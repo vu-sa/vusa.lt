@@ -19,6 +19,7 @@
 
 import { computed, inject, provide, reactive, readonly, ref, type InjectionKey, type Ref } from 'vue';
 
+import { invalidateActionWindowData } from '@/Composables/useActionWindowData';
 import { toLocalDateTime, type AgendaItemFormData, type MeetingFormData } from '@/Composables/useMeetingCreation';
 import { isDateOnlyMeetingType } from '@/Types/MeetingType';
 
@@ -161,6 +162,12 @@ export function createActionWindowProvider(): ActionWindowContext {
 
   const open = (options?: OpenOptions) => {
     reset();
+
+    // The window's institution/meeting data is fetched once per cache lifetime (see
+    // useActionWindowData), but meetings get completed on pages this window never
+    // touches (ShowMeeting, agenda items, votes). Without this, a meeting fixed since
+    // the window was last opened keeps showing as needing attention.
+    invalidateActionWindowData();
 
     if (options?.institution) {
       draft.institution = options.institution;

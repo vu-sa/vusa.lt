@@ -7,6 +7,35 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.38 — Angliška darbotvarkė ir pertraukos (2026-09-02) {#v1-38}
+
+- ⭐ **Darbotvarkės punktus galima įvesti ir angliškai** — punkto pavadinimą, aprašymą, studentų poziciją ir balsavimų pavadinimus dabar galima išversti. Darbotvarkės punkto lange atsirado vėliavėlės mygtukas, kuris vienu paspaudimu perjungia visus laukus į anglų kalbą; neišvertus nieko nesikeičia
+- ⭐ **Angliškame renginio puslapyje rodoma angliška darbotvarkė** — kai posėdis paskelbtas kalendoriuje, `/en/` puslapis parodo išverstus punktus. Kas neišversta, lieka lietuviškai, o ne tuščia
+- ⭐ **Naujas darbotvarkės punkto tipas — „Pertrauka“** — pertrauka taip pat yra posėdžio dalis, tad jai nebereikia išgalvoti kito tipo. Pertraukai nereikia balsavimo, todėl ji nebelaiko posėdžio neužbaigtu
+- ✨ **Posėdžio dokumentai parenkami pagal puslapio kalbą** — „SharePoint“ jau žymi kiekvieno dokumento kalbą, tad angliškame puslapyje rodomi angliški dokumentai, o lietuviškame — lietuviški. Jei atitinkamos kalbos dokumentų nėra, rodomi visi ir pažymima jų kalba
+- ✨ **Angliško posėdžio puslapio antraštė — angliška** — naršyklės kortelėje vietoje „2026 gegužės 14 d. 10.00 val. posėdis“ rodoma „14 May 2026 10.00 meeting“
+- ✨ **Prie posėdžio dokumentų rodoma jų kalba** — LT arba EN žymė, kad iš karto matytųsi, kuris dokumentas kuria kalba
+- ✨ **Užduočių kortelėje rodoma tik neatliktų užduočių** — posėdžio, institucijos ir nario puslapiuose skaičius prie „Užduotys“ rodo, kiek dar liko padaryti; atlikus visas, skaičius dingsta
+- ✨ **Švaresnis darbotvarkės klausimų langas** — pašalintas nuolatinis priminimas „Kiekvienas posėdis turi darbotvarkės klausimų“
+- 🔧 **Posėdžio dokumentų data rodoma normaliai** — vietoje pilno laiko su laiko juosta rodoma tik data. Ji taip pat nebegali „pasislinkti“ viena diena skaitant iš kitos laiko juostos
+- 🔧 **Posėdžio aprašymas pagaliau išsaugomas** — redaguojant jau sukurtą posėdį įvestas aprašymas buvo tyliai atmetamas
+- 🔧 **Kalbos mygtukas nebeišsaugo formos** — paspaudus vėliavėlę forma būdavo išsaugoma ir langas užsidarydavo. Tai lietė ir kitas administravimo formas (renginių, pareigų, institucijų, tipų)
+- 🔧 **Perjungiant redagavimą nebešokteli puslapis** — vėliavėlės mygtukui vieta rezervuojama iš anksto
+- 🔧 **Darbotvarkės punkto naršyklės antraštė** — vietoje „Redaguoti: [object Object]“ vėl rodomas klausimo pavadinimas
+
+## v1.37 — Užduočių suvestinė (2026-09-01) {#v1-37}
+
+- 🔧 **Užduoties veiksmų mygtukas pagaliau matomas** — trijų taškų mygtukas lentelėje buvo visiškai permatomas, todėl „Ištrinti“ ir „Pažymėti atlikta“ nebuvo kaip pasiekti
+- ⭐ **Užduotis, likusią po ištrinto įrašo, galima pašalinti** — kai posėdis ar institucija ištrinami visam laikui, užduotis kartais lieka. Tokios užduotys dabar matomos suvestinėje su žyma „Objektas ištrintas“, o vyriausiasis administratorius gali jas ištrinti
+- ✨ **„Ištrinti“ rodoma tik tiems, kurie tikrai gali ištrinti** — anksčiau mygtukas būdavo siūlomas visiems ir paspaudus grąžindavo klaidą
+- ✨ **Užduotį ištrinti dabar prašoma patvirtinti** — ir tą patį galima padaryti telefone, kur veiksmo išvis nebuvo
+- 🔧 **Suvestinėje nebeliko puslapiavimo puslapiavime** — lentelė papildomai skaidydavo po 15 įrašų tą patį puslapį, kurį serveris jau buvo atidavęs po 20
+- 🔧 **Suvestinės filtras „Atliktos / Neatliktos“ veikia per visus puslapius** — anksčiau jis atrinkdavo tik tame puslapyje matomas užduotis, todėl skaičiai nesutapdavo su puslapiuotoju
+- ✨ **Užduočių suvestinės kortelės atrodo kaip rezervacijų skydelyje** — tas pats kortelės stilius dabar naudojamas abiejose vietose
+- 🔧 **Ištrynus užduotį neberodomi du pranešimai**
+- 🔧 **Patvirtinimo langas nebeatskrenda iš kampo** — visi patvirtinimo langai (ne tik užduočių) atsidaro centre, kaip ir kiti langai
+- ✨ **Užduoties lange nebeišsitęsia atsakingųjų sąrašas** — kai užduotis priskirta visai institucijai, vardų sąrašas išaugdavo per visą ekrano aukštį; dabar rodomos nuotraukos, o vardai — užvedus pele
+
 ## v1.36 — Renginiai ir posėdžiai (2026-08-31) {#v1-36}
 
 - ⭐ **Posėdį galima sukurti tiesiai iš renginio** — renginių sąraše prie kalendoriaus įrašo, kuris dar nesusietas su posėdžiu, atsirado veiksmas „Sukurti posėdį iš renginio“. Data paimama iš renginio, todėl veiksmų lange belieka pasirinkti instituciją ir surašyti darbotvarkę, o sukurtas posėdis susiejamas su tuo pačiu renginiu

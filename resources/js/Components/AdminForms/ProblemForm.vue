@@ -29,7 +29,7 @@
         :hint="$t('problems.hints.description')"
       />
 
-      <div class="grid gap-x-4 lg:grid-cols-2">
+      <div class="grid gap-4 lg:grid-cols-2">
         <FormFieldWrapper id="tenant_id" :label="capitalize($tChoice('entities.tenant.model', 1))" :hint="$t('problems.hints.tenant')" required>
           <Select v-model="tenantIdString">
             <SelectTrigger>
@@ -63,7 +63,7 @@
         </FormFieldWrapper>
       </div>
 
-      <div class="grid gap-x-4 lg:grid-cols-2">
+      <div class="grid gap-4 lg:grid-cols-2">
         <FormFieldWrapper id="occurred_at" :label="capitalize($tChoice('entities.problem.occurred_at', 1))" :hint="$t('problems.hints.occurred_at')" required>
           <Input v-model="form.occurred_at" type="date" />
         </FormFieldWrapper>

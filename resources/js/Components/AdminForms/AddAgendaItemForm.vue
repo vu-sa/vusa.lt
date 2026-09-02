@@ -58,6 +58,11 @@
       </FormItem>
     </FormField>
 
+    <p class="flex items-start gap-1.5 text-xs text-muted-foreground">
+      <Languages class="mt-px h-3.5 w-3.5 shrink-0" />
+      {{ $t('meetings.agenda.english_added_later') }}
+    </p>
+
     <div class="flex justify-end gap-2 pt-2">
       <Button type="submit" :disabled="loading">
         <Plus class="h-4 w-4 mr-2" />
@@ -72,7 +77,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
 import { Form } from 'vee-validate';
-import { Plus } from 'lucide-vue-next';
+import { Languages, Plus } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

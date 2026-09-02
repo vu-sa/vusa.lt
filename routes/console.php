@@ -121,6 +121,43 @@ Schedule::command('notifications:prune-digests --older-than=30 --force')
     ->withoutOverlapping(10);
 
 // =====================================================================
+// BACKUPS & RETENTION
+// =====================================================================
+
+// Until now a backup only existed if somebody deployed, so a quiet week left
+// the newest dump a week old. Runs before the retention sweeps below so the
+// day's backup captures the rows they are about to delete.
+Schedule::command('deployment:backup')
+    ->dailyAt('01:30')
+    ->name('database-backup')
+    ->withoutOverlapping(60);
+
+// Telescope was 53% of the production database (334 MB) and 92% of staging's
+// (1.5 GB) because nothing ever pruned it, on a disk that is 86% full.
+Schedule::command('telescope:prune --hours=168')
+    ->daily()
+    ->name('prune-telescope')
+    ->withoutOverlapping(30);
+
+// Retention comes from config/activitylog.php (clean_after_days), which was
+// already set to 365 — the command was simply never scheduled.
+Schedule::command('activitylog:clean')
+    ->weeklyOn(0, '03:30')
+    ->name('clean-activity-log')
+    ->withoutOverlapping(60);
+
+// Staging tracks production's data as well as its code. The command refuses to
+// run outside APP_ENV=staging on its own, but scheduling it only there keeps it
+// off production's schedule:list entirely. Runs after the 01:30 backup so it
+// picks up the same night's dump rather than yesterday's.
+if (config('app.env') === 'staging') {
+    Schedule::command('staging:refresh-database')
+        ->dailyAt('04:00')
+        ->name('staging-database-refresh')
+        ->withoutOverlapping(120);
+}
+
+// =====================================================================
 // SCHEDULER HEARTBEAT
 // =====================================================================
 

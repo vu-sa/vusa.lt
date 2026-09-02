@@ -163,6 +163,7 @@ const typeLabel = (type?: string | null): string => {
     case 'voting': return $t('Balsuojamas');
     case 'informational': return $t('Informacinis');
     case 'deferred': return $t('Atidėtas');
+    case 'break': return $t('Pertrauka');
     default: return $t('Nepažymėtas');
   }
 };

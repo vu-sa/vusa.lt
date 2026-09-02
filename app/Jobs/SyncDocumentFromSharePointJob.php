@@ -59,7 +59,7 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
                     'title' => $result->title,
                 ]);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('SharePoint sync job failed', [
                 'document_id' => $this->document->id,
                 'attempt' => $this->attempts(),

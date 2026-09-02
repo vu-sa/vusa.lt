@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
+use Database\Factories\Concerns\HasTranslatableFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class VoteFactory extends Factory
 {
+    use HasTranslatableFactory;
+
     protected $model = Vote::class;
 
     /**
@@ -59,7 +62,7 @@ class VoteFactory extends Factory
     public function withTitle(?string $title = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'title' => $title ?? $this->faker->sentence(4),
+            'title' => $this->translatable($title, $title),
         ]);
     }
 
@@ -134,7 +137,7 @@ class VoteFactory extends Factory
     public function withNote(?string $note = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'note' => $note ?? $this->faker->paragraph,
+            'note' => $this->translatable($note, $note),
         ]);
     }
 

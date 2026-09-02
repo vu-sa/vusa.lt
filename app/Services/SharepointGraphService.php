@@ -391,13 +391,14 @@ class SharepointGraphService
     {
         $permissions = collect($this->getDriveItemPermissions($driveItemId)->getValue());
 
-        $permission = $permissions->filter(function (Models\Permission $permission) {
+        $permission = $permissions->filter(function (Models\Permission $permission) use ($driveItemId) {
             // Filter criteria:
             // 1. Must have a link (not SharePoint group permission)
             // 2. Must be anonymous scope
             // 3. Must NOT have expiration (our standard)
             // 4. CRITICAL: Must NOT be inherited from parent folder
-            // 5. CRITICAL: Must be a file URL (:b: or :w:), not a folder URL (:f:)
+            // 5. Must expose its webUrl (Graph omits it once an identity is granted on the link)
+            // 6. CRITICAL: Must be a file URL (:b: or :w:), not a folder URL (:f:)
             if (! $permission->getLink()
                 || $permission->getLink()->getScope() !== 'anonymous'
                 || $permission->getExpirationDateTime() !== null
@@ -405,11 +406,24 @@ class SharepointGraphService
                 return false;
             }
 
-            // Check URL type - must be file (:b: or :w:), not folder (:f:)
             $url = $permission->getLink()->getWebUrl();
+
+            // A link whose address Graph withholds is useless to us, and treating it as
+            // the current one would overwrite a working anonymous_url with null.
+            if ($url === null) {
+                $this->logWarning('Rejecting anonymous permission without a webUrl', [
+                    'drive_item_id' => $driveItemId,
+                    'permission_id' => $permission->getId(),
+                ]);
+
+                return false;
+            }
+
+            // Check URL type - must be file (:b: or :w:), not folder (:f:)
             if ($this->isFolderUrl($url)) {
                 $this->logWarning('Rejecting folder URL permission on file', [
-                    'drive_item_id' => $permission->getId(),
+                    'drive_item_id' => $driveItemId,
+                    'permission_id' => $permission->getId(),
                     'url_type' => 'folder',
                 ]);
 
@@ -744,26 +758,8 @@ class SharepointGraphService
             $document->summary = $driveItem['listItem']['fields'][SharepointFieldEnum::SUMMARY->label()] ?? null;
             /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
 
-            $anonymousPermission = collect($driveItem['permissions'] ?? [])
-                ->filter(fn ($permission) => $this->isValidAnonymousPermission($permission))
-                ->first();
-
-            $url = $anonymousPermission['link']['webUrl'] ?? null;
-
-            if ($this->isFolderUrl($url)) {
-                $this->logWarning('Batch processing: rejecting folder URL for document', [
-                    'sharepoint_id' => $document->sharepoint_id,
-                    'title' => $document->title,
-                ]);
-                $document->anonymous_url = null;
-            } else {
-                $document->anonymous_url = $url;
-            }
-
-            $document->sharepoint_permission_id = $anonymousPermission['id'] ?? null;
-
-            $document->checked_at = Carbon::now();
-            $document->sync_status = 'imported';
+            $this->applyImportedPublicLink($document, collect($driveItem['permissions'] ?? [])
+                ->first(fn ($permission) => $this->isValidAnonymousPermission($permission)));
 
             $institutionFieldName = SharepointFieldEnum::PADALINYS->label();
 
@@ -846,8 +842,12 @@ class SharepointGraphService
      * SharePoint anonymous links are bearer tokens - anyone with the URL can access the file.
      * This method masks the unique file identifier to prevent URL leakage in logs.
      */
-    private function maskUrl(string $url): string
+    private function maskUrl(?string $url): string
     {
+        if ($url === null) {
+            return 'none';
+        }
+
         // Extract the unique file identifier (last segment after last /)
         $segments = explode('/', $url);
         $fileId = end($segments);
@@ -988,10 +988,45 @@ class SharepointGraphService
     }
 
     /**
+     * Record the public link on a freshly imported document.
+     *
+     * An import that produced no usable link is marked failed rather than 'imported', so
+     * `sharepoint:sync-documents --failed` retries it instead of leaving a document nobody
+     * can open. checked_at stays null so the rolling refresh also treats it as critical.
+     *
+     * @param  array<string, mixed>|null  $anonymousPermission
+     */
+    protected function applyImportedPublicLink(Document $document, ?array $anonymousPermission): void
+    {
+        // isValidAnonymousPermission() already rejected folder and unreadable links,
+        // so a missing URL here means link creation failed for this drive item.
+        $url = $anonymousPermission['link']['webUrl'] ?? null;
+
+        $document->anonymous_url = $url;
+        $document->sharepoint_permission_id = $anonymousPermission['id'] ?? null;
+
+        if ($url === null) {
+            $this->logWarning('Batch processing: document imported without a public link', [
+                'sharepoint_id' => $document->sharepoint_id,
+                'title' => $document->title,
+            ]);
+
+            $document->sync_status = 'failed';
+            $document->sync_error_message = 'Imported without a public link';
+
+            return;
+        }
+
+        $document->checked_at = Carbon::now();
+        $document->sync_status = 'imported';
+    }
+
+    /**
      * Check if a raw permission array represents a valid anonymous file permission.
      *
      * Mirrors the validation in getDriveItemPublicLink() for typed Permission objects.
-     * Criteria: anonymous scope, no password, not inherited, not a folder URL.
+     * Criteria: anonymous scope, no password, not inherited, has a readable webUrl,
+     * not a folder URL.
      */
     private function isValidAnonymousPermission(array $permission): bool
     {
@@ -1009,7 +1044,7 @@ class SharepointGraphService
         }
 
         $url = $permission['link']['webUrl'] ?? null;
-        if ($this->isFolderUrl($url)) {
+        if ($url === null || $this->isFolderUrl($url)) {
             return false;
         }
 

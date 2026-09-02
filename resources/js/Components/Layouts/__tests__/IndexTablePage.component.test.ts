@@ -30,7 +30,8 @@ describe('IndexTablePage', () => {
         AdminContentPage: defineComponent({ name: 'AdminContentPage', template: '<div><slot /></div>' }),
         ServerDataTable: defineComponent({
           name: 'ServerDataTable',
-          template: '<div><slot name="actions" /><slot name="filters" /></div>',
+          // Mirrors the real component's `v-if="$slots.filters"` filter-button gate.
+          template: '<div><slot name="actions" /><div v-if="$slots.filters" data-testid="filters-slot-forwarded"><slot name="filters" /></div></div>',
         }),
         Link: { template: '<a :href="href"><slot /></a>', props: ['href'] },
       },
@@ -83,5 +84,42 @@ describe('IndexTablePage', () => {
     await item?.trigger('click');
 
     expect(onSelect).toHaveBeenCalledOnce();
+  });
+
+  // ServerDataTable shows its filter-toggle button whenever it receives a
+  // #filters slot at all, even an empty one, so an unconditional pass-through
+  // would show the button on pages with no filters to offer.
+  it('does not forward a filters slot when the page defines none', () => {
+    wrapper = mountPage();
+
+    expect(wrapper.find('[data-testid="filters-slot-forwarded"]').exists()).toBe(false);
+  });
+
+  it('forwards the filters slot when the page defines one', () => {
+    wrapper = mount(IndexTablePage, {
+      props: {
+        modelName: 'tests',
+        columns: columns as ColumnDef<unknown, any>[],
+        data: [],
+        totalCount: 0,
+      },
+      slots: {
+        filters: '<div data-testid="page-filter-control" />',
+      },
+      global: {
+        stubs: {
+          ...commonStubs,
+          AdminContentPage: defineComponent({ name: 'AdminContentPage', template: '<div><slot /></div>' }),
+          ServerDataTable: defineComponent({
+            name: 'ServerDataTable',
+            template: '<div><slot name="actions" /><div v-if="$slots.filters" data-testid="filters-slot-forwarded"><slot name="filters" /></div></div>',
+          }),
+          Link: { template: '<a :href="href"><slot /></a>', props: ['href'] },
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-testid="filters-slot-forwarded"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="page-filter-control"]').exists()).toBe(true);
   });
 });

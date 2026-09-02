@@ -11,6 +11,7 @@ export enum AgendaItemType {
   Voting = "voting",
   Informational = "informational",
   Deferred = "deferred",
+  Break = "break",
 }
 export enum AllowedFileablesEnum {
   DUTY = "Duty",

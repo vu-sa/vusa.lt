@@ -4,11 +4,37 @@ import type { InertiaForm } from '@inertiajs/vue3';
 
 export type VoteValue = 'positive' | 'negative' | 'neutral' | null;
 
+/**
+ * A Spatie-translatable field as the editor holds it. Read-only surfaces receive the
+ * already-localized string instead (`App.Entities.*`), so this shape stays local to the
+ * editor, which is the only place that writes translations.
+ */
+export interface TranslatedField {
+  lt: string;
+  en: string;
+}
+
+/** Server-shaped translations (`toFullArray()`) coerced into a complete `{lt, en}` pair. */
+export function toTranslatedField(value: unknown): TranslatedField {
+  // Spatie hands back `[]` for a field that has never been set in any locale.
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const record = value as Record<string, unknown>;
+
+    return {
+      lt: typeof record.lt === 'string' ? record.lt : '',
+      en: typeof record.en === 'string' ? record.en : '',
+    };
+  }
+
+  return { lt: typeof value === 'string' ? value : '', en: '' };
+}
+
 export interface EditableVote {
   id?: string | null;
   is_main?: boolean;
   is_consensus?: boolean;
-  title?: string | null;
+  title: TranslatedField;
+  note: TranslatedField;
   student_vote?: VoteValue;
   decision?: VoteValue;
   student_benefit?: VoteValue;
@@ -16,11 +42,11 @@ export interface EditableVote {
 }
 
 export interface AgendaItemFormData {
-  title: string;
-  type: 'voting' | 'informational' | 'deferred' | null;
+  title: TranslatedField;
+  type: 'voting' | 'informational' | 'deferred' | 'break' | null;
   brought_by_students: boolean;
-  student_position: string;
-  description: string;
+  student_position: TranslatedField;
+  description: TranslatedField;
   /** Timetable slot as `HH:MM`; null when the body did not schedule per-item times. */
   start_time: string | null;
   end_time: string | null;

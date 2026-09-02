@@ -29,7 +29,7 @@
               stroke-width="2.5"
               stroke-linecap="round"
               :stroke-dasharray="`${task.progress.percentage * 0.817} 81.7`"
-              :class="progressColor"
+              :class="progressStrokeClass"
             />
           </svg>
           <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
@@ -40,13 +40,9 @@
         <!-- Icon for auto-completing tasks without progress -->
         <div
           v-else-if="!canManuallyComplete"
-          :class="['flex size-8 items-center justify-center rounded-lg', iconBgClass]"
+          :class="['flex size-8 items-center justify-center rounded-lg', actionBackgroundClass]"
         >
-          <component
-            :is="taskIcon"
-            class="size-4"
-            :class="iconColorClass"
-          />
+          <component :is="actionIcon" class="size-4" :class="actionTextClass" />
         </div>
 
         <!-- Checkbox for manual tasks -->
@@ -75,21 +71,25 @@
         <!-- Meta info row -->
         <div class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
           <!-- Auto-complete label -->
-          <span
-            v-if="!canManuallyComplete"
-            :class="['font-medium', actionTypeColor]"
-          >
-            {{ actionTypeLabel }}
+          <span v-if="!canManuallyComplete && actionLabel" :class="['font-medium', actionTextClass]">
+            {{ actionLabel }}
           </span>
 
           <!-- Taskable reference -->
           <Link
-            v-if="task.taskable?.name"
-            :href="taskableLink"
+            v-if="taskableUrl"
+            :href="taskableUrl"
             class="text-zinc-500 hover:text-zinc-700 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
-            {{ task.taskable.name }}
+            {{ task.taskable?.name }}
           </Link>
+          <span
+            v-else-if="isOrphaned"
+            class="text-zinc-400 dark:text-zinc-500"
+            :title="$t('tasks.orphaned_description')"
+          >
+            {{ $t('tasks.orphaned') }}
+          </span>
 
           <!-- Due date -->
           <span
@@ -107,7 +107,7 @@
 
         <!-- Assigned users -->
         <div v-if="task.users?.length" class="mt-2">
-          <UsersAvatarGroup :users="(task.users as any)" :size="24" :max="4" />
+          <UsersAvatarGroup :users="task.users" :size="24" :max="4" />
         </div>
 
         <!-- Actions row -->
@@ -132,7 +132,7 @@
               size="sm"
               variant="outline"
               class="h-7 gap-1.5 text-xs"
-              @click="$emit('openMeetingModal', task)"
+              @click="emit('openMeetingModal', task)"
             >
               <CalendarPlusIcon class="size-3" />
               {{ $t('Schedule') }}
@@ -141,7 +141,7 @@
               size="sm"
               variant="outline"
               class="h-7 gap-1.5 text-xs text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/50"
-              @click="$emit('openCheckInDialog', task)"
+              @click="emit('openCheckInDialog', task)"
             >
               <CalendarOffIcon class="size-3" />
               {{ $t('No meeting') }}
@@ -149,19 +149,13 @@
           </template>
 
           <!-- Agenda task quick actions -->
-          <template v-if="isAgendaTask && !task.completed_at && isMeeting">
-            <Link :href="meetingAgendaUrl">
-              <Button
-                size="sm"
-                variant="outline"
-                class="h-7 gap-1.5 text-xs"
-              >
-                <FilePlus2Icon v-if="isAgendaCreationTask" class="size-3" />
-                <FileCheckIcon v-else class="size-3" />
-                {{ isAgendaCreationTask ? $t('tasks.agenda.action_add_items') : $t('tasks.agenda.action_view_agenda') }}
-              </Button>
-            </Link>
-          </template>
+          <Link v-if="meetingAgendaUrl && !task.completed_at" :href="meetingAgendaUrl">
+            <Button size="sm" variant="outline" class="h-7 gap-1.5 text-xs">
+              <FilePlus2Icon v-if="isAgendaCreation" class="size-3" />
+              <FileCheckIcon v-else class="size-3" />
+              {{ isAgendaCreation ? $t('tasks.agenda.action_add_items') : $t('tasks.agenda.action_view_agenda') }}
+            </Button>
+          </Link>
 
           <!-- View details button (info icon) -->
           <Button
@@ -169,10 +163,23 @@
             size="sm"
             variant="ghost"
             class="size-7 p-0 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
-            @click="$emit('openTaskDetail', task)"
+            @click="emit('openTaskDetail', task)"
           >
             <InfoIcon class="size-4" />
             <span class="sr-only">{{ $t('View Details') }}</span>
+          </Button>
+
+          <!-- Delete: the mobile counterpart of the table's actions menu -->
+          <Button
+            v-if="canDelete"
+            size="sm"
+            variant="ghost"
+            class="size-7 p-0 text-zinc-400 hover:text-destructive dark:text-zinc-500"
+            :disabled="isLoading"
+            @click="emit('delete', task)"
+          >
+            <TrashIcon class="size-4" />
+            <span class="sr-only">{{ canManuallyComplete ? $t('Delete') : $t('tasks.delete_automatic') }}</span>
           </Button>
         </div>
       </div>
@@ -181,277 +188,93 @@
 </template>
 
 <script setup lang="ts">
-import { useDateLocale } from '@/Composables/useDateLocale';
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { formatDistanceToNow, parseISO, isToday, isTomorrow, differenceInDays } from 'date-fns';
 import { toast } from 'vue-sonner';
 import {
+  CalendarOffIcon,
+  CalendarPlusIcon,
   CheckIcon,
-  LoaderCircleIcon,
+  FileCheckIcon,
+  FilePlus2Icon,
   InfoIcon,
-  ShieldCheck as ShieldCheckIcon,
-  Package as PackageIcon,
-  PackageCheck as PackageCheckIcon,
-  ClipboardCheck as ClipboardCheckIcon,
-  Clock as ClockIcon,
-  CalendarPlus as CalendarPlusIcon,
-  CalendarOff as CalendarOffIcon,
-  FilePlus2 as FilePlus2Icon,
-  FileCheck as FileCheckIcon,
+  LoaderCircleIcon,
+  TrashIcon,
 } from 'lucide-vue-next';
 
+import { useDateLocale } from '@/Composables/useDateLocale';
+import {
+  formatTaskDueDate,
+  getMeetingAgendaUrl,
+  getTaskActionBackgroundClass,
+  getTaskActionIcon,
+  getTaskActionLabel,
+  getTaskActionTextClass,
+  getTaskProgressStrokeClass,
+  getTaskableUrl,
+  isAgendaCreationTask,
+  isAgendaTask,
+  isInstitutionTask,
+  isMeetingTask,
+  isOrphanedTask,
+  isPeriodicityGapTask,
+  type TaskDisplayData,
+} from '@/Composables/useTaskPresentation';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
-
-interface Task {
-  id: string;
-  name: string;
-  description?: string | null;
-  due_date?: string | null;
-  completed_at?: string | null;
-  action_type?: TaskActionType | string | null;
-  progress?: TaskProgress | null;
-  is_overdue?: boolean;
-  can_be_manually_completed?: boolean;
-  taskable?: {
-    id: string;
-    name?: string;
-    type?: string;
-  } | null;
-  taskable_type: string;
-  taskable_id: string;
-  users?: Array<{
-    id: string;
-    name: string;
-    profile_photo_path?: string;
-  }>;
-}
 
 const props = defineProps<{
-  task: Task;
+  task: TaskDisplayData;
   isLoading?: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'openMeetingModal', task: Task): void;
-  (e: 'openCheckInDialog', task: Task): void;
-  (e: 'openTaskDetail', task: Task): void;
-  (e: 'update:completed', task: Task): void;
+  (e: 'openMeetingModal', task: TaskDisplayData): void;
+  (e: 'openCheckInDialog', task: TaskDisplayData): void;
+  (e: 'openTaskDetail', task: TaskDisplayData): void;
+  (e: 'update:completed', task: TaskDisplayData): void;
+  (e: 'delete', task: TaskDisplayData): void;
 }>();
 
-// Date locale
 const dateLocale = useDateLocale();
 
-// Computed properties
 const canManuallyComplete = computed(() => props.task.can_be_manually_completed !== false);
+const isPeriodicityGap = computed(() => isPeriodicityGapTask(props.task));
+const isAgendaCreation = computed(() => isAgendaCreationTask(props.task));
+const isInstitution = computed(() => isInstitutionTask(props.task));
+const isOrphaned = computed(() => isOrphanedTask(props.task));
 
-const isPeriodicityGap = computed(() =>
-  props.task.action_type === TaskActionType.PeriodicityGap || props.task.action_type === 'periodicity_gap',
+const meetingAgendaUrl = computed(() =>
+  isAgendaTask(props.task) && isMeetingTask(props.task) ? getMeetingAgendaUrl(props.task) : null,
 );
+const taskableUrl = computed(() => (props.task.taskable?.name ? getTaskableUrl(props.task) : null));
+const formattedDueDate = computed(() => formatTaskDueDate(props.task.due_date, dateLocale.value));
 
-const isAgendaTask = computed(() =>
-  props.task.action_type === TaskActionType.AgendaCreation
-  || props.task.action_type === 'agenda_creation'
-  || props.task.action_type === TaskActionType.AgendaCompletion
-  || props.task.action_type === 'agenda_completion',
-);
+const actionIcon = computed(() => getTaskActionIcon(props.task.action_type));
+const actionLabel = computed(() => getTaskActionLabel(props.task.action_type));
+const actionTextClass = computed(() => getTaskActionTextClass(props.task.action_type));
+const actionBackgroundClass = computed(() => getTaskActionBackgroundClass(props.task.action_type));
+const progressStrokeClass = computed(() => getTaskProgressStrokeClass(props.task.action_type));
 
-const isAgendaCreationTask = computed(() =>
-  props.task.action_type === TaskActionType.AgendaCreation || props.task.action_type === 'agenda_creation',
-);
+// Mirrors TaskTable: the endpoint's `can_delete` wins, with the controller's rule as fallback
+// for the Show pages that hand over raw task models.
+const canDelete = computed(() => {
+  if (props.task.can_delete !== undefined) {
+    return props.task.can_delete;
+  }
 
-const isInstitution = computed(() => props.task.taskable_type === 'institution');
-
-const isMeeting = computed(() => props.task.taskable_type === 'meeting');
-
-// URL for navigating to meeting agenda
-const meetingAgendaUrl = computed(() => {
-  if (!isMeeting.value || !props.task.taskable_id) return '#';
-  const baseUrl = route('meetings.show', props.task.taskable_id);
-  const params = new URLSearchParams({ tab: 'agenda' });
-  if (isAgendaCreationTask.value) params.set('action', 'add');
-  return `${baseUrl}?${params.toString()}`;
+  return canManuallyComplete.value || (usePage().props.auth?.user?.isSuperAdmin ?? false);
 });
 
-// Format due date
-const formattedDueDate = computed(() => {
-  if (!props.task.due_date) return '';
-  try {
-    const date = parseISO(props.task.due_date);
-    if (isToday(date)) return $t('Today');
-    if (isTomorrow(date)) return $t('Tomorrow');
-    const daysUntil = differenceInDays(date, new Date());
-    if (Math.abs(daysUntil) <= 7) {
-      return formatDistanceToNow(date, { addSuffix: true, locale: dateLocale.value });
-    }
-    return props.task.due_date.split('T')[0];
-  }
-  catch {
-    return props.task.due_date;
-  }
-});
-
-// Task icon based on action type
-const taskIcon = computed(() => {
-  switch (props.task.action_type) {
-    case TaskActionType.Approval:
-    case 'approval':
-      return ShieldCheckIcon;
-    case TaskActionType.Pickup:
-    case 'pickup':
-      return PackageIcon;
-    case TaskActionType.Return:
-    case 'return':
-      return PackageCheckIcon;
-    case TaskActionType.PeriodicityGap:
-    case 'periodicity_gap':
-      return ClockIcon;
-    case TaskActionType.AgendaCreation:
-    case 'agenda_creation':
-      return FilePlus2Icon;
-    case TaskActionType.AgendaCompletion:
-    case 'agenda_completion':
-      return FileCheckIcon;
-    default:
-      return ClipboardCheckIcon;
-  }
-});
-
-// Icon background class
-const iconBgClass = computed(() => {
-  switch (props.task.action_type) {
-    case TaskActionType.Approval:
-    case 'approval':
-      return 'bg-blue-100 dark:bg-blue-900/40';
-    case TaskActionType.Pickup:
-    case 'pickup':
-      return 'bg-amber-100 dark:bg-amber-900/40';
-    case TaskActionType.Return:
-    case 'return':
-      return 'bg-emerald-100 dark:bg-emerald-900/40';
-    case TaskActionType.PeriodicityGap:
-    case 'periodicity_gap':
-      return 'bg-orange-100 dark:bg-orange-900/40';
-    case TaskActionType.AgendaCreation:
-    case 'agenda_creation':
-      return 'bg-violet-100 dark:bg-violet-900/40';
-    case TaskActionType.AgendaCompletion:
-    case 'agenda_completion':
-      return 'bg-emerald-100 dark:bg-emerald-900/40';
-    default:
-      return 'bg-zinc-100 dark:bg-zinc-800';
-  }
-});
-
-// Icon color class
-const iconColorClass = computed(() => {
-  switch (props.task.action_type) {
-    case TaskActionType.Approval:
-    case 'approval':
-      return 'text-blue-600 dark:text-blue-400';
-    case TaskActionType.Pickup:
-    case 'pickup':
-      return 'text-amber-600 dark:text-amber-400';
-    case TaskActionType.Return:
-    case 'return':
-      return 'text-emerald-600 dark:text-emerald-400';
-    case TaskActionType.PeriodicityGap:
-    case 'periodicity_gap':
-      return 'text-orange-600 dark:text-orange-400';
-    case TaskActionType.AgendaCreation:
-    case 'agenda_creation':
-      return 'text-violet-600 dark:text-violet-400';
-    case TaskActionType.AgendaCompletion:
-    case 'agenda_completion':
-      return 'text-green-600 dark:text-green-400';
-    default:
-      return 'text-zinc-600 dark:text-zinc-400';
-  }
-});
-
-// Progress ring color
-const progressColor = computed(() => {
-  switch (props.task.action_type) {
-    case TaskActionType.Approval:
-    case 'approval':
-      return 'text-blue-500 dark:text-blue-400';
-    case TaskActionType.Pickup:
-    case 'pickup':
-      return 'text-amber-500 dark:text-amber-400';
-    case TaskActionType.Return:
-    case 'return':
-      return 'text-emerald-500 dark:text-emerald-400';
-    default:
-      return 'text-primary';
-  }
-});
-
-// Action type color
-const actionTypeColor = computed(() => {
-  switch (props.task.action_type) {
-    case TaskActionType.Approval:
-    case 'approval':
-      return 'text-blue-600 dark:text-blue-400';
-    case TaskActionType.Pickup:
-    case 'pickup':
-      return 'text-amber-600 dark:text-amber-400';
-    case TaskActionType.Return:
-    case 'return':
-      return 'text-emerald-600 dark:text-emerald-400';
-    case TaskActionType.PeriodicityGap:
-    case 'periodicity_gap':
-      return 'text-orange-600 dark:text-orange-400';
-    default:
-      return 'text-zinc-600 dark:text-zinc-400';
-  }
-});
-
-// Action type label
-const actionTypeLabel = computed(() => {
-  switch (props.task.action_type) {
-    case TaskActionType.Approval:
-    case 'approval':
-      return $t('Auto: approval');
-    case TaskActionType.Pickup:
-    case 'pickup':
-      return $t('Auto: pickup');
-    case TaskActionType.Return:
-    case 'return':
-      return $t('Auto: return');
-    case TaskActionType.PeriodicityGap:
-    case 'periodicity_gap':
-      return $t('Auto: periodicity');
-    default:
-      return '';
-  }
-});
-
-// Taskable link
-const taskableLink = computed(() => {
-  if (!props.task.taskable) return '#';
-  const type = props.task.taskable_type;
-  switch (type) {
-    case 'meeting':
-      return route('meetings.show', props.task.taskable_id);
-    case 'reservation':
-      return route('reservations.show', props.task.taskable_id);
-    case 'institution':
-      return route('institutions.show', props.task.taskable_id);
-    default:
-      return '#';
-  }
-});
-
-// Handle completion
 function handleComplete() {
   if (!canManuallyComplete.value) {
     toast.info($t('This task completes automatically'));
+
     return;
   }
+
   emit('update:completed', props.task);
 }
 </script>

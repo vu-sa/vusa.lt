@@ -16,7 +16,7 @@ class DocumentSharepointSyncService
      *
      * @return Document|null Returns the document on success, null on non-fatal failure.
      *
-     * @throws \InvalidArgumentException|\RuntimeException|\Exception On fatal errors.
+     * @throws \Throwable On fatal errors.
      */
     public function sync(Document $document, bool $force = false): ?Document
     {
@@ -208,7 +208,7 @@ class DocumentSharepointSyncService
             }
 
             throw $e;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('SharePoint document sync failed', [
                 'document_id' => $document->id,
                 'sharepoint_id' => $document->sharepoint_id,

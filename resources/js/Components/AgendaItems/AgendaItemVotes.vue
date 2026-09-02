@@ -68,9 +68,9 @@
                 </span>
                 <span
                   class="mt-1 block truncate text-sm"
-                  :class="vote.title ? 'text-zinc-700 dark:text-zinc-300' : 'italic text-muted-foreground'"
+                  :class="voteLabel(vote) ? 'text-zinc-700 dark:text-zinc-300' : 'italic text-muted-foreground'"
                 >
-                  {{ vote.title || $t('Be pavadinimo') }}
+                  {{ voteLabel(vote) || $t('Be pavadinimo') }}
                 </span>
               </span>
             </button>
@@ -116,7 +116,7 @@
           <div v-if="isExpanded(vote)" class="space-y-4 border-t border-zinc-200 px-3.5 pb-4 pt-4 dark:border-zinc-800">
             <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
               <Input
-                v-model="vote.title"
+                v-model="vote.title[locale]"
                 class="h-9 min-w-0 flex-1 basis-48 bg-white dark:bg-zinc-950/40 text-sm"
                 maxlength="200"
                 :readonly="!editing"
@@ -185,6 +185,8 @@ import type { AgendaItemFormData, EditableVote } from '@/Composables/useAgendaIt
 const props = withDefaults(defineProps<{
   form: InertiaForm<AgendaItemFormData>;
   editing?: boolean;
+  /** Which translation the inputs write. See EditAgendaItem.vue. */
+  locale?: 'lt' | 'en';
   /**
    * False for VU SA's own bodies: the representatives *are* the organisation, so there is no
    * separate student position or student benefit to record — only the outcome.
@@ -192,8 +194,13 @@ const props = withDefaults(defineProps<{
   requiresStudentPerspective?: boolean;
 }>(), {
   editing: false,
+  locale: 'lt',
   requiresStudentPerspective: true,
 });
+
+/** The collapsed row falls back to Lithuanian, so an untranslated vote still reads as named. */
+const voteLabel = (vote: EditableVote): string =>
+  (props.locale === 'en' ? vote.title.en : '') || vote.title.lt;
 
 type VoteField = 'decision' | 'student_vote' | 'student_benefit';
 interface VoteOption {
@@ -331,7 +338,8 @@ const addVote = () => {
     id: null,
     is_main: props.form.votes.length === 0,
     is_consensus: false,
-    title: null,
+    title: { lt: '', en: '' },
+    note: { lt: '', en: '' },
     student_vote: null,
     decision: null,
     student_benefit: null,

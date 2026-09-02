@@ -3,8 +3,9 @@
     :columns
     :data="tasks"
     :row-class-name
-    :enable-pagination="true"
-    :page-size="15"
+    :enable-pagination
+    :enable-filtering
+    :page-size
     :empty-message="$t('No tasks found.')"
     :empty-icon="CheckIcon"
   >
@@ -27,33 +28,40 @@
 </template>
 
 <script setup lang="tsx">
-import { useDateLocale } from '@/Composables/useDateLocale';
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref, defineAsyncComponent } from 'vue';
 import {
-  CheckIcon,
-  CalendarIcon,
-  MoreHorizontalIcon,
-  TrashIcon,
-  CheckCircleIcon,
-  ShieldCheckIcon,
-  PackageIcon,
-  PackageCheckIcon,
-  ClipboardCheckIcon,
   AlertCircleIcon,
-  RotateCwIcon,
-  CalendarPlusIcon,
   CalendarOffIcon,
-  ClockIcon,
-  InfoIcon,
-  FilePlus2Icon,
+  CalendarPlusIcon,
+  CheckCircleIcon,
+  CheckIcon,
   FileCheckIcon,
-  ExternalLinkIcon,
+  FilePlus2Icon,
+  InfoIcon,
+  LinkIcon,
+  MoreHorizontalIcon,
+  RotateCwIcon,
+  TrashIcon,
 } from 'lucide-vue-next';
-import { toast } from 'vue-sonner';
-import { format, formatDistanceToNow, parseISO, differenceInDays } from 'date-fns';
 
+import { useDateLocale } from '@/Composables/useDateLocale';
+import {
+  formatTaskDueDate,
+  getDueDateUrgencyClasses,
+  getMeetingAgendaUrl,
+  getTaskActionBadgeClasses,
+  getTaskActionIcon,
+  getTaskProgressStrokeClass,
+  getTaskableUrl,
+  isAgendaCreationTask,
+  isAgendaTask,
+  isInstitutionTask,
+  isMeetingTask,
+  isOrphanedTask,
+  isPeriodicityGapTask,
+  type TaskDisplayData,
+} from '@/Composables/useTaskPresentation';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -62,286 +70,66 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Comp
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
 import { HomeIconFilled, MeetingIconFilled, ReservationIconFilled, UserIconFilled } from '@/Components/icons';
 
-// Lazy load modals
-const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
-
-// Enhanced Task interface with new backend fields
-interface Task {
-  id: string;
-  name: string;
-  description?: string | null;
-  completed_at: string | null;
-  due_date: string | null;
-  taskable_type: string;
-  taskable_id: string;
-  taskable?: {
-    id: string;
-    name?: string;
-    type?: string;
-  } | null;
-  users?: {
-    id: string;
-    name: string;
-    profile_photo_path?: string;
-  }[];
-  // New backend computed fields
-  action_type?: TaskActionType | string | null;
-  progress?: TaskProgress | null;
-  is_overdue?: boolean;
-  can_be_manually_completed?: boolean;
-  icon?: string;
-  color?: string;
-}
-
-const props = defineProps<{
-  tasks: Task[];
-}>();
+const props = withDefaults(defineProps<{
+  tasks: TaskDisplayData[];
+  /** The task currently being written to, so its row can show a spinner instead of a control. */
+  loadingTaskId?: string | null;
+  /** Off when the page around the table already paginates server-side. */
+  enablePagination?: boolean;
+  enableFiltering?: boolean;
+  pageSize?: number;
+}>(), {
+  loadingTaskId: null,
+  enablePagination: true,
+  enableFiltering: true,
+  pageSize: 15,
+});
 
 const emit = defineEmits<{
-  (e: 'openMeetingModal', task: Task): void;
-  (e: 'openCheckInDialog', task: Task): void;
-  (e: 'openTaskDetail', task: Task): void;
+  (e: 'openMeetingModal', task: TaskDisplayData): void;
+  (e: 'openCheckInDialog', task: TaskDisplayData): void;
+  (e: 'openTaskDetail', task: TaskDisplayData): void;
+  (e: 'update:completed', task: TaskDisplayData): void;
+  (e: 'delete', task: TaskDisplayData): void;
 }>();
 
-// Track loading state per task
-const loadingTaskId = ref<string | null>(null);
+const dateLocale = useDateLocale();
+
+const currentUserId = () => usePage().props.auth?.user?.id;
 
 // An automatic task is the system's to close; only a super admin may force one away when it
 // has become unclosable. The backend enforces the same rule.
-const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? false);
-
-// Get locale for date formatting
-const dateLocale = useDateLocale();
-const getDateLocale = () => dateLocale.value;
+const isSuperAdmin = () => usePage().props.auth?.user?.isSuperAdmin ?? false;
 
 /**
- * Handle row styling based on task status
+ * `can_delete` is authoritative when the endpoint sends it. The Show pages hand raw task models
+ * to the table, so fall back to the rule the controller applies for those.
  */
-const rowClassName = (row: Task) => {
-  if (row.completed_at !== null) {
-    return 'opacity-60 bg-zinc-50/30 dark:bg-zinc-900/20';
+const canDeleteTask = (task: TaskDisplayData): boolean => {
+  if (task.can_delete !== undefined) {
+    return task.can_delete;
+  }
+
+  return task.can_be_manually_completed !== false || isSuperAdmin();
+};
+
+/**
+ * `group` is what makes the row-hover reveal of the actions menu work — TableRow adds no
+ * grouping class of its own, so without it the trigger stayed at its base opacity forever.
+ */
+const rowClassName = (row: TaskDisplayData) => {
+  if (row.completed_at) {
+    return 'group opacity-60 bg-zinc-50/30 dark:bg-zinc-900/20';
   }
   if (row.is_overdue) {
-    return 'bg-rose-50/20 dark:bg-rose-950/5';
-  }
-  return '';
-};
-
-/**
- * Get action type icon component
- */
-const getActionTypeIcon = (actionType: TaskActionType | string | null | undefined) => {
-  switch (actionType) {
-    case TaskActionType.Approval:
-    case 'approval':
-      return ShieldCheckIcon;
-    case TaskActionType.Pickup:
-    case 'pickup':
-      return PackageIcon;
-    case TaskActionType.Return:
-    case 'return':
-      return PackageCheckIcon;
-    case TaskActionType.PeriodicityGap:
-    case 'periodicity_gap':
-      return ClockIcon;
-    case TaskActionType.AgendaCreation:
-    case 'agenda_creation':
-      return FilePlus2Icon;
-    case TaskActionType.AgendaCompletion:
-    case 'agenda_completion':
-      return FileCheckIcon;
-    default:
-      return ClipboardCheckIcon;
-  }
-};
-
-/**
- * Get action type color classes
- */
-const getActionTypeClasses = (actionType: TaskActionType | string | null | undefined) => {
-  switch (actionType) {
-    case TaskActionType.Approval:
-    case 'approval':
-      return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
-    case TaskActionType.Pickup:
-    case 'pickup':
-      return 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
-    case TaskActionType.Return:
-    case 'return':
-      return 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
-    case TaskActionType.PeriodicityGap:
-    case 'periodicity_gap':
-      return 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400';
-    case TaskActionType.AgendaCreation:
-    case 'agenda_creation':
-      return 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400';
-    case TaskActionType.AgendaCompletion:
-    case 'agenda_completion':
-      return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
-    default:
-      return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';
-  }
-};
-
-/**
- * Check if task is a periodicity gap task
- */
-const isPeriodicityGapTask = (task: Task): boolean => {
-  return task.action_type === TaskActionType.PeriodicityGap || task.action_type === 'periodicity_gap';
-};
-
-/**
- * Check if task is an agenda-related task
- */
-const isAgendaTask = (task: Task): boolean => {
-  return task.action_type === TaskActionType.AgendaCreation
-    || task.action_type === 'agenda_creation'
-    || task.action_type === TaskActionType.AgendaCompletion
-    || task.action_type === 'agenda_completion';
-};
-
-/**
- * Check if task is an agenda creation task
- */
-const isAgendaCreationTask = (task: Task): boolean => {
-  return task.action_type === TaskActionType.AgendaCreation || task.action_type === 'agenda_creation';
-};
-
-/**
- * Check if task is a meeting-based task
- */
-const isMeetingTask = (task: Task): boolean => {
-  return task.taskable_type === 'meeting';
-};
-
-/**
- * Check if task is institution-based (for periodicity gap actions)
- */
-const isInstitutionTask = (task: Task): boolean => {
-  return task.taskable_type === 'institution';
-};
-
-/**
- * Get URL for navigating to meeting agenda tab with optional add action
- */
-const getMeetingAgendaUrl = (task: Task, action?: 'add'): string => {
-  if (!isMeetingTask(task) || !task.taskable_id) return '#';
-  const baseUrl = route('meetings.show', task.taskable_id);
-  const params = new URLSearchParams({ tab: 'agenda' });
-  if (action) params.set('action', action);
-  return `${baseUrl}?${params.toString()}`;
-};
-
-/**
- * Format due date with relative display
- */
-const formatDueDate = (dateString: string | null, isOverdue?: boolean) => {
-  if (!dateString) return null;
-
-  const date = parseISO(dateString);
-  const daysUntil = differenceInDays(date, new Date());
-
-  // For dates within a week, show relative
-  if (Math.abs(daysUntil) <= 7) {
-    return formatDistanceToNow(date, {
-      addSuffix: true,
-      locale: getDateLocale(),
-    });
+    return 'group bg-rose-50/20 dark:bg-rose-950/5';
   }
 
-  return format(date, 'yyyy-MM-dd');
+  return 'group';
 };
 
-/**
- * Get due date badge variant and classes
- */
-const getDueDateClasses = (task: Task) => {
-  if (task.due_date && !task.is_overdue) {
-    const daysUntil = differenceInDays(parseISO(task.due_date), new Date());
-    if (daysUntil <= 3 && daysUntil >= 0) {
-      return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-    }
-  }
-
-  return '';
-};
-
-/**
- * Update task completion status
- */
-const updateTaskCompletion = (task: Task) => {
-  // Don't allow completing auto-completing tasks
-  if (task.can_be_manually_completed === false) {
-    toast.info($t('This task completes automatically'), {
-      description: $t('You cannot manually complete this task'),
-    });
-    return;
-  }
-
-  if (loadingTaskId.value) return;
-  loadingTaskId.value = task.id;
-
-  const newCompletionState = task.completed_at === null;
-  const previousState = task.completed_at;
-
-  // Optimistic update
-  task.completed_at = newCompletionState ? new Date().toISOString() : null;
-
-  router.post(
-    route('tasks.updateCompletionStatus', task.id),
-    { completed: newCompletionState },
-    {
-      preserveScroll: true,
-      preserveState: true,
-      onSuccess: () => {
-        loadingTaskId.value = null;
-        if (newCompletionState) {
-          toast.success($t('Task marked as completed'), { description: task.name });
-        }
-        else {
-          toast.info($t('Task marked as incomplete'), { description: task.name });
-        }
-      },
-      onError: () => {
-        loadingTaskId.value = null;
-        task.completed_at = previousState;
-        toast.error($t('Failed to update task status'), {
-          description: $t('Please try again'),
-        });
-      },
-    },
-  );
-};
-
-/**
- * Delete a task
- */
-const handleDelete = (task: Task) => {
-  if (loadingTaskId.value) return;
-  loadingTaskId.value = task.id;
-
-  router.delete(route('tasks.destroy', task.id), {
-    preserveScroll: true,
-    preserveState: true,
-    onSuccess: () => {
-      loadingTaskId.value = null;
-      toast.success($t('Task deleted successfully'), { description: task.name });
-    },
-    onError: (errors: any) => {
-      loadingTaskId.value = null;
-      toast.error($t('Failed to delete task'), {
-        description: errors.message || $t('Please try again'),
-      });
-    },
-  });
-};
-
-/**
- * Get taskable icon based on type
- */
 const getTaskableIcon = (taskableType: string) => {
   switch (taskableType) {
     case 'meeting': return MeetingIconFilled;
@@ -351,28 +139,17 @@ const getTaskableIcon = (taskableType: string) => {
   }
 };
 
-/**
- * Get model route based on taskable type
- */
-const getModelRoute = (taskableType: string) => `${taskableType}s`;
-
-/**
- * Table column definitions
- */
 const columns = [
   // Status column - checkbox or progress indicator
   {
     id: 'status',
     header: '',
     cell: ({ row }) => {
-      const task = row.original;
-      const isLoading = loadingTaskId.value === task.id;
-      const canComplete = task.users?.find(
-        user => user.id === usePage().props.auth?.user?.id,
-      );
+      const task: TaskDisplayData = row.original;
+      const isLoading = props.loadingTaskId === task.id;
+      const isAssignedToCurrentUser = task.users?.some(user => user.id === currentUserId());
       const canManuallyComplete = task.can_be_manually_completed !== false;
 
-      // Loading state
       if (isLoading) {
         return (
           <div class="flex justify-center">
@@ -381,7 +158,7 @@ const columns = [
         );
       }
 
-      // Progress indicator for auto-completing tasks
+      // Progress ring for auto-completing tasks that track item counts
       if (!canManuallyComplete && task.progress) {
         return (
           <TooltipProvider>
@@ -407,11 +184,7 @@ const columns = [
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-dasharray={`${(task.progress.percentage / 100) * 62.8} 62.8`}
-                      class={task.action_type === 'return' || task.action_type === TaskActionType.Return
-                        ? 'text-emerald-500'
-                        : task.action_type === 'pickup' || task.action_type === TaskActionType.Pickup
-                          ? 'text-amber-500'
-                          : 'text-blue-500'}
+                      class={getTaskProgressStrokeClass(task.action_type)}
                     />
                   </svg>
                   <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-zinc-600 dark:text-zinc-400">
@@ -433,14 +206,14 @@ const columns = [
         );
       }
 
-      // Icon for auto-completing tasks without progress
       if (!canManuallyComplete) {
-        const ActionIcon = getActionTypeIcon(task.action_type);
+        const ActionIcon = getTaskActionIcon(task.action_type);
+
         return (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div class={`flex h-6 w-6 items-center justify-center rounded-md ${getActionTypeClasses(task.action_type)}`}>
+                <div class={`flex h-6 w-6 items-center justify-center rounded-md ${getTaskActionBadgeClasses(task.action_type)}`}>
                   <ActionIcon class="h-3.5 w-3.5" />
                 </div>
               </TooltipTrigger>
@@ -452,13 +225,12 @@ const columns = [
         );
       }
 
-      // Standard checkbox for manual tasks
       return (
         <div class="flex justify-center">
           <Checkbox
             modelValue={task.completed_at !== null}
-            disabled={!canComplete || isLoading}
-            onUpdate:modelValue={() => updateTaskCompletion(task)}
+            disabled={!isAssignedToCurrentUser || isLoading}
+            onUpdate:modelValue={() => emit('update:completed', task)}
             class="transition-all duration-200 hover:scale-110"
           />
         </div>
@@ -466,31 +238,33 @@ const columns = [
     },
     size: 48,
   },
-  // Task name with action type indicator
+  // Task name, with a description preview when there is one
   {
     accessorKey: 'name',
     header: () => $t('forms.fields.title'),
     cell: ({ row }) => {
-      const task = row.original;
-      const isCompleted = task.completed_at !== null;
-      const hasDescription = !!task.description;
+      const task: TaskDisplayData = row.original;
+      const nameClasses = `group/name flex max-w-full items-center gap-1.5 text-left ${
+        task.completed_at ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'
+      }`;
 
-      // If task has description, wrap in HoverCard for preview
-      if (hasDescription) {
+      const trigger = (
+        <button
+          type="button"
+          class={nameClasses}
+          onClick={() => emit('openTaskDetail', task)}
+        >
+          <span class="truncate text-sm font-medium group-hover/name:underline" title={task.name}>
+            {task.name}
+          </span>
+        </button>
+      );
+
+      if (task.description) {
         return (
           <div class="min-w-0 flex-1">
             <HoverCard openDelay={300}>
-              <HoverCardTrigger asChild>
-                <button
-                  type="button"
-                  class={`group/name flex max-w-full items-center gap-1.5 text-left ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}
-                  onClick={() => emit('openTaskDetail', task)}
-                >
-                  <span class="truncate text-sm font-medium group-hover/name:underline" title={task.name}>
-                    {task.name}
-                  </span>
-                </button>
-              </HoverCardTrigger>
+              <HoverCardTrigger asChild>{trigger}</HoverCardTrigger>
               <HoverCardContent class="w-80" side="top" align="start">
                 <div class="space-y-2">
                   <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{task.name}</p>
@@ -502,22 +276,11 @@ const columns = [
         );
       }
 
-      // No description - just show name with tooltip for overflow
       return (
         <div class="min-w-0 flex-1">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  class={`group/name flex max-w-full items-center gap-1.5 text-left ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}
-                  onClick={() => emit('openTaskDetail', task)}
-                >
-                  <span class="truncate text-sm font-medium group-hover/name:underline">
-                    {task.name}
-                  </span>
-                </button>
-              </TooltipTrigger>
+              <TooltipTrigger asChild>{trigger}</TooltipTrigger>
               <TooltipContent side="top" align="start">
                 <p>{task.name}</p>
               </TooltipContent>
@@ -528,30 +291,48 @@ const columns = [
     },
     size: 280,
   },
-  // Subject (taskable) with icon
+  // Subject (taskable)
   {
     accessorKey: 'subject',
     header: () => $t('forms.fields.subject'),
     cell: ({ row }) => {
-      const task = row.original;
-      if (!task.taskable) return <span class="text-zinc-400">—</span>;
+      const task: TaskDisplayData = row.original;
 
-      const modelRoute = getModelRoute(task.taskable_type);
+      // A task outlives its subject when the subject is hard-deleted; say so instead of
+      // rendering a dash, so the row can be recognised as one worth clearing away.
+      if (isOrphanedTask(task)) {
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" class="inline-flex max-w-[160px] items-center gap-1.5 font-normal text-zinc-500 dark:text-zinc-400">
+                  <LinkIcon class="h-3 w-3 shrink-0" />
+                  <span class="truncate">{$t('tasks.orphaned')}</span>
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{$t('tasks.orphaned_description')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+
       const Icon = getTaskableIcon(task.taskable_type);
-      const displayName = task.taskable.name || task.taskable_type;
+      const displayName = task.taskable?.name || task.taskable_type;
+      const url = getTaskableUrl(task);
 
-      return (
-        <Link href={route(`${modelRoute}.show`, task.taskable_id)}>
-          <Badge variant="outline" class="inline-flex max-w-[160px] items-center gap-1.5 font-normal hover:bg-zinc-100 dark:hover:bg-zinc-800">
-            <Icon class="h-3 w-3 shrink-0" />
-            <span class="truncate">{displayName}</span>
-          </Badge>
-        </Link>
+      const badge = (
+        <Badge variant="outline" class="inline-flex max-w-[160px] items-center gap-1.5 font-normal hover:bg-zinc-100 dark:hover:bg-zinc-800">
+          <Icon class="h-3 w-3 shrink-0" />
+          <span class="truncate">{displayName}</span>
+        </Badge>
       );
+
+      return url ? <Link href={url}>{badge}</Link> : badge;
     },
     size: 180,
   },
-  // Responsible users
   {
     accessorKey: 'users',
     header: () => $t('forms.fields.responsible_people'),
@@ -560,41 +341,40 @@ const columns = [
     ),
     size: 120,
   },
-  // Due date with status badge
   {
     accessorKey: 'due_date',
     header: () => $t('forms.fields.due_date'),
     cell: ({ row }) => {
-      const task = row.original;
-      if (!task.due_date) return <span class="text-zinc-400">—</span>;
-
-      const dueDateClasses = getDueDateClasses(task);
-      const formattedDate = formatDueDate(task.due_date, task.is_overdue);
+      const task: TaskDisplayData = row.original;
+      if (!task.due_date) {
+        return <span class="text-zinc-400">—</span>;
+      }
 
       return (
         <div class="flex items-center gap-2">
           {task.is_overdue && <AlertCircleIcon class="h-3.5 w-3.5 shrink-0 text-rose-500" />}
           <Badge
             variant={task.is_overdue ? 'rose' : 'secondary'}
-            class={`text-xs font-medium ${dueDateClasses}`}
+            class={`text-xs font-medium ${getDueDateUrgencyClasses(task)}`}
           >
-            {formattedDate}
+            {formatTaskDueDate(task.due_date, dateLocale.value)}
           </Badge>
         </div>
       );
     },
     size: 140,
   },
-  // Quick actions for periodicity gap tasks and agenda tasks
+  // Quick actions for periodicity gap and agenda tasks
   {
     id: 'quick_actions',
     header: '',
     cell: ({ row }) => {
-      const task = row.original;
-      const isCompleted = task.completed_at !== null;
+      const task: TaskDisplayData = row.original;
+      if (task.completed_at) {
+        return null;
+      }
 
-      // Show quick actions for uncompleted periodicity gap tasks (institution-based)
-      if (isPeriodicityGapTask(task) && !isCompleted && isInstitutionTask(task)) {
+      if (isPeriodicityGapTask(task) && isInstitutionTask(task)) {
         return (
           <div class="flex items-center gap-1">
             <TooltipProvider>
@@ -635,10 +415,10 @@ const columns = [
         );
       }
 
-      // Show quick actions for uncompleted agenda tasks (meeting-based)
-      if (isAgendaTask(task) && !isCompleted && isMeetingTask(task)) {
+      const agendaUrl = isAgendaTask(task) && isMeetingTask(task) ? getMeetingAgendaUrl(task) : null;
+
+      if (agendaUrl) {
         const isCreation = isAgendaCreationTask(task);
-        const agendaUrl = getMeetingAgendaUrl(task, isCreation ? 'add' : undefined);
 
         return (
           <div class="flex items-center gap-1">
@@ -678,16 +458,20 @@ const columns = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const task = row.original;
+      const task: TaskDisplayData = row.original;
       const canManuallyComplete = task.can_be_manually_completed !== false;
-      const isCompleted = task.completed_at !== null;
-      const hasDescription = !!task.description;
-      const canDelete = canManuallyComplete || isSuperAdmin.value;
+      const canComplete = canManuallyComplete && !task.completed_at;
+      const canDelete = canDeleteTask(task);
 
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" class="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={$t('tables.open_menu')}
+              class="h-8 w-8 p-0 opacity-60 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
+            >
               <MoreHorizontalIcon class="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -696,15 +480,15 @@ const columns = [
               <InfoIcon class="mr-2 h-4 w-4" />
               <span>{$t('View Details')}</span>
             </DropdownMenuItem>
-            {(canManuallyComplete || hasDescription) && <DropdownMenuSeparator />}
-            {canManuallyComplete && !isCompleted && (
-              <DropdownMenuItem onClick={() => updateTaskCompletion(task)}>
+            {(canComplete || canDelete) && <DropdownMenuSeparator />}
+            {canComplete && (
+              <DropdownMenuItem onClick={() => emit('update:completed', task)}>
                 <CheckIcon class="mr-2 h-4 w-4" />
                 <span>{$t('Mark Complete')}</span>
               </DropdownMenuItem>
             )}
             {canDelete && (
-              <DropdownMenuItem onClick={() => handleDelete(task)} class="text-destructive focus:text-destructive">
+              <DropdownMenuItem onClick={() => emit('delete', task)} class="text-destructive focus:text-destructive">
                 <TrashIcon class="mr-2 h-4 w-4" />
                 <span>{canManuallyComplete ? $t('Delete') : $t('tasks.delete_automatic')}</span>
               </DropdownMenuItem>

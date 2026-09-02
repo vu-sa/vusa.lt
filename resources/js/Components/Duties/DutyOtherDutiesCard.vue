@@ -16,7 +16,7 @@
       >
         <div class="min-w-0 flex-1">
           <p class="truncate text-sm font-medium text-foreground">
-            {{ duty.name }}
+            <InflectedDutyName :name="duty.name" />
           </p>
           <p class="text-xs text-muted-foreground">
             {{ (duty.current_users?.length ?? 0) }}<template v-if="duty.places_to_occupy">
@@ -46,6 +46,7 @@ import { Users, ChevronRight } from 'lucide-vue-next';
 import { SectionCard } from '@/Components/ui/section-card';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 export interface OtherDuty {
   id: string | number;

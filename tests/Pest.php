@@ -208,6 +208,9 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
     $page = visit('/login');
     waitForInertiaRender($page);
 
+    // admin.ts registers the PWA service worker on every boot — see disableServiceWorker().
+    disableServiceWorker($page);
+
     $page->click('button:has-text("Prisijungti el. paštu")');
     $page->page()->waitForSelector('#email', ['timeout' => 15_000]);
 
@@ -219,6 +222,56 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
     waitForInertiaRender($page, '[data-sidebar="sidebar"]');
 
     return $page;
+}
+
+/**
+ * Keep the PWA service worker out of the browser test for the rest of its Chromium context.
+ *
+ * `resources/js/admin.ts` registers the workbox service worker (`scope: '/mano'`) on every
+ * admin page boot. Its install precaches ~40 assets through the plugin's in-process test
+ * server — slow enough that on a CI runner the *activation* can land in the middle of a later
+ * `navigate()`. Chromium then restarts the navigation so the now-active worker can handle it,
+ * and Playwright's `goto` fails with `Navigation to "…" is interrupted by another navigation
+ * to "…"` — to the very same URL. (Locally the install finishes before the next goto, which is
+ * exactly why this only ever failed in CI.) Its NetworkFirst cache of `/mano*` documents is a
+ * second hazard: stale pages served across `RefreshDatabase` test boundaries.
+ *
+ * Two layers, because Inertia "navigations" don't create documents: a stub in the currently
+ * loaded document (the dashboard SPA-mounts inside the login document) and a context init
+ * script covering every document loaded afterwards. Both also unregister anything the page
+ * managed to register before the stub arrived — the login page boots `admin.ts` too.
+ */
+function disableServiceWorker(PendingAwaitablePage|AwaitableWebpage $page): void
+{
+    $stub = <<<'JS'
+        navigator.serviceWorker.register = () =>
+            Promise.reject(new Error('service workers are disabled in browser tests'));
+        JS;
+
+    // Awaits the unregistrations, so no install is left in flight once this returns.
+    $page->script(<<<JS
+        (async () => {
+            if (!('serviceWorker' in navigator)) {
+                return 0;
+            }
+            {$stub}
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map((registration) => registration.unregister()));
+            return (await navigator.serviceWorker.getRegistrations()).length;
+        })()
+        JS);
+
+    $page->page()->context()->addInitScript(<<<JS
+        (() => {
+            if (!('serviceWorker' in navigator)) {
+                return;
+            }
+            {$stub}
+            navigator.serviceWorker.getRegistrations()
+                .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+                .catch(() => {});
+        })()
+        JS);
 }
 
 /**

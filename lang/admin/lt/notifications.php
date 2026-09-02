@@ -21,6 +21,9 @@ return [
         'in_app_description' => 'Gauti pranešimus tiesiogiai programėlėje',
         'push' => 'Push pranešimai',
         'push_description' => 'Gauti pranešimus į naršyklę / įrenginį',
+        'push_enable' => 'Įjungti',
+        'push_disable' => 'Išjungti',
+        'push_blocked' => 'Užblokuota',
         'email_digest' => 'El. pašto santrauka',
         'email_digest_description' => 'Gauti pranešimus el. paštu periodiniu santraukos laišku',
     ],
@@ -35,6 +38,8 @@ return [
     'digest_total' => 'iš viso',
     'digest_more_items' => '{1} dar :count pranešimas|[2,9] dar :count pranešimai|[10,*] dar :count pranešimų',
     'digest_view_all' => 'Peržiūrėti visus pranešimus',
+    'view_all' => 'Rodyti visus pranešimus',
+    'toast_fallback_title' => 'Naujas pranešimas',
 
     // Comment notifications
     'comment_posted_title' => 'Naujas komentaras: :name',
@@ -109,6 +114,7 @@ return [
     'meeting_agenda_type_voting' => ':count balsavimu',
     'meeting_agenda_type_informational' => ':count informaciniu',
     'meeting_agenda_type_deferred' => ':count atidėtu',
+    'meeting_agenda_type_break' => ':count pertrauka',
     'meeting_agenda_additional_votes_note' => 'Jei buvo papildomų balsavimų, nepamirškite juos įtraukti.',
 
     // News notifications
@@ -137,6 +143,10 @@ return [
     'test_email_hint' => 'Laiškas bus išsiųstas išsaugotais adresais. Pirma išsaugokite pakeitimus.',
     'test_email_sent' => 'Bandomasis laiškas išsiųstas: :emails',
     'test_email_failed' => 'Nepavyko išsiųsti laiško: :error',
+
+    // Misc UI labels
+    'category' => 'Kategorija',
+    'mark_as_read' => 'Pažymėti kaip skaitytą',
 
     // Actions
     'action_view_comment' => 'Peržiūrėti komentarą',
@@ -204,4 +214,41 @@ return [
     // Notification catalog
     'catalog_title' => 'Pranešimų katalogas',
     'catalog_description' => 'Visi sistemos siunčiami pranešimai',
+
+    // Notifications index page
+    'index' => [
+        'filter_unread' => 'Neskaityti',
+        'actions' => 'Veiksmai',
+        'mark_all_read' => 'Pažymėti visus kaip skaitytus',
+        'delete_read' => 'Ištrinti perskaitytus',
+        'delete_all' => 'Ištrinti visus',
+        'empty_unread_title' => 'Naujų pranešimų nėra',
+        'empty_all_title' => 'Pranešimų nėra',
+        'empty_unread_body' => 'Visus pranešimus perskaitėte! Nauji pranešimai bus rodomi čia.',
+        'empty_all_body' => 'Kol kas pranešimų nėra. Jie bus rodomi čia, kai gausite naujų.',
+        'deleted' => 'Pranešimas ištrintas.',
+        'all_marked_read' => 'Visi pranešimai pažymėti kaip perskaityti.',
+        'read_deleted' => 'Perskaityti pranešimai ištrinti.',
+        'all_deleted' => 'Visi pranešimai ištrinti.',
+    ],
+
+    // Push device management UI
+    'push_devices' => [
+        'title' => 'Push pranešimų įrenginiai',
+        'description' => 'Valdykite įrenginius, kuriuose įjungti push pranešimai.',
+        'this_device' => 'Šis įrenginys',
+        'not_supported' => 'Nepalaikoma',
+        'blocked_in_browser' => 'Užblokuota naršyklėje',
+        'all_devices' => 'Visi įrenginiai',
+        'no_devices' => 'Nėra įrenginių su įjungtais push pranešimais',
+        'unknown_device' => 'Nežinomas įrenginys',
+        'current_badge' => 'Šis',
+        'added_at' => 'Pridėta',
+        'send_test' => 'Siųsti bandomąjį pranešimą',
+        'test_sent' => 'Bandomasis pranešimas išsiųstas!',
+        'status_not_supported' => 'Push pranešimai nepalaikomi šioje naršyklėje',
+        'status_blocked' => 'Push pranešimai užblokuoti naršyklės nustatymuose',
+        'status_enabled' => 'Push pranešimai įjungti',
+        'status_disabled' => 'Push pranešimai išjungti',
+    ],
 ];

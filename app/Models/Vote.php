@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\VoteValue;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use Database\Factories\VoteFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -28,20 +29,22 @@ use Illuminate\Support\Carbon;
  * @property string $agenda_item_id
  * @property bool $is_main
  * @property bool $is_consensus
- * @property string|null $title
  * @property string|null $student_vote
  * @property string|null $decision
  * @property string|null $student_benefit
- * @property string|null $note
  * @property int $order
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property array|string|null $title
+ * @property array|string|null $note
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read AgendaItem $agendaItem
  * @property-read mixed $decision_label
+ * @property-read array $translatable_columns_from
  * @property-read mixed $is_complete
  * @property-read mixed $student_benefit_label
  * @property-read mixed $student_vote_label
+ * @property-read mixed $translations
  * @property-read mixed $vote_alignment_status
  * @property-read mixed $vote_matches
  *
@@ -51,6 +54,10 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vote newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vote newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Vote query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Vote whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Vote whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Vote whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Vote whereLocales(string $column, array $locales)
  *
  * @mixin \Eloquent
  */
@@ -59,7 +66,18 @@ use Illuminate\Support\Carbon;
 #[Unguarded]
 class Vote extends Model
 {
-    use HasFactory, HasUlids, LogsModelActivity;
+    use HasFactory, HasTranslations, HasUlids, LogsModelActivity;
+
+    /** @var list<string> */
+    public $translatable = ['title', 'note'];
+
+    /**
+     * English vote labels are the exception, not the rule — see AgendaItem::getFallbackLocale().
+     */
+    public function getFallbackLocale(): string
+    {
+        return 'lt';
+    }
 
     #[\Override]
     protected function casts(): array

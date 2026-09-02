@@ -180,4 +180,38 @@ describe('ShowMeeting.vue', () => {
     expect(wrapper.find('[data-testid="file-manager"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="agenda-list"]').exists()).toBe(false);
   });
+
+  describe('tasks tab count', () => {
+    const tasksTabText = (wrapper: ReturnType<typeof mount>) =>
+      wrapper.findAll('[role="tab"], button')
+        .map(node => node.text())
+        .find(text => text.includes('Užduotys')) ?? '';
+
+    it('counts only the tasks still outstanding', () => {
+      const wrapper = createWrapper({
+        meeting: {
+          ...baseMeeting,
+          tasks: [
+            { id: 't1', completed_at: null },
+            { id: 't2', completed_at: '2026-03-04T10:00:00.000Z' },
+            { id: 't3', completed_at: null },
+          ],
+        },
+      });
+
+      // Three tasks, one done — the badge reports what is left to act on.
+      expect(tasksTabText(wrapper)).toContain('2');
+    });
+
+    it('shows no number once every task is done', () => {
+      const wrapper = createWrapper({
+        meeting: {
+          ...baseMeeting,
+          tasks: [{ id: 't1', completed_at: '2026-03-04T10:00:00.000Z' }],
+        },
+      });
+
+      expect(tasksTabText(wrapper)).not.toContain('1');
+    });
+  });
 });

@@ -14,7 +14,7 @@
         <MultiLocaleInput v-model:input="form.name" />
       </FormFieldWrapper>
 
-      <div class="grid gap-x-4 lg:grid-cols-2">
+      <div class="grid gap-4 lg:grid-cols-2">
         <FormFieldWrapper id="degree" :label="$t('forms.fields.degree')" required>
           <Select v-model="form.degree">
             <SelectTrigger>

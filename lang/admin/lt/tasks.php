@@ -16,7 +16,11 @@ return [
     'assigned_to' => 'Priskirta',
     'stats' => [
         'pending' => 'Nebaigtos užduotys',
+        'pending_caption' => 'Dar neatliktos',
         'auto_completing' => 'Automatinės',
+        'auto_completing_caption' => 'Užbaigia sistema',
+        'overdue_caption' => 'Praleistas terminas',
+        'completed_caption' => 'Atliktos',
     ],
     'periodicity_gap' => [
         'name' => 'Pranešti apie :institution veiklą',
@@ -39,6 +43,10 @@ return [
         'all_items_completed' => 'Visi darbotvarkės klausimai užpildyti',
     ],
     'delete_automatic' => 'Ištrinti (administratoriaus teisėmis)',
+    'delete_confirm_title' => 'Ištrinti šią užduotį?',
+    'delete_confirm_description' => '„:name" bus visam laikui pašalinta. Šio veiksmo atšaukti negalėsite.',
+    'orphaned' => 'Objektas ištrintas',
+    'orphaned_description' => 'Įrašas, kuriam priskirta ši užduotis, nebeegzistuoja, todėl užduotis niekada nebus užbaigta automatiškai.',
     'agenda' => [
         'action_add_items' => 'Pridėti darbotvarkės klausimą',
         'action_view_agenda' => 'Peržiūrėti darbotvarkę',

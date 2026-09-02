@@ -418,7 +418,7 @@ describe('Title suffixes', function (): void {
         $meeting = makePublicMeeting(
             $this->mainTenant,
             institutionAttributes: ['name' => 'Test Institution For Meeting Title'],
-            meetingAttributes: ['title' => 'Meeting Title Test'],
+            meetingAttributes: ['start_time' => '2026-05-14 10:00:00'],
         );
 
         $response = $this->get(route('publicMeetings.show', [
@@ -428,6 +428,9 @@ describe('Title suffixes', function (): void {
         ]));
 
         $response->assertStatus(200);
-        expect($response->getContent())->toMatch('/<title[^>]*>Meeting Title Test - Test Institution For Meeting Title</');
+        // The head title is generated per locale by MeetingTitle, not read from the
+        // stored (always-Lithuanian) column.
+        expect($response->getContent())
+            ->toMatch('/<title[^>]*>2026 gegužės 14 d\. 10\.00 val\. posėdis - Test Institution For Meeting Title</');
     });
 });

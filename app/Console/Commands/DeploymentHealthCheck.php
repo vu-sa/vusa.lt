@@ -86,20 +86,21 @@ class DeploymentHealthCheck extends Command
         return 1;
     }
 
+    /**
+     * Fail loudly, but leave the site up.
+     *
+     * This used to call `down --retry=300`. Combined with the `health` step being non-critical, that
+     * was the worst of both worlds: deployment:run still returned 0, so the workflow went green while
+     * the site sat in maintenance mode with nobody alerted. A failed check is also often a transient
+     * blip, and downing the site turns that into a guaranteed outage.
+     *
+     * The step is critical now, so returning non-zero is enough to make the deploy go red. Taking the
+     * site down deliberately stays a human decision (`artisan down` over SSH).
+     */
     private function handleHealthCheckFailure(): int
     {
-        $this->error('Health check failed - putting site back in maintenance mode for investigation');
-
-        try {
-            $this->call('down', [
-                '--retry' => 300, // 5 minutes
-            ]);
-
-            $this->info('Site has been put in maintenance mode');
-
-        } catch (\Exception $e) {
-            $this->error('Failed to put site in maintenance mode: '.$e->getMessage());
-        }
+        $this->error('❌ Health check failed. The site has been left ONLINE — check it now.');
+        $this->warn('   If it is genuinely broken, take it down by hand: php artisan down --retry=300');
 
         return 1;
     }

@@ -7,6 +7,35 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.38 — English agendas and breaks (2026-09-02) {#v1-38}
+
+- ⭐ **Agenda items can now be written in English** — an item's title, description, student position and vote labels are translatable. The agenda item page gained a flag button that switches every field to English at once; leave it alone and nothing about the page changes
+- ⭐ **The English event page shows the English agenda** — once a meeting is announced in the calendar, its `/en/` page renders the translated items. Anything untranslated stays Lithuanian rather than going blank
+- ⭐ **New agenda item type — "Break"** — a pause is part of the sitting too, so it no longer has to be mistyped as something else. A break needs no vote, so it never leaves a meeting counted as incomplete
+- ✨ **Meeting documents follow the page language** — SharePoint already records each file's language, so the English page lists the English paperwork and the Lithuanian page the Lithuanian. When there is nothing in your language, everything is shown and labelled instead of hidden
+- ✨ **The English meeting page has an English title** — the browser tab now reads "14 May 2026 10.00 meeting" rather than "2026 gegužės 14 d. 10.00 val. posėdis"
+- ✨ **Linked meeting documents show their language** — an LT or EN chip, so it is clear at a glance which file is which
+- ✨ **The tasks tab counts only what is left to do** — on meeting, institution and member pages the number beside "Tasks" is the outstanding count, and disappears once everything is done
+- ✨ **A less cluttered agenda item dialog** — the standing "every meeting has agenda items" reminder was removed
+- 🔧 **Meeting document dates render as dates** — they showed a full timestamp with a timezone, which could also read a day early from a westward timezone
+- 🔧 **A meeting's description is finally saved** — editing an existing meeting silently discarded whatever was typed into the description box
+- 🔧 **The language button no longer saves the form** — clicking the flag saved the form and closed the dialog. The same bug affected the other admin forms (calendar, duties, institutions, types)
+- 🔧 **Toggling edit mode no longer shifts the page** — the flag button's space is reserved up front
+- 🔧 **The agenda item browser title** — it read "Edit: [object Object]" instead of the item's name
+
+## v1.37 — Tasks summary (2026-09-01) {#v1-37}
+
+- 🔧 **The task actions button is finally visible** — the three-dot trigger in the table was fully transparent, leaving "Delete" and "Mark complete" with no way in
+- ⭐ **A task left behind by a deleted record can be cleared** — when a meeting or institution is permanently deleted, its task sometimes survives. Those now show in the summary marked "Subject deleted", and a super administrator can delete them
+- ✨ **"Delete" is offered only to people who can actually delete** — it used to be shown to everyone and returned an error on click
+- ✨ **Deleting a task now asks for confirmation** — and is available on a phone, where the action was missing entirely
+- 🔧 **The summary no longer paginates inside its own pagination** — the table split the very page the server had already sent into further pages of 15
+- 🔧 **The summary's completed/incomplete filter works across all pages** — it used to filter only the rows on screen, so the counts disagreed with the paginator
+- ✨ **The tasks summary cards match the reservations dashboard** — both now draw the same tile, so the two pages read as one product
+- 🔧 **Deleting a task no longer shows two notifications**
+- 🔧 **Confirmation dialogs no longer fly in from the corner** — every confirmation dialog, not just the task one, now opens from the centre like the rest
+- ✨ **A task's detail dialog no longer stretches off-screen** — a task assigned to a whole institution listed every name at full width; it now shows avatars, with the names on hover
+
 ## v1.36 — Events and meetings (2026-08-31) {#v1-36}
 
 - ⭐ **A meeting can be created straight from an event** — the events list now offers "Create a meeting from this event" on any calendar entry not already standing for one. The date comes from the event, so the action window only asks which institution and what is on the agenda, and the new meeting is linked to that same event

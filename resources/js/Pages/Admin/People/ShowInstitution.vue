@@ -39,7 +39,7 @@
         <CalendarIcon class="h-4 w-4" />
         {{ $t('Suplanuoti susitikimą') }}
       </Button>
-      <Button v-if="canAddCheckIn" variant="outline" size="sm" class="gap-2" @click="showCheckInModal = true">
+      <Button v-if="canAddCheckIn" variant="outline" size="sm" class="gap-2" @click="openCheckInModal">
         <Clock class="h-4 w-4" />
         {{ $t('Pridėti pažymą') }}
       </Button>
@@ -101,7 +101,7 @@
         :can-edit-members="canManageMembers"
         @navigate-tab="navigateToTab"
         @schedule-meeting="openMeetingWindow"
-        @report-activity="showCheckInModal = true"
+        @report-activity="openCheckInModal"
         @add-member="showAddMemberModal = true"
         @view-profile="handleViewProfile"
         @edit-member="handleEditMember"
@@ -173,6 +173,9 @@
       <TaskManager
         :tasks="taskManagerTasks"
         :taskable="{ id: institution.id, type: ModelEnum.INSTITUTION }"
+        @open-meeting-modal="openMeetingWindow"
+        @open-check-in-dialog="openCheckInModalFromTask"
+        @open-task-detail="openTaskDetail"
       />
     </template>
 
@@ -185,8 +188,26 @@
     </template>
 
     <!-- Modals -->
-    <AddCheckInDialog v-if="showCheckInModal" :open="showCheckInModal" :institution-id="institution.id"
-      @close="showCheckInModal = false" />
+    <AddCheckInDialog
+      v-if="showCheckInModal"
+      :open="showCheckInModal"
+      :institution-id="institution.id"
+      :initial-start-date="checkInRange.start"
+      :initial-end-date="checkInRange.end"
+      @close="showCheckInModal = false"
+    />
+
+    <!-- Task detail dialog: the Tasks tab's "View details" and periodicity-gap quick actions
+         used to silently do nothing — TaskManager emitted these events but nothing on this page
+         listened for them. -->
+    <TaskDetailDialog
+      v-if="selectedDetailTask"
+      :open="showTaskDetail"
+      :task="selectedDetailTask"
+      @close="closeTaskDetail"
+      @schedule-meeting="scheduleMeetingFromDetail"
+      @report-no-meeting="reportNoMeetingFromDetail"
+    />
   </ShowPageLayout>
 </template>
 
@@ -220,6 +241,8 @@ import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBad
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { DutySummaryCard } from '@/Components/Duties';
+import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
+import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 import type { InstitutionPageData, InstitutionPageMeeting } from '@/Types/InstitutionPage';
 // UI Components
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
@@ -263,6 +286,22 @@ const { currentTab, navigateToTab } = useShowPageData({
 const activityAction = new URLSearchParams(page.url.split('?')[1] ?? '').get('activityAction');
 const showCheckInModal = ref(activityAction === 'report-activity');
 
+// The task-triggered check-in (a periodicity-gap quick action) suggests a smarter date range
+// than the page-level button's plain default — see getSuggestedCheckInRange. Both flows share
+// the one dialog instance; this ref is null for the plain button, set for the task-driven one.
+const checkInSourceTask = ref<TaskDisplayData | null>(null);
+const checkInRange = computed(() => getSuggestedCheckInRange(checkInSourceTask.value));
+
+const openCheckInModal = () => {
+  checkInSourceTask.value = null;
+  showCheckInModal.value = true;
+};
+
+const openCheckInModalFromTask = (task: TaskDisplayData) => {
+  checkInSourceTask.value = task;
+  showCheckInModal.value = true;
+};
+
 const actionWindow = useActionWindow();
 
 const openMeetingWindow = () => actionWindow.open({
@@ -282,6 +321,35 @@ onMounted(() => {
   }
 });
 const showAddMemberModal = ref(false);
+
+// Task detail dialog for the Tasks tab.
+const showTaskDetail = ref(false);
+const selectedDetailTask = ref<TaskDisplayData | null>(null);
+
+const openTaskDetail = (task: TaskDisplayData) => {
+  selectedDetailTask.value = task;
+  showTaskDetail.value = true;
+};
+
+const closeTaskDetail = () => {
+  showTaskDetail.value = false;
+  selectedDetailTask.value = null;
+};
+
+const scheduleMeetingFromDetail = () => {
+  if (selectedDetailTask.value) {
+    closeTaskDetail();
+    openMeetingWindow();
+  }
+};
+
+const reportNoMeetingFromDetail = () => {
+  const task = selectedDetailTask.value;
+  if (task) {
+    closeTaskDetail();
+    openCheckInModalFromTask(task);
+  }
+};
 
 // Subscription state
 const isFollowed = ref(props.subscription?.is_followed ?? false);
@@ -325,6 +393,10 @@ const FileManager = defineAsyncComponent(
 
 const RelatedInstitutions = defineAsyncComponent(
   () => import('@/Components/Carousels/RelatedInstitutions.vue'),
+);
+
+const TaskDetailDialog = defineAsyncComponent(
+  () => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'),
 );
 
 // Generate breadcrumbs
@@ -408,7 +480,8 @@ const tabs = computed(() => [
   { value: 'duties', label: $t('Pareigos'), count: props.institution.duties?.length },
   { value: 'meetings', label: $t('Susitikimai'), count: props.institution.meetings?.length },
   { value: 'files', label: $t('Failai') },
-  { value: 'tasks', label: $t('Užduotys'), count: props.institution.allTasks?.length },
+  // Outstanding only: a finished task is not something the reader still has to act on.
+  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.institution.allTasks) },
   ...(relatedInstitutionCount.value > 0
     ? [{ value: 'related', label: $t('Susijusios institucijos'), count: relatedInstitutionCount.value }]
     : []),

@@ -5,11 +5,13 @@ import AgendaItemVotes from '@/Components/AgendaItems/AgendaItemVotes.vue';
 import { createMockForm } from '@/tests/helpers/createMockForm';
 import { commonStubs } from '@/tests/stubs';
 
+/** Votes carry translatable `title`/`note` — see EditableVote in useAgendaItemAutosave. */
 const recordedVote = (overrides: Record<string, unknown> = {}) => ({
   id: '1',
   is_main: true,
   is_consensus: false,
-  title: null,
+  title: { lt: '', en: '' },
+  note: { lt: '', en: '' },
   student_vote: 'positive',
   decision: 'positive',
   student_benefit: 'positive',
@@ -21,7 +23,8 @@ const emptyVote = (overrides: Record<string, unknown> = {}) => ({
   id: '2',
   is_main: false,
   is_consensus: false,
-  title: null,
+  title: { lt: '', en: '' },
+  note: { lt: '', en: '' },
   student_vote: null,
   decision: null,
   student_benefit: null,

@@ -26,31 +26,53 @@
               <component :is="statusMeta.icon" class="h-3.5 w-3.5" />
               {{ statusMeta.label }}
             </span>
-            <label
-              v-if="canUpdate"
-              class="flex shrink-0 cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground select-none"
-            >
-              <Switch :model-value="editing" @update:model-value="setEditing" />
-              {{ $t('Redaguoti') }}
-            </label>
+            <div class="flex shrink-0 items-center gap-1">
+              <!-- Bilingual agenda items are rare, so the language switch appears only
+                   while editing. Its slot is held open (visibility, not v-if) for anyone who
+                   may edit, so toggling edit mode does not shift the header. -->
+              <span
+                v-if="canUpdate"
+                :class="showLocaleToggle ? undefined : 'invisible'"
+                :aria-hidden="!showLocaleToggle"
+              >
+                <SimpleLocaleButton
+                  :locale="editLocale"
+                  @update:locale="editLocale = $event"
+                />
+              </span>
+              <label
+                v-if="canUpdate"
+                class="flex cursor-pointer items-center gap-2 text-sm font-medium text-muted-foreground select-none"
+              >
+                <Switch :model-value="editing" @update:model-value="setEditing" />
+                {{ $t('Redaguoti') }}
+              </label>
+            </div>
           </div>
 
           <div class="min-w-0">
+            <p
+              v-if="editLocale === 'en'"
+              class="mb-2 flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400"
+            >
+              <Languages class="h-3.5 w-3.5 shrink-0" />
+              {{ $t('meetings.agenda.editing_english') }}
+            </p>
             <!-- The textarea and the heading share a type scale and line height, and the
                  textarea is `block`, so switching modes does not nudge the page. -->
             <textarea
               v-if="editing"
               ref="titleTextarea"
-              v-model="form.title"
+              v-model="form.title[editLocale]"
               rows="1"
               :class="[TITLE_CLASSES, 'block w-full resize-none overflow-hidden border-0 bg-transparent p-0 placeholder:text-muted-foreground focus:outline-none focus:ring-0']"
-              :placeholder="$t('Darbotvarkės punkto pavadinimas')"
+              :placeholder="titlePlaceholder"
             />
             <h1 v-else :class="TITLE_CLASSES">
-              {{ agendaItem.title }}
+              {{ displayTitle }}
             </h1>
-            <p v-if="form.errors.title" class="mt-1 text-sm text-destructive">
-              {{ form.errors.title }}
+            <p v-if="titleError" class="mt-1 text-sm text-destructive">
+              {{ titleError }}
             </p>
           </div>
 
@@ -80,6 +102,7 @@
         <AgendaItemBody
           :form
           :editing
+          :locale="editLocale"
           :requires-student-perspective
         />
 
@@ -142,25 +165,37 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { Link, router, useForm, Head as InertiaHead } from '@inertiajs/vue3';
 import { useTextareaAutosize } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, CalendarDays, Check, Loader2, Save } from 'lucide-vue-next';
+import { Building2, CalendarDays, Check, Languages, Loader2, Save } from 'lucide-vue-next';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemNavigator from '@/Components/AgendaItems/AgendaItemNavigator.vue';
 import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';
 import VisibilityIndicator from '@/Components/AgendaItems/VisibilityIndicator.vue';
+import SimpleLocaleButton from '@/Components/Buttons/SimpleLocaleButton.vue';
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
 import { Separator } from '@/Components/ui/separator';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { getAgendaItemStatusMeta } from '@/Composables/useAgendaItemStyling';
-import { useAgendaItemAutosave, type AgendaItemFormData, type EditableVote, type VoteValue } from '@/Composables/useAgendaItemAutosave';
+import { useAgendaItemAutosave, toTranslatedField, type AgendaItemFormData, type EditableVote, type VoteValue } from '@/Composables/useAgendaItemAutosave';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 
+/**
+ * `AgendaItemController::edit()` sends `toFullArray()`, so the translatable fields arrive as
+ * `{lt, en}` maps rather than the localized strings every read-only surface receives.
+ */
+type EditableAgendaItem = Omit<App.Entities.AgendaItem, 'title' | 'description' | 'student_position' | 'votes'> & {
+  title: unknown;
+  description: unknown;
+  student_position: unknown;
+  votes?: Array<Omit<App.Entities.Vote, 'title' | 'note'> & { title: unknown; note: unknown }>;
+};
+
 const props = withDefaults(defineProps<{
-  agendaItem: App.Entities.AgendaItem;
+  agendaItem: EditableAgendaItem;
   siblingAgendaItems: Array<{
     id: string;
     title: string;
@@ -199,11 +234,11 @@ const defaultStartTimeFromPreviousItem = (): string | null => {
 };
 
 const form = useForm<AgendaItemFormData>({
-  title: props.agendaItem.title,
+  title: toTranslatedField(props.agendaItem.title),
   type: (props.agendaItem.type ?? null) as AgendaItemFormData['type'],
   brought_by_students: props.agendaItem.brought_by_students ?? false,
-  student_position: props.agendaItem.student_position ?? '',
-  description: props.agendaItem.description ?? '',
+  student_position: toTranslatedField(props.agendaItem.student_position),
+  description: toTranslatedField(props.agendaItem.description),
   // The columns are TIME (`HH:MM:SS`); the inputs and the validator both speak `HH:MM`.
   start_time: props.agendaItem.start_time
     ? String(props.agendaItem.start_time).slice(0, 5)
@@ -213,7 +248,8 @@ const form = useForm<AgendaItemFormData>({
     id: vote.id,
     is_main: vote.is_main ?? false,
     is_consensus: vote.is_consensus ?? false,
-    title: vote.title ?? null,
+    title: toTranslatedField(vote.title),
+    note: toTranslatedField(vote.note),
     student_vote: (vote.student_vote ?? null) as VoteValue,
     decision: (vote.decision ?? null) as VoteValue,
     student_benefit: (vote.student_benefit ?? null) as VoteValue,
@@ -230,16 +266,39 @@ const { autoSaveEnabled, saveStatus, submit, saveThen } = useAgendaItemAutosave(
 // mode. View-only visitors (no update right) never enter edit mode.
 const editing = ref(props.canUpdate && props.agendaItem.type == null);
 
+/**
+ * Which language the editor writes. Lithuanian is the source language; English is filled in
+ * only for the handful of bodies whose agenda is published in both.
+ */
+const editLocale = ref<'lt' | 'en'>('lt');
+
+// Entering a translation is the only thing the switch is for, so it appears with the rest of
+// the edit affordances and leaves with them. The read view always shows Lithuanian.
+const showLocaleToggle = computed(() => props.canUpdate && editing.value);
+
+/** The heading only renders in read mode, which is always Lithuanian — with the same
+ *  fallback the public page uses, for the odd item that somehow has only English. */
+const displayTitle = computed(() => form.title.lt || form.title.en);
+
+const titlePlaceholder = computed(() => (editLocale.value === 'en'
+  ? $t('meetings.agenda.title_placeholder_en')
+  : $t('Darbotvarkės punkto pavadinimas')));
+
+const titleError = computed(() => form.errors[`title.${editLocale.value}` as keyof typeof form.errors]
+  ?? form.errors.title);
+
 // Auto-grow the title textarea so long titles wrap like the heading instead of
 // collapsing to one line.
 const titleTextarea = ref<HTMLTextAreaElement | null>(null);
 const { triggerResize } = useTextareaAutosize({ element: titleTextarea });
-watch([() => form.title, editing], () => nextTick(triggerResize), { immediate: true });
+watch([() => form.title.lt, () => form.title.en, editing, editLocale], () => nextTick(triggerResize), { immediate: true });
 
 const setEditing = (value: boolean) => {
   editing.value = value;
-  // Leaving edit mode: flush any pending change so the read view is accurate.
+  // Leaving edit mode: flush any pending change so the read view is accurate, and drop back
+  // to Lithuanian so the next edit does not silently start in English.
   if (!value) {
+    editLocale.value = 'lt';
     saveThen(() => {});
   }
 };
@@ -276,7 +335,9 @@ const meetingLabel = computed(() => {
   return meeting.title ?? '';
 });
 
-const pageTitle = computed(() => `${$t('Redaguoti')}: ${props.agendaItem.title}`);
+// `displayTitle`, not the raw prop: the page is served the whole `{lt, en}` map, which
+// interpolates as "[object Object]".
+const pageTitle = computed(() => `${$t('Redaguoti')}: ${displayTitle.value}`);
 
 usePageBreadcrumbs(() => {
   const items = [];

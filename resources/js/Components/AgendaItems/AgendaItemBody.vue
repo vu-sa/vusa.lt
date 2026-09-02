@@ -80,6 +80,7 @@
       v-if="form.type === 'voting'"
       :form
       :editing
+      :locale
       :requires-student-perspective
     />
 
@@ -87,11 +88,11 @@
     <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 p-4 sm:p-5 dark:border-zinc-800">
       <AgendaItemTextTabs
         :editable="editing"
-        :description="form.description"
-        :student-position="form.student_position"
+        :description="form.description[locale]"
+        :student-position="form.student_position[locale]"
         :show-student-position="requiresStudentPerspective"
-        @update:description="(v) => form.description = v"
-        @update:student-position="(v) => form.student_position = v"
+        @update:description="(v) => form.description[locale] = v"
+        @update:student-position="(v) => form.student_position[locale] = v"
       />
     </div>
   </div>
@@ -101,7 +102,7 @@
 import { computed } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarClock, Clock, Info, ListChecks, Vote, X } from 'lucide-vue-next';
+import { CalendarClock, Clock, Coffee, Info, ListChecks, Vote, X } from 'lucide-vue-next';
 
 import { Switch } from '@/Components/ui/switch';
 import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
@@ -112,6 +113,8 @@ import type { AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';
 const props = withDefaults(defineProps<{
   form: InertiaForm<AgendaItemFormData>;
   editing?: boolean;
+  /** Which translation the inputs write. See EditAgendaItem.vue. */
+  locale?: 'lt' | 'en';
   /**
    * False for VU SA's own bodies: the representatives *are* the organisation, so there is no
    * separate student position or student benefit to record — only the outcome.
@@ -119,6 +122,7 @@ const props = withDefaults(defineProps<{
   requiresStudentPerspective?: boolean;
 }>(), {
   editing: false,
+  locale: 'lt',
   requiresStudentPerspective: true,
 });
 
@@ -126,6 +130,8 @@ const typeOptions = [
   { value: 'voting' as const, label: $t('Balsavimas'), icon: Vote },
   { value: 'informational' as const, label: $t('Informacinis'), icon: Info },
   { value: 'deferred' as const, label: $t('Atidėtas'), icon: CalendarClock },
+  // A pause is a real agenda entry — excluding it forced editors to mistype it as something else.
+  { value: 'break' as const, label: $t('Pertrauka'), icon: Coffee },
 ];
 
 /** The form holds `HH:MM` strings; TimePicker speaks {hour, minute}. */

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\AgendaItemType;
 use App\Models\AgendaItem;
+use Database\Factories\Concerns\HasTranslatableFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class AgendaItemFactory extends Factory
 {
+    use HasTranslatableFactory;
+
     protected $model = \App\Models\Pivots\AgendaItem::class;
 
     /**
@@ -21,9 +24,9 @@ class AgendaItemFactory extends Factory
     public function definition()
     {
         return [
-            'title' => $this->faker->sentence,
+            'title' => $this->translatable(),
             'order' => $this->faker->numberBetween(1, 10),
-            'description' => $this->faker->optional()->paragraph,
+            'description' => $this->faker->optional()->passthrough($this->translatable()),
             'type' => null, // Default to unset type, requiring user to select
         ];
     }
@@ -69,12 +72,22 @@ class AgendaItemFactory extends Factory
     }
 
     /**
+     * A pause in the sitting. Like informational and deferred items, it needs no vote.
+     */
+    public function break(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => AgendaItemType::Break,
+        ]);
+    }
+
+    /**
      * Add a student position to the agenda item.
      */
     public function withStudentPosition(): static
     {
         return $this->state(fn (array $attributes) => [
-            'student_position' => $this->faker->paragraph,
+            'student_position' => $this->translatable(),
         ]);
     }
 }

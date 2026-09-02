@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\AnnounceMeetingInCalendar;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
-use App\Enums\MeetingType;
 use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\AttachMeetingInstitutionRequest;
@@ -26,6 +25,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
+use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
@@ -200,8 +200,10 @@ class MeetingController extends AdminController
             if (isset($validatedData['agendaItems']) && is_array($validatedData['agendaItems'])) {
                 foreach ($validatedData['agendaItems'] as $agendaItemData) {
                     AgendaItem::create([
-                        'title' => $agendaItemData['title'],
-                        'description' => $agendaItemData['description'] ?? null,
+                        'title' => ['lt' => $agendaItemData['title']],
+                        'description' => isset($agendaItemData['description'])
+                            ? ['lt' => $agendaItemData['description']]
+                            : null,
                         'order' => $agendaItemData['order'],
                         'brought_by_students' => $agendaItemData['brought_by_students'] ?? false,
                         'start_time' => $agendaItemData['start_time'] ?? null,
@@ -264,6 +266,10 @@ class MeetingController extends AdminController
 
         // Append is_public, is_joint and file status now that relations are loaded (avoids N+1)
         $meeting->append(['is_public', 'is_joint', 'has_protocol', 'has_report']);
+
+        // Derived, so it has to be appended to reach the panel that labels each document
+        // by language.
+        $meeting->documents->each->append('language_code');
 
         // Transform tasks with computed properties (same as userTasks method)
         $transformedTasks = $meeting->tasks->map(function (Task $task, int $key) {
@@ -329,6 +335,9 @@ class MeetingController extends AdminController
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => [
                 ...$meeting->toArray(),
+                // The edit dialog writes the description, so it needs every locale rather
+                // than the current one — the rest of the page reads the localized array above.
+                'description' => $meeting->getTranslations('description'),
                 'tasks' => $transformedTasks,
                 'sharepointPath' => $meeting->institutions->isNotEmpty() ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
             ],
@@ -357,10 +366,10 @@ class MeetingController extends AdminController
      */
     private function incompleteAgendaItem($query, array $externalTypeIds): void
     {
-        // `type` is nullable and a NULL type is not informational, but SQL's `!=` drops NULLs.
+        // `type` is nullable and a NULL type still needs filling in, but SQL's `!=` drops NULLs.
         $query->where(fn ($typeQuery) => $typeQuery
             ->whereNull('type')
-            ->orWhere('type', '!=', AgendaItemType::Informational->value))
+            ->orWhereNotIn('type', AgendaItemType::voteFreeValues()))
             ->where(function ($itemQuery) use ($externalTypeIds): void {
                 $itemQuery
                     // Covers both "no votes at all" and "no vote carrying an outcome".
@@ -525,22 +534,12 @@ class MeetingController extends AdminController
     }
 
     /**
-     * Build the auto-generated meeting title.
-     *
-     * Email-type meetings use a 23:59 deadline marker for `start_time`, so the
-     * time portion is intentionally omitted from the title to avoid showing a
-     * misleading "23.59 val." in the UI.
+     * The stored title is always Lithuanian; {@see MeetingTitle} renders the other locale
+     * on the public page, so a locale change never needs a data backfill.
      */
     private function buildMeetingTitle(mixed $startTime, mixed $type): string
     {
-        $typeValue = $type instanceof MeetingType ? $type->value : $type;
-        $isEmail = $typeValue === MeetingType::Email->value;
-
-        $format = $isEmail
-            ? 'YYYY MMMM DD [d.]'
-            : 'YYYY MMMM DD [d.] HH.mm [val.]';
-
-        return Carbon::parse($startTime)->locale('lt-LT')->isoFormat($format).' posėdis';
+        return MeetingTitle::build($startTime, $type, 'lt');
     }
 
     public function forceDelete(Meeting $meeting): RedirectResponse

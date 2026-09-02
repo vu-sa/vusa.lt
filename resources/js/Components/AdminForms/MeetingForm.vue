@@ -65,16 +65,23 @@
         </FormItem>
       </FormField>
 
-      <!-- Description -->
-      <FormField v-slot="{ componentField }" name="description">
+      <!-- Description. Translatable, but bilingual meetings are rare, so the language
+           switch sits beside the label rather than doubling the field. -->
+      <FormField v-slot="{ value }" name="description">
         <FormItem>
           <FormLabel class="inline-flex items-center gap-1">
             <component :is="DocumentIconFilled" class="h-4 w-4" />
             {{ $t('Aprašymas') }}
+            <SimpleLocaleButton :locale="descriptionLocale" @update:locale="descriptionLocale = $event" />
           </FormLabel>
           <FormControl>
-            <Textarea v-bind="componentField" :placeholder="$t('Trumpas posėdžio aprašymas (neprivaloma)')"
-              class="resize-none" rows="3" />
+            <Textarea
+              :model-value="value?.[descriptionLocale] ?? ''"
+              :placeholder="$t('Trumpas posėdžio aprašymas (neprivaloma)')"
+              class="resize-none"
+              rows="3"
+              @update:model-value="(v) => setFieldValue('description', { ...(value ?? { lt: '', en: '' }), [descriptionLocale]: String(v) })"
+            />
           </FormControl>
           <FormMessage />
         </FormItem>
@@ -91,7 +98,7 @@
 
 <script setup lang="ts">
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { computed, useTemplateRef, watch, nextTick } from 'vue';
+import { computed, ref, useTemplateRef, watch, nextTick } from 'vue';
 import { Form } from 'vee-validate';
 import { Loader2 } from 'lucide-vue-next';
 
@@ -113,6 +120,7 @@ import {
   RadioGroupItem,
 } from '@/Components/ui/radio-group';
 import { Label } from '@/Components/ui/label';
+import SimpleLocaleButton from '@/Components/Buttons/SimpleLocaleButton.vue';
 import { DateTimePicker, DatePicker } from '@/Components/ui/date-picker';
 import { DateIconFilled, DocumentIconFilled, TypeIconFilled } from '@/Components/icons';
 
@@ -138,6 +146,9 @@ const {
 
 // Local state
 const meetingFormRef = useTemplateRef<typeof Form>('meetingFormRef');
+
+/** Which translation the description textarea writes; Lithuanian is the source language. */
+const descriptionLocale = ref<'lt' | 'en'>('lt');
 
 // Initial values
 const initialValues = computed(() => getInitialValues(props.meeting || {}));

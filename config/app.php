@@ -71,6 +71,26 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Staging Database Refresh
+    |--------------------------------------------------------------------------
+    |
+    | Used by `staging:refresh-database`, which replaces staging's database with
+    | the newest production backup. Production and staging share a VPS, so the
+    | source is a local path rather than a transfer.
+    |
+    | Every address outside the allowlist is rewritten to user{id}@staging.invalid
+    | on import, so staging's schedule cannot mail real students. Keep the list to
+    | the people who need to receive staging mail.
+    |
+    */
+
+    'staging_refresh' => [
+        'source_backup_dir' => env('STAGING_SOURCE_BACKUP_DIR'),
+        'email_allowlist' => env('STAGING_EMAIL_ALLOWLIST', ''),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Staging Read-Only Modes
     |--------------------------------------------------------------------------
     |

@@ -144,7 +144,7 @@
         >
           <div class="flex items-center gap-2">
             <SmartphoneIcon class="h-4 w-4 text-zinc-500" aria-hidden="true" />
-            <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('Push pranešimai') }}</span>
+            <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('notifications.channels.push') }}</span>
           </div>
           <button
             v-if="!hasPushSubscription && canSubscribeToPush"
@@ -153,7 +153,7 @@
             @click="handleSubscribeToPush"
           >
             <LoaderCircleIcon v-if="isSubscribingToPush" class="h-3 w-3 animate-spin" />
-            <span v-else>{{ $t('Įjungti') }}</span>
+            <span v-else>{{ $t('notifications.channels.push_enable') }}</span>
           </button>
           <button
             v-else-if="hasPushSubscription"
@@ -162,13 +162,13 @@
             @click="handleUnsubscribeFromPush"
           >
             <LoaderCircleIcon v-if="isUnsubscribingFromPush" class="h-3 w-3 animate-spin" />
-            <span v-else>{{ $t('Išjungti') }}</span>
+            <span v-else>{{ $t('notifications.channels.push_disable') }}</span>
           </button>
           <span
             v-else-if="pushPermission === 'denied'"
             class="text-xs text-red-500"
           >
-            {{ $t('Užblokuota') }}
+            {{ $t('notifications.channels.push_blocked') }}
           </span>
         </div>
 
@@ -178,7 +178,7 @@
           class="flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           @click="isOpen = false"
         >
-          {{ $t('Rodyti visus pranešimus') }}
+          {{ $t('notifications.view_all') }}
           <ArrowRightIcon class="h-3 w-3" />
         </Link>
       </div>

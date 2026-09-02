@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Meeting;
+use Database\Factories\Concerns\HasTranslatableFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -11,6 +12,8 @@ use Illuminate\Support\Carbon;
  */
 class MeetingFactory extends Factory
 {
+    use HasTranslatableFactory;
+
     /**
      * Define the model's default state.
      *
@@ -22,7 +25,7 @@ class MeetingFactory extends Factory
 
         return [
             'title' => fake()->sentence(),
-            'description' => fake()->paragraph(),
+            'description' => $this->translatable(),
             'start_time' => $start_time,
             // end time after start_time
             'end_time' => Carbon::instance($start_time)->addHours(rand(1, 3)),

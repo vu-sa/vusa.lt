@@ -8,14 +8,20 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Tasks/**,app/Actions/ResyncTaskAssigneesForCadence.php,app/Models/Cadence.php | .ai/rules/actions-models.md |
 | app/Models/Task.php,app/Models/Traits/HasTasks.php,app/Http/Controllers/Admin/TaskController.php | .ai/rules/admin.md |
 | app/** | .ai/rules/app.md |
+| tests/Browser/** | .ai/rules/browser.md |
 | app/Models/Cadence.php,app/Policies/CadencePolicy.php,app/Actions/Cadences/**,app/Http/Requests/Cadences/**,resources/js/Components/Cadences/** | .ai/rules/cadences.md |
+| .github/workflows/deploy*.yml,app/Console/Commands/Deployment*.php,app/Console/Commands/StagingRefreshDatabase.php,deployment/** | .ai/rules/commands-console-commands.md |
 | app/Services/Typesense/**, app/Console/Commands/GenerateTypesenseSearchKey.php', app/Console/Commands/DocsCoverageCommand.php, app/Support/Docs/** | .ai/rules/commands.md |
 | resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/composables.md |
 | config/vusa.php | .ai/rules/config.md |
 | app/Actions/**,app/Models/InstitutionAdministrator.php,app/Services/CommentableMentionResolver.php,app/Console/Commands/SendMeetingReminders.php | .ai/rules/console-commands.md |
+| app/Models/Meeting.php,app/Models/Vote.php,app/Models/Pivots/AgendaItem.php,app/Http/Requests/UpdateAgendaItemRequest.php,app/Http/Controllers/Admin/AgendaItemController.php | .ai/rules/controllers-admin.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
+| resources/js/Components/Tables/**,resources/js/Components/ui/data-table/** | .ai/rules/data-table.md |
+| resources/js/Components/ui/alert-dialog/**,resources/js/Components/ui/dialog/** | .ai/rules/dialog.md |
 | app/Enums/** | .ai/rules/enums.md |
 | app/Actions/Cadences/**,app/Http/Requests/UpdateInstitutionAdministratorsRequest.php | .ai/rules/http-requests.md |
+| app/Enums/AgendaItemType.php,app/Services/MeetingCompletionService.php,app/Tasks/Handlers/AgendaCompletionTaskHandler.php,resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/js-composables.md |
 | resources/js/**/*.test.ts | .ai/rules/js.md |
 | lang/** | .ai/rules/lang.md |
 | resources/js/Pages/Admin/People/Show*.vue,app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |

@@ -49,7 +49,8 @@ export function useMeetingForm() {
       type: z.string({
         required_error: $t('validation.required', { attribute: $tChoice('forms.fields.type', 0) }),
       }).nullable(),
-      description: z.string().optional(),
+      // Translatable: Lithuanian is the source language, English optional.
+      description: z.object({ lt: z.string(), en: z.string() }).optional(),
     }),
   );
 
@@ -57,7 +58,7 @@ export function useMeetingForm() {
   const formatMeetingData = (values: Record<string, any>): {
     start_time: string;
     type: MeetingTypeValue;
-    description?: string;
+    description?: { lt: string; en: string };
   } => {
     const dt = values.start_time as Date;
     const meetingType = values.type as MeetingTypeValue;
@@ -81,11 +82,28 @@ export function useMeetingForm() {
     };
   };
 
+  /**
+   * `description` arrives as a `{lt, en}` map from the admin payload, but as a plain
+   * localized string from anywhere reading `toArray()` — and as `[]` when never set.
+   */
+  const toLocaleObject = (value: unknown): { lt: string; en: string } => {
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      const record = value as Record<string, unknown>;
+
+      return {
+        lt: typeof record.lt === 'string' ? record.lt : '',
+        en: typeof record.en === 'string' ? record.en : '',
+      };
+    }
+
+    return { lt: typeof value === 'string' ? value : '', en: '' };
+  };
+
   // Get initial values from a meeting object
   const getInitialValues = (meeting: any) => ({
     start_time: meeting?.start_time ? new Date(meeting.start_time) : undefined,
     type: meeting?.type ?? undefined, // Don't preselect any meeting type
-    description: meeting?.description || '',
+    description: toLocaleObject(meeting?.description),
   });
 
   return {

@@ -33,14 +33,17 @@ declare global {
       matter_id?: string | null
       created_at: string
       updated_at: string
-      title: string
       order: number
       brought_by_students: boolean
       type?: AgendaItemType | null
-      student_position?: string | null
-      description?: string | null
       start_time?: string | null
       end_time?: string | null
+      title?: Array<unknown> | null
+      description?: Array<unknown> | null
+      student_position?: Array<unknown> | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
       // relations
       meeting?: Meeting
       votes?: Vote[]
@@ -122,7 +125,7 @@ declare global {
       created_at?: string | null
       updated_at?: string | null
       // mutators
-      total_steps: number
+      total_steps: unknown
       // relations
       flowable?: ApprovalFlow
       // counts
@@ -163,7 +166,7 @@ declare global {
       created_at?: string | null
       updated_at?: string | null
       // mutators
-      label: string
+      label: unknown
       // relations
       institution?: Institution
       start_meeting?: Meeting
@@ -201,7 +204,7 @@ declare global {
       registration_form_id?: number | null
       deleted_at?: string | null
       // mutators
-      main_image_url: string
+      main_image_url: unknown
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
@@ -353,8 +356,8 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
-      content_summary: string
-      html: string
+      content_summary: unknown
+      html: unknown
       // relations
       content?: Content
       text_box_submissions?: TextBoxSubmission[]
@@ -397,7 +400,8 @@ declare global {
       effective_date?: string | null
       expiration_date?: string | null
       // mutators
-      is_in_effect: boolean
+      language_code: string
+      is_in_effect: unknown
       // relations
       meeting?: Meeting
       institution?: Institution
@@ -570,8 +574,8 @@ declare global {
       created_at?: string | null
       updated_at?: string | null
       // mutators
-      formatted_size: string
-      file_type_label: string
+      formatted_size: unknown
+      file_type_label: unknown
       // relations
       fileable?: FileableFile
       // counts
@@ -654,15 +658,15 @@ declare global {
       instagram_url?: string | null
       tenant_id?: number | null
       is_active: boolean
-      meeting_periodicity_days?: number | null
+      meeting_periodicity_days?: unknown | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
       // mutators
       related_institutions: unknown
       maybe_short_name: unknown
-      governance_scope: InstitutionScope
-      has_public_meetings: boolean
+      governance_scope: unknown
+      has_public_meetings: unknown
       force_delete_blocked_reason: string
       has_protocol: boolean
       has_report: boolean
@@ -830,23 +834,25 @@ declare global {
       // columns
       id: string
       title: string
-      description?: string | null
       type?: MeetingType | null
       start_time: string
       end_time?: string | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
+      description?: Array<unknown> | null
       // mutators
-      is_joint: boolean
-      is_public: boolean
-      type_label: string
-      type_slug: string
-      completion_status: string
+      is_joint: unknown
+      is_public: unknown
+      type_label: unknown
+      type_slug: unknown
+      completion_status: unknown
       requires_student_perspective: boolean
-      has_calendar_event: boolean
+      has_calendar_event: unknown
       has_protocol: boolean
       has_report: boolean
+      translatable_columns_from: Array<unknown>
+      translations: unknown
       // relations
       agenda_items?: AgendaItem[]
       institutions?: Institution[]
@@ -924,7 +930,7 @@ declare global {
       tenant_id: number
       publish_time?: string | null
       main_points?: string | null
-      highlights?: Array<unknown> | null
+      highlights?: unknown | null
       layout: string
       show_breadcrumbs: boolean
       read_more?: string | null
@@ -978,7 +984,7 @@ declare global {
       content_id: number
       category_id?: number | null
       is_active: boolean
-      highlights?: Array<unknown> | null
+      highlights?: unknown | null
       layout: string
       show_table_of_contents: boolean
       show_title: boolean
@@ -1106,15 +1112,15 @@ declare global {
       instagram_url?: string | null
       tenant_id?: number | null
       is_active: boolean
-      meeting_periodicity_days?: number | null
+      meeting_periodicity_days?: unknown | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
       // mutators
       related_institutions: unknown
       maybe_short_name: unknown
-      governance_scope: InstitutionScope
-      has_public_meetings: boolean
+      governance_scope: unknown
+      has_public_meetings: unknown
       force_delete_blocked_reason: string
       has_protocol: boolean
       has_report: boolean
@@ -1189,23 +1195,25 @@ declare global {
       // columns
       id: string
       title: string
-      description?: string | null
       type?: MeetingType | null
       start_time: string
       end_time?: string | null
       created_at: string
       updated_at: string
       deleted_at?: string | null
+      description?: Array<unknown> | null
       // mutators
-      is_joint: boolean
-      is_public: boolean
-      type_label: string
-      type_slug: string
-      completion_status: string
+      is_joint: unknown
+      is_public: unknown
+      type_label: unknown
+      type_slug: unknown
+      completion_status: unknown
       requires_student_perspective: boolean
-      has_calendar_event: boolean
+      has_calendar_event: unknown
       has_protocol: boolean
       has_report: boolean
+      translatable_columns_from: Array<unknown>
+      translations: unknown
       // relations
       institutions?: Institution[]
       types?: Type[]
@@ -1259,7 +1267,7 @@ declare global {
       tenant_id: number
       publish_time?: string | null
       main_points?: string | null
-      highlights?: Array<unknown> | null
+      highlights?: unknown | null
       layout: string
       show_breadcrumbs: boolean
       read_more?: string | null
@@ -1297,7 +1305,7 @@ declare global {
       content_id: number
       category_id?: number | null
       is_active: boolean
-      highlights?: Array<unknown> | null
+      highlights?: unknown | null
       layout: string
       show_table_of_contents: boolean
       show_title: boolean
@@ -1658,7 +1666,7 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
-      total_credits: number
+      total_credits: unknown
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
@@ -1732,8 +1740,8 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
-      icon: string
-      color: string
+      icon: unknown
+      color: unknown
       // relations
       taskable?: Task
       users?: User[]
@@ -1966,21 +1974,23 @@ declare global {
       agenda_item_id: string
       is_main: boolean
       is_consensus: boolean
-      title?: string | null
       student_vote?: string | null
       decision?: string | null
       student_benefit?: string | null
-      note?: string | null
       order: number
       created_at?: string | null
       updated_at?: string | null
+      title?: Array<unknown> | null
+      note?: Array<unknown> | null
       // mutators
-      is_complete: boolean
-      vote_matches: boolean
-      vote_alignment_status: string
-      decision_label: string
-      student_vote_label: string
-      student_benefit_label: string
+      is_complete: unknown
+      vote_matches: unknown
+      vote_alignment_status: unknown
+      decision_label: unknown
+      student_vote_label: unknown
+      student_benefit_label: unknown
+      translatable_columns_from: Array<unknown>
+      translations: unknown
       // relations
       agenda_item?: AgendaItem
       activities_as_subject?: Activity[]
@@ -1995,6 +2005,7 @@ declare global {
       Voting: 'voting',
       Informational: 'informational',
       Deferred: 'deferred',
+      Break: 'break',
     } as const;
 
     export type AgendaItemType = typeof AgendaItemType[keyof typeof AgendaItemType]
@@ -2021,15 +2032,6 @@ declare global {
     } as const;
 
     export type CommentKind = typeof CommentKind[keyof typeof CommentKind]
-
-    const InstitutionScope = {
-      Vusa: 'vusa',
-      University: 'vu',
-      National: 'national',
-      International: 'international',
-    } as const;
-
-    export type InstitutionScope = typeof InstitutionScope[keyof typeof InstitutionScope]
 
     const MeetingType = {
       InPerson: 'in-person',

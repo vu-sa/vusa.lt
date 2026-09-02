@@ -174,7 +174,7 @@ class TaskController extends AdminController
         $institutionPermissibleTenants = $this->authorizer->getTenants('institutions.read.padalinys');
 
         // Build base query with compound authorization
-        $baseQuery = Task::with(['users:id,name,email,profile_photo_path', 'taskable'])
+        $baseQuery = Task::with(['users:id,name,email,profile_photo_path', 'taskable', 'tenants'])
             ->whereHas('tenants', function ($q) use ($taskPermissibleTenants): void {
                 $q->whereIn('tenants.id', $taskPermissibleTenants->pluck('id'));
             });
@@ -204,6 +204,13 @@ class TaskController extends AdminController
                         });
                 });
             }
+
+            // A task outlives a hard-deleted subject. There is nothing left to compound-authorize
+            // against, and the tenant filter above already scopes it, so surface it rather than
+            // hiding the one listing from which such a task could ever be cleared away.
+            $q->orWhere(function ($subQ): void {
+                $subQ->whereDoesntHaveMorph('taskable', Task::TASKABLE_TYPES);
+            });
 
             // Institution tasks (e.g., PeriodicityGap) - user must have institutions.read.padalinys
             if ($institutionPermissibleTenants->isNotEmpty()) {
@@ -245,17 +252,13 @@ class TaskController extends AdminController
             ->whereIn('action_type', ['approval', 'pickup', 'return'])
             ->count();
 
-        // Type counts using direct database queries
-        $institutionsCount = (clone $statsQuery)
-            ->whereIn('taskable_type', [
-                MorphMap::alias(Institution::class),
-                MorphMap::alias(Meeting::class),
-            ])
-            ->count();
-
-        $reservationsCount = (clone $statsQuery)
-            ->where('taskable_type', MorphMap::alias(Reservation::class))
-            ->count();
+        // Type counts using direct database queries, one per real taskable type — the frontend's
+        // filter chips toggle these independently rather than through a merged "institutions"
+        // group, so a periodicity-gap task (taskable=institution) and an agenda task
+        // (taskable=meeting) can be selected together or apart.
+        $institutionCount = (clone $statsQuery)->where('taskable_type', MorphMap::alias(Institution::class))->count();
+        $meetingCount = (clone $statsQuery)->where('taskable_type', MorphMap::alias(Meeting::class))->count();
+        $reservationCount = (clone $statsQuery)->where('taskable_type', MorphMap::alias(Reservation::class))->count();
 
         $taskStats = [
             'total' => $total,
@@ -263,25 +266,25 @@ class TaskController extends AdminController
             'overdue' => $overdue,
             'autoCompleting' => $autoCompletable,
             'byType' => [
-                'institutions' => $institutionsCount,
-                'reservations' => $reservationsCount,
+                'institution' => $institutionCount,
+                'meeting' => $meetingCount,
+                'reservation' => $reservationCount,
             ],
         ];
 
-        // Now apply type filter for the paginated results
-        // Support 'institutions' group filter that includes both Institution and Meeting
-        $taskableType = $request->input('taskable_type');
-        if ($taskableType === 'institutions') {
-            $baseQuery->whereIn('taskable_type', [
-                MorphMap::alias(Institution::class),
-                MorphMap::alias(Meeting::class),
-            ]);
-        } elseif ($taskableType) {
-            $baseQuery->where('taskable_type', $taskableType);
+        // Now apply the type filter for the paginated results. `taskable_type` is normalized to
+        // an array by IndexTaskSummaryRequest::prepareForValidation(), and its values are already
+        // the raw `taskable_type` column aliases (Task::TASKABLE_TYPES), so no MorphMap lookup
+        // is needed here.
+        $taskableTypes = $request->validated('taskable_type') ?? [];
+        if (! empty($taskableTypes)) {
+            $baseQuery->whereIn('taskable_type', $taskableTypes);
         }
 
-        // Apply completion filter
-        $completionFilter = $request->input('completion');
+        // Apply completion filter. Pending by default: the summary is an action list, and the
+        // page used to reach the same result by discarding completed rows from whichever page it
+        // had been handed — which quietly disagreed with the paginator's own counts.
+        $completionFilter = $request->input('completion', 'pending');
         if ($completionFilter === 'pending') {
             $baseQuery->whereNull('completed_at');
         } elseif ($completionFilter === 'completed') {
@@ -298,7 +301,7 @@ class TaskController extends AdminController
             ->withQueryString();
 
         // Transform tasks for frontend
-        $transformedTasks = $tasks->getCollection()->map(function (Task $task, int $key) {
+        $transformedTasks = $tasks->getCollection()->map(function (Task $task) use ($user) {
             /** @var Model|null $taskable */
             $taskable = $task->taskable;
 
@@ -314,6 +317,7 @@ class TaskController extends AdminController
                 'progress' => $task->getProgress(),
                 'is_overdue' => $task->isOverdue(),
                 'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                'can_delete' => $task->isDeletableBy($user),
                 'icon' => $task->icon,
                 'color' => $task->color,
                 'taskable' => $taskable ? [
@@ -345,7 +349,7 @@ class TaskController extends AdminController
             ],
             'taskStats' => $taskStats,
             'filters' => [
-                'taskable_type' => $taskableType,
+                'taskable_type' => $taskableTypes,
                 'completion' => $completionFilter,
                 'tenant_ids' => $tenantIds,
             ],

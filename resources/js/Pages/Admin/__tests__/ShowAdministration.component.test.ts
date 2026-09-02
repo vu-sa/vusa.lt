@@ -12,12 +12,6 @@ function createWrapper() {
     global: {
       stubs: {
         AdminContentPage: { template: '<div><slot /></div>' },
-        DropdownMenu: { template: '<div><slot /></div>' },
-        DropdownMenuTrigger: { template: '<div><slot /></div>' },
-        DropdownMenuContent: { template: '<div v-if="false"><slot /></div>' },
-        DropdownMenuLabel: { template: '<div><slot /></div>' },
-        DropdownMenuSeparator: { template: '<div />' },
-        DropdownMenuCheckboxItem: { template: '<div><slot /></div>' },
       },
     },
   });
@@ -54,5 +48,33 @@ describe('ShowAdministration quick actions', () => {
 
     // The featured quick-action card must not come back with the permission.
     expect(wrapper.text()).not.toContain('Naujausi įrankiai');
+  });
+});
+
+describe('ShowAdministration tools section', () => {
+  it('renders the duty wizard and duty-periods tools as the first section, with gradient icon tiles', () => {
+    vi.mocked(usePage).mockReturnValue(
+      createMockPage({ auth: { can: { create: { duty: true } } } }),
+    );
+
+    wrapper = createWrapper();
+
+    const wizardLink = wrapper.find('a[href="/mocked-route/duties.updateUsersWizard"]');
+    const periodsLink = wrapper.find('a[href="/mocked-route/dutiables.timeline"]');
+    expect(wizardLink.exists()).toBe(true);
+    expect(periodsLink.exists()).toBe(true);
+
+    // Tools render their icon in a gradient tile; other cards don't.
+    expect(wizardLink.find('.bg-gradient-to-br').exists()).toBe(true);
+
+    // "Pareigybių laikotarpiai" moved out of Žmonės into the tools section, not duplicated.
+    expect(wrapper.findAll('a[href="/mocked-route/dutiables.timeline"]')).toHaveLength(1);
+  });
+
+  it('does not render the category filter dropdown or item-count badges', () => {
+    wrapper = createWrapper();
+
+    expect(wrapper.text()).not.toContain('Filtrai');
+    expect(wrapper.findComponent({ name: 'DropdownMenu' }).exists()).toBe(false);
   });
 });

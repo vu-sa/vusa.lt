@@ -7,13 +7,13 @@ import { commonStubs } from '@/tests/stubs';
 
 function makeForm(overrides: Record<string, unknown> = {}) {
   return createMockForm({
-    title: 'Test item',
+    title: { lt: 'Test item', en: '' },
     type: 'voting',
     brought_by_students: false,
-    student_position: '',
-    description: '',
+    student_position: { lt: '', en: '' },
+    description: { lt: '', en: '' },
     votes: [
-      { id: '1', is_main: true, is_consensus: false, title: null, student_vote: 'positive', decision: 'positive', student_benefit: 'positive', order: 0 },
+      { id: '1', is_main: true, is_consensus: false, title: { lt: '', en: '' }, note: { lt: '', en: '' }, student_vote: 'positive', decision: 'positive', student_benefit: 'positive', order: 0 },
     ],
     ...overrides,
   });
@@ -88,6 +88,27 @@ describe('AgendaItemBody', () => {
         .toContain('Išsakyta studentų pozicija');
       expect(factory({ editing: true, requiresStudentPerspective: false }).wrapper.text())
         .not.toContain('Išsakyta studentų pozicija');
+    });
+  });
+
+  describe('agenda item types', () => {
+    it('offers a break alongside the other types', () => {
+      const { wrapper } = factory({ editing: true });
+
+      // A pause is part of the agenda; without the option editors mistyped it as something else.
+      expect(wrapper.text()).toContain('Pertrauka');
+      expect(wrapper.text()).toContain('Balsavimas');
+      expect(wrapper.text()).toContain('Informacinis');
+      expect(wrapper.text()).toContain('Atidėtas');
+    });
+
+    it('records the break type on the form', async () => {
+      const { wrapper, form } = factory({ editing: true });
+
+      const breakButton = wrapper.findAll('button').find(b => b.text().includes('Pertrauka'));
+      await breakButton?.trigger('click');
+
+      expect(form.type).toBe('break');
     });
   });
 });

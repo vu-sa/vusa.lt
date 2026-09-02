@@ -28,6 +28,11 @@ beforeEach(function (): void {
 it('opens from the system status card and lists the pending digest', function (): void {
     $page = loginAsAdmin($this->admin);
 
+    // Guards disableServiceWorker(): a live workbox install whose activation lands mid-navigate()
+    // makes Chromium restart the navigation, which Playwright reports as an interrupted goto —
+    // a failure mode that only ever surfaced on CI's slower runners. See tests/Browser/README.md.
+    expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
+
     $page->navigate('/mano/system-status');
     waitForInertiaRender($page, 'a[href$="/mano/mail-queue"]');
 

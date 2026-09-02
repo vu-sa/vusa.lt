@@ -3,6 +3,15 @@ name: Deploy To Staging
 concurrency: staging
 
 on:
+  # Staging tracks `dev` automatically, the same way production tracks `main`. Before this it was
+  # dispatch-only and had gone four months without a deploy, which made it useless as a preview of
+  # the next release — and meant migrations were first exercised against real data in production.
+  workflow_run:
+    workflows: ["CI"]
+    branches:
+      - dev
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       branch:
@@ -13,161 +22,17 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-24.04
-    environment: Staging
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.inputs.branch || github.ref }}
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          extensions: dom, curl, libxml, mbstring, zip, fileinfo
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v6
-        with:
-          # Never cache `vendor` — see the comment in deploy.yml. A restored vendor from a
-          # different composer.lock keeps files from uninstalled package versions.
-          path: ~/.composer/cache
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
-
-      - name: Install Composer dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install npm dependencies
-        run: npm ci
-
-      - name: Build staging frontend assets
-        run: |
-          VITE_ARCHYVAS_PASSWORD=${{ secrets.ARCHYVAS_PASSWORD }} \
-          VITE_ATSTOVAI_PASSWORD=${{ secrets.ATSTOVAI_PASSWORD }} \
-          VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \
-          VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} \
-          VITE_REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }} \
-          VITE_REVERB_HOST=${{ vars.REVERB_HOST }} \
-          VITE_REVERB_PORT=${{ vars.REVERB_PORT }} \
-          VITE_REVERB_SCHEME=${{ vars.REVERB_SCHEME }} \
-          npm run build
-
-      - name: Install SSH keys
-        run: |
-          install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-
-      - name: Package build artifacts
-        run: |
-          tar -czf build.tar.gz public/build
-          tar -czf vendor.tar.gz vendor
-
-      # Build docs if needed
-      - name: Build docs
-        run: |
-          npm run docs:build
-          tar -czf docs.tar.gz -C public/docs .
-
-      # Upload build artifacts
-      #
-      # deployment/maintenance.php goes up first, straight to storage/framework/maintenance.php:
-      # public/index.php requires that file — when present — before vendor/autoload.php, so it
-      # takes staging down over plain scp with no PHP boot. That covers the window the next step
-      # opens, between the git reset and the vendor/ swap.
-      - name: Upload build artifacts
-        run: |
-          echo "Uploading maintenance fallback..."
-          scp deployment/maintenance.php ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/storage/framework/maintenance.php
-
-          echo "Uploading build artifacts to staging..."
-          scp build.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/build.tar.gz
-          scp vendor.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/vendor.tar.gz
-
-          # Upload docs changes
-          echo "Uploading documentation..."
-          if [ -f docs.tar.gz ]; then
-            scp docs.tar.gz ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ vars.SITE_DIR }}/docs.tar.gz
-          fi
-
-      # Run deployment process
-      #
-      # This mirrors deploy.yml's ordering, and for the same reason: everything up to and
-      # including the vendor/ swap is plain shell. Every `php artisan ...` boots the whole
-      # framework before the command runs, so new app code paired with the still-old vendor/
-      # fatals on a missing class — staging previously never swapped vendor/ in at all, and
-      # ran on whatever it happened to have.
-      #
-      # `set -e` stops the script at the first failure instead of running the rest of the
-      # deploy against a half-updated checkout.
-      - name: Deploy to staging
-        run: |
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'DEPLOY_SCRIPT'
-            set -e
-            cd ${{ vars.SITE_DIR }}
-
-            # Recovery net only: makes maintenanceMode()->active() true so a hand-run
-            # `artisan up` actually clears storage/framework/maintenance.php instead of
-            # short-circuiting on "Application is already up". deployment:run's own
-            # maintenance step overwrites both files moments later.
-            echo '{}' > storage/framework/down
-
-            # Determine target branch
-            TARGET_BRANCH="${{ github.event.inputs.branch || github.ref_name }}"
-            echo "🎯 Deploying branch: $TARGET_BRANCH"
-
-            # Fetch all branches
-            git fetch --all --prune
-
-            # Check if there are uncommitted changes (shouldn't be, but safety check)
-            if ! git diff --quiet || ! git diff --cached --quiet; then
-              echo "⚠️  Uncommitted changes detected, stashing..."
-              git stash push -m "Auto-stash before deployment $(date)"
-            fi
-
-            # Hard reset to the target branch (removes files from other branches)
-            git checkout "$TARGET_BRANCH" 2>/dev/null || git checkout -b "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
-            git reset --hard "origin/$TARGET_BRANCH"
-
-            # Clean untracked files (except those in .gitignore like storage/, .env).
-            # The archives scp'd in moments ago are excluded explicitly: they sit at the repo
-            # root and a plain `git clean -fd` deleted all three, so vendor/ was never swapped
-            # and deployment:deploy-assets found no build.tar.gz to unpack.
-            git clean -fd -e build.tar.gz -e docs.tar.gz -e vendor.tar.gz
-
-            echo "✅ Branch switched and cleaned"
-
-            # Swap vendor/ into place — still plain shell, still no artisan.
-            rm -rf vendor.new
-            mkdir vendor.new
-            tar -xzf vendor.tar.gz -C vendor.new
-            rm -rf vendor.old
-            mv vendor vendor.old
-            mv vendor.new/vendor vendor
-            rm -rf vendor.new vendor.tar.gz
-
-            # Drop the cached bootstrap files before the first artisan boot. PackageManifest
-            # only rebuilds bootstrap/cache/packages.php when it is missing, so a removed
-            # Composer package stays listed there and fatals on boot — see deploy.yml.
-            rm -f bootstrap/cache/*.php
-
-            # Run the deployment process
-            /opt/php85/bin/php artisan deployment:run
-          DEPLOY_SCRIPT
-
-      # Resume deployment if failed (optional recovery step)
-      - name: Resume deployment
-        if: failure()
-        run: |
-          ssh -T ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ vars.SITE_DIR }} && \
-          rm -f bootstrap/cache/*.php && \
-          /opt/php85/bin/php artisan deployment:resume" || true
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/deploy-common.yml
+    secrets: inherit
+    with:
+      environment: Staging
+      ref: ${{ github.event.inputs.branch || github.event.workflow_run.head_branch || 'dev' }}
+      # Staging deploys a moving branch rather than a pinned commit: the server checks the branch out
+      # and resets to its remote tip, so a manual dispatch of an arbitrary branch works too.
+      remote-branch: ${{ github.event.inputs.branch || github.event.workflow_run.head_branch || 'dev' }}
+      # The staging database is replaced wholesale by the nightly refresh from production, so dumping
+      # it before every deploy is pure downtime protecting nothing.
+      run-backup: false
+      # Staging switches between arbitrary branches, so it accumulates files from the ones it left.
+      clean-untracked: true

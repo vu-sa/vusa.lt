@@ -39,7 +39,14 @@ class PublicController extends Controller
         [$alias, $subdomain] = GetAliasSubdomainForPublic::execute();
 
         // When we have the final alias, get the tenant that will be used in all of the public controllers
-        $this->tenant = Tenant::where('alias', $alias)->first();
+        $tenant = Tenant::where('alias', $alias)->first();
+
+        // An unrecognized Host (e.g. the catch-all {permalink} route matching a request whose
+        // domain isn't a known tenant subdomain) must 404, not crash with a TypeError trying to
+        // assign null to the non-nullable $tenant property below.
+        abort_if($tenant === null, 404, 'Tenant not found');
+
+        $this->tenant = $tenant;
 
         // We also need to use the subdomain in the public controllers
         $this->subdomain = $subdomain;

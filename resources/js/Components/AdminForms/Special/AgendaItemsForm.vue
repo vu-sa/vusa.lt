@@ -1,20 +1,5 @@
 <template>
   <div class="flex flex-col gap-6">
-    <FadeTransition>
-      <SuggestionAlert v-if="props.showHint" :show-alert @alert-closed="showAlert = false">
-        <p class="mt-0">
-          <span>{{ $t('Kiekvienas posėdis turi') }}</span>
-          <Badge size="tiny" variant="secondary" class="mx-1">
-            <component :is="AgendaItemIcon" class="h-3 w-3" />
-            <strong>{{ $t('darbotvarkės klausimų') }}</strong>
-          </Badge>
-        </p>
-        <p class="mb-4">
-          {{ $t('Įrašyk arba įkopijuok visus klausimus, kurie šiuo metu yra numatomi posėdyje. Galite pradėti nuo ankstesnio posėdžio klausimų.') }}
-        </p>
-      </SuggestionAlert>
-    </FadeTransition>
-
     <Form ref="agendaForm" v-slot="{ values }" :validation-schema="schema" :initial-values="initialValues.value" @submit="onSubmit">
       <div class="space-y-6">
         <FormField ref="agendaItemField" v-slot="{ componentField, setValue }" name="agendaItemTitles">
@@ -334,6 +319,11 @@
           </FieldArray>
         </FormField>
 
+        <p v-if="currentFieldCount > 0" class="flex items-start gap-1.5 pt-3 text-xs text-muted-foreground">
+          <Languages class="mt-px h-3.5 w-3.5 shrink-0" />
+          {{ $t('meetings.agenda.english_added_later') }}
+        </p>
+
         <!-- Action buttons (conditionally hidden when hideActions is true) -->
         <div v-if="!props.hideActions" class="flex items-center justify-between pt-4 border-t">
           <div class="flex items-center gap-2">
@@ -396,11 +386,9 @@ import {
   Users as UsersIcon,
   Text as TextIcon,
   Clock as ClockIcon,
+  Languages,
 } from 'lucide-vue-next';
 
-import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
-import { Badge } from '@/Components/ui/badge';
-import SuggestionAlert from '@/Components/Alerts/SuggestionAlert.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useMeetingTemplates } from '@/Composables/useMeetingTemplates';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -433,8 +421,6 @@ const props = withDefaults(defineProps<{
   submitLabel?: string;
   /** Whether to show skip button */
   showSkipButton?: boolean;
-  /** Whether to show the hint/suggestion alert */
-  showHint?: boolean;
   /** Whether to hide the action buttons (for external button rendering) */
   hideActions?: boolean;
 }>(), {
@@ -442,7 +428,6 @@ const props = withDefaults(defineProps<{
   initialInput: 'one-by-one',
   submitLabel: undefined,
   showSkipButton: true,
-  showHint: true,
   hideActions: false,
 });
 
@@ -466,7 +451,6 @@ const studentBroughtSpotlight = useFeatureSpotlight('meeting-student-brought-v1'
 });
 
 // Local state
-const showAlert = ref(true);
 const showQuestionInputInTextArea = ref(false);
 const questionInputInTextArea = ref('');
 const agendaInputMode = ref<'previous' | 'one-by-one' | 'text' | null>(null);

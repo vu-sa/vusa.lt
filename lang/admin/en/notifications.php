@@ -21,6 +21,9 @@ return [
         'in_app_description' => 'Receive notifications directly in the app',
         'push' => 'Push Notifications',
         'push_description' => 'Receive notifications to your browser/device',
+        'push_enable' => 'Enable',
+        'push_disable' => 'Disable',
+        'push_blocked' => 'Blocked',
         'email_digest' => 'Email Digest',
         'email_digest_description' => 'Receive notifications via periodic email digest',
     ],
@@ -35,6 +38,8 @@ return [
     'digest_total' => 'total',
     'digest_more_items' => '{1} :count more item|[2,*] :count more items',
     'digest_view_all' => 'View all notifications',
+    'view_all' => 'View All Notifications',
+    'toast_fallback_title' => 'New Notification',
 
     // Comment notifications
     'comment_posted_title' => 'New comment: :name',
@@ -109,6 +114,7 @@ return [
     'meeting_agenda_type_voting' => ':count voting',
     'meeting_agenda_type_informational' => ':count informational',
     'meeting_agenda_type_deferred' => ':count deferred',
+    'meeting_agenda_type_break' => ':count break',
     'meeting_agenda_additional_votes_note' => 'If there were additional votes, don\'t forget to add them.',
 
     // News notifications
@@ -137,6 +143,10 @@ return [
     'test_email_sent' => 'Test email sent to: :emails',
     'test_email_hint' => 'The email is sent to your saved addresses. Save your changes first.',
     'test_email_failed' => 'Could not send the email: :error',
+
+    // Misc UI labels
+    'category' => 'Category',
+    'mark_as_read' => 'Mark as read',
 
     // Actions
     'action_view_comment' => 'View Comment',
@@ -204,4 +214,41 @@ return [
     // Notification catalog
     'catalog_title' => 'Notification Catalog',
     'catalog_description' => 'All notifications sent by the system',
+
+    // Notifications index page
+    'index' => [
+        'filter_unread' => 'Unread',
+        'actions' => 'Actions',
+        'mark_all_read' => 'Mark all as read',
+        'delete_read' => 'Delete read',
+        'delete_all' => 'Delete all',
+        'empty_unread_title' => 'No new notifications',
+        'empty_all_title' => 'No notifications',
+        'empty_unread_body' => 'You have read all your notifications! New notifications will appear here.',
+        'empty_all_body' => 'No notifications yet. They will appear here when you receive new ones.',
+        'deleted' => 'Notification deleted.',
+        'all_marked_read' => 'All notifications marked as read.',
+        'read_deleted' => 'Read notifications deleted.',
+        'all_deleted' => 'All notifications deleted.',
+    ],
+
+    // Push device management UI
+    'push_devices' => [
+        'title' => 'Push Notification Devices',
+        'description' => 'Manage the devices where push notifications are enabled.',
+        'this_device' => 'This Device',
+        'not_supported' => 'Not Supported',
+        'blocked_in_browser' => 'Blocked in Browser',
+        'all_devices' => 'All Devices',
+        'no_devices' => 'No devices with push notifications enabled',
+        'unknown_device' => 'Unknown Device',
+        'current_badge' => 'This',
+        'added_at' => 'Added',
+        'send_test' => 'Send Test Notification',
+        'test_sent' => 'Test notification sent!',
+        'status_not_supported' => 'Push notifications are not supported in this browser',
+        'status_blocked' => 'Push notifications are blocked in browser settings',
+        'status_enabled' => 'Push notifications are enabled',
+        'status_disabled' => 'Push notifications are disabled',
+    ],
 ];

@@ -5,6 +5,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -123,4 +124,35 @@ test('a user without meeting update rights cannot link documents', function (): 
         ->assertStatus(403);
 
     expect($document->fresh()->meeting_id)->toBeNull();
+});
+
+test('the meeting page labels each linked document by language and date', function (): void {
+    Document::factory()->for($this->institution)->create([
+        'meeting_id' => $this->meeting->id,
+        'title' => 'VU SA Tarybos protokolas',
+        'language' => 'Lietuvių',
+        'document_date' => '2026-07-23',
+    ]);
+
+    asUser($this->admin)
+        ->get(route('meetings.show', $this->meeting))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            // `language_code` is derived, so it only reaches the panel if it is appended.
+            ->where('meeting.documents.0.language_code', 'lt')
+            // A DATE column, not a moment: no time and no timezone suffix to render.
+            ->where('meeting.documents.0.document_date', '2026-07-23'));
+});
+
+test('a document of unrecorded language carries no language claim', function (): void {
+    Document::factory()->for($this->institution)->create([
+        'meeting_id' => $this->meeting->id,
+        'language' => null,
+    ]);
+
+    asUser($this->admin)
+        ->get(route('meetings.show', $this->meeting))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('meeting.documents.0.language_code', 'unknown'));
 });

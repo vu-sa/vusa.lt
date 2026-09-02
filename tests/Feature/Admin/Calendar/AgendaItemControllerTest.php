@@ -192,7 +192,9 @@ describe('agenda items controller', function (): void {
             ]);
 
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['votes.0.title']);
+        // A plain string is normalized onto the `lt` translation, so the length rule
+        // reports there — see NormalizesTranslatableInput.
+        $response->assertSessionHasErrors(['votes.0.title.lt']);
 
         $agendaItem->refresh();
         expect($agendaItem->votes()->count())->toEqual(0);

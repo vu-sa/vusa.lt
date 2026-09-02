@@ -138,7 +138,7 @@
 
         <!-- Quick actions for tenant view -->
         <div class="flex flex-wrap items-center gap-3">
-          <Link :href="route('tasks.summary', { taskable_type: ModelEnum.MEETING })">
+          <Link :href="route('tasks.summary', { taskable_type: [ModelEnum.INSTITUTION, ModelEnum.MEETING] })">
             <Button variant="outline" size="sm" class="gap-2">
               <ClipboardList class="h-4 w-4" />
               {{ $t('tasks.summary.view_meeting_tasks') }}

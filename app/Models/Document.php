@@ -49,6 +49,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Institution|null $institution
  * @property-read mixed $is_in_effect
+ * @property-read string $language_code
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenant
  *
@@ -70,7 +71,10 @@ class Document extends Model
     {
         return [
             'is_active' => 'boolean',
-            'document_date' => 'datetime',
+            // The column is a DATE. Cast as plain `datetime` it serialized to a
+            // Z-suffixed timestamp, which rendered in full and could shift the day by one
+            // in a westward timezone.
+            'document_date' => 'date:Y-m-d',
             'effective_date' => 'datetime',
             'expiration_date' => 'datetime',
             'checked_at' => 'datetime',
@@ -129,7 +133,7 @@ class Document extends Model
             'created_at' => $this->created_at->timestamp,
             // Enhanced faceting fields
             'content_type_category' => $this->getContentTypeCategory(),
-            'language_code' => $this->getLanguageCode(),
+            'language_code' => $this->language_code,
             'tenant_hierarchy' => $this->getTenantHierarchy(),
             'date_range_bucket' => $this->getDateRangeBucket(),
         ];
@@ -166,15 +170,23 @@ class Document extends Model
     }
 
     /**
-     * Get standardized language code
+     * The free-text SharePoint language label normalized to a locale code.
+     *
+     * An accessor rather than a plain method so it can be appended to a payload — both the
+     * public event page and the admin documents panel label documents by language.
+     *
+     * @return Attribute<'lt'|'en'|'unknown', never>
      */
-    protected function getLanguageCode(): string
+    protected function languageCode(): Attribute
     {
-        return match ($this->language) {
-            'Lietuvių', 'Lithuanian' => 'lt',
-            'Anglų', 'English' => 'en',
+        // SharePoint writes the label ("Lietuvių"), but the column also holds bare codes on
+        // rows that came from elsewhere — both have to resolve, or a document silently
+        // becomes "unknown" and escapes the public locale filter.
+        return Attribute::make(get: fn (): string => match (mb_strtolower((string) $this->language)) {
+            'lietuvių', 'lithuanian', 'lt' => 'lt',
+            'anglų', 'english', 'en' => 'en',
             default => 'unknown'
-        };
+        });
     }
 
     /**

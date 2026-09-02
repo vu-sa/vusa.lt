@@ -74,7 +74,9 @@ describe('vote controller', function (): void {
             ]);
 
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['title']);
+        // A plain string is normalized onto the `lt` translation, so that is where the
+        // length rule reports — see NormalizesTranslatableInput.
+        $response->assertSessionHasErrors(['title.lt']);
         expect($this->agendaItem->votes()->count())->toEqual(0);
     });
 
@@ -93,7 +95,7 @@ describe('vote controller', function (): void {
             ]);
 
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['title']);
+        $response->assertSessionHasErrors(['title.lt']);
 
         $vote->refresh();
         expect($vote->title)->toBe('Original Vote');

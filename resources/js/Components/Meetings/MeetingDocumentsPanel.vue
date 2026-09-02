@@ -61,9 +61,17 @@
             class="block truncate text-sm font-medium hover:underline"
           >{{ document.title || document.name }}</a>
           <span v-else class="block truncate text-sm font-medium">{{ document.title || document.name }}</span>
-          <span class="text-xs text-muted-foreground">
-            {{ document.content_type }}
-            <template v-if="document.document_date"> · {{ document.document_date }}</template>
+          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <!-- SharePoint records each file's language, and a body's paperwork is often
+                 filed in both — so say which this one is. -->
+            <span
+              v-if="languageLabel(document)"
+              class="rounded border border-border px-1 py-px text-[10px] font-semibold uppercase tracking-wide"
+            >{{ languageLabel(document) }}</span>
+            <span>
+              {{ document.content_type }}
+              <template v-if="document.document_date"> · {{ document.document_date }}</template>
+            </span>
           </span>
         </div>
         <button
@@ -100,7 +108,15 @@ export interface MeetingDocument {
   content_type: string | null;
   document_date: string | null;
   anonymous_url: string | null;
+  /** Normalized `lt` / `en` / `unknown` — see Document::languageCode(). */
+  language_code?: string | null;
 }
+
+/** `unknown` earns no chip — an unlabelled file is not a claim about its language. */
+const languageLabel = (document: MeetingDocument): string =>
+  (document.language_code && document.language_code !== 'unknown'
+    ? document.language_code.toUpperCase()
+    : '');
 
 const props = defineProps<{
   meetingId: string;

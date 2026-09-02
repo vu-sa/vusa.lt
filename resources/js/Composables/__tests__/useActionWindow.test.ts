@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 
@@ -8,6 +8,11 @@ import {
   type ActionWindowContext,
   type OpenOptions,
 } from '@/Composables/useActionWindow';
+import { invalidateActionWindowData } from '@/Composables/useActionWindowData';
+
+vi.mock('@/Composables/useActionWindowData', () => ({
+  invalidateActionWindowData: vi.fn(),
+}));
 
 /**
  * The provider calls provide(), so it only runs inside a component setup.
@@ -242,6 +247,15 @@ describe('useActionWindow', () => {
 
     expect(window.isOpen.value).toBe(false);
     expect(window.draft.institution).toEqual({ id: '1', name: 'MIF SPK' });
+  });
+
+  it('open() drops the cached action-window data so a reopen re-reads the server', () => {
+    vi.mocked(invalidateActionWindowData).mockClear();
+    const window = makeWindow();
+
+    window.open();
+
+    expect(invalidateActionWindowData).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to a no-op context when no provider is mounted', () => {
