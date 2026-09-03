@@ -30,7 +30,7 @@ return [
     'carousel_slide_position' => 'Slide :current of :total',
     'news_and_announcements' => 'News and announcements',
     'featured_news' => 'Featured news',
-    'partner_organizations' => 'Partner organizations',
+    'partner_organizations' => 'Partners, friends and initiatives',
     'visit' => 'Visit',
     'social_media_and_radio' => 'Social media and radio',
     'start_fm_toggle' => 'Play START FM',

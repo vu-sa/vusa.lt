@@ -15,7 +15,7 @@ use Laravel\Scout\Searchable;
 /**
  * @property int $id
  * @property string $title
- * @property string $image_url
+ * @property string|null $image_url
  * @property string $link_url
  * @property string $lang
  * @property int $order

@@ -136,7 +136,7 @@ declare global {
       // columns
       id: number
       title: string
-      image_url: string
+      image_url: string | null
       link_url: string
       lang: string
       order: number

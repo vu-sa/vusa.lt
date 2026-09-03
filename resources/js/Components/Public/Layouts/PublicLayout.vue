@@ -41,12 +41,10 @@
           <div :class="contentWrapperClass">
             <slot />
           </div>
-          <div v-if="
-            $page.props.tenant?.banners &&
-              $page.props.tenant.banners.length > 0
-          " class="mx-auto mt-8 max-w-7xl">
-            <BannerCarousel :banners="$page.props.tenant?.banners" />
-          </div>
+          <PartnersBanner
+            v-if="$page.props.tenant?.banners && $page.props.tenant.banners.length > 0"
+            :banners="$page.props.tenant.banners"
+          />
         </div>
       </main>
 
@@ -87,11 +85,11 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import 'vue-sonner/style.css';
 
 // Non-critical components - load asynchronously
-const BannerCarousel = defineAsyncComponent({
-  loader: () => import('../FullWidth/BannerCarousel.vue'),
+const PartnersBanner = defineAsyncComponent({
+  loader: () => import('../FullWidth/PartnersBanner.vue'),
   loadingComponent: {
     components: { Skeleton },
-    template: '<div class="mx-8 my-8"><Skeleton class="h-32 rounded" /></div>',
+    template: '<div class="mx-auto mt-8 max-w-7xl px-5 sm:px-6 lg:px-8"><Skeleton class="h-32 rounded-none" /></div>',
   },
   delay: 200,
 });

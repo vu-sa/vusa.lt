@@ -30,7 +30,7 @@ return [
     'carousel_slide_position' => 'Skaidrė :current iš :total',
     'news_and_announcements' => 'Naujienos ir pranešimai',
     'featured_news' => 'Paryškintosios naujienos',
-    'partner_organizations' => 'Partnerių organizacijos',
+    'partner_organizations' => 'Partneriai, draugai ir iniciatyvos',
     'visit' => 'Aplankyti',
     'social_media_and_radio' => 'Socialiniai tinklai ir radijas',
     'start_fm_toggle' => 'Įjungti START FM',
