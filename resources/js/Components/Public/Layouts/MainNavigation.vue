@@ -44,9 +44,9 @@
            three are already in the menu panel's footer, so nothing is lost by collapsing them
            into it. -->
       <div class="flex shrink-0 items-center gap-2 max-lg:ml-auto">
-        <SearchButton size="icon" :class="cn(navButtonClass, 'max-lg:hidden')" />
-        <AccessibilityMenu :class="cn(navButtonClass, 'max-lg:hidden')" />
-        <DarkModeSwitch size="icon" :class="cn(navButtonClass, 'max-lg:hidden')" />
+        <SearchButton size="icon" :class="cn(navButtonClass)" />
+        <AccessibilityMenu :class="cn(navButtonClass)" />
+        <DarkModeSwitch size="icon" :class="cn(navButtonClass)" />
         <MobileNavigation :class="cn(navButtonClass, 'lg:hidden')" />
       </div>
     </div>

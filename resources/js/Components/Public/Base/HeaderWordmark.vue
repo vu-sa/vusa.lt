@@ -14,7 +14,7 @@
       v-if="variant === 'official'"
       :src
       :alt
-      class="aspect-[1.886] h-11 w-auto max-w-full p-1 dark:invert"
+      class="aspect-[1.886] h-14 w-auto max-w-full p-1 dark:invert"
       loading="eager"
       width="189"
       height="100"
