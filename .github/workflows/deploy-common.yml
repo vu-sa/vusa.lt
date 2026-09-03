@@ -17,14 +17,8 @@ on:
         required: true
         type: string
       remote-sha:
-        description: 'Commit the server resets to. Mutually exclusive with remote-branch.'
-        required: false
-        default: ''
-        type: string
-      remote-branch:
-        description: 'Branch the server checks out and resets to. Takes precedence over remote-sha.'
-        required: false
-        default: ''
+        description: 'Immutable commit the server checks out'
+        required: true
         type: string
       run-backup:
         description: 'Take a database backup during the pre-flight phase'
@@ -205,6 +199,14 @@ jobs:
 
             git fetch --all --prune
 
+            if [ "${{ inputs.environment }}" = "Staging" ]; then
+              if /opt/php85/bin/php artisan list --raw | grep -qx 'staging:verify-isolation'; then
+                /opt/php85/bin/php artisan staging:verify-isolation
+              else
+                echo "::warning::The currently deployed revision predates staging:verify-isolation; the checked-out revision will verify before migrations."
+              fi
+            fi
+
             if [ "${{ inputs.run-backup }}" = "true" ]; then
               /opt/php85/bin/php artisan deployment:backup
             fi
@@ -243,13 +245,7 @@ jobs:
 
             echo '{}' > storage/framework/down
 
-            if [ -n "${{ inputs.remote-branch }}" ]; then
-              git checkout "${{ inputs.remote-branch }}" 2>/dev/null \
-                || git checkout -b "${{ inputs.remote-branch }}" "origin/${{ inputs.remote-branch }}"
-              git reset --hard "origin/${{ inputs.remote-branch }}"
-            else
-              git reset --hard "${{ inputs.remote-sha }}"
-            fi
+            git checkout --detach --force "${{ inputs.remote-sha }}"
 
             # Drop files left by another branch. The deploy archives and vendor.new/.old sit at the
             # repo root; they are gitignored so a plain `git clean -fd` spares them, but they are

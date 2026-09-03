@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Helpers\InternetShortcutParser;
 use App\Models\Document;
 use App\Models\Institution;
+use App\Support\StagingProtection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Microsoft\Graph\Generated\Models\DriveItem;
@@ -131,6 +132,19 @@ class DocumentSharepointSyncService
             ]);
 
             if ($anonymousPermission === null) {
+                if (StagingProtection::sharepointIsReadOnly()) {
+                    Log::info('No public permission found; staging read-only mode prevents creating one', [
+                        'document_id' => $document->id,
+                    ]);
+
+                    $document->checked_at = Carbon::now();
+                    $document->sync_status = 'success';
+                    $document->save();
+                    $document->refresh();
+
+                    return $document;
+                }
+
                 Log::info('Creating new permission for document', [
                     'document_id' => $document->id,
                     'reason' => 'No valid permission found',

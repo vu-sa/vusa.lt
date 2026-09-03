@@ -9,6 +9,7 @@ use App\Enums\SharepointScopeEnum;
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\SharepointFile;
+use App\Support\StagingProtection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -261,6 +262,8 @@ class SharepointGraphService
 
     public function updateDriveItemByPath(string $path, array $fields): ?DriveItem
     {
+        StagingProtection::ensureSharepointIsWritable();
+
         try {
             $path = rawurlencode($path);
 
@@ -314,6 +317,8 @@ class SharepointGraphService
 
     public function updateListItem(string $listId, string $listItemId, array $fields): FieldValueSet
     {
+        StagingProtection::ensureSharepointIsWritable();
+
         try {
             $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
             $fieldValueSet = new FieldValueSet;
@@ -451,6 +456,7 @@ class SharepointGraphService
 
     public function createPublicPermission(?string $siteId, string $driveItemId, Carbon|false|null $datetime = null): Models\Permission
     {
+        StagingProtection::ensureSharepointIsWritable();
         $this->validateNotEmpty(['driveItemId' => $driveItemId]);
 
         // Validate item is a file, not folder
@@ -497,6 +503,8 @@ class SharepointGraphService
      */
     public function deletePermission(string $driveItemId, string $permissionId): void
     {
+        StagingProtection::ensureSharepointIsWritable();
+
         $this->graph->drives()
             ->byDriveId($this->driveId)
             ->items()
@@ -514,6 +522,8 @@ class SharepointGraphService
 
     public function uploadDriveItem(string $filePath, UploadedFile $file): DriveItem
     {
+        StagingProtection::ensureSharepointIsWritable();
+
         $factory = new Psr17Factory;
 
         $stream = $factory->createStreamFromFile($file->getPathname(), 'r');
@@ -527,6 +537,8 @@ class SharepointGraphService
 
     public function deleteDriveItem(string $driveItemId): void
     {
+        StagingProtection::ensureSharepointIsWritable();
+
         $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->delete()->wait();
     }
 
@@ -538,6 +550,8 @@ class SharepointGraphService
      */
     public function createFolder(string $folderPath): DriveItem
     {
+        StagingProtection::ensureSharepointIsWritable();
+
         $pathParts = explode('/', trim($folderPath, '/'));
         $folderName = array_pop($pathParts);
         $parentPath = implode('/', $pathParts);
@@ -579,6 +593,8 @@ class SharepointGraphService
      */
     public function uploadUrlShortcut(string $filePath, string $content): DriveItem
     {
+        StagingProtection::ensureSharepointIsWritable();
+
         $factory = new Psr17Factory;
 
         $stream = $factory->createStream($content);
@@ -685,7 +701,7 @@ class SharepointGraphService
             ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission)));
 
         // Add anonymous url to drive items without it
-        if ($driveItemsWithoutAnonymousUrl->isNotEmpty()) {
+        if ($driveItemsWithoutAnonymousUrl->isNotEmpty() && ! StagingProtection::sharepointIsReadOnly()) {
             $batch = new BatchRequestContent(
                 $driveItemsWithoutAnonymousUrl->map(function (array $driveItem) {
 
@@ -1002,10 +1018,12 @@ class SharepointGraphService
         // so a missing URL here means link creation failed for this drive item.
         $url = $anonymousPermission['link']['webUrl'] ?? null;
 
-        $document->anonymous_url = $url;
-        $document->sharepoint_permission_id = $anonymousPermission['id'] ?? null;
-
         if ($url === null) {
+            if (! StagingProtection::sharepointIsReadOnly()) {
+                $document->anonymous_url = null;
+                $document->sharepoint_permission_id = null;
+            }
+
             $this->logWarning('Batch processing: document imported without a public link', [
                 'sharepoint_id' => $document->sharepoint_id,
                 'title' => $document->title,
@@ -1016,6 +1034,9 @@ class SharepointGraphService
 
             return;
         }
+
+        $document->anonymous_url = $url;
+        $document->sharepoint_permission_id = $anonymousPermission['id'] ?? null;
 
         $document->checked_at = Carbon::now();
         $document->sync_status = 'imported';

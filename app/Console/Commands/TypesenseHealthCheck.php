@@ -219,11 +219,11 @@ class TypesenseHealthCheck extends Command
             $set = TypesenseSynonyms::getSynonymSet($this->client);
 
             if (isset($set['error'])) {
-                $this->warn('  ⚠️  Synonym set "'.TypesenseSynonyms::SET_NAME.'" not found (run typesense:apply-search-config)');
+                $this->warn('  ⚠️  Synonym set "'.TypesenseSynonyms::setName().'" not found (run typesense:apply-search-config)');
             } else {
                 $items = $set['items'] ?? [];
                 $count = count($items);
-                $this->line('  📌 '.TypesenseSynonyms::SET_NAME.": {$count} synonym items");
+                $this->line('  📌 '.TypesenseSynonyms::setName().": {$count} synonym items");
 
                 if ($this->option('detailed') && $count > 0) {
                     foreach ($items as $synonym) {

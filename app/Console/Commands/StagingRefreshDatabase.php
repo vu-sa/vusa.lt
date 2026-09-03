@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\StagingIsolationService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -28,6 +29,8 @@ class StagingRefreshDatabase extends Command
         'job_batches',
         'failed_jobs',
         'notifications',
+        'notification_digest_queue',
+        'push_subscriptions',
         'sessions',
         'telescope_entries',
         'telescope_entries_tags',
@@ -35,7 +38,7 @@ class StagingRefreshDatabase extends Command
         'activity_log',
     ];
 
-    public function handle(): int
+    public function handle(StagingIsolationService $isolation): int
     {
         // The only thing standing between this command and dropping the production database. It is
         // deliberately not overridable: there is no --force, and no prompt a tired person can accept
@@ -43,6 +46,18 @@ class StagingRefreshDatabase extends Command
         if (config('app.env') !== 'staging') {
             $this->error('Refused: staging:refresh-database only runs when APP_ENV=staging.');
             $this->line('  Current environment: '.config('app.env'));
+
+            return self::FAILURE;
+        }
+
+        $databaseErrors = $isolation->databaseErrors();
+
+        if ($databaseErrors !== []) {
+            $this->error('Refused: the staging database target is not verified.');
+
+            foreach ($databaseErrors as $error) {
+                $this->line("  - {$error}");
+            }
 
             return self::FAILURE;
         }

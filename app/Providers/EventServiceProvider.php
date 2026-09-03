@@ -9,6 +9,7 @@ use App\Events\MemberRegistrationCreated;
 use App\Events\ReservationResourceCreated;
 use App\Events\StudentRepRegistrationCreated;
 use App\Events\TaskCreated;
+use App\Listeners\BlockExternalNotificationsOnStaging;
 use App\Listeners\HandleDutiableChange;
 use App\Listeners\HandleTaskCreated;
 use App\Listeners\NotifyUsersOfComment;
@@ -90,6 +91,7 @@ class EventServiceProvider extends ServiceProvider
         // Note: Approval task handling moved to ApprovalTaskSubscriber
         // Notification digest queuing
         NotificationSending::class => [
+            BlockExternalNotificationsOnStaging::class,
             QueueNotificationForDigest::class,
         ],
     ];

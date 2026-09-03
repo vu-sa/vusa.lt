@@ -42,7 +42,7 @@ return [
     |
     */
 
-    'prefix' => env('SCOUT_PREFIX', ''),
+    'prefix' => env('APP_ENV') === 'staging' ? 'staging_' : env('SCOUT_PREFIX', ''),
 
     /*
     |--------------------------------------------------------------------------

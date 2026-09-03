@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\MediaLibrary\StagingAwareFileRemover;
 use Spatie\ImageOptimizer\Optimizers\Cwebp;
 use Spatie\ImageOptimizer\Optimizers\Gifsicle;
 use Spatie\ImageOptimizer\Optimizers\Jpegoptim;
@@ -51,6 +52,8 @@ return [
      * The fully qualified class name of the media model.
      */
     'media_model' => Media::class,
+
+    'file_remover_class' => StagingAwareFileRemover::class,
 
     /*
      * The fully qualified class name of the model used for temporary uploads.

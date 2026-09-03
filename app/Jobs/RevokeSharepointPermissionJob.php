@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Services\SharepointGraphService;
+use App\Support\StagingProtection;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -43,6 +44,10 @@ class RevokeSharepointPermissionJob implements ShouldQueue
      */
     public function handle(): void
     {
+        if (StagingProtection::sharepointIsReadOnly()) {
+            return;
+        }
+
         Log::info('Revoking SharePoint permission for document', [
             'document_id' => $this->documentId,
             'permission_id' => $this->sharepointPermissionId,

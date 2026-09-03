@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Calendar;
+use App\Support\StagingProtection;
 use Illuminate\Support\Facades\DB;
 
 class DuplicateCalendarAction
@@ -34,6 +35,8 @@ class DuplicateCalendarAction
 
             // Copy media files if they exist
             if ($calendar->media->isNotEmpty()) {
+                StagingProtection::ensureFilesAreWritable();
+
                 foreach ($calendar->media as $media) {
                     $newCalendar
                         ->addMediaFromUrl($media->getFullUrl())
