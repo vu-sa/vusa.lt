@@ -1,5 +1,9 @@
 <template>
-  <DropdownMenu @update:open="isOpen = $event">
+  <!-- `modal="false"`: reka-ui's default `modal: true` locks body scroll and hides the
+       scrollbar while open, shifting the whole page. `Popover` (PadalinysSelector, the
+       mega menu) defaults to non-modal already; matching that here keeps this dropdown
+       from doing something none of the other header controls do. -->
+  <DropdownMenu :modal="false" @update:open="isOpen = $event">
     <DropdownMenuTrigger as-child>
       <Button
         variant="ghost"

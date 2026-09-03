@@ -42,7 +42,13 @@ describe('SecondMenu.vue', () => {
     const avatar = img.element.closest('[data-slot="avatar"]');
     expect(avatar?.className).toContain('rounded-lg');
 
-    expect(wrapper.text()).toContain('Testas Testaitis');
+    // The label stays "Mano VU SA" for a logged-in user too — the avatar is what
+    // signals the logged-in state, and it links to /mano rather than the name.
+    expect(wrapper.text()).toContain('Mano VU SA');
+
+    const link = wrapper.find('a[title="Testas Testaitis"]');
+    expect(link.exists()).toBe(true);
+    expect(link.attributes('href')).toBe('/mocked-route/dashboard');
   });
 
   it('falls back to initials when the user has no photo', () => {
@@ -59,5 +65,37 @@ describe('SecondMenu.vue', () => {
 
     expect(wrapper.find('[data-slot="avatar"]').exists()).toBe(false);
     expect(wrapper.text()).toContain('Mano VU SA');
+
+    const link = wrapper.find('a[title="auth.login"]');
+    expect(link.exists()).toBe(true);
+    expect(link.attributes('href')).toBe('/mocked-route/login');
+  });
+
+  it('hides the "more" dropdown when no tenant links overflow', () => {
+    const page = createMockPage({
+      auth: { user: null } as never,
+      tenant: {
+        links: [
+          { id: 1, text: 'Nuoroda 1', link: '/one', icon: null, is_important: false },
+          { id: 2, text: 'Nuoroda 2', link: '/two', icon: null, is_important: false },
+        ],
+      } as never,
+    });
+    vi.mocked(usePage).mockReturnValue(page);
+    const originalPage = config.global.mocks.$page;
+    config.global.mocks.$page = page;
+
+    let wrapper;
+    try {
+      wrapper = mount(SecondMenu);
+    }
+    finally {
+      config.global.mocks.$page = originalPage;
+    }
+
+    // jsdom performs no layout, so `clientWidth` stays 0 and nothing is ever
+    // measured as overflowing — the dropdown must stay hidden rather than
+    // duplicating every already-visible link.
+    expect(wrapper.find('[title="Daugiau nuorodų"]').exists()).toBe(false);
   });
 });
