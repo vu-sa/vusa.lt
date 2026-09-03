@@ -22,15 +22,14 @@ class StagingReadOnlyMode
      * These are routes that modify files in storage/app/public
      */
     protected array $fileRoutes = [
-        'files.store',           // Upload files
-        'files.destroy',         // Delete single file
-        'files.update',          // Update file
-        'files.delete',          // Delete file
-        'files.deleteDirectory', // Delete directory
-        'files.bulkDelete',      // Bulk delete files
-        'files.createDirectory', // Create directories
-        'files.compress',        // Compress files
-        'files.uploadImage',     // Upload image
+        'files.store',
+        'files.delete',
+        'files.deleteDirectory',
+        'files.bulkDelete',
+        'files.createDirectory',
+        'files.compress',
+        'files.uploadImage',
+        'api.v1.admin.files.store',
     ];
 
     /**
@@ -43,7 +42,9 @@ class StagingReadOnlyMode
     protected array $sharepointWriteRoutes = [
         'sharepointFiles.store',                  // Upload file TO SharePoint
         'sharepointFiles.destroy',                // Delete file FROM SharePoint
-        'sharepoint.createDriveItemPublicLink',   // Create public link in SharePoint
+        'fileableFiles.destroy',                  // Delete file FROM SharePoint
+        'sharepoint.createFolder',                // Create folder IN SharePoint
+        'sharepoint.createPublicPermission',      // Create public link IN SharePoint
     ];
 
     /**
@@ -83,6 +84,7 @@ class StagingReadOnlyMode
         // Check file storage read-only mode
         if (config('app.files_read_only') && $this->isFileRoute($routeName)) {
             return $this->readOnlyResponse(
+                $request,
                 'File modifications are disabled in staging environment. '.
                 'Files are shared with production.'
             );
@@ -91,6 +93,7 @@ class StagingReadOnlyMode
         // Check SharePoint read-only mode
         if (config('app.sharepoint_read_only') && $this->isSharepointWriteRoute($routeName)) {
             return $this->readOnlyResponse(
+                $request,
                 'SharePoint modifications are disabled in staging environment. '.
                 'SharePoint is shared with production.'
             );
@@ -118,16 +121,16 @@ class StagingReadOnlyMode
     /**
      * Return appropriate read-only error response
      */
-    protected function readOnlyResponse(string $message): Response
+    protected function readOnlyResponse(Request $request, string $message): Response
     {
         // For Inertia requests, redirect back with an error flash message
         // Use 303 status to force GET method on redirect (prevents DELETE/POST following)
-        if (request()->header('X-Inertia')) {
+        if ($request->header('X-Inertia')) {
             return redirect()->back(303)->with('error', $message);
         }
 
         // For API/JSON requests
-        if (request()->wantsJson()) {
+        if ($request->wantsJson()) {
             return response()->json([
                 'message' => $message,
                 'error' => 'STAGING_READ_ONLY',

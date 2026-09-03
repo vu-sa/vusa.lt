@@ -2,15 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      # `dev` is here for two reasons. It is what deploy-staging.yml's workflow_run trigger listens
-      # for — a pull_request run reports the *source* branch, so a PR into dev never produces a run
-      # whose head_branch is `dev`, and staging would sit un-deployed forever waiting for one.
-      # It also closes a real gap: dev is updated by direct merge-pushes as well as PRs, and those
-      # pushes previously ran no CI at all — the code was first tested when the dev→main PR opened.
-      # Runs here are full (no --tia, same as main), which is free on a public repo.
-      - dev
+    branches-ignore:
+      - 'dependabot/npm_and_yarn/*'
+      - 'dependabot/composer/*'
   pull_request:
     branches-ignore:
       - 'dependabot/npm_and_yarn/*'

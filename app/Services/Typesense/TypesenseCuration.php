@@ -34,6 +34,11 @@ class TypesenseCuration
      */
     public const SET_NAME = 'vusa_curation';
 
+    public static function setName(): string
+    {
+        return (string) config('scout.prefix').self::SET_NAME;
+    }
+
     /**
      * Build a curation item that pins a document to a position for a query.
      * Pure transform — no client needed.
@@ -91,7 +96,7 @@ class TypesenseCuration
      */
     public static function upsertCurationSet(Client $client, array $items = []): array
     {
-        return $client->curationSets->upsert(self::SET_NAME, [
+        return $client->curationSets->upsert(self::setName(), [
             'items' => $items,
         ]);
     }
@@ -102,7 +107,7 @@ class TypesenseCuration
     public static function getCurationSet(Client $client): array
     {
         try {
-            return $client->curationSets[self::SET_NAME]->retrieve();
+            return $client->curationSets[self::setName()]->retrieve();
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }
@@ -114,7 +119,7 @@ class TypesenseCuration
     public static function deleteCurationSet(Client $client): array
     {
         try {
-            return $client->curationSets[self::SET_NAME]->delete();
+            return $client->curationSets[self::setName()]->delete();
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }

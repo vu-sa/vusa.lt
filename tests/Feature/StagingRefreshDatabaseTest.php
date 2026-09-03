@@ -9,6 +9,16 @@ use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    $connection = (string) config('database.default');
+
+    config([
+        'app.staging_refresh.expected_database' => config("database.connections.{$connection}.database"),
+        'app.staging_refresh.expected_database_username' => 'staging_test_user',
+        "database.connections.{$connection}.username" => 'staging_test_user',
+    ]);
+});
+
 /**
  * This command drops every table in the database it points at. The guard is the only thing that
  * decides which database that is, so it gets tested harder than the happy path.
@@ -41,6 +51,21 @@ describe('the environment guard', function () {
         $before = DB::table('users')->count();
 
         $this->artisan('staging:refresh-database')->assertExitCode(1);
+
+        expect(DB::table('users')->count())->toBe($before);
+    });
+
+    test('it refuses a staging database that does not match the expected target', function (): void {
+        config([
+            'app.env' => 'staging',
+            'app.staging_refresh.expected_database' => 'expected_staging_database',
+        ]);
+
+        $before = DB::table('users')->count();
+
+        $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
+            ->expectsOutputToContain('database target is not verified')
+            ->assertExitCode(1);
 
         expect(DB::table('users')->count())->toBe($before);
     });
@@ -117,12 +142,21 @@ describe('scrubbing personal data', function () {
     });
 
     test('it empties the tables that would replay production state', function (): void {
+        $user = User::factory()->create();
+
         DB::table('notifications')->insert([
             'id' => Str::uuid()->toString(),
             'type' => 'App\\Notifications\\Test',
             'notifiable_type' => 'App\\Models\\User',
-            'notifiable_id' => User::factory()->create()->id,
+            'notifiable_id' => $user->id,
             'data' => '{}',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('push_subscriptions')->insert([
+            'subscribable_type' => $user->getMorphClass(),
+            'subscribable_id' => $user->id,
+            'endpoint' => 'https://push.example.test/subscription',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -130,7 +164,8 @@ describe('scrubbing personal data', function () {
         $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
             ->assertExitCode(0);
 
-        expect(DB::table('notifications')->count())->toBe(0);
+        expect(DB::table('notifications')->count())->toBe(0)
+            ->and(DB::table('push_subscriptions')->count())->toBe(0);
     });
 
     test('scrub-only still refuses outside staging', function (): void {

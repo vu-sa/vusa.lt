@@ -10,6 +10,7 @@ use App\Models\Meeting;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Type;
 use App\Services\SharepointGraphService;
+use App\Support\StagingProtection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -112,6 +113,8 @@ class SharepointFileService
      */
     public function uploadFile(UploadedFile $file, string $filename, Model $fileable, array $listItemProperties): FileableFile
     {
+        StagingProtection::ensureSharepointIsWritable();
+
         $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
 
         $folderPath = self::pathForFileableDriveItem($fileable);

@@ -62,7 +62,7 @@ return [
         'redis' => [
             'driver' => 'redis',
             'connection' => 'default',
-            'queue' => env('REDIS_QUEUE', 'default'),
+            'queue' => env('APP_ENV') === 'staging' ? 'staging' : env('REDIS_QUEUE', 'default'),
             'retry_after' => 90,
             'block_for' => null,
         ],

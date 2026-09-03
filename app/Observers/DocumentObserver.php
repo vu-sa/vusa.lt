@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Jobs\RevokeSharepointPermissionJob;
 use App\Models\Document;
+use App\Support\StagingProtection;
 
 class DocumentObserver
 {
@@ -41,7 +42,7 @@ class DocumentObserver
      */
     private function dispatchRevocationIfNeeded(Document $document): void
     {
-        if (! $document->sharepoint_permission_id || ! $document->anonymous_url) {
+        if (StagingProtection::sharepointIsReadOnly() || ! $document->sharepoint_permission_id || ! $document->anonymous_url) {
             return;
         }
 

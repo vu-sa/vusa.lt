@@ -2,6 +2,10 @@ name: Deploy To Staging
 
 concurrency: staging
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   # Staging tracks `dev` automatically, the same way production tracks `main`. Before this it was
   # dispatch-only and had gone four months without a deploy, which made it useless as a preview of
@@ -21,16 +25,59 @@ on:
         type: string
 
 jobs:
-  deploy:
+  resolve:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - name: Checkout requested revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.branch || github.event.workflow_run.head_sha || 'dev' }}
+          fetch-depth: 0
+
+      - name: Resolve and validate commit
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          sha=$(git rev-parse HEAD)
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::Could not resolve an immutable commit SHA."; exit 1; }
+
+          git fetch origin dev:refs/remotes/origin/dev
+          git merge-base --is-ancestor origin/dev "$sha" || {
+            echo "::error::The requested branch must contain the current dev branch, including staging safety controls."
+            exit 1
+          }
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            successful_run=$(gh run list \
+              --workflow CI \
+              --commit "$sha" \
+              --event push \
+              --status success \
+              --json databaseId \
+              --jq '.[0].databaseId' \
+              --limit 1)
+
+            [ -n "$successful_run" ] || {
+              echo "::error::No successful push CI run exists for commit $sha. Push the branch and wait for CI before deploying."
+              exit 1
+            }
+          fi
+
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: resolve
     uses: ./.github/workflows/deploy-common.yml
     secrets: inherit
     with:
       environment: Staging
-      ref: ${{ github.event.inputs.branch || github.event.workflow_run.head_branch || 'dev' }}
-      # Staging deploys a moving branch rather than a pinned commit: the server checks the branch out
-      # and resets to its remote tip, so a manual dispatch of an arbitrary branch works too.
-      remote-branch: ${{ github.event.inputs.branch || github.event.workflow_run.head_branch || 'dev' }}
+      ref: ${{ needs.resolve.outputs.sha }}
+      remote-sha: ${{ needs.resolve.outputs.sha }}
       # The staging database is replaced wholesale by the nightly refresh from production, so dumping
       # it before every deploy is pure downtime protecting nothing.
       run-backup: false

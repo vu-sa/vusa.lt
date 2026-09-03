@@ -87,6 +87,8 @@ return [
     'staging_refresh' => [
         'source_backup_dir' => env('STAGING_SOURCE_BACKUP_DIR'),
         'email_allowlist' => env('STAGING_EMAIL_ALLOWLIST', ''),
+        'expected_database' => env('STAGING_EXPECTED_DATABASE'),
+        'expected_database_username' => env('STAGING_EXPECTED_DB_USERNAME'),
     ],
 
     /*
@@ -99,9 +101,9 @@ return [
     |
     */
 
-    'files_read_only' => env('FILES_READ_ONLY', false),
+    'files_read_only' => env('APP_ENV') === 'staging' || env('FILES_READ_ONLY', false),
 
-    'sharepoint_read_only' => env('SHAREPOINT_READ_ONLY', false),
+    'sharepoint_read_only' => env('APP_ENV') === 'staging' || env('SHAREPOINT_READ_ONLY', false),
 
     /*
     |--------------------------------------------------------------------------

@@ -24,6 +24,11 @@ class TypesenseSynonyms
      */
     public const SET_NAME = 'vusa_synonyms';
 
+    public static function setName(): string
+    {
+        return (string) config('scout.prefix').self::SET_NAME;
+    }
+
     /**
      * Multi-way synonyms - all terms are equivalent
      * When any term is searched, documents with any of the other terms will match
@@ -163,7 +168,7 @@ class TypesenseSynonyms
      */
     public static function upsertSynonymSet(Client $client): array
     {
-        return $client->synonymSets->upsert(self::SET_NAME, [
+        return $client->synonymSets->upsert(self::setName(), [
             'items' => self::buildSynonymSetItems(),
         ]);
     }
@@ -174,7 +179,7 @@ class TypesenseSynonyms
     public static function getSynonymSet(Client $client): array
     {
         try {
-            return $client->synonymSets[self::SET_NAME]->retrieve();
+            return $client->synonymSets[self::setName()]->retrieve();
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }
@@ -186,7 +191,7 @@ class TypesenseSynonyms
     public static function deleteSynonymSet(Client $client): array
     {
         try {
-            return $client->synonymSets[self::SET_NAME]->delete();
+            return $client->synonymSets[self::setName()]->delete();
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
         }

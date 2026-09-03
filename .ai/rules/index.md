@@ -21,6 +21,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Components/Tables/**,resources/js/Components/ui/data-table/** | .ai/rules/data-table.md |
 | resources/js/Components/ui/alert-dialog/**,resources/js/Components/ui/dialog/** | .ai/rules/dialog.md |
 | app/Enums/** | .ai/rules/enums.md |
+| tests/Feature/** | .ai/rules/feature.md |
 | app/Actions/Cadences/**,app/Http/Requests/UpdateInstitutionAdministratorsRequest.php | .ai/rules/http-requests.md |
 | app/Enums/AgendaItemType.php,app/Services/MeetingCompletionService.php,app/Tasks/Handlers/AgendaCompletionTaskHandler.php,resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/js-composables.md |
 | resources/js/**/*.test.ts | .ai/rules/js.md |
