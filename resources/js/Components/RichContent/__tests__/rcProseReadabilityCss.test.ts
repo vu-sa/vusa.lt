@@ -1,4 +1,4 @@
-import { globSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -30,6 +30,18 @@ function readCssImportGraph(path: string): string {
 }
 
 const css = readCssImportGraph(cssPath);
+
+function vueFilesIn(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = resolve(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return vueFilesIn(path);
+    }
+
+    return entry.isFile() && entry.name.endsWith('.vue') ? [path] : [];
+  });
+}
 
 /**
  * Returns the body of the first rule whose selector line matches, brace-balanced and
@@ -157,12 +169,14 @@ describe('text scaling', () => {
    * The site-wide setting scales the root font size, so it only reaches `rem`-based type. A
    * `text-[11px]` chip ignores the reader's choice entirely — and the public surface had twenty
    * of them.
-   */
+  */
   it('sizes public type in rem, never in px', () => {
-    const publicFiles = globSync('resources/js/{Components/Public,Pages/Public,Components/RichContent}/**/*.vue', {
-      cwd: resolve(dirname(fileURLToPath(import.meta.url)), '../../../../..'),
-      absolute: true,
-    });
+    const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../..');
+    const publicFiles = [
+      ...vueFilesIn(resolve(projectRoot, 'resources/js/Components/Public')),
+      ...vueFilesIn(resolve(projectRoot, 'resources/js/Pages/Public')),
+      ...vueFilesIn(resolve(projectRoot, 'resources/js/Components/RichContent')),
+    ];
 
     const offenders = publicFiles.filter(file => /text-\[\d+px\]/.test(readFileSync(file, 'utf-8')));
 
