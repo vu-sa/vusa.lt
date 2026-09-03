@@ -1,6 +1,15 @@
 <template>
-  <Popover @update:open="handlePopoverOpenChange">
-    <PopoverTrigger as-child>
+  <!-- Controlled (`:open`), not just listened to (`@update:open`): opening on hover means
+       something outside a click has to be able to set the state, so the popover can no longer be
+       left to manage its own open/closed internally. -->
+  <Popover :open="isPopoverOpen" @update:open="handlePopoverOpenChange">
+    <PopoverTrigger
+      as-child
+      @mouseenter="openOnHover"
+      @mouseleave="scheduleClose"
+      @focus="openOnHover"
+      @blur="scheduleClose"
+    >
       <Button
         variant="ghost"
         :size="size === 'tiny' ? 'sm' : 'default'"
@@ -22,7 +31,16 @@
         <IFluentChevronDown24Regular class="h-4 w-4 opacity-50 transition-transform duration-200" :class="{ 'rotate-180': isPopoverOpen }" />
       </Button>
     </PopoverTrigger>
-    <PopoverContent class="p-0" :class="{ 'w-[300px]': viewMode === 'list', 'w-[520px]': viewMode === 'map' }" align="start">
+    <!-- Fixed width regardless of `viewMode` — it used to grow from 300px to 520px switching into
+         map mode, which reads as the panel jumping under the cursor. -->
+    <PopoverContent
+      class="w-96 p-0"
+      align="start"
+      @mouseenter="openOnHover"
+      @mouseleave="scheduleClose"
+      @focusin="openOnHover"
+      @focusout="scheduleClose"
+    >
       <div class="flex items-center gap-2 border-b border-border p-2">
         <Button
           v-for="view in (['list', 'map'] as const)"
@@ -36,13 +54,6 @@
           <component :is="view === 'list' ? IFluentList24Regular : IFluentMap24Regular" class="h-4 w-4" />
           {{ view === 'list' ? $t('List') : $t('Map') }}
         </Button>
-
-        <Input
-          v-if="viewMode === 'map'"
-          v-model="searchQuery"
-          class="h-8 w-32 shrink-0"
-          :placeholder="`${$t('Ieškoti')}...`"
-        />
       </div>
 
       <!-- List View -->
@@ -58,19 +69,20 @@
               <button
                 type="button"
                 :class="[
-                  'group relative flex w-full cursor-pointer items-center gap-3 border-l-2 text-left transition-colors',
+                  'group relative flex w-full cursor-pointer items-center gap-3 text-left transition-colors',
                   'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
                   option.primary_institution?.image_url ? 'min-h-[4.5rem] bg-ink p-4' : 'px-4 py-2.5 hover:bg-secondary',
-                  isActivePadalinys(option.key) ? 'border-brand' : 'border-transparent',
-                  isActivePadalinys(option.key) && !option.primary_institution?.image_url && 'bg-secondary/60',
+                  isActivePadalinys(option.key) && !option.primary_institution?.image_url && 'bg-secondary',
                 ]"
                 @click="handleSelectPadalinys(option.key)"
               >
+                <!-- No rail: the active row is marked the same way a hovered one is (colour +
+                     checkmark), not by a persistent left border. -->
                 <template v-if="option.primary_institution?.image_url">
                   <img
                     :src="option.primary_institution.image_url"
                     alt=""
-                    class="absolute inset-0 size-full object-cover opacity-60 grayscale transition-transform duration-500 group-hover:scale-105"
+                    class="absolute inset-0 size-full object-cover opacity-60 grayscale"
                   >
                   <span class="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/30" />
                 </template>
@@ -79,7 +91,7 @@
                   <!-- `rounded-none` explicitly: the primitive's base is `rounded-full`, which is a
                        literal and so survives the public surface's zeroed radius scale. The design
                        has no circles. -->
-                  <AvatarFallback class="rounded-none bg-secondary text-[11px] font-bold uppercase tracking-wide text-foreground">
+                  <AvatarFallback class="rounded-none bg-secondary text-[0.6875rem] font-bold uppercase tracking-wide text-foreground">
                     {{ option.key.substring(0, 2).toUpperCase() }}
                   </AvatarFallback>
                 </Avatar>
@@ -87,7 +99,7 @@
                 <span class="relative z-10 min-w-0 flex-1">
                   <span
                     class="block truncate text-sm font-bold transition-colors"
-                    :class="option.primary_institution?.image_url ? 'text-white group-hover:text-brand-fill' : 'text-foreground group-hover:text-brand'"
+                    :class="rowNameClass(option)"
                   >
                     {{ option.label }}
                   </span>
@@ -119,7 +131,7 @@
           <PadalinysMap
             ref="mapComponentRef"
             :faculties="options_padaliniai"
-            :search-query
+            search-query=""
             :on-faculty-select="handleSelectPadalinys"
             :faculty-locations
             class="max-h-[350px] overflow-hidden"
@@ -146,7 +158,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, nextTick } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -160,7 +172,6 @@ import IFluentList24Regular from '~icons/fluent/list-24-regular';
 import type { TenantOption } from '@/Composables/useTenantOptions';
 import { useTenantOptions } from '@/Composables/useTenantOptions';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Popover, PopoverTrigger, PopoverContent } from '@/Components/ui/popover';
 import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
@@ -207,9 +218,9 @@ const facultyLocations: Record<string, FacultyLocation> = {
 };
 
 const viewMode = useStorage('padalinysSelectorViewMode', 'list'); // 'list' or 'map'
-const searchQuery = ref('');
 const hoveredLocation = ref<TenantOption | null>(null);
 const isPopoverOpen = ref(false);
+let closeTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 const { options: options_padaliniai, isActive: isActivePadalinys, switchTenant: handleSelectPadalinys, currentLabel, isSwitchAllowed } = useTenantOptions(props.prependOptions);
 
@@ -221,12 +232,50 @@ function secondaryLabel(option: TenantOption): string {
 
   return shortName.trim().toLowerCase() === (option.label ?? '').trim().toLowerCase() ? '' : shortName;
 }
+
+/**
+ * The active row is marked with the same colour a hover would use, permanently — there is no
+ * separate rail/border treatment for "selected" any more.
+ */
+function rowNameClass(option: TenantOption): string {
+  const hasImage = Boolean(option.primary_institution?.image_url);
+  const brandClass = hasImage ? 'text-brand-fill' : 'text-brand';
+
+  if (isActivePadalinys(option.key)) {
+    return brandClass;
+  }
+
+  return `${hasImage ? 'text-white' : 'text-foreground'} group-hover:${brandClass}`;
+}
+
 const isDisabled = computed(() => !isSwitchAllowed.value);
+
+/** Opens on hover; a real click still toggles via `handlePopoverOpenChange` below. */
+function openOnHover(): void {
+  if (closeTimeoutId) {
+    clearTimeout(closeTimeoutId);
+    closeTimeoutId = null;
+  }
+
+  handlePopoverOpenChange(true);
+}
+
+/** Short grace period so moving the cursor from the trigger down into the panel doesn't close it. */
+function scheduleClose(): void {
+  closeTimeoutId = setTimeout(() => {
+    handlePopoverOpenChange(false);
+  }, 150);
+}
+
+onBeforeUnmount(() => {
+  if (closeTimeoutId) {
+    clearTimeout(closeTimeoutId);
+  }
+});
 
 // Set view mode and initialize map if needed
 const setViewMode = (mode: 'list' | 'map') => {
   viewMode.value = mode;
-  searchQuery.value = '';
 
   if (mode === 'map') {
     // Give DOM time to update before initializing map
@@ -255,10 +304,6 @@ const handlePopoverOpenChange = (open: boolean) => {
         }, 100);
       });
     }
-  }
-  else {
-    // Reset the search when popover is closed
-    searchQuery.value = '';
   }
 };
 </script>

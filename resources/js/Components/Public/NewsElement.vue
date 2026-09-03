@@ -50,34 +50,10 @@
       </p>
 
       <div v-else class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-10">
-        <!-- Featured: the one article that gets a picture at full width. Its image keeps its
-             colour — the grayscale treatment is for photography sitting *behind* type. -->
-        <SmartLink :href="getNewsRoute(featured)" prefetch class="group flex flex-col">
-          <MediaFrame
-            :src="getImageSrc(featured.image)"
-            :alt="featured.title"
-            ratio="16/10"
-            :grayscale="false"
-            hover-zoom
-            eager
-            class="bg-secondary"
-          >
-            <TagChip v-if="featured.category" class="absolute left-0 top-0" :label="featured.category" />
-          </MediaFrame>
-          <div class="mt-5 flex flex-1 flex-col">
-            <span v-if="featured.publish_time" class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-              {{ longDate(featured.publish_time) }}
-            </span>
-            <h3 class="mt-3 text-pretty text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-brand sm:text-[1.7rem]">
-              {{ featured.title }}
-            </h3>
-            <div class="mt-3 line-clamp-3 text-pretty leading-relaxed text-muted-foreground" v-html="featured.short" />
-            <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand">
-              {{ $t('Skaityti daugiau') }}
-              <IFluentArrowUpRight16Regular class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </span>
-          </div>
-        </SmartLink>
+        <!-- Featured: the one article that gets a picture at full width. `NewsCard` owns this
+             treatment — the article page's related grid and the archive render the same card at
+             its smaller size, and keeping one component is what stops the three drifting apart. -->
+        <NewsCard :news="featured" size="lg" eager />
 
         <!-- The rest as a hairline list. Rows are separate links, not slide selectors: the
              design has no carousel here, so every headline is one click from the reader. -->
@@ -98,7 +74,7 @@
               class="w-32 shrink-0 sm:w-44"
             />
             <div class="flex flex-1 flex-col justify-center gap-1.5">
-              <span v-if="item.category" class="text-[11px] font-bold uppercase tracking-[0.18em] text-brand">
+              <span v-if="item.category" class="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-brand">
                 {{ item.category }}
               </span>
               <h3 class="text-pretty font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
@@ -123,10 +99,11 @@ import { usePage } from '@inertiajs/vue3';
 
 import SmartLink from './SmartLink.vue';
 
+import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import type { News, NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { useNewsFetch } from '@/Services/ContentService';
-import { EyebrowLabel, MediaFrame, TagChip } from '@/Components/Public/Base';
+import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
 import { Skeleton } from '@/Components/ui/skeleton';
 
 // Fallback image for news without images

@@ -46,18 +46,26 @@ class NewsController extends PublicController
             modifiedTime: $news->updated_at,
         );
 
-        // Fetch related articles from the same tenant
+        // Fetch related articles from the same tenant. The shape matches `NewsItem`
+        // (resources/js/Types/contentParts.ts) so they render through the same `NewsCard` as the
+        // homepage's news block and the archive — image and category included, since the design
+        // shows these as cards rather than as a list of headlines.
         $relatedArticles = News::where('tenant_id', $news->tenant_id)
             ->where('id', '!=', $news->id)
             ->where('lang', $news->lang)
             ->where('draft', false)
             ->where('publish_time', '<=', now())
+            ->with('category:id,name')
             ->orderByDesc('publish_time')
             ->take(3)
-            ->get(['id', 'title', 'permalink', 'publish_time', 'lang'])
+            ->get(['id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'category_id'])
             ->map(fn ($article) => [
                 'id' => $article->id,
                 'title' => $article->title,
+                'short' => $article->short,
+                'lang' => $article->lang,
+                'image' => $article->getImageUrl(),
+                'category' => $article->category?->name,
                 'permalink' => $article->permalink,
                 'publish_time' => $article->publish_time,
                 'url' => LocalizedRouteSlugs::route('news', [
@@ -90,21 +98,14 @@ class NewsController extends PublicController
             // the most obvious use of the new dynamic block types inside a news body.
             'resolvedParts' => (object) $this->resolveContentParts($news->content),
             'article' => [
-                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'layout', 'show_breadcrumbs', 'highlights'),
+                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'show_breadcrumbs', 'highlights'),
                 'tags' => $news->tags->map(fn ($tag) => [
                     'id' => $tag->id,
                     'name' => $tag->name,
                     'alias' => $tag->alias,
                 ]),
                 'content' => $news->content,
-                /* 'content' => [ */
-                /*    ...$news->content->toArray(), */
-                /*    'parts' => $news->content->parts->map(function ($part) { */
-                /*        return [ */
-                /*            ...$part->parseTipTapElements()->toArray(), */
-                /*        ]; */
-                /*    }), */
-                /* ], */
+                'reading_time' => $news->readingTimeMinutes(),
                 // Use getImageUrl() for public display with fallback for missing images
                 'image' => $news->getImageUrl(),
                 'tenant' => $news->tenant->shortname,

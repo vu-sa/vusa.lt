@@ -27,11 +27,14 @@
       :aria-label="$t('navigation.menu')"
     >
       <div class="flex h-16 shrink-0 items-center justify-between border-b border-border px-5 sm:px-6">
+        <!-- `inline-flex items-center`: see the same fix in `MainNavigation.vue` — a plain `<a>`
+             is taller than the logo it wraps unless it's a flex container itself. -->
         <SmartLink
           prefetch
           target="_self"
           :href="`${page.props.app.url}/${page.props.app.locale}`"
           :title="$t('Grįžti į pagrindinį puslapį')"
+          class="inline-flex items-center"
           @click="close"
         >
           <HeaderWordmark />

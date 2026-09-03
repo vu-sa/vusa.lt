@@ -66,6 +66,8 @@ export enum ContentPartEnum {
   EVENT_LIST = "EVENT_LIST",
   PERSON_QUOTE = "PERSON_QUOTE",
   SECTION = "SECTION",
+  PROCESS_STEPS = "PROCESS_STEPS",
+  CTA_BAND = "CTA_BAND",
   SPACER = "SPACER",
   TIMETABLE = "TIMETABLE",
 }
@@ -134,12 +136,6 @@ export enum ModelEnum {
   TENANT = "tenant",
   TYPE = "type",
   USER = "user",
-}
-export enum NewsLayoutEnum {
-  MODERN = "modern",
-  CLASSIC = "classic",
-  IMMERSIVE = "immersive",
-  HEADLINE = "headline",
 }
 export enum NotificationCategory {
   Comment = "comment",

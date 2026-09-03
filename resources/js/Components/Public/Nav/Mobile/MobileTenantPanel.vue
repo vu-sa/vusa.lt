@@ -11,7 +11,7 @@
           <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
           <!-- `rounded-none` explicitly: the primitive's base is `rounded-full`, a literal that
                survives the public surface's zeroed radius scale. -->
-          <AvatarFallback class="rounded-none bg-secondary text-[11px] font-bold uppercase tracking-wide text-foreground">
+          <AvatarFallback class="rounded-none bg-secondary text-[0.6875rem] font-bold uppercase tracking-wide text-foreground">
             {{ option.key.substring(0, 2).toUpperCase() }}
           </AvatarFallback>
         </Avatar>

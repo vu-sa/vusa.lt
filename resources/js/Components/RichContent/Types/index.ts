@@ -27,6 +27,8 @@ import PersonQuoteIcon from '~icons/fluent/text-quote24-regular';
 import SectionIcon from '~icons/fluent/text-header-1-24-regular';
 import SpacerIcon from '~icons/fluent/align-space-evenly-vertical-24-regular';
 import TimetableIcon from '~icons/fluent/calendar-clock20-regular';
+import ProcessStepsIcon from '~icons/fluent/text-number-list-ltr-24-regular';
+import CtaBandIcon from '~icons/fluent/megaphone-loud-24-regular';
 
 /**
  * Canvas column a block resolves to (see `.rc-canvas` in app.css). `prose` is the
@@ -692,6 +694,65 @@ export const contentTypeRegistry: Record<string, ContentType> = {
         <div class="w-full py-12 px-4 flex flex-col items-center gap-3">
           <Skeleton class="h-7 w-64 max-w-full" />
           <Skeleton class="h-4 w-40" />
+        </div>
+      `,
+    },
+  },
+  'process-steps': {
+    value: 'process-steps',
+    label: 'Žingsniai',
+    icon: ProcessStepsIcon,
+    description: 'Sunumeruoti proceso žingsniai',
+    isNew: true,
+    category: 'section',
+    defaultWidth: 'wide',
+    allowedWidths: ['content', 'wide', 'full'],
+    selfSpaced: true,
+    defaultContent: () => ([
+      { title: '', text: '' },
+      { title: '', text: '' },
+      { title: '', text: '' },
+    ]),
+    defaultOptions: () => ({ columns: 3, background: 'none', padding: 'lg', align: 'start' }),
+    usesSectionChrome: true,
+    editor: defineAsyncComponent(() => import('./ProcessStepsEditor.vue')),
+    display: defineAsyncComponent(() => import('../RCProcessSteps/ProcessStepsDisplay.vue')),
+    skeleton: {
+      height: 'min-h-[160px]',
+      template: `
+        <div class="grid w-full gap-8 py-8 sm:grid-cols-3">
+          <div v-for="i in 3" :key="i" class="space-y-3">
+            <Skeleton class="h-8 w-12" />
+            <Skeleton class="h-5 w-32" />
+            <Skeleton class="h-12 w-full" />
+          </div>
+        </div>
+      `,
+    },
+  },
+  'cta-band': {
+    value: 'cta-band',
+    label: 'Kvietimas veikti',
+    icon: CtaBandIcon,
+    description: 'Firminės spalvos juosta su antrašte ir mygtuku',
+    isNew: true,
+    category: 'section',
+    defaultWidth: 'full',
+    // Locked to full: the band paints its own ground edge to edge, so a narrower canvas column
+    // would just clip the fill without changing where the copy sits.
+    allowedWidths: ['full'],
+    selfSpaced: true,
+    defaultContent: () => ({ heading: '', text: '', items: [], button: { label: '', href: '' } }),
+    defaultOptions: () => ({ bleed: true }),
+    editor: defineAsyncComponent(() => import('./CtaBandEditor.vue')),
+    display: defineAsyncComponent(() => import('../RCCtaBand/CtaBandDisplay.vue')),
+    skeleton: {
+      height: 'min-h-[160px]',
+      template: `
+        <div class="flex w-full flex-col gap-4 py-12">
+          <Skeleton class="h-9 w-72 max-w-full" />
+          <Skeleton class="h-5 w-full max-w-xl" />
+          <Skeleton class="h-12 w-48" />
         </div>
       `,
     },

@@ -4,10 +4,11 @@
  * (`RCSection/SectionDisplay.vue`) and `HeroElement.vue` can reuse the exact same
  * background/padding/rounding vocabulary instead of re-declaring their own subset.
  */
-export type SectionBackground = 'none' | 'muted' | 'contrast' | 'gradient';
+export type SectionBackground = 'none' | 'muted' | 'contrast' | 'gradient' | 'brand' | 'ink';
 export type SectionPadding = 'none' | 'sm' | 'md' | 'lg';
 export type SectionInner = 'prose' | 'content' | 'wide' | 'full';
 export type SectionRounded = 'none' | 'sm' | 'md' | 'lg';
+export type SectionDivider = 'none' | 'top' | 'bottom' | 'both';
 
 /** Semantic heading level for a section title. Matches the levels offered in RCSectionOptions. */
 export type SectionHeadingLevel = 2 | 3 | 4;
@@ -35,6 +36,23 @@ export const BACKGROUND_CLASS: Record<SectionBackground, string> = {
   // A hair more presence than `muted` without becoming a card — for a section that wants to
   // read as its own panel.
   gradient: 'bg-gradient-to-br from-secondary/60 to-secondary',
+  // The two loud grounds, for the one call-to-action band a page is allowed. Both carry their
+  // own foreground, since the page's `--foreground` would be unreadable on either: `text-*`
+  // utilities inside a `brand`/`ink` section inherit from here unless they say otherwise.
+  brand: 'bg-brand-fill text-brand-foreground',
+  ink: 'bg-ink text-[oklch(0.98_0_0)]',
+};
+
+/**
+ * A section's hairline edges. The surface separates bands with a 1px rule rather than with
+ * shadows or gaps, so a tinted section usually wants at least one — otherwise the tint simply
+ * starts and stops mid-page. Same map `Public/Base/SectionBand` uses.
+ */
+export const DIVIDER_CLASS: Record<SectionDivider, string> = {
+  none: '',
+  top: 'border-t border-border',
+  bottom: 'border-b border-border',
+  both: 'border-y border-border',
 };
 
 export const PADDING_CLASS: Record<SectionPadding, string> = {

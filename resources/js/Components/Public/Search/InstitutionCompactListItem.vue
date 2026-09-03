@@ -37,7 +37,7 @@
           <div class="flex items-center gap-2 text-xs text-muted-foreground ml-13">
             <!-- Tenant Badge -->
             <Badge v-if="institution.tenant?.shortname" variant="secondary"
-              class="text-[10px] font-medium px-1.5 py-0 flex-shrink-0">
+              class="text-[0.625rem] font-medium px-1.5 py-0 flex-shrink-0">
               {{ institution.tenant.shortname }}
             </Badge>
 

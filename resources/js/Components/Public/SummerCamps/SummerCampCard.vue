@@ -17,7 +17,7 @@
         <div
           class="flex min-w-11 flex-col items-center justify-center rounded-lg bg-vusa-red/10 px-2 py-1.5 text-center text-vusa-red dark:bg-vusa-red/20"
         >
-          <span class="text-[9px] font-semibold uppercase leading-none">
+          <span class="text-[0.5625rem] font-semibold uppercase leading-none">
             {{ formatMonthShort(event.date, locale) }}
           </span>
           <span class="mt-0.5 text-base font-bold leading-none tabular-nums">

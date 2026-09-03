@@ -2,9 +2,16 @@
   <!-- scroll-mt-32 matches .rc-prose's heading offset — the ToC's scroll-to logic uses a
        160px JS offset (TableOfContents.vue) which already runs slightly ahead of the
        128px CSS one on tiptap headings; kept consistent with that existing behavior. -->
-  <section :class="['relative scroll-mt-32', PADDING_CLASS[padding], BACKGROUND_CLASS[background], ROUNDED_CLASS[rounded]]">
+  <section :class="[
+    'relative scroll-mt-32',
+    PADDING_CLASS[padding],
+    BACKGROUND_CLASS[background],
+    DIVIDER_CLASS[divider],
+    ROUNDED_CLASS[rounded],
+    bleed && 'rc-viewport',
+  ]">
     <div :class="['container relative z-10 mx-auto px-4', INNER_CLASS[inner]]">
-      <SectionHeader v-if="title" :title :subtitle :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" />
+      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" />
       <slot />
     </div>
   </section>
@@ -24,19 +31,30 @@ import { computed } from 'vue';
 import SectionHeader from '@/Components/ui/SectionHeader.vue';
 import { latinizeId } from '@/Utils/String';
 import {
-  BACKGROUND_CLASS, INNER_CLASS, PADDING_CLASS, ROUNDED_CLASS,
-  type SectionBackground, type SectionHeadingLevel, type SectionInner, type SectionPadding, type SectionRounded,
+  BACKGROUND_CLASS, DIVIDER_CLASS, INNER_CLASS, PADDING_CLASS, ROUNDED_CLASS,
+  type SectionBackground, type SectionDivider, type SectionHeadingLevel, type SectionInner,
+  type SectionPadding, type SectionRounded,
 } from './sectionClasses';
 
 const props = withDefaults(defineProps<{
   title?: string;
   subtitle?: string;
+  /** Brand kicker above the title — forwarded to SectionHeader. */
+  eyebrow?: string;
   background?: SectionBackground;
   padding?: SectionPadding;
   /** Inner content max-width — independent of the canvas column the block itself sits in. */
   inner?: SectionInner;
   align?: 'center' | 'start';
   rounded?: SectionRounded;
+  /** Hairline edges separating this band from its neighbours. */
+  divider?: SectionDivider;
+  /**
+   * Break out to the full viewport width. A tinted band that stops at the content measure reads
+   * as a panel; the design's bands run edge to edge. `.rc-viewport` escapes the rc-canvas, the
+   * `.wrapper` grid and PublicLayout's `.container` in one go.
+   */
+  bleed?: boolean;
   /** Semantic heading level for the title — forwarded to SectionHeader. */
   headingLevel?: SectionHeadingLevel;
   /** Whether to render the separator bar beneath the title. */
@@ -47,6 +65,7 @@ const props = withDefaults(defineProps<{
   inner: 'wide',
   align: 'center',
   rounded: 'none',
+  divider: 'none',
   headingLevel: 2,
   showSeparator: true,
 });

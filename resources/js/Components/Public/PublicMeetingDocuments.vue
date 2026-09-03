@@ -15,7 +15,7 @@
                  other locale rather than showing nothing, so say which one this is. -->
             <span
               v-if="isOtherLanguage(document)"
-              class="ml-1.5 align-middle rounded border border-zinc-300 px-1 py-px text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+              class="ml-1.5 align-middle rounded border border-zinc-300 px-1 py-px text-[0.625rem] font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
             >{{ document.language_code }}</span>
           </span>
           <span class="block text-xs text-zinc-500 dark:text-zinc-400">

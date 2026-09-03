@@ -61,7 +61,7 @@
               <Avatar class="h-4 w-4 rounded-lg ring-1 ring-border">
                 <AvatarImage v-if="$page.props.auth.user.profile_photo_path"
                   :src="$page.props.auth.user.profile_photo_path" :alt="$page.props.auth.user.name" />
-                <AvatarFallback class="bg-secondary text-[7px] font-semibold text-foreground">
+                <AvatarFallback class="bg-secondary text-[0.4375rem] font-semibold text-foreground">
                   {{ $page.props.auth.user.name.substring(0, 2).toUpperCase() }}
                 </AvatarFallback>
               </Avatar>

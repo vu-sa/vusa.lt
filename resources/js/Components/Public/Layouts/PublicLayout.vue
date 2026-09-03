@@ -24,8 +24,12 @@
     <div
       class="flex-1 flex flex-col antialiased container px-0 @container/main">
       <main id="main-content" class="pb-8" :class="mainContentMarginClass">
-        <!-- Centralized breadcrumb display -->
-        <div v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass">
+        <!-- Centralized breadcrumb display. Skipped when the page has claimed the trail for its
+             own title band (placement: 'band'), so a detail page shows one trail, not two. -->
+        <div
+          v-if="breadcrumbState.breadcrumbs.value.length > 0 && breadcrumbState.placement.value === 'layout'"
+          :class="breadcrumbWrapperClass"
+        >
           <PublicBreadcrumbs />
         </div>
 

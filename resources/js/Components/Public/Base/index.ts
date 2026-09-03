@@ -29,6 +29,8 @@ export { default as HairlineRow } from './HairlineRow.vue';
 export { default as HeaderWordmark } from './HeaderWordmark.vue';
 export { default as MediaFrame } from './MediaFrame.vue';
 export { default as PageTitleBand } from './PageTitleBand.vue';
+export { default as ReadingSizeControl } from './ReadingSizeControl.vue';
 export { default as SectionBand } from './SectionBand.vue';
+export { default as ShareButton } from './ShareButton.vue';
 export { default as StatCell } from './StatCell.vue';
 export { default as TagChip } from './TagChip.vue';

@@ -49,6 +49,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
 import Button from '@/Components/ui/button/Button.vue';
+import { useShareLink } from '@/Composables/useShareLink';
 
 const props = defineProps<{
   registrationUrl?: string | null;
@@ -66,28 +67,10 @@ const secondaryClasses = computed(() =>
     : 'gap-2',
 );
 
-const handleShare = async () => {
-  const shareData = {
-    title: props.shareTitle,
-    text: props.shareTitle,
-    url: window.location.href,
-  };
+// Share/clipboard behaviour lives in useShareLink — it is shared with the news article's own
+// share row, and it fixes what this used to do: a dismissed share sheet copied the link anyway,
+// a successful copy said nothing, and a missing `navigator.clipboard` threw to the console.
+const { share } = useShareLink();
 
-  if (typeof navigator !== 'undefined' && 'share' in navigator) {
-    try {
-      await navigator.share(shareData);
-      return;
-    }
-    catch {
-      // Dismissed or unsupported — fall through to the clipboard.
-    }
-  }
-
-  try {
-    await navigator.clipboard.writeText(window.location.href);
-  }
-  catch (error) {
-    console.error('Failed to copy to clipboard:', error);
-  }
-};
+const handleShare = () => share({ title: props.shareTitle });
 </script>

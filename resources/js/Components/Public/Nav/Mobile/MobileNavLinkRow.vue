@@ -25,7 +25,7 @@ class="flex min-h-11 items-center gap-3 border-t border-border/50 px-4 py-3 tran
       <div class="inline-flex items-center gap-2">
         <span :class="link.type !== 'category-link' && 'font-bold text-foreground'">{{ link.name }}</span>
         <Icon v-if="link.new_tab" icon="fluent:open-16-regular" class="size-3.5 opacity-60" />
-        <Badge v-if="link.small_text" :variant="link.badge_variant ?? 'rose'" class="px-2 py-0 text-[10px]">
+        <Badge v-if="link.small_text" :variant="link.badge_variant ?? 'rose'" class="px-2 py-0 text-[0.625rem]">
           {{ link.small_text }}
         </Badge>
       </div>

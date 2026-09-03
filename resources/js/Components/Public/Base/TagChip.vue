@@ -3,7 +3,7 @@
     :is="href ? 'a' : 'span'"
     :href
     :class="cn(
-      'inline-flex items-center px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em]',
+      'inline-flex items-center px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.14em]',
       variantClass,
       href && 'transition-colors',
       props.class,

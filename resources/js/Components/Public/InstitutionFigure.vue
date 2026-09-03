@@ -40,7 +40,7 @@
                       class="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50"
                       @click.stop>
                       <ISimpleIconsFacebook class="size-3" />
-                      <span class="text-[10px] font-medium">{{ extractSocialHandle(institution.facebook_url, 'facebook')
+                      <span class="text-[0.625rem] font-medium">{{ extractSocialHandle(institution.facebook_url, 'facebook')
                       }}</span>
                     </a>
                     <a v-if="institution.instagram_url" :href="institution.instagram_url" target="_blank"
@@ -48,7 +48,7 @@
                       class="inline-flex items-center gap-1 rounded-md bg-pink-50 px-2 py-0.5 text-xs font-medium text-pink-700 transition-colors hover:bg-pink-100 dark:bg-pink-900/30 dark:text-pink-300 dark:hover:bg-pink-900/50"
                       @click.stop>
                       <ISimpleIconsInstagram class="size-3" />
-                      <span class="text-[10px] font-medium">{{ extractSocialHandle(institution.instagram_url,
+                      <span class="text-[0.625rem] font-medium">{{ extractSocialHandle(institution.instagram_url,
                                                                                    'instagram') }}</span>
                     </a>
                   </div>

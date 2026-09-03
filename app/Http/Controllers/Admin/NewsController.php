@@ -133,7 +133,6 @@ class NewsController extends AdminController
             'image_author' => $request->image_author,
             'draft' => $request->draft ?? 0,
             'publish_time' => $request->publish_time,
-            'layout' => $request->layout ?? 'modern',
             'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),
             'highlights' => $request->highlights ?? [],
             'tenant_id' => $tenant_id,
@@ -182,7 +181,6 @@ class NewsController extends AdminController
                 'tags' => $news->tags->pluck('id')->toArray(),
                 'image_author' => $news->image_author,
                 'publish_time' => $news->publish_time,
-                'layout' => $news->layout ?? 'modern',
                 'show_breadcrumbs' => $news->show_breadcrumbs ?? true,
                 'highlights' => $news->highlights ?? [],
             ],
@@ -205,7 +203,6 @@ class NewsController extends AdminController
                 'short',
                 'image',
                 'image_author',
-                'layout',
                 'highlights',
             ),
             // Sent as an explicit boolean by Inertia's useForm; boolean() also covers

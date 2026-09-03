@@ -34,8 +34,8 @@
         H{{ sectionLevel }}
       </Badge>
 
-      <span v-if="content?.id" class="shrink-0 text-[10px] text-zinc-400">#{{ content.id }}</span>
-      <span v-else class="shrink-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">{{ $t('New') }}</span>
+      <span v-if="content?.id" class="shrink-0 text-[0.625rem] text-zinc-400">#{{ content.id }}</span>
+      <span v-else class="shrink-0 text-[0.625rem] font-medium text-emerald-600 dark:text-emerald-400">{{ $t('New') }}</span>
 
       <RCWidthPicker
         v-if="allowedWidths.length > 1"

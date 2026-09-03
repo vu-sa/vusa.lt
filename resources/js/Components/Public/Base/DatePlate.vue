@@ -6,7 +6,7 @@
     )"
     data-slot="date-plate"
   >
-    <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+    <span class="text-[0.625rem] font-bold uppercase tracking-[0.16em] text-muted-foreground">
       {{ monthLabel }}
     </span>
     <span class="mt-0.5 text-xl font-bold text-foreground">{{ dayLabel }}</span>

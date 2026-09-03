@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { globSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -66,20 +66,21 @@ describe('.rc-prose readability rules', () => {
   });
 
   it('sets link colour in CSS so stored HTML carrying text-blue-500 is corrected', () => {
-    expect(prose).toMatch(/@apply text-vusa-red;/);
+    expect(prose).toMatch(/@apply text-brand;/);
   });
 
   /**
-   * Regression guard: written as `@apply … dark:text-vusa-red-on-dark` *inside* the
-   * nested `a` rule, this declaration compiled away silently — no error, just an
-   * unstyled dark-mode link. `@apply` with a variant only survives at the top level,
-   * so the dark colour must stay a plain selector.
+   * Regression guard, generalised. It began as one declaration: `dark:text-vusa-red-on-dark`
+   * written inside the nested `a` rule compiled away silently — no error, just an unstyled
+   * dark-mode link, because `@apply` with a variant only survives at the top level.
+   *
+   * The block is now token-driven, so it needs no `dark:` variant at all — `--brand` and
+   * `--border` already swap per theme. That makes the guard stronger than it was: any `dark:`
+   * reappearing inside this block is either the compile-away trap or a hardcoded colour that
+   * should have been a token.
    */
-  it('sets the dark-mode link colour from a top-level rule, not a nested @apply', () => {
-    expect(css).toMatch(
-      /\.dark :is\(\.rc-prose, \.rc-prose-editing\) a\s*\{\s*color:\s*var\(--color-vusa-red-on-dark\);/,
-    );
-    expect(prose).not.toMatch(/dark:text-vusa-red-on-dark/);
+  it('carries no dark: variant inside the shared block — tokens swap themselves', () => {
+    expect(prose).not.toMatch(/dark:/);
   });
 
   it('wraps links with break-words, never break-all', () => {
@@ -87,8 +88,22 @@ describe('.rc-prose readability rules', () => {
     expect(prose).not.toMatch(/\ba\s*\{[^}]*break-all/);
   });
 
-  it('gives the blockquote bar a dark-mode border colour', () => {
-    expect(prose).toMatch(/blockquote\s*\{[^}]*dark:border-zinc-600/);
+  it('hangs the blockquote off the brand rule', () => {
+    expect(prose).toMatch(/blockquote\s*\{[^}]*border-brand/);
+  });
+
+  /**
+   * Body copy sits one step back from headings and emphasis — the design's two-weight reading
+   * voice. Scoped to the public surface on purpose: `.rc-prose-editing` is also the admin Tiptap
+   * root, and muting the text you are typing is the wrong call (and a visible admin change).
+   */
+  it('mutes public body copy while keeping headings and emphasis at full strength', () => {
+    expect(css).toMatch(
+      /\[data-surface="public"\] :is\(\.rc-prose, \.rc-prose-editing\)\s*\{\s*color:\s*var\(--muted-foreground\);/,
+    );
+    expect(css).toMatch(
+      /\[data-surface="public"\] :is\(\.rc-prose, \.rc-prose-editing\) :is\(h1, h2, h3, h4, h5, h6, strong, b, th\)\s*\{\s*color:\s*var\(--foreground\);/,
+    );
   });
 
   it('spaces consecutive paragraphs inside a blockquote', () => {
@@ -119,5 +134,51 @@ describe('.typography legacy block', () => {
 
     expect(typography).toMatch(/\ba\s*\{[^}]*break-words/);
     expect(typography).not.toMatch(/break-all/);
+  });
+});
+
+/**
+ * The two independent text scales, and the trap each one hides.
+ *
+ * jsdom resolves no cascade, so the rendered sizes are checked in a real browser
+ * (`.design-reference/probe-a11y-scale.mjs`, `probe-reading-headings.mjs`). What is assertable
+ * here is the wiring — and the wiring is exactly what broke twice while building this.
+ */
+describe('text scaling', () => {
+  const css = readFileSync(cssPath, 'utf-8');
+
+  /**
+   * The site-wide setting scales the root font size, so it only reaches `rem`-based type. A
+   * `text-[11px]` chip ignores the reader's choice entirely — and the public surface had twenty
+   * of them.
+   */
+  it('sizes public type in rem, never in px', () => {
+    const publicFiles = globSync('resources/js/{Components/Public,Pages/Public,Components/RichContent}/**/*.vue', {
+      cwd: resolve(dirname(fileURLToPath(import.meta.url)), '../../../../..'),
+      absolute: true,
+    });
+
+    const offenders = publicFiles.filter(file => /text-\[\d+px\]/.test(readFileSync(file, 'utf-8')));
+
+    expect(offenders).toEqual([]);
+  });
+
+  /**
+   * A heading has a font-size of its own, so the `calc(1em * scale)` that scales paragraphs does
+   * not reach it — and a per-element override would have to restate every level, every breakpoint
+   * and every authored `.rc-h-*` size, and would still lose on specificity. Redefining Tailwind's
+   * own `--text-*` tokens inside the scope moves all of them at once. Losing this block is how the
+   * hierarchy silently inverts at the largest step.
+   */
+  it('scales headings by redefining the --text-* scale, not per element', () => {
+    const readingScale = ruleBody(/^\.reading-scale\s*\{/m);
+
+    expect(readingScale).toMatch(/--text-3xl:\s*calc\(1\.875rem \* var\(--reading-scale, 1\)\)/);
+    expect(readingScale).toMatch(/--text-base:\s*calc\(1rem \* var\(--reading-scale, 1\)\)/);
+  });
+
+  /** The lead's size comes from a `text-*` utility, so the paragraph rule would scale it twice. */
+  it('opts the lead out of the paragraph multiplier', () => {
+    expect(ruleBody(/^\.rc-lead>p\s*\{/m)).toMatch(/font-size:\s*inherit/);
   });
 });

@@ -17,6 +17,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Actions/**,app/Models/InstitutionAdministrator.php,app/Services/CommentableMentionResolver.php,app/Console/Commands/SendMeetingReminders.php | .ai/rules/console-commands.md |
 | app/Models/Meeting.php,app/Models/Vote.php,app/Models/Pivots/AgendaItem.php,app/Http/Requests/UpdateAgendaItemRequest.php,app/Http/Controllers/Admin/AgendaItemController.php | .ai/rules/controllers-admin.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
+| resources/css/app.css | .ai/rules/css.md |
 | resources/js/Components/Tables/**,resources/js/Components/ui/data-table/** | .ai/rules/data-table.md |
 | resources/js/Components/ui/alert-dialog/**,resources/js/Components/ui/dialog/** | .ai/rules/dialog.md |
 | app/Enums/** | .ai/rules/enums.md |
@@ -28,6 +29,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Models/**, app/Models/Tenant.php, app/Models/Calendar.php | .ai/rules/models.md |
 | app/Http/Controllers/Admin/MailQueueController.php,app/Console/Commands/PruneNotificationDigests.php,resources/js/Pages/Admin/MailQueue.vue | .ai/rules/pages-admin.md |
 | app/Providers/** | .ai/rules/providers.md |
+| resources/js/**/Public/** | .ai/rules/public.md |
 | app/Http/Requests/** | .ai/rules/requests.md |
 | routes/api.php | .ai/rules/routes.md |
 | app/Actions/ResolveTaskAudience.php,app/Listeners/HandleTaskCreated.php,app/Actions/Schedulable/TaskNotifier.php,app/Console/Commands/SendTaskOverdueReminders.php | .ai/rules/schedulable-console-commands.md |

@@ -159,12 +159,19 @@
   --secondary-foreground: oklch(0.2 0.008 70);
   --muted: oklch(0.93 0.006 85);
   --muted-foreground: oklch(0.46 0.01 75);
+  /* Long-form body copy: one step back from `--foreground`, but not as far back as
+     `--muted-foreground`, which is sized for labels and metadata. At 0.46 on the 0.965 canvas it
+     passes AA comfortably and still reads as too light across a full article — a paragraph is
+     read for minutes, a timestamp for a second. */
+  --prose-foreground: oklch(0.315 0.012 75);
   /* shadcn semantics: the hover/lifted surface, NOT the brand. Matches --secondary. */
   --accent: oklch(0.925 0.006 85);
   --accent-foreground: oklch(0.2 0.008 70);
   --destructive: oklch(0.55 0.19 27);
-  --border: oklch(0.855 0.008 80);
-  --input: oklch(0.855 0.008 80);
+  /* Was oklch(0.855 0.008 80) — read as too faint against the 0.965 canvas (the header's own
+     bottom border was the complaint, but every hairline on the surface shares this token). */
+  --border: oklch(0.76 0.01 78);
+  --input: oklch(0.76 0.01 78);
   --ring: oklch(0.48 0.18 25);
 
   /* Cornery, not round — a hard rule of the design. `rounded-full` is unaffected by this and
@@ -200,6 +207,9 @@
   --secondary-foreground: oklch(0.955 0.004 85);
   --muted: oklch(0.225 0.006 70);
   --muted-foreground: oklch(0.68 0.008 78);
+  /* Dark mode needs no separate step: on near-black, 0.68 already reads as body copy rather than
+     as metadata. Defined anyway so the token exists in both themes. */
+  --prose-foreground: oklch(0.74 0.008 78);
   --accent: oklch(0.225 0.006 70);
   --accent-foreground: oklch(0.955 0.004 85);
   --destructive: oklch(0.62 0.2 27);
@@ -290,6 +300,24 @@
   }
 }
 
+/* The ground a detail page's title band sits on.
+
+   Theme-aware rather than the prototype's hardcoded near-black: a black slab above warm paper is
+   the one place the v0 screenshots (dark-mode only) do not tell you what light mode should do,
+   and in light mode it reads as a foreign object rather than as a masthead. Light gets the same
+   warm tint every other band on the surface uses; dark keeps the near-black `--ink` slab, a
+   touch darker than the canvas, exactly as the design shows.
+
+   Because both grounds follow the theme, everything inside the band can use the ordinary tokens —
+   `text-foreground`, `text-muted-foreground`, `text-brand` — and resolves correctly in both. */
+.band-masthead {
+  background-color: color-mix(in oklch, var(--secondary) 40%, transparent);
+}
+
+.dark .band-masthead {
+  background-color: var(--ink);
+}
+
 /* ------------------------------------------------------------------ */
 /* Accessibility preferences (public a11y menu)                        */
 /* ------------------------------------------------------------------ */
@@ -340,10 +368,38 @@ html.a11y-contrast[data-surface="public"]:not(.dark) {
   }
 }
 
-/* Article-scoped reading size (the per-article stepper on news pages) — only the story's own
-   body text scales, independently of the global a11y setting. */
-.reading-scale p,
-.reading-scale li {
+/* Article-scoped reading size (the per-article stepper on news pages) — only the story's own text
+   scales, independently of the global a11y setting.
+
+   Headings scale with the paragraphs rather than staying put. Leaving them fixed inverts the
+   hierarchy: at the largest step the body overtakes an `h3` and the article stops looking
+   structured.
+
+   They cannot be scaled the same way the paragraphs are. A paragraph has no font-size of its own,
+   so `calc(1em * scale)` multiplies what it inherits; a heading's size comes from a `text-*`
+   utility, and there is no CSS expression for "whatever this element already computes to". A
+   per-element override would have to restate every level *and every breakpoint* of the prose
+   scale, and would still lose to the `.rc-h-*` authored sizes on specificity.
+
+   Tailwind v4 compiles `text-3xl` to `font-size: var(--text-3xl)`, so redefining the scale inside
+   this scope moves every heading, every authored `.rc-h-*` size and every responsive step at once,
+   with nothing restated and no specificity fight. The stepper control sits outside this element
+   (see ReadingSizeControl.vue) so the control does not grow along with the text it controls. */
+.reading-scale {
+  --text-xs: calc(0.75rem * var(--reading-scale, 1));
+  --text-sm: calc(0.875rem * var(--reading-scale, 1));
+  --text-base: calc(1rem * var(--reading-scale, 1));
+  --text-lg: calc(1.125rem * var(--reading-scale, 1));
+  --text-xl: calc(1.25rem * var(--reading-scale, 1));
+  --text-2xl: calc(1.5rem * var(--reading-scale, 1));
+  --text-3xl: calc(1.875rem * var(--reading-scale, 1));
+  --text-4xl: calc(2.25rem * var(--reading-scale, 1));
+  --text-5xl: calc(3rem * var(--reading-scale, 1));
+}
+
+/* Paragraphs, list items and quotes carry no size of their own — they inherit the canvas's, which
+   is an arbitrary value rather than a `--text-*` token, so the block above does not reach them. */
+.reading-scale :is(p, li, blockquote) {
   font-size: calc(1em * var(--reading-scale, 1));
 }
 
@@ -571,11 +627,11 @@ html.dark-mode-init {
      into the HTML: stored content still carries the preset's old `text-blue-500`
      (~3.6:1 on zinc-50, ~4.4:1 on zinc-900 — both under the 4.5:1 AA floor), and
      this block is unlayered, so it outranks any Tailwind utility on the element and
-     corrects legacy content too. `vusa-red` itself only reaches ~3.0:1 on zinc-900,
-     hence the separate dark-mode token. */
+     corrects legacy content too. `--brand` replaces the old `vusa-red`/`vusa-red-on-dark`
+     pair: it already swaps per theme, so one rule now covers what needed two. */
   a {
     @apply underline break-words underline-offset-2 decoration-1 font-medium;
-    @apply text-vusa-red;
+    @apply text-brand;
   }
 
   a:hover {
@@ -583,7 +639,7 @@ html.dark-mode-init {
   }
 
   code {
-    @apply rounded-sm bg-zinc-100 px-1 py-0.5 text-[0.875em] dark:bg-zinc-800;
+    @apply rounded-sm bg-secondary px-1 py-0.5 text-[0.875em];
   }
 
   :is(h1, h2, h3, h4, h5, h6) {
@@ -595,7 +651,7 @@ html.dark-mode-init {
   }
 
   h2 {
-    @apply border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-bold tracking-tight transition-colors;
+    @apply border-b border-border pb-2 text-3xl font-bold tracking-tight transition-colors;
   }
 
   h3 {
@@ -625,14 +681,16 @@ html.dark-mode-init {
   /* The default border colour comes from the base layer's `*` rule, which is
      `gray-200` with no dark-mode counterpart — so the quote bar reads as a glaring
      light-grey line on a dark background unless it is set explicitly, the same way
-     `h2`'s bottom border already is.
+     `h2`'s bottom border already is. `border-brand` rather than a neutral: the
+     brand-coloured vertical rule is the design's signature device, and a quote is
+     exactly the "hung off a rule" shape it names.
 
      No `leading-*` here on purpose: quotes are set at body size, so tightening them
      relative to the surrounding 1.7 makes them read as a different (smaller) size
      rather than as an emphasis. Large pull quotes set their own leading — see
      PersonQuoteDisplay. */
   blockquote {
-    @apply border-l-2 border-zinc-200 pl-6 italic tracking-normal dark:border-zinc-600
+    @apply border-l-2 border-brand pl-6 italic tracking-normal
   }
 
   /* Preflight zeroes every margin and the flow rules above only reach *direct*
@@ -679,15 +737,49 @@ html.dark-mode-init {
   }
 }
 
-/* Dark-mode link colour, hoisted out of the shared block above rather than written as
-   `@apply … dark:text-vusa-red-on-dark` alongside the light value.
-   `@apply` with a variant compiles correctly at the top level (see `.rc-h-accent-yellow`,
-   which emits `:is(.dark *)`) but is silently dropped inside a *nested* rule — the
-   declaration simply vanishes from the build with no error, which is exactly the kind
-   of failure that reaches production unnoticed. Written out as a plain selector it
-   cannot be lost. */
-.dark :is(.rc-prose, .rc-prose-editing) a {
-  color: var(--color-vusa-red-on-dark);
+/* Body copy sits at `--muted-foreground`, headings and emphasis at full strength — the
+   design's two-weight reading voice (v0: `text-pretty … text-muted-foreground` paragraphs under
+   `text-foreground` headings). Contrast holds comfortably: light 0.46 on 0.965 ≈ 7:1, dark 0.68
+   on 0.135 ≈ 9:1, both well past the 4.5:1 floor.
+
+   Written as plain selectors rather than `@apply` inside the shared block above: `@apply` with a
+   variant compiles at the top level but is silently dropped inside a *nested* rule — the
+   declaration vanishes from the build with no error. That trap cost a dark-mode link colour once
+   already, so anything conditional lives out here.
+
+   Scoped to the public surface: `.rc-prose-editing` is also the admin Tiptap root, and muting the
+   text you are actively typing is both a visible admin change and the wrong call while editing.
+   Admin *previews* still match the published page, because BlockPreviewRenderer stamps
+   `data-surface="public"` on all three preview surfaces. */
+[data-surface="public"] :is(.rc-prose, .rc-prose-editing) {
+  color: var(--prose-foreground);
+}
+
+[data-surface="public"] :is(.rc-prose, .rc-prose-editing) :is(h1, h2, h3, h4, h5, h6, strong, b, th) {
+  color: var(--foreground);
+}
+
+/* The opening paragraph of an article or page: hung off the brand rule, set bold and one step
+   up. A class rather than a component because both hosts feed it stored HTML through `v-html`
+   (`News.short`, sanitized on write), so there is no element of ours to hang props on. `> p`
+   because that HTML arrives wrapped in its own `<p>`. */
+.rc-lead {
+  @apply border-l-2 border-brand pl-5 text-lg font-bold leading-relaxed text-foreground sm:pl-6 sm:text-xl;
+  text-wrap: pretty;
+}
+
+.rc-lead>p {
+  margin: 0;
+  color: inherit;
+  /* `inherit`, not the reading-scale multiplier that catches every other paragraph: the lead's
+     size comes from a `text-*` utility on the wrapper, which `.reading-scale` already scales
+     through `--text-*`. Without this the lead was scaled twice — 20px became 45px at the largest
+     step rather than 30px. Source order does the work; the specificities tie. */
+  font-size: inherit;
+}
+
+.rc-lead>p+p {
+  @apply mt-4;
 }
 
 /* Anchor scroll offset is only meaningful on the rendered page (the ToC scrolls to

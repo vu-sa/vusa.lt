@@ -39,11 +39,11 @@ describe('RCSectionOptions', () => {
     await trigger!.trigger('click');
 
     expect(trigger!.attributes('aria-expanded')).toBe('true');
-    // Title + subtitle = two text inputs; headingLevel/align/background/padding/rounded
-    // = five selects; plus the separator toggle = one switch.
-    expect(wrapper.findAll('input[type="text"]')).toHaveLength(2);
-    expect(wrapper.findAll('[data-slot="select-trigger"]')).toHaveLength(5);
-    expect(wrapper.findAll('button[role="switch"]')).toHaveLength(1);
+    // Title + subtitle + eyebrow = three text inputs; headingLevel/align/background/padding/
+    // rounded/divider = six selects; plus the separator and bleed toggles = two switches.
+    expect(wrapper.findAll('input[type="text"]')).toHaveLength(3);
+    expect(wrapper.findAll('[data-slot="select-trigger"]')).toHaveLength(6);
+    expect(wrapper.findAll('button[role="switch"]')).toHaveLength(2);
   });
 
   it('renders the fields flat (always visible) when collapsible=false', () => {
@@ -53,9 +53,9 @@ describe('RCSectionOptions', () => {
 
     // No trigger button — the section options header is a plain FieldLabel (<label>).
     expect(findTrigger(wrapper)).toBeUndefined();
-    expect(wrapper.findAll('input[type="text"]')).toHaveLength(2);
-    expect(wrapper.findAll('[data-slot="select-trigger"]')).toHaveLength(5);
-    expect(wrapper.findAll('button[role="switch"]')).toHaveLength(1);
+    expect(wrapper.findAll('input[type="text"]')).toHaveLength(3);
+    expect(wrapper.findAll('[data-slot="select-trigger"]')).toHaveLength(6);
+    expect(wrapper.findAll('button[role="switch"]')).toHaveLength(2);
   });
 
   it('mutates the shared options object in place when a field is edited', async () => {

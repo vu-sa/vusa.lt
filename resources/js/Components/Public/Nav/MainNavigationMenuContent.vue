@@ -43,13 +43,13 @@
               :src="link.image" alt="">
             <div class="absolute left-0 top-0 size-full transition-opacity duration-300 group-hover:opacity-90" :class="resolveImageGradient(link)" />
             <div :class="['relative z-10 mt-auto', isCompactCard(links) ? 'p-4' : 'p-6']">
-              <p v-if="link.eyebrow" class="mb-1 text-[11px] font-bold uppercase tracking-[0.2em] text-brand-fill">
+              <p v-if="link.eyebrow" class="mb-1 text-[0.6875rem] font-bold uppercase tracking-[0.2em] text-brand-fill">
                 {{ link.eyebrow }}
               </p>
               <p :class="['inline-flex items-center gap-1.5 text-balance font-bold uppercase leading-tight text-white', isCompactCard(links) ? 'text-sm' : 'text-lg']">
                 {{ link.name }}
                 <Icon v-if="link.new_tab" icon="fluent:open-16-regular" class="size-3.5 opacity-80" />
-                <Badge v-if="link.small_text" :variant="link.badge_variant ?? 'rose'" class="ml-1 px-2 py-0 text-[10px]">
+                <Badge v-if="link.small_text" :variant="link.badge_variant ?? 'rose'" class="ml-1 px-2 py-0 text-[0.625rem]">
                   {{ link.small_text }}
                 </Badge>
               </p>
@@ -95,7 +95,7 @@
                     class="size-3.5 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
                     aria-hidden="true"
                   />
-                  <Badge v-if="link.small_text" :variant="link.badge_variant ?? 'rose'" class="ml-1 px-2 py-0 text-[10px]">
+                  <Badge v-if="link.small_text" :variant="link.badge_variant ?? 'rose'" class="ml-1 px-2 py-0 text-[0.625rem]">
                     {{ link.small_text }}
                   </Badge>
                 </div>

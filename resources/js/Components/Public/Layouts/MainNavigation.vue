@@ -3,10 +3,14 @@
     <!-- Primary bar. `relative` so the mega-menu panel positions against this row and spans the
          full header width. -->
     <div class="relative mx-auto flex h-16 max-w-7xl items-center gap-6 px-5 sm:px-6 lg:px-8">
+      <!-- `inline-flex items-center`: `SmartLink` renders a plain `<a>`, an inline element whose
+           box height follows the surrounding line height, not its content — leaving the anchor
+           visibly taller than the logo sitting inside it. Making it a flex container sizes it to
+           the logo exactly. -->
       <SmartLink
         prefetch
         :title="$t('Grįžti į pagrindinį puslapį')"
-        class="shrink-0"
+        class="inline-flex shrink-0 items-center"
         :href="`${$page.props.app.url}/${$page.props.app.locale}`"
         target="_self"
       >

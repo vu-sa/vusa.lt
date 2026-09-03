@@ -47,6 +47,12 @@ return [
     'text_size_option' => 'Teksto dydis: :size',
     'text_size_decrease' => 'Sumažinti teksto dydį',
     'text_size_increase' => 'Padidinti teksto dydį',
+
+    // Per-article reading size (Components/Public/Base/ReadingSizeControl.vue) — scales only the
+    // article body, independently of the site-wide text size above.
+    'reading_size' => 'Skaitymo dydis',
+    'reading_size_decrease' => 'Sumažinti skaitymo dydį',
+    'reading_size_increase' => 'Padidinti skaitymo dydį',
     'high_contrast' => 'Didelis kontrastas',
     'underline_links' => 'Pabraukti nuorodas',
     'reset' => 'Atstatyti',

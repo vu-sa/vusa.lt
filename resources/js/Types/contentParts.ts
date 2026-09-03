@@ -9,9 +9,15 @@
 export interface SectionOptions {
   title?: string;
   subtitle?: string;
-  background?: 'none' | 'muted' | 'contrast' | 'gradient';
+  /** Brand kicker above the title. */
+  eyebrow?: string;
+  background?: 'none' | 'muted' | 'contrast' | 'gradient' | 'brand' | 'ink';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   rounded?: 'none' | 'sm' | 'md' | 'lg';
+  /** Hairline edges separating the band from its neighbours. */
+  divider?: 'none' | 'top' | 'bottom' | 'both';
+  /** Break the band out to the full viewport width, so a tint reaches the screen edges. */
+  bleed?: boolean;
   /** Semantic heading level for the section title (rendered by SectionHeader). Defaults to 2. */
   headingLevel?: 2 | 3 | 4;
   /** Title alignment, forwarded to SectionHeader. Defaults to 'center'. */
@@ -191,6 +197,32 @@ export interface FlowGraph {
     preset?: 'VusaStructure';
   };
   options: null;
+}
+
+/** A numbered process — "how you join", "how a request is handled". Auto-numbered on render. */
+export interface ProcessSteps {
+  json_content: {
+    title: string;
+    text?: string;
+  }[];
+  options: SectionOptions & {
+    columns?: 2 | 3 | 4;
+  };
+}
+
+/** The brand-filled band a page closes on. At most one per page — it is the loudest thing there. */
+export interface CtaBand {
+  json_content: {
+    heading?: string;
+    text?: string;
+    /** Contact facts beside the copy — an email, a room number. */
+    items?: { icon?: string; label: string }[];
+    button?: { label: string; href: string };
+  };
+  options: {
+    /** Defaults to true; a CTA that stops at the content measure reads as a panel. */
+    bleed?: boolean;
+  } | null;
 }
 
 export interface NumberStatSection {

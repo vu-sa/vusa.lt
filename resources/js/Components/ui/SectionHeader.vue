@@ -1,13 +1,24 @@
 <template>
   <div :class="rootClass">
-    <component :is="`h${resolvedLevel}`" :id="id"
-      :class="['font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4 scroll-mt-32', SECTION_HEADING_SIZE_CLASS[resolvedLevel]]">
-      {{ title }}
-    </component>
-    <p v-if="subtitle" :class="['text-base sm:text-lg text-zinc-600 dark:text-zinc-400 mb-6 max-w-3xl', align === 'start' ? '' : 'mx-auto']">
-      {{ subtitle }}
-    </p>
-    <div v-if="showSeparator" :class="['w-16 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full', align === 'start' ? '' : 'mx-auto']" />
+    <div :class="['flex flex-wrap items-end justify-between gap-x-8 gap-y-3', showSeparator && 'border-b border-border pb-5']">
+      <div :class="['min-w-0', align === 'start' ? 'flex-1' : 'mx-auto text-center']">
+        <p v-if="eyebrow" class="u-eyebrow mb-2">
+          {{ eyebrow }}
+        </p>
+        <component :is="`h${resolvedLevel}`" :id="id"
+          :class="['u-display scroll-mt-32 text-balance text-foreground', SECTION_HEADING_SIZE_CLASS[resolvedLevel]]">
+          {{ title }}
+        </component>
+        <p v-if="subtitle" :class="['mt-4 max-w-2xl leading-relaxed text-muted-foreground', align === 'start' ? '' : 'mx-auto']">
+          {{ subtitle }}
+        </p>
+      </div>
+
+      <!-- The archive/"see all" link a listing band carries opposite its title. -->
+      <div v-if="$slots.actions" class="shrink-0">
+        <slot name="actions" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -18,12 +29,14 @@ import { SECTION_HEADING_SIZE_CLASS, type SectionHeadingLevel } from '@/Componen
 interface Props {
   title: string;
   subtitle?: string;
+  /** Brand kicker above the title. */
+  eyebrow?: string;
   align?: 'center' | 'start';
   /** Sluggified anchor id for direct linking — see RCSection.vue's `headingId`. */
   id?: string;
   /** Semantic heading level. Sizes follow the `.rc-prose` h2/h3/h4 scale (sectionClasses.ts). */
   level?: SectionHeadingLevel;
-  /** Whether to render the separator bar beneath the title. */
+  /** Whether to close the header off with the hairline rule. */
   showSeparator?: boolean;
 }
 
@@ -40,11 +53,15 @@ const resolvedLevel = computed<SectionHeadingLevel>(() => {
   return n === 3 || n === 4 ? n : 2;
 });
 
-// The roomy bottom gap exists to give the content breathing room *after the separator
-// bar*. With the bar hidden the same gap reads as dead space, so tighten it — the
-// section's outer spacing still comes from its `padding` option ("Vidiniai tarpai").
+// `u-eyebrow` / `u-display` are used as plain classes rather than by importing EyebrowLabel and
+// DisplayHeading: this file sits in `ui/`, and importing from `Public/Base/` would run the tier
+// dependency backwards. The classes carry the same values.
+//
+// The roomy bottom gap exists to give the content breathing room *after the rule*. With the rule
+// hidden the same gap reads as dead space, so tighten it — the section's outer spacing still comes
+// from its `padding` option ("Vidiniai tarpai").
 const rootClass = computed(() => [
-  props.showSeparator ? 'mb-12 md:mb-16' : 'mb-6 md:mb-8',
+  props.showSeparator ? 'mb-10 md:mb-12' : 'mb-6 md:mb-8',
   props.align === 'start' ? 'text-left' : 'text-center',
 ]);
 </script>

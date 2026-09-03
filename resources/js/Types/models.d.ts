@@ -931,7 +931,6 @@ declare global {
       publish_time?: string | null
       main_points?: string | null
       highlights?: unknown | null
-      layout: string
       show_breadcrumbs: boolean
       read_more?: string | null
       draft?: boolean | null
@@ -1268,7 +1267,6 @@ declare global {
       publish_time?: string | null
       main_points?: string | null
       highlights?: unknown | null
-      layout: string
       show_breadcrumbs: boolean
       read_more?: string | null
       draft?: boolean | null

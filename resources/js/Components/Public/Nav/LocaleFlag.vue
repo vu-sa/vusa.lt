@@ -1,17 +1,28 @@
 <template>
   <!-- `flex-col`, not `flex`: the Lithuanian flag's bands are horizontal. A row of three
-       full-width children renders them as vertical bars, which is a different flag. -->
-  <span v-if="locale === 'lt'" class="flex h-3 w-5 shrink-0 flex-col overflow-hidden" aria-hidden="true">
-    <span class="h-full w-full bg-[oklch(0.78_0.15_80)]" />
-    <span class="h-full w-full bg-[oklch(0.55_0.13_150)]" />
-    <span class="h-full w-full bg-[oklch(0.55_0.16_25)]" />
+       full-width children renders them as vertical bars, which is a different flag.
+       5:3 is the flag's official proportion (width:height). `w-5 h-3` sets both dimensions
+       explicitly — `aspect-5/3` alone, as a flex item, was resolving to a square instead of
+       computing width from height, so it stays only as a documented invariant, not the
+       mechanism. -->
+  <span v-if="locale === 'lt'" class="flex aspect-5/3 h-3 w-5 shrink-0 flex-col overflow-hidden" aria-hidden="true">
+    <!-- Official Lithuanian web colours: yellow #FDB913, green #006A44, red #C1272D. -->
+    <span class="h-full w-full bg-[#FDB913]" />
+    <span class="h-full w-full bg-[#006A44]" />
+    <span class="h-full w-full bg-[#C1272D]" />
   </span>
 
   <!-- The Union Jack cannot be expressed as three bands — blue/white/red stacked is the French
-       flag, which is what the band version rendered. Drawn instead, simplified to the crosses. -->
+       flag, which is what the band version rendered. Drawn instead, simplified to the crosses.
+       Same 5:3 proportion as the LT flag (viewBox is 60×36 = 5:3).
+       `!h-3 !w-5`, not plain `h-3 w-5`: this flag sits inside `ui/button`, whose base class ships
+       `[&_svg:not([class*='size-'])]:size-4` — any descendant `<svg>` without a `size-*` class
+       gets force-squared to 16×16. That selector only matches the `<svg>` tag, which is why the
+       `<span>`-based LT flag above was unaffected while this one stayed square. `!` beats it
+       outright regardless of specificity. -->
   <svg
     v-else
-    class="h-3 w-5 shrink-0"
+    class="!h-3 !w-5 shrink-0"
     viewBox="0 0 60 36"
     preserveAspectRatio="none"
     aria-hidden="true"

@@ -7,7 +7,9 @@ import HairlineList from './HairlineList.vue';
 import HairlineRow from './HairlineRow.vue';
 import HeaderWordmark from './HeaderWordmark.vue';
 import MediaFrame from './MediaFrame.vue';
+import ReadingSizeControl from './ReadingSizeControl.vue';
 import SectionBand from './SectionBand.vue';
+import ShareButton from './ShareButton.vue';
 import StatCell from './StatCell.vue';
 import TagChip from './TagChip.vue';
 
@@ -186,6 +188,50 @@ export const Accessibility: Story = {
         <div class="flex items-center gap-4">
           <AccessibilityMenu />
           <p class="text-sm text-muted-foreground">Skaitytojo nustatymai išsaugomi naršyklėje.</p>
+        </div>
+      </SectionBand>
+    `,
+  }),
+};
+
+/**
+ * The article's own reading-size stepper, distinct from the site-wide text size in the
+ * accessibility menu: this scales only the body it wraps, and is reached where the reading
+ * happens. Step it up and watch the paragraph below grow while the heading does not — the CSS
+ * (`.reading-scale` in app.css) claims `p` and `li` only, so the hierarchy cannot invert.
+ */
+export const ReadingSize: Story = {
+  render: () => ({
+    components: { ReadingSizeControl, SectionBand },
+    template: `
+      <SectionBand spacing="tight">
+        <div class="max-w-2xl">
+          <ReadingSizeControl>
+            <h3 class="mb-3 text-xl font-bold text-foreground">Antraštė nesikeičia</h3>
+            <p class="leading-relaxed text-muted-foreground">
+              Vilniaus universiteto Studentų atstovybė vienija studentus (-es) visuose fakultetuose
+              ir atstovauja jų interesams universiteto sprendimų priėmimo organuose.
+            </p>
+          </ReadingSizeControl>
+        </div>
+      </SectionBand>
+    `,
+  }),
+};
+
+/**
+ * Share this page. In a browser with a native share sheet it opens that; everywhere else it
+ * copies the link and says so with a toast. A dismissed share sheet does nothing at all — see
+ * `useShareLink`.
+ */
+export const Share: Story = {
+  render: () => ({
+    components: { SectionBand, ShareButton },
+    template: `
+      <SectionBand spacing="tight">
+        <div class="flex flex-wrap items-center gap-4">
+          <ShareButton title="Pradedama kandidatų registracija" />
+          <ShareButton title="Pradedama kandidatų registracija" variant="brand" />
         </div>
       </SectionBand>
     `,

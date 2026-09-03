@@ -78,7 +78,7 @@ describe('MainNavigationMenuContent.vue', () => {
     expect(img.classes()).toContain('opacity-40');
     expect(img.classes()).toContain('blur-[4px]');
 
-    const gradientLayer = wrapper.findAll('div').find(d => d.classes().includes('bg-black/40'));
+    const gradientLayer = wrapper.findAll('div').find(d => d.classes().includes('bg-ink/40'));
     expect(gradientLayer).toBeTruthy();
   });
 

@@ -9,7 +9,9 @@
         :title="$t('accessibility.menu_title')"
         data-slot="accessibility-menu-trigger"
       >
-        <IFluentAccessibility24Regular class="size-5" />
+        <!-- `size-4`, matching the other utility icons in the header (search, dark mode) — this
+             one previously ran a step larger than its neighbours at `size-5`. -->
+        <IFluentAccessibility24Regular class="size-4" />
         <!-- A colour change alone reaches neither a screen reader nor anyone who cannot pick the
              brand hue out from the default foreground. -->
         <span v-if="!isDefault" class="sr-only">{{ $t('accessibility.preferences_active') }}</span>

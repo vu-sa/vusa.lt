@@ -12,6 +12,10 @@
       <Input v-model="options.subtitle" type="text" :placeholder="$t('rich-content.enter_section_subtitle')" />
     </Field>
     <Field>
+      <FieldLabel>{{ $t('rich-content.section_eyebrow') }}</FieldLabel>
+      <Input v-model="options.eyebrow" type="text" :placeholder="$t('rich-content.enter_section_eyebrow')" />
+    </Field>
+    <Field>
       <FieldLabel>{{ $t('rich-content.section_heading_level') }}</FieldLabel>
       <Select v-model="options.headingLevel">
         <SelectTrigger>
@@ -47,8 +51,31 @@
           <SelectItem value="muted">{{ $t('rich-content.section_background_muted') }}</SelectItem>
           <SelectItem value="contrast">{{ $t('rich-content.section_background_contrast') }}</SelectItem>
           <SelectItem value="gradient">{{ $t('rich-content.section_background_gradient') }}</SelectItem>
+          <SelectItem value="brand">{{ $t('rich-content.section_background_brand') }}</SelectItem>
+          <SelectItem value="ink">{{ $t('rich-content.section_background_ink') }}</SelectItem>
         </SelectContent>
       </Select>
+    </Field>
+    <Field>
+      <FieldLabel>{{ $t('rich-content.section_divider') }}</FieldLabel>
+      <Select v-model="options.divider">
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">{{ $t('rich-content.section_divider_none') }}</SelectItem>
+          <SelectItem value="top">{{ $t('rich-content.section_divider_top') }}</SelectItem>
+          <SelectItem value="bottom">{{ $t('rich-content.section_divider_bottom') }}</SelectItem>
+          <SelectItem value="both">{{ $t('rich-content.section_divider_both') }}</SelectItem>
+        </SelectContent>
+      </Select>
+    </Field>
+    <Field>
+      <div class="flex items-center justify-between">
+        <FieldLabel class="mb-0">{{ $t('rich-content.section_bleed') }}</FieldLabel>
+        <Switch v-model="options.bleed" />
+      </div>
+      <FieldDescription>{{ $t('rich-content.section_bleed_help') }}</FieldDescription>
     </Field>
     <Field>
       <FieldLabel>{{ $t('rich-content.section_padding') }}</FieldLabel>
@@ -90,7 +117,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { Field, FieldLabel } from '@/Components/ui/field';
+import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';

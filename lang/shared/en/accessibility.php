@@ -47,6 +47,12 @@ return [
     'text_size_option' => 'Text size: :size',
     'text_size_decrease' => 'Decrease text size',
     'text_size_increase' => 'Increase text size',
+
+    // Per-article reading size (Components/Public/Base/ReadingSizeControl.vue) — scales only the
+    // article body, independently of the site-wide text size above.
+    'reading_size' => 'Reading size',
+    'reading_size_decrease' => 'Decrease reading size',
+    'reading_size_increase' => 'Increase reading size',
     'high_contrast' => 'High contrast',
     'underline_links' => 'Underline links',
     'reset' => 'Reset',

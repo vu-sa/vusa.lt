@@ -6,19 +6,19 @@
           <!-- Vote matches (student position accepted) -->
           <span v-if="matches > 0" class="flex items-center">
             <CheckIcon class="h-3 w-3 text-green-600 dark:text-green-400" />
-            <span class="text-[10px] text-green-600 dark:text-green-400 font-medium">{{ matches }}</span>
+            <span class="text-[0.625rem] text-green-600 dark:text-green-400 font-medium">{{ matches }}</span>
           </span>
 
           <!-- Vote mismatches (student position not accepted) -->
           <span v-if="mismatches > 0" class="flex items-center ml-1">
             <XIcon class="h-3 w-3 text-amber-600 dark:text-amber-400" />
-            <span class="text-[10px] text-amber-600 dark:text-amber-400 font-medium">{{ mismatches }}</span>
+            <span class="text-[0.625rem] text-amber-600 dark:text-amber-400 font-medium">{{ mismatches }}</span>
           </span>
 
           <!-- Incomplete vote data -->
           <span v-if="incomplete > 0" class="flex items-center ml-1">
             <MinusIcon class="h-3 w-3 text-zinc-500 dark:text-zinc-400" />
-            <span class="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">{{ incomplete }}</span>
+            <span class="text-[0.625rem] text-zinc-500 dark:text-zinc-400 font-medium">{{ incomplete }}</span>
           </span>
         </TooltipTrigger>
         <TooltipContent>

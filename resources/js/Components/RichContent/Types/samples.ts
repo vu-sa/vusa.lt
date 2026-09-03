@@ -193,6 +193,26 @@ export const contentSamples: Record<string, () => ContentSample> = {
     json_content: {},
     options: { title: 'VU SA skaičiais', subtitle: 'Sužinok daugiau apie mus', background: 'muted', padding: 'lg' },
   }),
+  'process-steps': () => ({
+    json_content: [
+      { title: 'Užpildyk anketą', text: 'Trumpa registracija – užtenka penkių minučių ir studento pažymėjimo.' },
+      { title: 'Susitikime pokalbiui', text: 'Pasikalbėsime apie tai, kas tau įdomu, ir kur galėtum prisidėti.' },
+      { title: 'Pradėk veikti', text: 'Prisijungsi prie komandos ir gausi mentorių pirmiesiems mėnesiams.' },
+    ],
+    options: { title: 'Kaip prisijungti', eyebrow: 'Procesas', columns: 3, align: 'start', background: 'none', padding: 'lg' },
+  }),
+  'cta-band': () => ({
+    json_content: {
+      heading: 'Turi klausimų?',
+      text: 'Parašyk mums arba užsuk į biurą – atsakysime į viską, kas rūpi dėl studijų, stipendijų ar atstovavimo.',
+      items: [
+        { icon: 'mail', label: 'info@vusa.lt' },
+        { icon: 'map-pin', label: 'Universiteto g. 3, Vilnius' },
+      ],
+      button: { label: 'Užpildyti užklausą', href: '#' },
+    },
+    options: { bleed: false },
+  }),
   'spacer': () => ({
     json_content: {},
     options: { size: 'lg' },

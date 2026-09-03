@@ -60,17 +60,17 @@
         <li v-for="event in upcomingEvents" :key="event.id">
           <SmartLink
             :href="eventHref(event)"
-            class="group flex items-center gap-4 border-b border-border py-5 transition-colors hover:bg-background sm:gap-6"
+            class="group -mx-4 flex items-center gap-4 border-b border-border px-4 py-6 transition-colors hover:bg-background sm:gap-6"
           >
             <div class="flex w-14 shrink-0 flex-col items-center justify-center border border-border bg-background py-2 text-foreground transition-colors group-hover:border-brand sm:w-16">
               <span class="text-2xl font-bold leading-none tabular-nums">{{ dayOfMonth(event.date) }}</span>
-              <span class="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+              <span class="mt-1 text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground">
                 {{ formatMonthAbbr(new Date(event.date), locale) }}
               </span>
             </div>
 
             <div class="min-w-0 flex-1">
-              <span v-if="event.category?.name" class="text-[11px] font-bold uppercase tracking-[0.18em] text-brand">
+              <span v-if="event.category?.name" class="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-brand">
                 {{ event.category.name }}
               </span>
               <h3 class="mt-1 text-pretty font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
