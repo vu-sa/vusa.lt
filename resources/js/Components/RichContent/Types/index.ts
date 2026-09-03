@@ -138,9 +138,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[200px]',
       template: `
-        <div class="w-full py-16 px-4">
+        <div class="w-full py-16 px-4 bg-secondary/40">
           <div class="space-y-4">
-            <div v-for="i in 3" :key="i" class="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 bg-white dark:bg-zinc-800">
+            <div v-for="i in 3" :key="i" class="border border-border rounded-lg p-4 bg-card">
               <Skeleton class="h-5 w-3/4" />
             </div>
           </div>
@@ -226,7 +226,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[45rem]',
       template: `
-        <div class="w-full min-h-[45rem] bg-zinc-200 dark:bg-zinc-800 animate-pulse flex items-end justify-center pb-16">
+        <div class="w-full min-h-[45rem] bg-secondary/40 animate-pulse flex items-end justify-center pb-16">
           <div class="flex flex-col items-center gap-4 max-w-2xl px-8">
             <Skeleton class="h-12 w-96 max-w-full" />
             <Skeleton class="h-6 w-64 max-w-full" />
@@ -299,7 +299,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
         <div class="w-full py-8 px-4 md:px-8">
           <Skeleton class="h-8 w-48 mb-6" />
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div v-for="i in 6" :key="i" class="space-y-3 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg">
+            <div v-for="i in 6" :key="i" class="space-y-3 p-4 border border-border rounded-lg">
               <Skeleton class="h-4 w-24" />
               <Skeleton class="h-6 w-full" />
               <Skeleton class="h-3 w-3/4" />
@@ -398,7 +398,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[200px]',
       template: `
-        <div class="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
+        <div class="w-full rounded-lg border border-border p-6">
           <Skeleton class="h-6 w-48 mb-4" />
           <Skeleton class="h-28 w-full mb-3" />
           <Skeleton class="h-10 w-28 rounded-md" />
@@ -475,7 +475,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       height: 'min-h-[600px]',
       template: `
         <div class="w-full py-12 px-4">
-          <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center bg-white dark:bg-zinc-800 rounded-2xl p-8 md:p-12 shadow-sm border border-zinc-100 dark:border-zinc-700">
+          <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center bg-card rounded-2xl p-8 md:p-12 border border-border">
             <div class="space-y-4 md:space-y-6">
               <Skeleton class="h-6 w-32" />
               <Skeleton class="h-8 w-3/4" />
@@ -514,7 +514,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       height: 'min-h-[22rem]',
       template: `
         <div class="w-full px-4 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-5 lg:px-8">
-          <div class="min-h-[22rem] rounded-2xl md:rounded-3xl bg-zinc-200 dark:bg-zinc-800 animate-pulse relative overflow-hidden">
+          <div class="min-h-[22rem] rounded-2xl md:rounded-3xl bg-secondary/40 animate-pulse relative overflow-hidden">
             <div class="absolute inset-0 flex items-end p-8">
               <div class="space-y-3 max-w-xl">
                 <Skeleton class="h-4 w-24" />
@@ -555,9 +555,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[500px]',
       template: `
-        <div class="w-full py-16 bg-zinc-50 dark:bg-zinc-900 px-4">
+        <div class="w-full py-16 bg-secondary/40 px-4">
           <div class="max-w-lg mx-auto">
-            <Skeleton class="h-80 w-full rounded-xl" />
+            <Skeleton class="h-80 w-full rounded-xl border border-border" />
             <div class="flex justify-center mt-8 space-x-2">
               <Skeleton v-for="i in 3" :key="i" class="w-3 h-3 rounded-full" />
             </div>
@@ -691,7 +691,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[120px]',
       template: `
-        <div class="w-full py-12 px-4 flex flex-col items-center gap-3">
+        <div class="w-full py-16 px-4 flex flex-col items-center gap-3">
           <Skeleton class="h-7 w-64 max-w-full" />
           <Skeleton class="h-4 w-40" />
         </div>
@@ -720,7 +720,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[160px]',
       template: `
-        <div class="grid w-full gap-8 py-8 sm:grid-cols-3">
+        <div class="grid w-full gap-8 py-16 sm:grid-cols-3">
           <div v-for="i in 3" :key="i" class="space-y-3">
             <Skeleton class="h-8 w-12" />
             <Skeleton class="h-5 w-32" />
@@ -749,7 +749,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[160px]',
       template: `
-        <div class="flex w-full flex-col gap-4 py-12">
+        <div class="flex w-full flex-col gap-4 bg-secondary/40 px-5 py-14 sm:px-6 lg:px-8 lg:py-20">
           <Skeleton class="h-9 w-72 max-w-full" />
           <Skeleton class="h-5 w-full max-w-xl" />
           <Skeleton class="h-12 w-48" />
@@ -825,8 +825,10 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[120px]',
       template: `
-        <div class="w-full rounded-2xl bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-          <div class="h-9 bg-zinc-200/60 dark:bg-zinc-700/60" />
+        <div class="w-full overflow-hidden border border-border bg-secondary/40">
+          <div class="flex items-center gap-2 border-b border-border px-5 py-3">
+            <Skeleton class="h-4 w-24" />
+          </div>
           <div v-for="i in 3" :key="i" class="flex items-center gap-4 px-5 py-3">
             <Skeleton class="h-4 w-16" />
             <Skeleton class="h-4 flex-1" />
