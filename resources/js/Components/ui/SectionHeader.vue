@@ -6,10 +6,10 @@
           {{ eyebrow }}
         </p>
         <component :is="`h${resolvedLevel}`" :id="id"
-          :class="['u-display scroll-mt-32 text-balance text-foreground', SECTION_HEADING_SIZE_CLASS[resolvedLevel]]">
+          :class="['u-display scroll-mt-32 text-balance', inverted ? 'text-current' : 'text-foreground', SECTION_HEADING_SIZE_CLASS[resolvedLevel]]">
           {{ title }}
         </component>
-        <p v-if="subtitle" :class="['mt-4 max-w-2xl leading-relaxed text-muted-foreground', align === 'start' ? '' : 'mx-auto']">
+        <p v-if="subtitle" :class="['mt-4 max-w-2xl leading-relaxed', inverted ? 'text-current/75' : 'text-muted-foreground', align === 'start' ? '' : 'mx-auto']">
           {{ subtitle }}
         </p>
       </div>
@@ -38,6 +38,13 @@ interface Props {
   level?: SectionHeadingLevel;
   /** Whether to close the header off with the hairline rule. */
   showSeparator?: boolean;
+  /**
+   * Set by a `brand`/`ink` section background (sectionClasses.ts): those grounds carry their
+   * own fixed foreground colour, unaffected by light/dark mode, so the title/subtitle must
+   * inherit it instead of `text-foreground`/`text-muted-foreground` — those tokens flip with
+   * the theme and would go near-black on a background that stays dark in light mode too.
+   */
+  inverted?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {

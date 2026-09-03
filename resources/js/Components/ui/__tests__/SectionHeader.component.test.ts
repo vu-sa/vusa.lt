@@ -40,4 +40,18 @@ describe('SectionHeader', () => {
     const withEyebrow = mount(SectionHeader, { props: { title: 'Sveiki', eyebrow: 'VU SA' } });
     expect(withEyebrow.find('.u-eyebrow').text()).toBe('VU SA');
   });
+
+  it('uses the theme-following foreground tokens by default', () => {
+    const wrapper = mount(SectionHeader, { props: { title: 'Sveiki', subtitle: 'Poskyris' } });
+    expect(wrapper.find('h2').classes()).toContain('text-foreground');
+    expect(wrapper.find('p').classes()).toContain('text-muted-foreground');
+  });
+
+  it('inherits the section\'s fixed foreground instead when inverted', () => {
+    const wrapper = mount(SectionHeader, { props: { title: 'Sveiki', subtitle: 'Poskyris', inverted: true } });
+    expect(wrapper.find('h2').classes()).toContain('text-current');
+    expect(wrapper.find('h2').classes()).not.toContain('text-foreground');
+    expect(wrapper.find('p').classes()).toContain('text-current/75');
+    expect(wrapper.find('p').classes()).not.toContain('text-muted-foreground');
+  });
 });

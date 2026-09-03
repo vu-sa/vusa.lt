@@ -7,6 +7,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { useDark } from '@vueuse/core';
 
 const props = defineProps<{
@@ -18,15 +19,18 @@ const props = defineProps<{
 
 const mapContainer = useTemplateRef<HTMLElement>('mapContainer');
 const isDark = useDark();
+const cartoApiKey = usePage().props.map?.cartoApiKey;
 
 // Held outside of Vue's reactivity: Leaflet instances must not be proxied.
 let L: any = null;
 let map: any = null;
 let tileLayer: any = null;
 
+// CARTO now requires an API key on tile requests, passed as `key` (not `api_key`) per their docs.
+const tileUrlSuffix = cartoApiKey ? `?key=${encodeURIComponent(cartoApiKey)}` : '';
 const tileUrls = {
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light: `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png${tileUrlSuffix}`,
+  dark: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${tileUrlSuffix}`,
 };
 
 const createTileLayer = () =>
@@ -49,6 +53,9 @@ onMounted(async () => {
       attributionControl: false,
       // The map sits inside an article; grabbing the wheel would trap the reader.
       scrollWheelZoom: false,
+      // This is a static, decorative preview — no keyboard panning needed, and it avoids
+      // Leaflet focusing the container on click (see PadalinysMap for why that matters there).
+      keyboard: false,
     }).setView([props.latitude, props.longitude], 15);
 
     tileLayer = createTileLayer().addTo(map);

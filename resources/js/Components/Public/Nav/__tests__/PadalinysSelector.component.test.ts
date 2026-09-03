@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mount, config } from '@vue/test-utils';
+import { defineComponent, h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import PadalinysSelector from '../PadalinysSelector.vue';
@@ -16,10 +17,13 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const popoverStubs = {
   Popover: { template: '<div><slot /></div>' },
   PopoverTrigger: { template: '<div><slot /></div>' },
-  PopoverContent: { template: '<div><slot /></div>', emits: ['close-auto-focus'] },
+  PopoverContent: {
+    template: '<div><slot /></div>',
+    emits: ['open-auto-focus', 'close-auto-focus', 'pointer-down-outside', 'focus-outside'],
+  },
 };
 
-function mountSelector() {
+function mountSelector(stubs = popoverStubs) {
   const page = createMockPage({ app: { path: 'lt' } });
   vi.mocked(usePage).mockReturnValue(page);
 
@@ -28,7 +32,7 @@ function mountSelector() {
 
   const wrapper = mount(PadalinysSelector, {
     props: { size: 'small' },
-    global: { stubs: popoverStubs },
+    global: { stubs },
   });
 
   return {
@@ -48,6 +52,7 @@ function isOpen(wrapper: ReturnType<typeof mount>): boolean {
 describe('PadalinysSelector.vue', () => {
   afterEach(() => {
     vi.useRealTimers();
+    localStorage.removeItem('padalinysSelectorViewMode');
   });
 
   it('opens on mouseenter and closes only after the hover grace period elapses', async () => {
@@ -72,6 +77,35 @@ describe('PadalinysSelector.vue', () => {
     restore();
   });
 
+  it('stays open when multiple close signals are followed by re-entry', async () => {
+    vi.useFakeTimers();
+    const { wrapper, restore } = mountSelector();
+    const trigger = wrapper.findComponent(popoverStubs.PopoverTrigger);
+    const content = wrapper.findComponent(popoverStubs.PopoverContent);
+
+    await trigger.trigger('mouseenter');
+    await content.trigger('focusout');
+    await content.trigger('mouseleave');
+    await content.trigger('mouseenter');
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(isOpen(wrapper)).toBe(true);
+
+    restore();
+  });
+
+  it('prevents reka-ui\'s default open-auto-focus, which would otherwise paint a focus ring around the List button on hover-open', () => {
+    const { wrapper, restore } = mountSelector();
+
+    const content = wrapper.findComponent(popoverStubs.PopoverContent);
+    const event = { preventDefault: vi.fn() } as unknown as Event;
+    content.vm.$emit('open-auto-focus', event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+
+    restore();
+  });
+
   it('prevents reka-ui\'s default close-auto-focus, which would otherwise refocus the trigger and reopen the popover', () => {
     const { wrapper, restore } = mountSelector();
 
@@ -80,6 +114,35 @@ describe('PadalinysSelector.vue', () => {
     content.vm.$emit('close-auto-focus', event);
 
     expect(event.preventDefault).toHaveBeenCalled();
+
+    restore();
+  });
+
+  it('does not reinitialize the map when controls receive focus while the popover is open', async () => {
+    vi.useFakeTimers();
+    localStorage.setItem('padalinysSelectorViewMode', 'map');
+    const initializeOrUpdateMap = vi.fn();
+    const forceUpdateMap = vi.fn();
+    const PadalinysMap = defineComponent({
+      setup(_, { expose }) {
+        expose({ initializeOrUpdateMap, forceUpdateMap });
+
+        return () => h('div', { class: 'padalinys-map-stub' });
+      },
+    });
+    const { wrapper, restore } = mountSelector({ ...popoverStubs, PadalinysMap });
+    const trigger = wrapper.findComponent(popoverStubs.PopoverTrigger);
+    const content = wrapper.findComponent(popoverStubs.PopoverContent);
+
+    await trigger.trigger('mouseenter');
+    await vi.advanceTimersByTimeAsync(100);
+    await content.trigger('focusin');
+    await content.trigger('mouseenter');
+    await vi.advanceTimersByTimeAsync(100);
+
+    // jsdom cannot run Leaflet's rendered zoom animation; repeated initialization is the reset trigger.
+    expect(initializeOrUpdateMap).not.toHaveBeenCalled();
+    expect(forceUpdateMap).toHaveBeenCalledTimes(1);
 
     restore();
   });

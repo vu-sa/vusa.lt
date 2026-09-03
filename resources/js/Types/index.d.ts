@@ -68,6 +68,10 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   // prop's actual shape comes from `NavigationService::getNavigationForPublic()`, not
   // the raw Eloquent model. See Components/Public/Nav/types.ts for the authoritative shape.
   mainNavigation?: NavItem[];
+  /** CARTO now requires an API key on basemap tile requests; null when unconfigured. */
+  map: {
+    cartoApiKey: string | null;
+  };
   otherLangURL?: string | null;
   seo: Record<string, any>;
   tenants: Pick<

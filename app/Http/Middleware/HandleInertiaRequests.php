@@ -110,6 +110,10 @@ class HandleInertiaRequests extends Middleware
             // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'tenants' => $this->getTenantsForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
+            // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
+            'map' => [
+                'cartoApiKey' => fn () => config('services.carto.api_key'),
+            ],
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
                 'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,

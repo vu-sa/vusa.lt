@@ -4,15 +4,19 @@
       <li
         v-for="(links, columnIndex) in item.links"
         :key="columnIndex"
-        class="flex flex-col border-b border-border last:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0"
-        :class="isMediaColumn(links) ? 'p-0' : 'p-6'"
+        class="flex flex-col"
+        :class="isMediaColumn(links)
+          ? 'p-0 dark:border-b dark:border-border/50 dark:last:border-b-0 lg:dark:border-b-0 lg:dark:border-r lg:dark:last:border-r-0'
+            + ' [.a11y-contrast_&]:border-b [.a11y-contrast_&]:border-border [.a11y-contrast_&]:last:border-b-0'
+            + ' lg:[.a11y-contrast_&]:border-b-0 lg:[.a11y-contrast_&]:border-r lg:[.a11y-contrast_&]:last:border-r-0'
+          : 'p-6 border-b border-border/50 last:border-b-0 lg:border-b-0 lg:border-r lg:last:border-r-0'"
       >
         <template v-for="(link, index) in links" :key="link.id ?? link.name">
-          <div v-if="link.type === 'divider'" class="my-4 border-t border-border">
+          <div v-if="link.type === 'divider'" class="my-4 border-t border-border/50">
             <slot v-if="showEditIcons" :index :link :links name="editIconsDivider" />
           </div>
 
-          <div v-else-if="link.type === 'heading'" class="u-eyebrow mb-3 mt-6 border-b border-border pb-3 first:mt-0">
+          <div v-else-if="link.type === 'heading'" class="u-eyebrow mb-3 mt-6 border-b border-border/50 pb-3 first:mt-0">
             {{ link.name }}
           </div>
 
@@ -165,7 +169,7 @@ const linkTypes = {
   // only that this one is clickable.
   'category-link': {
     textClass: 'u-eyebrow transition-colors group-hover:text-foreground',
-    blockClass: 'mb-3 mt-6 border-b border-border pb-3 first:mt-0',
+    blockClass: 'mb-3 mt-6 border-b border-border/50 pb-3 first:mt-0',
   },
   'full-height-background-link': {
     textClass: 'text-sm font-bold text-foreground transition-colors group-hover:text-brand',

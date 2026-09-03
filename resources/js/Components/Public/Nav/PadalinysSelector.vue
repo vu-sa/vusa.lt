@@ -35,17 +35,24 @@
          map mode, which reads as the panel jumping under the cursor. -->
     <!-- `@close-auto-focus.prevent`: reka-ui returns focus to the trigger whenever the popover
          closes, which fires the trigger's own `@focus`/`@focusin` handler and reopens it right
-         after a hover-out closes it. Suppressing the auto-focus breaks that loop. -->
+         after a hover-out closes it. Suppressing the auto-focus breaks that loop.
+         `@open-auto-focus.prevent`: reka-ui also focuses the first tabbable element (the "List"
+         button) whenever the popover opens, which paints a focus ring even though the popover was
+         opened by hover, not keyboard. -->
     <PopoverContent
-      class="w-96 p-0"
+      class="w-96 border-0 p-0 shadow-2xl dark:border dark:border-border/50
+        [.a11y-contrast_&]:border [.a11y-contrast_&]:border-border"
       align="start"
       @mouseenter="openOnHover"
       @mouseleave="scheduleClose"
       @focusin="openOnHover"
-      @focusout="scheduleClose"
+      @focusout="scheduleCloseOnFocusOut"
+      @open-auto-focus.prevent
       @close-auto-focus="preventCloseAutoFocus"
+      @pointer-down-outside="preventDismiss"
+      @focus-outside="preventDismiss"
     >
-      <div class="flex items-center gap-2 border-b border-border p-2">
+      <div class="flex items-center gap-2 border-b border-border/50 p-2">
         <Button
           v-for="view in (['list', 'map'] as const)"
           :key="view"
@@ -165,6 +172,7 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
+import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
 
 import PadalinysMap from './PadalinysMap.vue';
 
@@ -256,19 +264,27 @@ const isDisabled = computed(() => !isSwitchAllowed.value);
 
 /** Opens on hover; a real click still toggles via `handlePopoverOpenChange` below. */
 function openOnHover(): void {
-  if (closeTimeoutId) {
-    clearTimeout(closeTimeoutId);
-    closeTimeoutId = null;
-  }
+  clearScheduledClose();
 
   handlePopoverOpenChange(true);
 }
 
 /** Short grace period so moving the cursor from the trigger down into the panel doesn't close it. */
 function scheduleClose(): void {
+  clearScheduledClose();
   closeTimeoutId = setTimeout(() => {
+    closeTimeoutId = null;
     handlePopoverOpenChange(false);
   }, 150);
+}
+
+function clearScheduledClose(): void {
+  if (closeTimeoutId === null) {
+    return;
+  }
+
+  clearTimeout(closeTimeoutId);
+  closeTimeoutId = null;
 }
 
 /** Blocks reka-ui's default focus-return-to-trigger, which would re-fire the trigger's focus handler and reopen the popover. */
@@ -276,13 +292,24 @@ function preventCloseAutoFocus(event: Event): void {
   event.preventDefault();
 }
 
-onBeforeUnmount(() => {
-  if (closeTimeoutId) {
-    clearTimeout(closeTimeoutId);
+/** Leaflet's click-driven zoom can be misread as outside interaction and unmount the map. */
+function preventDismiss(event: PointerDownOutsideEvent | FocusOutsideEvent): void {
+  event.preventDefault();
+}
+
+/** Leaflet replaces focused marker nodes during zoom; pointer presence remains authoritative. */
+function scheduleCloseOnFocusOut(event: FocusEvent): void {
+  if ((event.currentTarget as HTMLElement | null)?.matches(':hover')) {
+    return;
   }
+  scheduleClose();
+}
+
+onBeforeUnmount(() => {
+  clearScheduledClose();
 });
 
-// Set view mode and initialize map if needed
+// Set view mode and refresh the map after it becomes visible.
 const setViewMode = (mode: 'list' | 'map') => {
   viewMode.value = mode;
 
@@ -298,21 +325,20 @@ const setViewMode = (mode: 'list' | 'map') => {
   }
 };
 
-// Handle popover open/close to initialize map when opened
+// Refresh geometry once per actual open transition, not on every focus event within the map.
 const handlePopoverOpenChange = (open: boolean) => {
+  if (isPopoverOpen.value === open) {
+    return;
+  }
+
   isPopoverOpen.value = open;
 
-  if (open) {
-    if (viewMode.value === 'map') {
-      // When popover opens, initialize or update map after DOM has updated
-      nextTick(() => {
-        setTimeout(() => {
-          if (mapComponentRef.value) {
-            mapComponentRef.value.initializeOrUpdateMap();
-          }
-        }, 100);
-      });
-    }
+  if (open && viewMode.value === 'map') {
+    nextTick(() => {
+      setTimeout(() => {
+        mapComponentRef.value?.forceUpdateMap();
+      }, 100);
+    });
   }
 };
 </script>

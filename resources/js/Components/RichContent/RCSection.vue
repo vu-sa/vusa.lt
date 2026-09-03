@@ -11,7 +11,7 @@
     bleed && 'rc-viewport',
   ]">
     <div :class="['container relative z-10 mx-auto px-4', INNER_CLASS[inner]]">
-      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" />
+      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" :inverted="background === 'brand' || background === 'ink'" />
       <slot />
     </div>
   </section>

@@ -11,7 +11,16 @@
       :class="
         cn(
           'origin-top-center relative h-[var(--reka-navigation-menu-viewport-height)] w-full overflow-hidden'
-          + ' border border-border bg-popover text-popover-foreground shadow-2xl'
+          // Light mode: no border, only `shadow-2xl` separates the panel from the page —
+          // this panel routinely holds full-bleed dark photo cards (see
+          // MainNavigationMenuContent's media columns) that reach the panel edge, and even a
+          // soft light-mode `--border` read as an outline around the photo. Dark mode keeps its
+          // border: `--border` there is translucent white, which reads as a subtle frame rather
+          // than a seam against dark imagery. High-contrast mode restores the border in light
+          // mode too: `--border` becomes near-black there, and a shadow alone isn't enough
+          // separation for that preference.
+          + ' dark:border dark:border-border/50 [.a11y-contrast_&]:border [.a11y-contrast_&]:border-border'
+          + ' bg-popover text-popover-foreground shadow-2xl'
           + ' data-[state=open]:animate-in data-[state=closed]:animate-out'
           + ' data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90',
           props.class,

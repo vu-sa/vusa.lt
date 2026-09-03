@@ -9,7 +9,7 @@
   ]"
     :id="anchorId ? `rc-${anchorId}` : undefined">
     <div :class="['container relative z-10 mx-auto px-4', INNER_CLASS[inner]]">
-      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" />
+      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" :inverted="background === 'brand' || background === 'ink'" />
       <!-- A nested `.rc-canvas` so wrapped child blocks keep their own independent
            per-block widths (prose/content/wide/full) exactly like the page-level
            canvas — see `.rc-canvas-nested` in app.css for why `--rc-measure` needs a

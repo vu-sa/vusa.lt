@@ -14,7 +14,7 @@
     :skip-delay-duration="200"
   >
     <NavigationMenuList>
-      <NavigationMenuItem v-for="item in mainNavigation" :key="item.name" class="list-none">
+      <NavigationMenuItem v-for="item in mainNavigation" :key="item.name" :value="item.name" class="list-none">
         <!-- Uppercase, `whitespace-nowrap shrink-0`: the primary nav must never wrap to a second
              line. If labels stop fitting, shorten them or raise the desktop breakpoint. Colour and
              hover come from navigationMenuTriggerStyle, which is tokenised. -->
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
@@ -48,4 +48,12 @@ const mainNavigation = computed(() => usePage().props.mainNavigation);
 function closeMenu() {
   activeMenuItem.value = undefined;
 }
+
+// TEMP DEBUG: force the first item's mega menu open on load so borders can be inspected
+// without hovering. Revert before merging.
+watch(mainNavigation, (items) => {
+  if (items?.length && !activeMenuItem.value) {
+    activeMenuItem.value = items[0].name;
+  }
+}, { immediate: true });
 </script>

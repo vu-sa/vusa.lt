@@ -49,6 +49,12 @@
   --input: oklch(0.76 0.01 78);
   --ring: oklch(0.48 0.18 25);
 
+  /* Light mode's `--border` is already fully opaque, so it renders identically regardless of
+     what's behind it — no flattening needed. Defined anyway so `.u-hairline` (below) can use one
+     token in both themes without a `dark:` variant. See the dark block for why dark mode's
+     version differs. */
+  --border-opaque: var(--border);
+
   /* Cornery, not round — a hard rule of the design. `rounded-full` is unaffected by this and
      has to be removed per component. */
   --radius: 0rem;
@@ -91,6 +97,15 @@
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 14%);
   --ring: oklch(0.82 0.152 72);
+
+  /* An opaque flattening of `--border`'s 12%-white-over-background recipe. `--border` itself is
+     translucent so it reads correctly against the many different surfaces it sits on (cards,
+     popovers, images) — but that means the *same* `--border` renders as a visibly different RGB
+     depending on what's directly behind it. Two elements that must look identically weighted
+     regardless of their own local background (e.g. the header's `border-b` and the section
+     directly below it, which sit on differently-tinted, differently-transparent backgrounds)
+     should use this instead. */
+  --border-opaque: color-mix(in oklab, white 12%, var(--background));
 }
 
 /* ------------------------------------------------------------------ */

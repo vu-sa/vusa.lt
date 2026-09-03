@@ -1,5 +1,8 @@
 <template>
-  <section class="relative z-5 border-t border-border bg-secondary/50">
+  <!-- border-(--border-opaque): matches the header's own border-color override directly above —
+       see that comment for why the plain translucent --border renders differently here
+       (bg-secondary/50) than it does on the header (bg-background/90). -->
+  <section class="relative z-5 border-t border-(--border-opaque) bg-secondary/50">
     <div class="mx-auto grid h-11 max-w-7xl grid-cols-[min-content__1fr] items-center px-5 sm:px-6 lg:px-8">
       <SmartLink prefetch href="/"
         class="mr-6 whitespace-nowrap text-xs font-bold uppercase tracking-[0.2em] text-brand transition-colors hover:text-foreground">

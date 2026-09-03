@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.39 — Viešos svetainės navigacija (2026-09-03) {#v1-39}
+
+- 🔧 **Padalinių žemėlapis atsidaro ir priartėja sklandžiai** — `+`, `−` ir padalinių grupės nebeperkrauna vaizdo, pakartotinai atidarytas meniu nebesusitraukia pavėluotai, tamsiame režime nebesumirksi baltas fonas, o priartinimo mygtukai priderinti prie naujo viešos svetainės stiliaus
+
 ## v1.38 — Angliška darbotvarkė ir pertraukos (2026-09-02) {#v1-38}
 
 - ⭐ **Darbotvarkės punktus galima įvesti ir angliškai** — punkto pavadinimą, aprašymą, studentų poziciją ir balsavimų pavadinimus dabar galima išversti. Darbotvarkės punkto lange atsirado vėliavėlės mygtukas, kuris vienu paspaudimu perjungia visus laukus į anglų kalbą; neišvertus nieko nesikeičia

@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.39 — Public-site navigation (2026-09-03) {#v1-39}
+
+- 🔧 **The tenant map opens and zooms smoothly** — `+`, `−`, and tenant clusters no longer reload the view, a reopened menu no longer collapses from a stale delay, dark mode no longer flashes white, and the zoom controls now match the new public-site styling
+
 ## v1.38 — English agendas and breaks (2026-09-02) {#v1-38}
 
 - ⭐ **Agenda items can now be written in English** — an item's title, description, student position and vote labels are translatable. The agenda item page gained a flag button that switches every field to English at once; leave it alone and nothing about the page changes
