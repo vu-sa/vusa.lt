@@ -25,19 +25,19 @@ const variant = computed(() => (props.element.options?.variant as 'outline' | 's
 // `color` is an accent only now (a left rail on `outline`), never a tinted background —
 // red/yellow washes read as alerts, which most cards aren't.
 const SURFACE: Record<string, string> = {
-  outline: 'bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/60 hover:shadow-lg hover:ring-zinc-300 dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600',
-  soft: 'bg-gradient-to-br from-zinc-100 to-zinc-50 ring-0 shadow-sm hover:shadow-md dark:from-zinc-800 dark:to-zinc-900/60',
+  outline: 'border border-border bg-card hover:border-brand',
+  soft: 'bg-secondary/40 hover:bg-secondary/70',
 };
 
 const ACCENT_RAIL: Record<string, string> = {
-  red: `before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-red/70 before:content-['']`,
-  yellow: `before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-yellow/80 before:content-['']`,
+  red: `before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-brand/70 before:content-['']`,
+  yellow: `before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-vusa-yellow/80 before:content-['']`,
 };
 
 const TITLE_ACCENT: Record<string, string> = {
-  zinc: 'text-zinc-900 dark:text-zinc-100',
-  red: 'text-vusa-red dark:text-red-400',
-  yellow: 'text-yellow-700 dark:text-vusa-yellow',
+  zinc: 'text-foreground',
+  red: 'text-brand',
+  yellow: 'text-vusa-yellow-dark dark:text-vusa-yellow',
 };
 
 const surfaceClass = computed(() => {

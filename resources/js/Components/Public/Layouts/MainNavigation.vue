@@ -2,7 +2,7 @@
   <header class="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur-sm">
     <!-- Primary bar. `relative` so the mega-menu panel positions against this row and spans the
          full header width. -->
-    <div class="relative mx-auto flex h-16 max-w-[84rem] items-center gap-6 px-4 lg:px-8">
+    <div class="relative mx-auto flex h-16 max-w-7xl items-center gap-6 px-5 sm:px-6 lg:px-8">
       <SmartLink
         prefetch
         :title="$t('Grįžti į pagrindinį puslapį')"
@@ -20,18 +20,29 @@
         {{ $t($page.props.tenant?.shortname ?? '') }}
       </span>
 
-      <PadalinysSelector class="max-lg:hidden" :size="smallerThanSm ? 'tiny' : 'small'" />
+      <!-- Wrapped rather than classed directly: PadalinysSelector's root is reka's renderless
+           `Popover`, which has no element to inherit a fallthrough class, so `max-lg:hidden`
+           silently vanished and the selector kept its 156px on a phone — pushing the menu button
+           clean off the viewport. -->
+      <div class="max-lg:hidden">
+        <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" />
+      </div>
 
       <!-- `ml-auto` here, not on the utility cluster: the design groups the nav to the right,
            adjacent to the icons, with the gap after Padaliniai. -->
       <MainMenu class="ml-auto max-lg:hidden" />
 
       <!-- Icon-only on purpose: wordy buttons here push the primary nav onto a second line at
-           mid-laptop widths. The LT switch lives in the secondary bar for the same reason. -->
+           mid-laptop widths. The LT switch lives in the secondary bar for the same reason.
+
+           Below `lg` only the menu button survives. Four controls plus the wordmark do not fit a
+           phone — they overflowed the bar and pushed the menu button itself off-screen — and all
+           three are already in the menu panel's footer, so nothing is lost by collapsing them
+           into it. -->
       <div class="flex shrink-0 items-center gap-2 max-lg:ml-auto">
-        <SearchButton size="icon" :class="navButtonClass" />
-        <AccessibilityMenu :class="navButtonClass" />
-        <DarkModeSwitch size="icon" :class="navButtonClass" />
+        <SearchButton size="icon" :class="cn(navButtonClass, 'max-lg:hidden')" />
+        <AccessibilityMenu :class="cn(navButtonClass, 'max-lg:hidden')" />
+        <DarkModeSwitch size="icon" :class="cn(navButtonClass, 'max-lg:hidden')" />
         <MobileNavigation :class="cn(navButtonClass, 'lg:hidden')" />
       </div>
     </div>

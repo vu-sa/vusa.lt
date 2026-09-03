@@ -30,7 +30,7 @@ const { element } = defineProps<{
 
 const colorClass = computed(() => {
   if (element.options.color === 'zinc' || element.options.color === undefined) {
-    return 'text-zinc-800 dark:text-zinc-50';
+    return 'text-foreground';
   }
   else {
     return `text-vusa-${element.options.color}`;

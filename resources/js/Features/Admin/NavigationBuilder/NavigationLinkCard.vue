@@ -198,7 +198,7 @@ defineEmits<{
   (event: 'delete'): void;
 }>();
 
-const linkType = computed(() => props.link.extra_attributes?.type ?? 'block-link');
+const linkType = computed(() => props.link.extra_attributes?.type ?? 'link');
 
 const isStructural = computed(() => linkType.value === 'divider' || linkType.value === 'heading');
 const isFullHeight = computed(() => linkType.value === 'full-height-background-link');
@@ -226,7 +226,6 @@ const typeIcon = computed(() => {
     case 'divider': return Minus;
     case 'heading': return Type;
     case 'full-height-background-link':
-    case 'block-link':
     case 'category-link': return Square;
     default: return LinkIcon;
   }

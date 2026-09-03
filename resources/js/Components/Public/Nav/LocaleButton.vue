@@ -4,10 +4,12 @@
       <Button
         variant="ghost"
         :size="props.size || 'sm'"
-        class="gap-2 tracking-normal"
+        class="gap-2 tracking-normal text-muted-foreground transition-colors
+          hover:bg-transparent hover:text-brand
+          dark:hover:bg-transparent dark:hover:text-brand"
       >
         <LocaleFlag :locale />
-        <span class="font-medium tracking-wide text-foreground">
+        <span class="font-medium tracking-wide">
           {{ locale === "lt" ? "LT" : "EN" }}
         </span>
         <IFluentChevronDown24Regular class="h-4 w-4 opacity-50 transition-transform duration-200"

@@ -133,7 +133,6 @@ export interface Hero {
       text: string;
       link: string;
       variant?: 'default' | 'outline';
-      color?: 'red' | 'yellow' | 'zinc' | 'white';
       /** CMS-stored icon name (see `cardIcons.ts`), rendered before the button text. Optional — most buttons have none. */
       icon?: string;
     }[];
@@ -245,6 +244,8 @@ export interface NewsItem {
   publish_time: string;
   permalink: string | null;
   image: string;
+  /** Localized category name, or null for the many articles filed under none. */
+  category?: string | null;
 }
 
 export interface CarouselSlideDeck {

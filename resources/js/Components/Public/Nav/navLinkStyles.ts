@@ -1,4 +1,4 @@
-import type { NavItem, NavLink } from './types';
+import type { NavLink } from './types';
 
 /**
  * Static Tailwind class lookup tables for the presentation attributes editors set in
@@ -45,26 +45,6 @@ export const colsClass: Record<number, string> = {
   3: 'lg:grid-cols-3',
 };
 
-/**
- * `item.menu_width` → dropdown width. `wide` is the default and matches the menu's
- * original fixed width (650/800px) regardless of column count — a 1-column dropdown
- * like a plain link list looks identical to how it always has unless an editor
- * explicitly opts into a narrower or auto-scaled width.
- */
-export const menuWidthClass: Record<NonNullable<NavItem['menu_width']>, string> = {
-  narrow: 'max-lg:w-[340px] lg:w-[320px] xl:w-[360px]',
-  medium: 'max-lg:w-[340px] lg:w-[500px] xl:w-[560px]',
-  wide: 'max-lg:w-[340px] lg:w-[650px] xl:w-[800px]',
-  auto: '',
-};
-
-/** Used only when `menu_width` is `auto` — scales with the actual column count. */
-const autoDropdownWidthClass: Record<number, string> = {
-  1: 'max-lg:w-[340px] lg:w-[320px] xl:w-[360px]',
-  2: 'max-lg:w-[340px] lg:w-[500px] xl:w-[560px]',
-  3: 'max-lg:w-[340px] lg:w-[650px] xl:w-[800px]',
-};
-
 // `badge_variant` needs no class map of its own — it's already a valid `Badge`
 // `variant` prop value (rose/emerald/amber/sky/zinc; see Components/ui/badge/index.ts),
 // so the template passes it straight through.
@@ -88,14 +68,4 @@ export function resolveColSpan(link: NavLink): string {
 
 export function resolveCols(cols: number | undefined): string {
   return colsClass[cols ?? 1] ?? colsClass[1];
-}
-
-export function resolveDropdownWidth(menuWidth: NavItem['menu_width'], cols: number | undefined): string {
-  const width = menuWidth ?? 'wide';
-
-  if (width === 'auto') {
-    return autoDropdownWidthClass[cols ?? 1] ?? autoDropdownWidthClass[1];
-  }
-
-  return menuWidthClass[width];
 }

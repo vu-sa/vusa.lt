@@ -56,9 +56,6 @@ abstract class NavigationRequest extends FormRequest
             'extra_attributes.column' => 'nullable|integer|between:1,3',
             'extra_attributes.col_span' => 'nullable|integer|between:1,3',
             'extra_attributes.cols' => 'nullable|integer|between:1,3',
-            // Root items only — the dropdown's own width, independent of its column
-            // count. `wide` matches the menu's pre-redesign fixed width.
-            'extra_attributes.menu_width' => 'nullable|string|in:narrow,medium,wide,auto',
             'extra_attributes.icon' => 'nullable|string|max:100',
             'extra_attributes.description' => 'nullable|string|max:500',
             'extra_attributes.small_text' => 'nullable|string|max:200',
@@ -66,6 +63,11 @@ abstract class NavigationRequest extends FormRequest
             'extra_attributes.featured' => 'nullable|boolean',
             'extra_attributes.new_tab' => 'nullable|boolean',
             'extra_attributes.image' => 'nullable|string|max:500',
+            // Image-card copy: an eyebrow above the headline and a call-to-action label below it,
+            // both part of the design's featured card and meaningless without an image.
+            'extra_attributes.eyebrow' => 'nullable|string|max:100',
+            'extra_attributes.cta' => 'nullable|string|max:100',
+            'extra_attributes.image_height' => 'nullable|string|in:short,tall',
             'extra_attributes.image_render' => 'nullable|string|in:card,thumbnail',
             'extra_attributes.image_overlay' => 'nullable|string|in:none,light,medium,heavy',
             'extra_attributes.image_blur' => 'nullable|integer|in:0,2,4,8',

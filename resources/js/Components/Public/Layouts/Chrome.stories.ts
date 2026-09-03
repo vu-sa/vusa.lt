@@ -18,7 +18,7 @@ import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
  * middleware and PublicController respectively), so they are stubbed here rather than passed in.
  */
 /** `NavItem.links` is an array of columns, each an array of links — not a flat list. */
-const navItem = (name: string, columns: unknown[][]) => ({ id: name, name, cols: columns.length, menu_width: 'wide', links: columns });
+const navItem = (name: string, columns: unknown[][]) => ({ id: name, name, cols: columns.length, links: columns });
 
 const link = (name: string, description?: string, extra: Record<string, unknown> = {}) => ({
   id: name,

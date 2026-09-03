@@ -355,7 +355,21 @@ describe('NewsBlockResolver / CalendarBlockResolver bridges', function (): void 
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         expect($resolved[$part->id]['type'])->toBe('news')
-            ->and($resolved[$part->id]['items'][0])->toHaveKeys(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image']);
+            ->and($resolved[$part->id]['items'][0])->toHaveKeys(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'category']);
+    });
+
+    test('news bridge carries the category name, and null when the article has none', function (): void {
+        $category = Category::factory()->create(['name' => ['lt' => 'Akademinė informacija', 'en' => 'Academic information']]);
+        News::factory()->for($this->tenant)->for($category)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
+        News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(2), 'category_id' => null]);
+
+        $part = makeResolvablePart('news', ['title' => '']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $categories = collect($resolved[$part->id]['items'])->pluck('category')->all();
+
+        expect($categories)->toContain('Akademinė informacija')
+            ->and($categories)->toContain(null);
     });
 
     test('calendar bridge excludes drafts and is not tenant-scoped', function (): void {

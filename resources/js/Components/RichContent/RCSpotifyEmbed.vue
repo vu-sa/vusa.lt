@@ -3,8 +3,10 @@
        class RichContentParser passes via :class (no single target to fall through to). -->
   <div>
     <RCMixcloudEmbed v-if="isMixcloud" :element />
-    <div v-else class="w-full my-8">
-      <iframe class="block w-full h-[352px] rounded-xl" :src="embedUrl" frameborder="0" allowtransparency="true"
+    <!-- Hairline frame, square corners: an embed is still a block on this surface, so it is
+         ruled off like every other one rather than floating as a rounded card. -->
+    <div v-else class="my-8 w-full border border-border">
+      <iframe class="block w-full h-[352px]" :src="embedUrl" frameborder="0" allowtransparency="true"
         allow="encrypted-media" title="Spotify Embed" />
     </div>
   </div>

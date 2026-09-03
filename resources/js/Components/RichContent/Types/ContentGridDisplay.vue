@@ -47,7 +47,7 @@
                 :show-cover-fallback="false"
                 :class="processedOptions.equalHeight ? 'h-full' : ''"
               >
-                <p v-if="column.content.value?.description" class="text-sm text-zinc-600 dark:text-zinc-400">
+                <p v-if="column.content.value?.description" class="text-sm text-muted-foreground">
                   {{ column.content.value.description }}
                 </p>
               </RCFeatureCard>

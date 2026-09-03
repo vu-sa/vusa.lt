@@ -2,180 +2,136 @@
   <!-- Single root: with 4 sibling v-if/else-if/else branches, RichContentParser's
        width/spacing :class had no single element to fall through to. -->
   <div>
-  <div v-if="loading" class="py-4 px-4 md:px-8 lg:px-12">
-    <div class="w-full max-w-7xl mx-auto">
-      <div class="grid gap-6 lg:gap-8 grid-cols-1 lg:grid-cols-[2fr_1fr]">
+    <section class="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="news-section-heading">
+      <!-- Section head: eyebrow + display heading on the left, the archive link on the right,
+           closed by the hairline that every band on this surface is separated by. -->
+      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
+        <div>
+          <EyebrowLabel v-if="showEyebrow">{{ $t('Naujienos') }}</EyebrowLabel>
+          <h2 id="news-section-heading" class="u-display mt-2 text-3xl text-foreground sm:text-4xl">
+            {{ heading }}
+          </h2>
+        </div>
+        <SmartLink
+          :href="archiveHref"
+          prefetch
+          class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-foreground transition-colors hover:text-brand"
+        >
+          {{ $t('Žiūrėti visas') }}
+          <IFluentArrowRight16Regular class="size-4" />
+        </SmartLink>
+      </div>
+
+      <div v-if="loading" class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-10">
         <div class="space-y-4">
-          <Skeleton class="aspect-video w-full rounded-lg" />
+          <Skeleton class="aspect-[16/10] w-full" />
           <Skeleton class="h-4 w-32" />
           <Skeleton class="h-8 w-3/4" />
           <Skeleton class="h-20 w-full" />
         </div>
-        <div class="space-y-3">
-          <Skeleton class="h-6 w-24" />
-          <div v-for="i in 4" :key="i" class="flex items-center gap-3 py-2">
-            <Skeleton class="w-16 h-12 rounded flex-shrink-0" />
-            <div class="flex-1 space-y-2">
-              <Skeleton class="h-3 w-full" />
-              <Skeleton class="h-2 w-20" />
+        <div class="flex flex-col">
+          <div v-for="i in 3" :key="i" class="flex gap-4 border-t border-border py-5 first:border-t-0 first:pt-0 sm:gap-5">
+            <Skeleton class="aspect-[16/10] w-32 shrink-0 sm:w-44" />
+            <div class="flex-1 space-y-2 py-1">
+              <Skeleton class="h-3 w-20" />
+              <Skeleton class="h-4 w-full" />
+              <Skeleton class="h-3 w-24" />
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-  <div v-else-if="error" class="py-4 px-4 md:px-8 lg:px-12 text-red-500" role="alert">
-    <div class="max-w-7xl mx-auto">
-      {{ $t("Nepavyko užkrauti naujienų") }}
-    </div>
-  </div>
-  <section v-else-if="newsItems && newsItems.length > 0" class="py-4 px-4 md:px-8 lg:px-12" aria-labelledby="news-section-heading">
-    <h2 id="news-section-heading" class="sr-only">
-      {{ $t("accessibility.news_and_announcements") }}
-    </h2>
-    <div class="max-w-7xl mx-auto grid gap-6 lg:gap-8 grid-cols-1 lg:grid-cols-[2fr_1fr]">
-      <!-- Main Carousel -->
-      <section class="relative" aria-labelledby="featured-news-heading">
-        <h3 id="featured-news-heading" class="sr-only">
-          {{ $t("accessibility.featured_news") }}
-        </h3>
-        <Carousel v-if="newsItems.length" class="w-full" :opts="{ loop: true, skipSnaps: false }" :plugins="carouselPlugins"
-          role="region" aria-label="Featured news carousel" @init-api="onCarouselInit">
-          <CarouselContent>
-            <CarouselItem v-for="(item, itemIndex) in newsItems" :key="item.id">
-              <div class="flex flex-col">
-                <SmartLink :href="getNewsRoute(item)" prefetch>
-                  <div class="overflow-hidden rounded-xl aspect-video group/img">
-                    <img :src="getImageSrc(item.image)" :alt="item.title"
-                      class="w-full h-full object-cover rounded-xl transition-all duration-300 group-hover/img:brightness-105 group-hover/img:contrast-[1.02]"
-                      width="800"
-                      height="450"
-                      :loading="itemIndex === 0 ? 'eager' : 'lazy'"
-                      :fetchpriority="itemIndex === 0 ? 'high' : undefined"
-                      :style="currentSlide === itemIndex ? { viewTransitionName: `news-image-${item.id}` } : {}">
-                  </div>
-                </SmartLink>
-                <p v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 mt-3 text-sm sm:text-base">
-                  {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
-                                      $page.props.app.locale) }}
-                </p>
-                <SmartLink :href="getNewsRoute(item)" prefetch>
-                  <h2
-                    class="font-heading mt-2 font-bold text-lg sm:text-xl lg:text-2xl leading-tight text-zinc-800 line-clamp-2 dark:text-zinc-50 hover:text-vusa-red transition-colors">
-                    {{ item.title }}
-                  </h2>
-                </SmartLink>
-                <div class="leading-relaxed mt-3 text-zinc-600 dark:text-zinc-400 line-clamp-3 text-sm sm:text-base">
-                  <div v-html="item.short" />
-                </div>
-              </div>
-            </CarouselItem>
-          </CarouselContent>
-        </Carousel>
-      </section>
 
-      <!-- Sidebar News List -->
-      <aside class="flex flex-col gap-4" aria-labelledby="latest-news-heading">
-        <h3 id="latest-news-heading" class="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">
-          {{ $t("Naujausios") }}
-        </h3>
+      <p v-else-if="error" class="mt-8 text-destructive" role="alert">
+        {{ $t("Nepavyko užkrauti naujienų") }}
+      </p>
 
-        <!-- Mobile horizontal scrolling list using ScrollArea -->
-        <div class="lg:hidden -mx-4 md:-mx-8">
-          <ScrollArea class="w-full" orientation="horizontal">
-            <div class="flex gap-3 pb-4 pt-1 pl-5 pr-4 md:pl-9 md:pr-8">
-              <button v-for="(item, index) in newsItems" :key="`mobile-${item.id}`"
-                class="flex-shrink-0 w-44 overflow-hidden rounded-lg bg-white dark:bg-zinc-800/50 shadow-sm transition-all hover:shadow-md"
-                :class="{
-                  'ring-2 ring-vusa-red ring-offset-2 ring-offset-zinc-50 dark:ring-offset-zinc-900': currentSlide === index
-                }" :aria-label="`${$t('Rodyti naujieną')}: ${item.title}`" @click="selectSlide(index)">
-                <div class="aspect-video overflow-hidden">
-                  <img :src="getImageSrc(item.image)" :alt="item.title" loading="lazy" class="w-full h-full object-cover" width="176"
-                    height="99">
-                </div>
-                <div class="p-2.5">
-                  <p class="text-zinc-800 dark:text-zinc-200 font-semibold text-xs leading-tight line-clamp-2"
-                    :class="{ 'text-vusa-red': currentSlide === index }">
-                    {{ item.title }}
-                  </p>
-                  <p v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 text-xs mt-1">
-                    {{ formatStaticTime(new Date(item.publish_time), { month: "short", day: "numeric" },
-                                        $page.props.app.locale) }}
-                  </p>
-                </div>
-              </button>
-            </div>
-          </ScrollArea>
-        </div>
+      <p v-else-if="!featured" class="mt-8 text-muted-foreground">
+        {{ $t("Nėra naujienų") }}
+      </p>
 
-        <!-- Desktop vertical list -->
-        <div class="hidden lg:flex flex-col gap-1.5">
-          <SmartLink v-for="(item, index) in newsItems" :key="`desktop-${item.id}`" :href="getNewsRoute(item)"
-            class="flex items-center gap-3 py-2 px-2 rounded-lg transition-colors cursor-pointer relative hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
-            :class="{ 'bg-zinc-100 dark:bg-zinc-800/50': currentSlide === index }"
-            :aria-current="currentSlide === index ? 'true' : 'false'" @click.prevent="selectSlide(index)">
-            <div v-if="currentSlide === index" class="absolute left-0 top-2 bottom-2 w-0.5 bg-vusa-red rounded-full" style="width: 3px;" />
-            <div class="ml-2 overflow-hidden rounded-md aspect-[4/3] flex-shrink-0" style="width: 80px;">
-              <img :src="getImageSrc(item.image)" :alt="item.title" loading="lazy" class="w-full h-full object-cover" width="80"
-                height="60">
-            </div>
-            <div class="flex flex-col flex-1 min-w-0">
-              <span class="text-zinc-800 dark:text-zinc-200 font-semibold text-sm leading-tight line-clamp-2 transition-colors"
-                :class="{ 'text-vusa-red': currentSlide === index }">
-                {{ item.title }}
+      <div v-else class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-10">
+        <!-- Featured: the one article that gets a picture at full width. Its image keeps its
+             colour — the grayscale treatment is for photography sitting *behind* type. -->
+        <SmartLink :href="getNewsRoute(featured)" prefetch class="group flex flex-col">
+          <MediaFrame
+            :src="getImageSrc(featured.image)"
+            :alt="featured.title"
+            ratio="16/10"
+            :grayscale="false"
+            hover-zoom
+            eager
+            class="bg-secondary"
+          >
+            <TagChip v-if="featured.category" class="absolute left-0 top-0" :label="featured.category" />
+          </MediaFrame>
+          <div class="mt-5 flex flex-1 flex-col">
+            <span v-if="featured.publish_time" class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              {{ longDate(featured.publish_time) }}
+            </span>
+            <h3 class="mt-3 text-pretty text-2xl font-bold leading-tight text-foreground transition-colors group-hover:text-brand sm:text-[1.7rem]">
+              {{ featured.title }}
+            </h3>
+            <div class="mt-3 line-clamp-3 text-pretty leading-relaxed text-muted-foreground" v-html="featured.short" />
+            <span class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand">
+              {{ $t('Skaityti daugiau') }}
+              <IFluentArrowUpRight16Regular class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </span>
+          </div>
+        </SmartLink>
+
+        <!-- The rest as a hairline list. Rows are separate links, not slide selectors: the
+             design has no carousel here, so every headline is one click from the reader. -->
+        <div class="flex flex-col">
+          <SmartLink
+            v-for="item in rest"
+            :key="item.id"
+            :href="getNewsRoute(item)"
+            prefetch
+            class="group flex gap-4 border-t border-border py-5 first:border-t-0 first:pt-0 sm:gap-5 lg:first:border-t lg:first:pt-5"
+          >
+            <MediaFrame
+              :src="getImageSrc(item.image)"
+              :alt="item.title"
+              ratio="16/10"
+              :grayscale="false"
+              hover-zoom
+              class="w-32 shrink-0 sm:w-44"
+            />
+            <div class="flex flex-1 flex-col justify-center gap-1.5">
+              <span v-if="item.category" class="text-[11px] font-bold uppercase tracking-[0.18em] text-brand">
+                {{ item.category }}
               </span>
-              <span v-if="item.publish_time" class="text-zinc-500 dark:text-zinc-400 text-xs mt-1.5">
-                {{ formatStaticTime(new Date(item.publish_time), { year: "numeric", month: "long", day: "numeric" },
-                                    $page.props.app.locale) }}
+              <h3 class="text-pretty font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
+                {{ item.title }}
+              </h3>
+              <span v-if="item.publish_time" class="text-xs font-medium text-muted-foreground">
+                {{ longDate(item.publish_time) }}
               </span>
             </div>
           </SmartLink>
         </div>
-
-        <SmartLink :href="route('newsArchive', {
-          subdomain: $page.props.tenant?.subdomain ?? 'www',
-          lang: $page.props.app.locale,
-        })" prefetch class="inline-flex items-center gap-1.5 font-bold mt-2 text-zinc-900 dark:text-zinc-100 hover:text-vusa-red transition-colors">
-          <span>{{ $t("Žiūrėti visas") }}</span>
-          <IFluentArrowRight16Regular />
-        </SmartLink>
-      </aside>
-    </div>
-  </section>
-  <div v-else class="py-4 px-4 md:px-8 lg:px-12 text-center text-zinc-500 dark:text-zinc-400">
-    <div class="max-w-7xl mx-auto">
-      {{ $t("Nėra naujienų") }}
-    </div>
-  </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import Autoplay from 'embla-carousel-autoplay';
-import Fade from 'embla-carousel-fade';
 
 import SmartLink from './SmartLink.vue';
 
 import type { News, NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { useNewsFetch } from '@/Services/ContentService';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from '@/Components/ui/carousel';
-import { ScrollArea } from '@/Components/ui/scroll-area';
+import { EyebrowLabel, MediaFrame, TagChip } from '@/Components/Public/Base';
 import { Skeleton } from '@/Components/ui/skeleton';
 
 // Fallback image for news without images
 const FALLBACK_IMAGE = '/images/icons/naujienu_foto.png';
 
-// Helper to get image with fallback
 const getImageSrc = (image: string | null): string => image ?? FALLBACK_IMAGE;
 
 // Props - element is from content parts. `resolved` is the server-resolved payload
@@ -193,8 +149,12 @@ const page = usePage();
 
 const serverNews = computed<NewsItem[] | undefined>(() => props.resolved?.items ?? props.prefetchedNews);
 
-// Use server-provided news if available, otherwise fall back to a client fetch.
-const hasPrefetchedNews = computed(() => !!serverNews.value && serverNews.value.length > 0);
+/**
+ * Presence, not emptiness. `[]` from the resolver means "the server looked and there is nothing
+ * to show" — treating that as "no data" sent the component off to fetch the same empty answer
+ * over the network, and flashed a skeleton before rendering the same empty state.
+ */
+const hasPrefetchedNews = computed(() => serverNews.value !== undefined);
 
 // Only use API fetch if no server-provided news is available (prevents waterfall on
 // pages that already got it from ContentPartResolver or the homepage prefetch).
@@ -210,67 +170,35 @@ const newsItems = computed<NewsItem[]>(() => {
   return apiFetchedNews.value as NewsItem[] ?? [];
 });
 
-// Loading state: only show loading when using API fetch and it's loading
 const loading = computed(() => !hasPrefetchedNews.value && apiLoading.value);
-
-// Error state: only show error when using API fetch and there's an error
 const error = computed(() => !hasPrefetchedNews.value && apiError.value);
 
-// Carousel state
-const carouselApi = ref<CarouselApi | null>(null);
-const currentSlide = ref(0);
-const autoplayApi = ref<any>(null);
+const heading = computed(() => props.element?.json_content?.title || $t('Kas naujo bendruomenėje'));
 
-// Plugin options - configured for better user experience
-const autoplayOptions = {
-  delay: 5000,
-  stopOnInteraction: false,
-  stopOnMouseEnter: true,
-  rootNode: (emblaRoot: HTMLElement) => emblaRoot,
-};
+/**
+ * Most authored blocks are titled simply "Naujienos", which is also the eyebrow. Showing both
+ * stacks the same word twice, so the eyebrow steps aside whenever the author has already said it.
+ */
+const showEyebrow = computed(() => heading.value.trim().toLowerCase() !== $t('Naujienos').trim().toLowerCase());
 
-// Combined plugins for performance optimization
-const carouselPlugins = [
-  Autoplay(autoplayOptions),
-  Fade(),
-];
+const featured = computed<NewsItem | undefined>(() => newsItems.value[0]);
+// Three, not "the rest": the list column is sized against the featured article beside it, and
+// a fourth row makes the two columns visibly uneven.
+const rest = computed<NewsItem[]>(() => newsItems.value.slice(1, 4));
 
-// Helper function to create news route
-const getNewsRoute = (item: any) => localizedRoute('news', {
+const longDate = (time: string) => formatStaticTime(
+  new Date(time),
+  { year: 'numeric', month: 'long', day: 'numeric' },
+  page.props.app.locale,
+);
+
+const getNewsRoute = (item: NewsItem) => localizedRoute('news', {
   news: item.permalink ?? '',
   subdomain: page.props.tenant?.subdomain ?? 'www',
 }, item.lang);
 
-// Manually select a slide - improved for accessibility
-const selectSlide = (index: number) => {
-  if (!carouselApi.value) return;
-  carouselApi.value.scrollTo(index);
-};
-
-// Carousel initialization with proper event handling
-const onCarouselInit = (api: CarouselApi) => {
-  if (!api) return;
-
-  carouselApi.value = api;
-
-  // Get autoplay plugin API
-  const pluginApis = api.plugins();
-  if (pluginApis && pluginApis.autoplay) {
-    autoplayApi.value = pluginApis.autoplay;
-  }
-
-  // Set initial slide
-  currentSlide.value = api.selectedScrollSnap();
-
-  // Listen for slide changes
-  api.on('select', () => {
-    currentSlide.value = api.selectedScrollSnap();
-  });
-};
-
-// Clean up event listeners on component unmount for better performance
-onUnmounted(() => {
-  // Embla carousel cleans up listeners automatically when destroyed
-  carouselApi.value = null;
-});
+const archiveHref = computed(() => route('newsArchive', {
+  subdomain: page.props.tenant?.subdomain ?? 'www',
+  lang: page.props.app.locale,
+}));
 </script>

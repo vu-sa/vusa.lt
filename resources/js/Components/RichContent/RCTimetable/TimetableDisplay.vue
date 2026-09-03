@@ -1,22 +1,22 @@
 <template>
   <div
     v-if="rows.length"
-    class="overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/50 dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50"
+    class="overflow-hidden border border-border bg-secondary/40"
   >
-    <div class="flex items-center gap-2 border-b border-zinc-200/60 px-5 py-3 dark:border-zinc-700/60">
-      <IFluentClock20Regular class="size-4 text-vusa-red" />
-      <h3 class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+    <div class="flex items-center gap-2 border-b border-border px-5 py-3">
+      <IFluentClock20Regular class="size-4 text-brand" />
+      <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
         {{ heading }}
       </h3>
     </div>
-    <div class="divide-y divide-zinc-200/60 dark:divide-zinc-700/60">
+    <div class="divide-y divide-border">
       <div
         v-for="(row, index) in rows"
         :key="index"
         class="flex items-center gap-4 px-5 py-3"
       >
-        <span class="w-28 shrink-0 text-base font-bold tabular-nums text-vusa-red">{{ timeRangeLabel(row) }}</span>
-        <span class="min-w-0 flex-1 truncate text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ row.title }}</span>
+        <span class="w-28 shrink-0 text-base font-bold tabular-nums text-brand">{{ timeRangeLabel(row) }}</span>
+        <span class="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{{ row.title }}</span>
       </div>
     </div>
   </div>

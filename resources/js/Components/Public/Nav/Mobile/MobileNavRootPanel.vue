@@ -1,65 +1,81 @@
 <template>
-  <div class="flex flex-col gap-1 p-3">
-    <SearchButton class="flex min-h-11 items-center justify-start gap-3 px-3 py-2.5 text-base font-normal hover:bg-secondary">
-      {{ $t('Paieška') }}
-    </SearchButton>
+  <div>
+    <!-- Tenant quick links as bordered chips, the important one carrying the brand. Chips rather
+         than rows: there are only a handful and they are shortcuts, not a section of the menu. -->
+    <div v-if="tenantLinks.length" class="flex flex-wrap gap-2 border-b border-border p-4">
+      <SmartLink
+        v-for="link in tenantLinks"
+        :key="link?.id"
+        prefetch
+        :href="link?.link ?? '#'"
+        class="inline-flex items-center gap-1.5 border px-3 py-2 text-sm transition-colors"
+        :class="link?.is_important
+          ? 'border-brand font-bold text-brand'
+          : 'border-border font-medium text-muted-foreground hover:text-foreground'"
+        @click="$emit('close')"
+      >
+        <Icon v-if="link?.icon" :icon="`fluent:${link.icon}`" class="size-3.5 shrink-0" />
+        {{ link?.text }}
+      </SmartLink>
+    </div>
 
-    <button
-      v-if="isSwitchAllowed"
-      type="button"
-      class="flex min-h-11 items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
-      @click="$emit('openTenants')"
-    >
-      <IFluentLocation24Regular class="size-5 text-muted-foreground" />
-      <span class="flex-1">{{ tenantLabel }}</span>
-      <IFluentChevronRight24Regular class="size-4 shrink-0 text-muted-foreground" />
-    </button>
+    <!-- Accordion, not a drill-down. Every section is one tap from the top level and the reader
+         keeps their place in the list; the previous stack hid the rest of the menu behind a
+         back button. -->
+    <nav>
+      <div v-if="isSwitchAllowed" class="border-b border-border">
+        <button
+          type="button"
+          :class="sectionTriggerClass"
+          :aria-expanded="openSection === TENANTS_SECTION"
+          @click="toggle(TENANTS_SECTION)"
+        >
+          <span class="flex items-center gap-2">
+            <IFluentLocation24Regular class="size-4 text-brand" />
+            {{ tenantLabel }}
+          </span>
+          <IFluentAdd24Regular :class="togglerClass(TENANTS_SECTION)" />
+        </button>
 
-    <hr class="my-2 border-border">
-
-    <button
-      v-for="(item, index) in mainNavigation"
-      :key="item.name"
-      type="button"
-      class="flex min-h-11 items-center gap-3 px-3 py-2.5 text-left text-base font-medium transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
-      @click="$emit('openSection', index)"
-    >
-      <span class="flex-1">{{ item.name }}</span>
-      <IFluentChevronRight24Regular class="size-4 shrink-0 text-muted-foreground" />
-    </button>
-
-    <template v-if="tenantLinks.length">
-      <p class="mt-4 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {{ $t('navigation.tenant_links', { tenant: tenantShortname }) }}
-      </p>
-      <div class="flex flex-col gap-1 py-1">
-        <QuickLink
-          v-for="link in tenantLinks"
-          :key="link?.id"
-          class="min-h-11 items-center px-3 py-2"
-          :quick-link="link"
-          @click="$emit('close')"
-        />
+        <div v-if="openSection === TENANTS_SECTION" class="bg-secondary/40">
+          <MobileTenantPanel />
+        </div>
       </div>
-    </template>
+
+      <div v-for="(item, index) in mainNavigation" :key="item.name" class="border-b border-border">
+        <button
+          type="button"
+          :class="sectionTriggerClass"
+          :aria-expanded="openSection === index"
+          @click="toggle(index)"
+        >
+          {{ item.name }}
+          <IFluentAdd24Regular :class="togglerClass(index)" />
+        </button>
+
+        <div v-if="openSection === index" class="bg-secondary/40">
+          <MobileNavSectionPanel :item @close="$emit('close')" />
+        </div>
+      </div>
+    </nav>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
+import { Icon } from '@iconify/vue';
 
-import QuickLink from '../QuickLink.vue';
+import SmartLink from '../../SmartLink.vue';
 
-import SearchButton from '@/Components/Public/Nav/SearchButton.vue';
+import MobileNavSectionPanel from './MobileNavSectionPanel.vue';
+import MobileTenantPanel from './MobileTenantPanel.vue';
+
 import { useTenantOptions } from '@/Composables/useTenantOptions';
-import IFluentChevronRight24Regular from '~icons/fluent/chevron-right-24-regular';
+import IFluentAdd24Regular from '~icons/fluent/add-24-regular';
 import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
 
 defineEmits<{
-  openSection: [index: number];
-  openTenants: [];
   close: [];
 }>();
 
@@ -67,8 +83,26 @@ const page = usePage();
 
 const mainNavigation = computed(() => page.props.mainNavigation ?? []);
 const tenantLinks = computed(() => page.props.tenant?.links ?? []);
-const tenantShortname = computed(() => page.props.tenant?.shortname ? $t(page.props.tenant.shortname) : 'VU SA');
 
 const { currentLabel, isSwitchAllowed } = useTenantOptions();
 const tenantLabel = currentLabel();
+
+/** Sentinel for the tenants section, which has no index in `mainNavigation`. */
+const TENANTS_SECTION = -1;
+
+const openSection = ref<number | null>(null);
+
+const toggle = (index: number) => {
+  openSection.value = openSection.value === index ? null : index;
+};
+
+const sectionTriggerClass = 'flex w-full items-center justify-between gap-3 px-4 py-4 text-left '
+  + 'text-base font-bold uppercase tracking-wide text-foreground transition-colors hover:text-brand '
+  + 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring';
+
+/** A plus that rotates into a cross — one mark for both states, as in the design. */
+const togglerClass = (index: number) => [
+  'size-5 shrink-0 text-brand transition-transform duration-200',
+  openSection.value === index && 'rotate-45',
+];
 </script>

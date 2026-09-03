@@ -1,5 +1,5 @@
 import { fn } from 'storybook/test';
-import { defineComponent, h } from 'vue';
+import { defineComponent, h, reactive } from 'vue';
 
 /**
  * Inertia.js mock specifically for Storybook
@@ -17,6 +17,9 @@ export const usePage = fn(() => ({
       subdomain: 'www',
       name: 'VU SA',
       url: 'http://www.vusa.test',
+      // Required: useTenantOptions reads `app.path` to decide whether tenant switching applies
+      // to the current page, so a story rendering any header component throws without it.
+      path: 'lt',
     },
   organization: {
     contacts: { it: 'it@vusa.lt', accounting: 'saskaitos@vusa.lt', phone: '+37052687144' },
@@ -152,6 +155,28 @@ export const useForm = fn((data: Record<string, unknown> = {}) => ({
   cancel: fn(),
 }));
 
+/**
+ * Inertia v3's standalone XHR hook. Reactive so a component reading `http.processing` in a
+ * computed re-renders; the request methods are no-op spies, so a story never reaches the network.
+ * Mirrors `inertia.mock.ts` — a story importing a component that calls `useHttp` (TextBoxDisplay,
+ * TasksIndicator, FileUploadArea) fails to import at all without this export.
+ */
+export const useHttp = fn((data: Record<string, unknown> = {}) => reactive({
+  ...data,
+  processing: false,
+  errors: {},
+  hasErrors: false,
+  response: null,
+  get: fn(),
+  post: fn(),
+  put: fn(),
+  patch: fn(),
+  delete: fn(),
+  cancel: fn(),
+  reset: fn(),
+  clearErrors: fn(),
+}));
+
 // Mock Head component for document meta
 export const Head = defineComponent({
   name: 'InertiaHead',
@@ -191,6 +216,7 @@ export default {
   usePage,
   router,
   useForm,
+  useHttp,
   Head,
   Link,
 };

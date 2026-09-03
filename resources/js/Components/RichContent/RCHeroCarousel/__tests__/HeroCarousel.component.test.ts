@@ -48,8 +48,6 @@ const stubs = {
   Carousel: { template: '<div class="carousel-stub"><slot /></div>' },
   CarouselContent: { template: '<div><slot /></div>' },
   CarouselItem: { template: '<div class="carousel-item-stub"><slot /></div>' },
-  CarouselPrevious: { template: '<button class="carousel-prev" />' },
-  CarouselNext: { template: '<button class="carousel-next" />' },
   SmartLink: { template: '<a :href="href"><slot /></a>' },
   teleport: true,
 };
@@ -99,12 +97,12 @@ describe('HeroCarouselDisplay', () => {
     expect(textBlocks[1]!.classes()).toContain('items-start');
   });
 
-  it('applies the scrim strength option to the overlay layer', () => {
+  it('applies the scrim strength option to the photo, not an extra overlay', () => {
     const light = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'light' }) }, global: { stubs } });
-    expect(light.html()).toContain('bg-zinc-950/20');
+    expect(light.find('img').classes()).toContain('opacity-85');
 
     const dark = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'dark' }) }, global: { stubs } });
-    expect(dark.html()).toContain('bg-zinc-950/60');
+    expect(dark.find('img').classes()).toContain('opacity-55');
   });
 
   it('renders one labelled dot per slide with aria-current on the active one', () => {
@@ -117,32 +115,36 @@ describe('HeroCarouselDisplay', () => {
     expect(dots[1]!.attributes('aria-current')).toBeUndefined();
   });
 
-  it('insets the photos in a rounded panel while the section stays full-bleed', () => {
+  it('runs the band to the viewport edges with no inset panel', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
-    expect(wrapper.find('.overflow-hidden.rounded-2xl').exists()).toBe(true);
-    // Page-gutter padding on the section keeps the panel off the viewport edges and
-    // gives the straddling arrows room.
-    expect(wrapper.find('section').classes()).toContain('px-4');
+    // `rc-viewport` escapes PublicLayout's `.container` column; without it the hero is
+    // clamped to the content measure and stops being a full-bleed band.
+    expect(wrapper.find('section').classes()).toContain('rc-viewport');
+    expect(wrapper.find('.rounded-2xl').exists()).toBe(false);
   });
 
-  it('renders dot indicators below the panel instead of over the photos', () => {
+  it('puts dots and arrows in one bottom bar aligned to the content measure', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
-    const dotsRow = wrapper.find('.mt-3.flex.justify-center');
-    expect(dotsRow.exists()).toBe(true);
-    expect(dotsRow.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(2);
+    const bar = wrapper.find('.absolute.inset-x-0.bottom-0 .max-w-7xl');
+    expect(bar.exists()).toBe(true);
+    expect(bar.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(2);
+    expect(bar.findAll('button[aria-label="accessibility.carousel_previous_slide"]')).toHaveLength(0);
+    // The arrows label themselves through a visually-hidden span rather than aria-label.
+    expect(bar.text()).toContain('accessibility.carousel_previous_slide');
+    expect(bar.text()).toContain('accessibility.carousel_next_slide');
   });
 
   it('applies the default md panel height and honors the height option', () => {
     const defaultHeight = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
-    expect(defaultHeight.find('.carousel-item-stub div').classes()).toContain('h-[55svh]');
+    expect(defaultHeight.find('.carousel-item-stub div').classes()).toContain('min-h-[34rem]');
 
     const small = mount(HeroCarouselDisplay, { props: { element: makeElement([], { height: 'sm' }) }, global: { stubs } });
-    expect(small.find('.carousel-item-stub div').classes()).toContain('h-[42svh]');
+    expect(small.find('.carousel-item-stub div').classes()).toContain('min-h-[28rem]');
 
     const large = mount(HeroCarouselDisplay, { props: { element: makeElement([], { height: 'lg' }) }, global: { stubs } });
-    expect(large.find('.carousel-item-stub div').classes()).toContain('h-[68svh]');
+    expect(large.find('.carousel-item-stub div').classes()).toContain('min-h-[40rem]');
   });
 
   it('hides arrows and dots when there is only one slide', () => {
@@ -150,8 +152,8 @@ describe('HeroCarouselDisplay', () => {
     element.json_content = [element.json_content[0]!];
     const wrapper = mount(HeroCarouselDisplay, { props: { element }, global: { stubs } });
 
-    expect(wrapper.find('.carousel-prev').exists()).toBe(false);
-    expect(wrapper.find('.carousel-next').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('accessibility.carousel_previous_slide');
+    expect(wrapper.text()).not.toContain('accessibility.carousel_next_slide');
     expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(0);
   });
 
@@ -162,8 +164,8 @@ describe('HeroCarouselDisplay', () => {
     });
 
     // Plain truthiness would see "0" as truthy and wrongly render both.
-    expect(wrapper.find('.carousel-prev').exists()).toBe(false);
-    expect(wrapper.find('.carousel-next').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('accessibility.carousel_previous_slide');
+    expect(wrapper.text()).not.toContain('accessibility.carousel_next_slide');
     expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(0);
   });
 
@@ -175,11 +177,13 @@ describe('HeroCarouselDisplay', () => {
   });
 
   it('applies the navbar pull-up margin only as the first element', () => {
+    // Mirrors PublicLayout's content wrapper padding (`pt-4 md:pt-6 lg:pt-8`) so the band
+    // sits flush under the fixed header. Change one, change the other.
     const withMargin = mount(HeroCarouselDisplay, { props: { element: makeElement(), isFirstElement: true }, global: { stubs } });
-    expect(withMargin.find('section').classes()).toContain('-mt-8');
+    expect(withMargin.find('section').classes()).toEqual(expect.arrayContaining(['-mt-4', 'md:-mt-6', 'lg:-mt-8']));
 
     const withoutMargin = mount(HeroCarouselDisplay, { props: { element: makeElement(), isFirstElement: false }, global: { stubs } });
-    expect(withoutMargin.find('section').classes()).not.toContain('-mt-8');
+    expect(withoutMargin.find('section').classes()).not.toContain('-mt-4');
   });
 
   it('anchors the section for ToC scroll targets', () => {

@@ -1,5 +1,8 @@
 <template>
-  <div :class="layoutClasses">
+  <!-- The preview renders on the public surface, because that is where the block will end up:
+       warm paper, square corners, brand red or amber. Without this the editor showed authors an
+       admin-palette version of a block that looks different the moment it is published. -->
+  <div data-surface="public" :class="['bg-background text-foreground font-public', layoutClasses]">
     <!-- tiptap has no dedicated preview path: TiptapDisplay only reads `element.html`,
          a server-appended attribute that doesn't exist on unsaved rows, so it would
          render blank while editing. Render the live json_content directly instead. -->
@@ -17,8 +20,8 @@
       </template>
       <template #fallback>
         <slot name="fallback">
-          <div class="flex items-center gap-2 py-6 text-sm text-zinc-500">
-            <div class="h-3 w-3 animate-spin rounded-full border-2 border-zinc-300 border-r-transparent" />
+          <div class="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+            <div class="h-3 w-3 animate-spin rounded-full border-2 border-border border-r-transparent" />
             {{ $t('rich-content.loading_preview') }}
           </div>
         </slot>
@@ -34,6 +37,8 @@
  * preview, BlockPickerDialog's live pane). Two things a naive `<component :is>` gets
  * wrong that this fixes:
  *
+ * - Surface: stamps `data-surface="public"`, so the preview resolves the public palette and
+ *   radius scale rather than the admin one it is embedded in.
  * - Width: wraps in the same `.rc-canvas` column class RichContentParser would apply
  *   (`blockLayoutClasses`), so a block previewed at `full`/`wide` isn't silently clamped
  *   to the prose column the way the old per-surface implementations were.

@@ -35,15 +35,20 @@ describe('RichContentCard', () => {
     const rootClass = wrapper.attributes('class') ?? '';
     expect(rootClass).toContain('rounded-2xl');
     // No tinted background anywhere — `soft` used to gradient into the color itself,
-    // `outline` used a colored border. Now the surface is always neutral zinc; color
-    // is at most a 1px accent rail (outline) or nothing (soft).
-    expect(rootClass).toContain('bg-gradient-to-br from-zinc');
+    // `outline` used a colored border. The surface is always neutral and token-driven, so it
+    // follows whichever surface the card is rendered on; colour is at most a 1px accent rail
+    // (outline) or nothing (soft).
+    expect(rootClass).toMatch(/bg-card|bg-secondary/);
+    expect(rootClass).not.toContain('zinc-');
 
-    if (variant === 'outline' && color !== 'zinc') {
-      expect(rootClass).toContain('before:bg-vusa-' + color);
+    if (variant === 'outline' && color === 'red') {
+      expect(rootClass).toContain('before:bg-brand/70');
+    }
+    if (variant === 'outline' && color === 'yellow') {
+      expect(rootClass).toContain('before:bg-vusa-yellow');
     }
     if (variant === 'soft') {
-      expect(rootClass).not.toContain('before:bg-vusa-');
+      expect(rootClass).not.toContain('before:bg-');
     }
   });
 
@@ -56,8 +61,8 @@ describe('RichContentCard', () => {
     const uncoloured = mount(RichContentCard, { props: { element: makeElement({ color: 'red', title: 'T', isTitleColored: false }) } });
     const coloured = mount(RichContentCard, { props: { element: makeElement({ color: 'red', title: 'T', isTitleColored: true }) } });
 
-    expect(coloured.find('[data-slot="card-title"]').classes().join(' ')).toContain('text-vusa-red');
-    expect(uncoloured.find('[data-slot="card-title"]').classes().join(' ')).not.toContain('text-vusa-red');
+    expect(coloured.find('[data-slot="card-title"]').classes().join(' ')).toContain('text-brand');
+    expect(uncoloured.find('[data-slot="card-title"]').classes().join(' ')).not.toContain('text-brand');
   });
 
   it('never renders an icon, even when the deprecated showIcon option is still set on old rows', () => {

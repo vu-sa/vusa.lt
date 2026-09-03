@@ -1,116 +1,134 @@
 <template>
-  <div class="event-calendar-section py-4 px-4 lg:px-0">
-    <!-- Section header -->
-    <div class="text-center mb-6 lg:mb-8">
-      <div class="flex items-center justify-center gap-3 mb-4">
-        <div class="h-px w-12 bg-gradient-to-r from-transparent to-vusa-red/50" />
-        <div class="w-3 h-3 rounded-full bg-vusa-red animate-pulse" />
-        <div class="h-px w-12 bg-gradient-to-l from-transparent to-vusa-red/50" />
+  <!--
+    The events band: a tinted, ruled strip running edge to edge, matching how every section on
+    this surface is divided — by a rule and a change of ground, not by a card. `rc-viewport`
+    escapes PublicLayout's `.container` column so the tint actually reaches the viewport edges
+    (see app.css); without it the band stopped short of them while the hero above did not.
+  -->
+  <section class="rc-viewport border-y border-border bg-secondary/40">
+    <div class="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <div class="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
+        <div>
+          <EyebrowLabel>{{ $t('Renginių kalendorius') }}</EyebrowLabel>
+          <h2 class="u-display mt-2 text-3xl text-foreground sm:text-4xl">
+            {{ $t('Artimiausi renginiai') }}
+          </h2>
+        </div>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-foreground transition-colors hover:text-brand"
+          @click="showModal = true"
+        >
+          <IFluentArrowSync16Regular class="size-4" />
+          {{ $t('Sinchronizuoti kalendorių') }}
+        </button>
       </div>
 
-      <h2 class="text-2xl lg:text-3xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
-        {{ $page.props.app.locale === 'lt'
-          ? 'Sek visus VU studentų renginius bei įvykius!'
-          : 'Follow Vilnius University activities for students!'
-        }}
-      </h2>
+      <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
 
-      <p class="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-        {{ $page.props.app.locale === 'lt'
-          ? 'Naršyk laiko juostą ir rask tau įdomius renginius'
-          : 'Browse the timeline and find events that interest you'
-        }}
-      </p>
-    </div>
-
-    <!-- Calendar Sync Modal -->
-    <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
-
-    <!-- Timeline content -->
-    <!-- Loading state -->
-    <FadeTransition>
-      <div v-if="loading" class="w-full">
-        <div class="hidden lg:block">
-          <Skeleton class="w-full h-12 rounded-lg mb-4" />
-          <Skeleton class="w-full h-48 rounded-xl" />
-          <div class="grid grid-cols-2 gap-4 mt-6 max-w-2xl mx-auto">
-            <Skeleton class="h-24 rounded-xl" />
-            <Skeleton class="h-24 rounded-xl" />
+      <div v-if="loading" class="mt-4">
+        <div v-for="i in 4" :key="i" class="flex items-center gap-4 border-b border-border py-5 sm:gap-6">
+          <Skeleton class="h-14 w-14 shrink-0 sm:w-16" />
+          <div class="flex-1 space-y-2">
+            <Skeleton class="h-4 w-2/3" />
+            <Skeleton class="h-3 w-1/3" />
           </div>
         </div>
-        <div class="lg:hidden space-y-4">
-          <Skeleton class="w-full h-20 rounded-xl" />
-          <Skeleton class="w-full h-20 rounded-xl" />
-          <Skeleton class="w-full h-20 rounded-xl" />
-        </div>
       </div>
 
-      <!-- Error state -->
-      <div
-        v-else-if="error"
-        class="flex flex-col items-center justify-center py-12 text-center"
-      >
-        <div class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-          <IFluentWarning20Regular class="w-8 h-8 text-red-500 dark:text-red-400" />
-        </div>
-        <p class="text-red-600 dark:text-red-400 font-medium mb-2">
+      <div v-else-if="error" class="flex flex-col items-center justify-center py-12 text-center">
+        <IFluentWarning20Regular class="mb-4 size-8 text-destructive" />
+        <p class="mb-2 font-medium text-destructive">
           {{ $t("Nepavyko užkrauti kalendoriaus įvykių") }}
         </p>
-        <Button variant="outline" size="sm" @click="refresh">
-          <IFluentArrowSync16Regular class="w-4 h-4 mr-1.5" />
+        <Button variant="brand-outline" size="public-sm" @click="refresh">
+          <IFluentArrowSync16Regular class="size-4" />
           {{ $t("Bandyti dar kartą") }}
         </Button>
       </div>
 
-      <!-- Timeline content (shown when not loading and no error) -->
-      <div v-else>
-        <!-- Desktop: Horizontal timeline -->
-        <div class="hidden lg:block">
-          <EventTimeline
-            :events="calendar"
-            :locale="$page.props.app.locale"
-            :loading-past
-            :loading-future
-            @open-sync-modal="showModal = true"
-            @load-past="fetchPast"
-            @load-future="fetchFuture"
-          />
-        </div>
+      <p v-else-if="upcomingEvents.length === 0" class="mt-8 text-muted-foreground">
+        {{ $t('Nėra renginių') }}
+      </p>
 
-        <!-- Mobile: Vertical timeline -->
-        <div class="lg:hidden">
-          <EventTimelineVertical
-            :events="calendar"
-            :locale="$page.props.app.locale"
-            :loading-past
-            :loading-future
-            @open-sync-modal="showModal = true"
-            @load-past="fetchPast"
-            @load-future="fetchFuture"
-          />
-        </div>
+      <!--
+        A scannable list, not a timeline. The horizontal timeline was a bespoke interaction that
+        answered "what is happening across the next month" — but a reader arriving at the homepage
+        wants the next few events and a way into the calendar, which is what the design gives them.
+      -->
+      <ul v-else class="mt-4">
+        <li v-for="event in upcomingEvents" :key="event.id">
+          <SmartLink
+            :href="eventHref(event)"
+            class="group flex items-center gap-4 border-b border-border py-5 transition-colors hover:bg-background sm:gap-6"
+          >
+            <div class="flex w-14 shrink-0 flex-col items-center justify-center border border-border bg-background py-2 text-foreground transition-colors group-hover:border-brand sm:w-16">
+              <span class="text-2xl font-bold leading-none tabular-nums">{{ dayOfMonth(event.date) }}</span>
+              <span class="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                {{ formatMonthAbbr(new Date(event.date), locale) }}
+              </span>
+            </div>
+
+            <div class="min-w-0 flex-1">
+              <span v-if="event.category?.name" class="text-[11px] font-bold uppercase tracking-[0.18em] text-brand">
+                {{ event.category.name }}
+              </span>
+              <h3 class="mt-1 text-pretty font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
+                {{ event.title }}
+              </h3>
+              <div class="mt-1.5 flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-4">
+                <span class="flex items-center gap-1.5">
+                  <IFluentCalendarLtr20Regular class="size-3.5 shrink-0" />
+                  {{ eventDateLabel(event) }}
+                </span>
+                <span v-if="event.location" class="flex items-center gap-1.5">
+                  <IFluentLocation20Regular class="size-3.5 shrink-0" />
+                  <span class="truncate">{{ event.location }}</span>
+                </span>
+              </div>
+            </div>
+
+            <IFluentArrowRight16Regular class="hidden size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-brand sm:block" />
+          </SmartLink>
+        </li>
+      </ul>
+
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Button as="a" variant="brand" size="public" :href="route('calendar.list', { lang: locale })">
+          <IFluentCalendarLtr20Regular class="size-4" />
+          {{ $t('Visi renginiai') }}
+        </Button>
+        <Button variant="brand-outline" size="public" @click="showModal = true">
+          <IFluentArrowSync16Regular class="size-4" />
+          {{ $t('Sinchronizuoti kalendorių') }}
+        </Button>
       </div>
-    </FadeTransition>
-  </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
+import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
+import { EyebrowLabel } from '@/Components/Public/Base';
 import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
-import EventTimeline from '@/Components/Calendar/EventTimeline.vue';
-import EventTimelineVertical from '@/Components/Calendar/EventTimelineVertical.vue';
-import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import Skeleton from '@/Components/ui/skeleton/Skeleton.vue';
 import { useCalendarFetch } from '@/Services/ContentService';
+import { formatEventDateSpan, formatMonthAbbr } from '@/Utils/IntlTime';
 import type { Calendar } from '@/Types/contentParts';
+import { LocaleEnum } from '@/Types/enums';
 
-// Calendar event type
 interface CalendarEvent {
   id: number;
   title: string;
   date: string;
+  end_date?: string | null;
+  location?: string | null;
+  is_all_day?: boolean;
   category: { id: number; name: string } | null;
   images: Array<{ url: string }>;
   [key: string]: unknown;
@@ -124,12 +142,18 @@ const props = defineProps<{
   prefetchedCalendar?: CalendarEvent[];
 }>();
 
+const page = usePage();
+const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);
+
 const showModal = ref(false);
 
 const serverCalendar = computed<CalendarEvent[] | undefined>(() => props.resolved?.items ?? props.prefetchedCalendar);
 
-// Check if we have server-provided calendar data (resolver or the older homepage prop)
-const hasPrefetchedCalendar = computed(() => !!serverCalendar.value && serverCalendar.value.length > 0);
+/**
+ * Presence, not emptiness: `[]` from the resolver means "the server looked and there is nothing
+ * on", which must not send the component off to fetch the same empty answer.
+ */
+const hasPrefetchedCalendar = computed(() => serverCalendar.value !== undefined);
 
 // Normalize allTenants to boolean (handles true, 1, "1", "true")
 const allTenants = computed(() => {
@@ -137,35 +161,47 @@ const allTenants = computed(() => {
   return val === true || val === 1 || val === '1' || val === 'true';
 });
 
-// Use the ContentService to fetch calendar data with date-based loading
-// Only fetch from API if no prefetched data is available
 const {
   calendar: apiCalendar,
   loading: apiLoading,
-  loadingPast,
-  loadingFuture,
   error: apiError,
   refresh,
-  fetchPast,
-  fetchFuture,
   initializeWithData,
 } = useCalendarFetch({
   allTenants: allTenants.value,
   skipInitialFetch: hasPrefetchedCalendar.value,
 });
 
-// If we have server-provided data, initialize the calendar state with it
 if (hasPrefetchedCalendar.value && serverCalendar.value) {
   initializeWithData(serverCalendar.value);
 }
 
-// Combine sources: prefer prefetched data for initial render, then use API data
-// Note: Type cast maintains compatibility with EventTimeline props
-const calendar = computed(() => apiCalendar.value ?? []);
-
-// Loading state: only show loading when using API fetch and it's loading
 const loading = computed(() => !hasPrefetchedCalendar.value && apiLoading.value);
-
-// Error state: only show error when using API fetch and there's an error
 const error = computed(() => !hasPrefetchedCalendar.value && apiError.value);
+
+/**
+ * The next few events, soonest first. The band is a way *into* the calendar, not the calendar —
+ * a reader who wants the rest follows "Visi renginiai".
+ */
+const UPCOMING_LIMIT = 5;
+
+const upcomingEvents = computed<CalendarEvent[]>(() => {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  return ((apiCalendar.value ?? []) as CalendarEvent[])
+    .filter(event => new Date(event.end_date ?? event.date) >= startOfToday)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, UPCOMING_LIMIT);
+});
+
+const dayOfMonth = (date: string) => new Date(date).getDate();
+
+const eventDateLabel = (event: CalendarEvent) => formatEventDateSpan(
+  event.date,
+  event.end_date ?? undefined,
+  { allDay: event.is_all_day, locale: locale.value },
+).primary;
+
+const eventHref = (event: CalendarEvent) => route('calendar.event', { calendar: event.id, lang: locale.value });
 </script>

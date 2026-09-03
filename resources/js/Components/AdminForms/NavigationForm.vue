@@ -134,6 +134,25 @@
           </FormFieldWrapper>
 
           <template v-if="form.extra_attributes.image">
+            <!-- Card copy. Only an image card shows these — a thumbnail link has no room for an
+                 eyebrow or a call to action, and a link with no image has no card at all. -->
+            <template v-if="imageRender === 'card'">
+              <FormFieldWrapper id="eyebrow" :label="$t('navigation.form.eyebrow')" :hint="$t('navigation.form.eyebrow_hint')">
+                <Input id="eyebrow" v-model="form.extra_attributes.eyebrow" type="text" />
+              </FormFieldWrapper>
+
+              <FormFieldWrapper id="cta" :label="$t('navigation.form.cta')" :hint="$t('navigation.form.cta_hint')">
+                <Input id="cta" v-model="form.extra_attributes.cta" type="text" />
+              </FormFieldWrapper>
+
+              <FormFieldWrapper id="image_height" :label="$t('navigation.form.image_height')" :hint="$t('navigation.form.image_height_hint')">
+                <ToggleGroup v-model="imageHeight" type="single" class="justify-start">
+                  <ToggleGroupItem value="short">{{ $t('navigation.form.image_height_short') }}</ToggleGroupItem>
+                  <ToggleGroupItem value="tall">{{ $t('navigation.form.image_height_tall') }}</ToggleGroupItem>
+                </ToggleGroup>
+              </FormFieldWrapper>
+            </template>
+
             <FormFieldWrapper id="image_render" :label="$t('navigation.form.image_render')">
               <ToggleGroup v-model="imageRender" type="single" class="justify-start">
                 <ToggleGroupItem value="card">{{ $t('navigation.form.image_render_card') }}</ToggleGroupItem>
@@ -340,7 +359,13 @@ const DividerTypeIcon = () => h('svg', { viewBox: '0 0 80 48', fill: 'none', str
 
 const linkStyleOptions = computed(() => [
   { value: 'link', label: $t('navigation.form.type_link'), icon: LinkTypeIcon, disabled: false },
-  { value: 'block-link', label: $t('navigation.form.type_block_link'), icon: BlockLinkTypeIcon, disabled: false },
+  {
+    value: 'block-link',
+    label: $t('navigation.form.type_block_link'),
+    description: $t('navigation.form.type_block_link_hint'),
+    icon: BlockLinkTypeIcon,
+    disabled: false,
+  },
   { value: 'category-link', label: $t('navigation.form.type_category_link'), icon: CategoryLinkTypeIcon, disabled: false },
   {
     value: 'full-height-background-link',
@@ -354,7 +379,7 @@ const linkStyleOptions = computed(() => [
 ]);
 
 const linkType = computed({
-  get: () => form.extra_attributes.type ?? 'block-link',
+  get: () => form.extra_attributes.type ?? 'link',
   set: (val: string) => { form.extra_attributes.type = val; },
 });
 
@@ -381,6 +406,11 @@ const imageBlur = computed({
   get: () => String(form.extra_attributes.image_blur ?? 0),
   set: (val: string) => { form.extra_attributes.image_blur = Number(val); },
 });
+const imageHeight = computed({
+  get: () => form.extra_attributes.image_height ?? 'short',
+  set: (val: string) => { form.extra_attributes.image_height = val; },
+});
+
 const imageGradient = computed({
   get: () => form.extra_attributes.image_gradient ?? 'bottom',
   set: (val: string) => { form.extra_attributes.image_gradient = val; },

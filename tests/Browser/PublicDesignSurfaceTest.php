@@ -63,3 +63,54 @@ it('resolves the public token scope in the browser', function (): void {
 
     $page->assertNoJavaScriptErrors();
 });
+
+/**
+ * The hero band runs edge to edge, which means escaping PublicLayout's `.container` column.
+ * `.rc-viewport` does that with `width: 100vw; margin-inline: calc(50% - 50vw)`, and
+ * `overflow-x: clip` on the layout root absorbs the half-scrollbar overhang that leaves.
+ *
+ * Both halves fail silently: drop the utility and the hero quietly shrinks to the content
+ * measure; drop the clip and the whole site gains a horizontal scrollbar. Only a real browser
+ * with a real scrollbar can tell you either happened.
+ */
+it('lets a band escape the content column without making the page scroll sideways', function (): void {
+    Tenant::firstOrCreate(
+        ['alias' => 'vusa'],
+        [
+            'shortname' => 'VU SA',
+            'shortname_vu' => 'VU',
+            'fullname' => 'Vilniaus universiteto Studentų atstovybė',
+            'type' => 'pagrindinis',
+        ]
+    );
+
+    $page = visitPublicSubdomain('www', '/lt/naujienos');
+
+    $measured = $page->script(<<<'JS'
+        (() => {
+          const main = document.querySelector('#main-content');
+          const probe = document.createElement('div');
+          probe.className = 'rc-viewport';
+          probe.style.height = '4px';
+          main.prepend(probe);
+
+          const rect = probe.getBoundingClientRect();
+          const result = {
+            probeWidth: Math.round(rect.width),
+            viewportWidth: Math.round(window.innerWidth),
+            // Centres must agree, or the copy inside the band stops lining up with the header.
+            probeCentre: Math.round(rect.left + rect.width / 2),
+            viewportCentre: Math.round(window.innerWidth / 2),
+            horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          };
+          probe.remove();
+          return result;
+        })()
+    JS);
+
+    expect($measured['probeWidth'])->toBe($measured['viewportWidth'])
+        ->and(abs($measured['probeCentre'] - $measured['viewportCentre']))->toBeLessThanOrEqual(1)
+        ->and($measured['horizontalOverflow'])->toBeFalse();
+
+    $page->assertNoJavaScriptErrors();
+});

@@ -15,24 +15,24 @@
           :meta="publishedLabel(item.publishedAt)" :href="item.href"
         >
           <template #cover-fallback>
-            <IFluentLink24Regular class="size-10 text-vusa-red/50" />
+            <IFluentLink24Regular class="size-10 text-brand/50" />
           </template>
         </RCFeatureCard>
       </div>
 
       <!-- Compact style: a divided list, title left, date right. -->
-      <ul v-else class="divide-y divide-zinc-200/60 dark:divide-zinc-800">
+      <ul v-else class="divide-y divide-border">
         <li v-for="item in items" :key="item.id ?? item.href">
           <SmartLink :href="item.href" class="group flex items-center justify-between gap-4 py-3"
             :rel="isExternal(item.href) ? 'noopener noreferrer' : undefined">
-            <span class="truncate font-medium text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-200">
+            <span class="truncate font-medium text-foreground transition-colors group-hover:text-brand">
               {{ item.title }}
             </span>
             <span class="flex shrink-0 items-center gap-2">
-              <span v-if="item.publishedAt" class="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
+              <span v-if="item.publishedAt" class="text-xs tabular-nums text-muted-foreground">
                 {{ publishedLabel(item.publishedAt) }}
               </span>
-              <IFluentChevronRight12Regular class="size-3 text-zinc-300 transition-colors group-hover:text-vusa-red dark:text-zinc-600" />
+              <IFluentChevronRight12Regular class="size-3 text-muted-foreground transition-colors group-hover:text-brand" />
             </span>
           </SmartLink>
         </li>

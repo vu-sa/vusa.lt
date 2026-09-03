@@ -4,7 +4,10 @@
        by Laravel Head — see app.blade.php's @head directive and PublicController::applyPageHead().
        Inertia adopts and keeps those elements in sync on SPA navigation via serverHead: true in
        public.ts; no client-side <Head> component is needed here. -->
-  <div class="@container min-h-screen flex flex-col bg-background text-foreground font-public">
+  <!-- `overflow-x-clip` absorbs the half-scrollbar overhang of `.rc-viewport` bands (the
+       hero). `clip` rather than `hidden`: it does not create a scroll container, so sticky
+       descendants keep working. -->
+  <div class="@container min-h-screen flex flex-col overflow-x-clip bg-background text-foreground font-public">
     <!-- Staging environment warning banner -->
     <StagingBanner class="mx-2 mt-2 sm:mx-4" />
 
@@ -138,10 +141,10 @@ const contentWrapperClass = computed(() => {
  * by the breadcrumb wrapper itself (see {@link breadcrumbWrapperClass}).
  */
 const mainContentMarginClass = computed(() => {
-  // Must track MainNavigation's real height: a 4rem primary bar, plus a 2.5rem SecondMenu row
+  // Must track MainNavigation's real height: a 4rem primary bar, plus a 2.75rem SecondMenu row
   // that only renders from `md` up (max-md:hidden), hence the same mobile value either way.
   return hasSecondMenu.value
-    ? 'mt-16 md:mt-[6.5rem]'
+    ? 'mt-16 md:mt-[6.75rem]'
     : 'mt-16';
 });
 

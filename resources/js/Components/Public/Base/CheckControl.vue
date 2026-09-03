@@ -11,7 +11,10 @@
     data-slot="check-control"
     @click="modelValue = !modelValue"
   >
-    <span class="text-sm text-foreground">
+    <!-- `font-medium`, not the default weight: every other label in this menu carries weight
+         (the section headings are `font-semibold`), and a regular-weight row read as secondary
+         to the control beside it. -->
+    <span class="text-sm font-medium text-foreground">
       <slot>{{ label }}</slot>
     </span>
 

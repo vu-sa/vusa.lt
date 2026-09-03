@@ -12,7 +12,6 @@ export interface AdminNavigationExtraAttributes {
   col_span?: 1 | 2 | 3;
   cols?: 1 | 2 | 3;
   /** Root items only — dropdown width, independent of column count. Defaults to `wide`. */
-  menu_width?: 'narrow' | 'medium' | 'wide' | 'auto';
   icon?: string;
   description?: string;
   small_text?: string;

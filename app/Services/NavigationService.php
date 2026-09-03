@@ -28,7 +28,7 @@ class NavigationService
             // Build children on root navigation elements
             for ($i = 0; $i < count($rootNavigation); $i++) {
 
-                // Roots carry their own presentation settings too (e.g. `menu_width`,
+                // Roots carry their own presentation settings too (e.g. `cols`,
                 // `icon` for the menubar trigger) — hoist the same way children get.
                 $rootNavigation[$i] = self::hoistExtraAttributes($rootNavigation[$i]);
 
@@ -112,10 +112,10 @@ class NavigationService
     }
 
     /**
-     * Hoists a navigation row's `extra_attributes` keys (type, column, menu_width,
+     * Hoists a navigation row's `extra_attributes` keys (type, column, cols,
      * icon, …) onto the row itself and drops the now-redundant nested key, so the
-     * frontend reads `item.menu_width` / `link.type` directly instead of digging
-     * through `item.extra_attributes.menu_width`.
+     * frontend reads `item.cols` / `link.type` directly instead of digging
+     * through `item.extra_attributes.cols`.
      *
      * @param  array<string, mixed>  $row
      * @return array<string, mixed>

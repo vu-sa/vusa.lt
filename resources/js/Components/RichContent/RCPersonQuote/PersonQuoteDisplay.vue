@@ -8,21 +8,21 @@
     :id="anchorId ? `rc-${anchorId}` : undefined"
   >
     <figure :class="['flex flex-col gap-5', align === 'center' ? 'items-center text-center' : 'items-start text-left']">
-      <span class="text-6xl font-serif leading-none text-vusa-red/15" aria-hidden="true">&ldquo;</span>
+      <span class="text-6xl font-serif leading-none text-brand/20" aria-hidden="true">&ldquo;</span>
 
-      <blockquote class="rc-prose -mt-8 text-xl font-medium leading-relaxed text-zinc-800 dark:text-zinc-100 md:text-2xl">
+      <blockquote class="rc-prose -mt-8 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
         <RichContentTiptapHTML v-if="!html" :json_content="element.json_content?.quote" />
         <div v-else v-html="element.html" />
       </blockquote>
 
       <figcaption v-if="showAvatar && snapshot?.name" class="flex items-center gap-3">
-        <Avatar class="size-12 shadow ring-2 ring-white dark:ring-zinc-800">
+        <Avatar class="size-12 border border-border">
           <AvatarImage v-if="snapshot.photoUrl" :src="snapshot.photoUrl" :alt="snapshot.name" class="object-cover" />
           <AvatarFallback class="font-medium">{{ initials }}</AvatarFallback>
         </Avatar>
         <div :class="align === 'center' ? 'text-left' : ''">
-          <p class="font-semibold text-zinc-900 dark:text-zinc-100">{{ snapshot.name }}</p>
-          <p v-if="snapshot.attribution" class="text-sm text-zinc-500 dark:text-zinc-400">{{ snapshot.attribution }}</p>
+          <p class="font-bold text-foreground">{{ snapshot.name }}</p>
+          <p v-if="snapshot.attribution" class="text-sm text-muted-foreground">{{ snapshot.attribution }}</p>
         </div>
       </figcaption>
     </figure>

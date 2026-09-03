@@ -9,7 +9,10 @@ import { commonStubs } from '@/tests/stubs';
 const FileSelectorStub = defineComponent({
   name: 'FileSelectorStub',
   emits: ['submit'],
-  template: '<button type="button" data-testid="pick" @click="$emit(\'submit\', \'public/files/test.png\')">pick</button>',
+  template: `
+    <button type="button" data-testid="pick" @click="$emit('submit', 'public/files/test.png', 'browse')">pick</button>
+    <button type="button" data-testid="upload" @click="$emit('submit', 'public/files/fresh.webp', 'upload')">upload</button>
+  `,
 });
 
 const wrappers: ReturnType<typeof mount>[] = [];
@@ -35,6 +38,35 @@ async function mountAtDetailsStep() {
 
   return wrapper;
 }
+
+describe('ImageSelector file step', () => {
+  it('goes straight to the details once a file arrives from an upload', async () => {
+    const wrapper = mount(ImageSelector, {
+      props: { showModal: true },
+      attachTo: document.body,
+      global: { stubs: { ...commonStubs, FileSelector: FileSelectorStub } },
+    });
+    wrappers.push(wrapper);
+
+    await wrapper.find('[data-testid="upload"]').trigger('click');
+
+    expect(wrapper.text()).toContain('accessibility.selected_image');
+    expect(wrapper.find('img').attributes('src')).toBe('/uploads/files/fresh.webp');
+  });
+
+  it('waits for the author to confirm a file they picked from the listing', async () => {
+    const wrapper = mount(ImageSelector, {
+      props: { showModal: true },
+      attachTo: document.body,
+      global: { stubs: { ...commonStubs, FileSelector: FileSelectorStub } },
+    });
+    wrappers.push(wrapper);
+
+    await wrapper.find('[data-testid="pick"]').trigger('click');
+
+    expect(wrapper.text()).not.toContain('accessibility.selected_image');
+  });
+});
 
 describe('ImageSelector details step', () => {
   it('keeps the alt-text rationale collapsed until it is asked for', async () => {

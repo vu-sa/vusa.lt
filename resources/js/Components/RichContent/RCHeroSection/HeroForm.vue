@@ -145,20 +145,6 @@
                 </Select>
               </Field>
               <Field>
-                <FieldLabel>{{ $t('rich-content.button_color') }}</FieldLabel>
-                <Select :model-value="item.color || 'red'" @update:model-value="update({ ...item, color: $event })">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="red">{{ $t('rich-content.red') }}</SelectItem>
-                    <SelectItem value="yellow">{{ $t('rich-content.yellow') }}</SelectItem>
-                    <SelectItem value="zinc">{{ $t('rich-content.zinc') }}</SelectItem>
-                    <SelectItem value="white">{{ $t('rich-content.white') }}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
                 <FieldLabel>{{ $t('rich-content.icon') }}</FieldLabel>
                 <RCIconSelect :model-value="item.icon" allow-none @update:model-value="update({ ...item, icon: $event })" />
               </Field>
@@ -352,12 +338,16 @@ const variantOptions: { value: NonNullable<Hero['options']['variant']>; label: s
   { value: 'panel', label: $t('rich-content.hero_variant_panel'), icon: PanelVariantIcon },
 ];
 
+/**
+ * No `color`: a call to action is the brand fill on this surface — VU SA red on the light
+ * canvas, amber on near-black — and `variant` already carries the primary/secondary distinction,
+ * which is the one that actually means something to a reader.
+ */
 function createButton() {
   return {
     text: '',
     link: '',
     variant: 'default' as const,
-    color: 'red' as const,
   };
 }
 

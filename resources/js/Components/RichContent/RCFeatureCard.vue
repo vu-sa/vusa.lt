@@ -2,7 +2,7 @@
   <!-- The card aesthetic used across the site (SummerCampCard is the origin) — extracted
        here so link-list's photo style, the content-grid `card` cell and event-list's
        `cards` style all render identically instead of three near-copies drifting apart. -->
-  <article class="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/50 transition-all duration-300 hover:shadow-lg hover:ring-zinc-300 dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600">
+  <article class="group relative flex h-full flex-col overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-brand">
     <!-- Stretched link: the whole card is clickable, but content underneath (e.g. a
          footer list of per-event links) can still carry its own, higher-stacked links. -->
     <SmartLink v-if="href" :href="href" class="absolute inset-0 z-10" :aria-label="title" />
@@ -13,25 +13,25 @@
          gradient box; grids of uniformly-photographed items (event/summer-camp cards)
          want the fallback so the grid stays visually uniform even if one item lacks a
          photo. -->
-    <div v-if="coverImage || showCoverFallback" class="relative aspect-[16/9] overflow-hidden bg-zinc-200 dark:bg-zinc-800">
+    <div v-if="coverImage || showCoverFallback" class="relative aspect-[16/9] overflow-hidden bg-secondary">
       <img v-if="coverImage" :src="coverImage" :alt="coverAlt ?? title"
         class="size-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
-      <div v-else class="flex size-full items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/25">
+      <div v-else class="flex size-full items-center justify-center bg-brand/10">
         <slot name="cover-fallback">
-          <IFluentImage24Regular class="size-10 text-vusa-red/50" />
+          <IFluentImage24Regular class="size-10 text-brand/50" />
         </slot>
       </div>
 
-      <span v-if="badge" class="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+      <span v-if="badge" class="absolute right-3 top-3 bg-ink/70 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm">
         {{ badge }}
       </span>
     </div>
 
     <div class="flex flex-1 flex-col p-5">
-      <h3 class="text-base font-bold leading-tight text-zinc-900 dark:text-zinc-100">
+      <h3 class="text-base font-bold leading-tight text-foreground">
         {{ title }}
       </h3>
-      <p v-if="meta" class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+      <p v-if="meta" class="mt-1 text-xs text-muted-foreground">
         {{ meta }}
       </p>
 

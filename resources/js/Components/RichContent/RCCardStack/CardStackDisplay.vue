@@ -16,20 +16,20 @@
           :style="getCardStyle(index)"
           @click="handleCardClick"
         >
-          <!-- Fully opaque stops (no `/alpha`) — the previous `to-zinc-100/50` /
-               `dark:from-zinc-800/80` let the cards stacked underneath show through
+          <!-- Fully opaque (`bg-card`, not a tint) — a translucent fill lets the cards
+               stacked underneath show through
                the front card wherever they peek out past its edges. -->
-          <div class="flex h-full flex-col p-6 md:p-8 bg-gradient-to-br from-white to-zinc-50 ring-1 ring-zinc-200/60 hover:ring-zinc-300 dark:from-zinc-900 dark:to-zinc-950 dark:ring-zinc-700/50 dark:hover:ring-zinc-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <div v-if="card.icon" class="mb-4 flex size-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-700 md:mb-6">
-              <RCIcon :name="card.icon" class="size-6 text-zinc-600 dark:text-zinc-400" />
+          <div class="flex h-full flex-col p-6 md:p-8 bg-card border border-border hover:border-brand rounded-xl transition-colors duration-300">
+            <div v-if="card.icon" class="mb-4 flex size-12 shrink-0 items-center justify-center border border-border md:mb-6">
+              <RCIcon :name="card.icon" class="size-6 text-brand" />
             </div>
             <!-- No icon: the text group fills the remaining height and centers within
                  it instead of sitting bunched at the top of a tall, mostly-empty card. -->
             <div :class="['flex flex-col', !card.icon && 'flex-1 justify-center']">
-              <h3 class="text-xl sm:text-xl font-semibold mb-3 md:mb-4 text-zinc-900 dark:text-zinc-100">
+              <h3 class="text-xl sm:text-xl font-bold mb-3 md:mb-4 text-foreground">
                 {{ card.title }}
               </h3>
-              <p class="text-[14.5px] sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p class="text-[14.5px] sm:text-base text-muted-foreground leading-relaxed">
                 {{ card.description }}
               </p>
             </div>
@@ -42,15 +42,15 @@
         <button
           v-for="(card, index) in element.json_content"
           :key="index"
-          class="w-3 h-3 rounded-full transition-all duration-300"
-          :class="index === currentCardIndex ? 'bg-zinc-400 dark:bg-zinc-500' : 'bg-zinc-200 dark:bg-zinc-700'"
+          class="h-1 w-4 transition-all duration-300"
+          :class="index === currentCardIndex ? 'w-8 bg-brand-fill' : 'bg-border hover:bg-muted-foreground'"
           @click="handleIndicatorClick(index)"
         />
       </div>
 
       <!-- Control Hint -->
       <div v-if="element.options?.hintText" class="text-center mt-4">
-        <p class="text-sm text-zinc-500 dark:text-zinc-400">
+        <p class="text-sm text-muted-foreground">
           {{ element.options.hintText }}
         </p>
       </div>

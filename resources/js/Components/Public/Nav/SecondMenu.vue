@@ -1,19 +1,24 @@
 <template>
-  <section class="relative z-5 border-t border-border bg-secondary/40">
-    <div class="mx-auto grid h-10 max-w-[84rem] grid-cols-[min-content__1fr] items-center px-4 lg:px-8">
+  <section class="relative z-5 border-t border-border bg-secondary/50">
+    <div class="mx-auto grid h-11 max-w-7xl grid-cols-[min-content__1fr] items-center px-5 sm:px-6 lg:px-8">
       <SmartLink prefetch href="/"
-        class="mr-6 whitespace-nowrap text-xs font-bold text-brand transition-colors hover:text-foreground">
+        class="mr-6 whitespace-nowrap text-xs font-bold uppercase tracking-[0.2em] text-brand transition-colors hover:text-foreground">
         {{
           $page.props.tenant?.shortname
             ? $t($page.props.tenant?.shortname)
             : "VU SA"
         }}
       </SmartLink>
-      <nav class="grid grid-cols-[1fr_auto_auto] items-center gap-5 whitespace-nowrap text-xs">
-        <div class="relative flex items-center gap-4 overflow-hidden w-full">
+      <nav class="grid grid-cols-[1fr_auto_auto] items-center gap-5 whitespace-nowrap text-sm">
+        <!-- The overflow hint is a mask, not a gradient overlay. An overlay has to be painted in
+             the bar's own colour to disappear, and the bar is a translucent tint over the page
+             background — so the overlay showed up as a pale smudge instead of a fade. A mask
+             fades the content itself and needs to know nothing about what is behind it. -->
+        <div
+          class="flex w-full items-center gap-5 overflow-hidden"
+          style="mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent)"
+        >
           <QuickLink v-for="link in $page.props.tenant?.links" :key="link?.id" :quick-link="link" />
-          <div
-            class="pointer-events-none absolute right-0 h-8 w-10 bg-gradient-to-r from-transparent to-background" />
         </div>
         <div class="inline-flex gap-1">
           <DropdownMenu>
@@ -21,7 +26,7 @@
               <Button
                 variant="ghost"
                 size="sm"
-                class="h-6 px-1.5"
+                class="h-7 px-1.5"
                 :title="$t('Daugiau nuorodų')"
               >
                 <IFluentLineHorizontal1Dot20Filled class="h-4 w-4" />
@@ -44,10 +49,10 @@
           <!-- The language switcher lives here, not in the primary bar: the primary row has to
                fit the uppercase nav without wrapping, and a wordy LT/EN control is what pushed it
                onto two lines. Search is icon-only in the primary bar, so there is none here. -->
-          <LocaleButton :locale="$page.props.app.locale" size="sm" class="h-6 px-2 text-xs" />
+          <LocaleButton :locale="$page.props.app.locale" size="sm" class="h-7 px-2 text-xs" />
           <span class="h-4 w-px bg-border" aria-hidden="true" />
           <a href="/login"
-            class="inline-flex h-6 items-center justify-center gap-1.5 px-2 text-xs transition-colors hover:bg-secondary"
+            class="inline-flex h-7 items-center justify-center gap-1.5 px-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
             :title="$page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login')">
             <template v-if="$page.props.auth?.user">
               <!-- `rounded-lg` overrides the primitive's base `rounded-full`. Keep it: the radius

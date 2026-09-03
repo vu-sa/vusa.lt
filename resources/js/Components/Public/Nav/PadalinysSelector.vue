@@ -4,16 +4,20 @@
       <Button
         variant="ghost"
         :size="size === 'tiny' ? 'sm' : 'default'"
-        class="flex w-auto items-center justify-between gap-2 border border-border tracking-normal
-          text-foreground/70 transition-colors duration-200
+        class="flex w-auto items-center justify-between gap-2 border border-border
+          text-sm font-bold uppercase tracking-wide
+          text-foreground transition-colors duration-200
           hover:border-brand hover:bg-transparent hover:text-brand
           dark:hover:bg-transparent dark:hover:text-brand"
         :disabled="isDisabled"
         :title="$t('Pasirinkti padalinį')"
       >
-        <div class="flex items-center">
-          <IFluentLocation24Regular class="mr-2 h-4 w-4" />
-          <span class="tracking-normal">{{ padalinys }}</span>
+        <div class="flex items-center gap-2">
+          <!-- Brand-coloured pin: it is the one mark that tells a reader this control is about
+               *where* they are. The label itself is full-strength — this names the current unit,
+               so it is content, not chrome. -->
+          <IFluentLocation24Regular class="h-4 w-4 text-brand" />
+          <span>{{ padalinys }}</span>
         </div>
         <IFluentChevronDown24Regular class="h-4 w-4 opacity-50 transition-transform duration-200" :class="{ 'rotate-180': isPopoverOpen }" />
       </Button>
@@ -21,64 +25,89 @@
     <PopoverContent class="p-0" :class="{ 'w-[300px]': viewMode === 'list', 'w-[520px]': viewMode === 'map' }" align="start">
       <div class="flex items-center gap-2 border-b border-border p-2">
         <Button
-          variant="ghost"
-          size="sm"
-          :class="{ 'bg-muted': viewMode === 'list' }"
-          @click="setViewMode('list')"
+          v-for="view in (['list', 'map'] as const)"
+          :key="view"
+          :variant="viewMode === view ? 'brand' : 'ghost'"
+          size="public-sm"
+          class="flex-1"
+          :class="viewMode !== view && 'text-muted-foreground hover:text-foreground'"
+          @click="setViewMode(view)"
         >
-          <IFluentList24Regular class="h-4 w-4" />
-          <span class="ml-2">{{ $t('List') }}</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          :class="{ 'bg-muted': viewMode === 'map' }"
-          @click="setViewMode('map')"
-        >
-          <IFluentMap24Regular class="h-4 w-4" />
-          <span class="ml-2">{{ $t('Map') }}</span>
+          <component :is="view === 'list' ? IFluentList24Regular : IFluentMap24Regular" class="h-4 w-4" />
+          {{ view === 'list' ? $t('List') : $t('Map') }}
         </Button>
 
-        <div class="ml-auto flex">
-          <Input
-            v-if="viewMode === 'map'"
-            v-model="searchQuery"
-            class="h-8 w-32"
-            :placeholder="`${$t('Ieškoti')}...`"
-          />
-        </div>
+        <Input
+          v-if="viewMode === 'map'"
+          v-model="searchQuery"
+          class="h-8 w-32 shrink-0"
+          :placeholder="`${$t('Ieškoti')}...`"
+        />
       </div>
 
       <!-- List View -->
       <div v-if="viewMode === 'list'" class="padalinys-list">
         <ScrollArea class="h-[350px]">
-          <div class="space-y-1 p-1 overflow-hidden">
+          <div class="overflow-hidden">
             <template v-for="option in options_padaliniai" :key="option.key">
-              <Button
-                variant="ghost"
+              <!--
+                A unit with a photo renders as one of the mega menu's image items: the picture is
+                the row's ground, grayscale behind a scrim, with the name laid over it. Units
+                without one keep the plain lettered row, so the list stays scannable either way.
+              -->
+              <button
+                type="button"
                 :class="[
-                  'flex w-full cursor-pointer items-center justify-start gap-2 px-2 py-1.5 text-sm',
-                  // A brand left rule marks the current unit, echoing the ruled headline device.
-                  isActivePadalinys(option.key) && 'border-l-2 border-brand bg-secondary',
-                  option.isMainOffice && 'font-bold'
+                  'group relative flex w-full cursor-pointer items-center gap-3 border-l-2 text-left transition-colors',
+                  'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+                  option.primary_institution?.image_url ? 'min-h-[4.5rem] bg-ink p-4' : 'px-4 py-2.5 hover:bg-secondary',
+                  isActivePadalinys(option.key) ? 'border-brand' : 'border-transparent',
+                  isActivePadalinys(option.key) && !option.primary_institution?.image_url && 'bg-secondary/60',
                 ]"
                 @click="handleSelectPadalinys(option.key)"
               >
-                <Avatar class="h-6 w-6 rounded-none">
-                  <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
-                  <AvatarFallback>{{ option.key.substring(0, 2).toUpperCase() }}</AvatarFallback>
+                <template v-if="option.primary_institution?.image_url">
+                  <img
+                    :src="option.primary_institution.image_url"
+                    alt=""
+                    class="absolute inset-0 size-full object-cover opacity-60 grayscale transition-transform duration-500 group-hover:scale-105"
+                  >
+                  <span class="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/30" />
+                </template>
+
+                <Avatar v-else class="size-9 shrink-0 rounded-none">
+                  <!-- `rounded-none` explicitly: the primitive's base is `rounded-full`, which is a
+                       literal and so survives the public surface's zeroed radius scale. The design
+                       has no circles. -->
+                  <AvatarFallback class="rounded-none bg-secondary text-[11px] font-bold uppercase tracking-wide text-foreground">
+                    {{ option.key.substring(0, 2).toUpperCase() }}
+                  </AvatarFallback>
                 </Avatar>
 
-                <div class="flex flex-col items-start truncate w-full">
-                  <span class="font-medium">{{ option.label }}</span>
-                  <span class="text-xs text-muted-foreground">{{ $t(option.primary_institution?.short_name ?? '') }}</span>
-                </div>
+                <span class="relative z-10 min-w-0 flex-1">
+                  <span
+                    class="block truncate text-sm font-bold transition-colors"
+                    :class="option.primary_institution?.image_url ? 'text-white group-hover:text-brand-fill' : 'text-foreground group-hover:text-brand'"
+                  >
+                    {{ option.label }}
+                  </span>
+                  <!-- The main office's unit name and short name are both "VU SA"; showing both
+                       stacks the same words twice. -->
+                  <span
+                    v-if="secondaryLabel(option)"
+                    class="block truncate text-xs"
+                    :class="option.primary_institution?.image_url ? 'text-white/70' : 'text-muted-foreground'"
+                  >
+                    {{ secondaryLabel(option) }}
+                  </span>
+                </span>
 
                 <IFluentCheckmark24Regular
-                  class="ml-auto h-4 w-4 opacity-0 transition-opacity"
-                  :class="{ 'opacity-100': isActivePadalinys(option.key) }"
+                  v-if="isActivePadalinys(option.key)"
+                  class="relative z-10 size-4 shrink-0"
+                  :class="option.primary_institution?.image_url ? 'text-brand-fill' : 'text-brand'"
                 />
-              </Button>
+              </button>
             </template>
           </div>
         </ScrollArea>
@@ -119,6 +148,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { useStorage } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import PadalinysMap from './PadalinysMap.vue';
 
@@ -133,7 +163,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Popover, PopoverTrigger, PopoverContent } from '@/Components/ui/popover';
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Skeleton } from '@/Components/ui/skeleton';
 
 interface Props {
@@ -184,6 +214,13 @@ const isPopoverOpen = ref(false);
 const { options: options_padaliniai, isActive: isActivePadalinys, switchTenant: handleSelectPadalinys, currentLabel, isSwitchAllowed } = useTenantOptions(props.prependOptions);
 
 const padalinys = currentLabel(props.mainTenantLabel);
+
+/** The short name below a unit's name, unless it just repeats it. */
+function secondaryLabel(option: TenantOption): string {
+  const shortName = $t(option.primary_institution?.short_name ?? '');
+
+  return shortName.trim().toLowerCase() === (option.label ?? '').trim().toLowerCase() ? '' : shortName;
+}
 const isDisabled = computed(() => !isSwitchAllowed.value);
 
 // Set view mode and initialize map if needed

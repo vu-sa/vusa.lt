@@ -24,7 +24,8 @@ class NewsCollection extends Collection
      *     short: string,
      *     publish_time: Carbon|null,
      *     permalink: string|null,
-     *     image: string
+     *     image: string,
+     *     category: string|null
      * }>
      */
     public function toPublicArray(): array
@@ -37,6 +38,9 @@ class NewsCollection extends Collection
             'publish_time' => $item->publish_time,
             'permalink' => $item->permalink,
             'image' => $item->getImageUrl(),
+            // The category chip on a news card. Nullable: most historic articles have no
+            // category, and the chip is simply omitted for those.
+            'category' => $item->category?->name,
         ])->values()->all();
     }
 
@@ -65,8 +69,9 @@ class NewsCollection extends Collection
             ->where('draft', false)
             ->where('publish_time', '<=', now())
             ->orderByDesc('publish_time')
+            ->with('category:id,name')
             ->take($limit)
-            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image']);
+            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'category_id']);
 
         return new self($news->all());
     }

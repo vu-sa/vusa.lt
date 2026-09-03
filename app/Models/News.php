@@ -218,6 +218,11 @@ class News extends Model implements Feedable, Sitemapable
         return $this->belongsTo(Tenant::class);
     }
 
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function other_language_news(): HasOne
     {
         return $this->hasOne(News::class, 'id', 'other_lang_id');

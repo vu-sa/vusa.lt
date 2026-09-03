@@ -23,13 +23,18 @@ export const SECTION_HEADING_SIZE_CLASS: Record<SectionHeadingLevel, string> = {
   4: 'text-xl',
 };
 
+/**
+ * Token-driven, not fixed zinc: these fills have to follow whichever surface the block is
+ * rendered on — warm paper on the public site, plain white in admin — and a hardcoded
+ * `bg-zinc-50 dark:bg-zinc-900` can only ever be one of them.
+ */
 export const BACKGROUND_CLASS: Record<SectionBackground, string> = {
   none: '',
-  muted: 'bg-zinc-50 dark:bg-zinc-900',
-  contrast: 'bg-white dark:bg-zinc-950',
-  // Same subtle surface as RichContentCard / the hero panel variant — for a section
-  // that wants that card-like look rather than a flat fill.
-  gradient: 'bg-gradient-to-br from-zinc-50 to-zinc-100/50 dark:from-zinc-800/80 dark:to-zinc-900',
+  muted: 'bg-secondary/40',
+  contrast: 'bg-card',
+  // A hair more presence than `muted` without becoming a card — for a section that wants to
+  // read as its own panel.
+  gradient: 'bg-gradient-to-br from-secondary/60 to-secondary',
 };
 
 export const PADDING_CLASS: Record<SectionPadding, string> = {

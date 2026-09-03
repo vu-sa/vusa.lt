@@ -1,11 +1,13 @@
 <template>
-  <div class="w-full my-8">
+  <!-- Hairline frame, square corners — same treatment as the Spotify embed beside it, so an
+       audio player reads as a ruled block on the page rather than a floating rounded card. -->
+  <div class="my-8 w-full border border-border">
     <iframe
       :src="embedUrl"
       frameborder="0"
       allow="encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;"
       title="Mixcloud Embed"
-      class="block w-full rounded-xl h-[120px] min-h-[120px]"
+      class="block w-full h-[120px] min-h-[120px]"
     />
   </div>
 </template>

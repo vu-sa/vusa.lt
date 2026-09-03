@@ -8,16 +8,16 @@
   >
     <Accordion type="single" collapsible class="space-y-4">
       <AccordionItem v-for="(item, index) in element.json_content" :key="index" :value="`item-${index + 1}`"
-        class="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
+        class="border border-border rounded-lg overflow-hidden bg-card">
         <AccordionTrigger
-          class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-left [&[data-state=open]]:bg-zinc-50 dark:[&[data-state=open]]:bg-zinc-700"
+          class="px-4 sm:px-6 py-3 sm:py-4 hover:bg-secondary/60 text-left [&[data-state=open]]:bg-secondary/60"
         >
-          <span class="font-medium text-zinc-900 dark:text-zinc-100 text-sm sm:text-base">{{ item.label }}</span>
+          <span class="font-medium text-foreground text-sm sm:text-base">{{ item.label }}</span>
         </AccordionTrigger>
         <AccordionContent class="px-4 sm:px-6 pb-4 sm:pb-6 pt-2">
           <div
-            class="text-zinc-600 mt-3 dark:text-zinc-400 leading-relaxed text-sm sm:text-base
-              [&_a]:text-vusa-red [&_a]:decoration-vusa-red
+            class="text-muted-foreground mt-3 leading-relaxed text-sm sm:text-base
+              [&_a]:text-brand [&_a]:decoration-brand
               dark:[&_a]:text-red-400 dark:[&_a]:decoration-red-400
               [&_a:hover]:text-red-700 dark:[&_a:hover]:text-red-300
             "

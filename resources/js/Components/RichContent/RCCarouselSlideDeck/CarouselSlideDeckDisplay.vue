@@ -13,21 +13,21 @@
         <CarouselContent>
           <CarouselItem v-for="(slide, index) in element.json_content" :key="index">
             <div class="p-4">
-              <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center bg-white dark:bg-zinc-800 rounded-2xl p-8 md:p-12 shadow-sm border border-zinc-100 dark:border-zinc-700">
+              <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center bg-card rounded-2xl p-8 md:p-12 border border-border">
                 <div :class="['space-y-4 md:space-y-6', slide.imageLeft ? 'order-1 lg:order-2' : 'order-2 lg:order-1']">
                   <!-- Badge -->
-                  <div class="inline-flex items-center gap-2 px-3 py-1 bg-zinc-100 dark:bg-zinc-700 rounded-full text-sm text-zinc-600 dark:text-zinc-400">
+                  <div class="inline-flex items-center gap-2 px-3 py-1 border border-border text-sm text-muted-foreground">
                     <RCIcon :name="slide.icon" class="w-4 h-4" />
                     {{ slide.badge }}
                   </div>
 
                   <!-- Title -->
-                  <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
+                  <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">
                     {{ slide.title }}
                   </h3>
 
                   <!-- Description (authored as Tiptap JSON; no server-rendered html for this type) -->
-                  <div class="rc-prose text-sm sm:text-base md:text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  <div class="rc-prose text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
                     <RichContentTiptapHTML :json_content="slide.description" />
                   </div>
                 </div>
@@ -50,11 +50,11 @@
         <!-- Navigation buttons -->
         <CarouselPrevious
           v-if="asBoolean(element.options?.showNavigation)"
-          class="hidden sm:flex -left-12 bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 text-zinc-900 dark:text-zinc-100"
+          class="hidden sm:flex -left-12 bg-background border-border hover:border-brand hover:text-brand text-foreground"
           @click="restartCarouselAutoplay" />
         <CarouselNext
           v-if="asBoolean(element.options?.showNavigation)"
-          class="hidden sm:flex -right-12 bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 text-zinc-900 dark:text-zinc-100"
+          class="hidden sm:flex -right-12 bg-background border-border hover:border-brand hover:text-brand text-foreground"
           @click="restartCarouselAutoplay" />
 
         <!-- Photo Preview Navigation -->
@@ -68,7 +68,7 @@
             <img
               :src="slide.imageSrc"
               :alt="slide.imageAlt"
-              class="w-14 h-10 sm:w-16 sm:h-12 object-cover rounded-lg shadow-sm transition-all duration-200"
+              class="w-14 h-10 sm:w-16 sm:h-12 object-cover rounded-lg transition-all duration-200"
               :class="{
                 'opacity-100 scale-105 blur-[1px]': currentSlide === index,
                 'opacity-70 hover:opacity-90 scale-100 hover:scale-105': currentSlide !== index
@@ -76,12 +76,12 @@
               loading="lazy">
             <!-- Icon overlay for active slide -->
             <div v-if="currentSlide === index"
-              class="absolute inset-0 bg-zinc-900/20 rounded-lg flex items-center justify-center">
+              class="absolute inset-0 bg-ink/30 rounded-lg flex items-center justify-center">
               <RCIcon :name="slide.icon" class="w-3 h-3 sm:w-4 sm:h-4 text-white drop-shadow-sm" />
             </div>
             <!-- Category label -->
             <div
-              class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-zinc-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
               {{ slide.badge }}
             </div>
           </button>

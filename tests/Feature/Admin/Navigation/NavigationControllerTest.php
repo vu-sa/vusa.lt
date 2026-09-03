@@ -392,27 +392,6 @@ describe('authorized access', function (): void {
             ->assertSessionHasErrors(['extra_attributes.badge_variant']);
     });
 
-    test('can set a root item menu_width', function (): void {
-        $updateData = getControllerTestData('Navigation')['valid'];
-        $updateData['extra_attributes'] = ['menu_width' => 'narrow'];
-
-        asUser($this->admin)
-            ->patch(route('navigation.update', $this->navigation), $updateData)
-            ->assertSessionHas('success');
-
-        $this->navigation->refresh();
-        expect($this->navigation->extra_attributes['menu_width'])->toBe('narrow');
-    });
-
-    test('rejects an invalid menu_width', function (): void {
-        $updateData = getControllerTestData('Navigation')['valid'];
-        $updateData['extra_attributes'] = ['menu_width' => 'gigantic'];
-
-        asUser($this->admin)
-            ->patch(route('navigation.update', $this->navigation), $updateData)
-            ->assertSessionHasErrors(['extra_attributes.menu_width']);
-    });
-
     test('a heading type does not require a name, same as a divider', function (): void {
         asUser($this->admin)
             ->post(route('navigation.store'), [
