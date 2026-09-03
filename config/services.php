@@ -49,7 +49,7 @@ return [
      */
     'umami' => [
         'script_url' => env('UMAMI_SCRIPT_URL'),
-        'website_id' => env('UMAMI_WEBSITE_ID'),
+        'website_id' => env('APP_ENV') === 'staging' ? null : env('UMAMI_WEBSITE_ID'),
 
         /*
          * Server-to-server API access, used by UmamiClient for the admin dashboard.

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\StagingProtection;
 use App\Support\StoragePath;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
@@ -72,6 +73,8 @@ class ImageUploadService
         ?string $filename = null,
         array $options = []
     ): array {
+        StagingProtection::ensureFilesAreWritable();
+
         $opts = array_merge($this->options, $options);
 
         // Get original filename

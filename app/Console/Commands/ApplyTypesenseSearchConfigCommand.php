@@ -27,12 +27,18 @@ class ApplyTypesenseSearchConfigCommand extends Command
 
     public function handle(): int
     {
+        if (config('app.env') === 'staging' && config('scout.prefix') !== 'staging_') {
+            $this->error('Refused: staging Typesense operations require SCOUT_PREFIX=staging_.');
+
+            return self::FAILURE;
+        }
+
         $client = new Client(config('scout.typesense.client-settings'));
 
-        $this->info('Upserting synonym set ('.TypesenseSynonyms::SET_NAME.')...');
+        $this->info('Upserting synonym set ('.TypesenseSynonyms::setName().')...');
         TypesenseSynonyms::upsertSynonymSet($client);
 
-        $this->info('Upserting curation set ('.TypesenseCuration::SET_NAME.')...');
+        $this->info('Upserting curation set ('.TypesenseCuration::setName().')...');
         TypesenseCuration::upsertCurationSet($client);
 
         $this->info('Attaching sets to collections...');
@@ -78,8 +84,8 @@ class ApplyTypesenseSearchConfigCommand extends Command
         for ($attempt = 1; $attempt <= self::MAX_ATTEMPTS; $attempt++) {
             try {
                 $client->collections[$collection]->update([
-                    'synonym_sets' => [TypesenseSynonyms::SET_NAME],
-                    'curation_sets' => [TypesenseCuration::SET_NAME],
+                    'synonym_sets' => [TypesenseSynonyms::setName()],
+                    'curation_sets' => [TypesenseCuration::setName()],
                 ]);
 
                 return null;

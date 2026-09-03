@@ -39,6 +39,12 @@ class ReindexSearchCommand extends Command
             return self::SUCCESS;
         }
 
+        if (config('app.env') === 'staging' && config('scout.prefix') !== 'staging_') {
+            $this->error('Refused: staging Typesense operations require SCOUT_PREFIX=staging_.');
+
+            return self::FAILURE;
+        }
+
         $this->info('🔍 Starting search index reindexing...');
 
         // Import synchronously. With scout.queue on (the default), scout:import only

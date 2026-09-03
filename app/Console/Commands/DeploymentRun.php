@@ -25,6 +25,11 @@ class DeploymentRun extends Command
      * @var array<string, array{name: string, command: string, args?: array<string, mixed>, critical: bool}>
      */
     public const array STEPS = [
+        'isolation' => [
+            'name' => 'Verify staging isolation',
+            'command' => 'staging:verify-isolation',
+            'critical' => true,
+        ],
         // Outside the maintenance window on purpose. deployment:backup dumps with
         // --single-transaction, which is consistent and non-blocking on InnoDB, so it is safe to run
         // against a live site — and the deploy workflow already does exactly that in its pre-flight

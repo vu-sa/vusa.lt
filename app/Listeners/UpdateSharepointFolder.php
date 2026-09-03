@@ -10,6 +10,7 @@ use App\Models\Meeting;
 use App\Models\Type;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
+use App\Support\StagingProtection;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -35,6 +36,10 @@ class UpdateSharepointFolder
      */
     public function handle(FileableNameUpdated $event): void
     {
+        if (StagingProtection::sharepointIsReadOnly()) {
+            return;
+        }
+
         // Skip SharePoint operations in testing environment
         if (app()->environment('testing')) {
             return;

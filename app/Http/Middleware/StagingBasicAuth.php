@@ -49,8 +49,7 @@ class StagingBasicAuth
         $password = config('app.staging_password');
 
         if (empty($username) || empty($password)) {
-            // If not configured, allow access (fail open for flexibility)
-            return $next($request);
+            return response('Staging environment is unavailable because HTTP authentication is not configured.', 503);
         }
 
         // Validate Basic Auth credentials

@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Support\StagingProtection;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Spatie\MediaLibrary\HasMedia;
@@ -57,6 +58,8 @@ class HandleModelMediaUploads
             return;
         }
 
+        StagingProtection::ensureFilesAreWritable();
+
         $file = $request->file($fieldName);
 
         $model->addMedia($file)
@@ -78,6 +81,8 @@ class HandleModelMediaUploads
         if (! $files) {
             return;
         }
+
+        StagingProtection::ensureFilesAreWritable();
 
         // Handle both array of files and array of ['file' => File] structures
         /** @var array<int|string, UploadedFile|array<string, mixed>> $filesArray */

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'smtp'),
+    'default' => env('APP_ENV') === 'staging' ? 'log' : env('MAIL_MAILER', 'smtp'),
 
     /*
     |--------------------------------------------------------------------------

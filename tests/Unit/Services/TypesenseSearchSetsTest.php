@@ -3,6 +3,18 @@
 use App\Services\Typesense\TypesenseCuration;
 use App\Services\Typesense\TypesenseSynonyms;
 
+test('global search set names use the Scout environment prefix', function (): void {
+    config(['scout.prefix' => 'staging_']);
+
+    expect(TypesenseSynonyms::setName())->toBe('staging_vusa_synonyms')
+        ->and(TypesenseCuration::setName())->toBe('staging_vusa_curation');
+
+    config(['scout.prefix' => '']);
+
+    expect(TypesenseSynonyms::setName())->toBe('vusa_synonyms')
+        ->and(TypesenseCuration::setName())->toBe('vusa_curation');
+});
+
 describe('TypesenseSynonyms::buildSynonymSetItems', function (): void {
     test('includes every configured synonym as an item', function (): void {
         $items = TypesenseSynonyms::buildSynonymSetItems();

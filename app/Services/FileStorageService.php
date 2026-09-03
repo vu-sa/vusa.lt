@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Support\StagingProtection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -85,6 +86,8 @@ class FileStorageService
      */
     public function storeOne(UploadedFile $file, string $directory): array
     {
+        StagingProtection::ensureFilesAreWritable();
+
         $originalName = $file->getClientOriginalName();
         $extension = strtolower($file->getClientOriginalExtension());
 

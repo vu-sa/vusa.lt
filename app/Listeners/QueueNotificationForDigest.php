@@ -28,6 +28,10 @@ class QueueNotificationForDigest
      */
     public function handle(NotificationSending $event): void
     {
+        if (config('app.env') === 'staging') {
+            return;
+        }
+
         // Only queue once per notification — NotificationSending fires for each channel,
         // so we use the 'database' channel as the canonical trigger
         if ($event->channel !== 'database') {

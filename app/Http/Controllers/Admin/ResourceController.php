@@ -10,6 +10,7 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Support\StagingProtection;
 use Illuminate\Http\RedirectResponse;
 
 class ResourceController extends AdminController
@@ -47,6 +48,10 @@ class ResourceController extends AdminController
     public function store(StoreResourceRequest $request)
     {
         $this->handleAuthorization('create', Resource::class);
+
+        if ($request->validated('media') !== []) {
+            StagingProtection::ensureFilesAreWritable();
+        }
 
         $resource = new Resource;
 
@@ -97,6 +102,13 @@ class ResourceController extends AdminController
      */
     public function update(UpdateResourceRequest $request, Resource $resource)
     {
+        $hasPendingMedia = collect($request->validated('media'))
+            ->contains(fn (array $image): bool => $image['status'] === 'pending' && ($image['file'] ?? null) !== null);
+
+        if ($hasPendingMedia) {
+            StagingProtection::ensureFilesAreWritable();
+        }
+
         $resource->fill($request->safe()->except('media'));
         $resource->save();
 

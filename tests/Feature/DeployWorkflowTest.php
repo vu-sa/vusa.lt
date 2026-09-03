@@ -125,6 +125,30 @@ describe('the deploy workflows', function () use ($shared, $source) {
         expect($staging)->toContain('workflow_run')
             ->and($staging)->toContain('- dev');
     });
+
+    it('pins manual staging deployments to a green CI commit containing dev', function () use ($source): void {
+        $staging = $source('.github/workflows/deploy-staging.yml');
+
+        expect($staging)->toContain('--commit "$sha"')
+            ->and($staging)->toContain('--event push')
+            ->and($staging)->toContain('--status success')
+            ->and($staging)->toContain('git merge-base --is-ancestor origin/dev "$sha"')
+            ->and($staging)->toContain('remote-sha: ${{ needs.resolve.outputs.sha }}')
+            ->and($staging)->not->toContain('remote-branch:');
+    });
+
+    it('checks out the immutable SHA on the server', function () use ($source): void {
+        expect($source('.github/workflows/deploy-common.yml'))
+            ->toContain('git checkout --detach --force "${{ inputs.remote-sha }}"')
+            ->not->toContain('inputs.remote-branch');
+    });
+
+    it('runs CI for pushed feature branches', function () use ($source): void {
+        $ci = $source('.github/workflows/ci.yml');
+
+        expect($ci)->toContain("push:\n    branches-ignore:")
+            ->not->toContain("push:\n    branches:\n      - main");
+    });
 });
 
 describe('the deployment pipeline order', function () {
