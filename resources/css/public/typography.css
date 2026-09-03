@@ -1,0 +1,455 @@
+/* Editorial type utilities for the VU SA comms look. In `components`, not `base`, so a caller
+   can still override the size or colour with a plain utility class. */
+@layer components {
+  .u-eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.28em] text-brand;
+  }
+
+  .u-display {
+    @apply font-bold uppercase leading-[0.92] tracking-tight;
+  }
+}
+
+.typography {
+
+  /* Ensure images are responsive and don't overflow */
+  img {
+    @apply max-w-full h-auto;
+  }
+
+  /* break-words, not break-all: `break-all` wraps at *any* character, so ordinary
+     link text shattered mid-word. Long URLs still wrap, because `break-words` breaks
+     a token that cannot fit on its own line. */
+  a {
+    @apply underline break-words;
+  }
+
+  /* Rich content typography with proper spacing and enhanced styling */
+  h1 {
+    @apply scroll-mt-32 text-4xl font-bold tracking-tight lg:text-5xl mb-6 mt-0 first:mt-0;
+  }
+
+  h2 {
+    @apply scroll-mt-32 border-b border-zinc-200 dark:border-zinc-600 pb-2 text-3xl font-bold tracking-tight transition-colors mb-4 mt-8 first:mt-0;
+  }
+
+  h3 {
+    @apply scroll-mt-32 text-2xl font-bold tracking-tight mb-3 mt-6 first:mt-0;
+  }
+
+  h4 {
+    @apply scroll-mt-32 text-xl font-bold tracking-tight mb-2 mt-5 first:mt-0;
+  }
+
+  h5 {
+    @apply scroll-mt-32 text-lg font-bold tracking-tight mb-2 mt-4 first:mt-0;
+  }
+
+  h6 {
+    @apply scroll-mt-32 text-base font-bold tracking-tight mb-2 mt-3 first:mt-0;
+  }
+
+  table p {
+    @apply my-0
+  }
+
+  blockquote {
+    @apply mt-6 border-l-2 pl-6 italic tracking-normal leading-normal
+  }
+
+  p {
+    @apply not-first:mt-6 mt-4 mb-5 tracking-normal
+  }
+
+  ul,
+  ol {
+    @apply ml-4 [&>li]:mt-2;
+  }
+
+  ul {
+    @apply list-disc;
+  }
+
+  ol {
+    @apply list-decimal;
+  }
+}
+
+/*
+  Prose styling for rendered rich-text HTML specifically (TipTap output).
+  Unlike `.typography` above, this is applied only where TipTap-generated
+  HTML actually lands (RichContentTiptapHTML, TiptapDisplay) — never at
+  page level — so it can't leak into cards, accordions, heroes or
+  galleries that happen to share a rich-content block with a text block.
+
+  Uses a single-direction `margin-block-start` flow instead of `.typography`'s
+  `p { not-first:mt-6 mt-4 mb-5 }`, which stacks a top AND bottom margin on
+  every paragraph and, worse, silently doubles up whenever an ancestor is a
+  flex/grid container (margins don't collapse there) — exactly what happened
+  around the old `flex flex-col gap-4` rich content wrappers.
+
+  `.rc-prose-editing` is the *editing* surface (TiptapEditor's ProseMirror root,
+  opted in via `<TiptapEditor prose-style>`) — sharing one declaration block with
+  `.rc-prose` means the WYSIWYG editor and the published output cannot drift in
+  flow/heading scale/link treatment the way they used to (editor: tiptap-base.css's
+  `margin: .4rem 0`, h2 1.5rem; display: this block's `1.25em` flow, h2 `2em`).
+*/
+.rc-prose,
+.rc-prose-editing {
+  /* A left/right aligned image floats (App\Tiptap\Image), so without this the last
+     float in a block escapes past the end of the content it was aligned against. */
+  &::after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+
+  >* {
+    margin-block: 0;
+  }
+
+  >*+* {
+    margin-block-start: 1.25em;
+  }
+
+  >h2 {
+    margin-block-start: 1.5em;
+  }
+
+  >h3 {
+    margin-block-start: 1.3em;
+  }
+
+  >h4,
+  >h5,
+  >h6 {
+    margin-block-start: 1.15em;
+  }
+
+  /* Reading defaults live here, not on the host page, because `.rc-prose` is dropped
+     into contexts that set no typography of their own — ContentPage's `default` and
+     `wide` layouts previously fell through to Tailwind preflight's `html` 1.5 at 16px
+     across a 44rem measure (~90 characters/line), which is the least comfortable
+     combination on the public site. Hosts that want something different (cards,
+     carousels) still override per-element; this only claims `p`/`li`/headings. */
+  overflow-wrap: break-word;
+  /* `pretty` prevents a single-word orphan on the last line. Headings opt into
+     `balance` instead, below — it applies to the whole block rather than the tail. */
+  text-wrap: pretty;
+
+  p,
+  li {
+    line-height: 1.7;
+  }
+
+  img {
+    @apply max-w-full h-auto;
+  }
+
+  /* break-words (not break-all) so ordinary link text doesn't shatter mid-word.
+     The underline is offset because Lithuanian's ogonek vowels (ą ę į ų) descend
+     below the baseline, and an underline in the default position strikes through
+     them on every second word.
+
+     Colour is set here rather than left to the class the Tiptap render preset bakes
+     into the HTML: stored content still carries the preset's old `text-blue-500`
+     (~3.6:1 on zinc-50, ~4.4:1 on zinc-900 — both under the 4.5:1 AA floor), and
+     this block is unlayered, so it outranks any Tailwind utility on the element and
+     corrects legacy content too. `--brand` replaces the old `vusa-red`/`vusa-red-on-dark`
+     pair: it already swaps per theme, so one rule now covers what needed two. */
+  a {
+    @apply underline break-words underline-offset-2 decoration-1 font-medium;
+    @apply text-brand;
+  }
+
+  a:hover {
+    @apply decoration-2;
+  }
+
+  code {
+    @apply rounded-sm bg-secondary px-1 py-0.5 text-[0.875em];
+  }
+
+  :is(h1, h2, h3, h4, h5, h6) {
+    text-wrap: balance;
+  }
+
+  h1 {
+    @apply text-4xl font-bold tracking-tight lg:text-5xl;
+  }
+
+  h2 {
+    @apply border-b border-border pb-2 text-3xl font-bold tracking-tight transition-colors;
+  }
+
+  h3 {
+    @apply text-2xl font-bold tracking-tight;
+  }
+
+  h4 {
+    @apply text-xl font-bold tracking-tight;
+  }
+
+  h5 {
+    @apply text-lg font-bold tracking-tight;
+  }
+
+  h6 {
+    @apply text-base font-bold tracking-tight;
+  }
+
+  /* Not dead code, despite `.rc-prose` giving descendant `p` no margin of its own:
+     the editing surface also matches `.tiptap`, whose base stylesheet sets
+     `p { margin: .4rem 0 }`. Without this, table cells gain stray vertical padding
+     while typing that the published output doesn't have. */
+  table p {
+    @apply my-0
+  }
+
+  /* The default border colour comes from the base layer's `*` rule, which is
+     `gray-200` with no dark-mode counterpart — so the quote bar reads as a glaring
+     light-grey line on a dark background unless it is set explicitly, the same way
+     `h2`'s bottom border already is. `border-brand` rather than a neutral: the
+     brand-coloured vertical rule is the design's signature device, and a quote is
+     exactly the "hung off a rule" shape it names.
+
+     No `leading-*` here on purpose: quotes are set at body size, so tightening them
+     relative to the surrounding 1.7 makes them read as a different (smaller) size
+     rather than as an emphasis. Large pull quotes set their own leading — see
+     PersonQuoteDisplay. */
+  blockquote {
+    @apply border-l-2 border-brand pl-6 italic tracking-normal
+  }
+
+  /* Preflight zeroes every margin and the flow rules above only reach *direct*
+     children, so a multi-paragraph quote would otherwise collapse into one block. */
+  blockquote p+p {
+    @apply mt-4;
+  }
+
+  /* `pl-6`, not `ml-4`: padding keeps the markers hanging inside the measure instead
+     of out in the gutter, and matches the editor's own `padding-left: 1.5rem`. */
+  ul,
+  ol {
+    @apply pl-6 [&>li]:mt-2;
+  }
+
+  li> :is(ul, ol) {
+    @apply mt-2;
+  }
+
+  ul {
+    @apply list-disc;
+  }
+
+  ol {
+    @apply list-decimal;
+  }
+
+  /* Depth cues — without these every nesting level repeats `disc`/`decimal`, so a
+     sub-point is indistinguishable from a sibling once the indent scrolls off. */
+  ul ul {
+    @apply list-[circle];
+  }
+
+  ul ul ul {
+    @apply list-[square];
+  }
+
+  ol ol {
+    @apply list-[lower-alpha];
+  }
+
+  ol ol ol {
+    @apply list-[lower-roman];
+  }
+}
+
+/* Body copy sits at `--muted-foreground`, headings and emphasis at full strength — the
+   design's two-weight reading voice (v0: `text-pretty … text-muted-foreground` paragraphs under
+   `text-foreground` headings). Contrast holds comfortably: light 0.46 on 0.965 ≈ 7:1, dark 0.68
+   on 0.135 ≈ 9:1, both well past the 4.5:1 floor.
+
+   Written as plain selectors rather than `@apply` inside the shared block above: `@apply` with a
+   variant compiles at the top level but is silently dropped inside a *nested* rule — the
+   declaration vanishes from the build with no error. That trap cost a dark-mode link colour once
+   already, so anything conditional lives out here.
+
+   Scoped to the public surface: `.rc-prose-editing` is also the admin Tiptap root, and muting the
+   text you are actively typing is both a visible admin change and the wrong call while editing.
+   Admin *previews* still match the published page, because BlockPreviewRenderer stamps
+   `data-surface="public"` on all three preview surfaces. */
+[data-surface="public"] :is(.rc-prose, .rc-prose-editing) {
+  color: var(--prose-foreground);
+}
+
+[data-surface="public"] :is(.rc-prose, .rc-prose-editing) :is(h1, h2, h3, h4, h5, h6, strong, b, th) {
+  color: var(--foreground);
+}
+
+/* The opening paragraph of an article or page: hung off the brand rule, set bold and one step
+   up. A class rather than a component because both hosts feed it stored HTML through `v-html`
+   (`News.short`, sanitized on write), so there is no element of ours to hang props on. `> p`
+   because that HTML arrives wrapped in its own `<p>`. */
+.rc-lead {
+  @apply border-l-2 border-brand pl-5 text-lg font-bold leading-relaxed text-foreground sm:pl-6 sm:text-xl;
+  text-wrap: pretty;
+}
+
+.rc-lead>p {
+  margin: 0;
+  color: inherit;
+  /* `inherit`, not the reading-scale multiplier that catches every other paragraph: the lead's
+     size comes from a `text-*` utility on the wrapper, which `.reading-scale` already scales
+     through `--text-*`. Without this the lead was scaled twice — 20px became 45px at the largest
+     step rather than 30px. Source order does the work; the specificities tie. */
+  font-size: inherit;
+}
+
+.rc-lead>p+p {
+  @apply mt-4;
+}
+
+/* Anchor scroll offset is only meaningful on the rendered page (the ToC scrolls to
+   these ids) — the editing surface never needs a 32px dead zone above every heading
+   while typing, so this stays out of the shared block above. */
+.rc-prose :is(h1, h2, h3, h4, h5, h6) {
+  @apply scroll-mt-32;
+}
+
+/* Authorable heading size/accent (App\Tiptap\CustomHeading, CustomHeading.ts) — a
+   heading's *size* is independent of its semantic level (h2/h3/h4), so a `rc-h-md`
+   heading can reproduce e.g. the "Susipažink su Lijana!" mascot heading
+   (`text-xl sm:text-2xl md:text-3xl`) regardless of which level it's marked up as
+   for document structure/ToC purposes. `!important` isn't needed: these rules come
+   after (and are more specific than) the plain `.rc-prose h2/h3/h4` rules above.
+   Both `.rc-prose` and `.rc-prose-editing` are targeted so the WYSIWYG editing
+   surface renders the same heading treatment as the published output. */
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-sm,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-sm {
+  @apply text-lg sm:text-xl font-bold tracking-tight border-none pb-0;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-md,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-md {
+  @apply text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-tight border-none pb-0;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-lg,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-lg {
+  @apply text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight leading-tight border-none pb-0;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-xl,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-xl {
+  @apply text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight border-none pb-0;
+}
+
+.rc-h-accent-red {
+  @apply text-vusa-red;
+}
+
+.rc-h-accent-yellow {
+  @apply text-vusa-yellow-dark dark:text-vusa-yellow;
+}
+
+.rc-h-accent-zinc {
+  @apply text-zinc-500 dark:text-zinc-400;
+}
+
+/* Authorable heading top spacing (App\Tiptap\CustomHeading, CustomHeading.ts) —
+   overrides the level-based `margin-block-start` in the shared block above. These
+   rules' specificity (`.rc-prose :is(h*).rc-h-spacing-*` → 0,2,1) beats the plain
+   `.rc-prose > h2` (0,1,1), so no `!important` is needed. `default` is the absence
+   of a class and keeps the level-based margin. `none` collapses the top margin
+   entirely so a heading can sit flush against the preceding block. Both `.rc-prose`
+   and `.rc-prose-editing` are targeted so spacing changes are visible while editing. */
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-tight,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-tight {
+  margin-block-start: 0.75em;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-loose,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-loose {
+  margin-block-start: 2.5em;
+}
+
+.rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-none,
+.rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-none {
+  margin-block-start: 0;
+}
+
+/* Authorable text alignment (App\Tiptap\TextAlign, TextAlign.ts) — a class, never
+   inline `style`, so it survives HtmlSanitizerService (which strips `style`
+   everywhere). `start` is the default and has no class of its own. */
+.rc-align-center {
+  @apply text-center;
+}
+
+.rc-align-end {
+  @apply text-end;
+}
+
+/* The MembershipPage-style dot-pill "tag" mark (App\Tiptap\RCTag, RCTag.ts) — the dot
+   is a `::before`, not a real child element, so the mark survives sanitization as a
+   single `<span class="rc-tag rc-tag-{variant} rc-tag-{color}">`. */
+.rc-tag {
+  @apply inline-flex items-center gap-2 text-sm font-medium align-middle;
+}
+
+.rc-tag::before {
+  content: '';
+  @apply size-2 shrink-0 rounded-full;
+}
+
+.rc-tag-filled {
+  @apply rounded-full px-3 py-1;
+}
+
+.rc-tag-zinc.rc-tag-filled {
+  @apply bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300;
+}
+
+.rc-tag-zinc::before {
+  @apply bg-zinc-500;
+}
+
+.rc-tag-zinc.rc-tag-plain {
+  @apply text-zinc-500 dark:text-zinc-400;
+}
+
+.rc-tag-red.rc-tag-filled {
+  @apply bg-vusa-red/10 text-vusa-red dark:bg-vusa-red/20;
+}
+
+.rc-tag-red::before {
+  @apply bg-vusa-red;
+}
+
+.rc-tag-red.rc-tag-plain {
+  @apply text-vusa-red;
+}
+
+.rc-tag-yellow.rc-tag-filled {
+  @apply bg-vusa-yellow/10 text-vusa-yellow-dark dark:bg-vusa-yellow/20 dark:text-vusa-yellow;
+}
+
+.rc-tag-yellow::before {
+  @apply bg-vusa-yellow;
+}
+
+.rc-tag-yellow.rc-tag-plain {
+  @apply text-zinc-500 dark:text-zinc-400;
+}
+
+.rc-tag-green.rc-tag-filled {
+  @apply bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400;
+}
+
+.rc-tag-green::before {
+  @apply bg-green-500;
+}
+
+.rc-tag-green.rc-tag-plain {
+  @apply text-zinc-500 dark:text-zinc-400 italic;
+}

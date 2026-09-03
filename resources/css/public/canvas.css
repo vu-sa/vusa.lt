@@ -1,0 +1,282 @@
+/* The ground a detail page's title band sits on.
+
+   Theme-aware rather than the prototype's hardcoded near-black: a black slab above warm paper is
+   the one place the v0 screenshots (dark-mode only) do not tell you what light mode should do,
+   and in light mode it reads as a foreign object rather than as a masthead. Light gets the same
+   warm tint every other band on the surface uses; dark keeps the near-black `--ink` slab, a
+   touch darker than the canvas, exactly as the design shows.
+
+   Because both grounds follow the theme, everything inside the band can use the ordinary tokens —
+   `text-foreground`, `text-muted-foreground`, `text-brand` — and resolves correctly in both. */
+.band-masthead {
+  background-color: color-mix(in oklch, var(--secondary) 40%, transparent);
+}
+
+.dark .band-masthead {
+  background-color: var(--ink);
+}
+
+/*
+  Rich content canvas — the grid RichContentParser lays its blocks into.
+
+  Replaces the old `.full-bleed` + parser-level `getSpacingClass()` table.
+  `.full-bleed` only works on a *direct child* of `.wrapper` (see the child
+  combinator on `.wrapper > *` below), which silently failed wherever the
+  parser was nested inside a `max-w-prose` / flex wrapper (ContentPage,
+  NewsArticleLayout). This grid is self-contained: it doesn't need to be a
+  `.wrapper` child to produce `full`-width blocks, so bleed behavior no
+  longer depends on how deeply a page happens to nest the parser.
+
+  Column model, gutter-to-gutter: full ⊃ wide ⊃ content ⊃ prose (default).
+  `--rc-measure` is in `rem`, not `ch` — `ch` resolves against the canvas's
+  own font and would silently narrow the measure relative to the public
+  font stack (Atkinson Hyperlegible).
+*/
+.rc-canvas {
+  --rc-gutter: 1rem;
+  --rc-wide-step: 0rem;
+  --rc-content-step: 0rem;
+  --rc-measure: 44rem;
+  --rc-flow: 2.5rem;
+
+  display: grid;
+  align-content: start;
+  /* wide/content steps are `minmax(0, …)`, not a bare length — a bare `var(--rc-wide-step)`
+     is a fixed track that cannot shrink, so pairing it with a narrower sibling (e.g. the
+     17rem ToC sidebar in `.rc-shell`) can demand more total width than the row has,
+     pushing the grid to overflow its column and run under the sidebar. `minmax(0, …)`
+     lets the steps collapse under pressure; the minimum canvas width becomes just
+     `2×gutter + prose`, which always fits. */
+  grid-template-columns:
+    [full-start] minmax(var(--rc-gutter), 1fr)
+    [wide-start] minmax(0, var(--rc-wide-step))
+    [content-start] minmax(0, var(--rc-content-step))
+    [prose-start] min(var(--rc-measure), 100% - var(--rc-gutter) * 2) [prose-end]
+    minmax(0, var(--rc-content-step))
+    [content-end] minmax(0, var(--rc-wide-step))
+    [wide-end] minmax(var(--rc-gutter), 1fr) [full-end];
+
+  @media (width >=768px) {
+    --rc-gutter: 2rem;
+    --rc-wide-step: 8rem;
+    --rc-content-step: 6rem;
+  }
+}
+
+/* A `section` block (RCSection/SectionDisplay.vue) nests a second `.rc-canvas` inside
+   its own `<section>` so wrapped children keep independent per-block widths. Without
+   this, the nested canvas's own `.rc-canvas` rule above would re-declare
+   `--rc-measure: 44rem`, clobbering the page's actual measure (58rem on `wide` layout,
+   40rem on `focused`) for every block inside a section. `inherit` is a valid value for
+   any property, including custom properties, so this simply takes the ambient value
+   set by the page's outer canvas instead of resetting it. Must come after the plain
+   `.rc-canvas` rule above — same specificity, so source order decides the winner. */
+.rc-canvas-nested {
+  --rc-measure: inherit;
+}
+
+/* Left-aligned measure (News `headline` layout, and ContentPage's `default` layout
+   whenever a ToC sidebar is present) — the prose column hugs the start edge instead of
+   being centered between the wide/content steps.
+
+   Gated to ≥1024px on purpose: `.rc-aside` (the 17rem ToC sidebar this variant exists
+   for) is `hidden lg:block`, and `.rc-shell` only goes two-column at that same
+   ≥1024px breakpoint (see `.rc-shell:has(>.rc-aside)` below). Below 1024px there is no
+   sidebar consuming space, so this template's leading wide/content steps (8rem + 6rem
+   from 768px) grew unopposed while the trailing `1fr` track collapsed — pushing the
+   whole prose column ~150-200px right and reading as a large, asymmetric left margin
+   between 768 and 1023px. Falling back to the default centered template in that range
+   fixes it; the sidebar reclaims the space again at ≥1024px. */
+@media (width >=1024px) {
+  .rc-canvas[data-align='start'] {
+    grid-template-columns:
+      [full-start] var(--rc-gutter)
+      [wide-start] minmax(0, var(--rc-wide-step))
+      [content-start] minmax(0, var(--rc-content-step))
+      [prose-start] min(var(--rc-measure), 100% - var(--rc-gutter) * 2) [prose-end]
+      minmax(0, 1fr)
+      [content-end wide-end] minmax(var(--rc-gutter), 1fr) [full-end];
+  }
+}
+
+/* Shorthand only: `grid-column-start: prose` alone would leave `grid-column-end`
+   at `auto` (span 1 track) instead of resolving to the matching `prose-end` line.
+   Always assign through the single-value ident shorthand, never split longhands. */
+.rc-canvas>* {
+  grid-column: prose;
+  min-width: 0;
+}
+
+.rc-canvas>.rc-content {
+  grid-column: content;
+}
+
+.rc-canvas>.rc-wide {
+  grid-column: wide;
+}
+
+.rc-canvas>.rc-full {
+  grid-column: full;
+}
+
+/* Vertical rhythm — replaces the old per-type getSpacingClass() lookup table.
+   Blocks that render their own full-bleed section (hero, accordion, galleries, …)
+   carry `.rc-flush` so the canvas doesn't add a second margin on top of their
+   internal `py-*`. */
+.rc-canvas>*+* {
+  margin-block-start: var(--rc-flow);
+}
+
+.rc-canvas>.rc-flush,
+.rc-canvas>.rc-flush+* {
+  margin-block-start: 0;
+}
+
+/* The canvas is self-contained (works with no `.wrapper` ancestor at all — e.g. in an
+   editor preview) but still wants the full page measure whenever it does happen to sit
+   inside one of the page wrapper grids, without every page having to remember to also
+   add `full-bleed` to the canvas's own wrapper element. `.rc-shell` (canvas + sticky
+   sidebar, e.g. the table-of-contents layout) opts in the same way, since in that case
+   `.rc-shell` — not `.rc-canvas` — is the direct wrapper child. */
+.wrapper>.rc-canvas,
+.wrapper-wide>.rc-canvas,
+.wrapper-full>.rc-canvas,
+.wrapper-content>.rc-canvas,
+.wrapper>.rc-shell,
+.wrapper-wide>.rc-shell,
+.wrapper-full>.rc-shell,
+.wrapper-content>.rc-shell {
+  grid-column: 1 / -1;
+  padding-inline: 0;
+}
+
+/* Pairs a canvas with a sticky sidebar (e.g. ContentPage's table-of-contents layout)
+   without the sidebar clipping `rc-full` blocks down to a second, narrower measure
+   on every page — only pages that actually have anchor links pay that cost.
+
+   `.rc-shell` is a `.wrapper > *` full-bleed child (see the rule above), so — unlike
+   `.rc-canvas`, which reserves its own `--rc-gutter` on both edges internally — it
+   spans the true viewport edge to true viewport edge with zero padding of its own.
+   The content column's *left* edge is already fine: the nested `.rc-canvas` inside it
+   reserves its own left-hand `--rc-gutter`. But `.rc-aside`'s fixed `17rem` track has
+   no such built-in margin, so at every width ≥1024px (not just some band of it — a
+   previous version of this fix only applied it 1024–1279px, leaving it flush against
+   the edge above 1280px) the ToC card sat flush against the browser edge. Reserving
+   the gutter on `.rc-shell` itself, matching `.rc-canvas`'s own 2rem desktop value,
+   fixes the right edge without touching the content column's already-correct left one. */
+.rc-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3rem;
+}
+
+@media (width >=1024px) {
+  .rc-shell:has(>.rc-aside) {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    padding-inline-end: 2rem;
+  }
+}
+
+.rc-aside {
+  position: sticky;
+  top: 12rem;
+  align-self: start;
+}
+
+/*
+  Only keeping essential global classes that represent layout patterns
+  that would be cumbersome as inline utilities
+
+  NOTE: Do not use tailwindcss-typography plugin here as it conflicts with our custom styling
+*/
+.wrapper {
+  display: grid;
+  grid-template-columns:
+    minmax(1rem, 1fr) min(calc(100% - 2rem), 1200px) minmax(1rem, 1fr);
+  /* CSS containment for performance - isolates layout calculations */
+  contain: layout style;
+
+  @media (width >=768px) {
+    grid-template-columns:
+      minmax(2rem, 1fr) min(calc(100% - 4rem), 1200px) minmax(2rem, 1fr);
+  }
+}
+
+/* Layout width variants */
+.wrapper-wide {
+  display: grid;
+  grid-template-columns:
+    minmax(1rem, 1fr) min(calc(100% - 2rem), 1400px) minmax(1rem, 1fr);
+  contain: layout style;
+
+  @media (width >=768px) {
+    grid-template-columns:
+      minmax(2rem, 1fr) min(calc(100% - 4rem), 1400px) minmax(2rem, 1fr);
+  }
+}
+
+.wrapper-full {
+  display: grid;
+  grid-template-columns:
+    minmax(0.75rem, 1fr) min(calc(100% - 1.5rem), none) minmax(0.75rem, 1fr);
+  contain: layout style;
+
+  @media (width >=768px) {
+    grid-template-columns:
+      minmax(1rem, 1fr) min(calc(100% - 2rem), none) minmax(1rem, 1fr);
+  }
+}
+
+.wrapper-content {
+  display: grid;
+  grid-template-columns:
+    minmax(1rem, 1fr) min(calc(100% - 2rem), 1600px) minmax(1rem, 1fr);
+  contain: layout style;
+
+  @media (width >=768px) {
+    grid-template-columns:
+      minmax(2rem, 1fr) min(calc(100% - 4rem), 1600px) minmax(2rem, 1fr);
+  }
+}
+
+.wrapper>*,
+.wrapper-wide>*,
+.wrapper-full>*,
+.wrapper-content>* {
+  grid-column: 2;
+  /* Optimized mobile-first padding */
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+
+  @media (width >=640px) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (width >=768px) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.full-bleed {
+  width: 100%;
+  grid-column: 1 / 4;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Escapes *every* ancestor measure — the rc canvas, `.wrapper`, and PublicLayout's
+   `.container` column — so a band can run to the viewport edges. `.rc-full` only reaches the
+   canvas's widest column, which the `.container` above it still clamps; the hero has to break
+   that too.
+
+   `calc(50% - 50vw)` re-centres on the viewport, so the element's centre still coincides with
+   the content column's centre and the copy inside it stays aligned with the header. When a
+   scrollbar is present the band overhangs by half its width on each side, which
+   `overflow-x: clip` on PublicLayout's root absorbs. */
+.rc-viewport {
+  width: 100vw;
+  max-width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}

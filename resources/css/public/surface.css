@@ -1,0 +1,179 @@
+/* ==================================================================================
+   Public surface
+   ==================================================================================
+
+   `data-surface="public"` is stamped on <html> server-side by app.blade.php, from the same
+   `str_starts_with($page['component'], 'Public/')` check that already gates @head and Umami —
+   so it is correct before the first paint and composes with the .dark class the inline theme
+   script sets.
+
+   Scoping the palette here rather than at :root is what lets the public site take the new
+   editorial design (warm paper / near-black, zero radius, hairline borders) while the admin
+   interface keeps its current look until its own revamp. Only the tokens change: every
+   shadcn primitive keeps its meaning, including `--accent`, which stays a neutral hover
+   surface rather than becoming the brand colour.
+   ================================================================================== */
+
+[data-surface="public"] {
+  color-scheme: light;
+
+  /* The typeface is part of the surface, not something each shell remembers to apply. Setting it
+     here means anything the surface contains gets it — including content teleported out of the
+     Vue tree into <body> (popovers, dropdowns, dialogs), which is what used to render the
+     accessibility menu in the browser default while the page around it was Atkinson. */
+  font-family: var(--font-public);
+
+  /* Warm paper canvas, near-black ink. No blue anywhere. */
+  --background: oklch(0.965 0.006 85);
+  --foreground: oklch(0.17 0.008 70);
+  --card: oklch(0.995 0.003 85);
+  --card-foreground: oklch(0.17 0.008 70);
+  --popover: oklch(0.995 0.003 85);
+  --popover-foreground: oklch(0.17 0.008 70);
+  --primary: oklch(0.19 0.008 70);
+  --primary-foreground: oklch(0.97 0.006 85);
+  --secondary: oklch(0.925 0.006 85);
+  --secondary-foreground: oklch(0.2 0.008 70);
+  --muted: oklch(0.93 0.006 85);
+  --muted-foreground: oklch(0.46 0.01 75);
+  /* Long-form body copy: one step back from `--foreground`, but not as far back as
+     `--muted-foreground`, which is sized for labels and metadata. At 0.46 on the 0.965 canvas it
+     passes AA comfortably and still reads as too light across a full article — a paragraph is
+     read for minutes, a timestamp for a second. */
+  --prose-foreground: oklch(0.315 0.012 75);
+  /* shadcn semantics: the hover/lifted surface, NOT the brand. Matches --secondary. */
+  --accent: oklch(0.925 0.006 85);
+  --accent-foreground: oklch(0.2 0.008 70);
+  --destructive: oklch(0.55 0.19 27);
+  --border: oklch(0.855 0.008 80);
+  --input: oklch(0.76 0.01 78);
+  --ring: oklch(0.48 0.18 25);
+
+  /* Cornery, not round — a hard rule of the design. `rounded-full` is unaffected by this and
+     has to be removed per component. */
+  --radius: 0rem;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+}
+
+/* Two selectors, because the surface is stamped in two places: on `<html>` for the public site
+   (where `.dark` lands on the same element), and on a *nested* wrapper for the admin editor's
+   block previews (where `.dark` is still up on `<html>`). Without the descendant form a preview
+   inside a dark admin would resolve the light public palette. */
+.dark[data-surface="public"],
+.dark [data-surface="public"] {
+  color-scheme: dark;
+  /* True near-black. Off-white ink. Amber brand (set globally on .dark). */
+  --background: oklch(0.135 0.004 70);
+  --foreground: oklch(0.955 0.004 85);
+  --card: oklch(0.175 0.005 70);
+  --card-foreground: oklch(0.955 0.004 85);
+  --popover: oklch(0.165 0.005 70);
+  --popover-foreground: oklch(0.955 0.004 85);
+  --primary: oklch(0.955 0.004 85);
+  --primary-foreground: oklch(0.15 0.005 70);
+  --secondary: oklch(0.225 0.006 70);
+  --secondary-foreground: oklch(0.955 0.004 85);
+  --muted: oklch(0.225 0.006 70);
+  --muted-foreground: oklch(0.68 0.008 78);
+  /* Dark mode needs no separate step: on near-black, 0.68 already reads as body copy rather than
+     as metadata. Defined anyway so the token exists in both themes. */
+  --prose-foreground: oklch(0.74 0.008 78);
+  --accent: oklch(0.225 0.006 70);
+  --accent-foreground: oklch(0.955 0.004 85);
+  --destructive: oklch(0.62 0.2 27);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.82 0.152 72);
+}
+
+/* ------------------------------------------------------------------ */
+/* Accessibility preferences (public a11y menu)                        */
+/* ------------------------------------------------------------------ */
+
+/* Global text scaling — the root font size drives every rem-based size, so one variable
+   scales type, spacing and icons together. Scoped to the public surface because admin.css
+   sets its own `:root { font-size: 90% }` density and has no a11y menu; without the
+   attribute selector the two would fight on source order alone. */
+html[data-surface="public"] {
+  font-size: calc(100% * var(--a11y-font-scale, 1));
+}
+
+html.a11y-underline[data-surface="public"] a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* High contrast pushes ink and paper apart. The brand moves in opposite directions per theme:
+   *darker* red on white, *brighter* amber on near-black. Brightening the light accent is the
+   intuitive move and the wrong one — it lowers contrast on paper. */
+html.a11y-contrast[data-surface="public"] {
+  --foreground: oklch(1 0 0);
+  --muted-foreground: oklch(0.9 0.004 85);
+  --border: oklch(1 0 0 / 40%);
+  --brand: oklch(0.86 0.17 82);
+  --brand-fill: oklch(0.86 0.17 82);
+}
+
+html.a11y-contrast[data-surface="public"]:not(.dark) {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.12 0.008 70);
+  --muted-foreground: oklch(0.24 0.01 75);
+  --border: oklch(0.2 0.01 75);
+  --brand: oklch(0.4 0.18 25);
+  --brand-fill: oklch(0.4 0.18 25);
+}
+
+/* Honour an OS-level reduced-motion request. Scoped to the public surface for now so the admin
+   interface keeps the behaviour it has today; widen it to :root during the admin revamp. */
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="public"] *,
+  [data-surface="public"] *::before,
+  [data-surface="public"] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Article-scoped reading size (the per-article stepper on news pages) — only the story's own text
+   scales, independently of the global a11y setting.
+
+   Headings scale with the paragraphs rather than staying put. Leaving them fixed inverts the
+   hierarchy: at the largest step the body overtakes an `h3` and the article stops looking
+   structured.
+
+   They cannot be scaled the same way the paragraphs are. A paragraph has no font-size of its own,
+   so `calc(1em * scale)` multiplies what it inherits; a heading's size comes from a `text-*`
+   utility, and there is no CSS expression for "whatever this element already computes to". A
+   per-element override would have to restate every level *and every breakpoint* of the prose
+   scale, and would still lose to the `.rc-h-*` authored sizes on specificity.
+
+   Tailwind v4 compiles `text-3xl` to `font-size: var(--text-3xl)`, so redefining the scale inside
+   this scope moves every heading, every authored `.rc-h-*` size and every responsive step at once,
+   with nothing restated and no specificity fight. The stepper control sits outside this element
+   (see ReadingSizeControl.vue) so the control does not grow along with the text it controls. */
+.reading-scale {
+  --text-xs: calc(0.75rem * var(--reading-scale, 1));
+  --text-sm: calc(0.875rem * var(--reading-scale, 1));
+  --text-base: calc(1rem * var(--reading-scale, 1));
+  --text-lg: calc(1.125rem * var(--reading-scale, 1));
+  --text-xl: calc(1.25rem * var(--reading-scale, 1));
+  --text-2xl: calc(1.5rem * var(--reading-scale, 1));
+  --text-3xl: calc(1.875rem * var(--reading-scale, 1));
+  --text-4xl: calc(2.25rem * var(--reading-scale, 1));
+  --text-5xl: calc(3rem * var(--reading-scale, 1));
+}
+
+/* Paragraphs, list items and quotes carry no size of their own — they inherit the canvas's, which
+   is an arbitrary value rather than a `--text-*` token, so the block above does not reach them. */
+.reading-scale :is(p, li, blockquote) {
+  font-size: calc(1em * var(--reading-scale, 1));
+}
