@@ -33,6 +33,7 @@ return [
     'partner_organizations' => 'Partner organizations',
     'visit' => 'Visit',
     'social_media_and_radio' => 'Social media and radio',
+    'start_fm_toggle' => 'Play START FM',
     'site_search' => 'Site search',
     'enter_search_terms' => 'Enter search terms',
     'type_to_search' => 'Type to search documents, pages and news',

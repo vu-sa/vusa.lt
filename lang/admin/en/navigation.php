@@ -13,6 +13,7 @@ return [
         'tenant_exists' => 'The selected tenant does not exist.',
         'type_invalid' => 'The selected link style is invalid.',
         'column_between' => 'Column must be between 1 and 3.',
+        'footer_columns_max' => 'The footer can have at most 4 columns.',
     ],
 
     'builder' => [
@@ -32,6 +33,11 @@ return [
         'active' => 'Active',
         'inactive' => 'Inactive',
         'empty_column' => 'Empty column',
+        'tab_header' => 'Header',
+        'tab_footer' => 'Footer',
+        'footer_description' => 'Up to 4 columns. Each column is a heading (a plain-text label, or a link if you give it a URL) with a list of simple links under it.',
+        'footer_column_text_only' => 'Text only',
+        'add_footer_column' => 'Add footer column',
     ],
 
     'form' => [
@@ -47,6 +53,7 @@ return [
         'link_target_search' => 'Search…',
         'link_target_manual' => 'Enter a URL manually',
         'link_target_category' => 'Link to a category',
+        'footer_category_url_hint' => 'Leave empty to show this column heading as plain text instead of a link.',
         'or' => 'or',
         'show_image' => 'Show image settings',
         'hide_image' => 'Hide image settings',

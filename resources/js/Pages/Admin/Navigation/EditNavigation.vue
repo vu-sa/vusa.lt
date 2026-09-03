@@ -4,7 +4,7 @@
       <ActivityLogSheet subject-type="navigation" :subject-id="navigationElement.id" />
     </template>
     <UpsertModelLayout>
-      <Suspense v-if="navigationElement.parent_id !== 0">
+      <Suspense v-if="navigationElement.parent_id !== 0 || navigationElement.extra_attributes?.location === 'footer'">
         <NavigationForm enable-delete :navigation="navigationElement" :parent-elements :category-options
           @submit:form="(form) => form.patch(route('navigation.update', navigationElement.id), { preserveScroll: true })"
           @delete="() => router.delete(route('navigation.destroy', navigationElement.id))" />

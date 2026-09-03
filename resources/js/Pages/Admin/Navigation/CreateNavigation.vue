@@ -2,7 +2,7 @@
   <PageContent title="Naujas navigacijos elementas" :back-url="route('navigation.index')"
     :heading-icon="NavigationIcon">
     <UpsertModelLayout>
-      <Suspense v-if="navigationElement.parent_id !== 0">
+      <Suspense v-if="navigationElement.parent_id !== 0 || location === 'footer'">
         <NavigationForm remember-key="CreateNavigation" :navigation="navigationElement" :parent-elements :category-options
           @submit:form="(form) => form.post(route('navigation.store'))" />
       </Suspense>
@@ -28,6 +28,7 @@ interface CategoryOption {
 const props = defineProps<{
   parent_id: number | string;
   lang?: 'lt' | 'en';
+  location?: 'header' | 'footer';
   parentElements?: App.Entities.Navigation[];
   categoryOptions?: CategoryOption[];
 }>();
@@ -39,6 +40,6 @@ const navigationElement = {
   lang: props.lang ?? 'lt',
   url: '#',
   is_active: true,
-  extra_attributes: {},
+  extra_attributes: props.location === 'footer' ? { location: 'footer' } : {},
 };
 </script>

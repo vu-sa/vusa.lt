@@ -76,6 +76,35 @@ const pageProps = {
     ]),
     navItem('Kontaktai', [[link('Centrinis biuras', 'Universiteto g. 3')]]),
   ],
+  // One column heading left without a `url` on purpose — renders as plain text, not a link.
+  footerNavigation: [
+    {
+      id: 1,
+      name: 'Apie mus',
+      url: '#',
+      links: [
+        { id: 11, name: 'Kas yra VU SA?', url: '#', new_tab: false },
+        { id: 12, name: 'Struktūra', url: '#', new_tab: false },
+      ],
+    },
+    {
+      id: 2,
+      name: 'Studentams',
+      url: '',
+      links: [
+        { id: 21, name: 'Akademinė informacija', url: '#', new_tab: false },
+        { id: 22, name: 'Finansinė parama', url: '#', new_tab: false },
+      ],
+    },
+    {
+      id: 3,
+      name: 'Iniciatyvos',
+      url: '#',
+      links: [
+        { id: 31, name: 'START FM', url: 'https://startfm.lt', new_tab: true },
+      ],
+    },
+  ],
 };
 
 const meta: Meta = {

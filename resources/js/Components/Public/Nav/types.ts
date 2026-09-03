@@ -45,3 +45,24 @@ export interface NavItem {
   cols?: number;
   links: NavLink[][];
 }
+
+/**
+ * Shared shape of the `footerNavigation` Inertia prop, from
+ * `NavigationService::getFooterNavigationForPublic()`. Unlike `NavItem`, footer links are
+ * never grouped into sub-columns — one `NavFooterColumn` *is* one column — and only ever
+ * plain links, so this carries no `type`/image/badge fields at all.
+ */
+export interface NavFooterLink {
+  id: number;
+  name: string;
+  url: string;
+  new_tab: boolean;
+}
+
+export interface NavFooterColumn {
+  id: number;
+  /** The column heading. Rendered as a link when `url` is set, plain text otherwise. */
+  name: string;
+  url: string;
+  links: NavFooterLink[];
+}

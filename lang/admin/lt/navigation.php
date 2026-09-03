@@ -13,6 +13,7 @@ return [
         'tenant_exists' => 'Pasirinktas padalinys neegzistuoja.',
         'type_invalid' => 'Pasirinktas nuorodos stilius yra neteisingas.',
         'column_between' => 'Stulpelis turi būti tarp 1 ir 3.',
+        'footer_columns_max' => 'Poraštėje gali būti ne daugiau nei 4 stulpeliai.',
     ],
 
     'builder' => [
@@ -32,6 +33,11 @@ return [
         'active' => 'Aktyvus',
         'inactive' => 'Neaktyvus',
         'empty_column' => 'Tuščias stulpelis',
+        'tab_header' => 'Antraštė',
+        'tab_footer' => 'Poraštė',
+        'footer_description' => 'Iki 4 stulpelių. Kiekvienas stulpelis — tai antraštė (tik tekstas, arba nuoroda, jei nurodysite URL) su paprastų nuorodų sąrašu po ja.',
+        'footer_column_text_only' => 'Tik tekstas',
+        'add_footer_column' => 'Pridėti poraštės stulpelį',
     ],
 
     'form' => [
@@ -47,6 +53,7 @@ return [
         'link_target_search' => 'Ieškoti…',
         'link_target_manual' => 'Įvesti nuorodą rankiniu būdu',
         'link_target_category' => 'Susieti su kategorija',
+        'footer_category_url_hint' => 'Palikite tuščią, kad ši stulpelio antraštė būtų rodoma kaip paprastas tekstas, o ne nuoroda.',
         'or' => 'arba',
         'show_image' => 'Rodyti paveikslėlio nustatymus',
         'hide_image' => 'Slėpti paveikslėlio nustatymus',

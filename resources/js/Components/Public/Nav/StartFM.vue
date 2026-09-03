@@ -2,17 +2,24 @@
   <!-- StartFM Button -->
   <Popover>
     <PopoverTrigger as-child>
-      <Button variant="ghost" size="sm" :disabled="loading" @click="toggleAudio">
+      <Button
+        variant="ghost"
+        :size="iconOnly ? 'icon' : 'sm'"
+        :class="iconOnly ? socialIconButtonClass : undefined"
+        :disabled="loading"
+        :aria-label="iconOnly ? $t('accessibility.start_fm_toggle') : undefined"
+        @click="toggleAudio"
+      >
         <template v-if="loading">
-          <Loader2 class="w-4 h-4 mr-2 animate-spin" />
+          <Loader2 class="size-4 animate-spin" :class="[!iconOnly && 'mr-2']" />
         </template>
         <template v-else-if="!isPaused && audioPlaying">
-          <Pause class="w-4 h-4 mr-2" />
+          <Pause class="size-4" :class="[!iconOnly && 'mr-2']" />
         </template>
         <template v-else>
-          <Radio class="w-4 h-4 mr-2" />
+          <Radio class="size-4" :class="[!iconOnly && 'mr-2']" />
         </template>
-        <slot />
+        <slot v-if="!iconOnly" />
         <audio v-show="false" ref="startFM" preload="none" @canplay="onCanPlay" @ended="onEnded" @play="onPlay" @pause="onPause">
           <source src="https://eteris.startfm.lt/startfm.mp3" type="audio/mpeg">
           <source src="https://eteris.startfm.lt/startfm.m4a" type="audio/mp4">
@@ -91,11 +98,15 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ref, useTemplateRef, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Radio, Play, Pause, Square, Volume1, Volume2, GripVertical, Loader2 } from 'lucide-vue-next';
 
+import { socialIconButtonClass } from './socialIconButtonClass';
+
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
 defineProps<{
   size?: 'sm' | 'default' | 'lg' | 'icon' | null;
+  /** Renders the square bordered treatment used in the footer's social row, icon-only. */
+  iconOnly?: boolean;
 }>();
 
 const startFM = useTemplateRef<HTMLAudioElement>('startFM');

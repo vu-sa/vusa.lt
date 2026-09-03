@@ -33,6 +33,7 @@ return [
     'partner_organizations' => 'Partnerių organizacijos',
     'visit' => 'Aplankyti',
     'social_media_and_radio' => 'Socialiniai tinklai ir radijas',
+    'start_fm_toggle' => 'Įjungti START FM',
     'site_search' => 'Paieška svetainėje',
     'enter_search_terms' => 'Įveskite paieškos žodžius',
     'type_to_search' => 'Rašykite, kad ieškotumėte dokumentų, puslapių ir naujienų',

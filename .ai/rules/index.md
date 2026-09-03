@@ -6,6 +6,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | resources/js/Components/ActionWindow/** | .ai/rules/action-window.md |
 | app/Tasks/**,app/Actions/ResyncTaskAssigneesForCadence.php,app/Models/Cadence.php | .ai/rules/actions-models.md |
+| app/Services/NavigationService.php,app/Http/Requests/NavigationRequest.php,app/Http/Controllers/Admin/NavigationController.php,app/Models/Navigation.php | .ai/rules/admin-models.md |
 | app/Models/Task.php,app/Models/Traits/HasTasks.php,app/Http/Controllers/Admin/TaskController.php | .ai/rules/admin.md |
 | app/** | .ai/rules/app.md |
 | tests/Browser/** | .ai/rules/browser.md |

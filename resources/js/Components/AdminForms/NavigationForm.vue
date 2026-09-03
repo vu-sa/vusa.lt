@@ -48,8 +48,8 @@
           </div>
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="url" :label="$t('navigation.form.url')" required :error="form.errors.url"
-          :helper-text="$t('navigation.form.link_target_manual')">
+        <FormFieldWrapper id="url" :label="$t('navigation.form.url')" :required="!isFooterRoot" :error="form.errors.url"
+          :helper-text="isFooterRoot ? $t('navigation.form.footer_category_url_hint') : $t('navigation.form.link_target_manual')">
           <div class="flex gap-1">
             <Input id="url" v-model="form.url" type="text" />
             <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank">
@@ -60,8 +60,8 @@
       </template>
     </FormElement>
 
-    <!-- §2 Appearance -->
-    <FormElement v-if="!isDivider" :section-number="2">
+    <!-- §2 Appearance — footer links have exactly one look, so there is nothing to pick -->
+    <FormElement v-if="!isDivider && !isFooter" :section-number="2">
       <template #title>
         {{ $t('navigation.form.section_appearance') }}
       </template>
@@ -95,8 +95,9 @@
       </template>
     </FormElement>
 
-    <!-- §3 Image (collapsible, auto-open when an image is already set) -->
-    <FormElement v-if="!isNameless" :section-number="3">
+    <!-- §3 Image (collapsible, auto-open when an image is already set) — not supported on
+         footer links, which are text-only by design (see AGENTS.md) -->
+    <FormElement v-if="!isNameless && !isFooter" :section-number="3">
       <template #title>
         {{ $t('navigation.form.section_image') }}
       </template>
@@ -210,19 +211,21 @@
             <Switch id="is_active" :model-value="form.is_active" @update:model-value="val => form.is_active = val" />
           </div>
 
-          <div v-if="!isNameless" class="flex items-center justify-between rounded-md border p-3">
+          <div v-if="!isNameless && !isFooter" class="flex items-center justify-between rounded-md border p-3">
             <Label for="featured" class="cursor-pointer">{{ $t('navigation.form.featured') }}</Label>
             <Switch id="featured" :model-value="!!form.extra_attributes.featured"
               @update:model-value="val => form.extra_attributes.featured = val" />
           </div>
 
-          <div v-if="!isNameless" class="flex items-center justify-between rounded-md border p-3">
+          <div v-if="!isNameless && !isFooterRoot" class="flex items-center justify-between rounded-md border p-3">
             <Label for="new_tab" class="cursor-pointer">{{ $t('navigation.form.new_tab') }}</Label>
             <Switch id="new_tab" :model-value="!!form.extra_attributes.new_tab"
               @update:model-value="val => form.extra_attributes.new_tab = val" />
           </div>
 
-          <div class="grid gap-3 lg:grid-cols-2">
+          <!-- Column/col-span pick a header link's spot inside its dropdown; a footer column
+               IS a root, so neither concept applies there (see FooterNavigationManager.vue). -->
+          <div v-if="!isFooter" class="grid gap-3 lg:grid-cols-2">
             <FormFieldWrapper id="column" :label="$t('navigation.form.column')">
               <Select
                 :model-value="form.extra_attributes.column != null ? String(form.extra_attributes.column) : undefined"
@@ -252,7 +255,8 @@
             </FormFieldWrapper>
           </div>
 
-          <FormFieldWrapper id="parent_id" :label="$t('navigation.form.parent')">
+          <!-- A footer column is itself a root — it has no parent to reassign. -->
+          <FormFieldWrapper v-if="!isFooterRoot" id="parent_id" :label="$t('navigation.form.parent')">
             <SingleSelect
               v-model="selectedParent"
               :options="parentOptions"
@@ -320,6 +324,16 @@ const form = props.rememberKey
 
 if (!form.extra_attributes) {
   form.extra_attributes = {};
+}
+
+// Footer links only ever take two fixed shapes — see NavigationRequest, which is the
+// authoritative source for this. Forced here too so the rest of the form (icons, type
+// name in the type picker it never renders, etc.) never observes a stale/mismatched type.
+const isFooter = computed(() => form.extra_attributes.location === 'footer');
+const isFooterRoot = computed(() => isFooter.value && (form.parent_id === 0 || form.parent_id == null));
+
+if (isFooter.value) {
+  form.extra_attributes.type = isFooterRoot.value ? 'category-link' : 'link';
 }
 
 // Type preview icons — a small skeleton of each element style, mirroring the
