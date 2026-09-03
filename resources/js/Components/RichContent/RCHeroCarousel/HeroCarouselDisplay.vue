@@ -66,11 +66,13 @@
                   {{ slide.subtitle }}
                 </p>
                 <!-- Authored as Tiptap JSON; rendered client-side like CarouselSlideDeck.
-                     Text color is forced through [&_a] etc. because rc-prose's link blue
-                     is unreadable on dark photos. -->
+                     `rc-prose` sets its own (theme-following) text/link color through unlayered
+                     rules that outrank a plain `text-white/…` utility here — `rc-prose-invert`
+                     (typography.css) gives it a fixed-white palette instead, matching the scrim
+                     it sits on in both themes. -->
                 <div
                   v-if="hasTiptapContent(slide.description)"
-                  class="rc-prose mt-3 max-w-xl text-sm leading-relaxed text-white/75 sm:text-base [&_a]:text-white [&_a]:underline [&_strong]:text-white"
+                  class="rc-prose rc-prose-invert mt-3 max-w-xl text-sm leading-relaxed sm:text-base"
                 >
                   <RichContentTiptapHTML :json_content="slide.description" />
                 </div>

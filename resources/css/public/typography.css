@@ -287,6 +287,32 @@
   color: var(--foreground);
 }
 
+/* `.rc-prose-invert` — for prose laid over a fixed-dark ground that does not follow the theme
+   (the hero carousel's photo scrim, an `ink`-background RCSection): `--prose-foreground` and
+   `--foreground` above are theme tokens and go near-black in light mode, unreadable on a
+   background that stays dark either way. A plain `text-white/…` utility on the host element
+   cannot fix this — the two rules above are unlayered, so they outrank it the same way they
+   outrank stored content's utility classes.
+
+   The custom-property override is enough for body copy: it's set directly on the element the
+   first rule above reads `var(--prose-foreground)` from, and a value set directly on an element
+   always wins over one inherited from an ancestor, regardless of selector specificity. Headings,
+   strong/b/th and links set `color` outright rather than through a variable, so those need
+   matching or greater specificity instead — the repeated `[data-surface="public"]` prefix gets
+   there (and for the heading list, which ties with its source rule, coming later in the file
+   wins it). */
+.rc-prose-invert {
+  --prose-foreground: oklch(0.98 0 0 / 75%);
+}
+
+[data-surface="public"] :is(.rc-prose-invert) :is(h1, h2, h3, h4, h5, h6, strong, b, th) {
+  color: oklch(0.98 0 0);
+}
+
+[data-surface="public"] :is(.rc-prose-invert) a {
+  color: oklch(0.98 0 0);
+}
+
 /* The opening paragraph of an article or page: hung off the brand rule, set bold and one step
    up. A class rather than a component because both hosts feed it stored HTML through `v-html`
    (`News.short`, sanitized on write), so there is no element of ours to hang props on. `> p`

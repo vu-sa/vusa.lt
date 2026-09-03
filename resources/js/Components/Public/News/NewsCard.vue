@@ -3,7 +3,7 @@
     <MediaFrame
       :src="imageSrc"
       :alt="news.title"
-      ratio="16/10"
+      :ratio="size === 'lg' ? '16/9' : '16/10'"
       :grayscale="false"
       :eager
       hover-zoom

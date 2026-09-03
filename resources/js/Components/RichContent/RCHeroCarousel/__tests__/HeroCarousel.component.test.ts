@@ -72,6 +72,13 @@ describe('HeroCarouselDisplay', () => {
     expect(link?.attributes('href')).toBe('/lt/narys');
   });
 
+  it('sets the description on a fixed-white rc-prose so it stays readable on the photo scrim in light mode', () => {
+    const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
+
+    const description = wrapper.find('.rc-prose');
+    expect(description.classes()).toContain('rc-prose-invert');
+  });
+
   it('renders the first slide image eager with high fetchpriority, the rest lazy', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
