@@ -18,8 +18,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $alias
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property array|string|null $name
- * @property array|string|null $description
+ * @property string|null $name
+ * @property string|null $description
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Calendar> $calendars
  * @property-read string|null $force_delete_blocked_reason

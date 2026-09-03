@@ -52,6 +52,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Category|null $category
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, Tag> $tags

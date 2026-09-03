@@ -1,33 +1,17 @@
 @import 'tailwindcss';
-
 @import 'tw-animate-css';
-
-/* Vue Flow - used in rich content on public pages */
 @import '@vue-flow/core/dist/style.css';
 @import '@vue-flow/core/dist/theme-default.css';
+@import './theme/base-tokens.css';
+@import './theme/design-tokens.css';
+@import './base/reset.css';
+@import './base/view-transitions.css';
+@import './public/surface.css';
+@import './public/typography.css';
+@import './public/canvas.css';
+@import './components/misc.css';
+@import './vendor/vue-flow.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../js';
-
-/* Shared design tokens — custom variants, radius/brand @theme, :root/.dark palette,
-   the consolidated @theme inline (fonts, brand + status colors, animations). */
-@import './theme/base-tokens.css';
-@import './theme/design-tokens.css';
-
-/* Base element resets and the compat/utility layers every page needs. */
-@import './base/reset.css';
-@import './base/view-transitions.css';
-
-/* Public site: editorial palette, a11y menu, rich-content typography and grid system.
-   Scoped by [data-surface="public"] / class selectors, so importing here is safe even
-   though admin pages load this bundle too — nothing fires without the attribute/class. */
-@import './public/surface.css';
-@import './public/typography.css';
-@import './public/canvas.css';
-
-/* Small standalone components not tied to a single page. */
-@import './components/misc.css';
-
-/* Third-party widget overrides. */
-@import './vendor/vue-flow.css';

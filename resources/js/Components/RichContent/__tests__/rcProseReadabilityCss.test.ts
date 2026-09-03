@@ -21,7 +21,15 @@ import { describe, expect, it } from 'vitest';
  * and whether `text-wrap: pretty` improves any specific paragraph.
  */
 const cssPath = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../css/app.css');
-const css = readFileSync(cssPath, 'utf-8');
+
+function readCssImportGraph(path: string): string {
+  return readFileSync(path, 'utf-8').replace(
+    /@import ['"](\.\/[^'"]+\.css)['"];/g,
+    (_, importPath: string) => readCssImportGraph(resolve(dirname(path), importPath)),
+  );
+}
+
+const css = readCssImportGraph(cssPath);
 
 /**
  * Returns the body of the first rule whose selector line matches, brace-balanced and
@@ -97,9 +105,9 @@ describe('.rc-prose readability rules', () => {
    * voice. Scoped to the public surface on purpose: `.rc-prose-editing` is also the admin Tiptap
    * root, and muting the text you are typing is the wrong call (and a visible admin change).
    */
-  it('mutes public body copy while keeping headings and emphasis at full strength', () => {
+  it('uses the dedicated public prose colour while keeping headings and emphasis at full strength', () => {
     expect(css).toMatch(
-      /\[data-surface="public"\] :is\(\.rc-prose, \.rc-prose-editing\)\s*\{\s*color:\s*var\(--muted-foreground\);/,
+      /\[data-surface="public"\] :is\(\.rc-prose, \.rc-prose-editing\)\s*\{\s*color:\s*var\(--prose-foreground\);/,
     );
     expect(css).toMatch(
       /\[data-surface="public"\] :is\(\.rc-prose, \.rc-prose-editing\) :is\(h1, h2, h3, h4, h5, h6, strong, b, th\)\s*\{\s*color:\s*var\(--foreground\);/,
@@ -145,8 +153,6 @@ describe('.typography legacy block', () => {
  * here is the wiring — and the wiring is exactly what broke twice while building this.
  */
 describe('text scaling', () => {
-  const css = readFileSync(cssPath, 'utf-8');
-
   /**
    * The site-wide setting scales the root font size, so it only reaches `rem`-based type. A
    * `text-[11px]` chip ignores the reader's choice entirely — and the public surface had twenty

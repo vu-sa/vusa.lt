@@ -276,6 +276,21 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.5
+        extensions: dom, curl, libxml, mbstring, zip, fileinfo
+
+    - name: Install Composer dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+    - name: Generate translation catalogues
+      run: |
+        cp .env.example .env
+        php artisan key:generate --force
+        php artisan typescript:transform
+
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
