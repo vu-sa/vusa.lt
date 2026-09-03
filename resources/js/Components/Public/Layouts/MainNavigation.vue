@@ -32,13 +32,13 @@
            `Popover`, which has no element to inherit a fallthrough class, so `max-lg:hidden`
            silently vanished and the selector kept its 156px on a phone — pushing the menu button
            clean off the viewport. -->
-      <div class="max-lg:hidden">
+      <div class="max-lg:hidden [[data-a11y-font-scale=xl]_&]:hidden">
         <PadalinysSelector :size="smallerThanSm ? 'tiny' : 'small'" />
       </div>
 
       <!-- `ml-auto` here, not on the utility cluster: the design groups the nav to the right,
            adjacent to the icons, with the gap after Padaliniai. -->
-      <MainMenu class="ml-auto max-lg:hidden" />
+      <MainMenu class="ml-auto max-lg:hidden [[data-a11y-font-scale=xl]_&]:hidden" />
 
       <!-- Icon-only on purpose: wordy buttons here push the primary nav onto a second line at
            mid-laptop widths. The LT switch lives in the secondary bar for the same reason.
@@ -47,11 +47,11 @@
            phone — they overflowed the bar and pushed the menu button itself off-screen — and all
            three are already in the menu panel's footer, so nothing is lost by collapsing them
            into it. -->
-      <div class="flex shrink-0 items-center gap-2 max-lg:ml-auto">
+      <div class="flex shrink-0 items-center gap-2 max-lg:ml-auto [[data-a11y-font-scale=xl]_&]:ml-auto">
         <SearchButton size="icon" :class="cn(navButtonClass)" />
         <AccessibilityMenu :class="cn(navButtonClass)" />
         <DarkModeSwitch size="icon" :class="cn(navButtonClass)" />
-        <MobileNavigation :class="cn(navButtonClass, 'lg:hidden')" />
+        <MobileNavigation :class="cn(navButtonClass, 'lg:hidden [[data-a11y-font-scale=xl]_&]:!flex')" />
       </div>
     </div>
 

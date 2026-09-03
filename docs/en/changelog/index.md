@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.40 — Public-site notices (2026-09-04) {#v1-40}
+
+- ✨ **Public-site notices are now consistent** — the cookie reminder and notifications now match the new site style, while the staging warning appears as a persistent notice without taking space from the page
+
 ## v1.39 — Public-site navigation (2026-09-03) {#v1-39}
 
 - 🔧 **The tenant map opens and zooms smoothly** — `+`, `−`, and tenant clusters no longer reload the view, a reopened menu no longer collapses from a stale delay, dark mode no longer flashes white, and the zoom controls now match the new public-site styling

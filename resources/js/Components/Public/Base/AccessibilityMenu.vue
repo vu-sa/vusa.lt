@@ -18,7 +18,7 @@
       </Button>
     </PopoverTrigger>
 
-    <PopoverContent align="end" class="w-80 p-0" data-slot="accessibility-menu">
+    <PopoverContent align="end" class="z-[70] w-80 p-0" data-slot="accessibility-menu">
       <div class="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
         <p class="u-eyebrow flex items-center gap-2">
           <IFluentAccessibility24Regular class="size-4" aria-hidden="true" />

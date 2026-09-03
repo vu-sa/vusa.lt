@@ -21,7 +21,7 @@
   <Teleport to="body">
     <div
       v-if="open"
-      class="fixed inset-0 z-[60] flex flex-col bg-background lg:hidden"
+      class="fixed inset-0 z-[60] flex flex-col bg-background lg:hidden [[data-a11y-font-scale=xl]_&]:!flex"
       role="dialog"
       aria-modal="true"
       :aria-label="$t('navigation.menu')"
@@ -56,23 +56,24 @@
         <MobileNavRootPanel @close="close" />
 
         <div class="flex items-center gap-3 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <LocaleButton :locale="page.props.app.locale" size="public-sm" class="flex-1 border border-border" />
-          <SearchButton size="public-sm" class="flex-1 border border-border" @click="close">
+          <LocaleButton :locale="page.props.app.locale" size="public-sm" class="h-9 flex-1 border border-border" />
+          <SearchButton size="public-sm" :class="cn(mobileNavButtonClass, 'h-9 flex-1')" @click="close">
             {{ $t('Paieška') }}
           </SearchButton>
-          <AccessibilityMenu class="border border-border" />
-          <DarkModeButton size="icon" class="border border-border" />
+          <AccessibilityMenu :class="mobileNavButtonClass" />
+          <DarkModeButton size="icon" :class="mobileNavButtonClass" />
         </div>
 
-        <a
-          href="/login"
-          class="flex min-h-11 items-center gap-2 border-t border-border px-4 py-4 text-sm font-medium transition-colors hover:text-brand"
+        <SmartLink
+          :href="page.props.auth?.user ? route('dashboard') : route('login')"
+          target="_self"
+          class="plain flex h-11 items-center gap-1.5 border-t border-border px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-brand"
           :title="page.props.auth?.user ? page.props.auth.user?.name : $t('auth.login')"
         >
-          <IFluentPerson24Filled v-if="page.props.auth?.user" class="size-5" aria-hidden="true" />
-          <IFluentPerson24Regular v-else class="size-5" aria-hidden="true" />
-          <span>{{ page.props.auth?.user ? page.props.auth.user?.name : $t('Mano VU SA') }}</span>
-        </a>
+          <IFluentPerson24Filled v-if="page.props.auth?.user" class="size-4" aria-hidden="true" />
+          <IFluentPerson24Regular v-else class="size-4" aria-hidden="true" />
+          <span>{{ $t('Mano VU SA') }}</span>
+        </SmartLink>
       </div>
     </div>
   </Teleport>
@@ -92,6 +93,7 @@ import SearchButton from '@/Components/Public/Nav/SearchButton.vue';
 import { AccessibilityMenu, HeaderWordmark } from '@/Components/Public/Base';
 import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
 import { Button } from '@/Components/ui/button';
+import { cn } from '@/Utils/Shadcn/utils';
 import LineHorizontal320Filled from '~icons/fluent/line-horizontal-3-20-filled';
 import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import IFluentPerson24Filled from '~icons/fluent/person-24-filled';
@@ -100,6 +102,10 @@ import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
 const props = defineProps<{
   class?: HTMLAttributes['class'];
 }>();
+
+const mobileNavButtonClass = 'border border-border text-foreground/70 transition-colors duration-200 '
+  + 'hover:border-brand hover:bg-transparent hover:text-brand '
+  + 'dark:hover:bg-transparent dark:hover:text-brand';
 
 const page = usePage();
 

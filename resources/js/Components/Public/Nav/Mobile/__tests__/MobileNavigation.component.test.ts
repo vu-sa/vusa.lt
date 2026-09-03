@@ -139,12 +139,43 @@ describe('MobileNavigation.vue', () => {
     wrapper.unmount();
   });
 
-  it('shows a login row pointing at /login with the authenticated user name', async () => {
+  it('shows the authenticated account row with the second-menu link treatment', async () => {
     const wrapper = await openNav({ auth: { user: { id: 1, name: 'Testas Testauskas' }, can: {} } });
 
-    const loginLink = document.querySelector('a[href="/login"]');
-    expect(loginLink).not.toBeNull();
-    expect(loginLink!.textContent).toContain('Testas Testauskas');
+    const accountLink = document.querySelector('a[href="http://localhost:8000/mock/dashboard"]') as HTMLElement;
+    expect(accountLink).not.toBeNull();
+    expect(accountLink.textContent).toContain('Mano VU SA');
+    expect(accountLink.className).toContain('text-muted-foreground');
+    expect(accountLink.className).toContain('hover:text-brand');
+
+    wrapper.unmount();
+  });
+
+  it('keeps the footer controls visually consistent and opens accessibility preferences', async () => {
+    const wrapper = await openNav();
+    const localeTrigger = document.querySelector('[data-slot="locale-button"]') as HTMLElement;
+    const accessibilityTrigger = document.querySelector('[data-slot="accessibility-menu-trigger"]') as HTMLElement;
+
+    expect(accessibilityTrigger.className).toContain('hover:border-brand');
+    expect(accessibilityTrigger.className).toContain('dark:hover:text-brand');
+
+    const searchButton = [...document.querySelectorAll('a')]
+      .find(link => link.textContent?.includes('Paieška')) as HTMLElement;
+    expect(searchButton.className).toContain('h-9');
+
+    localeTrigger.click();
+    await wrapper.vm.$nextTick();
+
+    const localeMenu = document.querySelector('[data-slot="locale-menu"]') as HTMLElement;
+    expect(localeMenu).not.toBeNull();
+    expect(localeMenu.className).toContain('z-[70]');
+
+    accessibilityTrigger.click();
+    await wrapper.vm.$nextTick();
+
+    const accessibilityMenu = document.querySelector('[data-slot="accessibility-menu"]') as HTMLElement;
+    expect(accessibilityMenu).not.toBeNull();
+    expect(accessibilityMenu.className).toContain('z-[70]');
 
     wrapper.unmount();
   });

@@ -8,6 +8,7 @@
       <Button
         variant="ghost"
         :size="props.size || 'sm'"
+        data-slot="locale-button"
         class="gap-2 tracking-normal text-muted-foreground transition-colors
           hover:bg-transparent hover:text-brand
           dark:hover:bg-transparent dark:hover:text-brand"
@@ -20,7 +21,7 @@
           :class="{ 'rotate-180': isOpen }" />
       </Button>
     </DropdownMenuTrigger>
-    <DropdownMenuContent align="end" class="w-48">
+    <DropdownMenuContent align="end" class="z-[70] w-48" data-slot="locale-menu">
       <DropdownMenuItem
         as-child
         :disabled="!$page.props.otherLangURL"

@@ -8,11 +8,14 @@
        hero). `clip` rather than `hidden`: it does not create a scroll container, so sticky
        descendants keep working. -->
   <div class="@container min-h-screen flex flex-col overflow-x-clip bg-background text-foreground font-public">
-    <!-- Staging environment warning banner -->
-    <StagingBanner class="mx-2 mt-2 sm:mx-4" />
-
     <!-- Skip to main content link - positioned first for keyboard navigation -->
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-brand">
+    <a
+      href="#main-content"
+      :class="[
+        'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999]',
+        'focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-brand',
+      ]"
+    >
       {{ $t('accessibility.skip_to_main_content') }}
     </a>
 
@@ -57,7 +60,7 @@
   </div>
 
   <!-- Toast notifications (flash messages + the persistent public edit-link toast) -->
-  <Toaster rich-colors />
+  <Toaster />
 </template>
 
 <script setup lang="ts">
@@ -77,15 +80,11 @@ import { Toaster } from '@/Components/ui/sonner';
 import { useToasts } from '@/Composables/useToasts';
 import { useCookieConsent } from '@/Composables/useCookieConsent';
 import { usePublicEditLinkToast } from '@/Composables/usePublicEditLinkToast';
+import { usePublicStagingToast } from '@/Composables/usePublicStagingToast';
 import { useSecondMenu } from '@/Composables/useSecondMenu';
-import 'vue-sonner/style.css';
-
-// Critical path components - load synchronously for faster initial render
 import MainNavigation from '@/Components/Public/Layouts/MainNavigation.vue';
-import StagingBanner from '@/Components/StagingBanner.vue';
-
-// Use existing Skeleton component for consistency
 import { Skeleton } from '@/Components/ui/skeleton';
+import 'vue-sonner/style.css';
 
 // Non-critical components - load asynchronously
 const BannerCarousel = defineAsyncComponent({
@@ -180,6 +179,7 @@ const toasts = useToasts();
 // Persistent "edit this page" toast for signed-in editors (no-op for guests —
 // the backend never shares the link for them)
 usePublicEditLinkToast(() => usePage().props.publicEditLink);
+usePublicStagingToast(() => usePage().props.staging);
 
 // Handle validation errors (show only first error for public pages)
 watch(() => usePage().props.errors, (errors) => {

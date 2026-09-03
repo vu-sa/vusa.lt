@@ -125,6 +125,51 @@ html.a11y-underline[data-surface="public"] a {
   text-underline-offset: 2px;
 }
 
+/* Sonner ships its own fixed white/black palette and rounded, shadowed chrome. The public
+   surface reaches it through this generated DOM rather than a Vue component, so tokenise it here
+   where flash messages, the edit link, and the persistent staging notice stay in step. */
+[data-surface="public"] [data-sonner-toaster] {
+  --normal-bg: var(--popover);
+  --normal-border: var(--border);
+  --normal-text: var(--popover-foreground);
+  --border-radius: 0px;
+}
+
+[data-surface="public"] [data-sonner-toast][data-styled='true'] {
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--font-public);
+}
+
+[data-surface="public"] [data-sonner-toast][data-styled='true'] [data-description] {
+  color: var(--muted-foreground);
+}
+
+[data-surface="public"] [data-sonner-toast][data-styled='true'] [data-button] {
+  border-radius: 0;
+  background: var(--brand-fill);
+  color: var(--brand-foreground);
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+[data-surface="public"] [data-sonner-toast][data-styled='true'] [data-close-button] {
+  border-color: var(--border);
+  border-radius: 0;
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+
+[data-surface="public"] [data-sonner-toast][data-styled='true']:hover [data-close-button]:hover {
+  background: var(--secondary);
+  border-color: var(--brand);
+}
+
+[data-surface="public"] [data-sonner-toast].public-toast {
+  border-top: 2px solid var(--brand);
+}
+
 /* High contrast pushes ink and paper apart. The brand moves in opposite directions per theme:
    *darker* red on white, *brighter* amber on near-black. Brightening the light accent is the
    intuitive move and the wrong one — it lowers contrast on paper. */

@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.40 — Viešos svetainės pranešimai (2026-09-04) {#v1-40}
+
+- ✨ **Viešos svetainės pranešimai suvienodinti** — slapukų priminimas ir pranešimai dabar priderinti prie naujo svetainės stiliaus, o bandomojoje aplinkoje įspėjimas rodomas kaip nuolatinis pranešimas, neužimantis vietos puslapyje
+
 ## v1.39 — Viešos svetainės navigacija (2026-09-03) {#v1-39}
 
 - 🔧 **Padalinių žemėlapis atsidaro ir priartėja sklandžiai** — `+`, `−` ir padalinių grupės nebeperkrauna vaizdo, pakartotinai atidarytas meniu nebesusitraukia pavėluotai, tamsiame režime nebesumirksi baltas fonas, o priartinimo mygtukai priderinti prie naujo viešos svetainės stiliaus

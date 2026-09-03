@@ -1,5 +1,5 @@
 <template>
-  <footer class="w-full border-t border-border bg-secondary/40" role="contentinfo">
+  <footer class="w-full border-t border-border bg-secondary/40">
     <div class="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8 lg:py-14">
       <div class="grid gap-10 lg:grid-cols-[1.3fr_2fr] lg:gap-16">
         <!-- Brand, contacts, social -->
@@ -20,13 +20,13 @@
             </p>
             <p class="flex items-center gap-2.5">
               <IFluentPhone20Regular class="size-4 shrink-0 text-brand" aria-hidden="true" />
-              <a :href="`tel:${contacts.phone}`" class="transition-colors hover:text-brand">
+              <a :href="`tel:${contacts.phone}`" class="no-underline transition-colors hover:text-brand hover:underline">
                 +370 5 268 7144
               </a>
             </p>
             <p class="flex items-center gap-2.5">
               <IFluentMail20Regular class="size-4 shrink-0 text-brand" aria-hidden="true" />
-              <a :href="`mailto:${contacts.accounting}`" class="transition-colors hover:text-brand">
+              <a :href="`mailto:${contacts.accounting}`" class="no-underline transition-colors hover:text-brand hover:underline">
                 {{ contacts.accounting }}
               </a>
             </p>
@@ -47,7 +47,7 @@
             <component
               :is="hasColumnLink(column) ? 'a' : 'span'"
               :href="hasColumnLink(column) ? column.url : undefined"
-              class="u-eyebrow block border-b border-border pb-2"
+              class="u-eyebrow block border-b border-border pb-2 no-underline hover:underline"
             >
               {{ column.name }}
             </component>
@@ -57,7 +57,7 @@
                   :href="link.url"
                   :target="link.new_tab ? '_blank' : undefined"
                   :rel="link.new_tab ? 'noopener noreferrer' : undefined"
-                  class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  class="text-sm text-muted-foreground no-underline transition-colors hover:text-foreground hover:underline"
                 >
                   {{ link.name }}
                 </a>

@@ -22,6 +22,22 @@ describe('SiteFooter.vue', () => {
     expect(wrapper.find('a[href="mailto:saskaitos@vusa.lt"]').exists()).toBe(true);
   });
 
+  it('underlines contact and navigation links only on hover', () => {
+    const wrapper = mountFooter([
+      { id: 1, name: 'Apie mus', url: '/apie', links: [{ id: 11, name: 'Struktūra', url: '/struktura', new_tab: false }] },
+    ]);
+
+    for (const link of [
+      wrapper.find('a[href="tel:+37052687144"]'),
+      wrapper.find('a[href="mailto:saskaitos@vusa.lt"]'),
+      wrapper.find('a[href="/apie"]'),
+      wrapper.find('a[href="/struktura"]'),
+    ]) {
+      expect(link.classes()).toContain('no-underline');
+      expect(link.classes()).toContain('hover:underline');
+    }
+  });
+
   it('renders nothing in the nav slot when there is no footer navigation', () => {
     const wrapper = mountFooter([]);
 

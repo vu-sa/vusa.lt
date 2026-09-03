@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import MainNavigationMenuContent from './MainNavigationMenuContent.vue';
@@ -49,11 +49,4 @@ function closeMenu() {
   activeMenuItem.value = undefined;
 }
 
-// TEMP DEBUG: force the first item's mega menu open on load so borders can be inspected
-// without hovering. Revert before merging.
-watch(mainNavigation, (items) => {
-  if (items?.length && !activeMenuItem.value) {
-    activeMenuItem.value = items[0].name;
-  }
-}, { immediate: true });
 </script>

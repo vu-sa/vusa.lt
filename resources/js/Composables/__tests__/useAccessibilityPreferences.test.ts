@@ -28,6 +28,7 @@ describe('useAccessibilityPreferences', () => {
     expect(underlineLinks.value).toBe(false);
     expect(isDefault.value).toBe(true);
     expect(document.documentElement.style.getPropertyValue('--a11y-font-scale')).toBe('1');
+    expect(document.documentElement.dataset.a11yFontScale).toBe('m');
   });
 
   it('drives the root element and persists when a preference changes', async () => {
@@ -41,6 +42,7 @@ describe('useAccessibilityPreferences', () => {
 
     expect(document.documentElement.style.getPropertyValue('--a11y-font-scale'))
       .toBe(String(FONT_SCALES.xl));
+    expect(document.documentElement.dataset.a11yFontScale).toBe('xl');
     expect(document.documentElement.classList.contains('a11y-contrast')).toBe(true);
     expect(document.documentElement.classList.contains('a11y-underline')).toBe(true);
     expect(isDefault.value).toBe(false);
@@ -80,6 +82,7 @@ describe('useAccessibilityPreferences', () => {
     expect(isDefault.value).toBe(true);
     expect(document.documentElement.classList.contains('a11y-contrast')).toBe(false);
     expect(document.documentElement.style.getPropertyValue('--a11y-font-scale')).toBe('1');
+    expect(document.documentElement.dataset.a11yFontScale).toBe('m');
   });
 
   it('falls back to defaults when stored data is unusable', async () => {

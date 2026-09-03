@@ -78,6 +78,7 @@ function apply(): void {
   const root = document.documentElement;
 
   root.style.setProperty('--a11y-font-scale', String(FONT_SCALES[fontScale.value]));
+  root.dataset.a11yFontScale = fontScale.value;
   root.classList.toggle('a11y-contrast', contrast.value);
   root.classList.toggle('a11y-underline', underlineLinks.value);
 }
