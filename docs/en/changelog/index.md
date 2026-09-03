@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.41 — Public-site navigation (2026-09-04) {#v1-41}
+
+- ✨ **“Mano VU SA” is now a clear navigation button** — the account link in the second menu row now matches the site controls, with a clear account icon instead of a profile photo
+
 ## v1.40 — Public-site notices (2026-09-04) {#v1-40}
 
 - ✨ **Public-site notices are now consistent** — the cookie reminder and notifications now match the new site style, while the staging warning appears as a persistent notice without taking space from the page

@@ -26,44 +26,44 @@ function mountMenu(auth: { user: Record<string, unknown> | null }) {
 }
 
 describe('SecondMenu.vue', () => {
-  it('shows the logged-in user avatar image with AppSidebar roundness', () => {
+  it('renders the authenticated account control as a public outline button', () => {
     const wrapper = mountMenu({
       user: { id: 1, name: 'Testas Testaitis', profile_photo_path: '/storage/profile.jpg' },
     });
 
-    // Scoped to the avatar rather than `find('img')`: the bar also renders the language
-    // switcher's flag, which comes first in the DOM.
-    const img = wrapper.find('[data-slot="avatar"] img');
-    expect(img.exists()).toBe(true);
-    expect(img.attributes('src')).toBe('/storage/profile.jpg');
-
-    // jsdom cannot render the CSS pipeline, so assert the wiring: the avatar
-    // container carries the rounded shape the AppSidebar avatar uses.
-    const avatar = img.element.closest('[data-slot="avatar"]');
-    expect(avatar?.className).toContain('rounded-lg');
-
-    // The label stays "Mano VU SA" for a logged-in user too — the avatar is what
-    // signals the logged-in state, and it links to /mano rather than the name.
     expect(wrapper.text()).toContain('Mano VU SA');
 
     const link = wrapper.find('a[title="Testas Testaitis"]');
     expect(link.exists()).toBe(true);
     expect(link.attributes('href')).toBe('/mocked-route/dashboard');
+    expect(link.classes()).toEqual(expect.arrayContaining([
+      'border',
+      'border-border',
+      'font-bold',
+      'uppercase',
+      'tracking-wide',
+      'w-31',
+      'text-foreground/70',
+    ]));
+    expect(wrapper.find('[data-slot="mano-vusa-button-icon"]').classes()).toContain('text-brand');
+    expect(wrapper.find('[data-slot="avatar"]').exists()).toBe(false);
   });
 
-  it('falls back to initials when the user has no photo', () => {
+  it('uses the same account control when the user has no photo', () => {
     const wrapper = mountMenu({
       user: { id: 1, name: 'Testas Testaitis', profile_photo_path: null },
     });
 
-    expect(wrapper.find('[data-slot="avatar"] img').exists()).toBe(false);
-    expect(wrapper.find('[data-slot="avatar-fallback"]').text()).toBe('TE');
+    expect(wrapper.find('[data-slot="mano-vusa-button-icon"]').classes()).toContain('text-brand');
+    expect(wrapper.find('[data-slot="avatar"]').exists()).toBe(false);
   });
 
-  it('shows the login link without an avatar when logged out', () => {
+  it('shows the login button with an account icon when logged out', () => {
     const wrapper = mountMenu({ user: null });
 
     expect(wrapper.find('[data-slot="avatar"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="mano-vusa-button-icon"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="mano-vusa-button-icon"]').classes()).not.toContain('text-brand');
     expect(wrapper.text()).toContain('Mano VU SA');
 
     const link = wrapper.find('a[title="auth.login"]');
@@ -97,5 +97,6 @@ describe('SecondMenu.vue', () => {
     // measured as overflowing — the dropdown must stay hidden rather than
     // duplicating every already-visible link.
     expect(wrapper.find('[title="Daugiau nuorodų"]').exists()).toBe(false);
+    expect(wrapper.find('nav').classes()).toContain('grid-cols-[1fr_auto]');
   });
 });

@@ -64,16 +64,28 @@
           <DarkModeButton size="icon" :class="mobileNavButtonClass" />
         </div>
 
-        <SmartLink
-          :href="page.props.auth?.user ? route('dashboard') : route('login')"
-          target="_self"
-          class="plain flex h-11 items-center gap-1.5 border-t border-border px-4 text-xs font-medium text-muted-foreground transition-colors hover:text-brand"
-          :title="page.props.auth?.user ? page.props.auth.user?.name : $t('auth.login')"
-        >
-          <IFluentPerson24Filled v-if="page.props.auth?.user" class="size-4" aria-hidden="true" />
-          <IFluentPerson24Regular v-else class="size-4" aria-hidden="true" />
-          <span>{{ $t('Mano VU SA') }}</span>
-        </SmartLink>
+        <div class="border-t border-border p-4">
+          <Button as-child variant="brand-outline" size="public-sm" class="h-11 w-full text-foreground/70">
+            <a
+              :href="page.props.auth?.user ? route('dashboard') : route('login')"
+              :title="page.props.auth?.user ? page.props.auth.user?.name : $t('auth.login')"
+            >
+              <IFluentGrid24Filled
+                v-if="page.props.auth?.user"
+                data-slot="mano-vusa-button-icon"
+                class="size-4 text-brand"
+                aria-hidden="true"
+              />
+              <IFluentGrid24Regular
+                v-else
+                data-slot="mano-vusa-button-icon"
+                class="size-4"
+                aria-hidden="true"
+              />
+              <span>{{ $t('Mano VU SA') }}</span>
+            </a>
+          </Button>
+        </div>
       </div>
     </div>
   </Teleport>
@@ -96,8 +108,8 @@ import { Button } from '@/Components/ui/button';
 import { cn } from '@/Utils/Shadcn/utils';
 import LineHorizontal320Filled from '~icons/fluent/line-horizontal-3-20-filled';
 import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
-import IFluentPerson24Filled from '~icons/fluent/person-24-filled';
-import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
+import IFluentGrid24Filled from '~icons/fluent/grid-24-filled';
+import IFluentGrid24Regular from '~icons/fluent/grid-24-regular';
 
 const props = defineProps<{
   class?: HTMLAttributes['class'];

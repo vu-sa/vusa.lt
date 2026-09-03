@@ -17,8 +17,8 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
  */
 const iconStubs = {
   LineHorizontal320Filled: { template: '<span class="icon-menu" />' },
-  IFluentPerson24Filled: { template: '<span class="icon-person-filled" />' },
-  IFluentPerson24Regular: { template: '<span class="icon-person-regular" />' },
+  IFluentGrid24Filled: { template: '<span data-slot="mano-vusa-button-icon" class="icon-grid-filled" />' },
+  IFluentGrid24Regular: { template: '<span data-slot="mano-vusa-button-icon" class="icon-grid" />' },
   IFluentDismiss24Regular: { template: '<span class="icon-close" />' },
   IFluentAdd24Regular: { template: '<span class="icon-add" />' },
   IFluentLocation24Regular: { template: '<span class="icon-location" />' },
@@ -139,14 +139,19 @@ describe('MobileNavigation.vue', () => {
     wrapper.unmount();
   });
 
-  it('shows the authenticated account row with the second-menu link treatment', async () => {
+  it('shows the authenticated account row as a public outline button', async () => {
     const wrapper = await openNav({ auth: { user: { id: 1, name: 'Testas Testauskas' }, can: {} } });
 
-    const accountLink = document.querySelector('a[href="http://localhost:8000/mock/dashboard"]') as HTMLElement;
+    const accountLink = document.querySelector('a[title="Testas Testauskas"]') as HTMLElement;
     expect(accountLink).not.toBeNull();
+    expect(accountLink.getAttribute('href')).toContain('dashboard');
     expect(accountLink.textContent).toContain('Mano VU SA');
-    expect(accountLink.className).toContain('text-muted-foreground');
+    expect(accountLink.className).toContain('border');
+    expect(accountLink.className).toContain('text-foreground/70');
     expect(accountLink.className).toContain('hover:text-brand');
+    const icon = document.querySelector('[data-slot="mano-vusa-button-icon"]') as HTMLElement;
+    expect(icon).not.toBeNull();
+    expect(icon.getAttribute('class')).toContain('text-brand');
 
     wrapper.unmount();
   });

@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.41 — Viešos svetainės navigacija (2026-09-04) {#v1-41}
+
+- ✨ **„Mano VU SA“ tapo aiškiu navigacijos mygtuku** — paskyros nuoroda antroje meniu juostoje dabar dera prie kitų svetainės valdiklių, o vietoje profilio nuotraukos naudojama aiški paskyros piktograma
+
 ## v1.40 — Viešos svetainės pranešimai (2026-09-04) {#v1-40}
 
 - ✨ **Viešos svetainės pranešimai suvienodinti** — slapukų priminimas ir pranešimai dabar priderinti prie naujo svetainės stiliaus, o bandomojoje aplinkoje įspėjimas rodomas kaip nuolatinis pranešimas, neužimantis vietos puslapyje

@@ -12,7 +12,12 @@
             : "VU SA"
         }}
       </SmartLink>
-      <nav class="grid grid-cols-[1fr_auto_auto] items-center gap-5 whitespace-nowrap text-sm">
+      <nav
+        :class="[
+          'grid items-center gap-5 whitespace-nowrap text-sm',
+          overflowOptions.length > 0 ? 'grid-cols-[1fr_auto_auto]' : 'grid-cols-[1fr_auto]',
+        ]"
+      >
         <!-- The overflow hint is a mask, not a gradient overlay. An overlay has to be painted in
              the bar's own colour to disappear, and the bar is a translucent tint over the page
              background — so the overlay showed up as a pale smudge instead of a fade. A mask
@@ -65,28 +70,31 @@
                onto two lines. Search is icon-only in the primary bar, so there is none here. -->
           <LocaleButton :locale="$page.props.app.locale" size="sm" class="h-7 px-2 text-xs" />
           <span class="h-4 w-px bg-border" aria-hidden="true" />
-          <SmartLink :href="$page.props.auth?.user ? route('dashboard') : route('login')"
-            target="_self"
-            class="plain inline-flex h-7 items-center justify-center gap-1.5 px-2 text-xs font-medium text-muted-foreground transition-colors hover:text-brand"
-            :title="$page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login')">
-            <template v-if="$page.props.auth?.user">
-              <!-- `rounded-lg` overrides the primitive's base `rounded-full`. Keep it: the radius
-                   token resolves to 0 on the public surface (the design has no circular avatars),
-                   and dropping the class would fall back to a circle rather than a square. -->
-              <Avatar class="h-4 w-4 rounded-lg ring-1 ring-border">
-                <AvatarImage v-if="$page.props.auth.user.profile_photo_path"
-                  :src="$page.props.auth.user.profile_photo_path" :alt="$page.props.auth.user.name" />
-                <AvatarFallback class="bg-secondary text-[0.4375rem] font-semibold text-foreground">
-                  {{ $page.props.auth.user.name.substring(0, 2).toUpperCase() }}
-                </AvatarFallback>
-              </Avatar>
-            </template>
-            <IFluentPerson24Regular v-else class="h-4 w-4" aria-hidden="true" />
-            <!-- The label stays "Mano VU SA" in both states — the avatar already signals the
-                 logged-in state, and the user's full name doesn't reliably fit this bar. -->
-            <span class="hidden sm:inline">{{ $t('Mano VU SA') }}</span>
-            <span class="sr-only sm:hidden">{{ $t('Mano VU SA') }}</span>
-          </SmartLink>
+          <Button
+            as-child
+            variant="brand-outline"
+            size="public-sm"
+            class="w-31 shrink-0 gap-1 px-2 text-foreground/70"
+          >
+            <a
+              :href="$page.props.auth?.user ? route('dashboard') : route('login')"
+              :title="$page.props.auth?.user ? $page.props.auth.user?.name : $t('auth.login')"
+            >
+              <IFluentGrid24Filled
+                v-if="$page.props.auth?.user"
+                data-slot="mano-vusa-button-icon"
+                class="size-4 text-brand"
+                aria-hidden="true"
+              />
+              <IFluentGrid24Regular
+                v-else
+                data-slot="mano-vusa-button-icon"
+                class="size-4"
+                aria-hidden="true"
+              />
+              <span>{{ $t('Mano VU SA') }}</span>
+            </a>
+          </Button>
         </div>
       </nav>
     </div>
@@ -105,13 +113,14 @@ import QuickLink from './QuickLink.vue';
 import LocaleButton from './LocaleButton.vue';
 
 import { Button } from '@/Components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import IFluentGrid24Filled from '~icons/fluent/grid-24-filled';
+import IFluentGrid24Regular from '~icons/fluent/grid-24-regular';
 
 const tenantLinks = computed(() => usePage().props.tenant?.links ?? []);
 
