@@ -33,6 +33,9 @@
     </PopoverTrigger>
     <!-- Fixed width regardless of `viewMode` — it used to grow from 300px to 520px switching into
          map mode, which reads as the panel jumping under the cursor. -->
+    <!-- `@close-auto-focus.prevent`: reka-ui returns focus to the trigger whenever the popover
+         closes, which fires the trigger's own `@focus`/`@focusin` handler and reopens it right
+         after a hover-out closes it. Suppressing the auto-focus breaks that loop. -->
     <PopoverContent
       class="w-96 p-0"
       align="start"
@@ -40,6 +43,7 @@
       @mouseleave="scheduleClose"
       @focusin="openOnHover"
       @focusout="scheduleClose"
+      @close-auto-focus="preventCloseAutoFocus"
     >
       <div class="flex items-center gap-2 border-b border-border p-2">
         <Button
@@ -265,6 +269,11 @@ function scheduleClose(): void {
   closeTimeoutId = setTimeout(() => {
     handlePopoverOpenChange(false);
   }, 150);
+}
+
+/** Blocks reka-ui's default focus-return-to-trigger, which would re-fire the trigger's focus handler and reopen the popover. */
+function preventCloseAutoFocus(event: Event): void {
+  event.preventDefault();
 }
 
 onBeforeUnmount(() => {
