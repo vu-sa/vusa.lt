@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 /**
  * Reader preferences for the public site: text size, high contrast, forced link underlines.
  *
- * These replace the third-party UserWay widget. The CSS they drive lives in `resources/css/app.css`
+ * The CSS they drive lives in `resources/css/app.css`
  * (the "Accessibility preferences" block) and is scoped to `html[data-surface="public"]`, so the
  * admin interface — which sets its own root font size — is unaffected.
  *

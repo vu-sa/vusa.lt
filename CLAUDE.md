@@ -130,7 +130,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 # Test Enforcement
 
-- Test every code change by adding or updating a test.
+- Add or update a test when a change affects observable behaviour, a business rule, a security boundary, a data transformation, or a regression likely to recur. Do not add a test solely for deleting dead code, an unused asset/preload or retired integration; comments, formatting, copy-only edits; framework behaviour; or implementation details without a user-facing contract.
 - Run the affected tests and ensure they pass.
 - Test the changed behavior and its important failure modes, but do not add tests beyond them.
 - Read the `testing-best-practices` skill before writing tests.

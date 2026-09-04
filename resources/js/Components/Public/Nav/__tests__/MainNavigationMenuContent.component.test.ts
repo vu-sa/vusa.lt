@@ -1,8 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import MainNavigationMenuContent from '@/Components/Public/Nav/MainNavigationMenuContent.vue';
 import type { NavItem, NavLink } from '@/Components/Public/Nav/types';
+import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from '@/Components/ui/navigation-menu';
 
 // jsdom cannot evaluate the CSS pipeline (Tailwind isn't compiled in tests, and
 // backdrop/opacity/gradient effects render identically as far as jsdom is concerned),
@@ -46,6 +47,44 @@ describe('MainNavigationMenuContent.vue', () => {
     const textWrapper = wrapper.findAll('div').find(d => d.classes().includes('group-hover:text-brand'));
     expect(textWrapper).toBeTruthy();
     expect(link.classes()).not.toContain('hover:bg-secondary');
+  });
+
+  it('does not make SmartLink reactive when it is passed to the navigation primitive', () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    try {
+      mount({
+        components: { MainNavigationMenuContent, NavigationMenu, NavigationMenuItem, NavigationMenuList },
+        setup: () => ({ item: makeItem([[{ name: 'Dokumentai', url: '/dokumentai', type: 'link' }]]) }),
+        template: `
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem value="root">
+                <MainNavigationMenuContent :item="item" />
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        `,
+      }, { global: { stubs: { Icon: iconStub } } });
+
+      expect(warning).not.toHaveBeenCalledWith(expect.stringContaining('Component that was made a reactive object'));
+    }
+    finally {
+      warning.mockRestore();
+    }
+  });
+
+  it('makes every mega-menu link label respond to the underline preference', () => {
+    const textLink = mountItem(makeItem([[{ name: 'Dokumentai', url: '/dokumentai', type: 'link' }]]));
+    const imageLink = mountItem(makeItem([[{ name: 'Karjera', url: '/karjera', type: 'link', image: '/hero.jpg' }]]));
+
+    [textLink, imageLink].forEach((wrapper) => {
+      const label = wrapper.find('a span');
+
+      // jsdom does not compile Tailwind or apply the ancestor selector, so assert the wiring.
+      expect(label.classes()).toContain('[.a11y-underline_&]:underline');
+      expect(label.classes()).toContain('[.a11y-underline_&]:underline-offset-2');
+    });
   });
 
   it('renders an image as a card by default (image_render unset)', () => {

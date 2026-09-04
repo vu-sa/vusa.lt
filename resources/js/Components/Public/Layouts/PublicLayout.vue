@@ -212,8 +212,7 @@ onMounted(() => {
   });
 
   // Reader preferences (text size, contrast, link underlines) are served by the in-house
-  // AccessibilityMenu in the header — see Components/Public/Base/AccessibilityMenu.vue. The
-  // third-party UserWay widget it replaced used to be injected here.
+  // AccessibilityMenu in the header — see Components/Public/Base/AccessibilityMenu.vue.
 
   // Tawk.to live chat disabled — its bottom-right widget kept colliding with other
   // floating UI. Re-enable by restoring this block.

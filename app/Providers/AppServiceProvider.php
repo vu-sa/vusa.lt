@@ -91,8 +91,7 @@ class AppServiceProvider extends ServiceProvider
             ->meta('author', 'VU SA')
             ->robots('max-snippet:-1,max-image-preview:large,max-video-preview:-1')
             ->link('sitemap', '/sitemap.xml', ['type' => 'application/xml'])
-            ->preconnect('https://embed.tawk.to', crossorigin: 'anonymous')
-            ->preload('https://cdn.userway.org/widgetapp/images/body_wh.svg', as: 'image'));
+            ->preconnect('https://embed.tawk.to', crossorigin: 'anonymous'));
     }
 
     /**

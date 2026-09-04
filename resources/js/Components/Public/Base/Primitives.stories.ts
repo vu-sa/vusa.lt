@@ -179,7 +179,7 @@ export const Checks: Story = {
   }),
 };
 
-/** Replaces the UserWay widget. Open it and change a setting — the whole page rescales. */
+/** Open it and change a setting — the whole page rescales. */
 export const Accessibility: Story = {
   render: () => ({
     components: { AccessibilityMenu, SectionBand },

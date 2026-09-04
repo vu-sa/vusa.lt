@@ -51,7 +51,7 @@
                 {{ link.eyebrow }}
               </p>
               <p :class="['inline-flex items-center gap-1.5 text-balance font-bold uppercase leading-tight text-white', isCompactCard(links) ? 'text-sm' : 'text-lg']">
-                {{ link.name }}
+                <span class="[.a11y-underline_&]:underline [.a11y-underline_&]:underline-offset-2">{{ link.name }}</span>
                 <Icon v-if="link.new_tab" icon="fluent:open-16-regular" class="size-3.5 opacity-80" />
                 <Badge v-if="link.small_text" :variant="link.badge_variant ?? 'rose'" class="ml-1 px-2 py-0 text-[0.625rem]">
                   {{ link.small_text }}
@@ -90,7 +90,7 @@
               <div class="h-fit">
                 <div class="inline-flex items-center gap-1.5" :class="textClasses(link)">
                   <Icon v-if="link.icon && !(link.image && link.image_render === 'thumbnail')" :icon="`fluent:${link.icon}`" :class="['shrink-0', link.type === 'category-link' ? 'size-3.5' : 'mr-0.5 size-5 text-brand']" />
-                  {{ link.name }}
+                  <span class="[.a11y-underline_&]:underline [.a11y-underline_&]:underline-offset-2">{{ link.name }}</span>
                   <Icon v-if="link.new_tab" icon="fluent:open-16-regular" class="size-3.5 opacity-60" />
                   <!-- Slides in on hover instead of sitting there permanently: with one per row it
                        would read as a column of arrows rather than a pointer to the hovered link. -->
@@ -120,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, markRaw } from 'vue';
 import { Icon } from '@iconify/vue';
 
 import SmartLink from '../SmartLink.vue';
@@ -189,7 +189,7 @@ const ulClasses = computed(() => [
   resolveCols(item.cols),
 ]);
 
-const linkComponent = computed(() => areLinksDisabled ? 'div' : SmartLink);
+const linkComponent = computed(() => areLinksDisabled ? 'div' : markRaw(SmartLink));
 
 function renderableLinks(links: NavLink[]): NavLink[] {
   return links.filter(link => link.type !== 'divider' && link.type !== 'heading');

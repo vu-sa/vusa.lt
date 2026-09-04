@@ -3,7 +3,7 @@
        the same token renders a visibly different RGB depending on what's behind it — this header
        sits on bg-background/90 while SecondMenu below sits on bg-secondary/50. --border-opaque
        (surface.css) flattens that into a fixed color so the two borders read as the same weight. -->
-  <header class="fixed inset-x-0 top-0 z-50 border-b border-(--border-opaque) bg-background/90 backdrop-blur-sm">
+  <header class="fixed inset-x-0 top-0 z-50 border-b border-(--border-opaque) bg-background/90 backdrop-blur-sm [.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none">
     <!-- Primary bar. `relative` so the mega-menu panel positions against this row and spans the
          full header width. -->
     <div class="relative mx-auto flex h-16 max-w-7xl items-center gap-6 px-5 sm:px-6 lg:px-8">

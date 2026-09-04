@@ -117,7 +117,7 @@ import { cn } from '@/Utils/Shadcn/utils';
 import { type FontScaleKey, useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 /**
- * Reader preferences, replacing the third-party UserWay widget: text size, high contrast, and
+ * Reader preferences: text size, high contrast, and
  * forced link underlines, persisted per browser.
  *
  * The controls only set state — the CSS that reacts to it lives in `resources/css/app.css` and is
