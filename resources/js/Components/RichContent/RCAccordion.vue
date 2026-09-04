@@ -1,8 +1,7 @@
 <template>
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :background="element.options?.background ?? 'muted'" :padding="element.options?.padding ?? 'lg'"
-    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'center'"
+    :band :align="element.options?.align ?? 'center'"
     :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
     inner="content" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
@@ -35,6 +34,7 @@
 import { defineAsyncComponent } from 'vue';
 
 import RCSection from './RCSection.vue';
+import type { BandResolution } from './bandLayout';
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
 
@@ -45,5 +45,6 @@ defineProps<{
   html?: boolean;
   /** Content-part id, used as the ToC scroll anchor when this block has a title (see tocAnchors.ts). */
   anchorId?: number | null;
+  band?: BandResolution;
 }>();
 </script>

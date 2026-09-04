@@ -108,16 +108,22 @@ describe('SpotifyEmbedEditor', () => {
     expect(patchedOptions?.textLeft).toBe(false);
   });
 
-  it('defaults bleed to on and can be switched off', async () => {
+  it('defaults to automatic presentation and can select plain with compact padding', async () => {
     const item = makeItem();
     item.options = { ...item.options, variant: 'promo' };
     const wrapper = mountEditor(item);
 
-    const toggles = wrapper.findAll('[role="switch"]');
-    const bleedToggle = toggles[toggles.length - 1]!;
-    await bleedToggle.trigger('click');
+    expect(item.options?.presentation).toBeUndefined();
 
-    const patchedOptions = wrapper.emitted('update:options')!.at(-1)![0] as SpotifyEmbed['options'];
-    expect(patchedOptions?.bleed).toBe(false);
+    await findButtonByText(wrapper, 'presentation_plain').trigger('click');
+
+    let patchedOptions = wrapper.emitted('update:options')!.at(-1)![0] as SpotifyEmbed['options'];
+    expect(patchedOptions?.presentation).toBe('plain');
+
+    await wrapper.setProps({ options: patchedOptions });
+    await findButtonByText(wrapper, 'plain_padding_compact').trigger('click');
+
+    patchedOptions = wrapper.emitted('update:options')!.at(-1)![0] as SpotifyEmbed['options'];
+    expect(patchedOptions?.plainPadding).toBe('compact');
   });
 });

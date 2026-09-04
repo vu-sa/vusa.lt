@@ -13,6 +13,11 @@ const stubs = {
   ...commonStubs,
   ContentEditorFactory: { template: '<div class="content-editor-factory-stub" />' },
   TextBoxSubmissionsDialog: true,
+  RCFullscreenEditor: {
+    props: ['contents', 'tenantId', 'history'],
+    emits: ['update:contents', 'close'],
+    template: '<div class="fullscreen-editor-stub" />',
+  },
   // Render the real TransitionGroup rather than vue-test-utils' default stub, since
   // the block list relies on it for drag reordering.
   'transition-group': false,
@@ -99,5 +104,28 @@ describe('RichContentEditor', () => {
     const bodies = wrapper.findAll('[data-rc-block-body]');
     expect(isHidden(bodies[0]!)).toBe(true);
     expect(isHidden(bodies[1]!)).toBe(false);
+  });
+
+  it('the fullscreen button opens RCFullscreenEditor and hides the forms-mode block list', async () => {
+    const wrapper = await mountEditor(makeParts(2));
+    expect(wrapper.find('.fullscreen-editor-stub').exists()).toBe(false);
+    expect(wrapper.findAll('[data-rc-block-body]')).toHaveLength(2);
+
+    await wrapper.findAll('button').find(b => b.text().includes('rich-content.fullscreen_editor'))!.trigger('click');
+
+    expect(wrapper.find('.fullscreen-editor-stub').exists()).toBe(true);
+    expect(wrapper.findAll('[data-rc-block-body]')).toHaveLength(0);
+  });
+
+  it('closing the full-screen editor brings the forms-mode block list back', async () => {
+    const wrapper = await mountEditor(makeParts(2));
+    await wrapper.findAll('button').find(b => b.text().includes('rich-content.fullscreen_editor'))!.trigger('click');
+    expect(wrapper.find('.fullscreen-editor-stub').exists()).toBe(true);
+
+    await wrapper.getComponent(stubs.RCFullscreenEditor as any).vm.$emit('close');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('.fullscreen-editor-stub').exists()).toBe(false);
+    expect(wrapper.findAll('[data-rc-block-body]')).toHaveLength(2);
   });
 });

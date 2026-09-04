@@ -22,7 +22,7 @@
         :submit-url="route('news.update', news.id)"
         submit-method="patch"
         enable-delete
-        @submit:form="(form: any) => form.patch(route('news.update', news.id), { preserveScroll: true })"
+        @submit:form="submitForm"
         @delete="() => router.delete(route('news.destroy', news.id))"
       />
     </UpsertModelLayout>
@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
@@ -51,4 +51,9 @@ const props = defineProps<{
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminForm('Naujienos', 'news.index', props.news.title, NewsIcon),
 );
+
+function submitForm(form: InertiaForm<App.Entities.News>): void {
+  form.defaults();
+  form.patch(route('news.update', props.news.id), { preserveScroll: true });
+}
 </script>

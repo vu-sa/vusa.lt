@@ -33,6 +33,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Providers/** | .ai/rules/providers.md |
 | resources/js/**/Public/** | .ai/rules/public.md |
 | app/Http/Requests/** | .ai/rules/requests.md |
+| resources/js/Components/RichContent/** | .ai/rules/rich-content.md |
 | routes/api.php | .ai/rules/routes.md |
 | app/Actions/ResolveTaskAudience.php,app/Listeners/HandleTaskCreated.php,app/Actions/Schedulable/TaskNotifier.php,app/Console/Commands/SendTaskOverdueReminders.php | .ai/rules/schedulable-console-commands.md |
 | app/Services/** | .ai/rules/services.md |

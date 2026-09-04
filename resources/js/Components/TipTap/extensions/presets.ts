@@ -21,7 +21,7 @@ import { TextAlign } from '../TextAlign';
 import { RCTag } from '../RCTag';
 import { Video } from '../Video';
 
-export type EditorPreset = 'minimal' | 'compact' | 'full';
+export type EditorPreset = 'minimal' | 'compact' | 'full' | 'marks';
 
 export interface PresetOptions {
   placeholder?: string;
@@ -75,6 +75,42 @@ const ALLOWED_MIME_TYPES = [
 export function createMinimalExtensions(options: PresetOptions = {}): AnyExtension[] {
   const extensions: AnyExtension[] = [
     createStarterKit(false),
+  ];
+
+  if (options.placeholder) {
+    extensions.push(
+      Placeholder.configure({
+        placeholder: options.placeholder,
+      }),
+    );
+  }
+
+  return extensions;
+}
+
+/**
+ * Marks preset - a single inline run of text with bold/italic/underline only. No
+ * headings, lists, blockquote, hr, code, strike, or link — those nodes/marks aren't
+ * just hidden from the toolbar, they're unregistered, so their markdown input rules
+ * ("# ", "- ", "> ", "---") can't fire either. For fields like the hero title/
+ * description, where the value is a single styled line, not a document. Always pair
+ * with `toolbar="bubble"` — the fixed toolbar's link/list controls aren't gated by
+ * preset and would otherwise still render.
+ */
+export function createMarksExtensions(options: PresetOptions = {}): AnyExtension[] {
+  const extensions: AnyExtension[] = [
+    StarterKit.configure({
+      heading: false,
+      codeBlock: false,
+      code: false,
+      strike: false,
+      link: false,
+      blockquote: false,
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
+      horizontalRule: false,
+    }),
   ];
 
   if (options.placeholder) {
@@ -213,6 +249,8 @@ export function getExtensionsForPreset(preset: EditorPreset, options: PresetOpti
   switch (preset) {
     case 'minimal':
       return createMinimalExtensions(options);
+    case 'marks':
+      return createMarksExtensions(options);
     case 'compact':
       return createCompactExtensions(options);
     case 'full':

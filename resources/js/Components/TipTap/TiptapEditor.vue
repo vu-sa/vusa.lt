@@ -2,19 +2,20 @@
   <div class="tiptap-editor" :class="[`tiptap-editor--${preset}`]">
     <!-- Bubble Menu (for compact and full presets) -->
     <BubbleMenu v-if="editor && preset !== 'minimal'"
-      class="flex items-center gap-1 rounded-lg border bg-white p-1 shadow-md dark:bg-zinc-900 dark:border-zinc-700"
-      :editor plugin-key="textBubbleMenu" :should-show="shouldShowTextBubbleMenu" :options="{ placement: 'top', offset: 8 }">
-      <TiptapFormattingButtons v-model:editor="editor" />
+      class="flex items-center gap-0.5 rounded-lg border bg-white p-1 shadow-md dark:bg-zinc-900 dark:border-zinc-700"
+      :editor plugin-key="textBubbleMenu" :should-show="shouldShowTextBubbleMenu" :options="{ placement: 'top', offset: 8 }"
+      @mousedown.prevent>
+      <TiptapFormattingButtons v-model:editor="editor" :show-bold="showBold" bubble />
 
       <!-- Link controls in bubble menu -->
       <template v-if="preset === 'full'">
-        <Separator orientation="vertical" class="h-5 mx-1" />
+        <Separator orientation="vertical" class="h-5 mx-0.5" />
         <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-          <Button size="sm" class="h-8 w-8 p-0" :variant="editor.isActive('link') ? 'default' : 'ghost'">
+          <Button size="icon-sm" :variant="editor.isActive('link') ? 'secondary' : 'ghost'">
             <IFluentLink24Regular class="h-4 w-4" />
           </Button>
         </TiptapLinkButton>
-        <Button v-if="editor.isActive('link')" variant="ghost" size="sm" class="h-8 w-8 p-0"
+        <Button v-if="editor.isActive('link')" variant="ghost" size="icon-sm"
           @click="editor?.chain().focus().unsetLink().run()">
           <IFluentLinkDismiss20Filled class="h-4 w-4" />
         </Button>
@@ -25,7 +26,7 @@
     <div v-if="editor && showToolbar"
       class="tiptap-toolbar flex flex-wrap items-center gap-2 rounded-lg border bg-white p-2 dark:bg-zinc-900 dark:border-zinc-700 mb-2">
       <!-- Formatting buttons -->
-      <TiptapFormattingButtons v-model:editor="editor" />
+      <TiptapFormattingButtons v-model:editor="editor" :show-bold="showBold" />
 
       <!-- Mobile-only toggle for the rest of the toolbar — on small screens the full
            control set doesn't fit above the keyboard, so only bold/italic/underline
@@ -402,6 +403,10 @@ const props = withDefaults(defineProps<{
   showToolbarToggle?: boolean;
   /** Initial toolbar visibility (when showToolbarToggle is true) */
   toolbarVisible?: boolean;
+  /** Keep controls next to a selection instead of reserving space above the editor. */
+  toolbar?: 'inline' | 'bubble';
+  /** Hide bold where the surrounding component already enforces a bold display style. */
+  showBold?: boolean;
   /**
    * Style the editing surface with `.rc-prose-editing` — the same flow/heading-scale
    * rules as the published rich-content output (`.rc-prose`) — so what you type looks
@@ -415,6 +420,8 @@ const props = withDefaults(defineProps<{
   disableTables: false,
   showToolbarToggle: false,
   toolbarVisible: true,
+  toolbar: 'inline',
+  showBold: true,
   proseStyle: false,
 });
 
@@ -429,6 +436,9 @@ const mobileToolbarExpanded = ref(false);
 
 // Computed toolbar visibility
 const showToolbar = computed(() => {
+  if (props.toolbar === 'bubble') {
+    return false;
+  }
   if (props.showToolbarToggle) {
     return internalShowToolbar.value;
   }

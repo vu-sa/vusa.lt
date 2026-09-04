@@ -1,5 +1,5 @@
 <template>
-  <section :id="anchorElementId" :class="['relative scroll-mt-32', bleed && 'rc-band rc-viewport border-y border-border', backgroundClass, paddingClass]">
+  <section :id="anchorElementId" :class="band?.classes ?? []">
     <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
       <div class="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-14">
         <!-- Text side -->
@@ -55,6 +55,10 @@
  * fake play button + static waveform, the right-hand panel embeds the real Spotify/Mixcloud
  * iframe — that's the only way a visitor can actually start playback, and it's not full-bleed so
  * it reads as a panel beside the copy rather than taking over the row.
+ *
+ * Chrome comes entirely from the `band` prop (bandLayout.ts) — this type's `bandRole` resolves
+ * to `'band'` only for the `promo` variant (see Types/index.ts), so it participates in the
+ * page's automatic tint alternation exactly like every other band-capable block now.
  */
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
@@ -62,31 +66,21 @@ import { useDark } from '@vueuse/core';
 import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
 import HeroButtons from './RCHeroSection/HeroButtons.vue';
 import { isMixcloudUrl, toMixcloudEmbedUrl, toSpotifyEmbedUrl } from './embedUrl';
-import { BACKGROUND_CLASS, PADDING_CLASS } from './sectionClasses';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import IconHeadphones from '~icons/fluent/headphones24-regular';
 import type { SpotifyEmbed } from '@/Types/contentParts';
+import type { BandResolution } from './bandLayout';
 
 const props = defineProps<{
   element: SpotifyEmbed;
   anchorId?: number | null;
+  band?: BandResolution;
 }>();
 
 const content = computed(() => props.element.json_content);
 const anchorElementId = computed(() => (props.anchorId ? `rc-${props.anchorId}` : undefined));
 
 const textLeft = computed(() => props.element.options?.textLeft !== false);
-const backgroundClass = computed(() => BACKGROUND_CLASS[props.element.options?.background ?? 'muted']);
-const paddingClass = computed(() => PADDING_CLASS[props.element.options?.padding ?? 'lg']);
-
-/**
- * Each RC block paints its own "is this a new section" chrome — there's no automatic
- * alternation between blocks. This mirrors `EventCalendarElement.vue` (`rc-viewport border-y
- * border-border bg-secondary/40`) rather than `NewsElement.vue`, which stays transparent and
- * blends into whatever sits above/below it. Defaults on, so switching to `promo` reads as a
- * distinct band immediately.
- */
-const bleed = computed(() => props.element.options?.bleed !== false);
 
 const hasBody = computed(() => {
   const body = content.value.body as { content?: unknown[] } | undefined;

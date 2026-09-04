@@ -1,8 +1,7 @@
 <template>
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'md'"
-    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'center'"
+    :band :align="element.options?.align ?? 'center'"
     :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
@@ -62,10 +61,12 @@ import VueEasyLightbox from 'vue-easy-lightbox';
 import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
 import RCSection from '../RCSection.vue';
 import type { PhotoGalleryGrid } from '@/Types/contentParts';
+import type { BandResolution } from '../bandLayout';
 
 const { element } = defineProps<{
   element: PhotoGalleryGrid;
   anchorId?: number | null;
+  band?: BandResolution;
 }>();
 
 // Lightbox state

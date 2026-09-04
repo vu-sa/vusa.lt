@@ -7,6 +7,12 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.43 — Content editing (2026-09-04) {#v1-43}
+
+- ✨ **Plain sections have spacing choices** — a section without a background keeps the standard vertical spacing by default, but can use compact spacing or none; the unnecessary “Emphasis” presentation has been removed
+- ✨ **Hero images are clearer to edit** — image controls are compactly grouped, decorations have their own control apart from image and focal-point settings, and the full-screen editor can switch theme, hide editing markers for preview, and save without returning to the form
+- 🔧 **Hero sections no longer jump while editing** — a centered title stays centered and uppercase after editing, and the split layout’s settings button is no longer covered by the top bar
+
 ## v1.42 — Mobile browser colours (2026-09-04) {#v1-42}
 
 - 🔧 **The phone’s top bar changes colour immediately** — switching between light and dark mode now immediately updates the area around the phone’s front camera to match the page

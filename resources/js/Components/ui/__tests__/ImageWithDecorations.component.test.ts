@@ -35,4 +35,14 @@ describe('ImageWithDecorations', () => {
     const wrapper = mount(ImageWithDecorations, { props: { src: '/a.jpg', alt: 'A' } });
     expect(wrapper.find('.shadow-xl').exists()).toBe(false);
   });
+
+  it('can force an empty overlay card and lets an editor replace its text through the overlay slot', () => {
+    const wrapper = mount(ImageWithDecorations, {
+      props: { src: '/a.jpg', alt: 'A', forceOverlayContent: true },
+      slots: { 'overlay-content': '<span class="editable-overlay">Editable overlay</span>' },
+    });
+
+    expect(wrapper.find('.shadow-xl').exists()).toBe(true);
+    expect(wrapper.get('.editable-overlay').text()).toBe('Editable overlay');
+  });
 });

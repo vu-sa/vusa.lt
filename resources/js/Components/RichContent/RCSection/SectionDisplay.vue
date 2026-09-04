@@ -1,15 +1,8 @@
 <template>
-  <section :class="[
-    'relative scroll-mt-32',
-    PADDING_CLASS[padding],
-    BACKGROUND_CLASS[background],
-    DIVIDER_CLASS[divider],
-    ROUNDED_CLASS[rounded],
-    bleed && 'rc-viewport',
-  ]"
+  <component :is="band?.isBand === false ? 'div' : 'section'" :class="band?.classes ?? []"
     :id="anchorId ? `rc-${anchorId}` : undefined">
     <div :class="['container relative z-10 mx-auto px-4', INNER_CLASS[inner]]">
-      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" :inverted="background === 'brand' || background === 'ink'" />
+      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" :inverted="band?.tint === 'emphasis'" />
       <!-- A nested `.rc-canvas` so wrapped child blocks keep their own independent
            per-block widths (prose/content/wide/full) exactly like the page-level
            canvas — see `.rc-canvas-nested` in app.css for why `--rc-measure` needs a
@@ -21,7 +14,7 @@
         <slot />
       </div>
     </div>
-  </section>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -40,24 +33,20 @@ import { computed } from 'vue';
 import SectionHeader from '@/Components/ui/SectionHeader.vue';
 import { latinizeId } from '@/Utils/String';
 import type { Section } from '@/Types/contentParts';
-import {
-  BACKGROUND_CLASS, DIVIDER_CLASS, INNER_CLASS, PADDING_CLASS, ROUNDED_CLASS, type SectionHeadingLevel,
-} from '../sectionClasses';
+import type { BandResolution } from '../bandLayout';
+import { INNER_CLASS, type SectionHeadingLevel } from '../sectionClasses';
 
 const props = defineProps<{
   element: Section;
   anchorId?: number | null;
   hasChildren?: boolean;
+  /** This section's resolved chrome — computed by `RichContentParser` via `resolveBands`. */
+  band?: BandResolution;
 }>();
 
 const title = computed(() => props.element.options?.title);
 const subtitle = computed(() => props.element.options?.subtitle);
 const eyebrow = computed(() => props.element.options?.eyebrow);
-const background = computed(() => props.element.options?.background ?? 'none');
-const padding = computed(() => props.element.options?.padding ?? 'lg');
-const rounded = computed(() => props.element.options?.rounded ?? 'none');
-const divider = computed(() => props.element.options?.divider ?? 'none');
-const bleed = computed(() => props.element.options?.bleed ?? false);
 const inner = computed(() => props.element.options?.inner ?? 'full');
 const align = computed(() => props.element.options?.align ?? 'center');
 const headingLevel = computed<SectionHeadingLevel>(() => props.element.options?.headingLevel ?? 2);

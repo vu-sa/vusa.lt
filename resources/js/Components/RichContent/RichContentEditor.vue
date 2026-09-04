@@ -36,7 +36,7 @@
         </FadeTransition>
 
         <div class="ml-auto flex items-center gap-3">
-          <ButtonGroup v-if="!globalPreviewMode && (contents?.length ?? 0) > 1">
+          <ButtonGroup v-if="(contents?.length ?? 0) > 1">
             <Button size="xs" variant="outline" @click="collapseAll">
               {{ $t('rich-content.collapse_all') }}
             </Button>
@@ -44,55 +44,40 @@
               {{ $t('rich-content.expand_all') }}
             </Button>
           </ButtonGroup>
-          <label class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 cursor-pointer">
-            <input v-model="globalPreviewMode" type="checkbox" class="h-3.5 w-3.5 rounded border-zinc-300 text-zinc-600 focus:ring-zinc-500 dark:border-zinc-600">
-            {{ $t('rich-content.preview_all') }}
-          </label>
+          <Button size="xs" variant="outline" @click="isFullscreenOpen = true">
+            <IFluentFullScreenMaximize24Regular class="mr-1.5 h-3.5 w-3.5" />
+            {{ $t('rich-content.fullscreen_editor') }}
+          </Button>
         </div>
       </div>
 
-      <!-- Global preview mode - rc-canvas (not .typography) so this matches the public
-           rendering, including per-block width choices, instead of clamping everything
-           to a fixed prose column. -->
-      <div v-if="globalPreviewMode" class="rc-canvas rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900/50"
-        style="--rc-measure: 44rem">
-        <RichContentParser :content="(contents as unknown as models.ContentPart[]) ?? []" :resolved="globalPreviewResolved" />
-      </div>
+      <!-- Full-screen editor. `v-if`, never `v-show`: forms mode's per-block editors
+           (TipTap instances included) must be fully unmounted while the full-screen
+           editor is open, and vice versa — two live editors bound to the same content is
+           the one invariant this whole feature can't violate. Since `contents` is the
+           same `defineModel` array throughout, nothing is lost tearing forms-mode editors
+           down and back up. -->
+      <RCFullscreenEditor
+        v-if="isFullscreenOpen"
+        v-model:contents="contents"
+        :tenant-id="tenantId"
+        :history="{ commit, undo, redo, canUndo, canRedo }"
+        @close="isFullscreenOpen = false"
+        @save="$emit('save')"
+      />
 
-      <!-- Editor mode - sortable blocks -->
-      <template v-else>
+      <!-- Forms mode - sortable blocks -->
+      <template v-if="!isFullscreenOpen">
         <!-- Sortable container - ref must be on the direct parent of sortable items -->
         <TransitionGroup ref="sortableEl" tag="div" class="space-y-2" :class="{ 'rc-dragging': isDragging }">
           <div v-for="content, index in contents" :key="content?.id ?? content?.key" class="relative">
             <!-- Insert-between affordance: a thin hover-revealed line, not a floating circle -->
-            <div v-if="index > 0" class="group/insert absolute inset-x-0 -top-2.5 z-20 flex h-5 items-center justify-center">
-              <div class="absolute inset-x-3 top-1/2 h-px -translate-y-1/2 bg-transparent transition-colors group-hover/insert:bg-zinc-300 dark:group-hover/insert:bg-zinc-600" />
-              <DropdownMenu>
-                <DropdownMenuTrigger as-child>
-                  <button class="relative z-10 flex h-5 w-5 items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-500 opacity-0 shadow-sm transition-opacity group-hover/insert:opacity-100 hover:border-zinc-400 hover:text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:hover:border-zinc-500">
-                    <IFluentAdd24Regular class="h-3 w-3" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" class="w-56">
-                  <DropdownMenuItem
-                    v-for="type in quickAddTypes"
-                    :key="type.value"
-                    @click="insertContentAt(type.value, index)"
-                  >
-                    <component :is="type.icon" class="mr-2 h-4 w-4" />
-                    {{ type.label }}
-                    <Badge v-if="type.isNew" variant="success" size="tiny" class="ml-auto">
-                      {{ $t('rich-content.new_badge') }}
-                    </Badge>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem @click="showInsertMenuAt = index; showSelection = true">
-                    <IFluentMoreHorizontal24Regular class="mr-2 h-4 w-4" />
-                    {{ $t('rich-content.more_content_types') }}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <RCInsertAffordance
+              v-if="index > 0"
+              :quick-add-types="quickAddTypes"
+              @insert="insertContentAt($event, index)"
+              @more="showInsertMenuAt = index; showSelection = true"
+            />
 
             <RCBlockCard
               :content
@@ -160,9 +145,10 @@ import FadeTransition from '../Transitions/FadeTransition.vue';
 
 import BlockPickerDialog from './BlockPickerDialog.vue';
 import RCBlockCard from './Editor/RCBlockCard.vue';
-import { useContentPartPreview } from './composables/useContentPartPreview';
-import RichContentParser from './RichContentParser.vue';
-import { createContentItem, getContentType, type ContentPart } from './Types';
+import RCFullscreenEditor from './Editor/Fullscreen/RCFullscreenEditor.vue';
+import RCInsertAffordance from './Editor/RCInsertAffordance.vue';
+import { getQuickAddTypes } from './Editor/quickAddTypes';
+import { createContentItem, type ContentPart } from './Types';
 
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
@@ -171,8 +157,7 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import IFluentAdd24Regular from '~icons/fluent/add24-regular';
 import IFluentArrowUndo24Filled from '~icons/fluent/arrow-undo24-filled';
 import IFluentArrowRedo24Filled from '~icons/fluent/arrow-redo24-filled';
-import IFluentMoreHorizontal24Regular from '~icons/fluent/more-horizontal24-regular';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
+import IFluentFullScreenMaximize24Regular from '~icons/fluent/full-screen-maximize24-regular';
 
 const props = defineProps<{
   maxContentBlocks?: number;
@@ -181,6 +166,8 @@ const props = defineProps<{
 }>();
 
 const contents = defineModel<ContentPart[]>('contents');
+
+defineEmits<(e: 'save') => void>();
 
 /**
  * Ensure all content items have unique keys for TransitionGroup.
@@ -211,7 +198,7 @@ onMounted(() => {
   }
 });
 
-const { history, commit, undo, redo } = useManualRefHistory(contents, { clone: true, capacity: 30 });
+const { history, commit, undo, redo, canUndo, canRedo } = useManualRefHistory(contents, { clone: true, capacity: 30 });
 
 // TransitionGroup component ref - we extract $el to get the DOM element
 const sortableEl = ref<{ $el: HTMLElement } | null>(null);
@@ -222,46 +209,11 @@ const showHistory = ref(false);
 const showSelection = ref(false);
 const showInsertMenuAt = ref<number | null>(null);
 const isInitialLoading = ref(true);
-const globalPreviewMode = ref(false);
+const isFullscreenOpen = ref(false);
 const isDragging = ref(false);
 // Per-block preview mode / collapse tracking, keyed by block id or generated key
 const blocksInPreviewMode = ref(new Set<string | number>());
 const collapsedKeys = ref(new Set<string | number>());
-
-// Server-resolved preview data (link-list, event-list, …) for the "preview all" mode —
-// one batched request for every resolvable, *saved* block (unsaved blocks have no id
-// yet, so they can't be looked up by RichContentParser's `resolved[element.id]` and
-// simply show no dynamic data until first saved — the same gap BlockPickerDialog's
-// samples already accept for these types).
-const { debouncedFetchPreview } = useContentPartPreview(() => props.tenantId);
-const globalPreviewResolved = ref<Record<number, unknown>>({});
-
-watch(
-  [globalPreviewMode, contents],
-  async ([isPreview, currentContents]) => {
-    if (!isPreview || !currentContents?.length) {
-      return;
-    }
-    const resolvableParts = currentContents.filter(
-      (part): part is ContentPart & { id: number } => part.id != null && !!getContentType(part.type).serverResolved,
-    );
-    if (resolvableParts.length === 0) {
-      globalPreviewResolved.value = {};
-
-      return;
-    }
-    const resolved = await debouncedFetchPreview(resolvableParts.map(part => ({
-      key: String(part.id),
-      type: part.type,
-      json_content: part.json_content,
-      options: part.options ?? null,
-    })));
-    globalPreviewResolved.value = Object.fromEntries(
-      Object.entries(resolved).map(([key, value]) => [Number(key), value]),
-    );
-  },
-  { deep: true },
-);
 
 // Cleanup timeout to prevent memory leaks
 let loadingTimeout: NodeJS.Timeout | null = null;
@@ -280,19 +232,7 @@ onUnmounted(() => {
 });
 
 // Quick add types for common content
-const quickAddTypes = computed(() => [
-  getContentType('tiptap'),
-  getContentType('shadcn-card'),
-  getContentType('content-grid'),
-  getContentType('image-grid'),
-  getContentType('hero'),
-  getContentType('shadcn-accordion'),
-  getContentType('social-embed'),
-  getContentType('spotify-embed'),
-  getContentType('section'),
-  getContentType('person-quote'),
-  getContentType('spacer'),
-]);
+const quickAddTypes = computed(getQuickAddTypes);
 
 // Check if max content blocks limit would be exceeded
 const isMaxContentReached = computed(() => {

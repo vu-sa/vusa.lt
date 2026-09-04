@@ -62,8 +62,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
 
-        /* Route::get('become-a-member', [Public\PublicPageController::class, 'membership'])->name('joinUs.en'); */
-
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarMain'])->name('calendar.event.2')->whereNumber('year')->whereNumber('month')->whereNumber('day');
 
         Route::get('kalendorius/renginiu-sarasas', [Public\PublicPageController::class, 'calendarEventList'])->name('calendar.list');
@@ -102,8 +100,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('{newsArchiveString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')
             ->whereIn('newsArchiveString', LocalizedRouteSlugs::accepted('newsArchiveString'));
         Route::permanentRedirect('/admin', '/mano');
-
-        /* Route::get('tapk-nariu', [Public\PublicPageController::class, 'membership'])->name('joinUs'); */
 
         Route::get('{contactsString}/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution')
             ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'));

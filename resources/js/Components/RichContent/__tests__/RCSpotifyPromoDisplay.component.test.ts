@@ -12,6 +12,7 @@ vi.mock('@vueuse/core', async (importOriginal) => {
 
 import RCSpotifyPromoDisplay from '../RCSpotifyPromoDisplay.vue';
 import { createContentItem, getContentType } from '../Types';
+import { resolveBand } from '../bandLayout';
 import type { SpotifyEmbed } from '@/Types/contentParts';
 
 function makeElement(overrides: Partial<SpotifyEmbed['json_content']> = {}, optionOverrides: SpotifyEmbed['options'] = {}): SpotifyEmbed {
@@ -22,9 +23,13 @@ function makeElement(overrides: Partial<SpotifyEmbed['json_content']> = {}, opti
   } as SpotifyEmbed;
 }
 
+/** Chrome now comes entirely from the `band` prop (bandLayout.ts) — the display itself
+ *  no longer computes a default. `slot: 0` mirrors a standalone preview. Per-type
+ *  interfaces like `SpotifyEmbed` carry no `type` field of their own (that discriminator
+ *  lives on the wrapping `ContentPart`), so `resolveBand` needs it supplied separately. */
 function mountDisplay(element: SpotifyEmbed, anchorId?: number) {
   return mount(RCSpotifyPromoDisplay, {
-    props: { element, anchorId },
+    props: { element, anchorId, band: resolveBand({ type: 'spotify-embed', options: element.options }, 0) },
     global: { stubs: { SmartLink: { props: ['href'], template: '<a :href="href"><slot /></a>' } } },
   });
 }
@@ -66,12 +71,14 @@ describe('RCSpotifyPromoDisplay', () => {
     expect(iframe.attributes('title')).toBe('Mixcloud Embed');
   });
 
-  it('bleeds to the viewport with a top/bottom rule by default, the same "new section" treatment EventCalendarElement uses', () => {
-    const wrapper = mountDisplay(makeElement());
+  // Bleed is now derived purely from width (bandLayout.ts's `resolveBand`), not a
+  // separate authored option — spotify-embed's registry `defaultWidth` is `prose` (the
+  // common inline case), so a promo embed only bleeds once an author explicitly widens
+  // it to `full` via the block's width picker.
+  it('bleeds to the viewport at full width, the same "new section" treatment EventCalendarElement uses', () => {
+    const wrapper = mountDisplay(makeElement({}, { width: 'full' }));
 
-    const section = wrapper.find('section');
-    expect(section.classes()).toContain('rc-viewport');
-    expect(section.classes()).toContain('border-y');
+    expect(wrapper.find('section').classes()).toContain('rc-viewport');
   });
 
   // `.rc-band` is what lets two adjacent full-bleed bands (this, EventCalendarElement,
@@ -84,12 +91,14 @@ describe('RCSpotifyPromoDisplay', () => {
     expect(wrapper.find('section').classes()).toContain('rc-band');
   });
 
-  it('drops the rc-viewport band when bleed is explicitly disabled', () => {
-    const wrapper = mountDisplay(makeElement({}, { bleed: false }));
+  it('renders as a contained, bordered panel instead of a viewport-edge band once narrowed off full width — rc-band stays, only the bleed treatment changes', () => {
+    const wrapper = mountDisplay(makeElement({}, { width: 'content' }));
 
     const section = wrapper.find('section');
     expect(section.classes()).not.toContain('rc-viewport');
-    expect(section.classes()).not.toContain('rc-band');
+    expect(section.classes()).toContain('rc-band');
+    expect(section.classes()).toContain('rounded-xl');
+    expect(section.classes()).toContain('border');
   });
 
   it('puts the embed panel first when textLeft is false', () => {

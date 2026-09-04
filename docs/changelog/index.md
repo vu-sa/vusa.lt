@@ -7,6 +7,12 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.43 — Turinio redagavimas (2026-09-04) {#v1-43}
+
+- ✨ **Paprastoms sekcijoms galima parinkti tarpus** — sekcija be fono pagal nutylėjimą išlaiko įprastus vertikalius tarpus, bet gali naudoti kompaktiškus arba visai jų neturėti; nebereikalingas „Akcento“ pateikimas pašalintas
+- ✨ **Antraštės sekcijos nuotrauka redaguojama aiškiau** — nuotraukos valdikliai kompaktiškai sugrupuoti, dekoracijos atskirtos nuo nuotraukos ir jos fokuso nustatymų, o viso ekrano redaktoriuje galima perjungti šviesų arba tamsų vaizdą, paslėpti redagavimo žymes peržiūrai ir išsaugoti negrįžtant į formą
+- 🔧 **Antraštės sekcija redaguojant nebešokinėja** — centruota antraštė lieka centruota ir didžiosiomis raidėmis užbaigus teksto redagavimą, o dviejų stulpelių antraštės nustatymų mygtuko nebeuždengia viršutinė juosta
+
 ## v1.42 — Mobiliojo naršymo spalvos (2026-09-04) {#v1-42}
 
 - 🔧 **Telefono viršutinė juosta keičia spalvą iš karto** — perjungus šviesų ar tamsų režimą, spalva aplink priekinę telefono kamerą dabar iš karto dera prie puslapio

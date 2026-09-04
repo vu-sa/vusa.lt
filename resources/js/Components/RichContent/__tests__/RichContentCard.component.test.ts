@@ -48,4 +48,32 @@ describe('RichContentCard', () => {
     });
     expect(wrapper.find('.rc-prose p').text()).toBe('Hello');
   });
+
+  it('renders a plain (non-editable) title with no contenteditable when editable is not set', () => {
+    const wrapper = mount(RichContentCard, { props: { element: makeElement({ title: 'Kortelė' }) } });
+    const title = wrapper.find('[data-slot="card-title"]');
+    expect(title.text()).toBe('Kortelė');
+    expect(title.attributes('contenteditable')).toBeUndefined();
+  });
+
+  it('shows an editable, empty title header when editable and no title is set yet', () => {
+    const wrapper = mount(RichContentCard, { props: { element: makeElement({}), editable: true } });
+    expect(wrapper.find('[data-slot="card-header"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="card-title"]').attributes('contenteditable')).toBe('plaintext-only');
+  });
+
+  it('emits update:element with the patched title, preserving other options', async () => {
+    const wrapper = mount(RichContentCard, {
+      props: { element: makeElement({ title: 'Old' }), editable: true },
+    });
+    const title = wrapper.find('[data-slot="card-title"]');
+    title.element.textContent = 'New title';
+    await title.trigger('input');
+    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+
+    const emitted = wrapper.emitted('update:element');
+    expect(emitted).toBeTruthy();
+    const patched = emitted![emitted!.length - 1]![0] as { options: Record<string, unknown> };
+    expect(patched.options.title).toBe('New title');
+  });
 });

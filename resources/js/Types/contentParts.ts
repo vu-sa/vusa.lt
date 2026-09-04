@@ -1,29 +1,37 @@
 // Type definitions for content parts used in the rich content editor
 // These types correspond to the ContentPartEnum in enums.ts
 
+import type { BlockPresentation } from '@/Components/RichContent/bandLayout';
+import type { PlainPadding } from '@/Components/RichContent/sectionClasses';
+import type { BlockWidth } from '@/Components/RichContent/Types';
+
 /**
  * Shared RCSection.vue chrome fields — mixed into the `options` of every type that
  * renders through RCSection (see Editor/RCSectionOptions.vue, the one editor fieldset
- * behind all of them).
+ * behind all of them). `background`/`padding`/`rounded`/`divider`/`bleed` are gone —
+ * a band's ground now alternates automatically (see `bandLayout.ts`); `presentation`
+ * is the only override left.
  */
 export interface SectionOptions {
   title?: string;
   subtitle?: string;
   /** Brand kicker above the title. */
   eyebrow?: string;
-  background?: 'none' | 'muted' | 'contrast' | 'gradient' | 'brand' | 'ink';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  rounded?: 'none' | 'sm' | 'md' | 'lg';
-  /** Hairline edges separating the band from its neighbours. */
-  divider?: 'none' | 'top' | 'bottom' | 'both';
-  /** Break the band out to the full viewport width, so a tint reaches the screen edges. */
-  bleed?: boolean;
+  /**
+   * `auto` (default): the parser alternates this band's tint with its neighbours.
+   * `plain`: no band at all — renders in the content column like a text block.
+   */
+  presentation?: BlockPresentation;
+  /** Applied only when presentation is `plain`; automatic bands keep the standard rhythm. */
+  plainPadding?: PlainPadding;
   /** Semantic heading level for the section title (rendered by SectionHeader). Defaults to 2. */
   headingLevel?: 2 | 3 | 4;
   /** Title alignment, forwarded to SectionHeader. Defaults to 'center'. */
   align?: 'center' | 'start';
   /** Whether to render the separator bar beneath the title. Defaults to true. */
   showSeparator?: boolean;
+  /** Canvas column (see `.rc-canvas` in app.css) — read via `blockLayout.ts`. */
+  width?: BlockWidth;
 }
 
 // Implemented
@@ -111,6 +119,7 @@ export interface ShadcnCard {
   json_content: Tiptap['json_content'];
   options: {
     title?: string;
+    width?: BlockWidth;
   };
 }
 
@@ -147,16 +156,15 @@ export interface Hero {
      * `split` (default): two-column text + image — the original hero.
      * `centered`: no image, centred title/description/buttons — CTA/slogan sections.
      * `banner`: a compact single-row strip, title + one button.
-     * `panel`: the SummerCamps-style rounded gradient panel with a square thumbnail.
+     * `panel`: the SummerCamps-style rounded gradient panel with a square thumbnail —
+     * flow-role, not a band; it keeps its own fixed chrome and ignores `presentation`.
      */
     variant?: 'split' | 'centered' | 'banner' | 'panel';
-    /**
-     * `split`/`centered`/`banner` only — `panel` keeps its own fixed gradient chrome.
-     * Defaults reproduce each variant's previous hardcoded look exactly (see HeroElement.vue).
-     */
-    background?: 'none' | 'muted' | 'contrast' | 'gradient';
-    padding?: 'none' | 'sm' | 'md' | 'lg';
-    rounded?: 'none' | 'sm' | 'md' | 'lg';
+    /** `split`/`centered`/`banner` only — see `SectionOptions.presentation`. */
+    presentation?: BlockPresentation;
+    /** Applied only when presentation is `plain`. */
+    plainPadding?: PlainPadding;
+    width?: BlockWidth;
   };
 }
 
@@ -185,21 +193,16 @@ export interface SpotifyEmbed {
   };
   options: {
     /** `inline` (default): a plain bordered embed dropped into prose — unchanged original
-     *  behaviour. `promo`: the START FM-style two-column section, text + buttons beside the
-     *  embed, for a standalone promotional block rather than a mid-article link. */
+     *  behaviour, flow-role. `promo`: the START FM-style two-column section, text + buttons
+     *  beside the embed — a band, reading as its own section against the page. */
     variant?: 'inline' | 'promo';
     /** `promo` only. Text column on the left, embed panel on the right (default) — or swapped. */
     textLeft?: boolean;
-    /** `promo` only. */
-    background?: 'none' | 'muted' | 'contrast' | 'gradient';
-    padding?: 'none' | 'sm' | 'md' | 'lg';
-    /**
-     * `promo` only. Break out to the full viewport width with a top/bottom rule and a tinted
-     * ground — the same "new section" treatment `EventCalendarElement` uses to read as its own
-     * band against the page, rather than blending in like `NewsElement`'s plain transparent one.
-     * Defaults to true so switching to `promo` reads as a section immediately.
-     */
-    bleed?: boolean;
+    /** `promo` only — see `SectionOptions.presentation`. */
+    presentation?: BlockPresentation;
+    /** Applied only when presentation is `plain`. */
+    plainPadding?: PlainPadding;
+    width?: BlockWidth;
   } | null;
 }
 
@@ -211,6 +214,7 @@ export interface SocialEmbed {
   };
   options: {
     showCaption?: boolean;
+    width?: BlockWidth;
   };
 }
 
@@ -244,8 +248,7 @@ export interface CtaBand {
     button?: { label: string; href: string };
   };
   options: {
-    /** Defaults to true; a CTA that stops at the content measure reads as a panel. */
-    bleed?: boolean;
+    width?: BlockWidth;
   } | null;
 }
 
@@ -266,6 +269,7 @@ export interface Calendar {
   };
   options: {
     allTenants?: boolean;
+    width?: BlockWidth;
   } | null;
 }
 
@@ -283,6 +287,7 @@ export interface TextBox {
     placeholder?: { lt: string; en: string };
     isClosed?: boolean;
     closedMessage?: { lt: string; en: string };
+    width?: BlockWidth;
   };
 }
 
@@ -370,6 +375,7 @@ export interface HeroCarousel {
     scrim?: 'light' | 'medium' | 'dark';
     /** Panel height preset — the photo panel is inset, so this is the panel's own height. */
     height?: 'sm' | 'md' | 'lg';
+    width?: BlockWidth;
   };
 }
 
@@ -505,6 +511,7 @@ export interface Spacer {
   json_content: Record<string, never>;
   options: {
     size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    width?: BlockWidth;
   };
 }
 
@@ -522,6 +529,7 @@ export interface Timetable {
   }[];
   options: {
     title?: string;
+    width?: BlockWidth;
   } | null;
 }
 

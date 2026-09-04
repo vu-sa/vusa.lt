@@ -2,9 +2,7 @@
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
     :eyebrow="element.options?.eyebrow"
-    :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'lg'"
-    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'start'"
-    :divider="element.options?.divider ?? 'none'" :bleed="element.options?.bleed"
+    :band :align="element.options?.align ?? 'start'"
     :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
@@ -33,6 +31,7 @@ import { computed } from 'vue';
 import RCSection from '../RCSection.vue';
 
 import type { ProcessSteps } from '@/Types/contentParts';
+import type { BandResolution } from '../bandLayout';
 
 /**
  * A numbered process — "how you join", "how a request is handled".
@@ -44,6 +43,7 @@ import type { ProcessSteps } from '@/Types/contentParts';
 const props = defineProps<{
   element: ProcessSteps;
   anchorId?: number | null;
+  band?: BandResolution;
 }>();
 
 const COLUMN_CLASS: Record<number, string> = {

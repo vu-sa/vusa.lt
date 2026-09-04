@@ -10,6 +10,7 @@
       :element="(group.element as unknown as Section)"
       :anchor-id="group.element.id"
       :has-children="group.children.length > 0"
+      :band="bandFor(group.element)"
       :class="blockClasses(group.element)"
     >
       <RichContentBlock
@@ -17,6 +18,7 @@
         :element="child" :html
         :is-first-element="false"
         :resolved="resolvedFor(child)"
+        :band="bandFor(child)"
         :news="child.type === 'news' ? news : undefined"
         :calendar-events="child.type === 'calendar' ? calendarEvents : undefined"
       />
@@ -27,6 +29,7 @@
       :element="group.element" :html
       :is-first-element="index === 0"
       :resolved="resolvedFor(group.element)"
+      :band="bandFor(group.element)"
       :news="group.element.type === 'news' ? news : undefined"
       :calendar-events="group.element.type === 'calendar' ? calendarEvents : undefined"
     />
@@ -44,6 +47,7 @@ import { computed } from 'vue';
 
 import { getContentType } from './Types';
 import { blockLayoutClasses } from './blockLayout';
+import { resolveBandRole, resolveBands, type BandResolution } from './bandLayout';
 import RichContentBlock from './RichContentBlock.vue';
 import SectionDisplay from './RCSection/SectionDisplay.vue';
 import type { NewsItem, Section } from '@/Types/contentParts';
@@ -75,6 +79,18 @@ function resolvedFor(element: models.ContentPart): unknown {
 // the editor's preview surfaces (ContentEditorFactory, BlockPickerDialog) via blockLayout.ts
 // so a previewed block's width never disagrees with its public rendering.
 const blockClasses = blockLayoutClasses;
+
+// One alternation pass over the whole document — see bandLayout.ts. Threaded down to
+// every band-capable display the same way `resolved` is (below): only a type that
+// declares `bandRole` receives a real value, so an undeclared object prop never falls
+// through and stringifies into the DOM on a display that doesn't ask for it.
+const bandMap = computed<Map<models.ContentPart, BandResolution>>(() => resolveBands(props.content));
+
+function bandFor(element: models.ContentPart): BandResolution | undefined {
+  if (resolveBandRole(element.type, element.options) === 'flow') return undefined;
+
+  return bandMap.value.get(element);
+}
 
 type ContentGroup =
   | { kind: 'block'; element: models.ContentPart }

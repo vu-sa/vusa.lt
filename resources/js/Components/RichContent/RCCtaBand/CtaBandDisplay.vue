@@ -1,10 +1,17 @@
 <template>
   <!-- Not an RCSection: this band owns its whole ground, and the section header's eyebrow +
        hairline vocabulary belongs to the quiet bands, not to the one loud call to action. -->
+  <!-- Own hardcoded ground + bespoke asymmetric padding (not band.classes' uniform
+       BAND_PADDING — this row's copy/button layout carries its own responsive py-14/
+       py-20 below) — see the `band` prop docs for why. `rc-band` still marks the root
+       for the cross-band seam-dedup rule; `resolveBand` always resolves this type's
+       `tint` to 'emphasis' and its width is locked to `full`, so `band.bleeds` is
+       always true once resolved (the `!== false` guard only matters standalone, where
+       no `band` prop is supplied at all). -->
   <section
     :class="[
       'relative scroll-mt-32 border-y border-brand-fill bg-brand-fill text-brand-foreground',
-      bleed && 'rc-band rc-viewport',
+      band?.bleeds !== false && 'rc-band rc-viewport',
     ]"
     :id="anchorId ? `rc-${anchorId}` : undefined"
   >
@@ -47,6 +54,7 @@ import RCIcon from '../RCIcon.vue';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import type { CtaBand } from '@/Types/contentParts';
+import type { BandResolution } from '../bandLayout';
 
 /**
  * The brand-filled band a page closes on: a headline, a line of copy, a few contact facts, and
@@ -55,13 +63,13 @@ import type { CtaBand } from '@/Types/contentParts';
 const props = defineProps<{
   element: CtaBand;
   anchorId?: number | null;
+  /** Resolved by `resolveBand` (bandLayout.ts) — always `tint: 'emphasis'` for this
+   *  type, and `bleeds` follows its locked `full` width. Consumed here only for the
+   *  bleed signal + alternation slot bookkeeping; the ground stays hardcoded (below). */
+  band?: BandResolution;
 }>();
 
 const content = computed(() => props.element.json_content ?? {});
 
 const items = computed(() => content.value.items ?? []);
-
-// Defaults to true: a call-to-action band that stops at the content measure reads as a panel
-// rather than as the page's closing statement.
-const bleed = computed(() => props.element.options?.bleed !== false);
 </script>

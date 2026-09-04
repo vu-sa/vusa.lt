@@ -1,20 +1,15 @@
 <template>
   <!-- scroll-mt-32 matches .rc-prose's heading offset — the ToC's scroll-to logic uses a
        160px JS offset (TableOfContents.vue) which already runs slightly ahead of the
-       128px CSS one on tiptap headings; kept consistent with that existing behavior. -->
-  <section :class="[
-    'relative scroll-mt-32',
-    PADDING_CLASS[padding],
-    BACKGROUND_CLASS[background],
-    DIVIDER_CLASS[divider],
-    ROUNDED_CLASS[rounded],
-    bleed && 'rc-viewport',
-  ]">
+       128px CSS one on tiptap headings; kept consistent with that existing behavior.
+       `band.classes` already carries `relative scroll-mt-32` for an actual band. A
+       `plain` block has no ground, but may carry its author-selected vertical padding. -->
+  <component :is="band?.isBand === false ? 'div' : 'section'" :class="band?.classes ?? []">
     <div :class="['container relative z-10 mx-auto px-4', INNER_CLASS[inner]]">
-      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" :inverted="background === 'brand' || background === 'ink'" />
+      <SectionHeader v-if="title" :title :subtitle :eyebrow :align :id="headingId" :level="headingLevel" :show-separator="showSeparator" :inverted="band?.tint === 'emphasis'" />
       <slot />
     </div>
-  </section>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -25,47 +20,37 @@
  * `py-16 [bg] … container mx-auto max-w-*` markup and none of them rendered a header,
  * which is why pages like MembershipPage had to supply `SectionHeader` separately
  * around the rich-content block instead of the block owning its own title/subtitle.
+ *
+ * Chrome (ground, padding, border) is entirely driven by the `band` prop — resolved by
+ * the caller via `bandLayout.ts`'s `resolveBand`/`resolveBands`, which alternates tints
+ * automatically from document position. This component no longer picks its own colours.
  */
-import { computed } from 'vue';
-
 import SectionHeader from '@/Components/ui/SectionHeader.vue';
 import { latinizeId } from '@/Utils/String';
+import type { BandResolution } from './bandLayout';
 import {
-  BACKGROUND_CLASS, DIVIDER_CLASS, INNER_CLASS, PADDING_CLASS, ROUNDED_CLASS,
-  type SectionBackground, type SectionDivider, type SectionHeadingLevel, type SectionInner,
-  type SectionPadding, type SectionRounded,
+  INNER_CLASS, type SectionHeadingLevel, type SectionInner,
 } from './sectionClasses';
+import { computed } from 'vue';
 
 const props = withDefaults(defineProps<{
   title?: string;
   subtitle?: string;
   /** Brand kicker above the title — forwarded to SectionHeader. */
   eyebrow?: string;
-  background?: SectionBackground;
-  padding?: SectionPadding;
+  /** This block's resolved chrome (see bandLayout.ts). Undefined renders as a plain,
+   *  chrome-free flow block — the same as an explicit `{ isBand: false }`. */
+  band?: BandResolution;
   /** Inner content max-width — independent of the canvas column the block itself sits in. */
   inner?: SectionInner;
   align?: 'center' | 'start';
-  rounded?: SectionRounded;
-  /** Hairline edges separating this band from its neighbours. */
-  divider?: SectionDivider;
-  /**
-   * Break out to the full viewport width. A tinted band that stops at the content measure reads
-   * as a panel; the design's bands run edge to edge. `.rc-viewport` escapes the rc-canvas, the
-   * `.wrapper` grid and PublicLayout's `.container` in one go.
-   */
-  bleed?: boolean;
   /** Semantic heading level for the title — forwarded to SectionHeader. */
   headingLevel?: SectionHeadingLevel;
   /** Whether to render the separator bar beneath the title. */
   showSeparator?: boolean;
 }>(), {
-  background: 'none',
-  padding: 'lg',
   inner: 'wide',
   align: 'center',
-  rounded: 'none',
-  divider: 'none',
   headingLevel: 2,
   showSeparator: true,
 });

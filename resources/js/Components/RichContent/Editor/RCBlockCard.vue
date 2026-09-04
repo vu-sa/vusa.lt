@@ -132,6 +132,7 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { deriveBlockSummary } from './blockSummary';
+import { withWidth } from './blockWidth';
 import RCSideBySideDialog from './RCSideBySideDialog.vue';
 import RCWidthPicker from './RCWidthPicker.vue';
 
@@ -188,9 +189,6 @@ const sectionActive = computed(() =>
 const sectionLevel = computed(() => props.content?.options?.headingLevel ?? 2);
 
 function setWidth(width: BlockWidth) {
-  emit('update:content', {
-    ...props.content,
-    options: { ...(props.content.options ?? {}), width },
-  });
+  emit('update:content', withWidth(props.content, width));
 }
 </script>

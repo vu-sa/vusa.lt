@@ -1,8 +1,7 @@
 <template>
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :background="element.options?.background ?? 'muted'" :padding="element.options?.padding ?? 'lg'"
-    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'center'"
+    :band :align="element.options?.align ?? 'center'"
     :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
@@ -64,10 +63,12 @@ import type { CardStack } from '@/Types/contentParts';
 import RCSection from '../RCSection.vue';
 import RCIcon from '../RCIcon.vue';
 import { asBoolean } from '../booleanish';
+import type { BandResolution } from '../bandLayout';
 
 const { element } = defineProps<{
   element: CardStack;
   anchorId?: number | null;
+  band?: BandResolution;
 }>();
 
 // Card stack state

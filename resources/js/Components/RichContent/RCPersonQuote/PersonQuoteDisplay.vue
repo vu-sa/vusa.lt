@@ -1,8 +1,7 @@
 <template>
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'md'"
-    :rounded="element.options?.rounded ?? 'none'"
+    :band
     inner="content" :align="align"
     :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
     :id="anchorId ? `rc-${anchorId}` : undefined"
@@ -40,11 +39,13 @@ import { computed } from 'vue';
 import RCSection from '../RCSection.vue';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import type { BandResolution } from '../bandLayout';
 
 const props = defineProps<{
   element: models.ContentPart;
   html?: boolean;
   anchorId?: number | null;
+  band?: BandResolution;
 }>();
 
 // `options.align` is authored once, via the shared RCSectionOptions header control

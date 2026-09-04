@@ -1,8 +1,7 @@
 <template>
   <RCSection
     :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'lg'"
-    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'center'"
+    :band :align="element.options?.align ?? 'center'"
     :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
     inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
@@ -56,12 +55,14 @@ import RCFeatureCard from '../RCFeatureCard.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { LocaleEnum } from '@/Types/enums';
 import { smartGridCols } from '../gridStacking';
+import type { BandResolution } from '../bandLayout';
 
 const props = defineProps<{
   element: models.ContentPart;
   html?: boolean;
   anchorId?: number | null;
   resolved?: LinkListResolved | null;
+  band?: BandResolution;
 }>();
 
 const page = usePage();

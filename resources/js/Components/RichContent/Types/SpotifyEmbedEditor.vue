@@ -126,36 +126,12 @@
         </DynamicListInput>
       </Field>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field>
-          <FieldLabel>{{ $t('rich-content.section_background') }}</FieldLabel>
-          <Select :model-value="options?.background ?? 'muted'" @update:model-value="options = { ...options, background: $event }">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">{{ $t('rich-content.section_background_none') }}</SelectItem>
-              <SelectItem value="muted">{{ $t('rich-content.section_background_muted') }}</SelectItem>
-              <SelectItem value="contrast">{{ $t('rich-content.section_background_contrast') }}</SelectItem>
-              <SelectItem value="gradient">{{ $t('rich-content.section_background_gradient') }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field>
-          <FieldLabel>{{ $t('rich-content.section_padding') }}</FieldLabel>
-          <Select :model-value="options?.padding ?? 'lg'" @update:model-value="options = { ...options, padding: $event }">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">{{ $t('rich-content.section_padding_none') }}</SelectItem>
-              <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-              <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-              <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-      </div>
+      <RCPresentationPicker
+        :model-value="options?.presentation"
+        :plain-padding="options?.plainPadding"
+        @update:model-value="options = { ...options, presentation: $event }"
+        @update:plain-padding="options = { ...options, plainPadding: $event }"
+      />
 
       <Field>
         <div class="flex items-center justify-between">
@@ -163,14 +139,6 @@
           <Switch :model-value="options?.textLeft !== false" @update:model-value="options = { ...options, textLeft: $event }" />
         </div>
         <FieldDescription>Kai išjungta, tekstas ir grotuvas sukeičiami vietomis darbalaukyje.</FieldDescription>
-      </Field>
-
-      <Field>
-        <div class="flex items-center justify-between">
-          <FieldLabel class="mb-0">{{ $t('rich-content.section_bleed') }}</FieldLabel>
-          <Switch :model-value="options?.bleed !== false" @update:model-value="options = { ...options, bleed: $event }" />
-        </div>
-        <FieldDescription>{{ $t('rich-content.section_bleed_help') }}</FieldDescription>
       </Field>
     </template>
   </div>
@@ -181,6 +149,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCIconSelect from '../RCIconSelect.vue';
+import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { SpotifyEmbed } from '@/Types/contentParts';

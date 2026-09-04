@@ -17,7 +17,7 @@
     </div>
 
     <!-- Overlay content (like the overlapping text card in hero) -->
-    <div v-if="hasOverlayContent" :class="[
+    <div v-if="hasOverlayContent || forceOverlayContent" :class="[
       'absolute rounded-xl shadow-xl border border-zinc-100 dark:border-zinc-700',
       overlayPositionClass,
       overlaySize,
@@ -25,27 +25,29 @@
         ? ['bg-white/95 dark:bg-zinc-800/95 backdrop-blur-sm', overlayPaddingClass]
         : ['bg-white dark:bg-zinc-800', overlayPaddingClass]
     ]">
-      <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 mb-1 sm:mb-2">
-        <div class="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-vusa-yellow rounded-full" />
-        <span :class="[
-          'font-medium text-zinc-600 dark:text-zinc-400',
+      <slot name="overlay-content">
+        <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3 mb-1 sm:mb-2">
+          <div class="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 bg-vusa-yellow rounded-full" />
+          <span :class="[
+            'font-medium text-zinc-600 dark:text-zinc-400',
+            overlayStyle === 'backdrop' ? 'text-xs' : 'text-xs sm:text-sm'
+          ]">
+            {{ overlayContent?.title }}
+          </span>
+        </div>
+        <p :class="[
+          'text-zinc-500 dark:text-zinc-500',
           overlayStyle === 'backdrop' ? 'text-xs' : 'text-xs sm:text-sm'
         ]">
-          {{ overlayContent.title }}
-        </span>
-      </div>
-      <p :class="[
-        'text-zinc-500 dark:text-zinc-500',
-        overlayStyle === 'backdrop' ? 'text-xs' : 'text-xs sm:text-sm'
-      ]">
-        {{ overlayContent.subtitle }}
-      </p>
+          {{ overlayContent?.subtitle }}
+        </p>
+      </slot>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type Component } from 'vue';
 
 import DecorativeElement from '@/Components/ui/DecorativeElement.vue';
 
@@ -69,7 +71,7 @@ interface Props {
   height?: 'sm' | 'md' | 'lg' | 'xl' | 'custom';
   heightClass?: string; // For custom heights
   decorations?: DecorationConfig[];
-  icon?: any; // Vue component
+  icon?: Component;
   overlayContent?: OverlayContent;
   /**
    * Free-text position classes — kept for back-compat with existing authored content
@@ -91,6 +93,8 @@ interface Props {
   overlayCorner?: OverlayCorner;
   overlayOverhang?: boolean;
   overlayPadding?: 'sm' | 'md' | 'lg';
+  /** Lets an editor render empty overlay fields in their final visual position. */
+  forceOverlayContent?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {

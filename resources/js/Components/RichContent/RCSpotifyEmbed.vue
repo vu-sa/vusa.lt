@@ -1,5 +1,5 @@
 <template>
-  <RCSpotifyPromoDisplay v-if="isPromo" :element :anchor-id="anchorId" />
+  <RCSpotifyPromoDisplay v-if="isPromo" :element :anchor-id="anchorId" :band />
 
   <!-- Single root — a multi-root/fragment component can't auto-inherit the width/spacing
        class RichContentParser passes via :class (no single target to fall through to). -->
@@ -23,10 +23,12 @@ import RCSpotifyPromoDisplay from './RCSpotifyPromoDisplay.vue';
 import { isMixcloudUrl, toSpotifyEmbedUrl } from './embedUrl';
 
 import type { SpotifyEmbed } from '@/Types/contentParts';
+import type { BandResolution } from './bandLayout';
 
 const props = defineProps<{
   element: SpotifyEmbed;
   anchorId?: number | null;
+  band?: BandResolution;
 }>();
 
 const isPromo = computed(() => props.element.options?.variant === 'promo');

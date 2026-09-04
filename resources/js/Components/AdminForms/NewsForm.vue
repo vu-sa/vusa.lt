@@ -115,7 +115,7 @@
       </template>
     </FormElement>
 
-    <RichContentFormElement v-model="form.content.parts" :tenant-id="news?.tenant_id" />
+    <RichContentFormElement v-model="form.content.parts" :tenant-id="news?.tenant_id" @save="$emit('submit:form', form)" />
 
     <!-- Section 4: Highlights (Optional but prominent) -->
     <FormElement :section-number="4" :is-complete="form.highlights.length > 0">

@@ -25,15 +25,6 @@
       </Field>
     </div>
 
-    <Field>
-      <div class="flex items-center justify-between">
-        <FieldLabel class="mb-0">{{ $t('rich-content.section_bleed') }}</FieldLabel>
-        <Switch :model-value="options?.bleed !== false"
-          @update:model-value="options = { ...options, bleed: $event }" />
-      </div>
-      <FieldDescription>{{ $t('rich-content.section_bleed_help') }}</FieldDescription>
-    </Field>
-
     <DynamicListInput
       :model-value="content.items ?? []"
       :create-item
@@ -68,13 +59,11 @@ import RCIconSelect from '../RCIconSelect.vue';
 
 import type { CtaBand } from '@/Types/contentParts';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
-import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
+import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
-import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
 
 const model = defineModel<CtaBand['json_content']>();
-const options = defineModel<CtaBand['options']>('options');
 
 const content = computed(() => model.value ?? {});
 
