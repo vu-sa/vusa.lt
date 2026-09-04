@@ -99,18 +99,11 @@ return [
     'enter_title' => 'Enter title...',
     'variant' => 'Variant',
     'color' => 'Color',
-    'select_color' => 'Select color',
-    'color_title' => 'Color the title',
     'show_icon' => 'Show icon',
     'icon_description' => 'Icon will be shown on the left side',
     'icon_exclamation' => 'exclamation mark',
     'icon_question' => 'question mark',
     'icon_info' => 'info',
-    // Variants
-    'variants' => [
-        'outline' => 'Outline',
-        'soft' => 'Soft',
-    ],
     // Colors
     'colors' => [
         'gray' => 'Gray',
@@ -128,7 +121,6 @@ return [
     'blur_background' => 'Darken and blur background image',
     'button_text' => 'Button text',
     'button_link' => 'Button link',
-    'button_color' => 'Button color',
     'enter_button_text' => 'Enter button text...',
     // Calendar
     'show_all_tenants' => 'Show events from all units',
@@ -254,11 +246,6 @@ return [
     'button_variant' => 'Button variant',
     'default' => 'Default',
     'outline' => 'Outline',
-    'button_color' => 'Button color',
-    'red' => 'Red',
-    'yellow' => 'Yellow',
-    'zinc' => 'Gray',
-    'white' => 'White',
     'overlay_content' => 'Overlay content',
     'overlay_title' => 'Overlay title',
     'overlay_subtitle' => 'Overlay subtitle',
@@ -288,11 +275,6 @@ return [
     'small' => 'Small',
     'medium' => 'Medium',
     'large' => 'Large',
-    'decoration_color' => 'Decoration color',
-    'vusa_red' => 'VU SA red',
-    'vusa_yellow' => 'VU SA yellow',
-    'decoration_opacity' => 'Decoration opacity',
-    'enable_rotation' => 'Enable rotation',
     // Card stack
     'card_stack_options' => 'Card stack options',
     'cards' => 'Cards',
@@ -468,9 +450,6 @@ return [
     'person_quote_attribution' => 'Attribution',
     'enter_attribution' => 'Enter attribution...',
     'person_quote_quote' => 'Quote',
-    'person_quote_align' => 'Alignment',
-    'person_quote_align_start' => 'Left',
-    'person_quote_align_center' => 'Center',
     'person_quote_show_avatar' => 'Show photo and name',
     // Content grid — alignment
     'grid_dividers' => 'Hairline rules',
@@ -481,9 +460,6 @@ return [
     'grid_vertical_align_start' => 'Top',
     'grid_vertical_align_center' => 'Center',
     'grid_vertical_align_end' => 'Bottom',
-    'grid_header_align' => 'Header alignment',
-    'grid_header_align_center' => 'Center',
-    'grid_header_align_start' => 'Left',
     // Section block (standalone)
     'section_wraps' => 'Wraps the following blocks',
     'section_wraps_following' => 'Yes, up to the next section block',

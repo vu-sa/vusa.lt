@@ -109,6 +109,20 @@ export function deriveBlockSummary(part: ContentPart): string {
     }
     case 'section':
       return options?.title ? truncate(options.title) : noTitle();
+    case 'link-list':
+      return options?.title ? truncate(options.title) : '—';
+    case 'event-list':
+      return options?.title ? truncate(options.title) : '—';
+    case 'process-steps': {
+      const steps = Array.isArray(json) ? json : [];
+      if (steps.length === 0) return '—';
+      const rest = steps.length > 1 ? ` (+${steps.length - 1})` : '';
+      return truncate(steps[0]?.title || noTitle()) + rest;
+    }
+    case 'cta-band':
+      return json?.heading ? truncate(json.heading) : '—';
+    case 'person-quote':
+      return json?.snapshot?.name ? truncate(json.snapshot.name) : '—';
     case 'spacer':
       return $t('rich-content.summary_spacer', { size: $t(`rich-content.spacer_size_${options?.size ?? DEFAULT_SPACER_SIZE}`) });
     case 'timetable': {

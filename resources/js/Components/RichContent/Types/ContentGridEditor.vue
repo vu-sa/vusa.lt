@@ -57,17 +57,6 @@
             </SelectContent>
           </Select>
         </FormFieldWrapper>
-        <FormFieldWrapper id="align" :label="$t('rich-content.grid_header_align')">
-          <Select :model-value="options.align ?? 'center'" @update:model-value="options.align = $event">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="center">{{ $t('rich-content.grid_header_align_center') }}</SelectItem>
-              <SelectItem value="start">{{ $t('rich-content.grid_header_align_start') }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
       </div>
 
       <!-- Row management -->

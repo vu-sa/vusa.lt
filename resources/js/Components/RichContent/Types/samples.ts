@@ -53,7 +53,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
   }),
   'shadcn-card': () => ({
     json_content: tiptapDoc(['Svarbi informacija, kurią verta žinoti prieš registruojantis.']),
-    options: { variant: 'outline', color: 'red', title: 'Svarbu', isTitleColored: true },
+    options: { title: 'Svarbu' },
   }),
   'image-grid': () => ({
     json_content: [
@@ -82,7 +82,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
       { endNumber: 1500, label: 'narių', showPlus: true },
       { endNumber: 20, label: 'padalinių' },
     ],
-    options: { title: 'VU SA skaičiais', color: 'zinc' },
+    options: { title: 'VU SA skaičiais' },
   }),
   'text-box': () => ({
     json_content: {},

@@ -50,19 +50,10 @@
       <TiptapEditor v-model="quote" preset="minimal" prose-style />
     </Field>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Field>
-        <FieldLabel>{{ $t('rich-content.person_quote_align') }}</FieldLabel>
-        <ToggleGroup v-model="options.align" type="single" class="justify-start">
-          <ToggleGroupItem value="start">{{ $t('rich-content.person_quote_align_start') }}</ToggleGroupItem>
-          <ToggleGroupItem value="center">{{ $t('rich-content.person_quote_align_center') }}</ToggleGroupItem>
-        </ToggleGroup>
-      </Field>
-      <label class="flex items-center gap-2 pt-6 text-sm">
-        <Checkbox v-model="options.showAvatar" />
-        <span class="text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.person_quote_show_avatar') }}</span>
-      </label>
-    </div>
+    <label class="flex items-center gap-2 text-sm">
+      <Checkbox v-model="options.showAvatar" />
+      <span class="text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.person_quote_show_avatar') }}</span>
+    </label>
   </div>
 </template>
 
@@ -87,7 +78,6 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
-import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 
 const content = defineModel<PersonQuote['json_content']>({ required: true });
 const options = defineModel<PersonQuote['options']>('options', { required: true });

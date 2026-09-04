@@ -12,7 +12,7 @@ const cardElement = {
     type: 'doc',
     content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Hello from card' }] }],
   },
-  options: { title: 'Card title', variant: 'outline', color: 'zinc' },
+  options: { title: 'Card title' },
 } as unknown as models.ContentPart;
 
 const tiptapElement = {

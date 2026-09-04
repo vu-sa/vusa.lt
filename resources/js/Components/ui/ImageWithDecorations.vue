@@ -8,8 +8,7 @@
 
     <!-- Decorative elements -->
     <DecorativeElement v-for="decoration in decorations" :key="`${decoration.type}-${decoration.position}`"
-      :type="decoration.type" :position="decoration.position" :size="decoration.size" :color="decoration.color"
-      :opacity="decoration.opacity" :rotation="decoration.rotation" />
+      :type="decoration.type" :position="decoration.position" :size="decoration.size" />
 
     <!-- Icon overlay -->
     <div v-if="icon"
@@ -54,9 +53,6 @@ interface DecorationConfig {
   type: 'circle' | 'line' | 'square';
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   size: 'sm' | 'md' | 'lg';
-  color?: 'vusa-red' | 'vusa-yellow' | 'zinc';
-  opacity?: number;
-  rotation?: boolean;
 }
 
 interface OverlayContent {

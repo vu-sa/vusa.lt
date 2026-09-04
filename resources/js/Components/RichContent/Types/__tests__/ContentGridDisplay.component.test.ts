@@ -79,7 +79,7 @@ describe('ContentGridDisplay', () => {
                 type: 'image',
                 value: '/a.jpg',
                 alt: 'A',
-                decorations: [{ type: 'line', position: 'top-right', size: 'lg', color: 'vusa-yellow', opacity: 60 }],
+                decorations: [{ type: 'line', position: 'top-right', size: 'lg' }],
               },
             },
           ],

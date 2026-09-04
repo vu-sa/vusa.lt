@@ -73,6 +73,8 @@ export interface ContentGrid {
     equalHeight?: boolean;
     /** Vertical alignment of column content within each row — grid items stretch by default. */
     verticalAlign?: 'stretch' | 'start' | 'center' | 'end';
+    /** Cell rules: each column becomes a panel separated by a 1px rule instead of a gap. */
+    dividers?: boolean;
   };
 }
 
@@ -108,12 +110,7 @@ export interface ShadcnAccordion {
 export interface ShadcnCard {
   json_content: Tiptap['json_content'];
   options: {
-    color?: 'zinc' | 'red' | 'yellow';
-    variant?: 'outline' | 'soft';
     title?: string;
-    isTitleColored?: boolean;
-    /** @deprecated Cards no longer render an icon — ignored on display. Optional so old rows keep validating. */
-    showIcon?: boolean;
   };
 }
 
@@ -167,9 +164,6 @@ export interface DecorationConfig {
   type: 'circle' | 'line' | 'square';
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   size: 'sm' | 'md' | 'lg';
-  color?: 'vusa-red' | 'vusa-yellow' | 'zinc';
-  opacity?: number;
-  rotation?: boolean;
 }
 
 export interface SpotifyEmbed {
@@ -261,9 +255,7 @@ export interface NumberStatSection {
     label: string;
     showPlus?: boolean;
   }[];
-  options: SectionOptions & {
-    color?: 'zinc' | 'red' | 'yellow';
-  };
+  options: SectionOptions;
 }
 
 // Now implemented

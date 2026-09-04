@@ -252,6 +252,7 @@ describe('HeroCarouselEditor', () => {
     await findButtonByText(wrapper, 'add_first_button').trigger('click');
     const emitted = wrapper.emitted('update:modelValue')?.at(-1)?.[0] as HeroCarousel['json_content'];
     expect(emitted[0]!.buttons).toHaveLength(1);
-    expect(emitted[0]!.buttons![0]).toMatchObject({ variant: 'default', color: 'red' });
+    expect(emitted[0]!.buttons![0]).toMatchObject({ variant: 'default' });
+    expect(emitted[0]!.buttons![0]).not.toHaveProperty('color');
   });
 });

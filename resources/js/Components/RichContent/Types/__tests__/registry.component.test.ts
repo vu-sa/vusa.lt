@@ -54,7 +54,7 @@ describe('contentTypeRegistry', () => {
     const item = createContentItem('shadcn-card');
     expect(item.type).toBe('shadcn-card');
     expect(item.json_content).toEqual({});
-    expect(item.options).toMatchObject({ variant: 'outline', color: 'zinc' });
+    expect(item.options).toMatchObject({ title: '' });
   });
 
   it('getSkeletonForType falls back to a generic skeleton for types without one', () => {

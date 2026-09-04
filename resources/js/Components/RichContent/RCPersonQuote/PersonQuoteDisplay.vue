@@ -47,6 +47,11 @@ const props = defineProps<{
   anchorId?: number | null;
 }>();
 
+// `options.align` is authored once, via the shared RCSectionOptions header control
+// (PersonQuoteEditor has no align control of its own) — it drives both the section
+// header's alignment above and this figure's own alignment below, which is coherent
+// (a centered header sits over a centered quote) but worth flagging as one key doing
+// two jobs.
 const align = computed<'start' | 'center'>(() => (props.element.options?.align === 'start' ? 'start' : 'center'));
 const showAvatar = computed(() => props.element.options?.showAvatar !== false);
 const snapshot = computed(() => props.element.json_content?.snapshot as { name?: string; photoUrl?: string; attribution?: string } | undefined);

@@ -99,18 +99,11 @@ return [
     'enter_title' => 'Įveskite pavadinimą...',
     'variant' => 'Variantas',
     'color' => 'Spalva',
-    'select_color' => 'Pasirinkite spalvą',
-    'color_title' => 'Spalvinti pavadinimą',
     'show_icon' => 'Rodyti ikoną',
     'icon_description' => 'Ikona bus rodoma kairėje pusėje',
     'icon_exclamation' => 'šauktukas',
     'icon_question' => 'klaustukas',
     'icon_info' => 'informacija',
-    // Variants
-    'variants' => [
-        'outline' => 'Kontūrinis',
-        'soft' => 'Minkštas',
-    ],
     // Colors
     'colors' => [
         'gray' => 'Pilka',
@@ -128,7 +121,6 @@ return [
     'blur_background' => 'Tamsinti ir sulieti foninę nuotrauką',
     'button_text' => 'Mygtuko tekstas',
     'button_link' => 'Mygtuko nuoroda',
-    'button_color' => 'Mygtuko spalva',
     'enter_button_text' => 'Įveskite mygtuko tekstą...',
     // Calendar
     'show_all_tenants' => 'Rodyti visų padalinių renginius',
@@ -265,11 +257,6 @@ return [
     'button_variant' => 'Mygtuko variantas',
     'default' => 'Numatytasis',
     'outline' => 'Kontūrinis',
-    'button_color' => 'Mygtuko spalva',
-    'red' => 'Raudona',
-    'yellow' => 'Geltona',
-    'zinc' => 'Pilka',
-    'white' => 'Balta',
     'overlay_content' => 'Antvivo turinys',
     'overlay_title' => 'Antvivo pavadinimas',
     'overlay_subtitle' => 'Antvivo paantraštė',
@@ -299,11 +286,6 @@ return [
     'small' => 'Mažas',
     'medium' => 'Vidutinis',
     'large' => 'Didelis',
-    'decoration_color' => 'Dekoracijos spalva',
-    'vusa_red' => 'VU SA raudona',
-    'vusa_yellow' => 'VU SA geltona',
-    'decoration_opacity' => 'Dekoracijos skaidrumas',
-    'enable_rotation' => 'Įjungti sukimą',
     // Card stack
     'card_stack_options' => 'Kortelių krūvos nustatymai',
     'cards' => 'Kortelės',
@@ -479,9 +461,6 @@ return [
     'person_quote_attribution' => 'Pareigos',
     'enter_attribution' => 'Įveskite pareigas...',
     'person_quote_quote' => 'Citata',
-    'person_quote_align' => 'Lygiuotė',
-    'person_quote_align_start' => 'Kairėje',
-    'person_quote_align_center' => 'Centre',
     'person_quote_show_avatar' => 'Rodyti nuotrauką ir vardą',
     // Content grid — alignment
     'grid_dividers' => 'Skiriamosios linijos',
@@ -492,9 +471,6 @@ return [
     'grid_vertical_align_start' => 'Viršuje',
     'grid_vertical_align_center' => 'Centre',
     'grid_vertical_align_end' => 'Apačioje',
-    'grid_header_align' => 'Antraštės lygiuotė',
-    'grid_header_align_center' => 'Centre',
-    'grid_header_align_start' => 'Kairėje',
     // Section block (standalone)
     'section_wraps' => 'Apima sekančius blokus',
     'section_wraps_following' => 'Taip, iki kito sekcijos bloko',

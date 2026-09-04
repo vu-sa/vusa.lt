@@ -86,6 +86,29 @@ describe('deriveBlockSummary', () => {
     expect(deriveBlockSummary(part('card-stack', cards))).toBe('Studijos');
   });
 
+  it('reads link-list/event-list title from options', () => {
+    expect(deriveBlockSummary(part('link-list', {}, { title: 'Naujausi įrašai' }))).toBe('Naujausi įrašai');
+    expect(deriveBlockSummary(part('link-list', {}))).toBe('—');
+    expect(deriveBlockSummary(part('event-list', {}, { title: 'Artėjantys renginiai' }))).toBe('Artėjantys renginiai');
+    expect(deriveBlockSummary(part('event-list', {}))).toBe('—');
+  });
+
+  it('shows process-steps first title plus remaining count', () => {
+    const steps = [{ title: 'Užpildyk anketą' }, { title: 'Palauk atsakymo' }];
+    expect(deriveBlockSummary(part('process-steps', steps))).toBe('Užpildyk anketą (+1)');
+    expect(deriveBlockSummary(part('process-steps', []))).toBe('—');
+  });
+
+  it('reads cta-band heading from json_content', () => {
+    expect(deriveBlockSummary(part('cta-band', { heading: 'Prisijunk dabar' }))).toBe('Prisijunk dabar');
+    expect(deriveBlockSummary(part('cta-band', {}))).toBe('—');
+  });
+
+  it('reads person-quote name from the snapshot', () => {
+    expect(deriveBlockSummary(part('person-quote', { snapshot: { name: 'Jonas Jonaitis' } }))).toBe('Jonas Jonaitis');
+    expect(deriveBlockSummary(part('person-quote', { snapshot: { name: '' } }))).toBe('—');
+  });
+
   it('returns a dash for an unknown type instead of throwing', () => {
     expect(deriveBlockSummary(part('does-not-exist', {}))).toBe('—');
   });
