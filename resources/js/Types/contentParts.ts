@@ -175,8 +175,38 @@ export interface DecorationConfig {
 export interface SpotifyEmbed {
   json_content: {
     url: string;
+    /** `promo` variant only — small boxed kicker beside a headphones icon, e.g. "START FM 94.2". */
+    eyebrow?: string;
+    /** `promo` variant only. */
+    title?: string;
+    /** `promo` variant only. Tiptap doc — richer than a plain description string, so more than
+     *  one paragraph fits beside the embed. */
+    body?: Tiptap['json_content'];
+    /** `promo` variant only. */
+    buttons?: Hero['json_content']['buttons'];
+    /** `promo` variant only. Small label above the embed, e.g. "Naujausias epizodas". */
+    panelLabel?: string;
+    /** `promo` variant only. Optional background photo behind the embed panel's ink scrim. */
+    panelImage?: string;
   };
-  options: null;
+  options: {
+    /** `inline` (default): a plain bordered embed dropped into prose — unchanged original
+     *  behaviour. `promo`: the START FM-style two-column section, text + buttons beside the
+     *  embed, for a standalone promotional block rather than a mid-article link. */
+    variant?: 'inline' | 'promo';
+    /** `promo` only. Text column on the left, embed panel on the right (default) — or swapped. */
+    textLeft?: boolean;
+    /** `promo` only. */
+    background?: 'none' | 'muted' | 'contrast' | 'gradient';
+    padding?: 'none' | 'sm' | 'md' | 'lg';
+    /**
+     * `promo` only. Break out to the full viewport width with a top/bottom rule and a tinted
+     * ground — the same "new section" treatment `EventCalendarElement` uses to read as its own
+     * band against the page, rather than blending in like `NewsElement`'s plain transparent one.
+     * Defaults to true so switching to `promo` reads as a section immediately.
+     */
+    bleed?: boolean;
+  } | null;
 }
 
 export interface SocialEmbed {

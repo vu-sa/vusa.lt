@@ -313,11 +313,20 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     value: 'spotify-embed',
     label: 'Spotify / Mixcloud',
     icon: SpotifyIcon,
-    description: 'Spotify grojaraščio ar Mixcloud įrašo įterpimas',
+    description: 'Spotify grojaraščio ar Mixcloud įrašo įterpimas, arba pilna reklaminė sekcija su grotuvu',
     category: 'embed',
+    // `prose` stays the default — the common case is still a link dropped mid-article, and
+    // every embed already saved has no `options.width` of its own so must keep resolving here.
+    // `promo` (see SpotifyEmbedEditor/RCSpotifyEmbed) additionally offers wide/full so the
+    // two-column section isn't stuck at the reading measure.
     defaultWidth: 'prose',
-    allowedWidths: ['prose', 'content'],
+    allowedWidths: ['prose', 'content', 'wide', 'full'],
+    // Self-spaced for both variants: `promo` paints its own vertical rhythm, and `inline`
+    // already carries its own `my-8` on the embed frame, so the canvas's flow margin on top of
+    // that was only ever double-spacing it.
+    selfSpaced: true,
     defaultContent: () => ({ url: '' }),
+    defaultOptions: () => ({ variant: 'inline' }),
     editor: defineAsyncComponent(() => import('./SpotifyEmbedEditor.vue')),
     display: defineAsyncComponent(() => import('../RCSpotifyEmbed.vue')),
   },

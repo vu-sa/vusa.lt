@@ -372,6 +372,8 @@ return [
     'chevron_down' => 'Chevron down',
     'chevron_right' => 'Chevron right',
     'arrow_right' => 'Arrow right',
+    'play' => 'Play',
+    'rss' => 'RSS',
     'no_icon' => 'No icon',
     // Collapsed block summaries
     'summary_no_title' => '(untitled)',

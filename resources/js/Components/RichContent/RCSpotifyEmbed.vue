@@ -1,7 +1,9 @@
 <template>
+  <RCSpotifyPromoDisplay v-if="isPromo" :element :anchor-id="anchorId" />
+
   <!-- Single root — a multi-root/fragment component can't auto-inherit the width/spacing
        class RichContentParser passes via :class (no single target to fall through to). -->
-  <div>
+  <div v-else>
     <RCMixcloudEmbed v-if="isMixcloud" :element />
     <!-- Hairline frame, square corners: an embed is still a block on this surface, so it is
          ruled off like every other one rather than floating as a rounded card. -->
@@ -17,48 +19,21 @@ import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
 
 import RCMixcloudEmbed from './RCMixcloudEmbed.vue';
+import RCSpotifyPromoDisplay from './RCSpotifyPromoDisplay.vue';
+import { isMixcloudUrl, toSpotifyEmbedUrl } from './embedUrl';
 
 import type { SpotifyEmbed } from '@/Types/contentParts';
 
 const props = defineProps<{
   element: SpotifyEmbed;
+  anchorId?: number | null;
 }>();
 
-const isMixcloud = computed(() => {
-  const { url } = props.element.json_content;
+const isPromo = computed(() => props.element.options?.variant === 'promo');
 
-  try {
-    const parsedUrl = new URL(url, window.location.origin);
-    const host = parsedUrl.hostname.toLowerCase();
-
-    return host === 'mixcloud.com'
-      || host === 'www.mixcloud.com'
-      || host === 'player-widget.mixcloud.com';
-  }
-  catch {
-    return false;
-  }
-});
+const isMixcloud = computed(() => isMixcloudUrl(props.element.json_content.url));
 
 const isDark = useDark();
 
-const embedUrl = computed(() => {
-  const { url } = props.element.json_content;
-
-  // Only append theme param for Spotify URLs
-  const isSpotify = /^https?:\/\/(open\.)?spotify\.com\//.test(url);
-  if (!isSpotify) {
-    return url;
-  }
-
-  try {
-    const parsedUrl = new URL(url, window.location.origin);
-    parsedUrl.searchParams.set('theme', isDark.value ? '0' : '1');
-    return parsedUrl.toString();
-  }
-  catch {
-    const themeParam = `theme=${isDark.value ? '0' : '1'}`;
-    return url.includes('?') ? `${url}&${themeParam}` : `${url}?${themeParam}`;
-  }
-});
+const embedUrl = computed(() => toSpotifyEmbedUrl(props.element.json_content.url, isDark.value));
 </script>

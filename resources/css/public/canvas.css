@@ -132,6 +132,18 @@
   margin-block-start: 0;
 }
 
+/* Two "band" blocks back to back (event calendar, CTA band, the spotify-embed promo variant —
+   anything that paints its own full-bleed `border-y`) sit with zero gap between them (the
+   `.rc-flush` rule above), so each side's 1px rule stacks directly on the other's and reads as
+   one doubled/thickened line at the seam. Authors mark a band's bordered root `.rc-band`; this
+   drops the second band's top rule whenever it directly follows another one, so the shared seam
+   is a single hairline regardless of which two band types happen to be adjacent or which order
+   they're in. `:has()` reaches through RichContentBlock's per-block wrapper div, so it doesn't
+   matter that the two `.rc-band` sections are never actually DOM siblings themselves. */
+.rc-canvas>*:has(>.rc-band)+*:has(>.rc-band)>.rc-band {
+  border-top: 0;
+}
+
 /* The canvas is self-contained (works with no `.wrapper` ancestor at all — e.g. in an
    editor preview) but still wants the full page measure whenever it does happen to sit
    inside one of the page wrapper grids, without every page having to remember to also

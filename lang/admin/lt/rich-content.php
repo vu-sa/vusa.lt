@@ -383,6 +383,8 @@ return [
     'chevron_down' => 'Rodyklė žemyn',
     'chevron_right' => 'Rodyklė dešinėn',
     'arrow_right' => 'Rodyklė į dešinę',
+    'play' => 'Leisti',
+    'rss' => 'RSS',
     'no_icon' => 'Be ikonos',
     // Collapsed block summaries
     'summary_no_title' => '(be pavadinimo)',

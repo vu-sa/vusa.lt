@@ -5,7 +5,7 @@
     escapes PublicLayout's `.container` column so the tint actually reaches the viewport edges
     (see app.css); without it the band stopped short of them while the hero above did not.
   -->
-  <section class="rc-viewport border-y border-border bg-secondary/40">
+  <section class="rc-band rc-viewport border-y border-border bg-secondary/40">
     <div class="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-24">
       <div class="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
         <div>

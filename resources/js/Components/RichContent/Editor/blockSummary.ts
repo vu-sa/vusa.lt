@@ -73,6 +73,10 @@ export function deriveBlockSummary(part: ContentPart): string {
     case 'calendar':
       return json?.title ? truncate(json.title) : '—';
     case 'spotify-embed':
+      // `promo` variant carries a title worth showing over the bare hostname every plain
+      // embed falls back to.
+      if (options?.variant === 'promo' && json?.title) return truncate(json.title);
+      return json?.url ? hostnameOf(json.url) : '—';
     case 'social-embed':
       return json?.url ? hostnameOf(json.url) : '—';
     case 'flow-graph':

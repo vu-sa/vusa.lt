@@ -4,7 +4,7 @@
   <section
     :class="[
       'relative scroll-mt-32 border-y border-brand-fill bg-brand-fill text-brand-foreground',
-      bleed && 'rc-viewport',
+      bleed && 'rc-band rc-viewport',
     ]"
     :id="anchorId ? `rc-${anchorId}` : undefined"
   >
