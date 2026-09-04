@@ -10,22 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * Handles Pickup tasks with progress tracking for reservation resources.
- *
- * Pickup tasks are created when a reservation resource is approved and track
- * the progress of picking up multiple resources. They auto-complete when all
- * resources have been picked up (state changed to Lent).
- */
 class PickupTaskHandler extends BaseTaskHandler
 {
     /**
-     * Find or create a pickup task with progress tracking.
-     *
-     * If a task already exists for the model, increments the total items count.
-     *
-     * @param  Model  $model  The reservation model
-     * @param  Collection<int, User>  $users  Users assigned to the task
+     * @param  Collection<int, User>  $users
      */
     public function findOrCreate(
         string $name,
@@ -51,11 +39,6 @@ class PickupTaskHandler extends BaseTaskHandler
         return $this->create($data);
     }
 
-    /**
-     * Increment progress when a resource is picked up.
-     *
-     * @return bool True if task was completed (all items picked up)
-     */
     public function incrementProgress(Task $task, string $resourceName): bool
     {
         $completed = $task->incrementProgress();
@@ -71,8 +54,6 @@ class PickupTaskHandler extends BaseTaskHandler
     }
 
     /**
-     * Increment progress for a reservation's pickup task.
-     *
      * @param  Model  $reservation
      */
     public function incrementProgressForModel($reservation, string $resourceName): bool
@@ -86,9 +67,6 @@ class PickupTaskHandler extends BaseTaskHandler
         return $this->incrementProgress($task, $resourceName);
     }
 
-    /**
-     * Find an existing incomplete pickup task for the model.
-     */
     public function findExistingTask(Model $model): ?Task
     {
         return Task::query()
@@ -100,16 +78,12 @@ class PickupTaskHandler extends BaseTaskHandler
             ->first();
     }
 
-    /**
-     * Increment total items and update due date if needed.
-     */
     protected function incrementTotalItems(Task $task, ?string $dueDate): Task
     {
         $metadata = $task->metadata ?? ['items_total' => 0, 'items_completed' => 0];
         $metadata['items_total'] = ($metadata['items_total'] ?? 0) + 1;
         $task->metadata = $metadata;
 
-        // Update due date if provided date is later
         if ($dueDate) {
             $parsedDueDate = Carbon::parse($dueDate);
             if (! $task->due_date || $parsedDueDate->greaterThan($task->due_date)) {
