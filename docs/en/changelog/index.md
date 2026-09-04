@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.42 — Mobile browser colours (2026-09-04) {#v1-42}
+
+- 🔧 **The phone’s top bar changes colour immediately** — switching between light and dark mode now immediately updates the area around the phone’s front camera to match the page
+
 ## v1.41 — Public-site navigation (2026-09-04) {#v1-41}
 
 - ✨ **“Mano VU SA” is now a clear navigation button** — the account link in the second menu row now matches the site controls, with a clear account icon instead of a profile photo

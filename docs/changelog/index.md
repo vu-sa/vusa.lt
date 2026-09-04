@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.42 — Mobiliojo naršymo spalvos (2026-09-04) {#v1-42}
+
+- 🔧 **Telefono viršutinė juosta keičia spalvą iš karto** — perjungus šviesų ar tamsų režimą, spalva aplink priekinę telefono kamerą dabar iš karto dera prie puslapio
+
 ## v1.41 — Viešos svetainės navigacija (2026-09-04) {#v1-41}
 
 - ✨ **„Mano VU SA“ tapo aiškiu navigacijos mygtuku** — paskyros nuoroda antroje meniu juostoje dabar dera prie kitų svetainės valdiklių, o vietoje profilio nuotraukos naudojama aiški paskyros piktograma

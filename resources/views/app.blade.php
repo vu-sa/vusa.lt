@@ -54,8 +54,7 @@
     @endif
 
 
-    <meta name="theme-color" content="#252528" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta id="theme-color" name="theme-color" content="#ffffff" />
 
     @include('meta-icons')
 
@@ -81,6 +80,8 @@
             if (isDark) {
                 document.documentElement.classList.add('dark');
             }
+
+            document.getElementById('theme-color').content = isDark ? '#252528' : '#ffffff';
 
             // Remove initialization class to allow normal operation
             document.documentElement.classList.remove('dark-mode-init');
