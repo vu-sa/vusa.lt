@@ -149,6 +149,8 @@
      otherwise fall back to the default sans instead of Atkinson. --}}
 <body class="antialiased @if (str_starts_with($page['component'] ?? '', 'Public/')) font-public bg-background text-foreground @else font-sans bg-zinc-50 dark:bg-zinc-900 @endif" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
     @inertia
+
+    @include('turtle-loader')
 </body>
 
 </html>

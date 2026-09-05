@@ -1,0 +1,199 @@
+/* ==================================================================================
+   Page-transition loader — the turtle
+   ==================================================================================
+
+   Replaces NProgress's corner spinner (`showSpinner: false` in admin.ts / public.ts) with the
+   VU SR mascot. No JavaScript of its own: Inertia's progress component puts `nprogress-busy` on
+   <html> once its 250 ms delay has elapsed and removes it when the bar finishes, which is the
+   only signal this needs. Markup: resources/views/turtle-loader.blade.php.
+   ================================================================================== */
+
+.turtle-loader {
+  position: fixed;
+  top: 11px;
+  right: 13px;
+  /* Same layer NProgress uses for its own bar and spinner. */
+  z-index: 1031;
+  pointer-events: none;
+  color: var(--brand);
+  visibility: hidden;
+  opacity: 0;
+  /* Enters and leaves by walking in from the edge it is pinned to, rather than fading in place. */
+  transform: translateX(20px);
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease,
+    visibility 0s linear 260ms;
+}
+
+html.nprogress-busy .turtle-loader {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition-delay: 0s;
+}
+
+.turtle-loader__svg {
+  display: block;
+  width: 36px;
+  height: 20.8px;
+}
+
+/* The drawing has exactly one tone besides the body: a tint of the page ground. Solid at this
+   size reads as a slash cut through the shell — or, for the eye, as a blank socket. */
+.turtle-loader__scutes {
+  stroke: var(--background);
+  opacity: 0.45;
+}
+
+.turtle-loader__eye {
+  fill: var(--background);
+  opacity: 0.55;
+}
+
+.turtle-loader__shadow {
+  opacity: 0.16;
+}
+
+.turtle-loader__leg--far-front,
+.turtle-loader__leg--far-hind {
+  opacity: 0.55;
+}
+
+/* --- Gait ---------------------------------------------------------------------------------
+   A diagonal walk: each leg swings about its hip, the two diagonal pairs half a cycle apart.
+   `transform-box: view-box` is what makes the pixel transform-origins below read as viewBox
+   user units rather than each group's own bounding box. */
+
+.turtle-loader__leg,
+.turtle-loader__body,
+.turtle-loader__head,
+.turtle-loader__shadow {
+  transform-box: view-box;
+}
+
+.turtle-loader__leg {
+  animation: turtle-step 1.4s ease-in-out infinite;
+}
+
+.turtle-loader__leg--front {
+  transform-origin: 23.25px 27.5px;
+}
+
+.turtle-loader__leg--far-hind {
+  transform-origin: 42.75px 28px;
+}
+
+.turtle-loader__leg--hind {
+  transform-origin: 47px 27.5px;
+  animation-delay: -0.7s;
+}
+
+.turtle-loader__leg--far-front {
+  transform-origin: 26.75px 28px;
+  animation-delay: -0.7s;
+}
+
+/* Two rises per gait cycle — one per diagonal pair — so the shell lifts with each step. */
+.turtle-loader__body {
+  animation: turtle-bob 1.4s ease-in-out infinite;
+}
+
+.turtle-loader__head {
+  transform-origin: 22px 23.5px;
+  animation: turtle-crane 1.4s ease-in-out infinite;
+}
+
+.turtle-loader__shadow {
+  transform-origin: 35px 35.4px;
+  animation: turtle-shadow 1.4s ease-in-out infinite;
+}
+
+@keyframes turtle-step {
+  0%,
+  100% {
+    transform: rotate(11deg);
+  }
+
+  50% {
+    transform: rotate(-11deg);
+  }
+}
+
+@keyframes turtle-bob {
+  0%,
+  50%,
+  100% {
+    transform: translateY(0);
+  }
+
+  25%,
+  75% {
+    transform: translateY(-1.1px);
+  }
+}
+
+@keyframes turtle-crane {
+  0%,
+  100% {
+    transform: rotate(2.5deg);
+  }
+
+  50% {
+    transform: rotate(-2.5deg);
+  }
+}
+
+@keyframes turtle-shadow {
+  0%,
+  50%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.16;
+  }
+
+  25%,
+  75% {
+    transform: scaleX(0.93);
+    opacity: 0.1;
+  }
+}
+
+/* The walk is the whole point, so there is nothing to keep once motion is off — fall back to a
+   fade, which carries no vestibular risk. */
+@media (prefers-reduced-motion: reduce) {
+  .turtle-loader__leg,
+  .turtle-loader__body,
+  .turtle-loader__head,
+  .turtle-loader__shadow {
+    animation: none;
+  }
+
+  .turtle-loader__svg {
+    animation: turtle-rest 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes turtle-rest {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* NProgress's colour is baked into the stylesheet it injects at boot, so it cannot follow a
+   theme toggle. Re-point the bar at --brand so it matches the turtle in both themes; the
+   `html` prefix is only there to outweigh the injected `#nprogress .bar`. */
+html #nprogress .bar {
+  background: var(--brand);
+}
+
+html #nprogress .peg {
+  box-shadow:
+    0 0 10px var(--brand),
+    0 0 5px var(--brand);
+}

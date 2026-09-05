@@ -90,13 +90,15 @@ createInertiaApp({
     // appear during navigation, in milliseconds.
     delay: 250,
 
-    // The color of the progress bar.
+    // Fallback colour only: turtle-loader.css re-points the bar at --brand, which the value
+    // injected here cannot do (it is baked in at boot and never follows a theme toggle).
     color: '#fbb01b',
 
     // Whether to include the default NProgress styles.
     includeCSS: true,
 
-    // Whether the NProgress spinner will be shown.
-    showSpinner: true,
+    // The corner spinner is our own walking turtle instead — see
+    // resources/views/turtle-loader.blade.php.
+    showSpinner: false,
   },
 });
