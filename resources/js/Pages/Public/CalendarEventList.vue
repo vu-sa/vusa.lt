@@ -1,373 +1,537 @@
 <template>
-  <div class="px-4 py-12 lg:px-8">
-    <!-- Header section -->
-    <header class="mb-8 border-b border-zinc-200 pb-6 dark:border-zinc-700">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-zinc-900 dark:text-white">
-            {{ $t("Visų renginių sąrašas") }}
-          </h1>
-          <p class="mt-2 max-w-3xl text-zinc-600 dark:text-zinc-400">
-            {{ $t("Vilniaus universiteto Studentų atstovybės ir studentų (-čių) bendruomenės renginių sąrašas") }}.
+  <div class="calendar-list-page">
+    <!-- Page Title Band per v0 redesign -->
+    <PageTitleBand
+      :eyebrow="$t('Renginių kalendorius')"
+      :title="$t('Renginiai')"
+      :lead="$t('Sek visus VU studentų renginius bei įvykius – nuo koncertų iki atstovavimo iniciatyvų.')"
+    >
+      <template #breadcrumbs>
+        <PublicBreadcrumbs variant="inline" />
+      </template>
+
+      <template #actions>
+        <Button
+          variant="brand-outline"
+          size="public"
+          @click="showModal = true"
+        >
+          <IFluentArrowSync20Regular class="size-4" />
+          <span>{{ $t('Sinchronizuoti') }}</span>
+        </Button>
+      </template>
+    </PageTitleBand>
+
+    <!-- Main Content -->
+    <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <!-- Tabs + Search + Filter Controls -->
+      <div class="space-y-4">
+        <!-- Top row: Tabs on left + Year selector in the same row, count on right -->
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <!-- Left side: Date tabs -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="inline-flex h-10 border border-border bg-background p-0.5">
+              <button
+                type="button"
+                :class="[
+                  'h-full px-4 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center',
+                  tab === 'upcoming'
+                    ? 'bg-brand-fill text-brand-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                ]"
+                @click="setTab('upcoming')"
+              >
+                {{ $t('Būsimi') }}
+              </button>
+              <button
+                type="button"
+                :class="[
+                  'h-full px-4 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center',
+                  tab === 'past'
+                    ? 'bg-brand-fill text-brand-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                ]"
+                @click="setTab('past')"
+              >
+                {{ $t('Praėję') }}
+              </button>
+              <button
+                type="button"
+                :class="[
+                  'h-full px-4 text-xs font-bold uppercase tracking-wide transition-colors flex items-center justify-center',
+                  tab === 'all'
+                    ? 'bg-brand-fill text-brand-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                ]"
+                @click="setTab('all')"
+              >
+                {{ $t('Visi') }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Total count indicator on desktop -->
+          <div class="hidden text-xs font-mono uppercase tracking-wider text-muted-foreground sm:block">
+            <template v-if="!isLoading">
+              {{ $t('Rasta :count renginių', { count: totalHits }) }}
+            </template>
+          </div>
+        </div>
+
+        <!-- Search Bar and Filters Button in the same row on desktop -->
+        <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+          <!-- Search Input -->
+          <div class="relative min-w-0 flex-1">
+            <IFluentSearch16Regular class="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <input
+              v-model="query"
+              type="text"
+              :placeholder="`${$t('Ieškoti pagal pavadinimą')}...`"
+              :class="[
+                'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
+                'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
+              ]"
+            >
+            <button
+              v-if="query"
+              type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              @click="query = ''"
+            >
+              <IFluentDismiss16Regular class="size-3.5" />
+              <span class="sr-only">{{ $t('Išvalyti') }}</span>
+            </button>
+          </div>
+
+          <!-- Filter Button (opens filter popovers row) -->
+          <button
+            type="button"
+            :class="[
+              'inline-flex h-11 items-center justify-center gap-2 border px-5 text-xs font-bold uppercase tracking-wide transition-colors shrink-0',
+              showFilterBar || activeFilterCount > 0
+                ? 'border-brand text-brand bg-brand/5 hover:bg-brand/10'
+                : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
+            ]"
+            @click="showFilterBar = !showFilterBar"
+          >
+            <IFluentFilter20Regular class="size-4" />
+            <span>{{ $t('Filtrai') }}</span>
+            <span
+              v-if="activeFilterCount > 0"
+              class="flex size-4 items-center justify-center bg-brand-fill text-brand-foreground text-[0.625rem] font-mono leading-none"
+            >
+              {{ activeFilterCount }}
+            </span>
+            <IFluentChevronDown16Regular
+              class="size-3.5 transition-transform duration-200"
+              :class="{ 'rotate-180': showFilterBar }"
+            />
+          </button>
+
+          <Popover v-model:open="isSortPopoverOpen">
+            <PopoverTrigger as-child>
+              <button
+                type="button"
+                :class="[
+                  'inline-flex h-11 shrink-0 items-center justify-between gap-2 border px-3.5 text-xs font-bold uppercase tracking-wide transition-colors',
+                  sortBy !== 'relevance'
+                    ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
+                    : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
+                ]"
+                :aria-label="$t('Rikiuoti')"
+              >
+                <IFluentArrowSort24Regular class="size-3.5" />
+                <span>{{ $t('Rikiuoti') }}</span>
+                <IFluentChevronDown16Regular
+                  class="size-3.5 transition-transform duration-200"
+                  :class="{ 'rotate-180': isSortPopoverOpen }"
+                />
+              </button>
+            </PopoverTrigger>
+
+            <PopoverContent
+              align="end"
+              class="z-50 w-64 border border-border bg-popover p-0 text-popover-foreground shadow-lg"
+            >
+              <div class="border-b border-border px-3.5 py-2.5 text-xs font-bold uppercase tracking-wider text-foreground">
+                {{ $t('Rikiuoti pagal') }}
+              </div>
+              <div class="divide-y divide-border/40">
+                <button
+                  v-for="option in sortOptions"
+                  :key="option.value"
+                  type="button"
+                  role="radio"
+                  :aria-checked="sortBy === option.value"
+                  :class="[
+                    'flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm font-medium',
+                    'text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+                  ]"
+                  @click="selectSort(option.value)"
+                >
+                  <span>{{ option.label }}</span>
+                  <IFluentCheckmark16Filled
+                    v-if="sortBy === option.value"
+                    class="size-4 text-brand"
+                  />
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <!-- Filter Popovers Bar (toggled by the filter button) -->
+        <div
+          v-show="showFilterBar"
+          class="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3"
+        >
+          <!-- Year Filter Popover -->
+          <CalendarFilterPopover
+            :label="$t('Metai')"
+            :options="yearOptions"
+            :selected="selectedYears"
+            searchable
+            :search-placeholder="`${$t('Ieškoti metų')}...`"
+            trigger-class="h-9 px-3"
+            @toggle="toggleYear"
+            @clear="selectedYears = []"
+          />
+
+          <!-- Category Filter Popover -->
+          <CalendarFilterPopover
+            :label="$t('Kategorija')"
+            :options="categoryOptions"
+            :selected="selectedCategories"
+            trigger-class="h-9 px-3"
+            @toggle="toggleCategory"
+            @clear="selectedCategories = []"
+          />
+
+          <!-- Tenant/Padalinys Filter Popover -->
+          <CalendarFilterPopover
+            :label="$t('Padalinys')"
+            :options="tenantOptions"
+            :selected="selectedTenants"
+            searchable
+            :search-placeholder="`${$t('Ieškoti padalinio')}...`"
+            trigger-class="h-9 px-3"
+            @toggle="toggleTenant"
+            @clear="selectedTenants = []"
+          />
+
+          <!-- Remote Events Toggle -->
+          <button
+            type="button"
+            :class="[
+              'inline-flex h-9 items-center gap-2 border px-3 text-xs font-bold uppercase tracking-wide transition-colors',
+              isRemoteOnly
+                ? 'border-brand text-brand bg-brand/5 hover:bg-brand/10'
+                : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
+            ]"
+            @click="toggleRemote"
+          >
+            <IFluentGlobe20Regular class="size-3.5" />
+            <span>{{ $t('Tik nuotoliniai') }}</span>
+          </button>
+        </div>
+
+        <!-- Active Filter Chips -->
+        <div v-if="hasActiveFilters" class="flex flex-wrap items-center gap-2 pt-1">
+          <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-1">
+            {{ $t('Aktyvūs filtrai') }}:
+          </span>
+
+          <!-- Search term chip -->
+          <TagChip
+            v-if="query.trim()"
+            variant="muted"
+            removable
+            class="normal-case font-medium text-xs tracking-normal bg-background text-foreground"
+            :label="`&quot;${query.trim()}&quot;`"
+            @remove="query = ''"
+          />
+
+          <!-- Category chips -->
+          <TagChip
+            v-for="cat in selectedCategories"
+            :key="`cat-${cat}`"
+            variant="muted"
+            removable
+            class="normal-case font-medium text-xs tracking-normal bg-background text-foreground"
+            :label="cat"
+            @remove="toggleCategory(cat)"
+          />
+
+          <!-- Tenant chips -->
+          <TagChip
+            v-for="t in selectedTenants"
+            :key="`tenant-${t}`"
+            variant="muted"
+            removable
+            class="normal-case font-medium text-xs tracking-normal bg-background text-foreground"
+            :label="t"
+            @remove="toggleTenant(t)"
+          />
+
+          <!-- Year chips -->
+          <TagChip
+            v-for="yr in selectedYears"
+            :key="`year-${yr}`"
+            variant="muted"
+            removable
+            class="normal-case font-medium text-xs tracking-normal bg-background text-foreground"
+            :label="String(yr)"
+            @remove="toggleYear(yr)"
+          />
+
+          <!-- Remote only chip -->
+          <TagChip
+            v-if="isRemoteOnly"
+            variant="muted"
+            removable
+            class="normal-case font-medium text-xs tracking-normal bg-background text-foreground"
+            :label="$t('Tik nuotoliniai')"
+            @remove="toggleRemote"
+          />
+
+          <!-- Clear all button -->
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:text-brand ml-1"
+            @click="clearFilters"
+          >
+            <IFluentDelete20Regular class="size-3.5" />
+            <span>{{ $t('Išvalyti visus') }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Section -->
+      <div class="mt-8">
+        <!-- Initial Loading State -->
+        <div
+          v-if="isLoading && events.length === 0"
+          class="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          <div
+            v-for="n in 6"
+            :key="n"
+            class="flex flex-col animate-pulse"
+          >
+            <div class="aspect-[16/10] bg-secondary border border-border" />
+            <div class="mt-4 h-5 w-3/4 bg-secondary" />
+            <div class="mt-2 h-4 w-1/2 bg-secondary" />
+            <div class="mt-4 h-4 w-1/4 bg-secondary" />
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          v-else-if="!isLoading && events.length === 0"
+          class="border border-dashed border-border py-16 text-center"
+        >
+          <div class="mx-auto flex size-12 items-center justify-center border border-border bg-secondary text-muted-foreground">
+            <IFluentCalendarLtr24Regular class="size-6" />
+          </div>
+          <h3 class="mt-4 text-base font-bold text-foreground">
+            {{ $t('Renginių nerasta') }}
+          </h3>
+          <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+            {{ $t('Pagal pasirinktus kriterijus renginių nerasta. Pabandykite pakeisti paieškos frazę arba išvalyti filtrus.') }}
           </p>
-        </div>
-        <div class="flex gap-2">
-          <Button variant="secondary" as="a" :href="route('calendar.ics', { lang: $page.props.app.locale })">
-            <IFluentCalendarLtr20Regular />
-            {{ $t("iCalendar") }}
-          </Button>
-          <Button variant="secondary" @click="showModal = true">
-            <IFluentArrowSync20Regular />
-            {{ $t("Sinchronizuoti") }}
-          </Button>
-        </div>
-      </div>
-
-      <!-- Filter section -->
-      <div class="mb-6 flex flex-col gap-4">
-        <!-- Filter section -->
-        <div class="flex flex-wrap items-center pt-3 gap-2">
-          <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">{{ $t("Filtruoti pagal") }}:</span>
-
-          <div class="grid grid-cols-2 gap-2">
-            <!-- Category filter -->
-            <Select v-model="selectedCategory" @update:model-value="onCategoryChange">
-              <SelectTrigger class="min-w-[150px] h-8 text-sm">
-                <SelectValue :placeholder="$t('Kategorija')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">
-                  {{ $t("Visos kategorijos") }}
-                </SelectItem>
-                <SelectItem v-for="option in categoryOptions" :key="option.value" :value="String(option.value)">
-                  {{ option.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <!-- Tenant filter -->
-            <Select v-model="selectedTenant" @update:model-value="onTenantChange">
-              <SelectTrigger class="min-w-[150px] h-8 text-sm">
-                <SelectValue :placeholder="$t('Padalinys')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">
-                  {{ $t("Visi padaliniai") }}
-                </SelectItem>
-                <SelectItem v-for="option in tenantOptions" :key="option.value" :value="String(option.value)">
-                  {{ option.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+          <div v-if="hasActiveFilters" class="mt-6">
+            <Button
+              variant="brand-outline"
+              size="public-sm"
+              @click="clearFilters"
+            >
+              {{ $t('Išvalyti filtrus') }}
+            </Button>
           </div>
         </div>
 
-        <!-- Search input with action buttons -->
-        <div class="flex gap-2">
-          <div class="relative flex-grow">
-            <input v-model="filters.search" type="text" :placeholder="`${$t('Ieškoti pagal pavadinimą')}...`"
-              class="w-full rounded-md border border-zinc-300 py-1.5 pl-9 pr-3 text-sm text-zinc-800 placeholder:text-zinc-400 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:placeholder:text-zinc-500"
-              @keyup.enter="applyFilters">
-            <IFluentSearch16Regular class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
-          </div>
+        <!-- Event Grid -->
+        <div
+          v-else
+          class="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          <EventCard
+            v-for="event in events"
+            :key="event.id"
+            :event
+            :variant="tab === 'past' ? 'past' : 'upcoming'"
+          />
+        </div>
 
-          <!-- Search button -->
-          <Button :disabled="searchLoading" @click="applyFilters">
-            <IFluentSearch20Filled />
-            {{ $t("Ieškoti") }}
-          </Button>
-
-          <!-- Reset filters button -->
-          <Button v-if="filters.search || filters.category || filters.tenant" variant="secondary" @click="resetFilters">
-            <IFluentDelete20Regular />
-            {{ $t("Išvalyti") }}
+        <!-- Load More Button -->
+        <div
+          v-if="hasMore"
+          class="mt-12 flex justify-center"
+        >
+          <Button
+            variant="brand-outline"
+            size="public"
+            :disabled="isLoadingMore"
+            @click="loadMore"
+          >
+            <IFluentArrowSync20Regular
+              v-if="isLoadingMore"
+              class="size-4 animate-spin"
+            />
+            <span v-if="isLoadingMore">{{ $t('Kraunama...') }}</span>
+            <span v-else>{{ $t('Rodyti daugiau renginių') }}</span>
           </Button>
         </div>
       </div>
-    </header>
+    </section>
 
-    <!-- Tabs for upcoming and past events -->
-    <Tabs :model-value="activeTab" @update:model-value="handleTabChange">
-      <TabsList class="mb-4">
-        <TabsTrigger value="upcoming">
-          {{ $t('Būsimi renginiai') }}
-        </TabsTrigger>
-        <TabsTrigger value="past">
-          {{ $t('Praėję renginiai') }}
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="upcoming">
-        <EventListContent :events :tab="activeTab" @page-change="handlePageChange" />
-      </TabsContent>
-
-      <TabsContent value="past">
-        <EventListContent :events :tab="activeTab" @page-change="handlePageChange" />
-      </TabsContent>
-    </Tabs>
+    <!-- Calendar Sync Modal -->
+    <CalendarSyncModal
+      v-model:show-modal="showModal"
+      @close="showModal = false"
+    />
   </div>
-
-  <!-- Calendar Sync Modal -->
-  <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
 </template>
 
 <script setup lang="ts">
-import { useDateLocale } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
-import { format, addDays, subDays, startOfDay, differenceInDays, isSameDay, parseISO } from 'date-fns';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { Button } from '@/Components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useCalendarSearch, type CalendarSearchSort } from '@/Composables/useCalendarSearch';
+import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
+import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import TagChip from '@/Components/Public/Base/TagChip.vue';
+import EventCard from '@/Components/Calendar/EventCard.vue';
+import CalendarFilterPopover, { type FilterOption } from '@/Components/Calendar/CalendarFilterPopover.vue';
 import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
-import EventListContent from '@/Components/Calendar/EventListContent.vue';
-import IFluentCalendar16Regular from '~icons/fluent/calendar-16-regular';
+import { Button } from '@/Components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
+import IFluentArrowSync20Regular from '~icons/fluent/arrow-sync-20-regular';
+import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
+import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
+import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
+import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
+import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
+import IFluentDelete20Regular from '~icons/fluent/delete-20-regular';
+import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
+import IFluentCheckmark16Filled from '~icons/fluent/checkmark-16-filled';
 
-// Set breadcrumbs for calendar list page
-usePageBreadcrumbs(() => {
-  return BreadcrumbHelpers.publicContent([
+// Breadcrumbs in band placement per redesign
+usePageBreadcrumbs(
+  () => BreadcrumbHelpers.publicContent([
     BreadcrumbHelpers.createBreadcrumbItem(
       'Kalendorius',
       undefined,
-      IFluentCalendar16Regular,
+      IFluentCalendarLtr24Regular,
     ),
-  ]);
-});
+  ]),
+  { placement: 'band' },
+);
 
 const props = defineProps<{
-  events: {
+  events?: {
     data: App.Entities.Calendar[];
     current_page: number;
     last_page: number;
     per_page: number;
     total: number;
     path: string;
-    links: any[];
+    links: unknown[];
   };
-  activeTab: string;
+  activeTab?: string;
   allCategories?: Array<{ id: number; name: string }>;
   allTenants?: Array<{ id: number; shortname: string }>;
 }>();
 
 const showModal = ref(false);
-const searchLoading = ref(false);
+const showFilterBar = ref(true);
+const isSortPopoverOpen = ref(false);
 
-// Parse URL parameters on component mount
-const params = new URLSearchParams(window.location.search);
-
-// Parse category and tenant params
-const categoryParamStr = params.get('category');
-const tenantParamStr = params.get('tenant');
-const categoryParam = categoryParamStr ? parseInt(categoryParamStr) : null;
-const tenantParam = tenantParamStr ? parseInt(tenantParamStr) : null;
-
-// Filter state initialized from URL params
-const filters = ref({
-  search: params.get('search') || '',
-  category: categoryParam,
-  tenant: tenantParam,
-  tab: props.activeTab || 'upcoming',
+const {
+  query,
+  tab,
+  selectedCategories,
+  selectedTenants,
+  selectedYears,
+  isRemoteOnly,
+  sortBy,
+  events,
+  totalHits,
+  isLoading,
+  isLoadingMore,
+  hasMore,
+  hasActiveFilters,
+  activeFilterCount,
+  categoryFacets,
+  tenantFacets,
+  yearFacets,
+  setTab,
+  toggleCategory,
+  toggleTenant,
+  toggleYear,
+  toggleRemote,
+  setSortBy,
+  clearFilters,
+  loadMore,
+} = useCalendarSearch({
+  initialTab: (props.activeTab as 'upcoming' | 'past' | 'all') || 'upcoming',
 });
 
-// Computed values for Select components (Shadcn Select uses string values)
-// Use __all__ as sentinel value since SelectItem cannot have empty string value
-const selectedCategory = computed({
-  get: () => filters.value.category ? String(filters.value.category) : '__all__',
-  set: (val: string) => {
-    filters.value.category = val && val !== '__all__' ? parseInt(val) : null;
-  },
-});
+const sortOptions: Array<{ value: CalendarSearchSort; label: string }> = [
+  { value: 'relevance', label: $t('Pagal aktualumą') },
+  { value: 'date_desc', label: $t('Tolimiausi ateityje pirmi') },
+  { value: 'date_asc', label: $t('Seniausi pirmi') },
+];
 
-const selectedTenant = computed({
-  get: () => filters.value.tenant ? String(filters.value.tenant) : '__all__',
-  set: (val: string) => {
-    filters.value.tenant = val && val !== '__all__' ? parseInt(val) : null;
-  },
-});
-
-// Handlers for select changes
-const onCategoryChange = (value: unknown) => {
-  if (typeof value === 'string') {
-    selectedCategory.value = value;
-    applyFilters();
-  }
+const selectSort = (newSortBy: CalendarSearchSort) => {
+  setSortBy(newSortBy);
+  isSortPopoverOpen.value = false;
 };
 
-const onTenantChange = (value: unknown) => {
-  if (typeof value === 'string') {
-    selectedTenant.value = value;
-    applyFilters();
+// Category options combining Typesense facets with backend props if available
+const categoryOptions = computed<FilterOption[]>(() => {
+  if (categoryFacets.value.length > 0) {
+    return categoryFacets.value;
   }
-};
+  if (props.allCategories?.length) {
+    return props.allCategories.map(c => ({
+      label: c.name,
+      value: c.name,
+    }));
+  }
+  return [];
+});
 
-// Fetch all available categories and tenants from the backend rather than relying on filtered data
-const page = usePage();
-const allCategories = ref<{ label: string; value: number }[]>([]);
-const allTenants = ref<{ label: string; value: number }[]>([]);
+// Tenant options combining Typesense facets with backend props if available
+const tenantOptions = computed<FilterOption[]>(() => {
+  if (tenantFacets.value.length > 0) {
+    return tenantFacets.value;
+  }
+  if (props.allTenants?.length) {
+    return props.allTenants.map(t => ({
+      label: t.shortname,
+      value: t.shortname,
+    }));
+  }
+  return [];
+});
 
-// Initialize with all categories and tenants from the backend
-const initializeFilters = () => {
-  // Reset the filter options
-  allCategories.value = [];
-  allTenants.value = [];
-
-  // Add categories from backend
-  if (props.allCategories) {
-    props.allCategories.forEach((category) => {
-      allCategories.value.push({
-        label: category.name,
-        value: category.id,
-      });
+// Year options derived from Typesense facets with fallback range
+const yearOptions = computed<FilterOption[]>(() => {
+  if (yearFacets.value.length > 0) {
+    return yearFacets.value;
+  }
+  const currentYear = new Date().getFullYear();
+  const fallback: FilterOption[] = [];
+  for (let y = currentYear + 1; y >= 2011; y--) {
+    fallback.push({
+      label: String(y),
+      value: String(y),
+      count: 0,
     });
   }
-
-  // Add tenants from backend
-  if (props.allTenants) {
-    props.allTenants.forEach((tenant) => {
-      allTenants.value.push({
-        label: tenant.shortname,
-        value: tenant.id,
-      });
-    });
-  }
-};
-
-// Initialize on component mount
-initializeFilters();
-
-// This function is no longer needed since we're getting filter options from the backend
-// based on the active tab. The backend will handle the logic of which options to show.
-
-// Use all extracted filters instead of just the current filtered events
-const categoryOptions = computed(() => allCategories.value);
-const tenantOptions = computed(() => allTenants.value);
-
-// Apply filters using Inertia router
-const applyFilters = () => {
-  searchLoading.value = true;
-
-  // Update URL with filter parameters
-  router.visit(route('calendar.list', {
-    lang: usePage().props.app.locale,
-    search: filters.value.search || undefined,
-    category: filters.value.category || undefined,
-    tenant: filters.value.tenant || undefined,
-    tab: filters.value.tab,
-    page: 1, // Reset to first page when applying new filters
-  }), {
-    only: ['events', 'activeTab', 'allCategories', 'allTenants'],
-    preserveState: true,
-    preserveScroll: true,
-    onSuccess: () => {
-      // Re-initialize filter options from backend
-      initializeFilters();
-      searchLoading.value = false;
-    },
-    onError: () => {
-      searchLoading.value = false;
-    },
-  });
-};
-
-// Handle tab change
-const handleTabChange = (tabValue: string | number) => {
-  // Update tab in filters and reset other filters when changing tabs
-  filters.value = {
-    search: '',
-    category: null,
-    tenant: null,
-    tab: String(tabValue),
-  };
-
-  // Apply filters with the new tab (all filters reset)
-  applyFilters();
-};
-
-// Handle page change
-const handlePageChange = (page: number) => {
-  // Update URL with the page parameter
-  router.visit(route('calendar.list', {
-    lang: usePage().props.app.locale,
-    search: filters.value.search || undefined,
-    category: filters.value.category || undefined,
-    tenant: filters.value.tenant || undefined,
-    tab: filters.value.tab,
-    page,
-  }), {
-    only: ['events', 'activeTab', 'allCategories', 'allTenants'],
-    preserveState: true,
-    preserveScroll: true,
-    onSuccess: () => {
-      // We don't need to reinitialize filters when just changing pages
-      // The tab hasn't changed so filter options should remain the same
-    },
-  });
-};
-
-// Function to reset all filters
-const resetFilters = () => {
-  filters.value = {
-    search: '',
-    category: null,
-    tenant: null,
-    tab: filters.value.tab, // Preserve the active tab
-  };
-  applyFilters();
-};
-
-// ===== Event Density Visualization =====
-const dateLocale = useDateLocale();
-const today = computed(() => startOfDay(new Date()));
-
-const densityBars = computed(() => {
-  const bars: Array<{
-    date: string;
-    dateLabel: string;
-    count: number;
-    height: number;
-    isToday: boolean;
-  }> = [];
-
-  const startDate = subDays(today.value, DENSITY_DAYS_PAST);
-
-  // Count events per day
-  const eventCounts = new Map<string, number>();
-  props.events.data.forEach((event) => {
-    const eventDate = startOfDay(parseISO(event.date));
-    const dateKey = format(eventDate, 'yyyy-MM-dd');
-    eventCounts.set(dateKey, (eventCounts.get(dateKey) || 0) + 1);
-  });
-
-  // Find max count for scaling
-  let maxCount = 0;
-  eventCounts.forEach((count) => {
-    if (count > maxCount) maxCount = count;
-  });
-
-  // Create bars for each day
-  for (let i = 0; i < DENSITY_DAYS; i++) {
-    const date = addDays(startDate, i);
-    const dateKey = format(date, 'yyyy-MM-dd');
-    const count = eventCounts.get(dateKey) || 0;
-    const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
-
-    bars.push({
-      date: dateKey,
-      dateLabel: format(date, 'd MMM', { locale: dateLocale.value }),
-      count,
-      height: Math.max(height, count > 0 ? 15 : 5), // Minimum height for visibility
-      isToday: isSameDay(date, today.value),
-    });
-  }
-
-  return bars;
+  return fallback;
 });
-
-const todayBarIndex = computed(() => {
-  return densityBars.value.findIndex(bar => bar.isToday);
-});
-
 </script>

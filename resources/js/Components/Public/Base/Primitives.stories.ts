@@ -41,6 +41,7 @@ export const Tags: Story = {
           <TagChip label="Renginiai" variant="outline" />
           <TagChip label="Gidai" variant="muted" />
           <TagChip label="Su nuoroda" href="#" variant="muted" />
+          <TagChip label="Pašalinamas filtras" variant="muted" removable />
         </div>
       </SectionBand>
     `,

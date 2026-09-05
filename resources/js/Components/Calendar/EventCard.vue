@@ -1,88 +1,98 @@
 <template>
   <article
-    class="group flex h-full flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white transition-all duration-200 hover:border-zinc-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
-    :class="{ 'opacity-80': variant === 'past' }"
+    class="group flex flex-col transition-colors"
+    :class="{ 'opacity-75': variant === 'past' }"
+    data-slot="event-card"
   >
-    <!-- Image / fallback: a wide band, not a poster — the card's balance comes from the content below, not an oversized photo -->
-    <Link :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })" class="block aspect-video w-full shrink-0 overflow-hidden bg-zinc-100 dark:bg-zinc-700">
-      <div v-if="(event as any).main_image_url" class="relative h-full w-full">
-        <img
-          class="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-          :class="{ 'opacity-0': imageLoadError }"
-          :src="(event as any).main_image_url"
-          :alt="getEventTitle(event)"
-          :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
-          @error="imageLoadError = true"
-          @load="imageLoadError = false"
-        >
-        <div
-          v-if="imageLoadError"
-          class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 dark:from-vusa-red/20 dark:to-vusa-red/30"
-        >
-          <IFluentCalendarLtr20Regular class="h-8 w-8 text-vusa-red" />
-        </div>
+    <!-- 16:10 fixed-ratio image frame per v0 design -->
+    <Link
+      :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })"
+      class="relative aspect-[16/10] overflow-hidden border border-border bg-secondary"
+    >
+      <img
+        v-if="imageUrl && !imageLoadError"
+        class="size-full object-cover grayscale transition-transform duration-500 group-hover:scale-105"
+        :src="imageUrl"
+        :alt="eventTitle"
+        :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
+        loading="lazy"
+        @error="imageLoadError = true"
+        @load="imageLoadError = false"
+      >
+      <div
+        v-else
+        class="flex size-full items-center justify-center bg-secondary text-muted-foreground/40"
+      >
+        <IFluentCalendarLtr24Regular class="size-10" />
       </div>
-      <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 dark:from-vusa-red/20 dark:to-vusa-red/30">
-        <IFluentCalendarLtr20Regular class="h-8 w-8 text-vusa-red" />
+
+      <!-- Date plate (top-left) -->
+      <DatePlate
+        :date="eventDateObj"
+        class="absolute left-0 top-0 border-b border-r border-brand"
+      />
+
+      <!-- Badges (top-right) -->
+      <div
+        v-if="showBadges && (categoryName || tenantShortname)"
+        class="absolute right-0 top-0 flex max-w-[65%] flex-wrap justify-end"
+      >
+        <span
+          v-if="categoryName"
+          :class="[
+            'border-b border-l border-border bg-background/90 px-2 py-0.5',
+            'text-[0.625rem] font-bold uppercase tracking-wider text-brand backdrop-blur-xs truncate',
+          ]"
+        >
+          {{ categoryName }}
+        </span>
+        <span
+          v-if="tenantShortname"
+          :class="[
+            'border-b border-l border-border bg-background/90 px-2 py-0.5',
+            'text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground backdrop-blur-xs truncate',
+          ]"
+        >
+          {{ tenantShortname }}
+        </span>
       </div>
     </Link>
 
     <!-- Content -->
-    <div class="flex flex-1 flex-col gap-2.5 p-4">
-      <!-- Badges -->
-      <div v-if="showBadges && (event.category || event.tenant)" class="flex flex-wrap items-center gap-1.5">
-        <span v-if="event.category" class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-700/70 dark:text-zinc-300">
-          {{ event.category.name }}
-        </span>
-        <span v-if="event.tenant" class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100/70 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300/90">
-          {{ event.tenant.shortname }}
-        </span>
-      </div>
-
+    <div class="flex flex-1 flex-col pt-4">
       <!-- Title -->
-      <h3
-        class="font-semibold leading-snug line-clamp-2 transition-colors duration-200 hover:text-vusa-red dark:hover:text-vusa-red"
-        :class="variant === 'past' ? 'text-zinc-700 dark:text-zinc-300' : 'text-zinc-900 dark:text-zinc-100'"
-      >
+      <h3 class="text-pretty text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
         <Link :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })">
-          {{ getEventTitle(event) }}
+          {{ eventTitle }}
         </Link>
       </h3>
 
       <!-- Metadata -->
-      <div class="flex flex-col gap-1.5 text-xs" :class="variant === 'past' ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-600 dark:text-zinc-400'">
-        <div class="flex items-center gap-1.5">
-          <IFluentCalendarLtr16Regular class="h-3.5 w-3.5 shrink-0" />
-          <span class="break-words">{{ formatEventDateTime(event) }}</span>
-        </div>
+      <div class="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
+        <span class="flex items-center gap-1.5">
+          <IFluentCalendarLtr20Regular class="size-3.5 shrink-0 text-brand" />
+          <span>{{ formattedDateTime }}</span>
+        </span>
 
-        <div v-if="event.is_remote" class="flex items-center gap-1.5">
-          <IFluentGlobe16Regular class="h-3.5 w-3.5 shrink-0" />
+        <span v-if="event.is_remote" class="flex items-center gap-1.5">
+          <IFluentGlobe20Regular class="size-3.5 shrink-0 text-brand" />
           <span>{{ $t('Nuotolinis renginys') }}</span>
-        </div>
-        <div v-else-if="event.location" class="flex items-center gap-1.5 min-w-0">
-          <IFluentLocation16Regular class="h-3.5 w-3.5 shrink-0" />
-          <span class="truncate">{{ getEventLocation(event) }}</span>
-        </div>
+        </span>
+        <span v-else-if="eventLocation" class="flex items-center gap-1.5 min-w-0">
+          <IFluentLocation16Regular class="size-3.5 shrink-0 text-brand" />
+          <span class="truncate">{{ eventLocation }}</span>
+        </span>
       </div>
 
-      <!-- Actions -->
-      <div class="mt-auto flex items-center gap-2 pt-1">
-        <Button as="a" :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })"
-          :variant="variant === 'past' ? 'outline' : 'default'" size="sm" class="flex-1 gap-1.5">
-          <IFluentInfo16Regular class="h-3.5 w-3.5" />
-          {{ variant === 'past' ? $t('Peržiūrėti') : $t('Daugiau') }}
-        </Button>
-
-        <template v-if="variant !== 'past'">
-          <Button v-if="googleLink" as="a" :href="googleLink" target="_blank" variant="ghost" size="sm" :title="$t('Pridėti į Google kalendorių')">
-            <ISimpleIconsGoogle class="h-4 w-4" />
-          </Button>
-
-          <Button v-if="event.facebook_url" as="a" :href="event.facebook_url" target="_blank" variant="ghost" size="sm" :title="$t('Facebook renginys')">
-            <ISimpleIconsFacebook class="h-4 w-4" />
-          </Button>
-        </template>
+      <!-- Action -->
+      <div class="mt-auto flex items-center justify-between gap-3 pt-4">
+        <Link
+          :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })"
+          class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:text-brand"
+        >
+          <span>{{ variant === 'past' ? $t('Peržiūrėti') : $t('Daugiau') }}</span>
+          <IFluentArrowUpRight20Regular class="size-4" />
+        </Link>
       </div>
     </div>
   </article>
@@ -91,38 +101,99 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
-import Button from '@/Components/ui/button/Button.vue';
+import DatePlate from '@/Components/Public/Base/DatePlate.vue';
 import { formatEventDateSpan } from '@/Utils/IntlTime';
+import type { LocaleEnum } from '@/Types/enums';
+import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';
+import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
+import IFluentLocation16Regular from '~icons/fluent/location-16-regular';
+import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
+import IFluentArrowUpRight20Regular from '~icons/fluent/arrow-up-right-20-regular';
+
+interface CalendarEventLike {
+  id: number | string;
+  title: string | string[] | Record<string, unknown>;
+  date: string | number | Date;
+  end_date?: string | number | Date | null;
+  is_all_day?: boolean;
+  is_remote?: boolean;
+  location?: string | string[] | null;
+  main_image_url?: string | null;
+  main_image?: string | null;
+  main_image_focal_point?: string | null;
+  facebook_url?: string | null;
+  category?: { name: string } | null;
+  category_name?: string | null;
+  tenant?: { shortname: string } | null;
+  tenant_shortname?: string | null;
+}
 
 const page = usePage();
 
 const props = withDefaults(defineProps<{
-  event: App.Entities.Calendar;
+  event: CalendarEventLike | App.Entities.Calendar;
   variant?: 'upcoming' | 'past' | 'compact';
   showBadges?: boolean;
-  googleLink?: string;
 }>(), {
   variant: 'upcoming',
+  // eslint-disable-next-line vue/no-boolean-default
   showBadges: true,
 });
 
 const imageLoadError = ref(false);
 
-const getEventTitle = (event: App.Entities.Calendar): string =>
-  Array.isArray(event.title) ? event.title.join(' ') : (event.title || '');
+const eventTitle = computed(() => {
+  const t = props.event.title;
+  if (Array.isArray(t)) return t.join(' ');
+  if (typeof t === 'string') return t;
+  return String(t ?? '');
+});
 
-const getEventLocation = (event: App.Entities.Calendar): string =>
-  Array.isArray(event.location) ? event.location.join(' ') : (event.location || '');
+const eventLocation = computed(() => {
+  const loc = props.event.location;
+  if (!loc) return null;
+  if (Array.isArray(loc)) return loc.join(' ');
+  return String(loc);
+});
 
-/** Multi-day events read as one collapsed span, e.g. "2026 m. rugpjūčio 25–27 d. · 10:00 → 18:00". */
-const formatEventDateTime = (event: App.Entities.Calendar): string => {
-  const span = formatEventDateSpan(event.date, event.end_date, {
-    allDay: event.is_all_day,
-    locale: page.props.app.locale,
+const categoryName = computed(() => {
+  const ev = props.event as CalendarEventLike;
+  return ev.category?.name ?? ev.category_name ?? null;
+});
+
+const tenantShortname = computed(() => {
+  const ev = props.event as CalendarEventLike;
+  return ev.tenant?.shortname ?? ev.tenant_shortname ?? null;
+});
+
+const imageUrl = computed(() => {
+  const ev = props.event as CalendarEventLike;
+  return ev.main_image_url ?? ev.main_image ?? null;
+});
+
+const normalizeDate = (d: number | Date | string | undefined | null): Date => {
+  if (!d) return new Date();
+  if (d instanceof Date) return d;
+  if (typeof d === 'number') {
+    // UNIX timestamp in seconds
+    return new Date(d < 10000000000 ? d * 1000 : d);
+  }
+  return new Date(d);
+};
+
+const eventDateObj = computed(() => normalizeDate(props.event.date));
+
+const formattedDateTime = computed(() => {
+  const startDate = normalizeDate(props.event.date);
+  const endDate = props.event.end_date ? normalizeDate(props.event.end_date) : null;
+
+  const span = formatEventDateSpan(startDate, endDate, {
+    allDay: props.event.is_all_day,
+    locale: page.props.app.locale as LocaleEnum,
   });
 
   return `${span.primary} · ${span.secondary}`;
-};
+});
 </script>

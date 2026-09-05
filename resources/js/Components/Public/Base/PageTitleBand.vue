@@ -1,5 +1,8 @@
 <template>
   <SectionBand :spacing divider="bottom" :class="props.class" data-slot="page-title-band">
+    <div v-if="$slots.breadcrumbs" class="mb-6">
+      <slot name="breadcrumbs" />
+    </div>
     <div class="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
       <DisplayHeading
         :title

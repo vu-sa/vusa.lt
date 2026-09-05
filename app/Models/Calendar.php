@@ -10,6 +10,7 @@ use Datetime;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -246,9 +247,13 @@ class Calendar extends Model implements HasMedia
         $this->addMediaConversion('webp')
             ->format('webp')
             ->quality(80)
-            ->width(1600)
             ->performOnCollections('main_image', 'images') /** @phpstan-ignore method.notFound */
             ->nonQueued(); // Run synchronously for immediate availability
+    }
+
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with(['tenant', 'category', 'media']);
     }
 
     public function toSearchableArray(): array
@@ -258,12 +263,24 @@ class Calendar extends Model implements HasMedia
             'title' => $this->getTranslation('title', app()->getLocale()) ?: $this->getTranslation('title', 'lt') ?: $this->getTranslation('title', 'en'),
             'title_lt' => $this->getTranslation('title', 'lt'),
             'title_en' => $this->getTranslation('title', 'en'),
+            'description' => strip_tags((string) ($this->getTranslation('description', app()->getLocale()) ?: $this->getTranslation('description', 'lt') ?: $this->getTranslation('description', 'en'))),
             'date' => $this->date->timestamp,
             'end_date' => $this->end_date ? $this->end_date->timestamp : null,
+            'year' => $this->date ? (int) $this->date->format('Y') : null,
             'lang' => $this->lang ?? app()->getLocale(),
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
-            'tenant_name' => $this->tenant->fullname,
+            'tenant_name' => $this->tenant?->fullname ?? '',
+            'tenant_shortname' => $this->tenant?->shortname ?? '',
+            'category_id' => $this->category_id ? (int) $this->category_id : null,
+            'category_name' => $this->category?->name,
+            'location' => $this->getTranslation('location', app()->getLocale()) ?: $this->location,
+            'is_all_day' => (bool) $this->is_all_day,
+            'is_remote' => (bool) $this->is_remote,
+            'is_international' => (bool) $this->is_international,
+            'main_image_url' => $this->main_image_url,
+            'facebook_url' => $this->facebook_url,
+            'cto_url' => $this->getTranslation('cto_url', app()->getLocale()) ?: $this->cto_url,
             'created_at' => $this->created_at->timestamp,
         ];
     }
