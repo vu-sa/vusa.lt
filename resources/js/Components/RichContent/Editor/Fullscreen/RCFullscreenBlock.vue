@@ -32,6 +32,33 @@
       @delete="$emit('delete')"
       @open-form="$emit('open-form')"
     />
+    <LinkListBlockToolbar v-else-if="!preview && content.type === 'link-list'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')"
+      @move-down="$emit('move-down')"
+      @delete="$emit('delete')"
+      @open-form="$emit('open-form')"
+    />
+    <EventListBlockToolbar v-else-if="!preview && content.type === 'event-list'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')"
+      @move-down="$emit('move-down')"
+      @delete="$emit('delete')"
+      @open-form="$emit('open-form')"
+    />
+    <CalendarBlockToolbar v-else-if="!preview && content.type === 'calendar'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')"
+      @move-down="$emit('move-down')"
+      @delete="$emit('delete')"
+      @open-form="$emit('open-form')"
+    />
     <RCBlockToolbarShell v-else-if="!preview"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete
@@ -60,10 +87,12 @@
 /**
  * Per-block wrapper for the full-screen editor: the real rendered output
  * (`BlockPreviewRenderer`, same component forms-mode preview and the picker use) plus
- * the whole-block toolbar (`HeroBlockToolbar` for `hero`, `SectionBlockToolbar` for
- * `section`, the generic `RCBlockToolbarShell` for every other type — see its own
- * docblock for why every type gets this on day one). No selection state, no
- * pointer-events CSS lockdown — this design has no "select the block" concept at all.
+ * the whole-block toolbar — a dedicated type toolbar (`HeroBlockToolbar`, `SectionBlockToolbar`,
+ * `LinkListBlockToolbar`, `EventListBlockToolbar`, `CalendarBlockToolbar`) for a type whose
+ * structured fields have no on-canvas representation to click into, the generic
+ * `RCBlockToolbarShell` for every other type — see its own docblock for why every type
+ * gets this on day one. No selection state, no pointer-events CSS lockdown — this design
+ * has no "select the block" concept at all.
  *
  * Bridges `BlockPreviewRenderer`'s pre-existing `activeInlineField`/`claim-inline-field`
  * contract (used today by `shadcn-card`'s inline body editing) onto the shared
@@ -82,6 +111,9 @@ import RCWidthPicker from '../RCWidthPicker.vue';
 import { withWidth } from '../blockWidth';
 import HeroBlockToolbar from '../../RCHeroSection/HeroBlockToolbar.vue';
 import SectionBlockToolbar from '../../RCSection/SectionBlockToolbar.vue';
+import LinkListBlockToolbar from '../../RCLinkList/LinkListBlockToolbar.vue';
+import EventListBlockToolbar from '../../RCEventList/EventListBlockToolbar.vue';
+import CalendarBlockToolbar from '../../RCCalendar/CalendarBlockToolbar.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { resolveBandRole, type BandResolution, type BlockPresentation } from '../../bandLayout';
 import type { PlainPadding } from '../../sectionClasses';

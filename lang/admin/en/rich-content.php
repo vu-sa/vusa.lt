@@ -131,9 +131,6 @@ return [
     'button_link' => 'Button link',
     'enter_button_text' => 'Enter button text...',
     'remove_button' => 'Remove button',
-    // Calendar
-    'show_all_tenants' => 'Show events from all units',
-    'show_all_tenants_description' => 'Enable to show events from all VU SA units',
     // Spotify
     'spotify_url_hint' => 'Paste a Spotify playlist, album or track URL, or a Mixcloud link',
     'preview' => 'Preview',
@@ -410,10 +407,13 @@ return [
     // Shared list options (link-list / event-list)
     'style' => 'Style',
     'limit' => 'Count',
-    'category_alias' => 'Category alias',
+    'category_alias' => 'Category',
+    'category_alias_none' => 'No category',
     'tenant_scope' => 'Units',
     'tenant_scope_current' => 'This unit',
     'tenant_scope_all' => 'All units',
+    'tenant_scope_none' => 'None',
+    'tenant_scope_selected_count' => 'Selected: :count',
     'confirm_selection' => 'Confirm selection',
     'select_items' => 'Select...',
     // Link list

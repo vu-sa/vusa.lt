@@ -80,6 +80,12 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     App.Entities.Tenant,
     'id' | 'alias' | 'shortname' | 'fullname' | 'type' | 'primary_institution_id' | 'primary_institution'
   >[];
+  /**
+   * Every category, global (not tenant-scoped). `name` is already the current-locale
+   * string here (Spatie translatable resolves it server-side before serializing) — not
+   * the raw translation array `App.Entities.Category['name']` would suggest.
+   */
+  categories: Array<{ id: number; alias: string | null; name: string }>;
   tenant:
   | (Pick<App.Entities.Tenant, 'id' | 'alias' | 'shortname' | 'type'> & {
     subdomain: string;

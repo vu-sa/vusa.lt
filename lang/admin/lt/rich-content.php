@@ -131,9 +131,6 @@ return [
     'button_link' => 'Mygtuko nuoroda',
     'enter_button_text' => 'Įveskite mygtuko tekstą...',
     'remove_button' => 'Pašalinti mygtuką',
-    // Calendar
-    'show_all_tenants' => 'Rodyti visų padalinių renginius',
-    'show_all_tenants_description' => 'Įjungti, jei norite rodyti visų VU SA padalinių renginius',
     // Spotify
     'spotify_url_hint' => 'Įklijuokite Spotify grojaraščio, albumo ar takelio, arba Mixcloud įrašo nuorodą',
     'preview' => 'Peržiūra',
@@ -410,10 +407,13 @@ return [
     // Shared list options (link-list / event-list)
     'style' => 'Stilius',
     'limit' => 'Kiekis',
-    'category_alias' => 'Kategorijos kodas',
+    'category_alias' => 'Kategorija',
+    'category_alias_none' => 'Be kategorijos',
     'tenant_scope' => 'Padaliniai',
     'tenant_scope_current' => 'Šis padalinys',
     'tenant_scope_all' => 'Visi padaliniai',
+    'tenant_scope_none' => 'Nė vieno',
+    'tenant_scope_selected_count' => 'Pasirinkta: :count',
     'confirm_selection' => 'Patvirtinti pasirinkimą',
     'select_items' => 'Pasirinkti...',
     // Link list

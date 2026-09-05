@@ -243,33 +243,40 @@ function updateSideBySideContent(value: ContentPart): void {
   if (index !== -1 && contents.value) contents.value[index] = value;
 }
 
-// Server-resolved preview data for every resolvable, *saved* block — the full-screen
-// editor has no "preview all" toggle to gate this behind, it always shows the real
-// thing. Mirrors RichContentEditor.vue's globalPreviewMode watch (unsaved blocks have no
-// id yet, so they can't be looked up here and simply show no dynamic data until first
-// saved).
+// Server-resolved preview data for every resolvable block — the full-screen editor has
+// no "preview all" toggle to gate this behind, it always shows the real thing. Keyed by
+// `getBlockKey()` (saved id or the block's generated client-side key), NOT `content.id`
+// — a *saved* id would leave a just-added or still-unsaved block (link-list, event-list,
+// news, calendar) with no dynamic data at all until the page is saved once, which is
+// exactly the "preview doesn't show the fetched events" gap this fixes.
 const { debouncedFetchPreview } = useContentPartPreview(() => props.tenantId);
-const resolvedByPartId = ref<Record<number, unknown>>({});
+const resolvedByBlockKey = ref<Record<string, unknown>>({});
 
 watch(contents, async (currentContents) => {
-  const resolvableParts = (currentContents ?? []).filter(
-    (part): part is ContentPart & { id: number } => part.id != null && !!getContentType(part.type).serverResolved,
-  );
+  const resolvableParts = (currentContents ?? []).filter(part => !!getContentType(part.type).serverResolved);
   if (resolvableParts.length === 0) {
-    resolvedByPartId.value = {};
+    resolvedByBlockKey.value = {};
     return;
   }
   const resolved = await debouncedFetchPreview(resolvableParts.map(part => ({
-    key: String(part.id),
+    key: getBlockKey(part),
     type: part.type,
     json_content: part.json_content,
     options: part.options ?? null,
   })));
-  resolvedByPartId.value = Object.fromEntries(Object.entries(resolved).map(([key, value]) => [Number(key), value]));
+  // `debouncedFetchPreview` resolves a *superseded* call's promise to `undefined`
+  // (vueuse's `useDebounceFn`, `rejectOnCancel: false` by default) rather than the
+  // newer call's result — e.g. every keystroke on a toolbar's NumberField re-fires this
+  // watcher, cancelling the previous in-flight request. Skip the assignment rather than
+  // clobbering already-shown data with `undefined`: the call that actually wins the
+  // debounce (the latest one) still resolves normally and updates this ref then.
+  if (resolved) {
+    resolvedByBlockKey.value = resolved;
+  }
 }, { deep: true, immediate: true });
 
 function resolvedFor(content: ContentPart): unknown {
-  if (!getContentType(content.type).serverResolved || content.id == null) return undefined;
-  return resolvedByPartId.value[content.id];
+  if (!getContentType(content.type).serverResolved) return undefined;
+  return resolvedByBlockKey.value[getBlockKey(content)];
 }
 </script>

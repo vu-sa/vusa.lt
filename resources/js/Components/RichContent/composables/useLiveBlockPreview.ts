@@ -33,7 +33,14 @@ export function useLiveBlockPreview(
         json_content: content.value?.json_content,
         options: content.value?.options ?? null,
       }]);
-      previewResolved.value = resolved.preview;
+      // A *superseded* call (a newer edit re-fired this watcher before the debounce
+      // settled) resolves to `undefined`, not the newer call's result — vueuse's
+      // `useDebounceFn` default (`rejectOnCancel: false`). Skip the assignment rather
+      // than crashing on `undefined.preview` / clobbering already-shown data; the call
+      // that actually wins the debounce still resolves normally and updates this ref.
+      if (resolved) {
+        previewResolved.value = resolved.preview;
+      }
     },
     { deep: true, immediate: true },
   );

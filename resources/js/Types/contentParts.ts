@@ -266,10 +266,27 @@ export interface NumberStatSection {
 export interface Calendar {
   json_content: {
     title: string;
+    /** Small uppercase label above the title (Hero's `eyebrow`). Optional. */
+    eyebrow?: string;
   };
   options: {
-    allTenants?: boolean;
     width?: BlockWidth;
+    /** Server-resolved fetch options — see `CalendarBlockResolver`. */
+    limit?: number;
+    categoryAlias?: string;
+    /**
+     * Which tenants' events to show. `'all'` (default, unset counts as this too) or a
+     * specific list of tenant ids — `[]` means "none selected" and shows zero events,
+     * a deliberate author choice via `RCTenantMultiSelect.vue`'s "None" button, not a
+     * fallback to unfiltered (contrast `LinkList`/`EventList`'s `tenantScope`, where an
+     * empty array only ever happens by accident and falls through to "all").
+     */
+    tenantScope?: 'current' | 'all' | number[];
+    /** Band chrome (bandLayout.ts) — not part of `SectionOptions` since this type has
+     *  no title/subtitle/heading-level/align of its own (its title/eyebrow live in
+     *  `json_content`, edited inline, not through a section header). */
+    presentation?: BlockPresentation;
+    plainPadding?: PlainPadding;
   } | null;
 }
 

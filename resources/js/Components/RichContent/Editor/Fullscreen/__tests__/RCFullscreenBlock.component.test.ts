@@ -12,6 +12,9 @@ const stubs = {
     template: '<div class="block-preview" :data-preview="preview" />',
   },
   HeroBlockToolbar: { template: '<div class="hero-toolbar" />' },
+  LinkListBlockToolbar: { template: '<div class="link-list-toolbar" />' },
+  EventListBlockToolbar: { template: '<div class="event-list-toolbar" />' },
+  CalendarBlockToolbar: { template: '<div class="calendar-toolbar" />' },
   RCBlockToolbarShell: { template: '<div class="block-toolbar"><slot /></div>' },
   RCWidthPicker: { template: '<div />' },
   RCPresentationPicker: {
@@ -57,5 +60,25 @@ describe('RCFullscreenBlock', () => {
     });
 
     expect(wrapper.get('.presentation-picker').attributes('data-disabled')).toBe('true');
+  });
+
+  it.each([
+    ['link-list', '.link-list-toolbar'],
+    ['event-list', '.event-list-toolbar'],
+    ['calendar', '.calendar-toolbar'],
+  ])('routes %s to its dedicated toolbar, not the generic fallback', (type, toolbarSelector) => {
+    const wrapper = mount(RCFullscreenBlock, {
+      props: {
+        content: { type, json_content: {}, options: {} } as ContentPart,
+        blockKey: `${type}-1`,
+        canMoveUp: true,
+        canMoveDown: true,
+        canDelete: true,
+      },
+      global: { stubs, provide: { [ACTIVE_HOTSPOT_KEY]: useActiveHotspot() } },
+    });
+
+    expect(wrapper.find(toolbarSelector).exists()).toBe(true);
+    expect(wrapper.find('.block-toolbar').exists()).toBe(false);
   });
 });

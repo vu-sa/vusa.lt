@@ -38,6 +38,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Actions/ResolveTaskAudience.php,app/Listeners/HandleTaskCreated.php,app/Actions/Schedulable/TaskNotifier.php,app/Console/Commands/SendTaskOverdueReminders.php | .ai/rules/schedulable-console-commands.md |
 | app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
+| resources/js/Components/AdminForms/**,resources/js/Components/RichContent/**,resources/js/Features/Admin/AdminSearch/**,resources/js/Components/ui/single-select/** | .ai/rules/single-select.md |
 | app/Actions/Get*.php,app/Actions/Resolve*.php,app/Tasks/Subscribers/** | .ai/rules/subscribers.md |
 | app/Support/MorphMap.php, app/Support/LocalizedRouteSlugs.php | .ai/rules/support.md |
 | app/**, tests/Feature/System/** | .ai/rules/system.md |

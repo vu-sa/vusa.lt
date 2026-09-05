@@ -188,6 +188,19 @@ describe('LinkListResolver — news source', function (): void {
             ->and($ids)->not->toContain($otherCategory->id);
     });
 
+    test('latest mode with tenantScope "all" includes news from every tenant', function (): void {
+        $otherTenant = Tenant::factory()->create();
+        $ownNews = News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
+        $otherNews = News::factory()->for($otherTenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
+
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'latest', 'tenantScope' => 'all']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($ownNews->id)
+            ->and($ids)->toContain($otherNews->id);
+    });
+
     test('clamps limit to the 1-12 range', function (): void {
         // 13, not 12: with exactly 12 available, "12 results" would hold even if the
         // clamp did nothing — one extra record is needed to actually prove truncation.
@@ -372,15 +385,104 @@ describe('NewsBlockResolver / CalendarBlockResolver bridges', function (): void 
             ->and($categories)->toContain(null);
     });
 
-    test('calendar bridge excludes drafts and is not tenant-scoped', function (): void {
+    test('calendar bridge excludes drafts and defaults to every tenant (tenantScope unset)', function (): void {
         $otherTenant = Tenant::factory()->create();
         $event = Calendar::factory()->for($otherTenant)->create(['is_draft' => false, 'date' => now()]);
         Calendar::factory()->for($this->tenant)->create(['is_draft' => true, 'date' => now()]);
 
-        $part = makeResolvablePart('calendar', ['title' => ''], ['allTenants' => false]);
+        $part = makeResolvablePart('calendar', ['title' => '']);
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
         expect($ids)->toContain($event->id);
+    });
+
+    test('calendar bridge tenantScope "current" restricts to the viewing tenant', function (): void {
+        $otherTenant = Tenant::factory()->create();
+        $own = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()]);
+        $other = Calendar::factory()->for($otherTenant)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['tenantScope' => 'current']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toBe([$own->id])
+            ->and($ids)->not->toContain($other->id);
+    });
+
+    test('calendar bridge tenantScope as an array restricts to exactly those tenants', function (): void {
+        $tenantA = Tenant::factory()->create();
+        $tenantB = Tenant::factory()->create();
+        $tenantC = Tenant::factory()->create();
+        $eventA = Calendar::factory()->for($tenantA)->create(['is_draft' => false, 'date' => now()]);
+        $eventB = Calendar::factory()->for($tenantB)->create(['is_draft' => false, 'date' => now()]);
+        Calendar::factory()->for($tenantC)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['tenantScope' => [$tenantA->id, $tenantB->id]]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toEqualCanonicalizing([$eventA->id, $eventB->id]);
+    });
+
+    test('calendar bridge tenantScope as an empty array ("None" selected) returns zero events, not every tenant\'s', function (): void {
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['tenantScope' => []]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toBeEmpty();
+    });
+
+    test('calendar bridge returns the soonest upcoming events first, excluding past ones', function (): void {
+        $past = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()->subWeek()]);
+        $soonest = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()->addDays(2)]);
+        $furthest = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()->addDays(10)]);
+
+        // With a small limit, `orderByDesc('date')` (the old query) would return
+        // $furthest instead of $soonest, and would never exclude $past at all.
+        $part = makeResolvablePart('calendar', ['title' => ''], ['limit' => 2]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toBe([$soonest->id, $furthest->id])
+            ->and($ids)->not->toContain($past->id);
+    });
+
+    test('calendar bridge respects options.limit', function (): void {
+        Calendar::factory()->for($this->tenant)->count(5)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['limit' => 2]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(2)
+            ->and($resolved[$part->id]['meta']['total'])->toBe(2);
+    });
+
+    test('calendar bridge clamps limit to the 1-10 range', function (): void {
+        // 11, not 10: with exactly 10 available, "10 results" would hold even if the
+        // clamp did nothing — one extra record is needed to actually prove truncation.
+        Calendar::factory()->for($this->tenant)->count(11)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['limit' => 500]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(10);
+    });
+
+    test('calendar bridge filters by categoryAlias, keeping a trashed category working as a grouping key', function (): void {
+        $category = Category::factory()->create(['alias' => 'concerts']);
+        $category->delete();
+        $otherCategory = Category::factory()->create(['alias' => 'workshops']);
+
+        $matching = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now(), 'category_id' => $category->id]);
+        $other = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now(), 'category_id' => $otherCategory->id]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['categoryAlias' => 'concerts']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($matching->id)
+            ->and($ids)->not->toContain($other->id);
     });
 });

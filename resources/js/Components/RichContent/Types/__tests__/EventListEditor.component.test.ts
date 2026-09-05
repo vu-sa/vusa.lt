@@ -34,7 +34,9 @@ describe('EventListEditor', () => {
     const tenantGroupButton = wrapper.findAll('button').find(b => b.text().includes('group_by_tenant'));
     await tenantGroupButton!.trigger('click');
 
-    expect(item.options.groupBy).toBe('tenant');
+    const emitted = wrapper.emitted('update:options');
+    expect(emitted).toBeTruthy();
+    expect((emitted!.at(-1)![0] as EventList['options']).groupBy).toBe('tenant');
     expect(wrapper.text()).toContain('tenant_label_prefix');
   });
 });

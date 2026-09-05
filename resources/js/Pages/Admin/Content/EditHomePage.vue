@@ -5,7 +5,7 @@
     </template>
     <UpsertModelLayout>
       <AdminForm :model="form" label-placement="top" @submit:form="handleFormSubmit">
-        <RichContentFormElement v-model="form.parts" @save="handleFormSubmit" />
+        <RichContentFormElement v-model="form.parts" :tenant-id="tenant.id" @save="handleFormSubmit" />
       </AdminForm>
     </UpsertModelLayout>
   </AdminContentPage>

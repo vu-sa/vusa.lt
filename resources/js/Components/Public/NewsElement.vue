@@ -8,8 +8,13 @@
       <div class="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
         <div>
           <EyebrowLabel v-if="showEyebrow">{{ $t('Naujienos') }}</EyebrowLabel>
+          <!-- eslint-disable-next-line vuejs-accessibility/heading-has-content -- RCInlineText renders the real text at runtime; eslint can't see through the child component. -->
           <h2 id="news-section-heading" class="u-display mt-2 text-3xl text-foreground sm:text-4xl">
-            {{ heading }}
+            <RCInlineText
+              as="span" :model-value="editable ? (element.json_content.title ?? '') : heading"
+              :editable :placeholder="$t('Kas naujo bendruomenėje')"
+              @update:model-value="updateTitle"
+            />
           </h2>
         </div>
         <SmartLink
@@ -105,6 +110,7 @@ import { formatStaticTime } from '@/Utils/IntlTime';
 import { useNewsFetch } from '@/Services/ContentService';
 import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
 import { Skeleton } from '@/Components/ui/skeleton';
+import RCInlineText from '@/Components/RichContent/Editor/Fullscreen/RCInlineText.vue';
 
 // Fallback image for news without images
 const FALLBACK_IMAGE = '/images/icons/naujienu_foto.png';
@@ -120,7 +126,23 @@ const props = defineProps<{
   resolved?: { type: string; items: NewsItem[] } | null;
   /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
   prefetchedNews?: NewsItem[];
+  /** Full-screen editor mode: the title becomes click-to-edit. Undefined/false
+   *  elsewhere. Nothing else on this type is author-editable — the list itself is
+   *  entirely server-resolved. */
+  editable?: boolean;
+  /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
+   *  `inlineEditable` fallthrough — this type has no per-field claiming, but an
+   *  undeclared non-undefined prop would otherwise land on the root as a stray attribute. */
+  blockKey?: string;
+  /** @see blockKey */
+  activeInlineField?: string | null;
 }>();
+
+const emit = defineEmits<(e: 'update:element', value: News) => void>();
+
+function updateTitle(title: string): void {
+  emit('update:element', { ...props.element, json_content: { ...props.element.json_content, title } });
+}
 
 const page = usePage();
 

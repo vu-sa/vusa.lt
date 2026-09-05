@@ -270,6 +270,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     allowedWidths: ['content', 'wide', 'full'],
     selfSpaced: true,
     serverResolved: true,
+    inlineEditable: true,
     defaultContent: () => ({ title: '' }),
     editor: defineAsyncComponent(() => import('./NewsEditor.vue')),
     display: defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue')),
@@ -311,10 +312,10 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     allowedWidths: ['content', 'wide', 'full'],
     selfSpaced: true,
     serverResolved: true,
+    inlineEditable: true,
     defaultContent: () => ({ title: '' }),
-    defaultOptions: () => ({ allTenants: false }),
-    // EventCalendarElement.vue is not registered as `bandRole: 'band'` — it always
-    // renders its own hardcoded band, deliberately outside the alternation. See its docblock.
+    defaultOptions: () => ({ tenantScope: 'all', limit: 3 }),
+    bandRole: 'band',
     editor: defineAsyncComponent(() => import('./CalendarEditor.vue')),
     display: defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue')),
     skeleton: {

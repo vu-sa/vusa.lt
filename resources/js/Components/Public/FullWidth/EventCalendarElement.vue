@@ -1,20 +1,30 @@
 <template>
   <!--
-    The events band: a tinted, ruled strip running edge to edge, matching how every section on
-    this surface is divided — by a rule and a change of ground, not by a card. `rc-viewport`
-    escapes PublicLayout's `.container` column so the tint actually reaches the viewport edges
-    (see app.css); without it the band stopped short of them while the hero above did not.
+    The events band: a ruled strip, chrome entirely driven by `band` (bandLayout.ts) — same
+    derived ground/padding/bleed every other band-capable block gets (auto-alternating tint,
+    or `presentation: 'plain'` with an authored `plainPadding`), via `CalendarBlockToolbar.vue`'s
+    RCPresentationPicker. Not an RCSection (keeps its own header layout — sync button beside the
+    title, a footer CTA row), so `band.classes` is bound directly rather than through that
+    component.
   -->
-  <!-- Deliberately not registered as `bandRole: 'band'` (see RichContent/Types/index.ts) —
-       this display is always this block's whole rendering, outside the SectionOptions/
-       alternation system entirely, and always wants a tint regardless of page position. -->
-  <section :class="['rc-band rc-viewport', BAND_GROUND_CLASS.tint]">
-    <div class="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-24">
+  <section :class="bandClasses">
+    <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
       <div class="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
         <div>
-          <EyebrowLabel>{{ $t('Renginių kalendorius') }}</EyebrowLabel>
+          <EyebrowLabel>
+            <RCInlineText
+              as="span" :model-value="editable ? (element?.json_content?.eyebrow ?? '') : eyebrowText"
+              :editable :placeholder="$t('Renginių kalendorius')"
+              @update:model-value="updateEyebrow"
+            />
+          </EyebrowLabel>
+          <!-- eslint-disable-next-line vuejs-accessibility/heading-has-content -- RCInlineText renders the real text at runtime; eslint can't see through the child component. -->
           <h2 class="u-display mt-2 text-3xl text-foreground sm:text-4xl">
-            {{ $t('Artimiausi renginiai') }}
+            <RCInlineText
+              as="span" :model-value="editable ? (element?.json_content?.title ?? '') : heading"
+              :editable :placeholder="$t('Artimiausi renginiai')"
+              @update:model-value="updateTitle"
+            />
           </h2>
         </div>
         <button
@@ -111,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -124,7 +134,9 @@ import { useCalendarFetch } from '@/Services/ContentService';
 import { formatEventDateSpan, formatMonthAbbr } from '@/Utils/IntlTime';
 import type { Calendar } from '@/Types/contentParts';
 import { LocaleEnum } from '@/Types/enums';
-import { BAND_GROUND_CLASS } from '@/Components/RichContent/sectionClasses';
+import type { BandResolution } from '@/Components/RichContent/bandLayout';
+import { BAND_GROUND_CLASS, BAND_PADDING } from '@/Components/RichContent/sectionClasses';
+import RCInlineText from '@/Components/RichContent/Editor/Fullscreen/RCInlineText.vue';
 
 interface CalendarEvent {
   id: number;
@@ -144,7 +156,42 @@ const props = defineProps<{
   resolved?: { type: string; items: CalendarEvent[] } | null;
   /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
   prefetchedCalendar?: CalendarEvent[];
+  /** Full-screen editor mode: the title and eyebrow become click-to-edit. Undefined/false
+   *  elsewhere. The fetch configuration (limit/category/tenantScope) is edited through
+   *  `CalendarBlockToolbar.vue`'s options popover instead. */
+  editable?: boolean;
+  /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
+   *  `inlineEditable` fallthrough — this type has no per-field claiming, but an
+   *  undeclared non-undefined prop would otherwise land on the root as a stray attribute. */
+  blockKey?: string;
+  /** @see blockKey */
+  activeInlineField?: string | null;
+  /** This block's resolved chrome (bandLayout.ts) — ground/padding/bleed, and whether
+   *  `presentation: 'plain'` dropped the band entirely. See `RCSection.vue`'s identical
+   *  prop for the full contract; this display binds `band.classes` straight to its root
+   *  instead of forwarding through that component. */
+  band?: BandResolution;
 }>();
+
+const emit = defineEmits<(e: 'update:element', value: { json_content: Calendar['json_content']; options: Calendar['options'] }) => void>();
+
+const heading = computed(() => props.element?.json_content?.title || $t('Artimiausi renginiai'));
+const eyebrowText = computed(() => props.element?.json_content?.eyebrow || $t('Renginių kalendorius'));
+// Fallback only matters standalone (no surrounding document to resolve a band from —
+// e.g. Storybook, a unit test that doesn't pass `band`); every real render path always
+// supplies it once this type is registered `bandRole: 'band'` (Types/index.ts).
+const bandClasses = computed(() => props.band?.classes
+  ?? ['rc-band', 'relative', 'scroll-mt-32', BAND_PADDING, BAND_GROUND_CLASS.tint, 'rc-viewport']);
+
+function updateTitle(title: string): void {
+  if (!props.element) return;
+  emit('update:element', { ...props.element, json_content: { ...props.element.json_content, title } });
+}
+
+function updateEyebrow(eyebrow: string): void {
+  if (!props.element) return;
+  emit('update:element', { ...props.element, json_content: { ...props.element.json_content, eyebrow } });
+}
 
 const page = usePage();
 const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);
@@ -159,12 +206,6 @@ const serverCalendar = computed<CalendarEvent[] | undefined>(() => props.resolve
  */
 const hasPrefetchedCalendar = computed(() => serverCalendar.value !== undefined);
 
-// Normalize allTenants to boolean (handles true, 1, "1", "true")
-const allTenants = computed(() => {
-  const val = props.element?.options?.allTenants;
-  return val === true || val === 1 || val === '1' || val === 'true';
-});
-
 const {
   calendar: apiCalendar,
   loading: apiLoading,
@@ -172,13 +213,23 @@ const {
   refresh,
   initializeWithData,
 } = useCalendarFetch({
-  allTenants: allTenants.value,
+  // Matches CalendarBlockResolver's own default ('all') — this client fetch is a
+  // fallback for the (effectively unreachable in normal operation) case where no
+  // server-resolved payload arrived at all; `options.tenantScope` only reaches the
+  // resolver, not this endpoint.
+  allTenants: true,
   skipInitialFetch: hasPrefetchedCalendar.value,
 });
 
-if (hasPrefetchedCalendar.value && serverCalendar.value) {
-  initializeWithData(serverCalendar.value);
-}
+// Reactive, not a one-time call at setup: `props.resolved` changes whenever the editor
+// re-fetches this block's preview (e.g. after a limit/category change in
+// CalendarBlockToolbar.vue) — a plain `if (...) initializeWithData(...)` here only ran
+// once at mount, so the display stayed frozen on whatever data it first received and
+// never picked up a later options change. This is the actual "changing the amount does
+// nothing" bug.
+watch(serverCalendar, (events) => {
+  if (events) initializeWithData(events);
+}, { immediate: true });
 
 const loading = computed(() => !hasPrefetchedCalendar.value && apiLoading.value);
 const error = computed(() => !hasPrefetchedCalendar.value && apiError.value);
@@ -186,17 +237,24 @@ const error = computed(() => !hasPrefetchedCalendar.value && apiError.value);
 /**
  * The next few events, soonest first. The band is a way *into* the calendar, not the calendar —
  * a reader who wants the rest follows "Visi renginiai".
+ *
+ * When server-resolved (the normal case — see `CalendarBlockResolver`), the source is
+ * already exactly "upcoming, ascending, capped at `options.limit`"; no client-side
+ * re-filtering/re-sorting/re-capping here, since that used to silently override
+ * whatever count the author configured (always showing at most a hardcoded 5,
+ * regardless of `options.limit`) and, worse, could show the wrong events entirely —
+ * `apiCalendar` from the old prefetch path was a large pool ordered newest-first, not
+ * upcoming-first. This filter+sort stays only as a safety net for the (effectively
+ * unreachable today) live client-fetch fallback, whose own date window may not be
+ * pre-sorted.
  */
-const UPCOMING_LIMIT = 5;
-
 const upcomingEvents = computed<CalendarEvent[]>(() => {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
   return ((apiCalendar.value ?? []) as CalendarEvent[])
     .filter(event => new Date(event.end_date ?? event.date) >= startOfToday)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, UPCOMING_LIMIT);
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 });
 
 const dayOfMonth = (date: string) => new Date(date).getDate();

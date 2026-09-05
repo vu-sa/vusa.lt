@@ -27,7 +27,9 @@ describe('LinkListEditor', () => {
     expect(addButton).toBeTruthy();
     await addButton!.trigger('click');
 
-    expect(item.json_content.links).toHaveLength(1);
+    const emitted = wrapper.emitted('update:modelValue');
+    expect(emitted).toBeTruthy();
+    expect((emitted!.at(-1)![0] as LinkList['json_content']).links).toHaveLength(1);
   });
 
   it('news/pages sourcing hides the manual link list', () => {
@@ -54,6 +56,8 @@ describe('LinkListEditor', () => {
     expect(allButton).toBeTruthy();
     await allButton!.trigger('click');
 
-    expect(item.options.tenantScope).toBe('all');
+    const emitted = wrapper.emitted('update:options');
+    expect(emitted).toBeTruthy();
+    expect((emitted!.at(-1)![0] as LinkList['options']).tenantScope).toBe('all');
   });
 });

@@ -96,4 +96,28 @@ describe('NewsElement', () => {
     expect(wrapper.find('[data-slot="skeleton"]').exists()).toBe(false);
     expect(wrapper.text()).toContain('Nėra naujienų');
   });
+
+  it('is not editable by default — the title renders as plain text', () => {
+    const wrapper = mountWith([makeItem()], makeElement('Naujausios'));
+    expect(wrapper.find('[contenteditable]').exists()).toBe(false);
+    expect(wrapper.find('h2').text()).toBe('Naujausios');
+  });
+
+  it('in full-screen editor mode, editing the title bubbles update:element', async () => {
+    const wrapper = mount(NewsElement, {
+      props: { element: makeElement('Naujausios'), resolved: { type: 'news', items: [makeItem()] }, editable: true, blockKey: 'news-1' },
+      global: { stubs },
+    });
+
+    const title = wrapper.find('[contenteditable]');
+    expect(title.exists()).toBe(true);
+
+    title.element.textContent = 'Kas naujo';
+    await title.trigger('input');
+    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+
+    const emitted = wrapper.emitted('update:element');
+    expect(emitted).toBeTruthy();
+    expect((emitted!.at(-1)![0] as News).json_content.title).toBe('Kas naujo');
+  });
 });
