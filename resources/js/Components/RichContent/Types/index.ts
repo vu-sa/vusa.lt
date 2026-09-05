@@ -150,7 +150,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     // `prose` is offered so an accordion can line up with a `prose` text block.
     allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
-    defaultContent: () => ([]),
+    defaultContent: () => ([
+      { label: '', content: {} },
+    ]),
     usesSectionChrome: true,
     bandRole: 'band',
     inlineEditable: true,

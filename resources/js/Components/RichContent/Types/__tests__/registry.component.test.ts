@@ -57,6 +57,12 @@ describe('contentTypeRegistry', () => {
     expect(item.options).toMatchObject({ title: '' });
   });
 
+  it('seeds a new accordion with one editable item', () => {
+    const item = createContentItem('shadcn-accordion');
+
+    expect(item.json_content).toEqual([{ label: '', content: {} }]);
+  });
+
   it('getSkeletonForType falls back to a generic skeleton for types without one', () => {
     // spotify-embed has no bespoke skeleton registered.
     const skeleton = getSkeletonForType('spotify-embed');
