@@ -96,7 +96,12 @@
             class="group cursor-pointer rounded-lg px-3 py-2.5 transition-colors hover:bg-accent data-[highlighted]:bg-accent"
             @select="handleHitSelect(hit)"
           >
-            <SearchHitRow :hit />
+            <SearchHitRow
+              :hit
+              show-actions
+              @view="navigateToHref(hit.viewHref)"
+              @edit="navigateToHref(hit.editHref)"
+            />
           </CommandItem>
         </CommandGroup>
 
@@ -389,6 +394,14 @@ const handleHitSelect = (hit: NormalizedSearchHit) => {
   if (hit.href) {
     close();
     router.visit(hit.href);
+  }
+};
+
+// View/edit quick-action buttons on a hit row
+const navigateToHref = (href?: string) => {
+  if (href) {
+    close();
+    router.visit(href);
   }
 };
 

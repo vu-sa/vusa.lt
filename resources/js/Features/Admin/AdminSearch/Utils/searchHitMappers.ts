@@ -83,6 +83,14 @@ export interface NormalizedSearchHit {
   badge?: string;
   meta?: string;
   href?: string;
+  /**
+   * "View" / "Edit" links for the two-button row affordance (command palette).
+   * Mirror the same per-collection routes as the detail-pane `#actions` slot
+   * (e.g. `DutyDetailPreview.vue`) — a collection with no dedicated admin show
+   * page (news, pages, calendar) or a stubbed one (resources) omits `viewHref`.
+   */
+  viewHref?: string;
+  editHref?: string;
   /** Contextual colored status badge shown on the list row. */
   statusBadge?: { label: string; tone: BadgeTone };
   /** Duties only: the row belongs to a tenant outside the user's own scope. */
@@ -310,6 +318,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     badge: m.tenant_shortname,
     meta: formatSearchDate(m.start_time),
     href: route('meetings.show', m.id),
+    viewHref: route('meetings.show', m.id),
+    editHref: route('meetings.edit', m.id),
     statusBadge: m.completion_status
       ? { label: getFacetValueLabel('completion_status', m.completion_status), tone: completionTone(m.completion_status) }
       : undefined,
@@ -321,6 +331,9 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     subtitle: a.institution_name_lt || a.institution_name_en,
     meta: formatSearchDate(a.meeting_start_time),
     href: route('agendaItems.edit', a.id),
+    // Agenda items have no dedicated show page — "view" opens their parent meeting.
+    viewHref: a.meeting_id ? route('meetings.show', a.meeting_id) : undefined,
+    editHref: route('agendaItems.edit', a.id),
     statusBadge: a.decision
       ? { label: getFacetValueLabel('decision', a.decision), tone: voteTone(a.decision) }
       : undefined,
@@ -332,6 +345,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     subtitle: i.tenant_shortname,
     badge: i.tenant_shortname,
     href: route('institutions.show', i.id),
+    viewHref: route('institutions.show', i.id),
+    editHref: route('institutions.edit', i.id),
   }),
   resources: (r: ResourceSearchResult) => ({
     recordId: String(r.id),
@@ -340,6 +355,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     imageUrl: r.image_url || undefined,
     badge: r.tenant_shortname,
     href: route('resources.edit', r.id),
+    // No view button: ResourceController@show is an unimplemented stub.
+    editHref: route('resources.edit', r.id),
     statusBadge: {
       label: r.is_reservable ? $t('Skolinamas') : $t('Neskolinamas'),
       tone: (r.is_reservable ? 'success' : 'neutral') as BadgeTone,
@@ -357,6 +374,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
       badge: d.tenant_shortname,
       meta: memberMeta,
       href: route('duties.show', d.id),
+      viewHref: route('duties.show', d.id),
+      editHref: route('duties.edit', d.id),
       isExternal: external,
       // Subtle cross-tenant indicator: only external duties get a badge, labelled
       // with their owning padalinys.
@@ -372,6 +391,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     badge: d.tenant_shortname,
     meta: formatSearchDate(d.document_date),
     href: d.anonymous_url,
+    viewHref: route('documents.show', d.id),
     statusBadge: d.content_type
       ? { label: d.content_type, tone: 'neutral' as BadgeTone }
       : undefined,
@@ -382,6 +402,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     badge: n.tenant_name,
     meta: formatSearchDate(n.publish_time),
     href: route('news.edit', n.id),
+    // No admin show page for news — only the public page and the editor.
+    editHref: route('news.edit', n.id),
     // The admin index (unlike the public one) also contains drafts and
     // scheduled articles — flag them so they aren't mistaken for live ones.
     statusBadge: n.draft
@@ -396,6 +418,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     subtitle: p.category_name,
     badge: p.tenant_name,
     href: route('pages.edit', p.id),
+    // No admin show page for pages — only the public page and the editor.
+    editHref: route('pages.edit', p.id),
   }),
   calendar: (c: CalendarSearchResult) => ({
     recordId: String(c.id),
@@ -403,6 +427,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     badge: c.tenant_name,
     meta: formatSearchDate(c.date),
     href: route('calendar.edit', c.id),
+    editHref: route('calendar.edit', c.id),
   }),
   users: (u: UserSearchResult) => ({
     recordId: String(u.id),
@@ -411,6 +436,8 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     badge: u.tenant_shortname,
     meta: u.current_duty_names?.[0],
     href: route('users.show', u.id),
+    viewHref: route('users.show', u.id),
+    editHref: route('users.edit', u.id),
     statusBadge: u.is_active === false
       ? { label: $t('Ištrintas'), tone: 'destructive' as BadgeTone }
       : undefined,
