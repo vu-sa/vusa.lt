@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { defineComponent, h, inject, nextTick, provide, reactive, type InjectionKey } from 'vue';
+import { reactive } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import MobileNavigation from '../MobileNavigation.vue';
@@ -10,47 +10,18 @@ import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-// The real Drawer is a vaul-vue portal — unreliable in jsdom, and it renders
-// its content regardless of `open` (visibility is CSS/animation-driven, not
-// v-if-gated), so the panel-stack navigation underneath is exercised the
-// same way with or without a real open/close. The one thing worth wiring is
-// the trigger -> `open` link itself, via provide/inject mirroring vaul's own
-// context pattern, since one test needs a real true->false transition to
-// exercise the "reset stack on navigate" watcher. The drawer's actual
-// open/close animation is a manual-QA concern either way.
-const openKey: InjectionKey<{ setOpen: (value: boolean) => void }> = Symbol('drawer-open');
-
-const DrawerStub = defineComponent({
-  name: 'DrawerStub',
-  props: { open: { type: Boolean, default: false } },
-  emits: ['update:open'],
-  setup(_props, { emit, slots }) {
-    provide(openKey, { setOpen: (value: boolean) => emit('update:open', value) });
-    return () => h('div', slots.default?.());
-  },
-});
-
-const DrawerTriggerStub = defineComponent({
-  name: 'DrawerTriggerStub',
-  setup(_props, { slots }) {
-    const ctx = inject(openKey, null);
-    return () => h('div', { 'data-testid': 'drawer-trigger', 'onClick': () => ctx?.setOpen(true) }, slots.default?.());
-  },
-});
-
-const drawerStubs = {
-  Drawer: DrawerStub,
-  DrawerTrigger: DrawerTriggerStub,
-  DrawerContent: { template: '<div><slot /></div>' },
-  DrawerTitle: { template: '<h2><slot /></h2>' },
-  DrawerDescription: { template: '<p><slot /></p>' },
-  DrawerClose: { template: '<button type="button"><slot /></button>' },
-};
-
+/**
+ * The mobile menu is a full-viewport panel teleported to `body`, opened by the header button —
+ * not a sheet with a drill-down stack. `attachTo` is required so the teleport target exists and
+ * `wrapper.html()` can see the panel.
+ */
 const iconStubs = {
   LineHorizontal320Filled: { template: '<span class="icon-menu" />' },
-  IFluentPerson24Filled: { template: '<span class="icon-person-filled" />' },
-  IFluentPerson24Regular: { template: '<span class="icon-person-regular" />' },
+  IFluentGrid24Filled: { template: '<span data-slot="mano-vusa-button-icon" class="icon-grid-filled" />' },
+  IFluentGrid24Regular: { template: '<span data-slot="mano-vusa-button-icon" class="icon-grid" />' },
+  IFluentDismiss24Regular: { template: '<span class="icon-close" />' },
+  IFluentAdd24Regular: { template: '<span class="icon-add" />' },
+  IFluentLocation24Regular: { template: '<span class="icon-location" />' },
   IFluentSearch20Filled: { template: '<span class="icon-search" />' },
   Icon: { props: ['icon'], template: '<span class="iconify" />' },
 };
@@ -79,97 +50,138 @@ function buildMockPage(overrides: Record<string, unknown> = {}) {
 }
 
 function mountNav(overrides: Record<string, unknown> = {}) {
-  const mockPage = buildMockPage(overrides);
-  vi.mocked(usePage).mockReturnValue(mockPage);
+  vi.mocked(usePage).mockReturnValue(buildMockPage(overrides));
 
   return mount(MobileNavigation, {
+    attachTo: document.body,
     global: {
-      stubs: { ...commonStubs, ...drawerStubs, ...iconStubs },
+      stubs: { ...commonStubs, ...iconStubs },
     },
   });
 }
 
-// The back button always stays in the DOM (so the title's indent doesn't
-// jump between panels) — it's toggled via `invisible`/`aria-hidden`, not
-// v-if, so "shown" means visible, not merely present.
-function backButtonVisible(wrapper: ReturnType<typeof mount>) {
-  const button = wrapper.find('[aria-label="navigation.back"]');
-  return button.exists() && !button.classes().includes('invisible') && button.attributes('aria-hidden') !== 'true';
+/** The panel only exists once opened, so every content assertion goes through this. */
+async function openNav(overrides: Record<string, unknown> = {}) {
+  const wrapper = mountNav(overrides);
+  await wrapper.find('button').trigger('click');
+
+  return wrapper;
 }
 
 describe('MobileNavigation.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    document.body.innerHTML = '';
+    document.body.style.overflow = '';
   });
 
-  it('shows the root panel with every section from mainNavigation', () => {
+  it('stays closed until the header button is pressed', () => {
     const wrapper = mountNav();
 
-    expect(wrapper.text()).toContain('VU SA');
-    expect(wrapper.text()).toContain('Studijos ir mokslas');
-    // The back button stays reserved in the header (no layout shift) but is hidden at the root.
-    expect(backButtonVisible(wrapper)).toBe(false);
+    expect(wrapper.html()).not.toContain('Studijos ir mokslas');
   });
 
-  it('drills into a section, flattening every column into one list, with a back button', async () => {
-    const wrapper = mountNav();
+  it('opens a full-viewport panel listing every section', async () => {
+    const wrapper = await openNav();
 
-    const sectionButton = wrapper.findAll('button').find(b => b.text() === 'VU SA');
-    await sectionButton!.trigger('click');
-    await nextTick();
+    const panel = document.querySelector('[role="dialog"]');
+    expect(panel).not.toBeNull();
+    expect(panel!.className).toContain('fixed');
+    expect(panel!.textContent).toContain('VU SA');
+    expect(panel!.textContent).toContain('Studijos ir mokslas');
 
-    expect(wrapper.text()).toContain('Struktūra');
-    expect(wrapper.text()).toContain('Strategija');
-    expect(wrapper.text()).toContain('Tvarumas');
-    // Root-only content is gone.
-    expect(wrapper.text()).not.toContain('Studijos ir mokslas');
-    expect(backButtonVisible(wrapper)).toBe(true);
+    wrapper.unmount();
   });
 
-  it('returns to the root panel via the back button', async () => {
-    const wrapper = mountNav();
+  it('expands a section in place rather than replacing the list', async () => {
+    const wrapper = await openNav();
 
-    await wrapper.findAll('button').find(b => b.text() === 'VU SA')!.trigger('click');
-    await nextTick();
-    await wrapper.find('[aria-label="navigation.back"]').trigger('click');
-    await nextTick();
+    const triggers = [...document.querySelectorAll('nav button')] as HTMLElement[];
+    triggers.at(-2)!.click();
+    await wrapper.vm.$nextTick();
 
-    expect(wrapper.text()).toContain('VU SA');
-    expect(wrapper.text()).toContain('Studijos ir mokslas');
-    expect(backButtonVisible(wrapper)).toBe(false);
+    const panel = document.querySelector('[role="dialog"]')!;
+    expect(panel.textContent).toContain('Struktūra');
+    // The section it drilled into used to disappear; now the whole menu stays put.
+    expect(panel.textContent).toContain('Studijos ir mokslas');
+
+    wrapper.unmount();
   });
 
-  it('resets the panel stack to root when the current path changes', async () => {
-    const mockPage = reactive(buildMockPage());
-    vi.mocked(usePage).mockReturnValue(mockPage as ReturnType<typeof usePage>);
+  it('locks the page behind the panel while it is open', async () => {
+    const wrapper = await openNav();
+
+    expect(document.body.style.overflow).toBe('hidden');
+
+    wrapper.unmount();
+  });
+
+  it('closes when the current path changes', async () => {
+    // The component captures `usePage()` once at setup, so navigation has to be simulated by
+    // mutating that same reactive object — swapping the mock's return value would not reach it.
+    const page = reactive(buildMockPage());
+    vi.mocked(usePage).mockReturnValue(page);
 
     const wrapper = mount(MobileNavigation, {
-      global: { stubs: { ...commonStubs, ...drawerStubs, ...iconStubs } },
+      attachTo: document.body,
+      global: { stubs: { ...commonStubs, ...iconStubs } },
     });
 
-    // The stack only resets when the sheet transitions from open to closed —
-    // open it via the trigger first so the later path change is a real flip.
-    await wrapper.find('[data-testid="drawer-trigger"]').trigger('click');
-    await wrapper.findAll('button').find(b => b.text() === 'VU SA')!.trigger('click');
-    await nextTick();
-    expect(backButtonVisible(wrapper)).toBe(true);
+    await wrapper.find('button').trigger('click');
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
 
-    mockPage.props.app.path = 'lt/kita-svetaine';
-    await nextTick();
+    page.props.app.path = 'lt/naujienos';
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
 
-    expect(backButtonVisible(wrapper)).toBe(false);
-    expect(wrapper.text()).toContain('Studijos ir mokslas');
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+
+    wrapper.unmount();
   });
 
-  it('shows a login row pointing at /login with the authenticated user name', () => {
-    const wrapper = mountNav({
-      auth: {
-        user: { id: 1, name: 'Testas Testauskas' },
-      },
-    });
+  it('shows the authenticated account row as a public outline button', async () => {
+    const wrapper = await openNav({ auth: { user: { id: 1, name: 'Testas Testauskas' }, can: {} } });
 
-    const loginLink = wrapper.find('a[href="/login"]');
-    expect(loginLink.exists()).toBe(true);
-    expect(loginLink.text()).toContain('Testas Testauskas');
+    const accountLink = document.querySelector('a[title="Testas Testauskas"]') as HTMLElement;
+    expect(accountLink).not.toBeNull();
+    expect(accountLink.getAttribute('href')).toContain('dashboard');
+    expect(accountLink.textContent).toContain('Mano VU SA');
+    expect(accountLink.className).toContain('border');
+    expect(accountLink.className).toContain('text-foreground/70');
+    expect(accountLink.className).toContain('hover:text-brand');
+    const icon = document.querySelector('[data-slot="mano-vusa-button-icon"]') as HTMLElement;
+    expect(icon).not.toBeNull();
+    expect(icon.getAttribute('class')).toContain('text-brand');
+
+    wrapper.unmount();
+  });
+
+  it('keeps the footer controls visually consistent and opens accessibility preferences', async () => {
+    const wrapper = await openNav();
+    const localeTrigger = document.querySelector('[data-slot="locale-button"]') as HTMLElement;
+    const accessibilityTrigger = document.querySelector('[data-slot="accessibility-menu-trigger"]') as HTMLElement;
+
+    expect(accessibilityTrigger.className).toContain('hover:border-brand');
+    expect(accessibilityTrigger.className).toContain('dark:hover:text-brand');
+
+    const searchButton = [...document.querySelectorAll('a')]
+      .find(link => link.textContent?.includes('Paieška')) as HTMLElement;
+    expect(searchButton.className).toContain('h-9');
+
+    localeTrigger.click();
+    await wrapper.vm.$nextTick();
+
+    const localeMenu = document.querySelector('[data-slot="locale-menu"]') as HTMLElement;
+    expect(localeMenu).not.toBeNull();
+    expect(localeMenu.className).toContain('z-[70]');
+
+    accessibilityTrigger.click();
+    await wrapper.vm.$nextTick();
+
+    const accessibilityMenu = document.querySelector('[data-slot="accessibility-menu"]') as HTMLElement;
+    expect(accessibilityMenu).not.toBeNull();
+    expect(accessibilityMenu.className).toContain('z-[70]');
+
+    wrapper.unmount();
   });
 });

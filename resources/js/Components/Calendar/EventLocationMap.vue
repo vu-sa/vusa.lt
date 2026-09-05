@@ -1,13 +1,15 @@
 <template>
   <div
     ref="mapContainer"
-    class="h-48 w-full rounded-xl overflow-hidden ring-1 ring-zinc-200/60 dark:ring-zinc-700/60 bg-zinc-100 dark:bg-zinc-800"
+    class="h-48 w-full overflow-hidden border border-border bg-secondary"
   />
 </template>
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { useDark } from '@vueuse/core';
+import type * as Leaflet from 'leaflet';
 
 const props = defineProps<{
   latitude: number;
@@ -18,24 +20,29 @@ const props = defineProps<{
 
 const mapContainer = useTemplateRef<HTMLElement>('mapContainer');
 const isDark = useDark();
+const cartoApiKey = usePage().props.map?.cartoApiKey;
 
 // Held outside of Vue's reactivity: Leaflet instances must not be proxied.
-let L: any = null;
-let map: any = null;
-let tileLayer: any = null;
+let L: typeof Leaflet | null = null;
+let map: Leaflet.Map | null = null;
+let tileLayer: Leaflet.TileLayer | null = null;
 
+// CARTO now requires an API key on tile requests, passed as `key` (not `api_key`) per their docs.
+const tileUrlSuffix = cartoApiKey ? `?key=${encodeURIComponent(cartoApiKey)}` : '';
 const tileUrls = {
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light: `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png${tileUrlSuffix}`,
+  dark: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${tileUrlSuffix}`,
 };
 
-const createTileLayer = () =>
-  L.tileLayer(isDark.value ? tileUrls.dark : tileUrls.light, {
+const createTileLayer = () => {
+  if (!L) return null;
+  return L.tileLayer(isDark.value ? tileUrls.dark : tileUrls.light, {
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19,
   });
+};
 
 onMounted(async () => {
   if (typeof window === 'undefined' || !mapContainer.value) return;
@@ -49,9 +56,12 @@ onMounted(async () => {
       attributionControl: false,
       // The map sits inside an article; grabbing the wheel would trap the reader.
       scrollWheelZoom: false,
+      // This is a static, decorative preview — no keyboard panning needed, and it avoids
+      // Leaflet focusing the container on click (see PadalinysMap for why that matters there).
+      keyboard: false,
     }).setView([props.latitude, props.longitude], 15);
 
-    tileLayer = createTileLayer().addTo(map);
+    tileLayer = createTileLayer()?.addTo(map) ?? null;
 
     L.control.attribution({ position: 'bottomright', prefix: '' })
       .addAttribution('© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>')
@@ -79,7 +89,7 @@ watch(isDark, () => {
   if (!map || !tileLayer) return;
 
   tileLayer.remove();
-  tileLayer = createTileLayer().addTo(map);
+  tileLayer = createTileLayer()?.addTo(map) ?? null;
 });
 
 onBeforeUnmount(() => {
@@ -98,7 +108,7 @@ onBeforeUnmount(() => {
   width: 18px;
   height: 18px;
   border-radius: 9999px;
-  background-color: var(--color-vusa-red);
+  background-color: var(--brand);
   border: 3px solid white;
   box-shadow: 0 1px 6px rgb(0 0 0 / 35%);
 }
@@ -135,7 +145,7 @@ onBeforeUnmount(() => {
 
 :deep(.leaflet-tooltip) {
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0;
   padding: 0.375rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 500;

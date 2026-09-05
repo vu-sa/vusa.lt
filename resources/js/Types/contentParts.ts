@@ -1,23 +1,37 @@
 // Type definitions for content parts used in the rich content editor
 // These types correspond to the ContentPartEnum in enums.ts
 
+import type { BlockPresentation } from '@/Components/RichContent/bandLayout';
+import type { PlainPadding } from '@/Components/RichContent/sectionClasses';
+import type { BlockWidth } from '@/Components/RichContent/Types';
+
 /**
  * Shared RCSection.vue chrome fields — mixed into the `options` of every type that
  * renders through RCSection (see Editor/RCSectionOptions.vue, the one editor fieldset
- * behind all of them).
+ * behind all of them). `background`/`padding`/`rounded`/`divider`/`bleed` are gone —
+ * a band's ground now alternates automatically (see `bandLayout.ts`); `presentation`
+ * is the only override left.
  */
 export interface SectionOptions {
   title?: string;
   subtitle?: string;
-  background?: 'none' | 'muted' | 'contrast' | 'gradient';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  rounded?: 'none' | 'sm' | 'md' | 'lg';
+  /** Brand kicker above the title. */
+  eyebrow?: string;
+  /**
+   * `auto` (default): the parser alternates this band's tint with its neighbours.
+   * `plain`: no band at all — renders in the content column like a text block.
+   */
+  presentation?: BlockPresentation;
+  /** Applied only when presentation is `plain`; automatic bands keep the standard rhythm. */
+  plainPadding?: PlainPadding;
   /** Semantic heading level for the section title (rendered by SectionHeader). Defaults to 2. */
   headingLevel?: 2 | 3 | 4;
   /** Title alignment, forwarded to SectionHeader. Defaults to 'center'. */
   align?: 'center' | 'start';
   /** Whether to render the separator bar beneath the title. Defaults to true. */
   showSeparator?: boolean;
+  /** Canvas column (see `.rc-canvas` in app.css) — read via `blockLayout.ts`. */
+  width?: BlockWidth;
 }
 
 // Implemented
@@ -67,6 +81,8 @@ export interface ContentGrid {
     equalHeight?: boolean;
     /** Vertical alignment of column content within each row — grid items stretch by default. */
     verticalAlign?: 'stretch' | 'start' | 'center' | 'end';
+    /** Cell rules: each column becomes a panel separated by a 1px rule instead of a gap. */
+    dividers?: boolean;
   };
 }
 
@@ -102,12 +118,8 @@ export interface ShadcnAccordion {
 export interface ShadcnCard {
   json_content: Tiptap['json_content'];
   options: {
-    color?: 'zinc' | 'red' | 'yellow';
-    variant?: 'outline' | 'soft';
     title?: string;
-    isTitleColored?: boolean;
-    /** @deprecated Cards no longer render an icon — ignored on display. Optional so old rows keep validating. */
-    showIcon?: boolean;
+    width?: BlockWidth;
   };
 }
 
@@ -133,7 +145,6 @@ export interface Hero {
       text: string;
       link: string;
       variant?: 'default' | 'outline';
-      color?: 'red' | 'yellow' | 'zinc' | 'white';
       /** CMS-stored icon name (see `cardIcons.ts`), rendered before the button text. Optional — most buttons have none. */
       icon?: string;
     }[];
@@ -145,16 +156,15 @@ export interface Hero {
      * `split` (default): two-column text + image — the original hero.
      * `centered`: no image, centred title/description/buttons — CTA/slogan sections.
      * `banner`: a compact single-row strip, title + one button.
-     * `panel`: the SummerCamps-style rounded gradient panel with a square thumbnail.
+     * `panel`: the SummerCamps-style rounded gradient panel with a square thumbnail —
+     * flow-role, not a band; it keeps its own fixed chrome and ignores `presentation`.
      */
     variant?: 'split' | 'centered' | 'banner' | 'panel';
-    /**
-     * `split`/`centered`/`banner` only — `panel` keeps its own fixed gradient chrome.
-     * Defaults reproduce each variant's previous hardcoded look exactly (see HeroElement.vue).
-     */
-    background?: 'none' | 'muted' | 'contrast' | 'gradient';
-    padding?: 'none' | 'sm' | 'md' | 'lg';
-    rounded?: 'none' | 'sm' | 'md' | 'lg';
+    /** `split`/`centered`/`banner` only — see `SectionOptions.presentation`. */
+    presentation?: BlockPresentation;
+    /** Applied only when presentation is `plain`. */
+    plainPadding?: PlainPadding;
+    width?: BlockWidth;
   };
 }
 
@@ -162,16 +172,38 @@ export interface DecorationConfig {
   type: 'circle' | 'line' | 'square';
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   size: 'sm' | 'md' | 'lg';
-  color?: 'vusa-red' | 'vusa-yellow' | 'zinc';
-  opacity?: number;
-  rotation?: boolean;
 }
 
 export interface SpotifyEmbed {
   json_content: {
     url: string;
+    /** `promo` variant only — small boxed kicker beside a headphones icon, e.g. "START FM 94.2". */
+    eyebrow?: string;
+    /** `promo` variant only. */
+    title?: string;
+    /** `promo` variant only. Tiptap doc — richer than a plain description string, so more than
+     *  one paragraph fits beside the embed. */
+    body?: Tiptap['json_content'];
+    /** `promo` variant only. */
+    buttons?: Hero['json_content']['buttons'];
+    /** `promo` variant only. Small label above the embed, e.g. "Naujausias epizodas". */
+    panelLabel?: string;
+    /** `promo` variant only. Optional background photo behind the embed panel's ink scrim. */
+    panelImage?: string;
   };
-  options: null;
+  options: {
+    /** `inline` (default): a plain bordered embed dropped into prose — unchanged original
+     *  behaviour, flow-role. `promo`: the START FM-style two-column section, text + buttons
+     *  beside the embed — a band, reading as its own section against the page. */
+    variant?: 'inline' | 'promo';
+    /** `promo` only. Text column on the left, embed panel on the right (default) — or swapped. */
+    textLeft?: boolean;
+    /** `promo` only — see `SectionOptions.presentation`. */
+    presentation?: BlockPresentation;
+    /** Applied only when presentation is `plain`. */
+    plainPadding?: PlainPadding;
+    width?: BlockWidth;
+  } | null;
 }
 
 export interface SocialEmbed {
@@ -182,6 +214,7 @@ export interface SocialEmbed {
   };
   options: {
     showCaption?: boolean;
+    width?: BlockWidth;
   };
 }
 
@@ -194,15 +227,38 @@ export interface FlowGraph {
   options: null;
 }
 
+/** A numbered process — "how you join", "how a request is handled". Auto-numbered on render. */
+export interface ProcessSteps {
+  json_content: {
+    title: string;
+    text?: string;
+  }[];
+  options: SectionOptions & {
+    columns?: 2 | 3 | 4;
+  };
+}
+
+/** The brand-filled band a page closes on. At most one per page — it is the loudest thing there. */
+export interface CtaBand {
+  json_content: {
+    heading?: string;
+    text?: string;
+    /** Contact facts beside the copy — an email, a room number. */
+    items?: { icon?: string; label: string }[];
+    button?: { label: string; href: string };
+  };
+  options: {
+    width?: BlockWidth;
+  } | null;
+}
+
 export interface NumberStatSection {
   json_content: {
     endNumber: number;
     label: string;
     showPlus?: boolean;
   }[];
-  options: SectionOptions & {
-    color?: 'zinc' | 'red' | 'yellow';
-  };
+  options: SectionOptions;
 }
 
 // Now implemented
@@ -210,9 +266,27 @@ export interface NumberStatSection {
 export interface Calendar {
   json_content: {
     title: string;
+    /** Small uppercase label above the title (Hero's `eyebrow`). Optional. */
+    eyebrow?: string;
   };
   options: {
-    allTenants?: boolean;
+    width?: BlockWidth;
+    /** Server-resolved fetch options — see `CalendarBlockResolver`. */
+    limit?: number;
+    categoryAlias?: string;
+    /**
+     * Which tenants' events to show. `'all'` (default, unset counts as this too) or a
+     * specific list of tenant ids — `[]` means "none selected" and shows zero events,
+     * a deliberate author choice via `RCTenantMultiSelect.vue`'s "None" button, not a
+     * fallback to unfiltered (contrast `LinkList`/`EventList`'s `tenantScope`, where an
+     * empty array only ever happens by accident and falls through to "all").
+     */
+    tenantScope?: 'current' | 'all' | number[];
+    /** Band chrome (bandLayout.ts) — not part of `SectionOptions` since this type has
+     *  no title/subtitle/heading-level/align of its own (its title/eyebrow live in
+     *  `json_content`, edited inline, not through a section header). */
+    presentation?: BlockPresentation;
+    plainPadding?: PlainPadding;
   } | null;
 }
 
@@ -230,6 +304,7 @@ export interface TextBox {
     placeholder?: { lt: string; en: string };
     isClosed?: boolean;
     closedMessage?: { lt: string; en: string };
+    width?: BlockWidth;
   };
 }
 
@@ -245,6 +320,8 @@ export interface NewsItem {
   publish_time: string;
   permalink: string | null;
   image: string;
+  /** Localized category name, or null for the many articles filed under none. */
+  category?: string | null;
 }
 
 export interface CarouselSlideDeck {
@@ -315,6 +392,7 @@ export interface HeroCarousel {
     scrim?: 'light' | 'medium' | 'dark';
     /** Panel height preset — the photo panel is inset, so this is the panel's own height. */
     height?: 'sm' | 'md' | 'lg';
+    width?: BlockWidth;
   };
 }
 
@@ -450,6 +528,7 @@ export interface Spacer {
   json_content: Record<string, never>;
   options: {
     size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    width?: BlockWidth;
   };
 }
 
@@ -467,6 +546,7 @@ export interface Timetable {
   }[];
   options: {
     title?: string;
+    width?: BlockWidth;
   } | null;
 }
 

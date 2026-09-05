@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Category;
 use App\Models\Form;
 use App\Models\Tenant;
 use App\Models\User;
@@ -109,7 +110,17 @@ class HandleInertiaRequests extends Middleware
             // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
             // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'tenants' => $this->getTenantsForInertia(...),
+            // Global, not tenant-scoped, ~7 rows repo-wide — cheap enough to always share
+            // rather than thread a `categories` prop through every controller/form that
+            // needs a category picker (Page/Calendar admin forms, RichContent's
+            // event-list/calendar block editors). See QuickLinkController's identical
+            // "not worth a search endpoint" rationale for categories.
+            'categories' => $this->getCategoriesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
+            // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
+            'map' => [
+                'cartoApiKey' => fn () => config('services.carto.api_key'),
+            ],
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
                 'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,
@@ -145,6 +156,16 @@ class HandleInertiaRequests extends Middleware
         $tenants->load('primary_institution:id,short_name,image_url');
 
         return $tenants;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    private function getCategoriesForInertia(): Collection
+    {
+        return Cache::rememberForever('all-categories-for-inertia',
+            fn () => Category::orderBy('alias')->get(['id', 'name', 'alias'])
+        );
     }
 
     /**

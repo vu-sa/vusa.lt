@@ -1,29 +1,24 @@
 <template>
   <div class="padalinys-map">
     <div class="relative h-[350px] w-full bg-muted overflow-hidden">
-      <!-- Leaflet Map Container -->
-      <div id="padalinys-leaflet-map" class="h-full w-full" />
-
-      <!-- <div class="absolute bottom-2 left-2 z-[1000] p-2 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-sm rounded-md shadow text-sm max-w-[200px]">
-        <p v-if="hoveredLocation" class="font-medium">
-          {{ hoveredLocation.label }}
-          <span class="block text-xs text-zinc-900 dark:text-zinc-50">{{ hoveredLocation.primary_institution?.short_name || '' }}</span>
-        </p>
-        <p v-else class="text-xs text-zinc-900 dark:text-zinc-50">
-          {{ $t('Hover over a faculty to see details') }}
-        </p>
-      </div> -->
+      <div id="padalinys-leaflet-map" class="h-full w-full !bg-muted" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { trans as $t, trans } from 'laravel-vue-i18n';
-import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick, h, render } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDark } from '@vueuse/core';
+import type * as Leaflet from 'leaflet';
+import type { Layer, Map as LeafletMap, MarkerClusterGroup, TileLayer } from 'leaflet';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+type LeafletApi = typeof Leaflet;
+type ZoomTransitionMap = LeafletMap & {
+  _animatingZoom?: boolean;
+  _onZoomTransitionEnd?: () => void;
+};
 
 interface DropdownOption {
   label: string;
@@ -49,13 +44,16 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits(['update:hoveredLocation']);
+const emit = defineEmits<{
+  'update:hoveredLocation': [option: DropdownOption | null];
+}>();
 
 // Importing leaflet dynamically to avoid SSR issues
-let L: any = null;
-let leafletMap: any = null;
-let markers: any[] = [];
-let markerClusterGroup: any = null;
+let L: LeafletApi | null = null;
+let leafletMap: ZoomTransitionMap | null = null;
+let markers: Layer[] = [];
+let markerClusterGroup: MarkerClusterGroup | null = null;
+let suppressMarkerClicksUntil = 0;
 
 const hoveredLocation = ref<DropdownOption | null>(null);
 const isMapInitialized = ref(false);
@@ -64,14 +62,18 @@ const mapCreationAttempted = ref(false);
 // Get theme state for dark mode detection
 const isDark = useDark();
 
+// CARTO now requires an API key on tile requests, passed as `key` (not `api_key`) per their docs.
+const cartoApiKey = usePage().props.map?.cartoApiKey;
+const tileUrlSuffix = cartoApiKey ? `?key=${encodeURIComponent(cartoApiKey)}` : '';
+
 // Map tile URLs for light and dark modes
 const mapTileUrls = {
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light: `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png${tileUrlSuffix}`,
+  dark: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${tileUrlSuffix}`,
 };
 
 // Map tile layer - will be initialized once we know the theme
-let tileLayer: any = null;
+let tileLayer: TileLayer | null = null;
 
 const isActivePadalinys = (key: string): boolean => {
   return usePage().props.tenant?.alias === key;
@@ -117,30 +119,23 @@ const renderAvatarToHTML = (option: DropdownOption, isActive: boolean): string =
   const { isMainOffice } = option;
   const avatarClasses = `map-avatar ${isActive ? 'active' : ''} ${isMainOffice ? 'main-office' : ''}`;
 
-  // Create direct HTML structure that matches Shadcn Avatar component structure
-  let html = '';
-
   if (avatarUrl) {
-    // If we have an avatar URL, create an avatar with an image
-    html = `
+    return `
       <div class="${avatarClasses}" data-slot="avatar">
         <img src="${avatarUrl}" alt="${option.label}" class="h-full w-full object-cover" />
       </div>
     `;
   }
-  else {
-    // Otherwise create an avatar with fallback text
-    const fallbackText = key.substring(0, 2).toUpperCase();
-    html = `
-      <div class="${avatarClasses}" data-slot="avatar">
-        <div class="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
-          ${fallbackText}
-        </div>
-      </div>
-    `;
-  }
 
-  return html;
+  const fallbackText = key.substring(0, 2).toUpperCase();
+
+  return `
+    <div class="${avatarClasses}" data-slot="avatar">
+      <div class="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+        ${fallbackText}
+      </div>
+    </div>
+  `;
 };
 
 // Initialize map when component is mounted
@@ -157,31 +152,39 @@ watch(() => [props.faculties, props.searchQuery], () => {
 }, { deep: true });
 
 // Watch for theme changes and update map tiles accordingly
-watch(() => isDark, (newIsDark) => {
-  if (leafletMap && tileLayer) {
-    // Remove existing tile layer
+watch(isDark, (newIsDark) => {
+  if (L && leafletMap && tileLayer) {
     tileLayer.remove();
 
-    // Add new tile layer based on theme
     tileLayer = L.tileLayer(newIsDark ? mapTileUrls.dark : mapTileUrls.light, {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 19,
     }).addTo(leafletMap);
-
-    // Force update styling for attribution in dark mode
-    updateMapControlsStyle(newIsDark.value);
   }
 });
 
+// Hover and focus can request initialization again while the dynamic imports are pending.
+let isInitializingMap = false;
+
+/** Leaflet leaves its zoom timer alive after `remove()`, so finish an active transition first. */
+const removeMapSafely = (instance: ZoomTransitionMap): void => {
+  if (instance._animatingZoom) {
+    instance._onZoomTransitionEnd?.();
+  }
+  instance.remove();
+};
+
 // Initialize or recreate the map
 const initializeOrUpdateMap = async () => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || isInitializingMap) return;
+
+  isInitializingMap = true;
 
   try {
     // Clean up any existing map
     if (leafletMap) {
-      leafletMap.remove();
+      removeMapSafely(leafletMap);
       leafletMap = null;
       markers = [];
       markerClusterGroup = null;
@@ -191,24 +194,31 @@ const initializeOrUpdateMap = async () => {
     mapCreationAttempted.value = true;
 
     // Dynamically import Leaflet and Leaflet.MarkerCluster
-    const leaflet = await import('leaflet');
+    const leaflet = await import('leaflet') as LeafletApi & { default: LeafletApi };
     L = leaflet.default;
 
     // Import Leaflet and MarkerCluster CSS
     await import('leaflet/dist/leaflet.css');
 
-    // Import MarkerCluster
-    const MarkerCluster = await import('leaflet.markercluster');
+    await import('leaflet.markercluster');
     await import('leaflet.markercluster/dist/MarkerCluster.css');
     await import('leaflet.markercluster/dist/MarkerCluster.Default.css');
 
     // Initialize map if container exists
     const container = document.getElementById('padalinys-leaflet-map');
     if (container) {
+      // Closing the popover during imports can leave Leaflet's stamp on the reused node.
+      const leafletContainer = container as HTMLElement & { _leaflet_id?: number };
+      if (leafletContainer._leaflet_id) {
+        delete leafletContainer._leaflet_id;
+      }
+
       // Center on Vilnius
       leafletMap = L.map('padalinys-leaflet-map', {
         zoomControl: false, // Disable default zoom control for cleaner look
         attributionControl: false, // We'll add attribution in a more subtle way
+        // Replacing a focused cluster icon during zoom can close the hover-driven popover.
+        keyboard: false,
       }).setView([54.683333, 25.286944], 13);
 
       // Add tile layer based on current theme
@@ -229,9 +239,6 @@ const initializeOrUpdateMap = async () => {
         position: 'bottomright',
       }).addTo(leafletMap);
 
-      // Apply custom styling for attribution and zoom controls
-      updateMapControlsStyle(isDark.value);
-
       // Create marker cluster group with custom options
       markerClusterGroup = L.markerClusterGroup({
         showCoverageOnHover: false,
@@ -246,6 +253,11 @@ const initializeOrUpdateMap = async () => {
         },
       });
 
+      // Prevent a rapid second cluster click from landing on a newly revealed tenant marker.
+      markerClusterGroup.on('clusterclick', () => {
+        suppressMarkerClicksUntil = Date.now() + 400;
+      });
+
       // Add marker cluster group to map
       leafletMap.addLayer(markerClusterGroup);
 
@@ -258,6 +270,9 @@ const initializeOrUpdateMap = async () => {
   catch (error) {
     console.error('Failed to load map libraries:', error);
     isMapInitialized.value = false;
+  }
+  finally {
+    isInitializingMap = false;
   }
 };
 
@@ -285,7 +300,7 @@ const updateMapMarkers = () => {
     if (!location) return;
 
     // Create marker based on whether we have an avatar image
-    let marker;
+    let marker: Layer;
     const isActive = isActivePadalinys(option.key);
     const avatarUrl = option.primary_institution?.image_url;
 
@@ -297,7 +312,8 @@ const updateMapMarkers = () => {
         iconAnchor: [16, 32],
       });
 
-      marker = L.marker([location.lat, location.lng], { icon: customIcon });
+      // Replacing a focused marker after cluster zoom can close the hover-driven popover.
+      marker = L.marker([location.lat, location.lng], { icon: customIcon, keyboard: false });
     }
     else {
       // Fallback to minimal circle marker
@@ -315,7 +331,10 @@ const updateMapMarkers = () => {
     // Add hover and click events
     marker.on('mouseover', () => setHoveredLocation(option));
     marker.on('mouseout', () => setHoveredLocation(null));
-    marker.on('click', () => props.onFacultySelect(option.key));
+    marker.on('click', () => {
+      if (Date.now() < suppressMarkerClicksUntil) return;
+      props.onFacultySelect(option.key);
+    });
 
     // Add tooltip with faculty name and short name
     const shortName = $t(option.primary_institution?.short_name ?? '');
@@ -345,35 +364,6 @@ const updateMapMarkers = () => {
   }
 };
 
-// Apply custom styling to map controls based on theme
-const updateMapControlsStyle = (isDark: boolean) => {
-  if (!leafletMap) return;
-
-  // Find all zoom control buttons and apply spacing
-  const zoomInButton = document.querySelector('.leaflet-control-zoom-in');
-  const zoomOutButton = document.querySelector('.leaflet-control-zoom-out');
-
-  if (zoomInButton && zoomOutButton) {
-    // Add margin between zoom buttons
-    (zoomInButton as HTMLElement).style.marginBottom = '4px';
-    (zoomInButton as HTMLElement).style.borderRadius = '4px';
-    (zoomOutButton as HTMLElement).style.borderRadius = '4px';
-  }
-
-  // Fix attribution background color in dark mode
-  const attributionContainer = document.querySelector('.leaflet-control-attribution');
-  if (attributionContainer) {
-    if (isDark) {
-      (attributionContainer as HTMLElement).style.backgroundColor = 'rgba(30, 41, 59, 0.7)';
-      (attributionContainer as HTMLElement).style.color = '#94a3b8';
-    }
-    else {
-      (attributionContainer as HTMLElement).style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
-      (attributionContainer as HTMLElement).style.color = '#64748b';
-    }
-  }
-};
-
 // Provide methods for parent component to call
 defineExpose({
   forceUpdateMap,
@@ -383,7 +373,7 @@ defineExpose({
 // Clean up map on component unmount
 onBeforeUnmount(() => {
   if (leafletMap) {
-    leafletMap.remove();
+    removeMapSafely(leafletMap);
     leafletMap = null;
     markers = [];
     markerClusterGroup = null;
@@ -443,31 +433,72 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
-/* Customize Leaflet controls for minimal design */
+:deep(.leaflet-container) {
+  background: var(--muted);
+  font: inherit;
+}
+
 :deep(.leaflet-control-zoom) {
-  border: none !important;
+  overflow: hidden;
+  border: 1px solid var(--border) !important;
+  border-radius: 0;
   margin-right: 10px;
   margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
 }
 
 :deep(.leaflet-control-zoom a) {
-  border-radius: 4px !important;
-  color: #64748b;
-  border: 1px solid #e2e8f0 !important;
-  background-color: white;
-  display: block; /* Ensure buttons stack properly */
+  /* Leaflet's own "+"/"−" glyph (set via innerHTML), just re-centred: `display: flex` beats
+     the native `line-height`-based centring, which throws the glyph off-centre once the
+     button is resized away from Leaflet's default 26px. `!important` on `display` guards
+     against Leaflet's own CSS, which is imported dynamically at runtime and lands after this
+     scoped style in source order — same-specificity rules resolve by source order, so without
+     it Leaflet's `.leaflet-bar a { display: block }` would silently win. */
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  /* The glyph's own descender-side leading outweighs its ascender-side leading, which reads as
+     "sits a couple pixels low" once it's flex-centred on box height instead of Leaflet's default
+     line-height centring. A bottom padding nudges the centred content up to compensate. */
+  padding-bottom: 2px;
+  width: 2rem;
+  height: 2rem;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: var(--popover);
+  color: var(--foreground);
+  font-size: 1.125rem;
+  line-height: 1;
+  text-indent: 0;
+  transition: color 150ms ease, background-color 150ms ease;
 }
 
-:deep(.leaflet-control-zoom a:hover) {
-  background-color: #f8fafc;
-  color: #334155;
+:deep(.leaflet-control-zoom a:last-child) {
+  border-bottom: 0 !important;
+}
+
+:deep(.leaflet-control-zoom a:hover),
+:deep(.leaflet-control-zoom a:focus-visible) {
+  background: var(--popover);
+  color: var(--brand);
+}
+
+:deep(.leaflet-control-zoom a:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+:deep(.leaflet-control-zoom a.leaflet-disabled) {
+  background: var(--muted);
+  color: var(--muted-foreground);
 }
 
 :deep(.leaflet-control-attribution) {
-  background-color: rgba(255, 255, 255, 0.7);
+  background: color-mix(in oklab, var(--popover) 78%, transparent);
   padding: 0 5px;
   font-size: 9px;
-  color: #64748b;
+  color: var(--muted-foreground);
 }
 
 :deep(.leaflet-tooltip) {
@@ -478,23 +509,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   word-wrap: break-word; /* Ensure long words wrap properly */
   overflow-wrap: break-word; /* Modern version of word-wrap */
-}
-
-/* Dark theme support - use !important for higher specificity */
-.dark :deep(.leaflet-control-zoom a) {
-  background-color: #1e293b !important;
-  border-color: #334155 !important;
-  color: #cbd5e1;
-}
-
-.dark :deep(.leaflet-control-zoom a:hover) {
-  background-color: #334155 !important;
-  color: #f1f5f9;
-}
-
-.dark :deep(.leaflet-control-attribution) {
-  background-color: rgba(30, 41, 59, 0.7) !important;
-  color: #94a3b8 !important;
 }
 
 .dark :deep(.marker-cluster-icon) {

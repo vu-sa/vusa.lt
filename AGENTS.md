@@ -27,7 +27,9 @@ Specialized guidance lives in sub-directory `CLAUDE.md` files:
 
 ## Testing
 
-Every change must come with a test. But a component behavior that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model) is **intractable in a Vitest/jsdom component test** — assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion. Leave a comment in the test explaining what is intentionally not covered and why, so the gap is documented rather than accidental.
+Add or update a test when a change affects observable behaviour, a business rule, a security boundary, a data transformation, or a regression likely to recur. Do not add a test solely for deleting dead code, an unused asset/preload or retired integration; comments, formatting, copy-only edits; framework behaviour; or implementation details without a user-facing contract. A test must protect a plausible future regression — “every change needs one” is not sufficient reason.
+
+For a component behaviour that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model), assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion. Leave a comment in the test explaining what is intentionally not covered and why, so the gap is documented rather than accidental.
 
 ## Development Commands
 
@@ -502,7 +504,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 # Test Enforcement
 
-- Test every code change by adding or updating a test.
+- Add or update a test when a change affects observable behaviour, a business rule, a security boundary, a data transformation, or a regression likely to recur. Do not add a test solely for deleting dead code, an unused asset/preload or retired integration; comments, formatting, copy-only edits; framework behaviour; or implementation details without a user-facing contract.
 - Run the affected tests and ensure they pass.
 - Test the changed behavior and its important failure modes, but do not add tests beyond them.
 - Read the `testing-best-practices` skill before writing tests.

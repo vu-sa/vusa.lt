@@ -32,7 +32,11 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
     const tenantOptions = page.props.tenants
       .filter(tenant => tenant.type === TenantType.Padalinys || tenant.type === TenantType.Pagrindinis)
       .map((tenant): TenantOption => ({
-        label: $t(tenant.fullname.split('atstovybė ')[1] || ''),
+        // The unit's name is whatever follows "atstovybė " in its full name — but the main
+        // tenant *is* "Vilniaus universiteto Studentų atstovybė", so nothing follows and the
+        // label came out empty. Falling back to the shortname gives it "VU SA" instead of a
+        // blank row.
+        label: $t(tenant.fullname.split('atstovybė ')[1] || tenant.shortname),
         key: tenant.alias,
         primary_institution: tenant.primary_institution
           ? {
@@ -83,7 +87,9 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
    * how `en/news` came to be missing here in the first place.
    */
   const isSwitchAllowed = computed(() => {
-    const path = page.props.app.path;
+    // Defaulted rather than asserted: an absent path means "not one of the switchable pages",
+    // which is the safe answer. It used to throw on `.includes` instead.
+    const path = page.props.app?.path ?? '';
     const locales = ['lt', 'en'];
 
     const newsArchivePaths = locales.map(locale => `${locale}/${localizedSlug('newsArchiveString', locale)}`);

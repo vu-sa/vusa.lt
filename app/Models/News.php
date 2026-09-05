@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
-use App\Enums\NewsLayoutEnum;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
@@ -45,7 +44,6 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $publish_time
  * @property string|null $main_points
  * @property array<array-key, mixed>|null $highlights
- * @property string $layout
  * @property bool $show_breadcrumbs
  * @property string|null $read_more
  * @property int|null $draft
@@ -54,6 +52,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Category|null $category
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, Tag> $tags
@@ -77,6 +76,9 @@ class News extends Model implements Feedable, Sitemapable
     use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
 
     public $fallback_image = '/images/icons/naujienu_foto.png';
+
+    /** The conventional prose reading pace, used by {@see readingTimeMinutes()}. */
+    private const WORDS_PER_MINUTE = 200;
 
     #[\Override]
     protected function casts(): array
@@ -118,10 +120,6 @@ class News extends Model implements Feedable, Sitemapable
             if (is_array($news->highlights) && count($news->highlights) > 3) {
                 $news->highlights = array_slice($news->highlights, 0, 3);
             }
-
-            // Coerce an unrecognised layout rather than failing the save — the value is
-            // validated at the request boundary; this is the belt-and-braces pass.
-            $news->layout = (NewsLayoutEnum::tryFrom((string) $news->layout) ?? NewsLayoutEnum::default())->value;
         });
 
         static::saved(function ($news): void {
@@ -218,6 +216,11 @@ class News extends Model implements Feedable, Sitemapable
         return $this->belongsTo(Tenant::class);
     }
 
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function other_language_news(): HasOne
     {
         return $this->hasOne(News::class, 'id', 'other_lang_id');
@@ -231,6 +234,28 @@ class News extends Model implements Feedable, Sitemapable
     public function content(): BelongsTo
     {
         return $this->belongsTo(Content::class);
+    }
+
+    /**
+     * Rough minutes-to-read, shown beside the author and date in the article header.
+     *
+     * Counts only the article's text blocks — `ContentPart::$html` is null for everything that is
+     * not tiptap — plus the excerpt, at the conventional 200 words per minute. Rounded up, and
+     * never below 1: "0 min read" reads as an error rather than as "this is short".
+     */
+    public function readingTimeMinutes(): int
+    {
+        $text = trim(strip_tags($this->renderBodyHtml().' '.($this->short ?? '')));
+
+        if ($text === '') {
+            return 1;
+        }
+
+        // Split on whitespace rather than `str_word_count()`, which decides what a word character
+        // is from the C locale and therefore breaks Lithuanian words apart at every ą/č/ę/ū.
+        $words = count(preg_split('/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: []);
+
+        return max(1, (int) ceil($words / self::WORDS_PER_MINUTE));
     }
 
     public function toFeedItem(): FeedItem

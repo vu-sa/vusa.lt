@@ -82,11 +82,11 @@ describe('RCSideBySideDialog', () => {
     expect(lastEmit?.options?.width).toBe('prose');
   });
 
-  it('hides the width picker entirely for blocks with a single allowed width (e.g. section)', () => {
+  it('hides the width picker entirely for blocks with a single allowed width (e.g. cta-band)', () => {
     const wrapper = mount(RCSideBySideDialog, {
       props: {
         open: true,
-        content: { id: 2, type: 'section', json_content: [], options: { width: 'full' } },
+        content: { id: 2, type: 'cta-band', json_content: [], options: { width: 'full' } },
       },
       global: {
         stubs: { ...commonStubs, ContentEditorFactory: ContentEditorFactoryStub, BlockPreviewRenderer: BlockPreviewRendererStub },
@@ -95,7 +95,7 @@ describe('RCSideBySideDialog', () => {
 
     const buttons = wrapper.findAll('button');
     const anyWidthOption = buttons.find(el => el.text().includes('rich-content.width_'));
-    expect(anyWidthOption, 'section only allows "full", so the picker should not render').toBeUndefined();
+    expect(anyWidthOption, 'cta-band only allows "full", so the picker should not render').toBeUndefined();
   });
 
   it('toggles dark mode through the global useDark() ref (no local .dark scoping)', async () => {

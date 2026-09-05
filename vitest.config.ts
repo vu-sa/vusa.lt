@@ -106,8 +106,11 @@ export default defineConfig({
             '@/mocks/inertia': path.resolve(__dirname, 'resources/js/mocks/inertia.mock.ts'),
             '@/mocks/i18n': path.resolve(__dirname, 'resources/js/mocks/i18n.ts'),
             '@/mocks/route': path.resolve(__dirname, 'resources/js/mocks/route.ts'),
-            // Mock @inertiajs/vue3 to use our mock in Storybook tests
-            '@inertiajs/vue3': path.resolve(__dirname, 'resources/js/mocks/inertia.mock.ts'),
+            // Must match .storybook/main.ts, which aliases this to inertia.storybook.ts. Pointing
+            // the two runners at different mocks meant a story could pass in `storybook dev` and
+            // fail under `test:storybook` (or the reverse) for reasons invisible in the story
+            // file. inertia.storybook.ts uses `fn()` from storybook/test, which works in both.
+            '@inertiajs/vue3': path.resolve(__dirname, 'resources/js/mocks/inertia.storybook.ts'),
           },
         },
         test: {

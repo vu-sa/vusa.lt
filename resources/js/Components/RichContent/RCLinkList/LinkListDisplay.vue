@@ -1,10 +1,10 @@
 <template>
   <RCSection
-    :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'lg'"
-    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'center'"
-    :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
-    inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
+    :id="anchorId ? `rc-${anchorId}` : undefined" :title="element.options?.title" :subtitle="element.options?.subtitle"
+    :eyebrow="element.options?.eyebrow" :band
+    :align="element.options?.align ?? 'center'" :heading-level="element.options?.headingLevel"
+    :show-separator="element.options?.showSeparator" inner="wide"
+    :editable @update:header="updateOptions"
   >
     <div v-if="!isEmpty">
       <!-- Photo style: a grid of RCFeatureCard, one per link. -->
@@ -15,24 +15,24 @@
           :meta="publishedLabel(item.publishedAt)" :href="item.href"
         >
           <template #cover-fallback>
-            <IFluentLink24Regular class="size-10 text-vusa-red/50" />
+            <IFluentLink24Regular class="size-10 text-brand/50" />
           </template>
         </RCFeatureCard>
       </div>
 
       <!-- Compact style: a divided list, title left, date right. -->
-      <ul v-else class="divide-y divide-zinc-200/60 dark:divide-zinc-800">
+      <ul v-else class="divide-y divide-border">
         <li v-for="item in items" :key="item.id ?? item.href">
           <SmartLink :href="item.href" class="group flex items-center justify-between gap-4 py-3"
             :rel="isExternal(item.href) ? 'noopener noreferrer' : undefined">
-            <span class="truncate font-medium text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-200">
+            <span class="truncate font-medium text-foreground transition-colors group-hover:text-brand">
               {{ item.title }}
             </span>
             <span class="flex shrink-0 items-center gap-2">
-              <span v-if="item.publishedAt" class="text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
+              <span v-if="item.publishedAt" class="text-xs tabular-nums text-muted-foreground">
                 {{ publishedLabel(item.publishedAt) }}
               </span>
-              <IFluentChevronRight12Regular class="size-3 text-zinc-300 transition-colors group-hover:text-vusa-red dark:text-zinc-600" />
+              <IFluentChevronRight12Regular class="size-3 text-muted-foreground transition-colors group-hover:text-brand" />
             </span>
           </SmartLink>
         </li>
@@ -50,19 +50,38 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
-import type { LinkListResolved } from '@/Types/contentParts';
 import RCSection from '../RCSection.vue';
 import RCFeatureCard from '../RCFeatureCard.vue';
+import { smartGridCols } from '../gridStacking';
+import type { BandResolution } from '../bandLayout';
+
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { LocaleEnum } from '@/Types/enums';
-import { smartGridCols } from '../gridStacking';
+import type { LinkListResolved } from '@/Types/contentParts';
 
 const props = defineProps<{
   element: models.ContentPart;
   html?: boolean;
   anchorId?: number | null;
   resolved?: LinkListResolved | null;
+  band?: BandResolution;
+  /** Full-screen editor mode: the optional title/subtitle/eyebrow header becomes
+   *  click-to-edit. Undefined/false in every other context. Nothing else on this type
+   *  is author-editable — its list content is entirely server-resolved. */
+  editable?: boolean;
+  /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
+   *  `inlineEditable` fallthrough — this block has no per-field claiming, but an
+   *  undeclared non-undefined prop would otherwise land on the root as a stray attribute. */
+  blockKey?: string;
+  /** @see blockKey */
+  activeInlineField?: string | null;
 }>();
+
+const emit = defineEmits<(e: 'update:element', value: models.ContentPart) => void>();
+
+function updateOptions(patch: { title?: string; subtitle?: string; eyebrow?: string }): void {
+  emit('update:element', { ...props.element, options: { ...props.element.options, ...patch } });
+}
 
 const page = usePage();
 const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);

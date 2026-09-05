@@ -71,7 +71,6 @@ export const newsTemplate = {
   image_author: null,
   tags: [],
   highlights: [],
-  layout: 'modern' as const,
 };
 
 export const pageTemplate = {

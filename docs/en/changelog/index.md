@@ -7,6 +7,33 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.44 — Calendar event page design (2026-09-05) {#v1-44}
+
+- ✨ **Calendar event page updated to editorial style** — full-bleed hero with tabular date plate, integrated breadcrumbs, clear facts sidebar with registration actions and interactive map, editorial meeting agenda and documents, and a 3-column related events card grid
+- ✨ **Hero carousels support inline editing and single-slide optimization** — a carousel with a single slide renders directly as a static full-bleed hero without carousel controls or layout overhead, and the full-screen editor supports inline editing for copy, call-to-action buttons, and slide photos
+
+## v1.43 — Content editing (2026-09-04) {#v1-43}
+
+- ✨ **Plain sections have spacing choices** — a section without a background keeps the standard vertical spacing by default, but can use compact spacing or none; the unnecessary “Emphasis” presentation has been removed
+- ✨ **Hero images are clearer to edit** — image controls are compactly grouped, decorations have their own control apart from image and focal-point settings, and the full-screen editor can switch theme, hide editing markers for preview, and save without returning to the form
+- 🔧 **Hero sections no longer jump while editing** — a centered title stays centered and uppercase after editing, and the split layout’s settings button is no longer covered by the top bar
+
+## v1.42 — Mobile browser colours (2026-09-04) {#v1-42}
+
+- 🔧 **The phone’s top bar changes colour immediately** — switching between light and dark mode now immediately updates the area around the phone’s front camera to match the page
+
+## v1.41 — Public-site navigation (2026-09-04) {#v1-41}
+
+- ✨ **“Mano VU SA” is now a clear navigation button** — the account link in the second menu row now matches the site controls, with a clear account icon instead of a profile photo
+
+## v1.40 — Public-site notices (2026-09-04) {#v1-40}
+
+- ✨ **Public-site notices are now consistent** — the cookie reminder and notifications now match the new site style, while the staging warning appears as a persistent notice without taking space from the page
+
+## v1.39 — Public-site navigation (2026-09-03) {#v1-39}
+
+- 🔧 **The tenant map opens and zooms smoothly** — `+`, `−`, and tenant clusters no longer reload the view, a reopened menu no longer collapses from a stale delay, dark mode no longer flashes white, and the zoom controls now match the new public-site styling
+
 ## v1.38 — English agendas and breaks (2026-09-02) {#v1-38}
 
 - ⭐ **Agenda items can now be written in English** — an item's title, description, student position and vote labels are translatable. The agenda item page gained a flag button that switches every field to English at once; leave it alone and nothing about the page changes

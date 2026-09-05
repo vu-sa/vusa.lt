@@ -485,7 +485,6 @@ function getControllerTestData(string $controller): array
             ],
             'invalid' => [
                 'title' => '', // Required field empty
-                'image_url' => '', // Required field empty
             ],
         ],
         'Navigation' => [
@@ -524,7 +523,7 @@ function getControllerValidationErrors(string $controller): array
     return match ($controller) {
         'Page' => ['title', 'content.parts', 'permalink', 'lang'],
         'Category' => ['name.lt', 'name.en'],
-        'Banner' => ['title', 'image_url'],
+        'Banner' => ['title'],
         'Navigation' => ['name', 'url'],
         'Relationship' => ['name', 'slug'],
         default => ['name'],

@@ -15,6 +15,14 @@ function makeItem(): { json_content: Hero['json_content']; options: Hero['option
   return { json_content: item.json_content, options: item.options };
 }
 
+async function openSection(wrapper: ReturnType<typeof mount>, label: string): Promise<void> {
+  const trigger = wrapper.findAll('button').find(button => button.text().includes(label));
+
+  if (trigger?.attributes('aria-expanded') === 'false') {
+    await trigger.trigger('click');
+  }
+}
+
 describe('HeroForm', () => {
   it('hides eyebrow and description for the banner variant, which renders neither', async () => {
     const item = makeItem();
@@ -38,6 +46,8 @@ describe('HeroForm', () => {
 
     const bannerButton = wrapper.findAll('button').find(b => b.text().includes('rich-content.hero_variant_banner'));
     await bannerButton!.trigger('click');
+    await openSection(wrapper, 'rich-content.buttons');
+
     expect(wrapper.text()).toContain('rich-content.hero_banner_buttons_hint');
   });
 
@@ -51,9 +61,21 @@ describe('HeroForm', () => {
     expect(item.options.variant).toBe('panel');
   });
 
+  it('uses compact, labelled controls beside an existing image', async () => {
+    const item = makeItem();
+    item.json_content.imageSrc = '/hero.jpg';
+    const wrapper = mount(HeroForm, { props: { modelValue: item.json_content, options: item.options }, global: { stubs } });
+    await openSection(wrapper, 'rich-content.hero_image');
+
+    expect(wrapper.find('button[aria-label="rich-content.select_image"]').exists()).toBe(true);
+    expect(wrapper.find('button[aria-label="rich-content.set_focal_point"]').exists()).toBe(true);
+    expect(wrapper.find('button[aria-label="rich-content.delete_image"]').exists()).toBe(true);
+  });
+
   it('adds an image decoration through the shared RCDecorationListEditor', async () => {
     const item = makeItem();
     const wrapper = mount(HeroForm, { props: { modelValue: item.json_content, options: item.options }, global: { stubs } });
+    await openSection(wrapper, 'rich-content.hero_image');
 
     const before = item.options.imageDecorations?.length ?? 0;
     const addButton = wrapper.findAll('button').find(b => b.text().includes('add_first_decoration') || b.text().includes('add_decoration'));
@@ -76,12 +98,27 @@ describe('HeroForm', () => {
 
     const splitButton = wrapper.findAll('button').find(b => b.text().includes('rich-content.hero_variant_split'));
     await splitButton!.trigger('click');
+    await openSection(wrapper, 'rich-content.hero_image');
 
     expect(item.options.variant).toBe('split');
     expect(item.json_content.overlayContent).toEqual({ title: '', subtitle: '' });
     // The overlay-title input renders without throwing — guarded by the watcher
     // having initialized the object before the v-model resolves.
     expect(wrapper.html()).toContain('rich-content.overlay_title');
+  });
+
+  it('caps buttons at two — the add control disappears once the second is added', async () => {
+    const item = makeItem();
+    item.json_content.buttons = [{ text: 'A', link: '#a', variant: 'default' }];
+    const wrapper = mount(HeroForm, { props: { modelValue: item.json_content, options: item.options }, global: { stubs } });
+    await openSection(wrapper, 'rich-content.buttons');
+
+    expect(wrapper.text()).toContain('rich-content.add_button');
+    const addButton = wrapper.findAll('button').find(b => b.text().includes('rich-content.add_button'));
+    await addButton!.trigger('click');
+
+    expect(item.json_content.buttons).toHaveLength(2);
+    expect(wrapper.text()).not.toContain('rich-content.add_button');
   });
 
   it('leaves existing overlayContent untouched when switching to split', async () => {

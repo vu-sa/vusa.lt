@@ -213,7 +213,8 @@
       </template>
 
       <FormFieldWrapper id="main_image" :label="$t('Pagrindinė nuotrauka')" required :error="form.errors.main_image">
-        <ImageUpload :max="1" :existing-url="existingMainImageUrl" cropper compress folder="calendar"
+        <ImageUpload v-model:focal-point-value="form.main_image_focal_point" :max="1"
+          :existing-url="existingMainImageUrl" cropper compress focal-point folder="calendar"
           @update:file="handleMainImageUpdate" />
       </FormFieldWrapper>
     </FormElement>

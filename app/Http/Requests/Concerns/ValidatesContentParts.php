@@ -47,9 +47,11 @@ trait ValidatesContentParts
             'content.parts.*.options.title.lt' => ['nullable', 'string', 'max:255'],
             'content.parts.*.options.title.en' => ['nullable', 'string', 'max:255'],
             'content.parts.*.options.subtitle' => 'nullable|string|max:255',
-            'content.parts.*.options.background' => ['nullable', 'string', Rule::in(['none', 'muted', 'contrast', 'gradient'])],
-            'content.parts.*.options.padding' => ['nullable', 'string', Rule::in(['none', 'sm', 'md', 'lg'])],
-            'content.parts.*.options.rounded' => ['nullable', 'string', Rule::in(['none', 'sm', 'md', 'lg'])],
+            // Band ground (see resources/js/Components/RichContent/bandLayout.ts) — replaces
+            // the old background/padding/rounded/divider/bleed authoring surface. `auto`
+            // alternates automatically from document position; `plain` removes the ground.
+            'content.parts.*.options.presentation' => ['nullable', 'string', Rule::in(['auto', 'plain'])],
+            'content.parts.*.options.plainPadding' => ['nullable', 'string', Rule::in(['none', 'compact', 'default'])],
 
             // section
             'content.parts.*.options.inner' => ['nullable', 'string', Rule::in(['prose', 'content', 'wide', 'full'])],

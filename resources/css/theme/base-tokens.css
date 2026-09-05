@@ -1,0 +1,124 @@
+@custom-variant dark (&:is(.dark *));
+
+/* Radius scale — deliberately NOT `inline`, so `rounded-lg` emits `var(--radius-lg)` and a
+   surface scope can override it. Values reproduce the previous `calc(var(--radius) ± Npx)`
+   results for --radius: 0.625rem exactly, so admin radii are unchanged. */
+@theme {
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+}
+
+/* Brand accent. Deliberately NOT shadcn's `--accent`: that slot means "hover/muted surface"
+   (`focus:bg-accent` on every dropdown item, `hover:bg-accent` on ghost buttons, the sidebar),
+   so painting the brand colour into it turns every hover row solid red. The brand is
+   theme-aware by design — VU SA red on a light canvas, amber on near-black, where red loses
+   too much contrast as small text. */
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-fill: var(--brand-fill);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-ink: var(--ink);
+}
+
+/* Ensure the --background variable is properly defined and scoped */
+:root {
+  --background: oklch(1 0 0);
+  /* Default light mode background */
+  --foreground: oklch(0.141 0.005 285.823);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.21 0.006 285.885);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  /* `--brand` is the ink/line value (text, borders, thin rules, /10 tints); `--brand-fill` is
+     the solid block (buttons, date plates, active tabs). They coincide in light mode and
+     diverge in dark, where the fill is a touch deeper than the ink. */
+  --brand: oklch(0.42 0.145 25);
+  --brand-fill: oklch(0.42 0.145 25);
+  --brand-foreground: oklch(0.98 0.003 85);
+  /* Fixed-dark ground for surfaces that lay white type over a photograph — the hero, the
+     mega menu's featured card, the podcast panel. Deliberately NOT theme-swapped: the scrim
+     is what keeps the copy legible, so it has to stay dark in light mode too. */
+  --ink: oklch(0.11 0.004 70);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-primary: oklch(0.21 0.006 285.885);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.967 0.001 286.375);
+  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.705 0.015 286.067);
+}
+
+.dark {
+  --background: oklch(0.141 0.005 285.823);
+  /* Dark mode background */
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.141 0.005 285.823);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.141 0.005 285.823);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.21 0.006 285.885);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.274 0.006 286.033);
+  --input: oklch(0.274 0.006 286.033);
+  --ring: oklch(0.442 0.017 285.786);
+  --brand: oklch(0.82 0.152 72);
+  --brand-fill: oklch(0.8 0.15 70);
+  --brand-foreground: oklch(0.16 0.02 60);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.274 0.006 286.033);
+  --sidebar-ring: oklch(0.442 0.017 285.786);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Prevent flash during dark mode initialization */
+html.dark-mode-init {
+  /* Use system preference for initial render */
+  @media (prefers-color-scheme: dark) {
+    --background: oklch(0.141 0.005 285.823);
+    --foreground: oklch(0.985 0 0);
+    color-scheme: dark;
+  }
+}

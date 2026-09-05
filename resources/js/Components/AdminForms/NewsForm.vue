@@ -115,7 +115,7 @@
       </template>
     </FormElement>
 
-    <RichContentFormElement v-model="form.content.parts" :tenant-id="news?.tenant_id" />
+    <RichContentFormElement v-model="form.content.parts" :tenant-id="news?.tenant_id" @save="$emit('submit:form', form)" />
 
     <!-- Section 4: Highlights (Optional but prominent) -->
     <FormElement :section-number="4" :is-complete="form.highlights.length > 0">
@@ -162,14 +162,8 @@
 
         <CollapsibleContent class="pt-4">
           <div class="space-y-4">
-            <!-- Layout Selection -->
-            <div>
-              <Label class="mb-3 block text-sm font-medium">{{ $t('Išdėstymas') }}</Label>
-              <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="4" />
-            </div>
-
-            <!-- Breadcrumbs toggle — hide the breadcrumb trail, e.g. for immersive /
-                 headline layouts that lead with a full-bleed title. -->
+            <!-- Breadcrumbs toggle — hide the trail on an article whose title band should lead
+                 with nothing above it. -->
             <div class="flex items-center gap-3">
               <Switch v-model="form.show_breadcrumbs" />
               <span class="text-sm text-zinc-700 dark:text-zinc-300">
@@ -204,12 +198,11 @@
 <script setup lang="ts">
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { computed, ref, watch, h } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
-import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
 
 import AdminForm from './AdminForm.vue';
 import FormElement from './FormElement.vue';
@@ -234,51 +227,6 @@ import { ImageUpload } from '@/Components/ui/upload';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { newsTemplate } from '@/Types/formTemplates';
 
-// Layout preview icons as simple SVG components
-const ModernLayoutIcon = {
-  render() {
-    return h('svg', { viewBox: '0 0 80 48', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }, [
-      h('rect', { x: 4, y: 4, width: 72, height: 20, rx: 2 }),
-      h('rect', { x: 4, y: 28, width: 30, height: 4, rx: 1 }),
-      h('rect', { x: 4, y: 36, width: 50, height: 2, rx: 1 }),
-      h('rect', { x: 4, y: 42, width: 40, height: 2, rx: 1 }),
-    ]);
-  },
-};
-
-const ClassicLayoutIcon = {
-  render() {
-    return h('svg', { viewBox: '0 0 80 48', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }, [
-      h('rect', { x: 4, y: 4, width: 30, height: 24, rx: 2 }),
-      h('rect', { x: 40, y: 4, width: 36, height: 4, rx: 1 }),
-      h('rect', { x: 40, y: 12, width: 30, height: 2, rx: 1 }),
-      h('rect', { x: 40, y: 18, width: 32, height: 2, rx: 1 }),
-      h('rect', { x: 4, y: 34, width: 72, height: 2, rx: 1 }),
-      h('rect', { x: 4, y: 42, width: 60, height: 2, rx: 1 }),
-    ]);
-  },
-};
-
-const ImmersiveLayoutIcon = {
-  render() {
-    return h('svg', { viewBox: '0 0 80 48', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }, [
-      h('rect', { x: 0, y: 0, width: 80, height: 32, rx: 0, fill: 'currentColor', opacity: 0.1 }),
-      h('rect', { x: 16, y: 36, width: 48, height: 4, rx: 1 }),
-      h('rect', { x: 20, y: 44, width: 40, height: 2, rx: 1 }),
-    ]);
-  },
-};
-
-const HeadlineLayoutIcon = {
-  render() {
-    return h('svg', { viewBox: '0 0 80 48', fill: 'none', stroke: 'currentColor', strokeWidth: 1 }, [
-      h('rect', { x: 4, y: 4, width: 50, height: 6, rx: 1 }),
-      h('rect', { x: 4, y: 14, width: 35, height: 3, rx: 1 }),
-      h('rect', { x: 4, y: 22, width: 72, height: 22, rx: 2 }),
-    ]);
-  },
-};
-
 const props = defineProps<{
   news?: App.Entities.News;
   otherLangNews?: App.Entities.News[];
@@ -298,7 +246,7 @@ const isCreate = computed(() => props.rememberKey === 'CreateNews');
 // Advanced settings collapsed by default
 const advancedSettingsOpen = ref(false);
 
-const formData = { ...newsTemplate, ...props.news, layout: props.news?.layout || 'modern', show_breadcrumbs: props.news?.show_breadcrumbs ?? true, highlights: props.news?.highlights || [] } as any;
+const formData = { ...newsTemplate, ...props.news, show_breadcrumbs: props.news?.show_breadcrumbs ?? true, highlights: props.news?.highlights || [] } as any;
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)
@@ -417,29 +365,6 @@ const selectedTags = computed({
     form.tags = items.map(item => item.value);
   },
 });
-
-const layoutOptions = [
-  {
-    value: 'modern',
-    label: 'Modernus',
-    icon: ModernLayoutIcon,
-  },
-  {
-    value: 'classic',
-    label: 'Klasikinis',
-    icon: ClassicLayoutIcon,
-  },
-  {
-    value: 'immersive',
-    label: 'Įtraukiantis',
-    icon: ImmersiveLayoutIcon,
-  },
-  {
-    value: 'headline',
-    label: 'Antraštinis',
-    icon: HeadlineLayoutIcon,
-  },
-];
 
 // Auto-generate permalink from title for new news
 if (isCreate.value) {

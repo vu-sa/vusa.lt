@@ -392,27 +392,6 @@ describe('authorized access', function (): void {
             ->assertSessionHasErrors(['extra_attributes.badge_variant']);
     });
 
-    test('can set a root item menu_width', function (): void {
-        $updateData = getControllerTestData('Navigation')['valid'];
-        $updateData['extra_attributes'] = ['menu_width' => 'narrow'];
-
-        asUser($this->admin)
-            ->patch(route('navigation.update', $this->navigation), $updateData)
-            ->assertSessionHas('success');
-
-        $this->navigation->refresh();
-        expect($this->navigation->extra_attributes['menu_width'])->toBe('narrow');
-    });
-
-    test('rejects an invalid menu_width', function (): void {
-        $updateData = getControllerTestData('Navigation')['valid'];
-        $updateData['extra_attributes'] = ['menu_width' => 'gigantic'];
-
-        asUser($this->admin)
-            ->patch(route('navigation.update', $this->navigation), $updateData)
-            ->assertSessionHasErrors(['extra_attributes.menu_width']);
-    });
-
     test('a heading type does not require a name, same as a divider', function (): void {
         asUser($this->admin)
             ->post(route('navigation.store'), [
@@ -526,6 +505,178 @@ describe('authorized access', function (): void {
             ])
             ->assertStatus(302)
             ->assertSessionHasErrors(['name']);
+    });
+});
+
+describe('footer navigation', function (): void {
+    test('index exposes the footer tree separately from the header tree', function (): void {
+        $footerRoot = Navigation::factory()->create([
+            'name' => 'Footer column',
+            'url' => '#',
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        $response = asUser($this->admin)->get(route('navigation.index'));
+
+        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page->has('footerNavigation'));
+
+        $footerIds = collect($response->viewData('page')['props']['footerNavigation'])->pluck('id');
+        $headerIds = collect($response->viewData('page')['props']['navigation'])->pluck('id');
+
+        expect($footerIds)->toContain($footerRoot->id)
+            ->and($headerIds)->not->toContain($footerRoot->id);
+    });
+
+    test('creating a footer column stores its location and forces the category-link type', function (): void {
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => 'Footer column',
+                'url' => '',
+                'parent_id' => 0,
+                'lang' => 'lt',
+                'is_active' => true,
+                'extra_attributes' => ['location' => 'footer'],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $column = Navigation::where('name', 'Footer column')->firstOrFail();
+
+        expect($column->extra_attributes)->toMatchArray([
+            'location' => 'footer',
+            'type' => 'category-link',
+        ]);
+    });
+
+    test('a footer column may be saved without a URL — it renders as plain text', function (): void {
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => 'Text-only heading',
+                'parent_id' => 0,
+                'lang' => 'lt',
+                'is_active' => true,
+                'extra_attributes' => ['location' => 'footer'],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('navigation', ['name' => 'Text-only heading', 'url' => '']);
+    });
+
+    test('a footer link under a column is forced to the plain link type, even if the client sends something else', function (): void {
+        $footerRoot = Navigation::factory()->create([
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => 'Footer link',
+                'url' => '/footer-link',
+                'parent_id' => $footerRoot->id,
+                'lang' => 'lt',
+                'is_active' => true,
+                'extra_attributes' => ['location' => 'footer', 'type' => 'full-height-background-link'],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $link = Navigation::where('name', 'Footer link')->firstOrFail();
+        expect($link->extra_attributes['type'])->toBe('link');
+    });
+
+    test('a footer link still requires a URL', function (): void {
+        $footerRoot = Navigation::factory()->create([
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => 'Footer link',
+                'url' => '',
+                'parent_id' => $footerRoot->id,
+                'lang' => 'lt',
+                'is_active' => true,
+                'extra_attributes' => ['location' => 'footer'],
+            ])
+            ->assertSessionHasErrors(['url']);
+    });
+
+    test('a 5th footer column is rejected', function (): void {
+        Navigation::factory()->count(4)->create([
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        asUser($this->admin)
+            ->post(route('navigation.store'), [
+                'name' => 'One too many',
+                'parent_id' => 0,
+                'lang' => 'lt',
+                'is_active' => true,
+                'extra_attributes' => ['location' => 'footer'],
+            ])
+            ->assertSessionHasErrors(['extra_attributes.location']);
+    });
+
+    test('the 5th column check ignores the row being updated', function (): void {
+        $columns = Navigation::factory()->count(4)->create([
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        asUser($this->admin)
+            ->patch(route('navigation.update', $columns->first()), [
+                'name' => 'Renamed column',
+                'url' => '',
+                'parent_id' => 0,
+                'lang' => 'lt',
+                'is_active' => true,
+                'extra_attributes' => ['location' => 'footer'],
+            ])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('navigation', ['id' => $columns->first()->id, 'name' => 'Renamed column']);
+    });
+
+    test('create page scopes parentElements to footer columns only when creating a footer link', function (): void {
+        $footerRoot = Navigation::factory()->create([
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        $response = asUser($this->admin)
+            ->get(route('navigation.create', ['parent_id' => $footerRoot->id]))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page->where('location', 'footer'));
+
+        $parentIds = collect($response->viewData('page')['props']['parentElements'])->pluck('id');
+
+        expect($parentIds)->toContain($footerRoot->id)
+            ->and($parentIds)->not->toContain($this->navigation->id);
+    });
+
+    test('edit page scopes parentElements to the item\'s own menu location', function (): void {
+        $footerRoot = Navigation::factory()->create(['parent_id' => 0, 'lang' => 'lt', 'extra_attributes' => ['location' => 'footer', 'type' => 'category-link']]);
+        $footerLink = Navigation::factory()->create(['parent_id' => $footerRoot->id, 'lang' => 'lt', 'extra_attributes' => ['location' => 'footer', 'type' => 'link']]);
+
+        $response = asUser($this->admin)
+            ->get(route('navigation.edit', $footerLink))
+            ->assertStatus(200);
+
+        $parentIds = collect($response->viewData('page')['props']['parentElements'])->pluck('id');
+
+        expect($parentIds)->toContain($footerRoot->id)
+            ->and($parentIds)->not->toContain($this->navigation->id);
     });
 });
 

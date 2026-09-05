@@ -153,9 +153,9 @@ class ContentPart extends Model
      */
     private const array FORMDATA_BOOLEAN_KEYS = [
         'autoplay', 'showNavigation', 'showThumbnails', 'showArrows', 'showIndicators',
-        'showAvatar', 'showCaption', 'showLightbox', 'showIcon', 'showPlus', 'isClosed',
-        'isTitleColored', 'is_active', 'allTenants', 'mobileStacking', 'equalHeight',
-        'textLeft', 'imageLeft', 'rotation', 'overlayOverhang',
+        'showAvatar', 'showCaption', 'showLightbox', 'showPlus', 'isClosed',
+        'is_active', 'allTenants', 'mobileStacking', 'equalHeight',
+        'textLeft', 'imageLeft', 'overlayOverhang', 'dividers',
     ];
 
     private const array FORMDATA_INTEGER_KEYS = ['autoplayDelay', 'limit', 'year', 'endNumber'];

@@ -5,24 +5,24 @@
       <!-- Left navigation -->
       <button
         type="button"
-        class="flex items-center justify-center w-9 h-9 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-vusa-red dark:hover:border-vusa-red transition-all duration-200 group"
+        class="flex items-center justify-center w-9 h-9 rounded-full bg-card border border-border shadow-sm hover:bg-secondary/60 hover:border-brand dark:hover:border-brand transition-all duration-200 group"
         :aria-label="$t('Ankstesni renginiai')"
         @click="navigatePast"
       >
-        <ChevronLeft class="w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:text-vusa-red transition-colors" />
+        <ChevronLeft class="w-4 h-4 text-muted-foreground group-hover:text-brand transition-colors" />
       </button>
 
       <!-- Date range indicator -->
       <div class="flex items-center gap-2 text-xs sm:text-sm">
-        <span class="font-medium text-zinc-500 dark:text-zinc-400">
+        <span class="font-medium text-muted-foreground">
           {{ formatDateLabel(dateRange.start) }}
         </span>
         <div class="flex items-center gap-1">
-          <div class="w-6 h-px bg-zinc-300 dark:bg-zinc-600" />
-          <div class="w-1.5 h-1.5 rounded-full bg-vusa-red" />
-          <div class="w-6 h-px bg-zinc-300 dark:bg-zinc-600" />
+          <div class="w-6 h-px bg-border" />
+          <div class="w-1.5 h-1.5 rounded-full bg-brand-fill" />
+          <div class="w-6 h-px bg-border" />
         </div>
-        <span class="font-medium text-zinc-500 dark:text-zinc-400">
+        <span class="font-medium text-muted-foreground">
           {{ formatDateLabel(dateRange.end) }}
         </span>
       </div>
@@ -30,16 +30,16 @@
       <!-- Right navigation -->
       <button
         type="button"
-        class="flex items-center justify-center w-9 h-9 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 hover:border-vusa-red dark:hover:border-vusa-red transition-all duration-200 group"
+        class="flex items-center justify-center w-9 h-9 rounded-full bg-card border border-border shadow-sm hover:bg-secondary/60 hover:border-brand dark:hover:border-brand transition-all duration-200 group"
         :aria-label="$t('Vėlesni renginiai')"
         @click="navigateFuture"
       >
-        <ChevronRight class="w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:text-vusa-red transition-colors" />
+        <ChevronRight class="w-4 h-4 text-muted-foreground group-hover:text-brand transition-colors" />
       </button>
     </div>
 
     <!-- Timeline container with proper overflow handling -->
-    <div class="relative rounded-xl bg-white dark:bg-zinc-800/90 border border-zinc-200 dark:border-zinc-700 p-4 overflow-hidden">
+    <div class="relative rounded-xl bg-card border border-border p-4 overflow-hidden">
       <!-- Decorative background pattern -->
       <div class="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]" aria-hidden="true">
         <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23bd1b21&quot; fill-opacity=&quot;1&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');" />
@@ -50,10 +50,10 @@
         class="absolute top-0 bottom-0 w-0.5 z-10 pointer-events-none"
         :style="{ left: `${todayPosition}%` }"
       >
-        <div class="absolute inset-0 w-1 -ml-0.5 bg-vusa-red/20 blur-sm" />
-        <div class="absolute inset-0 bg-gradient-to-b from-vusa-red via-vusa-red to-vusa-red/30 rounded-full" />
+        <div class="absolute inset-0 w-1 -ml-0.5 bg-brand/20 blur-sm" />
+        <div class="absolute inset-0 bg-gradient-to-b from-brand-fill via-brand-fill to-brand-fill/30" />
         <!-- Today badge at top -->
-        <div class="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full mb-1 px-2 py-0.5 bg-vusa-red text-white text-[9px] font-bold uppercase tracking-wide rounded shadow-lg whitespace-nowrap">
+        <div class="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full mb-1 px-2 py-0.5 bg-brand-fill text-white text-[9px] font-bold uppercase tracking-wide rounded shadow-lg whitespace-nowrap">
           {{ $t('Šiandien') }}
         </div>
       </div>
@@ -61,7 +61,7 @@
       <!-- Timeline track with events -->
       <div class="relative h-36 sm:h-40">
         <!-- Horizontal axis line -->
-        <div class="absolute left-0 right-0 bottom-6 h-px bg-gradient-to-r from-transparent via-zinc-300 dark:via-zinc-600 to-transparent" />
+        <div class="absolute left-0 right-0 bottom-6 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         <!-- Date tick marks -->
         <div class="absolute left-0 right-0 bottom-0 h-6 flex">
@@ -74,12 +74,12 @@
             <div
               class="w-px mb-0.5"
               :class="[
-                marker.isWeekStart ? 'h-2 bg-zinc-400 dark:bg-zinc-500' : 'h-1.5 bg-zinc-300 dark:bg-zinc-600'
+                marker.isWeekStart ? 'h-2 bg-muted-foreground' : 'h-1.5 bg-border'
               ]"
             />
             <span
               v-if="marker.showLabel"
-              class="text-[9px] font-medium text-zinc-400 dark:text-zinc-500 whitespace-nowrap"
+              class="text-[9px] font-medium text-muted-foreground whitespace-nowrap"
             >
               {{ marker.label }}
             </span>
@@ -98,7 +98,7 @@
             }"
           >
             <!-- Vertical connector to axis -->
-            <div class="absolute top-full w-px h-2 bg-zinc-300 dark:bg-zinc-600" />
+            <div class="absolute top-full w-px h-2 bg-border" />
 
             <!-- Stacked event thumbnails -->
             <div class="flex flex-col items-center gap-1">
@@ -109,18 +109,19 @@
                     class="event-thumbnail relative transition-all duration-200"
                     :class="[
                       group.isNextUpcoming && eventIndex === 0
-                        ? 'ring-2 ring-vusa-red ring-offset-2 dark:ring-offset-zinc-800 scale-105 z-20'
+                        ? 'ring-2 ring-brand ring-offset-2 ring-offset-background scale-105 z-20'
                         : 'hover:scale-105 hover:z-20',
                       !isUpcoming(event) ? 'opacity-75 grayscale-[15%] hover:opacity-100 hover:grayscale-0' : ''
                     ]"
                     @click="navigateToEvent(event)"
                   >
-                    <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-lg overflow-hidden shadow-lg border-2 border-white dark:border-zinc-700 bg-white dark:bg-zinc-700">
+                    <div class="w-11 h-11 sm:w-12 sm:h-12 overflow-hidden border border-border bg-card">
                       <img
                         v-if="getEventImage(event)"
                         :src="getEventImage(event)!"
                         :alt="getEventTitle(event)"
                         class="w-full h-full object-cover"
+                        :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
                         loading="lazy"
                       >
                       <div
@@ -135,7 +136,7 @@
                     <!-- Pulsing glow for next upcoming -->
                     <div
                       v-if="group.isNextUpcoming && eventIndex === 0"
-                      class="absolute -inset-1 rounded-xl bg-vusa-red/30 blur-md -z-10 animate-pulse"
+                      class="absolute -inset-1 rounded-xl bg-brand/30 blur-md -z-10 animate-pulse"
                     />
                   </button>
                 </HoverCardTrigger>
@@ -153,7 +154,7 @@
               <button
                 v-if="group.overflowCount > 0"
                 type="button"
-                class="flex items-center justify-center w-6 h-6 rounded-md bg-zinc-200 dark:bg-zinc-700 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-vusa-red hover:text-white transition-all duration-200"
+                class="flex items-center justify-center w-6 h-6 rounded-md bg-secondary text-[10px] font-bold text-muted-foreground hover:bg-brand-fill hover:text-white transition-all duration-200"
                 :title="`${group.overflowCount} ${$t('daugiau renginių')}`"
                 @click="navigateToDateEvents(group.date)"
               >
@@ -175,7 +176,7 @@
         v-for="event in nextUpcomingEvents"
         :key="event.id"
         :href="route('calendar.event', { calendar: event.id, lang: locale })"
-        class="group relative flex items-center gap-4 p-4 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm hover:shadow-md hover:border-vusa-red/50 dark:hover:border-vusa-red/50 transition-all duration-300"
+        class="group relative flex items-center gap-4 p-4 rounded-xl bg-card border border-border shadow-sm hover:shadow-md hover:border-brand/50 dark:hover:border-brand/50 transition-all duration-300"
       >
         <!-- Event image -->
         <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden shadow-sm">
@@ -184,6 +185,7 @@
             :src="getEventImage(event)!"
             :alt="getEventTitle(event)"
             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
           >
           <div
             v-else
@@ -196,31 +198,43 @@
 
         <!-- Event details -->
         <div class="flex-1 min-w-0">
-          <h4 class="font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-1 group-hover:text-vusa-red transition-colors">
+          <h4 class="font-semibold text-foreground line-clamp-1 group-hover:text-brand transition-colors">
             {{ getEventTitle(event) }}
           </h4>
-          <div class="flex items-center gap-2 mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <div class="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
             <Calendar class="w-4 h-4 flex-shrink-0" />
             <span>{{ formatEventDate(event.date) }}</span>
           </div>
-          <div v-if="getEventLocation(event)" class="flex items-center gap-2 mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+          <div v-if="getEventLocation(event)" class="flex items-center gap-2 mt-0.5 text-sm text-muted-foreground">
             <MapPin class="w-4 h-4 flex-shrink-0" />
             <span class="truncate">{{ getEventLocation(event) }}</span>
           </div>
         </div>
 
         <!-- Arrow -->
-        <ChevronRight class="w-5 h-5 text-zinc-400 group-hover:text-vusa-red transition-colors flex-shrink-0" />
+        <ChevronRight class="w-5 h-5 text-muted-foreground group-hover:text-brand transition-colors flex-shrink-0" />
       </a>
     </div>
 
-    <!-- Action buttons -->
-    <div class="flex flex-wrap justify-center gap-3 mt-6">
-      <Button as="a" :href="route('calendar.list', { lang: locale })">
+    <!-- Action buttons: one brand-filled primary and one hairline secondary, the pairing the
+         design uses wherever a band closes with a call to action. -->
+    <div class="flex flex-col gap-3 mt-8 sm:flex-row sm:justify-center">
+      <Button
+        as="a"
+        variant="brand"
+        :href="route('calendar.list', { lang: locale })"
+        class="h-auto px-6 py-3.5 text-sm font-bold uppercase tracking-wide"
+      >
         <Calendar class="w-4 h-4 mr-2" />
         {{ $t('Visi renginiai') }}
       </Button>
-      <Button variant="outline" @click="$emit('openSyncModal')">
+      <Button
+        variant="ghost"
+        class="h-auto border border-border px-6 py-3.5 text-sm font-bold uppercase tracking-wide
+          hover:border-brand hover:bg-transparent hover:text-brand
+          dark:hover:bg-transparent dark:hover:text-brand"
+        @click="$emit('openSyncModal')"
+      >
         <RefreshCw class="w-4 h-4 mr-2" />
         {{ $t('Sinchronizuoti kalendorių') }}
       </Button>
@@ -434,7 +448,7 @@ const isUpcoming = (event: App.Entities.Calendar): boolean => {
 const getCategoryColorClass = (event: App.Entities.Calendar): string => {
   const categoryAlias = (event.category as any)?.alias || '';
   const colorMap: Record<string, string> = {
-    renginiai: 'bg-gradient-to-br from-vusa-red to-rose-600',
+    renginiai: 'bg-brand-fill',
     paskaitos: 'bg-gradient-to-br from-blue-500 to-indigo-600',
     seminarai: 'bg-gradient-to-br from-purple-500 to-violet-600',
     konkursai: 'bg-gradient-to-br from-amber-500 to-orange-600',
@@ -442,7 +456,7 @@ const getCategoryColorClass = (event: App.Entities.Calendar): string => {
     sportas: 'bg-gradient-to-br from-cyan-500 to-blue-600',
     muzika: 'bg-gradient-to-br from-pink-500 to-rose-600',
   };
-  return colorMap[categoryAlias] || 'bg-gradient-to-br from-vusa-red/80 to-vusa-red';
+  return colorMap[categoryAlias] || 'bg-brand-fill';
 };
 
 const getCategoryIcon = (event: App.Entities.Calendar) => {
@@ -512,22 +526,13 @@ const handleWheel = (e: WheelEvent) => {
   height: 8px;
 }
 
+/* Tokens, so the scrollbar follows the surface instead of needing its own dark-mode rule. */
 .scrollbar-thin::-webkit-scrollbar-track {
-  background-color: rgb(244 244 245); /* zinc-100 */
-  border-radius: 9999px;
-}
-
-:root.dark .scrollbar-thin::-webkit-scrollbar-track {
-  background-color: rgb(39 39 42); /* zinc-800 */
+  background-color: var(--secondary);
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgb(212 212 216); /* zinc-300 */
-  border-radius: 9999px;
-}
-
-:root.dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: rgb(82 82 91); /* zinc-600 */
+  background-color: var(--border);
 }
 
 /* Subtle pulse animation for upcoming events */

@@ -1,29 +1,29 @@
 <template>
-  <ul class="divide-y divide-zinc-200/70 border-y border-zinc-200/70 dark:divide-zinc-800 dark:border-zinc-800">
+  <ul class="divide-y divide-border border-y border-border">
     <li v-for="document in documents" :key="document.id">
       <a
         :href="documentUrl(document)"
         target="_blank"
         rel="noopener noreferrer"
-        class="flex items-start gap-3 rounded-lg px-1 py-3 transition-colors hover:bg-zinc-100/70 sm:px-2 dark:hover:bg-zinc-800/50"
+        class="flex items-start gap-3 px-1 py-3 transition-colors hover:bg-secondary/60 sm:px-2"
       >
-        <IFluentDocument20Regular class="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
+        <IFluentDocument20Regular class="mt-0.5 size-4 shrink-0 text-muted-foreground" />
         <span class="min-w-0 flex-1">
-          <span class="block text-sm font-medium text-zinc-900 dark:text-zinc-50">
+          <span class="block text-sm font-medium text-foreground">
             {{ document.title }}
             <!-- Only when the file is not in the page's language: the list falls back to the
                  other locale rather than showing nothing, so say which one this is. -->
             <span
               v-if="isOtherLanguage(document)"
-              class="ml-1.5 align-middle rounded border border-zinc-300 px-1 py-px text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
+              class="ml-1.5 align-middle border border-border px-1 py-px font-mono text-[0.625rem] font-semibold uppercase tracking-wide text-muted-foreground"
             >{{ document.language_code }}</span>
           </span>
-          <span class="block text-xs text-zinc-500 dark:text-zinc-400">
+          <span class="block text-xs text-muted-foreground">
             {{ document.content_type }}
             <template v-if="document.document_date"> · {{ document.document_date }}</template>
           </span>
         </span>
-        <IFluentOpen20Regular class="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-300 dark:text-zinc-600" />
+        <IFluentOpen20Regular class="mt-0.5 size-3.5 shrink-0 text-muted-foreground/60" />
       </a>
     </li>
   </ul>

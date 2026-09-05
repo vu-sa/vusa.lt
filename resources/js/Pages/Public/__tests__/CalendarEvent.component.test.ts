@@ -13,9 +13,8 @@ const stubs = {
       shareTitle: { type: String, default: '' },
       isPast: { type: Boolean },
       isLive: { type: Boolean },
-      onImage: { type: Boolean },
     },
-    template: '<a class="event-actions-stub" :data-registration-url="registrationUrl" :data-on-image="onImage"><slot /></a>',
+    template: '<a class="event-actions-stub" :data-registration-url="registrationUrl"><slot /></a>',
   },
   EventDetailsCard: {
     template: '<div class="event-details-card-stub" />',
@@ -23,10 +22,6 @@ const stubs = {
   EventImageGallery: {
     props: { images: Array, eventTitle: String },
     template: '<div class="event-image-gallery-stub" />',
-  },
-  EventListRow: {
-    props: { event: Object },
-    template: '<div class="event-list-row-stub" />',
   },
 };
 
@@ -164,7 +159,15 @@ describe('Public/CalendarEvent.vue', () => {
     expect(main.classes()).toContain('lg:order-none');
   });
 
-  it('renders other events as compact rows, excluding the current one', () => {
+  it('wraps the main content area in rc-viewport and max-w-7xl to match hero and related events width', () => {
+    const wrapper = mountPage();
+
+    const mainViewport = wrapper.find('.calendar-event-page > div.rc-viewport');
+    expect(mainViewport.exists()).toBe(true);
+    expect(mainViewport.find('.mx-auto.max-w-7xl').exists()).toBe(true);
+  });
+
+  it('renders other events as an editorial 3-column card grid, excluding the current one', () => {
     const wrapper = mountPage({
       calendar: [
         { id: 1, title: 'Test Event', date: '2030-01-01T18:00:00+00:00' }, // current event, excluded
@@ -177,8 +180,14 @@ describe('Public/CalendarEvent.vue', () => {
     });
 
     expect(wrapper.text()).toContain('Kiti renginiai');
-    // Compact rows, so more of them fit than the two full cards this section used to show.
-    expect(wrapper.findAll('.event-list-row-stub')).toHaveLength(4);
+    expect(wrapper.text()).toContain('Future 1');
+    expect(wrapper.text()).toContain('Future 2');
+    expect(wrapper.text()).toContain('Future 3');
+    expect(wrapper.text()).not.toContain('Future 4');
+
+    const related = wrapper.find('section.rc-viewport');
+    expect(related.exists()).toBe(true);
+    expect(related.find('.mx-auto.max-w-7xl').exists()).toBe(true);
   });
 
   /**
@@ -205,27 +214,6 @@ describe('Public/CalendarEvent.vue', () => {
     const heroActions = hero.find('.event-actions-stub');
     expect(heroActions.exists()).toBe(true);
     expect(heroActions.attributes('data-registration-url')).toBe('https://forms.example.com/register');
-    expect(heroActions.attributes('data-on-image')).toBe('true');
-  });
-
-  it('renders hero actions off-image for the split style', () => {
-    const wrapper = mountPage({
-      event: makeEvent({ hero_style: 'split' }),
-    });
-
-    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
-    expect(heroActions.exists()).toBe(true);
-    expect(heroActions.attributes('data-on-image')).toBe('false');
-  });
-
-  it('renders hero actions off-image for the minimal style', () => {
-    const wrapper = mountPage({
-      event: makeEvent({ hero_style: 'minimal' }),
-    });
-
-    const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
-    expect(heroActions.exists()).toBe(true);
-    expect(heroActions.attributes('data-on-image')).toBe('false');
   });
 
   it('passes upcoming state to hero actions for events with a registration URL', () => {
@@ -252,5 +240,16 @@ describe('Public/CalendarEvent.vue', () => {
     const heroActions = wrapper.find('[data-slot="event-hero"]').find('.event-actions-stub');
     expect(heroActions.exists()).toBe(true);
     expect(heroActions.attributes('data-registration-url')).toBeUndefined();
+  });
+
+  it('renders the minimal hero style with band-masthead and no photo', () => {
+    const wrapper = mountPage({
+      event: makeEvent({ hero_style: 'minimal' }),
+    });
+
+    const hero = wrapper.find('[data-slot="event-hero"]');
+    expect(hero.exists()).toBe(true);
+    expect(hero.classes()).toContain('band-masthead');
+    expect(hero.find('img').exists()).toBe(false);
   });
 });

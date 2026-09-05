@@ -5,7 +5,7 @@
     </template>
     <UpsertModelLayout>
       <AdminForm :model="form" label-placement="top" @submit:form="handleFormSubmit">
-        <RichContentFormElement v-model="form.parts" />
+        <RichContentFormElement v-model="form.parts" :tenant-id="tenant.id" @save="handleFormSubmit" />
       </AdminForm>
     </UpsertModelLayout>
   </AdminContentPage>
@@ -27,6 +27,7 @@ const { tenant } = defineProps<{
 const form = useForm<App.Entities.Content>(tenant.content);
 
 function handleFormSubmit() {
+  form.defaults();
   form.post(route('tenants.updateMainPage', tenant.id), {
     preserveScroll: true,
     forceFormData: true,

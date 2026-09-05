@@ -27,6 +27,8 @@ import PersonQuoteIcon from '~icons/fluent/text-quote24-regular';
 import SectionIcon from '~icons/fluent/text-header-1-24-regular';
 import SpacerIcon from '~icons/fluent/align-space-evenly-vertical-24-regular';
 import TimetableIcon from '~icons/fluent/calendar-clock20-regular';
+import ProcessStepsIcon from '~icons/fluent/text-number-list-ltr-24-regular';
+import CtaBandIcon from '~icons/fluent/megaphone-loud-24-regular';
 
 /**
  * Canvas column a block resolves to (see `.rc-canvas` in app.css). `prose` is the
@@ -65,18 +67,38 @@ export interface ContentType {
 
   /**
    * The display renders through RCSection.vue and exposes the shared section-chrome
-   * options (title/background/padding/…) via RCSectionOptions. RCBlockCard uses this to
-   * decide whether to show the "this block is a section" indicator chip.
+   * options (title/eyebrow/presentation/…) via RCSectionOptions. RCBlockCard uses this
+   * to decide whether to show the "this block is a section" indicator chip. Orthogonal
+   * to `bandRole` — a type can render a `SectionHeader` without ever being a band (none
+   * currently do), or vice versa (`hero-carousel`, `cta-band`).
    */
   usesSectionChrome?: boolean;
 
-  defaultContent: () => any;
-  defaultOptions?: () => Record<string, any>;
+  /**
+   * Whether this type can render as a full-bleed, auto-alternating "band" (see
+   * `bandLayout.ts`) or always sits in the flow with no ground of its own. A function
+   * form covers types whose answer depends on a variant (`hero`, `spotify-embed`).
+   * Omitted entirely means `'flow'` (`resolveBandRole` treats a missing field the same
+   * as `'flow'`).
+   */
+  bandRole?: 'flow' | 'band' | ((options?: Record<string, unknown> | null) => 'flow' | 'band');
+
+  defaultContent: () => unknown;
+  defaultOptions?: () => Record<string, unknown>;
 
   /** Async-loaded editor component (`ContentEditorFactory`'s edit mode). */
   editor: Component;
   /** Display component. Only `tiptap` is loaded synchronously (most common type). */
   display: Component;
+
+  /**
+   * This type's display honours an `editable` prop and renders its text fields through
+   * `RCInlineText`/a mounted `TiptapEditor` instead of static text. Gates whether
+   * `BlockPreviewRenderer` passes `editable`/`band-slot` down at all — same gate pattern
+   * as `serverResolved`/`resolved`, so an undeclared prop never falls through and
+   * stringifies into the DOM on a display that doesn't ask for it.
+   */
+  inlineEditable?: true;
 
   /** Suspense fallback shown while `display` loads. Falls back to a generic skeleton. */
   skeleton?: ContentTypeSkeleton;
@@ -129,16 +151,17 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
     defaultContent: () => ([]),
-    defaultOptions: () => ({ background: 'muted', padding: 'lg' }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./AccordionEditor.vue')),
     display: defineAsyncComponent(() => import('../RCAccordion.vue')),
     skeleton: {
       height: 'min-h-[200px]',
       template: `
-        <div class="w-full py-16 px-4">
+        <div class="w-full py-16 px-4 bg-secondary/40">
           <div class="space-y-4">
-            <div v-for="i in 3" :key="i" class="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 bg-white dark:bg-zinc-800">
+            <div v-for="i in 3" :key="i" class="border border-border rounded-lg p-4 bg-card">
               <Skeleton class="h-5 w-3/4" />
             </div>
           </div>
@@ -156,11 +179,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     allowedWidths: ['prose', 'content'],
     defaultContent: () => ({}),
     defaultOptions: () => ({
-      variant: 'outline',
-      color: 'zinc',
       title: '',
-      isTitleColored: false,
     }),
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./CardEditor.vue')),
     display: defineAsyncComponent(() => import('../RichContentCard.vue')),
   },
@@ -215,16 +236,19 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       variant: 'split',
       textLeft: true,
       imageDecorations: [
-        { type: 'line', position: 'top-right', size: 'md', color: 'vusa-red', opacity: 60 },
-        { type: 'square', position: 'top-left', size: 'md', color: 'vusa-yellow', rotation: true },
+        { type: 'line', position: 'top-right', size: 'md' },
+        { type: 'square', position: 'top-left', size: 'md' },
       ],
     }),
+    // `panel` keeps its own fixed gradient-panel chrome and ignores presentation/alternation.
+    bandRole: options => (options?.variant === 'panel' ? 'flow' : 'band'),
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('../RCHeroSection/HeroForm.vue')),
     display: defineAsyncComponent(() => import('../RCHeroSection/HeroElement.vue')),
     skeleton: {
       height: 'min-h-[45rem]',
       template: `
-        <div class="w-full min-h-[45rem] bg-zinc-200 dark:bg-zinc-800 animate-pulse flex items-end justify-center pb-16">
+        <div class="w-full min-h-[45rem] bg-secondary/40 animate-pulse flex items-end justify-center pb-16">
           <div class="flex flex-col items-center gap-4 max-w-2xl px-8">
             <Skeleton class="h-12 w-96 max-w-full" />
             <Skeleton class="h-6 w-64 max-w-full" />
@@ -246,6 +270,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     allowedWidths: ['content', 'wide', 'full'],
     selfSpaced: true,
     serverResolved: true,
+    inlineEditable: true,
     defaultContent: () => ({ title: '' }),
     editor: defineAsyncComponent(() => import('./NewsEditor.vue')),
     display: defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue')),
@@ -287,8 +312,10 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     allowedWidths: ['content', 'wide', 'full'],
     selfSpaced: true,
     serverResolved: true,
+    inlineEditable: true,
     defaultContent: () => ({ title: '' }),
-    defaultOptions: () => ({ allTenants: false }),
+    defaultOptions: () => ({ tenantScope: 'all', limit: 3 }),
+    bandRole: 'band',
     editor: defineAsyncComponent(() => import('./CalendarEditor.vue')),
     display: defineAsyncComponent(() => import('@/Components/Public/FullWidth/EventCalendarElement.vue')),
     skeleton: {
@@ -297,7 +324,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
         <div class="w-full py-8 px-4 md:px-8">
           <Skeleton class="h-8 w-48 mb-6" />
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div v-for="i in 6" :key="i" class="space-y-3 p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg">
+            <div v-for="i in 6" :key="i" class="space-y-3 p-4 border border-border rounded-lg">
               <Skeleton class="h-4 w-24" />
               <Skeleton class="h-6 w-full" />
               <Skeleton class="h-3 w-3/4" />
@@ -311,11 +338,23 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     value: 'spotify-embed',
     label: 'Spotify / Mixcloud',
     icon: SpotifyIcon,
-    description: 'Spotify grojaraščio ar Mixcloud įrašo įterpimas',
+    description: 'Spotify grojaraščio ar Mixcloud įrašo įterpimas, arba pilna reklaminė sekcija su grotuvu',
     category: 'embed',
+    // `prose` stays the default — the common case is still a link dropped mid-article, and
+    // every embed already saved has no `options.width` of its own so must keep resolving here.
+    // `promo` (see SpotifyEmbedEditor/RCSpotifyEmbed) additionally offers wide/full so the
+    // two-column section isn't stuck at the reading measure.
     defaultWidth: 'prose',
-    allowedWidths: ['prose', 'content'],
+    allowedWidths: ['prose', 'content', 'wide', 'full'],
+    // Self-spaced for both variants: `promo` paints its own vertical rhythm, and `inline`
+    // already carries its own `my-8` on the embed frame, so the canvas's flow margin on top of
+    // that was only ever double-spacing it.
+    selfSpaced: true,
     defaultContent: () => ({ url: '' }),
+    defaultOptions: () => ({ variant: 'inline' }),
+    // `inline` is a plain bordered embed dropped into prose — flow. `promo` reads as its
+    // own section beside the page's other bands.
+    bandRole: options => (options?.variant === 'promo' ? 'band' : 'flow'),
     editor: defineAsyncComponent(() => import('./SpotifyEmbedEditor.vue')),
     display: defineAsyncComponent(() => import('../RCSpotifyEmbed.vue')),
   },
@@ -357,8 +396,10 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
     defaultContent: () => ([]),
-    defaultOptions: () => ({ title: '', color: 'zinc', background: 'none', padding: 'md' }),
+    defaultOptions: () => ({ title: '' }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./NumberStatEditor.vue')),
     display: defineAsyncComponent(() => import('../RCNumberStatSection/RCNumberSection.vue')),
     skeleton: {
@@ -396,7 +437,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[200px]',
       template: `
-        <div class="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 p-6">
+        <div class="w-full rounded-lg border border-border p-6">
           <Skeleton class="h-6 w-48 mb-4" />
           <Skeleton class="h-28 w-full mb-3" />
           <Skeleton class="h-10 w-28 rounded-md" />
@@ -433,15 +474,12 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       },
     ]),
     defaultOptions: () => ({
-      // Kept chrome-free by default — existing content-grid blocks must not gain
-      // padding/background out of nowhere. RCSectionOptions lets an author opt in.
-      background: 'none',
-      padding: 'none',
       gap: 'gap-4',
       mobileStacking: true,
       equalHeight: false,
     }),
     usesSectionChrome: true,
+    bandRole: 'band',
     editor: defineAsyncComponent(() => import('./ContentGridEditor.vue')),
     display: defineAsyncComponent(() => import('./ContentGridDisplay.vue')),
   },
@@ -459,21 +497,21 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     selfSpaced: true,
     defaultContent: () => ([]),
     defaultOptions: () => ({
-      background: 'none',
-      padding: 'md',
       autoplay: true,
       autoplayDelay: 8000,
       showNavigation: true,
       showThumbnails: true,
     }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./CarouselSlideDeckEditor.vue')),
     display: defineAsyncComponent(() => import('../RCCarouselSlideDeck/CarouselSlideDeckDisplay.vue')),
     skeleton: {
       height: 'min-h-[600px]',
       template: `
         <div class="w-full py-12 px-4">
-          <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center bg-white dark:bg-zinc-800 rounded-2xl p-8 md:p-12 shadow-sm border border-zinc-100 dark:border-zinc-700">
+          <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center bg-card rounded-2xl p-8 md:p-12 border border-border">
             <div class="space-y-4 md:space-y-6">
               <Skeleton class="h-6 w-32" />
               <Skeleton class="h-8 w-3/4" />
@@ -493,10 +531,10 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     description: 'Viso pločio karuselė su didelėmis nuotraukomis ir tekstu ant jų',
     category: 'section',
     defaultWidth: 'full',
-    // Full-bleed is the default, not a lock — but unlike RCSection-based types there
-    // is no section chrome; narrowing to content/wide insets the photo panel instead.
-    allowedWidths: ['content', 'wide', 'full'],
+    // Full-bleed only: the hero-carousel breaks page measure using .rc-viewport, so narrowing is disallowed.
+    allowedWidths: ['full'],
     selfSpaced: true,
+    inlineEditable: true,
     defaultContent: () => ([]),
     defaultOptions: () => ({
       autoplay: true,
@@ -505,14 +543,16 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       showIndicators: true,
       scrim: 'medium',
       height: 'md',
+      width: 'full',
     }),
+    bandRole: 'band',
     editor: defineAsyncComponent(() => import('./HeroCarouselEditor.vue')),
     display: defineAsyncComponent(() => import('../RCHeroCarousel/HeroCarouselDisplay.vue')),
     skeleton: {
       height: 'min-h-[22rem]',
       template: `
         <div class="w-full px-4 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-5 lg:px-8">
-          <div class="min-h-[22rem] rounded-2xl md:rounded-3xl bg-zinc-200 dark:bg-zinc-800 animate-pulse relative overflow-hidden">
+          <div class="min-h-[22rem] rounded-2xl md:rounded-3xl bg-secondary/40 animate-pulse relative overflow-hidden">
             <div class="absolute inset-0 flex items-end p-8">
               <div class="space-y-3 max-w-xl">
                 <Skeleton class="h-4 w-24" />
@@ -541,21 +581,21 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     selfSpaced: true,
     defaultContent: () => ([]),
     defaultOptions: () => ({
-      background: 'muted',
-      padding: 'lg',
       autoplay: true,
       autoplayDelay: 5000,
       hintText: '',
     }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./CardStackEditor.vue')),
     display: defineAsyncComponent(() => import('../RCCardStack/CardStackDisplay.vue')),
     skeleton: {
       height: 'min-h-[500px]',
       template: `
-        <div class="w-full py-16 bg-zinc-50 dark:bg-zinc-900 px-4">
+        <div class="w-full py-16 bg-secondary/40 px-4">
           <div class="max-w-lg mx-auto">
-            <Skeleton class="h-80 w-full rounded-xl" />
+            <Skeleton class="h-80 w-full rounded-xl border border-border" />
             <div class="flex justify-center mt-8 space-x-2">
               <Skeleton v-for="i in 3" :key="i" class="w-3 h-3 rounded-full" />
             </div>
@@ -578,13 +618,13 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     selfSpaced: true,
     defaultContent: () => ([]),
     defaultOptions: () => ({
-      background: 'none',
-      padding: 'md',
       columns: '4',
       gap: 'medium',
       showLightbox: true,
     }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./PhotoGalleryGridEditor.vue')),
     display: defineAsyncComponent(() => import('../RCPhotoGalleryGrid/PhotoGalleryGridDisplay.vue')),
     skeleton: {
@@ -612,8 +652,6 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     serverResolved: true,
     defaultContent: () => ({ links: [] }),
     defaultOptions: () => ({
-      background: 'none',
-      padding: 'lg',
       source: 'news',
       mode: 'latest',
       tenantScope: 'current',
@@ -621,6 +659,8 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       style: 'photo',
     }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./LinkListEditor.vue')),
     display: defineAsyncComponent(() => import('../RCLinkList/LinkListDisplay.vue')),
     skeleton: {
@@ -647,8 +687,6 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     serverResolved: true,
     defaultContent: () => ({}),
     defaultOptions: () => ({
-      background: 'none',
-      padding: 'lg',
       mode: 'upcoming',
       tenantScope: 'current',
       groupBy: 'none',
@@ -656,6 +694,8 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       style: 'cards',
     }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./EventListEditor.vue')),
     display: defineAsyncComponent(() => import('../RCEventList/EventListDisplay.vue')),
     skeleton: {
@@ -677,21 +717,92 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     isNew: true,
     category: 'section',
     defaultWidth: 'full',
-    // Locked to full — a section marker is always full-bleed chrome around its
-    // children; a `content`/`wide` section would fight with its own nested canvas.
-    allowedWidths: ['full'],
+    // `prose` excluded (unlike accordion/card-stack): a section wraps children with
+    // their own independent width choices via the nested canvas
+    // (`.rc-canvas-nested` — see canvas.css), and narrowing the section itself caps
+    // how wide a `full`-width child can visually reach, regardless of that child's
+    // own setting. `prose` would make that mismatch the common case rather than an
+    // edge case; `content`/`wide` are narrow enough to be a deliberate authoring
+    // choice (a boxed section) without making every full-width child surprising.
+    allowedWidths: ['content', 'wide', 'full'],
     selfSpaced: true,
     defaultContent: () => ({}),
-    defaultOptions: () => ({ background: 'none', padding: 'lg', inner: 'full', wraps: 'following' }),
+    defaultOptions: () => ({ inner: 'full', wraps: 'following' }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./SectionEditor.vue')),
     display: defineAsyncComponent(() => import('../RCSection/SectionDisplay.vue')),
     skeleton: {
       height: 'min-h-[120px]',
       template: `
-        <div class="w-full py-12 px-4 flex flex-col items-center gap-3">
+        <div class="w-full py-16 px-4 flex flex-col items-center gap-3">
           <Skeleton class="h-7 w-64 max-w-full" />
           <Skeleton class="h-4 w-40" />
+        </div>
+      `,
+    },
+  },
+  'process-steps': {
+    value: 'process-steps',
+    label: 'Žingsniai',
+    icon: ProcessStepsIcon,
+    description: 'Sunumeruoti proceso žingsniai',
+    isNew: true,
+    category: 'section',
+    defaultWidth: 'wide',
+    allowedWidths: ['content', 'wide', 'full'],
+    selfSpaced: true,
+    defaultContent: () => ([
+      { title: '', text: '' },
+      { title: '', text: '' },
+      { title: '', text: '' },
+    ]),
+    defaultOptions: () => ({ columns: 3, align: 'start' }),
+    usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
+    editor: defineAsyncComponent(() => import('./ProcessStepsEditor.vue')),
+    display: defineAsyncComponent(() => import('../RCProcessSteps/ProcessStepsDisplay.vue')),
+    skeleton: {
+      height: 'min-h-[160px]',
+      template: `
+        <div class="grid w-full gap-8 py-16 sm:grid-cols-3">
+          <div v-for="i in 3" :key="i" class="space-y-3">
+            <Skeleton class="h-8 w-12" />
+            <Skeleton class="h-5 w-32" />
+            <Skeleton class="h-12 w-full" />
+          </div>
+        </div>
+      `,
+    },
+  },
+  'cta-band': {
+    value: 'cta-band',
+    label: 'Kvietimas veikti',
+    icon: CtaBandIcon,
+    description: 'Firminės spalvos juosta su antrašte ir mygtuku',
+    isNew: true,
+    category: 'section',
+    defaultWidth: 'full',
+    // Locked to full: the band paints its own ground edge to edge, so a narrower canvas column
+    // would just clip the fill without changing where the copy sits.
+    allowedWidths: ['full'],
+    selfSpaced: true,
+    defaultContent: () => ({ heading: '', text: '', items: [], button: { label: '', href: '' } }),
+    defaultOptions: () => ({}),
+    // Always the one loud emphasis band, regardless of options.presentation (it has no
+    // presentation control at all) — see resolveBand's cta-band special-case.
+    bandRole: 'band',
+    editor: defineAsyncComponent(() => import('./CtaBandEditor.vue')),
+    display: defineAsyncComponent(() => import('../RCCtaBand/CtaBandDisplay.vue')),
+    skeleton: {
+      height: 'min-h-[160px]',
+      template: `
+        <div class="flex w-full flex-col gap-4 bg-secondary/40 px-5 py-14 sm:px-6 lg:px-8 lg:py-20">
+          <Skeleton class="h-9 w-72 max-w-full" />
+          <Skeleton class="h-5 w-full max-w-xl" />
+          <Skeleton class="h-12 w-48" />
         </div>
       `,
     },
@@ -708,12 +819,12 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     selfSpaced: true,
     defaultContent: () => ({ quote: {}, snapshot: { name: '' } }),
     defaultOptions: () => ({
-      background: 'none',
-      padding: 'md',
       align: 'center',
       showAvatar: true,
     }),
     usesSectionChrome: true,
+    bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./PersonQuoteEditor.vue')),
     display: defineAsyncComponent(() => import('../RCPersonQuote/PersonQuoteDisplay.vue')),
     skeleton: {
@@ -764,8 +875,10 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     skeleton: {
       height: 'min-h-[120px]',
       template: `
-        <div class="w-full rounded-2xl bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
-          <div class="h-9 bg-zinc-200/60 dark:bg-zinc-700/60" />
+        <div class="w-full overflow-hidden border border-border bg-secondary/40">
+          <div class="flex items-center gap-2 border-b border-border px-5 py-3">
+            <Skeleton class="h-4 w-24" />
+          </div>
           <div v-for="i in 3" :key="i" class="flex items-center gap-4 px-5 py-3">
             <Skeleton class="h-4 w-16" />
             <Skeleton class="h-4 flex-1" />

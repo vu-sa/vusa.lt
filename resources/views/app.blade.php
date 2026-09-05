@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 
 {{-- TODO: Enable class="scroll-smooth" when Inertia scroll reset is fixed --}}
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark-mode-init">
+{{-- `data-surface="public"` switches the design-token scope in resources/css/app.css: the
+     public site takes the editorial palette (warm paper / near-black, zero radius), admin keeps
+     its own. Emitted server-side, from the same component check that gates @head and Umami
+     below, so it is correct before the first paint. --}}
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark-mode-init"
+    @if (str_starts_with($page['component'] ?? '', 'Public/')) data-surface="public" @endif>
 
 <head>
     <meta charset="utf-8">
@@ -49,8 +54,7 @@
     @endif
 
 
-    <meta name="theme-color" content="#252528" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta id="theme-color" name="theme-color" content="#ffffff" />
 
     @include('meta-icons')
 
@@ -76,6 +80,8 @@
             if (isDark) {
                 document.documentElement.classList.add('dark');
             }
+
+            document.getElementById('theme-color').content = isDark ? '#252528' : '#ffffff';
 
             // Remove initialization class to allow normal operation
             document.documentElement.classList.remove('dark-mode-init');
@@ -137,7 +143,11 @@
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}
-<body class="font-sans antialiased bg-zinc-50 dark:bg-zinc-900" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
+{{-- The public surface paints from its own tokens; admin keeps the zinc canvas it has today
+     until its own revamp. The font is set here rather than only on PublicLayout's root div
+     because Reka teleports popovers, dialogs and dropdowns to <body> — outside that div, they
+     otherwise fall back to the default sans instead of Atkinson. --}}
+<body class="antialiased @if (str_starts_with($page['component'] ?? '', 'Public/')) font-public bg-background text-foreground @else font-sans bg-zinc-50 dark:bg-zinc-900 @endif" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
     @inertia
 </body>
 

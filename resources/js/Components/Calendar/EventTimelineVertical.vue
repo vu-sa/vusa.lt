@@ -2,13 +2,13 @@
   <div class="event-timeline-vertical">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
-      <h3 class="text-lg font-semibold text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
-        <div class="w-1 h-5 bg-vusa-red rounded-full" />
+      <h3 class="text-lg font-semibold text-foreground flex items-center gap-2">
+        <div class="w-1 h-5 bg-brand-fill rounded-full" />
         {{ $t('Renginių kalendorius') }}
       </h3>
 
       <!-- Date range indicator -->
-      <div class="text-xs text-zinc-400 dark:text-zinc-500">
+      <div class="text-xs text-muted-foreground">
         {{ formatDateCompact(dateRange.start) }} — {{ formatDateCompact(dateRange.end) }}
       </div>
     </div>
@@ -17,7 +17,7 @@
     <button
       v-if="!showPast && hasPastEvents"
       type="button"
-      class="w-full flex items-center justify-center gap-2 py-2.5 mb-6 text-sm font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-vusa-red transition-colors"
+      class="w-full flex items-center justify-center gap-2 py-2.5 mb-6 text-sm font-medium text-muted-foreground bg-secondary/50 rounded-lg border border-border/50 hover:bg-secondary hover:text-brand transition-colors"
       @click="showPast = true"
     >
       <ArrowUp class="w-4 h-4" />
@@ -26,7 +26,7 @@
     <button
       v-else-if="showPast && canLoadPast"
       type="button"
-      class="w-full flex items-center justify-center gap-2 py-2.5 mb-6 text-sm font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-vusa-red transition-colors"
+      class="w-full flex items-center justify-center gap-2 py-2.5 mb-6 text-sm font-medium text-muted-foreground bg-secondary/50 rounded-lg border border-border/50 hover:bg-secondary hover:text-brand transition-colors"
       :disabled="loadingPast"
       @click="loadMorePast"
     >
@@ -38,7 +38,7 @@
     <!-- Timeline container -->
     <div class="relative">
       <!-- Vertical timeline line -->
-      <div class="absolute left-5 top-0 bottom-0 w-px bg-zinc-200 dark:bg-zinc-700" />
+      <div class="absolute left-5 top-0 bottom-0 w-px bg-secondary" />
 
       <!-- Event entries with integrated today marker -->
       <div class="space-y-2">
@@ -50,16 +50,16 @@
           >
             <!-- Today dot -->
             <div class="relative flex items-center justify-center w-10">
-              <div class="absolute w-5 h-5 bg-vusa-red/20 rounded-full animate-ping" />
-              <div class="w-3 h-3 bg-vusa-red rounded-full" />
+              <div class="absolute w-5 h-5 bg-brand/20 rounded-full animate-ping" />
+              <div class="w-3 h-3 bg-brand-fill rounded-full" />
             </div>
 
             <!-- Today label -->
-            <div class="flex-1 h-px bg-vusa-red/20" />
-            <span class="px-3 py-1 text-xs font-semibold text-white bg-vusa-red rounded-full">
+            <div class="flex-1 h-px bg-brand/20" />
+            <span class="px-3 py-1 text-xs font-semibold text-white bg-brand-fill rounded-full">
               {{ $t('Šiandien') }}
             </span>
-            <div class="flex-1 h-px bg-vusa-red/20" />
+            <div class="flex-1 h-px bg-brand/20" />
           </div>
 
           <!-- Date separator for new dates -->
@@ -75,10 +75,10 @@
               <div
                 class="w-2.5 h-2.5 rounded-full"
                 :class="group.isPast
-                  ? 'bg-zinc-300 dark:bg-zinc-600'
+                  ? 'bg-border'
                   : group.isToday
-                    ? 'bg-vusa-red'
-                    : 'bg-vusa-red/70'"
+                    ? 'bg-brand-fill'
+                    : 'bg-brand-fill/70'"
               />
             </div>
 
@@ -86,8 +86,8 @@
             <div
               class="text-sm font-medium"
               :class="group.isPast
-                ? 'text-zinc-400 dark:text-zinc-500'
-                : 'text-zinc-700 dark:text-zinc-300'"
+                ? 'text-muted-foreground'
+                : 'text-foreground'"
             >
               {{ formatDateFull(group.date) }}
             </div>
@@ -101,48 +101,49 @@
             class="group relative flex items-center gap-4 ml-10 py-3 px-4 rounded-xl border transition-all duration-200"
             :class="[
               group.isPast
-                ? 'bg-zinc-50/50 dark:bg-zinc-800/30 border-zinc-100 dark:border-zinc-800 opacity-70 hover:opacity-100'
-                : 'bg-white dark:bg-zinc-800/80 border-zinc-200 dark:border-zinc-700 hover:border-vusa-red/40 hover:shadow-sm',
+                ? 'bg-secondary/40 border-border opacity-70 hover:opacity-100'
+                : 'bg-card/80 border-border hover:border-brand/40 hover:shadow-sm',
             ]"
           >
             <!-- Event thumbnail -->
-            <div class="flex-shrink-0 w-11 h-11 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-700">
+            <div class="flex-shrink-0 w-11 h-11 overflow-hidden border border-border bg-secondary">
               <img
                 v-if="getEventImage(event)"
                 :src="getEventImage(event)!"
                 :alt="getEventTitle(event)"
                 class="w-full h-full object-cover"
+                :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
                 loading="lazy"
               >
               <div
                 v-else
-                class="w-full h-full bg-gradient-to-br from-vusa-red/10 to-vusa-red/20 flex items-center justify-center"
+                class="w-full h-full bg-brand/10 flex items-center justify-center"
               >
-                <Calendar class="w-5 h-5 text-vusa-red/50" />
+                <Calendar class="w-5 h-5 text-brand/50" />
               </div>
             </div>
 
             <!-- Event content -->
             <div class="flex-1 min-w-0">
               <h4
-                class="font-medium text-sm line-clamp-2 leading-snug transition-colors group-hover:text-vusa-red"
-                :class="group.isPast ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-800 dark:text-zinc-100'"
+                class="font-medium text-sm line-clamp-2 leading-snug transition-colors group-hover:text-brand"
+                :class="group.isPast ? 'text-muted-foreground' : 'text-foreground'"
               >
                 {{ getEventTitle(event) }}
               </h4>
 
-              <div class="flex items-center gap-2 mt-1 text-xs" :class="group.isPast ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400'">
+              <div class="flex items-center gap-2 mt-1 text-xs" :class="group.isPast ? 'text-muted-foreground' : 'text-muted-foreground'">
                 <Clock class="w-3 h-3" />
                 <span>{{ formatEventTime(event.date) }}</span>
                 <template v-if="getEventLocation(event)">
-                  <span class="text-zinc-300 dark:text-zinc-600">·</span>
+                  <span class="text-muted-foreground">·</span>
                   <span class="truncate">{{ getEventLocation(event) }}</span>
                 </template>
               </div>
             </div>
 
             <!-- Arrow indicator -->
-            <ChevronRight class="flex-shrink-0 w-4 h-4 text-zinc-300 dark:text-zinc-600 group-hover:text-vusa-red transition-colors" />
+            <ChevronRight class="flex-shrink-0 w-4 h-4 text-muted-foreground group-hover:text-brand transition-colors" />
           </a>
         </template>
 
@@ -153,16 +154,16 @@
         >
           <!-- Today dot -->
           <div class="relative flex items-center justify-center w-10">
-            <div class="absolute w-5 h-5 bg-vusa-red/20 rounded-full animate-ping" />
-            <div class="w-3 h-3 bg-vusa-red rounded-full" />
+            <div class="absolute w-5 h-5 bg-brand/20 rounded-full animate-ping" />
+            <div class="w-3 h-3 bg-brand-fill rounded-full" />
           </div>
 
           <!-- Today label -->
-          <div class="flex-1 h-px bg-vusa-red/20" />
-          <span class="px-3 py-1 text-xs font-semibold text-white bg-vusa-red rounded-full">
+          <div class="flex-1 h-px bg-brand/20" />
+          <span class="px-3 py-1 text-xs font-semibold text-white bg-brand-fill rounded-full">
             {{ $t('Šiandien') }}
           </span>
-          <div class="flex-1 h-px bg-vusa-red/20" />
+          <div class="flex-1 h-px bg-brand/20" />
         </div>
       </div>
 
@@ -171,13 +172,13 @@
         v-if="displayedGroups.length === 0"
         class="flex flex-col items-center justify-center py-16 text-center"
       >
-        <div class="w-14 h-14 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
-          <CalendarX class="w-6 h-6 text-zinc-400 dark:text-zinc-500" />
+        <div class="w-14 h-14 rounded-full bg-secondary flex items-center justify-center mb-4">
+          <CalendarX class="w-6 h-6 text-muted-foreground" />
         </div>
-        <p class="text-zinc-500 dark:text-zinc-400 text-sm">
+        <p class="text-muted-foreground text-sm">
           {{ $t('Nėra renginių') }}
         </p>
-        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+        <p class="text-xs text-muted-foreground mt-1">
           {{ $t('Šiuo laikotarpiu renginių nerasta') }}
         </p>
       </div>
@@ -187,7 +188,7 @@
     <button
       v-if="canLoadFuture"
       type="button"
-      class="w-full flex items-center justify-center gap-2 py-2.5 mt-6 text-sm font-medium text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-vusa-red transition-colors"
+      class="w-full flex items-center justify-center gap-2 py-2.5 mt-6 text-sm font-medium text-muted-foreground bg-secondary/50 rounded-lg border border-border/50 hover:bg-secondary hover:text-brand transition-colors"
       :disabled="loadingFuture"
       @click="loadMoreFuture"
     >
@@ -197,12 +198,12 @@
     </button>
 
     <!-- Action buttons -->
-    <div class="flex flex-col gap-3 mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+    <div class="flex flex-col gap-3 mt-8 pt-6 border-t border-border">
       <Button as="a" :href="route('calendar.list', { lang: locale })" class="w-full" size="sm">
         <Calendar class="w-4 h-4 mr-2" />
         {{ $t('Visi renginiai') }}
       </Button>
-      <Button variant="ghost" size="sm" class="w-full text-zinc-500" @click="$emit('openSyncModal')">
+      <Button variant="ghost" size="sm" class="w-full text-muted-foreground" @click="$emit('openSyncModal')">
         <RefreshCw class="w-4 h-4 mr-2" />
         {{ $t('Sinchronizuoti kalendorių') }}
       </Button>

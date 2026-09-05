@@ -6,6 +6,8 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 import HeroCarouselDisplay from '../HeroCarouselDisplay.vue';
 import HeroCarouselEditor from '../../Types/HeroCarouselEditor.vue';
 import { createContentItem } from '../../Types';
+import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
+
 import type { HeroCarousel } from '@/Types/contentParts';
 
 /**
@@ -48,8 +50,6 @@ const stubs = {
   Carousel: { template: '<div class="carousel-stub"><slot /></div>' },
   CarouselContent: { template: '<div><slot /></div>' },
   CarouselItem: { template: '<div class="carousel-item-stub"><slot /></div>' },
-  CarouselPrevious: { template: '<button class="carousel-prev" />' },
-  CarouselNext: { template: '<button class="carousel-next" />' },
   SmartLink: { template: '<a :href="href"><slot /></a>' },
   teleport: true,
 };
@@ -65,13 +65,28 @@ describe('HeroCarouselDisplay', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
     expect(wrapper.findAll('h2')).toHaveLength(2);
-    expect(wrapper.find('h2').text()).toBe('Pirmasis');
+    const h2 = wrapper.find('h2');
+    expect(h2.text()).toBe('Pirmasis');
+    expect(h2.classes()).toEqual(expect.arrayContaining([
+      'u-display',
+      'text-white',
+      'text-[2.25rem]',
+      'sm:text-6xl',
+      'lg:text-7xl',
+    ]));
     expect(wrapper.text()).toContain('VU SA kviečia');
     expect(wrapper.text()).toContain('Paantraštė');
     expect(wrapper.text()).toContain('Aprašymas');
 
     const link = wrapper.findAll('a').find(a => a.text().includes('Tapk nariu'));
     expect(link?.attributes('href')).toBe('/lt/narys');
+  });
+
+  it('sets the description on a fixed-white rc-prose so it stays readable on the photo scrim in light mode', () => {
+    const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
+
+    const description = wrapper.find('.rc-prose');
+    expect(description.classes()).toContain('rc-prose-invert');
   });
 
   it('renders the first slide image eager with high fetchpriority, the rest lazy', () => {
@@ -99,12 +114,12 @@ describe('HeroCarouselDisplay', () => {
     expect(textBlocks[1]!.classes()).toContain('items-start');
   });
 
-  it('applies the scrim strength option to the overlay layer', () => {
+  it('applies the scrim strength option to the photo, not an extra overlay', () => {
     const light = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'light' }) }, global: { stubs } });
-    expect(light.html()).toContain('bg-zinc-950/20');
+    expect(light.find('img').classes()).toContain('opacity-85');
 
     const dark = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'dark' }) }, global: { stubs } });
-    expect(dark.html()).toContain('bg-zinc-950/60');
+    expect(dark.find('img').classes()).toContain('opacity-55');
   });
 
   it('renders one labelled dot per slide with aria-current on the active one', () => {
@@ -117,42 +132,92 @@ describe('HeroCarouselDisplay', () => {
     expect(dots[1]!.attributes('aria-current')).toBeUndefined();
   });
 
-  it('insets the photos in a rounded panel while the section stays full-bleed', () => {
+  it('runs the band to the viewport edges with no inset panel', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
-    expect(wrapper.find('.overflow-hidden.rounded-2xl').exists()).toBe(true);
-    // Page-gutter padding on the section keeps the panel off the viewport edges and
-    // gives the straddling arrows room.
-    expect(wrapper.find('section').classes()).toContain('px-4');
+    // `rc-viewport` escapes PublicLayout's `.container` column; without it the hero is
+    // clamped to the content measure and stops being a full-bleed band.
+    expect(wrapper.find('section').classes()).toContain('rc-viewport');
+    expect(wrapper.find('.rounded-2xl').exists()).toBe(false);
   });
 
-  it('renders dot indicators below the panel instead of over the photos', () => {
+  it('puts dots and arrows in one bottom bar aligned to the content measure', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
-    const dotsRow = wrapper.find('.mt-3.flex.justify-center');
-    expect(dotsRow.exists()).toBe(true);
-    expect(dotsRow.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(2);
+    const bar = wrapper.find('.absolute.inset-x-0.bottom-0 .max-w-7xl');
+    expect(bar.exists()).toBe(true);
+    expect(bar.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(2);
+    expect(bar.findAll('button[aria-label="accessibility.carousel_previous_slide"]')).toHaveLength(0);
+    // The arrows label themselves through a visually-hidden span rather than aria-label.
+    expect(bar.text()).toContain('accessibility.carousel_previous_slide');
+    expect(bar.text()).toContain('accessibility.carousel_next_slide');
   });
 
   it('applies the default md panel height and honors the height option', () => {
     const defaultHeight = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
-    expect(defaultHeight.find('.carousel-item-stub div').classes()).toContain('h-[55svh]');
+    expect(defaultHeight.find('.carousel-item-stub div').classes()).toContain('min-h-[34rem]');
 
     const small = mount(HeroCarouselDisplay, { props: { element: makeElement([], { height: 'sm' }) }, global: { stubs } });
-    expect(small.find('.carousel-item-stub div').classes()).toContain('h-[42svh]');
+    expect(small.find('.carousel-item-stub div').classes()).toContain('min-h-[28rem]');
 
     const large = mount(HeroCarouselDisplay, { props: { element: makeElement([], { height: 'lg' }) }, global: { stubs } });
-    expect(large.find('.carousel-item-stub div').classes()).toContain('h-[68svh]');
+    expect(large.find('.carousel-item-stub div').classes()).toContain('min-h-[40rem]');
   });
 
-  it('hides arrows and dots when there is only one slide', () => {
+  it('renders a static hero without carousel stub when there is only one slide', () => {
     const element = makeElement();
     element.json_content = [element.json_content[0]!];
     const wrapper = mount(HeroCarouselDisplay, { props: { element }, global: { stubs } });
 
-    expect(wrapper.find('.carousel-prev').exists()).toBe(false);
-    expect(wrapper.find('.carousel-next').exists()).toBe(false);
+    expect(wrapper.find('.carousel-stub').exists()).toBe(false);
+    expect(wrapper.find('h2').text()).toBe('Pirmasis');
+    expect(wrapper.text()).not.toContain('accessibility.carousel_previous_slide');
+    expect(wrapper.text()).not.toContain('accessibility.carousel_next_slide');
     expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(0);
+  });
+
+  it('renders carousel stub and controls when there are multiple slides', () => {
+    const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
+
+    expect(wrapper.find('.carousel-stub').exists()).toBe(true);
+    expect(wrapper.findAll('.carousel-item-stub')).toHaveLength(2);
+    expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(2);
+  });
+
+  it('renders an empty state with add slide button when editable and 0 slides', async () => {
+    const element = makeElement();
+    element.json_content = [];
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: { element, editable: true },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('rich-content.no_slides');
+    const addBtn = wrapper.findAll('button').find(b => b.text().includes('rich-content.add_slide'));
+    expect(addBtn).toBeDefined();
+
+    await addBtn!.trigger('click');
+    const emitted = wrapper.emitted('update:element')?.at(-1)?.[0] as HeroCarousel;
+    expect(emitted.json_content).toHaveLength(1);
+  });
+
+  it('allows removing a slide when editable and more than 1 slide', async () => {
+    const hotspots = useActiveHotspot();
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: { element: makeElement(), editable: true },
+      global: {
+        stubs: { ...stubs, TiptapEditor: true },
+        provide: { [ACTIVE_HOTSPOT_KEY]: hotspots },
+      },
+    });
+
+    const removeBtn = wrapper.find('button[aria-label="rich-content.remove_slide"]');
+    expect(removeBtn.exists()).toBe(true);
+
+    await removeBtn.trigger('click');
+    const emitted = wrapper.emitted('update:element')?.at(-1)?.[0] as HeroCarousel;
+    expect(emitted.json_content).toHaveLength(1);
+    expect(emitted.json_content[0]!.title).toBe('Antrasis');
   });
 
   it('reads FormData-mangled "0" strings as off (legacy rows saved via forceFormData)', () => {
@@ -162,8 +227,8 @@ describe('HeroCarouselDisplay', () => {
     });
 
     // Plain truthiness would see "0" as truthy and wrongly render both.
-    expect(wrapper.find('.carousel-prev').exists()).toBe(false);
-    expect(wrapper.find('.carousel-next').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('accessibility.carousel_previous_slide');
+    expect(wrapper.text()).not.toContain('accessibility.carousel_next_slide');
     expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(0);
   });
 
@@ -175,16 +240,51 @@ describe('HeroCarouselDisplay', () => {
   });
 
   it('applies the navbar pull-up margin only as the first element', () => {
+    // Mirrors PublicLayout's content wrapper padding (`pt-4 md:pt-6 lg:pt-8`) so the band
+    // sits flush under the fixed header. Change one, change the other.
     const withMargin = mount(HeroCarouselDisplay, { props: { element: makeElement(), isFirstElement: true }, global: { stubs } });
-    expect(withMargin.find('section').classes()).toContain('-mt-8');
+    expect(withMargin.find('section').classes()).toEqual(expect.arrayContaining(['-mt-4', 'md:-mt-6', 'lg:-mt-8']));
 
     const withoutMargin = mount(HeroCarouselDisplay, { props: { element: makeElement(), isFirstElement: false }, global: { stubs } });
-    expect(withoutMargin.find('section').classes()).not.toContain('-mt-8');
+    expect(withoutMargin.find('section').classes()).not.toContain('-mt-4');
   });
 
   it('anchors the section for ToC scroll targets', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement(), anchorId: 42 }, global: { stubs } });
     expect(wrapper.find('#rc-42').exists()).toBe(true);
+  });
+
+  it('honors showArrows: false and showIndicators: false even when editable is true', () => {
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: {
+        element: makeElement([], { showArrows: false, showIndicators: false }),
+        editable: true,
+      },
+      global: {
+        stubs: { ...stubs, TiptapEditor: true },
+        provide: { [ACTIVE_HOTSPOT_KEY]: useActiveHotspot() },
+      },
+    });
+
+    expect(wrapper.text()).not.toContain('accessibility.carousel_previous_slide');
+    expect(wrapper.text()).not.toContain('accessibility.carousel_next_slide');
+    expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(0);
+  });
+
+  it('renders empty image placeholder button when editable and slide has no image', () => {
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: {
+        element: makeElement([{ imageSrc: '' }]),
+        editable: true,
+      },
+      global: {
+        stubs: { ...stubs, TiptapEditor: true },
+        provide: { [ACTIVE_HOTSPOT_KEY]: useActiveHotspot() },
+      },
+    });
+
+    expect(wrapper.text()).toContain('rich-content.slide_image');
+    expect(wrapper.text()).toContain('rich-content.select_image');
   });
 });
 
@@ -241,6 +341,40 @@ describe('HeroCarouselEditor', () => {
     await findButtonByText(wrapper, 'add_first_button').trigger('click');
     const emitted = wrapper.emitted('update:modelValue')?.at(-1)?.[0] as HeroCarousel['json_content'];
     expect(emitted[0]!.buttons).toHaveLength(1);
-    expect(emitted[0]!.buttons![0]).toMatchObject({ variant: 'default', color: 'red' });
+    expect(emitted[0]!.buttons![0]).toMatchObject({ variant: 'default' });
+    expect(emitted[0]!.buttons![0]).not.toHaveProperty('color');
+  });
+
+  it('emits update:options on switch toggle via patchOption', async () => {
+    const wrapper = mount(HeroCarouselEditor, {
+      props: {
+        modelValue: [],
+        options: { autoplay: true, autoplayDelay: 8000, showArrows: true, showIndicators: true, scrim: 'medium' },
+      },
+      global: { stubs: { TiptapEditor: true } },
+    });
+
+    const switches = wrapper.findAll('[role="switch"]');
+    // switches: [autoplay, showArrows, showIndicators]
+    await switches[1]!.trigger('click');
+    const emitted = wrapper.emitted('update:options');
+    expect(emitted).toBeTruthy();
+    const lastOptions = emitted!.at(-1)![0] as HeroCarousel['options'];
+    expect(lastOptions.showArrows).toBe(false);
+  });
+
+  it('renders a select_image button even when slide already has an image', () => {
+    const wrapper = mount(HeroCarouselEditor, {
+      props: {
+        modelValue: [{ eyebrow: '', title: 'T', subtitle: '', description: { type: 'doc', content: [] }, imageSrc: '/existing.webp', imageAlt: '', align: 'start', buttons: [] }],
+        options: { autoplay: true, autoplayDelay: 8000, showArrows: true, showIndicators: true, scrim: 'medium' },
+      },
+      global: { stubs: { TiptapEditor: true } },
+    });
+
+    // Image selector button is present alongside focal point and delete buttons
+    expect(wrapper.text()).toContain('rich-content.select_image');
+    expect(wrapper.text()).toContain('rich-content.set_focal_point');
+    expect(wrapper.text()).toContain('rich-content.delete_image');
   });
 });

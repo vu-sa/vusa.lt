@@ -1,80 +1,136 @@
 <template>
-  <Popover @update:open="handlePopoverOpenChange">
-    <PopoverTrigger as-child>
+  <!-- Controlled (`:open`), not just listened to (`@update:open`): opening on hover means
+       something outside a click has to be able to set the state, so the popover can no longer be
+       left to manage its own open/closed internally. -->
+  <Popover :open="isPopoverOpen" @update:open="handlePopoverOpenChange">
+    <PopoverTrigger
+      as-child
+      @mouseenter="openOnHover"
+      @mouseleave="scheduleClose"
+      @focus="openOnHover"
+      @blur="scheduleClose"
+    >
       <Button
-        variant="outline"
+        variant="ghost"
         :size="size === 'tiny' ? 'sm' : 'default'"
-        class="flex items-center gap-2 w-auto justify-between tracking-normal"
+        class="flex w-auto items-center justify-between gap-2 border border-border
+          text-sm font-bold uppercase tracking-wide
+          text-foreground transition-colors duration-200
+          hover:border-brand hover:bg-transparent hover:text-brand
+          dark:hover:bg-transparent dark:hover:text-brand"
         :disabled="isDisabled"
         :title="$t('Pasirinkti padalinį')"
       >
-        <div class="flex items-center">
-          <MapPin class="mr-2 h-4 w-4" />
-          <span class="tracking-normal">{{ padalinys }}</span>
+        <div class="flex items-center gap-2">
+          <!-- Brand-coloured pin: it is the one mark that tells a reader this control is about
+               *where* they are. The label itself is full-strength — this names the current unit,
+               so it is content, not chrome. -->
+          <IFluentLocation24Regular class="h-4 w-4 text-brand" />
+          <span>{{ padalinys }}</span>
         </div>
-        <ChevronDown class="h-4 w-4 opacity-50 transition-transform duration-200" :class="{ 'rotate-180': isPopoverOpen }" />
+        <IFluentChevronDown24Regular class="h-4 w-4 opacity-50 transition-transform duration-200" :class="{ 'rotate-180': isPopoverOpen }" />
       </Button>
     </PopoverTrigger>
-    <PopoverContent class="p-0" :class="{ 'w-[300px]': viewMode === 'list', 'w-[520px]': viewMode === 'map' }" align="start">
-      <div class="flex items-center gap-2 p-2 border-b border-zinc-200 dark:border-zinc-800">
+    <!-- Fixed width regardless of `viewMode` — it used to grow from 300px to 520px switching into
+         map mode, which reads as the panel jumping under the cursor. -->
+    <!-- `@close-auto-focus.prevent`: reka-ui returns focus to the trigger whenever the popover
+         closes, which fires the trigger's own `@focus`/`@focusin` handler and reopens it right
+         after a hover-out closes it. Suppressing the auto-focus breaks that loop.
+         `@open-auto-focus.prevent`: reka-ui also focuses the first tabbable element (the "List"
+         button) whenever the popover opens, which paints a focus ring even though the popover was
+         opened by hover, not keyboard. -->
+    <PopoverContent
+      class="w-96 border-0 p-0 shadow-2xl dark:border dark:border-border/50
+        [.a11y-contrast_&]:border [.a11y-contrast_&]:border-border"
+      align="start"
+      @mouseenter="openOnHover"
+      @mouseleave="scheduleClose"
+      @focusin="openOnHover"
+      @focusout="scheduleCloseOnFocusOut"
+      @open-auto-focus.prevent
+      @close-auto-focus="preventCloseAutoFocus"
+      @pointer-down-outside="preventDismiss"
+      @focus-outside="preventDismiss"
+    >
+      <div class="flex items-center gap-2 border-b border-border/50 p-2">
         <Button
-          variant="ghost"
-          size="sm"
-          :class="{ 'bg-muted': viewMode === 'list' }"
-          @click="setViewMode('list')"
+          v-for="view in (['list', 'map'] as const)"
+          :key="view"
+          :variant="viewMode === view ? 'brand' : 'ghost'"
+          size="public-sm"
+          class="flex-1"
+          :class="viewMode !== view && 'text-muted-foreground hover:text-foreground'"
+          @click="setViewMode(view)"
         >
-          <List class="h-4 w-4" />
-          <span class="ml-2">{{ $t('List') }}</span>
+          <component :is="view === 'list' ? IFluentList24Regular : IFluentMap24Regular" class="h-4 w-4" />
+          {{ view === 'list' ? $t('List') : $t('Map') }}
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          :class="{ 'bg-muted': viewMode === 'map' }"
-          @click="setViewMode('map')"
-        >
-          <Map class="h-4 w-4" />
-          <span class="ml-2">{{ $t('Map') }}</span>
-        </Button>
-
-        <div class="ml-auto flex">
-          <Input
-            v-if="viewMode === 'map'"
-            v-model="searchQuery"
-            class="h-8 w-32"
-            :placeholder="`${$t('Ieškoti')}...`"
-          />
-        </div>
       </div>
 
       <!-- List View -->
       <div v-if="viewMode === 'list'" class="padalinys-list">
         <ScrollArea class="h-[350px]">
-          <div class="space-y-1 p-1 overflow-hidden">
+          <div class="overflow-hidden">
             <template v-for="option in options_padaliniai" :key="option.key">
-              <Button
-                variant="ghost"
+              <!--
+                A unit with a photo renders as one of the mega menu's image items: the picture is
+                the row's ground, grayscale behind a scrim, with the name laid over it. Units
+                without one keep the plain lettered row, so the list stays scannable either way.
+              -->
+              <button
+                type="button"
                 :class="[
-                  'flex w-full cursor-pointer items-center justify-start gap-2 rounded-md px-2 py-1.5 text-sm',
-                  isActivePadalinys(option.key) && 'bg-accent text-accent-foreground',
-                  option.isMainOffice && 'font-bold'
+                  'group relative flex w-full cursor-pointer items-center gap-3 text-left transition-colors',
+                  'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+                  option.primary_institution?.image_url ? 'min-h-[4.5rem] bg-ink p-4' : 'px-4 py-2.5 hover:bg-secondary',
+                  isActivePadalinys(option.key) && !option.primary_institution?.image_url && 'bg-secondary',
                 ]"
                 @click="handleSelectPadalinys(option.key)"
               >
-                <Avatar class="h-6 w-6">
-                  <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
-                  <AvatarFallback>{{ option.key.substring(0, 2).toUpperCase() }}</AvatarFallback>
+                <!-- No rail: the active row is marked the same way a hovered one is (colour +
+                     checkmark), not by a persistent left border. -->
+                <template v-if="option.primary_institution?.image_url">
+                  <img
+                    :src="option.primary_institution.image_url"
+                    alt=""
+                    class="absolute inset-0 size-full object-cover opacity-60 grayscale"
+                  >
+                  <span class="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/30" />
+                </template>
+
+                <Avatar v-else class="size-9 shrink-0 rounded-none">
+                  <!-- `rounded-none` explicitly: the primitive's base is `rounded-full`, which is a
+                       literal and so survives the public surface's zeroed radius scale. The design
+                       has no circles. -->
+                  <AvatarFallback class="rounded-none bg-secondary text-[0.6875rem] font-bold uppercase tracking-wide text-foreground">
+                    {{ option.key.substring(0, 2).toUpperCase() }}
+                  </AvatarFallback>
                 </Avatar>
 
-                <div class="flex flex-col items-start truncate w-full">
-                  <span class="font-medium">{{ option.label }}</span>
-                  <span class="text-xs text-muted-foreground">{{ $t(option.primary_institution?.short_name ?? '') }}</span>
-                </div>
+                <span class="relative z-10 min-w-0 flex-1">
+                  <span
+                    class="block truncate text-sm font-bold transition-colors"
+                    :class="rowNameClass(option)"
+                  >
+                    {{ option.label }}
+                  </span>
+                  <!-- The main office's unit name and short name are both "VU SA"; showing both
+                       stacks the same words twice. -->
+                  <span
+                    v-if="secondaryLabel(option)"
+                    class="block truncate text-xs"
+                    :class="option.primary_institution?.image_url ? 'text-white/70' : 'text-muted-foreground'"
+                  >
+                    {{ secondaryLabel(option) }}
+                  </span>
+                </span>
 
-                <Check
-                  class="ml-auto h-4 w-4 opacity-0 transition-opacity"
-                  :class="{ 'opacity-100': isActivePadalinys(option.key) }"
+                <IFluentCheckmark24Regular
+                  v-if="isActivePadalinys(option.key)"
+                  class="relative z-10 size-4 shrink-0"
+                  :class="option.primary_institution?.image_url ? 'text-brand-fill' : 'text-brand'"
                 />
-              </Button>
+              </button>
             </template>
           </div>
         </ScrollArea>
@@ -86,7 +142,7 @@
           <PadalinysMap
             ref="mapComponentRef"
             :faculties="options_padaliniai"
-            :search-query
+            search-query=""
             :on-faculty-select="handleSelectPadalinys"
             :faculty-locations
             class="max-h-[350px] overflow-hidden"
@@ -113,19 +169,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, nextTick } from 'vue';
-import { Check, ChevronDown, MapPin, Map, List } from 'lucide-vue-next';
+import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useStorage } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
+import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
 
 import PadalinysMap from './PadalinysMap.vue';
 
+import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
+import IFluentChevronDown24Regular from '~icons/fluent/chevron-down-24-regular';
+import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
+import IFluentMap24Regular from '~icons/fluent/map-24-regular';
+import IFluentList24Regular from '~icons/fluent/list-24-regular';
 import type { TenantOption } from '@/Composables/useTenantOptions';
 import { useTenantOptions } from '@/Composables/useTenantOptions';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Popover, PopoverTrigger, PopoverContent } from '@/Components/ui/popover';
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import { Skeleton } from '@/Components/ui/skeleton';
 
 interface Props {
@@ -169,19 +230,88 @@ const facultyLocations: Record<string, FacultyLocation> = {
 };
 
 const viewMode = useStorage('padalinysSelectorViewMode', 'list'); // 'list' or 'map'
-const searchQuery = ref('');
 const hoveredLocation = ref<TenantOption | null>(null);
 const isPopoverOpen = ref(false);
+let closeTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 const { options: options_padaliniai, isActive: isActivePadalinys, switchTenant: handleSelectPadalinys, currentLabel, isSwitchAllowed } = useTenantOptions(props.prependOptions);
 
 const padalinys = currentLabel(props.mainTenantLabel);
+
+/** The short name below a unit's name, unless it just repeats it. */
+function secondaryLabel(option: TenantOption): string {
+  const shortName = $t(option.primary_institution?.short_name ?? '');
+
+  return shortName.trim().toLowerCase() === (option.label ?? '').trim().toLowerCase() ? '' : shortName;
+}
+
+/**
+ * The active row is marked with the same colour a hover would use, permanently — there is no
+ * separate rail/border treatment for "selected" any more.
+ */
+function rowNameClass(option: TenantOption): string {
+  const hasImage = Boolean(option.primary_institution?.image_url);
+  const brandClass = hasImage ? 'text-brand-fill' : 'text-brand';
+
+  if (isActivePadalinys(option.key)) {
+    return brandClass;
+  }
+
+  return `${hasImage ? 'text-white' : 'text-foreground'} group-hover:${brandClass}`;
+}
+
 const isDisabled = computed(() => !isSwitchAllowed.value);
 
-// Set view mode and initialize map if needed
+/** Opens on hover; a real click still toggles via `handlePopoverOpenChange` below. */
+function openOnHover(): void {
+  clearScheduledClose();
+
+  handlePopoverOpenChange(true);
+}
+
+/** Short grace period so moving the cursor from the trigger down into the panel doesn't close it. */
+function scheduleClose(): void {
+  clearScheduledClose();
+  closeTimeoutId = setTimeout(() => {
+    closeTimeoutId = null;
+    handlePopoverOpenChange(false);
+  }, 150);
+}
+
+function clearScheduledClose(): void {
+  if (closeTimeoutId === null) {
+    return;
+  }
+
+  clearTimeout(closeTimeoutId);
+  closeTimeoutId = null;
+}
+
+/** Blocks reka-ui's default focus-return-to-trigger, which would re-fire the trigger's focus handler and reopen the popover. */
+function preventCloseAutoFocus(event: Event): void {
+  event.preventDefault();
+}
+
+/** Leaflet's click-driven zoom can be misread as outside interaction and unmount the map. */
+function preventDismiss(event: PointerDownOutsideEvent | FocusOutsideEvent): void {
+  event.preventDefault();
+}
+
+/** Leaflet replaces focused marker nodes during zoom; pointer presence remains authoritative. */
+function scheduleCloseOnFocusOut(event: FocusEvent): void {
+  if ((event.currentTarget as HTMLElement | null)?.matches(':hover')) {
+    return;
+  }
+  scheduleClose();
+}
+
+onBeforeUnmount(() => {
+  clearScheduledClose();
+});
+
+// Set view mode and refresh the map after it becomes visible.
 const setViewMode = (mode: 'list' | 'map') => {
   viewMode.value = mode;
-  searchQuery.value = '';
 
   if (mode === 'map') {
     // Give DOM time to update before initializing map
@@ -195,25 +325,20 @@ const setViewMode = (mode: 'list' | 'map') => {
   }
 };
 
-// Handle popover open/close to initialize map when opened
+// Refresh geometry once per actual open transition, not on every focus event within the map.
 const handlePopoverOpenChange = (open: boolean) => {
+  if (isPopoverOpen.value === open) {
+    return;
+  }
+
   isPopoverOpen.value = open;
 
-  if (open) {
-    if (viewMode.value === 'map') {
-      // When popover opens, initialize or update map after DOM has updated
-      nextTick(() => {
-        setTimeout(() => {
-          if (mapComponentRef.value) {
-            mapComponentRef.value.initializeOrUpdateMap();
-          }
-        }, 100);
-      });
-    }
-  }
-  else {
-    // Reset the search when popover is closed
-    searchQuery.value = '';
+  if (open && viewMode.value === 'map') {
+    nextTick(() => {
+      setTimeout(() => {
+        mapComponentRef.value?.forceUpdateMap();
+      }, 100);
+    });
   }
 };
 </script>

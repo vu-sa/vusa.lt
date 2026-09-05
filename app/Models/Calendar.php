@@ -39,6 +39,7 @@ use Spatie\SchemaOrg\Place;
  * @property string|null $facebook_url
  * @property string|null $video_url
  * @property string|null $main_image
+ * @property string|null $main_image_focal_point
  * @property bool $is_draft
  * @property bool $is_all_day
  * @property bool $is_international
@@ -117,6 +118,29 @@ class Calendar extends Model implements HasMedia
         return $locale === 'lt'
             ? $query
             : $query->where('is_international', 1);
+    }
+
+    /** Excludes drafts. Shared by every public-facing calendar listing (resolvers, controllers). */
+    public function scopePublished($query)
+    {
+        return $query->where('is_draft', false);
+    }
+
+    /**
+     * Restricts to one category, by alias. A no-op when `$alias` is null/empty — callers
+     * don't need to guard the call themselves. The category is a grouping key, not a
+     * publication gate — a trashed category (e.g. an old campaign) must still work as
+     * one. See the identical rationale in PublicPageController::summerCamps().
+     */
+    public function scopeInCategoryAlias($query, ?string $alias)
+    {
+        if ($alias === null || $alias === '') {
+            return $query;
+        }
+
+        return $query->whereHas('category', function ($q) use ($alias): void {
+            $q->withTrashed()->where('alias', $alias);
+        });
     }
 
     public $translatable = [

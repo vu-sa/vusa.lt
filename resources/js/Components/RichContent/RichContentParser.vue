@@ -10,6 +10,7 @@
       :element="(group.element as unknown as Section)"
       :anchor-id="group.element.id"
       :has-children="group.children.length > 0"
+      :band="bandFor(group.element)"
       :class="blockClasses(group.element)"
     >
       <RichContentBlock
@@ -17,6 +18,7 @@
         :element="child" :html
         :is-first-element="false"
         :resolved="resolvedFor(child)"
+        :band="bandFor(child)"
         :news="child.type === 'news' ? news : undefined"
         :calendar-events="child.type === 'calendar' ? calendarEvents : undefined"
       />
@@ -27,6 +29,7 @@
       :element="group.element" :html
       :is-first-element="index === 0"
       :resolved="resolvedFor(group.element)"
+      :band="bandFor(group.element)"
       :news="group.element.type === 'news' ? news : undefined"
       :calendar-events="group.element.type === 'calendar' ? calendarEvents : undefined"
     />
@@ -44,8 +47,10 @@ import { computed } from 'vue';
 
 import { getContentType } from './Types';
 import { blockLayoutClasses } from './blockLayout';
+import { endsSectionWrapping, resolveBandRole, resolveBands, type BandResolution } from './bandLayout';
 import RichContentBlock from './RichContentBlock.vue';
 import SectionDisplay from './RCSection/SectionDisplay.vue';
+
 import type { NewsItem, Section } from '@/Types/contentParts';
 
 const props = defineProps<{
@@ -76,13 +81,26 @@ function resolvedFor(element: models.ContentPart): unknown {
 // so a previewed block's width never disagrees with its public rendering.
 const blockClasses = blockLayoutClasses;
 
-type ContentGroup =
-  | { kind: 'block'; element: models.ContentPart }
-  | { kind: 'section'; element: models.ContentPart; children: models.ContentPart[] };
+// One alternation pass over the whole document — see bandLayout.ts. Threaded down to
+// every band-capable display the same way `resolved` is (below): only a type that
+// declares `bandRole` receives a real value, so an undeclared object prop never falls
+// through and stringifies into the DOM on a display that doesn't ask for it.
+const bandMap = computed<Map<models.ContentPart, BandResolution>>(() => resolveBands(props.content));
+
+function bandFor(element: models.ContentPart): BandResolution | undefined {
+  if (resolveBandRole(element.type, element.options) === 'flow') return undefined;
+
+  return bandMap.value.get(element);
+}
+
+type ContentGroup
+  = | { kind: 'block'; element: models.ContentPart }
+    | { kind: 'section'; element: models.ContentPart; children: models.ContentPart[] };
 
 /**
  * Splits `content` into top-level render groups: a plain block, or a `section` marker
- * plus every part that follows it up to the next `section` marker (or the end).
+ * plus every part that follows it up to the next `section` marker, an independent
+ * self-spaced band, or the end.
  * `options.wraps: 'none'` makes a section render header-only — it still opens a group
  * (so it gets its own chrome/anchor), but doesn't absorb anything after it; the very
  * next element (section or not) starts fresh, exactly as if this section didn't exist
@@ -102,9 +120,14 @@ const groupedContent = computed<ContentGroup[]>(() => {
       continue;
     }
 
+    if (active && endsSectionWrapping(element)) {
+      active = null;
+    }
+
     if (active) {
       active.children.push(element);
-    } else {
+    }
+    else {
       groups.push({ kind: 'block', element });
     }
   }

@@ -17,7 +17,7 @@
       @back="handleBack"
       @change-directory="handleChangeDirectory"
       @search="handleSearch"
-      @file-selected="(path) => $emit('submit', path)"
+      @file-selected="(path, source) => $emit('submit', path, source)"
     />
   </div>
 </template>
@@ -28,7 +28,7 @@ import { useDebounceFn } from '@vueuse/core';
 import { useFileListing } from './useFileListing';
 import FileManager from './FileManager.vue';
 
-defineEmits<(e: 'submit', path: string) => void>();
+defineEmits<(e: 'submit', path: string, source: 'browse' | 'upload') => void>();
 
 const props = defineProps<{
   uploadAccept?: string;

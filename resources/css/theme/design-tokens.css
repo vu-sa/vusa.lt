@@ -1,0 +1,137 @@
+/* Consolidated theme colors for Tailwind CSS v4 */
+@theme inline {
+  /* Font Families */
+  --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-public: 'Atkinson Hyperlegible Next', ui-sans-serif, system-ui, sans-serif;
+  --font-admin: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* VU SA Brand Colors - converted to OKLCH */
+  --color-vusa-red: oklch(0.5 0.2 25);
+  --color-vusa-red-secondary: oklch(0.4 0.18 25);
+  --color-vusa-red-quaternary: oklch(0.6 0.18 25);
+  --color-vusa-red-dark: oklch(0.3 0.15 25);
+  /* `vusa-red` is ~5.9:1 on the light background but only ~3.0:1 on zinc-900, so it
+     fails AA as a text colour in dark mode (it is fine as a *fill*). This is the
+     lightened counterpart for dark-mode text — ~6.5:1 on zinc-900 — mirroring the
+     `vusa-yellow` / `vusa-yellow-dark` pair, which already exists for the same
+     reason in the opposite direction. */
+  --color-vusa-red-on-dark: oklch(0.7 0.16 25);
+  --color-vusa-yellow: oklch(0.82 0.17 75);
+  --color-vusa-yellow-dark: oklch(0.55 0.14 65);
+
+  /* Semantic Status Colors - OKLCH for consistency */
+  /* Success - Emerald tones */
+  --color-status-success: oklch(0.696 0.17 162.48);
+  --color-status-success-muted: oklch(0.95 0.052 163.051);
+  --color-status-success-foreground: oklch(0.378 0.077 168.94);
+
+  /* Warning - Amber tones (unified, no orange) */
+  --color-status-warning: oklch(0.769 0.188 70.08);
+  --color-status-warning-muted: oklch(0.962 0.059 95.617);
+  --color-status-warning-foreground: oklch(0.414 0.112 45.904);
+
+  /* Danger - Red/Rose tones */
+  --color-status-danger: oklch(0.637 0.237 25.331);
+  --color-status-danger-muted: oklch(0.936 0.032 17.717);
+  --color-status-danger-foreground: oklch(0.396 0.141 25.723);
+
+  /* Info - Blue tones */
+  --color-status-info: oklch(0.623 0.214 259.815);
+  --color-status-info-muted: oklch(0.932 0.032 255.585);
+  --color-status-info-foreground: oklch(0.379 0.146 265.522);
+
+  /* Neutral - Slate tones */
+  --color-status-neutral: oklch(0.554 0.046 257.417);
+  --color-status-neutral-muted: oklch(0.968 0.007 247.896);
+  --color-status-neutral-foreground: oklch(0.372 0.044 257.287);
+
+  /* UI Theme Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Sidebar Colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Chart Colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Border radius lives in the plain `@theme` block in app.css, NOT here.
+     `@theme inline` inlines the *value* into every utility, so `--radius-xl:
+     calc(var(--radius) + 4px)` compiled `rounded-xl` to a literal calc() — redefining
+     --radius-xl (or --radius) in a scope such as [data-surface="public"] then had no effect,
+     which is exactly what the public surface needs to do to reach zero radius. */
+
+  /* Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
+  --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--reka-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--reka-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--reka-collapsible-content-height);
+    }
+  }
+
+  @keyframes collapsible-up {
+    from {
+      height: var(--reka-collapsible-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+}

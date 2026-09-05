@@ -1,76 +1,36 @@
 <template>
   <!-- No wrapping `.wrapper` here — PublicLayout already wraps page content in one;
-       nesting a second grid doubled the gutters/padding for everything below. -->
+       nesting a second grid doubled the gutters/padding for everything below.
 
-  <!-- News article with dynamic layout based on article settings -->
+       The title band, the share row and the related grid all belong to the article, so the page
+       itself is only the composition. -->
   <NewsArticleLayout
     :article
-    :other-lang-u-r-l="$page.props.otherLangURL"
+    :other-lang-u-r-l="$page.props.otherLangURL ?? undefined"
     :locale="$page.props.app.locale"
-    :layout="(article.layout as 'modern' | 'classic' | 'immersive' | 'headline') || 'modern'"
-    class-name="mb-8 md:mb-16"
+    :show-breadcrumbs="showBreadcrumbs"
+    :related-articles="relatedArticles"
   >
     <RichContentParser :content="article.content?.parts ?? []" :resolved="resolvedParts" />
   </NewsArticleLayout>
-
-  <!-- Related Articles Section -->
-  <section v-if="relatedArticles && relatedArticles.length > 0" :class="['mt-8 mb-12', relatedArticlesContainerClass]">
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100 p-6 ring-1 ring-zinc-200/50 dark:from-zinc-900 dark:to-zinc-800 dark:ring-zinc-700/50">
-      <!-- Decorative blur elements -->
-      <div class="absolute -right-16 -top-16 size-48 rounded-full bg-vusa-red/5 blur-3xl" />
-      <div class="absolute -bottom-8 -left-8 size-32 rounded-full bg-vusa-yellow/5 blur-3xl" />
-
-      <div class="relative">
-        <h2 class="text-xl font-semibold mb-5 text-zinc-900 dark:text-zinc-50">
-          {{ $t('Skaityti daugiau') }}
-        </h2>
-        <ul class="space-y-3">
-          <li v-for="related in relatedArticles" :key="related.id" class="flex items-start gap-3">
-            <span class="mt-2 size-1.5 rounded-full bg-vusa-red/60 flex-shrink-0" />
-            <Link
-              :href="related.url"
-              class="group flex flex-1 items-baseline justify-between gap-4 hover:text-vusa-red transition-colors"
-            >
-              <span class="font-heading group-hover:underline text-zinc-800 dark:text-zinc-200">{{ related.title }}</span>
-              <time
-                :datetime="related.publish_time"
-                class="text-sm text-zinc-500 dark:text-zinc-400 whitespace-nowrap"
-              >
-                {{ formatDate(related.publish_time) }}
-              </time>
-            </Link>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </section>
 
   <FeedbackPopover />
 </template>
 
 <script setup lang="ts">
-// No longer need computed, onMounted, onUnmounted - usePageBreadcrumbs handles this
 import { computed, watchEffect } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
+import { usePage } from '@inertiajs/vue3';
 
 import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import { usePageBreadcrumbs, useBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import NewsArticleLayout from '@/Components/Public/News/NewsArticleLayout.vue';
+import type { NewsItem } from '@/Types/contentParts';
 import IFluentNews24Regular from '~icons/fluent/news-24-regular';
 
-interface RelatedArticle {
-  id: number;
-  title: string;
-  permalink: string;
-  publish_time: string;
-  url: string;
-}
-
 const props = defineProps<{
-  article: App.Entities.News;
-  relatedArticles?: RelatedArticle[];
+  article: App.Entities.News & { category?: { name?: string | null } | null; reading_time?: number | null };
+  relatedArticles?: NewsItem[];
   /** Server-resolved dynamic blocks (link-list, event-list, …) keyed by content-part id. */
   resolvedParts?: Record<number, unknown>;
 }>();
@@ -78,40 +38,18 @@ const props = defineProps<{
 const page = usePage();
 
 // An author can hide the breadcrumb trail on a news article (Advanced Settings in
-// NewsForm) — e.g. immersive/headline layouts that lead with a full-bleed title.
+// NewsForm) — the title band still carries the headline, it just goes untrailed.
 const showBreadcrumbs = computed(() => props.article.show_breadcrumbs !== false);
 
-// Container class for related articles section - matches the article layout width
-const relatedArticlesContainerClass = computed(() => {
-  const layout = props.article.layout || 'modern';
-  const layoutStyles: Record<string, string> = {
-    modern: 'max-w-3xl mx-auto',
-    classic: 'max-w-4xl mx-auto',
-    immersive: 'max-w-3xl mx-auto px-4', // Immersive content uses max-w-3xl
-    headline: 'max-w-3xl', // Left-aligned
-  };
-  return layoutStyles[layout] || 'max-w-3xl mx-auto';
-});
-
-// Format date for display
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString(page.props.app.locale === 'lt' ? 'lt-LT' : 'en-GB', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-};
-
-// Set breadcrumbs for news article page
+// Set breadcrumbs for news article page.
+//
+// `placement: 'band'` — the trail belongs inside the article's ink masthead, so PublicLayout
+// skips the bar it draws above page content for every other route. One trail, not two.
 usePageBreadcrumbs(() => {
   // Author disabled breadcrumbs for this article — return nothing so the setter skips.
   if (!showBreadcrumbs.value) return [];
 
-  const items = [];
-
-  // News archive link
-  items.push(
+  return BreadcrumbHelpers.publicContent([
     BreadcrumbHelpers.createRouteBreadcrumb(
       'Naujienos',
       'newsArchive',
@@ -121,15 +59,9 @@ usePageBreadcrumbs(() => {
       },
       IFluentNews24Regular,
     ),
-  );
-
-  // Current news article
-  items.push(
     BreadcrumbHelpers.createBreadcrumbItem(props.article.title),
-  );
-
-  return BreadcrumbHelpers.publicContent(items);
-});
+  ]);
+}, { placement: 'band' });
 
 // usePageBreadcrumbs persists breadcrumbs across navigation and only sets when the
 // getter is non-empty, so a suppressed article would otherwise inherit the *previous*

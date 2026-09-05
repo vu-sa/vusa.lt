@@ -51,13 +51,41 @@ describe('MobileNavRootPanel.vue', () => {
     expect(wrapper.text()).toContain('Studijos ir mokslas');
   });
 
-  it('emits openSection with the clicked section index', async () => {
+  /**
+   * The panel is an accordion, not a drill-down: sections expand in place so the rest of the menu
+   * stays on screen. That is what replaced the old back-button stack.
+   */
+  it('expands a section in place, keeping the other sections visible', async () => {
     const wrapper = mountPanel();
 
-    const buttons = wrapper.findAll('button').filter(b => b.text().includes('Studijos ir mokslas'));
-    await buttons[0].trigger('click');
+    expect(wrapper.text()).not.toContain('Struktūra');
 
-    expect(wrapper.emitted('openSection')).toEqual([[1]]);
+    await wrapper.findAll('nav button')[1]!.trigger('click');
+
+    expect(wrapper.text()).toContain('Struktūra');
+    expect(wrapper.text()).toContain('Studijos ir mokslas');
+  });
+
+  it('collapses an open section when its trigger is clicked again', async () => {
+    const wrapper = mountPanel();
+    const trigger = wrapper.findAll('nav button')[1]!;
+
+    await trigger.trigger('click');
+    expect(wrapper.text()).toContain('Struktūra');
+
+    await trigger.trigger('click');
+    expect(wrapper.text()).not.toContain('Struktūra');
+  });
+
+  it('keeps only one section open at a time', async () => {
+    const wrapper = mountPanel();
+    const triggers = wrapper.findAll('nav button');
+
+    await triggers[1]!.trigger('click');
+    await triggers[2]!.trigger('click');
+
+    expect(wrapper.text()).toContain('Stipendijos');
+    expect(wrapper.text()).not.toContain('Struktūra');
   });
 
   it('renders the tenant quick links', () => {
@@ -67,20 +95,19 @@ describe('MobileNavRootPanel.vue', () => {
     expect(wrapper.text()).toContain('Renginių kalendorius');
   });
 
-  it('shows the tenant switcher row and emits openTenants when switching is allowed', async () => {
-    const wrapper = mountPanel({ app: { path: 'lt' } });
+  it('offers the tenants as their own section when switching is allowed', async () => {
+    const wrapper = mountPanel();
 
-    const tenantRow = wrapper.findAll('button').find(b => b.text().includes('MIF'));
-    expect(tenantRow?.exists()).toBe(true);
+    // The tenants section leads the accordion, so it is the first trigger.
+    await wrapper.findAll('nav button')[0]!.trigger('click');
 
-    await tenantRow!.trigger('click');
-    expect(wrapper.emitted('openTenants')).toHaveLength(1);
+    expect(wrapper.text()).toContain('VU MIF');
   });
 
-  it('hides the tenant switcher row when switching is not allowed on this page', () => {
-    const wrapper = mountPanel({ app: { path: 'lt/kazkas/kitas' } });
+  it('hides the tenant section when switching is not allowed on this page', () => {
+    const wrapper = mountPanel({ app: { path: 'lt/kazkas' } });
 
-    const tenantRow = wrapper.findAll('button').find(b => b.text().includes('MIF'));
-    expect(tenantRow).toBeUndefined();
+    // Only the two `mainNavigation` sections remain.
+    expect(wrapper.findAll('nav button')).toHaveLength(2);
   });
 });

@@ -1,6 +1,6 @@
 import type { LocaleEnum, ModelEnum } from './enums';
 
-import type { NavItem } from '@/Components/Public/Nav/types';
+import type { NavFooterColumn, NavItem } from '@/Components/Public/Nav/types';
 
 interface User extends Omit<App.Entities.User, 'tenants'> {
   tenants: Pick<App.Entities.Tenant, 'id' | 'shortname'>[];
@@ -68,12 +68,24 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   // prop's actual shape comes from `NavigationService::getNavigationForPublic()`, not
   // the raw Eloquent model. See Components/Public/Nav/types.ts for the authoritative shape.
   mainNavigation?: NavItem[];
+  /** Up to `NavigationService::FOOTER_MAX_COLUMNS` columns — see Components/Public/Nav/types.ts. */
+  footerNavigation?: NavFooterColumn[];
+  /** CARTO now requires an API key on basemap tile requests; null when unconfigured. */
+  map: {
+    cartoApiKey: string | null;
+  };
   otherLangURL?: string | null;
   seo: Record<string, any>;
   tenants: Pick<
     App.Entities.Tenant,
     'id' | 'alias' | 'shortname' | 'fullname' | 'type' | 'primary_institution_id' | 'primary_institution'
   >[];
+  /**
+   * Every category, global (not tenant-scoped). `name` is already the current-locale
+   * string here (Spatie translatable resolves it server-side before serializing) — not
+   * the raw translation array `App.Entities.Category['name']` would suggest.
+   */
+  categories: Array<{ id: number; alias: string | null; name: string }>;
   tenant:
   | (Pick<App.Entities.Tenant, 'id' | 'alias' | 'shortname' | 'type'> & {
     subdomain: string;

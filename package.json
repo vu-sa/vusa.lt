@@ -89,7 +89,6 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
-    "@chromatic-com/storybook": "^5.0",
     "@codecov/vite-plugin": "^2.0.1",
     "@eslint/js": "^10.0.0",
     "@iconify-json/fluent": "^1.1.57",

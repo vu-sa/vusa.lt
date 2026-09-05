@@ -165,6 +165,14 @@ describe('Inertia head adoption', function (): void {
     });
 });
 
+describe('Public head resources', function (): void {
+    it('does not preload the retired accessibility icon', function (): void {
+        $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
+
+        expect($response->getContent())->not->toContain('body_wh.svg');
+    });
+});
+
 describe('Hreflang tags', function (): void {
     it('renders hreflang alternate links for bilingual content', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));

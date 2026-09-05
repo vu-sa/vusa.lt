@@ -1,18 +1,21 @@
 <template>
   <RCSection
     :title="processedOptions.title" :subtitle="processedOptions.subtitle"
-    :background="processedOptions.background ?? 'none'" :padding="processedOptions.padding ?? 'none'"
-    :rounded="processedOptions.rounded ?? 'none'" :align="processedOptions.align ?? 'center'"
+    :eyebrow="processedOptions.eyebrow"
+    :band :align="processedOptions.align ?? 'center'"
     :heading-level="processedOptions.headingLevel" :show-separator="processedOptions.showSeparator"
     inner="full" :id="anchorId ? `rc-${anchorId}` : undefined"
   >
-    <div class="content-grid">
-      <div class="flex flex-col" :class="processedOptions.gap || 'gap-4'">
+    <!-- `dividers` turns the gaps into 1px rules: the grid's own background becomes the rule
+         colour and each cell paints over it, which is the design's panelled grid (no cards, no
+         shadows — just hairlines). `gap-px` overrides the authored gap while it is on. -->
+    <div :class="['content-grid', dividers && 'border border-border']">
+      <div class="flex flex-col" :class="dividers ? 'gap-px bg-border' : (processedOptions.gap || 'gap-4')">
         <div v-for="(row, rowIndex) in rows" :key="rowIndex" class="w-full">
           <!-- Responsive grid - stack columns on mobile if mobileStacking is true -->
           <div :class="[
             'grid',
-            processedOptions.gap || 'gap-4',
+            dividers ? 'gap-px bg-border' : (processedOptions.gap || 'gap-4'),
             'grid-cols-12',
             processedOptions.mobileStacking ? 'max-md:grid-cols-1' : '',
             VERTICAL_ALIGN_CLASS[processedOptions.verticalAlign ?? 'stretch'],
@@ -20,6 +23,7 @@
             <div v-for="(column, colIndex) in row.columns" :key="colIndex" :class="[
               column.width,
               processedOptions.equalHeight ? 'h-full' : '',
+              dividers && 'bg-background p-6 sm:p-8',
             ]">
               <!-- Render content based on type -->
               <div v-if="column.content.type === 'tiptap'" class="max-w-none tracking-normal">
@@ -47,7 +51,7 @@
                 :show-cover-fallback="false"
                 :class="processedOptions.equalHeight ? 'h-full' : ''"
               >
-                <p v-if="column.content.value?.description" class="text-sm text-zinc-600 dark:text-zinc-400">
+                <p v-if="column.content.value?.description" class="text-sm text-muted-foreground">
                   {{ column.content.value.description }}
                 </p>
               </RCFeatureCard>
@@ -66,7 +70,7 @@ import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import RCFeatureCard from '../RCFeatureCard.vue';
 import RCSection from '../RCSection.vue';
 import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
-import type { SectionBackground, SectionPadding, SectionRounded } from '../sectionClasses';
+import type { BandResolution } from '../bandLayout';
 
 // The user's specific complaint was a short text column stretching to the row's
 // height with its content pinned to the top — `grid` items default to `stretch` with
@@ -85,9 +89,9 @@ const props = defineProps<{
     options?: {
       title?: string;
       subtitle?: string;
-      background?: SectionBackground;
-      padding?: SectionPadding;
-      rounded?: SectionRounded;
+      eyebrow?: string;
+      /** 1px rules instead of gaps, each cell painted over them. See the template. */
+      dividers?: boolean;
       /** Header alignment, forwarded to RCSection — grids default to centered like every other section block. */
       align?: 'center' | 'start';
       /** Semantic heading level for the title, forwarded to RCSection. */
@@ -103,6 +107,7 @@ const props = defineProps<{
   };
   /** Content-part id, used as the ToC scroll anchor when this block has a title (see tocAnchors.ts). */
   anchorId?: number | null;
+  band?: BandResolution;
 }>();
 
 // Parse the JSON content if it's a string (which often happens when coming from the backend)
@@ -158,6 +163,8 @@ const processedOptions = computed(() => {
     equalHeight: false,
   };
 });
+
+const dividers = computed(() => processedOptions.value.dividers === true);
 
 // Directly use the content as rows, converting from the old nested format if needed
 const rows = computed(() => {

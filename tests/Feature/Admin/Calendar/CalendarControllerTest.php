@@ -143,6 +143,22 @@ describe('authorized access', function (): void {
         ]);
     });
 
+    test('calendar manager can store a main image focal point', function (): void {
+        $calendarData = [
+            'title' => ['lt' => 'Renginys su fokuso tašku', 'en' => 'Event with focal point'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+            'main_image_focal_point' => '40% 25%',
+        ];
+
+        asUser($this->calendarManager)->post(route('calendar.store'), $calendarData)->assertRedirect();
+
+        $this->assertDatabaseHas('calendar', [
+            'title->lt' => 'Renginys su fokuso tašku',
+            'main_image_focal_point' => '40% 25%',
+        ]);
+    });
+
     test('hero style defaults to card when omitted on store', function (): void {
         $calendarData = [
             'title' => ['lt' => 'Numatyto stiliaus renginys', 'en' => 'Default style event'],

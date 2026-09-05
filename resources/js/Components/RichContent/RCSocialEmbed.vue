@@ -2,7 +2,7 @@
   <div class="social-embed-container my-8 flex w-full justify-center">
     <!-- Loading state - only show initially before any render -->
     <div v-if="isLoading && !hasRendered" class="flex items-center justify-center py-8">
-      <div class="h-6 w-6 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
+      <div class="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-brand" />
     </div>
 
     <!-- Facebook embed -->
@@ -24,19 +24,19 @@
         data-instgrm-version="14"
         style="max-width:540px; min-width:326px; width:100%;"
       >
-        <div class="flex items-center justify-center py-8 text-zinc-500">
+        <div class="flex items-center justify-center py-8 text-muted-foreground">
           Kraunamas Instagram įrašas...
         </div>
       </blockquote>
     </div>
 
     <!-- Fallback for invalid embeds -->
-    <div v-else-if="element.json_content.url" class="rounded-lg bg-zinc-100 p-4 text-center text-sm text-zinc-500 dark:bg-zinc-800">
+    <div v-else-if="element.json_content.url" class="border border-border bg-secondary/40 p-4 text-center text-sm text-muted-foreground">
       <a
         :href="element.json_content.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="text-zinc-600 underline hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+        class="text-muted-foreground underline hover:text-brand"
       >
         Atidaryti įrašą naujame lange →
       </a>

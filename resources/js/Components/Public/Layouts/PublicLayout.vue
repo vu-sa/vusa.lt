@@ -4,22 +4,35 @@
        by Laravel Head — see app.blade.php's @head directive and PublicController::applyPageHead().
        Inertia adopts and keeps those elements in sync on SPA navigation via serverHead: true in
        public.ts; no client-side <Head> component is needed here. -->
-  <div class="@container min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-900 font-public">
-    <!-- Staging environment warning banner -->
-    <StagingBanner class="mx-2 mt-2 sm:mx-4" />
-
+  <!-- `overflow-x-clip` absorbs the half-scrollbar overhang of `.rc-viewport` bands (the
+       hero). `clip` rather than `hidden`: it does not create a scroll container, so sticky
+       descendants keep working. -->
+  <div class="@container min-h-screen flex flex-col overflow-x-clip bg-background text-foreground font-public">
     <!-- Skip to main content link - positioned first for keyboard navigation -->
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999] focus:bg-white focus:text-zinc-900 focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg focus:border-2 focus:border-vusa-red dark:focus:bg-zinc-800 dark:focus:text-zinc-100">
+    <a
+      href="#main-content"
+      :class="[
+        'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999]',
+        'focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-brand',
+      ]"
+    >
       {{ $t('accessibility.skip_to_main_content') }}
     </a>
 
-    <div
-      class="flex-1 flex flex-col text-zinc-800 antialiased dark:text-zinc-300 container px-0 @container/main">
-      <MainNavigation :is-theme-dark="isDark" />
+    <!-- Outside the `container` wrapper below on purpose. That wrapper is a `@container/main`,
+         which establishes a containing block for `position: fixed` descendants — a fixed header
+         inside it is clamped to the container's max-width instead of spanning the viewport. -->
+    <MainNavigation :is-theme-dark="isDark" />
 
+    <div
+      class="flex-1 flex flex-col antialiased container px-0 @container/main">
       <main id="main-content" class="pb-8" :class="mainContentMarginClass">
-        <!-- Centralized breadcrumb display -->
-        <div v-if="breadcrumbState.breadcrumbs.value.length > 0" :class="breadcrumbWrapperClass">
+        <!-- Centralized breadcrumb display. Skipped when the page has claimed the trail for its
+             own title band (placement: 'band'), so a detail page shows one trail, not two. -->
+        <div
+          v-if="breadcrumbState.breadcrumbs.value.length > 0 && breadcrumbState.placement.value === 'layout'"
+          :class="breadcrumbWrapperClass"
+        >
           <PublicBreadcrumbs />
         </div>
 
@@ -28,12 +41,10 @@
           <div :class="contentWrapperClass">
             <slot />
           </div>
-          <div v-if="
-            $page.props.tenant?.banners &&
-              $page.props.tenant.banners.length > 0
-          " class="mx-auto mt-8 max-w-7xl">
-            <BannerCarousel :banners="$page.props.tenant?.banners" />
-          </div>
+          <PartnersBanner
+            v-if="$page.props.tenant?.banners && $page.props.tenant.banners.length > 0"
+            :banners="$page.props.tenant.banners"
+          />
         </div>
       </main>
 
@@ -47,7 +58,7 @@
   </div>
 
   <!-- Toast notifications (flash messages + the persistent public edit-link toast) -->
-  <Toaster rich-colors />
+  <Toaster />
 </template>
 
 <script setup lang="ts">
@@ -67,22 +78,18 @@ import { Toaster } from '@/Components/ui/sonner';
 import { useToasts } from '@/Composables/useToasts';
 import { useCookieConsent } from '@/Composables/useCookieConsent';
 import { usePublicEditLinkToast } from '@/Composables/usePublicEditLinkToast';
+import { usePublicStagingToast } from '@/Composables/usePublicStagingToast';
 import { useSecondMenu } from '@/Composables/useSecondMenu';
+import MainNavigation from '@/Components/Public/Layouts/MainNavigation.vue';
+import { Skeleton } from '@/Components/ui/skeleton';
 import 'vue-sonner/style.css';
 
-// Critical path components - load synchronously for faster initial render
-import MainNavigation from '@/Components/Public/Layouts/MainNavigation.vue';
-import StagingBanner from '@/Components/StagingBanner.vue';
-
-// Use existing Skeleton component for consistency
-import { Skeleton } from '@/Components/ui/skeleton';
-
 // Non-critical components - load asynchronously
-const BannerCarousel = defineAsyncComponent({
-  loader: () => import('../FullWidth/BannerCarousel.vue'),
+const PartnersBanner = defineAsyncComponent({
+  loader: () => import('../FullWidth/PartnersBanner.vue'),
   loadingComponent: {
     components: { Skeleton },
-    template: '<div class="mx-8 my-8"><Skeleton class="h-32 rounded" /></div>',
+    template: '<div class="mx-auto mt-8 max-w-7xl px-5 sm:px-6 lg:px-8"><Skeleton class="h-32 rounded-none" /></div>',
   },
   delay: 200,
 });
@@ -135,9 +142,11 @@ const contentWrapperClass = computed(() => {
  * by the breadcrumb wrapper itself (see {@link breadcrumbWrapperClass}).
  */
 const mainContentMarginClass = computed(() => {
+  // Must track MainNavigation's real height: a 4rem primary bar, plus a 2.75rem SecondMenu row
+  // that only renders from `md` up (max-md:hidden), hence the same mobile value either way.
   return hasSecondMenu.value
-    ? 'mt-20 md:mt-32'
-    : 'mt-20';
+    ? 'mt-16 md:mt-[6.75rem]'
+    : 'mt-16';
 });
 
 const breadcrumbWrapperClass = computed(() => {
@@ -168,6 +177,7 @@ const toasts = useToasts();
 // Persistent "edit this page" toast for signed-in editors (no-op for guests —
 // the backend never shares the link for them)
 usePublicEditLinkToast(() => usePage().props.publicEditLink);
+usePublicStagingToast(() => usePage().props.staging);
 
 // Handle validation errors (show only first error for public pages)
 watch(() => usePage().props.errors, (errors) => {
@@ -201,12 +211,8 @@ onMounted(() => {
     // Individual pages will set their own breadcrumbs using usePageBreadcrumbs()
   });
 
-  // Load UserWay immediately for accessibility (needs to modify styles early)
-  const userWayScript = document.createElement('script');
-  userWayScript.setAttribute('data-account', '5OC3pQZI6r');
-  userWayScript.setAttribute('src', 'https://cdn.userway.org/widget.js');
-  userWayScript.async = true;
-  document.head.appendChild(userWayScript);
+  // Reader preferences (text size, contrast, link underlines) are served by the in-house
+  // AccessibilityMenu in the header — see Components/Public/Base/AccessibilityMenu.vue.
 
   // Tawk.to live chat disabled — its bottom-right widget kept colliding with other
   // floating UI. Re-enable by restoring this block.

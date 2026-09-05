@@ -21,8 +21,14 @@ export interface NavLink {
   featured?: boolean;
   new_tab?: boolean;
   col_span?: 1 | 2 | 3;
+  /** Brand eyebrow above an image card's headline. */
+  eyebrow?: string;
+  /** Call-to-action label under an image card's copy, e.g. "Registruokis". */
+  cta?: string;
   /** `card` (default, full-bleed background) or `thumbnail` (small leading image). */
   image_render?: 'card' | 'thumbnail';
+  /** Image-card height. `short` is the default; `tall` is for a column's single feature card. */
+  image_height?: 'short' | 'tall';
   image_overlay?: 'none' | 'light' | 'medium' | 'heavy';
   image_blur?: 0 | 2 | 4 | 8;
   /** Raw CSS `object-position`, e.g. `"50% 30%"` — set via FocalPointPicker. */
@@ -37,11 +43,26 @@ export interface NavItem {
   name: string;
   icon?: string;
   cols?: number;
-  /**
-   * Dropdown width, independent of `cols` — `wide` (the default) matches the menu's
-   * original fixed width regardless of column count; `auto` scales down with fewer
-   * columns; `narrow`/`medium` are explicit overrides.
-   */
-  menu_width?: 'narrow' | 'medium' | 'wide' | 'auto';
   links: NavLink[][];
+}
+
+/**
+ * Shared shape of the `footerNavigation` Inertia prop, from
+ * `NavigationService::getFooterNavigationForPublic()`. Unlike `NavItem`, footer links are
+ * never grouped into sub-columns — one `NavFooterColumn` *is* one column — and only ever
+ * plain links, so this carries no `type`/image/badge fields at all.
+ */
+export interface NavFooterLink {
+  id: number;
+  name: string;
+  url: string;
+  new_tab: boolean;
+}
+
+export interface NavFooterColumn {
+  id: number;
+  /** The column heading. Rendered as a link when `url` is set, plain text otherwise. */
+  name: string;
+  url: string;
+  links: NavFooterLink[];
 }

@@ -7,6 +7,33 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.44 — Renginio puslapio dizainas (2026-09-05) {#v1-44}
+
+- ✨ **Renginio puslapis atnaujintas pagal naują stilių** — viso pločio antraštė su datos plokštele, integruota navigacijos juosta, aiški informacijos šoninė juosta su registracijos mygtukais bei interaktyviu žemėlapiu, atnaujintas posėdžių darbotvarkių ir dokumentų pateikimas bei 3 stulpelių susijusių renginių tinklelis
+- ✨ **Hero karuselės palaiko tiesioginį redagavimą ir vienos skaidrės optimizavimą** — turinti tik vieną skaidrę karuselė automatiškai pateikiama kaip statiška viso pločio antraštė be karuselės valdiklių ar papildomos apkrovos, o viso ekrano redaktoriuje tekstą, mygtukus ir fono nuotraukas galima redaguoti tiesiogiai puslapyje
+
+## v1.43 — Turinio redagavimas (2026-09-04) {#v1-43}
+
+- ✨ **Paprastoms sekcijoms galima parinkti tarpus** — sekcija be fono pagal nutylėjimą išlaiko įprastus vertikalius tarpus, bet gali naudoti kompaktiškus arba visai jų neturėti; nebereikalingas „Akcento“ pateikimas pašalintas
+- ✨ **Antraštės sekcijos nuotrauka redaguojama aiškiau** — nuotraukos valdikliai kompaktiškai sugrupuoti, dekoracijos atskirtos nuo nuotraukos ir jos fokuso nustatymų, o viso ekrano redaktoriuje galima perjungti šviesų arba tamsų vaizdą, paslėpti redagavimo žymes peržiūrai ir išsaugoti negrįžtant į formą
+- 🔧 **Antraštės sekcija redaguojant nebešokinėja** — centruota antraštė lieka centruota ir didžiosiomis raidėmis užbaigus teksto redagavimą, o dviejų stulpelių antraštės nustatymų mygtuko nebeuždengia viršutinė juosta
+
+## v1.42 — Mobiliojo naršymo spalvos (2026-09-04) {#v1-42}
+
+- 🔧 **Telefono viršutinė juosta keičia spalvą iš karto** — perjungus šviesų ar tamsų režimą, spalva aplink priekinę telefono kamerą dabar iš karto dera prie puslapio
+
+## v1.41 — Viešos svetainės navigacija (2026-09-04) {#v1-41}
+
+- ✨ **„Mano VU SA“ tapo aiškiu navigacijos mygtuku** — paskyros nuoroda antroje meniu juostoje dabar dera prie kitų svetainės valdiklių, o vietoje profilio nuotraukos naudojama aiški paskyros piktograma
+
+## v1.40 — Viešos svetainės pranešimai (2026-09-04) {#v1-40}
+
+- ✨ **Viešos svetainės pranešimai suvienodinti** — slapukų priminimas ir pranešimai dabar priderinti prie naujo svetainės stiliaus, o bandomojoje aplinkoje įspėjimas rodomas kaip nuolatinis pranešimas, neužimantis vietos puslapyje
+
+## v1.39 — Viešos svetainės navigacija (2026-09-03) {#v1-39}
+
+- 🔧 **Padalinių žemėlapis atsidaro ir priartėja sklandžiai** — `+`, `−` ir padalinių grupės nebeperkrauna vaizdo, pakartotinai atidarytas meniu nebesusitraukia pavėluotai, tamsiame režime nebesumirksi baltas fonas, o priartinimo mygtukai priderinti prie naujo viešos svetainės stiliaus
+
 ## v1.38 — Angliška darbotvarkė ir pertraukos (2026-09-02) {#v1-38}
 
 - ⭐ **Darbotvarkės punktus galima įvesti ir angliškai** — punkto pavadinimą, aprašymą, studentų poziciją ir balsavimų pavadinimus dabar galima išversti. Darbotvarkės punkto lange atsirado vėliavėlės mygtukas, kuris vienu paspaudimu perjungia visus laukus į anglų kalbą; neišvertus nieko nesikeičia

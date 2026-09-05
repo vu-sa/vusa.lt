@@ -34,8 +34,8 @@
         H{{ sectionLevel }}
       </Badge>
 
-      <span v-if="content?.id" class="shrink-0 text-[10px] text-zinc-400">#{{ content.id }}</span>
-      <span v-else class="shrink-0 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">{{ $t('New') }}</span>
+      <span v-if="content?.id" class="shrink-0 text-[0.625rem] text-zinc-400">#{{ content.id }}</span>
+      <span v-else class="shrink-0 text-[0.625rem] font-medium text-emerald-600 dark:text-emerald-400">{{ $t('New') }}</span>
 
       <RCWidthPicker
         v-if="allowedWidths.length > 1"
@@ -101,6 +101,7 @@
         <ContentEditorFactory
           :content
           :preview-mode="previewMode"
+          :presentation-disabled="presentationDisabled"
           :tenant-id="tenantId"
           @update:content="$emit('update:content', $event)"
         />
@@ -132,6 +133,7 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { deriveBlockSummary } from './blockSummary';
+import { withWidth } from './blockWidth';
 import RCSideBySideDialog from './RCSideBySideDialog.vue';
 import RCWidthPicker from './RCWidthPicker.vue';
 
@@ -155,6 +157,7 @@ const props = defineProps<{
   content: ContentPart;
   collapsed: boolean;
   previewMode: boolean;
+  presentationDisabled?: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
   canDelete: boolean;
@@ -188,9 +191,6 @@ const sectionActive = computed(() =>
 const sectionLevel = computed(() => props.content?.options?.headingLevel ?? 2);
 
 function setWidth(width: BlockWidth) {
-  emit('update:content', {
-    ...props.content,
-    options: { ...(props.content.options ?? {}), width },
-  });
+  emit('update:content', withWidth(props.content, width));
 }
 </script>

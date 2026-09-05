@@ -23,6 +23,19 @@ export const buttonVariants = cva(
           'bg-green-600 text-white shadow-xs hover:bg-green-600/90 focus-visible:ring-green-500/20 dark:bg-green-700 dark:hover:bg-green-700/90',
         warning:
           'bg-amber-500 text-white shadow-xs hover:bg-amber-500/90 focus-visible:ring-amber-500/20 dark:bg-amber-600 dark:hover:bg-amber-600/90',
+        // The public site's primary call to action. Token-driven rather than a fixed colour, so
+        // it is VU SA red on the light canvas and amber on near-black — see `--brand-fill` in
+        // app.css. Added as a variant rather than a new component because public code already
+        // imports this Button in ~38 places.
+        brand:
+          'bg-brand-fill text-brand-foreground hover:bg-brand-fill/90 focus-visible:ring-brand/30 '
+          + 'dark:bg-brand-fill dark:text-brand-foreground dark:hover:bg-brand-fill/90',
+        // The hairline secondary that sits beside a `brand` primary all over the public site —
+        // "Sinchronizuoti kalendorių" next to "Visi renginiai", and so on. Distinct from
+        // `outline`, which hardcodes `bg-white`/zinc and belongs to admin.
+        'brand-outline':
+          'border border-border bg-transparent text-foreground hover:border-brand hover:bg-transparent hover:text-brand '
+          + 'dark:bg-transparent dark:hover:bg-transparent dark:hover:text-brand',
       },
       size: {
         'default': 'h-9 px-4 py-2 has-[>svg]:px-3',
@@ -33,6 +46,17 @@ export const buttonVariants = cva(
         'icon-sm': 'size-8',
         'icon-xs': 'size-6',
         'icon-lg': 'size-10',
+        /*
+         * Public-surface controls. Unusually for a `size`, these also set the type: on the public
+         * site a button *is* bold uppercase with wide tracking, and splitting that across every
+         * caller is exactly how the padding, casing and icon gaps drifted apart in the first
+         * place. One prop, one look.
+         *
+         * Note the base already applies `gap-2` — icons inside a Button must NOT carry their own
+         * `mr-2`, or the gap doubles.
+         */
+        'public': 'h-auto px-6 py-3.5 text-sm font-bold uppercase tracking-wide',
+        'public-sm': 'h-auto px-3 py-2 text-xs font-bold uppercase tracking-wide',
       },
       animation: {
         none: '',

@@ -1,20 +1,22 @@
 <template>
+  <!--
+    Deliberately unopinionated: no background, no padding, no text colour.
+
+    shadcn's stock version ships `hover:bg-zinc-100 hover:text-zinc-900` and `p-2 rounded-sm`,
+    which is why the mega menu kept rendering as a grid of filled buttons no matter what
+    `MainNavigationMenuContent` set — a `hover:` utility here beats an unprefixed one there, and
+    its `dark:hover:text-*` beat the consumer's brand colour outright. The panel decides how its
+    own rows look; this only has to be a focusable link.
+
+    Safe to strip because the navigation-menu family is used by exactly two components, both in
+    the public nav (MainMenu, MainNavigationMenuContent).
+  -->
   <NavigationMenuLink
     data-slot="navigation-menu-link"
     v-bind="forwarded"
     :class="cn(
-      'data-[active=true]:focus:bg-zinc-100',
-      'data-[active=true]:hover:bg-zinc-100',
-      'data-[active=true]:bg-zinc-50',
-      'data-[active=true]:text-zinc-900',
-      'hover:bg-zinc-100 hover:text-zinc-900 dark:hover:text-zinc-200',
-      'focus:bg-zinc-100 focus:text-zinc-900 dark:focus:text-zinc-200',
-      'ring-zinc-100 dark:ring-zinc-200',
-      'dark:outline-zinc-300 outline-zinc-200',
-      '[&_svg:not([class*=\'text-\'])]:text-gray-400',
-      'flex flex-col gap-1 rounded-sm p-2 text-sm transition-[color,box-shadow]',
-      'focus-visible:ring-4 focus-visible:outline-1',
-      '[&_svg:not([class*=\'size-\'])]:size-4',
+      'flex flex-col gap-1 text-sm transition-colors',
+      'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
       props.class,
     )"
   >

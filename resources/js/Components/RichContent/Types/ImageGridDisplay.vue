@@ -5,7 +5,7 @@
         :class="getClassesForImage(image.colspan)" class="overflow-hidden">
         <img
           :src="image.image"
-          class="!size-full rounded-md shadow-xs object-cover"
+          class="!size-full rounded-md object-cover"
           :alt="image.alt || image.title || `Image ${index + 1}`"
           :title="image.title || image.alt || `Image ${index + 1}`"
           :style="image.objectPosition ? { objectPosition: image.objectPosition } : undefined"

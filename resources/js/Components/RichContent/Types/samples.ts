@@ -53,7 +53,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
   }),
   'shadcn-card': () => ({
     json_content: tiptapDoc(['Svarbi informacija, kurią verta žinoti prieš registruojantis.']),
-    options: { variant: 'outline', color: 'red', title: 'Svarbu', isTitleColored: true },
+    options: { title: 'Svarbu' },
   }),
   'image-grid': () => ({
     json_content: [
@@ -69,7 +69,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
       imageAlt: 'Studentai',
       objectPosition: '50% 50%',
       overlayContent: { title: '1500+', subtitle: 'aktyvių narių' },
-      buttons: [{ text: 'Sužinoti daugiau', link: '#', variant: 'default', color: 'red' }],
+      buttons: [{ text: 'Sužinoti daugiau', link: '#', variant: 'default' }],
     },
     options: { textLeft: true, imageDecorations: [] },
   }),
@@ -82,7 +82,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
       { endNumber: 1500, label: 'narių', showPlus: true },
       { endNumber: 20, label: 'padalinių' },
     ],
-    options: { title: 'VU SA skaičiais', color: 'zinc' },
+    options: { title: 'VU SA skaičiais' },
   }),
   'text-box': () => ({
     json_content: {},
@@ -127,7 +127,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
         imageSrc: PLACEHOLDER_IMAGES[0],
         imageAlt: 'Studentai renginyje',
         align: 'start',
-        buttons: [{ text: 'Tapk nariu', link: '#', variant: 'default', color: 'red' }],
+        buttons: [{ text: 'Tapk nariu', link: '#', variant: 'default' }],
       },
       {
         eyebrow: '',
@@ -137,7 +137,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
         imageSrc: PLACEHOLDER_IMAGES[4],
         imageAlt: 'Studentų veikla',
         align: 'center',
-        buttons: [{ text: 'Sužinok daugiau', link: '#', variant: 'outline', color: 'white' }],
+        buttons: [{ text: 'Sužinok daugiau', link: '#', variant: 'outline' }],
       },
     ],
     // Autoplay off — the picker previews must never start rotating on their own.
@@ -193,6 +193,26 @@ export const contentSamples: Record<string, () => ContentSample> = {
     json_content: {},
     options: { title: 'VU SA skaičiais', subtitle: 'Sužinok daugiau apie mus', background: 'muted', padding: 'lg' },
   }),
+  'process-steps': () => ({
+    json_content: [
+      { title: 'Užpildyk anketą', text: 'Trumpa registracija – užtenka penkių minučių ir studento pažymėjimo.' },
+      { title: 'Susitikime pokalbiui', text: 'Pasikalbėsime apie tai, kas tau įdomu, ir kur galėtum prisidėti.' },
+      { title: 'Pradėk veikti', text: 'Prisijungsi prie komandos ir gausi mentorių pirmiesiems mėnesiams.' },
+    ],
+    options: { title: 'Kaip prisijungti', eyebrow: 'Procesas', columns: 3, align: 'start', background: 'none', padding: 'lg' },
+  }),
+  'cta-band': () => ({
+    json_content: {
+      heading: 'Turi klausimų?',
+      text: 'Parašyk mums arba užsuk į biurą – atsakysime į viską, kas rūpi dėl studijų, stipendijų ar atstovavimo.',
+      items: [
+        { icon: 'mail', label: 'info@vusa.lt' },
+        { icon: 'map-pin', label: 'Universiteto g. 3, Vilnius' },
+      ],
+      button: { label: 'Užpildyti užklausą', href: '#' },
+    },
+    options: { bleed: false },
+  }),
   'spacer': () => ({
     json_content: {},
     options: { size: 'lg' },
@@ -244,7 +264,7 @@ export const contentSampleVariants: Partial<Record<string, ContentSampleVariant[
           imageAlt: 'Studentai',
           objectPosition: '50% 50%',
           overlayContent: { title: '1500+', subtitle: 'aktyvių narių' },
-          buttons: [{ text: 'Sužinoti daugiau', link: '#', variant: 'default', color: 'red' }],
+          buttons: [{ text: 'Sužinoti daugiau', link: '#', variant: 'default' }],
         },
         options: { variant: 'split', textLeft: true, imageDecorations: [] },
       }),
@@ -258,7 +278,7 @@ export const contentSampleVariants: Partial<Record<string, ContentSampleVariant[
           eyebrow: '',
           imageSrc: '',
           imageAlt: '',
-          buttons: [{ text: 'Registruotis', link: '#', variant: 'default', color: 'red' }],
+          buttons: [{ text: 'Registruotis', link: '#', variant: 'default' }],
         },
         options: { variant: 'centered' },
       }),
@@ -272,7 +292,7 @@ export const contentSampleVariants: Partial<Record<string, ContentSampleVariant[
           eyebrow: '',
           imageSrc: '',
           imageAlt: '',
-          buttons: [{ text: 'Registruotis', link: '#', variant: 'default', color: 'red' }],
+          buttons: [{ text: 'Registruotis', link: '#', variant: 'default' }],
         },
         options: { variant: 'banner' },
       }),

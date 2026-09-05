@@ -3,12 +3,32 @@
  * These styles modify component behavior for better story presentation
  */
 
+/* Storybook's preview iframe and its docs page both paint their own light ground behind a
+   story. The Surface/Theme decorator wraps every story in [data-sb-surface], so neutralising
+   the containers around it is what actually makes dark mode look dark. */
+body:has([data-sb-surface]) {
+  background: var(--background);
+}
+
+.sb-show-main,
+#storybook-root,
+.docs-story {
+  background: transparent;
+}
+
+/* Storybook pads the preview; the story's own painted wrapper should reach the edges instead. */
+.sb-main-padded {
+  padding: 0;
+}
+
 /* Make dialogs/modals render inline without overlay/portal behavior */
 .storybook-modal-container {
-  /* Container styling */
+  /* Container styling. Paints from the token rather than a fixed grey so the container follows
+     the Surface/Theme toolbar instead of forcing every dialog story onto a light ground. */
   padding: 1rem;
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--background);
+  color: var(--foreground);
 }
 
 /* Override Radix Dialog overlay to be transparent and non-blocking */
@@ -39,7 +59,7 @@
   top: auto !important;
   transform: none !important;
   margin: 1rem auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }

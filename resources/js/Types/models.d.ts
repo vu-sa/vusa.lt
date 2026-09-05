@@ -136,7 +136,7 @@ declare global {
       // columns
       id: number
       title: string
-      image_url: string
+      image_url: string | null
       link_url: string
       lang: string
       order: number
@@ -190,6 +190,7 @@ declare global {
       facebook_url?: string | null
       video_url?: string | null
       main_image?: string | null
+      main_image_focal_point?: string | null
       is_draft: boolean
       is_all_day: boolean
       is_international: boolean
@@ -931,7 +932,6 @@ declare global {
       publish_time?: string | null
       main_points?: string | null
       highlights?: unknown | null
-      layout: string
       show_breadcrumbs: boolean
       read_more?: string | null
       draft?: boolean | null
@@ -1268,7 +1268,6 @@ declare global {
       publish_time?: string | null
       main_points?: string | null
       highlights?: unknown | null
-      layout: string
       show_breadcrumbs: boolean
       read_more?: string | null
       draft?: boolean | null
@@ -2062,5 +2061,5 @@ declare global {
     export type TenantType = typeof TenantType[keyof typeof TenantType]
 
   }
-}
 
+}

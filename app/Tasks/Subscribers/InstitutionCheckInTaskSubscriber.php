@@ -7,11 +7,7 @@ use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Events\Dispatcher;
 
 /**
- * Event subscriber for InstitutionCheckIn task operations.
- *
- * Completes periodicity gap tasks when check-ins are created,
- * allowing representatives to address periodicity warnings without
- * scheduling a full meeting.
+ * Completes periodicity gap tasks when check-ins are created.
  */
 class InstitutionCheckInTaskSubscriber
 {
@@ -19,9 +15,6 @@ class InstitutionCheckInTaskSubscriber
         protected PeriodicityGapTaskHandler $periodicityGapHandler,
     ) {}
 
-    /**
-     * Register the listeners for the subscriber.
-     */
     public function subscribe(Dispatcher $events): void
     {
         $events->listen(
@@ -30,10 +23,6 @@ class InstitutionCheckInTaskSubscriber
         );
     }
 
-    /**
-     * Handle check-in created event.
-     * Completes any pending periodicity gap task for the institution.
-     */
     public function handleCheckInCreated(InstitutionCheckIn $checkIn): void
     {
         $checkIn->load('institution');

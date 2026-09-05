@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import ContentGridDisplay from '../ContentGridDisplay.vue';
 import DecorativeElement from '@/Components/ui/DecorativeElement.vue';
+import { resolveBand } from '../../bandLayout';
 
 describe('ContentGridDisplay', () => {
   it('renders a card cell through RCFeatureCard', () => {
@@ -58,13 +59,14 @@ describe('ContentGridDisplay', () => {
     expect(wrapper.find('section').classes().join(' ')).not.toMatch(/py-|bg-/);
   });
 
-  it('renders the gradient background and a title when opted in', () => {
+  it('renders the alternating tint and a title in the tinted automatic slot', () => {
     const element = {
       json_content: [{ columns: [{ width: 'col-span-12', content: { type: 'tiptap', value: {} } }] }],
-      options: { gap: 'gap-4', mobileStacking: true, equalHeight: false, background: 'gradient' as const, padding: 'md' as const, title: 'Apie mus' },
+      options: { gap: 'gap-4', mobileStacking: true, equalHeight: false, presentation: 'auto' as const, title: 'Apie mus' },
     };
-    const wrapper = mount(ContentGridDisplay, { props: { element } });
-    expect(wrapper.find('section').classes().join(' ')).toContain('bg-gradient-to-br');
+    const band = resolveBand({ type: 'content-grid', options: element.options }, 1);
+    const wrapper = mount(ContentGridDisplay, { props: { element, band } });
+    expect(wrapper.find('section').classes().join(' ')).toContain('bg-secondary/40');
     expect(wrapper.text()).toContain('Apie mus');
   });
 
@@ -79,7 +81,7 @@ describe('ContentGridDisplay', () => {
                 type: 'image',
                 value: '/a.jpg',
                 alt: 'A',
-                decorations: [{ type: 'line', position: 'top-right', size: 'lg', color: 'vusa-yellow', opacity: 60 }],
+                decorations: [{ type: 'line', position: 'top-right', size: 'lg' }],
               },
             },
           ],

@@ -2,6 +2,7 @@
 
 namespace App\Collections;
 
+use App\Models\Category;
 use App\Models\News;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -24,7 +25,8 @@ class NewsCollection extends Collection
      *     short: string,
      *     publish_time: Carbon|null,
      *     permalink: string|null,
-     *     image: string
+     *     image: string,
+     *     category: string|null
      * }>
      */
     public function toPublicArray(): array
@@ -37,6 +39,9 @@ class NewsCollection extends Collection
             'publish_time' => $item->publish_time,
             'permalink' => $item->permalink,
             'image' => $item->getImageUrl(),
+            // The category chip on a news card. Nullable: most historic articles have no
+            // category, and the chip is simply omitted for those.
+            'category' => $item->category?->name,
         ])->values()->all();
     }
 
@@ -51,22 +56,38 @@ class NewsCollection extends Collection
     }
 
     /**
-     * Scope to get published news only.
+     * Scope to get published news only. The canonical "latest published news" query —
+     * `NewsBlockResolver` and `LinkListResolver` (source: news) both resolve through this
+     * instead of hand-rolling their own copy, so the homepage's prefetch and every
+     * content-part rendering of "latest news" can never drift apart.
      *
-     * @param  int  $tenantId  The tenant ID to filter by
+     * @param  int|null  $tenantId  The tenant ID to filter by, or null for every tenant
      * @param  string  $lang  The language to filter by
      * @param  int  $limit  Maximum number of items to return
+     * @param  string|null  $categoryAlias  Restrict to one category, by alias
      */
-    public static function getPublishedForTenant(int $tenantId, string $lang, int $limit = 5): self
+    public static function getPublishedForTenant(?int $tenantId, string $lang, int $limit = 5, ?string $categoryAlias = null): self
     {
-        $news = News::query()
-            ->where('tenant_id', $tenantId)
+        $query = News::query()
             ->where('lang', $lang)
             ->where('draft', false)
-            ->where('publish_time', '<=', now())
-            ->orderByDesc('publish_time')
+            ->where('publish_time', '<=', now());
+
+        if ($tenantId !== null) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        if ($categoryAlias !== null && $categoryAlias !== '') {
+            $categoryId = Category::query()->where('alias', $categoryAlias)->value('id');
+            if ($categoryId) {
+                $query->where('category_id', $categoryId);
+            }
+        }
+
+        $news = $query->orderByDesc('publish_time')
+            ->with('category:id,name')
             ->take($limit)
-            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image']);
+            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'category_id', 'other_lang_id', 'tenant_id']);
 
         return new self($news->all());
     }

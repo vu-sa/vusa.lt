@@ -93,4 +93,26 @@ describe('EventListDisplay', () => {
     });
     expect(wrapper.text()).toContain('Nieko čia nėra');
   });
+
+  it('editable: the header becomes click-to-edit and patches emit through update:element', async () => {
+    const wrapper = mount(EventListDisplay, {
+      props: {
+        element: { type: 'event-list', json_content: {}, options: { title: 'Renginiai', style: 'list' } },
+        resolved: makeFlatResolved(),
+        editable: true,
+      },
+      global: { stubs },
+    });
+    const title = wrapper.find('h2[contenteditable]');
+    expect(title.exists()).toBe(true);
+    title.element.textContent = 'Artimiausi renginiai';
+    await title.trigger('input');
+    await new Promise(resolve => setTimeout(resolve, 200)); // RCInlineText's debounce
+
+    const emitted = wrapper.emitted('update:element');
+    expect(emitted).toBeTruthy();
+    const patched = emitted!.at(-1)![0] as { options?: { title?: string; style?: string } };
+    expect(patched.options?.title).toBe('Artimiausi renginiai');
+    expect(patched.options?.style).toBe('list'); // untouched sibling option
+  });
 });

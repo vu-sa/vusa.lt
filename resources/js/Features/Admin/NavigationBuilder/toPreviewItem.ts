@@ -30,7 +30,6 @@ export function toPreviewItem(root: AdminNavigationRoot): NavItem {
     id: String(root.id),
     name: root.name ?? '',
     icon: root.extra_attributes?.icon,
-    menu_width: root.extra_attributes?.menu_width,
     cols: nonEmptyColumns.length,
     links: nonEmptyColumns,
   };

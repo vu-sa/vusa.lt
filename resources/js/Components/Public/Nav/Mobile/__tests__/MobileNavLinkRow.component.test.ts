@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils';
 import { Icon } from '@iconify/vue';
 
 import MobileNavLinkRow from '../MobileNavLinkRow.vue';
-
 import type { NavLink } from '../../types';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -39,16 +38,16 @@ describe('MobileNavLinkRow.vue', () => {
     expect(wrapper.text()).toContain('Prisijunk prie mūsų');
   });
 
-  it('renders a bold row for category-link', () => {
+  it('renders a category-link as an eyebrow, not as a heavier link', () => {
     const wrapper = createWrapper({ name: 'Dokumentai', url: '/dokumentai', type: 'category-link' });
 
-    expect(wrapper.find('a').classes().join(' ')).toContain('font-bold');
+    expect(wrapper.find('a').classes().join(' ')).toContain('u-eyebrow');
   });
 
   it('falls back to a plain row for an unknown/absent type', () => {
     const wrapper = createWrapper({ name: 'Struktūra', url: '/struktura' });
 
-    expect(wrapper.find('a').classes().join(' ')).not.toContain('font-bold');
+    expect(wrapper.find('a').classes().join(' ')).not.toContain('u-eyebrow');
   });
 
   it('shows the small_text badge when present', () => {

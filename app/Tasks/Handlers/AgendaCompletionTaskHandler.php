@@ -17,22 +17,16 @@ use Illuminate\Support\Collection;
 /**
  * Handles Agenda Completion tasks with progress tracking for meeting agenda items.
  *
- * Agenda completion tasks are created when agenda items exist but need their vote details
- * filled. Which details count is the meeting's scope question, so progress is measured with
- * MeetingCompletionService: a VU SA body's item needs only a decision, an external body's
- * also needs student_vote and student_benefit. They auto-complete once every item qualifies.
+ * Progress is measured with MeetingCompletionService according to governance scope:
+ * a VU SA body needs only a decision; an external body also needs student_vote
+ * and student_benefit. Auto-completes once every item qualifies.
  */
 class AgendaCompletionTaskHandler extends BaseTaskHandler
 {
     public function __construct(protected MeetingCompletionService $completionService) {}
 
     /**
-     * Find or create an agenda completion task with progress tracking.
-     *
-     * @param  string  $name  The task name
-     * @param  Meeting  $meeting  The meeting model
-     * @param  \Illuminate\Database\Eloquent\Collection<int, User>|Collection<int, User>  $users  Users assigned to the task
-     * @param  string|null  $dueDate  Due date for the task
+     * @param  \Illuminate\Database\Eloquent\Collection<int, User>|Collection<int, User>  $users
      */
     public function findOrCreate(
         string $name,
@@ -49,7 +43,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         $totalItems = $meeting->agendaItems()->count();
         $completedItems = $this->countCompletedItems($meeting);
 
-        // Generate contextual description with assignee count and meeting context
         $description = $this->generateDescription($meeting, $users);
 
         $data = CreateTaskData::withProgress(
@@ -64,14 +57,12 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
 
         $task = $this->create($data);
 
-        // If some items are already complete, update the progress
         if ($completedItems > 0) {
             $metadata = $task->metadata;
             $metadata['items_completed'] = $completedItems;
             $task->metadata = $metadata;
             $task->save();
 
-            // Auto-complete if all items are already done
             if ($totalItems > 0 && $completedItems >= $totalItems) {
                 $this->complete($task, __('tasks.agenda_completion.all_items_completed'));
             }
@@ -81,10 +72,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     }
 
     /**
-     * Generate a contextual description for the task.
-     *
-     * @param  Meeting  $meeting  The meeting model
-     * @param  Collection<int, User>  $users  Users assigned to the task
+     * @param  Collection<int, User>  $users
      */
     protected function generateDescription(Meeting $meeting, Collection $users): string
     {
@@ -96,13 +84,11 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
 
         $parts = [];
 
-        // Add meeting context
         $parts[] = __('tasks.agenda_completion.meeting_context', [
             'institution' => $institutionName,
             'date' => $meetingDate,
         ]);
 
-        // Add assignee context if there are multiple assignees
         if ($assigneeCount > 1) {
             $parts[] = __('tasks.agenda_completion.assignee_context', [
                 'count' => $assigneeCount - 1,
@@ -112,13 +98,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         return implode(' ', $parts);
     }
 
-    /**
-     * Update the task when an agenda item changes.
-     * Recalculates progress and auto-completes if all items are done.
-     *
-     * @param  User|null  $completedBy  The user who triggered the update (excluded from notifications)
-     * @return bool True if task was completed
-     */
     public function updateProgressForMeeting(Meeting $meeting, ?User $completedBy = null): bool
     {
         $task = $this->findExistingTask($meeting);
@@ -136,7 +115,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         $task->metadata = $metadata;
         $task->save();
 
-        // Auto-complete if all items are done
         if ($totalItems > 0 && $completedItems >= $totalItems) {
             $this->complete($task, __('tasks.agenda_completion.all_items_completed'), $completedBy);
 
@@ -146,9 +124,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         return false;
     }
 
-    /**
-     * Find an existing incomplete agenda completion task for the meeting.
-     */
     public function findExistingTask(Meeting $meeting): ?Task
     {
         return Task::query()
@@ -161,14 +136,9 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     }
 
     /**
-     * Count how many agenda items are complete.
-     *
      * An item is complete when:
      * - Type needs no vote (informational, deferred, break), OR
-     * - Type is 'voting' AND has a main vote the meeting's scope considers filled — a decision
-     *   alone for a VU SA body, decision plus student_vote and student_benefit for an external one.
-     *
-     * Items with null type are NOT counted as complete (user must select type first).
+     * - Type is 'voting' AND has a main vote the meeting's scope considers filled.
      */
     protected function countCompletedItems(Meeting $meeting): int
     {
@@ -176,7 +146,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         $requiresStudentPerspective = $meeting->requiresStudentPerspective();
 
         return $agendaItems->filter(function ($item) use ($requiresStudentPerspective) {
-            // Items without type selected are incomplete
             if ($item->type === null) {
                 return false;
             }
@@ -196,8 +165,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     }
 
     /**
-     * Get agenda item counts by type for use in notifications.
-     *
      * @return array{voting: int, informational: int, deferred: int, break: int, unset: int}
      */
     public function getAgendaItemTypeCounts(Meeting $meeting): array
@@ -214,10 +181,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     }
 
     /**
-     * Check if a previously complete task should be reopened due to type change.
-     *
-     * This is called when an agenda item's type changes from a vote-free type to voting,
-     * and the voting item doesn't have a complete main vote.
+     * Check if a previously completed task should reopen due to an agenda item changing to voting.
      */
     public function shouldReopenTask(Meeting $meeting): bool
     {
@@ -225,7 +189,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
         $requiresStudentPerspective = $meeting->requiresStudentPerspective();
 
         foreach ($agendaItems as $item) {
-            // Check if any voting item is incomplete
             if ($item->type === AgendaItemType::Voting) {
                 $mainVote = $item->votes->firstWhere('is_main', true);
 
@@ -238,7 +201,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
                 }
             }
 
-            // Items without type are incomplete
             if ($item->type === null) {
                 return true;
             }
@@ -258,7 +220,6 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
      */
     public function reopenIfNeeded(Meeting $meeting): void
     {
-        // Find a completed task for this meeting
         $completedTask = Task::query()
             ->where('taskable_type', MorphMap::alias(Meeting::class))
             ->where('taskable_id', $meeting->getKey())
@@ -282,14 +243,10 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
                 $completedTask->users()->sync($assignees->pluck('id'));
             }
 
-            // Update progress
             $this->syncTotalItems($completedTask, $meeting);
         }
     }
 
-    /**
-     * Sync total items count with current agenda items.
-     */
     protected function syncTotalItems(Task $task, Meeting $meeting): Task
     {
         $totalItems = $meeting->agendaItems()->count();

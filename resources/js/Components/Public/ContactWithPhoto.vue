@@ -24,7 +24,7 @@
         <!-- Name -->
         <h3 class="text-sm font-bold leading-tight text-zinc-900 dark:text-zinc-50 sm:text-base">
           {{ contact.name }}
-          <span v-if="contact.show_pronouns" class="text-[10px] font-normal text-zinc-400 sm:text-xs">
+          <span v-if="contact.show_pronouns" class="text-[0.625rem] font-normal text-zinc-400 sm:text-xs">
             ({{ contact.pronouns }})
           </span>
         </h3>
@@ -32,7 +32,7 @@
         <!-- Duties (hidden when the surrounding section already names the duty) -->
         <div v-if="duties && !hideDutyNames" class="mt-1.5 space-y-0.5 sm:mt-2 sm:space-y-1">
           <p v-for="duty in duties" :key="duty.id"
-            class="flex items-center gap-0.5 text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-xs">
+            class="flex items-center gap-0.5 text-[0.6875rem] leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-xs">
             <span class="min-w-0">
               {{ changeDutyNameEndings(contact, duty.name, $page.props.app.locale, contact.pronouns,
                 duty.pivot?.use_original_duty_name) }}
@@ -50,14 +50,14 @@
         <div v-if="primaryEmail" class="mt-1.5 flex items-center gap-1.5 sm:mt-2">
           <IFluentMail20Regular class="size-3 shrink-0 text-zinc-500 dark:text-zinc-400 sm:size-3.5" />
           <a :href="`mailto:${primaryEmail.email}`"
-            class="truncate text-[11px] text-zinc-600 hover:text-vusa-red dark:text-zinc-400 dark:hover:text-vusa-red sm:text-xs"
+            class="truncate text-[0.6875rem] text-zinc-600 hover:text-vusa-red dark:text-zinc-400 dark:hover:text-vusa-red sm:text-xs"
             :title="primaryEmail.email">
             {{ primaryEmail.email }}
           </a>
           <Popover v-if="shownContactEmail.length > 1">
             <PopoverTrigger as-child>
               <button type="button"
-                class="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium text-zinc-500 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200">
+                class="inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[0.625rem] font-medium text-zinc-500 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-200">
                 +{{ shownContactEmail.length - 1 }}
               </button>
             </PopoverTrigger>

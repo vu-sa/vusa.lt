@@ -38,55 +38,19 @@
               </Select>
             </Field>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>{{ $t('rich-content.decoration_size') }}</FieldLabel>
-              <Select :model-value="item.size" @update:model-value="update({ ...item, size: $event })">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-                  <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-                  <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field>
-              <FieldLabel>{{ $t('rich-content.decoration_color') }}</FieldLabel>
-              <Select :model-value="item.color || 'vusa-red'" @update:model-value="update({ ...item, color: $event })">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="vusa-red">{{ $t('rich-content.vusa_red') }}</SelectItem>
-                  <SelectItem value="vusa-yellow">{{ $t('rich-content.vusa_yellow') }}</SelectItem>
-                  <SelectItem value="zinc">{{ $t('rich-content.zinc') }}</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel>{{ $t('rich-content.decoration_opacity') }}</FieldLabel>
-              <Input
-                :model-value="item.opacity"
-                type="number"
-                min="0"
-                max="100"
-                @update:model-value="update({ ...item, opacity: Number($event) })"
-              />
-            </Field>
-            <div class="flex items-center gap-3 pt-6">
-              <Switch
-                :model-value="item.rotation"
-                @update:model-value="update({ ...item, rotation: $event })"
-              />
-              <span class="text-sm text-zinc-700 dark:text-zinc-300">
-                {{ $t('rich-content.enable_rotation') }}
-              </span>
-            </div>
-          </div>
+          <Field>
+            <FieldLabel>{{ $t('rich-content.decoration_size') }}</FieldLabel>
+            <Select :model-value="item.size" @update:model-value="update({ ...item, size: $event })">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
+                <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
+                <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
         </div>
       </template>
     </DynamicListInput>
@@ -104,9 +68,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { DecorationConfig } from '@/Types/contentParts';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Field, FieldLabel } from '@/Components/ui/field';
-import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Switch } from '@/Components/ui/switch';
 
 defineProps<{
   label?: string;
@@ -119,9 +81,6 @@ function createDecoration(): DecorationConfig {
     type: 'line',
     position: 'top-right',
     size: 'md',
-    color: 'vusa-red',
-    opacity: 60,
-    rotation: false,
   };
 }
 </script>

@@ -8,11 +8,12 @@ import type { NavBadgeVariant } from '@/Components/Public/Nav/types';
  */
 export interface AdminNavigationExtraAttributes {
   type?: 'link' | 'block-link' | 'category-link' | 'full-height-background-link' | 'divider' | 'heading';
+  /** Which menu a root (and, tagged the same way, its children) belongs to. Absent means 'header'. */
+  location?: 'header' | 'footer';
   column?: 1 | 2 | 3;
   col_span?: 1 | 2 | 3;
   cols?: 1 | 2 | 3;
   /** Root items only — dropdown width, independent of column count. Defaults to `wide`. */
-  menu_width?: 'narrow' | 'medium' | 'wide' | 'auto';
   icon?: string;
   description?: string;
   small_text?: string;
@@ -45,6 +46,15 @@ export interface AdminNavigationRoot extends AdminNavigationLink {
   /** Always exactly 3 arrays — array index 0/1/2 is column 1/2/3. */
   links: AdminNavigationLink[][];
   cols: number;
+}
+
+/**
+ * One footer column, from `NavigationService::getFooterTreeForAdmin()` — flat, unlike
+ * `AdminNavigationRoot`: a footer column's children are never sub-grouped, so `links` is
+ * a plain list rather than 3 column arrays.
+ */
+export interface AdminFooterColumn extends AdminNavigationLink {
+  links: AdminNavigationLink[];
 }
 
 export interface TranslationSummaryMismatch {

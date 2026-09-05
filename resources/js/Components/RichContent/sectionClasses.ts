@@ -1,16 +1,17 @@
 /**
- * Shared section-chrome class maps — background/padding/inner-width/rounding.
- * Extracted out of `RCSection.vue` so the new standalone `section` block
- * (`RCSection/SectionDisplay.vue`) and `HeroElement.vue` can reuse the exact same
- * background/padding/rounding vocabulary instead of re-declaring their own subset.
+ * Shared section-chrome class maps. `SectionInner` still varies per-type (a section's
+ * own inner content measure, independent of the canvas column it sits in); background/
+ * padding/rounded/divider are no longer per-block choices — see `bandLayout.ts`, which
+ * computes a band's ground automatically from its position in the document.
  */
-export type SectionBackground = 'none' | 'muted' | 'contrast' | 'gradient';
-export type SectionPadding = 'none' | 'sm' | 'md' | 'lg';
 export type SectionInner = 'prose' | 'content' | 'wide' | 'full';
-export type SectionRounded = 'none' | 'sm' | 'md' | 'lg';
+export type PlainPadding = 'none' | 'compact' | 'default';
 
 /** Semantic heading level for a section title. Matches the levels offered in RCSectionOptions. */
 export type SectionHeadingLevel = 2 | 3 | 4;
+
+/** A band's resolved ground: alternates canvas/tint automatically, or the one loud emphasis. */
+export type BandTint = 'canvas' | 'tint' | 'emphasis';
 
 /**
  * Size class per heading level — the same scale `.rc-prose` uses for h2/h3/h4
@@ -23,20 +24,29 @@ export const SECTION_HEADING_SIZE_CLASS: Record<SectionHeadingLevel, string> = {
   4: 'text-xl',
 };
 
-export const BACKGROUND_CLASS: Record<SectionBackground, string> = {
+/** A band's fixed vertical rhythm — was `PADDING_CLASS.lg`, what 9 of 11 band types already used. */
+export const BAND_PADDING = 'py-16';
+
+/** The one exception: `hero`'s `banner` variant is a compact single-row strip. */
+export const BAND_PADDING_COMPACT = 'py-8';
+
+/** Optional rhythm for a plain section, which has no background to imply its own spacing. */
+export const PLAIN_PADDING_CLASS: Record<PlainPadding, string> = {
   none: '',
-  muted: 'bg-zinc-50 dark:bg-zinc-900',
-  contrast: 'bg-white dark:bg-zinc-950',
-  // Same subtle surface as RichContentCard / the hero panel variant — for a section
-  // that wants that card-like look rather than a flat fill.
-  gradient: 'bg-gradient-to-br from-zinc-50 to-zinc-100/50 dark:from-zinc-800/80 dark:to-zinc-900',
+  compact: 'py-8',
+  default: BAND_PADDING,
 };
 
-export const PADDING_CLASS: Record<SectionPadding, string> = {
-  none: '',
-  sm: 'py-8',
-  md: 'py-12',
-  lg: 'py-16',
+/**
+ * Two calm tints alternating down the page, plus one loud one. `tint` is exactly what
+ * `EventCalendarElement.vue` has hardcoded since Phase 4 — this generalises it to every
+ * band-capable block. Token-driven, not fixed zinc, so it follows whichever surface the
+ * block is rendered on.
+ */
+export const BAND_GROUND_CLASS: Record<BandTint, string> = {
+  canvas: '',
+  tint: 'bg-secondary/40 border-y border-border',
+  emphasis: 'bg-brand-fill text-brand-foreground border-y border-brand-fill',
 };
 
 export const INNER_CLASS: Record<SectionInner, string> = {
@@ -44,17 +54,4 @@ export const INNER_CLASS: Record<SectionInner, string> = {
   content: 'max-w-4xl',
   wide: 'max-w-6xl',
   full: 'max-w-none',
-};
-
-/**
- * `overflow-hidden` is bundled with the radius — every current use (section
- * backgrounds, hero variants) rounds the same element that also clips a background
- * fill/gradient/decorative blur, so a rounded corner without clipping would just show
- * a square background peeking past the curve.
- */
-export const ROUNDED_CLASS: Record<SectionRounded, string> = {
-  none: '',
-  sm: 'md:rounded-lg md:overflow-hidden',
-  md: 'md:rounded-xl md:overflow-hidden',
-  lg: 'md:rounded-2xl md:overflow-hidden',
 };

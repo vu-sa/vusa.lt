@@ -50,19 +50,10 @@
       <TiptapEditor v-model="quote" preset="minimal" prose-style />
     </Field>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <Field>
-        <FieldLabel>{{ $t('rich-content.person_quote_align') }}</FieldLabel>
-        <ToggleGroup v-model="options.align" type="single" class="justify-start">
-          <ToggleGroupItem value="start">{{ $t('rich-content.person_quote_align_start') }}</ToggleGroupItem>
-          <ToggleGroupItem value="center">{{ $t('rich-content.person_quote_align_center') }}</ToggleGroupItem>
-        </ToggleGroup>
-      </Field>
-      <label class="flex items-center gap-2 pt-6 text-sm">
-        <Checkbox v-model="options.showAvatar" />
-        <span class="text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.person_quote_show_avatar') }}</span>
-      </label>
-    </div>
+    <label class="flex items-center gap-2 text-sm">
+      <Checkbox v-model="options.showAvatar" />
+      <span class="text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.person_quote_show_avatar') }}</span>
+    </label>
   </div>
 </template>
 
@@ -77,9 +68,10 @@
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { useApi } from '@/Composables/useApi';
-import type { PersonQuote } from '@/Types/contentParts';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+import { useUserAttributionLookup } from '../composables/useUserAttributionLookup';
+
+import type { PersonQuote } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
@@ -87,7 +79,6 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
-import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 
 const content = defineModel<PersonQuote['json_content']>({ required: true });
 const options = defineModel<PersonQuote['options']>('options', { required: true });
@@ -104,21 +95,7 @@ const initialHits = computed<NormalizedSearchHit[]>(() => {
   return [normalizeHit('users', { id: content.value.snapshot.userId, name: content.value.snapshot.name })];
 });
 
-interface AttributionResponse {
-  name: string;
-  photoUrl: string | null;
-  attributions: string[];
-}
-
-const attributionUserId = ref<number | null>(null);
-const attributionUrl = computed(() => (attributionUserId.value
-  ? route('api.v1.admin.users.attributions', attributionUserId.value)
-  : ''));
-
-const { data: attributionData, execute: fetchAttributions } = useApi<AttributionResponse>(attributionUrl, {
-  immediate: false,
-  showErrorToast: false,
-});
+const { userId: attributionUserId, data: attributionData } = useUserAttributionLookup();
 
 const attributionSuggestions = computed(() => attributionData.value?.attributions ?? []);
 
@@ -133,11 +110,6 @@ function onConfirm(hits: NormalizedSearchHit[]) {
   content.value.snapshot = { ...content.value.snapshot, userId, name: hit.title };
   attributionUserId.value = userId;
 }
-
-watch(attributionUserId, async (id) => {
-  if (!id) return;
-  await fetchAttributions();
-}, { flush: 'post' });
 
 watch(attributionData, (data) => {
   if (!data) return;
