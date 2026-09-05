@@ -58,6 +58,28 @@
               variant="ghost"
               size="icon"
               class="size-7"
+              :disabled="index === 0"
+              :title="$t('rich-content.move_up')"
+              @click="moveSlide(index, index - 1)"
+            >
+              <IFluentArrowUp24Regular class="size-3.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              class="size-7"
+              :disabled="index === slides.length - 1"
+              :title="$t('rich-content.move_down')"
+              @click="moveSlide(index, index + 1)"
+            >
+              <IFluentArrowDown24Regular class="size-3.5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              class="size-7"
               :title="$t('rich-content.select_image')"
               @click="activeSlideIndexForImage = index"
             >
@@ -175,6 +197,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/Components/ui/switch';
 import type { HeroCarousel } from '@/Types/contentParts';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
+import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
+import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
@@ -229,6 +253,17 @@ function onSlideImageSubmit(img: { src: string; alt: string }): void {
 function removeSlide(index: number): void {
   if (slides.value.length <= 1) return;
   const newSlides = slides.value.filter((_, i) => i !== index);
+  emit('update:content', {
+    ...props.content,
+    json_content: newSlides,
+  });
+}
+
+function moveSlide(from: number, to: number): void {
+  const newSlides = [...slides.value];
+  const [slide] = newSlides.splice(from, 1);
+  if (!slide) return;
+  newSlides.splice(to, 0, slide);
   emit('update:content', {
     ...props.content,
     json_content: newSlides,

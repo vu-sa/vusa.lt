@@ -17,6 +17,7 @@ const stubs = {
   CalendarBlockToolbar: { template: '<div class="calendar-toolbar" />' },
   CardBlockToolbar: { template: '<div class="card-toolbar" />' },
   NumberStatBlockToolbar: { template: '<div class="number-stat-toolbar" />' },
+  RCImageListBlockToolbar: { template: '<div class="image-list-toolbar" />' },
   RCBlockToolbarShell: { template: '<div class="block-toolbar"><slot /></div>' },
   RCWidthPicker: { template: '<div />' },
   RCPresentationPicker: {
@@ -70,6 +71,8 @@ describe('RCFullscreenBlock', () => {
     ['calendar', '.calendar-toolbar'],
     ['shadcn-card', '.card-toolbar'],
     ['number-stat-section', '.number-stat-toolbar'],
+    ['image-grid', '.image-list-toolbar'],
+    ['photo-gallery', '.image-list-toolbar'],
   ])('routes %s to its dedicated toolbar, not the generic fallback', (type, toolbarSelector) => {
     const wrapper = mount(RCFullscreenBlock, {
       props: {

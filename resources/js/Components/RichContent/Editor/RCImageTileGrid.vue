@@ -40,6 +40,14 @@
               <IFluentTarget24Regular class="mr-2 h-4 w-4" />
               {{ $t('rich-content.set_focal_point') }}
             </DropdownMenuItem>
+            <DropdownMenuItem :disabled="index === 0" @click="moveItem(index, index - 1)">
+              <IFluentArrowUp24Regular class="mr-2 h-4 w-4" />
+              {{ $t('rich-content.move_up') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem :disabled="index === modelValue.length - 1" @click="moveItem(index, index + 1)">
+              <IFluentArrowDown24Regular class="mr-2 h-4 w-4" />
+              {{ $t('rich-content.move_down') }}
+            </DropdownMenuItem>
             <slot name="tile-menu" :item="item" :index="index" :update="(patch: Partial<T>) => updateAt(index, patch)" />
             <DropdownMenuSeparator />
             <DropdownMenuItem class="text-red-600 focus:text-red-600" @click="removeAt(index)">
@@ -120,6 +128,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from '@/Components/ui/input';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import IFluentAdd24Regular from '~icons/fluent/add24-regular';
+import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
+import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImageAdd24Regular from '~icons/fluent/image-add24-regular';
 import IFluentImageMultiple24Regular from '~icons/fluent/image-multiple24-regular';
@@ -172,6 +182,14 @@ function updateAt(index: number, patch: Partial<T>) {
 function removeAt(index: number) {
   const next = [...(modelValue.value ?? [])];
   next.splice(index, 1);
+  modelValue.value = next;
+}
+
+function moveItem(from: number, to: number) {
+  const next = [...(modelValue.value ?? [])];
+  const [item] = next.splice(from, 1);
+  if (!item) return;
+  next.splice(to, 0, item);
   modelValue.value = next;
 }
 

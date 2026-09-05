@@ -195,6 +195,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     category: 'media',
     defaultWidth: 'wide',
     allowedWidths: ['content', 'wide', 'full'],
+    inlineEditable: true,
     defaultContent: () => ([]),
     editor: defineAsyncComponent(() => import('./ImageGridEditor.vue')),
     display: defineAsyncComponent(() => import('./ImageGridDisplay.vue')),

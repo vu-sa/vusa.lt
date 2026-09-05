@@ -119,6 +119,23 @@ describe('ImageGridEditor', () => {
     expect(wrapper.emitted('update:modelValue')![0]![0]).toEqual([modelValue[1]]);
   });
 
+  it('moves a tile from the more-options menu', async () => {
+    const modelValue = [
+      { colspan: 'col-span-2', image: '/a.jpg', alt: 'Alt A' },
+      { colspan: 'col-span-2', image: '/b.jpg', alt: 'Alt B' },
+    ];
+    const wrapper = mount(ImageGridEditor, {
+      props: { modelValue, 'onUpdate:modelValue': (val: unknown) => wrapper.setProps({ modelValue: val }) },
+      global: { stubs },
+    });
+
+    const menus = wrapper.findAll('[data-testid="dropdown-menu-content"]');
+    const moveDown = menus[0]!.findAll('button').find(button => button.text().includes('rich-content.move_down'))!;
+    await moveDown.trigger('click');
+
+    expect(wrapper.emitted('update:modelValue')?.at(-1)?.[0]).toEqual([modelValue[1], modelValue[0]]);
+  });
+
   it('changing the width via the dropdown updates colspan for that tile only', async () => {
     const modelValue = [
       { colspan: 'col-span-2', image: '/a.jpg', alt: '' },

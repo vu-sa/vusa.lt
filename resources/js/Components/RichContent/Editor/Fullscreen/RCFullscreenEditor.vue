@@ -52,7 +52,7 @@
           </Button>
         </div>
 
-        <main class="rc-canvas mx-auto pt-6 md:pt-8" style="--rc-measure: 44rem">
+        <main class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
           <div
             v-for="(content, index) in contents ?? []" :key="getBlockKey(content)"
             :class="['relative', blockLayoutClasses(content)]"

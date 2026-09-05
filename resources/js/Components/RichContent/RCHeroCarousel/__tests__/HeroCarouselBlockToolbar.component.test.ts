@@ -113,6 +113,16 @@ describe('HeroCarouselBlockToolbar', () => {
     expect(updatedContent.json_content[0].title).toBe('Slide 2');
   });
 
+  it('moves a slide with its ordering controls', async () => {
+    const wrapper = mountToolbar(makeContent(2));
+    const moveDown = wrapper.findAll('button[title="rich-content.move_down"]')[0]!;
+
+    await moveDown.trigger('click');
+
+    const updatedContent = wrapper.emitted('update:content')!.at(-1)![0] as ContentPart;
+    expect(updatedContent.json_content.map(slide => slide.title)).toEqual(['Slide 2', 'Slide 1']);
+  });
+
   it('toggling showArrows switch emits update:content with updated showArrows', async () => {
     const wrapper = mountToolbar(makeContent(2, { showArrows: true }));
     const switches = wrapper.findAll('[role="switch"]');

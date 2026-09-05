@@ -59,6 +59,18 @@ describe('RCFullscreenEditor', () => {
     expect(wrapper.text()).toContain('rich-content.edit_mode_hint');
   });
 
+  it('gives the editing canvas comfortable space above and below its blocks', () => {
+    const wrapper = mount(RCFullscreenEditor, {
+      props: {
+        contents: [],
+        history: { commit: () => {}, undo: () => {}, redo: () => {}, canUndo: false, canRedo: false },
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('main').classes()).toEqual(expect.arrayContaining(['py-20', 'md:py-28']));
+  });
+
   it('fetches and shows preview data for a not-yet-saved server-resolved block (no id)', async () => {
     const wrapper = mount(RCFullscreenEditor, {
       props: {

@@ -82,6 +82,13 @@
       @move-up="$emit('move-up')" @move-down="$emit('move-down')"
       @delete="$emit('delete')" @open-form="$emit('open-form')"
     />
+    <RCImageListBlockToolbar v-else-if="!preview && (content.type === 'image-grid' || content.type === 'photo-gallery')"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
     <RCBlockToolbarShell v-else-if="!preview"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete
@@ -142,6 +149,7 @@ import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { resolveBandRole, type BandResolution, type BlockPresentation } from '../../bandLayout';
 import type { PlainPadding } from '../../sectionClasses';
 
+import RCImageListBlockToolbar from './RCImageListBlockToolbar.vue';
 import { injectActiveHotspot } from './useActiveHotspot';
 import RCBlockToolbarShell from './RCBlockToolbarShell.vue';
 
