@@ -14,8 +14,12 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ⭐ **New public website design** — modern editorial typography (Atkinson Hyperlegible), warm paper and deep dark palettes, sharp architectural lines, and a unified design token system, keeping the admin surface untouched
 - ⭐ **Built-in accessibility menu** — native drawer lets visitors adjust text size, enable high contrast, and underline links without third-party scripts (UserWay) or performance overhead
 - ⭐ **Full-screen WYSIWYG rich content editor** — edit copy, buttons, images, and section settings directly on the live public layout with instant preview and save
+- ✨ **Cards and statistics can be edited in place** — card headings are more prominent, descriptions have a clear place to start, and vertical spacing is configurable; new statistic blocks start with a figure whose number, label, and plus sign can be changed without leaving the full-screen editor
+- ✨ **No separate spacer block is needed** — every content block configures its own vertical spacing, so “Spacer” has been removed from the content editor
 - ✨ **Refreshed navigation and full-bleed mega menu** — two-tier navigation enhanced with full-measure mega menus, contextual link descriptions, rich photo cards, category headings, and instant hover response
 - ✨ **Calendar event page updated to editorial style** — full-bleed hero with tabular date plate, integrated breadcrumbs, clear facts sidebar with registration actions and interactive map, editorial meeting agenda and documents, and a 3-column related events card grid
+- ✨ **Redesigned events catalog with instant Typesense search** — event list migrated to the new editorial public design with integrated title band breadcrumbs, a 3-column card grid, upcoming and past tabs, a year filter selector, instant typo-tolerant search across titles, descriptions, and locations, plus popover filter buttons for category, tenant, and remote format
+- ✨ **Clearer event-list navigation** — compact “Upcoming”, “Past”, and “All” tabs, the year filter alongside the other filters, and separate relevance or date sorting make it faster to find the right events
 - ✨ **Hero carousels support inline editing and single-slide optimization** — a carousel with a single slide renders directly as a static full-bleed hero without carousel controls or layout overhead, and the full-screen editor supports inline editing for copy, call-to-action buttons, and slide photos
 - ✨ **The calendar band has a clearer route to all events** — its upper action now opens the complete event list, while calendar synchronization remains at the bottom
 - 🔧 **The phone’s top bar now truly switches with the theme** — pressing the light or dark mode button updates both the page theme and browser colour in the same click instead of waiting for a later DOM update
@@ -32,6 +36,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - 🔧 **The tenant map opens and zooms smoothly** — `+`, `−`, and tenant clusters no longer reload the view, a reopened menu no longer collapses from a stale delay, dark mode no longer flashes white, and zoom controls match the new public-site styling
 - 🔧 **Hero sections no longer jump while editing** — a centered title stays centered and uppercase after editing, and the split layout’s settings button is no longer covered by the top bar
 - 🔧 **Member registration notification verification** — verified automated email notifications when new members register
+- ✨ **The turtle now marks both loading and empty pages** — the corner spinner is replaced by the organisation's mascot taking a slow walk (it and the progress bar use the VU SR brand colour, which follows the light or dark theme), and lists with nothing to show yet rest the same turtle in the middle of the empty space
 
 ## v1.38 — English agendas and breaks (2026-09-02) {#v1-38}
 
