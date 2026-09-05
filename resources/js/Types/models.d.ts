@@ -190,6 +190,7 @@ declare global {
       facebook_url?: string | null
       video_url?: string | null
       main_image?: string | null
+      main_image_focal_point?: string | null
       is_draft: boolean
       is_all_day: boolean
       is_international: boolean
@@ -2060,5 +2061,5 @@ declare global {
     export type TenantType = typeof TenantType[keyof typeof TenantType]
 
   }
-}
 
+}

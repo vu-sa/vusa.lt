@@ -7,6 +7,10 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v1.44 — Calendar event page design (2026-09-05) {#v1-44}
+
+- ✨ **Calendar event page updated to editorial style** — full-bleed hero with tabular date plate, integrated breadcrumbs, clear facts sidebar with registration actions and interactive map, editorial meeting agenda and documents, and a 3-column related events card grid
+
 ## v1.43 — Content editing (2026-09-04) {#v1-43}
 
 - ✨ **Plain sections have spacing choices** — a section without a background keeps the standard vertical spacing by default, but can use compact spacing or none; the unnecessary “Emphasis” presentation has been removed

@@ -112,6 +112,7 @@
                 :src="getEventImage(event)!"
                 :alt="getEventTitle(event)"
                 class="w-full h-full object-cover"
+                :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
                 loading="lazy"
               >
               <div

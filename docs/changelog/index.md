@@ -7,6 +7,10 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v1.44 — Renginio puslapio dizainas (2026-09-05) {#v1-44}
+
+- ✨ **Renginio puslapis atnaujintas pagal naują stilių** — viso pločio antraštė su datos plokštele, integruota navigacijos juosta, aiški informacijos šoninė juosta su registracijos mygtukais bei interaktyviu žemėlapiu, atnaujintas posėdžių darbotvarkių ir dokumentų pateikimas bei 3 stulpelių susijusių renginių tinklelis
+
 ## v1.43 — Turinio redagavimas (2026-09-04) {#v1-43}
 
 - ✨ **Paprastoms sekcijoms galima parinkti tarpus** — sekcija be fono pagal nutylėjimą išlaiko įprastus vertikalius tarpus, bet gali naudoti kompaktiškus arba visai jų neturėti; nebereikalingas „Akcento“ pateikimas pašalintas

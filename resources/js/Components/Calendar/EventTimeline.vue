@@ -121,6 +121,7 @@
                         :src="getEventImage(event)!"
                         :alt="getEventTitle(event)"
                         class="w-full h-full object-cover"
+                        :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
                         loading="lazy"
                       >
                       <div
@@ -184,6 +185,7 @@
             :src="getEventImage(event)!"
             :alt="getEventTitle(event)"
             class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
           >
           <div
             v-else

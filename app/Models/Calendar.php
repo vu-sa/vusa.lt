@@ -39,6 +39,7 @@ use Spatie\SchemaOrg\Place;
  * @property string|null $facebook_url
  * @property string|null $video_url
  * @property string|null $main_image
+ * @property string|null $main_image_focal_point
  * @property bool $is_draft
  * @property bool $is_all_day
  * @property bool $is_international

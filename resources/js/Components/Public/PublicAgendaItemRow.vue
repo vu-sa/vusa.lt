@@ -8,12 +8,12 @@
       :is="isExpandable ? 'summary' : 'div'"
       class="grid grid-cols-[2rem_1fr] items-start gap-x-3 gap-y-1 px-1 py-3 sm:grid-cols-[2rem_1fr_auto] sm:px-2"
       :class="isExpandable
-        ? 'cursor-pointer list-none rounded-lg transition-colors hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50'
+        ? 'cursor-pointer list-none transition-colors hover:bg-secondary/60'
         : ''"
     >
       <!-- Number then status dot, in that order, so hiding the dot never shifts the numbers -->
       <span class="flex items-center gap-1.5 pt-0.5">
-        <span class="w-4 text-right text-xs tabular-nums text-zinc-400 dark:text-zinc-500">{{ item.order }}</span>
+        <span class="w-4 text-right font-mono text-xs tabular-nums text-muted-foreground">{{ item.order }}</span>
         <span
           class="size-1.5 shrink-0 rounded-full"
           :class="showStatus ? status.dotClass : 'bg-transparent'"
@@ -22,12 +22,12 @@
       </span>
 
       <div class="min-w-0">
-        <p class="text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-50">
+        <p class="text-sm font-medium leading-snug text-foreground">
           {{ item.title }}
         </p>
         <p
           v-if="showStatus || item.brought_by_students || isExpandable"
-          class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-500 dark:text-zinc-400"
+          class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground"
         >
           <span v-if="showStatus" :class="status.colorClass">{{ status.label }}</span>
           <span v-if="showStatus && item.brought_by_students" aria-hidden="true">·</span>
@@ -37,11 +37,11 @@
           </span>
           <template v-if="isExpandable">
             <span v-if="showStatus || item.brought_by_students" aria-hidden="true">·</span>
-            <span class="inline-flex items-center gap-0.5 text-zinc-400 group-open/item:hidden dark:text-zinc-500">
+            <span class="inline-flex items-center gap-0.5 text-muted-foreground group-open/item:hidden">
               {{ $t('Plačiau') }}
               <IFluentChevronDown20Regular class="size-3" />
             </span>
-            <span class="hidden items-center gap-0.5 text-zinc-400 group-open/item:inline-flex dark:text-zinc-500">
+            <span class="hidden items-center gap-0.5 text-muted-foreground group-open/item:inline-flex">
               {{ $t('Suskleisti') }}
               <IFluentChevronUp20Regular class="size-3" />
             </span>
@@ -53,12 +53,12 @@
       <div class="col-start-2 flex flex-wrap items-center gap-1.5 sm:col-start-3 sm:justify-end">
         <span
           v-if="timeRangeLabel"
-          class="text-xs tabular-nums text-zinc-400 dark:text-zinc-500"
+          class="font-mono text-xs tabular-nums text-muted-foreground"
         >{{ timeRangeLabel }}</span>
 
         <template v-if="showsOutcome">
           <span
-            class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+            class="inline-flex items-center gap-1 border border-border px-2 py-0.5 font-mono text-xs font-medium"
             :class="[status.bgClass, decisionColorClass]"
           >
             {{ getDecisionLabel(mainVote?.decision) }}
@@ -77,17 +77,17 @@
     </component>
 
     <!-- Expanded detail: the long text and the full vote breakdown -->
-    <div v-if="isExpandable" class="space-y-3 px-1 pb-4 pl-[2.75rem] sm:px-2 sm:pl-[3rem]">
+    <div v-if="isExpandable" class="my-2 space-y-3 border-l-2 border-border/80 bg-secondary/30 px-3 py-3 pl-[2.75rem] sm:pl-[3rem]">
       <p
         v-if="item.description"
-        class="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300"
+        class="text-sm leading-relaxed text-foreground/90"
       >
         {{ item.description }}
       </p>
 
       <dl v-if="showsOutcome" class="flex flex-wrap gap-x-6 gap-y-1.5 text-xs">
         <div v-if="requiresStudentPerspective" class="flex items-center gap-1.5">
-          <dt class="text-zinc-500 dark:text-zinc-400">
+          <dt class="text-muted-foreground">
             {{ $t('Studentų balsas') }}
           </dt>
           <dd :class="getVoteTextColorClass(mainVote?.student_vote)">
@@ -95,7 +95,7 @@
           </dd>
         </div>
         <div class="flex items-center gap-1.5">
-          <dt class="text-zinc-500 dark:text-zinc-400">
+          <dt class="text-muted-foreground">
             {{ $t('Sprendimas') }}
           </dt>
           <dd :class="decisionColorClass">
@@ -103,7 +103,7 @@
           </dd>
         </div>
         <div v-if="requiresStudentPerspective" class="flex items-center gap-1.5">
-          <dt class="text-zinc-500 dark:text-zinc-400">
+          <dt class="text-muted-foreground">
             {{ $t('Nauda studentams') }}
           </dt>
           <dd :class="getVoteTextColorClass(mainVote?.student_benefit)">

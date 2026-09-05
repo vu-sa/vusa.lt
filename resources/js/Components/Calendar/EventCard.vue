@@ -11,6 +11,7 @@
           :class="{ 'opacity-0': imageLoadError }"
           :src="(event as any).main_image_url"
           :alt="getEventTitle(event)"
+          :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
           @error="imageLoadError = true"
           @load="imageLoadError = false"
         >
