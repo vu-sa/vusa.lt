@@ -39,6 +39,7 @@
         v-if="variant !== 'panel'"
         :model-value="presentation"
         :plain-padding="plainPadding"
+        :disabled="presentationDisabled"
         @update:model-value="setPresentation"
         @update:plain-padding="setPlainPadding"
       />
@@ -75,6 +76,7 @@ const props = defineProps<{
   canMoveUp: boolean;
   canMoveDown: boolean;
   canDelete: boolean;
+  presentationDisabled?: boolean;
 }>();
 
 const emit = defineEmits<{

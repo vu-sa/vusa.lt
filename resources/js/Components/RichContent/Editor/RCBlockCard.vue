@@ -101,6 +101,7 @@
         <ContentEditorFactory
           :content
           :preview-mode="previewMode"
+          :presentation-disabled="presentationDisabled"
           :tenant-id="tenantId"
           @update:content="$emit('update:content', $event)"
         />
@@ -156,6 +157,7 @@ const props = defineProps<{
   content: ContentPart;
   collapsed: boolean;
   previewMode: boolean;
+  presentationDisabled?: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
   canDelete: boolean;

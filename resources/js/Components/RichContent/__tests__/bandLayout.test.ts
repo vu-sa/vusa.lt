@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { resolveBand } from '../bandLayout';
+import { resolveBand, resolveBands } from '../bandLayout';
 
 describe('rich-content band layout', () => {
   it('keeps automatic sections on the default band padding', () => {
@@ -27,5 +27,18 @@ describe('rich-content band layout', () => {
     expect(band.isBand).toBe(false);
     if (expectedClass) expect(band.classes).toContain(expectedClass);
     else expect(band.classes).toEqual([]);
+  });
+
+  it('keeps a self-spaced band outside a preceding section', () => {
+    const section = { type: 'section', options: { wraps: 'following' } };
+    const grid = { type: 'content-grid', options: { presentation: 'plain', plainPadding: 'none' } };
+    const cardStack = { type: 'card-stack', options: { presentation: 'plain' } };
+
+    const bands = resolveBands([section, grid, cardStack]);
+
+    expect(bands.get(grid)?.isSectionChild).toBe(true);
+    expect(bands.get(grid)?.classes).toEqual([]);
+    expect(bands.get(cardStack)?.isSectionChild).toBe(false);
+    expect(bands.get(cardStack)?.classes).toContain('py-16');
   });
 });

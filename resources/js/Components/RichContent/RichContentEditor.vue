@@ -84,6 +84,7 @@
               :content
               :collapsed="isBlockCollapsed(content)"
               :preview-mode="isBlockInPreviewMode(content)"
+              :presentation-disabled="bandMap.get(content)?.isSectionChild"
               :can-move-up="index > 0"
               :can-move-down="(contents?.length ?? 0) > index + 1"
               :can-delete="(contents?.length ?? 0) > 1"
@@ -150,6 +151,7 @@ import RCFullscreenEditor from './Editor/Fullscreen/RCFullscreenEditor.vue';
 import RCInsertAffordance from './Editor/RCInsertAffordance.vue';
 import { getQuickAddTypes } from './Editor/quickAddTypes';
 import { createContentItem, type ContentPart } from './Types';
+import { resolveBands, type BandResolution } from './bandLayout';
 
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
@@ -167,6 +169,8 @@ const props = defineProps<{
 }>();
 
 const contents = defineModel<ContentPart[]>('contents');
+
+const bandMap = computed<Map<ContentPart, BandResolution>>(() => resolveBands(contents.value ?? []));
 
 defineEmits<(e: 'save') => void>();
 

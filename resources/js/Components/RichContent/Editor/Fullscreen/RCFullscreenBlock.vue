@@ -16,7 +16,7 @@
 
     <HeroBlockToolbar v-if="!preview && content.type === 'hero'"
       :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
       @update:content="$emit('update:content', $event)"
       @move-up="$emit('move-up')"
       @move-down="$emit('move-down')"
@@ -48,6 +48,7 @@
         v-if="isBand"
         :model-value="presentation"
         :plain-padding
+        :disabled="band?.isSectionChild"
         @update:model-value="setPresentation"
         @update:plain-padding="setPlainPadding"
       />

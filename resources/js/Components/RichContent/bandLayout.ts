@@ -29,15 +29,23 @@ export interface BandResolution {
   bleeds: boolean;
   /** Ready-to-bind class list for the band's root element. Includes `.rc-band`. */
   classes: string[];
+  /** True when a preceding section owns this block's presentation and vertical rhythm. */
+  isSectionChild: boolean;
 }
 
-const FLOW: BandResolution = { isBand: false, tint: null, bleeds: false, classes: [] };
+const FLOW: BandResolution = { isBand: false, tint: null, bleeds: false, classes: [], isSectionChild: false };
 
 /** Whether this type can ever render as a band, independent of any specific block's options. */
 export function resolveBandRole(type: string, options?: Record<string, unknown> | null): 'flow' | 'band' {
   const role = getContentType(type).bandRole;
   if (!role) return 'flow';
   return typeof role === 'function' ? role(options) : role;
+}
+
+/** A full band with its own vertical rhythm cannot live inside a manual section's band. */
+export function endsSectionWrapping(element: LayoutableElement): boolean {
+  return getContentType(element.type).selfSpaced === true
+    && resolveBandRole(element.type, element.options) === 'band';
 }
 
 /**
@@ -96,9 +104,8 @@ export function withCompactPadding(band: BandResolution): BandResolution {
  * - `presentation: 'plain'` forces flow and does not consume a slot either — a block
  *   opting out must not shift its neighbours' tints.
  * - `cta-band` consumes a slot like every other band, but always uses its fixed emphasis tint.
- * - Every part following a `section` marker (until the next one, or `wraps: 'none'`
- *   ends the wrapping early) is forced flow — a band nested inside a band's own section
- *   canvas is incoherent.
+ * - Every part following a `section` marker is forced flow until the next marker,
+ *   `wraps: 'none'`, or a self-spaced band that renders an independent section.
  */
 export function resolveBands(parts: readonly LayoutableElement[]): Map<LayoutableElement, BandResolution> {
   const map = new Map<LayoutableElement, BandResolution>();
@@ -114,10 +121,12 @@ export function resolveBands(parts: readonly LayoutableElement[]): Map<Layoutabl
       continue;
     }
 
-    if (insideSection) {
-      map.set(part, FLOW);
+    if (insideSection && !endsSectionWrapping(part)) {
+      map.set(part, { ...FLOW, isSectionChild: true });
       continue;
     }
+
+    insideSection = false;
 
     const resolved = resolveBand(part, slot);
     map.set(part, resolved);

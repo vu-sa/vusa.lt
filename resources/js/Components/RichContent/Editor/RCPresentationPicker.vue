@@ -4,7 +4,8 @@
       <FieldLabel>{{ $t('rich-content.section_presentation') }}</FieldLabel>
       <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <button v-for="option in presentationOptions" :key="option.value" type="button"
-          class="rounded-lg border-2 p-2.5 text-left transition-colors"
+          :disabled="isDisabled"
+          class="rounded-lg border-2 p-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           :class="(modelValue ?? 'auto') === option.value
             ? 'border-vusa-red bg-red-50/50 dark:bg-red-950/20'
             : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600'"
@@ -19,7 +20,8 @@
       <FieldLabel>{{ $t('rich-content.plain_padding') }}</FieldLabel>
       <div class="grid grid-cols-3 gap-2">
         <button v-for="option in paddingOptions" :key="option.value" type="button"
-          class="rounded-lg border px-2 py-1.5 text-center text-xs transition-colors"
+          :disabled="isDisabled"
+          class="rounded-lg border px-2 py-1.5 text-center text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           :class="(plainPadding ?? 'default') === option.value
             ? 'border-vusa-red bg-red-50/50 font-medium dark:bg-red-950/20'
             : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600'"
@@ -28,6 +30,10 @@
         </button>
       </div>
     </Field>
+
+    <p v-if="isDisabled" class="text-xs leading-5 text-muted-foreground">
+      {{ $t('rich-content.section_padding_inherited') }}
+    </p>
   </div>
 </template>
 
@@ -39,21 +45,29 @@
  * band-capable editor (RCSectionOptionsFields, HeroForm, SpotifyEmbedEditor) so the choices
  * read identically everywhere they appear.
  */
+import { computed, inject } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { Field, FieldLabel } from '@/Components/ui/field';
 import type { BlockPresentation } from '../bandLayout';
 import type { PlainPadding } from '../sectionClasses';
 
-defineProps<{
+import { SECTION_PRESENTATION_DISABLED } from './sectionPresentation';
+
+import { Field, FieldLabel } from '@/Components/ui/field';
+
+const props = defineProps<{
   modelValue?: BlockPresentation;
   plainPadding?: PlainPadding;
+  disabled?: boolean;
 }>();
 
 defineEmits<{
   (e: 'update:modelValue', value: BlockPresentation): void;
   (e: 'update:plainPadding', value: PlainPadding): void;
 }>();
+
+const inheritedDisabled = inject(SECTION_PRESENTATION_DISABLED, undefined);
+const isDisabled = computed(() => props.disabled || inheritedDisabled?.value || false);
 
 const presentationOptions: { value: BlockPresentation; label: string; help: string }[] = [
   { value: 'auto', label: $t('rich-content.presentation_auto'), help: $t('rich-content.presentation_auto_help') },

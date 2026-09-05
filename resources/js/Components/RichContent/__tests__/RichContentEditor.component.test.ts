@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount, type DOMWrapper } from '@vue/test-utils';
 
 import RichContentEditor from '../RichContentEditor.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 /**
@@ -11,9 +12,12 @@ import { commonStubs } from '@/tests/stubs';
  */
 const stubs = {
   ...commonStubs,
-  ContentEditorFactory: { template: '<div class="content-editor-factory-stub" />' },
-  TextBoxSubmissionsDialog: true,
-  RCFullscreenEditor: {
+  'ContentEditorFactory': {
+    props: ['presentationDisabled'],
+    template: '<div class="content-editor-factory-stub" :data-presentation-disabled="presentationDisabled" />',
+  },
+  'TextBoxSubmissionsDialog': true,
+  'RCFullscreenEditor': {
     props: ['contents', 'tenantId', 'history'],
     emits: ['update:contents', 'close'],
     template: '<div class="fullscreen-editor-stub" />',
@@ -84,6 +88,19 @@ describe('RichContentEditor', () => {
     wrapper.findAll('[data-rc-block-body]').forEach(body => expect(isHidden(body)).toBe(false));
   });
 
+  it('keeps independent bands after a section presentation-editable in forms mode', async () => {
+    const wrapper = await mountEditor([
+      { id: 1, type: 'section', json_content: {}, options: { wraps: 'following' } },
+      { id: 2, type: 'content-grid', json_content: {}, options: {} },
+      { id: 3, type: 'card-stack', json_content: {}, options: {} },
+    ]);
+    const factories = wrapper.findAll('.content-editor-factory-stub');
+
+    expect(factories[0]!.attributes('data-presentation-disabled')).toBeUndefined();
+    expect(factories[1]!.attributes('data-presentation-disabled')).toBe('true');
+    expect(factories[2]!.attributes('data-presentation-disabled')).toBeUndefined();
+  });
+
   it('collapse all / expand all toggle every block', async () => {
     const wrapper = await mountEditor(makeParts(3));
 
@@ -122,7 +139,7 @@ describe('RichContentEditor', () => {
     await wrapper.findAll('button').find(b => b.text().includes('rich-content.fullscreen_editor'))!.trigger('click');
     expect(wrapper.find('.fullscreen-editor-stub').exists()).toBe(true);
 
-    await wrapper.getComponent(stubs.RCFullscreenEditor as any).vm.$emit('close');
+    await wrapper.getComponent(stubs['RCFullscreenEditor']).vm.$emit('close');
     await wrapper.vm.$nextTick();
 
     expect(wrapper.find('.fullscreen-editor-stub').exists()).toBe(false);

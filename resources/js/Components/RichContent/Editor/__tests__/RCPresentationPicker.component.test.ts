@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { ref } from 'vue';
 
 import RCPresentationPicker from '../RCPresentationPicker.vue';
+import { SECTION_PRESENTATION_DISABLED } from '../sectionPresentation';
 
 describe('RCPresentationPicker', () => {
   it('offers only automatic and plain presentations', () => {
@@ -38,5 +40,19 @@ describe('RCPresentationPicker', () => {
     const defaultPadding = wrapper.findAll('button').find(button => button.text().includes('rich-content.plain_padding_default'));
 
     expect(defaultPadding!.classes()).toContain('border-vusa-red');
+  });
+
+  it('disables presentation choices when a containing section owns the spacing', async () => {
+    const wrapper = mount(RCPresentationPicker, {
+      props: { modelValue: 'plain' },
+      global: { provide: { [SECTION_PRESENTATION_DISABLED]: ref(true) } },
+    });
+    const buttons = wrapper.findAll('button');
+
+    await buttons[0]!.trigger('click');
+
+    expect(buttons.every(button => button.attributes('disabled') !== undefined)).toBe(true);
+    expect(wrapper.text()).toContain('rich-content.section_padding_inherited');
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
   });
 });

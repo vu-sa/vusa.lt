@@ -228,6 +228,7 @@ return [
     'plain_padding_none' => 'None',
     'plain_padding_compact' => 'Compact',
     'plain_padding_default' => 'Default',
+    'section_padding_inherited' => 'This block inherits its vertical spacing from the section containing it.',
     // Hero variants
     'hero_variant' => 'Layout',
     'hero_variant_split' => 'Split (two columns)',

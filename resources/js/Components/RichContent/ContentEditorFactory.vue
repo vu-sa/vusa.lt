@@ -43,11 +43,11 @@
  *
  * Supports preview mode to show the display component instead of editor.
  */
-import { computed } from 'vue';
+import { computed, provide, toRef } from 'vue';
 
 import { getContentType } from './Types';
-
 import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
+import { SECTION_PRESENTATION_DISABLED } from './Editor/sectionPresentation';
 import { useLiveBlockPreview } from './composables/useLiveBlockPreview';
 
 import { Skeleton } from '@/Components/ui/skeleton';
@@ -68,6 +68,8 @@ const props = defineProps<{
    * Whether to show preview mode (display component) instead of editor
    */
   previewMode?: boolean;
+  /** A wrapping section owns presentation and vertical spacing for this block. */
+  presentationDisabled?: boolean;
   /** Tenant the page/news article being edited belongs to — needed to resolve server-side (link-list, event-list, …) previews. */
   tenantId?: number | null;
 }>();
@@ -78,6 +80,8 @@ const props = defineProps<{
  * properly propagate up to the parent RichContentEditor
  */
 const content = defineModel<ContentData>('content', { required: true });
+
+provide(SECTION_PRESENTATION_DISABLED, toRef(props, 'presentationDisabled'));
 
 /**
  * Writable computed for json_content - enables proper two-way binding

@@ -47,9 +47,10 @@ import { computed } from 'vue';
 
 import { getContentType } from './Types';
 import { blockLayoutClasses } from './blockLayout';
-import { resolveBandRole, resolveBands, type BandResolution } from './bandLayout';
+import { endsSectionWrapping, resolveBandRole, resolveBands, type BandResolution } from './bandLayout';
 import RichContentBlock from './RichContentBlock.vue';
 import SectionDisplay from './RCSection/SectionDisplay.vue';
+
 import type { NewsItem, Section } from '@/Types/contentParts';
 
 const props = defineProps<{
@@ -92,13 +93,14 @@ function bandFor(element: models.ContentPart): BandResolution | undefined {
   return bandMap.value.get(element);
 }
 
-type ContentGroup =
-  | { kind: 'block'; element: models.ContentPart }
-  | { kind: 'section'; element: models.ContentPart; children: models.ContentPart[] };
+type ContentGroup
+  = | { kind: 'block'; element: models.ContentPart }
+    | { kind: 'section'; element: models.ContentPart; children: models.ContentPart[] };
 
 /**
  * Splits `content` into top-level render groups: a plain block, or a `section` marker
- * plus every part that follows it up to the next `section` marker (or the end).
+ * plus every part that follows it up to the next `section` marker, an independent
+ * self-spaced band, or the end.
  * `options.wraps: 'none'` makes a section render header-only — it still opens a group
  * (so it gets its own chrome/anchor), but doesn't absorb anything after it; the very
  * next element (section or not) starts fresh, exactly as if this section didn't exist
@@ -118,9 +120,14 @@ const groupedContent = computed<ContentGroup[]>(() => {
       continue;
     }
 
+    if (active && endsSectionWrapping(element)) {
+      active = null;
+    }
+
     if (active) {
       active.children.push(element);
-    } else {
+    }
+    else {
       groups.push({ kind: 'block', element });
     }
   }

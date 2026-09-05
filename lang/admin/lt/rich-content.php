@@ -228,6 +228,7 @@ return [
     'plain_padding_none' => 'Be tarpų',
     'plain_padding_compact' => 'Kompaktiški',
     'plain_padding_default' => 'Numatytieji',
+    'section_padding_inherited' => 'Šis blokas paveldi vertikalius tarpus iš jį apimančios sekcijos.',
     // Hero variants
     'hero_variant' => 'Antraštės tipas',
     'hero_variant_split' => 'Dviejų stulpelių',

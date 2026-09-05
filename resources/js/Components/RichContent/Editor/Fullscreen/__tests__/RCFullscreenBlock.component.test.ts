@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import RCFullscreenBlock from '../RCFullscreenBlock.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../useActiveHotspot';
+
 import type { ContentPart } from '@/Components/RichContent/Types';
 
 const stubs = {
@@ -11,9 +12,12 @@ const stubs = {
     template: '<div class="block-preview" :data-preview="preview" />',
   },
   HeroBlockToolbar: { template: '<div class="hero-toolbar" />' },
-  RCBlockToolbarShell: { template: '<div class="block-toolbar" />' },
+  RCBlockToolbarShell: { template: '<div class="block-toolbar"><slot /></div>' },
   RCWidthPicker: { template: '<div />' },
-  RCPresentationPicker: { template: '<div />' },
+  RCPresentationPicker: {
+    props: ['disabled'],
+    template: '<div class="presentation-picker" :data-disabled="disabled" />',
+  },
 };
 
 function mountBlock(preview: boolean) {
@@ -37,5 +41,21 @@ describe('RCFullscreenBlock', () => {
     expect(wrapper.get('.block-preview').attributes('data-preview')).toBe('true');
     expect(wrapper.find('.hero-toolbar').exists()).toBe(false);
     expect(wrapper.find('.block-toolbar').exists()).toBe(false);
+  });
+
+  it('disables a wrapped grid presentation controls', () => {
+    const wrapper = mount(RCFullscreenBlock, {
+      props: {
+        content: { type: 'content-grid', json_content: {}, options: {} } as ContentPart,
+        band: { isBand: false, tint: null, bleeds: false, classes: [], isSectionChild: true },
+        blockKey: 'grid-1',
+        canMoveUp: true,
+        canMoveDown: true,
+        canDelete: true,
+      },
+      global: { stubs, provide: { [ACTIVE_HOTSPOT_KEY]: useActiveHotspot() } },
+    });
+
+    expect(wrapper.get('.presentation-picker').attributes('data-disabled')).toBe('true');
   });
 });
