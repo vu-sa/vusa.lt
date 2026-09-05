@@ -1,6 +1,10 @@
 <template>
   <figure
-    :class="cn('relative w-full overflow-hidden bg-secondary', ratioClass, props.class)"
+    :class="cn(
+      'relative w-full overflow-hidden bg-secondary',
+      !src && 'border border-border',
+      ratioClass, props.class,
+    )"
     data-slot="media-frame"
   >
     <img
@@ -14,6 +18,14 @@
         hoverZoom && 'transition-transform duration-500 group-hover:scale-[1.03]',
       )"
     >
+    <!-- No photo: an empty frame reads as a broken layout in a grid of otherwise-photographed
+         cards, so callers that want the slot visibly filled pass #fallback. Neutral, not
+         branded — a hairline border (the house "no photo" tell, see the figure's own class
+         above) around the same muted bg-secondary ground everything else on the surface
+         uses, not a tinted highlight. -->
+    <div v-else-if="$slots.fallback" class="absolute inset-0 flex items-center justify-center">
+      <slot name="fallback" />
+    </div>
     <!-- Left-weighted, so copy laid over the image stays legible whatever the photo is doing. -->
     <div v-if="scrim" class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
     <div v-if="$slots.default" class="absolute inset-0">

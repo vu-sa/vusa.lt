@@ -7,6 +7,7 @@ use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tiptap\Editor;
 
 pest()->use(RefreshDatabase::class);
@@ -74,6 +75,9 @@ describe('feed rendering', function (): void {
     });
 
     it('emits enclosure, media and guid for items with a cover image', function (): void {
+        Storage::fake('public');
+        Storage::disk('public')->put('images/placeholders/foto1.jpg', 'fake-image-content');
+
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,
@@ -97,6 +101,9 @@ describe('feed rendering', function (): void {
     });
 
     it('uses the cover image as an absolute URL', function (): void {
+        Storage::fake('public');
+        Storage::disk('public')->put('images/placeholders/foto2.jpg', 'fake-image-content');
+
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,

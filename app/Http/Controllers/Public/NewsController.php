@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Public;
 
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
+use App\Models\Category;
 use App\Models\News;
 use App\Models\Tag;
+use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
 use Inertia\Inertia;
 
@@ -106,7 +108,8 @@ class NewsController extends PublicController
                 ]),
                 'content' => $news->content,
                 'reading_time' => $news->readingTimeMinutes(),
-                // Use getImageUrl() for public display with fallback for missing images
+                // getImageUrl() checks the file actually exists and returns null otherwise —
+                // NewsArticleLayout skips the hero image entirely rather than show a placeholder.
                 'image' => $news->getImageUrl(),
                 'tenant' => $news->tenant->shortname,
             ],
@@ -144,9 +147,48 @@ class NewsController extends PublicController
             });
         }
 
-        $news = $query->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')
+        $news = $query->with('category:id,name')
+            ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'category_id', 'created_at')
             ->orderBy('publish_time', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->through(fn ($item) => [
+                'id' => $item->id,
+                'title' => $item->title,
+                'short' => $item->short,
+                'image' => $item->getImageUrl(),
+                'category' => $item->category?->name,
+                'permalink' => $item->permalink,
+                'publish_time' => $item->publish_time?->toISOString() ?? $item->created_at->toISOString(),
+                'lang' => $item->lang,
+            ]);
+
+        $allCategories = Category::query()
+            ->whereHas('news', function ($q): void {
+                $q->where('draft', false)
+                    ->where('lang', app()->getLocale());
+            })
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+            ])
+            ->toArray();
+
+        $allTenants = Tenant::query()
+            ->whereHas('news', function ($q): void {
+                $q->where('draft', false)
+                    ->where('lang', app()->getLocale());
+            })
+            ->select('id', 'shortname')
+            ->orderBy('shortname')
+            ->get()
+            ->map(fn ($t) => [
+                'id' => $t->id,
+                'shortname' => $t->shortname,
+            ])
+            ->toArray();
 
         // Get the current tag for display purposes
         $currentTag = null;
@@ -205,6 +247,8 @@ class NewsController extends PublicController
         return Inertia::render('Public/NewsArchive', [
             'news' => $news,
             'currentTag' => $currentTag,
+            'allCategories' => $allCategories,
+            'allTenants' => $allTenants,
         ])->withViewData(
             [
                 'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],

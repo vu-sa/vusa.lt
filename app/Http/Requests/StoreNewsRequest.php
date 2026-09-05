@@ -60,7 +60,7 @@ class StoreNewsRequest extends NewsRequest
             // The global single-column unique index on news.permalink has been removed;
             // uniqueness is now enforced per tenant by the composite index and this rule.
             'permalink' => ['required', UniqueAmongTrashed::of('news', 'permalink')->where('tenant_id', $this->getTargetTenantId())],
-            'image' => 'required',
+            'image' => 'nullable|string',
             'short' => 'required',
         ]);
     }

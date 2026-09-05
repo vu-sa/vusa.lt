@@ -10,6 +10,7 @@ use App\Services\HtmlSanitizerService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -74,8 +75,6 @@ use Spatie\Sitemap\Tags\Url;
 class News extends Model implements Feedable, Sitemapable
 {
     use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
-
-    public $fallback_image = '/images/icons/naujienu_foto.png';
 
     /** The conventional prose reading pace, used by {@see readingTimeMinutes()}. */
     private const WORDS_PER_MINUTE = 200;
@@ -306,6 +305,10 @@ class News extends Model implements Feedable, Sitemapable
     {
         $url = $this->getImageUrl();
 
+        if ($url === null) {
+            return '';
+        }
+
         return str_starts_with($url, 'http') ? $url : url($url);
     }
 
@@ -404,12 +407,14 @@ class News extends Model implements Feedable, Sitemapable
     }
 
     /**
-     * Get the public-facing image URL with fallback for missing images.
+     * Get the public-facing image URL, or null when there is none to show.
      *
-     * Use this method for public display (news pages, feeds, sitemaps, schema).
-     * For admin forms, use $news->image directly (raw value without fallback).
+     * Use this method for public display (news pages, feeds, sitemaps, schema) — callers
+     * decide how to represent "no image" (an empty card slot, an omitted schema/feed
+     * field, a site-default OG image), rather than this method inventing a placeholder.
+     * For admin forms, use $news->image directly (raw value, no existence check).
      */
-    public function getImageUrl(): string
+    public function getImageUrl(): ?string
     {
         $image = $this->image;
 
@@ -423,17 +428,18 @@ class News extends Model implements Feedable, Sitemapable
             return $image;
         }
 
-        // Return fallback image
-        return $this->fallback_image;
+        return null;
     }
 
     public function toNewsArticleSchema()
     {
         $schema = new NewsArticle;
 
-        // Fix image URL construction
-        $imageUrl = str_starts_with($this->image, 'http') ? $this->image : url($this->getImageUrl());
-        $schema = $schema->image($imageUrl);
+        $imageUrl = $this->getImageUrl();
+        if ($imageUrl !== null) {
+            $imageUrl = str_starts_with($imageUrl, 'http') ? $imageUrl : url($imageUrl);
+            $schema = $schema->image($imageUrl);
+        }
 
         $schema = $schema->datePublished($this->publish_time);
         $schema = $schema->dateModified($this->updated_at);
@@ -481,8 +487,16 @@ class News extends Model implements Feedable, Sitemapable
             ->get();
     }
 
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->with(['tags', 'category', 'content.parts', 'tenant', 'other_language_news']);
+    }
+
     public function toSearchableArray(): array
     {
+        $publishTimestamp = $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp;
+        $categoryName = $this->category?->getTranslation('name', $this->lang) ?? $this->category?->name;
+
         return [
             'id' => (string) $this->id,
             'title' => $this->title,
@@ -492,11 +506,17 @@ class News extends Model implements Feedable, Sitemapable
             // Falls back to created_at rather than now() so unscheduled drafts (no
             // publish_time yet) sort by when they were made, not by index time —
             // this collection now also carries records that are never published.
-            'publish_time' => $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp,
+            'publish_time' => $publishTimestamp,
             'lang' => $this->lang,
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
+            'tenant_shortname' => $this->tenant?->shortname,
+            'category_id' => $this->category_id,
+            'category_name' => $categoryName,
+            'year' => (int) ($this->publish_time ?? $this->created_at)->format('Y'),
+            'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
+            'important' => (bool) $this->important,
             'draft' => (bool) $this->draft,
             'created_at' => $this->created_at->timestamp,
         ];
@@ -538,8 +558,9 @@ class News extends Model implements Feedable, Sitemapable
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_NEVER);
 
         // Add image if available
-        if ($this->image) {
-            $imageUrl = str_starts_with($this->image, 'http') ? $this->image : url($this->getImageUrl());
+        $imageUrl = $this->getImageUrl();
+        if ($imageUrl !== null) {
+            $imageUrl = str_starts_with($imageUrl, 'http') ? $imageUrl : url($imageUrl);
             $sitemapUrl->addImage($imageUrl, $this->title);
         }
 

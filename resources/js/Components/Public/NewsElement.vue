@@ -71,13 +71,17 @@
             class="group flex gap-4 border-t border-border py-5 first:border-t-0 first:pt-0 sm:gap-5 lg:first:border-t lg:first:pt-5"
           >
             <MediaFrame
-              :src="getImageSrc(item.image)"
+              :src="item.image ?? undefined"
               :alt="item.title"
               ratio="16/10"
               :grayscale="false"
               hover-zoom
               class="w-32 shrink-0 sm:w-44"
-            />
+            >
+              <template #fallback>
+                <IFluentImage24Regular class="size-6 text-muted-foreground/50" />
+              </template>
+            </MediaFrame>
             <div class="flex flex-1 flex-col justify-center gap-1.5">
               <span v-if="item.category" class="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-brand">
                 {{ item.category }}
@@ -111,11 +115,7 @@ import { useNewsFetch } from '@/Services/ContentService';
 import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
 import { Skeleton } from '@/Components/ui/skeleton';
 import RCInlineText from '@/Components/RichContent/Editor/Fullscreen/RCInlineText.vue';
-
-// Fallback image for news without images
-const FALLBACK_IMAGE = '/images/icons/naujienu_foto.png';
-
-const getImageSrc = (image: string | null): string => image ?? FALLBACK_IMAGE;
+import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 // Props - element is from content parts. `resolved` is the server-resolved payload
 // (ContentPartResolver, via RichContentParser's `resolved` prop); `prefetchedNews` is

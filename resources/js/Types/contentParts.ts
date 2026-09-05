@@ -321,7 +321,7 @@ export interface NewsItem {
   short: string;
   publish_time: string;
   permalink: string | null;
-  image: string;
+  image: string | null;
   /** Localized category name, or null for the many articles filed under none. */
   category?: string | null;
 }

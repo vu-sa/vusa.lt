@@ -82,7 +82,7 @@
     </FormElement>
 
     <!-- Section 2: Image (Visual identity) -->
-    <FormElement :section-number="2" :is-complete="!!form.image" required>
+    <FormElement :section-number="2" :is-complete="!!form.image">
       <template #title>
         {{ $t('Nuotrauka') }}
       </template>
@@ -91,7 +91,7 @@
       </template>
 
       <div class="space-y-4">
-        <FormFieldWrapper id="image" :label="$t('Nuotrauka')" required :error="form.errors.image"
+        <FormFieldWrapper id="image" :label="$t('Nuotrauka')" :error="form.errors.image"
           :valid="form.valid('image')" :invalid="form.invalid('image')">
           <ImageUpload v-model:url="form.image" mode="immediate" folder="news" cropper :existing-url="news?.image"
             @update:url="form.validate('image')" />

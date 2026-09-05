@@ -140,7 +140,7 @@
                 ]"
                 :aria-label="$t('Rikiuoti')"
               >
-                <IFluentArrowSort24Regular class="size-3.5" />
+                <component :is="currentSortIcon" class="size-3.5" />
                 <span>{{ $t('Rikiuoti') }}</span>
                 <IFluentChevronDown16Regular
                   class="size-3.5 transition-transform duration-200"
@@ -169,7 +169,13 @@
                   ]"
                   @click="selectSort(option.value)"
                 >
-                  <span>{{ option.label }}</span>
+                  <div class="flex items-center gap-2">
+                    <component
+                      :is="getSortIcon(option.value)"
+                      class="size-4 text-muted-foreground"
+                    />
+                    <span>{{ option.label }}</span>
+                  </div>
                   <IFluentCheckmark16Filled
                     v-if="sortBy === option.value"
                     class="size-4 text-brand"
@@ -396,6 +402,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
+import { useStorage } from '@vueuse/core';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { useCalendarSearch, type CalendarSearchSort } from '@/Composables/useCalendarSearch';
@@ -416,6 +423,8 @@ import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
 import IFluentDelete20Regular from '~icons/fluent/delete-20-regular';
 import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
+import IFluentArrowSortDownLines24Regular from '~icons/fluent/arrow-sort-down-lines-24-regular';
+import IFluentArrowSortUpLines24Regular from '~icons/fluent/arrow-sort-up-lines-24-regular';
 import IFluentCheckmark16Filled from '~icons/fluent/checkmark-16-filled';
 
 // Breadcrumbs in band placement per redesign
@@ -446,7 +455,7 @@ const props = defineProps<{
 }>();
 
 const showModal = ref(false);
-const showFilterBar = ref(true);
+const showFilterBar = useStorage('vusa-calendar-show-filters', false);
 const isSortPopoverOpen = ref(false);
 
 const {
@@ -489,6 +498,20 @@ const selectSort = (newSortBy: CalendarSearchSort) => {
   setSortBy(newSortBy);
   isSortPopoverOpen.value = false;
 };
+
+const getSortIcon = (mode: CalendarSearchSort) => {
+  switch (mode) {
+    case 'date_desc':
+      return IFluentArrowSortDownLines24Regular;
+    case 'date_asc':
+      return IFluentArrowSortUpLines24Regular;
+    case 'relevance':
+    default:
+      return IFluentArrowSort24Regular;
+  }
+};
+
+const currentSortIcon = computed(() => getSortIcon(sortBy.value));
 
 // Category options combining Typesense facets with backend props if available
 const categoryOptions = computed<FilterOption[]>(() => {

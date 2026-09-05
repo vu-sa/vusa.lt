@@ -27,9 +27,10 @@
         }, news.lang)"
           class="flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
           <!-- Image thumbnail -->
-          <div class="overflow-hidden rounded-md aspect-4/3 shrink-0 bg-muted" style="width: 70px;">
-            <img :src="String(news.image)" :alt="news.title" loading="lazy"
+          <div class="overflow-hidden rounded-md aspect-4/3 shrink-0 bg-muted flex items-center justify-center" style="width: 70px;">
+            <img v-if="news.image" :src="news.image" :alt="news.title" loading="lazy"
               class="w-full h-full object-cover" width="70" height="53">
+            <ImageIcon v-else class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           </div>
           <!-- Content -->
           <div class="flex flex-col min-w-0 flex-1">
@@ -56,7 +57,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { format, parseISO } from 'date-fns';
-import { Newspaper as NewspaperIcon, ChevronRight as ChevronRightIcon } from 'lucide-vue-next';
+import { Newspaper as NewspaperIcon, ChevronRight as ChevronRightIcon, Image as ImageIcon } from 'lucide-vue-next';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { dashboardCardClasses } from '@/Composables/useDashboardCardStyles';

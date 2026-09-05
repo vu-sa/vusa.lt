@@ -25,7 +25,7 @@ class NewsCollection extends Collection
      *     short: string,
      *     publish_time: Carbon|null,
      *     permalink: string|null,
-     *     image: string,
+     *     image: string|null,
      *     category: string|null
      * }>
      */

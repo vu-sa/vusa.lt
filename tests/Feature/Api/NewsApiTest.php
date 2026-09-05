@@ -11,7 +11,7 @@ beforeEach(function (): void {
 });
 
 describe('news API image fallback', function (): void {
-    test('returns fallback image when news has no image', function (): void {
+    test('returns null image when news has no image', function (): void {
         News::query()->where('tenant_id', $this->tenant->id)->delete();
 
         // Create news without an image
@@ -26,7 +26,7 @@ describe('news API image fallback', function (): void {
         $response = $this->getJson("/api/v1/tenants/{$this->tenant->alias}/news?lang=lt");
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.0.image', '/images/icons/naujienu_foto.png');
+            ->assertJsonPath('data.0.image', null);
     });
 
     test('returns actual image when news has valid image', function (): void {

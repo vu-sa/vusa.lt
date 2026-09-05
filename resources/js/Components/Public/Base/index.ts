@@ -34,3 +34,4 @@ export { default as SectionBand } from './SectionBand.vue';
 export { default as ShareButton } from './ShareButton.vue';
 export { default as StatCell } from './StatCell.vue';
 export { default as TagChip } from './TagChip.vue';
+export { default as PublicFilterPopover, type FilterOption } from './PublicFilterPopover.vue';
