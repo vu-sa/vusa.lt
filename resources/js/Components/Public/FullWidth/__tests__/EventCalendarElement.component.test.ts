@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import EventCalendarElement from '../EventCalendarElement.vue';
+
 import { resolveBand } from '@/Components/RichContent/bandLayout';
 import type { Calendar } from '@/Types/contentParts';
 
@@ -35,6 +36,18 @@ const stubs = {
 };
 
 describe('EventCalendarElement', () => {
+  it('links the header action to all events while keeping calendar synchronization in the footer', () => {
+    const wrapper = mount(EventCalendarElement, {
+      props: { element: makeElement(''), resolved: { type: 'calendar', items: [] } },
+      global: { stubs },
+    });
+
+    const allEvents = wrapper.get('[data-calendar-all-events]');
+    expect(allEvents.text()).toContain('Visi renginiai');
+    expect(allEvents.attributes('href')).toContain('/calendar');
+    expect(wrapper.text()).toContain('Sinchronizuoti kalendorių');
+  });
+
   it('renders the authored title, falling back to the default heading when blank', () => {
     const withTitle = mount(EventCalendarElement, {
       props: { element: makeElement('Šio mėnesio renginiai'), resolved: { type: 'calendar', items: [] } },

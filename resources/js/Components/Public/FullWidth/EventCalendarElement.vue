@@ -27,14 +27,14 @@
             />
           </h2>
         </div>
-        <button
-          type="button"
+        <a
+          :href="route('calendar.list', { lang: locale })"
+          data-calendar-all-events
           class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-foreground transition-colors hover:text-brand"
-          @click="showModal = true"
         >
-          <IFluentArrowSync16Regular class="size-4" />
-          {{ $t('Sinchronizuoti kalendorių') }}
-        </button>
+          <IFluentCalendarLtr20Regular class="size-4" />
+          {{ $t('Visi renginiai') }}
+        </a>
       </div>
 
       <CalendarSyncModal v-model:show-modal="showModal" @close="showModal = false" />
@@ -75,7 +75,13 @@
             :href="eventHref(event)"
             class="group -mx-4 flex items-center gap-4 border-b border-border px-4 py-6 transition-colors hover:bg-background sm:gap-6"
           >
-            <div class="flex w-14 shrink-0 flex-col items-center justify-center border border-border bg-background py-2 text-foreground transition-colors group-hover:border-brand sm:w-16">
+            <div
+              :class="[
+                'flex w-14 shrink-0 flex-col items-center justify-center',
+                'border border-border bg-background py-2 text-foreground',
+                'transition-colors group-hover:border-brand sm:w-16',
+              ]"
+            >
               <span class="text-2xl font-bold leading-none tabular-nums">{{ dayOfMonth(event.date) }}</span>
               <span class="mt-1 text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground">
                 {{ formatMonthAbbr(new Date(event.date), locale) }}
