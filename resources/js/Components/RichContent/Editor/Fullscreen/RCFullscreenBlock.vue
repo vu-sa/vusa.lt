@@ -5,7 +5,7 @@
         :element="content"
         :resolved
         :band
-        :editable="true"
+        editable
         :preview
         :block-key
         :active-inline-field
@@ -53,6 +53,15 @@
     <CalendarBlockToolbar v-else-if="!preview && content.type === 'calendar'"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')"
+      @move-down="$emit('move-down')"
+      @delete="$emit('delete')"
+      @open-form="$emit('open-form')"
+    />
+    <HeroCarouselBlockToolbar v-else-if="!preview && content.type === 'hero-carousel'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete
       @update:content="$emit('update:content', $event)"
       @move-up="$emit('move-up')"
       @move-down="$emit('move-down')"
@@ -114,6 +123,7 @@ import SectionBlockToolbar from '../../RCSection/SectionBlockToolbar.vue';
 import LinkListBlockToolbar from '../../RCLinkList/LinkListBlockToolbar.vue';
 import EventListBlockToolbar from '../../RCEventList/EventListBlockToolbar.vue';
 import CalendarBlockToolbar from '../../RCCalendar/CalendarBlockToolbar.vue';
+import HeroCarouselBlockToolbar from '../../RCHeroCarousel/HeroCarouselBlockToolbar.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { resolveBandRole, type BandResolution, type BlockPresentation } from '../../bandLayout';
 import type { PlainPadding } from '../../sectionClasses';

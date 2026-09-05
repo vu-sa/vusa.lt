@@ -83,8 +83,8 @@ export interface ContentType {
    */
   bandRole?: 'flow' | 'band' | ((options?: Record<string, unknown> | null) => 'flow' | 'band');
 
-  defaultContent: () => any;
-  defaultOptions?: () => Record<string, any>;
+  defaultContent: () => unknown;
+  defaultOptions?: () => Record<string, unknown>;
 
   /** Async-loaded editor component (`ContentEditorFactory`'s edit mode). */
   editor: Component;
@@ -531,10 +531,10 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     description: 'Viso pločio karuselė su didelėmis nuotraukomis ir tekstu ant jų',
     category: 'section',
     defaultWidth: 'full',
-    // Full-bleed is the default, not a lock — but unlike RCSection-based types there
-    // is no section chrome; narrowing to content/wide insets the photo panel instead.
-    allowedWidths: ['content', 'wide', 'full'],
+    // Full-bleed only: the hero-carousel breaks page measure using .rc-viewport, so narrowing is disallowed.
+    allowedWidths: ['full'],
     selfSpaced: true,
+    inlineEditable: true,
     defaultContent: () => ([]),
     defaultOptions: () => ({
       autoplay: true,
@@ -543,6 +543,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       showIndicators: true,
       scrim: 'medium',
       height: 'md',
+      width: 'full',
     }),
     bandRole: 'band',
     editor: defineAsyncComponent(() => import('./HeroCarouselEditor.vue')),

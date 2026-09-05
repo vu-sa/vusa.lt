@@ -10,6 +10,7 @@ lastUpdated: true
 ## v1.44 — Renginio puslapio dizainas (2026-09-05) {#v1-44}
 
 - ✨ **Renginio puslapis atnaujintas pagal naują stilių** — viso pločio antraštė su datos plokštele, integruota navigacijos juosta, aiški informacijos šoninė juosta su registracijos mygtukais bei interaktyviu žemėlapiu, atnaujintas posėdžių darbotvarkių ir dokumentų pateikimas bei 3 stulpelių susijusių renginių tinklelis
+- ✨ **Hero karuselės palaiko tiesioginį redagavimą ir vienos skaidrės optimizavimą** — turinti tik vieną skaidrę karuselė automatiškai pateikiama kaip statiška viso pločio antraštė be karuselės valdiklių ar papildomos apkrovos, o viso ekrano redaktoriuje tekstą, mygtukus ir fono nuotraukas galima redaguoti tiesiogiai puslapyje
 
 ## v1.43 — Turinio redagavimas (2026-09-04) {#v1-43}
 

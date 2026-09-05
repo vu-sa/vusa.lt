@@ -8,7 +8,7 @@
              (EditHomePage) carry "1"/"0" strings, which reka-ui's strict boolean
              model renders as always-unchecked. -->
         <div class="flex items-center gap-3">
-          <Switch :model-value="asBoolean(options.autoplay)" @update:model-value="options.autoplay = $event" />
+          <Switch :model-value="asBoolean(options.autoplay)" @update:model-value="patchOption('autoplay', $event)" />
           <span class="text-sm text-zinc-700 dark:text-zinc-300">
             {{ $t('rich-content.enable_autoplay') }}
           </span>
@@ -18,30 +18,31 @@
             {{ $t('rich-content.autoplay_delay') }}
           </FieldLabel>
           <Input
-            v-model.number="options.autoplayDelay"
+            :model-value="options.autoplayDelay ?? 8000"
             type="number"
             min="2000"
             max="30000"
             step="1000"
             class="w-24"
+            @update:model-value="patchOption('autoplayDelay', Number($event))"
           />
           <span class="text-sm text-zinc-700 dark:text-zinc-300">{{ $t('rich-content.milliseconds') }}</span>
         </div>
         <div class="flex items-center gap-3">
-          <Switch :model-value="asBoolean(options.showArrows)" @update:model-value="options.showArrows = $event" />
+          <Switch :model-value="asBoolean(options.showArrows ?? true)" @update:model-value="patchOption('showArrows', $event)" />
           <span class="text-sm text-zinc-700 dark:text-zinc-300">
             {{ $t('rich-content.show_arrows') }}
           </span>
         </div>
         <div class="flex items-center gap-3">
-          <Switch :model-value="asBoolean(options.showIndicators)" @update:model-value="options.showIndicators = $event" />
+          <Switch :model-value="asBoolean(options.showIndicators ?? true)" @update:model-value="patchOption('showIndicators', $event)" />
           <span class="text-sm text-zinc-700 dark:text-zinc-300">
             {{ $t('rich-content.show_indicators') }}
           </span>
         </div>
         <Field>
           <FieldLabel>{{ $t('rich-content.scrim_strength') }}</FieldLabel>
-          <Select :model-value="options.scrim ?? 'medium'" @update:model-value="options.scrim = $event">
+          <Select :model-value="options.scrim ?? 'medium'" @update:model-value="patchOption('scrim', $event as NonNullable<HeroCarousel['options']>['scrim'])">
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -60,7 +61,7 @@
         </Field>
         <Field>
           <FieldLabel>{{ $t('rich-content.carousel_height') }}</FieldLabel>
-          <Select :model-value="options.height ?? 'md'" @update:model-value="options.height = $event">
+          <Select :model-value="options.height ?? 'md'" @update:model-value="patchOption('height', $event as NonNullable<HeroCarousel['options']>['height'])">
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -141,6 +142,12 @@
               </TiptapImageButton>
               <div v-else class="flex items-center gap-3">
                 <img :src="item.imageSrc" :alt="item.imageAlt" class="aspect-video h-20 rounded-lg object-cover">
+                <TiptapImageButton
+                  size="sm"
+                  @submit:object="(img) => update({ ...item, imageSrc: img.src, imageAlt: img.alt })"
+                >
+                  {{ $t('rich-content.select_image') }}
+                </TiptapImageButton>
                 <Button variant="outline" size="sm" @click="activeFocalSlide = item">
                   {{ $t('rich-content.set_focal_point') }}
                 </Button>
@@ -283,6 +290,18 @@ const options = defineModel<HeroCarousel['options']>('options', {
 });
 const json_content = defineModel<HeroCarousel['json_content']>({ default: () => [] });
 
+function patchOption<K extends keyof NonNullable<HeroCarousel['options']>>(
+  key: K,
+  value: NonNullable<HeroCarousel['options']>[K],
+): void {
+  const current = options.value ?? ({} as NonNullable<HeroCarousel['options']>);
+  (current as Record<string, unknown>)[key as string] = value;
+  options.value = {
+    ...current,
+    [key]: value,
+  };
+}
+
 // The slide whose image the focal-point dialog is editing, identified by object
 // identity — the dialog must write back through the same `update()` contract the
 // list template uses, never by mutating the model array in place.
@@ -298,7 +317,11 @@ function updateFocalPoint(val: string) {
   if (!activeFocalSlide.value) return;
   const index = json_content.value.indexOf(activeFocalSlide.value);
   if (index === -1) return;
-  json_content.value[index] = { ...activeFocalSlide.value, objectPosition: val };
+  const updatedSlide = { ...activeFocalSlide.value, objectPosition: val };
+  const newContent = [...json_content.value];
+  newContent[index] = updatedSlide;
+  json_content.value = newContent;
+  activeFocalSlide.value = updatedSlide;
 }
 
 function createSlide(): HeroCarousel['json_content'][number] {

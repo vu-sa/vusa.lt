@@ -295,9 +295,11 @@ return [
     // Carousel
     'carousel_options' => 'Carousel options',
     'slides' => 'Slides',
+    'slide' => 'Slide',
     'no_slides' => 'No slides added yet',
     'add_first_slide' => 'Add first slide',
     'add_slide' => 'Add slide',
+    'remove_slide' => 'Remove slide',
     'badge' => 'Badge',
     'enter_badge' => 'Enter badge text...',
     'slide_image' => 'Slide image',

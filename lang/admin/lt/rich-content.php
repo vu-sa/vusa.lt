@@ -295,9 +295,11 @@ return [
     // Carousel
     'carousel_options' => 'Karuselės nustatymai',
     'slides' => 'Skaidrės',
+    'slide' => 'Skaidrė',
     'no_slides' => 'Nėra pridėta skaidrių',
     'add_first_slide' => 'Pridėti pirmą skaidrę',
     'add_slide' => 'Pridėti skaidrę',
+    'remove_slide' => 'Pašalinti skaidrę',
     'badge' => 'Ženkliukas',
     'enter_badge' => 'Įveskite ženkliuko tekstą...',
     'slide_image' => 'Skaidrės paveikslėlis',

@@ -10,6 +10,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 ## v1.44 — Calendar event page design (2026-09-05) {#v1-44}
 
 - ✨ **Calendar event page updated to editorial style** — full-bleed hero with tabular date plate, integrated breadcrumbs, clear facts sidebar with registration actions and interactive map, editorial meeting agenda and documents, and a 3-column related events card grid
+- ✨ **Hero carousels support inline editing and single-slide optimization** — a carousel with a single slide renders directly as a static full-bleed hero without carousel controls or layout overhead, and the full-screen editor supports inline editing for copy, call-to-action buttons, and slide photos
 
 ## v1.43 — Content editing (2026-09-04) {#v1-43}
 

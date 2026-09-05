@@ -70,6 +70,17 @@ type Story = StoryObj;
 /** Full-bleed band, grayscale photo on the fixed-dark ink ground, copy hung off a brand rule. */
 export const HeroCarousel: Story = { render: () => renderBlock('hero-carousel') };
 
+/** Full-bleed band with a single slide: rendered as a static hero with no carousel chrome. */
+export const HeroCarouselSingleSlide: Story = {
+  render: () => renderBlock('hero-carousel', (() => {
+    const sample = contentSamples['hero-carousel']!();
+    return {
+      ...sample,
+      json_content: [sample.json_content[0]!],
+    };
+  })()),
+};
+
 /** The `split` variant — the two-column text + image hero. */
 export const Hero: Story = { render: () => renderBlock('hero') };
 

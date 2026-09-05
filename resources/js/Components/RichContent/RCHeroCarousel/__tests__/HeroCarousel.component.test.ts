@@ -6,6 +6,8 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 import HeroCarouselDisplay from '../HeroCarouselDisplay.vue';
 import HeroCarouselEditor from '../../Types/HeroCarouselEditor.vue';
 import { createContentItem } from '../../Types';
+import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
+
 import type { HeroCarousel } from '@/Types/contentParts';
 
 /**
@@ -63,7 +65,15 @@ describe('HeroCarouselDisplay', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
     expect(wrapper.findAll('h2')).toHaveLength(2);
-    expect(wrapper.find('h2').text()).toBe('Pirmasis');
+    const h2 = wrapper.find('h2');
+    expect(h2.text()).toBe('Pirmasis');
+    expect(h2.classes()).toEqual(expect.arrayContaining([
+      'u-display',
+      'text-white',
+      'text-[2.25rem]',
+      'sm:text-6xl',
+      'lg:text-7xl',
+    ]));
     expect(wrapper.text()).toContain('VU SA kviečia');
     expect(wrapper.text()).toContain('Paantraštė');
     expect(wrapper.text()).toContain('Aprašymas');
@@ -154,14 +164,60 @@ describe('HeroCarouselDisplay', () => {
     expect(large.find('.carousel-item-stub div').classes()).toContain('min-h-[40rem]');
   });
 
-  it('hides arrows and dots when there is only one slide', () => {
+  it('renders a static hero without carousel stub when there is only one slide', () => {
     const element = makeElement();
     element.json_content = [element.json_content[0]!];
     const wrapper = mount(HeroCarouselDisplay, { props: { element }, global: { stubs } });
 
+    expect(wrapper.find('.carousel-stub').exists()).toBe(false);
+    expect(wrapper.find('h2').text()).toBe('Pirmasis');
     expect(wrapper.text()).not.toContain('accessibility.carousel_previous_slide');
     expect(wrapper.text()).not.toContain('accessibility.carousel_next_slide');
     expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(0);
+  });
+
+  it('renders carousel stub and controls when there are multiple slides', () => {
+    const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
+
+    expect(wrapper.find('.carousel-stub').exists()).toBe(true);
+    expect(wrapper.findAll('.carousel-item-stub')).toHaveLength(2);
+    expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(2);
+  });
+
+  it('renders an empty state with add slide button when editable and 0 slides', async () => {
+    const element = makeElement();
+    element.json_content = [];
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: { element, editable: true },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('rich-content.no_slides');
+    const addBtn = wrapper.findAll('button').find(b => b.text().includes('rich-content.add_slide'));
+    expect(addBtn).toBeDefined();
+
+    await addBtn!.trigger('click');
+    const emitted = wrapper.emitted('update:element')?.at(-1)?.[0] as HeroCarousel;
+    expect(emitted.json_content).toHaveLength(1);
+  });
+
+  it('allows removing a slide when editable and more than 1 slide', async () => {
+    const hotspots = useActiveHotspot();
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: { element: makeElement(), editable: true },
+      global: {
+        stubs: { ...stubs, TiptapEditor: true },
+        provide: { [ACTIVE_HOTSPOT_KEY]: hotspots },
+      },
+    });
+
+    const removeBtn = wrapper.find('button[aria-label="rich-content.remove_slide"]');
+    expect(removeBtn.exists()).toBe(true);
+
+    await removeBtn.trigger('click');
+    const emitted = wrapper.emitted('update:element')?.at(-1)?.[0] as HeroCarousel;
+    expect(emitted.json_content).toHaveLength(1);
+    expect(emitted.json_content[0]!.title).toBe('Antrasis');
   });
 
   it('reads FormData-mangled "0" strings as off (legacy rows saved via forceFormData)', () => {
@@ -196,6 +252,39 @@ describe('HeroCarouselDisplay', () => {
   it('anchors the section for ToC scroll targets', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement(), anchorId: 42 }, global: { stubs } });
     expect(wrapper.find('#rc-42').exists()).toBe(true);
+  });
+
+  it('honors showArrows: false and showIndicators: false even when editable is true', () => {
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: {
+        element: makeElement([], { showArrows: false, showIndicators: false }),
+        editable: true,
+      },
+      global: {
+        stubs: { ...stubs, TiptapEditor: true },
+        provide: { [ACTIVE_HOTSPOT_KEY]: useActiveHotspot() },
+      },
+    });
+
+    expect(wrapper.text()).not.toContain('accessibility.carousel_previous_slide');
+    expect(wrapper.text()).not.toContain('accessibility.carousel_next_slide');
+    expect(wrapper.findAll('button[aria-label="accessibility.carousel_go_to_slide"]')).toHaveLength(0);
+  });
+
+  it('renders empty image placeholder button when editable and slide has no image', () => {
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: {
+        element: makeElement([{ imageSrc: '' }]),
+        editable: true,
+      },
+      global: {
+        stubs: { ...stubs, TiptapEditor: true },
+        provide: { [ACTIVE_HOTSPOT_KEY]: useActiveHotspot() },
+      },
+    });
+
+    expect(wrapper.text()).toContain('rich-content.slide_image');
+    expect(wrapper.text()).toContain('rich-content.select_image');
   });
 });
 
@@ -254,5 +343,38 @@ describe('HeroCarouselEditor', () => {
     expect(emitted[0]!.buttons).toHaveLength(1);
     expect(emitted[0]!.buttons![0]).toMatchObject({ variant: 'default' });
     expect(emitted[0]!.buttons![0]).not.toHaveProperty('color');
+  });
+
+  it('emits update:options on switch toggle via patchOption', async () => {
+    const wrapper = mount(HeroCarouselEditor, {
+      props: {
+        modelValue: [],
+        options: { autoplay: true, autoplayDelay: 8000, showArrows: true, showIndicators: true, scrim: 'medium' },
+      },
+      global: { stubs: { TiptapEditor: true } },
+    });
+
+    const switches = wrapper.findAll('[role="switch"]');
+    // switches: [autoplay, showArrows, showIndicators]
+    await switches[1]!.trigger('click');
+    const emitted = wrapper.emitted('update:options');
+    expect(emitted).toBeTruthy();
+    const lastOptions = emitted!.at(-1)![0] as HeroCarousel['options'];
+    expect(lastOptions.showArrows).toBe(false);
+  });
+
+  it('renders a select_image button even when slide already has an image', () => {
+    const wrapper = mount(HeroCarouselEditor, {
+      props: {
+        modelValue: [{ eyebrow: '', title: 'T', subtitle: '', description: { type: 'doc', content: [] }, imageSrc: '/existing.webp', imageAlt: '', align: 'start', buttons: [] }],
+        options: { autoplay: true, autoplayDelay: 8000, showArrows: true, showIndicators: true, scrim: 'medium' },
+      },
+      global: { stubs: { TiptapEditor: true } },
+    });
+
+    // Image selector button is present alongside focal point and delete buttons
+    expect(wrapper.text()).toContain('rich-content.select_image');
+    expect(wrapper.text()).toContain('rich-content.set_focal_point');
+    expect(wrapper.text()).toContain('rich-content.delete_image');
   });
 });
