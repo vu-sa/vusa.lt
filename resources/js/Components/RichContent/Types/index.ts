@@ -25,7 +25,6 @@ import LinkListIcon from '~icons/fluent/link-multiple24-regular';
 import EventListIcon from '~icons/fluent/calendar-multiple24-regular';
 import PersonQuoteIcon from '~icons/fluent/text-quote24-regular';
 import SectionIcon from '~icons/fluent/text-header-1-24-regular';
-import SpacerIcon from '~icons/fluent/align-space-evenly-vertical-24-regular';
 import TimetableIcon from '~icons/fluent/calendar-clock20-regular';
 import ProcessStepsIcon from '~icons/fluent/text-number-list-ltr-24-regular';
 import CtaBandIcon from '~icons/fluent/megaphone-loud-24-regular';
@@ -182,6 +181,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultContent: () => ({}),
     defaultOptions: () => ({
       title: '',
+      verticalSpacing: 'default',
     }),
     inlineEditable: true,
     editor: defineAsyncComponent(() => import('./CardEditor.vue')),
@@ -396,7 +396,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     // `prose` lets a number row align with a `prose` text block.
     allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
-    defaultContent: () => ([]),
+    defaultContent: () => ([
+      { endNumber: 0, label: '' },
+    ]),
     defaultOptions: () => ({ title: '' }),
     usesSectionChrome: true,
     bandRole: 'band',
@@ -837,24 +839,6 @@ export const contentTypeRegistry: Record<string, ContentType> = {
         </div>
       `,
     },
-  },
-  'spacer': {
-    value: 'spacer',
-    label: 'Tarpas',
-    icon: SpacerIcon,
-    description: 'Vertikalus tarpas tarp blokų',
-    isNew: false,
-    category: 'section',
-    defaultWidth: 'prose',
-    // No visible chrome — width is a no-op on an empty block, so it's locked to the
-    // default prose column rather than offering a meaningless width picker.
-    selfSpaced: true,
-    defaultContent: () => ({}),
-    defaultOptions: () => ({ size: 'md' }),
-    editor: defineAsyncComponent(() => import('./SpacerEditor.vue')),
-    display: defineAsyncComponent(() => import('./SpacerDisplay.vue')),
-    // No skeleton — the block renders instantly (a single <div> with a height class),
-    // and the empty fallback would flash more than the real thing.
   },
   'timetable': {
     value: 'timetable',

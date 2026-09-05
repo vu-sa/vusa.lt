@@ -16,7 +16,7 @@ const EXPECTED_TYPES = [
   'spotify-embed', 'social-embed', 'flow-graph', 'number-stat-section', 'text-box',
   'content-grid', 'carousel-slide-deck', 'hero-carousel', 'card-stack', 'photo-gallery',
   'link-list', 'event-list', 'person-quote', 'section', 'process-steps', 'cta-band',
-  'spacer', 'timetable',
+  'timetable',
 ];
 
 describe('contentTypeRegistry', () => {
@@ -54,13 +54,19 @@ describe('contentTypeRegistry', () => {
     const item = createContentItem('shadcn-card');
     expect(item.type).toBe('shadcn-card');
     expect(item.json_content).toEqual({});
-    expect(item.options).toMatchObject({ title: '' });
+    expect(item.options).toMatchObject({ title: '', verticalSpacing: 'default' });
   });
 
   it('seeds a new accordion with one editable item', () => {
     const item = createContentItem('shadcn-accordion');
 
     expect(item.json_content).toEqual([{ label: '', content: {} }]);
+  });
+
+  it('seeds a new statistic section with one editable figure', () => {
+    const item = createContentItem('number-stat-section');
+
+    expect(item.json_content).toEqual([{ endNumber: 0, label: '' }]);
   });
 
   it('getSkeletonForType falls back to a generic skeleton for types without one', () => {

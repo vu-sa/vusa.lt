@@ -46,6 +46,13 @@
           </div>
 
           <slot />
+
+          <RCPresentationPicker
+            :presentation="false"
+            :plain-padding="verticalSpacing"
+            default-plain-padding="none"
+            @update:plain-padding="setVerticalSpacing"
+          />
         </div>
       </PopoverContent>
     </Popover>
@@ -66,6 +73,9 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { ContentPart } from '../../Types';
+import type { VerticalSpacing } from '../../sectionClasses';
+
+import RCPresentationPicker from '../RCPresentationPicker.vue';
 
 import { injectActiveHotspot } from './useActiveHotspot';
 
@@ -87,7 +97,8 @@ const props = defineProps<{
   canDelete: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
+  (e: 'update:content', value: ContentPart): void;
   (e: 'move-up'): void;
   (e: 'move-down'): void;
   (e: 'delete'): void;
@@ -97,9 +108,14 @@ defineEmits<{
 const hotspots = injectActiveHotspot();
 const toolbarId = computed(() => `${props.blockKey}:toolbar`);
 const toolbarButtonRef = ref<HTMLElement | null>(null);
+const verticalSpacing = computed(() => props.content.options?.verticalSpacing as VerticalSpacing | undefined);
 
 function onOpenChange(open: boolean): void {
   if (open) hotspots.openPopover(toolbarId.value);
   else hotspots.close(toolbarId.value);
+}
+
+function setVerticalSpacing(value: VerticalSpacing): void {
+  emit('update:content', { ...props.content, options: { ...(props.content.options ?? {}), verticalSpacing: value } });
 }
 </script>

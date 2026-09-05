@@ -56,9 +56,7 @@ describe('RCSectionOptions', () => {
     expect(wrapper.findAll('button[role="switch"]')).toHaveLength(1);
   });
 
-  it('mutates the shared options object in place when a field is edited', async () => {
-    // Every RichContent editor mutates its defineModel object in place to preserve
-    // object identity (see ContentEditorFactory); the title input must do the same.
+  it('emits an immutable options update when a field is edited', async () => {
     const options = makeOptions();
     const wrapper = mount(RCSectionOptions, {
       props: { modelValue: options, collapsible: false },
@@ -66,6 +64,6 @@ describe('RCSectionOptions', () => {
 
     await wrapper.findAll('input[type="text"]')[0]!.setValue('Mano antraštė');
 
-    expect(options.title).toBe('Mano antraštė');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[{ ...options, title: 'Mano antraštė' }]]);
   });
 });

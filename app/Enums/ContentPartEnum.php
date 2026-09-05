@@ -31,7 +31,6 @@ enum ContentPartEnum: string
     case SECTION = 'SECTION';
     case PROCESS_STEPS = 'PROCESS_STEPS';
     case CTA_BAND = 'CTA_BAND';
-    case SPACER = 'SPACER';
     case TIMETABLE = 'TIMETABLE';
 
     public function label(): string
@@ -60,7 +59,6 @@ enum ContentPartEnum: string
             self::SECTION => 'section',
             self::PROCESS_STEPS => 'process-steps',
             self::CTA_BAND => 'cta-band',
-            self::SPACER => 'spacer',
             self::TIMETABLE => 'timetable',
         };
     }

@@ -17,20 +17,8 @@
           @update:element="$emit('update:element', $event)"
           @claim-inline-field="$emit('claim-inline-field', $event)"
         >
-          <!-- shadcn-card takes its body through the default slot (see RichContentParser) —
-               same live-json_content renderer, so its preview reflects unsaved edits too.
-               In the full-screen editor (editable + this block's body field claimed) it
-               mounts a real TiptapEditor instead — the one Tiptap-doc inline-editable
-               field this type has. -->
-          <template v-if="element.type === 'shadcn-card'">
-            <TiptapEditor
-              v-if="editableForElement && activeInlineFieldForElement === `${blockKey}:body`"
-              :model-value="cardBodyContent" preset="full" prose-style
-              @update:model-value="$emit('update:element', { ...element, json_content: $event })"
-            />
-            <div v-else :data-rc-interactive="editableForElement ? '' : undefined" @click="editableForElement && $emit('claim-inline-field', `${blockKey}:body`)">
-              <RichContentTiptapHTML :json_content="element.json_content" />
-            </div>
+          <template v-if="element.type === 'shadcn-card' && !editableForElement">
+            <RichContentTiptapHTML :json_content="element.json_content" />
           </template>
         </component>
       </template>
@@ -59,17 +47,15 @@
  * - Width: wraps in the same `.rc-canvas` column class RichContentParser would apply
  *   (`blockLayoutClasses`), so a block previewed at `full`/`wide` isn't silently clamped
  *   to the prose column the way the old per-surface implementations were.
- * - TipTap content: `TiptapDisplay`/`RichContentCard` read `element.html`, which is a
- *   server-appended attribute that only exists on *saved* rows. An unsaved/just-edited
- *   block has no `.html` yet, so previewing it through those components renders blank.
- *   Rendering the live `json_content` through `RichContentTiptapHTML` client-side keeps
- *   the preview in sync with keystrokes instead of only updating after a save.
+ * - TipTap content: server-rendered HTML only exists on saved rows. Rendering live
+ *   `json_content` through `RichContentTiptapHTML` keeps previews in sync with
+ *   keystrokes instead of only updating after a save.
  * - `editable`/`band`/`resolved` are all gated on the type declaring the matching
  *   registry field (`inlineEditable`/`bandRole`/`serverResolved`) — an undeclared object
  *   prop on a display that doesn't ask for it would otherwise fall through and
  *   stringify into the DOM.
  */
-import { computed, defineAsyncComponent } from 'vue';
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { blockLayoutClasses } from '../blockLayout';
@@ -77,14 +63,8 @@ import { getContentType } from '../Types';
 import { resolveBand, resolveBandRole, type BandResolution } from '../bandLayout';
 
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
-
-// Lazy-loaded: only shadcn-card's live (claimed) body mounts this, and only inside the
-// editor — every other preview surface (public pages never reach this component at all)
-// stays on the static json_content -> HTML path above.
-const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
-
 const props = defineProps<{
-  element: { type: string; json_content: any; options?: Record<string, unknown> | null; id?: number };
+  element: { type: string; json_content: unknown; options?: Record<string, unknown> | null; id?: number };
   /** Server-resolved preview payload for this element (see useContentPartPreview), keyed by block key upstream. */
   resolved?: unknown;
   /** This block's position among the document's *other* bands — see bandLayout.ts's `resolveBands`. Standalone previews (picker, side-by-side) omit it and get slot 0. Ignored when `band` is supplied directly. */
@@ -124,5 +104,4 @@ const bandForElement = computed(() => {
 const editableForElement = computed(() => (getContentType(props.element.type).inlineEditable ? !!props.editable && !props.preview : undefined));
 const activeInlineFieldForElement = computed(() => (getContentType(props.element.type).inlineEditable ? (props.activeInlineField ?? null) : undefined));
 const blockKey = computed(() => props.blockKey ?? '');
-const cardBodyContent = computed(() => (typeof props.element.json_content === 'object' && props.element.json_content ? props.element.json_content : { type: 'doc', content: [] }));
 </script>

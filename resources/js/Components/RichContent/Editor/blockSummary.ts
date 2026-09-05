@@ -1,7 +1,6 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import type { ContentPart } from '../Types';
-import { DEFAULT_SPACER_SIZE } from '../Types/spacerSizes';
 
 /** Recursively pull the first text node out of a Tiptap JSON document. */
 function firstTiptapText(json: unknown): string {
@@ -123,8 +122,6 @@ export function deriveBlockSummary(part: ContentPart): string {
       return json?.heading ? truncate(json.heading) : '—';
     case 'person-quote':
       return json?.snapshot?.name ? truncate(json.snapshot.name) : '—';
-    case 'spacer':
-      return $t('rich-content.summary_spacer', { size: $t(`rich-content.spacer_size_${options?.size ?? DEFAULT_SPACER_SIZE}`) });
     case 'timetable': {
       const timedRows = Array.isArray(json) ? json : [];
       if (timedRows.length === 0) return '—';

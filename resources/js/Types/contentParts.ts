@@ -120,6 +120,8 @@ export interface ShadcnCard {
   options: {
     title?: string;
     width?: BlockWidth;
+    /** Extra space surrounding the card in the document flow. */
+    verticalSpacing?: PlainPadding;
   };
 }
 
@@ -515,21 +517,6 @@ export interface EventListResolved {
   groups: EventListResolvedGroup[];
   items: EventListResolvedItem[];
   meta: { total: number; truncated: boolean; style: 'cards' | 'list' };
-}
-
-/**
- * Empty layout block whose only job is to insert a controlled vertical gap between
- * its siblings. The canvas's own `--rc-flow` rhythm is fixed (~2.5rem) and applies
- * uniformly to every sibling pair; this block — flagged `selfSpaced` so it picks up
- * `.rc-flush` — replaces that rhythm with a height the author picks from `options.size`.
- * No `json_content`, no resolver, no visible chrome.
- */
-export interface Spacer {
-  json_content: Record<string, never>;
-  options: {
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
-    width?: BlockWidth;
-  };
 }
 
 /**

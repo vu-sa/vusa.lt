@@ -28,6 +28,12 @@
               @update:model-value="update({ ...item, endNumber: $event })"
             />
           </Field>
+          <Field>
+            <div class="flex items-center justify-between">
+              <FieldLabel class="mb-0">{{ $t('rich-content.stat_show_plus') }}</FieldLabel>
+              <Switch :model-value="item.showPlus" @update:model-value="update({ ...item, showPlus: $event })" />
+            </div>
+          </Field>
         </div>
       </template>
     </DynamicListInput>
@@ -41,6 +47,7 @@ import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';
+import { Switch } from '@/Components/ui/switch';
 
 const content = defineModel<NumberStatSection['json_content']>();
 const options = defineModel<NumberStatSection['options']>('options');

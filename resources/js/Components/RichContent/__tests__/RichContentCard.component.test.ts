@@ -18,7 +18,7 @@ describe('RichContentCard', () => {
 
   it('renders one fixed, token-driven surface regardless of stored options', () => {
     const wrapper = mount(RichContentCard, { props: { element: makeElement({}) } });
-    const rootClass = wrapper.attributes('class') ?? '';
+    const rootClass = wrapper.get('[data-slot="card-surface"]').attributes('class') ?? '';
     expect(rootClass).toContain('rounded-2xl');
     expect(rootClass).toContain('bg-card');
     expect(rootClass).not.toContain('zinc-');
@@ -30,7 +30,7 @@ describe('RichContentCard', () => {
     const wrapper = mount(RichContentCard, {
       props: { element: makeElement({ variant: 'soft', color: 'red', title: 'T', isTitleColored: true, showIcon: true }) },
     });
-    const rootClass = wrapper.attributes('class') ?? '';
+    const rootClass = wrapper.get('[data-slot="card-surface"]').attributes('class') ?? '';
     expect(rootClass).toContain('bg-card');
     expect(wrapper.find('[data-slot="card-title"]').classes().join(' ')).toContain('text-foreground');
     expect(wrapper.find('svg').exists()).toBe(false);
@@ -60,6 +60,18 @@ describe('RichContentCard', () => {
     const wrapper = mount(RichContentCard, { props: { element: makeElement({}), editable: true } });
     expect(wrapper.find('[data-slot="card-header"]').exists()).toBe(true);
     expect(wrapper.find('[data-slot="card-title"]').attributes('contenteditable')).toBe('plaintext-only');
+  });
+
+  it('shows a visible content placeholder and claims the body field in the full-screen editor', async () => {
+    const wrapper = mount(RichContentCard, {
+      props: { element: makeElement({}), editable: true, blockKey: 'card-1' },
+    });
+
+    expect(wrapper.find('[data-rc-card-content]').text()).toContain('rich-content.content');
+
+    await wrapper.find('[data-rc-card-content]').trigger('click');
+
+    expect(wrapper.emitted('claim-inline-field')).toEqual([['card-1:body']]);
   });
 
   it('emits update:element with the patched title, preserving other options', async () => {

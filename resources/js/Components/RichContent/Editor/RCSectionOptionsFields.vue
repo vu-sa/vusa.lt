@@ -6,19 +6,19 @@
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Field>
         <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-        <Input v-model="options.title" type="text" :placeholder="$t('rich-content.enter_section_title')" />
+        <Input :model-value="options.title" type="text" :placeholder="$t('rich-content.enter_section_title')" @update:model-value="patchOptions({ title: $event })" />
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.subtitle') }}</FieldLabel>
-        <Input v-model="options.subtitle" type="text" :placeholder="$t('rich-content.enter_section_subtitle')" />
+        <Input :model-value="options.subtitle" type="text" :placeholder="$t('rich-content.enter_section_subtitle')" @update:model-value="patchOptions({ subtitle: $event })" />
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.section_eyebrow') }}</FieldLabel>
-        <Input v-model="options.eyebrow" type="text" :placeholder="$t('rich-content.enter_section_eyebrow')" />
+        <Input :model-value="options.eyebrow" type="text" :placeholder="$t('rich-content.enter_section_eyebrow')" @update:model-value="patchOptions({ eyebrow: $event })" />
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.section_heading_level') }}</FieldLabel>
-        <Select v-model="options.headingLevel">
+        <Select :model-value="options.headingLevel" @update:model-value="patchOptions({ headingLevel: $event as SectionOptions['headingLevel'] })">
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -31,7 +31,7 @@
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.section_align') }}</FieldLabel>
-        <Select v-model="options.align">
+        <Select :model-value="options.align" @update:model-value="patchOptions({ align: $event as SectionOptions['align'] })">
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
@@ -44,12 +44,16 @@
       <Field>
         <div class="flex items-center justify-between">
           <FieldLabel class="mb-0">{{ $t('rich-content.section_show_separator') }}</FieldLabel>
-          <Switch v-model="options.showSeparator" />
+          <Switch :model-value="options.showSeparator" @update:model-value="patchOptions({ showSeparator: $event })" />
         </div>
       </Field>
     </div>
 
-    <RCPresentationPicker v-model="options.presentation" v-model:plain-padding="options.plainPadding" />
+    <RCPresentationPicker
+      :model-value="options.presentation" :plain-padding="options.plainPadding" :disabled="presentationDisabled"
+      @update:model-value="patchOptions({ presentation: $event })"
+      @update:plain-padding="patchOptions({ plainPadding: $event })"
+    />
   </div>
 </template>
 
@@ -65,5 +69,11 @@ import RCPresentationPicker from './RCPresentationPicker.vue';
 
 import type { SectionOptions } from '@/Types/contentParts';
 
+defineProps<{ presentationDisabled?: boolean }>();
+
 const options = defineModel<SectionOptions>({ required: true });
+
+function patchOptions(patch: Partial<SectionOptions>): void {
+  options.value = { ...options.value, ...patch };
+}
 </script>

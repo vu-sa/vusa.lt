@@ -6,6 +6,7 @@
  */
 export type SectionInner = 'prose' | 'content' | 'wide' | 'full';
 export type PlainPadding = 'none' | 'compact' | 'default';
+export type VerticalSpacing = PlainPadding;
 
 /** Semantic heading level for a section title. Matches the levels offered in RCSectionOptions. */
 export type SectionHeadingLevel = 2 | 3 | 4;

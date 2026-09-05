@@ -30,9 +30,9 @@ const { stop } = useIntersectionObserver(target, ([{ isIntersecting }]) => {
   }
 });
 
-watch(targetIsVisible, (isVisible) => {
+watch([targetIsVisible, () => props.endNumber], ([isVisible, endNumber]) => {
   if (isVisible) {
-    source.value = props.endNumber;
+    source.value = endNumber;
   }
 });
 </script>

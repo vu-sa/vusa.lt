@@ -23,4 +23,9 @@ describe('blockLayoutClasses', () => {
   it('omits rc-flush for types that are not selfSpaced', () => {
     expect(blockLayoutClasses({ type: 'image-grid' })).toEqual(['rc-wide']);
   });
+
+  it('adds selected vertical spacing for every block type', () => {
+    expect(blockLayoutClasses({ type: 'image-grid', options: { verticalSpacing: 'compact' } })).toEqual(['rc-wide', 'py-8']);
+    expect(blockLayoutClasses({ type: 'timetable', options: { verticalSpacing: 'default' } })).toEqual(['rc-flush', 'py-16']);
+  });
 });

@@ -89,6 +89,18 @@ describe('RCBlockToolbarShell', () => {
     expect(wrapper.find('.type-specific').exists()).toBe(true);
   });
 
+  it('emits a universal vertical-spacing update', async () => {
+    const { wrapper, hotspots } = mountShell();
+    hotspots.openPopover('k1:toolbar');
+    await wrapper.vm.$nextTick();
+
+    await wrapper.findAll('button').find(button => button.text().includes('rich-content.plain_padding_compact'))!.trigger('click');
+
+    expect(wrapper.emitted('update:content')).toEqual([[
+      { ...content, options: { verticalSpacing: 'compact' } },
+    ]]);
+  });
+
   it('does not render popover content until the toolbar hotspot is open', () => {
     const { wrapper } = mountShell({}, { default: '<div class="type-specific">Width picker</div>' });
     expect(wrapper.find('.type-specific').exists()).toBe(false);

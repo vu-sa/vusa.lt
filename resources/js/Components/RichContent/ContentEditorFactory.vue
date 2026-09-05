@@ -9,10 +9,19 @@
 
     <!-- Edit mode - show the editor component -->
     <Suspense v-else>
-      <component
-        :is="editorComponent"
-        v-model="jsonContent"
-        v-model:options="contentOptions" />
+      <div class="flex flex-col gap-5">
+        <component
+          :is="editorComponent"
+          v-model="jsonContent"
+          v-model:options="contentOptions" />
+        <RCPresentationPicker
+          :presentation="false"
+          :plain-padding="verticalSpacing"
+          default-plain-padding="none"
+          :disabled="presentationDisabled"
+          @update:plain-padding="setVerticalSpacing"
+        />
+      </div>
       <template #fallback>
         <div class="space-y-3">
           <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -46,8 +55,10 @@
 import { computed, provide, toRef } from 'vue';
 
 import { getContentType } from './Types';
+import type { VerticalSpacing } from './sectionClasses';
 import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
 import { SECTION_PRESENTATION_DISABLED } from './Editor/sectionPresentation';
+import RCPresentationPicker from './Editor/RCPresentationPicker.vue';
 import { useLiveBlockPreview } from './composables/useLiveBlockPreview';
 
 import { Skeleton } from '@/Components/ui/skeleton';
@@ -123,6 +134,14 @@ const contentOptions = computed({
     }
   },
 });
+
+const verticalSpacing = computed(() => contentOptions.value?.verticalSpacing as VerticalSpacing | undefined);
+
+function setVerticalSpacing(value: VerticalSpacing): void {
+  if (contentOptions.value) {
+    contentOptions.value.verticalSpacing = value;
+  }
+}
 
 // Editor component comes straight from the registry (Types/index.ts) — adding a content
 // type no longer means adding a case here too. Preview mode's display component is

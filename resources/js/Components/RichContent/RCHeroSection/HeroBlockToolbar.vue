@@ -2,6 +2,7 @@
   <RCBlockToolbarShell
     :content :block-key="blockKey" :reference
     :can-move-up="canMoveUp" :can-move-down="canMoveDown" :can-delete="canDelete"
+    @update:content="$emit('update:content', $event)"
     @move-up="$emit('move-up')"
     @move-down="$emit('move-down')"
     @delete="$emit('delete')"

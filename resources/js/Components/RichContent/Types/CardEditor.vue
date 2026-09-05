@@ -1,10 +1,6 @@
 <template>
   <div class="flex flex-col gap-5">
-    <!-- Title -->
-    <Field>
-      <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-      <Input v-model="options.title" type="text" :placeholder="$t('rich-content.enter_title')" />
-    </Field>
+    <CardOptionsFields v-model="options" />
 
     <!-- Content -->
     <Field>
@@ -18,7 +14,7 @@
 import type { ShadcnCard } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Field, FieldLabel } from '@/Components/ui/field';
-import { Input } from '@/Components/ui/input';
+import CardOptionsFields from './CardOptionsFields.vue';
 
 const content = defineModel<ShadcnCard['json_content']>();
 const options = defineModel<ShadcnCard['options']>('options');

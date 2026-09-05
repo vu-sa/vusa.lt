@@ -68,9 +68,24 @@
       @delete="$emit('delete')"
       @open-form="$emit('open-form')"
     />
+    <CardBlockToolbar v-else-if="!preview && content.type === 'shadcn-card'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
+    <NumberStatBlockToolbar v-else-if="!preview && content.type === 'number-stat-section'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
     <RCBlockToolbarShell v-else-if="!preview"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete
+      @update:content="$emit('update:content', $event)"
       @move-up="$emit('move-up')"
       @move-down="$emit('move-down')"
       @delete="$emit('delete')"
@@ -103,13 +118,10 @@
  * gets this on day one. No selection state, no pointer-events CSS lockdown — this design
  * has no "select the block" concept at all.
  *
- * Bridges `BlockPreviewRenderer`'s pre-existing `activeInlineField`/`claim-inline-field`
- * contract (used today by `shadcn-card`'s inline body editing) onto the shared
- * `useActiveHotspot` state as a `kind: 'text'` claim — this is the one place an
- * "intermediate layer" injects the hotspot key, and it's deliberate: it's what keeps
- * `shadcn-card`'s inline editing (and any future type using the same contract) part of
- * the same single-live-editor invariant as Hero's own hotspots, without
- * `BlockPreviewRenderer.vue` itself ever needing to know the composable exists.
+ * Bridges a display's `activeInlineField`/`claim-inline-field` contract onto the shared
+ * `useActiveHotspot` state as a `kind: 'text'` claim. This keeps a card's live body
+ * editor (and any future rich inline field) in the same single-live-editor invariant as
+ * Hero's hotspots without `BlockPreviewRenderer.vue` needing to know the composable.
  */
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -124,6 +136,8 @@ import LinkListBlockToolbar from '../../RCLinkList/LinkListBlockToolbar.vue';
 import EventListBlockToolbar from '../../RCEventList/EventListBlockToolbar.vue';
 import CalendarBlockToolbar from '../../RCCalendar/CalendarBlockToolbar.vue';
 import HeroCarouselBlockToolbar from '../../RCHeroCarousel/HeroCarouselBlockToolbar.vue';
+import CardBlockToolbar from '../../RCCard/CardBlockToolbar.vue';
+import NumberStatBlockToolbar from '../../RCNumberStatSection/NumberStatBlockToolbar.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { resolveBandRole, type BandResolution, type BlockPresentation } from '../../bandLayout';
 import type { PlainPadding } from '../../sectionClasses';

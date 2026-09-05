@@ -213,10 +213,6 @@ export const contentSamples: Record<string, () => ContentSample> = {
     },
     options: { bleed: false },
   }),
-  'spacer': () => ({
-    json_content: {},
-    options: { size: 'lg' },
-  }),
   'person-quote': () => ({
     json_content: {
       quote: tiptapDoc(['Narystė VU SA man atvėrė galimybę prisidėti prie realių pokyčių universitete.']),

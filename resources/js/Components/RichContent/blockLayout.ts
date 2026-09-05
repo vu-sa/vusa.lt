@@ -1,4 +1,5 @@
 import { getContentType, type BlockWidth } from './Types';
+import { PLAIN_PADDING_CLASS, type VerticalSpacing } from './sectionClasses';
 
 const WIDTH_CLASS: Record<BlockWidth, string> = {
   prose: '',
@@ -25,5 +26,6 @@ export function blockLayoutClasses(element: LayoutableElement): string[] {
   const width = (element.options?.width as BlockWidth | undefined) ?? contentType.defaultWidth;
   const widthClass = WIDTH_CLASS[width];
   const flushClass = contentType.selfSpaced ? 'rc-flush' : '';
-  return [widthClass, flushClass].filter(Boolean);
+  const verticalSpacing = (element.options?.verticalSpacing as VerticalSpacing | undefined) ?? 'none';
+  return [widthClass, flushClass, PLAIN_PADDING_CLASS[verticalSpacing]].filter(Boolean);
 }

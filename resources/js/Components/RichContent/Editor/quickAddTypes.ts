@@ -19,6 +19,5 @@ export function getQuickAddTypes(): ContentType[] {
     getContentType('spotify-embed'),
     getContentType('section'),
     getContentType('person-quote'),
-    getContentType('spacer'),
   ];
 }

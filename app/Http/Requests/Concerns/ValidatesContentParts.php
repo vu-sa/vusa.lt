@@ -52,6 +52,7 @@ trait ValidatesContentParts
             // alternates automatically from document position; `plain` removes the ground.
             'content.parts.*.options.presentation' => ['nullable', 'string', Rule::in(['auto', 'plain'])],
             'content.parts.*.options.plainPadding' => ['nullable', 'string', Rule::in(['none', 'compact', 'default'])],
+            'content.parts.*.options.verticalSpacing' => ['nullable', 'string', Rule::in(['none', 'compact', 'default'])],
 
             // section
             'content.parts.*.options.inner' => ['nullable', 'string', Rule::in(['prose', 'content', 'wide', 'full'])],
@@ -101,9 +102,6 @@ trait ValidatesContentParts
             'content.parts.*.json_content.snapshot.name' => 'nullable|string|max:255',
             'content.parts.*.json_content.snapshot.photoUrl' => 'nullable|string|max:2048',
             'content.parts.*.json_content.snapshot.attribution' => 'nullable|string|max:255',
-
-            // spacer
-            'content.parts.*.options.size' => ['nullable', 'string', Rule::in(['xs', 'sm', 'md', 'lg', 'xl', '2xl'])],
 
             // text-box — placeholder/closedMessage are translatable {lt, en} and title
             // lives with the shared chrome rules above (TextBoxEditor.vue).
