@@ -205,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { computed, defineAsyncComponent, inject } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
@@ -215,9 +215,13 @@ import HeroImageHotspot from './HeroImageHotspot.vue';
 import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { EyebrowLabel } from '@/Components/Public/Base';
-import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import type { Hero } from '@/Types/contentParts';
 import { withCompactPadding, type BandResolution } from '../bandLayout';
+
+// Lazy-loaded: title/description only ever mount a *live* TiptapEditor while claimed in
+// the full-screen editor. A static import would bundle it into every public page that
+// renders a hero, which never reaches that branch at all.
+const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
 
 // `inlineEditable: true` makes BlockPreviewRenderer start passing real values for props
 // this component doesn't declare (it has no server-resolved data, so never needs the

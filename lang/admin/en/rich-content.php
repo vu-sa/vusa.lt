@@ -149,6 +149,7 @@ return [
     'add_first_accordion_item' => 'Add first item',
     'add_accordion_item' => 'Add item',
     'enter_accordion_title' => 'Enter title...',
+    'remove_accordion_item' => 'Remove item',
     // Image grid
     'no_images' => 'No images added',
     'add_first_image' => 'Add first image',
@@ -205,6 +206,8 @@ return [
     'tile_options' => 'Image options',
     // Section chrome (RCSection / RCSectionOptions)
     'section_options' => 'Section options',
+    'section_general' => 'General',
+    'section_text' => 'Text',
     'enter_section_subtitle' => 'Enter section subtitle...',
     'section_heading_level' => 'Heading level',
     'section_align' => 'Alignment',
@@ -286,6 +289,9 @@ return [
     'no_cards' => 'No cards added yet',
     'add_first_card' => 'Add first card',
     'add_card' => 'Add card',
+    'remove_card' => 'Remove card',
+    'previous_card' => 'Previous card',
+    'next_card' => 'Next card',
     'hint_text' => 'Hint text',
     'enter_hint_text' => 'Enter hint text...',
     // Carousel

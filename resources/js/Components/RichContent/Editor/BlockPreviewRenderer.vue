@@ -69,7 +69,7 @@
  *   prop on a display that doesn't ask for it would otherwise fall through and
  *   stringify into the DOM.
  */
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { blockLayoutClasses } from '../blockLayout';
@@ -77,7 +77,11 @@ import { getContentType } from '../Types';
 import { resolveBand, resolveBandRole, type BandResolution } from '../bandLayout';
 
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
-import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+
+// Lazy-loaded: only shadcn-card's live (claimed) body mounts this, and only inside the
+// editor — every other preview surface (public pages never reach this component at all)
+// stays on the static json_content -> HTML path above.
+const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
 
 const props = defineProps<{
   element: { type: string; json_content: any; options?: Record<string, unknown> | null; id?: number };

@@ -68,9 +68,10 @@
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { useApi } from '@/Composables/useApi';
-import type { PersonQuote } from '@/Types/contentParts';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+import { useUserAttributionLookup } from '../composables/useUserAttributionLookup';
+
+import type { PersonQuote } from '@/Types/contentParts';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
@@ -94,21 +95,7 @@ const initialHits = computed<NormalizedSearchHit[]>(() => {
   return [normalizeHit('users', { id: content.value.snapshot.userId, name: content.value.snapshot.name })];
 });
 
-interface AttributionResponse {
-  name: string;
-  photoUrl: string | null;
-  attributions: string[];
-}
-
-const attributionUserId = ref<number | null>(null);
-const attributionUrl = computed(() => (attributionUserId.value
-  ? route('api.v1.admin.users.attributions', attributionUserId.value)
-  : ''));
-
-const { data: attributionData, execute: fetchAttributions } = useApi<AttributionResponse>(attributionUrl, {
-  immediate: false,
-  showErrorToast: false,
-});
+const { userId: attributionUserId, data: attributionData } = useUserAttributionLookup();
 
 const attributionSuggestions = computed(() => attributionData.value?.attributions ?? []);
 
@@ -123,11 +110,6 @@ function onConfirm(hits: NormalizedSearchHit[]) {
   content.value.snapshot = { ...content.value.snapshot, userId, name: hit.title };
   attributionUserId.value = userId;
 }
-
-watch(attributionUserId, async (id) => {
-  if (!id) return;
-  await fetchAttributions();
-}, { flush: 'post' });
 
 watch(attributionData, (data) => {
   if (!data) return;

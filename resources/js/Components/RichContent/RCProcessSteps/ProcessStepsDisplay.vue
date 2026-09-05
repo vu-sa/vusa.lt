@@ -1,10 +1,11 @@
 <template>
   <RCSection
-    :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :eyebrow="element.options?.eyebrow"
-    :band :align="element.options?.align ?? 'start'"
-    :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
-    inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
+    :id="anchorId ? `rc-${anchorId}` : undefined" :title="element.options?.title"
+    :subtitle="element.options?.subtitle"
+    :eyebrow="element.options?.eyebrow" :band
+    :align="element.options?.align ?? 'start'" :heading-level="element.options?.headingLevel"
+    :show-separator="element.options?.showSeparator" inner="wide"
+    :editable @update:header="updateOptions"
   >
     <ol :class="['grid gap-8 sm:gap-10', COLUMN_CLASS[columns]]">
       <li v-for="(step, index) in steps" :key="index" class="border-t-2 border-brand pt-5">
@@ -29,9 +30,9 @@
 import { computed } from 'vue';
 
 import RCSection from '../RCSection.vue';
+import type { BandResolution } from '../bandLayout';
 
 import type { ProcessSteps } from '@/Types/contentParts';
-import type { BandResolution } from '../bandLayout';
 
 /**
  * A numbered process — "how you join", "how a request is handled".
@@ -44,7 +45,22 @@ const props = defineProps<{
   element: ProcessSteps;
   anchorId?: number | null;
   band?: BandResolution;
+  /** Full-screen editor mode: the optional title/subtitle/eyebrow header becomes
+   *  click-to-edit. Undefined/false in every other context. */
+  editable?: boolean;
+  /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
+   *  `inlineEditable` fallthrough — this block has no per-field claiming, but an
+   *  undeclared non-undefined prop would otherwise land on the root as a stray attribute. */
+  blockKey?: string;
+  /** @see blockKey */
+  activeInlineField?: string | null;
 }>();
+
+const emit = defineEmits<(e: 'update:element', value: ProcessSteps) => void>();
+
+function updateOptions(patch: { title?: string; subtitle?: string; eyebrow?: string }): void {
+  emit('update:element', { ...props.element, options: { ...props.element.options, ...patch } });
+}
 
 const COLUMN_CLASS: Record<number, string> = {
   2: 'sm:grid-cols-2',

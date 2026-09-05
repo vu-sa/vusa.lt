@@ -149,6 +149,7 @@ return [
     'add_first_accordion_item' => 'Pridėti pirmą punktą',
     'add_accordion_item' => 'Pridėti punktą',
     'enter_accordion_title' => 'Įveskite pavadinimą...',
+    'remove_accordion_item' => 'Pašalinti punktą',
     // Image grid
     'no_images' => 'Nėra pridėta nuotraukų',
     'add_first_image' => 'Pridėti pirmą nuotrauką',
@@ -205,6 +206,8 @@ return [
     'tile_options' => 'Nuotraukos parinktys',
     // Section chrome (RCSection / RCSectionOptions)
     'section_options' => 'Sekcijos nustatymai',
+    'section_general' => 'Bendra',
+    'section_text' => 'Tekstas',
     'enter_section_subtitle' => 'Įveskite sekcijos paantraštę...',
     'section_heading_level' => 'Antraštės lygis',
     'section_align' => 'Lygiuotė',
@@ -286,6 +289,9 @@ return [
     'no_cards' => 'Nėra pridėta kortelių',
     'add_first_card' => 'Pridėti pirmą kortelę',
     'add_card' => 'Pridėti kortelę',
+    'remove_card' => 'Pašalinti kortelę',
+    'previous_card' => 'Ankstesnė kortelė',
+    'next_card' => 'Kita kortelė',
     'hint_text' => 'Užuominos tekstas',
     'enter_hint_text' => 'Įveskite užuominos tekstą...',
     // Carousel

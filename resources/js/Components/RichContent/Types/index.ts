@@ -153,6 +153,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultContent: () => ([]),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./AccordionEditor.vue')),
     display: defineAsyncComponent(() => import('../RCAccordion.vue')),
     skeleton: {
@@ -397,6 +398,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultOptions: () => ({ title: '' }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./NumberStatEditor.vue')),
     display: defineAsyncComponent(() => import('../RCNumberStatSection/RCNumberSection.vue')),
     skeleton: {
@@ -501,6 +503,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./CarouselSlideDeckEditor.vue')),
     display: defineAsyncComponent(() => import('../RCCarouselSlideDeck/CarouselSlideDeckDisplay.vue')),
     skeleton: {
@@ -582,6 +585,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./CardStackEditor.vue')),
     display: defineAsyncComponent(() => import('../RCCardStack/CardStackDisplay.vue')),
     skeleton: {
@@ -618,6 +622,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./PhotoGalleryGridEditor.vue')),
     display: defineAsyncComponent(() => import('../RCPhotoGalleryGrid/PhotoGalleryGridDisplay.vue')),
     skeleton: {
@@ -653,6 +658,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./LinkListEditor.vue')),
     display: defineAsyncComponent(() => import('../RCLinkList/LinkListDisplay.vue')),
     skeleton: {
@@ -687,6 +693,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./EventListEditor.vue')),
     display: defineAsyncComponent(() => import('../RCEventList/EventListDisplay.vue')),
     skeleton: {
@@ -708,14 +715,20 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     isNew: true,
     category: 'section',
     defaultWidth: 'full',
-    // Locked to full — a section marker is always full-bleed chrome around its
-    // children; a `content`/`wide` section would fight with its own nested canvas.
-    allowedWidths: ['full'],
+    // `prose` excluded (unlike accordion/card-stack): a section wraps children with
+    // their own independent width choices via the nested canvas
+    // (`.rc-canvas-nested` — see canvas.css), and narrowing the section itself caps
+    // how wide a `full`-width child can visually reach, regardless of that child's
+    // own setting. `prose` would make that mismatch the common case rather than an
+    // edge case; `content`/`wide` are narrow enough to be a deliberate authoring
+    // choice (a boxed section) without making every full-width child surprising.
+    allowedWidths: ['content', 'wide', 'full'],
     selfSpaced: true,
     defaultContent: () => ({}),
     defaultOptions: () => ({ inner: 'full', wraps: 'following' }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./SectionEditor.vue')),
     display: defineAsyncComponent(() => import('../RCSection/SectionDisplay.vue')),
     skeleton: {
@@ -746,6 +759,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultOptions: () => ({ columns: 3, align: 'start' }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./ProcessStepsEditor.vue')),
     display: defineAsyncComponent(() => import('../RCProcessSteps/ProcessStepsDisplay.vue')),
     skeleton: {
@@ -808,6 +822,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./PersonQuoteEditor.vue')),
     display: defineAsyncComponent(() => import('../RCPersonQuote/PersonQuoteDisplay.vue')),
     skeleton: {

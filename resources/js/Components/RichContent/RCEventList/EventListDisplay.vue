@@ -1,9 +1,10 @@
 <template>
   <RCSection
-    :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :band :align="element.options?.align ?? 'center'"
-    :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
-    inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
+    :id="anchorId ? `rc-${anchorId}` : undefined" :title="element.options?.title" :subtitle="element.options?.subtitle"
+    :eyebrow="element.options?.eyebrow" :band
+    :align="element.options?.align ?? 'center'" :heading-level="element.options?.headingLevel"
+    :show-separator="element.options?.showSeparator" inner="wide"
+    :editable @update:header="updateOptions"
   >
     <!-- Grouped cards — one RCFeatureCard per group (tenant), events as a footer link
          list. This is the SummerCampCard shape, generalized. -->
@@ -120,14 +121,15 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import type { EventListResolved, EventListResolvedItem } from '@/Types/contentParts';
 import RCSection from '../RCSection.vue';
 import RCFeatureCard from '../RCFeatureCard.vue';
+import { smartGridCols } from '../gridStacking';
+import type { BandResolution } from '../bandLayout';
+
+import type { EventListResolved, EventListResolvedItem } from '@/Types/contentParts';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { formatEventDateSpan, formatMonthShort } from '@/Utils/IntlTime';
 import { LocaleEnum } from '@/Types/enums';
-import { smartGridCols } from '../gridStacking';
-import type { BandResolution } from '../bandLayout';
 
 const props = defineProps<{
   element: models.ContentPart;
@@ -135,7 +137,23 @@ const props = defineProps<{
   anchorId?: number | null;
   resolved?: EventListResolved | null;
   band?: BandResolution;
+  /** Full-screen editor mode: the optional title/subtitle/eyebrow header becomes
+   *  click-to-edit. Undefined/false in every other context. Nothing else on this type
+   *  is author-editable — its list content is entirely server-resolved. */
+  editable?: boolean;
+  /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
+   *  `inlineEditable` fallthrough — this block has no per-field claiming, but an
+   *  undeclared non-undefined prop would otherwise land on the root as a stray attribute. */
+  blockKey?: string;
+  /** @see blockKey */
+  activeInlineField?: string | null;
 }>();
+
+const emit = defineEmits<(e: 'update:element', value: models.ContentPart) => void>();
+
+function updateOptions(patch: { title?: string; subtitle?: string; eyebrow?: string }): void {
+  emit('update:element', { ...props.element, options: { ...props.element.options, ...patch } });
+}
 
 const page = usePage();
 const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);

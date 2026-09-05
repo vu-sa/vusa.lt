@@ -23,6 +23,15 @@
       @delete="$emit('delete')"
       @open-form="$emit('open-form')"
     />
+    <SectionBlockToolbar v-else-if="!preview && content.type === 'section'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')"
+      @move-down="$emit('move-down')"
+      @delete="$emit('delete')"
+      @open-form="$emit('open-form')"
+    />
     <RCBlockToolbarShell v-else-if="!preview"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete
@@ -50,10 +59,10 @@
 /**
  * Per-block wrapper for the full-screen editor: the real rendered output
  * (`BlockPreviewRenderer`, same component forms-mode preview and the picker use) plus
- * the whole-block toolbar (`HeroBlockToolbar` for `hero`, the generic
- * `RCBlockToolbarShell` for every other type — see its own docblock for why every type
- * gets this on day one). No selection state, no pointer-events CSS lockdown — this
- * design has no "select the block" concept at all.
+ * the whole-block toolbar (`HeroBlockToolbar` for `hero`, `SectionBlockToolbar` for
+ * `section`, the generic `RCBlockToolbarShell` for every other type — see its own
+ * docblock for why every type gets this on day one). No selection state, no
+ * pointer-events CSS lockdown — this design has no "select the block" concept at all.
  *
  * Bridges `BlockPreviewRenderer`'s pre-existing `activeInlineField`/`claim-inline-field`
  * contract (used today by `shadcn-card`'s inline body editing) onto the shared
@@ -71,6 +80,7 @@ import RCPresentationPicker from '../RCPresentationPicker.vue';
 import RCWidthPicker from '../RCWidthPicker.vue';
 import { withWidth } from '../blockWidth';
 import HeroBlockToolbar from '../../RCHeroSection/HeroBlockToolbar.vue';
+import SectionBlockToolbar from '../../RCSection/SectionBlockToolbar.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { resolveBandRole, type BandResolution, type BlockPresentation } from '../../bandLayout';
 import type { PlainPadding } from '../../sectionClasses';

@@ -28,4 +28,19 @@ describe('RCInsertAffordance', () => {
     await item!.trigger('click');
     expect(wrapper.emitted('more')).toHaveLength(1);
   });
+
+  it('uses the larger hover zone by default, for the full-screen editor', () => {
+    const wrapper = mountAffordance();
+    expect(wrapper.classes()).toContain('h-12');
+    expect(wrapper.classes()).not.toContain('h-5');
+  });
+
+  it('shrinks the hover zone when compact, so it stops overlapping RCBlockCard\'s header', () => {
+    const wrapper = mount(RCInsertAffordance, {
+      props: { quickAddTypes, compact: true },
+      global: { stubs: commonStubs },
+    });
+    expect(wrapper.classes()).toContain('h-5');
+    expect(wrapper.classes()).not.toContain('h-12');
+  });
 });

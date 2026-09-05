@@ -74,6 +74,7 @@
             <!-- Insert-between affordance: a thin hover-revealed line, not a floating circle -->
             <RCInsertAffordance
               v-if="index > 0"
+              compact
               :quick-add-types="quickAddTypes"
               @insert="insertContentAt($event, index)"
               @more="showInsertMenuAt = index; showSelection = true"

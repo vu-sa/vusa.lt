@@ -1,111 +1,129 @@
 <template>
   <RCSection
-    :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :band :align="element.options?.align ?? 'center'"
-    :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
-    inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
+    :id="anchorId ? `rc-${anchorId}` : undefined" :title="element.options?.title" :subtitle="element.options?.subtitle"
+    :eyebrow="element.options?.eyebrow" :band
+    :align="element.options?.align ?? 'center'" :heading-level="element.options?.headingLevel"
+    :show-separator="element.options?.showSeparator" inner="wide"
+    :editable @update:header="updateOptions"
   >
-      <Carousel ref="carouselRef" class="w-full max-w-5xl mx-auto" :opts="{
-        align: 'start',
-        loop: true,
-      }" @init-api="(val) => carouselApi = val">
-        <CarouselContent>
-          <CarouselItem v-for="(slide, index) in element.json_content" :key="index">
-            <div class="p-4">
-              <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center bg-card rounded-2xl p-8 md:p-12 border border-border">
-                <div :class="['space-y-4 md:space-y-6', slide.imageLeft ? 'order-1 lg:order-2' : 'order-2 lg:order-1']">
-                  <!-- Badge -->
-                  <div class="inline-flex items-center gap-2 px-3 py-1 border border-border text-sm text-muted-foreground">
-                    <RCIcon :name="slide.icon" class="w-4 h-4" />
-                    {{ slide.badge }}
-                  </div>
-
-                  <!-- Title -->
-                  <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">
-                    {{ slide.title }}
-                  </h3>
-
-                  <!-- Description (authored as Tiptap JSON; no server-rendered html for this type) -->
-                  <div class="rc-prose text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-                    <RichContentTiptapHTML :json_content="slide.description" />
-                  </div>
+    <Carousel ref="carouselRef" class="w-full max-w-5xl mx-auto" :opts="{
+      align: 'start',
+      loop: true,
+    }" @init-api="(val) => carouselApi = val">
+      <CarouselContent>
+        <CarouselItem v-for="(slide, index) in element.json_content" :key="index">
+          <div class="p-4">
+            <div class="grid lg:grid-cols-2 gap-8 md:gap-12 items-center bg-card rounded-2xl p-8 md:p-12 border border-border">
+              <div :class="['space-y-4 md:space-y-6', slide.imageLeft ? 'order-1 lg:order-2' : 'order-2 lg:order-1']">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-3 py-1 border border-border text-sm text-muted-foreground">
+                  <RCIcon :name="slide.icon" class="w-4 h-4" />
+                  {{ slide.badge }}
                 </div>
 
-                <div :class="['relative', slide.imageLeft ? 'order-2 lg:order-1' : 'order-1 lg:order-2']">
-                  <ImageWithDecorations
-                    :src="slide.imageSrc"
-                    :alt="slide.imageAlt"
-                    height-class="h-64 md:h-80"
-                    :decorations="slide.decorations"
-                    :object-position="slide.objectPosition"
-                    loading="lazy"
-                  />
+                <!-- Title -->
+                <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">
+                  {{ slide.title }}
+                </h3>
+
+                <!-- Description (authored as Tiptap JSON; no server-rendered html for this type) -->
+                <div class="rc-prose text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+                  <RichContentTiptapHTML :json_content="slide.description" />
                 </div>
               </div>
-            </div>
-          </CarouselItem>
-        </CarouselContent>
 
-        <!-- Navigation buttons -->
-        <CarouselPrevious
-          v-if="asBoolean(element.options?.showNavigation)"
-          class="hidden sm:flex -left-12 bg-background border-border hover:border-brand hover:text-brand text-foreground"
-          @click="restartCarouselAutoplay" />
-        <CarouselNext
-          v-if="asBoolean(element.options?.showNavigation)"
-          class="hidden sm:flex -right-12 bg-background border-border hover:border-brand hover:text-brand text-foreground"
-          @click="restartCarouselAutoplay" />
+              <div :class="['relative', slide.imageLeft ? 'order-2 lg:order-1' : 'order-1 lg:order-2']">
+                <ImageWithDecorations
+                  :src="slide.imageSrc"
+                  :alt="slide.imageAlt"
+                  height-class="h-64 md:h-80"
+                  :decorations="slide.decorations"
+                  :object-position="slide.objectPosition"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </div>
+        </CarouselItem>
+      </CarouselContent>
 
-        <!-- Photo Preview Navigation -->
-        <div v-if="asBoolean(element.options?.showThumbnails)" class="flex flex-wrap justify-center mt-2 xl:mt-8 gap-3">
-          <button
-            v-for="(slide, index) in element.json_content"
-            :key="index"
-            class="relative group transition-all duration-200"
-            :class="{ '': currentSlide === index }"
-            @click="() => { carouselApi?.scrollTo(index); restartCarouselAutoplay(); }">
-            <img
-              :src="slide.imageSrc"
-              :alt="slide.imageAlt"
-              class="w-14 h-10 sm:w-16 sm:h-12 object-cover rounded-lg transition-all duration-200"
-              :class="{
-                'opacity-100 scale-105 blur-[1px]': currentSlide === index,
-                'opacity-70 hover:opacity-90 scale-100 hover:scale-105': currentSlide !== index
-              }"
-              loading="lazy">
-            <!-- Icon overlay for active slide -->
-            <div v-if="currentSlide === index"
-              class="absolute inset-0 bg-ink/30 rounded-lg flex items-center justify-center">
-              <RCIcon :name="slide.icon" class="w-3 h-3 sm:w-4 sm:h-4 text-white drop-shadow-sm" />
-            </div>
-            <!-- Category label -->
-            <div
-              class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-              {{ slide.badge }}
-            </div>
-          </button>
-        </div>
-      </Carousel>
+      <!-- Navigation buttons -->
+      <CarouselPrevious
+        v-if="asBoolean(element.options?.showNavigation)"
+        class="hidden sm:flex -left-12 bg-background border-border hover:border-brand hover:text-brand text-foreground"
+        @click="restartCarouselAutoplay" />
+      <CarouselNext
+        v-if="asBoolean(element.options?.showNavigation)"
+        class="hidden sm:flex -right-12 bg-background border-border hover:border-brand hover:text-brand text-foreground"
+        @click="restartCarouselAutoplay" />
+
+      <!-- Photo Preview Navigation -->
+      <div v-if="asBoolean(element.options?.showThumbnails)" class="flex flex-wrap justify-center mt-2 xl:mt-8 gap-3">
+        <button
+          v-for="(slide, index) in element.json_content"
+          :key="index"
+          class="relative group transition-all duration-200"
+          :class="{ '': currentSlide === index }"
+          @click="() => { carouselApi?.scrollTo(index); restartCarouselAutoplay(); }">
+          <img
+            :src="slide.imageSrc"
+            :alt="slide.imageAlt"
+            class="w-14 h-10 sm:w-16 sm:h-12 object-cover rounded-lg transition-all duration-200"
+            :class="{
+              'opacity-100 scale-105 blur-[1px]': currentSlide === index,
+              'opacity-70 hover:opacity-90 scale-100 hover:scale-105': currentSlide !== index
+            }"
+            loading="lazy">
+          <!-- Icon overlay for active slide -->
+          <div v-if="currentSlide === index"
+            class="absolute inset-0 bg-ink/30 rounded-lg flex items-center justify-center">
+            <RCIcon :name="slide.icon" class="w-3 h-3 sm:w-4 sm:h-4 text-white drop-shadow-sm" />
+          </div>
+          <!-- Category label -->
+          <div
+            class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground font-medium opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            {{ slide.badge }}
+          </div>
+        </button>
+      </div>
+    </Carousel>
   </RCSection>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue';
-import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+
 import RCIcon from '../RCIcon.vue';
 import RCSection from '../RCSection.vue';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import { asBoolean } from '../booleanish';
+import type { BandResolution } from '../bandLayout';
+
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/Components/ui/carousel';
 import type { CarouselSlideDeck } from '@/Types/contentParts';
-import type { BandResolution } from '../bandLayout';
+import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
 
 const { element } = defineProps<{
   element: CarouselSlideDeck;
   html?: boolean;
   anchorId?: number | null;
   band?: BandResolution;
+  /** Full-screen editor mode: the optional title/subtitle/eyebrow header becomes
+   *  click-to-edit. Undefined/false in every other context. */
+  editable?: boolean;
+  /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
+   *  `inlineEditable` fallthrough — this block has no per-field claiming, but an
+   *  undeclared non-undefined prop would otherwise land on the root as a stray attribute. */
+  blockKey?: string;
+  /** @see blockKey */
+  activeInlineField?: string | null;
 }>();
+
+const emit = defineEmits<(e: 'update:element', value: CarouselSlideDeck) => void>();
+
+function updateOptions(patch: { title?: string; subtitle?: string; eyebrow?: string }): void {
+  emit('update:element', { ...element, options: { ...element.options, ...patch } });
+}
 
 // Carousel functionality
 const carouselApi = ref();
