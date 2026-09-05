@@ -7,32 +7,31 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
-## v1.44 — Renginio puslapio dizainas (2026-09-05) {#v1-44}
+## v2.0 — Naujas svetainės dizainas ir vizualus turinio redaktorius (2026-09-05) {#v2-0}
 
+> Visi šios šakos („feature/new-style“) pakeitimai ir patobulinimai sujungti į v2.0 versiją.
+
+- ⭐ **Naujas viešosios svetainės dizainas** — moderni tipografija („Atkinson Hyperlegible“), šilta šviesi paletė ir sodri tamsi tema, griežtos kampuotos formos bei vientisa dizaino žetonų sistema, nepaliečianti vidinės administravimo aplinkos
+- ⭐ **Integruotas prieinamumo meniu** — vietinė prieinamumo juosta leidžia patogiai pasirinkti teksto dydį, įjungti aukštą kontrastą ir pabraukti nuorodas be trečiųjų šalių („UserWay“) įrankių ar papildomos kodo apkrovos
+- ⭐ **Pilno ekrano vizualus turinio redaktorius (WYSIWYG)** — tekstus, mygtukus, nuotraukas ir sekcijų nustatymus puslapiuose ir naujienose galima redaguoti tiesiogiai realiame viešos svetainės vaizde su tiesiogine peržiūra ir išsaugojimu
+- ✨ **Atnaujinta navigacija ir per visą plotį išsiskleidžiantis meniu** — dviejų lygių navigacija papildyta mega-meniu su nuotraukų kortelėmis, nuorodų aprašymais, kategorijų antraštėmis ir greitu reagavimu užvedus pele
 - ✨ **Renginio puslapis atnaujintas pagal naują stilių** — viso pločio antraštė su datos plokštele, integruota navigacijos juosta, aiški informacijos šoninė juosta su registracijos mygtukais bei interaktyviu žemėlapiu, atnaujintas posėdžių darbotvarkių ir dokumentų pateikimas bei 3 stulpelių susijusių renginių tinklelis
 - ✨ **Hero karuselės palaiko tiesioginį redagavimą ir vienos skaidrės optimizavimą** — turinti tik vieną skaidrę karuselė automatiškai pateikiama kaip statiška viso pločio antraštė be karuselės valdiklių ar papildomos apkrovos, o viso ekrano redaktoriuje tekstą, mygtukus ir fono nuotraukas galima redaguoti tiesiogiai puslapyje
-
-## v1.43 — Turinio redagavimas (2026-09-04) {#v1-43}
-
+- ✨ **Kalendoriaus juostoje aiškesnis kelias į visus renginius** — viršutinis veiksmas dabar atidaro visą renginių sąrašą, o kalendoriaus sinchronizavimas lieka apačioje
+- 🔧 **Telefono viršutinė juosta tikrai persijungia kartu su tema** — paspaudus šviesaus ar tamsaus režimo mygtuką puslapio tema ir naršyklės spalva dabar pakeičiamos tuo pačiu paspaudimu, nelaukiant vėlesnio DOM atnaujinimo
+- ✨ **Nauja svetainės apatinė dalis (footer) ir jos valdymas** — aiški kontaktų, socialinių tinklų ir nuorodų struktūra bei administratoriams skirta galimybė patogiai valdyti iki 4 navigacijos stulpelių administravimo skydelyje
+- ✨ **Akordeono blokas pradeda nuo pirmo punkto** — kuriant naują išsiskleidžiančio turinio bloką iš karto galima įrašyti pirmą klausimą ir jo turinį
 - ✨ **Paprastoms sekcijoms galima parinkti tarpus** — sekcija be fono pagal nutylėjimą išlaiko įprastus vertikalius tarpus, bet gali naudoti kompaktiškus arba visai jų neturėti; nebereikalingas „Akcento“ pateikimas pašalintas
 - ✨ **Antraštės sekcijos nuotrauka redaguojama aiškiau** — nuotraukos valdikliai kompaktiškai sugrupuoti, dekoracijos atskirtos nuo nuotraukos ir jos fokuso nustatymų, o viso ekrano redaktoriuje galima perjungti šviesų arba tamsų vaizdą, paslėpti redagavimo žymes peržiūrai ir išsaugoti negrįžtant į formą
-- 🔧 **Antraštės sekcija redaguojant nebešokinėja** — centruota antraštė lieka centruota ir didžiosiomis raidėmis užbaigus teksto redagavimą, o dviejų stulpelių antraštės nustatymų mygtuko nebeuždengia viršutinė juosta
-
-## v1.42 — Mobiliojo naršymo spalvos (2026-09-04) {#v1-42}
-
-- 🔧 **Telefono viršutinė juosta keičia spalvą iš karto** — perjungus šviesų ar tamsų režimą, spalva aplink priekinę telefono kamerą dabar iš karto dera prie puslapio
-
-## v1.41 — Viešos svetainės navigacija (2026-09-04) {#v1-41}
-
+- ✨ **Tinklalaidžių ir garso įrašų pateikimas** — dviejų stulpelių blokas su aprašymu, mygtukais ir integruotu „Spotify“ ar „Mixcloud“ grotuvu
+- ✨ **Naujienų pateikimas ir kategorijų žymės** — aiškesnė pagrindinės naujienos struktūra, susijusios naujienos su linijomis bei kategorijų žymės
+- ✨ **Partnerių skiltis vietoje skaidrių karuselės** — aiškus ir tvarkingas organizacijos rėmėjų bei partnerių logotipų tinklelis
 - ✨ **„Mano VU SA“ tapo aiškiu navigacijos mygtuku** — paskyros nuoroda antroje meniu juostoje dabar dera prie kitų svetainės valdiklių, o vietoje profilio nuotraukos naudojama aiški paskyros piktograma
-
-## v1.40 — Viešos svetainės pranešimai (2026-09-04) {#v1-40}
-
 - ✨ **Viešos svetainės pranešimai suvienodinti** — slapukų priminimas ir pranešimai dabar priderinti prie naujo svetainės stiliaus, o bandomojoje aplinkoje įspėjimas rodomas kaip nuolatinis pranešimas, neužimantis vietos puslapyje
-
-## v1.39 — Viešos svetainės navigacija (2026-09-03) {#v1-39}
-
+- 🔧 **Bandomosios (staging) aplinkos izoliacija** — užtikrinta, kad bandomoji aplinka nesiųstų el. laiškų tikriems vartotojams ir negalėtų modifikuoti ar ištrinti gamybinės „SharePoint“ saugyklos failų
 - 🔧 **Padalinių žemėlapis atsidaro ir priartėja sklandžiai** — `+`, `−` ir padalinių grupės nebeperkrauna vaizdo, pakartotinai atidarytas meniu nebesusitraukia pavėluotai, tamsiame režime nebesumirksi baltas fonas, o priartinimo mygtukai priderinti prie naujo viešos svetainės stiliaus
+- 🔧 **Antraštės sekcija redaguojant nebešokinėja** — centruota antraštė lieka centruota ir didžiosiomis raidėmis užbaigus teksto redagavimą, o dviejų stulpelių antraštės nustatymų mygtuko nebeuždengia viršutinė juosta
+- 🔧 **Narių registracijos laiškų patikra** — patvirtintas automatinis pranešimų apie naują nario registraciją siuntimas
 
 ## v1.38 — Angliška darbotvarkė ir pertraukos (2026-09-02) {#v1-38}
 

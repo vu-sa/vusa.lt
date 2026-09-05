@@ -7,32 +7,31 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
-## v1.44 — Calendar event page design (2026-09-05) {#v1-44}
+## v2.0 — Public site redesign and visual content editor (2026-09-05) {#v2-0}
 
+> All updates and improvements from this branch (feature/new-style) are consolidated into the v2.0 release.
+
+- ⭐ **New public website design** — modern editorial typography (Atkinson Hyperlegible), warm paper and deep dark palettes, sharp architectural lines, and a unified design token system, keeping the admin surface untouched
+- ⭐ **Built-in accessibility menu** — native drawer lets visitors adjust text size, enable high contrast, and underline links without third-party scripts (UserWay) or performance overhead
+- ⭐ **Full-screen WYSIWYG rich content editor** — edit copy, buttons, images, and section settings directly on the live public layout with instant preview and save
+- ✨ **Refreshed navigation and full-bleed mega menu** — two-tier navigation enhanced with full-measure mega menus, contextual link descriptions, rich photo cards, category headings, and instant hover response
 - ✨ **Calendar event page updated to editorial style** — full-bleed hero with tabular date plate, integrated breadcrumbs, clear facts sidebar with registration actions and interactive map, editorial meeting agenda and documents, and a 3-column related events card grid
 - ✨ **Hero carousels support inline editing and single-slide optimization** — a carousel with a single slide renders directly as a static full-bleed hero without carousel controls or layout overhead, and the full-screen editor supports inline editing for copy, call-to-action buttons, and slide photos
-
-## v1.43 — Content editing (2026-09-04) {#v1-43}
-
-- ✨ **Plain sections have spacing choices** — a section without a background keeps the standard vertical spacing by default, but can use compact spacing or none; the unnecessary “Emphasis” presentation has been removed
-- ✨ **Hero images are clearer to edit** — image controls are compactly grouped, decorations have their own control apart from image and focal-point settings, and the full-screen editor can switch theme, hide editing markers for preview, and save without returning to the form
-- 🔧 **Hero sections no longer jump while editing** — a centered title stays centered and uppercase after editing, and the split layout’s settings button is no longer covered by the top bar
-
-## v1.42 — Mobile browser colours (2026-09-04) {#v1-42}
-
-- 🔧 **The phone’s top bar changes colour immediately** — switching between light and dark mode now immediately updates the area around the phone’s front camera to match the page
-
-## v1.41 — Public-site navigation (2026-09-04) {#v1-41}
-
+- ✨ **The calendar band has a clearer route to all events** — its upper action now opens the complete event list, while calendar synchronization remains at the bottom
+- 🔧 **The phone’s top bar now truly switches with the theme** — pressing the light or dark mode button updates both the page theme and browser colour in the same click instead of waiting for a later DOM update
+- ✨ **Editorial footer and footer navigation management** — redesigned footer layout with contact details and social links, plus an admin interface to manage up to 4 footer navigation columns
+- ✨ **Accordion blocks start with their first item** — creating a new expandable-content block immediately provides a place to enter the first question and its content
+- ✨ **Plain sections have spacing choices** — a section without a background keeps standard vertical spacing by default, but can use compact spacing or none; unnecessary presentation choices have been removed
+- ✨ **Hero images are clearer to edit** — image controls are compactly grouped, decorations have their own control apart from image and focal-point settings, and the full-screen editor supports theme switching and preview
+- ✨ **Podcast promo display for audio embeds** — two-column layout with rich text, action buttons, and integrated Spotify or Mixcloud players
+- ✨ **Modernized news layout and category tags** — featured article presentation, clean hairline article list, and category chip integration
+- ✨ **Partners grid replacing banner carousel** — clean and responsive partner and sponsor showcase instead of a rotating banner carousel
 - ✨ **“Mano VU SA” is now a clear navigation button** — the account link in the second menu row now matches the site controls, with a clear account icon instead of a profile photo
-
-## v1.40 — Public-site notices (2026-09-04) {#v1-40}
-
-- ✨ **Public-site notices are now consistent** — the cookie reminder and notifications now match the new site style, while the staging warning appears as a persistent notice without taking space from the page
-
-## v1.39 — Public-site navigation (2026-09-03) {#v1-39}
-
-- 🔧 **The tenant map opens and zooms smoothly** — `+`, `−`, and tenant clusters no longer reload the view, a reopened menu no longer collapses from a stale delay, dark mode no longer flashes white, and the zoom controls now match the new public-site styling
+- ✨ **Public-site notices are now consistent** — the cookie reminder and notifications match the new site style, while the staging warning appears as a persistent notice without taking space from the page
+- 🔧 **Staging environment isolation** — strict safeguards prevent staging environments from sending external user notifications or altering production SharePoint files and folders
+- 🔧 **The tenant map opens and zooms smoothly** — `+`, `−`, and tenant clusters no longer reload the view, a reopened menu no longer collapses from a stale delay, dark mode no longer flashes white, and zoom controls match the new public-site styling
+- 🔧 **Hero sections no longer jump while editing** — a centered title stays centered and uppercase after editing, and the split layout’s settings button is no longer covered by the top bar
+- 🔧 **Member registration notification verification** — verified automated email notifications when new members register
 
 ## v1.38 — English agendas and breaks (2026-09-02) {#v1-38}
 
