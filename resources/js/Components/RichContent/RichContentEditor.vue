@@ -331,7 +331,7 @@ watch(el, (newEl) => {
       onEnd: () => {
         isDragging.value = false;
       },
-      onUpdate: (e: any) => {
+      onUpdate: (e: { oldIndex?: number; newIndex?: number }) => {
         if (!contents.value || e.oldIndex === undefined || e.newIndex === undefined) return;
         commit();
         moveArrayElement(contents.value, e.oldIndex, e.newIndex);

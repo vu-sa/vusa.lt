@@ -45,7 +45,7 @@
               <p class="truncate font-medium text-foreground">
                 {{ slide.title || `${$t('rich-content.slide')} ${index + 1}` }}
               </p>
-              <p v-if="slide.eyebrow" class="truncate text-[10px] text-muted-foreground">
+              <p v-if="slide.eyebrow" class="truncate text-xs text-muted-foreground">
                 {{ slide.eyebrow }}
               </p>
             </div>

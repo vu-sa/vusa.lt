@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 
 import BlockPickerDialog from '../BlockPickerDialog.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 async function mountDialog() {
@@ -119,5 +120,22 @@ describe('BlockPickerDialog', () => {
     await flushPromises();
 
     expect((wrapper.find('input[type="search"]').element as HTMLInputElement).value).toBe('');
+  });
+
+  it('marks migrated fullscreen-editable blocks with a badge and removes "new" badges', async () => {
+    const wrapper = await mountDialog();
+    expect(wrapper.text()).not.toContain('rich-content.new_badge');
+    expect(wrapper.text()).toContain('rich-content.fullscreen_badge');
+
+    // Hero is inlineEditable, so its button must carry the fullscreen badge
+    const heroBtn = wrapper.findAll('button').find(b => b.text().includes('Hero'));
+    expect(heroBtn?.text()).toContain('rich-content.fullscreen_badge');
+
+    // tiptap is not inlineEditable, so it should not carry the fullscreen badge
+    const tiptapBtn = wrapper.findAll('button').find(b => b.text().includes('Tekstas') && !b.text().includes('Teksto laukas'));
+    expect(tiptapBtn?.text()).not.toContain('rich-content.fullscreen_badge');
+
+    await flushPromises();
+    wrapper.unmount();
   });
 });

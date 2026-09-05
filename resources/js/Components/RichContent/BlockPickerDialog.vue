@@ -53,8 +53,22 @@
               <span class="min-w-0 flex-1">
                 <span class="flex items-center gap-1.5">
                   <span class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ type.label }}</span>
-                  <Badge v-if="type.isNew" variant="success" size="tiny">
+                  <Badge
+                    v-if="type.isNew"
+                    variant="success"
+                    size="tiny"
+                  >
                     {{ $t('rich-content.new_badge') }}
+                  </Badge>
+                  <Badge
+                    v-if="type.inlineEditable"
+                    variant="outline"
+                    size="tiny"
+                    class="shrink-0 gap-1 border-zinc-200 bg-white/70 font-normal text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-300"
+                    :title="$t('rich-content.fullscreen_editable_hint')"
+                  >
+                    <IFluentFullScreenMaximize24Regular class="h-2.5 w-2.5 shrink-0" />
+                    <span>{{ $t('rich-content.fullscreen_badge') }}</span>
                   </Badge>
                 </span>
                 <span v-if="type.description" class="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -109,9 +123,28 @@
           </div>
           <div v-if="previewedContentType" class="flex items-center justify-between gap-3 border-t border-zinc-100 p-3 dark:border-zinc-800">
             <div class="min-w-0">
-              <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {{ previewedContentType.label }}
-              </p>
+              <div class="flex items-center gap-1.5">
+                <p class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  {{ previewedContentType.label }}
+                </p>
+                <Badge
+                  v-if="previewedContentType.isNew"
+                  variant="success"
+                  size="tiny"
+                >
+                  {{ $t('rich-content.new_badge') }}
+                </Badge>
+                <Badge
+                  v-if="previewedContentType.inlineEditable"
+                  variant="outline"
+                  size="tiny"
+                  class="shrink-0 gap-1 border-zinc-200 bg-white/70 font-normal text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/70 dark:text-zinc-300"
+                  :title="$t('rich-content.fullscreen_editable_hint')"
+                >
+                  <IFluentFullScreenMaximize24Regular class="h-2.5 w-2.5 shrink-0" />
+                  <span>{{ $t('rich-content.fullscreen_badge') }}</span>
+                </Badge>
+              </div>
               <p v-if="previewedContentType.description" class="truncate text-xs text-zinc-500 dark:text-zinc-400">
                 {{ previewedContentType.description }}
               </p>
@@ -138,6 +171,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
+import IFluentFullScreenMaximize24Regular from '~icons/fluent/full-screen-maximize-24-regular';
 
 // Wide enough that section-chrome blocks (hero, card-stack, …) render at something
 // close to their real proportions before being scaled down to fit the pane.
@@ -179,7 +213,11 @@ const filteredTypes = computed(() => {
   }
   const query = searchTerm.value.trim().toLowerCase();
   if (query) {
-    types = types.filter(t => t.label.toLowerCase().includes(query) || t.description?.toLowerCase().includes(query));
+    types = types.filter(t =>
+      t.label.toLowerCase().includes(query)
+      || t.description?.toLowerCase().includes(query)
+      || (t.inlineEditable && ('ekranas'.includes(query) || 'fullscreen'.includes(query))),
+    );
   }
   return types;
 });

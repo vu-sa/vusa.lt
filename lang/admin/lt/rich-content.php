@@ -70,6 +70,8 @@ return [
     // Full-screen editor (Editor/Fullscreen/*)
     'fullscreen_editor' => 'Redaguoti per visą ekraną',
     'close_fullscreen_editor' => 'Uždaryti',
+    'fullscreen_badge' => 'Visas ekranas',
+    'fullscreen_editable_hint' => 'Palaiko tiesioginį redagavimą per visą ekraną',
     'edit_mode' => 'Redagavimo režimas',
     'edit_mode_hint' => 'Spustelėkite tekstą, raudonus taškus ar mygtukus, kad juos redaguotumėte.',
     'preview_mode_hint' => 'Taip turinį matys lankytojai.',

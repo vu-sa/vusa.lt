@@ -70,6 +70,8 @@ return [
     // Full-screen editor (Editor/Fullscreen/*)
     'fullscreen_editor' => 'Full-screen editor',
     'close_fullscreen_editor' => 'Close',
+    'fullscreen_badge' => 'Full screen',
+    'fullscreen_editable_hint' => 'Supports direct full-screen editing',
     'edit_mode' => 'Edit mode',
     'edit_mode_hint' => 'Click text, red dots, or buttons to edit them.',
     'preview_mode_hint' => 'This is how visitors will see the content.',
