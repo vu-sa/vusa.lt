@@ -1,14 +1,16 @@
 name: CI
 
+# `push` is deliberately limited to the two branches that need a run of their own: main and dev are
+# what deploy.yml / deploy-staging.yml hang their `workflow_run` triggers off. Every other branch is
+# covered by `pull_request` — listing them under `push` as well made each push to a branch with an
+# open PR start CI twice, and the two runs never cancel each other because their concurrency keys
+# differ (`refs/heads/<branch>` vs `refs/pull/<n>/merge`).
 on:
   push:
-    branches-ignore:
-      - 'dependabot/npm_and_yarn/*'
-      - 'dependabot/composer/*'
+    branches:
+      - main
+      - dev
   pull_request:
-    branches-ignore:
-      - 'dependabot/npm_and_yarn/*'
-      - 'dependabot/composer/*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

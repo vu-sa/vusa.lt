@@ -130,7 +130,9 @@ describe('the deploy workflows', function () use ($shared, $source) {
         $staging = $source('.github/workflows/deploy-staging.yml');
 
         expect($staging)->toContain('--commit "$sha"')
-            ->and($staging)->toContain('--event push')
+            // Not `--event push`: CI only pushes on main and dev, so a feature branch's green run is
+            // a pull_request one, reported against this same head SHA.
+            ->and($staging)->not->toContain('--event push')
             ->and($staging)->toContain('--status success')
             ->and($staging)->toContain('git merge-base --is-ancestor origin/dev "$sha"')
             ->and($staging)->toContain('remote-sha: ${{ needs.resolve.outputs.sha }}')
@@ -143,11 +145,16 @@ describe('the deploy workflows', function () use ($shared, $source) {
             ->not->toContain('inputs.remote-branch');
     });
 
-    it('runs CI for pushed feature branches', function () use ($source): void {
+    // A push to a branch with an open PR fires `push` and `pull_request` both, and the two runs
+    // never cancel each other (their concurrency keys are `refs/heads/<branch>` and
+    // `refs/pull/<n>/merge`). Only main and dev need a push run of their own — they are what the two
+    // deploy workflows hang their `workflow_run` triggers off.
+    it('runs CI once per push by limiting the push trigger to the deploy branches', function () use ($source): void {
         $ci = $source('.github/workflows/ci.yml');
 
-        expect($ci)->toContain("push:\n    branches-ignore:")
-            ->not->toContain("push:\n    branches:\n      - main");
+        expect($ci)->toContain("push:\n    branches:\n      - main\n      - dev")
+            ->and($ci)->toContain('pull_request:')
+            ->and($ci)->not->toContain("push:\n    branches-ignore:");
     });
 });
 
