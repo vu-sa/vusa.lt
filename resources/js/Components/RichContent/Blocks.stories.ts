@@ -135,12 +135,6 @@ export const Section: Story = { render: () => renderBlock('section') };
 export const ProcessSteps: Story = { render: () => renderBlock('process-steps') };
 
 /**
- * The brand-filled band a page closes on — the loudest thing it is allowed. The fixture keeps
- * `bleed: false` so it stays inside the story frame; on a real page it runs edge to edge.
- */
-export const CtaBand: Story = { render: () => renderBlock('cta-band') };
-
-/**
  * The same `content-grid`, with `dividers` on: gaps become 1px rules and each column paints over
  * them. This is the design's panelled grid — no cards, no shadows, just hairlines.
  */

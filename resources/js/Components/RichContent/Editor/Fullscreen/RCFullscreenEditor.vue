@@ -52,13 +52,14 @@
           </Button>
         </div>
 
-        <main class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
+        <main ref="canvasRef" class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
           <div
             v-for="(content, index) in contents ?? []" :key="getBlockKey(content)"
             :class="['relative', blockLayoutClasses(content)]"
+            :data-rc-block-key="getBlockKey(content)"
           >
             <RCInsertAffordance
-              v-if="!isPreviewing && index > 0"
+              v-if="!isPreviewing"
               :quick-add-types
               @insert="insertAt($event, index)"
               @more="openInsertMenuAt(index)"
@@ -177,6 +178,7 @@ defineEmits<{
 
 const contents = defineModel<ContentPart[]>('contents');
 const isPreviewing = ref(false);
+const canvasRef = ref<HTMLElement | null>(null);
 
 provide(ACTIVE_HOTSPOT_KEY, useActiveHotspot());
 
@@ -190,10 +192,20 @@ function getBlockKey(content: ContentPart): string {
 
 const bandMap = computed<Map<ContentPart, BandResolution>>(() => resolveBands(contents.value ?? []));
 
+function scrollToBlock(blockKey: string): void {
+  requestAnimationFrame(() => {
+    Array.from(canvasRef.value?.querySelectorAll<HTMLElement>('[data-rc-block-key]') ?? [])
+      .find(element => element.dataset.rcBlockKey === blockKey)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
+
 function moveBlock(from: number, to: number): void {
   if (!contents.value || to < 0 || to >= contents.value.length) return;
+  const movedBlockKey = getBlockKey(contents.value[from]!);
   props.history.commit();
   moveArrayElement(contents.value, from, to);
+  scrollToBlock(movedBlockKey);
   requestAnimationFrame(() => props.history.commit());
 }
 

@@ -81,8 +81,8 @@ describe('RCSpotifyPromoDisplay', () => {
     expect(wrapper.find('section').classes()).toContain('rc-viewport');
   });
 
-  // `.rc-band` is what lets two adjacent full-bleed bands (this, EventCalendarElement,
-  // CtaBandDisplay) collapse their touching borders into one hairline instead of a doubled
+  // `.rc-band` is what lets two adjacent full-bleed bands (this, EventCalendarElement)
+  // collapse their touching borders into one hairline instead of a doubled
   // line — see the `.rc-canvas>*:has(>.rc-band)+*:has(>.rc-band)>.rc-band` rule in canvas.css.
   // Losing this class from the bordered root silently brings the doubled-border bug back.
   it('marks the bordered root with .rc-band so adjacent bands can collapse their shared border', () => {

@@ -19,8 +19,15 @@ const stubs = {
   CardBlockToolbar: { template: '<div class="card-toolbar" />' },
   NumberStatBlockToolbar: { template: '<div class="number-stat-toolbar" />' },
   FlowGraphBlockToolbar: { template: '<div class="flow-graph-toolbar" />' },
+  CardStackBlockToolbar: { template: '<div class="card-stack-toolbar" />' },
+  CarouselSlideDeckBlockToolbar: { template: '<div class="carousel-slide-deck-toolbar" />' },
+  ProcessStepsBlockToolbar: { template: '<div class="process-steps-toolbar" />' },
   RCImageListBlockToolbar: { template: '<div class="image-list-toolbar" />' },
   RCBlockToolbarShell: { template: '<div class="block-toolbar"><slot /></div>' },
+  RCSectionToolbarOptions: {
+    props: ['presentationDisabled'],
+    template: '<div class="section-toolbar-options"><div class="presentation-picker" :data-disabled="presentationDisabled" /></div>',
+  },
   RCWidthPicker: { template: '<div />' },
   RCPresentationPicker: {
     props: ['disabled'],
@@ -77,6 +84,9 @@ describe('RCFullscreenBlock', () => {
     ['flow-graph', '.flow-graph-toolbar'],
     ['image-grid', '.image-list-toolbar'],
     ['photo-gallery', '.image-list-toolbar'],
+    ['card-stack', '.card-stack-toolbar'],
+    ['carousel-slide-deck', '.carousel-slide-deck-toolbar'],
+    ['process-steps', '.process-steps-toolbar'],
   ])('routes %s to its dedicated toolbar, not the generic fallback', (type, toolbarSelector) => {
     const wrapper = mount(RCFullscreenBlock, {
       props: {

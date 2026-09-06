@@ -9,14 +9,29 @@
     <div class="relative max-w-lg mx-auto">
       <!-- Stack of Cards -->
       <div ref="stackRef" class="relative h-80 perspective-1000">
-        <RCAddPlaceholder v-if="editable" :label="$t('rich-content.add_card')" class="right-0 top-1/2 -translate-y-1/2 translate-x-full" @click="addCard" />
+        <RCAddPlaceholder v-if="editable && element.json_content.length > 0" :label="$t('rich-content.add_card')" class="right-0 top-1/2 -translate-y-1/2 translate-x-full" @click="addCard" />
+        <div
+          v-if="editable && element.json_content.length === 0"
+          class="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-border p-8 text-center"
+        >
+          <p class="mb-4 text-sm text-muted-foreground">
+            {{ $t('rich-content.no_cards') }}
+          </p>
+          <Button variant="outline" size="sm" @click="addCard">
+            <IFluentAdd12Regular class="mr-1 size-3.5" />
+            {{ $t('rich-content.add_card') }}
+          </Button>
+        </div>
         <div
           v-for="(card, index) in element.json_content"
           :key="index"
+          role="button"
+          tabindex="0"
           class="group/card absolute inset-0 cursor-pointer transition-all duration-700 ease-in-out transform-gpu"
           :data-rc-interactive="editable ? '' : undefined"
           :style="getCardStyle(index)"
           @click="onCardClick(index)"
+          @keydown.enter="onCardClick(index)"
         >
           <!-- Fully opaque (`bg-card`, not a tint) — a translucent fill lets the cards
                stacked underneath show through
@@ -44,11 +59,15 @@
             <div :class="['flex flex-col', !card.icon && 'flex-1 justify-center']">
               <h3 class="text-xl sm:text-xl font-bold mb-3 md:mb-4 text-foreground">
                 <RCInlineText v-if="editable" as="span" :model-value="card.title" :editable :placeholder="$t('rich-content.enter_title')" @click.stop @update:model-value="updateCard(index, { ...card, title: $event })" />
-                <template v-else>{{ card.title }}</template>
+                <template v-else>
+                  {{ card.title }}
+                </template>
               </h3>
               <p class="text-[14.5px] sm:text-base text-muted-foreground leading-relaxed">
                 <RCInlineText v-if="editable" as="span" :model-value="card.description" :editable :placeholder="$t('rich-content.enter_description')" @click.stop @update:model-value="updateCard(index, { ...card, description: $event })" />
-                <template v-else>{{ card.description }}</template>
+                <template v-else>
+                  {{ card.description }}
+                </template>
               </p>
             </div>
           </div>
@@ -119,6 +138,7 @@ import type { CardStack } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
+import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentChevronLeft24Regular from '~icons/fluent/chevron-left-24-regular';
 import IFluentChevronRight24Regular from '~icons/fluent/chevron-right-24-regular';

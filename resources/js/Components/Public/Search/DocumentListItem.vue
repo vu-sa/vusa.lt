@@ -74,6 +74,21 @@
                     </TooltipTrigger>
                     <TooltipContent side="bottom">{{ $t('copy_link') }}</TooltipContent>
                   </Tooltip>
+
+                  <Tooltip v-if="calendarEventUrl">
+                    <TooltipTrigger as-child>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        :aria-label="$t('Peržiūrėti posėdį')"
+                        class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
+                        @click.prevent.stop="openCalendarEvent"
+                      >
+                        <IFluentCalendarLtr20Regular class="size-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{{ $t('Peržiūrėti posėdį') }}</TooltipContent>
+                  </Tooltip>
                 </div>
               </TooltipProvider>
             </div>
@@ -152,6 +167,7 @@
 </template>
 
 <script setup lang="ts">
+import { router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -217,6 +233,10 @@ const downloadUrl = computed(() => {
   return `${base}${separator}download=1`;
 });
 
+const calendarEventUrl = computed(() => props.document.calendar_event_id
+  ? route('calendar.event', { calendar: props.document.calendar_event_id })
+  : undefined);
+
 // Open document in new tab
 const openDocument = () => {
   if (documentUrl.value) {
@@ -230,6 +250,12 @@ const downloadDocument = () => {
   if (downloadUrl.value) {
     trackDocumentClick();
     window.open(downloadUrl.value, '_blank', 'noopener,noreferrer');
+  }
+};
+
+const openCalendarEvent = () => {
+  if (calendarEventUrl.value) {
+    router.visit(calendarEventUrl.value);
   }
 };
 

@@ -102,7 +102,7 @@
             @update:model-value="updateGalleryOptions({ showLightbox: $event })"
           />
         </div>
-        <RCSectionOptions v-model="galleryOptions" />
+        <RCSectionToolbarOptions v-model="galleryOptions" />
       </template>
     </div>
 
@@ -121,7 +121,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { withWidth } from '../blockWidth';
-import RCSectionOptions from '../RCSectionOptions.vue';
+import RCSectionToolbarOptions from '../RCSectionToolbarOptions.vue';
 import RCWidthPicker from '../RCWidthPicker.vue';
 
 import RCBlockToolbarShell from './RCBlockToolbarShell.vue';

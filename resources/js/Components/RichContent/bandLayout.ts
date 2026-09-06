@@ -68,11 +68,7 @@ export function resolveBand(element: LayoutableElement, slot: number): BandResol
   const width = (element.options?.width as BlockWidth | undefined) ?? contentType.defaultWidth;
   const bleeds = width === 'full';
 
-  // cta-band is always the one loud band a page is allowed — see its own docblock —
-  // regardless of what options.presentation says (it has no presentation control at all).
-  const tint: BandTint = element.type === 'cta-band'
-    ? 'emphasis'
-    : (slot % 2 === 0 ? 'canvas' : 'tint');
+  const tint: BandTint = slot % 2 === 0 ? 'canvas' : 'tint';
 
   const classes = [
     'rc-band',
@@ -103,7 +99,6 @@ export function withCompactPadding(band: BandResolution): BandResolution {
  * - A `flow`-role type never consumes a slot (it was never in the running).
  * - `presentation: 'plain'` forces flow and does not consume a slot either — a block
  *   opting out must not shift its neighbours' tints.
- * - `cta-band` consumes a slot like every other band, but always uses its fixed emphasis tint.
  * - Every part following a `section` marker is forced flow until the next marker,
  *   `wraps: 'none'`, or a self-spaced band that renders an independent section.
  */

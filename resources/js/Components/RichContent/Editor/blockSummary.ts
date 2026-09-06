@@ -118,8 +118,6 @@ export function deriveBlockSummary(part: ContentPart): string {
       const rest = steps.length > 1 ? ` (+${steps.length - 1})` : '';
       return truncate(steps[0]?.title || noTitle()) + rest;
     }
-    case 'cta-band':
-      return json?.heading ? truncate(json.heading) : '—';
     case 'person-quote':
       return json?.snapshot?.name ? truncate(json.snapshot.name) : '—';
     case 'timetable': {

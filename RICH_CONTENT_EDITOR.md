@@ -119,3 +119,27 @@ first ("a wrap in a wrap"). `TiptapFormattingButtons` and `TipTapMarkButton` tak
 that switches `size`/`variant` from the toolbar's `sm`/`outline`/`default` to the bubble's
 `icon-sm`/`ghost`/`secondary` — pass `bubble` wherever a control is mounted inside a
 `BubbleMenu`, never inside the fixed toolbar.
+
+## Initial default content seeding for repeatable blocks
+
+When defining a block type with repeatable items (`card-stack`, `carousel-slide-deck`, `image-grid`, `process-steps`), `defaultContent` in `Types/index.ts` must seed at least one default item (or the minimal viable set, e.g. 1 slide for `carousel-slide-deck`, 1 card for `card-stack`, 3 steps for `process-steps`). Never leave the initial array empty `[]` — an empty block inserted onto the canvas has no visible elements to click or edit inline, forcing the author to search for an add affordance before they can begin.
+
+## Multi-item blocks in More Options toolbar (`*BlockToolbar.vue`)
+
+Blocks that manage collections of items (`hero-carousel`, `carousel-slide-deck`, `card-stack`, `process-steps`, `image-grid`, `link-list` manual mode) must expose item management in their More Options popover (`*BlockToolbar.vue`):
+
+- **Compact, scrollable list**: Display items in a scrollable list capped at `max-h-48 overflow-y-auto` so the toolbar popover does not push off the viewport.
+- **Order controls**: Each item must have move up / move down buttons (with boundary disabling `index === 0` / `index === items.length - 1`) so authors can quickly reorder items without drag-and-drop complexity.
+- **Add and remove affordances**: A clear "Add item" button in the section header, and a remove button on each item (disabled or hidden when at the minimum item count).
+- **Secondary field editors**: Secondary properties (such as icons, images, or detailed text) should open focused modals (`Dialog`, `ImageSelector`), not inline accordions.
+- **Never embed `DynamicListInput` in a toolbar**: `DynamicListInput` is built for the side form, not the compact toolbar popover.
+
+## Section chrome in More Options (`RCSectionToolbarOptions`)
+
+For blocks that support `RCSection` chrome (`usesSectionChrome: true`), the More Options toolbar must give authors access to the optional section header:
+
+- **"Add section" when absent**: When a block has no title, subtitle, or eyebrow, render an "Add section" button. Clicking it activates the section fields so the author can configure the title, subtitle, eyebrow, alignment, and heading level.
+- **"Remove section" when present**: When section header fields are active, render the section fields alongside a remove button that resets the title, subtitle, and eyebrow.
+- **Consistent component**: Use `RCSectionToolbarOptions` across all block toolbars rather than hand-rolling section toggles or embedding the sidebar's `RCSectionOptions` accordion.
+- **Always-accessible presentation**: Block presentation (plain, soft, card) and padding must remain configurable via `RCPresentationPicker` whether or not a section header is active.
+

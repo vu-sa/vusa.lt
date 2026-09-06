@@ -240,20 +240,6 @@ export interface ProcessSteps {
   };
 }
 
-/** The brand-filled band a page closes on. At most one per page — it is the loudest thing there. */
-export interface CtaBand {
-  json_content: {
-    heading?: string;
-    text?: string;
-    /** Contact facts beside the copy — an email, a room number. */
-    items?: { icon?: string; label: string }[];
-    button?: { label: string; href: string };
-  };
-  options: {
-    width?: BlockWidth;
-  } | null;
-}
-
 export interface NumberStatSection {
   json_content: {
     endNumber: number;

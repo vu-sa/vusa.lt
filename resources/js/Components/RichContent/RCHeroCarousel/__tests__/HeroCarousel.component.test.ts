@@ -175,6 +175,15 @@ describe('HeroCarouselDisplay', () => {
     expect(large.find('.carousel-item-stub div').classes()).toContain('min-h-[40rem]');
   });
 
+  it('uses a smaller bottom offset for bottom-aligned copy in the small height preset', () => {
+    const small = mount(HeroCarouselDisplay, { props: { element: makeElement([], { height: 'sm' }) }, global: { stubs } });
+    const medium = mount(HeroCarouselDisplay, { props: { element: makeElement([], { height: 'md' }) }, global: { stubs } });
+
+    // jsdom cannot lay out Tailwind utilities, so assert the responsive padding wiring.
+    expect(small.find('.carousel-item-stub .relative.z-10').classes()).toEqual(expect.arrayContaining(['pb-16', 'sm:pb-20']));
+    expect(medium.find('.carousel-item-stub .relative.z-10').classes()).toEqual(expect.arrayContaining(['pb-20', 'sm:pb-24']));
+  });
+
   it('renders a static hero without carousel stub when there is only one slide', () => {
     const element = makeElement();
     element.json_content = [element.json_content[0]!];

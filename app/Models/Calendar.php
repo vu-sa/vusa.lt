@@ -191,6 +191,7 @@ class Calendar extends Model implements HasMedia
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
+            $calendar->syncMeetingDocumentsSearchIndex();
         });
 
         static::deleted(function ($calendar): void {
@@ -198,7 +199,29 @@ class Calendar extends Model implements HasMedia
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
+            $calendar->syncMeetingDocumentsSearchIndex();
         });
+
+        static::restored(fn (self $calendar) => $calendar->syncMeetingDocumentsSearchIndex());
+    }
+
+    private function syncMeetingDocumentsSearchIndex(): void
+    {
+        $meetingIds = array_filter([
+            $this->meeting_id,
+            $this->wasChanged('meeting_id') ? $this->getOriginal('meeting_id') : null,
+        ]);
+
+        if ($meetingIds === []) {
+            return;
+        }
+
+        Document::query()
+            ->whereIn('meeting_id', $meetingIds)
+            ->whereNotNull('anonymous_url')
+            ->get()
+            ->each
+            ->searchable();
     }
 
     public function tenant(): BelongsTo

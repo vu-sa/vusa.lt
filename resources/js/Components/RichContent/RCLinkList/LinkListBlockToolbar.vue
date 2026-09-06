@@ -14,15 +14,9 @@
         <RCWidthPicker :model-value="currentWidth" :allowed-widths @update:model-value="setWidth" />
       </div>
 
-      <LinkListOptionsFields v-model="content" v-model:options="options" />
+      <LinkListOptionsFields v-model="content" v-model:options="options" toolbar />
 
-      <RCPresentationPicker
-        :model-value="presentation"
-        :plain-padding
-        :disabled="presentationDisabled"
-        @update:model-value="setPresentation"
-        @update:plain-padding="setPlainPadding"
-      />
+      <RCSectionToolbarOptions v-model="options" :presentation-disabled />
     </div>
   </RCBlockToolbarShell>
 </template>
@@ -40,7 +34,7 @@ import { computed, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
-import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
+import RCSectionToolbarOptions from '../Editor/RCSectionToolbarOptions.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';

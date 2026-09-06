@@ -1,5 +1,6 @@
 import { describe, test, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { router } from '@inertiajs/vue3';
 
 vi.mock('vue-sonner', () => ({
   toast: {
@@ -8,6 +9,7 @@ vi.mock('vue-sonner', () => ({
     info: vi.fn(),
   },
 }));
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import DocumentListItem from '../DocumentListItem.vue';
 
@@ -83,6 +85,30 @@ describe('DocumentListItem', () => {
     });
 
     expect(wrapper.findAll('button')).toHaveLength(3); // Open + Download + Copy-link
+  });
+
+  test('visits the meeting event when the document belongs to an announced meeting', async () => {
+    const wrapper = mount(DocumentListItem, {
+      props: { document: { ...baseDocument, calendar_event_id: 42 } },
+      global: { stubs },
+    });
+
+    expect(wrapper.findAll('button')).toHaveLength(4); // Open + Download + Copy-link + Calendar event
+    const meetingButton = wrapper.find('button[aria-label="Peržiūrėti posėdį"]');
+    expect(meetingButton.exists()).toBe(true);
+
+    await meetingButton.trigger('click');
+
+    expect(router.visit).toHaveBeenCalledWith('/mocked-route/calendar.event?calendar=42');
+  });
+
+  test('hides the calendar event button when no event is available', () => {
+    const wrapper = mount(DocumentListItem, {
+      props: { document: baseDocument },
+      global: { stubs },
+    });
+
+    expect(wrapper.findAll('button')).toHaveLength(3);
   });
 
   test('renders the link badge only for shortcut documents', () => {

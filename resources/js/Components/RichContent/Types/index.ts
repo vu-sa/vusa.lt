@@ -27,7 +27,6 @@ import PersonQuoteIcon from '~icons/fluent/text-quote24-regular';
 import SectionIcon from '~icons/fluent/text-header-1-24-regular';
 import TimetableIcon from '~icons/fluent/calendar-clock20-regular';
 import ProcessStepsIcon from '~icons/fluent/text-number-list-ltr-24-regular';
-import CtaBandIcon from '~icons/fluent/megaphone-loud-24-regular';
 import InstitutionListIcon from '~icons/fluent/building-multiple24-regular';
 
 /**
@@ -70,7 +69,7 @@ export interface ContentType {
    * options (title/eyebrow/presentation/…) via RCSectionOptions. RCBlockCard uses this
    * to decide whether to show the "this block is a section" indicator chip. Orthogonal
    * to `bandRole` — a type can render a `SectionHeader` without ever being a band (none
-   * currently do), or vice versa (`hero-carousel`, `cta-band`).
+   * currently do), or vice versa (`hero-carousel`).
    */
   usesSectionChrome?: boolean;
 
@@ -536,7 +535,18 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     // (background/padding) regardless of width, so authors can still narrow them.
     allowedWidths: ['content', 'wide', 'full'],
     selfSpaced: true,
-    defaultContent: () => ([]),
+    defaultContent: () => ([
+      {
+        icon: 'info',
+        badge: '',
+        title: '',
+        description: '',
+        imageSrc: '',
+        imageAlt: '',
+        imageLeft: false,
+        decorations: [],
+      },
+    ]),
     defaultOptions: () => ({
       autoplay: true,
       autoplayDelay: 8000,
@@ -620,7 +630,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     // `prose` lets a card stack align with a `prose` text block.
     allowedWidths: ['prose', 'content', 'wide', 'full'],
     selfSpaced: true,
-    defaultContent: () => ([]),
+    defaultContent: () => ([
+      { icon: '', title: '', description: '' },
+    ]),
     defaultOptions: () => ({
       autoplay: true,
       autoplayDelay: 5000,
@@ -816,36 +828,6 @@ export const contentTypeRegistry: Record<string, ContentType> = {
             <Skeleton class="h-5 w-32" />
             <Skeleton class="h-12 w-full" />
           </div>
-        </div>
-      `,
-    },
-  },
-  'cta-band': {
-    value: 'cta-band',
-    label: 'Kvietimas veikti',
-    icon: CtaBandIcon,
-    description: 'Firminės spalvos juosta su antrašte ir mygtuku',
-    isNew: false,
-    category: 'section',
-    defaultWidth: 'full',
-    // Locked to full: the band paints its own ground edge to edge, so a narrower canvas column
-    // would just clip the fill without changing where the copy sits.
-    allowedWidths: ['full'],
-    selfSpaced: true,
-    defaultContent: () => ({ heading: '', text: '', items: [], button: { label: '', href: '' } }),
-    defaultOptions: () => ({}),
-    // Always the one loud emphasis band, regardless of options.presentation (it has no
-    // presentation control at all) — see resolveBand's cta-band special-case.
-    bandRole: 'band',
-    editor: defineAsyncComponent(() => import('./CtaBandEditor.vue')),
-    display: defineAsyncComponent(() => import('../RCCtaBand/CtaBandDisplay.vue')),
-    skeleton: {
-      height: 'min-h-[160px]',
-      template: `
-        <div class="flex w-full flex-col gap-4 bg-secondary/40 px-5 py-14 sm:px-6 lg:px-8 lg:py-20">
-          <Skeleton class="h-9 w-72 max-w-full" />
-          <Skeleton class="h-5 w-full max-w-xl" />
-          <Skeleton class="h-12 w-48" />
         </div>
       `,
     },

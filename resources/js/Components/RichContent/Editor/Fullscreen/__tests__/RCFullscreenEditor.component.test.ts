@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 
 // `debouncedFetchPreview` echoes back one fake resolved payload per requested part,
@@ -13,6 +13,7 @@ vi.mock('../../../composables/useContentPartPreview', () => ({
 }));
 
 import RCFullscreenEditor from '../RCFullscreenEditor.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 const stubs = {
@@ -20,16 +21,22 @@ const stubs = {
   BlockPickerDialog: { template: '<div />' },
   DarkModeButton: { template: '<button class="dark-mode-toggle" />' },
   RCFullscreenBlock: {
+    name: 'RCFullscreenBlock',
     props: ['content', 'resolved', 'blockKey'],
-    template: '<div class="rc-block-stub" :data-block-key="blockKey" :data-resolved="JSON.stringify(resolved)" />',
+    emits: ['move-up'],
+    template: '<button class="rc-block-stub" :data-block-key="blockKey" :data-resolved="JSON.stringify(resolved)" @click="$emit(\'move-up\')" />',
   },
-  RCInsertAffordance: { template: '<div />' },
+  RCInsertAffordance: { template: '<div class="insert-affordance" />' },
   RCSideBySideDialog: { template: '<div />' },
 };
 
 describe('RCFullscreenEditor', () => {
   beforeEach(() => {
     fetchPreviewMock.mockClear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('emits save from the toolbar so the parent form can persist the document', async () => {
@@ -69,6 +76,50 @@ describe('RCFullscreenEditor', () => {
     });
 
     expect(wrapper.find('main').classes()).toEqual(expect.arrayContaining(['py-20', 'md:py-28']));
+  });
+
+  it('renders an insert affordance above the first block', () => {
+    const wrapper = mount(RCFullscreenEditor, {
+      props: {
+        contents: [{ type: 'tiptap', json_content: {}, key: 'first-block' }],
+        history: { commit: () => {}, undo: () => {}, redo: () => {}, canUndo: false, canRedo: false },
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.findAll('.insert-affordance')).toHaveLength(2);
+  });
+
+  it('scrolls the moved block into view at its new position', async () => {
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0);
+      return 0;
+    });
+    const wrapper = mount(RCFullscreenEditor, {
+      props: {
+        contents: [
+          { type: 'tiptap', json_content: {}, key: 'first-block' },
+          { type: 'tiptap', json_content: {}, key: 'moved-block' },
+        ],
+        history: { commit: () => {}, undo: () => {}, redo: () => {}, canUndo: false, canRedo: false },
+      },
+      global: { stubs },
+    });
+    const scrollIntoView = vi.fn();
+    const originalScrollIntoView = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
+
+    try {
+      wrapper.findAllComponents({ name: 'RCFullscreenBlock' })[1]!.vm.$emit('move-up');
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
+    } finally {
+      if (originalScrollIntoView) {
+        Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScrollIntoView);
+      } else {
+        delete HTMLElement.prototype.scrollIntoView;
+      }
+    }
   });
 
   it('fetches and shows preview data for a not-yet-saved server-resolved block (no id)', async () => {

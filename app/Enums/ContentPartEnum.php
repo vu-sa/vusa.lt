@@ -30,7 +30,6 @@ enum ContentPartEnum: string
     case PERSON_QUOTE = 'PERSON_QUOTE';
     case SECTION = 'SECTION';
     case PROCESS_STEPS = 'PROCESS_STEPS';
-    case CTA_BAND = 'CTA_BAND';
     case TIMETABLE = 'TIMETABLE';
     case INSTITUTION_LIST = 'INSTITUTION_LIST';
 
@@ -59,7 +58,6 @@ enum ContentPartEnum: string
             self::PERSON_QUOTE => 'person-quote',
             self::SECTION => 'section',
             self::PROCESS_STEPS => 'process-steps',
-            self::CTA_BAND => 'cta-band',
             self::TIMETABLE => 'timetable',
             self::INSTITUTION_LIST => 'institution-list',
         };

@@ -201,18 +201,6 @@ export const contentSamples: Record<string, () => ContentSample> = {
     ],
     options: { title: 'Kaip prisijungti', eyebrow: 'Procesas', columns: 3, align: 'start', background: 'none', padding: 'lg' },
   }),
-  'cta-band': () => ({
-    json_content: {
-      heading: 'Turi klausimų?',
-      text: 'Parašyk mums arba užsuk į biurą – atsakysime į viską, kas rūpi dėl studijų, stipendijų ar atstovavimo.',
-      items: [
-        { icon: 'mail', label: 'info@vusa.lt' },
-        { icon: 'map-pin', label: 'Universiteto g. 3, Vilnius' },
-      ],
-      button: { label: 'Užpildyti užklausą', href: '#' },
-    },
-    options: { bleed: false },
-  }),
   'person-quote': () => ({
     json_content: {
       quote: tiptapDoc(['Narystė VU SA man atvėrė galimybę prisidėti prie realių pokyčių universitete.']),

@@ -85,7 +85,8 @@
               <FieldLabel>{{ $t('rich-content.description') }}</FieldLabel>
               <TiptapEditor
                 :model-value="item.description"
-                preset="full"
+                preset="marks"
+                toolbar="bubble"
                 prose-style
                 @update:model-value="update({ ...item, description: $event })"
               />

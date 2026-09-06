@@ -11,6 +11,9 @@ lastUpdated: true
 
 > Visi šios šakos („feature/new-style“) pakeitimai ir patobulinimai sujungti į v2.0 versiją.
 
+- ✨ **Dokumentų sąraše — susietas renginys** — prie dokumento, parengto posėdžiui ir turinčio paskelbtą kalendoriaus renginį, galima vienu mygtuku atverti to posėdžio renginio puslapį
+- 🔧 **Kompaktiškos hero karuselės geriau sulygiuotos** — pasirinkus mažą aukštį, tekstas dabar yra arčiau apatinio krašto ir nepalieka neproporcingai daug tuščios vietos
+
 - ⭐ **Naujas viešosios svetainės dizainas** — moderni tipografija („Atkinson Hyperlegible“), šilta šviesi paletė ir sodri tamsi tema, griežtos kampuotos formos bei vientisa dizaino žetonų sistema, nepaliečianti vidinės administravimo aplinkos
 - ⭐ **Integruotas prieinamumo meniu** — vietinė prieinamumo juosta leidžia patogiai pasirinkti teksto dydį, įjungti aukštą kontrastą ir pabraukti nuorodas be trečiųjų šalių („UserWay“) įrankių ar papildomos kodo apkrovos
 - ⭐ **Pilno ekrano vizualus turinio redaktorius (WYSIWYG)** — tekstus, mygtukus, nuotraukas ir sekcijų nustatymus puslapiuose ir naujienose galima redaguoti tiesiogiai realiame viešos svetainės vaizde su tiesiogine peržiūra ir išsaugojimu

@@ -25,10 +25,12 @@ function findButtonByText(wrapper: VueWrapper, key: string) {
 }
 
 describe('card-stack', () => {
-  it('editor adds and removes a card via v-model', async () => {
+  it('seeds 1 card by default and adds a card via v-model when empty', async () => {
     const item = createContentItem('card-stack');
+    expect(item.json_content).toHaveLength(1);
+
     const wrapper = mount(CardStackEditor, {
-      props: { modelValue: item.json_content, options: item.options },
+      props: { modelValue: [], options: item.options },
     });
 
     await findButtonByText(wrapper, 'add_first_card').trigger('click');
@@ -82,10 +84,12 @@ describe('card-stack', () => {
 });
 
 describe('carousel-slide-deck', () => {
-  it('editor adds a slide via v-model', async () => {
+  it('seeds 1 slide by default and adds a slide via v-model when empty', async () => {
     const item = createContentItem('carousel-slide-deck');
+    expect(item.json_content).toHaveLength(1);
+
     const wrapper = mount(CarouselSlideDeckEditor, {
-      props: { modelValue: item.json_content, options: item.options },
+      props: { modelValue: [], options: item.options },
       global: { stubs: { TiptapEditor: true } },
     });
 

@@ -5,7 +5,7 @@ import RCImageListBlockToolbar from '../RCImageListBlockToolbar.vue';
 
 const stubs = {
   RCBlockToolbarShell: { template: '<div><slot /></div>' },
-  RCSectionOptions: { template: '<div data-test="section-options" />' },
+  RCSectionToolbarOptions: { template: '<div data-test="section-options" />' },
   RCWidthPicker: {
     props: ['modelValue', 'allowedWidths'],
     template: '<button data-test="width-picker" @click="$emit(\'update:modelValue\', \'full\')">{{ modelValue }}</button>',

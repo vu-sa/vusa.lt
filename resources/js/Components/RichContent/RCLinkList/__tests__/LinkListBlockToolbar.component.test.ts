@@ -13,14 +13,14 @@ const stubs = {
     template: '<div class="shell-stub"><slot /></div>',
   },
   RCWidthPicker: { props: ['modelValue', 'allowedWidths'], emits: ['update:modelValue'], template: '<div class="width-picker-stub" />' },
-  RCPresentationPicker: { props: ['modelValue'], emits: ['update:modelValue'], template: '<div class="presentation-picker-stub" />' },
+  RCSectionToolbarOptions: { props: ['modelValue', 'presentationDisabled'], template: '<div class="section-toolbar-options-stub" />' },
   CollectionSelectDialog: { template: '<div />' },
 };
 
-function makeContent(options: Record<string, unknown> = {}): ContentPart {
+function makeContent(options: Record<string, unknown> = {}, jsonContent: Record<string, unknown> = { links: [] }): ContentPart {
   return {
     type: 'link-list',
-    json_content: { links: [] },
+    json_content: jsonContent,
     options: { source: 'news', mode: 'latest', tenantScope: 'current', limit: 3, style: 'photo', ...options },
   };
 }
@@ -59,9 +59,15 @@ describe('LinkListBlockToolbar', () => {
     expect((emitted!.at(-1)![0] as ContentPart).options).toBeTruthy();
   });
 
-  it('shows the width and presentation pickers', () => {
+  it('shows the width picker and section toolbar options', () => {
     const wrapper = mountToolbar(makeContent());
     expect(wrapper.find('.width-picker-stub').exists()).toBe(true);
-    expect(wrapper.find('.presentation-picker-stub').exists()).toBe(true);
+    expect(wrapper.find('.section-toolbar-options-stub').exists()).toBe(true);
+  });
+
+  it('renders compact manual links with add link button when source is manual', async () => {
+    const wrapper = mountToolbar(makeContent({ source: 'manual' }, { links: [{ title: 'Test link', url: 'https://vusa.lt' }] }));
+    expect(wrapper.find('[data-rc-toolbar-add-link]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Test link');
   });
 });

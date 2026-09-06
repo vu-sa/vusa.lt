@@ -114,6 +114,27 @@
       @move-up="$emit('move-up')" @move-down="$emit('move-down')"
       @delete="$emit('delete')" @open-form="$emit('open-form')"
     />
+    <CardStackBlockToolbar v-else-if="!preview && content.type === 'card-stack'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
+    <CarouselSlideDeckBlockToolbar v-else-if="!preview && content.type === 'carousel-slide-deck'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
+    <ProcessStepsBlockToolbar v-else-if="!preview && content.type === 'process-steps'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
     <RCBlockToolbarShell v-else-if="!preview"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete
@@ -128,12 +149,18 @@
         <RCWidthPicker :model-value="currentWidth" :allowed-widths @update:model-value="setWidth" />
       </div>
       <RCPresentationPicker
-        v-if="isBand"
+        v-if="isBand && !contentType.usesSectionChrome"
         :model-value="presentation"
         :plain-padding
         :disabled="band?.isSectionChild"
         @update:model-value="setPresentation"
         @update:plain-padding="setPlainPadding"
+      />
+      <RCSectionToolbarOptions
+        v-if="contentType.usesSectionChrome"
+        :model-value="sectionOptions"
+        :presentation-disabled="band?.isSectionChild"
+        @update:model-value="setSectionOptions"
       />
     </RCBlockToolbarShell>
   </div>
@@ -173,14 +200,19 @@ import HeroCarouselBlockToolbar from '../../RCHeroCarousel/HeroCarouselBlockTool
 import CardBlockToolbar from '../../RCCard/CardBlockToolbar.vue';
 import NumberStatBlockToolbar from '../../RCNumberStatSection/NumberStatBlockToolbar.vue';
 import FlowGraphBlockToolbar from '../../RCFlowGraph/FlowGraphBlockToolbar.vue';
+import CardStackBlockToolbar from '../../RCCardStack/CardStackBlockToolbar.vue';
+import CarouselSlideDeckBlockToolbar from '../../RCCarouselSlideDeck/CarouselSlideDeckBlockToolbar.vue';
+import ProcessStepsBlockToolbar from '../../RCProcessSteps/ProcessStepsBlockToolbar.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { resolveBandRole, type BandResolution, type BlockPresentation } from '../../bandLayout';
 import type { PlainPadding } from '../../sectionClasses';
+import RCSectionToolbarOptions from '../RCSectionToolbarOptions.vue';
 
 import RCImageListBlockToolbar from './RCImageListBlockToolbar.vue';
 import { injectActiveHotspot } from './useActiveHotspot';
 import RCBlockToolbarShell from './RCBlockToolbarShell.vue';
 
+import type { SectionOptions } from '@/Types/contentParts';
 import { FieldLabel } from '@/Components/ui/field';
 
 const props = defineProps<{
@@ -229,5 +261,11 @@ function setPresentation(value: BlockPresentation): void {
 
 function setPlainPadding(value: PlainPadding): void {
   emit('update:content', { ...props.content, options: { ...(props.content.options ?? {}), plainPadding: value } });
+}
+
+const sectionOptions = computed<SectionOptions>(() => (props.content.options ?? {}) as SectionOptions);
+
+function setSectionOptions(value: SectionOptions): void {
+  emit('update:content', { ...props.content, options: { ...(props.content.options ?? {}), ...value } });
 }
 </script>

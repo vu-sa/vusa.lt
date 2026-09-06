@@ -99,11 +99,6 @@ describe('deriveBlockSummary', () => {
     expect(deriveBlockSummary(part('process-steps', []))).toBe('—');
   });
 
-  it('reads cta-band heading from json_content', () => {
-    expect(deriveBlockSummary(part('cta-band', { heading: 'Prisijunk dabar' }))).toBe('Prisijunk dabar');
-    expect(deriveBlockSummary(part('cta-band', {}))).toBe('—');
-  });
-
   it('reads person-quote name from the snapshot', () => {
     expect(deriveBlockSummary(part('person-quote', { snapshot: { name: 'Jonas Jonaitis' } }))).toBe('Jonas Jonaitis');
     expect(deriveBlockSummary(part('person-quote', { snapshot: { name: '' } }))).toBe('—');

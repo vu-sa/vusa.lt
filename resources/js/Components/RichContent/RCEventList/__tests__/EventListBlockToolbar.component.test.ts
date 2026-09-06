@@ -13,7 +13,7 @@ const stubs = {
     template: '<div class="shell-stub"><slot /></div>',
   },
   RCWidthPicker: { props: ['modelValue', 'allowedWidths'], emits: ['update:modelValue'], template: '<div class="width-picker-stub" />' },
-  RCPresentationPicker: { props: ['modelValue'], emits: ['update:modelValue'], template: '<div class="presentation-picker-stub" />' },
+  RCSectionToolbarOptions: { props: ['modelValue', 'presentationDisabled'], template: '<div class="section-toolbar-options-stub" />' },
 };
 
 function makeContent(options: Record<string, unknown> = {}): ContentPart {
@@ -57,9 +57,9 @@ describe('EventListBlockToolbar', () => {
     expect((emitted!.at(-1)![0] as ContentPart).options).toBeTruthy();
   });
 
-  it('shows the width and presentation pickers', () => {
+  it('shows the width picker and section toolbar options', () => {
     const wrapper = mountToolbar(makeContent());
     expect(wrapper.find('.width-picker-stub').exists()).toBe(true);
-    expect(wrapper.find('.presentation-picker-stub').exists()).toBe(true);
+    expect(wrapper.find('.section-toolbar-options-stub').exists()).toBe(true);
   });
 });

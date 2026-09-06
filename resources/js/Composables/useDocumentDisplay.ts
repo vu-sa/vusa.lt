@@ -18,6 +18,7 @@ export interface DocumentDisplayItem {
   anonymous_url: string;
   share_url?: string;
   link_url?: string | null;
+  calendar_event_id?: number | null;
   tenant_shortname?: string;
   tenant_name?: string;
   institution_name_lt?: string;

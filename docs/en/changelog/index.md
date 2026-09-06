@@ -11,6 +11,9 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
 > All updates and improvements from this branch (feature/new-style) are consolidated into the v2.0 release.
 
+- ✨ **Linked event in the documents list** — a document produced for a meeting with a published calendar announcement now has a button that opens that meeting's event page
+- 🔧 **Compact hero carousels align their copy better** — the small-height setting now positions copy closer to the bottom edge instead of leaving disproportionately large empty space
+
 - ⭐ **New public website design** — modern editorial typography (Atkinson Hyperlegible), warm paper and deep dark palettes, sharp architectural lines, and a unified design token system, keeping the admin surface untouched
 - ⭐ **Built-in accessibility menu** — native drawer lets visitors adjust text size, enable high contrast, and underline links without third-party scripts (UserWay) or performance overhead
 - ⭐ **Full-screen WYSIWYG rich content editor** — edit copy, buttons, images, and section settings directly on the live public layout with instant preview and save

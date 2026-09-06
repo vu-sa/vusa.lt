@@ -188,6 +188,7 @@ const props = defineProps<{
   slide: Slide;
   slideIndex: number;
   slideHeightClass: string;
+  height: NonNullable<HeroCarousel['options']['height']>;
   scrimStrength: 'light' | 'medium' | 'dark';
   isFirstSlide?: boolean;
   editable?: boolean;
@@ -222,10 +223,11 @@ const isDescriptionLive = computed(() => !!props.editable && !!hotspots?.isTextF
 
 function slideContainerClass(align: 'start' | 'center' | 'end'): string {
   const base = 'relative z-10 mx-auto flex min-h-[inherit] max-w-7xl flex-col px-5 pt-24 sm:px-6 lg:px-8';
+  const bottomPadding = props.height === 'sm' ? 'pb-16 sm:pb-20' : 'pb-20 sm:pb-24';
   const map = {
-    start: 'justify-end items-start pb-20 text-left sm:pb-24',
+    start: `justify-end items-start ${bottomPadding} text-left`,
     center: 'items-center justify-center pb-16 text-center',
-    end: 'justify-end items-end pb-20 text-right sm:pb-24',
+    end: `justify-end items-end ${bottomPadding} text-right`,
   } as const;
   return [base, map[align]].join(' ');
 }

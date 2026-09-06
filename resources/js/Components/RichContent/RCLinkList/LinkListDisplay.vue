@@ -57,7 +57,7 @@ import type { BandResolution } from '../bandLayout';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { LocaleEnum } from '@/Types/enums';
-import type { LinkListResolved } from '@/Types/contentParts';
+import type { LinkList, LinkListResolved } from '@/Types/contentParts';
 
 const props = defineProps<{
   element: models.ContentPart;
@@ -87,7 +87,22 @@ const page = usePage();
 const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);
 
 const style = computed(() => props.element.options?.style ?? 'photo');
-const items = computed(() => props.resolved?.items ?? []);
+const items = computed(() => {
+  if (props.resolved?.items && props.resolved.items.length > 0) {
+    return props.resolved.items;
+  }
+  if (props.element.options?.source === 'manual') {
+    const rawLinks = (props.element.json_content as LinkList['json_content'])?.links ?? [];
+    return rawLinks.map((link, i) => ({
+      id: i,
+      title: link.title,
+      href: link.url,
+      imageUrl: link.imageUrl,
+      publishedAt: null,
+    }));
+  }
+  return props.resolved?.items ?? [];
+});
 const isEmpty = computed(() => items.value.length === 0);
 
 function publishedLabel(iso: string | null): string {
