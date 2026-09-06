@@ -10,6 +10,7 @@ export interface TenantOption {
   primary_institution?: {
     short_name?: string;
     image_url?: string;
+    image_focal_point?: string;
   };
   isMainOffice?: boolean;
 }
@@ -44,6 +45,7 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
                 ? tenant.primary_institution.short_name[0]
                 : tenant.primary_institution.short_name || undefined,
               image_url: tenant.primary_institution.image_url || undefined,
+              image_focal_point: tenant.primary_institution.image_focal_point || undefined,
             }
           : undefined,
         isMainOffice: tenant.type === TenantType.Pagrindinis,

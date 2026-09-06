@@ -9,6 +9,7 @@ use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -64,17 +65,19 @@ use Spatie\SchemaOrg\Place;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar forLocale(string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar withoutTrashed()
+ * @method static Builder<static>|Calendar forLocale(string $locale)
+ * @method static Builder<static>|Calendar inCategoryAlias(?string $alias)
+ * @method static Builder<static>|Calendar newModelQuery()
+ * @method static Builder<static>|Calendar newQuery()
+ * @method static Builder<static>|Calendar onlyTrashed()
+ * @method static Builder<static>|Calendar published()
+ * @method static Builder<static>|Calendar query()
+ * @method static Builder<static>|Calendar whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Calendar whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Calendar whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Calendar whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Calendar withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Calendar withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -122,7 +125,8 @@ class Calendar extends Model implements HasMedia
     }
 
     /** Excludes drafts. Shared by every public-facing calendar listing (resolvers, controllers). */
-    public function scopePublished($query)
+    #[Scope]
+    protected function published($query)
     {
         return $query->where('is_draft', false);
     }
@@ -133,7 +137,8 @@ class Calendar extends Model implements HasMedia
      * publication gate — a trashed category (e.g. an old campaign) must still work as
      * one. See the identical rationale in PublicPageController::summerCamps().
      */
-    public function scopeInCategoryAlias($query, ?string $alias)
+    #[Scope]
+    protected function inCategoryAlias($query, ?string $alias)
     {
         if ($alias === null || $alias === '') {
             return $query;

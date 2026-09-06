@@ -107,8 +107,8 @@ it('opening a second hotspot visually closes the first', function (): void {
     $page->page()->waitForSelector('input[placeholder="Įveskite mygtuko tekstą..."]', ['timeout' => 10_000]);
 
     $buttonTextInputs = 'document.querySelectorAll(\'input[placeholder="Įveskite mygtuko tekstą..."]\')';
-    expect($page->script("{$buttonTextInputs}.length"))->toBe(1);
-    expect($page->script("{$buttonTextInputs}[0].value"))->toBe('Sužinoti daugiau');
+    expect($page->script("{$buttonTextInputs}.length"))->toBe(1)
+        ->and($page->script("{$buttonTextInputs}[0].value"))->toBe('Sužinoti daugiau');
 
     $page->assertNoJavaScriptErrors();
 });
@@ -126,20 +126,20 @@ it('keeps a centered hero title uppercase and centered before, during, and after
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[role="heading"] button');
 
-    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textTransform'))->toBe('uppercase');
-    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textAlign'))->toBe('center');
+    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textTransform'))->toBe('uppercase')
+        ->and($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textAlign'))->toBe('center');
 
     $page->click('[role="heading"] button');
     $page->page()->waitForSelector('.rc-hero-title .ProseMirror', ['timeout' => 10_000]);
 
-    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title .ProseMirror p")).textTransform'))->toBe('uppercase');
-    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title .ProseMirror p")).textAlign'))->toBe('center');
+    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title .ProseMirror p")).textTransform'))->toBe('uppercase')
+        ->and($page->script('getComputedStyle(document.querySelector(".rc-hero-title .ProseMirror p")).textAlign'))->toBe('center');
 
     $page->click('button[title="Bloko nustatymai"]');
     $page->page()->waitForSelector('[role="heading"]', ['timeout' => 10_000]);
 
-    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textTransform'))->toBe('uppercase');
-    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textAlign'))->toBe('center');
+    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textTransform'))->toBe('uppercase')
+        ->and($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textAlign'))->toBe('center');
 
     $page->assertNoJavaScriptErrors();
 });
@@ -153,8 +153,8 @@ it('keeps the first split hero left-aligned and its settings trigger below the e
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[role="heading"] button');
 
-    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title")).textAlign'))->toBe('left');
-    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textTransform'))->toBe('uppercase');
+    expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title")).textAlign'))->toBe('left')
+        ->and($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textTransform'))->toBe('uppercase');
     $toolbarTop = $page->script('document.querySelector(\'button[title="Bloko nustatymai"]\').getBoundingClientRect().top');
     $navbarBottom = $page->script('document.querySelector(".sticky.top-0").getBoundingClientRect().bottom');
 
@@ -181,8 +181,8 @@ it('keeps split hero image spotlights beside the image surface', function (): vo
     $imageRight = $page->script('document.querySelector(".rc-fullscreen-block-display img").getBoundingClientRect().right');
     $spotlightRailLeft = $page->script('document.querySelector(\'[data-testid="hero-image-spotlight-rail"]\').getBoundingClientRect().left');
 
-    expect($spotlightRailLeft)->toBeGreaterThanOrEqual($imageRight);
-    expect($page->script('document.querySelectorAll(\'[data-testid="hero-image-spotlight-rail"] [data-rc-interactive]\').length'))->toBe(3);
+    expect($spotlightRailLeft)->toBeGreaterThanOrEqual($imageRight)
+        ->and($page->script('document.querySelectorAll(\'[data-testid="hero-image-spotlight-rail"] [data-rc-interactive]\').length'))->toBe(3);
     $imageRatio = $page->script('(() => { const image = document.querySelector(".rc-fullscreen-block-display img").getBoundingClientRect(); return image.width / image.height; })()');
     expect($imageRatio)->toBeGreaterThan(1.55)->toBeLessThan(1.65);
 
@@ -199,8 +199,8 @@ it('shows the published hero without editing affordances in full-screen preview 
     $page->click('button[title="Peržiūrėti"][aria-pressed="false"]');
     $page->page()->waitForSelector('[data-rc-interactive]', ['state' => 'detached', 'timeout' => 10_000]);
 
-    expect($page->script('document.querySelectorAll("[data-rc-interactive]").length'))->toBe(0);
-    expect($page->script('document.querySelectorAll("button[title=\'Bloko nustatymai\']").length'))->toBe(0);
+    expect($page->script('document.querySelectorAll("[data-rc-interactive]").length'))->toBe(0)
+        ->and($page->script('document.querySelectorAll("button[title=\'Bloko nustatymai\']").length'))->toBe(0);
 
     $page->assertNoJavaScriptErrors();
 });

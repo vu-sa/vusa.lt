@@ -16,7 +16,7 @@ function fakePermissionService(array $permissions): SharepointGraphService
     return new class($permissions) extends SharepointGraphService
     {
         /** @param array<int, Permission> $permissions */
-        public function __construct(private array $permissions)
+        public function __construct(private readonly array $permissions)
         {
             parent::__construct(siteId: 'test-site', driveId: 'test-drive', listId: null);
         }
@@ -84,7 +84,7 @@ describe('applyImportedPublicLink', function (): void {
         $this->apply = function (?array $permission): Document {
             $document = new Document(['sharepoint_id' => 'list-item-id', 'title' => 'Protokolas']);
 
-            (new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink'))
+            new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink')
                 ->invoke(fakePermissionService([]), $document, $permission);
 
             return $document;

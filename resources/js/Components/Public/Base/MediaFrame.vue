@@ -18,6 +18,7 @@
         grayscale && 'grayscale',
         hoverZoom && 'transition-transform duration-400 group-hover:scale-103',
       )"
+      :style="focalPoint ? { objectPosition: focalPoint } : undefined"
     >
     <!-- No photo: an empty frame reads as a broken layout in a grid of otherwise-photographed
          cards, so callers that want the slot visibly filled pass #fallback. Neutral, not
@@ -61,6 +62,8 @@ const props = withDefaults(defineProps<{
   eager?: boolean;
   /** Pairs with a `group` class on an ancestor link. */
   hoverZoom?: boolean;
+  /** Raw CSS `object-position`, e.g. `"50% 30%"` — set via FocalPointPicker. */
+  focalPoint?: string | null;
   class?: HTMLAttributes['class'];
 }>(), {
   src: undefined,

@@ -26,6 +26,7 @@ interface DropdownOption {
   primary_institution?: {
     short_name?: string;
     image_url?: string;
+    image_focal_point?: string;
   };
   isMainOffice?: boolean;
 }
@@ -120,9 +121,10 @@ const renderAvatarToHTML = (option: DropdownOption, isActive: boolean): string =
   const avatarClasses = `map-avatar ${isActive ? 'active' : ''} ${isMainOffice ? 'main-office' : ''}`;
 
   if (avatarUrl) {
+    const objectPosition = option.primary_institution?.image_focal_point ?? '50% 30%';
     return `
       <div class="${avatarClasses}" data-slot="avatar">
-        <img src="${avatarUrl}" alt="${option.label}" class="h-full w-full object-cover" />
+        <img src="${avatarUrl}" alt="${option.label}" class="h-full w-full object-cover" style="object-position: ${objectPosition}" />
       </div>
     `;
   }

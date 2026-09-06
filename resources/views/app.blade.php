@@ -40,8 +40,8 @@
     @endif
 
     {{-- Site-wide structured data schemas --}}
-    @if (isset($page['props']['schemas']))
-        @foreach ($page['props']['schemas'] as $schema)
+    @if (isset($SITE_JSONLD_Schemas) && is_array($SITE_JSONLD_Schemas))
+        @foreach ($SITE_JSONLD_Schemas as $schema)
             {!! $schema->toScript() !!}
         @endforeach
     @endif

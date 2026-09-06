@@ -346,13 +346,11 @@ describe('Tenant subdomain handling', function (): void {
 });
 
 describe('SEO structured data', function (): void {
-    it('shares organization schema', function (): void {
+    it('renders the organization schema into the document head', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->has('schemas')
-        );
+        $response->assertSee('"@type":"Organization"', escape: false);
     });
 });
 

@@ -4,7 +4,7 @@ use App\Models\Content;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('removes spacer content parts without affecting neighbouring blocks', function (): void {
     $content = Content::factory()->create();

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $connection = (string) config('database.default');
@@ -28,7 +28,7 @@ beforeEach(function (): void {
  * This command drops every table in the database it points at. The guard is the only thing that
  * decides which database that is, so it gets tested harder than the happy path.
  */
-describe('the environment guard', function () {
+describe('the environment guard', function (): void {
     test('it refuses to run outside staging', function (string $environment): void {
         config(['app.env' => $environment]);
 
@@ -101,8 +101,8 @@ describe('the environment guard', function () {
     });
 });
 
-describe('scrubbing personal data', function () {
-    beforeEach(function () {
+describe('scrubbing personal data', function (): void {
+    beforeEach(function (): void {
         config([
             'app.env' => 'staging',
             'app.staging_refresh.email_allowlist' => 'keep@vusa.lt, second@vusa.lt',
@@ -152,7 +152,7 @@ describe('scrubbing personal data', function () {
         DB::table('notifications')->insert([
             'id' => Str::uuid()->toString(),
             'type' => 'App\\Notifications\\Test',
-            'notifiable_type' => 'App\\Models\\User',
+            'notifiable_type' => $user->getMorphClass(),
             'notifiable_id' => $user->id,
             'data' => '{}',
             'created_at' => now(),
@@ -225,7 +225,7 @@ describe('scrubbing personal data', function () {
     });
 });
 
-describe('the scheduled task', function () {
+describe('the scheduled task', function (): void {
     test('it is only scheduled on staging', function (): void {
         // Registered from routes/console.php behind the same environment check, so production's
         // scheduler never even lists it.

@@ -94,6 +94,7 @@
                     :src="option.primary_institution.image_url"
                     alt=""
                     class="absolute inset-0 size-full object-cover opacity-60"
+                    :style="{ objectPosition: option.primary_institution.image_focal_point ?? '50% 30%' }"
                   >
                   <span class="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/30" />
                 </template>

@@ -15,6 +15,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Uri;
 use Inertia\Inertia;
 use Laravel\Head\Facades\Head;
@@ -380,8 +381,9 @@ class PublicController extends Controller
 
         $this->shareHreflangAlternates($contentTenant, $canonicalUrl);
 
-        // Add structured data schemas (rendered in Blade via $JSONLD_Schemas / $page['props']['schemas'])
-        Inertia::share('schemas', $this->getStructuredDataSchemas());
+        // Schema objects are view data, never Inertia props: Inertia serialises JsonSerializable
+        // props into arrays, which strips the ->toScript() the root view calls.
+        View::share('SITE_JSONLD_Schemas', $this->getStructuredDataSchemas());
     }
 
     /**

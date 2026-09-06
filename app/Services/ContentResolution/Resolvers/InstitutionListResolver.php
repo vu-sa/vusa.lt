@@ -4,6 +4,7 @@ namespace App\Services\ContentResolution\Resolvers;
 
 use App\Models\ContentPart;
 use App\Models\Institution;
+use App\Models\Type;
 use App\Services\ContentResolution\ResolutionContext;
 use App\Services\ContentResolution\ResolvesContentPart;
 use Illuminate\Support\Collection;
@@ -95,7 +96,7 @@ final class InstitutionListResolver implements ResolvesContentPart
                     'alias' => $tenant->alias,
                     'type' => $tenantTypeValue ?? $tenantType,
                 ] : null,
-                'types' => $institution->types->map(fn ($type) => [
+                'types' => $institution->types->map(fn (Type $type) => [
                     'id' => $type->id,
                     'slug' => $type->slug,
                     'title' => $type->title,

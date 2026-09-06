@@ -115,7 +115,7 @@ test('read only middleware blocks the real file and SharePoint mutation route na
     configureSafeStagingIsolation();
 
     $request = Request::create('/test', 'POST', server: ['HTTP_ACCEPT' => 'application/json']);
-    $route = (new Route('POST', '/test', fn () => null))->name($routeName);
+    $route = new Route('POST', '/test', fn () => null)->name($routeName);
     $request->setRouteResolver(fn () => $route);
 
     $response = app(StagingReadOnlyMode::class)

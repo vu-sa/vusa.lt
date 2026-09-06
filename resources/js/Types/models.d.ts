@@ -136,7 +136,7 @@ declare global {
       // columns
       id: number
       title: string
-      image_url: string | null
+      image_url?: string | null
       link_url: string
       lang: string
       order: number
@@ -654,6 +654,7 @@ declare global {
       email?: string | null
       website?: string | null
       image_url?: string | null
+      image_focal_point?: string | null
       logo_url?: string | null
       facebook_url?: string | null
       instagram_url?: string | null
@@ -942,6 +943,7 @@ declare global {
       // relations
       user?: User
       tenant?: Tenant
+      category?: Category
       other_language_news?: News
       tags?: Tag[]
       content?: Content
@@ -952,6 +954,7 @@ declare global {
       // exists
       user_exists: boolean
       tenant_exists: boolean
+      category_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
@@ -1107,6 +1110,7 @@ declare global {
       email?: string | null
       website?: string | null
       image_url?: string | null
+      image_focal_point?: string | null
       logo_url?: string | null
       facebook_url?: string | null
       instagram_url?: string | null
@@ -1278,6 +1282,7 @@ declare global {
       // relations
       user?: User
       tenant?: Tenant
+      category?: Category
       other_language_news?: News
       tags?: Tag[]
       content?: Content
@@ -1288,6 +1293,7 @@ declare global {
       // exists
       user_exists: boolean
       tenant_exists: boolean
+      category_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
@@ -2061,5 +2067,5 @@ declare global {
     export type TenantType = typeof TenantType[keyof typeof TenantType]
 
   }
-
 }
+

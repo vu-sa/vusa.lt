@@ -115,6 +115,7 @@ class SitemapController extends Controller
                 // Add individual news articles using model-based approach
                 $news = News::where('tenant_id', $tenant->id)
                     ->where('draft', false)
+                    ->where('permalink', '!=', '')
                     ->orderBy('publish_time', 'desc')
                     ->take(1000) // Limit to recent articles
                     ->get();
@@ -144,6 +145,7 @@ class SitemapController extends Controller
                 // Add recent news articles for Google News
                 $recentNews = News::where('tenant_id', $tenant->id)
                     ->where('draft', false)
+                    ->where('permalink', '!=', '')
                     ->where('publish_time', '>=', $cutoffDate)
                     ->orderBy('publish_time', 'desc')
                     ->take(1000)

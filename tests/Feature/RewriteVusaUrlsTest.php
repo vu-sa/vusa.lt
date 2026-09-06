@@ -5,7 +5,7 @@ use App\Models\QuickLink;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 test('rewrites production navigation and quick-link URLs to the configured app URL', function (): void {
     config(['app.url' => 'http://www.vusa.test:8080']);

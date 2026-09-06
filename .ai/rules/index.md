@@ -9,6 +9,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Services/NavigationService.php,app/Http/Requests/NavigationRequest.php,app/Http/Controllers/Admin/NavigationController.php,app/Models/Navigation.php | .ai/rules/admin-models.md |
 | app/Models/Task.php,app/Models/Traits/HasTasks.php,app/Http/Controllers/Admin/TaskController.php | .ai/rules/admin.md |
 | app/** | .ai/rules/app.md |
+| resources/js/Components/Public/Base/MediaFrame.vue | .ai/rules/base.md |
 | tests/Browser/** | .ai/rules/browser.md |
 | app/Models/Cadence.php,app/Policies/CadencePolicy.php,app/Actions/Cadences/**,app/Http/Requests/Cadences/**,resources/js/Components/Cadences/** | .ai/rules/cadences.md |
 | .github/workflows/deploy*.yml,app/Console/Commands/Deployment*.php,app/Console/Commands/StagingRefreshDatabase.php,deployment/** | .ai/rules/commands-console-commands.md |
@@ -17,6 +18,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | config/vusa.php | .ai/rules/config.md |
 | app/Actions/**,app/Models/InstitutionAdministrator.php,app/Services/CommentableMentionResolver.php,app/Console/Commands/SendMeetingReminders.php | .ai/rules/console-commands.md |
 | app/Models/Meeting.php,app/Models/Vote.php,app/Models/Pivots/AgendaItem.php,app/Http/Requests/UpdateAgendaItemRequest.php,app/Http/Controllers/Admin/AgendaItemController.php | .ai/rules/controllers-admin.md |
+| app/Http/Controllers/SitemapController.php,app/Models/News.php | .ai/rules/controllers-models.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
 | resources/css/app.css, resources/css/**/*.css | .ai/rules/css.md |
 | resources/js/Components/Tables/**,resources/js/Components/ui/data-table/** | .ai/rules/data-table.md |

@@ -44,6 +44,7 @@
             :src="institution.image_url"
             :alt="institution.name"
             class="size-full object-cover contrast-105"
+            :style="{ objectPosition: institution.image_focal_point ?? '50% 30%' }"
           >
         </div>
       </div>

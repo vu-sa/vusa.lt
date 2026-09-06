@@ -8,6 +8,7 @@
         <MediaFrame
           :src="institution.image_url ?? undefined"
           :alt="String(institution.name || '')"
+          :focal-point="institution.image_focal_point"
           :grayscale="false"
           hover-zoom
           class="bg-secondary"
@@ -127,6 +128,7 @@ interface InstitutionData {
   phone?: string | null;
   website?: string | null;
   image_url?: string | null;
+  image_focal_point?: string | null;
   logo_url?: string | null;
   facebook_url?: string | null;
   instagram_url?: string | null;

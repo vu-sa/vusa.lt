@@ -32,7 +32,7 @@ $stepPosition = function (string $workflow, string $stepName) use ($source): int
     return $position;
 };
 
-describe('the maintenance window', function () use ($shared, $stepsMatching, $stepPosition) {
+describe('the maintenance window', function () use ($shared, $stepsMatching, $stepPosition): void {
     // The whole point of the pre-flight phase. Extracting vendor and dumping the database were
     // measured at 10-90s and 8-48s of a 1m33s-4m18s production outage, and neither needs the site
     // down: vendor.new is a scratch dir the running app never reads, and deployment:backup dumps
@@ -62,7 +62,7 @@ describe('the maintenance window', function () use ($shared, $stepsMatching, $st
     });
 });
 
-describe('the state the server is in before artisan boots', function () use ($shared, $stepsMatching) {
+describe('the state the server is in before artisan boots', function () use ($shared, $stepsMatching): void {
     // PackageManifest only rebuilds bootstrap/cache/packages.php when the file is missing, so a
     // dropped Composer package stays listed there until something deletes it — and the first artisan
     // boot dies on the missing provider before optimize:clear can run.
@@ -101,7 +101,7 @@ describe('the state the server is in before artisan boots', function () use ($sh
     });
 });
 
-describe('the deploy workflows', function () use ($shared, $source) {
+describe('the deploy workflows', function () use ($shared, $source): void {
     it('share one implementation so they cannot drift', function () use ($shared, $source): void {
         // These two files were ~90 duplicated lines that had already diverged: staging swallowed
         // deploy failures with `|| true`, production never ran git clean, one cleaned up its SSH keys
@@ -158,7 +158,7 @@ describe('the deploy workflows', function () use ($shared, $source) {
     });
 });
 
-describe('the deployment pipeline order', function () {
+describe('the deployment pipeline order', function (): void {
     $keys = array_keys(DeploymentRun::STEPS);
     $indexOf = fn (string $step): int|false => array_search($step, $keys, strict: true);
 
@@ -246,7 +246,7 @@ function frontendSource(): string
     ));
 }
 
-describe('environment template hygiene', function () {
+describe('environment template hygiene', function (): void {
     // Two VITE_ keys (ARCHYVAS/ATSTOVAI passwords) outlived their last consumer and stayed in both
     // .env.example and the deploy workflow, where they were injected into every build as empty
     // strings. Nothing catches that kind of rot by itself, so this does.
@@ -263,7 +263,7 @@ describe('environment template hygiene', function () {
         ));
 
         // Asserted as a list so a failure names the dead keys instead of just saying "not found".
-        expect($unread)->toBe([]);
+        expect($unread)->toBeEmpty();
     });
 
     it('injects only VITE_ variables the frontend reads', function (): void {
@@ -278,6 +278,6 @@ describe('environment template hygiene', function () {
             fn (string $key): bool => ! str_contains($frontend, "import.meta.env.{$key}")
         ));
 
-        expect($unread)->toBe([]);
+        expect($unread)->toBeEmpty();
     });
 });

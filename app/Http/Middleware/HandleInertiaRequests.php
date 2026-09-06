@@ -159,7 +159,7 @@ class HandleInertiaRequests extends Middleware
             fn () => Tenant::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
         );
 
-        $tenants->load('primary_institution:id,short_name,image_url');
+        $tenants->load('primary_institution:id,short_name,image_url,image_focal_point');
 
         return $tenants;
     }

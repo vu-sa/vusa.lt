@@ -28,6 +28,7 @@ const institution = {
   website: '',
   alias: '',
   image_url: null,
+  image_focal_point: null,
   logo_url: null,
   is_active: true,
   tenant_id: null,

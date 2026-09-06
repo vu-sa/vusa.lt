@@ -61,12 +61,12 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read User|null $user
  *
  * @method static \Database\Factories\NewsFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News withoutTrashed()
+ * @method static Builder<static>|News newModelQuery()
+ * @method static Builder<static>|News newQuery()
+ * @method static Builder<static>|News onlyTrashed()
+ * @method static Builder<static>|News query()
+ * @method static Builder<static>|News withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|News withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -77,7 +77,7 @@ class News extends Model implements Feedable, Sitemapable
     use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
 
     /** The conventional prose reading pace, used by {@see readingTimeMinutes()}. */
-    private const WORDS_PER_MINUTE = 200;
+    private const int WORDS_PER_MINUTE = 200;
 
     #[\Override]
     protected function casts(): array

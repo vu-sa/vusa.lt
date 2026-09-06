@@ -51,6 +51,7 @@ use Laravel\Scout\Searchable;
  * @property-read mixed $is_public
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  * @property-read mixed $type_label
  * @property-read mixed $type_slug

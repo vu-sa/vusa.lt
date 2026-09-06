@@ -116,9 +116,8 @@ test('the administrator carries the task alone and is the only one mailed about 
     $meeting = meetingNeedingItsAgendaFilled($this->institution);
 
     expect(agendaCompletionTaskFor($meeting)->users()->pluck('users.id')->all())
-        ->toBe([$this->administrator->id]);
-
-    expect(scheduledMailFor($this->administrator))->toContain(TaskAssignedNotification::class);
+        ->toBe([$this->administrator->id])
+        ->and(scheduledMailFor($this->administrator))->toContain(TaskAssignedNotification::class);
 
     $this->members->each(fn (User $member) => expect(scheduledMailFor($member))
         ->not->toContain(TaskAssignedNotification::class));
@@ -132,8 +131,8 @@ test('auto-completing the agenda mails the administrator, not the members', func
 
     fillEveryAgendaItem($meeting);
 
-    expect(agendaCompletionTaskFor($meeting)->completed_at)->not->toBeNull();
-    expect(scheduledMailFor($this->administrator))->toContain(TaskAutoCompletedNotification::class);
+    expect(agendaCompletionTaskFor($meeting)->completed_at)->not->toBeNull()
+        ->and(scheduledMailFor($this->administrator))->toContain(TaskAutoCompletedNotification::class);
 
     $this->members->each(fn (User $member) => expect(scheduledMailFor($member))->toBeEmpty());
 });
@@ -168,8 +167,8 @@ test('a task reopened after the nomination is re-staffed, and mails only the adm
     $reopener->type = AgendaItemType::Informational;
     $reopener->save();
 
-    expect($task->fresh()->completed_at)->not->toBeNull();
-    expect(scheduledMailFor($this->administrator))->toContain(TaskAutoCompletedNotification::class);
+    expect($task->fresh()->completed_at)->not->toBeNull()
+        ->and(scheduledMailFor($this->administrator))->toContain(TaskAutoCompletedNotification::class);
 
     $this->members->each(fn (User $member) => expect(scheduledMailFor($member))->toBeEmpty());
 });

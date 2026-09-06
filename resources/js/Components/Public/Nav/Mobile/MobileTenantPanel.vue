@@ -8,7 +8,11 @@
         @click="switchTenant(option.key)"
       >
         <Avatar class="size-9 shrink-0 rounded-none">
-          <AvatarImage v-if="option.primary_institution?.image_url" :src="option.primary_institution.image_url" />
+          <AvatarImage
+            v-if="option.primary_institution?.image_url"
+            :src="option.primary_institution.image_url"
+            :style="{ objectPosition: option.primary_institution.image_focal_point ?? '50% 30%' }"
+          />
           <!-- `rounded-none` explicitly: the primitive's base is `rounded-full`, a literal that
                survives the public surface's zeroed radius scale. -->
           <AvatarFallback class="rounded-none bg-secondary text-[0.6875rem] font-bold uppercase tracking-wide text-foreground">
