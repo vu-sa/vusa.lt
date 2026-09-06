@@ -14,6 +14,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ⭐ **New public website design** — modern editorial typography (Atkinson Hyperlegible), warm paper and deep dark palettes, sharp architectural lines, and a unified design token system, keeping the admin surface untouched
 - ⭐ **Built-in accessibility menu** — native drawer lets visitors adjust text size, enable high contrast, and underline links without third-party scripts (UserWay) or performance overhead
 - ⭐ **Full-screen WYSIWYG rich content editor** — edit copy, buttons, images, and section settings directly on the live public layout with instant preview and save
+- ✨ **Flow diagrams work in the full-screen editor** — choose the displayed diagram without leaving the visual editor; red, yellow, border, and arrow treatments now match the new public design
 - ✨ **Image grids and galleries are editable in place** — add, replace, or remove multiple images, update alt text, and choose each image's focal point without leaving the full-screen page preview
 - ✨ **Cards and statistics can be edited in place** — card headings are more prominent, descriptions have a clear place to start, and vertical spacing is configurable; new statistic blocks start with a figure whose number, label, and plus sign can be changed without leaving the full-screen editor
 - ✨ **No separate spacer block is needed** — every content block configures its own vertical spacing, so “Spacer” has been removed from the content editor

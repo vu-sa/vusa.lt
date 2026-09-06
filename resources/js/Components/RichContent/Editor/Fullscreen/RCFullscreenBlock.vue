@@ -100,6 +100,13 @@
       @move-up="$emit('move-up')" @move-down="$emit('move-down')"
       @delete="$emit('delete')" @open-form="$emit('open-form')"
     />
+    <FlowGraphBlockToolbar v-else-if="!preview && content.type === 'flow-graph'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
     <RCImageListBlockToolbar v-else-if="!preview && (content.type === 'image-grid' || content.type === 'photo-gallery')"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete
@@ -165,6 +172,7 @@ import InstitutionListBlockToolbar from '../../RCInstitutionList/InstitutionList
 import HeroCarouselBlockToolbar from '../../RCHeroCarousel/HeroCarouselBlockToolbar.vue';
 import CardBlockToolbar from '../../RCCard/CardBlockToolbar.vue';
 import NumberStatBlockToolbar from '../../RCNumberStatSection/NumberStatBlockToolbar.vue';
+import FlowGraphBlockToolbar from '../../RCFlowGraph/FlowGraphBlockToolbar.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { resolveBandRole, type BandResolution, type BlockPresentation } from '../../bandLayout';
 import type { PlainPadding } from '../../sectionClasses';

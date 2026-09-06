@@ -3,8 +3,22 @@
 use App\Models\Navigation;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 pest()->use(RefreshDatabase::class);
+
+const BROWSER_TEST_IMAGE_PATH = 'public/files/000-browser-test-image.png';
+
+beforeEach(function (): void {
+    Storage::put(
+        BROWSER_TEST_IMAGE_PATH,
+        base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL+XQAAAABJRU5ErkJggg==', strict: true),
+    );
+});
+
+afterEach(function (): void {
+    Storage::delete(BROWSER_TEST_IMAGE_PATH);
+});
 
 it('shows the image preview right after picking a file', function (): void {
     $admin = makeAdminUser(Tenant::query()->first());
@@ -20,9 +34,9 @@ it('shows the image preview right after picking a file', function (): void {
     $page->page()->waitForSelector('button:has-text("Įkelti paveikslėlį")', ['timeout' => 10000]);
     $page->click('button:has-text("Įkelti paveikslėlį")');
 
-    $firstFile = $page->page()->locator('button.aspect-square')->first();
-    $firstFile->waitFor(['state' => 'visible', 'timeout' => 15000]);
-    $firstFile->click();
+    $testImage = $page->page()->locator('button:has-text("000-browser-test-image.png")');
+    $testImage->waitFor(['state' => 'visible', 'timeout' => 15000]);
+    $testImage->click();
 
     $page->page()->locator('button:has-text("Toliau")')->first()->click();
     $page->page()->waitForSelector('input[maxlength="125"]', ['timeout' => 10000]);

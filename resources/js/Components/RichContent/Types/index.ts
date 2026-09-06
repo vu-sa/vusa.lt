@@ -419,6 +419,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultWidth: 'wide',
     allowedWidths: ['content', 'wide', 'full'],
     defaultContent: () => ({ preset: 'VusaStructure' }),
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./FlowGraphEditor.vue')),
     display: defineAsyncComponent(() => import('../RCFlowGraph.vue')),
   },

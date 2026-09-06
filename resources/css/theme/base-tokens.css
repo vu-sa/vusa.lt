@@ -19,6 +19,8 @@
   --color-brand: var(--brand);
   --color-brand-fill: var(--brand-fill);
   --color-brand-foreground: var(--brand-foreground);
+  --color-brand-fixed: var(--brand-fixed);
+  --color-brand-fixed-foreground: var(--brand-fixed-foreground);
   --color-ink: var(--ink);
 }
 
@@ -56,6 +58,10 @@
   --brand: oklch(0.42 0.145 25);
   --brand-fill: oklch(0.42 0.145 25);
   --brand-foreground: oklch(0.98 0.003 85);
+  /* Some diagrams encode meaning with the VU SA red itself, so their red nodes must
+     not become amber when the surrounding surface switches to dark mode. */
+  --brand-fixed: oklch(0.42 0.145 25);
+  --brand-fixed-foreground: oklch(0.98 0.003 85);
   /* Fixed-dark ground for surfaces that lay white type over a photograph — the hero, the
      mega menu's featured card, the podcast panel. Deliberately NOT theme-swapped: the scrim
      is what keeps the copy legible, so it has to stay dark in light mode too. */

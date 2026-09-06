@@ -18,6 +18,7 @@ const stubs = {
   NewsBlockToolbar: { template: '<div class="news-toolbar" />' },
   CardBlockToolbar: { template: '<div class="card-toolbar" />' },
   NumberStatBlockToolbar: { template: '<div class="number-stat-toolbar" />' },
+  FlowGraphBlockToolbar: { template: '<div class="flow-graph-toolbar" />' },
   RCImageListBlockToolbar: { template: '<div class="image-list-toolbar" />' },
   RCBlockToolbarShell: { template: '<div class="block-toolbar"><slot /></div>' },
   RCWidthPicker: { template: '<div />' },
@@ -73,6 +74,7 @@ describe('RCFullscreenBlock', () => {
     ['news', '.news-toolbar'],
     ['shadcn-card', '.card-toolbar'],
     ['number-stat-section', '.number-stat-toolbar'],
+    ['flow-graph', '.flow-graph-toolbar'],
     ['image-grid', '.image-list-toolbar'],
     ['photo-gallery', '.image-list-toolbar'],
   ])('routes %s to its dedicated toolbar, not the generic fallback', (type, toolbarSelector) => {

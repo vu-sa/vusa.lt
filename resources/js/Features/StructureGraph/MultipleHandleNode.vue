@@ -1,5 +1,7 @@
 <template>
-  <button class="h-full w-full" :class="[data.nodeClass]" @mouseenter="handleOpen" @mouseleave="handleClose"
+  <button type="button"
+    class="h-full w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+    :class="[data.nodeClass]" @mouseenter="handleOpen" @mouseleave="handleClose"
     @blur="handleClose" @focus="handleOpen">
     <!-- <component :is="data.label" /> -->
     <span v-if="typeof data.label === 'string'" :class="[data.textClass]"
@@ -39,13 +41,14 @@
       <Handle id="bottom-right" :position="Position.Bottom" style="left: 75%" />
     </template>
   </button>
-  <NodeToolbar v-if="data.description || data.url" class="text-xs shadow-sm max-w-md rounded-sm bg-slate-50 p-3"
-    :is-visible position="top" @mouseenter="isOnToolbar = true" @mouseleave="handleToolbarLeave">
+  <NodeToolbar v-if="data.description || data.url" class="max-w-md border border-border bg-popover p-3 text-xs text-popover-foreground shadow-sm"
+    :is-visible position="top" @mouseenter="isOnToolbar = true" @mouseleave="handleToolbarLeave"
+    @focusin="isOnToolbar = true" @focusout="handleToolbarLeave">
     <strong v-if="typeof data.label === 'string'" class="block">{{ data.label }}</strong>
     {{
       data.description }}
-    <a v-if="data.url" rel="noopener noreferrer" :href="data.url" target="_blank" class="underline" @click.stop
-      @mouseenter="isOnToolbar = true">Nuoroda</a>
+    <a v-if="data.url" rel="noopener noreferrer" :href="data.url" target="_blank" class="text-brand underline"
+      @click.stop @mouseenter="isOnToolbar = true" @focus="isOnToolbar = true">Nuoroda</a>
   </NodeToolbar>
 </template>
 

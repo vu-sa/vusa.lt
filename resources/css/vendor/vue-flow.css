@@ -1,54 +1,66 @@
 /* Vue Flow custom styling */
-.basic-flow.dark {
-  background: #2d3748;
-  color: #fffffb;
+.basic-flow {
+  background: var(--card);
+  color: var(--foreground);
 }
 
-.basic-flow.dark .vue-flow__node {
-  background: #4a5568;
-  color: #fffffb;
-}
-
-.basic-flow.dark .vue-flow__node.selected {
-  background: #333;
-  box-shadow: 0 0 0 2px #2563eb;
+.basic-flow .vue-flow__node.selected {
+  box-shadow: 0 0 0 2px var(--brand);
 }
 
 .basic-flow .vue-flow__controls {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 4px;
-}
-
-.basic-flow.dark .vue-flow__controls {
-  border: 1px solid #EEEEEE;
+  gap: 0.25rem;
+  border: 1px solid var(--border);
+  background: var(--popover);
+  box-shadow: none;
 }
 
 .basic-flow .vue-flow__controls .vue-flow__controls-button {
-  border: none;
-  @apply bg-zinc-200/60 rounded-md px-3 cursor-pointer;
+  cursor: pointer;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button:hover {
+  background: var(--accent);
+  color: var(--brand);
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
 }
 
 .basic-flow .vue-flow__controls .vue-flow__controls-button svg {
-  height: 12px;
   width: 12px;
-}
-
-.basic-flow .vue-flow__controls .vue-flow__controls-button {
-  @apply border border-zinc-200 dark:border-zinc-500/30 bg-zinc-200/60 dark:bg-zinc-600 dark:fill-zinc-50 transition-shadow;
+  height: 12px;
+  fill: currentColor;
 }
 
 .basic-flow .vue-flow__edge-text {
-  @apply fill-zinc-900 dark:fill-zinc-50;
+  fill: var(--foreground);
 }
 
-.basic-flow .vue-flow__node-multiple-handle {
-  @apply border border-zinc-300 dark:border-zinc-600;
+.basic-flow .vue-flow__edge-path {
+  stroke: var(--muted-foreground);
 }
 
 .basic-flow .vue-flow__edge-textbg {
-  @apply fill-zinc-50 dark:fill-zinc-900;
+  fill: var(--card);
+}
+
+.basic-flow :is(.vue-flow__node-multiple-handle, .vue-flow__handle) {
+  border: 1px solid var(--muted-foreground);
+  background: var(--muted);
 }
 
 /* Overwrite padding for node div, so button would use it */
@@ -56,4 +68,10 @@
 .vue-flow__node-input,
 .vue-flow__node-output {
   padding: 0;
+}
+
+.basic-flow .vue-flow__node-default {
+  border-radius: 0;
+  border-color: var(--border);
+  background: var(--secondary);
 }

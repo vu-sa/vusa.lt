@@ -9,9 +9,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * The mail queue page reached the way an admin actually reaches it: by clicking the system
- * status card. Both the card link and the page's own bundle are client-side only, so a Feature
- * request test proves the props and nothing about whether the page renders.
+ * The mail queue page is reached the way an admin actually reaches it: through Administration
+ * and then the system-status card. Both links and the page bundle are client-side only, so a
+ * Feature request test proves the props and nothing about whether the page renders.
  */
 beforeEach(function (): void {
     $this->admin = makeAdminUser(Tenant::query()->first());
@@ -30,7 +30,10 @@ it('opens from the system status card and lists the pending digest', function ()
 
     expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
 
-    $page->navigate('/mano/system-status');
+    $page->click('a[href$="/mano/administration"]');
+    waitForInertiaRender($page, 'a[href$="/mano/system-status"]');
+
+    $page->click('a[href$="/mano/system-status"]');
     waitForInertiaRender($page, 'a[href$="/mano/mail-queue"]');
 
     $page->click('a[href$="/mano/mail-queue"]');
