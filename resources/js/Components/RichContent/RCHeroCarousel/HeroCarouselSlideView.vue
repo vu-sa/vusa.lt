@@ -1,12 +1,12 @@
 <template>
   <div :class="['relative', slideHeightClass]">
-    <!-- Grayscale background photograph -->
+    <!-- Background photograph, grayscale by default -->
     <img
       v-if="slide.imageSrc"
       :src="slide.imageSrc"
       :alt="slide.imageAlt"
       :style="slide.objectPosition ? { objectPosition: slide.objectPosition } : undefined"
-      :class="['absolute inset-0 size-full object-cover object-center grayscale', SCRIM_IMAGE_OPACITY[scrimStrength]]"
+      :class="['absolute inset-0 size-full object-cover object-center', grayscale && 'grayscale', SCRIM_IMAGE_OPACITY[scrimStrength]]"
       :loading="isFirstSlide ? 'eager' : 'lazy'"
       :fetchpriority="isFirstSlide ? 'high' : undefined"
       draggable="false"
@@ -190,6 +190,7 @@ const props = defineProps<{
   slideHeightClass: string;
   height: NonNullable<HeroCarousel['options']['height']>;
   scrimStrength: 'light' | 'medium' | 'dark';
+  grayscale: boolean;
   isFirstSlide?: boolean;
   editable?: boolean;
   blockKey?: string;

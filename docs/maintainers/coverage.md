@@ -38,7 +38,6 @@ Ranked by how much tested behaviour goes unexplained.
 | `comments` | Comment | yes | — | 9/10 | — |
 | `contacts` | — | — | — | 4/6 | — |
 | `contentParts` | ContentPart | — | — | 1/1 | — |
-| `curatorRegistrations` | — | — | — | 0/1 | — |
 | `dashboard` | — | — | — | 4/4 | — |
 | `document` | Document | — | — | 0/1 | — |
 | `documents` | Document | — | — | 5/8 | — |

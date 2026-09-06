@@ -14,183 +14,43 @@
       />
     </div>
 
-    <HeroBlockToolbar v-if="!preview && content.type === 'hero'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')"
-      @move-down="$emit('move-down')"
-      @delete="$emit('delete')"
-      @open-form="$emit('open-form')"
-    />
-    <SectionBlockToolbar v-else-if="!preview && content.type === 'section'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')"
-      @move-down="$emit('move-down')"
-      @delete="$emit('delete')"
-      @open-form="$emit('open-form')"
-    />
-    <LinkListBlockToolbar v-else-if="!preview && content.type === 'link-list'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')"
-      @move-down="$emit('move-down')"
-      @delete="$emit('delete')"
-      @open-form="$emit('open-form')"
-    />
-    <EventListBlockToolbar v-else-if="!preview && content.type === 'event-list'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')"
-      @move-down="$emit('move-down')"
-      @delete="$emit('delete')"
-      @open-form="$emit('open-form')"
-    />
-    <CalendarBlockToolbar v-else-if="!preview && content.type === 'calendar'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')"
-      @move-down="$emit('move-down')"
-      @delete="$emit('delete')"
-      @open-form="$emit('open-form')"
-    />
-    <NewsBlockToolbar v-else-if="!preview && content.type === 'news'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')"
-      @move-down="$emit('move-down')"
-      @delete="$emit('delete')"
-      @open-form="$emit('open-form')"
-    />
-    <InstitutionListBlockToolbar v-else-if="!preview && content.type === 'institution-list'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')"
-      @move-down="$emit('move-down')"
-      @delete="$emit('delete')"
-      @open-form="$emit('open-form')"
-    />
-    <HeroCarouselBlockToolbar v-else-if="!preview && content.type === 'hero-carousel'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')"
-      @move-down="$emit('move-down')"
-      @delete="$emit('delete')"
-      @open-form="$emit('open-form')"
-    />
-    <CardBlockToolbar v-else-if="!preview && content.type === 'shadcn-card'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <NumberStatBlockToolbar v-else-if="!preview && content.type === 'number-stat-section'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <FlowGraphBlockToolbar v-else-if="!preview && content.type === 'flow-graph'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <RCImageListBlockToolbar v-else-if="!preview && (content.type === 'image-grid' || content.type === 'photo-gallery')"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <CardStackBlockToolbar v-else-if="!preview && content.type === 'card-stack'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <CarouselSlideDeckBlockToolbar v-else-if="!preview && content.type === 'carousel-slide-deck'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <ProcessStepsBlockToolbar v-else-if="!preview && content.type === 'process-steps'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <SpotifyBlockToolbar v-else-if="!preview && content.type === 'spotify-embed'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <SocialEmbedBlockToolbar v-else-if="!preview && content.type === 'social-embed'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <TextBoxBlockToolbar v-else-if="!preview && content.type === 'text-box'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <TimetableBlockToolbar v-else-if="!preview && content.type === 'timetable'"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
-      @update:content="$emit('update:content', $event)"
-      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
-      @delete="$emit('delete')" @open-form="$emit('open-form')"
-    />
-    <RCBlockToolbarShell v-else-if="!preview"
-      :content :block-key :reference="rootRef"
-      :can-move-up :can-move-down :can-delete
+    <component
+      :is="activeToolbar"
+      v-if="!preview"
+      :content
+      :block-key
+      :reference="rootRef"
+      :can-move-up
+      :can-move-down
+      :can-delete
+      :presentation-disabled="band?.isSectionChild"
       @update:content="$emit('update:content', $event)"
       @move-up="$emit('move-up')"
       @move-down="$emit('move-down')"
       @delete="$emit('delete')"
       @open-form="$emit('open-form')"
     >
-      <div v-if="allowedWidths.length > 1" class="flex items-center justify-between gap-2">
-        <FieldLabel>{{ $t('rich-content.width') }}</FieldLabel>
-        <RCWidthPicker :model-value="currentWidth" :allowed-widths @update:model-value="setWidth" />
-      </div>
-      <RCPresentationPicker
-        v-if="isBand && !contentType.usesSectionChrome"
-        :model-value="presentation"
-        :plain-padding
-        :disabled="band?.isSectionChild"
-        @update:model-value="setPresentation"
-        @update:plain-padding="setPlainPadding"
-      />
-      <RCSectionToolbarOptions
-        v-if="contentType.usesSectionChrome"
-        :model-value="sectionOptions"
-        :presentation-disabled="band?.isSectionChild"
-        @update:model-value="setSectionOptions"
-      />
-    </RCBlockToolbarShell>
+      <template v-if="activeToolbar === RCBlockToolbarShell">
+        <div v-if="allowedWidths.length > 1" class="flex items-center justify-between gap-2">
+          <FieldLabel>{{ $t('rich-content.width') }}</FieldLabel>
+          <RCWidthPicker :model-value="currentWidth" :allowed-widths @update:model-value="setWidth" />
+        </div>
+        <RCPresentationPicker
+          v-if="isBand && !contentType.usesSectionChrome"
+          :model-value="presentation"
+          :plain-padding
+          :disabled="band?.isSectionChild"
+          @update:model-value="setPresentation"
+          @update:plain-padding="setPlainPadding"
+        />
+        <RCSectionToolbarOptions
+          v-if="contentType.usesSectionChrome"
+          :model-value="sectionOptions"
+          :presentation-disabled="band?.isSectionChild"
+          @update:model-value="setSectionOptions"
+        />
+      </template>
+    </component>
   </div>
 </template>
 
@@ -210,7 +70,7 @@
  * editor (and any future rich inline field) in the same single-live-editor invariant as
  * Hero's hotspots without `BlockPreviewRenderer.vue` needing to know the composable.
  */
-import { computed, ref } from 'vue';
+import { computed, ref, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import BlockPreviewRenderer from '../BlockPreviewRenderer.vue';
@@ -231,6 +91,7 @@ import FlowGraphBlockToolbar from '../../RCFlowGraph/FlowGraphBlockToolbar.vue';
 import CardStackBlockToolbar from '../../RCCardStack/CardStackBlockToolbar.vue';
 import CarouselSlideDeckBlockToolbar from '../../RCCarouselSlideDeck/CarouselSlideDeckBlockToolbar.vue';
 import ProcessStepsBlockToolbar from '../../RCProcessSteps/ProcessStepsBlockToolbar.vue';
+import ContentGridBlockToolbar from '../../RCContentGrid/ContentGridBlockToolbar.vue';
 import SpotifyBlockToolbar from '../../RCSpotify/SpotifyBlockToolbar.vue';
 import SocialEmbedBlockToolbar from '../../RCSocialEmbed/SocialEmbedBlockToolbar.vue';
 import TextBoxBlockToolbar from '../../RCTextBox/TextBoxBlockToolbar.vue';
@@ -275,6 +136,32 @@ function onClaimInlineField(field: string | null): void {
   if (field) hotspots.openTextField(field);
   else hotspots.close();
 }
+
+const blockToolbars: Record<string, Component> = {
+  'hero': HeroBlockToolbar,
+  'section': SectionBlockToolbar,
+  'link-list': LinkListBlockToolbar,
+  'event-list': EventListBlockToolbar,
+  'calendar': CalendarBlockToolbar,
+  'news': NewsBlockToolbar,
+  'institution-list': InstitutionListBlockToolbar,
+  'hero-carousel': HeroCarouselBlockToolbar,
+  'shadcn-card': CardBlockToolbar,
+  'number-stat-section': NumberStatBlockToolbar,
+  'flow-graph': FlowGraphBlockToolbar,
+  'image-grid': RCImageListBlockToolbar,
+  'photo-gallery': RCImageListBlockToolbar,
+  'card-stack': CardStackBlockToolbar,
+  'carousel-slide-deck': CarouselSlideDeckBlockToolbar,
+  'process-steps': ProcessStepsBlockToolbar,
+  'content-grid': ContentGridBlockToolbar,
+  'spotify-embed': SpotifyBlockToolbar,
+  'social-embed': SocialEmbedBlockToolbar,
+  'text-box': TextBoxBlockToolbar,
+  'timetable': TimetableBlockToolbar,
+};
+
+const activeToolbar = computed(() => blockToolbars[props.content.type] ?? RCBlockToolbarShell);
 
 const contentType = computed(() => getContentType(props.content.type));
 const allowedWidths = computed<BlockWidth[]>(() => contentType.value.allowedWidths ?? [contentType.value.defaultWidth]);

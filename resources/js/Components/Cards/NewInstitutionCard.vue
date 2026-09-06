@@ -36,16 +36,18 @@
       </div>
 
       <div class="flex flex-1 flex-col px-5 pb-5 pt-10">
-        <div v-if="showMetadata && (tenantName || displayTypes.length > 0)" class="mb-3 flex flex-wrap items-center gap-1.5">
-          <TagChip v-if="tenantName && !isPkp" variant="muted">
+        <div v-if="showMetadata && ((!hideTenantTag && tenantName) || (!hideTypeTag && displayTypes.length > 0))" class="mb-3 flex flex-wrap items-center gap-1.5">
+          <TagChip v-if="!hideTenantTag && tenantName && !isPkp" variant="muted">
             <span class="normal-case tracking-normal font-medium">{{ tenantName }}</span>
           </TagChip>
-          <TagChip v-for="(type, index) in displayTypes" :key="type.id || index" variant="muted">
-            <span class="normal-case tracking-normal font-medium">{{ type.title }}</span>
-          </TagChip>
-          <span v-if="hasMoreTypes" class="text-xs text-muted-foreground">
-            +{{ (institution.types?.length || 0) - 2 }}
-          </span>
+          <template v-if="!hideTypeTag">
+            <TagChip v-for="(type, index) in displayTypes" :key="type.id || index" variant="muted">
+              <span class="normal-case tracking-normal font-medium">{{ type.title }}</span>
+            </TagChip>
+            <span v-if="hasMoreTypes" class="text-xs text-muted-foreground">
+              +{{ (institution.types?.length || 0) - 2 }}
+            </span>
+          </template>
         </div>
 
         <h3 class="text-pretty text-xl font-bold leading-tight text-foreground transition-colors group-hover:text-brand sm:text-2xl">
@@ -85,7 +87,12 @@
             <span class="sr-only">Instagram</span>
             <ISimpleIconsInstagram class="size-3.5" />
           </a>
-          <span class="ml-auto inline-flex h-9 items-center gap-1.5 border border-border bg-transparent px-3 text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:border-brand group-hover:text-brand">
+          <span
+            :class="[
+              'ml-auto inline-flex h-9 items-center gap-1.5 border border-border bg-transparent px-3',
+              'text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:border-brand group-hover:text-brand',
+            ]"
+          >
             {{ $t('Kontaktai') }}
             <IFluentArrowUpRight16Regular class="size-3.5" />
           </span>
@@ -141,6 +148,8 @@ interface InstitutionData {
 const props = withDefaults(defineProps<{
   institution: InstitutionData | App.Entities.Institution;
   showMetadata?: boolean;
+  hideTenantTag?: boolean;
+  hideTypeTag?: boolean;
   href?: string | null;
 }>(), {
   href: null,
@@ -200,7 +209,7 @@ const hasMoreTypes = computed(() => {
 const isPkp = computed(() => {
   const { tenant, types } = props.institution;
   return tenant?.type === TenantType.Pkp
-    || types?.some((t: any) => t.slug === 'pkp')
+    || types?.some(t => t.slug === 'pkp')
     || false;
 });
 

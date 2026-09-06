@@ -1,8 +1,13 @@
 # Rich-content editor conventions
 
-The full-screen editor is a WYSIWYG canvas, not a second form. It renders the same display
-component and public design surface as the published page. The regular block form remains the
-complete, structured editing fallback.
+The full-screen editor (`RCFullscreenEditor`) is the **primary** WYSIWYG editing canvas. It
+renders the same display component and public design surface as the published page. Admin forms
+(`NewsForm`, `PageForm`) display a clean launcher card with block statistics and open the
+full-screen editor directly.
+
+The structured block forms (`ContentEditorFactory`) serve as an on-demand fallback inside the
+side-by-side editor (`RCSideBySideDialog` — "Redaguoti ir peržiūrėti greta"), opened from any
+block's toolbar split-view action.
 
 ## When migrating a block
 
@@ -32,10 +37,12 @@ The same header owns theme switching and Save. Save emits through `RichContentEd
 `RichContentFormElement` to the surrounding Page, News, or home-page form; never add a
 block-specific save endpoint.
 
-## Regular form convention
+## Side-by-side structured fallback convention
 
-The non-full-screen form is the exhaustive editor. Group related controls in a multiple-open
-accordion, in this order, if applicable:
+When an author needs granular form-based editing for complex properties, the side-by-side dialog
+(`RCSideBySideDialog`) mounts the block's structured form (`ContentEditorFactory`) side-by-side with
+a live preview (`BlockPreviewRenderer`). Group related controls in a multiple-open accordion, in
+this order, if applicable:
 
 1. General — layout, width, presentation, and other block-level choices.
 2. Text — text fields and text-placement options.

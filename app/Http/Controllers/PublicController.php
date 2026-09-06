@@ -51,10 +51,19 @@ class PublicController extends Controller
         // We also need to use the subdomain in the public controllers
         $this->subdomain = $subdomain;
 
+        $locale = request()->route('lang');
+        $locale = is_string($locale) ? $locale : app()->getLocale();
+
         // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
         Inertia::share('tenant', $this->tenant->only(['id', 'shortname', 'alias', 'type']) +
-            ['subdomain' => $subdomain]
+            [
+                'subdomain' => $subdomain,
+                'homeUrl' => route('home', ['subdomain' => $subdomain, 'lang' => $locale]),
+            ]
         );
+
+        // Pages that exist for every tenant override this with "same-page" in their Inertia props.
+        Inertia::share('tenantSwitchTarget', 'home');
 
         // Initialize otherLangURL as null by default - controllers can override this
         Inertia::share('otherLangURL', null);

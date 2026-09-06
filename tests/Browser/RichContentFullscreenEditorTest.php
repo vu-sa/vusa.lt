@@ -53,9 +53,9 @@ it('edits a hero button through its hotspot popover and the change survives a sa
     $page = loginAsAdmin($this->admin);
 
     $page->navigate("/mano/pages/{$this->page->id}/edit");
-    waitForInertiaRender($page, 'button:has-text("Redaguoti per visą ekraną")');
+    waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
 
-    $page->click('button:has-text("Redaguoti per visą ekraną")');
+    $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, 'button:has-text("Registruotis")');
 
     // Click the button hotspot — opens a popover with the button's fields.
@@ -67,7 +67,7 @@ it('edits a hero button through its hotspot popover and the change survives a sa
 
     // Close the full-screen editor — the same live array, so nothing is lost.
     $page->click('button[title="Uždaryti"]');
-    $page->page()->waitForSelector('button:has-text("Redaguoti per visą ekraną")', ['timeout' => 10_000]);
+    $page->page()->waitForSelector('button:has-text("Redaguoti turinį")', ['timeout' => 10_000]);
 
     $page->click('button:has-text("Išsaugoti")');
     waitForInertiaRender($page, '.text-green-600:has-text("Išsaugota")');
@@ -96,8 +96,8 @@ it('opening a second hotspot visually closes the first', function (): void {
 
     $page = loginAsAdmin($this->admin);
     $page->navigate("/mano/pages/{$this->page->id}/edit");
-    waitForInertiaRender($page, 'button:has-text("Redaguoti per visą ekraną")');
-    $page->click('button:has-text("Redaguoti per visą ekraną")');
+    waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
+    $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, 'button:has-text("Registruotis")');
 
     $page->click('button:has-text("Registruotis")');
@@ -122,8 +122,8 @@ it('keeps a centered hero title uppercase and centered before, during, and after
     expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
 
     $page->navigate("/mano/pages/{$this->page->id}/edit");
-    waitForInertiaRender($page, 'button:has-text("Redaguoti per visą ekraną")');
-    $page->click('button:has-text("Redaguoti per visą ekraną")');
+    waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
+    $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[role="heading"] button');
 
     expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title button")).textTransform'))->toBe('uppercase');
@@ -149,8 +149,8 @@ it('keeps the first split hero left-aligned and its settings trigger below the e
     expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
 
     $page->navigate("/mano/pages/{$this->page->id}/edit");
-    waitForInertiaRender($page, 'button:has-text("Redaguoti per visą ekraną")');
-    $page->click('button:has-text("Redaguoti per visą ekraną")');
+    waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
+    $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[role="heading"] button');
 
     expect($page->script('getComputedStyle(document.querySelector(".rc-hero-title")).textAlign'))->toBe('left');
@@ -174,8 +174,8 @@ it('keeps split hero image spotlights beside the image surface', function (): vo
 
     $page = loginAsAdmin($this->admin);
     $page->navigate("/mano/pages/{$this->page->id}/edit");
-    waitForInertiaRender($page, 'button:has-text("Redaguoti per visą ekraną")');
-    $page->click('button:has-text("Redaguoti per visą ekraną")');
+    waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
+    $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[data-testid="hero-image-spotlight-rail"]');
 
     $imageRight = $page->script('document.querySelector(".rc-fullscreen-block-display img").getBoundingClientRect().right');
@@ -192,8 +192,8 @@ it('keeps split hero image spotlights beside the image surface', function (): vo
 it('shows the published hero without editing affordances in full-screen preview mode', function (): void {
     $page = loginAsAdmin($this->admin);
     $page->navigate("/mano/pages/{$this->page->id}/edit");
-    waitForInertiaRender($page, 'button:has-text("Redaguoti per visą ekraną")');
-    $page->click('button:has-text("Redaguoti per visą ekraną")');
+    waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
+    $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[data-rc-interactive]');
 
     $page->click('button[title="Peržiūrėti"][aria-pressed="false"]');

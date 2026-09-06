@@ -372,6 +372,21 @@ describe('Robots directive override', function (): void {
 });
 
 describe('Title suffixes', function (): void {
+    it('shares the English home URL for the current tenant', function (): void {
+        $this->get(route('home', ['subdomain' => 'www', 'lang' => 'en']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('tenant.homeUrl', 'https://www.vusa.test/en')
+            );
+    });
+
+    it('serves documents on a tenant subdomain with that tenant as the switch target', function (): void {
+        $this->get(route('tenant.documents', ['subdomain' => 'mif', 'lang' => 'lt']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Public/ShowDocuments')
+                ->where('tenantSwitchTarget', 'same-page')
+            );
+    });
+
     it('suffixes a news article title with the content-owning tenant, not the accessing one', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->mifTenant->id,

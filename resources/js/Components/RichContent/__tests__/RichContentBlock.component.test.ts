@@ -5,6 +5,7 @@ import RichContentBlock from '../RichContentBlock.vue';
 
 // Warm up the async display so Suspense resolves inside the test environment.
 import '../RichContentCard.vue';
+import '../Types/TiptapDisplay.vue';
 
 const cardElement = {
   type: 'shadcn-card',

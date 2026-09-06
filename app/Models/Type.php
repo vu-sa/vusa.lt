@@ -137,7 +137,10 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
         return $this->morphedByMany(Institution::class, 'typeable');
     }
 
-    public function duties()
+    /**
+     * @return MorphToMany<Duty, $this>
+     */
+    public function duties(): MorphToMany
     {
         return $this->morphedByMany(Duty::class, 'typeable');
     }

@@ -170,6 +170,11 @@
           />
         </div>
       </template>
+
+      <div class="flex items-center justify-between pt-1">
+        <span class="text-xs text-muted-foreground">{{ $t('rich-content.grayscale_photo') }}</span>
+        <Switch :model-value="asBoolean(carouselOptions.grayscale ?? true)" @update:model-value="setOption('grayscale', $event)" />
+      </div>
     </div>
 
     <ImageSelector

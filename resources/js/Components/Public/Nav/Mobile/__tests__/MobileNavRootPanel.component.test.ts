@@ -95,7 +95,7 @@ describe('MobileNavRootPanel.vue', () => {
     expect(wrapper.text()).toContain('Renginių kalendorius');
   });
 
-  it('offers the tenants as their own section when switching is allowed', async () => {
+  it('offers the tenants as their own section', async () => {
     const wrapper = mountPanel();
 
     // The tenants section leads the accordion, so it is the first trigger.
@@ -104,10 +104,9 @@ describe('MobileNavRootPanel.vue', () => {
     expect(wrapper.text()).toContain('VU MIF');
   });
 
-  it('hides the tenant section when switching is not allowed on this page', () => {
+  it('keeps the tenant section on pages that fall back to the selected tenant home', () => {
     const wrapper = mountPanel({ app: { path: 'lt/kazkas' } });
 
-    // Only the two `mainNavigation` sections remain.
-    expect(wrapper.findAll('nav button')).toHaveLength(2);
+    expect(wrapper.findAll('nav button')).toHaveLength(3);
   });
 });

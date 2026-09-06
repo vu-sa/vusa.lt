@@ -23,7 +23,7 @@
          keeps their place in the list; the previous stack hid the rest of the menu behind a
          back button. -->
     <nav>
-      <div v-if="isSwitchAllowed" class="border-b border-border">
+      <div class="border-b border-border">
         <button
           type="button"
           :class="sectionTriggerClass"
@@ -84,7 +84,7 @@ const page = usePage();
 const mainNavigation = computed(() => page.props.mainNavigation ?? []);
 const tenantLinks = computed(() => page.props.tenant?.links ?? []);
 
-const { currentLabel, isSwitchAllowed } = useTenantOptions();
+const { currentLabel } = useTenantOptions();
 const tenantLabel = currentLabel();
 
 /** Sentinel for the tenants section, which has no index in `mainNavigation`. */

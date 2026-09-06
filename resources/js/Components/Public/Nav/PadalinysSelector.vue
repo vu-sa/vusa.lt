@@ -234,7 +234,12 @@ const hoveredLocation = ref<TenantOption | null>(null);
 const isPopoverOpen = ref(false);
 let closeTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-const { options: options_padaliniai, isActive: isActivePadalinys, switchTenant: handleSelectPadalinys, currentLabel, isSwitchAllowed } = useTenantOptions(props.prependOptions);
+const {
+  options: options_padaliniai,
+  isActive: isActivePadalinys,
+  switchTenant: handleSelectPadalinys,
+  currentLabel,
+} = useTenantOptions(props.prependOptions);
 
 const padalinys = currentLabel(props.mainTenantLabel);
 
@@ -260,7 +265,7 @@ function rowNameClass(option: TenantOption): string {
   return `${hasImage ? 'text-white' : 'text-foreground'} group-hover:${brandClass}`;
 }
 
-const isDisabled = computed(() => !isSwitchAllowed.value);
+const isDisabled = computed(() => options_padaliniai.value.length === 0);
 
 /** Opens on hover; a real click still toggles via `handlePopoverOpenChange` below. */
 function openOnHover(): void {

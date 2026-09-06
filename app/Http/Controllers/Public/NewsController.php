@@ -245,6 +245,7 @@ class NewsController extends PublicController
         }
 
         return Inertia::render('Public/NewsArchive', [
+            'tenantSwitchTarget' => 'same-page',
             'news' => $news,
             'currentTag' => $currentTag,
             'allCategories' => $allCategories,

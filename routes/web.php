@@ -72,9 +72,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kategorija/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category');
 
-        Route::get('{curatorRegistrationString}', [Public\PublicPageController::class, 'curatorRegistrations'])->name('curatorRegistrations')
-            ->whereIn('curatorRegistrationString', LocalizedRouteSlugs::accepted('curatorRegistrationString'));
-
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
 
         Route::permanentRedirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija')->name('member-registration');
@@ -97,6 +94,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
     Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
         Route::get('/', [Public\PublicPageController::class, 'home'])->name('home');
+        Route::get('{documentsString}', [Public\DocumentController::class, 'index'])->name('tenant.documents')
+            ->whereIn('documentsString', LocalizedRouteSlugs::accepted('documentsString'));
         Route::get('{newsArchiveString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')
             ->whereIn('newsArchiveString', LocalizedRouteSlugs::accepted('newsArchiveString'));
         Route::permanentRedirect('/admin', '/mano');

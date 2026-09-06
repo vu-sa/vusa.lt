@@ -4,25 +4,16 @@
     data-slot="header-wordmark"
     :data-variant="variant"
   >
-    <!-- Official institutional lockup. `dark:invert` because the asset is one-colour dark.
-         `aspect-[1.886]` is the source SVG's real ratio (viewBox 850.394×450.858) — the old
-         width/height attributes (120×40 = 3:1) lied about it, so the browser's implicit
-         aspect-ratio squashed the mark; `aspect-*` here is authored CSS and wins over that.
-         Padded (`p-1`), not flush, so it doesn't crowd the tenant tag and padaliniai selector
-         beside it. -->
     <img
       v-if="variant === 'official'"
-      :src
+      :src="resolvedSrc"
       :alt
-      class="aspect-[1.886] h-14 w-auto max-w-full p-1 dark:invert"
+      class="aspect-[2.804] h-14 w-auto max-w-full p-1 dark:invert"
       loading="eager"
-      width="189"
-      height="100"
+      width="1200"
+      height="428"
     >
 
-    <!-- Typographic mark: a brand rule beside a two-line lockup, matching the poster style of
-         the VU SA key visuals. Not `sr-only` text plus an image — it is real text, so it scales
-         with the a11y font setting and stays legible at any width. -->
     <span v-else class="border-l-2 border-brand pl-3 leading-none">
       <span class="block text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-foreground">
         {{ primaryLine }}
@@ -36,21 +27,19 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { HTMLAttributes } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
 import { cn } from '@/Utils/Shadcn/utils';
+import { getAppLogoSrc } from '@/Utils/AppLogo';
 
 /**
- * The site mark, in both forms the design allows.
- *
- * `official` (the default) is the institutional SVG, shown small and padded rather than as a
- * headline-sized wordmark. `wordmark` is the typographic lockup from the v0 prototype — kept
- * available via the prop, since it's still the reference layout if the official mark is ever
- * swapped out. Keep the official mark in the footer and share images either way.
+ * The public site mark.
  */
 const props = withDefaults(defineProps<{
   variant?: 'official' | 'wordmark';
-  /** Path to the official SVG; the caller picks the locale-appropriate file. */
+  /** Overrides the tenant and locale-specific official SVG. */
   src?: string;
   alt?: string;
   primaryLine?: string;
@@ -58,10 +47,15 @@ const props = withDefaults(defineProps<{
   class?: HTMLAttributes['class'];
 }>(), {
   variant: 'official',
-  src: '/logos/vusa.lin.hor.svg',
+  src: undefined,
   alt: 'Vilniaus universiteto Studentų atstovybė',
   primaryLine: 'Vilniaus universiteto',
   secondaryLine: 'Studentų atstovybė',
   class: undefined,
 });
+
+const page = usePage();
+
+const resolvedSrc = computed(() => props.src
+  ?? getAppLogoSrc(page.props.tenant?.alias, page.props.app.locale));
 </script>

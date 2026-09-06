@@ -415,6 +415,7 @@ import DocumentResultsSkeleton from '@/Components/Public/Search/DocumentResultsS
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import type { DocumentFacet, DocumentSearchSort } from '@/Types/DocumentSearchTypes';
+import { TenantType } from '@/Types/enums';
 import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
 import IFluentArrowSortDownLines24Regular from '~icons/fluent/arrow-sort-down-lines-24-regular';
 import IFluentArrowSortUpLines24Regular from '~icons/fluent/arrow-sort-up-lines-24-regular';
@@ -479,6 +480,17 @@ const {
 const searchInput = ref(
   filters.value.query && filters.value.query !== '*' ? filters.value.query : '',
 );
+
+function applyCurrentTenantFilter(): void {
+  const tenant = page.props.tenant;
+
+  if (tenant?.type !== TenantType.Padalinys || !tenant.shortname) {
+    return;
+  }
+
+  filters.value.tenants = [tenant.shortname];
+  showFilterBar.value = true;
+}
 
 const sortOptions: Array<{ value: DocumentSearchSort; label: string }> = [
   { value: 'relevance', label: $t('Pagal aktualumą') },
@@ -668,6 +680,7 @@ const clearAllFilters = () => {
 
 onMounted(async () => {
   await searchController.initializeSearchClient();
+  applyCurrentTenantFilter();
   await searchController.loadInitialFacets();
 
   const initialQuery = filters.value.query?.trim();

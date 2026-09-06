@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
 import NewsArchive from '@/Pages/Public/NewsArchive.vue';
+import PublicFilterPopover from '@/Components/Public/Base/PublicFilterPopover.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import type { NewsItem } from '@/Types/contentParts';
 
@@ -41,6 +42,7 @@ describe('Public/NewsArchive.vue', () => {
           shortname: 'VU SA',
           fullname: 'Vilniaus universiteto Studentų atstovybė',
           subdomain: 'www',
+          type: 'padalinys',
         },
         typesenseConfig: {
           apiKey: 'test-key',
@@ -94,6 +96,22 @@ describe('Public/NewsArchive.vue', () => {
     expect(wrapper.text()).toContain('Kas vyksta Studentų atstovybėje ir universitete');
   });
 
+  it('initially scopes results to the current tenant', () => {
+    const wrapper = mountPage();
+
+    expect(wrapper.findComponent(PublicFilterPopover).props('selected')).toEqual(['VU SA']);
+  });
+
+  it('does not scope results when viewing the main tenant', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      tenant: { shortname: 'VU SA', type: 'pagrindinis' },
+    }));
+
+    const wrapper = mountPage();
+
+    expect(wrapper.findComponent(PublicFilterPopover).props('selected')).toEqual([]);
+  });
+
   it('renders total count indicator and does not show category tabs', () => {
     const wrapper = mountPage();
     expect(wrapper.text()).toContain('Rasta :count naujienų');
@@ -144,16 +162,16 @@ describe('Public/NewsArchive.vue', () => {
     expect(wrapper.text()).not.toContain('Visos naujienos');
   });
 
-  it('has filter bar closed by default and toggles on button click', async () => {
+  it('shows the current tenant filter and lets visitors collapse the filter bar', async () => {
     localStorage.clear();
     const wrapper = mountPage();
     const filterBtn = wrapper.findAll('button').find(b => b.text().includes('Filtrai'));
     expect(filterBtn?.exists()).toBe(true);
 
     const filterPopoversBar = wrapper.find('.border-t.border-border\\/60');
-    expect(filterPopoversBar.isVisible()).toBe(false);
+    expect(filterPopoversBar.isVisible()).toBe(true);
 
     await filterBtn?.trigger('click');
-    expect(filterPopoversBar.isVisible()).toBe(true);
+    expect(filterPopoversBar.isVisible()).toBe(false);
   });
 });

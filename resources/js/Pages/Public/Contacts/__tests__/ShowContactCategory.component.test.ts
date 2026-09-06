@@ -7,8 +7,8 @@ import ShowContactCategory from '../ShowContactCategory.vue';
 
 const stubs = {
   NewInstitutionCard: {
-    props: ['institution'],
-    template: '<div class="mock-institution-card">{{ institution.name }}</div>',
+    props: ['institution', 'showMetadata'],
+    template: '<div class="mock-institution-card" :data-show-metadata="showMetadata">{{ institution.name }}</div>',
   },
   PageTitleBand: {
     props: ['title', 'eyebrow', 'lead'],
@@ -58,7 +58,10 @@ describe('ShowContactCategory', () => {
 
     expect(wrapper.text()).toContain('Padaliniai');
     expect(wrapper.text()).toContain('VU SA padaliniai fakultetuose');
-    expect(wrapper.findAll('.mock-institution-card')).toHaveLength(2);
+    const cards = wrapper.findAll('.mock-institution-card');
+    expect(cards).toHaveLength(2);
+    // Suppress tenant tag and type tag metadata chips on category pages
+    expect(cards[0].attributes('data-show-metadata')).toBeUndefined();
     expect(wrapper.text()).toContain('2 search.results');
   });
 

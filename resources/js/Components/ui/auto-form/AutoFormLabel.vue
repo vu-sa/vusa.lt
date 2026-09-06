@@ -1,7 +1,7 @@
 <template>
   <FormLabel>
     <slot />
-    <span v-if="required" class="text-red-500 dark:text-red-900"> *</span>
+    <span v-if="required" class="text-destructive"> *</span>
   </FormLabel>
 </template>
 

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Public;
 
 use App\Actions\GetPublicMeetingDocuments;
 use App\Collections\NewsCollection;
-use App\Enums\TenantType;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
@@ -107,6 +106,7 @@ class PublicPageController extends PublicController
         $firstNewsImageUrl = $news[0]['image'] ?? null;
 
         return Inertia::render('Public/HomePage', [
+            'tenantSwitchTarget' => 'same-page',
             'content' => $content,
             // `news`/`calendarEvents` stay as-is (HomePage's LCP tuning is built on this
             // exact prop shape); `resolvedParts` only carries the newer dynamic types
@@ -370,69 +370,6 @@ class PublicPageController extends PublicController
         request()->merge(['permalink' => $permalink]);
 
         return $this->page();
-    }
-
-    public function curatorRegistrations()
-    {
-        $this->getBanners();
-        $this->getTenantLinks();
-
-        // Share other language URL for locale switching
-        $this->shareOtherLangURL('curatorRegistrations');
-
-        // Global content - use null for current tenant
-        $this->applyPageHead(
-            contentTenant: null,
-            title: app()->getLocale() === 'lt' ? 'Registracija į kuratorių programą' : 'Registration to mentor program',
-            description: 'Kuratoriai - tai studentai, kurie savo laisvalaikiu padeda naujiems studentams prisitaikyti prie universiteto aplinkos, dalinasi patirtimi ir patarimais, skatina aktyvų studentų gyvenimą.'
-        );
-
-        $forms = [
-            'chgf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNjNTNU9ESE4wV0s4RTA2QUtIMllVN0RSNC4u',
-            'evaf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNDI2Q0xKWktSSVFVR1RUOENEUk9QUlRFVy4u',
-            'ff' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOEZBSDk4NFZWRUJDMjJBOVU1TEtHWFJDNy4u',
-            'filf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURVY3TlNWQ0VHTjcwU1BVMEI1NjA5N04xTS4u',
-            'fsf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMlRLOFozV1RNWEZXMDdJODUzSDhQTllKWS4u',
-            'gmc' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUQk1TVTlTM0k0MlpPTkZUSjczWU9HMDNTUi4u',
-            'if' => 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1utank1gTtJOjW_KfzCkXc1UN0NLNjM2SzRXQkwzT0NUTVQ1NjFKMjFIOS4u',
-            'kf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURU05RU1FUU5LODVCRjRaMzI3VkRRNFY3Sy4u',
-            'knf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUN1A4RFhKWDVXVjUwNDdZUkZEUjgzNzkzRi4u',
-            'mf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMllPRDFVSkZWOUQ4SVJRSjhJTkRSVUJYVy4u',
-            'mif' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOE03NUhXMFpON1RBT0hCODZLUFpFOUdDWS4u',
-            'sa' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMTlRQ1lIWUVMR0xNN0lSUzYzUzkwNDUzWi4u',
-            'tf' => 'mailto:integracija@tf.vusa.lt',
-            'tspmi' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNUc2UUtSREk4OExZT0VEMlkwRExKUUw5Ry4u',
-            'vm' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNEdYVzJTSURWRkdXMVZFMlhFUVkyREk0UC4u',
-        ];
-
-        $english_tenant_names = [
-            'chgf' => 'Faculty of Chemistry and Geosciences',
-            'evaf' => 'Faculty of Economics and Business Administration',
-            'ff' => 'Faculty of Physics',
-            'filf' => 'Faculty of Philology',
-            'fsf' => 'Faculty of Philosophy',
-            'gmc' => 'Life Sciences Center',
-            'if' => 'Faculty of History',
-            'kf' => 'Faculty of Communication',
-            'knf' => 'Kaunas Faculty',
-            'mf' => 'Faculty of Medicine',
-            'mif' => 'Faculty of Mathematics and Informatics',
-            'sa' => 'Šiauliai Academy',
-            'tf' => 'Faculty of Law',
-            'tspmi' => 'Institute of International Relations and Political Science',
-            'vm' => 'Business School',
-        ];
-
-        $tenants = Tenant::query()->where('type', TenantType::Padalinys)->with('primary_institution')->orderBy('fullname')
-            ->get(['id', 'primary_institution_id', 'alias', 'fullname']);
-
-        Inertia::share('otherLangURL', LocalizedRouteSlugs::route('curatorRegistrations', [], $this->getOtherLang()));
-
-        return Inertia::render('Public/CuratorRegistrations', [
-            'forms' => $forms,
-            'tenants' => $tenants,
-            'englishTenantNames' => $english_tenant_names,
-        ]);
     }
 
     public function calendarEvent(Calendar $calendar, LocationGeocoder $geocoder)

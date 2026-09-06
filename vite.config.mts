@@ -280,5 +280,14 @@ export default defineConfig(({ command }) => {
     css: {
       transformer: 'lightningcss',
     },
+    server: {
+      watch: {
+        ignored: [
+          '**/tests/**',
+          '**/__tests__/**',
+          '**/*.{test,spec}.{js,jsx,ts,tsx}',
+        ],
+      },
+    },
   };
 });

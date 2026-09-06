@@ -5,8 +5,25 @@
      without each layout remembering to mount it. Visibility is driven entirely by the
      `nprogress-busy` class Inertia's progress component puts on <html> — see
      resources/css/components/turtle-loader.css. --}}
+{{-- Inline fallback: if turtle-loader.css hasn't loaded yet (slow network, cache miss), this
+     keeps the turtle pinned, correctly sized, and hidden instead of flashing as an unstyled,
+     unsized black shape in the document flow. `html.nprogress-busy .turtle-loader` in the
+     external stylesheet has higher specificity and still governs show/hide once it loads. --}}
+<style>
+    .turtle-loader {
+        position: fixed;
+        top: 11px;
+        right: 13px;
+        z-index: 1031;
+        pointer-events: none;
+        visibility: hidden;
+        opacity: 0;
+    }
+</style>
 <div class="turtle-loader" aria-hidden="true">
-    <svg class="turtle-loader__svg" viewBox="0 0 64 37" fill="currentColor" focusable="false">
+    {{-- width/height attributes give the SVG its intrinsic size before any CSS applies —
+         without them a browser defaults an unsized SVG to 300x150. --}}
+    <svg class="turtle-loader__svg" viewBox="0 0 64 37" width="28" height="16.2" fill="currentColor" focusable="false">
         {{-- One leg, drawn around its own hip at (0,0), so each instance only says where that hip
              sits and how big the leg is. It runs 6 units *above* the hip, and every leg is painted
              before the body: that overhang stays buried under the shell at both ends of the swing

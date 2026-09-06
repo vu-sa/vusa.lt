@@ -19,6 +19,7 @@
       :slide-height-class
       :height="height"
       :scrim-strength
+      :grayscale
       is-first-slide
       :editable
       :block-key
@@ -60,6 +61,7 @@
               :slide-height-class
               :height="height"
               :scrim-strength
+              :grayscale
               :is-first-slide="index === 0"
               :editable
               :block-key
@@ -197,6 +199,7 @@ const slides = computed<Slide[]>(() => (Array.isArray(props.element.json_content
 const hasMultipleSlides = computed(() => slides.value.length > 1);
 const scrimStrength = computed(() => props.element.options?.scrim ?? 'medium');
 const height = computed<NonNullable<HeroCarousel['options']['height']>>(() => props.element.options?.height ?? 'md');
+const grayscale = computed(() => asBoolean(props.element.options?.grayscale ?? true));
 const slideHeightClass = computed(() => HEIGHT_CLASS[height.value]);
 const arrowsEnabled = computed(() => asBoolean(props.element.options?.showArrows ?? true));
 const indicatorsEnabled = computed(() => asBoolean(props.element.options?.showIndicators ?? true));

@@ -35,8 +35,8 @@ html.nprogress-busy .turtle-loader {
 
 .turtle-loader__svg {
   display: block;
-  width: 36px;
-  height: 20.8px;
+  width: 28px;
+  height: 16.2px;
 }
 
 /* The drawing has exactly one tone besides the body: a tint of the page ground. Solid at this

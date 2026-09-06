@@ -3,8 +3,8 @@
     data-slot="select-item"
     v-bind="forwardedProps"
     :class="cn(
-      'focus:bg-zinc-100 focus:text-zinc-900',
-      '[&_svg:not([class*=\'text-\'])]:text-gray-400',
+      'focus:bg-accent focus:text-accent-foreground',
+      '[&_svg:not([class*=\'text-\'])]:text-muted-foreground',
       'relative flex w-full cursor-default items-center gap-2',
       'rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',

@@ -287,6 +287,7 @@ import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue';
 import InstitutionResultsSkeleton from '@/Components/Public/Search/InstitutionResultsSkeleton.vue';
+import { TenantType } from '@/Types/enums';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
@@ -317,6 +318,17 @@ const {
 
 const showFilterBar = ref(false);
 const searchInput = ref('');
+
+function applyCurrentTenantFilter(): void {
+  const tenant = page.props.tenant;
+
+  if (tenant?.type !== TenantType.Padalinys || !tenant.shortname) {
+    return;
+  }
+
+  filters.value.tenants = [tenant.shortname];
+  showFilterBar.value = true;
+}
 
 // Computed eyebrow
 const pageEyebrow = computed(() => {
@@ -475,6 +487,7 @@ const parseInitialUrlParams = () => {
 
 onMounted(async () => {
   parseInitialUrlParams();
+  applyCurrentTenantFilter();
   await searchController.initializeSearchClient();
 
   const initialQuery = filters.value.query?.trim();

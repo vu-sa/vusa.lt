@@ -11,7 +11,12 @@ lastUpdated: true
 
 > Visi šios šakos („feature/new-style“) pakeitimai ir patobulinimai sujungti į v2.0 versiją.
 
+- ✨ **Viso ekrano turinio redaktorius tapo pagrindiniu** — puslapių ir naujienų formose vietoje pasikartojančių formų rodoma švari turinio kortelė su blokų skaičiumi ir mygtuku „Redaguoti turinį“, iš karto atveriančiu viso ekrano redaktorių, o išsami blokų forma prireikus pasiekiama greta peržiūros lange
+- ✨ **Kontaktų ir padalinių puslapiai atnaujinti pagal naują stilių** — aiški kontaktinės informacijos santrauka tinklelyje (telefonas, el. paštas, adresas, svetainė ir socialiniai tinklai), pareigybių filtrų skirtukai padaliniuose („Visi“, koordinatoriai, kuratoriai) bei atnaujintos kontaktų kortelės
+- ✨ **Kategorijų puslapis su nuorodų sąrašu** — kategorijose esančios nuorodos pateikiamos švariu ir patogiu eilučių sąrašu vietoj kortelių
+- ✨ **Registracijos ir studijų programų puslapiai pritaikyti naujam dizainui** — modernizuota registracijos forma, atnaujintas studijų programų tinklelis su fakulteto filtru, o navigacijos nuorodos integruotos puslapio viršuje
 - ✨ **Dokumentų sąraše — susietas renginys** — prie dokumento, parengto posėdžiui ir turinčio paskelbtą kalendoriaus renginį, galima vienu mygtuku atverti to posėdžio renginio puslapį
+- ✨ **Patikimesnis teksto formatavimas vaizdiniame redaktoriuje** — viso ekrano režimo teksto įrankių juosta tiksliai seka redaguojamą pastraipą, netrukdo slinkti, o papildomame meniu pateikia žymes, lygiavimą, antraščių stilius, mediją ir lentelių veiksmus
 - 🔧 **Kompaktiškos hero karuselės geriau sulygiuotos** — pasirinkus mažą aukštį, tekstas dabar yra arčiau apatinio krašto ir nepalieka neproporcingai daug tuščios vietos
 
 - ⭐ **Naujas viešosios svetainės dizainas** — moderni tipografija („Atkinson Hyperlegible“), šilta šviesi paletė ir sodri tamsi tema, griežtos kampuotos formos bei vientisa dizaino žetonų sistema, nepaliečianti vidinės administravimo aplinkos
@@ -36,6 +41,7 @@ lastUpdated: true
 - ✨ **Naujienų pateikimas ir kategorijų žymės** — aiškesnė pagrindinės naujienos struktūra, susijusios naujienos su linijomis bei kategorijų žymės
 - ✨ **Naujienų blokas valdomas tiesiai vaizdiniame redaktoriuje** — galima pakeisti viršelinę žymę ir antraštę bei atrinkti rodomas naujienas pagal kategoriją, žymę, padalinį ir kiekį
 - ✨ **Partnerių skiltis vietoje skaidrių karuselės** — aiškus ir tvarkingas organizacijos rėmėjų bei partnerių logotipų tinklelis
+- ✨ **Tinklelio blokas redaguojamas tiesiogiai** — teksto, nuotraukų ir kortelių stulpelius galima redaguoti tiesiai puslapio vaizde, o kiekviena eilutė ir stulpelis turi savo nustatymų langelį tvarkai, tipui ir pločiui keisti
 - ✨ **„Mano VU SA“ tapo aiškiu navigacijos mygtuku** — paskyros nuoroda antroje meniu juostoje dabar dera prie kitų svetainės valdiklių, o vietoje profilio nuotraukos naudojama aiški paskyros piktograma
 - ✨ **Viešos svetainės pranešimai suvienodinti** — slapukų priminimas ir pranešimai dabar priderinti prie naujo svetainės stiliaus, o bandomojoje aplinkoje įspėjimas rodomas kaip nuolatinis pranešimas, neužimantis vietos puslapyje
 - 🔧 **Bandomosios (staging) aplinkos izoliacija** — užtikrinta, kad bandomoji aplinka nesiųstų el. laiškų tikriems vartotojams ir negalėtų modifikuoti ar ištrinti gamybinės „SharePoint“ saugyklos failų

@@ -522,6 +522,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     }),
     usesSectionChrome: true,
     bandRole: 'band',
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./ContentGridEditor.vue')),
     display: defineAsyncComponent(() => import('./ContentGridDisplay.vue')),
   },

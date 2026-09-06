@@ -15,10 +15,6 @@ export const LOCALIZED_ROUTE_SLUGS: Record<string, Record<string, string>> = {
   newsArchiveString: { lt: 'naujienos', en: 'news' },
   newsString: { lt: 'naujiena', en: 'news' },
   registrationString: { lt: 'registracija', en: 'registration' },
-  curatorRegistrationString: {
-    lt: 'registracija-i-kuratoriu-programa',
-    en: 'registration-to-mentor-program',
-  },
   documentsString: { lt: 'dokumentai', en: 'documents' },
   searchString: { lt: 'paieska', en: 'search' },
   meetingsString: { lt: 'posedziai', en: 'meetings' },
@@ -32,7 +28,6 @@ export const ROUTE_SLUG_PARAMETERS: Record<string, string[]> = {
   'news': ['newsString'],
   'newsArchive': ['newsArchiveString'],
   'registrationPage': ['registrationString'],
-  'curatorRegistrations': ['curatorRegistrationString'],
   'documents': ['documentsString'],
   'search': ['searchString'],
   'publicMeetings.index': ['meetingsString'],

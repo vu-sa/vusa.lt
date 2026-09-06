@@ -41,8 +41,13 @@
               link.featured && 'ring-2 ring-brand/60',
             ]"
             @click="handleCloseMenu">
-            <img class="absolute left-0 top-0 size-full object-cover grayscale contrast-110 transition-transform duration-500 group-hover:scale-105"
-              :class="[resolveImageOverlay(link), resolveImageBlur(link)]"
+            <img
+              :class="[
+                'absolute left-0 top-0 size-full object-cover contrast-110 transition duration-500',
+                'grayscale group-hover:grayscale-0 group-hover:scale-105',
+                resolveImageOverlay(link),
+                resolveImageBlur(link),
+              ]"
               :style="{ objectPosition: link.image_focal ?? '50% 50%' }"
               :src="link.image" alt="">
             <div class="absolute left-0 top-0 size-full transition-opacity duration-300 group-hover:opacity-90" :class="resolveImageGradient(link)" />
@@ -85,7 +90,9 @@
             ]"
             @click="handleCloseMenu">
             <div class="flex w-full items-center justify-between gap-2">
-              <img v-if="link.image && link.image_render === 'thumbnail'" class="mr-3 size-10 shrink-0 object-cover grayscale"
+              <img
+                v-if="link.image && link.image_render === 'thumbnail'"
+                class="mr-3 size-10 shrink-0 object-cover grayscale transition-[filter] duration-300 group-hover:grayscale-0"
                 :style="{ objectPosition: link.image_focal ?? '50% 50%' }" :src="link.image" alt="">
               <div class="h-fit">
                 <div class="inline-flex items-center gap-1.5" :class="textClasses(link)">

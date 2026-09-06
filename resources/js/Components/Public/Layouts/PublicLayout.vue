@@ -27,15 +27,6 @@
     <div
       class="flex-1 flex flex-col antialiased container px-0 @container/main">
       <main id="main-content" class="pb-8" :class="mainContentMarginClass">
-        <!-- Centralized breadcrumb display. Skipped when the page has claimed the trail for its
-             own title band (placement: 'band'), so a detail page shows one trail, not two. -->
-        <div
-          v-if="breadcrumbState.breadcrumbs.value.length > 0 && breadcrumbState.placement.value === 'layout'"
-          :class="breadcrumbWrapperClass"
-        >
-          <PublicBreadcrumbs />
-        </div>
-
         <!-- <Suspense> -->
         <div>
           <div :class="contentWrapperClass">
@@ -72,7 +63,6 @@ import { usePage, router } from '@inertiajs/vue3';
 import SiteFooter from '../FullWidth/SiteFooter.vue';
 
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
-import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from '@/Components/ui/sonner';
 import { useToasts } from '@/Composables/useToasts';
@@ -147,17 +137,6 @@ const mainContentMarginClass = computed(() => {
   return hasSecondMenu.value
     ? 'mt-16 md:mt-[6.75rem]'
     : 'mt-16';
-});
-
-const breadcrumbWrapperClass = computed(() => {
-  // Consistent top padding gives the breadcrumb bar breathing room below the
-  // navbar. Breadcrumbs always use the standard wrapper width for consistency.
-  // Reduced from md:pt-6/lg:pt-8 — the gap above the trail read as too generous on
-  // non-mobile once compared against the rest of the page's vertical rhythm; mobile
-  // is unchanged.
-  const baseClasses = 'pt-4 md:pt-4 lg:pt-5';
-
-  return `wrapper ${baseClasses}`;
 });
 
 // Clear breadcrumbs when on home page

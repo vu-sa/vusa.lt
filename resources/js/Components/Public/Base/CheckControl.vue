@@ -20,12 +20,13 @@
 
     <span
       :class="cn(
-        'flex size-7 shrink-0 items-center justify-center border-2 transition-colors',
+        'flex shrink-0 items-center justify-center transition-colors',
+        size === 'sm' ? 'size-4.5 border' : 'size-7 border-2',
         modelValue ? 'border-brand-fill bg-brand-fill text-brand-foreground' : 'border-border',
       )"
       aria-hidden="true"
     >
-      <IFluentCheckmark24Filled v-if="modelValue" class="size-5" />
+      <IFluentCheckmark24Filled v-if="modelValue" :class="size === 'sm' ? 'size-3.5' : 'size-5'" />
     </span>
   </button>
 </template>
@@ -52,9 +53,11 @@ import { cn } from '@/Utils/Shadcn/utils';
 const props = withDefaults(defineProps<{
   label?: string;
   class?: HTMLAttributes['class'];
+  size?: 'default' | 'sm';
 }>(), {
   label: undefined,
   class: undefined,
+  size: 'default',
 });
 
 const modelValue = defineModel<boolean>({ default: false });

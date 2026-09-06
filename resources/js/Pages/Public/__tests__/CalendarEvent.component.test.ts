@@ -19,9 +19,9 @@ const stubs = {
   EventDetailsCard: {
     template: '<div class="event-details-card-stub" />',
   },
-  EventImageGallery: {
-    props: { images: Array, eventTitle: String },
-    template: '<div class="event-image-gallery-stub" />',
+  PhotoGalleryGridDisplay: {
+    props: { element: Object },
+    template: '<div class="photo-gallery-grid-stub" />',
   },
 };
 

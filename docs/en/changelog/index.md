@@ -11,7 +11,12 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
 > All updates and improvements from this branch (feature/new-style) are consolidated into the v2.0 release.
 
+- ✨ **Full-screen rich content editor is now the primary editing mode** — page and news forms now display a clean content card with block counts and an "Edit content" action that opens the full-screen canvas directly, while structured forms remain accessible on-demand in the side-by-side preview dialog
+- ✨ **Contacts and unit pages redesigned to new style** — structured contact summary grid (telephone, email, address, website, and social links), duty filter tabs for unit pages (“All”, coordinators, mentors), and refreshed contact cards
+- ✨ **Category pages with link-list presentation** — links within categories are now cleanly displayed in a structured row list instead of separate cards
+- ✨ **Registration and study programme pages migrated** — modernized registration form styling, updated study programme catalog with faculty filter, and integrated top-of-page breadcrumbs
 - ✨ **Linked event in the documents list** — a document produced for a meeting with a published calendar announcement now has a button that opens that meeting's event page
+- ✨ **More reliable text formatting in the visual editor** — the fullscreen text toolbar follows the active paragraph without blocking scrolling, while its overflow menu provides tags, alignment, heading styles, media, and table actions
 - 🔧 **Compact hero carousels align their copy better** — the small-height setting now positions copy closer to the bottom edge instead of leaving disproportionately large empty space
 
 - ⭐ **New public website design** — modern editorial typography (Atkinson Hyperlegible), warm paper and deep dark palettes, sharp architectural lines, and a unified design token system, keeping the admin surface untouched
@@ -36,6 +41,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ✨ **Modernized news layout and category tags** — featured article presentation, clean hairline article list, and category chip integration
 - ✨ **News blocks are configurable in the visual editor** — edit the eyebrow and heading, then choose articles by category, tag, unit, and count
 - ✨ **Partners grid replacing banner carousel** — clean and responsive partner and sponsor showcase instead of a rotating banner carousel
+- ✨ **Grid block editing goes fully visual** — text, image, and card columns can be edited directly on the page, and every row and column has its own settings popover for order, type, and width
 - ✨ **“Mano VU SA” is now a clear navigation button** — the account link in the second menu row now matches the site controls, with a clear account icon instead of a profile photo
 - ✨ **Public-site notices are now consistent** — the cookie reminder and notifications match the new site style, while the staging warning appears as a persistent notice without taking space from the page
 - 🔧 **Staging environment isolation** — strict safeguards prevent staging environments from sending external user notifications or altering production SharePoint files and folders

@@ -3,7 +3,6 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { TenantType } from '@/Types/enums';
-import { localizedSlug } from '@/Utils/LocalizedRoutes';
 
 export interface TenantOption {
   label: string;
@@ -20,7 +19,8 @@ export interface TenantOption {
  * `PadalinysSelector` popover and the mobile drill-down tenant panel, so both stay in sync.
  *
  * Switching tenants is a full page load to a different subdomain, not an Inertia visit,
- * because each tenant is served from its own subdomain.
+ * because each tenant is served from its own subdomain. Each Inertia page declares whether
+ * its equivalent exists on every tenant or should fall back to the selected tenant's home page.
  */
 export function useTenantOptions(prependOptions?: TenantOption[]) {
   const page = usePage();
@@ -54,10 +54,7 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
 
   const isActive = (key: string): boolean => page.props.tenant?.alias === key;
 
-  /**
-   * Navigates to another tenant's subdomain, keeping the current path.
-   * Handles both production (ff.vusa.lt) and staging (ff.naujas.vusa.lt) hostnames.
-   */
+  /** Navigates to another tenant subdomain using the destination declared by the current page. */
   const switchTenant = (key: string | string[]) => {
     let alias: string = Array.isArray(key) ? key[0] ?? '' : key;
 
@@ -70,7 +67,11 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
       alias = 'www';
     }
 
-    window.location.href = `${window.location.protocol}//${alias}.${hostWithoutSubdomain}${usePage().url}`;
+    const path = page.props.tenantSwitchTarget === 'same-page'
+      ? page.url
+      : `/${page.props.app.locale}`;
+
+    window.location.href = `${window.location.protocol}//${alias}.${hostWithoutSubdomain}${path}`;
   };
 
   const currentLabel = (mainTenantLabel?: string) => computed(() => {
@@ -80,32 +81,10 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
     return $t(page.props.tenant?.shortname.split(' ').pop() ?? 'Padaliniai');
   });
 
-  /**
-   * Whether tenant switching makes sense on the current page (home, news, contacts).
-   *
-   * The slugs come from the localized-route registry rather than a hardcoded list, which is
-   * how `en/news` came to be missing here in the first place.
-   */
-  const isSwitchAllowed = computed(() => {
-    // Defaulted rather than asserted: an absent path means "not one of the switchable pages",
-    // which is the safe answer. It used to throw on `.includes` instead.
-    const path = page.props.app?.path ?? '';
-    const locales = ['lt', 'en'];
-
-    const newsArchivePaths = locales.map(locale => `${locale}/${localizedSlug('newsArchiveString', locale)}`);
-
-    if ([...locales, ...newsArchivePaths].includes(path)) {
-      return true;
-    }
-
-    return locales.some(locale => path.includes(localizedSlug('contactsString', locale)));
-  });
-
   return {
     options,
     isActive,
     switchTenant,
     currentLabel,
-    isSwitchAllowed,
   };
 }

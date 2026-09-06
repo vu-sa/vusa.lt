@@ -134,9 +134,9 @@ describe('BlockPickerDialog', () => {
     const tiptapBtn = wrapper.findAll('button').find(b => b.text().includes('Tekstas') && !b.text().includes('Teksto laukas'));
     expect(tiptapBtn?.text()).toContain('rich-content.fullscreen_badge');
 
-    // content-grid is not inlineEditable, so it should not carry the fullscreen badge
+    // content-grid is now inlineEditable, so it must carry the fullscreen badge too
     const gridBtn = wrapper.findAll('button').find(b => b.text().includes('Tinklelis'));
-    expect(gridBtn?.text()).not.toContain('rich-content.fullscreen_badge');
+    expect(gridBtn?.text()).toContain('rich-content.fullscreen_badge');
 
     await flushPromises();
     wrapper.unmount();

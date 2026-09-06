@@ -392,6 +392,8 @@ export interface HeroCarousel {
     scrim?: 'light' | 'medium' | 'dark';
     /** Panel height preset — the photo panel is inset, so this is the panel's own height. */
     height?: 'sm' | 'md' | 'lg';
+    /** Desaturate the background photo. Defaults to true (existing hero look). */
+    grayscale?: boolean;
     width?: BlockWidth;
   };
 }

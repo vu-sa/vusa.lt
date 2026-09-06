@@ -18,7 +18,7 @@
               slotProps.componentField.onInput(parsed)
             }"
           />
-          <div v-else class="flex h-9 w-full items-center justify-between rounded-md border border-zinc-200 bg-transparent pl-3 pr-1 py-1 text-sm shadow-sm transition-colors dark:border-zinc-800">
+          <div v-else class="flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent pl-3 pr-1 py-1 text-sm shadow-sm transition-colors">
             <p>{{ inputFile?.name }}</p>
             <Button
               size="icon"

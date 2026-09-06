@@ -48,10 +48,10 @@ describe('PublicBreadcrumbs Fallback Mode', () => {
 });
 
 /**
- * A host that provides real breadcrumb state, so the two variants can be rendered as pages
+ * A host that provides real breadcrumb state, so the breadcrumbs can be rendered as pages
  * render them. `createBreadcrumbState` uses provide/inject, hence the wrapper component.
  */
-function renderWithTrail(variant?: 'bar' | 'inline') {
+function renderWithTrail(variant?: 'inline') {
   const Host = defineComponent({
     setup() {
       const state = createBreadcrumbState('public');
@@ -68,21 +68,9 @@ function renderWithTrail(variant?: 'bar' | 'inline') {
   return mount(Host);
 }
 
-describe('PublicBreadcrumbs variants', () => {
-  it('defaults to the boxed bar every non-detail page uses', () => {
+describe('PublicBreadcrumbs rendering', () => {
+  it('renders unboxed, slash-separated and iconless', () => {
     const nav = renderWithTrail().find('nav');
-
-    expect(nav.classes()).toContain('border-y');
-    // Chevron separators, not slashes.
-    expect(nav.text()).not.toContain('/');
-  });
-
-  /**
-   * The inline trail belongs inside a detail page's title band, where a boxed bar would read as a
-   * second component sitting on the masthead rather than as part of it.
-   */
-  it('renders unboxed, slash-separated and iconless when inline', () => {
-    const nav = renderWithTrail('inline').find('nav');
 
     expect(nav.classes()).not.toContain('border-y');
     expect(nav.classes()).toContain('text-xs');
@@ -90,12 +78,10 @@ describe('PublicBreadcrumbs variants', () => {
     expect(nav.findAll('svg')).toHaveLength(0);
   });
 
-  it('hovers to the brand colour in both variants, not to a hardcoded red', () => {
-    for (const variant of ['bar', 'inline'] as const) {
-      const link = renderWithTrail(variant).find('nav a');
+  it('hovers to the brand colour, not to a hardcoded red', () => {
+    const link = renderWithTrail().find('nav a');
 
-      expect(link.classes()).toContain('hover:text-brand');
-      expect(link.classes().join(' ')).not.toContain('vusa-red');
-    }
+    expect(link.classes()).toContain('hover:text-brand');
+    expect(link.classes().join(' ')).not.toContain('vusa-red');
   });
 });

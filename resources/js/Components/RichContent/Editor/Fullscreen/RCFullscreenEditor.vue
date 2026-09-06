@@ -1,14 +1,16 @@
 <template>
   <Dialog :open="true" @update:open="v => !v && $emit('close')">
     <DialogContent
-      class="fixed inset-0 top-0 left-0 block h-[100dvh] w-screen max-w-none overflow-y-auto overscroll-contain translate-x-0 translate-y-0 gap-0 rounded-none border-0 p-0 sm:max-w-none"
+      class="fixed inset-0 top-0 left-0 block h-[100dvh] w-screen max-w-none overflow-hidden translate-x-0 translate-y-0 gap-0 rounded-none border-0 p-0 sm:max-w-none"
       :show-close-button="false"
     >
       <DialogTitle class="sr-only">
         {{ $t('rich-content.fullscreen_editor') }}
       </DialogTitle>
-      <div data-surface="public" class="@container min-h-[100dvh] overflow-x-clip bg-background text-foreground font-public">
-        <div class="sticky top-0 z-40 flex items-center gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
+      <div data-surface="public" class="@container flex h-full min-h-0 flex-col overflow-x-clip bg-background text-foreground font-public">
+        <div ref="toolbarPortalRef" data-rc-smart-toolbar-portal />
+
+        <div class="z-40 flex shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
           <Button size="icon-xs" variant="ghost" :title="$t('rich-content.close_fullscreen_editor')" @click="$emit('close')">
             <IFluentDismiss24Regular class="size-4" />
           </Button>
@@ -52,50 +54,52 @@
           </Button>
         </div>
 
-        <main ref="canvasRef" class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
-          <div
-            v-for="(content, index) in contents ?? []" :key="getBlockKey(content)"
-            :class="['relative', blockLayoutClasses(content)]"
-            :data-rc-block-key="getBlockKey(content)"
-          >
-            <RCInsertAffordance
-              v-if="!isPreviewing"
-              :quick-add-types
-              @insert="insertAt($event, index)"
-              @more="openInsertMenuAt(index)"
-            />
-            <RCFullscreenBlock
-              :content
-              :resolved="resolvedFor(content)"
-              :band="bandMap.get(content)"
-              :block-key="getBlockKey(content)"
-              :can-move-up="index > 0"
-              :can-move-down="(contents?.length ?? 0) > index + 1"
-              :can-delete="(contents?.length ?? 0) > 1"
-              :preview="isPreviewing"
-              @update:content="(val) => { contents![index] = val; }"
-              @move-up="moveBlock(index, index - 1)"
-              @move-down="moveBlock(index, index + 1)"
-              @open-form="sideBySideContent = content"
-              @delete="removeAt(index)"
-            />
-          </div>
+        <div data-rc-fullscreen-scroll class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <main ref="canvasRef" class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
+            <div
+              v-for="(content, index) in contents ?? []" :key="getBlockKey(content)"
+              :class="['relative', blockLayoutClasses(content)]"
+              :data-rc-block-key="getBlockKey(content)"
+            >
+              <RCInsertAffordance
+                v-if="!isPreviewing"
+                :quick-add-types
+                @insert="insertAt($event, index)"
+                @more="openInsertMenuAt(index)"
+              />
+              <RCFullscreenBlock
+                :content
+                :resolved="resolvedFor(content)"
+                :band="bandMap.get(content)"
+                :block-key="getBlockKey(content)"
+                :can-move-up="index > 0"
+                :can-move-down="(contents?.length ?? 0) > index + 1"
+                :can-delete="(contents?.length ?? 0) > 1"
+                :preview="isPreviewing"
+                @update:content="(val) => { contents![index] = val; }"
+                @move-up="moveBlock(index, index - 1)"
+                @move-down="moveBlock(index, index + 1)"
+                @open-form="sideBySideContent = content"
+                @delete="removeAt(index)"
+              />
+            </div>
 
-          <p v-if="(contents?.length ?? 0) === 0 && !isPreviewing" class="py-16 text-center text-sm text-zinc-400">
-            {{ $t('rich-content.fullscreen_empty') }}
-          </p>
+            <p v-if="(contents?.length ?? 0) === 0 && !isPreviewing" class="py-16 text-center text-sm text-zinc-400">
+              {{ $t('rich-content.fullscreen_empty') }}
+            </p>
 
-          <!-- Trailing insert affordance: doubles as "add the first block" when the
+            <!-- Trailing insert affordance: doubles as "add the first block" when the
                document is empty (appendType/insertAt(0) are the same operation on an
                empty array), so no separate empty-state control is needed. -->
-          <div v-if="!isPreviewing" class="relative">
-            <RCInsertAffordance
-              :quick-add-types
-              @insert="appendType($event)"
-              @more="openInsertMenuAt(contents?.length ?? 0)"
-            />
-          </div>
-        </main>
+            <div v-if="!isPreviewing" class="relative">
+              <RCInsertAffordance
+                :quick-add-types
+                @insert="appendType($event)"
+                @more="openInsertMenuAt(contents?.length ?? 0)"
+              />
+            </div>
+          </main>
+        </div>
       </div>
     </DialogContent>
   </Dialog>
@@ -145,6 +149,7 @@ import { resolveBands, type BandResolution } from '../../bandLayout';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from './useActiveHotspot';
 import RCFullscreenBlock from './RCFullscreenBlock.vue';
 
+import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
 import DarkModeButton from '@/Components/Buttons/DarkModeButton.vue';
@@ -179,8 +184,10 @@ defineEmits<{
 const contents = defineModel<ContentPart[]>('contents');
 const isPreviewing = ref(false);
 const canvasRef = ref<HTMLElement | null>(null);
+const toolbarPortalRef = ref<HTMLElement | null>(null);
 
 provide(ACTIVE_HOTSPOT_KEY, useActiveHotspot());
+provide(SMART_TIPTAP_TOOLBAR_PORTAL_KEY, toolbarPortalRef);
 
 const quickAddTypes = computed(getQuickAddTypes);
 

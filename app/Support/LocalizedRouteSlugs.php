@@ -39,10 +39,7 @@ final class LocalizedRouteSlugs
         'newsArchiveString' => ['lt' => 'naujienos', 'en' => 'news'],
         'newsString' => ['lt' => 'naujiena', 'en' => 'news'],
         'registrationString' => ['lt' => 'registracija', 'en' => 'registration'],
-        'curatorRegistrationString' => [
-            'lt' => 'registracija-i-kuratoriu-programa',
-            'en' => 'registration-to-mentor-program',
-        ],
+
         'documentsString' => ['lt' => 'dokumentai', 'en' => 'documents'],
         'searchString' => ['lt' => 'paieska', 'en' => 'search'],
         'meetingsString' => ['lt' => 'posedziai', 'en' => 'meetings'],

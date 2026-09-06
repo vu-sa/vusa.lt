@@ -78,6 +78,25 @@ describe('RCFullscreenEditor', () => {
     expect(wrapper.find('main').classes()).toEqual(expect.arrayContaining(['py-20', 'md:py-28']));
   });
 
+  it('keeps the toolbar portal inside the dialog but outside its scroll viewport', () => {
+    const wrapper = mount(RCFullscreenEditor, {
+      props: {
+        contents: [],
+        history: { commit: () => {}, undo: () => {}, redo: () => {}, canUndo: false, canRedo: false },
+      },
+      global: { stubs },
+    });
+
+    const dialog = wrapper.get('.dialog-content');
+    const portal = wrapper.get('[data-rc-smart-toolbar-portal]');
+    const scrollViewport = wrapper.get('[data-rc-fullscreen-scroll]');
+
+    expect(dialog.classes()).toContain('overflow-hidden');
+    expect(scrollViewport.classes()).toContain('overflow-y-auto');
+    expect(scrollViewport.element.contains(portal.element)).toBe(false);
+    expect(scrollViewport.element.parentElement).toBe(portal.element.parentElement);
+  });
+
   it('renders an insert affordance above the first block', () => {
     const wrapper = mount(RCFullscreenEditor, {
       props: {
@@ -113,10 +132,12 @@ describe('RCFullscreenEditor', () => {
       wrapper.findAllComponents({ name: 'RCFullscreenBlock' })[1]!.vm.$emit('move-up');
 
       expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' });
-    } finally {
+    }
+    finally {
       if (originalScrollIntoView) {
         Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScrollIntoView);
-      } else {
+      }
+      else {
         delete HTMLElement.prototype.scrollIntoView;
       }
     }

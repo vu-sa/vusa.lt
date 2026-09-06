@@ -75,6 +75,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     cartoApiKey: string | null;
   };
   otherLangURL?: string | null;
+  /** Destination used by the tenant selector: the selected tenant's home or this route. */
+  tenantSwitchTarget?: 'home' | 'same-page';
   seo: Record<string, any>;
   tenants: Pick<
     App.Entities.Tenant,
@@ -91,6 +93,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   tenant:
   | (Pick<App.Entities.Tenant, 'id' | 'alias' | 'shortname' | 'type'> & {
     subdomain: string;
+    homeUrl: string;
     links: Array<App.Entities.QuickLink | null>;
     banners: Array<App.Entities.Banner> | [];
   })

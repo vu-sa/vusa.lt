@@ -120,7 +120,15 @@
 
             <!-- Image Gallery Section -->
             <section v-if="normalizedImages.length > 1">
-              <EventImageGallery :images="normalizedImages" :event-title />
+              <div class="mb-6 flex items-baseline gap-3 border-l-2 border-brand pl-3">
+                <h2 class="u-display text-xl font-bold tracking-tight text-foreground lg:text-2xl">
+                  {{ $t("Nuotraukos") }}
+                </h2>
+                <span class="font-mono text-sm text-muted-foreground">
+                  ({{ normalizedImages.length }})
+                </span>
+              </div>
+              <PhotoGalleryGridDisplay :element="photoGalleryElement" />
             </section>
 
             <!-- Article Bottom Action Bar -->
@@ -228,7 +236,7 @@ import Button from '@/Components/ui/button/Button.vue';
 import EventActions from '@/Components/Calendar/EventActions.vue';
 import EventDetailsCard from '@/Components/Calendar/EventDetailsCard.vue';
 import EventHero from '@/Components/Calendar/EventHero.vue';
-import EventImageGallery from '@/Components/Calendar/EventImageGallery.vue';
+import PhotoGalleryGridDisplay from '@/Components/RichContent/RCPhotoGalleryGrid/PhotoGalleryGridDisplay.vue';
 import PublicAgendaList from '@/Components/Public/PublicAgendaList.vue';
 import PublicMeetingDocuments, { type PublicMeetingDocument } from '@/Components/Public/PublicMeetingDocuments.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
@@ -236,6 +244,7 @@ import { useEventStatus } from '@/Composables/useEventStatus';
 import { useShareLink } from '@/Composables/useShareLink';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
+import type { PhotoGalleryGrid } from '@/Types/contentParts';
 import { LocaleEnum } from '@/Types/enums';
 import IFluentArrowLeft20Regular from '~icons/fluent/arrow-left-20-regular';
 import IFluentArrowRight20Regular from '~icons/fluent/arrow-right-20-regular';
@@ -336,12 +345,28 @@ const siblingEventDate = (event: { date: string }): string =>
     minute: '2-digit',
   }, locale.value as LocaleEnum);
 
-// Normalize images to array format for EventImageGallery
-const normalizedImages = computed(() => {
+interface EventImage {
+  id: number;
+  original_url: string;
+  caption?: string;
+}
+
+// Normalize images to array format for the photo gallery grid
+const normalizedImages = computed<EventImage[]>(() => {
   const { images } = props.event as { images?: unknown };
   if (!images) return [];
   if (Array.isArray(images)) return images;
   if (typeof images === 'object') return Object.values(images);
   return [];
 });
+
+// The RC photo gallery grid owns the lightbox — feed it the same shape a Tiptap-authored block would.
+const photoGalleryElement = computed<PhotoGalleryGrid>(() => ({
+  json_content: normalizedImages.value.map((image, index) => ({
+    src: image.original_url,
+    alt: image.caption || `${eventTitle.value} ${index + 1}`,
+    title: image.caption,
+  })),
+  options: { showLightbox: true, columns: '4', gap: 'medium' },
+}));
 </script>

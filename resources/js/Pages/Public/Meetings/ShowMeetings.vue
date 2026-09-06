@@ -353,6 +353,7 @@ import MeetingResultsSkeleton from '@/Components/Public/Search/MeetingResultsSke
 import { useMeetingSearch } from '@/Composables/useMeetingSearch';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import type { MeetingSearchSort } from '@/Types/MeetingSearchTypes';
+import { TenantType } from '@/Types/enums';
 import IFluentArrowSort24Regular from '~icons/fluent/arrow-sort-24-regular';
 import IFluentArrowSortDownLines24Regular from '~icons/fluent/arrow-sort-down-lines-24-regular';
 import IFluentArrowSortUpLines24Regular from '~icons/fluent/arrow-sort-up-lines-24-regular';
@@ -392,6 +393,17 @@ const {
 const showFilterBar = ref(false);
 const searchInput = ref('');
 const isSortPopoverOpen = ref(false);
+
+function applyCurrentTenantFilter(): void {
+  const tenant = page.props.tenant;
+
+  if (tenant?.type !== TenantType.Padalinys || !tenant.shortname) {
+    return;
+  }
+
+  filters.value.tenants = [tenant.shortname];
+  showFilterBar.value = true;
+}
 
 // Computed eyebrow
 const pageEyebrow = computed(() => {
@@ -607,6 +619,7 @@ const parseInitialUrlParams = () => {
 
 onMounted(async () => {
   parseInitialUrlParams();
+  applyCurrentTenantFilter();
   await searchController.initializeSearchClient();
   await searchController.loadInitialFacets();
 

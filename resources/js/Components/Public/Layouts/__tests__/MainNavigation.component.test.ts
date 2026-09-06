@@ -17,10 +17,24 @@ const chromeStubs = {
   PadalinysSelector: { template: '<button type="button" />' },
   SearchButton: { template: '<button type="button" />' },
   SecondMenu: { template: '<nav />' },
-  SmartLink: { template: '<a><slot /></a>' },
+  SmartLink: { props: ['href'], template: '<a :href="href"><slot /></a>' },
 };
 
 describe('MainNavigation.vue', () => {
+  it('links the wordmark to the current tenant home page', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { locale: 'lt' },
+      tenant: { alias: 'chgf', homeUrl: 'https://chgf.vusa.test/lt' },
+    }));
+
+    const wrapper = mount(MainNavigation, {
+      props: { isThemeDark: false },
+      global: { stubs: chromeStubs },
+    });
+
+    expect(wrapper.findComponent(chromeStubs.SmartLink).props('href')).toBe('https://chgf.vusa.test/lt');
+  });
+
   it('uses an opaque, unblurred header in high-contrast mode', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'lt' } }));
 

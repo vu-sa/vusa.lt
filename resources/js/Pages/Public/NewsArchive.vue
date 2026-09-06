@@ -370,6 +370,7 @@ import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import type { NewsItem } from '@/Types/contentParts';
+import { TenantType } from '@/Types/enums';
 import IFluentNews24Regular from '~icons/fluent/news-24-regular';
 import IFluentArrowSync20Regular from '~icons/fluent/arrow-sync-20-regular';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
@@ -459,6 +460,13 @@ const {
   initialTotal: props.news?.total,
   initialTag: initialTagName.value,
 });
+
+const currentTenant = page.props.tenant;
+
+if (currentTenant?.type === TenantType.Padalinys && currentTenant.shortname) {
+  selectedTenants.value = [currentTenant.shortname];
+  showFilterBar.value = true;
+}
 
 const sortOptions: Array<{ value: NewsSearchSort; label: string }> = [
   { value: 'relevance', label: $t('Pagal aktualumą') },

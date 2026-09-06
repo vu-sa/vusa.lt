@@ -32,7 +32,7 @@
         <SmartLink
           prefetch
           target="_self"
-          :href="`${page.props.app.url}/${page.props.app.locale}`"
+          :href="page.props.tenant?.homeUrl ?? `${page.props.app.url}/${page.props.app.locale}`"
           :title="$t('Grįžti į pagrindinį puslapį')"
           class="inline-flex items-center"
           @click="close"
