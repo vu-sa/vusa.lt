@@ -273,7 +273,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     selfSpaced: true,
     serverResolved: true,
     inlineEditable: true,
-    defaultContent: () => ({ title: '' }),
+    defaultContent: () => ({ title: '', eyebrow: '' }),
+    defaultOptions: () => ({ tenantScope: 'all', limit: 4 }),
+    bandRole: 'band',
     editor: defineAsyncComponent(() => import('./NewsEditor.vue')),
     display: defineAsyncComponent(() => import('@/Components/Public/NewsElement.vue')),
     skeleton: {

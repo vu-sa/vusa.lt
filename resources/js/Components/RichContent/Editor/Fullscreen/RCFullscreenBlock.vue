@@ -59,6 +59,15 @@
       @delete="$emit('delete')"
       @open-form="$emit('open-form')"
     />
+    <NewsBlockToolbar v-else-if="!preview && content.type === 'news'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')"
+      @move-down="$emit('move-down')"
+      @delete="$emit('delete')"
+      @open-form="$emit('open-form')"
+    />
     <HeroCarouselBlockToolbar v-else-if="!preview && content.type === 'hero-carousel'"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete
@@ -142,6 +151,7 @@ import SectionBlockToolbar from '../../RCSection/SectionBlockToolbar.vue';
 import LinkListBlockToolbar from '../../RCLinkList/LinkListBlockToolbar.vue';
 import EventListBlockToolbar from '../../RCEventList/EventListBlockToolbar.vue';
 import CalendarBlockToolbar from '../../RCCalendar/CalendarBlockToolbar.vue';
+import NewsBlockToolbar from '../../RCNews/NewsBlockToolbar.vue';
 import HeroCarouselBlockToolbar from '../../RCHeroCarousel/HeroCarouselBlockToolbar.vue';
 import CardBlockToolbar from '../../RCCard/CardBlockToolbar.vue';
 import NumberStatBlockToolbar from '../../RCNumberStatSection/NumberStatBlockToolbar.vue';

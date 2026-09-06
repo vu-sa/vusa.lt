@@ -69,6 +69,13 @@ describe('contentTypeRegistry', () => {
     expect(item.json_content).toEqual([{ endNumber: 0, label: '' }]);
   });
 
+  it('seeds a news block with its editable heading fields and global feed defaults', () => {
+    const item = createContentItem('news');
+
+    expect(item.json_content).toEqual({ title: '', eyebrow: '' });
+    expect(item.options).toMatchObject({ tenantScope: 'all', limit: 4 });
+  });
+
   it('getSkeletonForType falls back to a generic skeleton for types without one', () => {
     // spotify-embed has no bespoke skeleton registered.
     const skeleton = getSkeletonForType('spotify-embed');
