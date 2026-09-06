@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Navigation;
+use App\Models\QuickLink;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -166,6 +169,18 @@ describe('scrubbing personal data', function () {
 
         expect(DB::table('notifications')->count())->toBe(0)
             ->and(DB::table('push_subscriptions')->count())->toBe(0);
+    });
+
+    test('it rewrites production navigation and quick-link URLs for staging', function (): void {
+        config(['app.url' => 'https://www.naujas.vusa.lt']);
+        $navigation = Navigation::factory()->create(['url' => 'https://www.vusa.lt/lt/naujienos']);
+        $quickLink = QuickLink::factory()->for(Tenant::factory())->create(['link' => 'https://www.vusa.lt/en/documents']);
+
+        $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
+            ->assertExitCode(0);
+
+        expect($navigation->refresh()->url)->toBe('https://www.naujas.vusa.lt/lt/naujienos')
+            ->and($quickLink->refresh()->link)->toBe('https://www.naujas.vusa.lt/en/documents');
     });
 
     test('scrub-only still refuses outside staging', function (): void {

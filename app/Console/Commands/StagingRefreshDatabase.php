@@ -86,6 +86,10 @@ class StagingRefreshDatabase extends Command
         $this->info('Running migrations...');
         $this->call('migrate', ['--force' => true]);
 
+        if ($this->call('urls:rewrite-vusa') !== self::SUCCESS) {
+            return self::FAILURE;
+        }
+
         $this->call('optimize:clear');
 
         if (! $this->option('skip-reindex')) {

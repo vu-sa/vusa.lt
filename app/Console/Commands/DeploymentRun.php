@@ -22,7 +22,7 @@ class DeploymentRun extends Command
      *
      * `DeploymentResume` reads this to work out what comes next, so the two cannot drift.
      *
-     * @var array<string, array{name: string, command: string, args?: array<string, mixed>, critical: bool}>
+     * @var array<string, array{name: string, command: string, args?: array<string, mixed>, critical: bool, stagingOnly?: bool}>
      */
     public const array STEPS = [
         'isolation' => [
@@ -90,6 +90,14 @@ class DeploymentRun extends Command
             'command' => 'up',
             'critical' => true,
         ],
+        // APP_URL is different on staging, while restored navigation and quick-link records retain
+        // production's www.vusa.lt host. This must never run as part of a production deployment.
+        'rewrite-urls' => [
+            'name' => 'Rewrite navigation URLs for this environment',
+            'command' => 'urls:rewrite-vusa',
+            'critical' => true,
+            'stagingOnly' => true,
+        ],
         // After `online`, unlike the queue workers: broadcasting is not needed for the site to serve
         // pages, so a Reverb hiccup should never hold the outage open or fail the deploy.
         'reverb' => [
@@ -143,6 +151,12 @@ class DeploymentRun extends Command
                 } else {
                     continue;
                 }
+            }
+
+            if ($this->shouldSkipStep($step)) {
+                $this->line("⏭ {$step['name']} only runs on staging.");
+
+                continue;
             }
 
             $this->info("📋 {$step['name']}...");
@@ -211,6 +225,12 @@ class DeploymentRun extends Command
                 }
             }
 
+            if ($this->shouldSkipStep($step)) {
+                $this->line("  <fg=gray>⏸ {$step['name']} (staging only)</>");
+
+                continue;
+            }
+
             $critical = $step['critical'];
             $icon = $critical ? '🔴' : '🟡';
             $type = $critical ? 'critical' : 'non-critical';
@@ -222,6 +242,14 @@ class DeploymentRun extends Command
         $this->info('Use "deployment:run" to execute this plan.');
 
         return 0;
+    }
+
+    /**
+     * @param  array{stagingOnly?: bool}  $step
+     */
+    private function shouldSkipStep(array $step): bool
+    {
+        return ($step['stagingOnly'] ?? false) && config('app.env') !== 'staging';
     }
 
     private function updateDeploymentState(string $step, string $status, ?string $error = null): void

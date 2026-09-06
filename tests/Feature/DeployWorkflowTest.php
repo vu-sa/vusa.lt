@@ -169,6 +169,25 @@ describe('the deployment pipeline order', function () {
         expect($indexOf('search'))->toBeGreaterThan($indexOf('online'));
     });
 
+    it('rewrites staging navigation URLs after the site is back online', function () use ($indexOf): void {
+        expect(DeploymentRun::STEPS['rewrite-urls']['command'])->toBe('urls:rewrite-vusa')
+            ->and(DeploymentRun::STEPS['rewrite-urls']['stagingOnly'])->toBeTrue()
+            ->and($indexOf('rewrite-urls'))->toBeGreaterThan($indexOf('online'));
+    });
+
+    it('skips the URL rewrite in a production deployment', function (): void {
+        $environment = config('app.env');
+        config(['app.env' => 'production']);
+
+        try {
+            $this->artisan('deployment:run', ['--dry-run' => true])
+                ->expectsOutputToContain('Rewrite navigation URLs for this environment (staging only)')
+                ->assertSuccessful();
+        } finally {
+            config(['app.env' => $environment]);
+        }
+    });
+
     // optimize:clear runs cache:clear, and both restart signals are cache keys — restarting before
     // it would wipe the signal and leave workers running the pre-deploy code.
     it('restarts workers after the caches are rebuilt', function () use ($indexOf): void {
