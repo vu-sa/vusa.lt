@@ -5,9 +5,11 @@ use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
@@ -169,6 +171,36 @@ describe('scrubbing personal data', function () {
 
         expect(DB::table('notifications')->count())->toBe(0)
             ->and(DB::table('push_subscriptions')->count())->toBe(0);
+    });
+
+    test('it empties Telescope tables with a foreign-key relationship', function (): void {
+        Schema::drop('telescope_entries_tags');
+        Schema::create('telescope_entries_tags', function (Blueprint $table): void {
+            $table->char('entry_uuid', 36);
+            $table->string('tag');
+            $table->foreign('entry_uuid')->references('uuid')->on('telescope_entries');
+        });
+
+        $entryUuid = Str::uuid()->toString();
+
+        DB::table('telescope_entries')->insert([
+            'uuid' => $entryUuid,
+            'batch_id' => Str::uuid()->toString(),
+            'should_display_on_index' => true,
+            'type' => 'request',
+            'content' => '{}',
+            'created_at' => now(),
+        ]);
+        DB::table('telescope_entries_tags')->insert([
+            'entry_uuid' => $entryUuid,
+            'tag' => 'staging',
+        ]);
+
+        $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
+            ->assertExitCode(0);
+
+        $this->assertDatabaseEmpty('telescope_entries')
+            ->assertDatabaseEmpty('telescope_entries_tags');
     });
 
     test('it rewrites production navigation and quick-link URLs for staging', function (): void {
