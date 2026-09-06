@@ -577,3 +577,29 @@ export function generateSlug(text: string, maxLength?: number): string {
 
   return maxLength === undefined ? slug : slug.substring(0, maxLength).replace(/-+$/, '');
 }
+
+/**
+ * Strip HTML tags from a string, repeating until the result stops changing.
+ *
+ * The loop is what makes this safe on hostile input: a single pass over
+ * `<scr<b>ipt>` leaves a tag behind that the next pass removes.
+ */
+export function stripHtmlTags(html: string): string {
+  let previous: string;
+  let current = html;
+
+  do {
+    previous = current;
+    current = current.replace(/<[^<>]*>/g, '');
+  } while (current !== previous);
+
+  return current;
+}
+
+/**
+ * Whether a rich-text value carries any visible text once its markup is removed.
+ * Used to decide if an empty-looking block should render at all.
+ */
+export function hasHtmlText(html: string | null | undefined): boolean {
+  return Boolean(html && stripHtmlTags(html).trim());
+}

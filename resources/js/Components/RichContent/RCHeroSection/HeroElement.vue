@@ -216,6 +216,7 @@ import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { Hero } from '@/Types/contentParts';
+import { hasHtmlText } from '@/Utils/String';
 import { withCompactPadding, type BandResolution } from '../bandLayout';
 
 // Lazy-loaded: title/description only ever mount a *live* TiptapEditor while claimed in
@@ -273,7 +274,7 @@ const isTitleLive = computed(() => !!props.editable && !!hotspots?.isTextFieldLi
 const isDescriptionLive = computed(() => !!props.editable && !!hotspots?.isTextFieldLive(descriptionHotspotId.value));
 
 function elementText(value: string | undefined): boolean {
-  return Boolean(value?.replace(/<[^>]*>/g, '').trim());
+  return hasHtmlText(value);
 }
 
 function claimTitle(): void {

@@ -177,6 +177,7 @@ import HeroCarouselImageHotspot from './HeroCarouselImageHotspot.vue';
 import { Button } from '@/Components/ui/button';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { HeroCarousel } from '@/Types/contentParts';
+import { hasHtmlText } from '@/Utils/String';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
@@ -216,7 +217,7 @@ const titleHotspotId = computed(() => `${props.blockKey ?? ''}:slide-${props.sli
 const descriptionHotspotId = computed(() => `${props.blockKey ?? ''}:slide-${props.slideIndex}:description`);
 const imageHotspotId = computed(() => `${props.blockKey ?? ''}:slide-${props.slideIndex}:image`);
 
-const hasTitle = computed(() => Boolean(props.slide.title?.replace(/<[^>]*>/g, '').trim()));
+const hasTitle = computed(() => hasHtmlText(props.slide.title));
 const hasDesc = computed(() => hasTiptapContent(props.slide.description) || hasHtmlContent(props.slide.description));
 
 const isTitleLive = computed(() => !!props.editable && !!hotspots?.isTextFieldLive(titleHotspotId.value));
@@ -251,7 +252,7 @@ function hasTiptapContent(description: unknown): boolean {
 }
 
 function hasHtmlContent(description: unknown): boolean {
-  return typeof description === 'string' && Boolean(description.replace(/<[^>]*>/g, '').trim());
+  return typeof description === 'string' && hasHtmlText(description);
 }
 
 function patchSlide(patch: Partial<Slide>): void {

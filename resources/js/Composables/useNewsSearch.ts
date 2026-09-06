@@ -116,13 +116,13 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
     // Category filter
     if (selectedCategories.value.length > 0) {
-      const escaped = selectedCategories.value.map(c => `\`${c.replace(/`/g, '\\`')}\``).join(',');
+      const escaped = selectedCategories.value.map(c => `\`${c.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`category_name:=[${escaped}]`);
     }
 
     // Tenant filter
     if (selectedTenants.value.length > 0) {
-      const escaped = selectedTenants.value.map(t => `\`${t.replace(/`/g, '\\`')}\``).join(',');
+      const escaped = selectedTenants.value.map(t => `\`${t.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`tenant_shortname:=[${escaped}]`);
     }
 
@@ -133,7 +133,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
     // Tag filter
     if (selectedTags.value.length > 0) {
-      const escaped = selectedTags.value.map(t => `\`${t.replace(/`/g, '\\`')}\``).join(',');
+      const escaped = selectedTags.value.map(t => `\`${t.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`tag_names:=[${escaped}]`);
     }
 

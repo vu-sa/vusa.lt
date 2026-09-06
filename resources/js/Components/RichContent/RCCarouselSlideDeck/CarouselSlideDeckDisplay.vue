@@ -303,6 +303,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/u
 import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
 import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
 import type { CarouselSlideDeck } from '@/Types/contentParts';
+import { hasHtmlText } from '@/Utils/String';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
@@ -420,7 +421,7 @@ function hasTiptapContent(description: unknown): boolean {
 }
 
 function hasHtmlContent(description: unknown): boolean {
-  return typeof description === 'string' && Boolean(description.replace(/<[^>]*>/g, '').trim());
+  return typeof description === 'string' && hasHtmlText(description);
 }
 
 // Carousel functionality

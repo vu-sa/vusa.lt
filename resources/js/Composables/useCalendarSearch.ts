@@ -126,13 +126,13 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
 
     // Category filter
     if (selectedCategories.value.length > 0) {
-      const escaped = selectedCategories.value.map(c => `\`${c.replace(/`/g, '\\`')}\``).join(',');
+      const escaped = selectedCategories.value.map(c => `\`${c.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`category_name:=[${escaped}]`);
     }
 
     // Tenant filter
     if (selectedTenants.value.length > 0) {
-      const escaped = selectedTenants.value.map(t => `\`${t.replace(/`/g, '\\`')}\``).join(',');
+      const escaped = selectedTenants.value.map(t => `\`${t.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`tenant_shortname:=[${escaped}]`);
     }
 
