@@ -25,6 +25,7 @@ class GetNavigationForPublic
     {
         if ($request->isMethod('get')) {
             Inertia::share('mainNavigation', fn () => NavigationService::getNavigationForPublic());
+            Inertia::share('footerNavigation', fn () => NavigationService::getFooterNavigationForPublic());
         }
 
         return $next($request);

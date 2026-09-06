@@ -15,7 +15,8 @@ const EXPECTED_TYPES = [
   'tiptap', 'shadcn-accordion', 'shadcn-card', 'image-grid', 'hero', 'news', 'calendar',
   'spotify-embed', 'social-embed', 'flow-graph', 'number-stat-section', 'text-box',
   'content-grid', 'carousel-slide-deck', 'hero-carousel', 'card-stack', 'photo-gallery',
-  'link-list', 'event-list', 'person-quote', 'section', 'spacer', 'timetable',
+  'link-list', 'event-list', 'person-quote', 'section', 'process-steps',
+  'timetable', 'institution-list',
 ];
 
 describe('contentTypeRegistry', () => {
@@ -53,7 +54,38 @@ describe('contentTypeRegistry', () => {
     const item = createContentItem('shadcn-card');
     expect(item.type).toBe('shadcn-card');
     expect(item.json_content).toEqual({});
-    expect(item.options).toMatchObject({ variant: 'outline', color: 'zinc' });
+    expect(item.options).toMatchObject({ title: '', verticalSpacing: 'default' });
+  });
+
+  it('seeds a new accordion with one editable item', () => {
+    const item = createContentItem('shadcn-accordion');
+
+    expect(item.json_content).toEqual([{ label: '', content: {} }]);
+  });
+
+  it('seeds a new statistic section with one editable figure', () => {
+    const item = createContentItem('number-stat-section');
+
+    expect(item.json_content).toEqual([{ endNumber: 0, label: '' }]);
+  });
+
+  it('seeds a news block with its editable heading fields and global feed defaults', () => {
+    const item = createContentItem('news');
+
+    expect(item.json_content).toEqual({ title: '', eyebrow: '' });
+    expect(item.options).toMatchObject({ tenantScope: 'all', limit: 4 });
+  });
+
+  it('seeds a new image-grid with one empty image item', () => {
+    const item = createContentItem('image-grid');
+
+    expect(item.json_content).toEqual([{ colspan: 'col-span-2', image: '', alt: '', title: '' }]);
+  });
+
+  it('seeds a new photo-gallery with one empty image item', () => {
+    const item = createContentItem('photo-gallery');
+
+    expect(item.json_content).toEqual([{ src: '', alt: '', heightClass: 'h-52', decorations: [] }]);
   });
 
   it('getSkeletonForType falls back to a generic skeleton for types without one', () => {

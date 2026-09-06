@@ -53,12 +53,12 @@ class Category extends Model implements GuardsForceDelete
 
     public $translatable = ['name', 'description'];
 
-    public function pages()
+    public function pages(): HasMany
     {
         return $this->hasMany(Page::class);
     }
 
-    public function news()
+    public function news(): HasMany
     {
         return $this->hasMany(News::class);
     }

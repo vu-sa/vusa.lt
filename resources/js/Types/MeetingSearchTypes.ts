@@ -1,5 +1,7 @@
 // Meeting search interfaces - adapted from DocumentSearchTypes
 
+export type MeetingSearchSort = 'relevance' | 'date_desc' | 'date_asc';
+
 // Core search interfaces
 export interface MeetingSearchFilters {
   query: string;
@@ -12,6 +14,8 @@ export interface MeetingSearchFilters {
     to?: Date;
     preset?: 'recent' | '1year' | 'year-range' | 'custom';
   };
+  /** Optional so existing partial-filter object literals elsewhere keep type-checking. */
+  sort?: MeetingSearchSort;
 }
 
 export interface MeetingFacet {
@@ -80,6 +84,7 @@ export interface MeetingSearchController {
   toggleYear: (year: number) => void;
   toggleSuccessRate: (range: string) => void;
   setDateRange: (dateRange: any) => void;
+  setSortBy: (sort: MeetingSearchSort) => void;
   setViewMode: (mode: 'list' | 'compact') => void;
   clearFilters: () => void;
   clearRecentSearches: () => void;

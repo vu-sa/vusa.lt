@@ -7,7 +7,6 @@
       colorClasses,
       shapeClasses,
       opacityClasses,
-      rotationClasses
     ]"
   />
 </template>
@@ -19,16 +18,9 @@ interface Props {
   type: 'circle' | 'line' | 'square';
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
   size: 'sm' | 'md' | 'lg';
-  color?: 'vusa-red' | 'vusa-yellow' | 'zinc';
-  opacity?: number;
-  rotation?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  color: 'zinc',
-  opacity: 60,
-  rotation: false,
-});
+const props = defineProps<Props>();
 
 const positionClasses = computed(() => {
   const positions = {
@@ -60,20 +52,12 @@ const sizeClasses = computed(() => {
   }
 });
 
-const colorClasses = computed(() => {
-  const colors = {
-    'vusa-red': props.type === 'square'
-      ? `border-2 border-vusa-red dark:border-vusa-red bg-white/80 dark:bg-zinc-900/80`
-      : 'bg-vusa-red dark:bg-vusa-red',
-    'vusa-yellow': props.type === 'square'
-      ? `border-2 border-vusa-yellow dark:border-vusa-yellow bg-white/80 dark:bg-zinc-900/80`
-      : 'bg-vusa-yellow dark:bg-vusa-yellow',
-    'zinc': props.type === 'square'
-      ? `border-2 border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800`
-      : 'bg-zinc-400 dark:bg-zinc-500',
-  };
-  return colors[props.color];
-});
+// Fixed brand treatment — colour is no longer an authorable option (see
+// 2026_09_04_HHMMSS_drop_drifted_block_colour_settings.php), so every decorative
+// accent uses the same token regardless of type.
+const colorClasses = computed(() => (props.type === 'square'
+  ? 'border-2 border-brand bg-card/80'
+  : 'bg-brand'));
 
 const shapeClasses = computed(() => {
   const shapes = {
@@ -84,12 +68,5 @@ const shapeClasses = computed(() => {
   return shapes[props.type];
 });
 
-const opacityClasses = computed(() => {
-  if (props.type === 'square') return ''; // Squares handle opacity in colorClasses
-  return `opacity-${props.opacity}`;
-});
-
-const rotationClasses = computed(() => {
-  return props.rotation ? 'rotate-45' : '';
-});
+const opacityClasses = computed(() => (props.type === 'square' ? '' : 'opacity-60'));
 </script>

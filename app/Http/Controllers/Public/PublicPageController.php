@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Public;
 
 use App\Actions\GetPublicMeetingDocuments;
 use App\Collections\NewsCollection;
-use App\Enums\TenantType;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
@@ -15,7 +14,6 @@ use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Services\LocationGeocoder;
 use App\Services\ResourceServices\InstitutionService;
 use App\Settings\FormSettings;
@@ -108,6 +106,7 @@ class PublicPageController extends PublicController
         $firstNewsImageUrl = $news[0]['image'] ?? null;
 
         return Inertia::render('Public/HomePage', [
+            'tenantSwitchTarget' => 'same-page',
             'content' => $content,
             // `news`/`calendarEvents` stay as-is (HomePage's LCP tuning is built on this
             // exact prop shape); `resolvedParts` only carries the newer dynamic types
@@ -363,95 +362,14 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/IndividualStudies');
     }
 
-    // dynamically grabs list of pkp
+    // PKP is now a standard ContentPage using the institution-list content part
     public function pkp()
     {
-        $this->getBanners();
-        $this->getTenantLinks();
-        $this->shareOtherLangURL('pkp');
+        $permalink = app()->getLocale() === 'en' ? 'programs-clubs-and-projects' : 'programos-klubai-projektai';
+        request()->route()->setParameter('permalink', $permalink);
+        request()->merge(['permalink' => $permalink]);
 
-        $institutions = (new InstitutionService)->getInstitutionsByTypeSlug('pkp')->where('is_active', true);
-
-        // Global content - use null for current tenant. This route only exists on the www
-        // domain group, so the derived " - VU SA" suffix matches what was hardcoded here.
-        $this->applyPageHead(
-            contentTenant: null,
-            title: __('Studentiškos iniciatyvos'),
-            description: 'VU SA studentiškos iniciatyvos – plati erdvė Vilniaus universiteto studentų(-čių) idėjoms, kūrybiškumui ir savirealizacijai.'
-        );
-
-        return Inertia::render('Public/PKP', [
-            'institutions' => $institutions->map(function ($institution) {
-                /** @var Institution $institution */
-                return [
-                    ...$institution->toArray(),
-                    'description' => Str::limit(strip_tags($institution->description), 100, '...'),
-                ];
-            }),
-        ]);
-    }
-
-    public function curatorRegistrations()
-    {
-        $this->getBanners();
-        $this->getTenantLinks();
-
-        // Share other language URL for locale switching
-        $this->shareOtherLangURL('curatorRegistrations');
-
-        // Global content - use null for current tenant
-        $this->applyPageHead(
-            contentTenant: null,
-            title: app()->getLocale() === 'lt' ? 'Registracija į kuratorių programą' : 'Registration to mentor program',
-            description: 'Kuratoriai - tai studentai, kurie savo laisvalaikiu padeda naujiems studentams prisitaikyti prie universiteto aplinkos, dalinasi patirtimi ir patarimais, skatina aktyvų studentų gyvenimą.'
-        );
-
-        $forms = [
-            'chgf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNjNTNU9ESE4wV0s4RTA2QUtIMllVN0RSNC4u',
-            'evaf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNDI2Q0xKWktSSVFVR1RUOENEUk9QUlRFVy4u',
-            'ff' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOEZBSDk4NFZWRUJDMjJBOVU1TEtHWFJDNy4u',
-            'filf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURVY3TlNWQ0VHTjcwU1BVMEI1NjA5N04xTS4u',
-            'fsf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMlRLOFozV1RNWEZXMDdJODUzSDhQTllKWS4u',
-            'gmc' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUQk1TVTlTM0k0MlpPTkZUSjczWU9HMDNTUi4u',
-            'if' => 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1utank1gTtJOjW_KfzCkXc1UN0NLNjM2SzRXQkwzT0NUTVQ1NjFKMjFIOS4u',
-            'kf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVURU05RU1FUU5LODVCRjRaMzI3VkRRNFY3Sy4u',
-            'knf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUN1A4RFhKWDVXVjUwNDdZUkZEUjgzNzkzRi4u',
-            'mf' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMllPRDFVSkZWOUQ4SVJRSjhJTkRSVUJYVy4u',
-            'mif' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUOE03NUhXMFpON1RBT0hCODZLUFpFOUdDWS4u',
-            'sa' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUMTlRQ1lIWUVMR0xNN0lSUzYzUzkwNDUzWi4u',
-            'tf' => 'mailto:integracija@tf.vusa.lt',
-            'tspmi' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNUc2UUtSREk4OExZT0VEMlkwRExKUUw5Ry4u',
-            'vm' => 'https://forms.office.com/Pages/ResponsePage.aspx?id=XVfIeiHvL0yhJSx6Ldsk1qutBUuXL4FKrkfpwBeQGxVUNEdYVzJTSURWRkdXMVZFMlhFUVkyREk0UC4u',
-        ];
-
-        $english_tenant_names = [
-            'chgf' => 'Faculty of Chemistry and Geosciences',
-            'evaf' => 'Faculty of Economics and Business Administration',
-            'ff' => 'Faculty of Physics',
-            'filf' => 'Faculty of Philology',
-            'fsf' => 'Faculty of Philosophy',
-            'gmc' => 'Life Sciences Center',
-            'if' => 'Faculty of History',
-            'kf' => 'Faculty of Communication',
-            'knf' => 'Kaunas Faculty',
-            'mf' => 'Faculty of Medicine',
-            'mif' => 'Faculty of Mathematics and Informatics',
-            'sa' => 'Šiauliai Academy',
-            'tf' => 'Faculty of Law',
-            'tspmi' => 'Institute of International Relations and Political Science',
-            'vm' => 'Business School',
-        ];
-
-        $tenants = Tenant::query()->where('type', TenantType::Padalinys)->with('primary_institution')->orderBy('fullname')
-            ->get(['id', 'primary_institution_id', 'alias', 'fullname']);
-
-        Inertia::share('otherLangURL', LocalizedRouteSlugs::route('curatorRegistrations', [], $this->getOtherLang()));
-
-        return Inertia::render('Public/CuratorRegistrations', [
-            'forms' => $forms,
-            'tenants' => $tenants,
-            'englishTenantNames' => $english_tenant_names,
-        ]);
+        return $this->page();
     }
 
     public function calendarEvent(Calendar $calendar, LocationGeocoder $geocoder)
@@ -999,96 +917,5 @@ class PublicPageController extends PublicController
         }
 
         return $query->get();
-    }
-
-    /**
-     * Calculate and cache membership statistics
-     */
-    protected function getMembershipStats(): array
-    {
-        $cacheKey = 'membership_stats';
-
-        return Cache::remember($cacheKey, 3600, function () { // 60 minutes TTL
-            // Get the student representative type and its descendants
-            $representativeType = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
-
-            if (! $representativeType) {
-                // Fallback if type doesn't exist
-                return [
-                    'representative_bodies' => 0,
-                    'student_representatives' => 0,
-                    'cached_at' => now(),
-                ];
-            }
-
-            $representativeTypes = $representativeType->getDescendantsAndSelf();
-
-            // Calculate number of representative bodies (institutions with student representative types)
-            // Exclude 'pkp' type tenants as they're student initiatives, not formal representation
-            // Also exclude institutions that don't have any active users in their duties
-            $representativeBodies = Institution::query()
-                ->whereHas('types', function ($query) use ($representativeTypes): void {
-                    $query->whereIn('id', $representativeTypes->pluck('id'));
-                })
-                ->whereHas('tenant', function ($query): void {
-                    $query->whereIn('type', TenantType::representationalValues());
-                })
-                ->whereHas('duties.current_users') // Only count institutions that have active users
-                ->where('is_active', true)
-                ->count();
-
-            // Calculate unique student representatives
-            // Get all institutions with representative types and their current users
-            $institutions = Institution::query()
-                ->whereHas('types', function ($query) use ($representativeTypes): void {
-                    $query->whereIn('id', $representativeTypes->pluck('id'));
-                })
-                ->whereHas('tenant', function ($query): void {
-                    $query->whereIn('type', TenantType::representationalValues());
-                })
-                ->whereHas('duties.current_users') // Only get institutions that have active users
-                ->where('is_active', true)
-                ->with(['duties.current_users'])
-                ->get();
-
-            // Collect all unique user IDs from all duties in these institutions
-            $uniqueUserIds = collect();
-
-            foreach ($institutions as $institution) {
-                foreach ($institution->duties as $duty) {
-                    $uniqueUserIds = $uniqueUserIds->merge($duty->current_users->pluck('id'));
-                }
-            }
-
-            $studentRepresentativeCount = $uniqueUserIds->unique()->count();
-
-            return [
-                'representative_bodies' => $representativeBodies,
-                'student_representatives' => $studentRepresentativeCount,
-                'cached_at' => now(),
-            ];
-        });
-    }
-
-    public function membership()
-    {
-        $this->getBanners();
-        $this->getTenantLinks();
-
-        // Share other language URL for locale switching
-        $this->shareOtherLangURL('joinUs');
-
-        // Get membership statistics
-        $membershipStats = $this->getMembershipStats();
-
-        $this->applyPageHead(
-            contentTenant: $this->tenant,
-            title: __('Tapk VU SA nariu'),
-            description: __('Prisijunk prie VU SA bendruomenės!')
-        );
-
-        return Inertia::render('Public/MembershipPage', [
-            'membershipStats' => $membershipStats,
-        ]);
     }
 }

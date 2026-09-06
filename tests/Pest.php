@@ -205,11 +205,13 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
 {
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
 
-    $page = visit('/login');
-    waitForInertiaRender($page);
-
-    // admin.ts registers the PWA service worker on every boot — see disableServiceWorker().
+    // `/up` creates the browser context without loading admin.ts, so its next document gets the
+    // service-worker stub before the login app can attempt a registration.
+    $page = visit('/up');
     disableServiceWorker($page);
+
+    $page->navigate('/login');
+    waitForInertiaRender($page);
 
     $page->click('button:has-text("Prisijungti el. paštu")');
     $page->page()->waitForSelector('#email', ['timeout' => 15_000]);
@@ -485,7 +487,6 @@ function getControllerTestData(string $controller): array
             ],
             'invalid' => [
                 'title' => '', // Required field empty
-                'image_url' => '', // Required field empty
             ],
         ],
         'Navigation' => [
@@ -524,7 +525,7 @@ function getControllerValidationErrors(string $controller): array
     return match ($controller) {
         'Page' => ['title', 'content.parts', 'permalink', 'lang'],
         'Category' => ['name.lt', 'name.en'],
-        'Banner' => ['title', 'image_url'],
+        'Banner' => ['title'],
         'Navigation' => ['name', 'url'],
         'Relationship' => ['name', 'slug'],
         default => ['name'],

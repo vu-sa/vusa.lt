@@ -192,10 +192,10 @@ async function doUpload(file: UploadFile) {
 }
 
 function handleFiles(fileList: FileList | null) {
-  if (!fileList || !canUpload.value) return;
+  if (!fileList || (!isSingle.value && !canUpload.value)) return;
 
   const newFiles = Array.from(fileList);
-  const availableSlots = props.max - files.value.length;
+  const availableSlots = isSingle.value ? 1 : props.max - files.value.length;
 
   newFiles.slice(0, availableSlots).forEach((file) => {
     const error = validateFile(file);

@@ -66,18 +66,17 @@ describe('Calendar/EventCard.vue', () => {
     expect(wrapper.text()).not.toContain('Konferencija');
   });
 
-  it('shows Peržiūrėti and hides social/calendar actions for past events', () => {
-    const wrapper = mountCard({ variant: 'past', googleLink: 'https://calendar.google.com/x' });
+  it('shows Peržiūrėti for past events', () => {
+    const wrapper = mountCard({ variant: 'past' });
 
     expect(wrapper.text()).toContain('Peržiūrėti');
     expect(wrapper.text()).not.toContain('Daugiau');
-    expect(wrapper.findAll('a').some(a => a.attributes('href') === 'https://calendar.google.com/x')).toBe(false);
   });
 
-  it('shows Daugiau and the Google Calendar action for upcoming events', () => {
-    const wrapper = mountCard({ googleLink: 'https://calendar.google.com/x' });
+  it('shows Daugiau for upcoming events', () => {
+    const wrapper = mountCard({ variant: 'upcoming' });
 
     expect(wrapper.text()).toContain('Daugiau');
-    expect(wrapper.findAll('a').some(a => a.attributes('href') === 'https://calendar.google.com/x')).toBe(true);
+    expect(wrapper.text()).not.toContain('Peržiūrėti');
   });
 });

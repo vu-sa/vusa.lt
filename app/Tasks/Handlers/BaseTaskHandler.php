@@ -9,14 +9,8 @@ use App\Notifications\TaskAutoCompletedNotification;
 use App\Tasks\DTOs\CreateTaskData;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Base class for task handlers providing common functionality.
- */
 abstract class BaseTaskHandler implements TaskHandler
 {
-    /**
-     * Create a task using the provided data.
-     */
     public function create(CreateTaskData $data): Task
     {
         $task = new Task;
@@ -44,9 +38,8 @@ abstract class BaseTaskHandler implements TaskHandler
     }
 
     /**
-     * Complete a task and notify assigned users.
-     *
-     * @param  User|null  $completedBy  The user who triggered the auto-completion (will be excluded from notifications)
+     * @param  Task  $task
+     * @param  User|null  $completedBy  Excluded from completion notifications.
      */
     public function complete($task, ?string $reason = null, ?User $completedBy = null): void
     {
@@ -59,10 +52,7 @@ abstract class BaseTaskHandler implements TaskHandler
     }
 
     /**
-     * Notify all assigned users that the task was auto-completed.
-     * The completedBy user is included in the notification to show who triggered the completion.
-     *
-     * @param  User|null  $completedBy  The user who triggered the completion (shown in notification)
+     * @param  User|null  $completedBy  Excluded from completion notifications.
      */
     protected function notifyUsersOfCompletion(Task $task, string $reason, ?User $completedBy = null): void
     {

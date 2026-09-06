@@ -68,4 +68,8 @@ return [
         'data_since' => env('UMAMI_DATA_SINCE', '2026-07-26'),
     ],
 
+    'carto' => [
+        'api_key' => env('CARTO_API_KEY'),
+    ],
+
 ];

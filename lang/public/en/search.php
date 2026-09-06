@@ -285,7 +285,7 @@ return [
     'view_all' => 'View all',
 
     // Unified search section headings
-    'section_institutions' => 'Institutions',
+    'section_institutions' => 'Contacts',
     'section_meetings' => 'Meetings',
     'section_documents' => 'Documents',
     'section_news' => 'News',

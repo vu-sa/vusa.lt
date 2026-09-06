@@ -199,4 +199,59 @@ describe('NavigationForm.vue', () => {
     const urlInput = wrapper.find('#url');
     expect((urlInput.element as HTMLInputElement).value).toBe('/lt/kategorija/renginiai');
   });
+
+  describe('footer mode', () => {
+    it('forces a footer root to the category-link type and hides appearance/image/parent', () => {
+      wrapper = createWrapper({
+        navigation: {
+          id: 3,
+          name: 'Footer column',
+          url: '#',
+          parent_id: 0,
+          lang: 'lt',
+          is_active: true,
+          extra_attributes: { location: 'footer' },
+        },
+      });
+
+      expect(capturedForm?.extra_attributes.type).toBe('category-link');
+      // No type picker (VisualOptionSelect isn't stubbed to render its option labels
+      // through plain buttons the same way, so absence of the appearance heading is
+      // the reliable signal here).
+      expect(wrapper.text()).not.toContain('navigation.form.section_appearance');
+      expect(wrapper.text()).not.toContain('navigation.form.section_image');
+      expect(wrapper.text()).not.toContain('navigation.form.parent');
+      // The URL field is optional for a footer column and explains why.
+      const urlField = wrapper.findAllComponents(formStubs.FormFieldWrapper).find(f => f.props('id') === 'url');
+      expect(urlField?.props('required')).toBe(false);
+      expect(urlField?.props('helperText')).toBe('navigation.form.footer_category_url_hint');
+    });
+
+    it('forces a footer child to the link type and keeps the parent selector', () => {
+      wrapper = createWrapper({
+        navigation: {
+          id: 4,
+          name: 'Footer link',
+          url: '/some-page',
+          parent_id: 3,
+          lang: 'lt',
+          is_active: true,
+          extra_attributes: { location: 'footer' },
+        },
+        parentElements: [{ id: 3, name: 'Footer column' }],
+      });
+
+      expect(capturedForm?.extra_attributes.type).toBe('link');
+      expect(wrapper.text()).toContain('navigation.form.parent');
+      const urlField = wrapper.findAllComponents(formStubs.FormFieldWrapper).find(f => f.props('id') === 'url');
+      expect(urlField?.props('required')).toBe(true);
+    });
+
+    it('a header item (no footer location) is unaffected', () => {
+      wrapper = createWrapper();
+
+      expect(wrapper.text()).toContain('navigation.form.section_appearance');
+      expect(wrapper.text()).toContain('navigation.form.parent');
+    });
+  });
 });

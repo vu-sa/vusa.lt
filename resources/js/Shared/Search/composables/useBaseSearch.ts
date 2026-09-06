@@ -100,6 +100,14 @@ export interface UseBaseSearchOptions<
 
   /** Facet configuration (for admin search) */
   facetConfig?: FacetConfig;
+
+  /**
+   * Filter keys to leave out of `hasActiveFilters`/`activeFilterCount`, on top of `query`.
+   * For fields that always hold a non-empty value (a sort mode, a status toggle with a
+   * sensible default) — `FilterUtils`'s generic string/number check would otherwise count
+   * them as "active" even at their default value.
+   */
+  excludeFromFilterCount?: string[];
 }
 
 /**
@@ -178,7 +186,10 @@ export function useBaseSearch<
     searchOnMount = false,
     loadFacetsOnMount = false,
     facetConfig,
+    excludeFromFilterCount = [],
   } = options;
+
+  const filterCountExcludeKeys = ['query', ...excludeFromFilterCount];
 
   // ============================================================================
   // State
@@ -234,14 +245,11 @@ export function useBaseSearch<
   const hasMoreResults = computed(() => currentPage.value < totalPages.value);
 
   const hasActiveFilters = computed(() => {
-    if (facetConfig) {
-      return FilterUtils.hasActiveFilters(filters.value, ['query']);
-    }
-    return FilterUtils.hasActiveFilters(filters.value, ['query']);
+    return FilterUtils.hasActiveFilters(filters.value, filterCountExcludeKeys);
   });
 
   const activeFilterCount = computed(() => {
-    return FilterUtils.countActiveFilters(filters.value, ['query']);
+    return FilterUtils.countActiveFilters(filters.value, filterCountExcludeKeys);
   });
 
   // Merged facets with selection state

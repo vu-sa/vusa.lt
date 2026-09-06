@@ -1,12 +1,25 @@
 <template>
-  <NavigationMenu v-model="activeMenuItem" as="div">
-    <div class="mr-8">
-      <slot name="additional" />
-    </div>
+  <!-- `static` overrides the primitive's own `relative`. The mega-menu viewport is positioned
+       `absolute` against the nearest positioned ancestor; leaving this relative anchored the
+       panel to the nav items themselves, so it hugged the trigger instead of spanning the bar.
+       With this static, the header container (which is `relative`) becomes the anchor. -->
+  <!-- `delay-duration="0"`: reka waits 200ms on hover before opening, which on a bar this wide
+       reads as the menu being slow rather than deliberate. The skip window stays short so moving
+       between triggers does not re-animate each time. -->
+  <NavigationMenu
+    v-model="activeMenuItem"
+    as="div"
+    class="static"
+    :delay-duration="0"
+    :skip-delay-duration="200"
+  >
     <NavigationMenuList>
-      <NavigationMenuItem v-for="item in mainNavigation" :key="item.name" class="list-none">
+      <NavigationMenuItem v-for="item in mainNavigation" :key="item.name" :value="item.name" class="list-none">
+        <!-- Uppercase, `whitespace-nowrap shrink-0`: the primary nav must never wrap to a second
+             line. If labels stop fitting, shorten them or raise the desktop breakpoint. Colour and
+             hover come from navigationMenuTriggerStyle, which is tokenised. -->
         <NavigationMenuTrigger
-          class="bg-transparent cursor-pointer hover:bg-zinc-100 dark:bg-transparent dark:hover:bg-zinc-700 max-lg:px-1 max-lg:py-0.5 max-lg:text-xs lg:px-2 lg:py-1.5">
+          class="shrink-0 cursor-pointer whitespace-nowrap text-sm font-bold uppercase tracking-wide lg:px-3 lg:py-2">
           {{ item.name }}
         </NavigationMenuTrigger>
         <MainNavigationMenuContent :item @close-menu="closeMenu" />
@@ -35,4 +48,5 @@ const mainNavigation = computed(() => usePage().props.mainNavigation);
 function closeMenu() {
   activeMenuItem.value = undefined;
 }
+
 </script>

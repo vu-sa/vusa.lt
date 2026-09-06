@@ -19,7 +19,15 @@ import { describe, expect, it } from 'vitest';
  * exist for the visual behaviour to be consistent.
  */
 const cssPath = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../css/app.css');
-const css = readFileSync(cssPath, 'utf-8');
+
+function readCssImportGraph(path: string): string {
+  return readFileSync(path, 'utf-8').replace(
+    /@import ['"](\.\/[^'"]+\.css)['"];/g,
+    (_, importPath: string) => readCssImportGraph(resolve(dirname(path), importPath)),
+  );
+}
+
+const css = readCssImportGraph(cssPath);
 
 const headingModifierClasses = [
   'rc-h-sm',

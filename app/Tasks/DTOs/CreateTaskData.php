@@ -7,21 +7,11 @@ use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
-/**
- * Data Transfer Object for task creation.
- *
- * Provides type-safe, validated data for creating tasks throughout the application.
- */
 readonly class CreateTaskData
 {
     /**
-     * @param  string  $name  The task name/title
-     * @param  Model  $taskable  The model this task is attached to
-     * @param  Collection<int, User>  $users  Users assigned to the task
-     * @param  string|null  $dueDate  Due date for the task
-     * @param  ActionType|null  $actionType  Type of action (Manual, Approval, Pickup, Return)
-     * @param  array<string, mixed>|null  $metadata  Additional metadata (e.g., progress tracking)
-     * @param  string|null  $description  Instructions or description for the task
+     * @param  Collection<int, User>  $users
+     * @param  array<string, mixed>|null  $metadata
      */
     public function __construct(
         public string $name,
@@ -33,11 +23,6 @@ readonly class CreateTaskData
         public ?string $description = null,
     ) {}
 
-    /**
-     * Create a new instance with progress tracking metadata.
-     *
-     * @param  string|null  $description  Optional task description with context
-     */
     public static function withProgress(
         string $name,
         Model $taskable,
@@ -61,9 +46,6 @@ readonly class CreateTaskData
         );
     }
 
-    /**
-     * Create a manual task data object.
-     */
     public static function manual(
         string $name,
         Model $taskable,
@@ -79,9 +61,6 @@ readonly class CreateTaskData
         );
     }
 
-    /**
-     * Create an approval task data object.
-     */
     public static function approval(
         string $name,
         Model $taskable,
@@ -97,9 +76,6 @@ readonly class CreateTaskData
         );
     }
 
-    /**
-     * Check if this task has progress tracking.
-     */
     public function hasProgressTracking(): bool
     {
         return $this->metadata !== null

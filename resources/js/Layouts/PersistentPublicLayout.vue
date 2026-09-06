@@ -7,4 +7,8 @@
 
 <script setup lang="tsx">
 import PublicLayout from '@/Components/Public/Layouts/PublicLayout.vue';
+
+defineOptions({
+  inheritAttrs: false,
+});
 </script>

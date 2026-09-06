@@ -89,13 +89,12 @@ class BannerController extends AdminController
         $tenants = GetTenantsForUpserts::execute('banners.create.padalinys', $this->authorizer);
 
         $banner = new Banner;
-        // $banner->text = $request->text;
         $banner->title = $request->title;
         $banner->is_active = $request->is_active ?? 0;
         $banner->link_url = $request->link_url ?? '';
         // Order is assigned by the model's creating hook, which knows about trashed
         // banners still holding a slot.
-        $banner->image_url = $request->image_url;
+        $banner->image_url = $request->image_url ?: null;
         $banner->tenant_id = $tenants->first()['id'] ?? null;
         $banner->save();
 
@@ -126,7 +125,7 @@ class BannerController extends AdminController
         $banner->title = $request->title;
         $banner->is_active = $request->is_active;
         $banner->link_url = $request->link_url ?? '';
-        $banner->image_url = $request->image_url;
+        $banner->image_url = $request->image_url ?: null;
         $banner->save();
 
         Cache::forget('banners-'.$banner->tenant_id);

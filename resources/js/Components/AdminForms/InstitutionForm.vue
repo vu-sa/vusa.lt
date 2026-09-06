@@ -89,7 +89,15 @@
 
           <div class="grid gap-4 lg:grid-cols-2">
             <FormFieldWrapper id="image_url" :label="$t('Nuotrauka')">
-              <ImageUpload v-model:url="form.image_url" mode="immediate" cropper compress folder="institutions" />
+              <ImageUpload
+                v-model:url="form.image_url"
+                v-model:focal-point-value="form.image_focal_point"
+                mode="immediate"
+                cropper
+                compress
+                focal-point
+                folder="institutions"
+              />
             </FormFieldWrapper>
             <FormFieldWrapper id="logo_url" :label="$t('Logotipas')">
               <ImageUpload v-model:url="form.logo_url" mode="immediate" cropper compress folder="institutions" />

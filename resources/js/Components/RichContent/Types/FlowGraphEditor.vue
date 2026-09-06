@@ -8,15 +8,15 @@
           :key="preset.value"
           class="flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors"
           :class="modelValue.preset === preset.value
-            ? 'border-primary bg-primary/5 dark:bg-primary/10'
-            : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600'">
+            ? 'border-brand bg-brand/5'
+            : 'border-border hover:border-brand'">
           <RadioGroupItem :value="preset.value" />
           <div class="flex-1">
             <div class="flex items-center gap-2">
-              <component :is="preset.icon" class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-              <span class="font-medium text-zinc-900 dark:text-zinc-100">{{ preset.label }}</span>
+              <component :is="preset.icon" class="h-5 w-5 text-brand" />
+              <span class="font-medium text-foreground">{{ preset.label }}</span>
             </div>
-            <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ preset.description }}</p>
+            <p class="mt-1 text-xs text-muted-foreground">{{ preset.description }}</p>
           </div>
         </label>
       </RadioGroup>

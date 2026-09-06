@@ -78,6 +78,7 @@ import ContentEditorFactory from '../ContentEditorFactory.vue';
 import { useLiveBlockPreview } from '../composables/useLiveBlockPreview';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
 import BlockPreviewRenderer from './BlockPreviewRenderer.vue';
+import { withWidth } from './blockWidth';
 import RCWidthPicker from './RCWidthPicker.vue';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
@@ -111,10 +112,7 @@ const allowedWidths = computed<BlockWidth[]>(() => contentType.value.allowedWidt
 const currentWidth = computed<BlockWidth>(() => (props.content?.options?.width as BlockWidth | undefined) ?? contentType.value.defaultWidth);
 
 function setWidth(width: BlockWidth) {
-  emit('update:content', {
-    ...props.content,
-    options: { ...(props.content.options ?? {}), width },
-  });
+  emit('update:content', withWidth(props.content, width));
 }
 
 // The preview's dark-mode toggle *is* the admin theme: useDark() writes the `.dark`

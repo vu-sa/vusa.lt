@@ -84,6 +84,41 @@ export const formatMonthShort = (
     .toUpperCase();
 };
 
+/**
+ * Conventional Lithuanian three-letter month abbreviations, indexed by month number (0-11).
+ *
+ * These are not derivable: several are contractions rather than truncations — rugpjūtis → RGP
+ * and rugsėjis → RGS (not RUG, which would be ambiguous between the two), gruodis → GRD. Intl is
+ * no help either, because Lithuanian has no abbreviated month names in CLDR and
+ * `{ month: 'short' }` falls back to a bare number.
+ */
+const LT_MONTH_ABBREVIATIONS = [
+  'SAU', 'VAS', 'KOV', 'BAL', 'GEG', 'BIR',
+  'LIE', 'RGP', 'RGS', 'SPA', 'LAP', 'GRD',
+] as const;
+
+/**
+ * A three-letter month abbreviation for compact date plates — "RGS", "SEP".
+ */
+export const formatMonthAbbr = (
+  time: number | Date | undefined,
+  locale: LocaleEnum = LocaleEnum.LT,
+): string => {
+  if (!time) return '';
+
+  const date = new Date(time);
+
+  if (locale === LocaleEnum.LT) {
+    return LT_MONTH_ABBREVIATIONS[date.getMonth()] ?? '';
+  }
+
+  return new Intl.DateTimeFormat(locale, { month: 'short' })
+    .format(date)
+    .replace(/\.$/, '')
+    .slice(0, 3)
+    .toUpperCase();
+};
+
 export const getDaysDifference = (time: number | Date) => {
   const now = new Date();
   const difference = new Date(time);

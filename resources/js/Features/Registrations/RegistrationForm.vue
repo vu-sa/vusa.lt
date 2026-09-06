@@ -3,7 +3,7 @@
     <template v-for="field in fieldsWithDescription" #[`form-field-${field.id}`]="slotProps" :key="field.id">
       <div class="mb-6">
         <AutoFormField v-bind="slotProps" />
-        <div class="text-sm mt-1 text-zinc-600 dark:text-zinc-400" v-html="field.description" />
+        <div class="text-sm mt-1 text-muted-foreground" v-html="field.description" />
       </div>
     </template>
     <!-- Hide prefilled fields -->
@@ -12,7 +12,7 @@
         <AutoFormField v-bind="slotProps" />
       </div>
     </template>
-    <Button type="submit">
+    <Button type="submit" variant="brand" size="public">
       {{ $t("Pateikti") }}
     </Button>
   </AutoForm>

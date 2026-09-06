@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
-use App\Enums\NewsLayoutEnum;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
@@ -11,6 +10,7 @@ use App\Services\HtmlSanitizerService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,7 +45,6 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $publish_time
  * @property string|null $main_points
  * @property array<array-key, mixed>|null $highlights
- * @property string $layout
  * @property bool $show_breadcrumbs
  * @property string|null $read_more
  * @property int|null $draft
@@ -54,6 +53,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Category|null $category
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, Tag> $tags
@@ -61,12 +61,12 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read User|null $user
  *
  * @method static \Database\Factories\NewsFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|News withoutTrashed()
+ * @method static Builder<static>|News newModelQuery()
+ * @method static Builder<static>|News newQuery()
+ * @method static Builder<static>|News onlyTrashed()
+ * @method static Builder<static>|News query()
+ * @method static Builder<static>|News withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|News withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -76,7 +76,8 @@ class News extends Model implements Feedable, Sitemapable
 {
     use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
 
-    public $fallback_image = '/images/icons/naujienu_foto.png';
+    /** The conventional prose reading pace, used by {@see readingTimeMinutes()}. */
+    private const int WORDS_PER_MINUTE = 200;
 
     #[\Override]
     protected function casts(): array
@@ -118,10 +119,6 @@ class News extends Model implements Feedable, Sitemapable
             if (is_array($news->highlights) && count($news->highlights) > 3) {
                 $news->highlights = array_slice($news->highlights, 0, 3);
             }
-
-            // Coerce an unrecognised layout rather than failing the save — the value is
-            // validated at the request boundary; this is the belt-and-braces pass.
-            $news->layout = (NewsLayoutEnum::tryFrom((string) $news->layout) ?? NewsLayoutEnum::default())->value;
         });
 
         static::saved(function ($news): void {
@@ -218,6 +215,11 @@ class News extends Model implements Feedable, Sitemapable
         return $this->belongsTo(Tenant::class);
     }
 
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function other_language_news(): HasOne
     {
         return $this->hasOne(News::class, 'id', 'other_lang_id');
@@ -231,6 +233,28 @@ class News extends Model implements Feedable, Sitemapable
     public function content(): BelongsTo
     {
         return $this->belongsTo(Content::class);
+    }
+
+    /**
+     * Rough minutes-to-read, shown beside the author and date in the article header.
+     *
+     * Counts only the article's text blocks — `ContentPart::$html` is null for everything that is
+     * not tiptap — plus the excerpt, at the conventional 200 words per minute. Rounded up, and
+     * never below 1: "0 min read" reads as an error rather than as "this is short".
+     */
+    public function readingTimeMinutes(): int
+    {
+        $text = trim(strip_tags($this->renderBodyHtml().' '.($this->short ?? '')));
+
+        if ($text === '') {
+            return 1;
+        }
+
+        // Split on whitespace rather than `str_word_count()`, which decides what a word character
+        // is from the C locale and therefore breaks Lithuanian words apart at every ą/č/ę/ū.
+        $words = count(preg_split('/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY) ?: []);
+
+        return max(1, (int) ceil($words / self::WORDS_PER_MINUTE));
     }
 
     public function toFeedItem(): FeedItem
@@ -280,6 +304,10 @@ class News extends Model implements Feedable, Sitemapable
     protected function getAbsoluteCoverUrl(): string
     {
         $url = $this->getImageUrl();
+
+        if ($url === null) {
+            return '';
+        }
 
         return str_starts_with($url, 'http') ? $url : url($url);
     }
@@ -379,12 +407,14 @@ class News extends Model implements Feedable, Sitemapable
     }
 
     /**
-     * Get the public-facing image URL with fallback for missing images.
+     * Get the public-facing image URL, or null when there is none to show.
      *
-     * Use this method for public display (news pages, feeds, sitemaps, schema).
-     * For admin forms, use $news->image directly (raw value without fallback).
+     * Use this method for public display (news pages, feeds, sitemaps, schema) — callers
+     * decide how to represent "no image" (an empty card slot, an omitted schema/feed
+     * field, a site-default OG image), rather than this method inventing a placeholder.
+     * For admin forms, use $news->image directly (raw value, no existence check).
      */
-    public function getImageUrl(): string
+    public function getImageUrl(): ?string
     {
         $image = $this->image;
 
@@ -398,17 +428,18 @@ class News extends Model implements Feedable, Sitemapable
             return $image;
         }
 
-        // Return fallback image
-        return $this->fallback_image;
+        return null;
     }
 
     public function toNewsArticleSchema()
     {
         $schema = new NewsArticle;
 
-        // Fix image URL construction
-        $imageUrl = str_starts_with($this->image, 'http') ? $this->image : url($this->getImageUrl());
-        $schema = $schema->image($imageUrl);
+        $imageUrl = $this->getImageUrl();
+        if ($imageUrl !== null) {
+            $imageUrl = str_starts_with($imageUrl, 'http') ? $imageUrl : url($imageUrl);
+            $schema = $schema->image($imageUrl);
+        }
 
         $schema = $schema->datePublished($this->publish_time);
         $schema = $schema->dateModified($this->updated_at);
@@ -456,8 +487,16 @@ class News extends Model implements Feedable, Sitemapable
             ->get();
     }
 
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->with(['tags', 'category', 'content.parts', 'tenant', 'other_language_news']);
+    }
+
     public function toSearchableArray(): array
     {
+        $publishTimestamp = $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp;
+        $categoryName = $this->category?->getTranslation('name', $this->lang) ?? $this->category?->name;
+
         return [
             'id' => (string) $this->id,
             'title' => $this->title,
@@ -467,11 +506,17 @@ class News extends Model implements Feedable, Sitemapable
             // Falls back to created_at rather than now() so unscheduled drafts (no
             // publish_time yet) sort by when they were made, not by index time —
             // this collection now also carries records that are never published.
-            'publish_time' => $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp,
+            'publish_time' => $publishTimestamp,
             'lang' => $this->lang,
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
+            'tenant_shortname' => $this->tenant->shortname,
+            'category_id' => $this->category_id,
+            'category_name' => $categoryName,
+            'year' => (int) ($this->publish_time ?? $this->created_at)->format('Y'),
+            'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
+            'important' => (bool) $this->important,
             'draft' => (bool) $this->draft,
             'created_at' => $this->created_at->timestamp,
         ];
@@ -513,8 +558,9 @@ class News extends Model implements Feedable, Sitemapable
             ->setChangeFrequency(Url::CHANGE_FREQUENCY_NEVER);
 
         // Add image if available
-        if ($this->image) {
-            $imageUrl = str_starts_with($this->image, 'http') ? $this->image : url($this->getImageUrl());
+        $imageUrl = $this->getImageUrl();
+        if ($imageUrl !== null) {
+            $imageUrl = str_starts_with($imageUrl, 'http') ? $imageUrl : url($imageUrl);
             $sitemapUrl->addImage($imageUrl, $this->title);
         }
 

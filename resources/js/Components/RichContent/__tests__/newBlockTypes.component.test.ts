@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
 
 import CardStackEditor from '../Types/CardStackEditor.vue';
 import CarouselSlideDeckEditor from '../Types/CarouselSlideDeckEditor.vue';
 import PhotoGalleryGridEditor from '../Types/PhotoGalleryGridEditor.vue';
+import ImageGridDisplay from '../Types/ImageGridDisplay.vue';
 import CardStackDisplay from '../RCCardStack/CardStackDisplay.vue';
 import CarouselSlideDeckDisplay from '../RCCarouselSlideDeck/CarouselSlideDeckDisplay.vue';
 import PhotoGalleryGridDisplay from '../RCPhotoGalleryGrid/PhotoGalleryGridDisplay.vue';
@@ -24,10 +25,12 @@ function findButtonByText(wrapper: VueWrapper, key: string) {
 }
 
 describe('card-stack', () => {
-  it('editor adds and removes a card via v-model', async () => {
+  it('seeds 1 card by default and adds a card via v-model when empty', async () => {
     const item = createContentItem('card-stack');
+    expect(item.json_content).toHaveLength(1);
+
     const wrapper = mount(CardStackEditor, {
-      props: { modelValue: item.json_content, options: item.options },
+      props: { modelValue: [], options: item.options },
     });
 
     await findButtonByText(wrapper, 'add_first_card').trigger('click');
@@ -81,10 +84,12 @@ describe('card-stack', () => {
 });
 
 describe('carousel-slide-deck', () => {
-  it('editor adds a slide via v-model', async () => {
+  it('seeds 1 slide by default and adds a slide via v-model when empty', async () => {
     const item = createContentItem('carousel-slide-deck');
+    expect(item.json_content).toHaveLength(1);
+
     const wrapper = mount(CarouselSlideDeckEditor, {
-      props: { modelValue: item.json_content, options: item.options },
+      props: { modelValue: [], options: item.options },
       global: { stubs: { TiptapEditor: true } },
     });
 
@@ -188,8 +193,10 @@ describe('photo-gallery', () => {
       },
     };
     const item = createContentItem('photo-gallery');
+    expect(item.json_content).toHaveLength(1);
+
     const wrapper = mount(PhotoGalleryGridEditor, {
-      props: { modelValue: item.json_content, options: item.options },
+      props: { modelValue: [], options: item.options },
       global: { stubs },
     });
 
@@ -220,5 +227,92 @@ describe('photo-gallery', () => {
     expect(tiles).toHaveLength(6);
     await tiles[3]!.trigger('click');
     expect(wrapper.find('[data-testid="lightbox"]').attributes('data-index')).toBe('4');
+  });
+
+  it('updates a gallery image from its full-screen hotspot', async () => {
+    const wrapper = mount(PhotoGalleryGridDisplay, {
+      props: {
+        element: {
+          type: 'photo-gallery',
+          json_content: [{ src: '/old.webp', alt: 'Old', heightClass: 'h-52', decorations: [] }],
+          options: { columns: '2', gap: 'medium', showLightbox: true },
+        },
+        editable: true,
+        blockKey: 'gallery-1',
+      },
+      global: {
+        stubs: {
+          RCImageHotspot: { emits: ['update:image'], template: '<button class="gallery-hotspot" @click="$emit(\'update:image\', { src: \'/new.webp\', alt: \'New\', title: \'\' })" />' },
+          VueEasyLightbox: true,
+        },
+      },
+    });
+
+    await wrapper.find('.gallery-hotspot').trigger('click');
+    const updated = wrapper.emitted('update:element')?.at(-1)?.[0] as { json_content: { src: string; alt: string }[] };
+    expect(updated.json_content[0]).toMatchObject({ src: '/new.webp', alt: 'New' });
+  });
+
+  it('does not mount the lightbox while editing', () => {
+    const wrapper = mount(PhotoGalleryGridDisplay, {
+      props: {
+        element: {
+          type: 'photo-gallery',
+          json_content: [{ src: '/photo.webp', alt: 'Photo', heightClass: 'h-52', decorations: [] }],
+          options: { columns: '2', gap: 'medium', showLightbox: true },
+        },
+        editable: true,
+      },
+      global: {
+        stubs: {
+          RCImageHotspot: true,
+          VueEasyLightbox: { template: '<div data-testid="lightbox" />' },
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-testid="lightbox"]').exists()).toBe(false);
+  });
+
+  it('shows an add-image hotspot after the first gallery image', async () => {
+    const wrapper = mount(PhotoGalleryGridDisplay, {
+      props: {
+        element: {
+          type: 'photo-gallery',
+          json_content: [{ src: '/photo.webp', alt: 'Photo', heightClass: 'h-52', decorations: [] }],
+          options: { columns: '2', gap: 'medium', showLightbox: true },
+        },
+        editable: true,
+      },
+      global: { stubs: { RCImageHotspot: true, VueEasyLightbox: true } },
+    });
+    // RCAddPlaceholder is lazy-loaded (see PhotoGalleryGridDisplay.vue) — resolving that
+    // dynamic import can take longer than a single flush, so poll for it.
+    await vi.waitFor(() => {
+      if (!wrapper.find('button[aria-label="rich-content.add_image"]').exists()) throw new Error('not ready');
+    });
+
+    expect(wrapper.find('button[aria-label="rich-content.add_image"]').exists()).toBe(true);
+  });
+});
+
+describe('image-grid', () => {
+  it('updates an image from its full-screen hotspot', async () => {
+    const wrapper = mount(ImageGridDisplay, {
+      props: {
+        element: { json_content: [{ colspan: 'col-span-2', image: '/old.webp', alt: 'Old' }], options: null },
+        editable: true,
+        blockKey: 'grid-1',
+      },
+      global: {
+        stubs: {
+          RCImageHotspot: { emits: ['update:image'], template: '<button class="grid-hotspot" @click="$emit(\'update:image\', { src: \'/new.webp\', alt: \'New\', title: \'\' })" />' },
+        },
+      },
+    });
+
+    await wrapper.find('.grid-hotspot').trigger('click');
+    const updated = wrapper.emitted('update:element')?.at(-1)?.[0] as { json_content: { image: string; alt: string }[] };
+    expect(updated.json_content[0]).toMatchObject({ image: '/new.webp', alt: 'New' });
   });
 });

@@ -1,8 +1,10 @@
-import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { describe, expect, it } from 'vitest';
 
 import ImageGridEditor from '../ImageGridEditor.vue';
+
 import { commonStubs } from '@/tests/stubs';
+import type { ImageGrid } from '@/Types/contentParts';
 
 /**
  * TiptapImageButton opens a full file-picker dialog internally — irrelevant to what
@@ -33,7 +35,7 @@ describe('ImageGridEditor', () => {
   });
 
   it('adding an image preserves alt text from the picker (the previously-discarded field)', async () => {
-    const modelValue: any[] = [];
+    const modelValue: ImageGrid['json_content'] = [];
     const wrapper = mount(ImageGridEditor, {
       props: { modelValue, 'onUpdate:modelValue': (val: unknown) => wrapper.setProps({ modelValue: val }) },
       global: { stubs },
@@ -75,7 +77,7 @@ describe('ImageGridEditor', () => {
     await wrapper.findAll('input[type="text"]')[1]!.setValue('Updated alt B');
 
     const emitted = wrapper.emitted('update:modelValue')!;
-    const lastEmit = emitted[emitted.length - 1]![0] as any[];
+    const lastEmit = emitted[emitted.length - 1]![0] as ImageGrid['json_content'];
     expect(lastEmit[0]).toEqual(modelValue[0]);
     expect(lastEmit[1]).toMatchObject({ image: '/b.jpg', alt: 'Updated alt B' });
   });
@@ -96,7 +98,7 @@ describe('ImageGridEditor', () => {
     await tileButtons[0]!.trigger('click');
 
     const emitted = wrapper.emitted('update:modelValue')!;
-    const lastEmit = emitted[emitted.length - 1]![0] as any[];
+    const lastEmit = emitted[emitted.length - 1]![0] as ImageGrid['json_content'];
     expect(lastEmit[0]).toMatchObject({ colspan: 'col-span-2', image: '/new.jpg', alt: 'New alt' });
     expect(lastEmit[1]).toEqual(modelValue[1]);
   });
@@ -119,6 +121,40 @@ describe('ImageGridEditor', () => {
     expect(wrapper.emitted('update:modelValue')![0]![0]).toEqual([modelValue[1]]);
   });
 
+  it('disables deletion when only one image is left', async () => {
+    const modelValue = [
+      { colspan: 'col-span-2', image: '/a.jpg', alt: 'Alt A' },
+    ];
+    const wrapper = mount(ImageGridEditor, {
+      props: { modelValue, 'onUpdate:modelValue': (val: unknown) => wrapper.setProps({ modelValue: val }) },
+      global: { stubs },
+    });
+
+    const menus = wrapper.findAll('[data-testid="dropdown-menu-content"]');
+    const deleteButton = menus[0]!.findAll('button').find(b => b.text().includes('common.delete'))!;
+    expect(deleteButton.attributes('disabled')).toBeDefined();
+    await deleteButton.trigger('click');
+
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+  });
+
+  it('moves a tile from the more-options menu', async () => {
+    const modelValue = [
+      { colspan: 'col-span-2', image: '/a.jpg', alt: 'Alt A' },
+      { colspan: 'col-span-2', image: '/b.jpg', alt: 'Alt B' },
+    ];
+    const wrapper = mount(ImageGridEditor, {
+      props: { modelValue, 'onUpdate:modelValue': (val: unknown) => wrapper.setProps({ modelValue: val }) },
+      global: { stubs },
+    });
+
+    const menus = wrapper.findAll('[data-testid="dropdown-menu-content"]');
+    const moveDown = menus[0]!.findAll('button').find(button => button.text().includes('rich-content.move_down'))!;
+    await moveDown.trigger('click');
+
+    expect(wrapper.emitted('update:modelValue')?.at(-1)?.[0]).toEqual([modelValue[1], modelValue[0]]);
+  });
+
   it('changing the width via the dropdown updates colspan for that tile only', async () => {
     const modelValue = [
       { colspan: 'col-span-2', image: '/a.jpg', alt: '' },
@@ -136,7 +172,7 @@ describe('ImageGridEditor', () => {
     await fullWidthOption.trigger('click');
 
     const emitted = wrapper.emitted('update:modelValue')!;
-    const lastEmit = emitted[emitted.length - 1]![0] as any[];
+    const lastEmit = emitted[emitted.length - 1]![0] as ImageGrid['json_content'];
     expect(lastEmit[0]).toEqual(modelValue[0]);
     expect(lastEmit[1]).toMatchObject({ colspan: 'col-span-full' });
   });
@@ -154,7 +190,7 @@ describe('ImageGridEditor', () => {
     await wrapper.find('.focal-point-stub').trigger('click');
 
     const emitted = wrapper.emitted('update:modelValue')!;
-    const lastEmit = emitted[emitted.length - 1]![0] as any[];
+    const lastEmit = emitted[emitted.length - 1]![0] as ImageGrid['json_content'];
     expect(lastEmit[0]).toMatchObject({ objectPosition: '10% 20%' });
   });
 });

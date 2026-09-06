@@ -27,7 +27,9 @@ Specialized guidance lives in sub-directory `CLAUDE.md` files:
 
 ## Testing
 
-Every change must come with a test. But a component behavior that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model) is **intractable in a Vitest/jsdom component test** — assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion. Leave a comment in the test explaining what is intentionally not covered and why, so the gap is documented rather than accidental.
+Add or update a test when a change affects observable behaviour, a business rule, a security boundary, a data transformation, or a regression likely to recur. Do not add a test solely for deleting dead code, an unused asset/preload or retired integration; comments, formatting, copy-only edits; framework behaviour; or implementation details without a user-facing contract. A test must protect a plausible future regression — “every change needs one” is not sufficient reason.
+
+For a component behaviour that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model), assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion. Leave a comment in the test explaining what is intentionally not covered and why, so the gap is documented rather than accidental.
 
 ## Development Commands
 
@@ -36,7 +38,7 @@ All Laravel-related commands MUST run through Sail:
 ```bash
 ./vendor/bin/sail up -d                # start
 ./vendor/bin/sail artisan migrate      # artisan
-./vendor/bin/sail artisan test         # backend tests (TIA-backed, see below)
+./vendor/bin/sail artisan test --parallel --compact   # backend tests — see below
 ./vendor/bin/sail composer install
 ./vendor/bin/sail npm run dev          # vite
 ./vendor/bin/sail npm run build
@@ -45,6 +47,27 @@ All Laravel-related commands MUST run through Sail:
 ```
 
 Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only).
+
+### Running backend tests — always `--parallel`
+
+Anything wider than a single file runs with `--parallel`. The full suite is ~22s parallel against
+~130s serial, so a serial full run is a mistake, not a preference. `brianium/paratest` ships in
+`vendor/bin/` (it is not in `composer.json`), so no install is needed.
+
+| Scope | Command |
+|---|---|
+| Full suite | `vendor/bin/sail artisan test --parallel --compact` |
+| One directory | `vendor/bin/sail artisan test --parallel --compact tests/Feature` |
+| Several files | `vendor/bin/sail artisan test --parallel --compact --filter="AaaTest\|BbbTest"` |
+| One file | `vendor/bin/sail artisan test --compact path/to/OneTest.php` (worker startup outweighs the win) |
+
+**`--parallel` takes exactly one path.** Passing two files or directories fails with
+`Too many arguments, expected arguments "path"` — that is paratest's signature, not Pest's. When it
+happens, narrow to a single common path or switch to `--filter`; do **not** fall back to a serial
+full run.
+
+If a parallel run fails, re-run that one file serially before treating the failure as real —
+cross-process Typesense contention is possible.
 
 ### Test Impact Analysis (TIA)
 
@@ -67,9 +90,9 @@ full run, or hard-fails on a 403/404.
 
 | Command | When |
 |---|---|
-| `sail artisan test` | Default. TIA reruns affected tests, replays the rest. |
-| `sail artisan test --no-tia` | Full run, no replay — when you distrust the graph. |
-| `sail artisan test --fresh` | Discard the graph and re-record (after a large refactor). |
+| `sail artisan test --parallel` | Default. TIA reruns affected tests, replays the rest. |
+| `sail artisan test --parallel --no-tia` | Full run, no replay — when you distrust the graph. |
+| `sail artisan test --parallel --fresh` | Discard the graph and re-record (after a large refactor). |
 
 ### Linting
 
@@ -154,7 +177,7 @@ For tests, prefer the smallest role that covers the case (`'Communication Coordi
 - Admin interfaces: use `toFullArray()` to expose the full translation object.
 - Public interfaces: use `toArray()` for the localized string.
 - Factory data: always include both locales — `['lt' => '…', 'en' => '…']`.
-- PHPStan: override IDE-helper-generated `@property` annotations on translatable fields from `array<array-key, mixed>|null` to `string|null`.
+- PHPStan: leave the generated `@property` types on translatable fields as `array|string|null`. That is what the attribute genuinely is — an array via `toFullArray()`, a string via `toArray()` — and it is what `ide-helper:models` now emits. Do not hand-narrow to `string|null`; the next `composer install/update` only reverts it, and level 5 is clean either way.
 
 For admin index responses with translatable models:
 
@@ -287,7 +310,8 @@ If a page/component supports dark mode, new code in the same area must use match
 
 ## Static analysis (PHPStan level 5)
 
-- IDE helper annotations are auto-generated on `composer install/update`. Re-run with `composer ide-helper`. After regeneration, manually fix translatable-field types (see Translatable models).
+- IDE helper annotations are auto-generated on `composer install/update`. Re-run with `composer ide-helper`, and commit what it writes — including `array|string|null` on translatable fields (see Translatable models).
+- What regeneration *does* break is hand-written nullability it cannot infer: a morphTo `Model|null` narrowed to `Model`, a dropped `@property-read`. Those show up as `nullsafe.neverNull` / `property.notFound` in consumer code; check `git diff app/Models/` before believing such an error.
 - For relations PHPStan can't infer, add `@property-read` on the model class.
 - Annotate keyed collections: `/** @var \Illuminate\Support\Collection<int, \App\Models\X> $c */`.
 - For JSON columns, type-check with `is_string()` / `is_array()` before operating.
@@ -498,15 +522,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
     - Execute PHP scripts: `vendor/bin/sail php [script]`
 - View all available Sail commands by running `vendor/bin/sail` without arguments.
 
-=== tests rules ===
-
-# Test Enforcement
-
-- Test every code change by adding or updating a test.
-- Run the affected tests and ensure they pass.
-- Test the changed behavior and its important failure modes, but do not add tests beyond them.
-- Read the `testing-best-practices` skill before writing tests.
-
 === inertia-laravel/core rules ===
 
 # Inertia
@@ -578,10 +593,10 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Running Tests
 
-- Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `vendor/bin/sail artisan test --compact`.
+- Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `vendor/bin/sail artisan test --compact`. Add `--parallel` for anything wider than one file — see [Running backend tests](#running-backend-tests--always---parallel).
 - Rerun a test after each change to it.
 - Run `vendor/bin/sail bin pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
-- After the feature tests pass, ask the user to run the complete suite with `vendor/bin/sail artisan test --compact`.
+- After the feature tests pass, ask the user to run the complete suite with `vendor/bin/sail artisan test --parallel --compact`.
 
 === inertia-vue/core rules ===
 

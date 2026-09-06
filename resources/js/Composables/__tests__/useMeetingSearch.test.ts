@@ -9,7 +9,7 @@ import { createMockPage } from '@/tests/helpers/createMockPage';
 
 // Mock dependencies
 vi.mock('@vueuse/core', () => ({
-  useLocalStorage: vi.fn((key: string, defaultValue: any) => {
+  useLocalStorage: vi.fn((key: string, defaultValue: Record<string, unknown>) => {
     return { value: { ...defaultValue } };
   }),
   useOnline: vi.fn(() => ({ value: true })),
@@ -76,6 +76,7 @@ describe('useMeetingSearch (refactored)', () => {
         years: [],
         successRateRanges: [],
         dateRange: {},
+        sort: 'relevance',
       });
     });
 

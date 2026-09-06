@@ -12,8 +12,8 @@
                 <Button
                   variant="outline"
                   :class="cn(
-                    'w-full justify-start text-left font-normal',
-                    !slotProps.componentField.modelValue && 'text-zinc-500 dark:text-zinc-400',
+                    'w-full justify-start text-left font-normal border-input dark:bg-input/30',
+                    !slotProps.componentField.modelValue && 'text-muted-foreground',
                   )"
                 >
                   <CalendarIcon class="mr-2 h-4 w-4" />

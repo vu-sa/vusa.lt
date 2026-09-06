@@ -20,15 +20,6 @@ use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 
-/**
- * Event subscriber for meeting-related task and notification operations.
- *
- * Consolidates task creation and progress tracking for meetings:
- * - Creates Agenda Creation tasks when meetings are created (no agenda items yet)
- * - Creates Agenda Completion tasks when agenda items exist but need filling
- * - Completes Periodicity Gap tasks when meetings are created for institutions
- * - Sends notifications to the meeting's audience on creation and completion
- */
 class MeetingTaskSubscriber
 {
     public function __construct(
@@ -37,12 +28,8 @@ class MeetingTaskSubscriber
         protected PeriodicityGapTaskHandler $periodicityGapHandler,
     ) {}
 
-    /**
-     * Register the listeners for the subscriber.
-     */
     public function subscribe(Dispatcher $events): void
     {
-        // Listen to custom event that fires after meeting is fully set up with relationships
         $events->listen(
             MeetingFullyCreated::class,
             [self::class, 'handleMeetingCreated']
@@ -64,23 +51,16 @@ class MeetingTaskSubscriber
         );
     }
 
-    /**
-     * Handle meeting fully created event.
-     * Creates an agenda creation task and notifies the meeting's audience.
-     * Also completes any pending periodicity gap tasks for the meeting's institutions.
-     */
     public function handleMeetingCreated(MeetingFullyCreated $event): void
     {
         $meeting = $event->meeting;
 
-        // Load required relationships
         $meeting->load(['institutions.tenant', 'agendaItems']);
 
         // Nominated administrators when the term has any, else the representatives who
         // were actually active at the meeting date. See ResolveTaskAssignees.
         $representatives = ResolveTaskAssignees::forMeeting($meeting);
 
-        // If meeting was created WITHOUT agenda items, create an "agenda creation" task
         if ($representatives->isNotEmpty() && $meeting->agendaItems->isEmpty()) {
             $this->creationHandler->findOrCreate(
                 name: __('Sukurti posėdžio darbotvarkės klausimus'),
@@ -90,7 +70,6 @@ class MeetingTaskSubscriber
             );
         }
 
-        // If meeting was created WITH agenda items, create an "agenda completion" task
         if ($representatives->isNotEmpty() && $meeting->agendaItems->isNotEmpty()) {
             $this->completionHandler->findOrCreate(
                 name: __('Užpildyti darbotvarkės klausimų informaciją'),
@@ -100,7 +79,6 @@ class MeetingTaskSubscriber
             );
         }
 
-        // Complete any pending periodicity gap tasks for this meeting's institutions
         foreach ($meeting->institutions as $institution) {
             $this->periodicityGapHandler->completeForInstitution(
                 institution: $institution,
@@ -115,30 +93,18 @@ class MeetingTaskSubscriber
         }
     }
 
-    /**
-     * Handle agenda item saved (updated) event.
-     * Updates task progress and checks for completion.
-     * Also handles reopening tasks when type changes from informational/deferred to voting.
-     * Creates a task if one doesn't exist (for legacy meetings without tasks).
-     */
     public function handleAgendaItemSaved(AgendaItem $agendaItem): void
     {
         $meeting = $agendaItem->meeting;
 
-        // Reload meeting with fresh agenda items and votes data
         $meeting->load('agendaItems.votes');
 
-        // Get the user who made the change
         /** @var User|null $actor */
         $actor = Auth::user();
 
-        // Check if we need to reopen a completed task (e.g., type changed to voting without complete vote)
         $this->completionHandler->reopenIfNeeded($meeting);
-
-        // Ensure a task exists (for legacy meetings that don't have one yet)
         $this->ensureCompletionTaskExists($meeting);
 
-        // Update progress and check if completed
         $wasCompleted = $this->completionHandler->updateProgressForMeeting($meeting, $actor);
 
         if ($wasCompleted) {
@@ -156,21 +122,16 @@ class MeetingTaskSubscriber
 
         $meeting->load('agendaItems');
 
-        // Get the user who made the change
         /** @var User|null $actor */
         $actor = Auth::user();
 
-        // Complete the "create agenda items" task if it exists
         $this->creationHandler->completeForMeeting($meeting, $actor);
 
-        // Check if completion task exists
         $existingCompletionTask = $this->completionHandler->findExistingTask($meeting);
 
         if ($existingCompletionTask) {
-            // Update total items count
             $this->completionHandler->updateProgressForMeeting($meeting, $actor);
         } else {
-            // Create completion task for filling agenda item details
             $representatives = ResolveTaskAssignees::forMeeting($meeting);
 
             if ($representatives->isNotEmpty()) {
@@ -184,10 +145,6 @@ class MeetingTaskSubscriber
         }
     }
 
-    /**
-     * Handle agenda item deleted event.
-     * Updates the task total items count and may trigger completion.
-     */
     public function handleAgendaItemDeleted(AgendaItem $agendaItem): void
     {
         $meeting = $agendaItem->meeting;
@@ -201,7 +158,6 @@ class MeetingTaskSubscriber
 
         $meeting->load('agendaItems');
 
-        // Get the user who made the change
         /** @var User|null $actor */
         $actor = Auth::user();
 
@@ -212,12 +168,6 @@ class MeetingTaskSubscriber
         }
     }
 
-    /**
-     * Tell the meeting's audience that every agenda item is filled.
-     * The completedBy user is included to show who triggered the completion.
-     *
-     * @param  User|null  $completedBy  The user who completed the agenda (shown in notification)
-     */
     protected function notifyAudienceOfCompletion(Meeting $meeting, ?User $completedBy = null): void
     {
         $meeting->load(['institutions.tenant']);
@@ -229,20 +179,15 @@ class MeetingTaskSubscriber
         }
     }
 
-    /**
-     * Ensure a completion task exists for a meeting.
-     * Creates one if it doesn't exist (for legacy meetings without tasks).
-     */
     protected function ensureCompletionTaskExists(Meeting $meeting): void
     {
-        // Check if any task exists (completed or not) for this meeting
         $existingTask = $this->completionHandler->findExistingTask($meeting);
 
         if ($existingTask) {
             return;
         }
 
-        // Also check for completed tasks (reopenIfNeeded would have handled them already)
+        // reopenIfNeeded would have handled any completed tasks that need reopening.
         $hasCompletedTask = Task::query()
             ->where('taskable_type', MorphMap::alias(Meeting::class))
             ->where('taskable_id', $meeting->getKey())
@@ -254,7 +199,6 @@ class MeetingTaskSubscriber
             return;
         }
 
-        // No task exists, create one
         $representatives = ResolveTaskAssignees::forMeeting($meeting);
 
         if ($representatives->isNotEmpty()) {

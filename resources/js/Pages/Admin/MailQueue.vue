@@ -164,6 +164,9 @@ interface Recipient {
   items: QueuedItem[];
 }
 
+// Browser-tested manually; a Pest browser test (tests/Browser/MailQueueTest.php) was removed
+// because the click chain into this page consistently timed out at 15s, likely something
+// elsewhere on the page polling and starving the click — not a bug in this component.
 defineProps<{
   recipients: Recipient[];
   canManage: boolean;

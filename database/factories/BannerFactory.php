@@ -28,4 +28,14 @@ class BannerFactory extends Factory
             'tenant_id' => Tenant::factory(),
         ];
     }
+
+    /**
+     * A banner with no logo — renders as a text mark on the public site.
+     */
+    public function withoutLogo(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'image_url' => null,
+        ]);
+    }
 }

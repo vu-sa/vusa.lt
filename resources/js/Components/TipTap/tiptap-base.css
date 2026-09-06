@@ -1,8 +1,15 @@
-/**
- * TipTap Base Styles
- * 
+/* TipTap Base Styles
+ *
  * Unified styles for all TipTap editor instances.
  * Import this file in your main CSS or component.
+ *
+ * Presentation rules (flow, headings, blockquote, links, hr, table cell chrome) are
+ * scoped `:not(.rc-prose-editing)`: a root opted into the shared prose block
+ * (`rc-prose-editing` on the ProseMirror root — TiptapEditor's `prose-style` and
+ * TiptapDisplay's inline editor) is styled by `.rc-prose`'s published treatment
+ * instead, so WYSIWYG matches what renders. This file loads as a separate chunk
+ * AFTER app.css, so unscoped rules here would win every specificity tie and even
+ * beat the prose flow on `.tiptap p` (0,1,1) vs `> * + *` (0,1,0).
  */
 
 /* Base editor styles */
@@ -12,10 +19,10 @@
 }
 
 /* Paragraph and block spacing */
-.tiptap p,
-.tiptap ul,
-.tiptap ol,
-.tiptap blockquote {
+.tiptap:not(.rc-prose-editing) p,
+.tiptap:not(.rc-prose-editing) ul,
+.tiptap:not(.rc-prose-editing) ol,
+.tiptap:not(.rc-prose-editing) blockquote {
   margin: 0.4rem 0;
 }
 
@@ -34,46 +41,47 @@
 }
 
 /* Nested list indentation */
-.tiptap li > ul,
-.tiptap li > ol {
+.tiptap:not(.rc-prose-editing) li > ul,
+.tiptap:not(.rc-prose-editing) li > ol {
   margin: 0.25rem 0;
 }
 
-/* Links */
-.tiptap a {
-  color: #bd2835;
+/* Links — `var(--brand)` so they follow the theme (red light / amber dark) instead
+   of the old hardcoded #bd2835, which was unreadable on dark admin chrome. */
+.tiptap:not(.rc-prose-editing) a {
+  color: var(--brand);
   text-decoration: underline;
   font-weight: 500;
 }
 
 /* Blockquotes */
-.tiptap blockquote {
+.tiptap:not(.rc-prose-editing) blockquote {
   padding-left: 1rem;
   border-left: 4px solid #e2e8f0;
   font-style: italic;
   margin: 1rem 0;
 }
 
-.dark .tiptap blockquote {
+.dark .tiptap:not(.rc-prose-editing) blockquote {
   border-left-color: #52525b;
 }
 
 /* Headings */
-.tiptap h2,
-.tiptap h3,
-.tiptap h4,
-.tiptap h5,
-.tiptap h6 {
+.tiptap:not(.rc-prose-editing) h2,
+.tiptap:not(.rc-prose-editing) h3,
+.tiptap:not(.rc-prose-editing) h4,
+.tiptap:not(.rc-prose-editing) h5,
+.tiptap:not(.rc-prose-editing) h6 {
   margin-bottom: 1rem;
   font-weight: 600;
 }
 
-.tiptap h2 {
+.tiptap:not(.rc-prose-editing) h2 {
   font-size: 1.5rem;
   line-height: 2rem;
 }
 
-.tiptap h3 {
+.tiptap:not(.rc-prose-editing) h3 {
   font-size: 1.25rem;
   line-height: 1.75rem;
 }
@@ -83,6 +91,11 @@
   max-width: 100%;
   height: auto;
   border-radius: 0.375rem;
+}
+
+/* On the prose surface the image's spacing comes from the shared flow (`> * + *`),
+   matching the published output; elsewhere keep the compact margin. */
+.tiptap:not(.rc-prose-editing) img {
   margin: 0.5rem 0;
 }
 
@@ -151,10 +164,16 @@
   pointer-events: none;
 }
 
-/* Tables */
+/* Tables. On the prose surface the published cells carry the classes the render
+   presets bake (`border border-zinc-400 px-4 py-1 …`, see presets.ts /
+   App\Tiptap\TiptapEditor) — only the compact chrome is scoped away here.
+   `position: relative` stays unscoped: the selectedCell overlay anchors to it. */
 .tiptap table {
   border-collapse: collapse;
   width: 100%;
+}
+
+.tiptap:not(.rc-prose-editing) table {
   margin: 1rem 0;
 }
 
@@ -172,22 +191,26 @@
 
 .tiptap th,
 .tiptap td {
-  border: 1px solid #e2e8f0;
   position: relative;
+}
+
+.tiptap:not(.rc-prose-editing) th,
+.tiptap:not(.rc-prose-editing) td {
+  border: 1px solid #e2e8f0;
   padding: 0.25rem 0.5rem;
 }
 
-.dark .tiptap th,
-.dark .tiptap td {
+.dark .tiptap:not(.rc-prose-editing) th,
+.dark .tiptap:not(.rc-prose-editing) td {
   border-color: #3f3f46;
 }
 
-.tiptap th {
+.tiptap:not(.rc-prose-editing) th {
   background-color: #f4f4f5;
   font-weight: 600;
 }
 
-.dark .tiptap th {
+.dark .tiptap:not(.rc-prose-editing) th {
   background-color: #27272a;
 }
 
@@ -200,19 +223,25 @@
   height: 0;
 }
 
-/* Horizontal rule */
-.tiptap hr {
+/* Horizontal rule — published rules are preflight's 1px hairline with the base
+   layer's border colour, so the prose surface opts out of the thicker editor one. */
+.tiptap:not(.rc-prose-editing) hr {
   border: none;
   border-top: 2px solid #e4e4e7;
   margin: 1.5rem 0;
 }
 
-.dark .tiptap hr {
+.dark .tiptap:not(.rc-prose-editing) hr {
   border-top-color: #3f3f46;
 }
 
 /* YouTube/Video embeds */
 .tiptap iframe {
   max-width: 100%;
+}
+
+/* The published embeds carry their own rounded-xl class (render presets); the
+   unlayered 0.5rem here would silently outrank it on the prose editing surface. */
+.tiptap:not(.rc-prose-editing) iframe {
   border-radius: 0.5rem;
 }

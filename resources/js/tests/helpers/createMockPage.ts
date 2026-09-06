@@ -52,6 +52,10 @@ const defaultPageProps = {
     { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
     { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' },
   ],
+  categories: [
+    { id: 1, alias: 'freshmen-camps', name: 'Freshmen camps' },
+    { id: 2, alias: 'announcements', name: 'Announcements' },
+  ],
   flash: {
     success: null,
     error: null,

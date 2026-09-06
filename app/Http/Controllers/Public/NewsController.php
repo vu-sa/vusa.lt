@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Public;
 
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
+use App\Models\Category;
 use App\Models\News;
 use App\Models\Tag;
+use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
 use Inertia\Inertia;
 
@@ -46,18 +48,26 @@ class NewsController extends PublicController
             modifiedTime: $news->updated_at,
         );
 
-        // Fetch related articles from the same tenant
+        // Fetch related articles from the same tenant. The shape matches `NewsItem`
+        // (resources/js/Types/contentParts.ts) so they render through the same `NewsCard` as the
+        // homepage's news block and the archive — image and category included, since the design
+        // shows these as cards rather than as a list of headlines.
         $relatedArticles = News::where('tenant_id', $news->tenant_id)
             ->where('id', '!=', $news->id)
             ->where('lang', $news->lang)
             ->where('draft', false)
             ->where('publish_time', '<=', now())
+            ->with('category:id,name')
             ->orderByDesc('publish_time')
             ->take(3)
-            ->get(['id', 'title', 'permalink', 'publish_time', 'lang'])
+            ->get(['id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'category_id'])
             ->map(fn ($article) => [
                 'id' => $article->id,
                 'title' => $article->title,
+                'short' => $article->short,
+                'lang' => $article->lang,
+                'image' => $article->getImageUrl(),
+                'category' => $article->category?->name,
                 'permalink' => $article->permalink,
                 'publish_time' => $article->publish_time,
                 'url' => LocalizedRouteSlugs::route('news', [
@@ -90,22 +100,16 @@ class NewsController extends PublicController
             // the most obvious use of the new dynamic block types inside a news body.
             'resolvedParts' => (object) $this->resolveContentParts($news->content),
             'article' => [
-                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'layout', 'show_breadcrumbs', 'highlights'),
+                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'show_breadcrumbs', 'highlights'),
                 'tags' => $news->tags->map(fn ($tag) => [
                     'id' => $tag->id,
                     'name' => $tag->name,
                     'alias' => $tag->alias,
                 ]),
                 'content' => $news->content,
-                /* 'content' => [ */
-                /*    ...$news->content->toArray(), */
-                /*    'parts' => $news->content->parts->map(function ($part) { */
-                /*        return [ */
-                /*            ...$part->parseTipTapElements()->toArray(), */
-                /*        ]; */
-                /*    }), */
-                /* ], */
-                // Use getImageUrl() for public display with fallback for missing images
+                'reading_time' => $news->readingTimeMinutes(),
+                // getImageUrl() checks the file actually exists and returns null otherwise —
+                // NewsArticleLayout skips the hero image entirely rather than show a placeholder.
                 'image' => $news->getImageUrl(),
                 'tenant' => $news->tenant->shortname,
             ],
@@ -143,9 +147,48 @@ class NewsController extends PublicController
             });
         }
 
-        $news = $query->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang')
+        $news = $query->with('category:id,name')
+            ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'category_id', 'created_at')
             ->orderBy('publish_time', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->through(fn ($item) => [
+                'id' => $item->id,
+                'title' => $item->title,
+                'short' => $item->short,
+                'image' => $item->getImageUrl(),
+                'category' => $item->category?->name,
+                'permalink' => $item->permalink,
+                'publish_time' => $item->publish_time?->toISOString() ?? $item->created_at->toISOString(),
+                'lang' => $item->lang,
+            ]);
+
+        $allCategories = Category::query()
+            ->whereHas('news', function ($q): void {
+                $q->where('draft', false)
+                    ->where('lang', app()->getLocale());
+            })
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+            ])
+            ->toArray();
+
+        $allTenants = Tenant::query()
+            ->whereHas('news', function ($q): void {
+                $q->where('draft', false)
+                    ->where('lang', app()->getLocale());
+            })
+            ->select('id', 'shortname')
+            ->orderBy('shortname')
+            ->get()
+            ->map(fn ($t) => [
+                'id' => $t->id,
+                'shortname' => $t->shortname,
+            ])
+            ->toArray();
 
         // Get the current tag for display purposes
         $currentTag = null;
@@ -202,8 +245,11 @@ class NewsController extends PublicController
         }
 
         return Inertia::render('Public/NewsArchive', [
+            'tenantSwitchTarget' => 'same-page',
             'news' => $news,
             'currentTag' => $currentTag,
+            'allCategories' => $allCategories,
+            'allTenants' => $allTenants,
         ])->withViewData(
             [
                 'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],

@@ -1,0 +1,89 @@
+/* Vue Flow custom styling */
+.basic-flow {
+  --flow-surface: var(--background);
+  --flow-border: var(--border);
+
+  border-color: var(--flow-border);
+  background: var(--flow-surface);
+  color: var(--foreground);
+}
+
+[data-surface="public"] .basic-flow {
+  --flow-border: color-mix(in oklab, var(--border) 55%, var(--background));
+}
+
+.dark [data-surface="public"] .basic-flow {
+  --flow-border: var(--border);
+}
+
+.basic-flow .vue-flow__node.selected {
+  box-shadow: 0 0 0 2px var(--brand);
+}
+
+.basic-flow .vue-flow__controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  border: 1px solid var(--flow-border);
+  background: var(--popover);
+  box-shadow: none;
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button {
+  cursor: pointer;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button:hover {
+  background: var(--accent);
+  color: var(--brand);
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.basic-flow .vue-flow__edge-text {
+  fill: var(--foreground);
+}
+
+.basic-flow .vue-flow__edge-path {
+  stroke: var(--muted-foreground);
+}
+
+.basic-flow .vue-flow__edge-textbg {
+  fill: var(--flow-surface);
+}
+
+.basic-flow :is(.vue-flow__node-multiple-handle, .vue-flow__handle) {
+  border: 1px solid var(--muted-foreground);
+  background: var(--muted);
+}
+
+/* Overwrite padding for node div, so button would use it */
+.vue-flow__node-default,
+.vue-flow__node-input,
+.vue-flow__node-output {
+  padding: 0;
+}
+
+.basic-flow .vue-flow__node-default {
+  border-radius: 0;
+  border-color: var(--flow-border);
+  background: var(--flow-surface);
+}

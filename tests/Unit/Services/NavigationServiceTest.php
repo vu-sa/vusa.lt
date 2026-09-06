@@ -186,3 +186,115 @@ describe('NavigationService output structure', function (): void {
             ->and($rootElement['icon'])->toBe('star-16-regular');
     });
 });
+
+describe('footer navigation', function (): void {
+    test('getNavigationForPublic excludes footer-location roots from the header tree', function (): void {
+        $footerRoot = Navigation::factory()->create([
+            'name' => 'Footer column',
+            'url' => '#',
+            'parent_id' => 0,
+            'order' => 2,
+            'lang' => 'lt',
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        NavigationService::clearCache();
+        app()->setLocale('lt');
+
+        $result = NavigationService::getNavigationForPublic();
+
+        expect(collect($result)->pluck('id'))->not->toContain($footerRoot->id);
+    });
+
+    test('getTreeForAdmin excludes footer-location roots', function (): void {
+        $footerRoot = Navigation::factory()->create([
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        $tree = NavigationService::getTreeForAdmin('lt');
+
+        expect(collect($tree)->pluck('id'))
+            ->toContain($this->rootNav->id)
+            ->not->toContain($footerRoot->id);
+    });
+
+    test('getFooterNavigationForPublic returns only footer-location roots with their children', function (): void {
+        $footerRoot = Navigation::factory()->create([
+            'name' => 'Apie mus',
+            'url' => '#',
+            'parent_id' => 0,
+            'order' => 5,
+            'lang' => 'lt',
+            'is_active' => true,
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        $footerLink = Navigation::factory()->create([
+            'name' => 'Kontaktai',
+            'url' => '/kontaktai',
+            'parent_id' => $footerRoot->id,
+            'order' => 1,
+            'lang' => 'lt',
+            'is_active' => true,
+            'extra_attributes' => ['location' => 'footer', 'type' => 'link', 'new_tab' => true],
+        ]);
+
+        NavigationService::clearCache();
+        app()->setLocale('lt');
+
+        $result = NavigationService::getFooterNavigationForPublic();
+
+        expect($result)->toHaveCount(1);
+        $column = $result[0];
+        expect($column['id'])->toBe($footerRoot->id)
+            ->and($column['name'])->toBe('Apie mus')
+            ->and($column['links'])->toHaveCount(1)
+            ->and($column['links'][0]['id'])->toBe($footerLink->id)
+            ->and($column['links'][0]['new_tab'])->toBeTrue();
+
+        // The header tree's root created in beforeEach() must not leak into the footer result.
+        expect(collect($result)->pluck('id'))->not->toContain($this->rootNav->id);
+    });
+
+    test('getFooterNavigationForPublic caps at FOOTER_MAX_COLUMNS', function (): void {
+        Navigation::factory()->count(NavigationService::FOOTER_MAX_COLUMNS + 2)->sequence(fn ($sequence) => ['order' => $sequence->index])->create([
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'is_active' => true,
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        NavigationService::clearCache();
+        app()->setLocale('lt');
+
+        expect(NavigationService::getFooterNavigationForPublic())->toHaveCount(NavigationService::FOOTER_MAX_COLUMNS);
+    });
+
+    test('clearCache also clears the footer cache', function (): void {
+        NavigationService::clearCache();
+        app()->setLocale('lt');
+        NavigationService::getFooterNavigationForPublic();
+
+        expect(Cache::has('navigation:footer:lt'))->toBeTrue();
+
+        NavigationService::clearCache();
+
+        expect(Cache::has('navigation:footer:lt'))->toBeFalse();
+    });
+
+    test('getFooterTreeForAdmin returns only footer-location roots, inactive included', function (): void {
+        $footerRoot = Navigation::factory()->create([
+            'parent_id' => 0,
+            'lang' => 'lt',
+            'is_active' => false,
+            'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
+        ]);
+
+        $tree = NavigationService::getFooterTreeForAdmin('lt');
+
+        expect(collect($tree)->pluck('id'))->toContain($footerRoot->id)
+            ->and(collect($tree)->pluck('id'))->not->toContain($this->rootNav->id);
+    });
+});

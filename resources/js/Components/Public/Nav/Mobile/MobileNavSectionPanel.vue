@@ -1,5 +1,5 @@
 <template>
-  <ul class="flex flex-col p-3">
+  <ul class="flex flex-col pb-2">
     <li v-for="(link, index) in flatLinks" :key="`${link.name}-${index}`">
       <MobileNavLinkRow :link @close="$emit('close')" />
     </li>

@@ -15,6 +15,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\Uri;
 use Inertia\Inertia;
 use Laravel\Head\Facades\Head;
@@ -51,10 +52,19 @@ class PublicController extends Controller
         // We also need to use the subdomain in the public controllers
         $this->subdomain = $subdomain;
 
+        $locale = request()->route('lang');
+        $locale = is_string($locale) ? $locale : app()->getLocale();
+
         // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
         Inertia::share('tenant', $this->tenant->only(['id', 'shortname', 'alias', 'type']) +
-            ['subdomain' => $subdomain]
+            [
+                'subdomain' => $subdomain,
+                'homeUrl' => route('home', ['subdomain' => $subdomain, 'lang' => $locale]),
+            ]
         );
+
+        // Pages that exist for every tenant override this with "same-page" in their Inertia props.
+        Inertia::share('tenantSwitchTarget', 'home');
 
         // Initialize otherLangURL as null by default - controllers can override this
         Inertia::share('otherLangURL', null);
@@ -371,8 +381,9 @@ class PublicController extends Controller
 
         $this->shareHreflangAlternates($contentTenant, $canonicalUrl);
 
-        // Add structured data schemas (rendered in Blade via $JSONLD_Schemas / $page['props']['schemas'])
-        Inertia::share('schemas', $this->getStructuredDataSchemas());
+        // Schema objects are view data, never Inertia props: Inertia serialises JsonSerializable
+        // props into arrays, which strips the ->toScript() the root view calls.
+        View::share('SITE_JSONLD_Schemas', $this->getStructuredDataSchemas());
     }
 
     /**

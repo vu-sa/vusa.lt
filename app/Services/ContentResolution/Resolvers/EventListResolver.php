@@ -3,11 +3,9 @@
 namespace App\Services\ContentResolution\Resolvers;
 
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\ContentPart;
 use App\Services\ContentResolution\ResolutionContext;
 use App\Services\ContentResolution\ResolvesContentPart;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -54,22 +52,10 @@ final class EventListResolver implements ResolvesContentPart
         // fullname.
         $tenantLabelStyle = ($options['tenantLabelStyle'] ?? 'full') === 'faculty' ? 'faculty' : 'full';
 
-        $query = Calendar::query()->where('is_draft', false)->with(['media', 'tenant:id,alias,fullname,shortname']);
-
         $alias = $options['categoryAlias'] ?? null;
-        if (is_string($alias) && $alias !== '') {
-            // The category is a grouping key, not a publication gate — a trashed
-            // category (e.g. an old campaign) must still work as one. See the
-            // identical rationale in PublicPageController::summerCamps().
-            $query->whereHas('category', function (Builder $q) use ($alias): void {
-                /** @var Builder<Category> $q */
-                $q->withTrashed()->where('alias', $alias);
-            });
-        }
-
-        if ($context->locale === 'en') {
-            $query->where('is_international', true);
-        }
+        $query = Calendar::query()->published()->forLocale($context->locale)
+            ->inCategoryAlias(is_string($alias) && $alias !== '' ? $alias : null)
+            ->with(['media', 'tenant:id,alias,fullname,shortname']);
 
         $tenantScope = $options['tenantScope'] ?? 'current';
         if ($tenantScope === 'current') {

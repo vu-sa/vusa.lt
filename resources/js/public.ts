@@ -56,7 +56,7 @@ createInertiaApp({
         fallbackLang: 'en',
         resolve: async (lang: string) => {
           // Load JSON translations (shared between admin/public)
-          const jsonLangs = import.meta.glob('../../lang/*.json');
+          const jsonLangs = import.meta.glob(['../../lang/*.json', '!../../lang/php_admin_*.json']);
           // Load public-specific PHP translations (shared + public combined)
           const phpLangs = import.meta.glob('../../lang/php_public_*.json');
 
@@ -90,13 +90,15 @@ createInertiaApp({
     // appear during navigation, in milliseconds.
     delay: 250,
 
-    // The color of the progress bar.
+    // Fallback colour only: turtle-loader.css re-points the bar at --brand, which the value
+    // injected here cannot do (it is baked in at boot and never follows a theme toggle).
     color: '#fbb01b',
 
     // Whether to include the default NProgress styles.
     includeCSS: true,
 
-    // Whether the NProgress spinner will be shown.
-    showSpinner: true,
+    // The corner spinner is our own walking turtle instead — see
+    // resources/views/turtle-loader.blade.php.
+    showSpinner: false,
   },
 });

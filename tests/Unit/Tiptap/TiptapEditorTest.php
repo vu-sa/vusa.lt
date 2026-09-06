@@ -134,7 +134,7 @@ describe('TiptapEditor', function (): void {
         $html = $editor->setContent($content)->getHTML();
 
         expect($html)->toContain('href="https://example.com"')
-            ->toContain('text-vusa-red')
+            ->toContain('text-brand')
             ->toContain('>Click here</a>');
     });
 

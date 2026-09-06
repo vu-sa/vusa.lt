@@ -7,6 +7,15 @@
  * Debounced, batched (one request for every resolvable block on the page rather
  * than one per block), memoised per request shape, and superseded requests are
  * aborted rather than raced.
+ *
+ * `debouncedFetchPreview` resolves a *superseded* call's promise to `undefined`,
+ * not `{}` — a plain `useDebounceFn` wrap (`rejectOnCancel` defaults to false), so a
+ * call cancelled by a newer one within the 400ms window never reaches `fetchPreview`
+ * at all. Every caller must guard `if (resolved) { ... }` before using the result
+ * rather than assign it unconditionally — skipping the assignment preserves
+ * already-shown data until the call that actually wins the debounce resolves, instead
+ * of crashing on `undefined` or flashing an incorrect empty state. See
+ * `RCFullscreenEditor.vue`/`useLiveBlockPreview.ts` for the reference guard.
  */
 import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -30,8 +39,20 @@ export function useContentPartPreview(tenantId: () => number | null | undefined)
   let controller: AbortController | null = null;
 
   async function fetchPreview(parts: PreviewPartInput[]): Promise<PreviewResolvedMap> {
+    if (parts.length === 0) {
+      return {};
+    }
+
     const id = tenantId();
-    if (parts.length === 0 || !id) {
+    if (!id) {
+      // A missing tenant id here means whichever page embeds `RichContentFormElement`/
+      // `RichContentEditor` forgot to pass `:tenant-id` — every server-resolved block
+      // (link-list, event-list, news, calendar) then silently gets no preview data at
+      // all, every time, indistinguishable from "the server resolved to genuinely
+      // nothing" unless flagged. Cost real debugging time once already (EditHomePage.vue
+      // was missing it) — surfaced loudly so the next missing caller is obvious.
+      console.warn('[useContentPartPreview] fetchPreview called with no tenantId — the caller is missing `:tenant-id`. Every server-resolved block will show no preview data until this is fixed.');
+
       return {};
     }
 

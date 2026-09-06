@@ -52,18 +52,20 @@ jobs:
             exit 1
           }
 
+          # Deliberately not filtered by `--event`: CI only runs on `push` for main and dev, so a
+          # feature branch's green run is a `pull_request` one. Both report against this same head
+          # SHA, and requiring the push flavour would reject every manual staging deploy.
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             successful_run=$(gh run list \
               --workflow CI \
               --commit "$sha" \
-              --event push \
               --status success \
               --json databaseId \
               --jq '.[0].databaseId' \
               --limit 1)
 
             [ -n "$successful_run" ] || {
-              echo "::error::No successful push CI run exists for commit $sha. Push the branch and wait for CI before deploying."
+              echo "::error::No successful CI run exists for commit $sha. Push the branch, open a pull request and wait for CI before deploying."
               exit 1
             }
           fi

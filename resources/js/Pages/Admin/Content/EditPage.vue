@@ -22,7 +22,7 @@
         :submit-url="route('pages.update', page.id)"
         submit-method="patch"
         enable-delete
-        @submit:form="(form) => form.patch(route('pages.update', page.id), { preserveScroll: true })"
+        @submit:form="submitForm"
         @delete="() => router.delete(route('pages.destroy', page.id))"
       />
     </UpsertModelLayout>
@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
@@ -39,9 +39,14 @@ import PageForm from '@/Components/AdminForms/PageForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { PageIcon } from '@/Components/icons';
 
-defineProps<{
+const props = defineProps<{
   categories: App.Entities.Category[];
   page: App.Entities.Page;
   otherLangPages: App.Entities.Page[];
 }>();
+
+function submitForm(form: InertiaForm<App.Entities.Page>): void {
+  form.defaults();
+  form.patch(route('pages.update', props.page.id), { preserveScroll: true });
+}
 </script>

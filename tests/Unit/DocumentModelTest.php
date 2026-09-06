@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Calendar;
 use App\Models\Document;
+use App\Models\Meeting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -64,4 +66,16 @@ test('toSearchableArray includes link_url', function (): void {
     ]);
 
     expect($document->toSearchableArray())->toHaveKey('link_url', 'https://ataskaita2023.vusa.lt');
+});
+
+test('toSearchableArray includes only published meeting calendar events', function (): void {
+    $meeting = Meeting::factory()->create();
+    $document = Document::factory()->create(['meeting_id' => $meeting->id]);
+    $event = Calendar::factory()->create(['meeting_id' => $meeting->id, 'is_draft' => false]);
+
+    expect($document->toSearchableArray()['calendar_event_id'])->toBe($event->id);
+
+    $event->update(['is_draft' => true]);
+
+    expect($document->fresh()->toSearchableArray()['calendar_event_id'])->toBeNull();
 });

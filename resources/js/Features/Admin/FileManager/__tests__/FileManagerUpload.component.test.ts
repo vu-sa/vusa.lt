@@ -17,17 +17,39 @@ afterEach(() => {
   wrappers.splice(0).forEach(wrapper => wrapper.unmount());
 });
 
-function mountManager() {
+function mountManager(props: Record<string, unknown> = {}) {
   const wrapper = mount(FileManager, {
     props: {
       files: [{ path: 'public/files/a.pdf', name: 'a.pdf', size: 10, modified: 1 }],
       directories: [],
       path: 'public/files',
+      ...props,
     },
     global: { stubs: { ...commonStubs } },
   });
   wrappers.push(wrapper);
   return wrapper;
+}
+
+function mountSelector(props: Record<string, unknown> = {}) {
+  return mountManager({
+    selectionMode: true,
+    allowUploadInSelection: true,
+    uploadExtensions: ['jpg', 'png', 'webp'],
+    ...props,
+  });
+}
+
+function uploadedResponse(uploaded: Array<{ name: string; path: string }>) {
+  return jsonResponse(true, {
+    success: true,
+    data: {
+      uploaded: uploaded.map(file => ({ ...file, url: `/uploads/${file.name}`, renamed: false })),
+      failed: [],
+      path: 'public/files',
+    },
+    message: 'ok',
+  });
 }
 
 function jsonResponse(ok: boolean, body: unknown, status = ok ? 200 : 422) {
@@ -96,6 +118,35 @@ describe('FileManager upload', () => {
     await startUpload(wrapper);
 
     expect(uploadButtonIsSpinning(wrapper)).toBe(false);
+  });
+
+  it('selects the uploaded file so the picker does not make the author find it again', async () => {
+    mockFetch.mockResolvedValue(uploadedResponse([{ name: 'plakatas.webp', path: 'public/files/plakatas.webp' }]));
+
+    const wrapper = mountSelector();
+    await startUpload(wrapper);
+
+    expect(wrapper.emitted('fileSelected')).toEqual([['public/files/plakatas.webp', 'upload']]);
+  });
+
+  it('does not auto-select an upload the picker would refuse on click', async () => {
+    // The server can hand back an extension outside the allowlist (a rejected optimisation,
+    // an .svg saved as-is); auto-selecting it would smuggle past the click-time guard.
+    mockFetch.mockResolvedValue(uploadedResponse([{ name: 'sutartis.pdf', path: 'public/files/sutartis.pdf' }]));
+
+    const wrapper = mountSelector();
+    await startUpload(wrapper);
+
+    expect(wrapper.emitted('fileSelected')).toBeUndefined();
+  });
+
+  it('leaves the selection alone outside selection mode', async () => {
+    mockFetch.mockResolvedValue(uploadedResponse([{ name: 'plakatas.webp', path: 'public/files/plakatas.webp' }]));
+
+    const wrapper = mountManager();
+    await startUpload(wrapper);
+
+    expect(wrapper.emitted('fileSelected')).toBeUndefined();
   });
 
   it('keeps the panel open when every file in the batch failed', async () => {

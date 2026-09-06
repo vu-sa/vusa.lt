@@ -41,6 +41,7 @@ class CalendarRequest extends FormRequest
             'cto_url.en' => 'nullable|url',
             'facebook_url' => 'nullable|url',
             'video_url' => 'nullable',
+            'main_image_focal_point' => 'nullable|string|max:20',
             'is_draft' => 'boolean',
             'is_all_day' => 'boolean',
             'is_international' => 'boolean',

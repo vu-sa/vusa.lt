@@ -1,55 +1,80 @@
 <template>
-  <div :class="surfaceClass">
-    <div v-if="element.options?.title" data-slot="card-header" class="px-5 pt-5 pb-3">
-      <h3 data-slot="card-title" class="text-lg font-bold leading-tight tracking-tight mb-1.5" :class="titleClass">
-        {{ element.options.title }}
-      </h3>
-    </div>
-    <div class="rc-prose tracking-normal px-5 pb-5" :class="{ 'pt-5': !element.options?.title }">
-      <slot />
+  <div>
+    <div data-slot="card-surface" class="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-brand">
+      <div v-if="element.options?.title || editable" data-slot="card-header" class="px-5 pt-5 pb-3">
+        <RCInlineText
+          as="h3" data-slot="card-title" class="mb-1.5 text-2xl font-bold leading-tight tracking-tight text-foreground"
+          :model-value="element.options?.title ?? ''" :editable :placeholder="$t('rich-content.title')"
+          @update:model-value="$emit('update:element', { ...element, options: { ...element.options, title: $event } })"
+        />
+      </div>
+      <div class="relative rc-prose tracking-normal px-5 pb-5" :class="{ 'pt-5': !element.options?.title && !editable }">
+        <template v-if="editable">
+          <TiptapEditor
+            v-if="isBodyActive"
+            :model-value="element.json_content" preset="full" prose-style
+            :placeholder="$t('rich-content.content')"
+            @update:model-value="$emit('update:element', { ...element, json_content: $event })"
+          />
+          <div v-else
+            class="min-h-12 cursor-text" data-rc-interactive data-rc-card-content
+            role="button" tabindex="0"
+            @click="$emit('claim-inline-field', bodyFieldId)"
+            @keydown.enter.prevent="$emit('claim-inline-field', bodyFieldId)"
+            @keydown.space.prevent="$emit('claim-inline-field', bodyFieldId)"
+          >
+            <RichContentTiptapHTML v-if="hasBody" :json_content="element.json_content" />
+            <p v-else class="italic text-muted-foreground/60">{{ $t('rich-content.content') }}</p>
+          </div>
+          <RCAddPlaceholder
+            v-if="!hasBody && !isBodyActive"
+            :label="$t('rich-content.content')"
+            class="left-1/2 -bottom-2 -translate-x-1/2 translate-y-full"
+            @click="$emit('claim-inline-field', bodyFieldId)"
+          />
+        </template>
+        <slot v-else />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+
+import RCInlineText from './Editor/Fullscreen/RCInlineText.vue';
+
+import type { ShadcnCard } from '@/Types/contentParts';
+
+const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
+// Lazy-loaded: both only ever mounted while `editable` — public rendering uses the
+// `#default` slot instead, so a static import would bundle the full-screen editor's
+// preview renderer and add-placeholder control into every public page with a card block.
+const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));
+const RCAddPlaceholder = defineAsyncComponent(() => import('./Editor/Fullscreen/RCAddPlaceholder.vue'));
 
 const props = defineProps<{
-  element: models.ContentPart;
+  element: ShadcnCard;
+  editable?: boolean;
+  blockKey?: string;
+  activeInlineField?: string | null;
 }>();
 
-const color = computed(() => (props.element.options?.color as 'zinc' | 'red' | 'yellow' | undefined) ?? 'zinc');
-const variant = computed(() => (props.element.options?.variant as 'outline' | 'soft' | undefined) ?? 'outline');
+defineEmits<{
+  (e: 'update:element', value: ShadcnCard): void;
+  (e: 'claim-inline-field', field: string | null): void;
+}>();
 
-// Static class maps (no inline :style, no useDark) — dark: variants handle theming.
-// `color` is an accent only now (a left rail on `outline`), never a tinted background —
-// red/yellow washes read as alerts, which most cards aren't.
-const SURFACE: Record<string, string> = {
-  outline: 'bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/60 hover:shadow-lg hover:ring-zinc-300 dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600',
-  soft: 'bg-gradient-to-br from-zinc-100 to-zinc-50 ring-0 shadow-sm hover:shadow-md dark:from-zinc-800 dark:to-zinc-900/60',
-};
+const bodyFieldId = computed(() => `${props.blockKey ?? ''}:body`);
+const isBodyActive = computed(() => props.activeInlineField === bodyFieldId.value);
+const hasBody = computed(() => hasContent(props.element.json_content));
 
-const ACCENT_RAIL: Record<string, string> = {
-  red: `before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-red/70 before:content-['']`,
-  yellow: `before:absolute before:inset-y-0 before:left-0 before:w-1 before:rounded-l-2xl before:bg-vusa-yellow/80 before:content-['']`,
-};
-
-const TITLE_ACCENT: Record<string, string> = {
-  zinc: 'text-zinc-900 dark:text-zinc-100',
-  red: 'text-vusa-red dark:text-red-400',
-  yellow: 'text-yellow-700 dark:text-vusa-yellow',
-};
-
-const surfaceClass = computed(() => {
-  const surface = SURFACE[variant.value] ?? SURFACE.outline;
-  // The accent rail only makes sense on `outline` — `soft` already tints the whole
-  // surface, so a rail on top of that would be redundant.
-  const rail = variant.value === 'outline' ? (ACCENT_RAIL[color.value] ?? '') : '';
-  return `group relative flex flex-col overflow-hidden rounded-2xl transition-all duration-300 ${surface} ${rail}`;
-});
-
-const titleClass = computed(() => {
-  if (!props.element.options?.isTitleColored) return TITLE_ACCENT.zinc;
-  return TITLE_ACCENT[color.value] ?? TITLE_ACCENT.zinc;
-});
+function hasContent(node: unknown): boolean {
+  if (!node || typeof node !== 'object') return false;
+  const { type, text, content } = node as { type?: string; text?: string; content?: unknown[] };
+  if (typeof text === 'string' && text.trim()) return true;
+  if (type && type !== 'doc' && type !== 'paragraph') return true;
+  return (content ?? []).some(hasContent);
+}
 </script>

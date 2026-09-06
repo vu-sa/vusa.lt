@@ -6,16 +6,14 @@ import RCSectionOptions from '../RCSectionOptions.vue';
 interface SectionOptions {
   title?: string;
   subtitle?: string;
-  background?: string;
-  padding?: string;
-  rounded?: string;
+  presentation?: string;
   headingLevel?: number;
   align?: string;
   showSeparator?: boolean;
 }
 
 function makeOptions(): SectionOptions {
-  return { title: '', subtitle: '', background: 'none', padding: 'lg', rounded: 'none' };
+  return { title: '', subtitle: '' };
 }
 
 /** The collapsible trigger is a <button> carrying the "section options" heading; in the
@@ -39,10 +37,10 @@ describe('RCSectionOptions', () => {
     await trigger!.trigger('click');
 
     expect(trigger!.attributes('aria-expanded')).toBe('true');
-    // Title + subtitle = two text inputs; headingLevel/align/background/padding/rounded
-    // = five selects; plus the separator toggle = one switch.
-    expect(wrapper.findAll('input[type="text"]')).toHaveLength(2);
-    expect(wrapper.findAll('[data-slot="select-trigger"]')).toHaveLength(5);
+    // Title + subtitle + eyebrow = three text inputs; headingLevel/align = two selects;
+    // the separator toggle = one switch. Presentation is a 3-button picker, not a select/switch.
+    expect(wrapper.findAll('input[type="text"]')).toHaveLength(3);
+    expect(wrapper.findAll('[data-slot="select-trigger"]')).toHaveLength(2);
     expect(wrapper.findAll('button[role="switch"]')).toHaveLength(1);
   });
 
@@ -53,14 +51,12 @@ describe('RCSectionOptions', () => {
 
     // No trigger button — the section options header is a plain FieldLabel (<label>).
     expect(findTrigger(wrapper)).toBeUndefined();
-    expect(wrapper.findAll('input[type="text"]')).toHaveLength(2);
-    expect(wrapper.findAll('[data-slot="select-trigger"]')).toHaveLength(5);
+    expect(wrapper.findAll('input[type="text"]')).toHaveLength(3);
+    expect(wrapper.findAll('[data-slot="select-trigger"]')).toHaveLength(2);
     expect(wrapper.findAll('button[role="switch"]')).toHaveLength(1);
   });
 
-  it('mutates the shared options object in place when a field is edited', async () => {
-    // Every RichContent editor mutates its defineModel object in place to preserve
-    // object identity (see ContentEditorFactory); the title input must do the same.
+  it('emits an immutable options update when a field is edited', async () => {
     const options = makeOptions();
     const wrapper = mount(RCSectionOptions, {
       props: { modelValue: options, collapsible: false },
@@ -68,6 +64,6 @@ describe('RCSectionOptions', () => {
 
     await wrapper.findAll('input[type="text"]')[0]!.setValue('Mano antraštė');
 
-    expect(options.title).toBe('Mano antraštė');
+    expect(wrapper.emitted('update:modelValue')).toEqual([[{ ...options, title: 'Mano antraštė' }]]);
   });
 });

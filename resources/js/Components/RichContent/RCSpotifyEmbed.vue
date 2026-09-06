@@ -1,11 +1,46 @@
 <template>
+  <RCSpotifyPromoDisplay
+    v-if="isPromo"
+    :element
+    :anchor-id="anchorId"
+    :band
+    :editable
+    :block-key="blockKey"
+    :active-inline-field="activeInlineField"
+    @update:element="$emit('update:element', $event)"
+    @claim-inline-field="$emit('claim-inline-field', $event)"
+  />
+
   <!-- Single root — a multi-root/fragment component can't auto-inherit the width/spacing
        class RichContentParser passes via :class (no single target to fall through to). -->
-  <div>
-    <RCMixcloudEmbed v-if="isMixcloud" :element />
-    <div v-else class="w-full my-8">
-      <iframe class="block w-full h-[352px] rounded-xl" :src="embedUrl" frameborder="0" allowtransparency="true"
-        allow="encrypted-media" title="Spotify Embed" />
+  <div v-else>
+    <!-- When editable and empty URL, show a placeholder -->
+    <div
+      v-if="editable && !element.json_content.url"
+      class="my-8 flex w-full flex-col items-center justify-center border border-dashed border-border bg-secondary/20 p-8 text-center"
+      data-rc-interactive
+    >
+      <SpotifyIcon class="mb-2 size-8 text-muted-foreground" />
+      <p class="text-sm font-medium text-foreground">
+        {{ $t('rich-content.enter_spotify_url') }}
+      </p>
+      <p class="mt-1 text-xs text-muted-foreground">
+        {{ $t('rich-content.spotify_url_hint') }}
+      </p>
+    </div>
+    <RCMixcloudEmbed v-else-if="isMixcloud" :element />
+    <!-- Hairline frame, square corners: an embed is still a block on this surface, so it is
+         ruled off like every other one rather than floating as a rounded card. -->
+    <div v-else class="my-8 w-full border border-border">
+      <iframe
+        class="block h-[352px] w-full"
+        :class="[editable && 'pointer-events-none']"
+        :src="embedUrl"
+        frameborder="0"
+        allowtransparency="true"
+        allow="encrypted-media"
+        title="Spotify Embed"
+      />
     </div>
   </div>
 </template>
@@ -13,50 +48,35 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useDark } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import RCMixcloudEmbed from './RCMixcloudEmbed.vue';
+import RCSpotifyPromoDisplay from './RCSpotifyPromoDisplay.vue';
+import { isMixcloudUrl, toSpotifyEmbedUrl } from './embedUrl';
+import SpotifyIcon from '~icons/simple-icons/spotify';
 
 import type { SpotifyEmbed } from '@/Types/contentParts';
+import type { BandResolution } from './bandLayout';
 
 const props = defineProps<{
   element: SpotifyEmbed;
+  anchorId?: number | null;
+  band?: BandResolution;
+  editable?: boolean;
+  blockKey?: string;
+  activeInlineField?: string | null;
 }>();
 
-const isMixcloud = computed(() => {
-  const { url } = props.element.json_content;
+defineEmits<{
+  (e: 'update:element', value: SpotifyEmbed): void;
+  (e: 'claim-inline-field', field: string | null): void;
+}>();
 
-  try {
-    const parsedUrl = new URL(url, window.location.origin);
-    const host = parsedUrl.hostname.toLowerCase();
+const isPromo = computed(() => props.element.options?.variant === 'promo');
 
-    return host === 'mixcloud.com'
-      || host === 'www.mixcloud.com'
-      || host === 'player-widget.mixcloud.com';
-  }
-  catch {
-    return false;
-  }
-});
+const isMixcloud = computed(() => isMixcloudUrl(props.element.json_content.url));
 
 const isDark = useDark();
 
-const embedUrl = computed(() => {
-  const { url } = props.element.json_content;
-
-  // Only append theme param for Spotify URLs
-  const isSpotify = /^https?:\/\/(open\.)?spotify\.com\//.test(url);
-  if (!isSpotify) {
-    return url;
-  }
-
-  try {
-    const parsedUrl = new URL(url, window.location.origin);
-    parsedUrl.searchParams.set('theme', isDark.value ? '0' : '1');
-    return parsedUrl.toString();
-  }
-  catch {
-    const themeParam = `theme=${isDark.value ? '0' : '1'}`;
-    return url.includes('?') ? `${url}&${themeParam}` : `${url}?${themeParam}`;
-  }
-});
+const embedUrl = computed(() => toSpotifyEmbedUrl(props.element.json_content.url, isDark.value));
 </script>

@@ -104,6 +104,24 @@ describe('authorized access', function (): void {
         ]);
     });
 
+    test('can store banner without a logo — it renders as a text mark instead', function (): void {
+        $validData = getControllerTestData('Banner')['valid'];
+        $uniqueSuffix = time();
+        $validData['title'] = 'Baneris be logotipo '.$uniqueSuffix;
+        unset($validData['image_url']);
+
+        asUser($this->admin)
+            ->post(route('banners.store'), $validData)
+            ->assertStatus(302)
+            ->assertRedirect(route('banners.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('banners', [
+            'title' => $validData['title'],
+            'image_url' => null,
+        ]);
+    });
+
     test('cannot store banner with invalid data', function (): void {
         $invalidData = getControllerTestData('Banner')['invalid'];
 
@@ -156,18 +174,20 @@ describe('authorized access', function (): void {
         ]);
     });
 
-    test('cannot update banner with invalid data - missing image_url', function (): void {
-        $invalidData = ['title' => 'Valid title', 'image_url' => ''];
+    test('can update banner with an empty image_url — the logo is optional', function (): void {
+        $updateData = getControllerTestData('Banner')['valid'];
+        $updateData['title'] = 'Valid title';
+        $updateData['image_url'] = '';
 
         asUser($this->admin)
-            ->patch(route('banners.update', $this->banner), $invalidData)
+            ->patch(route('banners.update', $this->banner), $updateData)
             ->assertStatus(302)
-            ->assertSessionHasErrors(['image_url']);
+            ->assertSessionHas('success');
 
-        // Original data should remain unchanged
         $this->assertDatabaseHas('banners', [
             'id' => $this->banner->id,
-            'image_url' => 'https://example.com/test.jpg',
+            'title' => 'Valid title',
+            'image_url' => null,
         ]);
     });
 

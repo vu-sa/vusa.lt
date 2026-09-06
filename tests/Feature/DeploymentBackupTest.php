@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
  * The backup is only worth having if a broken one announces itself. These pin the two properties
  * that decide whether a bad dump gets stored as if it were good.
  */
-describe('failure is not swallowed', function () {
+describe('failure is not swallowed', function (): void {
     // The dump is two mysqldump passes into one gzip stream: table data, then the disposable tables
     // as schema only. `{ a; b; }` exits with b's status, so without `set -e` a data pass that died
     // halfway was masked by the schema pass succeeding — and the resulting truncated archive still
@@ -37,7 +37,7 @@ describe('failure is not swallowed', function () {
     });
 });
 
-describe('what the archive contains', function () {
+describe('what the archive contains', function (): void {
     // Telescope is 53% of the production database and activity_log another 32%. Dropping Telescope's
     // rows takes the dump from ~450 MB to ~11 MB; keeping activity_log's is deliberate, because it is
     // audit data rather than debug residue and is pruned on retention instead.

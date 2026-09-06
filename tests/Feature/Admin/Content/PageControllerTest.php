@@ -394,11 +394,11 @@ describe('content part width validation', function (): void {
             ->assertSessionHasErrors(['content.parts.0.options']);
     });
 
-    test('accepts a valid options.rounded value, shared by every RCSection-chrome block', function (): void {
+    test('accepts plain presentation with its own padding', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
-        $data['permalink'] = 'rounded-valid-'.time();
-        $data['content']['parts'][0]['options'] = ['rounded' => 'md'];
+        $data['permalink'] = 'presentation-valid-'.time();
+        $data['content']['parts'][0]['options'] = ['presentation' => 'plain', 'plainPadding' => 'compact'];
 
         asUser($this->admin)
             ->post(route('pages.store'), $data)
@@ -406,16 +406,40 @@ describe('content part width validation', function (): void {
             ->assertSessionDoesntHaveErrors();
     });
 
-    test('rejects an invalid options.rounded value', function (): void {
+    test('rejects an invalid options.presentation value', function (): void {
         $data = getControllerTestData('Page')['valid'];
         $data['tenant_id'] = $this->tenant->id;
-        $data['permalink'] = 'rounded-invalid-'.time();
-        $data['content']['parts'][0]['options'] = ['rounded' => 'huge'];
+        $data['permalink'] = 'presentation-invalid-'.time();
+        $data['content']['parts'][0]['options'] = ['presentation' => 'huge'];
 
         asUser($this->admin)
             ->post(route('pages.store'), $data)
             ->assertStatus(302)
-            ->assertSessionHasErrors(['content.parts.0.options.rounded']);
+            ->assertSessionHasErrors(['content.parts.0.options.presentation']);
+    });
+
+    test('rejects the removed emphasis presentation', function (): void {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'presentation-emphasis-'.time();
+        $data['content']['parts'][0]['options'] = ['presentation' => 'emphasis'];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionHasErrors(['content.parts.0.options.presentation']);
+    });
+
+    test('rejects an invalid plain padding value', function (): void {
+        $data = getControllerTestData('Page')['valid'];
+        $data['tenant_id'] = $this->tenant->id;
+        $data['permalink'] = 'plain-padding-invalid-'.time();
+        $data['content']['parts'][0]['options'] = ['presentation' => 'plain', 'plainPadding' => 'huge'];
+
+        asUser($this->admin)
+            ->post(route('pages.store'), $data)
+            ->assertStatus(302)
+            ->assertSessionHasErrors(['content.parts.0.options.plainPadding']);
     });
 
     test('accepts a section block with wraps/inner options', function (): void {

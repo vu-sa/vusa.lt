@@ -1,10 +1,10 @@
 /**
  * Smoke test for the unified public search page.
  *
- * The search behaviour itself (multi_search, distribution, ordering, load-more, browse
- * mode, collection filtering) is covered by `usePublicMultiSearch.test.ts`. Here we only
- * assert the page wires up: it renders the search input, the content-type toggles, fires a
- * browse search on mount, and shows the resulting counts.
+ * The search behaviour itself (multi_search, distribution, ordering, browse mode, collection
+ * filtering) is covered by `usePublicMultiSearch.test.ts`. Here we only assert the page wires
+ * up: it renders the search input, the content-type toggles, fires a browse search on mount,
+ * groups results by collection (not interleaved), and carries the query into "view all" links.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -60,17 +60,13 @@ describe('Public/Search.vue', () => {
         stubs: {
           ...commonStubs,
           Head: true,
-          DocumentResults: true,
-          MeetingResults: true,
-          InstitutionResults: true,
-          GenericResults: true,
         },
       },
     });
 
   it('renders the search input', () => {
     const wrapper = mountPage();
-    expect(wrapper.find('input[role="search"]').exists()).toBe(true);
+    expect(wrapper.find('input[type="text"]').exists()).toBe(true);
   });
 
   it('renders a toggle for every content type', () => {
@@ -98,35 +94,43 @@ describe('Public/Search.vue', () => {
     expect(body.searches).toHaveLength(6);
     expect(body.searches.every((s: { q: string }) => s.q === '*')).toBe(true);
 
-    // "search.all_search_prompt" no longer renders — the page opens already populated.
-    expect(wrapper.text()).not.toContain('search.all_search_prompt');
-    // A collection count from the fake browse response shows up in the sidebar.
+    // A collection count from the fake browse response shows up as a toggle badge.
     expect(wrapper.text()).toContain('5'); // documents
   });
 
-  it('does not filter results when no collection checkbox is checked', async () => {
+  it('does not filter results when no content-type toggle is active', async () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    // Nothing is checked by default, so every collection with hits is displayed.
-    const checkboxes = wrapper.findAll('button[role="checkbox"]');
-    expect(checkboxes.some(cb => cb.attributes('aria-checked') === 'true')).toBe(false);
+    // Nothing is toggled on by default, so every collection with hits is displayed.
+    const toggles = wrapper.findAll('button[aria-pressed]');
+    expect(toggles.some(t => t.attributes('aria-pressed') === 'true')).toBe(false);
   });
 
-  it('carries the current search term into "view all" links and the page switcher', async () => {
+  it('groups results by collection instead of interleaving them', async () => {
     const wrapper = mountPage();
     await flushPromises();
 
-    const input = wrapper.find('input[role="search"]');
+    // One section heading per collection that has hits, each followed by its own hit list —
+    // not a single flat list mixing collections together.
+    expect(wrapper.text()).toContain('search.section_documents');
+    const documentHit = wrapper.text().indexOf('documents hit');
+    const newsHit = wrapper.text().indexOf('news hit');
+    expect(documentHit).toBeGreaterThan(-1);
+    expect(newsHit).toBeGreaterThan(-1);
+  });
+
+  it('carries the current search term into "view all" links', async () => {
+    const wrapper = mountPage();
+    await flushPromises();
+
+    const input = wrapper.find('input[type="text"]');
     await input.setValue('studentai');
     await input.trigger('keydown.enter');
     await flushPromises();
 
-    // documents has more hits than shown (found: 5, only 1 hit returned by the fake response)
-    // and a global "view all" target, so at least one of its links must carry the search term —
-    // the other is the page-switcher tab at the top, which has no `q` when nothing's searched.
     const documentsLinks = wrapper.findAll('a').filter(a => (a.attributes('href') ?? '').includes('/documents'));
-    expect(documentsLinks.length).toBeGreaterThanOrEqual(2);
+    expect(documentsLinks.length).toBeGreaterThanOrEqual(1);
     expect(documentsLinks.every(a => (a.attributes('href') ?? '').includes('q=studentai'))).toBe(true);
   });
 });

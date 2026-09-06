@@ -3,7 +3,6 @@ import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { TenantType } from '@/Types/enums';
-import { localizedSlug } from '@/Utils/LocalizedRoutes';
 
 export interface TenantOption {
   label: string;
@@ -11,6 +10,7 @@ export interface TenantOption {
   primary_institution?: {
     short_name?: string;
     image_url?: string;
+    image_focal_point?: string;
   };
   isMainOffice?: boolean;
 }
@@ -20,7 +20,8 @@ export interface TenantOption {
  * `PadalinysSelector` popover and the mobile drill-down tenant panel, so both stay in sync.
  *
  * Switching tenants is a full page load to a different subdomain, not an Inertia visit,
- * because each tenant is served from its own subdomain.
+ * because each tenant is served from its own subdomain. Each Inertia page declares whether
+ * its equivalent exists on every tenant or should fall back to the selected tenant's home page.
  */
 export function useTenantOptions(prependOptions?: TenantOption[]) {
   const page = usePage();
@@ -32,7 +33,11 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
     const tenantOptions = page.props.tenants
       .filter(tenant => tenant.type === TenantType.Padalinys || tenant.type === TenantType.Pagrindinis)
       .map((tenant): TenantOption => ({
-        label: $t(tenant.fullname.split('atstovybė ')[1] || ''),
+        // The unit's name is whatever follows "atstovybė " in its full name — but the main
+        // tenant *is* "Vilniaus universiteto Studentų atstovybė", so nothing follows and the
+        // label came out empty. Falling back to the shortname gives it "VU SA" instead of a
+        // blank row.
+        label: $t(tenant.fullname.split('atstovybė ')[1] || tenant.shortname),
         key: tenant.alias,
         primary_institution: tenant.primary_institution
           ? {
@@ -40,6 +45,7 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
                 ? tenant.primary_institution.short_name[0]
                 : tenant.primary_institution.short_name || undefined,
               image_url: tenant.primary_institution.image_url || undefined,
+              image_focal_point: tenant.primary_institution.image_focal_point || undefined,
             }
           : undefined,
         isMainOffice: tenant.type === TenantType.Pagrindinis,
@@ -50,10 +56,7 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
 
   const isActive = (key: string): boolean => page.props.tenant?.alias === key;
 
-  /**
-   * Navigates to another tenant's subdomain, keeping the current path.
-   * Handles both production (ff.vusa.lt) and staging (ff.naujas.vusa.lt) hostnames.
-   */
+  /** Navigates to another tenant subdomain using the destination declared by the current page. */
   const switchTenant = (key: string | string[]) => {
     let alias: string = Array.isArray(key) ? key[0] ?? '' : key;
 
@@ -66,7 +69,11 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
       alias = 'www';
     }
 
-    window.location.href = `${window.location.protocol}//${alias}.${hostWithoutSubdomain}${usePage().url}`;
+    const path = page.props.tenantSwitchTarget === 'same-page'
+      ? page.url
+      : `/${page.props.app.locale}`;
+
+    window.location.href = `${window.location.protocol}//${alias}.${hostWithoutSubdomain}${path}`;
   };
 
   const currentLabel = (mainTenantLabel?: string) => computed(() => {
@@ -76,30 +83,10 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
     return $t(page.props.tenant?.shortname.split(' ').pop() ?? 'Padaliniai');
   });
 
-  /**
-   * Whether tenant switching makes sense on the current page (home, news, contacts).
-   *
-   * The slugs come from the localized-route registry rather than a hardcoded list, which is
-   * how `en/news` came to be missing here in the first place.
-   */
-  const isSwitchAllowed = computed(() => {
-    const path = page.props.app.path;
-    const locales = ['lt', 'en'];
-
-    const newsArchivePaths = locales.map(locale => `${locale}/${localizedSlug('newsArchiveString', locale)}`);
-
-    if ([...locales, ...newsArchivePaths].includes(path)) {
-      return true;
-    }
-
-    return locales.some(locale => path.includes(localizedSlug('contactsString', locale)));
-  });
-
   return {
     options,
     isActive,
     switchTenant,
     currentLabel,
-    isSwitchAllowed,
   };
 }

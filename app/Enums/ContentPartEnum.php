@@ -29,8 +29,9 @@ enum ContentPartEnum: string
     case EVENT_LIST = 'EVENT_LIST';
     case PERSON_QUOTE = 'PERSON_QUOTE';
     case SECTION = 'SECTION';
-    case SPACER = 'SPACER';
+    case PROCESS_STEPS = 'PROCESS_STEPS';
     case TIMETABLE = 'TIMETABLE';
+    case INSTITUTION_LIST = 'INSTITUTION_LIST';
 
     public function label(): string
     {
@@ -56,8 +57,9 @@ enum ContentPartEnum: string
             self::EVENT_LIST => 'event-list',
             self::PERSON_QUOTE => 'person-quote',
             self::SECTION => 'section',
-            self::SPACER => 'spacer',
+            self::PROCESS_STEPS => 'process-steps',
             self::TIMETABLE => 'timetable',
+            self::INSTITUTION_LIST => 'institution-list',
         };
     }
 }

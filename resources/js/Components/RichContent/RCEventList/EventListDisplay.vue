@@ -1,10 +1,10 @@
 <template>
   <RCSection
-    :title="element.options?.title" :subtitle="element.options?.subtitle"
-    :background="element.options?.background ?? 'none'" :padding="element.options?.padding ?? 'lg'"
-    :rounded="element.options?.rounded ?? 'none'" :align="element.options?.align ?? 'center'"
-    :heading-level="element.options?.headingLevel" :show-separator="element.options?.showSeparator"
-    inner="wide" :id="anchorId ? `rc-${anchorId}` : undefined"
+    :id="anchorId ? `rc-${anchorId}` : undefined" :title="element.options?.title" :subtitle="element.options?.subtitle"
+    :eyebrow="element.options?.eyebrow" :band
+    :align="element.options?.align ?? 'center'" :heading-level="element.options?.headingLevel"
+    :show-separator="element.options?.showSeparator" inner="wide"
+    :editable @update:header="updateOptions"
   >
     <!-- Grouped cards — one RCFeatureCard per group (tenant), events as a footer link
          list. This is the SummerCampCard shape, generalized. -->
@@ -17,28 +17,28 @@
         :badge="group.items.length > 1 ? group.items.length : null"
       >
         <template #cover-fallback>
-          <IFluentTent24Regular class="size-10 text-vusa-red/50" />
+          <IFluentTent24Regular class="size-10 text-brand/50" />
         </template>
         <ul class="contents">
           <li v-for="event in group.items" :key="event.id">
             <SmartLink
               :href="event.href"
-              class="relative z-20 -mx-2.5 flex items-start gap-3 rounded-xl p-2.5 transition-colors hover:bg-white/70 dark:hover:bg-zinc-800/60"
+              class="relative z-20 -mx-2.5 flex items-start gap-3 p-2.5 transition-colors hover:bg-secondary/60"
             >
-              <div class="flex min-w-11 flex-col items-center justify-center rounded-lg bg-vusa-red/10 px-2 py-1.5 text-center text-vusa-red dark:bg-vusa-red/20">
-                <span class="text-[9px] font-semibold uppercase leading-none">{{ formatMonthShort(event.date ?? undefined, locale) }}</span>
+              <div class="flex min-w-11 flex-col items-center justify-center border border-border px-2 py-1.5 text-center text-brand">
+                <span class="text-[0.5625rem] font-semibold uppercase leading-none">{{ formatMonthShort(event.date ?? undefined, locale) }}</span>
                 <span class="mt-0.5 text-base font-bold leading-none tabular-nums">{{ dayOfMonth(event.date) }}</span>
               </div>
               <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-200">
+                <p class="text-sm font-medium text-foreground transition-colors group-hover:text-brand">
                   {{ dateSpan(event).primary }}
                 </p>
-                <p v-if="event.location" class="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <p v-if="event.location" class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                   <IFluentLocation20Regular class="size-3 shrink-0" />
                   <span class="truncate">{{ event.location }}</span>
                 </p>
               </div>
-              <IFluentChevronRight12Regular class="mt-2 size-3 shrink-0 text-zinc-300 transition-colors group-hover:text-vusa-red dark:text-zinc-600" />
+              <IFluentChevronRight12Regular class="mt-2 size-3 shrink-0 text-muted-foreground transition-colors group-hover:text-brand" />
             </SmartLink>
           </li>
         </ul>
@@ -56,39 +56,55 @@
         :href="event.href"
       >
         <template #cover-fallback>
-          <IFluentTent24Regular class="size-10 text-vusa-red/50" />
+          <IFluentTent24Regular class="size-10 text-brand/50" />
         </template>
-        <p v-if="event.location" class="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p v-if="event.location" class="flex items-center gap-1 text-xs text-muted-foreground">
           <IFluentLocation20Regular class="size-3 shrink-0" />
           <span class="truncate">{{ event.location }}</span>
         </p>
       </RCFeatureCard>
     </div>
 
-    <!-- Flat chronological list -->
-    <ul v-else class="divide-y divide-zinc-200/60 dark:divide-zinc-800">
+    <!-- Flat chronological list — the design's scannable event row: a ruled date block, the
+         title, and its when/where on one line, separated by hairlines rather than boxed. -->
+    <ul v-else>
       <li v-for="event in items" :key="event.id">
-        <SmartLink :href="event.href" class="group flex items-center justify-between gap-4 py-3">
-          <div class="min-w-0">
-            <p class="truncate font-medium text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-200">
-              {{ event.title }}
-            </p>
-            <p v-if="event.location" class="truncate text-xs text-zinc-500 dark:text-zinc-400">{{ event.location }}</p>
+        <SmartLink
+          :href="event.href"
+          class="group flex items-center gap-4 border-b border-border py-5 transition-colors hover:bg-background sm:gap-6"
+        >
+          <div class="flex w-14 shrink-0 flex-col items-center justify-center border border-border bg-background py-2 text-foreground transition-colors group-hover:border-brand sm:w-16">
+            <span class="text-2xl font-bold leading-none tabular-nums">{{ dayOfMonth(event.date) }}</span>
+            <span class="mt-1 text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground">
+              {{ formatMonthShort(event.date ?? undefined, locale) }}
+            </span>
           </div>
-          <span class="shrink-0 text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{{ dateSpan(event).primary }}</span>
+
+          <div class="min-w-0 flex-1">
+            <h3 class="text-pretty font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
+              {{ event.title }}
+            </h3>
+            <div class="mt-1.5 flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-4">
+              <span class="flex items-center gap-1.5">
+                <IFluentCalendarLtr20Regular class="size-3.5 shrink-0" />
+                {{ dateSpan(event).primary }}
+              </span>
+              <span v-if="event.location" class="flex items-center gap-1.5">
+                <IFluentLocation20Regular class="size-3.5 shrink-0" />
+                <span class="truncate">{{ event.location }}</span>
+              </span>
+            </div>
+          </div>
+
+          <IFluentArrowRight16Regular class="hidden size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-brand sm:block" />
         </SmartLink>
       </li>
     </ul>
 
-    <!-- Empty state, mirroring SummerCamps.vue's -->
-    <div
-      v-if="isEmpty"
-      class="rounded-2xl bg-zinc-50 py-16 text-center ring-1 ring-zinc-200/50 dark:bg-zinc-800/50 dark:ring-zinc-700/50"
-    >
-      <div class="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-        <IFluentTent24Regular class="size-6 text-zinc-400" />
-      </div>
-      <p class="text-zinc-600 dark:text-zinc-400">
+    <!-- Empty state: a ruled panel, same language as the rows above it. -->
+    <div v-if="isEmpty" class="border border-border bg-secondary/40 py-16 text-center">
+      <IFluentTent24Regular class="mx-auto mb-4 size-8 text-muted-foreground" />
+      <p class="text-muted-foreground">
         {{ element.options?.emptyMessage || $t('rich-content.event_list_empty') }}
       </p>
     </div>
@@ -105,20 +121,39 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 
-import type { EventListResolved, EventListResolvedItem } from '@/Types/contentParts';
 import RCSection from '../RCSection.vue';
 import RCFeatureCard from '../RCFeatureCard.vue';
+import { smartGridCols } from '../gridStacking';
+import type { BandResolution } from '../bandLayout';
+
+import type { EventListResolved, EventListResolvedItem } from '@/Types/contentParts';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { formatEventDateSpan, formatMonthShort } from '@/Utils/IntlTime';
 import { LocaleEnum } from '@/Types/enums';
-import { smartGridCols } from '../gridStacking';
 
 const props = defineProps<{
   element: models.ContentPart;
   html?: boolean;
   anchorId?: number | null;
   resolved?: EventListResolved | null;
+  band?: BandResolution;
+  /** Full-screen editor mode: the optional title/subtitle/eyebrow header becomes
+   *  click-to-edit. Undefined/false in every other context. Nothing else on this type
+   *  is author-editable — its list content is entirely server-resolved. */
+  editable?: boolean;
+  /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
+   *  `inlineEditable` fallthrough — this block has no per-field claiming, but an
+   *  undeclared non-undefined prop would otherwise land on the root as a stray attribute. */
+  blockKey?: string;
+  /** @see blockKey */
+  activeInlineField?: string | null;
 }>();
+
+const emit = defineEmits<(e: 'update:element', value: models.ContentPart) => void>();
+
+function updateOptions(patch: { title?: string; subtitle?: string; eyebrow?: string }): void {
+  emit('update:element', { ...props.element, options: { ...props.element.options, ...patch } });
+}
 
 const page = usePage();
 const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);

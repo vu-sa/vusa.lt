@@ -27,6 +27,8 @@ class MeetingController extends PublicController
 
         // Render the meeting search page
         // Frontend handles all search via Typesense client-side
-        return Inertia::render('Public/Meetings/ShowMeetings', []);
+        return Inertia::render('Public/Meetings/ShowMeetings', [
+            'tenantSwitchTarget' => 'same-page',
+        ]);
     }
 }

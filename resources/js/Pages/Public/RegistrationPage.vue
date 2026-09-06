@@ -1,35 +1,73 @@
 <template>
-  <article class="gap-y-4 pt-8 last:pb-2">
-    <h1>
-      {{ $t(form.name) }}
-    </h1>
-    <div class="typography">
-      <div v-html="form.description" />
-    </div>
-    <!-- Show pre-filled institution name if provided -->
-    <div v-if="prefilledInstitutionName" class="mt-4 rounded-lg bg-zinc-100 p-4 dark:bg-zinc-800">
-      <p class="text-sm text-zinc-600 dark:text-zinc-400">
-        {{ $t('Registruojatės į') }}: <strong class="text-zinc-900 dark:text-zinc-100">{{ prefilledInstitutionName }}</strong>
-      </p>
-    </div>
-    <div class="mt-8 max-w-prose text-base">
-      <RegistrationForm :form :prefilled-values @submit="handleSubmit" />
-    </div>
-  </article>
+  <div class="registration-page">
+    <Head>
+      <title>{{ $t(form.name) }}</title>
+    </Head>
+
+    <PageTitleBand
+      :eyebrow="$t('Registracija')"
+      :title="$t(form.name)"
+    >
+      <template #breadcrumbs>
+        <PublicBreadcrumbs variant="inline" />
+      </template>
+    </PageTitleBand>
+
+    <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <div class="max-w-prose">
+        <!-- Rich Description -->
+        <div v-if="form.description" class="typography mb-8" v-html="form.description" />
+
+        <!-- Show pre-filled institution name if provided -->
+        <div v-if="prefilledInstitutionName" class="mb-8 border border-border bg-secondary/40 p-4">
+          <p class="text-sm text-muted-foreground">
+            {{ $t('Registruojatės į') }}: <strong class="text-foreground">{{ prefilledInstitutionName }}</strong>
+          </p>
+        </div>
+
+        <!-- Registration Form -->
+        <RegistrationForm :form :prefilled-values @submit="handleSubmit" />
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { router, usePage } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 
-import RegistrationForm from '../../Features/Registrations/RegistrationForm.vue';
+import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
+import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
+import RegistrationForm from '@/Features/Registrations/RegistrationForm.vue';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
-const $page = usePage();
+interface FormField {
+  id: number | string;
+  use_model_options?: boolean;
+  options_model?: string;
+  options?: Array<{ value: string | number; label: string }>;
+}
+
+interface RegistrationFormData {
+  id: number;
+  name: string;
+  description?: string | null;
+  form_fields?: FormField[];
+}
 
 const { form } = defineProps<{
-  form: Record<string, any>;
+  form: RegistrationFormData;
 }>();
+
+// Set breadcrumbs for registration page
+usePageBreadcrumbs(() => {
+  return BreadcrumbHelpers.publicContent([
+    BreadcrumbHelpers.createBreadcrumbItem(
+      $t(form.name) || 'Registracija',
+    ),
+  ]);
+}, { placement: 'band' });
 
 // Get institution ID from query param
 const institutionId = computed(() => {
@@ -42,7 +80,7 @@ const prefilledValues = computed(() => {
   if (!institutionId.value) return {};
 
   // Find the institution field in the form
-  const institutionField = form.form_fields?.find((field: Record<string, any>) =>
+  const institutionField = form.form_fields?.find((field: FormField) =>
     field.use_model_options && field.options_model === 'App\\Models\\Institution',
   );
 
@@ -60,20 +98,20 @@ const prefilledValues = computed(() => {
 const prefilledInstitutionName = computed(() => {
   if (!institutionId.value) return null;
 
-  const institutionField = form.form_fields?.find((field: Record<string, any>) =>
+  const institutionField = form.form_fields?.find((field: FormField) =>
     field.use_model_options && field.options_model === 'App\\Models\\Institution',
   );
 
   if (!institutionField?.options) return null;
 
-  const institution = institutionField.options.find((opt: { value: string }) =>
+  const institution = institutionField.options.find((opt: { value: string | number }) =>
     String(opt.value) === String(institutionId.value),
   );
 
   return institution?.label ?? null;
 });
 
-const handleSubmit = (data: Record<string, any>) => {
+const handleSubmit = (data: Record<string, unknown>) => {
   router.post(route('registrations.store', { form: form.id }), { data });
 };
 </script>

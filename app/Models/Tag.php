@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
@@ -61,6 +62,8 @@ class Tag extends Model
             }
         });
 
+        static::saved(fn () => Cache::forget('all-tags-for-inertia'));
+
         // posts_tags.tag_id restricts deletes, so detaching is what makes permanent
         // deletion possible — but on a soft delete it would strip the tag from every
         // article with no way to put it back, leaving restore to return an empty tag.
@@ -73,6 +76,9 @@ class Tag extends Model
             // Future: detach from pages when implemented
             // $tag->pages()->detach();
         });
+
+        static::deleted(fn () => Cache::forget('all-tags-for-inertia'));
+        static::restored(fn () => Cache::forget('all-tags-for-inertia'));
     }
 
     public function news(): BelongsToMany

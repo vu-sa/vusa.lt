@@ -49,6 +49,7 @@ describe('usePublicEditLinkToast', () => {
     expect(options.duration).toBe(Infinity);
     expect(options.closeButton).toBe(true);
     expect(options.action.label).toBe('edit-link.edit');
+    expect(options.class).toBe('public-toast');
   });
 
   it('opens the edit page in a new tab when the action is clicked', () => {

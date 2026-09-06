@@ -2,7 +2,7 @@
   <ListboxRoot
     data-slot="command"
     v-bind="forwarded"
-    :class="cn('bg-white text-zinc-950 flex h-full w-full flex-col overflow-hidden rounded-md dark:bg-zinc-950 dark:text-zinc-50', props.class)"
+    :class="cn('bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-md', props.class)"
   >
     <slot />
   </ListboxRoot>

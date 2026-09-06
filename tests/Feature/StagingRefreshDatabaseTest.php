@@ -1,13 +1,18 @@
 <?php
 
+use App\Models\Navigation;
+use App\Models\QuickLink;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $connection = (string) config('database.default');
@@ -23,7 +28,7 @@ beforeEach(function (): void {
  * This command drops every table in the database it points at. The guard is the only thing that
  * decides which database that is, so it gets tested harder than the happy path.
  */
-describe('the environment guard', function () {
+describe('the environment guard', function (): void {
     test('it refuses to run outside staging', function (string $environment): void {
         config(['app.env' => $environment]);
 
@@ -96,8 +101,8 @@ describe('the environment guard', function () {
     });
 });
 
-describe('scrubbing personal data', function () {
-    beforeEach(function () {
+describe('scrubbing personal data', function (): void {
+    beforeEach(function (): void {
         config([
             'app.env' => 'staging',
             'app.staging_refresh.email_allowlist' => 'keep@vusa.lt, second@vusa.lt',
@@ -147,7 +152,7 @@ describe('scrubbing personal data', function () {
         DB::table('notifications')->insert([
             'id' => Str::uuid()->toString(),
             'type' => 'App\\Notifications\\Test',
-            'notifiable_type' => 'App\\Models\\User',
+            'notifiable_type' => $user->getMorphClass(),
             'notifiable_id' => $user->id,
             'data' => '{}',
             'created_at' => now(),
@@ -168,6 +173,48 @@ describe('scrubbing personal data', function () {
             ->and(DB::table('push_subscriptions')->count())->toBe(0);
     });
 
+    test('it empties Telescope tables with a foreign-key relationship', function (): void {
+        Schema::drop('telescope_entries_tags');
+        Schema::create('telescope_entries_tags', function (Blueprint $table): void {
+            $table->char('entry_uuid', 36);
+            $table->string('tag');
+            $table->foreign('entry_uuid')->references('uuid')->on('telescope_entries');
+        });
+
+        $entryUuid = Str::uuid()->toString();
+
+        DB::table('telescope_entries')->insert([
+            'uuid' => $entryUuid,
+            'batch_id' => Str::uuid()->toString(),
+            'should_display_on_index' => true,
+            'type' => 'request',
+            'content' => '{}',
+            'created_at' => now(),
+        ]);
+        DB::table('telescope_entries_tags')->insert([
+            'entry_uuid' => $entryUuid,
+            'tag' => 'staging',
+        ]);
+
+        $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
+            ->assertExitCode(0);
+
+        $this->assertDatabaseEmpty('telescope_entries')
+            ->assertDatabaseEmpty('telescope_entries_tags');
+    });
+
+    test('it rewrites production navigation and quick-link URLs for staging', function (): void {
+        config(['app.url' => 'https://www.naujas.vusa.lt']);
+        $navigation = Navigation::factory()->create(['url' => 'https://www.vusa.lt/lt/naujienos']);
+        $quickLink = QuickLink::factory()->for(Tenant::factory())->create(['link' => 'https://www.vusa.lt/en/documents']);
+
+        $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
+            ->assertExitCode(0);
+
+        expect($navigation->refresh()->url)->toBe('https://www.naujas.vusa.lt/lt/naujienos')
+            ->and($quickLink->refresh()->link)->toBe('https://www.naujas.vusa.lt/en/documents');
+    });
+
     test('scrub-only still refuses outside staging', function (): void {
         config(['app.env' => 'production']);
         $user = User::factory()->create(['email' => 'student@stud.vu.lt']);
@@ -178,7 +225,7 @@ describe('scrubbing personal data', function () {
     });
 });
 
-describe('the scheduled task', function () {
+describe('the scheduled task', function (): void {
     test('it is only scheduled on staging', function (): void {
         // Registered from routes/console.php behind the same environment check, so production's
         // scheduler never even lists it.

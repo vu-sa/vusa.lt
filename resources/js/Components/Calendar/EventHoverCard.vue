@@ -7,6 +7,7 @@
         :src="eventImage"
         :alt="eventTitle"
         class="w-full h-full object-cover"
+        :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
       >
       <div
         v-else

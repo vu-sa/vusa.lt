@@ -23,7 +23,7 @@ afterEach(function (): void {
 });
 
 test('every direct SharePoint mutator refuses to run in staging', function (): void {
-    $service = (new ReflectionClass(SharepointGraphService::class))->newInstanceWithoutConstructor();
+    $service = new ReflectionClass(SharepointGraphService::class)->newInstanceWithoutConstructor();
     $file = UploadedFile::fake()->create('document.pdf');
 
     $operations = [
@@ -37,9 +37,7 @@ test('every direct SharePoint mutator refuses to run in staging', function (): v
         fn () => $service->uploadUrlShortcut('folder/link.url', '[InternetShortcut]'),
     ];
 
-    foreach ($operations as $operation) {
-        expect($operation)->toThrow(StagingResourceReadOnlyException::class);
-    }
+    expect($operations)->each->toThrow(StagingResourceReadOnlyException::class);
 });
 
 test('a read only batch import preserves an existing local public link when SharePoint has none', function (): void {
@@ -49,7 +47,7 @@ test('a read only batch import preserves an existing local public link when Shar
     $document->anonymous_url = 'https://example.sharepoint.com/:b:/existing';
     $document->sharepoint_permission_id = 'permission';
 
-    $service = (new ReflectionClass(SharepointGraphService::class))->newInstanceWithoutConstructor();
+    $service = new ReflectionClass(SharepointGraphService::class)->newInstanceWithoutConstructor();
     $method = new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink');
     $method->invoke($service, $document, null);
 
@@ -70,7 +68,7 @@ test('a production batch import clears an obsolete local public link when ShareP
     $document->anonymous_url = 'https://example.sharepoint.com/:b:/obsolete';
     $document->sharepoint_permission_id = 'permission';
 
-    $service = (new ReflectionClass(SharepointGraphService::class))->newInstanceWithoutConstructor();
+    $service = new ReflectionClass(SharepointGraphService::class)->newInstanceWithoutConstructor();
     $method = new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink');
     $method->invoke($service, $document, null);
 

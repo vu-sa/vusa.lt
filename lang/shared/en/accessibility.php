@@ -30,13 +30,32 @@ return [
     'carousel_slide_position' => 'Slide :current of :total',
     'news_and_announcements' => 'News and announcements',
     'featured_news' => 'Featured news',
-    'partner_organizations' => 'Partner organizations',
+    'partner_organizations' => 'Partners, friends and initiatives',
     'visit' => 'Visit',
     'social_media_and_radio' => 'Social media and radio',
+    'start_fm_toggle' => 'Play START FM',
     'site_search' => 'Site search',
     'enter_search_terms' => 'Enter search terms',
     'type_to_search' => 'Type to search documents, pages and news',
     'documents' => 'Documents',
     'pages' => 'Pages',
     'news' => 'News',
+
+    // Reader preferences menu (Components/Public/Base/AccessibilityMenu.vue)
+    'menu_title' => 'Accessibility',
+    'menu_open' => 'Open accessibility settings',
+    'text_size' => 'Text size',
+    'text_size_option' => 'Text size: :size',
+    'text_size_decrease' => 'Decrease text size',
+    'text_size_increase' => 'Increase text size',
+
+    // Per-article reading size (Components/Public/Base/ReadingSizeControl.vue) — scales only the
+    // article body, independently of the site-wide text size above.
+    'reading_size' => 'Reading size',
+    'reading_size_decrease' => 'Decrease reading size',
+    'reading_size_increase' => 'Increase reading size',
+    'high_contrast' => 'High contrast',
+    'underline_links' => 'Underline links',
+    'reset' => 'Reset',
+    'preferences_active' => 'Accessibility settings changed',
 ];

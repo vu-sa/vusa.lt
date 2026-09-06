@@ -2,13 +2,18 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Category;
 use App\Models\Form;
+use App\Models\Institution;
+use App\Models\Tag;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\FormSettings;
 use App\Settings\SiteSettings;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -109,7 +114,19 @@ class HandleInertiaRequests extends Middleware
             // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
             // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'tenants' => $this->getTenantsForInertia(...),
+            // Global, not tenant-scoped, ~7 rows repo-wide — cheap enough to always share
+            // rather than thread a `categories` prop through every controller/form that
+            // needs a category picker (Page/Calendar admin forms, RichContent's
+            // event-list/calendar block editors). See QuickLinkController's identical
+            // "not worth a search endpoint" rationale for categories.
+            'categories' => $this->getCategoriesForInertia(...),
+            'tags' => $this->getTagsForInertia(...),
+            'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
+            // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
+            'map' => [
+                'cartoApiKey' => fn () => config('services.carto.api_key'),
+            ],
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
                 'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,
@@ -142,9 +159,39 @@ class HandleInertiaRequests extends Middleware
             fn () => Tenant::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
         );
 
-        $tenants->load('primary_institution:id,short_name,image_url');
+        $tenants->load('primary_institution:id,short_name,image_url,image_focal_point');
 
         return $tenants;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    private function getCategoriesForInertia(): Collection
+    {
+        return Cache::rememberForever('all-categories-for-inertia',
+            fn () => Category::orderBy('alias')->get(['id', 'name', 'alias'])
+        );
+    }
+
+    /**
+     * @return Collection<int, Tag>
+     */
+    private function getTagsForInertia(): Collection
+    {
+        return Cache::rememberForever('all-tags-for-inertia',
+            fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias'])
+        );
+    }
+
+    /**
+     * @return Collection<int, Type>
+     */
+    private function getInstitutionTypesForInertia(): Collection
+    {
+        return Cache::rememberForever('all-institution-types-for-inertia',
+            fn () => Type::where('model_type', MorphMap::alias(Institution::class))->get(['id', 'title', 'slug'])
+        );
     }
 
     /**

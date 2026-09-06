@@ -1,5 +1,6 @@
 <template>
-  <VueFlow fit-view-on-init :nodes :edges class="basic-flow border mb-4 dark:border-zinc-600 rounded-sm" :nodes-connectable="false">
+  <VueFlow fit-view-on-init :nodes :edges default-marker-color="var(--muted-foreground)"
+    class="basic-flow mb-4 border" :nodes-connectable="false">
     <template #node-multiple-handle="props">
       <MultipleHandleNode :id="props.id" :data="props.data" />
     </template>
@@ -37,9 +38,12 @@
 </template>
 
 <script setup lang="ts">
-import { MarkerType, Position, useVueFlow, VueFlow } from '@vue-flow/core';
+import '@vue-flow/core/dist/style.css';
+import '@vue-flow/core/dist/theme-default.css';
+import '../../../css/vendor/vue-flow.css';
+
+import { VueFlow, type Edge, type Node } from '@vue-flow/core';
 import { Controls, ControlButton } from '@vue-flow/controls';
-// const { onInit, onNodeDragStop, onConnect, onPaneReady, addEdges, setViewport, toObject } = useVueFlow()
 import { ref, computed } from 'vue';
 
 import MultipleHandleNode from './MultipleHandleNode.vue';
@@ -49,11 +53,14 @@ const props = defineProps<{
   animated?: boolean;
   showFullscreen?: boolean;
   showClose?: boolean;
-  nodes: Record<string, any>[];
-  edges: Record<string, any>[];
+  nodes: Node[];
+  edges: Edge[];
 }>();
 
-defineEmits(['showDialog', 'close']);
+defineEmits<{
+  (e: 'showDialog'): void;
+  (e: 'close'): void;
+}>();
 
 const nodes = computed(() => {
   return props.nodes.map((node) => {

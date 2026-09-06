@@ -12,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ContactPresentationService;
+use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,8 +48,13 @@ class ContactController extends PublicController
             ])
             ->toArray();
 
+        $atstovavimasSettings = app(AtstovavimasSettings::class);
+        $studentRepTypeSlugs = $atstovavimasSettings->getStudentRepInstitutionTypeSlugs()->toArray();
+
         return Inertia::render('Public/Contacts/ShowContacts', [
+            'tenantSwitchTarget' => 'same-page',
             'institutionTypes' => $institutionTypes,
+            'studentRepTypeSlugs' => $studentRepTypeSlugs,
         ]);
     }
 
@@ -80,7 +86,7 @@ class ContactController extends PublicController
         if ($hasGroupedDuties) {
             $processedContacts = $this->presentationService->processDutiesWithGrouping($duties);
 
-            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | Kontaktai', hasMixedGrouping: true);
+            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | Kontaktai', hasMixedGrouping: true, activeDutyTypeTab: 'all');
         }
 
         // Default behavior - flatten and deduplicate all duties
@@ -89,7 +95,7 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | Kontaktai');
+        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | Kontaktai', activeDutyTypeTab: 'all');
     }
 
     public function institutionDutyTypeContacts($subdomain, $lang, $contactsString, Type $type)
@@ -138,7 +144,7 @@ class ContactController extends PublicController
             // Filter processed contacts to only show duties related to the selected types
             $processedContacts = $this->presentationService->filterProcessedContactsByTypes($processedContacts, $types);
 
-            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug), hasMixedGrouping: true);
+            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug), hasMixedGrouping: true, activeDutyTypeTab: $type->slug);
         }
 
         // Default behavior - flatten and deduplicate all duties
@@ -155,7 +161,7 @@ class ContactController extends PublicController
         // make eloquent collection from array
         $contacts = new Collection($contacts);
 
-        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | '.ucfirst($type->slug));
+        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | '.ucfirst($type->slug), activeDutyTypeTab: $type->slug);
     }
 
     public function studentRepresentatives()
@@ -163,9 +169,9 @@ class ContactController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
 
-        $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
+        $type = app(AtstovavimasSettings::class)->getStudentRepRootType();
         /** @var Collection<int, Type> $descendants */
-        $descendants = $type->getDescendantsAndSelf();
+        $descendants = $type ? $type->getDescendantsAndSelf() : collect();
 
         $descendants->load(['institutions' => function ($query): void {
             $query
@@ -189,6 +195,7 @@ class ContactController extends PublicController
             description: app()->getLocale() === 'lt' ? $this->tenant->shortname.' studentų atstovų paieškoje vienoje vietoje suraskite visus '.$this->tenant->shortname.'studentų atstovus' : 'In '.$this->tenant->shortname.'contact search find all'.$this->tenant->shortname.'student representatives');
 
         return Inertia::render('Public/Contacts/ShowStudentReps', [
+            'tenantSwitchTarget' => 'same-page',
             'types' => $descendants,
         ]);
     }
@@ -200,11 +207,51 @@ class ContactController extends PublicController
         Institution $institution,
         Collection|array $contacts,
         string $title,
-        bool $hasMixedGrouping = false
+        bool $hasMixedGrouping = false,
+        ?string $activeDutyTypeTab = 'all'
     ) {
+        $institution->loadMissing('tenant');
+
         // Load meetings and group by academic year
         $meetings = $this->getAllMeetingsForInstitution($institution);
         $groupedMeetings = $this->groupMeetingsByAcademicYear($meetings);
+
+        // Compute duty type tabs for padalinys main institution
+        $dutyTypeTabs = [];
+        $isPadalinys = $institution->tenant?->type === TenantType::Padalinys;
+
+        if ($isPadalinys) {
+            $availableTypeSlugs = ['koordinatoriai', app()->getLocale() === 'en' ? 'mentors' : 'kuratoriai'];
+            $typesWithDuties = Type::whereIn('slug', $availableTypeSlugs)
+                ->whereHas('duties', fn ($q) => $q->where('institution_id', $institution->id))
+                ->get();
+
+            if ($typesWithDuties->isNotEmpty()) {
+                $dutyTypeTabs = [
+                    [
+                        'label' => __('Visi'),
+                        'slug' => 'all',
+                        'href' => route('contacts.alias', [
+                            'subdomain' => $this->subdomain,
+                            'lang' => app()->getLocale(),
+                            'institution' => $institution->alias,
+                        ]),
+                    ],
+                ];
+
+                foreach ($typesWithDuties as $t) {
+                    $dutyTypeTabs[] = [
+                        'label' => $t->getTranslation('title', app()->getLocale()) ?: ucfirst($t->slug),
+                        'slug' => $t->slug,
+                        'href' => route('contacts.dutyType', [
+                            'subdomain' => $this->subdomain,
+                            'lang' => app()->getLocale(),
+                            'type' => $t->slug,
+                        ]),
+                    ];
+                }
+            }
+        }
 
         // Use the institution's tenant for proper canonical URL
         $this->applyPageHead(
@@ -220,6 +267,8 @@ class ContactController extends PublicController
             'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
             'hasMeetings' => ! empty($groupedMeetings),
             'studentRepFormInfo' => $this->getStudentRepFormInfo($institution),
+            'dutyTypeTabs' => $dutyTypeTabs,
+            'activeDutyTypeTab' => $activeDutyTypeTab,
         ];
 
         if ($hasMixedGrouping) {
@@ -403,7 +452,7 @@ class ContactController extends PublicController
             $institutions = $type->load(['institutions' => function ($query): void {
                 $query->orderBy('name')->with(['tenant' => function ($query): void {
                     $query->where('type', TenantType::Padalinys);
-                }]);
+                }, 'types']);
             }])->institutions;
 
             // Title suffix now derives from the current tenant instead of a hardcoded "VU SA" — on a
@@ -415,6 +464,7 @@ class ContactController extends PublicController
             );
 
             return Inertia::render('Public/Contacts/ShowContactCategory', [
+                'tenantSwitchTarget' => 'same-page',
                 'institutions' => $institutions->map(fn ($institution) => [
                     ...$institution->toArray(),
                     'description' => '',
@@ -465,6 +515,7 @@ class ContactController extends PublicController
         );
 
         return Inertia::render('Public/Contacts/ShowStudentReps', [
+            'tenantSwitchTarget' => 'same-page',
             'types' => $descendants,
             'categoryType' => $type->only(['id', 'slug', 'title', 'description']),
             'showAllTenants' => $showAllTenants,

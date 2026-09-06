@@ -2,6 +2,8 @@ import { onMounted, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { toast } from 'vue-sonner';
 
+import { publicToastAppearance } from './publicToastAppearance';
+
 export interface PublicEditLink {
   url: string;
   type: string;
@@ -50,6 +52,7 @@ export function usePublicEditLinkToast(linkGetter: () => PublicEditLink | null |
             window.open(link.url, '_blank', 'noopener');
           },
         },
+        ...publicToastAppearance,
       });
     }
   };

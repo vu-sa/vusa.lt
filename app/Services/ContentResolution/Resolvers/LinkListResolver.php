@@ -2,7 +2,7 @@
 
 namespace App\Services\ContentResolution\Resolvers;
 
-use App\Models\Category;
+use App\Collections\NewsCollection;
 use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Page;
@@ -154,31 +154,22 @@ final class LinkListResolver implements ResolvesContentPart
         return $items;
     }
 
-    /** @return Collection<int, News> */
+    /**
+     * Delegates to `NewsCollection::getPublishedForTenant()` — the same "latest
+     * published news" query `NewsBlockResolver` and the homepage prefetch use — instead
+     * of hand-rolling an equivalent one here.
+     *
+     * @return Collection<int, News>
+     */
     private function fetchLatestNews(array $options, ResolutionContext $context, int $limit): Collection
     {
-        $query = News::query()
-            ->where('lang', $context->locale)
-            ->where('draft', false)
-            ->where('publish_time', '<=', now());
+        $tenantScope = $options['tenantScope'] ?? 'current';
+        $tenantId = $tenantScope === 'current' ? $context->tenant->id : null;
 
         $alias = $options['categoryAlias'] ?? null;
-        if (is_string($alias) && $alias !== '') {
-            $categoryId = Category::query()->where('alias', $alias)->value('id');
-            if ($categoryId) {
-                $query->where('category_id', $categoryId);
-            }
-        }
+        $categoryAlias = is_string($alias) && $alias !== '' ? $alias : null;
 
-        $tenantScope = $options['tenantScope'] ?? 'current';
-        if ($tenantScope === 'current') {
-            $query->where('tenant_id', $context->tenant->id);
-        }
-        // 'all' → no tenant filter.
-
-        return $query->orderByDesc('publish_time')->limit($limit)->get([
-            'id', 'title', 'permalink', 'lang', 'other_lang_id', 'tenant_id', 'publish_time', 'image',
-        ]);
+        return NewsCollection::getPublishedForTenant($tenantId, $context->locale, $limit, $categoryAlias);
     }
 
     /** @return Collection<int, News> */

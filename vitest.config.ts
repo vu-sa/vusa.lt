@@ -10,6 +10,12 @@ import IconsResolver from 'unplugin-icons/resolver';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 
+import { generateI18nTranslationFiles } from './vite-plugins/i18n-split';
+
+// Storybook imports the generated catalogues through its i18n mock, but CI checkouts do not
+// contain ignored generated files. Generate them before Vitest discovers any stories.
+generateI18nTranslationFiles(__dirname);
+
 const alias = {
   '@': path.resolve(__dirname, 'resources/js'),
 };
@@ -106,8 +112,11 @@ export default defineConfig({
             '@/mocks/inertia': path.resolve(__dirname, 'resources/js/mocks/inertia.mock.ts'),
             '@/mocks/i18n': path.resolve(__dirname, 'resources/js/mocks/i18n.ts'),
             '@/mocks/route': path.resolve(__dirname, 'resources/js/mocks/route.ts'),
-            // Mock @inertiajs/vue3 to use our mock in Storybook tests
-            '@inertiajs/vue3': path.resolve(__dirname, 'resources/js/mocks/inertia.mock.ts'),
+            // Must match .storybook/main.ts, which aliases this to inertia.storybook.ts. Pointing
+            // the two runners at different mocks meant a story could pass in `storybook dev` and
+            // fail under `test:storybook` (or the reverse) for reasons invisible in the story
+            // file. inertia.storybook.ts uses `fn()` from storybook/test, which works in both.
+            '@inertiajs/vue3': path.resolve(__dirname, 'resources/js/mocks/inertia.storybook.ts'),
           },
         },
         test: {

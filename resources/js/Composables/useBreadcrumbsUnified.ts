@@ -20,9 +20,20 @@ export interface BreadcrumbItem {
  */
 type BreadcrumbContext = 'admin' | 'public';
 
+/**
+ * Where the trail is drawn.
+ *
+ * `layout` (the default) is the bar `PublicLayout` renders above the page content, and is right
+ * for every page whose content starts at the top of the canvas. `band` means the page draws the
+ * trail itself, inside its own title band — the design puts it there on detail pages, and without
+ * this the layout would render a second one above the band.
+ */
+export type BreadcrumbPlacement = 'layout' | 'band';
+
 // Global state for breadcrumbs
 const globalBreadcrumbs = ref<BreadcrumbItem[]>([]);
 const breadcrumbContext = ref<BreadcrumbContext>('admin');
+const globalPlacement = ref<BreadcrumbPlacement>('layout');
 
 /**
  * Injection key for the breadcrumbs context
@@ -91,10 +102,14 @@ export function createBreadcrumbState(context: BreadcrumbContext = 'admin') {
   breadcrumbContext.value = context;
 
   /**
-   * Set breadcrumbs (replaces all current breadcrumbs)
+   * Set breadcrumbs (replaces all current breadcrumbs).
+   *
+   * Placement is part of the same write, and defaults back to `layout`: a page that says nothing
+   * about it must not inherit `band` from whichever detail page the reader came from.
    */
-  function set(items: BreadcrumbItem[]) {
+  function set(items: BreadcrumbItem[], placement: BreadcrumbPlacement = 'layout') {
     globalBreadcrumbs.value = [...items];
+    globalPlacement.value = placement;
   }
 
   /**
@@ -109,6 +124,7 @@ export function createBreadcrumbState(context: BreadcrumbContext = 'admin') {
    */
   function clear() {
     globalBreadcrumbs.value = [];
+    globalPlacement.value = 'layout';
   }
 
   /**
@@ -116,11 +132,13 @@ export function createBreadcrumbState(context: BreadcrumbContext = 'admin') {
    */
   function home() {
     globalBreadcrumbs.value = [getHomeBreadcrumb(context)];
+    globalPlacement.value = 'layout';
   }
 
   const state = {
     breadcrumbs: readonly(globalBreadcrumbs),
     context: readonly(breadcrumbContext),
+    placement: readonly(globalPlacement),
     set,
     add,
     clear,
@@ -153,6 +171,7 @@ export function useBreadcrumbs() {
     return {
       breadcrumbs: readonly(ref([])),
       context: readonly(ref('admin' as BreadcrumbContext)),
+      placement: readonly(ref('layout' as BreadcrumbPlacement)),
       set: () => console.warn('🍞 [Breadcrumbs] set() called but no state provider found'),
       add: () => console.warn('🍞 [Breadcrumbs] add() called but no state provider found'),
       clear: () => console.warn('🍞 [Breadcrumbs] clear() called but no state provider found'),
@@ -178,9 +197,11 @@ export function usePageBreadcrumbs(
     includeHome?: boolean;
     clearOnUnmount?: boolean;
     persistDuringNavigation?: boolean;
+    /** `band` when the page renders `<PublicBreadcrumbs variant="inline" />` inside its own title band. */
+    placement?: BreadcrumbPlacement;
   } = {},
 ) {
-  const { includeHome = true, clearOnUnmount = false, persistDuringNavigation = true } = options;
+  const { includeHome = true, clearOnUnmount = false, persistDuringNavigation = true, placement = 'layout' } = options;
   const breadcrumbState = useBreadcrumbs();
   const { set, clear, getHomeBreadcrumb } = breadcrumbState;
 
@@ -215,7 +236,7 @@ export function usePageBreadcrumbs(
         ? [getHomeBreadcrumb(), ...items]
         : items;
 
-      set(finalItems);
+      set(finalItems, placement);
     }
   }
 

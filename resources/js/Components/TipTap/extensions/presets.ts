@@ -21,7 +21,7 @@ import { TextAlign } from '../TextAlign';
 import { RCTag } from '../RCTag';
 import { Video } from '../Video';
 
-export type EditorPreset = 'minimal' | 'compact' | 'full';
+export type EditorPreset = 'minimal' | 'compact' | 'full' | 'marks';
 
 export interface PresetOptions {
   placeholder?: string;
@@ -41,7 +41,11 @@ function createStarterKit(enableHeading: boolean = false) {
     link: {
       openOnClick: false,
       HTMLAttributes: {
-        class: 'text-vusa-red underline font-medium',
+        // `text-brand`, not the old `text-vusa-red`: it resolves per theme (red on
+        // light, amber on dark) via the token system. Rich-content surfaces let
+        // `.rc-prose a` own the final colour anyway — this is for editors and
+        // stored HTML outside a prose wrapper (comments).
+        class: 'text-brand underline font-medium',
       },
     },
   });
@@ -75,6 +79,42 @@ const ALLOWED_MIME_TYPES = [
 export function createMinimalExtensions(options: PresetOptions = {}): AnyExtension[] {
   const extensions: AnyExtension[] = [
     createStarterKit(false),
+  ];
+
+  if (options.placeholder) {
+    extensions.push(
+      Placeholder.configure({
+        placeholder: options.placeholder,
+      }),
+    );
+  }
+
+  return extensions;
+}
+
+/**
+ * Marks preset - a single inline run of text with bold/italic/underline only. No
+ * headings, lists, blockquote, hr, code, strike, or link — those nodes/marks aren't
+ * just hidden from the toolbar, they're unregistered, so their markdown input rules
+ * ("# ", "- ", "> ", "---") can't fire either. For fields like the hero title/
+ * description, where the value is a single styled line, not a document. Always pair
+ * with `toolbar="bubble"` — the fixed toolbar's link/list controls aren't gated by
+ * preset and would otherwise still render.
+ */
+export function createMarksExtensions(options: PresetOptions = {}): AnyExtension[] {
+  const extensions: AnyExtension[] = [
+    StarterKit.configure({
+      heading: false,
+      codeBlock: false,
+      code: false,
+      strike: false,
+      link: false,
+      blockquote: false,
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
+      horizontalRule: false,
+    }),
   ];
 
   if (options.placeholder) {
@@ -154,9 +194,13 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
       allowBase64: true,
     }),
     Video,
+    // The same classes `createRenderExtensions` and App\Tiptap\TiptapEditor bake,
+    // so the embed looks identical while typing and once published — the old
+    // `h-36 w-auto` made the editor show a small centered player where the
+    // published page renders a full-width one.
     Youtube.configure({
       HTMLAttributes: {
-        class: 'aspect-video h-36 w-auto my-2',
+        class: 'aspect-video h-auto w-full rounded-xl shadow-lg',
       },
     }),
   ];
@@ -179,11 +223,35 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
     );
   }
 
-  // Tables (optional)
+  // Tables (optional). The same HTMLAttributes `createRenderExtensions` and
+  // App\Tiptap\TiptapEditor bake: tiptap-base.css's own cell chrome is scoped
+  // `:not(.rc-prose-editing)`, so on the prose editing surface these classes are
+  // the *only* thing styling the table — and they make it identical to the
+  // published output.
   if (!options.disableTables) {
     extensions.push(
       TableKit.configure({
-        table: { resizable: true },
+        table: {
+          resizable: true,
+          HTMLAttributes: {
+            class: 'border-collapse table-auto w-full tracking-normal',
+          },
+        },
+        tableCell: {
+          HTMLAttributes: {
+            class: 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
+          },
+        },
+        tableHeader: {
+          HTMLAttributes: {
+            class: 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left font-bold tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
+          },
+        },
+        tableRow: {
+          HTMLAttributes: {
+            class: 'm-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20',
+          },
+        },
       }),
     );
   }
@@ -213,6 +281,8 @@ export function getExtensionsForPreset(preset: EditorPreset, options: PresetOpti
   switch (preset) {
     case 'minimal':
       return createMinimalExtensions(options);
+    case 'marks':
+      return createMarksExtensions(options);
     case 'compact':
       return createCompactExtensions(options);
     case 'full':

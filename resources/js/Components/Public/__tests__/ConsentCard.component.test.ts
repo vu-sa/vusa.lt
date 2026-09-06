@@ -1,7 +1,6 @@
 import { mount } from '@vue/test-utils';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import { usePage } from '@inertiajs/vue3';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ConsentCard from '../ConsentCard.vue';
 
@@ -45,6 +44,16 @@ describe('ConsentCard', () => {
     const wrapper = mountCard();
 
     expect(wrapper.text()).toContain('Lankomumo statistiką renkame be slapukų ir be asmens duomenų.');
+  });
+
+  it('uses the public surface card and control treatments', () => {
+    const wrapper = mountCard();
+    const card = wrapper.get('[data-slot="cookie-consent"]');
+
+    expect(card.classes()).toContain('bg-card');
+    expect(card.classes()).toContain('border-t-brand');
+    expect(card.classes()).not.toContain('rounded-xl');
+    expect(findButtonByText(wrapper, 'Supratau')!.classes()).toContain('bg-brand-fill');
   });
 
   it('offers no analytics opt-in — Umami is cookieless, so there is nothing to consent to', () => {

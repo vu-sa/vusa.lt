@@ -104,6 +104,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
     years: [],
     successRateRanges: [],
     dateRange: {},
+    sort: 'relevance',
   };
 
   // Filter key mapper for meeting facets
@@ -131,6 +132,9 @@ export const useMeetingSearch = (): MeetingSearchController => {
     maxRetries: 3,
     searchOnMount: false,
     loadFacetsOnMount: false,
+    // Always holds a non-empty value, so the generic active-filter counter would
+    // otherwise flag it even at its default.
+    excludeFromFilterCount: ['sort'],
   });
 
   // ============================================================================
@@ -248,6 +252,15 @@ export const useMeetingSearch = (): MeetingSearchController => {
     baseSearch.debouncedSearch();
   };
 
+  const setSortBy = (sort: MeetingSearchFilters['sort']) => {
+    if (baseSearch.filters.value.sort === sort) return;
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      sort,
+    };
+    baseSearch.debouncedSearch();
+  };
+
   const setViewMode = (mode: 'list' | 'compact') => {
     meetingPreferences.value.viewMode = mode;
   };
@@ -260,6 +273,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
       years: [],
       successRateRanges: [],
       dateRange: {},
+      sort: 'relevance',
     };
     baseSearch.debouncedSearch();
   };
@@ -336,6 +350,7 @@ export const useMeetingSearch = (): MeetingSearchController => {
     toggleYear,
     toggleSuccessRate,
     setDateRange,
+    setSortBy,
     setViewMode,
     clearFilters,
     clearRecentSearches,

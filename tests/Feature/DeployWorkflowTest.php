@@ -32,7 +32,7 @@ $stepPosition = function (string $workflow, string $stepName) use ($source): int
     return $position;
 };
 
-describe('the maintenance window', function () use ($shared, $stepsMatching, $stepPosition) {
+describe('the maintenance window', function () use ($shared, $stepsMatching, $stepPosition): void {
     // The whole point of the pre-flight phase. Extracting vendor and dumping the database were
     // measured at 10-90s and 8-48s of a 1m33s-4m18s production outage, and neither needs the site
     // down: vendor.new is a scratch dir the running app never reads, and deployment:backup dumps
@@ -62,7 +62,7 @@ describe('the maintenance window', function () use ($shared, $stepsMatching, $st
     });
 });
 
-describe('the state the server is in before artisan boots', function () use ($shared, $stepsMatching) {
+describe('the state the server is in before artisan boots', function () use ($shared, $stepsMatching): void {
     // PackageManifest only rebuilds bootstrap/cache/packages.php when the file is missing, so a
     // dropped Composer package stays listed there until something deletes it — and the first artisan
     // boot dies on the missing provider before optimize:clear can run.
@@ -101,7 +101,7 @@ describe('the state the server is in before artisan boots', function () use ($sh
     });
 });
 
-describe('the deploy workflows', function () use ($shared, $source) {
+describe('the deploy workflows', function () use ($shared, $source): void {
     it('share one implementation so they cannot drift', function () use ($shared, $source): void {
         // These two files were ~90 duplicated lines that had already diverged: staging swallowed
         // deploy failures with `|| true`, production never ran git clean, one cleaned up its SSH keys
@@ -130,7 +130,9 @@ describe('the deploy workflows', function () use ($shared, $source) {
         $staging = $source('.github/workflows/deploy-staging.yml');
 
         expect($staging)->toContain('--commit "$sha"')
-            ->and($staging)->toContain('--event push')
+            // Not `--event push`: CI only pushes on main and dev, so a feature branch's green run is
+            // a pull_request one, reported against this same head SHA.
+            ->and($staging)->not->toContain('--event push')
             ->and($staging)->toContain('--status success')
             ->and($staging)->toContain('git merge-base --is-ancestor origin/dev "$sha"')
             ->and($staging)->toContain('remote-sha: ${{ needs.resolve.outputs.sha }}')
@@ -143,15 +145,20 @@ describe('the deploy workflows', function () use ($shared, $source) {
             ->not->toContain('inputs.remote-branch');
     });
 
-    it('runs CI for pushed feature branches', function () use ($source): void {
+    // A push to a branch with an open PR fires `push` and `pull_request` both, and the two runs
+    // never cancel each other (their concurrency keys are `refs/heads/<branch>` and
+    // `refs/pull/<n>/merge`). Only main and dev need a push run of their own — they are what the two
+    // deploy workflows hang their `workflow_run` triggers off.
+    it('runs CI once per push by limiting the push trigger to the deploy branches', function () use ($source): void {
         $ci = $source('.github/workflows/ci.yml');
 
-        expect($ci)->toContain("push:\n    branches-ignore:")
-            ->not->toContain("push:\n    branches:\n      - main");
+        expect($ci)->toContain("push:\n    branches:\n      - main\n      - dev")
+            ->and($ci)->toContain('pull_request:')
+            ->and($ci)->not->toContain("push:\n    branches-ignore:");
     });
 });
 
-describe('the deployment pipeline order', function () {
+describe('the deployment pipeline order', function (): void {
     $keys = array_keys(DeploymentRun::STEPS);
     $indexOf = fn (string $step): int|false => array_search($step, $keys, strict: true);
 
@@ -160,6 +167,25 @@ describe('the deployment pipeline order', function () {
     // non-critical, so running it with the site up degrades search instead of extending the outage.
     it('reindexes search only after the site is back online', function () use ($indexOf): void {
         expect($indexOf('search'))->toBeGreaterThan($indexOf('online'));
+    });
+
+    it('rewrites staging navigation URLs after the site is back online', function () use ($indexOf): void {
+        expect(DeploymentRun::STEPS['rewrite-urls']['command'])->toBe('urls:rewrite-vusa')
+            ->and(DeploymentRun::STEPS['rewrite-urls']['stagingOnly'])->toBeTrue()
+            ->and($indexOf('rewrite-urls'))->toBeGreaterThan($indexOf('online'));
+    });
+
+    it('skips the URL rewrite in a production deployment', function (): void {
+        $environment = config('app.env');
+        config(['app.env' => 'production']);
+
+        try {
+            $this->artisan('deployment:run', ['--dry-run' => true])
+                ->expectsOutputToContain('Rewrite navigation URLs for this environment (staging only)')
+                ->assertSuccessful();
+        } finally {
+            config(['app.env' => $environment]);
+        }
     });
 
     // optimize:clear runs cache:clear, and both restart signals are cache keys — restarting before
@@ -220,7 +246,7 @@ function frontendSource(): string
     ));
 }
 
-describe('environment template hygiene', function () {
+describe('environment template hygiene', function (): void {
     // Two VITE_ keys (ARCHYVAS/ATSTOVAI passwords) outlived their last consumer and stayed in both
     // .env.example and the deploy workflow, where they were injected into every build as empty
     // strings. Nothing catches that kind of rot by itself, so this does.
@@ -237,7 +263,7 @@ describe('environment template hygiene', function () {
         ));
 
         // Asserted as a list so a failure names the dead keys instead of just saying "not found".
-        expect($unread)->toBe([]);
+        expect($unread)->toBeEmpty();
     });
 
     it('injects only VITE_ variables the frontend reads', function (): void {
@@ -252,6 +278,6 @@ describe('environment template hygiene', function () {
             fn (string $key): bool => ! str_contains($frontend, "import.meta.env.{$key}")
         ));
 
-        expect($unread)->toBe([]);
+        expect($unread)->toBeEmpty();
     });
 });

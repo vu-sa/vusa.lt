@@ -21,16 +21,37 @@ describe('SectionHeader', () => {
     expect(wrapper.find('h2').exists()).toBe(true);
   });
 
-  it('keeps the roomy gap when the separator is shown (default)', () => {
+  it('keeps the roomy gap and the hairline rule when the separator is shown (default)', () => {
     const wrapper = mount(SectionHeader, { props: { title: 'Sveiki' } });
-    expect(rootClass(wrapper)).toContain('mb-12');
-    expect(wrapper.find('.w-16.h-1').exists()).toBe(true);
+    expect(rootClass(wrapper)).toContain('mb-10');
+    expect(wrapper.find('.border-b.border-border').exists()).toBe(true);
   });
 
-  it('tightens the gap when the separator is hidden', () => {
+  it('tightens the gap and drops the rule when the separator is hidden', () => {
     const wrapper = mount(SectionHeader, { props: { title: 'Sveiki', showSeparator: false } });
     expect(rootClass(wrapper)).toContain('mb-6');
-    expect(rootClass(wrapper)).not.toContain('mb-12');
-    expect(wrapper.find('.w-16.h-1').exists()).toBe(false);
+    expect(rootClass(wrapper)).not.toContain('mb-10');
+    expect(wrapper.find('.border-b.border-border').exists()).toBe(false);
+  });
+
+  it('renders the brand eyebrow only when one is given', () => {
+    expect(mount(SectionHeader, { props: { title: 'Sveiki' } }).find('.u-eyebrow').exists()).toBe(false);
+
+    const withEyebrow = mount(SectionHeader, { props: { title: 'Sveiki', eyebrow: 'VU SA' } });
+    expect(withEyebrow.find('.u-eyebrow').text()).toBe('VU SA');
+  });
+
+  it('uses the theme-following foreground tokens by default', () => {
+    const wrapper = mount(SectionHeader, { props: { title: 'Sveiki', subtitle: 'Poskyris' } });
+    expect(wrapper.find('h2').classes()).toContain('text-foreground');
+    expect(wrapper.find('p').classes()).toContain('text-muted-foreground');
+  });
+
+  it('inherits the section\'s fixed foreground instead when inverted', () => {
+    const wrapper = mount(SectionHeader, { props: { title: 'Sveiki', subtitle: 'Poskyris', inverted: true } });
+    expect(wrapper.find('h2').classes()).toContain('text-current');
+    expect(wrapper.find('h2').classes()).not.toContain('text-foreground');
+    expect(wrapper.find('p').classes()).toContain('text-current/75');
+    expect(wrapper.find('p').classes()).not.toContain('text-muted-foreground');
   });
 });

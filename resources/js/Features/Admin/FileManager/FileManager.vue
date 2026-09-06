@@ -166,7 +166,7 @@ import FileGrid from './Components/FileGrid.vue';
 import FilePropertiesDrawer from './Components/FilePropertiesDrawer.vue';
 
 import { useToasts } from '@/Composables/useToasts';
-import { uploadFiles } from '@/Composables/useFileUpload';
+import { uploadFiles, type UploadedFileResult } from '@/Composables/useFileUpload';
 
 // Components
 import DeleteConfirmationDialog from '@/Components/Dialogs/DeleteConfirmationDialog.vue';
@@ -211,7 +211,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   back: [];
   changeDirectory: [directory: string];
-  fileSelected: [file: string];
+  fileSelected: [file: string, source: 'browse' | 'upload'];
   update: [path: string];
   search: [query: string, recursive: boolean];
 }>();
@@ -499,21 +499,27 @@ function handleBack() {
   emit('back');
 }
 
+/** Whether a file name passes the extension allowlist the caller restricted selection to. */
+function isSelectable(name: string): boolean {
+  const allowed = props.uploadExtensions?.length
+    ? props.uploadExtensions.map(e => e.toLowerCase())
+    : null;
+  if (!allowed) return true;
+
+  const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
+  return !!ext && allowed.includes(ext);
+}
+
 function handleFileClick(file: any, event?: MouseEvent) {
   if (props.selectionMode) {
-    // If selection is restricted by allowed extensions, enforce it
-    const allowed = props.uploadExtensions?.length
-      ? props.uploadExtensions.map(e => e.toLowerCase())
-      : null;
-    if (allowed) {
-      const name: string = file?.name || file?.path || '';
-      const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
-      if (!ext || !allowed.includes(ext)) {
-        toasts.error($t('files.ui.cannot_select_file_type'));
-        return;
-      }
+    if (!isSelectable(file?.name || file?.path || '')) {
+      toasts.error($t('files.ui.cannot_select_file_type'));
+      return;
     }
-    emit('fileSelected', file.path);
+    // Tracked so the grid highlight (FileItem's selection-mode state) shows what is actually
+    // selected — including a file auto-selected straight after upload.
+    selectedFile.value = file.path;
+    emit('fileSelected', file.path, 'browse');
     return;
   }
 
@@ -533,18 +539,12 @@ function handleFileClick(file: any, event?: MouseEvent) {
 
 function handleFileDoubleClick(file: any) {
   if (props.selectionMode) {
-    const allowed = props.uploadExtensions?.length
-      ? props.uploadExtensions.map(e => e.toLowerCase())
-      : null;
-    if (allowed) {
-      const name: string = file?.name || file?.path || '';
-      const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
-      if (!ext || !allowed.includes(ext)) {
-        toasts.error($t('files.ui.cannot_select_file_type'));
-        return;
-      }
+    if (!isSelectable(file?.name || file?.path || '')) {
+      toasts.error($t('files.ui.cannot_select_file_type'));
+      return;
     }
-    emit('fileSelected', file.path);
+    selectedFile.value = file.path;
+    emit('fileSelected', file.path, 'browse');
   }
 }
 
@@ -645,6 +645,7 @@ async function handleFileUpload(files: File[]) {
       isUploadMode.value = false;
       uploadAreaRef.value?.clearFiles();
       emit('update', props.path);
+      selectUploadedFile(result.uploaded);
     }
   }
   catch (error: unknown) {
@@ -655,6 +656,20 @@ async function handleFileUpload(files: File[]) {
     // release the button, or it spins over an upload that already landed.
     loading.value = false;
   }
+}
+
+/**
+ * In selection mode the file the user just uploaded is the one they came for, so it becomes
+ * the selection immediately instead of making them find it again in the listing.
+ */
+function selectUploadedFile(uploaded: UploadedFileResult[]) {
+  if (!props.selectionMode) return;
+
+  const file = uploaded.find(candidate => isSelectable(candidate.name));
+  if (!file) return;
+
+  selectedFile.value = file.path;
+  emit('fileSelected', file.path, 'upload');
 }
 
 function onFilesSelected(_files: File[]) {

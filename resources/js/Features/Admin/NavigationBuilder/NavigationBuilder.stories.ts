@@ -62,6 +62,9 @@ const apieRoot: AdminNavigationRoot = {
 };
 
 const meta: Meta<typeof NavigationBuilder> = {
+  // Admin component: pin the toolbar's Surface to admin so it renders against the palette
+  // it actually ships with, not the public one the toolbar defaults to.
+  globals: { surface: 'admin' },
   title: 'Features/Admin/NavigationBuilder',
   component: NavigationBuilder,
   // The admin layout provides this app-wide; every card and root header has a Switch

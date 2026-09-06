@@ -74,7 +74,7 @@ describe('Public/ContentPage.vue', () => {
    * The `default` and `wide` layouts set no font-size of their own, so rich content
    * inherited the 16px browser default across a 44rem/58rem measure — roughly 90
    * characters per line. `focused` already set `text-lg`, and NewsArticleLayout
-   * already set `text-base md:text-lg`; these two were the outliers.
+   * already set a responsive reading size; these two were the outliers.
    *
    * Only the class binding is asserted: jsdom resolves no stylesheet, so the actual
    * rendered font-size (and the resulting characters-per-line) can't be measured here.
@@ -82,7 +82,7 @@ describe('Public/ContentPage.vue', () => {
   it.each([
     ['default', '.rc-shell .rc-canvas'],
     ['wide', '.rc-canvas'],
-  ])('gives the %s layout a reading font-size', (layout, selector) => {
+  ])('gives the %s layout a responsive reading font-size', (layout, selector) => {
     vi.mocked(usePage).mockReturnValue(createMockPage());
 
     const wrapper = mount(ContentPage, {
@@ -93,7 +93,7 @@ describe('Public/ContentPage.vue', () => {
     const canvas = wrapper.find(selector);
     expect(canvas.exists()).toBe(true);
     expect(canvas.classes()).toContain('text-base');
-    expect(canvas.classes()).toContain('md:text-lg');
+    expect(canvas.classes()).toContain('md:text-[1.0625rem]');
   });
 
   it('renders no footer when the page has no last-edited/updated date', () => {

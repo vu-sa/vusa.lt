@@ -136,7 +136,7 @@ declare global {
       // columns
       id: number
       title: string
-      image_url: string
+      image_url?: string | null
       link_url: string
       lang: string
       order: number
@@ -190,6 +190,7 @@ declare global {
       facebook_url?: string | null
       video_url?: string | null
       main_image?: string | null
+      main_image_focal_point?: string | null
       is_draft: boolean
       is_all_day: boolean
       is_international: boolean
@@ -653,6 +654,7 @@ declare global {
       email?: string | null
       website?: string | null
       image_url?: string | null
+      image_focal_point?: string | null
       logo_url?: string | null
       facebook_url?: string | null
       instagram_url?: string | null
@@ -931,7 +933,6 @@ declare global {
       publish_time?: string | null
       main_points?: string | null
       highlights?: unknown | null
-      layout: string
       show_breadcrumbs: boolean
       read_more?: string | null
       draft?: boolean | null
@@ -942,6 +943,7 @@ declare global {
       // relations
       user?: User
       tenant?: Tenant
+      category?: Category
       other_language_news?: News
       tags?: Tag[]
       content?: Content
@@ -952,6 +954,7 @@ declare global {
       // exists
       user_exists: boolean
       tenant_exists: boolean
+      category_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
@@ -1107,6 +1110,7 @@ declare global {
       email?: string | null
       website?: string | null
       image_url?: string | null
+      image_focal_point?: string | null
       logo_url?: string | null
       facebook_url?: string | null
       instagram_url?: string | null
@@ -1268,7 +1272,6 @@ declare global {
       publish_time?: string | null
       main_points?: string | null
       highlights?: unknown | null
-      layout: string
       show_breadcrumbs: boolean
       read_more?: string | null
       draft?: boolean | null
@@ -1279,6 +1282,7 @@ declare global {
       // relations
       user?: User
       tenant?: Tenant
+      category?: Category
       other_language_news?: News
       tags?: Tag[]
       content?: Content
@@ -1289,6 +1293,7 @@ declare global {
       // exists
       user_exists: boolean
       tenant_exists: boolean
+      category_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean

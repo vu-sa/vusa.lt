@@ -9,7 +9,9 @@ use App\Services\IcalendarService;
 use Datetime;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,6 +41,7 @@ use Spatie\SchemaOrg\Place;
  * @property string|null $facebook_url
  * @property string|null $video_url
  * @property string|null $main_image
+ * @property string|null $main_image_focal_point
  * @property bool $is_draft
  * @property bool $is_all_day
  * @property bool $is_international
@@ -62,17 +65,19 @@ use Spatie\SchemaOrg\Place;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar forLocale(string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Calendar withoutTrashed()
+ * @method static Builder<static>|Calendar forLocale(string $locale)
+ * @method static Builder<static>|Calendar inCategoryAlias(?string $alias)
+ * @method static Builder<static>|Calendar newModelQuery()
+ * @method static Builder<static>|Calendar newQuery()
+ * @method static Builder<static>|Calendar onlyTrashed()
+ * @method static Builder<static>|Calendar published()
+ * @method static Builder<static>|Calendar query()
+ * @method static Builder<static>|Calendar whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Calendar whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Calendar whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Calendar whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Calendar withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Calendar withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -117,6 +122,31 @@ class Calendar extends Model implements HasMedia
         return $locale === 'lt'
             ? $query
             : $query->where('is_international', 1);
+    }
+
+    /** Excludes drafts. Shared by every public-facing calendar listing (resolvers, controllers). */
+    #[Scope]
+    protected function published($query)
+    {
+        return $query->where('is_draft', false);
+    }
+
+    /**
+     * Restricts to one category, by alias. A no-op when `$alias` is null/empty — callers
+     * don't need to guard the call themselves. The category is a grouping key, not a
+     * publication gate — a trashed category (e.g. an old campaign) must still work as
+     * one. See the identical rationale in PublicPageController::summerCamps().
+     */
+    #[Scope]
+    protected function inCategoryAlias($query, ?string $alias)
+    {
+        if ($alias === null || $alias === '') {
+            return $query;
+        }
+
+        return $query->whereHas('category', function ($q) use ($alias): void {
+            $q->withTrashed()->where('alias', $alias);
+        });
     }
 
     public $translatable = [
@@ -166,6 +196,7 @@ class Calendar extends Model implements HasMedia
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
+            $calendar->syncMeetingDocumentsSearchIndex();
         });
 
         static::deleted(function ($calendar): void {
@@ -173,7 +204,29 @@ class Calendar extends Model implements HasMedia
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
+            $calendar->syncMeetingDocumentsSearchIndex();
         });
+
+        static::restored(fn (self $calendar) => $calendar->syncMeetingDocumentsSearchIndex());
+    }
+
+    private function syncMeetingDocumentsSearchIndex(): void
+    {
+        $meetingIds = array_filter([
+            $this->meeting_id,
+            $this->wasChanged('meeting_id') ? $this->getOriginal('meeting_id') : null,
+        ]);
+
+        if ($meetingIds === []) {
+            return;
+        }
+
+        Document::query()
+            ->whereIn('meeting_id', $meetingIds)
+            ->whereNotNull('anonymous_url')
+            ->get()
+            ->each
+            ->searchable();
     }
 
     public function tenant(): BelongsTo
@@ -222,9 +275,13 @@ class Calendar extends Model implements HasMedia
         $this->addMediaConversion('webp')
             ->format('webp')
             ->quality(80)
-            ->width(1600)
             ->performOnCollections('main_image', 'images') /** @phpstan-ignore method.notFound */
             ->nonQueued(); // Run synchronously for immediate availability
+    }
+
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with(['tenant', 'category', 'media']);
     }
 
     public function toSearchableArray(): array
@@ -234,12 +291,24 @@ class Calendar extends Model implements HasMedia
             'title' => $this->getTranslation('title', app()->getLocale()) ?: $this->getTranslation('title', 'lt') ?: $this->getTranslation('title', 'en'),
             'title_lt' => $this->getTranslation('title', 'lt'),
             'title_en' => $this->getTranslation('title', 'en'),
+            'description' => strip_tags((string) ($this->getTranslation('description', app()->getLocale()) ?: $this->getTranslation('description', 'lt') ?: $this->getTranslation('description', 'en'))),
             'date' => $this->date->timestamp,
             'end_date' => $this->end_date ? $this->end_date->timestamp : null,
+            'year' => (int) $this->date->format('Y'),
             'lang' => $this->lang ?? app()->getLocale(),
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
+            'tenant_shortname' => $this->tenant->shortname,
+            'category_id' => $this->category_id ? (int) $this->category_id : null,
+            'category_name' => $this->category?->name,
+            'location' => $this->getTranslation('location', app()->getLocale()) ?: $this->location,
+            'is_all_day' => (bool) $this->is_all_day,
+            'is_remote' => (bool) $this->is_remote,
+            'is_international' => (bool) $this->is_international,
+            'main_image_url' => $this->main_image_url,
+            'facebook_url' => $this->facebook_url,
+            'cto_url' => $this->getTranslation('cto_url', app()->getLocale()) ?: $this->cto_url,
             'created_at' => $this->created_at->timestamp,
         ];
     }

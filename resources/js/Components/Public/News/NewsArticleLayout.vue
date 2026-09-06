@@ -1,402 +1,237 @@
 <template>
-  <article :class="[
-    'relative flex flex-col',
-    styles[layout]?.container || 'max-w-3xl mx-auto',
-    className
-  ]">
-    <!-- CLASSIC LAYOUT: Two-column grid with image beside title, left-aligned -->
-    <template v-if="layout === 'classic'">
-      <div class="mb-10 grid gap-10 md:grid-cols-5 md:items-start">
-        <!-- Image column (2/5 width on desktop) -->
-        <div class="order-2 md:order-1 md:col-span-2">
-          <div class="overflow-hidden rounded-xl">
-            <img
-              :src="article.image as string"
-              :alt="article.title"
-              class="aspect-[4/3] w-full object-cover rounded-xl"
-              :style="{ viewTransitionName: `news-image-${article.id}` }"
-            >
-          </div>
-          <div v-if="article.image_author" class="mt-2 text-right text-xs text-muted-foreground">
-            {{ article.image_author }}
-          </div>
-        </div>
+  <article :class="['relative', className]" data-slot="news-article">
+    <!-- ── Title band ───────────────────────────────────────────────────────────────────────
+         The masthead the article emerges from: warm tint on light, the near-black `--ink` slab on
+         dark (see `.band-masthead`). `rc-viewport` escapes the rc-canvas, `.wrapper` and
+         PublicLayout's `.container` so it reaches the viewport edges.
 
-        <!-- Title column (3/5 width on desktop) - left aligned -->
-        <div class="order-1 flex flex-col md:order-2 md:col-span-3">
-          <!-- Meta -->
-          <div class="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <div class="flex items-center">
-              <IFluentOrganization16Regular class="mr-1.5 h-4 w-4" />
-              <span>{{ article.tenant }}</span>
-            </div>
-            <span class="text-border">•</span>
-            <div v-if="article.publish_time" class="flex items-center">
-              <IFluentCalendarLtr16Regular class="mr-1.5 h-4 w-4" />
-              <time :datetime="formatISODate(article.publish_time)">
-                {{ formatStaticTime(new Date(article.publish_time),
-                                    { year: "numeric", month: "long", day: "numeric" },
-                                    locale === 'lt' ? LocaleEnum.LT : LocaleEnum.EN
-                ) }}
-              </time>
-            </div>
-          </div>
+         The `-mt-*` pull-up mirrors PublicLayout's content wrapper (`pt-4 md:pt-6 lg:pt-8`)
+         exactly — without it that padding shows as a strip of page background between the fixed
+         header and the band, which should sit flush against it. Same idiom as HeroElement's. -->
+    <header class="band-masthead rc-viewport -mt-4 border-b border-border md:-mt-6 lg:-mt-8">
+      <div class="mx-auto max-w-3xl px-5 py-12 sm:px-6 lg:py-16">
+        <PublicBreadcrumbs v-if="showBreadcrumbs" variant="inline" class="mb-8" />
 
-          <!-- Tags -->
-          <div v-if="article.tags && article.tags.length > 0" class="mb-3 flex flex-wrap gap-1.5">
-            <button
-              v-for="tag in article.tags"
-              :key="tag.id"
-              class="inline-flex cursor-pointer items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-              @click="tag.alias && navigateToTaggedNews(tag.alias)"
-            >
-              {{ getTagName(tag) }}
-            </button>
-          </div>
-
-          <!-- Title -->
-          <h1 class="font-heading text-2xl font-bold leading-tight text-foreground md:text-3xl lg:text-4xl">
+        <div class="border-l-2 border-brand pl-5 sm:pl-7">
+          <TagChip v-if="categoryName" :label="categoryName" />
+          <h1 :class="['u-display text-3xl sm:text-5xl', categoryName && 'mt-5']">
             {{ article.title }}
           </h1>
         </div>
-      </div>
 
-      <!-- Other language notice - below image, subtle with flag -->
-      <Link
-        v-if="otherLangURL"
-        :href="otherLangURL"
-        class="group -mt-4 mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <img
-          :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'gb' : 'lt'}.svg`"
-          width="16"
-          class="rounded-full"
-          :alt="locale === 'lt' ? 'English' : 'Lietuviškai'"
-        >
-        <span>{{ locale === 'lt' ? 'Read in English' : 'Skaityti lietuviškai' }}</span>
-        <ArrowRightIcon class="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-      </Link>
+        <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 pl-5 text-xs font-medium text-muted-foreground sm:pl-7">
+          <span v-if="article.tenant" class="flex items-center gap-1.5">
+            <IFluentOrganization16Regular class="size-3.5 text-brand" aria-hidden="true" />
+            {{ article.tenant }}
+          </span>
+          <span v-if="article.publish_time" class="flex items-center gap-1.5">
+            <IFluentCalendarLtr16Regular class="size-3.5 text-brand" aria-hidden="true" />
+            <time :datetime="isoPublishTime">{{ publishedOn }}</time>
+          </span>
+          <span v-if="article.reading_time" class="flex items-center gap-1.5">
+            <IFluentClock24Regular class="size-3.5 text-brand" aria-hidden="true" />
+            {{ $t('news.reading_time', { minutes: String(article.reading_time) }) }}
+          </span>
 
-      <!-- Highlights callout (integrated in flow) -->
-      <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights" class="mb-6" />
-
-      <!-- Article content: nested canvas, not a `.wrapper` child, so its own gutter/wide
-           steps are zeroed out — width here is bounded by this <article>'s own max-width,
-           `.rc-canvas`'s `min(measure, 100%)` just fills it exactly as `max-w-none` did. -->
-      <div class="rc-canvas text-base leading-7 text-zinc-800 md:text-lg md:leading-8 dark:text-zinc-300"
-        style="--rc-measure: 56rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
-        <slot />
-      </div>
-    </template>
-
-    <!-- IMMERSIVE LAYOUT: Wider hero with rounded corners and gradient below title -->
-    <template v-else-if="layout === 'immersive'">
-      <div class="relative mb-10 overflow-hidden rounded-2xl">
-        <div class="relative h-[35vh] md:h-[40vh] lg:h-[45vh]">
-          <img
-            :src="article.image as string"
-            :alt="article.title"
-            class="h-full w-full object-cover rounded-xl"
-            :style="{ viewTransitionName: `news-image-${article.id}` }"
+          <!-- The design has no per-article language switch; this is built in its idiom rather
+               than bolted on — the same hairline box the header's utility controls use, sitting
+               with the other article metadata because that is what it is. -->
+          <Link
+            v-if="otherLangURL"
+            :href="otherLangURL"
+            class="inline-flex items-center gap-2 border border-border px-2.5 py-1 transition-colors hover:border-brand hover:text-brand"
           >
-          <!-- Gradient overlay - stronger at bottom below title -->
-          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-
-          <!-- Top bar: image author and language switch -->
-          <div class="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-4 md:px-6">
-            <!-- Other language notice - compact badge in top left -->
-            <Link
-              v-if="otherLangURL"
-              :href="otherLangURL"
-              class="group flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-zinc-800 shadow-md transition-all hover:scale-105 hover:shadow-lg"
-            >
-              <img
-                :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'gb' : 'lt'}.svg`"
-                width="16"
-                class="rounded-full"
-                :alt="locale === 'lt' ? 'English' : 'Lietuviškai'"
-              >
-              <span>{{ locale === 'lt' ? 'EN' : 'LT' }}</span>
-            </Link>
-            <div v-else />
-
-            <!-- Image author on right -->
-            <div v-if="article.image_author" class="rounded-full bg-black/40 px-3 py-1 text-xs text-white backdrop-blur-sm">
-              {{ article.image_author }}
-            </div>
-          </div>
-
-          <!-- Content overlay -->
-          <div class="absolute inset-x-0 bottom-0 px-5 pb-6 md:px-8 md:pb-8">
-            <!-- Meta -->
-            <div class="mb-2 flex flex-wrap items-center gap-2 text-sm text-white/80">
-              <div class="flex items-center">
-                <IFluentOrganization16Regular class="mr-1.5 h-4 w-4" />
-                <span>{{ article.tenant }}</span>
-              </div>
-              <span class="text-white/50">•</span>
-              <div v-if="article.publish_time" class="flex items-center">
-                <IFluentCalendarLtr16Regular class="mr-1.5 h-4 w-4" />
-                <time :datetime="formatISODate(article.publish_time)">
-                  {{ formatStaticTime(new Date(article.publish_time),
-                                      { year: "numeric", month: "long", day: "numeric" },
-                                      locale === 'lt' ? LocaleEnum.LT : LocaleEnum.EN
-                  ) }}
-                </time>
-              </div>
-            </div>
-
-            <!-- Tags -->
-            <div v-if="article.tags && article.tags.length > 0" class="mb-2 flex flex-wrap gap-2">
-              <button
-                v-for="tag in article.tags"
-                :key="tag.id"
-                class="inline-flex cursor-pointer items-center rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                @click="tag.alias && navigateToTaggedNews(tag.alias)"
-              >
-                {{ getTagName(tag) }}
-              </button>
-            </div>
-
-            <!-- Title -->
-            <h1 class="font-heading text-xl font-bold leading-tight text-white drop-shadow-lg md:text-3xl lg:text-4xl">
-              {{ article.title }}
-            </h1>
-          </div>
+            <LocaleFlag :locale="otherLocale" />
+            <span>{{ $t('news.read_in_other_language') }}</span>
+          </Link>
         </div>
-      </div>
 
-      <!-- Highlights callout (integrated in flow) -->
-      <div class="mx-auto max-w-3xl px-4">
-        <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights" class="mb-6" />
-      </div>
-
-      <!-- Article content: the outer <article> is unbounded (max-w-full) so the hero above
-           can bleed, but the canvas keeps the reading measure narrow and centered — and,
-           unlike the old fixed `mx-auto max-w-3xl`, individual blocks can now opt into
-           `rc-full`/`rc-wide` to bleed to the article's own edges (up to the page wrapper). -->
-      <div class="rc-canvas px-4 text-base leading-7 text-zinc-800 md:text-lg md:leading-8 dark:text-zinc-300"
-        style="--rc-measure: 48rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
-        <slot />
-      </div>
-    </template>
-
-    <!-- MODERN LAYOUT: Default centered design -->
-    <template v-else-if="layout === 'modern'">
-      <!-- Cover image -->
-      <div class="relative mb-8 overflow-hidden rounded-xl">
-        <img
-          :src="article.image as string"
-          :alt="article.title"
-          class="max-h-[500px] w-full object-cover object-center rounded-xl"
-          :style="{ viewTransitionName: `news-image-${article.id}` }"
-        >
-        <div v-if="article.image_author" class="absolute bottom-3 right-3 rounded-full bg-black/40 px-3 py-1 text-xs text-white backdrop-blur-sm">
-          {{ article.image_author }}
-        </div>
-      </div>
-
-      <!-- Other language notice - below image, subtle with flag -->
-      <Link
-        v-if="otherLangURL"
-        :href="otherLangURL"
-        class="group mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <img
-          :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'gb' : 'lt'}.svg`"
-          width="16"
-          class="rounded-full"
-          :alt="locale === 'lt' ? 'English' : 'Lietuviškai'"
-        >
-        <span>{{ locale === 'lt' ? 'Read in English' : 'Skaityti lietuviškai' }}</span>
-        <ArrowRightIcon class="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-      </Link>
-
-      <!-- All meta in one row: org, date, tags -->
-      <div class="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-        <div class="flex items-center text-muted-foreground">
-          <IFluentOrganization16Regular class="mr-1.5 h-4 w-4" />
-          <span>{{ article.tenant }}</span>
-        </div>
-        <span class="text-border">•</span>
-        <div v-if="article.publish_time" class="flex items-center text-muted-foreground">
-          <IFluentCalendarLtr16Regular class="mr-1.5 h-4 w-4" />
-          <time :datetime="formatISODate(article.publish_time)">
-            {{ formatStaticTime(new Date(article.publish_time),
-                                { year: "numeric", month: "long", day: "numeric" },
-                                locale === 'lt' ? LocaleEnum.LT : LocaleEnum.EN
-            ) }}
-          </time>
-        </div>
-        <template v-if="article.tags && article.tags.length > 0">
-          <span class="text-border">•</span>
-          <button
-            v-for="tag in article.tags"
+        <!-- Tags are ours too, and they are links: the old markup used <button> + router.visit,
+             which cannot be middle-clicked, opened in a tab, or followed by a crawler. -->
+        <div v-if="tags.length > 0" class="mt-5 flex flex-wrap gap-2 pl-5 sm:pl-7">
+          <TagChip
+            v-for="tag in tags"
             :key="tag.id"
-            class="inline-flex cursor-pointer items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-            @click="tag.alias && navigateToTaggedNews(tag.alias)"
-          >
-            {{ getTagName(tag) }}
-          </button>
-        </template>
-      </div>
-
-      <!-- Title -->
-      <h1 class="font-heading mb-6 text-3xl font-bold leading-tight text-foreground md:text-4xl">
-        {{ article.title }}
-      </h1>
-
-      <!-- Highlights callout (integrated in flow) -->
-      <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights" class="mb-6" />
-
-      <!-- Article content -->
-      <div class="rc-canvas text-base leading-7 text-zinc-800 md:text-lg md:leading-8 dark:text-zinc-300"
-        style="--rc-measure: 48rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
-        <slot />
-      </div>
-    </template>
-
-    <!-- HEADLINE LAYOUT: Title above image, left-aligned -->
-    <template v-else>
-      <!-- All meta in one row: org, date, tags -->
-      <div class="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-        <div class="flex items-center text-muted-foreground">
-          <IFluentOrganization16Regular class="mr-1.5 h-4 w-4" />
-          <span>{{ article.tenant }}</span>
+            :label="tag.name"
+            :href="tag.href"
+            variant="muted"
+          />
         </div>
-        <span class="text-border">•</span>
-        <div v-if="article.publish_time" class="flex items-center text-muted-foreground">
-          <IFluentCalendarLtr16Regular class="mr-1.5 h-4 w-4" />
-          <time :datetime="formatISODate(article.publish_time)">
-            {{ formatStaticTime(new Date(article.publish_time),
-                                { year: "numeric", month: "long", day: "numeric" },
-                                locale === 'lt' ? LocaleEnum.LT : LocaleEnum.EN
-            ) }}
-          </time>
-        </div>
-        <template v-if="article.tags && article.tags.length > 0">
-          <span class="text-border">•</span>
-          <button
-            v-for="tag in article.tags"
-            :key="tag.id"
-            class="inline-flex cursor-pointer items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-            @click="tag.alias && navigateToTaggedNews(tag.alias)"
-          >
-            {{ getTagName(tag) }}
-          </button>
-        </template>
       </div>
+    </header>
 
-      <!-- Title - smaller, left-aligned -->
-      <h1 class="font-heading mb-5 text-2xl font-bold leading-snug text-foreground md:text-3xl">
-        {{ article.title }}
-      </h1>
+    <!-- ── Hero image ───────────────────────────────────────────────────────────────────────
+         Deliberately wider than the reading measure and pulled up so it straddles the band's
+         bottom edge — the one element that ties the masthead to the article below it. Full
+         colour: the grayscale treatment is for photography sitting *behind* type. -->
+    <div v-if="article.image" class="mx-auto max-w-4xl px-5 sm:px-6">
+      <MediaFrame
+        :src="article.image as string"
+        :alt="article.title"
+        ratio="16/9"
+        :grayscale="false"
+        eager
+        class="sm:-mt-8 sm:aspect-[2/1]"
+        :style="{ viewTransitionName: `news-image-${article.id}` }"
+      />
+      <p v-if="article.image_author" class="mt-2 text-right text-xs text-muted-foreground">
+        {{ article.image_author }}
+      </p>
+    </div>
 
-      <!-- Cover image -->
-      <div class="relative mb-6 overflow-hidden rounded-xl">
-        <img
-          :src="article.image as string"
-          :alt="article.title"
-          class="aspect-video w-full object-cover object-center rounded-xl"
-          :style="{ viewTransitionName: `news-image-${article.id}` }"
+    <!-- ── Body ─────────────────────────────────────────────────────────────────────────── -->
+    <div class="mx-auto max-w-3xl px-5 py-12 sm:px-6 lg:py-16">
+      <ReadingSizeControl>
+        <div v-if="article.short" class="rc-lead" v-html="article.short" />
+
+        <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights as string[]" />
+
+        <!-- A nested canvas, not a `.wrapper` child, so its gutter/wide steps are zeroed out:
+             the width here is already bounded by the column above. -->
+        <div class="mt-8 rc-canvas text-base md:text-[1.0625rem]"
+          style="--rc-measure: 44rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
+          <slot />
+        </div>
+      </ReadingSizeControl>
+
+      <div class="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+        <SmartLink
+          :href="archiveHref"
+          prefetch
+          class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-foreground transition-colors hover:text-brand"
         >
-        <div v-if="article.image_author" class="absolute bottom-3 right-3 rounded-full bg-black/40 px-3 py-1 text-xs text-white backdrop-blur-sm">
-          {{ article.image_author }}
+          <IFluentArrowLeft16Regular class="size-4" />
+          {{ $t('news.all_news') }}
+        </SmartLink>
+        <ShareButton :title="article.title" />
+      </div>
+    </div>
+
+    <!-- ── Related ──────────────────────────────────────────────────────────────────────── -->
+    <section v-if="relatedArticles.length > 0" class="rc-viewport border-t border-border bg-secondary/40">
+      <div class="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8 lg:py-20">
+        <div class="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
+          <div>
+            <EyebrowLabel>{{ $t('news.read_on') }}</EyebrowLabel>
+            <h2 class="u-display mt-2 text-2xl text-foreground sm:text-3xl">
+              {{ $t('news.other_news') }}
+            </h2>
+          </div>
+          <SmartLink
+            :href="archiveHref"
+            prefetch
+            class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-foreground transition-colors hover:text-brand"
+          >
+            {{ $t('Žiūrėti visas') }}
+            <IFluentArrowUpRight16Regular class="size-4" />
+          </SmartLink>
+        </div>
+
+        <div class="grid gap-x-8 gap-y-10 pt-10 sm:grid-cols-2 lg:grid-cols-3">
+          <NewsCard v-for="related in relatedArticles" :key="related.id" :news="related" />
         </div>
       </div>
-
-      <!-- Other language notice - below image, subtle with flag -->
-      <Link
-        v-if="otherLangURL"
-        :href="otherLangURL"
-        class="group mb-5 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <img
-          :src="`https://hatscripts.github.io/circle-flags/flags/${locale === 'lt' ? 'gb' : 'lt'}.svg`"
-          width="16"
-          class="rounded-full"
-          :alt="locale === 'lt' ? 'English' : 'Lietuviškai'"
-        >
-        <span>{{ locale === 'lt' ? 'Read in English' : 'Skaityti lietuviškai' }}</span>
-        <ArrowRightIcon class="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-      </Link>
-
-      <!-- Highlights callout (integrated in flow) -->
-      <HighlightsCallout v-if="article.highlights?.length" :highlights="article.highlights" class="mb-6" />
-
-      <!-- Article content - optimized typography -->
-      <div class="rc-canvas text-base leading-7 text-zinc-800 md:text-lg md:leading-8 dark:text-zinc-300"
-        style="--rc-measure: 48rem; --rc-gutter: 0px; --rc-wide-step: 0px; --rc-content-step: 0px">
-        <slot />
-      </div>
-    </template>
+    </section>
   </article>
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
-import { usePage, router, Link } from '@inertiajs/vue3';
-import { ArrowRightIcon } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Link, usePage } from '@inertiajs/vue3';
 
-import { formatStaticTime } from '@/Utils/IntlTime';
-import { LocaleEnum } from '@/Types/enums';
-import HighlightsCallout from '@/Components/Public/News/HighlightsCallout.vue';
+import HighlightsCallout from './HighlightsCallout.vue';
+import NewsCard from './NewsCard.vue';
 
-// Import icons
-import IFluentOrganization16Regular from '~icons/fluent/organization-16-regular';
+import IFluentArrowLeft16Regular from '~icons/fluent/arrow-left-16-regular';
+import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
 import IFluentCalendarLtr16Regular from '~icons/fluent/calendar-ltr-16-regular';
+import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
+import IFluentOrganization16Regular from '~icons/fluent/organization-16-regular';
+import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { EyebrowLabel, MediaFrame, ReadingSizeControl, ShareButton, TagChip } from '@/Components/Public/Base';
+import type { NewsItem } from '@/Types/contentParts';
+import { formatStaticTime } from '@/Utils/IntlTime';
 
-const props = defineProps<{
-  article: App.Entities.News;
+/**
+ * The news article, in one design.
+ *
+ * It used to be four near-duplicated layout branches (`modern`/`classic`/`immersive`/`headline`)
+ * behind a `news.layout` column that 1189 of 1191 articles left on `modern`. The column is gone
+ * with the branches — the design has one article treatment, and four ways to render the same
+ * thing is four places for it to drift.
+ */
+const props = withDefaults(defineProps<{
+  article: App.Entities.News & { category?: { name?: string | null } | null; reading_time?: number | null };
   otherLangURL?: string;
-  layout?: 'modern' | 'classic' | 'immersive' | 'headline';
   locale?: string;
+  /** Author-controlled (Advanced Settings in NewsForm) — the band still renders, just untrailed. */
+  showBreadcrumbs?: boolean;
+  relatedArticles?: NewsItem[];
   className?: string;
-}>();
+}>(), {
+  otherLangURL: undefined,
+  locale: 'lt',
+  showBreadcrumbs: true,
+  relatedArticles: () => [],
+  className: undefined,
+});
 
-// Default to 'modern' layout
-const layout = computed(() => props.layout || 'modern');
-const locale = computed(() => props.locale || 'lt');
+const page = usePage();
 
-// Formatter for ISO date
-function formatISODate(date: string | number | null | undefined) {
-  return date ? new Date(date).toISOString() : '';
-}
+const subdomain = computed(() => page.props.tenant?.subdomain ?? 'www');
 
-// Get tag name handling both string and translatable object
-function getTagName(tag: App.Entities.Tag): string {
-  if (!tag.name) return 'Unknown';
+// `category` arrives as the whole relation (the controller's `only()` resolves it), not as a
+// name — the chip wants only the label.
+const categoryName = computed(() => props.article.category?.name ?? undefined);
+
+const otherLocale = computed(() => (props.locale === 'lt' ? 'en' : 'lt'));
+
+const isoPublishTime = computed(() => (
+  props.article.publish_time ? new Date(props.article.publish_time).toISOString() : undefined
+));
+
+const publishedOn = computed(() => (props.article.publish_time
+  ? formatStaticTime(
+    new Date(props.article.publish_time),
+    { year: 'numeric', month: 'long', day: 'numeric' },
+    props.locale,
+  )
+  : ''));
+
+const archiveHref = computed(() => route('newsArchive', {
+  subdomain: subdomain.value,
+  lang: props.locale,
+}));
+
+/**
+ * A tag's name is either a plain string or a `{ lt, en }` translation object, depending on
+ * whether the payload came through `toArray()` or `toFullArray()`. Resolved once here so the
+ * template does not carry the branch.
+ */
+function tagName(tag: App.Entities.Tag): string {
   if (typeof tag.name === 'string') return tag.name;
-  if (typeof tag.name === 'object' && !Array.isArray(tag.name)) {
-    const nameObj = tag.name as Record<string, string>;
-    return nameObj[locale.value] || nameObj.lt || nameObj.en || 'Unknown';
+
+  if (tag.name && typeof tag.name === 'object' && !Array.isArray(tag.name)) {
+    const names = tag.name as Record<string, string>;
+
+    return names[props.locale] ?? names.lt ?? names.en ?? '';
   }
-  return 'Unknown';
+
+  return '';
 }
 
-// Navigate to tagged news archive
-function navigateToTaggedNews(tagAlias: string) {
-  router.visit(route('newsArchive', {
-    lang: locale.value,
-    subdomain: usePage().props.tenant?.subdomain || 'www',
-    tag: tagAlias, // This will be added as a query parameter
-  }));
-}
-
-// Container styles for different layouts
-const styles: Record<string, { container: string }> = {
-  modern: {
-    container: 'max-w-3xl mx-auto',
-  },
-  classic: {
-    container: 'max-w-4xl mx-auto',
-  },
-  immersive: {
-    container: 'max-w-full',
-  },
-  headline: {
-    container: 'max-w-3xl', // Left-aligned, not centered
-  },
-};
+const tags = computed(() => (props.article.tags ?? [])
+  .filter(tag => tag.alias)
+  .map(tag => ({
+    id: tag.id,
+    name: tagName(tag),
+    href: route('newsArchive', {
+      lang: props.locale,
+      subdomain: subdomain.value,
+      tag: tag.alias,
+    }),
+  })));
 </script>

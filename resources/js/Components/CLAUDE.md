@@ -25,6 +25,53 @@ Pages/Admin/   Compose only. No raw <Card>, no hand-rolled hero or grid markup.
 `App.Entities.*` type? Then it is *not* generic — it belongs in an entity folder,
 not in `Patterns/`. Pass URLs in as a resolved `href` string instead.
 
+## Two tiers, two surfaces
+
+`Patterns/` is **admin-only** by construction — its barrel says so, and nothing under
+`Pages/Public/**` imports it. The public site has its own primitives tier and its own visual
+language (sharp corners, hairline rules, one brand accent per view):
+
+```
+ui/  →  Public/Base/  →  Public/<area>/  →  Public/Layouts/  →  Pages/Public/
+ui/  →  Patterns/     →  <Entity>/       →  Layouts/         →  Pages/Admin/
+```
+
+The two never import each other. Where both have a component for the same idea, that is
+deliberate — `Patterns/DateBadge` is a muted `rounded-lg` inline badge, `Public/Base/DatePlate`
+is a square plate with a brand rule sized to sit on a photograph.
+
+### `Components/Public/Base/`
+
+| I need… | Use |
+|---|---|
+| A page section (measure + vertical rhythm) | `SectionBand` |
+| A ruled headline block (eyebrow + title + lead) | `DisplayHeading` |
+| The band a listing/detail page opens with | `PageTitleBand` |
+| A brand-coloured kicker on its own | `EyebrowLabel` |
+| A list of things (instead of cards) | `HairlineList` + `HairlineRow` |
+| A day/month plate over an event image | `DatePlate` |
+| A fixed-ratio, grayscale image | `MediaFrame` |
+| A category marker | `TagChip` |
+| One figure in a stats strip | `StatCell` |
+| Reader preferences (text size, contrast, underlines) | `AccessibilityMenu` |
+| The site mark | `HeaderWordmark` |
+| A primary call to action | `ui/button` with `variant="brand"` |
+
+Rules for anything added there:
+
+- **Colour comes from tokens** — `bg-card`, `text-muted-foreground`, `border-border`,
+  `text-brand`. A hardcoded `bg-white dark:bg-zinc-900` cannot follow the surface, which is the
+  whole point of the tier.
+- **`--brand`, not `--accent`.** `--accent` is shadcn's hover/muted surface (`hover:bg-accent` on
+  ghost buttons, `focus:bg-accent` on dropdown items). The VU SA brand — red on light, amber on
+  dark — is `text-brand` / `bg-brand-fill` / `text-brand-foreground`.
+- **No `rounded-*`.** The public surface zeroes the radius scale, but `rounded-full` is a literal
+  and would survive it.
+- **Domain-free**, same as `Patterns/`: no `route()`, no `App.Entities.*`. Pass a resolved `href`.
+- **Every primitive ships a story** covering its variants, with `parameters: { a11y: { test:
+  'error' } }`. Storybook is the only place the rendered result can be checked in both themes —
+  jsdom cannot resolve Tailwind's `dark:` variant.
+
 ## What do I reach for?
 
 | I need… | Use | From |

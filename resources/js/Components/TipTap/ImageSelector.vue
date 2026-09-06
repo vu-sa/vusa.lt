@@ -246,9 +246,15 @@ watch(currentStep, (step) => {
   }
 });
 
-function handleFileSelected(filePath: string) {
+function handleFileSelected(filePath: string, source: 'browse' | 'upload' = 'browse') {
   // Convert from public/files path to uploads URL
   selectedImageUrl.value = filePath.replace('public/', '/uploads/');
+
+  // A just-uploaded file needs no confirming step in the listing — the author picked it by
+  // uploading it, so skip straight to the details they still have to fill in.
+  if (source === 'upload') {
+    currentStep.value = 2;
+  }
 }
 
 function goToDetails() {

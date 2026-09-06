@@ -1,7 +1,7 @@
 <template>
-  <footer v-if="formattedDate" class="mt-16 border-t border-zinc-200 pt-6 pb-2 dark:border-zinc-800">
-    <p class="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
-      <ClockIcon class="size-3.5 shrink-0" />
+  <footer v-if="formattedDate" class="mt-16 border-t border-border pt-6 pb-2">
+    <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <IFluentClock24Regular class="size-3.5 shrink-0" />
       <span>
         {{ $t('content-page.last_updated_footer') }}
         <time :datetime="isoDate ?? undefined">{{ formattedDate }}</time>
@@ -22,8 +22,8 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ClockIcon } from 'lucide-vue-next';
 
+import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { LocaleEnum } from '@/Types/enums';
 

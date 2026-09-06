@@ -48,126 +48,37 @@ resources/js/Components/
 
 ## Configuration
 
-### `.storybook/main.ts`
+### Configuration files
 
-The main configuration file follows official Vue3+Vite guidelines:
+These are small and change often, so this document points at them rather than reproducing them —
+a copy here goes stale silently, which is exactly what happened to the block that used to live
+in this section.
+
+| File | What it owns |
+|---|---|
+| `.storybook/main.ts` | Story glob, addons (a11y, docs, vitest), framework, and the Vite aliases. Aliases **must** match `vite.config.mts`, and the `@inertiajs/vue3` / `laravel-vue-i18n` aliases must match the ones in `vitest.config.ts`'s `storybook` project — see [CLAUDE.md](CLAUDE.md). |
+| `.storybook/preview.ts` | Global Vue properties (`$t`, `route`, `$page`), the **Surface / Theme toolbars**, and the a11y parameter. |
+| `.storybook/vitest.setup.ts` | Fallback-only browser API shims. The storybook project runs in real Chromium, so it deliberately does **not** override `matchMedia`. |
+| `.storybook/storybook.css` | Inline-dialog overrides for `.storybook-modal-container`, painted from design tokens. |
+| `vitest.config.ts` | The `storybook` project: browser mode, Playwright, chromium, headless. It has no `include` — `storybookTest()` derives the file list from `main.ts`. |
+
+### Surface and theme
+
+Every story renders under a **Surface** (`public` / `admin`) and a **Theme** (`light` / `dark`)
+picked from the toolbar. The decorator stamps `data-surface` and `.dark` on the preview iframe's
+`<html>`, exactly as `app.blade.php` and the theme script do in production, so a story sees the
+same token cascade the real page does.
+
+Surface defaults to `public`. Admin components should pin it in their meta:
 
 ```typescript
-import { mergeConfig } from 'vite';
-import type { StorybookConfig } from '@storybook/vue3-vite';
-
-const config: StorybookConfig = {
-  // Story file locations
-  stories: ["../resources/js/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
-
-  // Addons for enhanced functionality
-  addons: [
-    "@storybook/addon-docs",      // Automatic documentation
-    "@storybook/addon-vitest",    // Vitest integration
-    "@storybook/addon-a11y"       // Accessibility testing
-  ],
-
-  // Framework configuration
-  framework: {
-    name: "@storybook/vue3-vite",
-    options: {
-      docgen: "vue-component-meta"
-    }
-  },
-
-  // Documentation configuration
-  docs: {
-    autodocs: 'tag'
-  },
-
-  // TypeScript configuration
-  typescript: {
-    check: false  // Disabled for performance
-  },
-
-  // Vite configuration override
-  async viteFinal(config) {
-    return mergeConfig(config, {
-      resolve: {
-        alias: {
-          "@": "/resources/js",
-          "ziggy-js": "/vendor/tightenco/ziggy/dist"
-        }
-      }
-    });
-  }
+const meta: Meta<typeof AdminThing> = {
+  globals: { surface: 'admin' },
 };
-
-export default config;
 ```
 
-**Critical Points**:
-- ✅ Aliases must exactly match `vite.config.mts`
-- ✅ TypeScript checking disabled for faster development
-- ✅ Minimal addon set for stability
-
-### `.storybook/preview.ts`
-
-Global parameters and decorators:
-
-```typescript
-import type { Preview } from '@storybook/vue3';
-
-const preview: Preview = {
-  parameters: {
-    controls: {
-      matchers: {
-        color: /(background|color)$/i,
-        date: /Date$/i
-      }
-    },
-    backgrounds: {
-      default: 'light',
-      values: [
-        { name: 'light', value: '#ffffff' },
-        { name: 'dark', value: '#1a1a1a' }
-      ]
-    }
-  }
-};
-
-export default preview;
-```
-
-### `.storybook/vitest.setup.ts`
-
-Test environment configuration:
-
-```typescript
-import { beforeAll } from 'vitest';
-
-beforeAll(() => {
-  // Setup global mocks
-  globalThis.route = route;
-  globalThis.trans = trans;
-  globalThis.$t = $t;
-});
-```
-
-### Vitest Integration
-
-The main `vitest.config.ts` includes a Storybook project:
-
-```typescript
-export default defineConfig({
-  test: {
-    name: 'storybook',
-    browser: {
-      enabled: true,
-      provider: 'playwright',
-      instances: [{ browser: 'chromium' }],
-      headless: true
-    },
-    include: ['**/*.stories.ts'],
-    setupFiles: ['./.storybook/vitest.setup.ts']
-  }
-});
-```
+This is the only place dark mode can be verified at all — jsdom cannot resolve Tailwind's `dark:`
+variant, so a component test can assert a class is bound but never that it renders.
 
 ## Mock System
 
@@ -284,7 +195,7 @@ export const Ziggy = {
 Override mock behavior for specific stories:
 
 ```typescript
-import { usePage, router } from "@/mocks/inertia.mock";
+import { usePage, router } from "@/mocks/inertia.storybook";
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 // Override usePage for authenticated user
@@ -599,7 +510,7 @@ resolve: {
 **Solution**:
 - Use `globalThis` instead of `global` in setup files
 - Ensure `.storybook/vitest.setup.ts` is properly configured
-- Import mocks from correct path (`@/mocks/inertia.mock`)
+- Import mocks from the correct path (`@/mocks/inertia.storybook` in stories; `@/mocks/inertia.mock` is the Vitest-only variant)
 
 ### "Browser tests not running"
 

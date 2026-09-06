@@ -50,4 +50,24 @@ describe('TiptapEditor mobile toolbar collapse', () => {
     expect(extra.classes()).toContain('hidden');
     expect(extra.classes()).toContain('sm:contents');
   });
+
+  it('keeps the toolbar in the selection bubble when requested', async () => {
+    const wrapper = mount(TiptapEditor, {
+      props: { modelValue: null, preset: 'compact', toolbar: 'bubble' },
+    });
+    await nextTick();
+
+    expect(wrapper.find('.tiptap-toolbar').exists()).toBe(false);
+  });
+
+  it('can hide bold while retaining italic and underline controls', async () => {
+    const wrapper = mount(TiptapEditor, {
+      props: { modelValue: null, preset: 'full', showBold: false },
+    });
+    await nextTick();
+
+    expect(wrapper.find('[data-testid="tiptap-format-bold"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="tiptap-format-italic"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="tiptap-format-underline"]').exists()).toBe(true);
+  });
 });

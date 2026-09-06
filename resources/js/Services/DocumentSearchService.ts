@@ -138,10 +138,7 @@ export class DocumentSearchService {
       max_facet_values: 50,
       per_page: perPage,
       page: isLoadMore ? currentPage + 1 : 1,
-      // Smart sorting: relevance for searches, chronological for browsing
-      // _text_match:desc = most relevant results first
-      // document_date:desc = newer documents first (as tiebreaker or for browsing)
-      sort_by: (query && query !== '*') ? '_text_match:desc,document_date:desc' : 'document_date:desc,created_at:desc',
+      sort_by: this.buildSortExpression(filters, query),
       prefix: false,
       infix: 'fallback',
       prioritize_exact_match: true,
@@ -161,8 +158,49 @@ export class DocumentSearchService {
     return searchParams;
   }
 
+  /**
+   * `explicit` sort choices win outright; otherwise fall back to the smart default
+   * (relevance for a real query, newest-first for browsing).
+   */
+  private buildSortExpression(filters: DocumentSearchFilters, query: string): string {
+    switch (filters.sort) {
+      case 'date_asc':
+        return 'document_date:asc,created_at:asc';
+      case 'date_desc':
+        return 'document_date:desc,created_at:desc';
+      default:
+        return (query && query !== '*') ? '_text_match:desc,document_date:desc' : 'document_date:desc,created_at:desc';
+    }
+  }
+
+  /**
+   * `is_in_effect` is optional (absent for documents with no effective/expiration dates —
+   * see calculateIsInEffect() in app/Models/Document.php), so "unknown" has to be expressed
+   * as "neither true nor false" rather than a literal value. Empty or all-three selected
+   * both mean "no restriction".
+   */
+  private buildEffectStatusFilter(statuses: DocumentSearchFilters['effectStatuses']): string | null {
+    const hasTrue = statuses.includes('true');
+    const hasFalse = statuses.includes('false');
+    const hasUnknown = statuses.includes('unknown');
+
+    if (statuses.length === 0 || (hasTrue && hasFalse && hasUnknown)) return null;
+    if (hasTrue && hasUnknown) return 'is_in_effect:!=false';
+    if (hasFalse && hasUnknown) return 'is_in_effect:!=true';
+    if (hasTrue && hasFalse) return '(is_in_effect:=true || is_in_effect:=false)';
+    if (hasTrue) return 'is_in_effect:=true';
+    if (hasFalse) return 'is_in_effect:=false';
+    if (hasUnknown) return 'is_in_effect:!=true && is_in_effect:!=false';
+    return null;
+  }
+
   private buildFilterConditions(filters: DocumentSearchFilters): string[] {
     const filterConditions: string[] = ['is_active:=true'];
+
+    const effectStatusFilter = this.buildEffectStatusFilter(filters.effectStatuses ?? []);
+    if (effectStatusFilter) {
+      filterConditions.push(effectStatusFilter);
+    }
 
     // Tenant filters - use exact match for each tenant
     if (filters.tenants.length > 0) {

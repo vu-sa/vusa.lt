@@ -3,10 +3,8 @@
   "compilerOptions": {
     // Base options
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    // Since it's build with Vite, target is not used
-    "target": "ESNext",
-    "allowJs": false,
+    // Vite controls production transpilation; keep type checking on a stable modern baseline.
+    "target": "ES2022",
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true, // specified in vue.js docs
@@ -16,11 +14,10 @@
     "noImplicitAny": true,
     "noImplicitOverride": true,
     // Transpiling
-    "outDir": "dist",
     "module": "esnext",
     "moduleResolution": "bundler",
     "lib": [
-      "ES2020",
+      "ES2022",
       "DOM",
       "DOM.Iterable"
     ],
@@ -42,7 +39,6 @@
       "unplugin-icons/types/vue",
       "vite-plugin-ziggy/routes"
     ],
-    "sourceMap": true,
     // For `<script setup>`
     // See <https://devblogs.microsoft.com/typescript/announcing-typescript-4-5-beta/#preserve-value-imports>
     "verbatimModuleSyntax": true,

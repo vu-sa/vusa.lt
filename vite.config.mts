@@ -4,7 +4,7 @@ import Components from 'unplugin-vue-components/vite';
 import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
 import Markdown from 'unplugin-vue-markdown/vite';
-import i18nSplit from './vite-plugins/i18n-split';
+import i18nSplit from './vite-plugins/i18n-split.ts';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
@@ -279,6 +279,15 @@ export default defineConfig(({ command }) => {
     },
     css: {
       transformer: 'lightningcss',
+    },
+    server: {
+      watch: {
+        ignored: [
+          '**/tests/**',
+          '**/__tests__/**',
+          '**/*.{test,spec}.{js,jsx,ts,tsx}',
+        ],
+      },
     },
   };
 });

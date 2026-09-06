@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings } from '../String';
+import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings, stripHtmlTags, hasHtmlText } from '../String';
 
 describe('translitLithuanian', () => {
   it('transliterates all Lithuanian lowercase letters', () => {
@@ -324,5 +324,29 @@ describe('getDutyNameGenderVariants', () => {
     expect(getDutyNameGenderVariants('   ')).toBeNull();
     expect(getDutyNameGenderVariants(null)).toBeNull();
     expect(getDutyNameGenderVariants(undefined)).toBeNull();
+  });
+});
+
+describe('stripHtmlTags', () => {
+  it('removes markup but keeps the text', () => {
+    expect(stripHtmlTags('<p>Labas <strong>pasauli</strong></p>')).toBe('Labas pasauli');
+  });
+
+  it('leaves no tag behind when tags are nested to survive a single pass', () => {
+    expect(stripHtmlTags('<scr<b>ipt>alert(1)</scr<b>ipt>')).toBe('alert(1)');
+  });
+});
+
+describe('hasHtmlText', () => {
+  it('is false for markup with no visible text', () => {
+    expect(hasHtmlText('<p></p>')).toBe(false);
+    expect(hasHtmlText('<p>   </p>')).toBe(false);
+    expect(hasHtmlText('')).toBe(false);
+    expect(hasHtmlText(null)).toBe(false);
+    expect(hasHtmlText(undefined)).toBe(false);
+  });
+
+  it('is true once there is text to render', () => {
+    expect(hasHtmlText('<p>Naujiena</p>')).toBe(true);
   });
 });

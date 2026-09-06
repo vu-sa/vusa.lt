@@ -34,7 +34,7 @@
             :alt="image.alt"
             :height-class="image.heightClass"
             :decorations="image.decorations"
-            :hover-scale="true"
+            hover-scale
             loading="lazy"
           />
           <!-- Lightbox overlay hint -->

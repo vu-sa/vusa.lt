@@ -10,6 +10,7 @@
           :is-first-element
           :anchor-id="element.id"
           :resolved
+          :band
           :prefetched-news="element.type === 'news' ? news : undefined"
           :prefetched-calendar="element.type === 'calendar' ? calendarEvents : undefined">
           <!-- shadcn-card renders its body through a default slot. This must be provided
@@ -52,6 +53,7 @@ import { blockLayoutClasses } from './blockLayout';
 import { getContentType, getSkeletonForType } from './Types';
 import { getSkeletonComponent } from './skeletonComponents';
 import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
+import type { BandResolution } from './bandLayout';
 
 import type { NewsItem } from '@/Types/contentParts';
 
@@ -61,6 +63,8 @@ const props = defineProps<{
   isFirstElement?: boolean;
   /** This block's already-looked-up server-resolved payload (see RichContentParser's `resolvedFor`). */
   resolved?: unknown;
+  /** This block's already-looked-up band chrome (see RichContentParser's `bandFor`). */
+  band?: BandResolution;
   /** @deprecated Superseded by `resolved` — only HomePage still supplies these directly. */
   news?: NewsItem[];
   calendarEvents?: Array<Record<string, unknown>>;

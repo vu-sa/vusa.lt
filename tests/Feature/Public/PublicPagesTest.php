@@ -1,9 +1,12 @@
 <?php
 
+use App\Enums\TenantType;
 use App\Mail\FeedbackMail;
+use App\Models\Category;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\News;
+use App\Models\Page;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Type;
@@ -34,6 +37,7 @@ test('home page gets default public props', function (): void {
                 ->has('shortname')
                 ->has('type')
                 ->has('subdomain')
+                ->has('homeUrl')
                 ->has('links')
             )
         );
@@ -144,6 +148,15 @@ test('can open student representative page', function (): void {
         );
 });
 
+test('can open contacts search page with student rep type slugs', function (): void {
+    $this->get(route('contacts', ['subdomain' => 'www', 'lang' => 'lt']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ShowContacts')
+            ->has('institutionTypes')
+            ->has('studentRepTypeSlugs')
+        );
+});
+
 test('can open institution page', function (): void {
     $institution = Institution::factory()->create();
 
@@ -169,6 +182,37 @@ test('can open student representative organ category', function (): void {
             ->component('Public/Contacts/ShowStudentReps')
             ->has('types')
             ->has('categoryType')
+        );
+});
+
+test('can open category page', function (): void {
+    $category = Category::factory()->create();
+    $page = Page::factory()->create(['category_id' => $category->id]);
+
+    $this->get(route('category', ['subdomain' => 'www', 'lang' => 'lt', 'category' => $category->alias]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $inertia) => $inertia
+            ->component('Public/CategoryPage')
+            ->has('category')
+            ->where('category.name', $category->name)
+        );
+});
+
+test('padalinys institution page renders duty type tabs', function (): void {
+    $tenant = Tenant::factory()->create(['type' => TenantType::Padalinys]);
+    $institution = Institution::factory()->create(['tenant_id' => $tenant->id]);
+    $type = Type::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $duty = Duty::factory()->create(['institution_id' => $institution->id]);
+    $duty->types()->attach($type);
+
+    $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ShowInstitution')
+            ->has('dutyTypeTabs', 2)
+            ->where('dutyTypeTabs.0.slug', 'all')
+            ->where('dutyTypeTabs.0.label', 'Visi')
+            ->where('dutyTypeTabs.1.slug', 'koordinatoriai')
+            ->where('activeDutyTypeTab', 'all')
         );
 });
 

@@ -7,6 +7,21 @@ lastUpdated: true
 
 Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
+## v2.0 — Public site redesign and visual content editor (2026-09-05) {#v2-0}
+
+> All updates and improvements from this branch (feature/new-style) are consolidated into the v2.0 release.
+
+- ⭐ **New public website design** — modern editorial typography (Atkinson Hyperlegible), warm paper and deep dark palettes, sharp architectural lines, and a unified design token system, keeping the admin surface untouched
+- ⭐ **Full-screen WYSIWYG rich content editor** — copy, buttons, images, cards, statistics, grids, galleries, hero carousels, headers, flow diagrams, accordions, news and podcast blocks are now edited directly on the live public layout with instant preview, replacing the old repeating forms with a clean content card and an "Edit content" action
+- ⭐ **Built-in accessibility menu** — native drawer lets visitors adjust text size, enable high contrast, and underline links without third-party scripts (UserWay)
+- ✨ **Refreshed navigation and footer** — two-tier navigation with full-bleed mega menus (photo cards, link descriptions, category headings), plus a redesigned footer with up to 4 admin-managed navigation columns
+- ✨ **Redesigned events and calendar pages** — full-bleed hero with date plate, facts sidebar, interactive map, instant Typesense search, upcoming/past tabs, and year/category filters
+- ✨ **Contacts, unit, category, registration, and study programme pages migrated** — structured contact summaries, duty filter tabs, link-list categories, and a study programme catalog with faculty filter
+- ✨ **Linked event in the documents list** — a document produced for a meeting with a published calendar announcement now has a button that opens that meeting's event page
+- ✨ **"Mano VU SA" is now a clear navigation button, and site notices are consistent** — the account link matches the site controls, while the cookie reminder and staging warning match the new style
+- 🔧 **Assorted fixes** — compact hero carousel alignment, phone top-bar theme switching, tenant map interaction, hero section jump-on-edit, member registration notifications, and staging environment isolation from production email and SharePoint
+- ✨ **The turtle now marks both loading and empty pages** — the corner spinner is replaced by the organisation's mascot taking a slow walk, and lists with nothing to show yet rest the same turtle in the middle of the empty space
+
 ## v1.38 — English agendas and breaks (2026-09-02) {#v1-38}
 
 - ⭐ **Agenda items can now be written in English** — an item's title, description, student position and vote labels are translatable. The agenda item page gained a flag button that switches every field to English at once; leave it alone and nothing about the page changes

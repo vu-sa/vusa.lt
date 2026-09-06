@@ -32,7 +32,6 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $publish_time
  * @property string|null $main_points
  * @property array<array-key, mixed>|null $highlights
- * @property string $layout
  * @property bool $show_breadcrumbs
  * @property string|null $read_more
  * @property int|null $draft
@@ -41,6 +40,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Category|null $category
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, Tag> $tags

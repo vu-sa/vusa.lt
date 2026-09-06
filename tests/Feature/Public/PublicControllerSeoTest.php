@@ -165,6 +165,14 @@ describe('Inertia head adoption', function (): void {
     });
 });
 
+describe('Public head resources', function (): void {
+    it('does not preload the retired accessibility icon', function (): void {
+        $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
+
+        expect($response->getContent())->not->toContain('body_wh.svg');
+    });
+});
+
 describe('Hreflang tags', function (): void {
     it('renders hreflang alternate links for bilingual content', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
@@ -338,13 +346,11 @@ describe('Tenant subdomain handling', function (): void {
 });
 
 describe('SEO structured data', function (): void {
-    it('shares organization schema', function (): void {
+    it('renders the organization schema into the document head', function (): void {
         $response = $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->has('schemas')
-        );
+        $response->assertSee('"@type":"Organization"', escape: false);
     });
 });
 
@@ -364,6 +370,21 @@ describe('Robots directive override', function (): void {
 });
 
 describe('Title suffixes', function (): void {
+    it('shares the English home URL for the current tenant', function (): void {
+        $this->get(route('home', ['subdomain' => 'www', 'lang' => 'en']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('tenant.homeUrl', 'https://www.vusa.test/en')
+            );
+    });
+
+    it('serves documents on a tenant subdomain with that tenant as the switch target', function (): void {
+        $this->get(route('tenant.documents', ['subdomain' => 'mif', 'lang' => 'lt']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Public/ShowDocuments')
+                ->where('tenantSwitchTarget', 'same-page')
+            );
+    });
+
     it('suffixes a news article title with the content-owning tenant, not the accessing one', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->mifTenant->id,

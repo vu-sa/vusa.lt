@@ -32,6 +32,8 @@ import IconGraduationCap from '~icons/fluent/hat-graduation24-regular';
 import IconChevronDown from '~icons/fluent/chevron-down24-regular';
 import IconChevronRight from '~icons/fluent/chevron-right24-regular';
 import IconArrowRight from '~icons/fluent/arrow-right24-regular';
+import IconPlay from '~icons/fluent/play24-regular';
+import IconRss from '~icons/fluent/rss24-regular';
 
 /**
  * CMS-stored icon names (card-stack / carousel-slide-deck) resolved to bundled Fluent
@@ -71,6 +73,8 @@ export const CARD_ICON_OPTIONS: { value: string; labelKey: string; icon: Compone
   { value: 'chevron-down', labelKey: 'rich-content.chevron_down', icon: IconChevronDown },
   { value: 'chevron-right', labelKey: 'rich-content.chevron_right', icon: IconChevronRight },
   { value: 'arrow-right', labelKey: 'rich-content.arrow_right', icon: IconArrowRight },
+  { value: 'play', labelKey: 'rich-content.play', icon: IconPlay },
+  { value: 'rss', labelKey: 'rich-content.rss', icon: IconRss },
 ];
 
 export const CARD_ICON_MAP: Record<string, Component> = Object.fromEntries(

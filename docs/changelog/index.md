@@ -7,6 +7,21 @@ lastUpdated: true
 
 Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
 
+## v2.0 — Naujas svetainės dizainas ir vizualus turinio redaktorius (2026-09-05) {#v2-0}
+
+> Visi šios šakos („feature/new-style“) pakeitimai ir patobulinimai sujungti į v2.0 versiją.
+
+- ⭐ **Naujas viešosios svetainės dizainas** — moderni tipografija („Atkinson Hyperlegible“), šilta šviesi paletė ir sodri tamsi tema, griežtos kampuotos formos bei vientisa dizaino žetonų sistema, nepaliečianti vidinės administravimo aplinkos
+- ⭐ **Pilno ekrano vizualus turinio redaktorius (WYSIWYG)** — tekstai, mygtukai, nuotraukos, kortelės, statistika, tinkleliai, galerijos, hero karuselės, antraštės, procesų schemos, akordeonai, naujienų ir tinklalaidžių blokai dabar redaguojami tiesiogiai realiame puslapio vaizde su gyva peržiūra, be pasikartojančių formų; puslapių ir naujienų formose vietoje jų rodoma tik švari turinio kortelė su mygtuku „Redaguoti turinį“
+- ⭐ **Integruotas prieinamumo meniu** — vietinė prieinamumo juosta leidžia pasirinkti teksto dydį, įjungti aukštą kontrastą ir pabraukti nuorodas be trečiųjų šalių („UserWay“) įrankių
+- ✨ **Atnaujinta navigacija ir apatinė dalis (footer)** — dviejų lygių navigacija su mega-meniu (nuotraukų kortelės, nuorodų aprašymai, kategorijų antraštės), naujas footeris su administratoriams valdomais iki 4 navigacijos stulpelių
+- ✨ **Perdaryti renginių ir kalendoriaus puslapiai** — viso pločio antraštė su datos plokštele, informacijos šoninė juosta, interaktyvus žemėlapis, greita momentinė „Typesense“ paieška, būsimų/praėjusių renginių skirtukai bei metų ir kategorijų filtrai
+- ✨ **Kontaktų, padalinių, kategorijų, registracijos ir studijų programų puslapiai pritaikyti naujam stiliui** — atnaujinta kontaktinė informacija, pareigybių filtrai, nuorodų sąrašai bei studijų programų tinklelis su fakulteto filtru
+- ✨ **Dokumentų sąraše — susietas renginys** — prie dokumento, parengto posėdžiui ir turinčio paskelbtą kalendoriaus renginį, galima vienu mygtuku atverti to posėdžio renginio puslapį
+- ✨ **„Mano VU SA“ tapo aiškiu navigacijos mygtuku, o pranešimai suvienodinti** — paskyros nuoroda dera prie kitų svetainės valdiklių, slapukų priminimas bei bandomosios aplinkos įspėjimas priderinti prie naujo stiliaus
+- 🔧 **Keli smulkūs pataisymai** — kompaktiškų hero karuselių sulygiavimas, telefono viršutinės juostos temos perjungimas, padalinių žemėlapio veikimas, antraštės redagavimo šokinėjimas, narių registracijos laiškai, bandomosios (staging) aplinkos izoliacija nuo gamybinių el. laiškų ir „SharePoint“ failų
+- ✨ **Vėžliukas puslapio įkėlimo indikatoriuje ir tuščiuose sąrašuose** — vietoje įprasto sukamo apskritimo dabar lėtai žingsniuoja organizacijos talismanas, o ten, kur dar nėra ką rodyti, sąrašo viduryje ilsisi tas pats vėžliukas
+
 ## v1.38 — Angliška darbotvarkė ir pertraukos (2026-09-02) {#v1-38}
 
 - ⭐ **Darbotvarkės punktus galima įvesti ir angliškai** — punkto pavadinimą, aprašymą, studentų poziciją ir balsavimų pavadinimus dabar galima išversti. Darbotvarkės punkto lange atsirado vėliavėlės mygtukas, kuris vienu paspaudimu perjungia visus laukus į anglų kalbą; neišvertus nieko nesikeičia

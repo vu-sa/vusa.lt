@@ -12,7 +12,7 @@ import { fn } from 'storybook/test'
 import ComponentName from './ComponentName.vue'
 
 // Import mocks if needed
-import { usePage } from '@/mocks/inertia'
+import { usePage } from '@/mocks/inertia.storybook'
 import { trans } from '@/mocks/i18n' 
 import { route } from '@/mocks/route'
 
@@ -151,7 +151,7 @@ export const Interactive: Story = {
 ### Import Centralized Mocks
 ```typescript
 // Always use centralized mocks
-import { usePage, router } from '@/mocks/inertia'
+import { usePage, router } from '@/mocks/inertia.storybook'
 import { trans, $t } from '@/mocks/i18n'
 import { route } from '@/mocks/route'
 

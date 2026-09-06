@@ -13,23 +13,13 @@ use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * Handles Periodicity Gap tasks for institutions.
- *
- * Periodicity gap tasks are created when an institution is approaching its
- * meeting periodicity threshold with no scheduled meeting. They prompt
- * representatives to either schedule a new meeting or create a check-in record.
- *
- * They can be manually completed by users, or auto-complete when a meeting
- * or check-in is created for the institution.
+ * Handles Periodicity Gap tasks for institutions approaching their
+ * meeting periodicity threshold without a scheduled meeting.
  */
 class PeriodicityGapTaskHandler extends BaseTaskHandler
 {
     /**
-     * Find or create a periodicity gap task for an institution.
-     *
-     * @param  Institution  $institution  The institution model
-     * @param  Collection<int, User>  $users  Users assigned to the task
-     * @param  Carbon  $dueDate  Due date for the task (threshold date)
+     * @param  Collection<int, User>  $users
      */
     public function findOrCreate(
         Institution $institution,
@@ -63,13 +53,6 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
         return $this->create($data);
     }
 
-    /**
-     * Complete the periodicity gap task for an institution.
-     * Called when a meeting or check-in is created.
-     *
-     * @param  Institution  $institution  The institution
-     * @param  string|null  $reason  Completion reason message
-     */
     public function completeForInstitution(Institution $institution, ?string $reason = null): bool
     {
         $task = $this->findExistingTask($institution);
@@ -83,9 +66,6 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
         return true;
     }
 
-    /**
-     * Find an existing incomplete periodicity gap task for the institution.
-     */
     public function findExistingTask(Institution $institution): ?Task
     {
         return Task::query()
@@ -97,19 +77,13 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
             ->first();
     }
 
-    /**
-     * Check if an institution has an existing periodicity gap task.
-     */
     public function hasExistingTask(Institution $institution): bool
     {
         return $this->findExistingTask($institution) !== null;
     }
 
     /**
-     * Sync task users with new collection of representatives.
-     *
-     * @param  Task  $task  The task to update
-     * @param  Collection<int, User>  $users  New set of users
+     * @param  Collection<int, User>  $users
      */
     protected function syncUsers(Task $task, Collection $users): void
     {

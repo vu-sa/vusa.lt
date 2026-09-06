@@ -24,6 +24,9 @@ const config: StorybookConfig = {
     "@storybook/addon-docs",
     "@storybook/addon-vitest"
   ],
+  // Serve the app's public/ as static root so stories can reference real assets by the same
+  // absolute paths production uses (/logos/vusa.lin.hor.svg, /images/...) instead of stubs.
+  staticDirs: ["../public"],
   framework: {
     name: "@storybook/vue3-vite",
     options: {}

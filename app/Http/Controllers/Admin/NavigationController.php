@@ -45,6 +45,11 @@ class NavigationController extends AdminController
 
         return $this->inertiaResponse('Admin/Navigation/IndexNavigation', [
             'navigation' => $navigation,
+            // The footer manager has its own, much simpler tree (no drag-and-drop, no
+            // fixed 3-column shape) — see NavigationService::getFooterTreeForAdmin().
+            // Not shown in trash view: trashed footer columns/links surface through the
+            // same flat trashed list as everything else.
+            'footerNavigation' => $showDeleted ? [] : NavigationService::getFooterTreeForAdmin($lang),
             'lang' => $lang,
             'showDeleted' => $showDeleted,
             'deletedCount' => $deletedCount,
@@ -63,11 +68,19 @@ class NavigationController extends AdminController
 
         $parent_id = $request->parent_id ?? 0;
 
+        // A new root picks its location explicitly (the "add column" vs "add root"
+        // entry point); a new child inherits it from the parent it's being created
+        // under, same as it inherits the parent's language below.
+        $location = (int) $parent_id === 0
+            ? $this->resolveLocation($request->input('location'))
+            : $this->resolveLocation(Navigation::withTrashed()->find($parent_id)?->extra_attributes['location'] ?? null);
+
         return $this->inertiaResponse('Admin/Navigation/CreateNavigation',
             [
                 'parent_id' => $parent_id,
                 'lang' => $this->resolveLang($request),
-                'parentElements' => Navigation::where('parent_id', 0)->get(),
+                'location' => $location,
+                'parentElements' => $this->rootElementsForLocation($location),
                 'categoryOptions' => $this->getCategoryOptions(),
             ]
         );
@@ -110,9 +123,11 @@ class NavigationController extends AdminController
     {
         $this->handleAuthorization('update', $navigation);
 
+        $location = $this->resolveLocation($navigation->extra_attributes['location'] ?? null);
+
         return $this->inertiaResponse('Admin/Navigation/EditNavigation', [
             'navigationElement' => $navigation,
-            'parentElements' => Navigation::where('parent_id', 0)->where('lang', $navigation->lang)->get(),
+            'parentElements' => $this->rootElementsForLocation($location)->where('lang', $navigation->lang)->values(),
             'categoryOptions' => $this->getCategoryOptions(),
         ]);
     }
@@ -205,6 +220,29 @@ class NavigationController extends AdminController
         $lang = $request->input('lang');
 
         return in_array($lang, ['lt', 'en'], true) ? $lang : app()->getLocale();
+    }
+
+    /**
+     * Which menu a create/edit form is working within — 'footer' only when explicitly
+     * tagged, same fallback NavigationService uses for any pre-existing row.
+     */
+    private function resolveLocation(mixed $location): string
+    {
+        return $location === 'footer' ? 'footer' : 'header';
+    }
+
+    /**
+     * Root elements (parent selector options / footer root's own siblings) scoped to
+     * one menu, so a header form never offers a footer column as a parent and vice
+     * versa — the two builders assume disjoint root sets (NavigationService).
+     *
+     * @return Collection<int, Navigation>
+     */
+    private function rootElementsForLocation(string $location): Collection
+    {
+        return Navigation::where('parent_id', 0)->get()
+            ->filter(fn (Navigation $root) => $this->resolveLocation($root->extra_attributes['location'] ?? null) === $location)
+            ->values();
     }
 
     /**

@@ -694,8 +694,8 @@ describe('cross-tenant parent scoping', function (): void {
             'calendar_id' => $event->id,
         ])->assertSessionHasErrors('calendar_id');
 
-        expect(Meeting::count())->toEqual($this->initialMeetingCount + 1);
-        expect($event->fresh()->meeting_id)->toEqual($taken->id);
+        expect(Meeting::count())->toEqual($this->initialMeetingCount + 1)
+            ->and($event->fresh()->meeting_id)->toEqual($taken->id);
     });
 
     test('refuses to link an announcement the user may not edit', function (): void {

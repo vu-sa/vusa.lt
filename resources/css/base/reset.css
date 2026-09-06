@@ -1,0 +1,100 @@
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+
+  @media (width >=--theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+
+  @media (width >=1400px) {
+    max-width: 1400px;
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@layer base {
+
+  /* Only essential typography - no margins, let components control spacing */
+  h1 {
+    @apply text-2xl md:text-4xl font-black text-gray-900 dark:text-zinc-100 leading-tight tracking-tight;
+  }
+
+  h2 {
+    @apply text-xl md:text-2xl font-bold text-gray-900 dark:text-zinc-100 leading-snug tracking-tight;
+  }
+
+  h3 {
+    @apply text-lg md:text-xl font-bold text-gray-900 dark:text-zinc-100 tracking-tight;
+  }
+
+  h4 {
+    @apply text-base md:text-lg font-bold text-gray-900 dark:text-zinc-100 tracking-tight;
+  }
+
+  a:not(.plain) {
+    @apply hover:text-vusa-red duration-200;
+  }
+
+  p>a {
+    @apply underline;
+  }
+
+  /* The h1-h4 rules above hardcode gray-900/zinc-100, which is wrong for the public palette's
+     warm near-black ink. Overriding inside the *same* base layer (rather than editing those
+     rules, or writing an unlayered selector) is what keeps precedence sane: it beats the bare
+     `h1` selector on specificity, and the utilities layer still comes after `base`, so a
+     component's own `text-brand`/`text-muted-foreground` continues to win. Admin headings are
+     untouched. */
+  [data-surface="public"] :is(h1, h2, h3, h4) {
+    @apply text-foreground;
+  }
+}
+
+/* Icons set beside body text.
+
+   Sized in `em` so the icon tracks the text at any root font size (a reader with
+   browser text scaling at 90% gets 10.8px `text-xs`, where a fixed 16px icon
+   dwarfs the type). The nudge is the part that matters: `items-center` centres
+   the icon on the *line box*, which includes the descender space below the
+   baseline, so an icon beside digits or an ascender-only string visibly hangs
+   below the text and the text reads as sitting high. Shifting up re-centres it
+   on the cap band. -0.06em was measured — rendered ink, not geometry — at DPR
+   1.5, 1.65 and 2: it takes the icon/text ink-centre delta from +1.0…+1.5
+   device px to 0…+0.5 and makes the overhang symmetric. Pair with
+   `items-center`. */
+@layer utilities {
+  .icon-inline {
+    width: 0.875em;
+    height: 0.875em;
+    /* `translate`, not `transform`, so a Tailwind rotate/scale utility still composes. */
+    translate: 0 -0.06em;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

@@ -57,23 +57,6 @@ describe('useTenantOptions', () => {
     expect(isActive('ff')).toBe(false);
   });
 
-  it.each([
-    ['lt', true],
-    ['en', true],
-    ['lt/naujienos', true],
-    // The English news archive is served from /en/news, which the path list used to omit.
-    ['en/news', true],
-    ['lt/kontaktai', true],
-    ['en/contacts', true],
-    ['lt/naujienos/some-slug', false],
-  ])('isSwitchAllowed is %s for path "%s"', (path, expected) => {
-    vi.mocked(usePage).mockReturnValue(createMockPage({ tenants, app: { path } }));
-
-    const { isSwitchAllowed } = useTenantOptions();
-
-    expect(isSwitchAllowed.value).toBe(expected);
-  });
-
   it('currentLabel falls back to the main tenant label when on the main tenant', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ tenants, tenant: { alias: 'vusa', shortname: 'VU SA' } }));
 
@@ -89,8 +72,8 @@ describe('useTenantOptions', () => {
     expect(currentLabel().value).toBe('MIF');
   });
 
-  it('switchTenant navigates to the target subdomain, keeping the current path', () => {
-    const mockPage = createMockPage({ tenants });
+  it('switchTenant keeps the current path when the page supports tenant-scoped content', () => {
+    const mockPage = createMockPage({ tenants, tenantSwitchTarget: 'same-page' });
     mockPage.url = '/lt/kontaktai';
     vi.mocked(usePage).mockReturnValue(mockPage);
     Object.defineProperty(window, 'location', {
@@ -105,8 +88,24 @@ describe('useTenantOptions', () => {
     expect(window.location.href).toBe('https://ff.vusa.test/lt/kontaktai');
   });
 
+  it('switchTenant goes to the selected tenant home page when the current page is not tenant-scoped', () => {
+    const mockPage = createMockPage({ tenants, app: { locale: 'en' } });
+    mockPage.url = '/en/documents';
+    vi.mocked(usePage).mockReturnValue(mockPage);
+    Object.defineProperty(window, 'location', {
+      value: { host: 'www.vusa.test', protocol: 'https:', href: '' },
+      writable: true,
+      configurable: true,
+    });
+
+    const { switchTenant } = useTenantOptions();
+    switchTenant('ff');
+
+    expect(window.location.href).toBe('https://ff.vusa.test/en');
+  });
+
   it('switchTenant maps the "vusa" alias to the "www" subdomain', () => {
-    const mockPage = createMockPage({ tenants });
+    const mockPage = createMockPage({ tenants, tenantSwitchTarget: 'same-page' });
     mockPage.url = '/lt';
     vi.mocked(usePage).mockReturnValue(mockPage);
     Object.defineProperty(window, 'location', {

@@ -30,7 +30,7 @@
             <!-- Vote alignment summary badge -->
             <span
               v-if="meetingSummary.voteAlignmentStatus !== 'unknown' && meetingSummary.totalItems > 0"
-              class="inline-flex items-center gap-1 text-[10px] font-medium rounded-full px-1.5 py-0.5"
+              class="inline-flex items-center gap-1 text-[0.625rem] font-medium rounded-full px-1.5 py-0.5"
               :class="{
                 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': meetingSummary.voteAlignmentStatus === 'all_match',
                 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400': meetingSummary.voteAlignmentStatus === 'mixed',
@@ -76,7 +76,7 @@
             </p>
             <span
               v-if="item.brought_by_students"
-              class="shrink-0 inline-flex items-center gap-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0 text-[10px] font-medium text-zinc-600 dark:text-zinc-300"
+              class="shrink-0 inline-flex items-center gap-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0 text-[0.625rem] font-medium text-zinc-600 dark:text-zinc-300"
             >
               <UsersIcon class="h-2.5 w-2.5" />
               {{ $t('Įtraukta studentų') }}

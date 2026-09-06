@@ -9,12 +9,6 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     usesTypesense();
-
-    config([
-        'scout.prefix' => 'testing_public_sync_',
-        'scout.queue' => false,
-        'scout.soft_delete' => false,
-    ]);
 });
 
 function publicSyncSearchHitIds(string $query): array

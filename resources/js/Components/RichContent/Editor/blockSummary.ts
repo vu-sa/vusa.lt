@@ -1,7 +1,6 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import type { ContentPart } from '../Types';
-import { DEFAULT_SPACER_SIZE } from '../Types/spacerSizes';
 
 /** Recursively pull the first text node out of a Tiptap JSON document. */
 function firstTiptapText(json: unknown): string {
@@ -73,6 +72,10 @@ export function deriveBlockSummary(part: ContentPart): string {
     case 'calendar':
       return json?.title ? truncate(json.title) : '—';
     case 'spotify-embed':
+      // `promo` variant carries a title worth showing over the bare hostname every plain
+      // embed falls back to.
+      if (options?.variant === 'promo' && json?.title) return truncate(json.title);
+      return json?.url ? hostnameOf(json.url) : '—';
     case 'social-embed':
       return json?.url ? hostnameOf(json.url) : '—';
     case 'flow-graph':
@@ -105,8 +108,18 @@ export function deriveBlockSummary(part: ContentPart): string {
     }
     case 'section':
       return options?.title ? truncate(options.title) : noTitle();
-    case 'spacer':
-      return $t('rich-content.summary_spacer', { size: $t(`rich-content.spacer_size_${options?.size ?? DEFAULT_SPACER_SIZE}`) });
+    case 'link-list':
+      return options?.title ? truncate(options.title) : '—';
+    case 'event-list':
+      return options?.title ? truncate(options.title) : '—';
+    case 'process-steps': {
+      const steps = Array.isArray(json) ? json : [];
+      if (steps.length === 0) return '—';
+      const rest = steps.length > 1 ? ` (+${steps.length - 1})` : '';
+      return truncate(steps[0]?.title || noTitle()) + rest;
+    }
+    case 'person-quote':
+      return json?.snapshot?.name ? truncate(json.snapshot.name) : '—';
     case 'timetable': {
       const timedRows = Array.isArray(json) ? json : [];
       if (timedRows.length === 0) return '—';

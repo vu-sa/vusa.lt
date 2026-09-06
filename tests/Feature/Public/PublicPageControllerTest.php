@@ -344,3 +344,31 @@ test('homepage uses tenant content when it has content parts', function (): void
             ->has('content.parts', 1)
     );
 });
+
+test('pkp page renders ContentPage with institution-list content', function (): void {
+    $content = Content::factory()->create();
+    ContentPart::factory()->create([
+        'content_id' => $content->id,
+        'type' => 'institution-list',
+        'json_content' => ['title' => 'Programos, klubai ir projektai', 'eyebrow' => 'VU SA'],
+        'options' => ['typeSlug' => 'pkp', 'tenantScope' => 'all'],
+    ]);
+
+    Page::factory()->create([
+        'title' => 'Programos, klubai, projektai',
+        'permalink' => 'programos-klubai-projektai',
+        'tenant_id' => $this->tenant->id,
+        'content_id' => $content->id,
+        'is_active' => true,
+    ]);
+
+    $response = $this->get(route('pkp', ['subdomain' => 'www', 'lang' => 'lt']));
+
+    $response->assertStatus(200);
+    $response->assertInertia(
+        fn (Assert $page) => $page
+            ->component('Public/ContentPage')
+            ->where('page.title', 'Programos, klubai, projektai')
+            ->has('resolvedParts')
+    );
+});

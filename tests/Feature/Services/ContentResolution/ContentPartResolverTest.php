@@ -3,9 +3,12 @@
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\ContentPart;
+use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Tag;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\ContentResolution\ResolutionContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,7 +39,7 @@ function makeResolvablePart(string $type, array $jsonContent = [], ?array $optio
 describe('ContentPartResolver::resolvableTypes', function (): void {
     test('lists exactly the dynamic types', function (): void {
         expect(ContentPartResolver::resolvableTypes())->toEqualCanonicalizing([
-            'link-list', 'event-list', 'news', 'calendar',
+            'link-list', 'event-list', 'news', 'calendar', 'institution-list',
         ]);
     });
 });
@@ -186,6 +189,19 @@ describe('LinkListResolver — news source', function (): void {
         $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
         expect($ids)->toBe([$matching->id])
             ->and($ids)->not->toContain($otherCategory->id);
+    });
+
+    test('latest mode with tenantScope "all" includes news from every tenant', function (): void {
+        $otherTenant = Tenant::factory()->create();
+        $ownNews = News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
+        $otherNews = News::factory()->for($otherTenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
+
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'latest', 'tenantScope' => 'all']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($ownNews->id)
+            ->and($ids)->toContain($otherNews->id);
     });
 
     test('clamps limit to the 1-12 range', function (): void {
@@ -355,18 +371,245 @@ describe('NewsBlockResolver / CalendarBlockResolver bridges', function (): void 
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         expect($resolved[$part->id]['type'])->toBe('news')
-            ->and($resolved[$part->id]['items'][0])->toHaveKeys(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image']);
+            ->and($resolved[$part->id]['items'][0])->toHaveKeys(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'category']);
     });
 
-    test('calendar bridge excludes drafts and is not tenant-scoped', function (): void {
+    test('news bridge carries the category name, and null when the article has none', function (): void {
+        $category = Category::factory()->create(['name' => ['lt' => 'Akademinė informacija', 'en' => 'Academic information']]);
+        News::factory()->for($this->tenant)->for($category)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
+        News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(2), 'category_id' => null]);
+
+        $part = makeResolvablePart('news', ['title' => '']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $categories = collect($resolved[$part->id]['items'])->pluck('category')->all();
+
+        expect($categories)->toContain('Akademinė informacija')
+            ->and($categories)->toContain(null);
+    });
+
+    test('news bridge filters by category, tag, selected tenants and limit', function (): void {
+        $otherTenant = Tenant::factory()->create();
+        $category = Category::factory()->create(['alias' => 'announcements']);
+        $tag = Tag::factory()->create(['alias' => 'important']);
+        $matching = News::factory()->for($otherTenant)->for($category)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+        ]);
+        $matching->tags()->attach($tag);
+
+        $wrongTag = News::factory()->for($otherTenant)->for($category)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(2),
+        ]);
+        $wrongTenant = News::factory()->for($this->tenant)->for($category)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(3),
+        ]);
+        $wrongTenant->tags()->attach($tag);
+
+        $part = makeResolvablePart('news', ['title' => ''], [
+            'categoryAlias' => 'announcements',
+            'tagAlias' => 'important',
+            'tenantScope' => [$otherTenant->id],
+            'limit' => 1,
+        ]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(1)
+            ->and($resolved[$part->id]['items'][0]['id'])->toBe($matching->id)
+            ->and($resolved[$part->id]['items'][0]['id'])->not->toBe($wrongTag->id);
+    });
+
+    test('news bridge keeps legacy blocks scoped to the current tenant', function (): void {
+        $own = News::factory()->for($this->tenant)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+        ]);
+        $other = News::factory()->for(Tenant::factory())->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+        ]);
+
+        $part = makeResolvablePart('news', ['title' => '']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect(collect($resolved[$part->id]['items'])->pluck('id')->all())
+            ->toContain($own->id)
+            ->not->toContain($other->id);
+    });
+
+    test('calendar bridge excludes drafts and defaults to every tenant (tenantScope unset)', function (): void {
         $otherTenant = Tenant::factory()->create();
         $event = Calendar::factory()->for($otherTenant)->create(['is_draft' => false, 'date' => now()]);
         Calendar::factory()->for($this->tenant)->create(['is_draft' => true, 'date' => now()]);
 
-        $part = makeResolvablePart('calendar', ['title' => ''], ['allTenants' => false]);
+        $part = makeResolvablePart('calendar', ['title' => '']);
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
         expect($ids)->toContain($event->id);
+    });
+
+    test('calendar bridge tenantScope "current" restricts to the viewing tenant', function (): void {
+        $otherTenant = Tenant::factory()->create();
+        $own = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()]);
+        $other = Calendar::factory()->for($otherTenant)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['tenantScope' => 'current']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toBe([$own->id])
+            ->and($ids)->not->toContain($other->id);
+    });
+
+    test('calendar bridge tenantScope as an array restricts to exactly those tenants', function (): void {
+        $tenantA = Tenant::factory()->create();
+        $tenantB = Tenant::factory()->create();
+        $tenantC = Tenant::factory()->create();
+        $eventA = Calendar::factory()->for($tenantA)->create(['is_draft' => false, 'date' => now()]);
+        $eventB = Calendar::factory()->for($tenantB)->create(['is_draft' => false, 'date' => now()]);
+        Calendar::factory()->for($tenantC)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['tenantScope' => [$tenantA->id, $tenantB->id]]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toEqualCanonicalizing([$eventA->id, $eventB->id]);
+    });
+
+    test('calendar bridge tenantScope as an empty array ("None" selected) returns zero events, not every tenant\'s', function (): void {
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['tenantScope' => []]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toBeEmpty();
+    });
+
+    test('calendar bridge returns the soonest upcoming events first, excluding past ones', function (): void {
+        $past = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()->subWeek()]);
+        $soonest = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()->addDays(2)]);
+        $furthest = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now()->addDays(10)]);
+
+        // With a small limit, `orderByDesc('date')` (the old query) would return
+        // $furthest instead of $soonest, and would never exclude $past at all.
+        $part = makeResolvablePart('calendar', ['title' => ''], ['limit' => 2]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toBe([$soonest->id, $furthest->id])
+            ->and($ids)->not->toContain($past->id);
+    });
+
+    test('calendar bridge respects options.limit', function (): void {
+        Calendar::factory()->for($this->tenant)->count(5)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['limit' => 2]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(2)
+            ->and($resolved[$part->id]['meta']['total'])->toBe(2);
+    });
+
+    test('calendar bridge clamps limit to the 1-10 range', function (): void {
+        // 11, not 10: with exactly 10 available, "10 results" would hold even if the
+        // clamp did nothing — one extra record is needed to actually prove truncation.
+        Calendar::factory()->for($this->tenant)->count(11)->create(['is_draft' => false, 'date' => now()]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['limit' => 500]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(10);
+    });
+
+    test('calendar bridge filters by categoryAlias, keeping a trashed category working as a grouping key', function (): void {
+        $category = Category::factory()->create(['alias' => 'concerts']);
+        $category->delete();
+        $otherCategory = Category::factory()->create(['alias' => 'workshops']);
+
+        $matching = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now(), 'category_id' => $category->id]);
+        $other = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now(), 'category_id' => $otherCategory->id]);
+
+        $part = makeResolvablePart('calendar', ['title' => ''], ['categoryAlias' => 'concerts']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($matching->id)
+            ->and($ids)->not->toContain($other->id);
+    });
+});
+
+describe('InstitutionListResolver', function (): void {
+    test('filters institutions by typeSlug', function (): void {
+        $pkpType = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+        $otherType = Type::factory()->create(['slug' => 'other', 'title' => ['lt' => 'Other', 'en' => 'Other']]);
+
+        $pkpInstitution = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'PKP Club', 'en' => 'PKP Club']]);
+        $pkpInstitution->types()->attach($pkpType);
+
+        $otherInstitution = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'Other Org', 'en' => 'Other Org']]);
+        $otherInstitution->types()->attach($otherType);
+
+        $part = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($pkpInstitution->id)
+            ->and($ids)->not->toContain($otherInstitution->id)
+            ->and($resolved[$part->id]['meta']['total'])->toBe(1);
+    });
+
+    test('filters institutions by tenantScope current vs all', function (): void {
+        $otherTenant = Tenant::factory()->create(['alias' => 'othertenant']);
+        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+
+        $currentInst = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'Current Inst', 'en' => 'Current Inst']]);
+        $currentInst->types()->attach($type);
+
+        $otherInst = Institution::factory()->for($otherTenant)->create(['is_active' => true, 'name' => ['lt' => 'Other Inst', 'en' => 'Other Inst']]);
+        $otherInst->types()->attach($type);
+
+        // tenantScope: current
+        $currentPart = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp', 'tenantScope' => 'current']);
+        $currentResolved = $this->resolver->resolveAll(collect([$currentPart->id => $currentPart]), $this->context);
+        $currentIds = collect($currentResolved[$currentPart->id]['items'])->pluck('id')->all();
+        expect($currentIds)->toContain($currentInst->id)
+            ->and($currentIds)->not->toContain($otherInst->id);
+
+        // tenantScope: all
+        $allPart = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp', 'tenantScope' => 'all']);
+        $allResolved = $this->resolver->resolveAll(collect([$allPart->id => $allPart]), $this->context);
+        $allIds = collect($allResolved[$allPart->id]['items'])->pluck('id')->all();
+        expect($allIds)->toContain($currentInst->id)
+            ->and($allIds)->toContain($otherInst->id);
+    });
+
+    test('excludes inactive institutions', function (): void {
+        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+
+        $active = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'Active', 'en' => 'Active']]);
+        $active->types()->attach($type);
+
+        $inactive = Institution::factory()->for($this->tenant)->create(['is_active' => false, 'name' => ['lt' => 'Inactive', 'en' => 'Inactive']]);
+        $inactive->types()->attach($type);
+
+        $part = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($active->id)
+            ->and($ids)->not->toContain($inactive->id);
+    });
+
+    test('clamps limit to maximum and respects limit option', function (): void {
+        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+
+        for ($i = 0; $i < 5; $i++) {
+            $inst = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => "Inst {$i}", 'en' => "Inst {$i}"]]);
+            $inst->types()->attach($type);
+        }
+
+        $part = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp', 'limit' => 2]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(2)
+            ->and($resolved[$part->id]['meta']['total'])->toBe(2);
     });
 });

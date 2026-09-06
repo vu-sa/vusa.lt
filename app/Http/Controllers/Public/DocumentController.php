@@ -14,7 +14,10 @@ class DocumentController extends PublicController
     {
         $this->getBanners();
         $this->getTenantLinks();
-        $this->shareOtherLangURL('documents');
+        $this->shareOtherLangURL(
+            $this->tenant->isMain() ? 'documents' : 'tenant.documents',
+            $this->tenant->isMain() ? null : $this->subdomain,
+        );
 
         // Global content - use null for current tenant
         $this->applyPageHead(
@@ -39,6 +42,7 @@ class DocumentController extends PublicController
                 ]);
 
         return Inertia::render('Public/ShowDocuments', [
+            'tenantSwitchTarget' => 'same-page',
             'allContentTypes' => $staticData['contentTypes'],
             'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
         ]);

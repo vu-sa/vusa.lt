@@ -30,13 +30,32 @@ return [
     'carousel_slide_position' => 'Skaidrė :current iš :total',
     'news_and_announcements' => 'Naujienos ir pranešimai',
     'featured_news' => 'Paryškintosios naujienos',
-    'partner_organizations' => 'Partnerių organizacijos',
+    'partner_organizations' => 'Partneriai, draugai ir iniciatyvos',
     'visit' => 'Aplankyti',
     'social_media_and_radio' => 'Socialiniai tinklai ir radijas',
+    'start_fm_toggle' => 'Įjungti START FM',
     'site_search' => 'Paieška svetainėje',
     'enter_search_terms' => 'Įveskite paieškos žodžius',
     'type_to_search' => 'Rašykite, kad ieškotumėte dokumentų, puslapių ir naujienų',
     'documents' => 'Dokumentai',
     'pages' => 'Puslapiai',
     'news' => 'Naujienos',
+
+    // Reader preferences menu (Components/Public/Base/AccessibilityMenu.vue)
+    'menu_title' => 'Prieinamumas',
+    'menu_open' => 'Atidaryti prieinamumo nustatymus',
+    'text_size' => 'Teksto dydis',
+    'text_size_option' => 'Teksto dydis: :size',
+    'text_size_decrease' => 'Sumažinti teksto dydį',
+    'text_size_increase' => 'Padidinti teksto dydį',
+
+    // Per-article reading size (Components/Public/Base/ReadingSizeControl.vue) — scales only the
+    // article body, independently of the site-wide text size above.
+    'reading_size' => 'Skaitymo dydis',
+    'reading_size_decrease' => 'Sumažinti skaitymo dydį',
+    'reading_size_increase' => 'Padidinti skaitymo dydį',
+    'high_contrast' => 'Didelis kontrastas',
+    'underline_links' => 'Pabraukti nuorodas',
+    'reset' => 'Atstatyti',
+    'preferences_active' => 'Pakeisti prieinamumo nustatymai',
 ];

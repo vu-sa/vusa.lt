@@ -31,8 +31,8 @@ const LOREM = [
 ];
 
 export interface ContentSample {
-  json_content: any;
-  options?: Record<string, any>;
+  json_content: unknown;
+  options?: Record<string, unknown>;
   /**
    * Fabricated server-resolved payload for `serverResolved` types (link-list,
    * event-list) — the picker still never hits the network; this is what
@@ -53,7 +53,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
   }),
   'shadcn-card': () => ({
     json_content: tiptapDoc(['Svarbi informacija, kurią verta žinoti prieš registruojantis.']),
-    options: { variant: 'outline', color: 'red', title: 'Svarbu', isTitleColored: true },
+    options: { title: 'Svarbu' },
   }),
   'image-grid': () => ({
     json_content: [
@@ -69,7 +69,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
       imageAlt: 'Studentai',
       objectPosition: '50% 50%',
       overlayContent: { title: '1500+', subtitle: 'aktyvių narių' },
-      buttons: [{ text: 'Sužinoti daugiau', link: '#', variant: 'default', color: 'red' }],
+      buttons: [{ text: 'Sužinoti daugiau', link: '#', variant: 'default' }],
     },
     options: { textLeft: true, imageDecorations: [] },
   }),
@@ -82,7 +82,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
       { endNumber: 1500, label: 'narių', showPlus: true },
       { endNumber: 20, label: 'padalinių' },
     ],
-    options: { title: 'VU SA skaičiais', color: 'zinc' },
+    options: { title: 'VU SA skaičiais' },
   }),
   'text-box': () => ({
     json_content: {},
@@ -127,7 +127,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
         imageSrc: PLACEHOLDER_IMAGES[0],
         imageAlt: 'Studentai renginyje',
         align: 'start',
-        buttons: [{ text: 'Tapk nariu', link: '#', variant: 'default', color: 'red' }],
+        buttons: [{ text: 'Tapk nariu', link: '#', variant: 'default' }],
       },
       {
         eyebrow: '',
@@ -137,7 +137,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
         imageSrc: PLACEHOLDER_IMAGES[4],
         imageAlt: 'Studentų veikla',
         align: 'center',
-        buttons: [{ text: 'Sužinok daugiau', link: '#', variant: 'outline', color: 'white' }],
+        buttons: [{ text: 'Sužinok daugiau', link: '#', variant: 'outline' }],
       },
     ],
     // Autoplay off — the picker previews must never start rotating on their own.
@@ -193,9 +193,13 @@ export const contentSamples: Record<string, () => ContentSample> = {
     json_content: {},
     options: { title: 'VU SA skaičiais', subtitle: 'Sužinok daugiau apie mus', background: 'muted', padding: 'lg' },
   }),
-  'spacer': () => ({
-    json_content: {},
-    options: { size: 'lg' },
+  'process-steps': () => ({
+    json_content: [
+      { title: 'Užpildyk anketą', text: 'Trumpa registracija – užtenka penkių minučių ir studento pažymėjimo.' },
+      { title: 'Susitikime pokalbiui', text: 'Pasikalbėsime apie tai, kas tau įdomu, ir kur galėtum prisidėti.' },
+      { title: 'Pradėk veikti', text: 'Prisijungsi prie komandos ir gausi mentorių pirmiesiems mėnesiams.' },
+    ],
+    options: { title: 'Kaip prisijungti', eyebrow: 'Procesas', columns: 3, align: 'start', background: 'none', padding: 'lg' },
   }),
   'person-quote': () => ({
     json_content: {
@@ -211,6 +215,34 @@ export const contentSamples: Record<string, () => ContentSample> = {
       { startTime: '11:30', endTime: '12:30', title: 'Diskusijų panelė' },
     ],
     options: {},
+  }),
+  'institution-list': () => ({
+    json_content: { title: 'Visos iniciatyvos', eyebrow: 'VU SA' },
+    options: { typeSlug: 'pkp', tenantScope: 'all' },
+    resolved: {
+      type: 'institution-list',
+      items: [
+        {
+          id: 1,
+          name: 'VU Debatų klubas',
+          alias: 'debatu-klubas',
+          description: 'Kritinio mąstymo ir viešojo kalbėjimo erdvė studentams.',
+          image_url: PLACEHOLDER_IMAGES[0],
+          tenant: { id: 1, shortname: 'VU SA', alias: 'vusa', type: 'pagrindinis' },
+          types: [{ id: 1, slug: 'pkp', title: 'Programos, klubai, projektai' }],
+        },
+        {
+          id: 2,
+          name: 'Rašytojų klubas',
+          alias: 'rasytoju-klubas',
+          description: 'Kūrybiško rašymo ir literatūros entuziastų bendruomenė.',
+          image_url: PLACEHOLDER_IMAGES[1],
+          tenant: { id: 1, shortname: 'VU SA', alias: 'vusa', type: 'pagrindinis' },
+          types: [{ id: 1, slug: 'pkp', title: 'Programos, klubai, projektai' }],
+        },
+      ],
+      meta: { total: 2 },
+    },
   }),
 };
 
@@ -244,7 +276,7 @@ export const contentSampleVariants: Partial<Record<string, ContentSampleVariant[
           imageAlt: 'Studentai',
           objectPosition: '50% 50%',
           overlayContent: { title: '1500+', subtitle: 'aktyvių narių' },
-          buttons: [{ text: 'Sužinoti daugiau', link: '#', variant: 'default', color: 'red' }],
+          buttons: [{ text: 'Sužinoti daugiau', link: '#', variant: 'default' }],
         },
         options: { variant: 'split', textLeft: true, imageDecorations: [] },
       }),
@@ -258,7 +290,7 @@ export const contentSampleVariants: Partial<Record<string, ContentSampleVariant[
           eyebrow: '',
           imageSrc: '',
           imageAlt: '',
-          buttons: [{ text: 'Registruotis', link: '#', variant: 'default', color: 'red' }],
+          buttons: [{ text: 'Registruotis', link: '#', variant: 'default' }],
         },
         options: { variant: 'centered' },
       }),
@@ -272,7 +304,7 @@ export const contentSampleVariants: Partial<Record<string, ContentSampleVariant[
           eyebrow: '',
           imageSrc: '',
           imageAlt: '',
-          buttons: [{ text: 'Registruotis', link: '#', variant: 'default', color: 'red' }],
+          buttons: [{ text: 'Registruotis', link: '#', variant: 'default' }],
         },
         options: { variant: 'banner' },
       }),

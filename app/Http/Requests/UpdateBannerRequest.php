@@ -19,7 +19,8 @@ class UpdateBannerRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:255',
-            'image_url' => 'required|string|max:255',
+            // A logo is optional: with none, the public banner renders the title as a text mark.
+            'image_url' => 'nullable|string|max:255',
             // Both are persisted by the controller and used to have no rule at all.
             'link_url' => 'nullable|string|max:255',
             'is_active' => 'nullable|boolean',

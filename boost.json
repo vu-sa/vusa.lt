@@ -1,9 +1,9 @@
 {
     "agents": [
         "claude_code",
-        "copilot",
         "codex",
-        "opencode"
+        "opencode",
+        "antigravity"
     ],
     "cloud": false,
     "guidelines": true,

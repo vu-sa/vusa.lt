@@ -29,7 +29,7 @@ describe('HeroElement', () => {
   it('defaults to the split variant when options.variant is unset', () => {
     const wrapper = mount(HeroElement, { props: { element: makeElement(), isFirstElement: true }, global: { stubs } });
     expect(wrapper.find('.image-with-decorations').exists()).toBe(true);
-    expect(wrapper.find('h1').exists()).toBe(true);
+    expect(wrapper.find('[role="heading"][aria-level="1"]').exists()).toBe(true);
   });
 
   it('centered variant renders no image', () => {
@@ -38,7 +38,16 @@ describe('HeroElement', () => {
       global: { stubs },
     });
     expect(wrapper.find('.image-with-decorations').exists()).toBe(false);
-    expect(wrapper.find('h1').exists()).toBe(true);
+    expect(wrapper.find('[role="heading"][aria-level="1"]').exists()).toBe(true);
+  });
+
+  it('keeps a TipTap paragraph inside the static heading container', () => {
+    const wrapper = mount(HeroElement, {
+      props: { element: makeElement({}, { title: '<p>Prisijunk</p>' }), isFirstElement: true },
+      global: { stubs },
+    });
+
+    expect(wrapper.get('[role="heading"]').find('p').text()).toBe('Prisijunk');
   });
 
   it('banner variant renders only the first button', () => {
@@ -72,5 +81,11 @@ describe('HeroElement', () => {
       global: { stubs },
     });
     expect(wrapper.find('#rc-42').exists()).toBe(true);
+  });
+
+  it('renders no editing affordances — that machinery lives entirely in HeroEditableElement.vue', () => {
+    const wrapper = mount(HeroElement, { props: { element: makeElement(), isFirstElement: true }, global: { stubs } });
+    expect(wrapper.find('[data-rc-interactive]').exists()).toBe(false);
+    expect(wrapper.find('[contenteditable]').exists()).toBe(false);
   });
 });

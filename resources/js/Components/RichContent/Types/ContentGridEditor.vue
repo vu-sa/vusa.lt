@@ -37,6 +37,13 @@
             <span class="text-sm">Vienodo aukščio stulpeliai</span>
           </div>
         </FormFieldWrapper>
+        <FormFieldWrapper id="dividers" :label="$t('rich-content.grid_dividers')"
+          :hint="$t('rich-content.grid_dividers_help')">
+          <div class="flex items-center gap-2">
+            <Switch :model-value="options.dividers" @update:model-value="val => options.dividers = val" />
+            <span class="text-sm">{{ $t('rich-content.grid_dividers_on') }}</span>
+          </div>
+        </FormFieldWrapper>
         <FormFieldWrapper id="verticalAlign" :label="$t('rich-content.grid_vertical_align')">
           <Select :model-value="options.verticalAlign ?? 'stretch'" @update:model-value="options.verticalAlign = $event">
             <SelectTrigger>
@@ -47,17 +54,6 @@
               <SelectItem value="start">{{ $t('rich-content.grid_vertical_align_start') }}</SelectItem>
               <SelectItem value="center">{{ $t('rich-content.grid_vertical_align_center') }}</SelectItem>
               <SelectItem value="end">{{ $t('rich-content.grid_vertical_align_end') }}</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
-        <FormFieldWrapper id="align" :label="$t('rich-content.grid_header_align')">
-          <Select :model-value="options.align ?? 'center'" @update:model-value="options.align = $event">
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="center">{{ $t('rich-content.grid_header_align_center') }}</SelectItem>
-              <SelectItem value="start">{{ $t('rich-content.grid_header_align_start') }}</SelectItem>
             </SelectContent>
           </Select>
         </FormFieldWrapper>

@@ -1,57 +1,44 @@
 <template>
-  <SmartLink
+  <HairlineRow
     :href
     :target="isExternal ? '_blank' : undefined"
     :rel="isExternal ? 'noopener' : undefined"
-    :class="[
-      'group flex items-center gap-3 rounded-md border border-border bg-card',
-      'px-3 py-2.5 transition-all duration-200',
-      'hover:bg-accent/20 hover:border-primary/30',
-    ]"
+    :title
+    :meta="metaText"
+    class="px-4"
   >
-    <!-- Thumbnail (news with image) or type icon -->
-    <div class="flex size-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-      <img
-        v-if="thumbnailUrl && !imageFailed"
-        :src="thumbnailUrl"
-        :alt="title"
-        class="size-full object-cover"
-        @error="imageFailed = true"
-      >
-      <component :is="icon" v-else class="size-4 text-muted-foreground" />
-    </div>
-
-    <!-- Content -->
-    <div class="min-w-0 flex-1">
-      <p class="truncate text-sm font-medium text-foreground">
-        {{ title }}
-      </p>
-      <div v-if="subtitle || formattedDate" class="mt-0.5 flex items-center gap-2">
-        <span v-if="subtitle" class="truncate text-xs text-muted-foreground">
-          {{ subtitle }}
-        </span>
-        <span v-if="subtitle && formattedDate" class="text-muted-foreground/40">·</span>
-        <span v-if="formattedDate" class="flex-shrink-0 text-xs text-muted-foreground">
-          {{ formattedDate }}
-        </span>
+    <template #leading>
+      <div class="flex size-9 items-center justify-center overflow-hidden bg-secondary">
+        <img
+          v-if="thumbnailUrl && !imageFailed"
+          :src="thumbnailUrl"
+          :alt="title"
+          class="size-full object-cover"
+          @error="imageFailed = true"
+        >
+        <component :is="icon" v-else class="size-4 text-muted-foreground" />
       </div>
-    </div>
+    </template>
 
-    <!-- External indicator -->
-    <ArrowUpRight v-if="isExternal" class="size-4 flex-shrink-0 text-muted-foreground/60 transition-colors group-hover:text-foreground" />
-    <ArrowRight v-else class="size-4 flex-shrink-0 text-muted-foreground/60 transition-colors group-hover:text-foreground" />
-  </SmartLink>
+    <template #trailing>
+      <component
+        :is="isExternal ? IFluentArrowUpRight16Regular : IFluentArrowRight16Regular"
+        class="size-4 text-muted-foreground/60 transition-colors group-hover:text-brand"
+      />
+    </template>
+  </HairlineRow>
 </template>
 
 <script setup lang="ts">
-import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { computed, ref, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { ArrowRight, ArrowUpRight } from 'lucide-vue-next';
 
-import SmartLink from '@/Components/Public/SmartLink.vue';
+import HairlineRow from '@/Components/Public/Base/HairlineRow.vue';
 import { getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import type { SearchCollectionId } from '@/Composables/usePublicMultiSearch';
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
+import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
+import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
 
 interface Props {
   collection: SearchCollectionId;
@@ -101,7 +88,8 @@ const subtitle = computed(() => {
       text = doc.summary || '';
       break;
     case 'institutions':
-      return doc.type_titles?.[0] || doc.alias || '';
+      // Not the alias/slug — it reads as noise, not helpful context, next to the name.
+      return doc.type_titles?.[0] || '';
     case 'meetings':
       return doc.institution_name_lt || doc.institution_name_en || '';
     case 'pages':
@@ -140,6 +128,8 @@ const formattedDate = computed(() => {
     day: 'numeric',
   });
 });
+
+const metaText = computed(() => [subtitle.value, formattedDate.value].filter(Boolean).join(' · '));
 
 // -- URL / routing -----------------------------------------------------------
 

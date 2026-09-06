@@ -60,8 +60,33 @@
       </div>
     </div>
 
+    <!-- View / edit quick actions (opt-in — command palette rows) -->
+    <div v-if="showActions" class="flex shrink-0 items-center gap-1">
+      <button
+        v-if="hit.viewHref"
+        type="button"
+        class="rounded-md p-1.5 text-muted-foreground opacity-0 transition-colors hover:bg-background hover:text-foreground group-hover:opacity-100"
+        :title="$t('Peržiūrėti')"
+        :aria-label="$t('Peržiūrėti')"
+        @click.stop="$emit('view')"
+      >
+        <Eye class="size-4" />
+      </button>
+      <button
+        v-if="hit.editHref"
+        type="button"
+        class="rounded-md p-1.5 text-muted-foreground opacity-0 transition-colors hover:bg-background hover:text-foreground group-hover:opacity-100"
+        :title="$t('Redaguoti')"
+        :aria-label="$t('Redaguoti')"
+        @click.stop="$emit('edit')"
+      >
+        <Pencil class="size-4" />
+      </button>
+    </div>
+
     <!-- Arrow indicator -->
     <ChevronRight
+      v-else
       :class="[
         'size-4 shrink-0 transition-opacity',
         selected ? 'text-primary opacity-100' : 'text-muted-foreground/40 opacity-0 group-hover:opacity-100',
@@ -73,7 +98,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, Link as LinkIcon, Clock } from 'lucide-vue-next';
+import { ChevronRight, Link as LinkIcon, Clock, Eye, Pencil } from 'lucide-vue-next';
 
 import { getCollectionColor } from '../Utils/searchHitMappers';
 import { toneClass } from '../Utils/searchBadges';
@@ -84,6 +109,13 @@ import { Badge } from '@/Components/ui/badge';
 const props = defineProps<{
   hit: NormalizedSearchHit;
   selected?: boolean;
+  /** Renders View/Edit icon buttons instead of the chevron (command palette rows). */
+  showActions?: boolean;
+}>();
+
+defineEmits<{
+  view: [];
+  edit: [];
 }>();
 
 const colorClasses = computed(() => getCollectionColor(props.hit.collection));

@@ -37,6 +37,7 @@ class InstitutionRequest extends FormRequest
             'phone' => 'nullable|string',
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],
             'image_url' => 'nullable|string',
+            'image_focal_point' => 'nullable|string|max:20',
             'logo_url' => 'nullable|string',
             'facebook_url' => 'nullable|string',
             'instagram_url' => 'nullable|string',

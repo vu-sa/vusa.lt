@@ -92,16 +92,16 @@
     </FormElement>
 
     <!-- Section 2: Content (Main editing area) -->
-    <FormElement :section-number="2" no-sider>
+    <FormElement :section-number="2" :is-complete="(form.content?.parts?.length ?? 0) > 0">
       <template #title>
         {{ $t('Turinys') }}
       </template>
       <template #subtitle>
         {{ $t('Pagrindinė puslapio informacija') }}
       </template>
-    </FormElement>
 
-    <RichContentFormElement v-model="form.content.parts" :tenant-id="page.tenant_id" />
+      <RichContentFormElement v-model="form.content.parts" :tenant-id="page.tenant_id" @save="$emit('submit:form', form)" />
+    </FormElement>
 
     <!-- Section 3: Highlights -->
     <FormElement :section-number="3" :is-complete="form.highlights.length > 0">

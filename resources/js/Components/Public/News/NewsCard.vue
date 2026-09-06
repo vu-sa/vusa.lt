@@ -1,62 +1,142 @@
+<!-- eslint-disable vue/no-v-html -->
 <template>
-  <article class="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800">
-    <!-- Image section -->
-    <div class="relative aspect-[16/9] w-full overflow-hidden rounded-t-xl">
-      <img :src="news.image" :alt="news.title"
-        class="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 rounded-t-xl"
-        :style="{ viewTransitionName: `news-image-${news.id}` }">
+  <SmartLink
+    :href
+    prefetch
+    :class="[
+      'group',
+      size === 'featured' ? 'grid gap-6 lg:grid-cols-2 lg:gap-10' : 'flex flex-col',
+    ]"
+    data-slot="news-card"
+  >
+    <MediaFrame
+      :src="news.image ?? undefined"
+      :alt="news.title"
+      :ratio="size === 'lg' ? '16/9' : '16/10'"
+      :grayscale="false"
+      :eager
+      hover-zoom
+      class="bg-secondary"
+    >
+      <template #fallback>
+        <IFluentImage24Regular class="size-10 text-muted-foreground/50" />
+      </template>
 
-      <!-- Date badge - only shown if publish_time exists -->
-      <div v-if="news.publish_time" class="absolute bottom-3 left-3 rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur-sm dark:bg-zinc-800/90">
-        <div class="flex items-center">
-          <IFluentCalendarLtr16Regular class="mr-1.5 h-3.5 w-3.5 text-red-500 dark:text-red-400" />
-          <time :datetime="formatISODate(news.publish_time)">
-            {{ formatStaticTime(new Date(news.publish_time),
-                                { year: "numeric", month: "short", day: "numeric" },
-                                locale) }}
-          </time>
-        </div>
-      </div>
-    </div>
+      <!-- The category marker sits on the photograph, top-left, so a grid of cards reads as a
+           list of subjects before it reads as a list of pictures.
 
-    <!-- Content section -->
-    <div class="flex flex-1 flex-col p-4">
-      <!-- Title -->
-      <h3 class="font-heading mb-2 text-base font-bold leading-tight text-zinc-900 line-clamp-2 dark:text-zinc-50 mt-0">
+           Loud on the one featured article, quiet on a grid of many — one accent per view is the
+           rule, and a dozen solid brand blocks in a grid is a dozen accents. The quiet form is
+           spelled out rather than using `variant="muted"`, which is a bordered chip for a light
+           ground and disappears against a photograph. -->
+      <TagChip
+        v-if="news.category"
+        :label="news.category"
+        class="absolute left-0 top-0"
+        :class="[
+          size === 'featured'
+            ? 'bg-brand-fill text-brand-foreground font-bold'
+            : (size === 'sm' ? 'bg-background/90 text-brand' : undefined),
+        ]"
+      />
+    </MediaFrame>
+
+    <div :class="size === 'featured' ? 'flex flex-col justify-center' : 'mt-4 flex flex-1 flex-col'">
+      <span v-if="news.publish_time" class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        {{ longDate(news.publish_time) }}
+      </span>
+
+      <h3 :class="[
+        'text-pretty font-bold text-foreground transition-colors group-hover:text-brand',
+        size === 'featured'
+          ? 'mt-3 text-3xl sm:text-4xl leading-tight'
+          : (size === 'lg' ? 'mt-3 text-2xl leading-tight sm:text-[1.7rem]' : 'mt-2 text-lg leading-snug'),
+      ]">
         {{ news.title }}
       </h3>
 
-      <!-- Summary if available -->
-      <p v-if="news.short" class="mb-4 text-sm text-zinc-600 line-clamp-3 dark:text-zinc-300" v-html="news.short" />
+      <div
+        v-if="showExcerpt && news.short"
+        :class="[
+          'text-pretty leading-relaxed text-muted-foreground',
+          size === 'featured'
+            ? 'mt-4 text-base sm:text-lg line-clamp-3'
+            : (size === 'lg' ? 'mt-3 line-clamp-3' : 'mt-2 line-clamp-2 text-sm'),
+        ]"
+        v-html="news.short"
+      />
 
-      <!-- Footer: tenant info + read more -->
-      <div class="mt-auto flex items-center justify-between pt-2">
-        <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ news.tenant?.shortname || news.tenant }}</span>
-
-        <span class="inline-flex items-center gap-1 text-sm font-medium text-red-600/80 transition-colors group-hover:text-red-700 dark:text-red-400 dark:group-hover:text-red-300">
-          {{ $t('Skaityti') }}
-          <IFluentArrowRight16Regular class="h-3.5 w-3.5 transform transition-transform group-hover:translate-x-0.5" />
-        </span>
-      </div>
+      <span
+        v-if="size === 'lg' || size === 'featured'"
+        :class="[
+          'inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand',
+          size === 'featured' ? 'mt-4 sm:mt-6' : 'mt-4',
+        ]"
+      >
+        {{ $t('Skaityti daugiau') }}
+        <IFluentArrowUpRight16Regular class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+      </span>
     </div>
-  </article>
+  </SmartLink>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { usePage } from '@inertiajs/vue3';
 
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
+import IFluentImage24Regular from '~icons/fluent/image24-regular';
+import { MediaFrame, TagChip } from '@/Components/Public/Base';
+import type { NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 
-const props = defineProps<{
-  news: App.Entities.News;
-  locale?: string;
-}>();
+/**
+ * One article as a card: picture, category, date, headline.
+ *
+ * Three sizes:
+ * - `featured`: 2-column hero article with large typography for archive lead
+ * - `lg`: vertical lead card with large typography (used in NewsElement)
+ * - `sm`: compact card for grids (archive, related news)
+ */
+const props = withDefaults(defineProps<{
+  news: NewsItem | (Omit<NewsItem, 'publish_time'> & { publish_time?: string | number | Date | null });
+  size?: 'sm' | 'lg' | 'featured';
+  /** `lg` and `featured` always show it; `sm` only where there is room, such as the archive grid. */
+  showExcerpt?: boolean;
+  /** Opt out of lazy loading for a card that is above the fold. */
+  eager?: boolean;
+}>(), {
+  size: 'sm',
+});
 
-// Default locale if not provided
-const locale = props.locale || 'lt';
+const page = usePage();
 
-// Formatter for ISO date - safely handles null/undefined values
-function formatISODate(date: string | number | null | undefined) {
-  return date ? new Date(date).toISOString() : '';
-}
+const showExcerpt = computed(() => props.showExcerpt ?? (props.size === 'lg' || props.size === 'featured'));
+
+const href = computed(() => localizedRoute('news', {
+  news: props.news.permalink ?? '',
+  subdomain: page.props.tenant?.subdomain ?? 'www',
+}, props.news.lang));
+
+const normalizeDate = (d: number | Date | string | undefined | null): Date => {
+  if (!d) return new Date();
+  if (d instanceof Date) return d;
+  if (typeof d === 'number') {
+    return new Date(d < 10000000000 ? d * 1000 : d);
+  }
+  if (typeof d === 'string' && /^\d+$/.test(d)) {
+    const num = Number(d);
+    return new Date(num < 10000000000 ? num * 1000 : num);
+  }
+  return new Date(d);
+};
+
+const longDate = (time: number | string | Date) => formatStaticTime(
+  normalizeDate(time),
+  { year: 'numeric', month: 'long', day: 'numeric' },
+  page.props.app.locale,
+);
 </script>

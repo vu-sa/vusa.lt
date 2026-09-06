@@ -4,8 +4,10 @@ namespace App\Settings;
 
 use App\Enums\TenantType;
 use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Policies\Traits\HasCommonChecks;
 use App\Services\ModelAuthorizer;
@@ -45,6 +47,12 @@ class AtstovavimasSettings extends Settings
      * Users with this role in a tenant can be contacted by student representatives.
      */
     public ?string $institution_manager_role_id = null;
+
+    /**
+     * The type ID that identifies the root student representative organ type.
+     * When null, defaults to the type with slug 'studentu-atstovu-organas'.
+     */
+    public ?int $student_rep_root_type_id = null;
 
     public static function group(): string
     {
@@ -250,5 +258,84 @@ class AtstovavimasSettings extends Settings
         // Currently not configured - super admin role handles global visibility
         // This could be extended to include additional global visibility roles if needed
         return collect();
+    }
+
+    /**
+     * Get the student representative root type model.
+     * Defaults to the type with slug 'studentu-atstovu-organas'.
+     */
+    public function getStudentRepRootType(): ?Type
+    {
+        if ($this->student_rep_root_type_id) {
+            $type = Type::find($this->student_rep_root_type_id);
+            if ($type) {
+                return $type;
+            }
+        }
+
+        return Type::query()->where('slug', 'studentu-atstovu-organas')->first();
+    }
+
+    /**
+     * Get all type IDs for student representative institutions (root type + all descendants).
+     *
+     * @return Collection<int, int>
+     */
+    public function getStudentRepInstitutionTypeIds(): Collection
+    {
+        return Cache::remember('atstovavimas:student_rep_type_ids', self::CACHE_TTL, function () {
+            $rootType = $this->getStudentRepRootType();
+
+            if (! $rootType) {
+                return collect();
+            }
+
+            return $rootType->getDescendantsAndSelf()->pluck('id');
+        });
+    }
+
+    /**
+     * Get all type slugs for student representative institutions (root type + all descendants).
+     *
+     * @return Collection<int, string>
+     */
+    public function getStudentRepInstitutionTypeSlugs(): Collection
+    {
+        return Cache::remember('atstovavimas:student_rep_type_slugs', self::CACHE_TTL, function () {
+            $rootType = $this->getStudentRepRootType();
+
+            if (! $rootType) {
+                return collect(['studentu-atstovu-organas']);
+            }
+
+            return $rootType->getDescendantsAndSelf()->pluck('slug')->filter()->values();
+        });
+    }
+
+    /**
+     * Check if an institution is a student representative organ (has root type or any descendant).
+     */
+    public function isStudentRepresentativeInstitution(Institution $institution): bool
+    {
+        $repTypeIds = $this->getStudentRepInstitutionTypeIds();
+
+        if ($repTypeIds->isEmpty()) {
+            return false;
+        }
+
+        if (! $institution->relationLoaded('types')) {
+            $institution->load('types');
+        }
+
+        return $institution->types->pluck('id')->intersect($repTypeIds)->isNotEmpty();
+    }
+
+    /**
+     * Clear the cached student rep type IDs and slugs.
+     */
+    public static function clearStudentRepTypeCache(): void
+    {
+        Cache::forget('atstovavimas:student_rep_type_ids');
+        Cache::forget('atstovavimas:student_rep_type_slugs');
     }
 }

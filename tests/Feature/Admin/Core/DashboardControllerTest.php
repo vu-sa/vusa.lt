@@ -338,7 +338,7 @@ describe('dashboard calendar and news', function (): void {
             );
     });
 
-    test('news without image returns fallback image', function (): void {
+    test('news without image returns null image', function (): void {
         // Delete any existing news first
         News::query()->delete();
 
@@ -357,7 +357,7 @@ describe('dashboard calendar and news', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
                 ->has('latestNews', 1)
-                ->where('latestNews.0.image', '/images/icons/naujienu_foto.png')
+                ->where('latestNews.0.image', null)
             );
     });
 

@@ -76,13 +76,36 @@
         </div>
       </template>
 
-      <NavigationBuilder
-        v-else
-        :roots="(contents as AdminNavigationRoot[])"
-        :lang="lang ?? 'lt'"
-        :translation-summary="translationSummary"
-        @update:lang="handleLangChange"
-      />
+      <Tabs v-else default-value="header">
+        <TabsList>
+          <TabsTrigger value="header">
+            {{ $t('navigation.builder.tab_header') }}
+          </TabsTrigger>
+          <TabsTrigger value="footer">
+            {{ $t('navigation.builder.tab_footer') }}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="header">
+          <NavigationBuilder
+            :roots="(contents as AdminNavigationRoot[])"
+            :lang="lang ?? 'lt'"
+            :translation-summary="translationSummary"
+            @update:lang="handleLangChange"
+          />
+        </TabsContent>
+
+        <TabsContent value="footer">
+          <FooterNavigationManager
+            :columns="footerColumns"
+            :lang="lang ?? 'lt'"
+            :max-columns="FOOTER_MAX_COLUMNS"
+            @toggle-link-active="handleToggleFooterLinkActive"
+            @delete-link="handleDeleteFooterLink"
+            @delete-column="handleDeleteFooterColumn"
+          />
+        </TabsContent>
+      </Tabs>
     </PageContent>
 
     <ConfirmDangerousActionDialog
@@ -102,12 +125,18 @@ import { computed, ref } from 'vue';
 import { RotateCcw, Trash2 } from 'lucide-vue-next';
 
 import NavigationBuilder from '@/Features/Admin/NavigationBuilder/NavigationBuilder.vue';
-import type { AdminNavigationRoot, TranslationSummary } from '@/Features/Admin/NavigationBuilder/types';
+import FooterNavigationManager from '@/Features/Admin/NavigationBuilder/FooterNavigationManager.vue';
+import type { AdminFooterColumn, AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from '@/Features/Admin/NavigationBuilder/types';
 import { Button } from '@/Components/ui/button';
 import TrashViewToggle from '@/Components/Tables/TrashViewToggle.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ConfirmDangerousActionDialog from '@/Components/ui/data-table/ConfirmDangerousActionDialog.vue';
+
+// Kept in sync with NavigationService::FOOTER_MAX_COLUMNS — purely a UI cap (hides the
+// "add column" button once reached); the server is the actual enforcement.
+const FOOTER_MAX_COLUMNS = 4;
 
 interface TrashedNavigationItem {
   id: number;
@@ -121,6 +150,7 @@ interface TrashedNavigationItem {
 
 const props = defineProps<{
   navigation: (AdminNavigationRoot | TrashedNavigationItem)[];
+  footerNavigation?: AdminFooterColumn[];
   lang?: 'lt' | 'en';
   showDeleted?: boolean;
   deletedCount?: number;
@@ -134,6 +164,11 @@ const page = usePage();
 // The trash branch renders `navigation` as a flat list; the live branch (NavigationBuilder)
 // owns its own local editable buffer internally. This is just a typed pass-through.
 const contents = computed(() => props.navigation);
+
+// The footer manager keeps no local buffer (unlike NavigationBuilder, it doesn't drag-reorder),
+// so it reads straight from the Inertia prop — each mutation below round-trips through the
+// server and Inertia refreshes this prop from the redirect response.
+const footerColumns = computed(() => props.footerNavigation ?? []);
 
 const showDeleted = computed(() => props.showDeleted ?? false);
 const deletedCount = computed(() => props.deletedCount ?? 0);
@@ -175,5 +210,26 @@ const handleForceDelete = () => {
   router.delete(route('navigation.forceDelete', itemPendingForceDelete.value.id), {
     preserveScroll: true,
   });
+};
+
+const handleToggleFooterLinkActive = (link: AdminNavigationLink, value: boolean) => {
+  router.patch(route('navigation.update', { navigation: link.id }), {
+    name: link.name,
+    url: link.url,
+    parent_id: link.parent_id,
+    lang: link.lang,
+    is_active: value,
+    extra_attributes: link.extra_attributes ?? {},
+  }, { preserveScroll: true });
+};
+
+const handleDeleteFooterLink = (link: AdminNavigationLink) => {
+  router.delete(route('navigation.destroy', { navigation: link.id }), { preserveScroll: true });
+};
+
+// Deleting a column deletes its children too — Navigation::booted() cascades a root
+// delete over its whole subtree (see app/Models/Navigation.php).
+const handleDeleteFooterColumn = (column: AdminFooterColumn) => {
+  router.delete(route('navigation.destroy', { navigation: column.id }), { preserveScroll: true });
 };
 </script>

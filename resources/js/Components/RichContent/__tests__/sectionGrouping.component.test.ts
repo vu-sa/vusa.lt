@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { describe, expect, it, vi } from 'vitest';
+import { flushPromises, mount } from '@vue/test-utils';
 
 import RichContentParser from '../RichContentParser.vue';
 
@@ -57,6 +57,23 @@ describe('RichContentParser section grouping', () => {
     expect(sections[0]!.find('.rc-canvas-nested').exists()).toBe(false);
     // The tiptap block after it renders as an ordinary top-level block, outside the section.
     expect(wrapper.html()).toContain('Divider');
+  });
+
+  it('ends a manual section before a self-spaced band', async () => {
+    const wrapper = mount(RichContentParser, {
+      props: {
+        content: [
+          { id: 1, type: 'section', json_content: {}, options: { title: 'Grid section' } },
+          { id: 2, type: 'content-grid', json_content: [], options: {} },
+          { id: 3, type: 'card-stack', json_content: [], options: {} },
+        ] as unknown as models.ContentPart[],
+      },
+    });
+
+    await flushPromises();
+    await vi.dynamicImportSettled();
+
+    expect(wrapper.find('.rc-canvas-nested')!.findAll(':scope > *')).toHaveLength(1);
   });
 
   it('renders a plain block with no section wrapper when there is no marker', () => {

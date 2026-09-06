@@ -46,6 +46,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email
  * @property string|null $website
  * @property string|null $image_url
+ * @property string|null $image_focal_point
  * @property string|null $logo_url
  * @property string|null $facebook_url
  * @property string|null $instagram_url

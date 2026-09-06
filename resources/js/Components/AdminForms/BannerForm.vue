@@ -13,7 +13,11 @@
         <Switch :model-value="!!form.is_active" @update:model-value="val => form.is_active = val ? 1 : 0" />
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="image_url" :label="$t('forms.fields.image')">
+      <FormFieldWrapper
+        id="image_url"
+        :label="$t('forms.fields.banner_logo')"
+        :helper-text="$t('forms.fields.banner_logo_help')"
+      >
         <ImageUpload v-model:url="form.image_url" mode="immediate" folder="banners" cropper :existing-url="banner?.image_url" />
       </FormFieldWrapper>
     </FormElement>

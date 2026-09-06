@@ -2,12 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\NewsLayoutEnum;
 use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
 class NewsRequest extends FormRequest
 {
@@ -28,7 +26,6 @@ class NewsRequest extends FormRequest
             'draft' => 'nullable|boolean',
             'image_author' => 'nullable|string',
             'publish_time' => 'required',
-            'layout' => ['nullable', new Enum(NewsLayoutEnum::class)],
             'show_breadcrumbs' => ['boolean'],
             'highlights' => 'nullable|array|max:3',
             'highlights.*' => 'nullable|string|max:500',

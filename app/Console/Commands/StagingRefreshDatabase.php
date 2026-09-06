@@ -32,8 +32,8 @@ class StagingRefreshDatabase extends Command
         'notification_digest_queue',
         'push_subscriptions',
         'sessions',
-        'telescope_entries',
         'telescope_entries_tags',
+        'telescope_entries',
         'telescope_monitoring',
         'activity_log',
     ];
@@ -85,6 +85,10 @@ class StagingRefreshDatabase extends Command
         // production data, which is where migration bugs actually surface.
         $this->info('Running migrations...');
         $this->call('migrate', ['--force' => true]);
+
+        if ($this->call('urls:rewrite-vusa') !== self::SUCCESS) {
+            return self::FAILURE;
+        }
 
         $this->call('optimize:clear');
 
@@ -244,7 +248,13 @@ class StagingRefreshDatabase extends Command
 
         foreach (self::DISPOSABLE_TABLES as $table) {
             if (Schema::hasTable($table)) {
-                DB::table($table)->truncate();
+                if ($table === 'telescope_entries') {
+                    // MySQL cannot truncate a table that another table references.
+                    DB::table($table)->delete();
+                } else {
+                    DB::table($table)->truncate();
+                }
+
                 $emptied[] = $table;
             }
         }
