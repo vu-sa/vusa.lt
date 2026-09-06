@@ -20,14 +20,9 @@
             </p>
             <p class="flex items-center gap-2.5">
               <IFluentPhone20Regular class="size-4 shrink-0 text-brand" aria-hidden="true" />
-              <a :href="`tel:${contacts.phone}`" class="no-underline transition-colors hover:text-brand hover:underline">
+              <a :href="`tel:${contacts.phone}`"
+                class="no-underline transition-colors hover:text-brand hover:underline">
                 +370 5 268 7144
-              </a>
-            </p>
-            <p class="flex items-center gap-2.5">
-              <IFluentMail20Regular class="size-4 shrink-0 text-brand" aria-hidden="true" />
-              <a :href="`mailto:${contacts.accounting}`" class="no-underline transition-colors hover:text-brand hover:underline">
-                {{ contacts.accounting }}
               </a>
             </p>
           </address>
@@ -42,23 +37,18 @@
         <!-- Footer navigation — up to 4 columns, managed from Admin ▸ Navigation ▸ Footer.
              A column heading without a URL renders as plain text (see hasColumnLink below);
              `.u-eyebrow` carries no hover treatment, so the two read identically either way. -->
-        <nav v-if="footerColumns.length > 0" :aria-label="$t('navigation.footer_navigation')" class="grid grid-cols-2 gap-8 sm:grid-cols-4">
+        <nav v-if="footerColumns.length > 0" :aria-label="$t('navigation.footer_navigation')"
+          class="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <div v-for="column in footerColumns" :key="column.id">
-            <component
-              :is="hasColumnLink(column) ? 'a' : 'span'"
-              :href="hasColumnLink(column) ? column.url : undefined"
-              class="u-eyebrow block border-b border-border pb-2 no-underline hover:underline"
-            >
+            <component :is="hasColumnLink(column) ? 'a' : 'span'" :href="hasColumnLink(column) ? column.url : undefined"
+              class="u-eyebrow block border-b border-border pb-2 no-underline hover:underline">
               {{ column.name }}
             </component>
             <ul v-if="column.links.length > 0" class="mt-4 space-y-2.5">
               <li v-for="link in column.links" :key="link.id">
-                <a
-                  :href="link.url"
-                  :target="link.new_tab ? '_blank' : undefined"
+                <a :href="link.url" :target="link.new_tab ? '_blank' : undefined"
                   :rel="link.new_tab ? 'noopener noreferrer' : undefined"
-                  class="text-sm text-muted-foreground no-underline transition-colors hover:text-foreground hover:underline"
-                >
+                  class="text-sm text-muted-foreground no-underline transition-colors hover:text-foreground hover:underline">
                   {{ link.name }}
                 </a>
               </li>
@@ -67,13 +57,12 @@
         </nav>
       </div>
 
-      <div class="mt-10 flex flex-col gap-3 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p>{{ $t("Įmonės kodas") }}: {{ legal.company_code }} · {{ $t("PVM mokėtojo kodas") }}: {{ legal.vat_code }}</p>
-        <button
-          type="button"
-          class="text-left transition-colors hover:text-brand hover:underline"
-          @click="reopen"
-        >
+      <div
+        class="mt-10 flex flex-col gap-3 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <p>{{ $t("Įmonės kodas") }}: {{ legal.company_code }} · {{ $t("PVM mokėtojo kodas") }}: {{ legal.vat_code }}. {{
+          $t("Finansiniais klausimais kreipkitės el. paštu") }}: <a :href="`mailto:${contacts.accounting}`">
+            {{ contacts.accounting }} </a> </p>
+        <button type="button" class="text-left transition-colors hover:text-brand hover:underline" @click="reopen">
           {{ $t("Slapukų nustatymai") }}
         </button>
       </div>

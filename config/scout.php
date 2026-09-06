@@ -489,15 +489,19 @@ return [
 
                         ['name' => 'duties_count', 'type' => 'int32', 'sort' => true],
                         ['name' => 'has_contacts', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'is_student_representation', 'type' => 'bool', 'facet' => true, 'optional' => true],
+                        ['name' => 'contacts', 'type' => 'object[]', 'optional' => true],
+                        ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true, 'infix' => true],
 
                         ['name' => 'created_at', 'type' => 'int64'],
                         ['name' => 'updated_at', 'type' => 'int64', 'sort' => true],
                     ],
                     'default_sorting_field' => 'updated_at',
+                    'enable_nested_fields' => true,
                 ],
                 'search-parameters' => [
-                    'query_by' => 'title,name_lt,name_en,short_name_lt,short_name_en,alias',
-                    'query_by_weights' => '10,10,8,6,4,3',
+                    'query_by' => 'title,name_lt,name_en,short_name_lt,short_name_en,alias,current_user_names',
+                    'query_by_weights' => '10,10,8,6,4,3,2',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,

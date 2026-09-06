@@ -148,6 +148,15 @@ test('can open student representative page', function (): void {
         );
 });
 
+test('can open contacts search page with student rep type slugs', function (): void {
+    $this->get(route('contacts', ['subdomain' => 'www', 'lang' => 'lt']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/Contacts/ShowContacts')
+            ->has('institutionTypes')
+            ->has('studentRepTypeSlugs')
+        );
+});
+
 test('can open institution page', function (): void {
     $institution = Institution::factory()->create();
 

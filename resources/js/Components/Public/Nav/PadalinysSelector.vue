@@ -74,8 +74,8 @@
             <template v-for="option in options_padaliniai" :key="option.key">
               <!--
                 A unit with a photo renders as one of the mega menu's image items: the picture is
-                the row's ground, grayscale behind a scrim, with the name laid over it. Units
-                without one keep the plain lettered row, so the list stays scannable either way.
+                the row's ground behind a scrim, with the name laid over it. Units without one
+                keep the plain lettered row, so the list stays scannable either way.
               -->
               <button
                 type="button"
@@ -93,7 +93,7 @@
                   <img
                     :src="option.primary_institution.image_url"
                     alt=""
-                    class="absolute inset-0 size-full object-cover opacity-60 grayscale"
+                    class="absolute inset-0 size-full object-cover opacity-60"
                   >
                   <span class="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/30" />
                 </template>

@@ -1,9 +1,9 @@
 <template>
   <div class="relative">
     <img :src :alt :loading :style="objectPosition ? `object-position: ${objectPosition}` : ''" :class="[
-      'w-full object-cover rounded-xl shadow-lg transition-transform duration-300',
+      'w-full object-cover rounded-xl shadow-lg transition-transform duration-400',
       heightClass,
-      { 'group-hover:scale-105': hoverScale }
+      { 'group-hover:scale-103': hoverScale }
     ]">
 
     <!-- Decorative elements -->

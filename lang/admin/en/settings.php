@@ -89,6 +89,12 @@ return [
         'manager_role_label' => 'Manager role',
         'manager_role_placeholder' => 'Select a role',
         'manager_role_note' => 'Note: institution managers are also notified about their institutions\' meetings. That is separate from institution administrators, who are nominated per cadence on the institution itself and carry its tasks.',
+        'student_rep_type_title' => 'Student representative body root type',
+        'student_rep_type_description' => 'Select the root institution type that (along with all its descendant types) is recognized as a student representative body. Institutions of this type will be displayed using the student rep card instead of the standard institution card in public contacts.',
+        'student_rep_type_label' => 'Root type',
+        'student_rep_type_placeholder' => 'Default: Student representative body',
+        'student_rep_type_default' => 'Default (studentu-atstovu-organas)',
+        'student_rep_type_note' => 'By default, the type with slug "studentu-atstovu-organas" is used.',
     ],
 
     // Document settings page

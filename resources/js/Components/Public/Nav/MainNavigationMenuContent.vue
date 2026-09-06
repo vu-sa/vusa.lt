@@ -43,8 +43,8 @@
             @click="handleCloseMenu">
             <img
               :class="[
-                'absolute left-0 top-0 size-full object-cover contrast-110 transition duration-500',
-                'grayscale group-hover:grayscale-0 group-hover:scale-105',
+                'absolute left-0 top-0 size-full object-cover contrast-110 transition-transform duration-400',
+                'group-hover:scale-103',
                 resolveImageOverlay(link),
                 resolveImageBlur(link),
               ]"
@@ -92,7 +92,7 @@
             <div class="flex w-full items-center justify-between gap-2">
               <img
                 v-if="link.image && link.image_render === 'thumbnail'"
-                class="mr-3 size-10 shrink-0 object-cover grayscale transition-[filter] duration-300 group-hover:grayscale-0"
+                class="mr-3 size-10 shrink-0 object-cover"
                 :style="{ objectPosition: link.image_focal ?? '50% 50%' }" :src="link.image" alt="">
               <div class="h-fit">
                 <div class="inline-flex items-center gap-1.5" :class="textClasses(link)">

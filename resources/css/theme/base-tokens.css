@@ -8,6 +8,10 @@
   --radius-md: 0.5rem;
   --radius-lg: 0.625rem;
   --radius-xl: 0.875rem;
+
+  /* Card image hover zoom scale (subtle 3% zoom) */
+  --scale-103: 1.03;
+  --duration-400: 400ms;
 }
 
 /* Brand accent. Deliberately NOT shadcn's `--accent`: that slot means "hover/muted surface"

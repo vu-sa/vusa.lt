@@ -198,7 +198,7 @@
                 v-if="otherEventImage(otherEvent)"
                 :src="otherEventImage(otherEvent)"
                 :alt="otherEventTitle(otherEvent)"
-                class="h-full w-full object-cover grayscale transition-transform duration-500 group-hover:scale-105"
+                class="h-full w-full object-cover transition-transform duration-400 group-hover:scale-103"
                 loading="lazy"
               >
               <div

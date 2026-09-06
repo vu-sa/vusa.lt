@@ -234,12 +234,17 @@
 
         <!-- Results Grid -->
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-          <NewInstitutionCard
-            v-for="institution in institutions"
-            :key="institution.id"
-            :institution
-            show-metadata
-          />
+          <template v-for="institution in institutions" :key="institution.id">
+            <StudentRepInstitutionCard
+              v-if="isStudentRepInstitution(institution)"
+              :institution
+            />
+            <NewInstitutionCard
+              v-else
+              :institution
+              show-metadata
+            />
+          </template>
         </div>
 
         <!-- Loading More Skeletons -->
@@ -286,6 +291,7 @@ import TagChip from '@/Components/Public/Base/TagChip.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue';
+import StudentRepInstitutionCard from '@/Components/Cards/StudentRepInstitutionCard.vue';
 import InstitutionResultsSkeleton from '@/Components/Public/Search/InstitutionResultsSkeleton.vue';
 import { TenantType } from '@/Types/enums';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
@@ -297,11 +303,28 @@ import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
 
 interface Props {
   institutionTypes?: Record<string, string>;
+  studentRepTypeSlugs?: string[];
+}
+
+interface SearchInstitutionItem {
+  id: string;
+  is_student_representation?: boolean;
+  type_slugs?: string[];
+  types?: Array<{ slug?: string }>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   institutionTypes: () => ({}),
+  studentRepTypeSlugs: () => ['studentu-atstovu-organas'],
 });
+
+const isStudentRepInstitution = (inst: SearchInstitutionItem): boolean => {
+  if (inst.is_student_representation === true) {
+    return true;
+  }
+  const slugs: string[] = inst.type_slugs || inst.types?.map(t => t.slug).filter((s): s is string => Boolean(s)) || [];
+  return slugs.some(slug => props.studentRepTypeSlugs.includes(slug));
+};
 
 const page = usePage();
 const searchController = useInstitutionSearch();
@@ -320,7 +343,7 @@ const showFilterBar = ref(false);
 const searchInput = ref('');
 
 function applyCurrentTenantFilter(): void {
-  const tenant = page.props.tenant;
+  const { tenant } = page.props;
 
   if (tenant?.type !== TenantType.Padalinys || !tenant.shortname) {
     return;

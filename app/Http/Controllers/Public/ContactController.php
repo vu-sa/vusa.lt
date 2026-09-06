@@ -12,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ContactPresentationService;
+use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,9 +48,13 @@ class ContactController extends PublicController
             ])
             ->toArray();
 
+        $atstovavimasSettings = app(AtstovavimasSettings::class);
+        $studentRepTypeSlugs = $atstovavimasSettings->getStudentRepInstitutionTypeSlugs()->toArray();
+
         return Inertia::render('Public/Contacts/ShowContacts', [
             'tenantSwitchTarget' => 'same-page',
             'institutionTypes' => $institutionTypes,
+            'studentRepTypeSlugs' => $studentRepTypeSlugs,
         ]);
     }
 
@@ -164,9 +169,9 @@ class ContactController extends PublicController
         $this->getTenantLinks();
         $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
 
-        $type = Type::query()->where('slug', '=', 'studentu-atstovu-organas')->first();
+        $type = app(AtstovavimasSettings::class)->getStudentRepRootType();
         /** @var Collection<int, Type> $descendants */
-        $descendants = $type->getDescendantsAndSelf();
+        $descendants = $type ? $type->getDescendantsAndSelf() : collect();
 
         $descendants->load(['institutions' => function ($query): void {
             $query

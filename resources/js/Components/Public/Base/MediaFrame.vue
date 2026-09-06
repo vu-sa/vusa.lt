@@ -16,7 +16,7 @@
       :class="cn(
         'absolute inset-0 size-full object-cover',
         grayscale && 'grayscale',
-        hoverZoom && 'transition-transform duration-500 group-hover:scale-[1.03]',
+        hoverZoom && 'transition-transform duration-400 group-hover:scale-103',
       )"
     >
     <!-- No photo: an empty frame reads as a broken layout in a grid of otherwise-photographed

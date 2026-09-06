@@ -28,12 +28,12 @@ export const blurClass: Record<NonNullable<NavLink['image_blur']>, string> = {
 
 // `ink` (not `black`): the shared fixed-dark ground for photo cards carrying white type — see
 // `--ink` in app.css. It stays legible in both themes the same way `bg-ink` on the card itself does.
-// `bottom` matches the strength of the hero's own vertical layer (`from-ink via-ink/70 to-transparent`
-// in HeroCarouselDisplay.vue) — it used to fade to `/60` at the anchor and `/20` by mid-height,
-// which read as barely-there next to the hero's full-strength scrim on the same `--ink` ground.
+// `bottom` keeps the hero's own scrim strength (`from-ink via-ink/70 to-transparent` in
+// HeroCarouselDisplay.vue) but tightens the stops so it fades out by 65% up the card instead of
+// the full height — the darkened band stays behind the text without shading the photo above it.
 export const gradientClass: Record<NonNullable<NavLink['image_gradient']>, string> = {
   none: '',
-  bottom: 'bg-gradient-to-t from-ink via-ink/70 to-transparent',
+  bottom: 'bg-gradient-to-t from-ink via-ink/70 via-35% to-transparent to-65%',
   full: 'bg-ink/40',
 };
 

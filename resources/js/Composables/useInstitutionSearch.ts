@@ -164,14 +164,16 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
       // Build collection-specific search parameters
       const collectionSpecificSearchParameters: Record<string, any> = {};
       collectionSpecificSearchParameters[collectionName] = {
-        query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias',
+        query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias,current_user_names',
+        query_by_weights: '10,8,6,4,3,5',
         facet_by: ['tenant_shortname', 'type_slugs', 'has_contacts'].join(','),
         per_page: 24,
       };
 
       const clients = createTypesenseClients(typesenseConfig, {
         additionalSearchParameters: {
-          query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias',
+          query_by: 'name_lt,name_en,short_name_lt,short_name_en,alias,current_user_names',
+          query_by_weights: '10,8,6,4,3,5',
           num_typos: 2,
           typo_tokens_threshold: 1,
           drop_tokens_threshold: 1,

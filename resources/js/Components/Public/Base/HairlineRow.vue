@@ -3,6 +3,8 @@
     <component
       :is="href ? 'a' : 'div'"
       :href
+      :target
+      :rel
       :class="cn(
         'group flex w-full items-center gap-5 py-5 text-left',
         href && 'transition-colors hover:bg-secondary/60',
@@ -54,6 +56,9 @@ const props = withDefaults(defineProps<{
   meta?: string;
   /** Makes the whole row a link. A resolved URL — this tier never calls `route()`. */
   href?: string;
+  /** Passed through to the rendered `<a>` — e.g. `_blank` for a link to an external file. */
+  target?: string;
+  rel?: string;
   as?: string;
   class?: HTMLAttributes['class'];
 }>(), {
@@ -61,6 +66,8 @@ const props = withDefaults(defineProps<{
   eyebrow: undefined,
   meta: undefined,
   href: undefined,
+  target: undefined,
+  rel: undefined,
   as: 'div',
   class: undefined,
 });

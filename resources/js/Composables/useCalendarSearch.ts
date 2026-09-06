@@ -154,7 +154,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     const params = new URLSearchParams();
 
     if (tab.value !== 'upcoming') params.set('tab', tab.value);
-    if (query.value.trim()) params.set('search', query.value.trim());
+    if (query.value.trim()) params.set('q', query.value.trim());
     if (selectedCategories.value.length > 0) {
       params.set('category', selectedCategories.value.join(','));
     }
@@ -181,7 +181,10 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
       tab.value = tabParam;
     }
 
-    const searchParam = params.get('search');
+    // `q` matches the convention used by useDocumentSearch — the site's search pages all
+    // read/write the same query-string key so a "view all" link's `?q=` term is picked up
+    // regardless of which collection it points to.
+    const searchParam = params.get('q');
     if (searchParam) {
       query.value = searchParam;
     }

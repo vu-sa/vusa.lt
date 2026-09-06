@@ -104,9 +104,9 @@ const COLLECTIONS: CollectionDef[] = [
     fallbackName: 'public_institutions',
     buildParams: (query, locale) => ({
       query_by: locale === 'en'
-        ? 'name_en,name_lt,short_name_en,short_name_lt,alias'
-        : 'name_lt,name_en,short_name_lt,short_name_en,alias',
-      query_by_weights: '10,8,6,4,3',
+        ? 'name_en,name_lt,short_name_en,short_name_lt,alias,current_user_names'
+        : 'name_lt,name_en,short_name_lt,short_name_en,alias,current_user_names',
+      query_by_weights: '10,8,6,4,3,5',
       sort_by: hasRealQuery(query)
         ? '_text_match:desc,has_logo:desc,name_lt:asc'
         : (locale === 'en' ? 'has_logo:desc,name_en:asc,name_lt:asc' : 'has_logo:desc,name_lt:asc,name_en:asc'),
@@ -487,7 +487,6 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
 
   const hasAnyResults = computed(() => orderedSections.value.length > 0);
 
-  // Shape compatible with `useSearchInterface`'s `SearchInterfaceController`.
   const filters = computed(() => ({ query: query.value }));
   const searchState = computed(() => ({ query: query.value }));
   // Clearing the search box returns to browsing everything rather than an empty page.

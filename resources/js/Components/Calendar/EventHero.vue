@@ -136,7 +136,7 @@
           <img
             :src="heroImageUrl"
             :alt="eventTitle"
-            class="size-full object-cover grayscale"
+            class="size-full object-cover"
             :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
             loading="eager"
           >
@@ -157,7 +157,7 @@
         v-if="heroImageUrl"
         :src="heroImageUrl"
         :alt="eventTitle"
-        class="absolute inset-0 size-full object-cover grayscale"
+        class="absolute inset-0 size-full object-cover"
         :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
         loading="eager"
       >

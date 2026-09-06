@@ -111,7 +111,7 @@
                       group.isNextUpcoming && eventIndex === 0
                         ? 'ring-2 ring-brand ring-offset-2 ring-offset-background scale-105 z-20'
                         : 'hover:scale-105 hover:z-20',
-                      !isUpcoming(event) ? 'opacity-75 grayscale-[15%] hover:opacity-100 hover:grayscale-0' : ''
+                      !isUpcoming(event) ? 'opacity-75 hover:opacity-100' : ''
                     ]"
                     @click="navigateToEvent(event)"
                   >
@@ -184,7 +184,7 @@
             v-if="getEventImage(event)"
             :src="getEventImage(event)!"
             :alt="getEventTitle(event)"
-            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            class="w-full h-full object-cover transition-transform duration-400 group-hover:scale-103"
             :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
           >
           <div

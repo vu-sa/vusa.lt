@@ -285,7 +285,7 @@ return [
     'view_all' => 'Rodyti visus',
 
     // Unified search section headings
-    'section_institutions' => 'Institucijos',
+    'section_institutions' => 'Kontaktai',
     'section_meetings' => 'Posėdžiai',
     'section_documents' => 'Dokumentai',
     'section_news' => 'Naujienos',

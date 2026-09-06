@@ -103,7 +103,7 @@ describe('useNewsSearch', () => {
   });
 
   it('initializes from URL query parameters if present', async () => {
-    window.history.replaceState({}, '', '/lt/naujienos?search=konferencija&category=Atstovavimas&tenant=VU%20SA&year=2026&tag=Studijos&sort=date_asc');
+    window.history.replaceState({}, '', '/lt/naujienos?q=konferencija&category=Atstovavimas&tenant=VU%20SA&year=2026&tag=Studijos&sort=date_asc');
 
     const { useNewsSearch } = await import('../useNewsSearch');
     const search = useNewsSearch();

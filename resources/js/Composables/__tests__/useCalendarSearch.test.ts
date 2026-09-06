@@ -80,7 +80,7 @@ describe('useCalendarSearch', () => {
   });
 
   it('initializes from URL query parameters if present', async () => {
-    window.history.replaceState({}, '', '/lt/renginiai?tab=past&search=test&category=Konferencija&year=2026&remote=1');
+    window.history.replaceState({}, '', '/lt/renginiai?tab=past&q=test&category=Konferencija&year=2026&remote=1');
 
     const { useCalendarSearch } = await import('../useCalendarSearch');
     const search = useCalendarSearch();

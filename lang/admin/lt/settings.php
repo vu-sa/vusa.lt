@@ -89,6 +89,12 @@ return [
         'manager_role_label' => 'Atstovų rolė',
         'manager_role_placeholder' => 'Pasirinkti rolę',
         'manager_role_note' => 'Pastaba: institucijų atstovai taip pat gauna pranešimus apie savo institucijų posėdžius. Tai nėra tas pats, kas institucijos administratoriai — jie nurodomi kadencijai pačios institucijos nustatymuose ir jiems tenka jos užduotys.',
+        'student_rep_type_title' => 'Studentų atstovų organų šakninis tipas',
+        'student_rep_type_description' => 'Pasirinkite šakninį institucijos tipą, kuris (ir visi jo potipiai) laikomas studentų atstovų organu. Šio tipo institucijoms viešame kontaktų puslapyje bus rodoma studentų atstovų kortelė vietoje standartinės institucijos kortelės.',
+        'student_rep_type_label' => 'Šakninis tipas',
+        'student_rep_type_placeholder' => 'Pagal nutylėjimą: Studentų atstovų organas',
+        'student_rep_type_default' => 'Pagal nutylėjimą (studentu-atstovu-organas)',
+        'student_rep_type_note' => 'Pagal nutylėjimą naudojamas tipas su unikaliu kodu "studentu-atstovu-organas".',
     ],
 
     // Document settings page

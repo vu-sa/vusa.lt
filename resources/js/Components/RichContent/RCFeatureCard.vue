@@ -15,7 +15,7 @@
          photo. -->
     <div v-if="coverImage || showCoverFallback" class="relative aspect-[16/9] overflow-hidden bg-secondary">
       <img v-if="coverImage" :src="coverImage" :alt="coverAlt ?? title"
-        class="size-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
+        class="size-full object-cover transition-transform duration-400 group-hover:scale-103" loading="lazy">
       <div v-else class="flex size-full items-center justify-center bg-brand/10">
         <slot name="cover-fallback">
           <IFluentImage24Regular class="size-10 text-brand/50" />

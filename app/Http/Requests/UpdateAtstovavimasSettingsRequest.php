@@ -16,6 +16,7 @@ class UpdateAtstovavimasSettingsRequest extends FormRequest
     {
         return [
             'institution_manager_role_id' => 'nullable|string|exists:roles,id',
+            'student_rep_root_type_id' => 'nullable|integer|exists:types,id',
         ];
     }
 }

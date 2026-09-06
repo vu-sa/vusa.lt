@@ -7,7 +7,7 @@
       <img
         :src="imageUrl"
         :alt="contact?.name"
-        class="size-full object-cover grayscale contrast-125 transition-transform duration-500 group-hover:grayscale-0 group-hover:scale-[1.03]"
+        class="size-full object-cover transition-transform duration-400 group-hover:scale-103"
         loading="lazy"
         :style="{ objectPosition: focalPoint }"
       >

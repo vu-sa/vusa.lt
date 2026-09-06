@@ -11,7 +11,7 @@
     >
       <img
         v-if="imageUrl && !imageLoadError"
-        class="size-full object-cover grayscale transition-transform duration-500 group-hover:scale-105"
+        class="size-full object-cover transition-transform duration-400 group-hover:scale-103"
         :src="imageUrl"
         :alt="eventTitle"
         :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"

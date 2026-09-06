@@ -43,7 +43,7 @@
           <img
             :src="institution.image_url"
             :alt="institution.name"
-            class="size-full object-cover grayscale contrast-105"
+            class="size-full object-cover contrast-105"
           >
         </div>
       </div>

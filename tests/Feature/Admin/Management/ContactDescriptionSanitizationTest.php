@@ -14,7 +14,7 @@ pest()->use(RefreshDatabase::class);
 /**
  * Duty, Dutiable and Institution descriptions are Tiptap `full` preset HTML that
  * the public site renders with `v-html` — ContactWithPhoto.vue for the two duty
- * descriptions, ShowInstitution.vue / InstitutionFigure.vue for the institution
+ * descriptions, ShowInstitution.vue for the institution
  * one. Any padalinys-scoped admin may write them, so unsanitized markup stored
  * here would execute in every anonymous visitor's browser.
  */
