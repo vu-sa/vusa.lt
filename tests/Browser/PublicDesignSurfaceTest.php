@@ -136,7 +136,10 @@ it('renders Vue Flow chrome with public tokens and neutral arrows', function ():
             <div class="vue-flow__controls"><button class="vue-flow__controls-button">+</button></div>
             <div class="vue-flow__node-default"><button>Node</button></div>
             <div class="vue-flow__handle"></div>
-            <svg><path class="vue-flow__edge-path" /></svg>
+            <svg>
+              <path class="vue-flow__edge-path" />
+              <rect class="vue-flow__edge-textbg" />
+            </svg>
           `;
           document.body.appendChild(flow);
 
@@ -156,16 +159,24 @@ it('renders Vue Flow chrome with public tokens and neutral arrows', function ():
           border.style.border = '1px solid var(--border)';
           document.body.appendChild(border);
 
-          const secondary = document.createElement('div');
-          secondary.style.background = 'var(--secondary)';
-          document.body.appendChild(secondary);
+          const background = document.createElement('div');
+          background.style.background = 'var(--background)';
+          document.body.appendChild(background);
 
           const controls = flow.querySelector('.vue-flow__controls');
           const button = flow.querySelector('.vue-flow__controls-button');
           const node = flow.querySelector('.vue-flow__node-default');
           const handle = flow.querySelector('.vue-flow__handle');
           const edge = flow.querySelector('.vue-flow__edge-path');
+          const edgeTextBackground = flow.querySelector('.vue-flow__edge-textbg');
+          const flowBorder = document.createElement('div');
+          flowBorder.style.border = '1px solid color-mix(in oklab, var(--border) 55%, var(--background))';
+          document.body.appendChild(flowBorder);
           const result = {
+            flowBackground: getComputedStyle(flow).backgroundColor,
+            expectedFlowBackground: getComputedStyle(background).backgroundColor,
+            flowBorder: getComputedStyle(flow).borderColor,
+            expectedFlowBorder: getComputedStyle(flowBorder).borderColor,
             controlBackground: getComputedStyle(button).backgroundColor,
             expectedControlBackground: getComputedStyle(popover).backgroundColor,
             controlRadius: getComputedStyle(button).borderRadius,
@@ -173,10 +184,11 @@ it('renders Vue Flow chrome with public tokens and neutral arrows', function ():
             controlGap: getComputedStyle(controls).gap,
             arrowStroke: getComputedStyle(edge).stroke,
             expectedArrowStroke: getComputedStyle(neutral).color,
+            edgeTextBackground: getComputedStyle(edgeTextBackground).fill,
             nodeBorder: getComputedStyle(node).borderColor,
             expectedNodeBorder: getComputedStyle(border).borderColor,
             nodeBackground: getComputedStyle(node).backgroundColor,
-            expectedNodeBackground: getComputedStyle(secondary).backgroundColor,
+            expectedNodeBackground: getComputedStyle(background).backgroundColor,
             nodeRadius: getComputedStyle(node).borderRadius,
             handleBorder: getComputedStyle(handle).borderColor,
             expectedHandleBorder: getComputedStyle(neutral).color,
@@ -189,18 +201,22 @@ it('renders Vue Flow chrome with public tokens and neutral arrows', function ():
           neutral.remove();
           muted.remove();
           border.remove();
-          secondary.remove();
+          background.remove();
+          flowBorder.remove();
 
           return result;
         })()
     JS);
 
-    expect($styles['controlBackground'])->toBe($styles['expectedControlBackground'])
+    expect($styles['flowBackground'])->toBe($styles['expectedFlowBackground'])
+        ->and($styles['flowBorder'])->toBe($styles['expectedFlowBorder'])
+        ->and($styles['controlBackground'])->toBe($styles['expectedControlBackground'])
         ->and($styles['controlRadius'])->toBe('0px')
         ->and($styles['controlPadding'])->toBe('8px')
         ->and($styles['controlGap'])->toBe('4px')
         ->and($styles['arrowStroke'])->toBe($styles['expectedArrowStroke'])
-        ->and($styles['nodeBorder'])->toBe($styles['expectedNodeBorder'])
+        ->and($styles['edgeTextBackground'])->toBe($styles['expectedFlowBackground'])
+        ->and($styles['nodeBorder'])->toBe($styles['expectedFlowBorder'])
         ->and($styles['nodeBackground'])->toBe($styles['expectedNodeBackground'])
         ->and($styles['nodeRadius'])->toBe('0px')
         ->and($styles['handleBorder'])->toBe($styles['expectedHandleBorder'])

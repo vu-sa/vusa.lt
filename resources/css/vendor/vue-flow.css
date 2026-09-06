@@ -1,7 +1,19 @@
 /* Vue Flow custom styling */
 .basic-flow {
-  background: var(--card);
+  --flow-surface: var(--background);
+  --flow-border: var(--border);
+
+  border-color: var(--flow-border);
+  background: var(--flow-surface);
   color: var(--foreground);
+}
+
+[data-surface="public"] .basic-flow {
+  --flow-border: color-mix(in oklab, var(--border) 55%, var(--background));
+}
+
+.dark [data-surface="public"] .basic-flow {
+  --flow-border: var(--border);
 }
 
 .basic-flow .vue-flow__node.selected {
@@ -13,7 +25,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.25rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--flow-border);
   background: var(--popover);
   box-shadow: none;
 }
@@ -55,7 +67,7 @@
 }
 
 .basic-flow .vue-flow__edge-textbg {
-  fill: var(--card);
+  fill: var(--flow-surface);
 }
 
 .basic-flow :is(.vue-flow__node-multiple-handle, .vue-flow__handle) {
@@ -72,6 +84,6 @@
 
 .basic-flow .vue-flow__node-default {
   border-radius: 0;
-  border-color: var(--border);
-  background: var(--secondary);
+  border-color: var(--flow-border);
+  background: var(--flow-surface);
 }

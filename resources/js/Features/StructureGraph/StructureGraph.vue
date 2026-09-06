@@ -1,6 +1,6 @@
 <template>
   <VueFlow fit-view-on-init :nodes :edges default-marker-color="var(--muted-foreground)"
-    class="basic-flow mb-4 border border-border" :nodes-connectable="false">
+    class="basic-flow mb-4 border" :nodes-connectable="false">
     <template #node-multiple-handle="props">
       <MultipleHandleNode :id="props.id" :data="props.data" />
     </template>
