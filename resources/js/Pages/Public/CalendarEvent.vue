@@ -324,6 +324,7 @@ const otherEventTitle = (ev: App.Entities.Calendar): string =>
   Array.isArray(ev.title) ? ev.title.join(' ') : String(ev.title ?? '');
 
 const otherEventImage = (ev: App.Entities.Calendar & { images?: Array<{ original_url: string }> }): string | null => {
+  if (typeof ev.main_image_url === 'string' && ev.main_image_url) return ev.main_image_url;
   if (!ev.images) return null;
   if (Array.isArray(ev.images) && ev.images[0]?.original_url) return ev.images[0].original_url;
   return null;
@@ -367,6 +368,6 @@ const photoGalleryElement = computed<PhotoGalleryGrid>(() => ({
     alt: image.caption || `${eventTitle.value} ${index + 1}`,
     title: image.caption,
   })),
-  options: { showLightbox: true, columns: '4', gap: 'medium' },
+  options: { showLightbox: true, columns: '3', gap: 'medium' },
 }));
 </script>

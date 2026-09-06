@@ -23,7 +23,7 @@ describe('Calendar/EventActions.vue', () => {
 
     const cta = wrapper.find('a');
     expect(cta.exists()).toBe(true);
-    expect(cta.text()).toContain('Registruotis');
+    expect(cta.text()).toContain('Dalyvauk!');
     expect(cta.classes()).not.toContain('hidden');
   });
 
@@ -34,7 +34,7 @@ describe('Calendar/EventActions.vue', () => {
     });
 
     const cta = wrapper.find('a');
-    expect(cta.text()).toContain('Dalyvauk dabar');
+    expect(cta.text()).toContain('Dalyvauk!');
   });
 
   it('does not render a registration CTA for past events', () => {

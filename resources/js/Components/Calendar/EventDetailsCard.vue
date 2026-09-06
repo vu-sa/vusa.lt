@@ -94,41 +94,6 @@
           </dd>
         </div>
       </div>
-
-      <!-- Category -->
-      <div v-if="event.category?.name" class="flex items-start gap-3 px-5 py-4">
-        <IFluentTag20Regular class="mt-0.5 size-4 shrink-0 text-brand" />
-        <div class="min-w-0">
-          <dt class="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            {{ $t('Kategorija') }}
-          </dt>
-          <dd class="mt-0.5 text-sm font-semibold text-foreground">
-            {{ event.category.name }}
-          </dd>
-        </div>
-      </div>
-
-      <!-- Status -->
-      <div v-if="statusLabel" class="flex items-start gap-3 px-5 py-4">
-        <span class="mt-1 relative flex size-2 shrink-0">
-          <span
-            v-if="isLive"
-            class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"
-          />
-          <span
-            class="relative inline-flex size-2 rounded-full"
-            :class="isLive ? 'bg-emerald-500' : 'bg-muted-foreground'"
-          />
-        </span>
-        <div class="min-w-0">
-          <dt class="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            {{ $t('Būsena') }}
-          </dt>
-          <dd class="mt-0.5 text-sm font-semibold text-foreground">
-            {{ statusLabel }}
-          </dd>
-        </div>
-      </div>
     </dl>
 
     <!-- Actions footer -->
@@ -145,11 +110,11 @@
       >
         <IFluentPlay20Filled v-if="isLive" class="size-4" />
         <IFluentTicket20Regular v-else class="size-4" />
-        {{ isLive ? $t('Dalyvauk dabar') : $t('Registruotis') }}
+        {{ $t('Dalyvauk!') }}
       </Button>
 
       <Button
-        v-if="googleLink"
+        v-if="googleLink && !isPast"
         as="a"
         :href="googleLink"
         target="_blank"
@@ -188,7 +153,6 @@ import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';
 import IFluentCalendarAdd20Regular from '~icons/fluent/calendar-add-20-regular';
 import IFluentLocation20Regular from '~icons/fluent/location-20-regular';
 import IFluentPeopleTeam20Regular from '~icons/fluent/people-team-20-regular';
-import IFluentTag20Regular from '~icons/fluent/tag-20-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
 import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
 import IFluentPlay20Filled from '~icons/fluent/play-20-filled';
@@ -206,18 +170,12 @@ const props = defineProps<{
   /** Server-side geocode of `event.location`; null when unresolvable. */
   coordinates?: { lat: number; lng: number; display_name: string } | null;
   registrationUrl?: string | null;
-  isPast?: boolean;
-  isLive?: boolean;
-  isMeeting?: boolean;
 }>();
 
 const page = usePage();
 const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as LocaleEnum);
 
-const statusHook = useEventStatus(() => props.event, () => Boolean(props.isMeeting));
-const isLive = computed(() => (props.isLive !== undefined ? props.isLive : statusHook.isLive.value));
-const isPast = computed(() => (props.isPast !== undefined ? props.isPast : statusHook.isPast.value));
-const statusLabel = computed(() => statusHook.statusLabel.value);
+const { isLive, isPast } = useEventStatus(() => props.event);
 
 const location = computed(() => (props.event.location ? String(props.event.location) : ''));
 const organizer = computed(() => (props.event.organizer ? String(props.event.organizer) : (props.event.tenant?.fullname || props.event.tenant?.shortname || '')));
@@ -238,7 +196,7 @@ const googleMapsUrl = computed(
 
 const hasActions = computed(() =>
   Boolean(effectiveRegistrationUrl.value && !isPast.value)
-  || Boolean(props.googleLink)
+  || Boolean(props.googleLink && !isPast.value)
   || Boolean(props.event.facebook_url),
 );
 </script>
