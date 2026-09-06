@@ -11,44 +11,16 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 
 > All updates and improvements from this branch (feature/new-style) are consolidated into the v2.0 release.
 
-- ✨ **Full-screen rich content editor is now the primary editing mode** — page and news forms now display a clean content card with block counts and an "Edit content" action that opens the full-screen canvas directly, while structured forms remain accessible on-demand in the side-by-side preview dialog
-- ✨ **Contacts and unit pages redesigned to new style** — structured contact summary grid (telephone, email, address, website, and social links), duty filter tabs for unit pages (“All”, coordinators, mentors), and refreshed contact cards
-- ✨ **Category pages with link-list presentation** — links within categories are now cleanly displayed in a structured row list instead of separate cards
-- ✨ **Registration and study programme pages migrated** — modernized registration form styling, updated study programme catalog with faculty filter, and integrated top-of-page breadcrumbs
-- ✨ **Linked event in the documents list** — a document produced for a meeting with a published calendar announcement now has a button that opens that meeting's event page
-- ✨ **More reliable text formatting in the visual editor** — the fullscreen text toolbar follows the active paragraph without blocking scrolling, while its overflow menu provides tags, alignment, heading styles, media, and table actions
-- 🔧 **Compact hero carousels align their copy better** — the small-height setting now positions copy closer to the bottom edge instead of leaving disproportionately large empty space
-
 - ⭐ **New public website design** — modern editorial typography (Atkinson Hyperlegible), warm paper and deep dark palettes, sharp architectural lines, and a unified design token system, keeping the admin surface untouched
-- ⭐ **Built-in accessibility menu** — native drawer lets visitors adjust text size, enable high contrast, and underline links without third-party scripts (UserWay) or performance overhead
-- ⭐ **Full-screen WYSIWYG rich content editor** — edit copy, buttons, images, and section settings directly on the live public layout with instant preview and save
-- ✨ **Flow diagrams work in the full-screen editor** — choose the displayed diagram without leaving the visual editor; red, yellow, border, and arrow treatments now match the new public design
-- ✨ **Image grids and galleries are editable in place** — add, replace, or remove multiple images, update alt text, and choose each image's focal point without leaving the full-screen page preview
-- ✨ **Cards and statistics can be edited in place** — card headings are more prominent, descriptions have a clear place to start, and vertical spacing is configurable; new statistic blocks start with a figure whose number, label, and plus sign can be changed without leaving the full-screen editor
-- ✨ **No separate spacer block is needed** — every content block configures its own vertical spacing, so “Spacer” has been removed from the content editor
-- ✨ **Refreshed navigation and full-bleed mega menu** — two-tier navigation enhanced with full-measure mega menus, contextual link descriptions, rich photo cards, category headings, and instant hover response
-- ✨ **Calendar event page updated to editorial style** — full-bleed hero with tabular date plate, integrated breadcrumbs, clear facts sidebar with registration actions and interactive map, editorial meeting agenda and documents, and a 3-column related events card grid
-- ✨ **Redesigned events catalog with instant Typesense search** — event list migrated to the new editorial public design with integrated title band breadcrumbs, a 3-column card grid, upcoming and past tabs, a year filter selector, instant typo-tolerant search across titles, descriptions, and locations, plus popover filter buttons for category, tenant, and remote format
-- ✨ **Clearer event-list navigation** — compact “Upcoming”, “Past”, and “All” tabs, the year filter alongside the other filters, and separate relevance or date sorting make it faster to find the right events
-- ✨ **Hero carousels support inline editing and single-slide optimization** — a carousel with a single slide renders directly as a static full-bleed hero without carousel controls or layout overhead, and the full-screen editor supports inline editing for copy, call-to-action buttons, and slide photos
-- ✨ **The calendar band has a clearer route to all events** — its upper action now opens the complete event list, while calendar synchronization remains at the bottom
-- 🔧 **The phone’s top bar now truly switches with the theme** — pressing the light or dark mode button updates both the page theme and browser colour in the same click instead of waiting for a later DOM update
-- ✨ **Editorial footer and footer navigation management** — redesigned footer layout with contact details and social links, plus an admin interface to manage up to 4 footer navigation columns
-- ✨ **Accordion blocks start with their first item** — creating a new expandable-content block immediately provides a place to enter the first question and its content
-- ✨ **Plain sections have spacing choices** — a section without a background keeps standard vertical spacing by default, but can use compact spacing or none; unnecessary presentation choices have been removed
-- ✨ **Hero images are clearer to edit** — image controls are compactly grouped, decorations have their own control apart from image and focal-point settings, and the full-screen editor supports theme switching and preview
-- ✨ **Podcast promo display for audio embeds** — two-column layout with rich text, action buttons, and integrated Spotify or Mixcloud players
-- ✨ **Modernized news layout and category tags** — featured article presentation, clean hairline article list, and category chip integration
-- ✨ **News blocks are configurable in the visual editor** — edit the eyebrow and heading, then choose articles by category, tag, unit, and count
-- ✨ **Partners grid replacing banner carousel** — clean and responsive partner and sponsor showcase instead of a rotating banner carousel
-- ✨ **Grid block editing goes fully visual** — text, image, and card columns can be edited directly on the page, and every row and column has its own settings popover for order, type, and width
-- ✨ **“Mano VU SA” is now a clear navigation button** — the account link in the second menu row now matches the site controls, with a clear account icon instead of a profile photo
-- ✨ **Public-site notices are now consistent** — the cookie reminder and notifications match the new site style, while the staging warning appears as a persistent notice without taking space from the page
-- 🔧 **Staging environment isolation** — strict safeguards prevent staging environments from sending external user notifications or altering production SharePoint files and folders
-- 🔧 **The tenant map opens and zooms smoothly** — `+`, `−`, and tenant clusters no longer reload the view, a reopened menu no longer collapses from a stale delay, dark mode no longer flashes white, and zoom controls match the new public-site styling
-- 🔧 **Hero sections no longer jump while editing** — a centered title stays centered and uppercase after editing, and the split layout’s settings button is no longer covered by the top bar
-- 🔧 **Member registration notification verification** — verified automated email notifications when new members register
-- ✨ **The turtle now marks both loading and empty pages** — the corner spinner is replaced by the organisation's mascot taking a slow walk (it and the progress bar use the VU SR brand colour, which follows the light or dark theme), and lists with nothing to show yet rest the same turtle in the middle of the empty space
+- ⭐ **Full-screen WYSIWYG rich content editor** — copy, buttons, images, cards, statistics, grids, galleries, hero carousels, headers, flow diagrams, accordions, news and podcast blocks are now edited directly on the live public layout with instant preview, replacing the old repeating forms with a clean content card and an "Edit content" action
+- ⭐ **Built-in accessibility menu** — native drawer lets visitors adjust text size, enable high contrast, and underline links without third-party scripts (UserWay)
+- ✨ **Refreshed navigation and footer** — two-tier navigation with full-bleed mega menus (photo cards, link descriptions, category headings), plus a redesigned footer with up to 4 admin-managed navigation columns
+- ✨ **Redesigned events and calendar pages** — full-bleed hero with date plate, facts sidebar, interactive map, instant Typesense search, upcoming/past tabs, and year/category filters
+- ✨ **Contacts, unit, category, registration, and study programme pages migrated** — structured contact summaries, duty filter tabs, link-list categories, and a study programme catalog with faculty filter
+- ✨ **Linked event in the documents list** — a document produced for a meeting with a published calendar announcement now has a button that opens that meeting's event page
+- ✨ **"Mano VU SA" is now a clear navigation button, and site notices are consistent** — the account link matches the site controls, while the cookie reminder and staging warning match the new style
+- 🔧 **Assorted fixes** — compact hero carousel alignment, phone top-bar theme switching, tenant map interaction, hero section jump-on-edit, member registration notifications, and staging environment isolation from production email and SharePoint
+- ✨ **The turtle now marks both loading and empty pages** — the corner spinner is replaced by the organisation's mascot taking a slow walk, and lists with nothing to show yet rest the same turtle in the middle of the empty space
 
 ## v1.38 — English agendas and breaks (2026-09-02) {#v1-38}
 

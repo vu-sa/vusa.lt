@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 
+import { waitForSelector } from '@/tests/helpers/waitForSelector';
+
 const mockAttributionData = ref<{ name: string; photoUrl: string | null; attributions: string[] } | null>(null);
 const mockExecute = vi.fn(async () => {});
 
@@ -56,8 +58,17 @@ const editableStubs = {
   Popover: stubPopover,
   PopoverAnchor: stubPopoverAnchor,
   PopoverContent: stubPopoverContent,
+  // Field/FieldLabel are lazy-loaded too (see PersonQuoteDisplay.vue) and wrap
+  // CollectionSelectDialog in the template — left unstubbed, their own pending
+  // dynamic import would keep the whole subtree out of the DOM.
+  Field: { template: '<div><slot /></div>' },
+  FieldLabel: { template: '<label><slot /></label>' },
 };
 
+// Popover/Field/CollectionSelectDialog/TiptapEditor are all stubbed above (sync), which
+// bypasses their real dynamic import — RCInlineText (the attribution field) is the one
+// lazy-loaded component (see PersonQuoteDisplay.vue) left unstubbed here, so only tests
+// touching it need to wait for it explicitly.
 function mountEditable(element: ReturnType<typeof makeElement>, blockKey = 'quote-1') {
   const hotspots = useActiveHotspot();
   const wrapper = mount(PersonQuoteDisplay, {
@@ -118,7 +129,7 @@ describe('PersonQuoteDisplay — editable (full-screen editor)', () => {
     expect((emitted!.at(-1)![0] as { json_content: { quote: unknown } }).json_content.quote).toBe('Naujas tekstas');
   });
 
-  it('shows a placeholder when an editable quote is empty', () => {
+  it('shows a placeholder when an editable quote is empty', async () => {
     const { wrapper } = mountEditable(makeElement({
       json_content: { quote: { type: 'doc', content: [] }, snapshot: { name: 'Vardenė Pavardenė' } },
     }));
@@ -149,7 +160,7 @@ describe('PersonQuoteDisplay — person popover (full-screen editor)', () => {
     expect(wrapper.find('.confirm-pick').exists()).toBe(true);
   });
 
-  it('shows an "add person" placeholder when editable and no person is picked yet', () => {
+  it('shows an "add person" placeholder when editable and no person is picked yet', async () => {
     const { wrapper } = mountEditable(makeElement({
       json_content: { quote: { type: 'doc', content: [] }, snapshot: { name: '' } },
     }));
@@ -202,6 +213,9 @@ describe('PersonQuoteDisplay — person popover (full-screen editor)', () => {
 
   it('emits an inline attribution edit once a person is set', async () => {
     const { wrapper } = mountEditable(makeElement());
+    // RCInlineText (attribution) is lazy-loaded (see PersonQuoteDisplay.vue) —
+    // resolving that dynamic import needs a wait before it exists in the DOM.
+    await waitForSelector(wrapper, '[contenteditable]');
 
     const attribution = wrapper.findAll('[contenteditable]')[0]!;
     attribution.element.textContent = 'Pirmininkė';

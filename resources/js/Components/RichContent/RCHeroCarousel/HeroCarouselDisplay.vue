@@ -63,6 +63,7 @@
               :scrim-strength
               :grayscale
               :is-first-slide="index === 0"
+              preload-image
               :editable
               :block-key
               :can-delete-slide="editable && slides.length > 1"

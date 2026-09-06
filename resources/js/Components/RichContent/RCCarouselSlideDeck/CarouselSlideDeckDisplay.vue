@@ -290,8 +290,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import RCIcon from '../RCIcon.vue';
 import RCIconSelect from '../RCIconSelect.vue';
 import RCSection from '../RCSection.vue';
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
-import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { asBoolean } from '../booleanish';
@@ -309,6 +307,11 @@ import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
+// Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
+// full-screen editor's inline-text/add-placeholder controls into every public page
+// that renders a carousel, which never reaches these branches at all.
+const RCInlineText = defineAsyncComponent(() => import('../Editor/Fullscreen/RCInlineText.vue'));
+const RCAddPlaceholder = defineAsyncComponent(() => import('../Editor/Fullscreen/RCAddPlaceholder.vue'));
 
 type Slide = CarouselSlideDeck['json_content'][number];
 

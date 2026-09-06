@@ -98,21 +98,27 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import RCSection from '../RCSection.vue';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { useUserAttributionLookup } from '../composables/useUserAttributionLookup';
 import type { BandResolution } from '../bandLayout';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
-import { Field, FieldLabel } from '@/Components/ui/field';
-import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
-import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import IFluentChevronDown24Regular from '~icons/fluent/chevron-down24-regular';
 
 // Lazy-loaded: only mounts while the quote field is claimed in the full-screen editor.
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
+// Lazy-loaded: the rest of this group only ever mounts while `editable` — a static
+// import would bundle the inline-text control and the person-picker popover (with the
+// admin search dialog it opens) into every public page that renders a person quote.
+const RCInlineText = defineAsyncComponent(() => import('../Editor/Fullscreen/RCInlineText.vue'));
+const Field = defineAsyncComponent(() => import('@/Components/ui/field').then(m => m.Field));
+const FieldLabel = defineAsyncComponent(() => import('@/Components/ui/field').then(m => m.FieldLabel));
+const Popover = defineAsyncComponent(() => import('@/Components/ui/popover').then(m => m.Popover));
+const PopoverAnchor = defineAsyncComponent(() => import('@/Components/ui/popover').then(m => m.PopoverAnchor));
+const PopoverContent = defineAsyncComponent(() => import('@/Components/ui/popover').then(m => m.PopoverContent));
+const CollectionSelectDialog = defineAsyncComponent(() => import('@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue'));
 
 const props = defineProps<{
   element: models.ContentPart;

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
 
 import CardStackEditor from '../Types/CardStackEditor.vue';
@@ -274,7 +274,7 @@ describe('photo-gallery', () => {
     expect(wrapper.find('[data-testid="lightbox"]').exists()).toBe(false);
   });
 
-  it('shows an add-image hotspot after the first gallery image', () => {
+  it('shows an add-image hotspot after the first gallery image', async () => {
     const wrapper = mount(PhotoGalleryGridDisplay, {
       props: {
         element: {
@@ -285,6 +285,11 @@ describe('photo-gallery', () => {
         editable: true,
       },
       global: { stubs: { RCImageHotspot: true, VueEasyLightbox: true } },
+    });
+    // RCAddPlaceholder is lazy-loaded (see PhotoGalleryGridDisplay.vue) — resolving that
+    // dynamic import can take longer than a single flush, so poll for it.
+    await vi.waitFor(() => {
+      if (!wrapper.find('button[aria-label="rich-content.add_image"]').exists()) throw new Error('not ready');
     });
 
     expect(wrapper.find('button[aria-label="rich-content.add_image"]').exists()).toBe(true);

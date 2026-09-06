@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import CarouselSlideDeckDisplay from '../CarouselSlideDeckDisplay.vue';
+import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { CarouselSlideDeck } from '@/Types/contentParts';
 
 function makeElement(slides: Partial<CarouselSlideDeck['json_content'][number]>[] = []): CarouselSlideDeck {
@@ -76,7 +77,7 @@ describe('CarouselSlideDeckDisplay — public', () => {
 });
 
 describe('CarouselSlideDeckDisplay — editable', () => {
-  it('renders title and badge as inline-editable elements', () => {
+  it('renders title and badge as inline-editable elements', async () => {
     const wrapper = mount(CarouselSlideDeckDisplay, {
       props: {
         element: makeElement([{ title: 'Redaguojama', badge: 'Žyma' }]),
@@ -85,6 +86,9 @@ describe('CarouselSlideDeckDisplay — editable', () => {
       },
       global: { stubs },
     });
+    // RCInlineText is lazy-loaded (see CarouselSlideDeckDisplay.vue) — resolving that
+    // dynamic import needs a wait before the editable markup it renders exists.
+    await waitForSelector(wrapper, '[contenteditable]');
 
     const editableEls = wrapper.findAll('[contenteditable]');
     expect(editableEls.length).toBeGreaterThanOrEqual(2);

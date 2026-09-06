@@ -85,18 +85,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCSection from '../RCSection.vue';
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
-import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
 import type { BandResolution } from '../bandLayout';
 
 import type { ProcessSteps } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
+
+// Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
+// full-screen editor's inline-text/add-placeholder controls into every public page
+// that renders a process-steps block, which never reaches these branches at all.
+const RCInlineText = defineAsyncComponent(() => import('../Editor/Fullscreen/RCInlineText.vue'));
+const RCAddPlaceholder = defineAsyncComponent(() => import('../Editor/Fullscreen/RCAddPlaceholder.vue'));
 
 /**
  * A numbered process — "how you join", "how a request is handled".

@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import ContentGridDisplay from '../ContentGridDisplay.vue';
 
+import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { ContentGrid } from '@/Types/contentParts';
 
 const TiptapEditorStub = {
@@ -40,16 +41,22 @@ function makeElement(rows: ContentGrid['json_content']): { json_content: Content
   return { json_content: rows, options: { gap: 'gap-4', mobileStacking: true, equalHeight: false } };
 }
 
-function mountEditable(rows: ContentGrid['json_content'], activeInlineField: string | null = null) {
-  return mount(ContentGridDisplay, {
+// RCInlineText/RCAddPlaceholder/Field/Input are lazy-loaded (see ContentGridDisplay.vue)
+// — resolving those dynamic imports needs a wait before the editable markup they render
+// exists. `[data-rc-grid-add-row]` (RCAddPlaceholder) is present for every non-empty
+// grid regardless of cell type, so it's a safe universal wait target here.
+async function mountEditable(rows: ContentGrid['json_content'], activeInlineField: string | null = null) {
+  const wrapper = mount(ContentGridDisplay, {
     props: { element: makeElement(rows), editable: true, blockKey: 'grid-1', activeInlineField },
     global: { stubs },
   });
+  await waitForSelector(wrapper, '[data-rc-grid-add-row]');
+  return wrapper;
 }
 
 describe('ContentGridDisplay — editable (full-screen editor)', () => {
   it('shows a placeholder for an unclaimed tiptap cell and claims it on click', async () => {
-    const wrapper = mountEditable([{ columns: [{ width: 'col-span-12', content: { type: 'tiptap', value: {} } }] }]);
+    const wrapper = await mountEditable([{ columns: [{ width: 'col-span-12', content: { type: 'tiptap', value: {} } }] }]);
 
     const cell = wrapper.get('[data-rc-grid-cell-content]');
     expect(cell.text()).toContain('rich-content.content');
@@ -59,7 +66,7 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('mounts a live TiptapEditor only for the claimed cell, and bubbles edits to that cell only', async () => {
-    const wrapper = mountEditable([
+    const wrapper = await mountEditable([
       {
         columns: [
           { width: 'col-span-6', content: { type: 'tiptap', value: { type: 'doc', content: [] } } },
@@ -80,7 +87,7 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('replacing an image cell\'s image patches only that column', async () => {
-    const wrapper = mountEditable([
+    const wrapper = await mountEditable([
       {
         columns: [
           { width: 'col-span-6', content: { type: 'image', value: '/a.jpg' } },
@@ -100,7 +107,7 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('clearing an image cell empties its value without removing the column', async () => {
-    const wrapper = mountEditable([{ columns: [{ width: 'col-span-12', content: { type: 'image', value: '/a.jpg' } }] }]);
+    const wrapper = await mountEditable([{ columns: [{ width: 'col-span-12', content: { type: 'image', value: '/a.jpg' } }] }]);
 
     await wrapper.findComponent(RCImageHotspotStub).vm.$emit('delete');
 
@@ -110,9 +117,10 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('edits a card\'s title inline via RCInlineText, preserving the rest of the card', async () => {
-    const wrapper = mountEditable([
+    const wrapper = await mountEditable([
       { columns: [{ width: 'col-span-12', content: { type: 'card', value: { title: 'Old', description: 'Old desc' } } }] },
     ]);
+    await waitForSelector(wrapper, '[contenteditable]');
 
     const title = wrapper.find('[contenteditable]');
     title.element.textContent = 'New title';
@@ -126,9 +134,10 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('edits a card\'s link URL through the image hotspot\'s options slot', async () => {
-    const wrapper = mountEditable([
+    const wrapper = await mountEditable([
       { columns: [{ width: 'col-span-12', content: { type: 'card', value: { title: 'T', href: '' } } }] },
     ]);
+    await waitForSelector(wrapper, 'input[type="url"]');
 
     const hrefInput = wrapper.get('input[type="url"]');
     await hrefInput.setValue('https://example.org');
@@ -139,7 +148,7 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('adding a row appends a full-width tiptap row and claims its first cell', async () => {
-    const wrapper = mountEditable([{ columns: [{ width: 'col-span-12', content: { type: 'tiptap', value: {} } }] }]);
+    const wrapper = await mountEditable([{ columns: [{ width: 'col-span-12', content: { type: 'tiptap', value: {} } }] }]);
 
     await wrapper.get('[data-rc-grid-add-row]').trigger('click');
 
@@ -153,7 +162,7 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('adding a column via the trailing placeholder redistributes widths evenly', async () => {
-    const wrapper = mountEditable([{ columns: [{ width: 'col-span-6', content: { type: 'tiptap', value: {} } }, { width: 'col-span-6', content: { type: 'image', value: '/a.jpg' } }] }]);
+    const wrapper = await mountEditable([{ columns: [{ width: 'col-span-6', content: { type: 'tiptap', value: {} } }, { width: 'col-span-6', content: { type: 'image', value: '/a.jpg' } }] }]);
 
     await wrapper.get('[data-rc-grid-add-column]').trigger('click');
 
@@ -164,14 +173,14 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
     expect(columns[2]!.content).toEqual({ type: 'tiptap', value: {} });
   });
 
-  it('hides the add-column placeholder once the row reaches the 4-column cap', () => {
+  it('hides the add-column placeholder once the row reaches the 4-column cap', async () => {
     const columns = Array.from({ length: 4 }, () => ({ width: 'col-span-3', content: { type: 'tiptap' as const, value: {} } }));
-    const wrapper = mountEditable([{ columns }]);
+    const wrapper = await mountEditable([{ columns }]);
     expect(wrapper.find('[data-rc-grid-add-column]').exists()).toBe(false);
   });
 
   it('forwards RCGridColumnOptions events to the matching column, not its siblings', async () => {
-    const wrapper = mountEditable([
+    const wrapper = await mountEditable([
       {
         columns: [
           { width: 'col-span-6', content: { type: 'tiptap', value: {} } },
@@ -199,7 +208,7 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('moves and removes a column via RCGridColumnOptions, redistributing widths on removal', async () => {
-    const wrapper = mountEditable([
+    const wrapper = await mountEditable([
       {
         columns: [
           { width: 'col-span-4', content: { type: 'tiptap', value: {} } },
@@ -223,7 +232,7 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
   });
 
   it('forwards RCGridRowOptions events to the matching row', async () => {
-    const wrapper = mountEditable([
+    const wrapper = await mountEditable([
       { columns: [{ width: 'col-span-12', content: { type: 'tiptap', value: {} } }] },
       { columns: [{ width: 'col-span-12', content: { type: 'image', value: '/a.jpg' } }] },
     ]);
@@ -243,8 +252,8 @@ describe('ContentGridDisplay — editable (full-screen editor)', () => {
     expect(patched.json_content).toHaveLength(1);
   });
 
-  it('disables row removal when only one row remains', () => {
-    const wrapper = mountEditable([{ columns: [{ width: 'col-span-12', content: { type: 'tiptap', value: {} } }] }]);
+  it('disables row removal when only one row remains', async () => {
+    const wrapper = await mountEditable([{ columns: [{ width: 'col-span-12', content: { type: 'tiptap', value: {} } }] }]);
     const rowOptions = wrapper.findComponent(RCGridRowOptionsStub);
     expect(rowOptions.props('canRemove')).toBe(false);
   });

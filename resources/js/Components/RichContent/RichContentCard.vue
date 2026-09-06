@@ -44,12 +44,15 @@ import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCInlineText from './Editor/Fullscreen/RCInlineText.vue';
-import RCAddPlaceholder from './Editor/Fullscreen/RCAddPlaceholder.vue';
-import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
 
 import type { ShadcnCard } from '@/Types/contentParts';
 
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
+// Lazy-loaded: both only ever mounted while `editable` — public rendering uses the
+// `#default` slot instead, so a static import would bundle the full-screen editor's
+// preview renderer and add-placeholder control into every public page with a card block.
+const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));
+const RCAddPlaceholder = defineAsyncComponent(() => import('./Editor/Fullscreen/RCAddPlaceholder.vue'));
 
 const props = defineProps<{
   element: ShadcnCard;

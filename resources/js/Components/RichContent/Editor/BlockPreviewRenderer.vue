@@ -13,7 +13,7 @@
         <component :is="displayComponent" :element="element" :html="false" :is-first-element="true"
           :resolved="resolvedForElement" :band="bandForElement"
           :editable="editableForElement" :active-inline-field="activeInlineFieldForElement"
-          :block-key="editableForElement !== undefined ? blockKey : undefined"
+          :block-key="blockKeyForElement"
           @update:element="$emit('update:element', $event)"
           @claim-inline-field="$emit('claim-inline-field', $event)"
         >
@@ -89,11 +89,21 @@ const emit = defineEmits<{
 type BlockPreviewRendererProps = typeof props;
 
 const layoutClasses = computed(() => blockLayoutClasses(props.element));
-const displayComponent = computed(() => getContentType(props.element.type).display);
+const type = computed(() => getContentType(props.element.type));
+// Full-screen editor only: is this block actually being edited right now (not merely
+// `inlineEditable`-capable, and not the "preview" mode that shows the published look
+// without edit controls)?
+const isEditingElement = computed(() => !!props.editable && !props.preview);
+// A type with its own `editableDisplay` (see Types/index.ts) keeps `display` pure —
+// route to the editable twin only while actually editing; everywhere else (public
+// rendering, the block picker, forms-mode preview) renders the same `display` a public
+// page would.
+const usesSplitEditable = computed(() => isEditingElement.value && !!type.value.editableDisplay);
+const displayComponent = computed(() => (usesSplitEditable.value ? type.value.editableDisplay! : type.value.display));
 // Same gate RichContentParser applies to the real `resolved` prop — an undeclared
 // object prop on a display that doesn't ask for it would otherwise fall through and
 // stringify into the DOM.
-const resolvedForElement = computed(() => (getContentType(props.element.type).serverResolved ? props.resolved : undefined));
+const resolvedForElement = computed(() => (type.value.serverResolved ? props.resolved : undefined));
 // Slot 0 by default — a standalone preview (picker, single-block editor) has no
 // surrounding document to alternate against (see bandLayout.ts's `resolveBand`
 // docblock); the full-screen editor passes the block's real position via `bandSlot`.
@@ -101,7 +111,12 @@ const bandForElement = computed(() => {
   if (resolveBandRole(props.element.type, props.element.options) !== 'band') return undefined;
   return props.band ?? resolveBand(props.element, props.bandSlot ?? 0);
 });
-const editableForElement = computed(() => (getContentType(props.element.type).inlineEditable ? !!props.editable && !props.preview : undefined));
-const activeInlineFieldForElement = computed(() => (getContentType(props.element.type).inlineEditable ? (props.activeInlineField ?? null) : undefined));
-const blockKey = computed(() => props.blockKey ?? '');
+// Legacy single-component types still branch on `editable`/`activeInlineField` inside
+// their own `display` — a type with an `editableDisplay` hands editing state to that
+// component's own props instead (see HeroEditableElement.vue), so `display` never
+// receives these at all, and stays pure.
+const usesLegacyEditableProps = computed(() => !!type.value.inlineEditable && !type.value.editableDisplay);
+const editableForElement = computed(() => (usesLegacyEditableProps.value ? isEditingElement.value : undefined));
+const activeInlineFieldForElement = computed(() => (usesLegacyEditableProps.value ? (props.activeInlineField ?? null) : undefined));
+const blockKeyForElement = computed(() => ((usesLegacyEditableProps.value || usesSplitEditable.value) ? (props.blockKey ?? '') : undefined));
 </script>

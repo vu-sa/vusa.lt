@@ -7,7 +7,7 @@
       :alt="slide.imageAlt"
       :style="slide.objectPosition ? { objectPosition: slide.objectPosition } : undefined"
       :class="['absolute inset-0 size-full object-cover object-center', grayscale && 'grayscale', SCRIM_IMAGE_OPACITY[scrimStrength]]"
-      :loading="isFirstSlide ? 'eager' : 'lazy'"
+      :loading="isFirstSlide || preloadImage ? 'eager' : 'lazy'"
       :fetchpriority="isFirstSlide ? 'high' : undefined"
       draggable="false"
     >
@@ -168,11 +168,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import HeroButtons from '../RCHeroSection/HeroButtons.vue';
-import HeroButtonsEditable from '../RCHeroSection/HeroButtonsEditable.vue';
+// NOT lazy-loaded, unlike its siblings below: eyebrow/subtitle show it whenever they
+// have content, on public pages too (`v-if="slide.eyebrow || editable"`), not only
+// while editable. RCInlineText is zero-cost when `editable` is false anyway (see its
+// own docblock) — async-loading it here would only delay public rendering.
 import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
-
-import HeroCarouselImageHotspot from './HeroCarouselImageHotspot.vue';
 
 import { Button } from '@/Components/ui/button';
 import { EyebrowLabel } from '@/Components/Public/Base';
@@ -182,6 +183,11 @@ import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
+// Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
+// editable buttons row and the image hotspot's picker/focal-point UI into every public
+// page that renders a hero carousel.
+const HeroButtonsEditable = defineAsyncComponent(() => import('../RCHeroSection/HeroButtonsEditable.vue'));
+const HeroCarouselImageHotspot = defineAsyncComponent(() => import('./HeroCarouselImageHotspot.vue'));
 
 type Slide = HeroCarousel['json_content'][number];
 
@@ -193,6 +199,7 @@ const props = defineProps<{
   scrimStrength: 'light' | 'medium' | 'dark';
   grayscale: boolean;
   isFirstSlide?: boolean;
+  preloadImage?: boolean;
   editable?: boolean;
   blockKey?: string;
   canDeleteSlide?: boolean;

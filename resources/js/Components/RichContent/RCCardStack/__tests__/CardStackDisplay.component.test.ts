@@ -5,6 +5,7 @@ import CardStackDisplay from '../CardStackDisplay.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
 
 import { stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
+import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { CardStack } from '@/Types/contentParts';
 
 function makeElement(cards: Partial<CardStack['json_content'][number]>[] = []): CardStack {
@@ -18,15 +19,24 @@ const popoverStubs = {
   Popover: stubPopover,
   PopoverAnchor: stubPopoverAnchor,
   PopoverContent: stubPopoverContent,
+  // Field/FieldLabel are lazy-loaded too (see CardStackDisplay.vue) and wrap
+  // RCIconSelect in the template — left unstubbed, their own pending dynamic import
+  // would keep the whole subtree (RCIconSelect included) out of the DOM.
+  Field: { template: '<div><slot /></div>' },
+  FieldLabel: { template: '<label><slot /></label>' },
   RCIconSelect: { props: ['modelValue', 'allowNone'], emits: ['update:modelValue'], template: '<div class="rc-icon-select" />' },
 };
 
-function mountEditableWithPopover(element: CardStack, blockKey = 'stack-1') {
+// RCInlineText/RCAddPlaceholder/Popover/Field/RCIconSelect are lazy-loaded (see
+// CardStackDisplay.vue) — resolving those dynamic imports needs a wait before the
+// editable markup they render exists.
+async function mountEditableWithPopover(element: CardStack, blockKey = 'stack-1') {
   const hotspots = useActiveHotspot();
   const wrapper = mount(CardStackDisplay, {
     props: { element, editable: true, blockKey },
     global: { stubs: popoverStubs, provide: { [ACTIVE_HOTSPOT_KEY]: hotspots } },
   });
+  await waitForSelector(wrapper, '[contenteditable]');
   return { wrapper, hotspots };
 }
 
@@ -45,12 +55,14 @@ describe('CardStackDisplay — public (non-editable)', () => {
 });
 
 describe('CardStackDisplay — editable (full-screen editor)', () => {
-  function mountEditable(element: CardStack) {
-    return mount(CardStackDisplay, { props: { element, editable: true, blockKey: 'stack-1' } });
+  async function mountEditable(element: CardStack) {
+    const wrapper = mount(CardStackDisplay, { props: { element, editable: true, blockKey: 'stack-1' } });
+    await waitForSelector(wrapper, '[contenteditable]');
+    return wrapper;
   }
 
-  it('renders every card title/description inline-editable', () => {
-    const wrapper = mountEditable(makeElement([{ title: 'Narystė', description: 'Prisijunk' }]));
+  it('renders every card title/description inline-editable', async () => {
+    const wrapper = await mountEditable(makeElement([{ title: 'Narystė', description: 'Prisijunk' }]));
     const editable = wrapper.findAll('[contenteditable]');
     expect(editable).toHaveLength(2);
     expect(editable[0]?.text()).toBe('Narystė');
@@ -58,7 +70,7 @@ describe('CardStackDisplay — editable (full-screen editor)', () => {
   });
 
   it('emits update:element with the patched title, preserving description', async () => {
-    const wrapper = mountEditable(makeElement([{ title: 'Old', description: 'Kept' }]));
+    const wrapper = await mountEditable(makeElement([{ title: 'Old', description: 'Kept' }]));
     const title = wrapper.findAll('[contenteditable]')[0]!;
     title.element.textContent = 'New title';
     await title.trigger('input');
@@ -72,7 +84,7 @@ describe('CardStackDisplay — editable (full-screen editor)', () => {
   });
 
   it('does not rotate the stack when clicking a card while editable', async () => {
-    const wrapper = mountEditable(makeElement([{ title: 'A' }, { title: 'B' }]));
+    const wrapper = await mountEditable(makeElement([{ title: 'A' }, { title: 'B' }]));
     const cards = wrapper.findAll('.perspective-1000 > div');
     await cards[0]!.trigger('click');
 
@@ -80,18 +92,18 @@ describe('CardStackDisplay — editable (full-screen editor)', () => {
     expect(wrapper.findAll('[contenteditable]')[0]?.text()).toBe('A');
   });
 
-  it('shows a remove button only on the current front card, when there is more than one', () => {
-    const wrapper = mountEditable(makeElement([{ title: 'A' }, { title: 'B' }]));
+  it('shows a remove button only on the current front card, when there is more than one', async () => {
+    const wrapper = await mountEditable(makeElement([{ title: 'A' }, { title: 'B' }]));
     expect(wrapper.findAll('[data-rc-card-stack-remove-item]')).toHaveLength(1);
   });
 
-  it('hides the remove button entirely with a single card', () => {
-    const wrapper = mountEditable(makeElement([{ title: 'A' }]));
+  it('hides the remove button entirely with a single card', async () => {
+    const wrapper = await mountEditable(makeElement([{ title: 'A' }]));
     expect(wrapper.find('[data-rc-card-stack-remove-item]').exists()).toBe(false);
   });
 
   it('removes a card and emits update:element without it', async () => {
-    const wrapper = mountEditable(makeElement([{ title: 'A' }, { title: 'B' }]));
+    const wrapper = await mountEditable(makeElement([{ title: 'A' }, { title: 'B' }]));
     await wrapper.get('[data-rc-card-stack-remove-item]').trigger('click');
 
     const emitted = wrapper.emitted('update:element');
@@ -101,7 +113,7 @@ describe('CardStackDisplay — editable (full-screen editor)', () => {
   });
 
   it('adds a new empty card via the add placeholder', async () => {
-    const wrapper = mountEditable(makeElement([{ title: 'A' }]));
+    const wrapper = await mountEditable(makeElement([{ title: 'A' }]));
     await wrapper.get('[data-rc-interactive]:not([contenteditable])').trigger('click');
 
     const emitted = wrapper.emitted('update:element');
@@ -114,18 +126,18 @@ describe('CardStackDisplay — editable (full-screen editor)', () => {
 
 describe('CardStackDisplay — icon popover (full-screen editor)', () => {
   it('clicking a card claims its popover hotspot', async () => {
-    const { wrapper, hotspots } = mountEditableWithPopover(makeElement([{ title: 'A' }]));
+    const { wrapper, hotspots } = await mountEditableWithPopover(makeElement([{ title: 'A' }]));
 
     const card = wrapper.get('.perspective-1000 > div');
     await card.trigger('click');
 
     expect(hotspots.isPopoverOpen('stack-1:card')).toBe(true);
-    await wrapper.vm.$nextTick();
+    await waitForSelector(wrapper, '.rc-icon-select');
     expect(wrapper.find('.rc-icon-select').exists()).toBe(true);
   });
 
   it('clicking a background card brings it to the front and opens the popover for it', async () => {
-    const { wrapper, hotspots } = mountEditableWithPopover(makeElement([{ title: 'A' }, { title: 'B' }]));
+    const { wrapper, hotspots } = await mountEditableWithPopover(makeElement([{ title: 'A' }, { title: 'B' }]));
 
     const cards = wrapper.findAll('.perspective-1000 > div');
     await cards[1]!.trigger('click');
@@ -137,9 +149,9 @@ describe('CardStackDisplay — icon popover (full-screen editor)', () => {
   });
 
   it('switches the current card via the popover prev/next controls and updates the icon field', async () => {
-    const { wrapper, hotspots } = mountEditableWithPopover(makeElement([{ title: 'A', icon: 'icon-a' }, { title: 'B', icon: 'icon-b' }]));
+    const { wrapper, hotspots } = await mountEditableWithPopover(makeElement([{ title: 'A', icon: 'icon-a' }, { title: 'B', icon: 'icon-b' }]));
     hotspots.openPopover('stack-1:card');
-    await wrapper.vm.$nextTick();
+    await waitForSelector(wrapper, '.rc-icon-select');
 
     expect(wrapper.findComponent(popoverStubs.RCIconSelect).props('modelValue')).toBe('icon-a');
 
@@ -151,9 +163,9 @@ describe('CardStackDisplay — icon popover (full-screen editor)', () => {
   });
 
   it('emits update:element with the patched icon for the current card', async () => {
-    const { wrapper, hotspots } = mountEditableWithPopover(makeElement([{ title: 'A', icon: '' }]));
+    const { wrapper, hotspots } = await mountEditableWithPopover(makeElement([{ title: 'A', icon: '' }]));
     hotspots.openPopover('stack-1:card');
-    await wrapper.vm.$nextTick();
+    await waitForSelector(wrapper, '.rc-icon-select');
 
     await wrapper.findComponent(popoverStubs.RCIconSelect).vm.$emit('update:modelValue', 'megaphone');
 

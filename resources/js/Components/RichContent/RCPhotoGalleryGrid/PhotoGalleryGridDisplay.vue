@@ -112,20 +112,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, ref } from 'vue';
+import { computed, defineAsyncComponent, inject, nextTick, ref } from 'vue';
 import VueEasyLightbox from 'vue-easy-lightbox';
 
 import RCSection from '../RCSection.vue';
 import type { BandResolution } from '../bandLayout';
-import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
-import RCImageHotspot from '../Editor/Fullscreen/RCImageHotspot.vue';
-import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 
 import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
-import { Field, FieldLabel } from '@/Components/ui/field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import type { PhotoGalleryGrid } from '@/Types/contentParts';
+
+// Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
+// hotspot's image picker/focal-point UI, the decoration-list editor, and the
+// height-select field into every public page that renders a photo gallery.
+const RCAddPlaceholder = defineAsyncComponent(() => import('../Editor/Fullscreen/RCAddPlaceholder.vue'));
+const RCImageHotspot = defineAsyncComponent(() => import('../Editor/Fullscreen/RCImageHotspot.vue'));
+const RCDecorationListEditor = defineAsyncComponent(() => import('../Editor/RCDecorationListEditor.vue'));
+const Field = defineAsyncComponent(() => import('@/Components/ui/field').then(m => m.Field));
+const FieldLabel = defineAsyncComponent(() => import('@/Components/ui/field').then(m => m.FieldLabel));
+const Select = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.Select));
+const SelectContent = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.SelectContent));
+const SelectItem = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.SelectItem));
+const SelectTrigger = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.SelectTrigger));
+const SelectValue = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.SelectValue));
 
 const { element, editable } = defineProps<{
   element: PhotoGalleryGrid;

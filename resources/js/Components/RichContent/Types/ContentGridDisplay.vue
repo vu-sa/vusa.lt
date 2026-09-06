@@ -187,22 +187,26 @@ import { trans as $t } from 'laravel-vue-i18n';
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 import RCFeatureCard from '../RCFeatureCard.vue';
 import RCSection from '../RCSection.vue';
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
-import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
-import RCImageHotspot from '../Editor/Fullscreen/RCImageHotspot.vue';
-import RCGridColumnOptions from '../RCContentGrid/RCGridColumnOptions.vue';
-import RCGridRowOptions from '../RCContentGrid/RCGridRowOptions.vue';
 import type { BandResolution } from '../bandLayout';
 
 import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
-import { Field, FieldLabel } from '@/Components/ui/field';
-import { Input } from '@/Components/ui/input';
 import type { DecorationConfig } from '@/Types/contentParts';
 
 // Lazy-loaded: only needed while a tiptap cell is actually being edited in the
 // full-screen editor. A static import would bundle it into every public page
 // that renders a content grid, which never mounts this branch at all.
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
+// Lazy-loaded: the rest of this group only ever mounts while `editable` — a static
+// import would bundle the row/column editor controls, the image hotspot's focal-point
+// UI, and the card fields into every public page that renders a content grid.
+const RCInlineText = defineAsyncComponent(() => import('../Editor/Fullscreen/RCInlineText.vue'));
+const RCAddPlaceholder = defineAsyncComponent(() => import('../Editor/Fullscreen/RCAddPlaceholder.vue'));
+const RCImageHotspot = defineAsyncComponent(() => import('../Editor/Fullscreen/RCImageHotspot.vue'));
+const RCGridColumnOptions = defineAsyncComponent(() => import('../RCContentGrid/RCGridColumnOptions.vue'));
+const RCGridRowOptions = defineAsyncComponent(() => import('../RCContentGrid/RCGridRowOptions.vue'));
+const Field = defineAsyncComponent(() => import('@/Components/ui/field').then(m => m.Field));
+const FieldLabel = defineAsyncComponent(() => import('@/Components/ui/field').then(m => m.FieldLabel));
+const Input = defineAsyncComponent(() => import('@/Components/ui/input').then(m => m.Input));
 
 // The user's specific complaint was a short text column stretching to the row's
 // height with its content pinned to the top — `grid` items default to `stretch` with

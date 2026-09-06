@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import SectionDisplay from '../SectionDisplay.vue';
@@ -33,19 +33,32 @@ describe('SectionDisplay — public (non-editable)', () => {
 });
 
 describe('SectionDisplay — editable (full-screen editor)', () => {
-  it('renders the header even when every field is empty, so there is always something to click', () => {
+  // RCInlineText is lazy-loaded (see SectionDisplay.vue) — resolving that dynamic
+  // import can take longer than a single microtask/macrotask flush (it pulls in
+  // EyebrowLabel's own transitive chunk too), so poll until the editable markup exists
+  // rather than assume one `flushPromises()` covers it.
+  async function waitForInlineFields(wrapper: ReturnType<typeof mount>): Promise<void> {
+    await vi.waitFor(() => {
+      if (!wrapper.find('[contenteditable]').exists()) throw new Error('RCInlineText not resolved yet');
+    });
+  }
+
+  it('renders the header even when every field is empty, so there is always something to click', async () => {
     const wrapper = mount(SectionDisplay, { props: { element: makeElement(), editable: true } });
+    await waitForInlineFields(wrapper);
     expect(wrapper.findAll('[contenteditable]')).toHaveLength(3); // eyebrow, title, subtitle
   });
 
-  it('renders the title at the configured heading level', () => {
+  it('renders the title at the configured heading level', async () => {
     const wrapper = mount(SectionDisplay, { props: { element: makeElement({ title: 'Nariams', headingLevel: 3 }), editable: true } });
+    await waitForInlineFields(wrapper);
     expect(wrapper.find('h3[contenteditable]').exists()).toBe(true);
     expect(wrapper.find('h2').exists()).toBe(false);
   });
 
   it('emits update:element with the patched title, preserving other options', async () => {
     const wrapper = mount(SectionDisplay, { props: { element: makeElement({ title: 'Old', subtitle: 'Sub' }), editable: true } });
+    await waitForInlineFields(wrapper);
     const title = wrapper.find('h2[contenteditable]');
     title.element.textContent = 'New title';
     await title.trigger('input');
@@ -60,6 +73,7 @@ describe('SectionDisplay — editable (full-screen editor)', () => {
 
   it('emits update:element with the patched eyebrow', async () => {
     const wrapper = mount(SectionDisplay, { props: { element: makeElement(), editable: true } });
+    await waitForInlineFields(wrapper);
     const [eyebrow] = wrapper.findAll('[contenteditable]');
     eyebrow!.element.textContent = 'Naujiena';
     await eyebrow!.trigger('input');

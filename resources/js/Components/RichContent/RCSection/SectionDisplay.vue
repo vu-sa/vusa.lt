@@ -56,11 +56,15 @@
  * is the one addition, set only by `RichContentParser` once it knows what this
  * section actually wraps.
  */
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import type { BandResolution } from '../bandLayout';
+
+// Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
+// full-screen editor's inline-text control into every public page that renders a
+// section marker, which never reaches this branch at all.
+const RCInlineText = defineAsyncComponent(() => import('../Editor/Fullscreen/RCInlineText.vue'));
 import {
   INNER_CLASS, SECTION_HEADING_SIZE_CLASS, type SectionHeadingLevel,
 } from '../sectionClasses';

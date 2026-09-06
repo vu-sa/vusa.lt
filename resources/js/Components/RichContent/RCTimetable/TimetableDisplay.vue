@@ -129,16 +129,20 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 
 import type { Timetable } from '@/Types/contentParts';
 import { Button } from '@/Components/ui/button';
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import IFluentClock20Regular from '~icons/fluent/clock20-regular';
 import IFluentAdd12Regular from '~icons/fluent/add-12-regular';
 import IFluentArrowUp12Regular from '~icons/fluent/arrow-up-12-regular';
 import IFluentArrowDown12Regular from '~icons/fluent/arrow-down-12-regular';
 import IFluentDelete12Regular from '~icons/fluent/delete-12-regular';
+
+// Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
+// full-screen editor's inline-text control into every public page that renders a
+// timetable, which never reaches this branch at all.
+const RCInlineText = defineAsyncComponent(() => import('../Editor/Fullscreen/RCInlineText.vue'));
 
 const props = defineProps<{
   element: Timetable;

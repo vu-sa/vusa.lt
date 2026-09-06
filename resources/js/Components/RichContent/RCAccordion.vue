@@ -106,8 +106,6 @@ import { computed, defineAsyncComponent, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCSection from './RCSection.vue';
-import RCInlineText from './Editor/Fullscreen/RCInlineText.vue';
-import RCAddPlaceholder from './Editor/Fullscreen/RCAddPlaceholder.vue';
 import type { BandResolution } from './bandLayout';
 
 import type { ShadcnAccordion } from '@/Types/contentParts';
@@ -115,6 +113,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 
 const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));
+// Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
+// full-screen editor's inline-text/add-placeholder controls into every public page
+// that renders an accordion, which never reaches these branches at all.
+const RCInlineText = defineAsyncComponent(() => import('./Editor/Fullscreen/RCInlineText.vue'));
+const RCAddPlaceholder = defineAsyncComponent(() => import('./Editor/Fullscreen/RCAddPlaceholder.vue'));
 // Lazy-loaded: TiptapEditor (and its extension set) is only needed while a field is
 // actually being edited in the full-screen editor. A static import would bundle it into
 // every public page that renders an accordion, which never mounts this branch at all.

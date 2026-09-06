@@ -53,16 +53,25 @@
 </template>
 
 <script setup lang="ts">
-import { inject, nextTick } from 'vue';
+import { defineAsyncComponent, inject, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
-import RCImageHotspot from '../Editor/Fullscreen/RCImageHotspot.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 
 import type { ImageGrid } from '@/Types/contentParts';
-import { Field, FieldLabel } from '@/Components/ui/field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+
+// Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
+// hotspot's image picker/focal-point UI (and its width-select field) into every public
+// page that renders an image grid, which never reaches this branch at all.
+const RCAddPlaceholder = defineAsyncComponent(() => import('../Editor/Fullscreen/RCAddPlaceholder.vue'));
+const RCImageHotspot = defineAsyncComponent(() => import('../Editor/Fullscreen/RCImageHotspot.vue'));
+const Field = defineAsyncComponent(() => import('@/Components/ui/field').then(m => m.Field));
+const FieldLabel = defineAsyncComponent(() => import('@/Components/ui/field').then(m => m.FieldLabel));
+const Select = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.Select));
+const SelectContent = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.SelectContent));
+const SelectItem = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.SelectItem));
+const SelectTrigger = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.SelectTrigger));
+const SelectValue = defineAsyncComponent(() => import('@/Components/ui/select').then(m => m.SelectValue));
 
 const props = defineProps<{ element: ImageGrid; editable?: boolean; blockKey?: string }>();
 const emit = defineEmits<(e: 'update:element', value: ImageGrid) => void>();

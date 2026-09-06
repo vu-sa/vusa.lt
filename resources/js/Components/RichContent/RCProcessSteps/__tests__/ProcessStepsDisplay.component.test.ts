@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import ProcessStepsDisplay from '../ProcessStepsDisplay.vue';
+import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { ProcessSteps } from '@/Types/contentParts';
 
 function makeElement(steps: Partial<ProcessSteps['json_content'][number]>[] = []): ProcessSteps {
@@ -31,13 +32,16 @@ describe('ProcessStepsDisplay — public (non-editable)', () => {
 });
 
 describe('ProcessStepsDisplay — editable (full-screen editor)', () => {
-  it('renders step title and text as inline editable', () => {
+  it('renders step title and text as inline editable', async () => {
     const wrapper = mount(ProcessStepsDisplay, {
       props: {
         element: makeElement([{ title: 'Pirmas žingsnis', text: 'Paaiškinimas' }]),
         editable: true,
       },
     });
+    // RCInlineText is lazy-loaded (see ProcessStepsDisplay.vue) — resolving that
+    // dynamic import needs a wait before the editable markup it renders exists.
+    await waitForSelector(wrapper, '[contenteditable]');
 
     const editables = wrapper.findAll('[contenteditable]');
     expect(editables.length).toBeGreaterThanOrEqual(2);
@@ -85,6 +89,7 @@ describe('ProcessStepsDisplay — editable (full-screen editor)', () => {
         editable: true,
       },
     });
+    await waitForSelector(wrapper, '[data-rc-step-add]');
 
     const addPlaceholder = wrapper.find('[data-rc-step-add]');
     expect(addPlaceholder.exists()).toBe(true);

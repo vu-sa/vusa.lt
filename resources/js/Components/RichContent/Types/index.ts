@@ -85,8 +85,19 @@ export interface ContentType {
 
   /** Async-loaded editor component (`ContentEditorFactory`'s edit mode). */
   editor: Component;
-  /** Display component (async-loaded via `defineAsyncComponent`). */
+  /** Display component (async-loaded via `defineAsyncComponent`). Pure presentation —
+   *  must never import from `Editor/Fullscreen` or TipTap, so public visitors never
+   *  download the editing machinery. */
   display: Component;
+  /**
+   * Full-screen-editor-only replacement for `display`, used only while
+   * `BlockPreviewRenderer` is actively editing this block (see its `inlineEditable`
+   * gate below). Wraps `display` and overrides its author-editable scoped slots rather
+   * than forking the whole template — see `RCHeroSection/HeroEditableElement.vue` for
+   * the reference implementation. Optional: most `inlineEditable` types still branch on
+   * an `editable` prop inside their single `display` component instead.
+   */
+  editableDisplay?: Component;
 
   /**
    * This type's display honours an `editable` prop and renders its text fields through
@@ -248,6 +259,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     inlineEditable: true,
     editor: defineAsyncComponent(() => import('../RCHeroSection/HeroForm.vue')),
     display: defineAsyncComponent(() => import('../RCHeroSection/HeroElement.vue')),
+    editableDisplay: defineAsyncComponent(() => import('../RCHeroSection/HeroEditableElement.vue')),
     skeleton: {
       height: 'min-h-[45rem]',
       template: `
