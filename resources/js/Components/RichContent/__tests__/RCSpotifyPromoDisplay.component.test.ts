@@ -113,4 +113,25 @@ describe('RCSpotifyPromoDisplay', () => {
 
     expect(wrapper.find('#rc-42').exists()).toBe(true);
   });
+
+  it('renders inline editable text when editable is true', () => {
+    const wrapper = mount(RCSpotifyPromoDisplay, {
+      props: {
+        element: makeElement({ title: 'Podcast title', eyebrow: 'START FM' }),
+        editable: true,
+        blockKey: 'spotify-test',
+        band: resolveBand({ type: 'spotify-embed', options: { variant: 'promo' } }, 0),
+      },
+      global: {
+        stubs: {
+          SmartLink: { props: ['href'], template: '<a :href="href"><slot /></a>' },
+          RCInlineText: { props: ['modelValue'], template: '<span class="inline-text-mock">{{ modelValue }}</span>' },
+          HeroButtonsEditable: true,
+          RichContentTiptapHTML: true,
+        },
+      },
+    });
+
+    expect(wrapper.findAll('.inline-text-mock').length).toBeGreaterThanOrEqual(2);
+  });
 });

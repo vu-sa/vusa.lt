@@ -1,7 +1,5 @@
 import { defineAsyncComponent, type Component } from 'vue';
 
-import TiptapDisplay from './TiptapDisplay.vue';
-
 // Re-export all type definitions
 export * from './types';
 import TextCaseUppercase20Filled from '~icons/fluent/text-case-uppercase20-filled';
@@ -87,7 +85,7 @@ export interface ContentType {
 
   /** Async-loaded editor component (`ContentEditorFactory`'s edit mode). */
   editor: Component;
-  /** Display component. Only `tiptap` is loaded synchronously (most common type). */
+  /** Display component (async-loaded via `defineAsyncComponent`). */
   display: Component;
 
   /**
@@ -134,8 +132,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultWidth: 'prose',
     allowedWidths: ['prose', 'content'],
     defaultContent: () => ({}),
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./TiptapEditor.vue')),
-    display: TiptapDisplay,
+    display: defineAsyncComponent(() => import('./TiptapDisplay.vue')),
   },
   'shadcn-accordion': {
     value: 'shadcn-accordion',
@@ -393,6 +392,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     // `inline` is a plain bordered embed dropped into prose — flow. `promo` reads as its
     // own section beside the page's other bands.
     bandRole: options => (options?.variant === 'promo' ? 'band' : 'flow'),
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./SpotifyEmbedEditor.vue')),
     display: defineAsyncComponent(() => import('../RCSpotifyEmbed.vue')),
   },
@@ -406,6 +406,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     allowedWidths: ['prose', 'content'],
     defaultContent: () => ({ url: '', platform: null, postId: '' }),
     defaultOptions: () => ({ showCaption: true }),
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./SocialEmbedEditor.vue')),
     display: defineAsyncComponent(() => import('../RCSocialEmbed.vue')),
   },
@@ -472,6 +473,7 @@ export const contentTypeRegistry: Record<string, ContentType> = {
       isClosed: false,
       closedMessage: { lt: '', en: '' },
     }),
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./TextBoxEditor.vue')),
     display: defineAsyncComponent(() => import('./TextBoxDisplay.vue')),
     skeleton: {
@@ -875,8 +877,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     // Owns its own card chrome (gradient + heading), so the canvas rhythm should not
     // add a top-margin flow on top of it.
     selfSpaced: true,
-    defaultContent: () => ([]),
+    defaultContent: () => ([{ startTime: '09:00', endTime: '10:00', title: '' }]),
     defaultOptions: () => ({}),
+    inlineEditable: true,
     editor: defineAsyncComponent(() => import('./TimetableEditor.vue')),
     display: defineAsyncComponent(() => import('../RCTimetable/TimetableDisplay.vue')),
     skeleton: {

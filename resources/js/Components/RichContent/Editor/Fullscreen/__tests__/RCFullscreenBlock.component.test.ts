@@ -22,6 +22,10 @@ const stubs = {
   CardStackBlockToolbar: { template: '<div class="card-stack-toolbar" />' },
   CarouselSlideDeckBlockToolbar: { template: '<div class="carousel-slide-deck-toolbar" />' },
   ProcessStepsBlockToolbar: { template: '<div class="process-steps-toolbar" />' },
+  SpotifyBlockToolbar: { template: '<div class="spotify-toolbar" />' },
+  SocialEmbedBlockToolbar: { template: '<div class="social-embed-toolbar" />' },
+  TextBoxBlockToolbar: { template: '<div class="text-box-toolbar" />' },
+  TimetableBlockToolbar: { template: '<div class="timetable-toolbar" />' },
   RCImageListBlockToolbar: { template: '<div class="image-list-toolbar" />' },
   RCBlockToolbarShell: { template: '<div class="block-toolbar"><slot /></div>' },
   RCSectionToolbarOptions: {
@@ -87,6 +91,10 @@ describe('RCFullscreenBlock', () => {
     ['card-stack', '.card-stack-toolbar'],
     ['carousel-slide-deck', '.carousel-slide-deck-toolbar'],
     ['process-steps', '.process-steps-toolbar'],
+    ['spotify-embed', '.spotify-toolbar'],
+    ['social-embed', '.social-embed-toolbar'],
+    ['text-box', '.text-box-toolbar'],
+    ['timetable', '.timetable-toolbar'],
   ])('routes %s to its dedicated toolbar, not the generic fallback', (type, toolbarSelector) => {
     const wrapper = mount(RCFullscreenBlock, {
       props: {
@@ -101,5 +109,20 @@ describe('RCFullscreenBlock', () => {
 
     expect(wrapper.find(toolbarSelector).exists()).toBe(true);
     expect(wrapper.find('.block-toolbar').exists()).toBe(false);
+  });
+
+  it('routes tiptap to the generic block toolbar', () => {
+    const wrapper = mount(RCFullscreenBlock, {
+      props: {
+        content: { type: 'tiptap', json_content: {}, options: {} } as ContentPart,
+        blockKey: 'tiptap-1',
+        canMoveUp: true,
+        canMoveDown: true,
+        canDelete: true,
+      },
+      global: { stubs, provide: { [ACTIVE_HOTSPOT_KEY]: useActiveHotspot() } },
+    });
+
+    expect(wrapper.find('.block-toolbar').exists()).toBe(true);
   });
 });

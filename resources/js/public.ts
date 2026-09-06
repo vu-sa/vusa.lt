@@ -56,7 +56,7 @@ createInertiaApp({
         fallbackLang: 'en',
         resolve: async (lang: string) => {
           // Load JSON translations (shared between admin/public)
-          const jsonLangs = import.meta.glob('../../lang/*.json');
+          const jsonLangs = import.meta.glob(['../../lang/*.json', '!../../lang/php_admin_*.json']);
           // Load public-specific PHP translations (shared + public combined)
           const phpLangs = import.meta.glob('../../lang/php_public_*.json');
 

@@ -3,10 +3,10 @@
        warm paper, square corners, brand red or amber. Without this the editor showed authors an
        admin-palette version of a block that looks different the moment it is published. -->
   <div data-surface="public" :class="['bg-background text-foreground font-public', layoutClasses]">
-    <!-- tiptap has no dedicated preview path: TiptapDisplay only reads `element.html`,
-         a server-appended attribute that doesn't exist on unsaved rows, so it would
-         render blank while editing. Render the live json_content directly instead. -->
-    <RichContentTiptapHTML v-if="element.type === 'tiptap'" :json_content="element.json_content" />
+    <!-- tiptap: when not inline-editable (e.g. BlockPickerDialog / static preview), render
+         live json_content directly through RichContentTiptapHTML. When inline-editable,
+         TiptapDisplay mounts the interactive editor canvas and smart toolbar. -->
+    <RichContentTiptapHTML v-if="element.type === 'tiptap' && !editableForElement" :json_content="element.json_content" />
 
     <Suspense v-else>
       <template #default>

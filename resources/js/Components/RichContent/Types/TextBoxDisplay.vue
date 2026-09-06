@@ -1,17 +1,42 @@
 <template>
-  <div class="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900/50">
-    <h3 v-if="title" class="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+  <div class="border border-border bg-card text-card-foreground p-6 sm:p-8">
+    <RCInlineText
+      v-if="editable"
+      as="h3"
+      class="mb-4 text-xl font-bold tracking-tight text-foreground"
+      :model-value="title"
+      :editable
+      :placeholder="$t('rich-content.title')"
+      @click.stop
+      @update:model-value="updateTitle"
+    />
+    <h3 v-else-if="title" class="mb-4 text-xl font-bold tracking-tight text-foreground">
       {{ title }}
     </h3>
 
     <!-- Closed state -->
-    <div v-if="isClosed" class="rounded-md bg-zinc-50 p-4 text-sm text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-400">
-      {{ closedMessage || $t('rich-content.text_box_closed_default') }}
+    <div v-if="isClosed" class="border border-border bg-secondary/40 p-4 text-sm text-muted-foreground">
+      <RCInlineText
+        v-if="editable"
+        as="div"
+        :model-value="closedMessage || $t('rich-content.text_box_closed_default')"
+        :editable
+        :placeholder="$t('rich-content.text_box_closed_default')"
+        @click.stop
+        @update:model-value="updateClosedMessage"
+      />
+      <template v-else>
+        {{ closedMessage || $t('rich-content.text_box_closed_default') }}
+      </template>
     </div>
 
     <!-- Already submitted -->
-    <div v-else-if="submitted" class="rounded-md bg-emerald-50 p-4 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300">
-      {{ $t('rich-content.text_box_success') }}
+    <div
+      v-else-if="submitted"
+      class="flex items-center gap-2 border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-300"
+    >
+      <IFluentCheckmark12Regular class="size-4 shrink-0" />
+      <span>{{ $t('rich-content.text_box_success') }}</span>
     </div>
 
     <!-- Form -->
@@ -26,27 +51,32 @@
         <Textarea
           v-model="http.text"
           :placeholder
-          :disabled="http.processing"
+          :disabled="editable || http.processing"
           :maxlength="MAX_LENGTH"
           class="min-h-28 resize-y"
           required
         />
         <span
           class="absolute bottom-2 right-2.5 text-xs tabular-nums"
-          :class="remaining <= 100 ? 'text-amber-500 dark:text-amber-400' : 'text-zinc-400 dark:text-zinc-500'"
+          :class="remaining <= 100 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'"
         >
           {{ remaining }} / {{ MAX_LENGTH }}
         </span>
       </div>
       <div class="flex items-center gap-3">
-        <Button type="submit" :disabled="http.processing || !http.text.trim()">
+        <Button
+          type="submit"
+          variant="brand"
+          size="public"
+          :disabled="editable || http.processing || !http.text.trim()"
+        >
           <span v-if="http.processing" class="flex items-center gap-2">
             <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" />
             {{ $t('rich-content.text_box_submit') }}
           </span>
           <span v-else>{{ $t('rich-content.text_box_submit') }}</span>
         </Button>
-        <p v-if="errorMessage" class="text-sm text-red-600 dark:text-red-400">
+        <p v-if="errorMessage" class="text-sm text-destructive">
           {{ errorMessage }}
         </p>
       </div>
@@ -57,19 +87,25 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 import { useHttp, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import type { TextBox } from '@/Types/contentParts';
 import type { ApiResponse } from '@/Types/api.d';
 import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
+import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
+import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
 
 const MAX_LENGTH = 5000;
 
 const props = defineProps<{
-  element: {
-    id: number;
-    options: TextBox['options'];
-  };
+  element: TextBox & { id?: number };
+  editable?: boolean;
+  blockKey?: string;
+}>();
+
+const emit = defineEmits<{
+  (e: 'update:element', value: TextBox): void;
 }>();
 
 const page = usePage();
@@ -77,13 +113,23 @@ const locale = computed(() => page.props.app?.locale ?? 'lt');
 
 const title = computed(() => {
   const t = props.element.options?.title;
-  if (!t) { return ''; }
+  if (!t) {
+    return '';
+  }
+  if (typeof t === 'string') {
+    return t;
+  }
   return t[locale.value as 'lt' | 'en'] || t.lt || t.en || '';
 });
 
 const placeholder = computed(() => {
   const p = props.element.options?.placeholder;
-  if (!p) { return ''; }
+  if (!p) {
+    return '';
+  }
+  if (typeof p === 'string') {
+    return p;
+  }
   return p[locale.value as 'lt' | 'en'] || p.lt || p.en || '';
 });
 
@@ -91,17 +137,22 @@ const isClosed = computed(() => props.element.options?.isClosed === true);
 
 const closedMessage = computed(() => {
   const m = props.element.options?.closedMessage;
-  if (!m) { return ''; }
+  if (!m) {
+    return '';
+  }
+  if (typeof m === 'string') {
+    return m;
+  }
   return m[locale.value as 'lt' | 'en'] || m.lt || m.en || '';
 });
 
-const storageKey = computed(() => `text_box_submitted_${props.element.id}`);
+const storageKey = computed(() => `text_box_submitted_${props.element.id ?? 'preview'}`);
 
 const submitted = ref(false);
 const errorMessage = ref('');
 
 const http = useHttp({
-  content_part_id: props.element.id,
+  content_part_id: props.element.id ?? 0,
   text: '',
   website: '',
 });
@@ -114,8 +165,40 @@ onMounted(() => {
   }
 });
 
+function updateTitle(val: string): void {
+  const currentTitle = props.element.options?.title;
+  const newTitle = typeof currentTitle === 'object' && currentTitle !== null
+    ? { ...currentTitle, [locale.value]: val }
+    : val;
+
+  emit('update:element', {
+    ...props.element,
+    options: {
+      ...props.element.options,
+      title: newTitle,
+    },
+  });
+}
+
+function updateClosedMessage(val: string): void {
+  const currentMsg = props.element.options?.closedMessage;
+  const newMsg = typeof currentMsg === 'object' && currentMsg !== null
+    ? { ...currentMsg, [locale.value]: val }
+    : val;
+
+  emit('update:element', {
+    ...props.element,
+    options: {
+      ...props.element.options,
+      closedMessage: newMsg,
+    },
+  });
+}
+
 async function submit(): Promise<void> {
-  if (!http.text.trim() || http.processing) { return; }
+  if (props.editable || !http.text.trim() || http.processing) {
+    return;
+  }
 
   errorMessage.value = '';
 

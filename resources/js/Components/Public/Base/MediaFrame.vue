@@ -12,6 +12,7 @@
       :src
       :alt
       :loading="eager ? 'eager' : 'lazy'"
+      :fetchpriority="eager ? 'high' : undefined"
       :class="cn(
         'absolute inset-0 size-full object-cover',
         grayscale && 'grayscale',

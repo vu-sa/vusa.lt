@@ -22,10 +22,10 @@
         @update:model-value="options!.isClosed = $event"
       />
       <div class="space-y-0.5">
-        <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <span class="text-sm font-medium text-foreground">
           {{ $t('rich-content.text_box_closed_label') }}
         </span>
-        <p class="text-xs text-zinc-500 dark:text-zinc-400">
+        <p class="text-xs text-muted-foreground">
           {{ $t('rich-content.text_box_closed_description') }}
         </p>
       </div>

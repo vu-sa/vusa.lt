@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import '@vue-flow/core/dist/style.css';
-@import '@vue-flow/core/dist/theme-default.css';
 @import './theme/base-tokens.css';
 @import './theme/design-tokens.css';
 @import './base/reset.css';
@@ -11,7 +9,6 @@
 @import './public/canvas.css';
 @import './components/misc.css';
 @import './components/turtle-loader.css';
-@import './vendor/vue-flow.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';

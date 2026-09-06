@@ -194,7 +194,7 @@ const editor = useEditor({
       heading: { levels: [2] },
       link: {
         openOnClick: false,
-        HTMLAttributes: { class: 'text-vusa-red underline font-medium' },
+        HTMLAttributes: { class: 'text-brand underline font-medium' },
       },
     }),
     TaskList,

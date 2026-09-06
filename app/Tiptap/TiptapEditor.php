@@ -93,7 +93,11 @@ class TiptapEditor extends Editor
                 // Text marks
                 new Link([
                     'HTMLAttributes' => [
-                        'class' => 'text-vusa-red underline font-medium tracking-normal',
+                        // `text-brand` resolves per theme (red light / amber dark) —
+                        // the token `.rc-prose a` also uses. On the public surface
+                        // `.rc-prose a` owns the colour anyway; this covers stored
+                        // HTML rendered outside a prose wrapper.
+                        'class' => 'text-brand underline font-medium tracking-normal',
                     ],
                 ]),
                 new Underline,

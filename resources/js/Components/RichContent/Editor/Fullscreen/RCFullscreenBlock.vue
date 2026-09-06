@@ -135,6 +135,34 @@
       @move-up="$emit('move-up')" @move-down="$emit('move-down')"
       @delete="$emit('delete')" @open-form="$emit('open-form')"
     />
+    <SpotifyBlockToolbar v-else-if="!preview && content.type === 'spotify-embed'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete :presentation-disabled="band?.isSectionChild"
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
+    <SocialEmbedBlockToolbar v-else-if="!preview && content.type === 'social-embed'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
+    <TextBoxBlockToolbar v-else-if="!preview && content.type === 'text-box'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
+    <TimetableBlockToolbar v-else-if="!preview && content.type === 'timetable'"
+      :content :block-key :reference="rootRef"
+      :can-move-up :can-move-down :can-delete
+      @update:content="$emit('update:content', $event)"
+      @move-up="$emit('move-up')" @move-down="$emit('move-down')"
+      @delete="$emit('delete')" @open-form="$emit('open-form')"
+    />
     <RCBlockToolbarShell v-else-if="!preview"
       :content :block-key :reference="rootRef"
       :can-move-up :can-move-down :can-delete
@@ -203,6 +231,10 @@ import FlowGraphBlockToolbar from '../../RCFlowGraph/FlowGraphBlockToolbar.vue';
 import CardStackBlockToolbar from '../../RCCardStack/CardStackBlockToolbar.vue';
 import CarouselSlideDeckBlockToolbar from '../../RCCarouselSlideDeck/CarouselSlideDeckBlockToolbar.vue';
 import ProcessStepsBlockToolbar from '../../RCProcessSteps/ProcessStepsBlockToolbar.vue';
+import SpotifyBlockToolbar from '../../RCSpotify/SpotifyBlockToolbar.vue';
+import SocialEmbedBlockToolbar from '../../RCSocialEmbed/SocialEmbedBlockToolbar.vue';
+import TextBoxBlockToolbar from '../../RCTextBox/TextBoxBlockToolbar.vue';
+import TimetableBlockToolbar from '../../RCTimetable/TimetableBlockToolbar.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../../Types';
 import { resolveBandRole, type BandResolution, type BlockPresentation } from '../../bandLayout';
 import type { PlainPadding } from '../../sectionClasses';
