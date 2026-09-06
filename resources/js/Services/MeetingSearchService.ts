@@ -44,10 +44,7 @@ export class MeetingSearchService {
       max_facet_values: 50,
       per_page: perPage,
       page: isLoadMore ? currentPage + 1 : 1,
-      // Sort: relevance first if query, otherwise newest first
-      sort_by: filters.query && filters.query.trim() !== '*'
-        ? '_text_match:desc,start_time:desc'
-        : 'start_time:desc',
+      sort_by: this.buildSortExpression(filters),
     };
 
     // Build filter conditions
@@ -98,6 +95,23 @@ export class MeetingSearchService {
     catch (error) {
       console.error('Failed to load initial facets:', error);
       return [];
+    }
+  }
+
+  /**
+   * `explicit` sort choices win outright; otherwise fall back to the smart default
+   * (relevance for a real query, newest-first for browsing).
+   */
+  private buildSortExpression(filters: MeetingSearchFilters): string {
+    switch (filters.sort) {
+      case 'date_asc':
+        return 'start_time:asc';
+      case 'date_desc':
+        return 'start_time:desc';
+      default:
+        return filters.query && filters.query.trim() !== '*'
+          ? '_text_match:desc,start_time:desc'
+          : 'start_time:desc';
     }
   }
 

@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Category;
 use App\Models\Form;
+use App\Models\Tag;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
@@ -116,6 +117,7 @@ class HandleInertiaRequests extends Middleware
             // event-list/calendar block editors). See QuickLinkController's identical
             // "not worth a search endpoint" rationale for categories.
             'categories' => $this->getCategoriesForInertia(...),
+            'tags' => $this->getTagsForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
             'map' => [
@@ -165,6 +167,16 @@ class HandleInertiaRequests extends Middleware
     {
         return Cache::rememberForever('all-categories-for-inertia',
             fn () => Category::orderBy('alias')->get(['id', 'name', 'alias'])
+        );
+    }
+
+    /**
+     * @return Collection<int, Tag>
+     */
+    private function getTagsForInertia(): Collection
+    {
+        return Cache::rememberForever('all-tags-for-inertia',
+            fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias'])
         );
     }
 

@@ -30,6 +30,7 @@ Here you'll find all changes and improvements to the mano.vusa.lt platform.
 - ✨ **Hero images are clearer to edit** — image controls are compactly grouped, decorations have their own control apart from image and focal-point settings, and the full-screen editor supports theme switching and preview
 - ✨ **Podcast promo display for audio embeds** — two-column layout with rich text, action buttons, and integrated Spotify or Mixcloud players
 - ✨ **Modernized news layout and category tags** — featured article presentation, clean hairline article list, and category chip integration
+- ✨ **News blocks are configurable in the visual editor** — edit the eyebrow and heading, then choose articles by category, tag, unit, and count
 - ✨ **Partners grid replacing banner carousel** — clean and responsive partner and sponsor showcase instead of a rotating banner carousel
 - ✨ **“Mano VU SA” is now a clear navigation button** — the account link in the second menu row now matches the site controls, with a clear account icon instead of a profile photo
 - ✨ **Public-site notices are now consistent** — the cookie reminder and notifications match the new site style, while the staging warning appears as a persistent notice without taking space from the page

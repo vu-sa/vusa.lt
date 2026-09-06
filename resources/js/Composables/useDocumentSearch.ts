@@ -99,13 +99,16 @@ export const useDocumentSearch = (): DocumentSearchController => {
   const typesenseClient = ref<any>(null);
   const documentService = ref<DocumentSearchService | null>(null);
 
-  // Default filters for document search
+  // Default filters for document search. `effectStatuses: ['true', 'unknown']` hides
+  // "Negalioja" documents by default — deselecting it (or clearing) reveals them.
   const defaultFilters: DocumentSearchFilters = {
     query: '',
     tenants: [],
     contentTypes: [],
     languages: [],
     dateRange: {},
+    sort: 'relevance',
+    effectStatuses: ['true', 'unknown'],
   };
 
   // Filter key mapper for document facets
@@ -133,6 +136,9 @@ export const useDocumentSearch = (): DocumentSearchController => {
     maxRetries: 3,
     searchOnMount: false,
     loadFacetsOnMount: false,
+    // Both always hold a non-empty value at their defaults, so the generic active-filter
+    // counter would otherwise flag them even when nobody has touched them.
+    excludeFromFilterCount: ['sort', 'effectStatuses'],
   });
 
   // ============================================================================
@@ -248,6 +254,32 @@ export const useDocumentSearch = (): DocumentSearchController => {
     baseSearch.debouncedSearch();
   };
 
+  const setSortBy = (sort: DocumentSearchFilters['sort']) => {
+    if (baseSearch.filters.value.sort === sort) return;
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      sort,
+    };
+    baseSearch.debouncedSearch();
+  };
+
+  const toggleEffectStatus = (value: DocumentSearchFilters['effectStatuses'][number]) => {
+    const current = baseSearch.filters.value.effectStatuses;
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      effectStatuses: FilterUtils.toggleArrayValue(current, value),
+    };
+    baseSearch.debouncedSearch();
+  };
+
+  const clearEffectStatuses = () => {
+    baseSearch.filters.value = {
+      ...baseSearch.filters.value,
+      effectStatuses: [],
+    };
+    baseSearch.debouncedSearch();
+  };
+
   const setViewMode = (mode: 'list' | 'compact') => {
     documentPreferences.value.viewMode = mode;
   };
@@ -259,6 +291,10 @@ export const useDocumentSearch = (): DocumentSearchController => {
       contentTypes: [],
       languages: [],
       dateRange: {},
+      sort: 'relevance',
+      // [] means no restriction — same convention as every other array filter here,
+      // so "clear all" also reveals "Negalioja" documents.
+      effectStatuses: [],
     };
     baseSearch.debouncedSearch();
   };
@@ -340,6 +376,27 @@ export const useDocumentSearch = (): DocumentSearchController => {
       params.set('datePreset', filters.dateRange.preset);
     }
 
+    // Only synced when non-default, to keep the URL clean for the common case.
+    if (filters.sort && filters.sort !== 'relevance') {
+      params.set('sort', filters.sort);
+    }
+    const defaultEffectStatuses = ['true', 'unknown'];
+    const effectStatuses = filters.effectStatuses ?? defaultEffectStatuses;
+    const isDefaultEffectStatuses = effectStatuses.length === defaultEffectStatuses.length
+      && defaultEffectStatuses.every(s => effectStatuses.includes(s as never));
+    if (!isDefaultEffectStatuses) {
+      if (effectStatuses.length === 0) {
+        // Explicit marker for "no restriction" — an empty array wouldn't otherwise
+        // round-trip through the URL (no params to append).
+        params.set('status', 'all');
+      }
+      else {
+        effectStatuses.forEach((status) => {
+          params.append('status[]', status);
+        });
+      }
+    }
+
     // Update URL without page reload
     const newUrl = new URL(window.location.href);
     newUrl.search = params.toString();
@@ -400,6 +457,21 @@ export const useDocumentSearch = (): DocumentSearchController => {
       };
     }
 
+    const sortParam = params.get('sort');
+    if (sortParam === 'date_asc' || sortParam === 'date_desc' || sortParam === 'relevance') {
+      filters.sort = sortParam;
+    }
+
+    if (params.get('status') === 'all') {
+      filters.effectStatuses = [];
+    }
+    else {
+      const statuses = parseArrayParam('status').filter(
+        (s): s is DocumentSearchFilters['effectStatuses'][number] => s === 'true' || s === 'false' || s === 'unknown',
+      );
+      if (statuses.length > 0) filters.effectStatuses = statuses;
+    }
+
     return filters;
   };
 
@@ -453,6 +525,12 @@ export const useDocumentSearch = (): DocumentSearchController => {
       if (urlFilters.query) {
         baseSearch.filters.value.query = urlFilters.query;
       }
+      if (urlFilters.sort) {
+        baseSearch.filters.value.sort = urlFilters.sort;
+      }
+      if (urlFilters.effectStatuses) {
+        baseSearch.filters.value.effectStatuses = urlFilters.effectStatuses;
+      }
     }
 
     // Initialize search client
@@ -501,6 +579,9 @@ export const useDocumentSearch = (): DocumentSearchController => {
     toggleContentType,
     toggleLanguage,
     setDateRange,
+    setSortBy,
+    toggleEffectStatus,
+    clearEffectStatuses,
     setViewMode,
     clearFilters,
     clearRecentSearches,

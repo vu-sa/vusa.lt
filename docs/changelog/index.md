@@ -30,6 +30,7 @@ lastUpdated: true
 - ✨ **Antraštės sekcijos nuotrauka redaguojama aiškiau** — nuotraukos valdikliai kompaktiškai sugrupuoti, dekoracijos atskirtos nuo nuotraukos ir jos fokuso nustatymų, o viso ekrano redaktoriuje galima perjungti šviesų arba tamsų vaizdą, paslėpti redagavimo žymes peržiūrai ir išsaugoti negrįžtant į formą
 - ✨ **Tinklalaidžių ir garso įrašų pateikimas** — dviejų stulpelių blokas su aprašymu, mygtukais ir integruotu „Spotify“ ar „Mixcloud“ grotuvu
 - ✨ **Naujienų pateikimas ir kategorijų žymės** — aiškesnė pagrindinės naujienos struktūra, susijusios naujienos su linijomis bei kategorijų žymės
+- ✨ **Naujienų blokas valdomas tiesiai vaizdiniame redaktoriuje** — galima pakeisti viršelinę žymę ir antraštę bei atrinkti rodomas naujienas pagal kategoriją, žymę, padalinį ir kiekį
 - ✨ **Partnerių skiltis vietoje skaidrių karuselės** — aiškus ir tvarkingas organizacijos rėmėjų bei partnerių logotipų tinklelis
 - ✨ **„Mano VU SA“ tapo aiškiu navigacijos mygtuku** — paskyros nuoroda antroje meniu juostoje dabar dera prie kitų svetainės valdiklių, o vietoje profilio nuotraukos naudojama aiški paskyros piktograma
 - ✨ **Viešos svetainės pranešimai suvienodinti** — slapukų priminimas ir pranešimai dabar priderinti prie naujo svetainės stiliaus, o bandomojoje aplinkoje įspėjimas rodomas kaip nuolatinis pranešimas, neužimantis vietos puslapyje

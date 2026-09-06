@@ -1,13 +1,19 @@
 <template>
   <!-- Single root: with 4 sibling v-if/else-if/else branches, RichContentParser's
        width/spacing :class had no single element to fall through to. -->
-  <div>
-    <section class="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="news-section-heading">
+  <section :class="bandClasses" aria-labelledby="news-section-heading">
+    <div class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
       <!-- Section head: eyebrow + display heading on the left, the archive link on the right,
            closed by the hairline that every band on this surface is separated by. -->
       <div class="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
         <div>
-          <EyebrowLabel v-if="showEyebrow">{{ $t('Naujienos') }}</EyebrowLabel>
+          <EyebrowLabel v-if="editable || showEyebrow">
+            <RCInlineText
+              as="span" :model-value="editable ? (element.json_content.eyebrow ?? '') : eyebrowText"
+              :editable :placeholder="$t('Naujienos')"
+              @update:model-value="updateEyebrow"
+            />
+          </EyebrowLabel>
           <!-- eslint-disable-next-line vuejs-accessibility/heading-has-content -- RCInlineText renders the real text at runtime; eslint can't see through the child component. -->
           <h2 id="news-section-heading" class="u-display mt-2 text-3xl text-foreground sm:text-4xl">
             <RCInlineText
@@ -96,18 +102,18 @@
           </SmartLink>
         </div>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import SmartLink from './SmartLink.vue';
 
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import type { News, NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';
@@ -115,6 +121,8 @@ import { useNewsFetch } from '@/Services/ContentService';
 import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
 import { Skeleton } from '@/Components/ui/skeleton';
 import RCInlineText from '@/Components/RichContent/Editor/Fullscreen/RCInlineText.vue';
+import type { BandResolution } from '@/Components/RichContent/bandLayout';
+import { BAND_GROUND_CLASS, BAND_PADDING } from '@/Components/RichContent/sectionClasses';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 // Props - element is from content parts. `resolved` is the server-resolved payload
@@ -126,9 +134,7 @@ const props = defineProps<{
   resolved?: { type: string; items: NewsItem[] } | null;
   /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
   prefetchedNews?: NewsItem[];
-  /** Full-screen editor mode: the title becomes click-to-edit. Undefined/false
-   *  elsewhere. Nothing else on this type is author-editable — the list itself is
-   *  entirely server-resolved. */
+  /** Full-screen editor mode: the title and eyebrow become click-to-edit. */
   editable?: boolean;
   /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
    *  `inlineEditable` fallthrough — this type has no per-field claiming, but an
@@ -136,12 +142,17 @@ const props = defineProps<{
   blockKey?: string;
   /** @see blockKey */
   activeInlineField?: string | null;
+  band?: BandResolution;
 }>();
 
 const emit = defineEmits<(e: 'update:element', value: News) => void>();
 
 function updateTitle(title: string): void {
   emit('update:element', { ...props.element, json_content: { ...props.element.json_content, title } });
+}
+
+function updateEyebrow(eyebrow: string): void {
+  emit('update:element', { ...props.element, json_content: { ...props.element.json_content, eyebrow } });
 }
 
 const page = usePage();
@@ -173,12 +184,16 @@ const loading = computed(() => !hasPrefetchedNews.value && apiLoading.value);
 const error = computed(() => !hasPrefetchedNews.value && apiError.value);
 
 const heading = computed(() => props.element?.json_content?.title || $t('Kas naujo bendruomenėje'));
+const eyebrowText = computed(() => props.element.json_content.eyebrow || $t('Naujienos'));
 
 /**
  * Most authored blocks are titled simply "Naujienos", which is also the eyebrow. Showing both
  * stacks the same word twice, so the eyebrow steps aside whenever the author has already said it.
  */
-const showEyebrow = computed(() => heading.value.trim().toLowerCase() !== $t('Naujienos').trim().toLowerCase());
+const showEyebrow = computed(() => eyebrowText.value.trim().toLowerCase() !== heading.value.trim().toLowerCase());
+
+const bandClasses = computed(() => props.band?.classes
+  ?? ['rc-band', 'relative', 'scroll-mt-32', BAND_PADDING, BAND_GROUND_CLASS.tint, 'rc-viewport']);
 
 const featured = computed<NewsItem | undefined>(() => newsItems.value[0]);
 // Three, not "the rest": the list column is sized against the featured article beside it, and

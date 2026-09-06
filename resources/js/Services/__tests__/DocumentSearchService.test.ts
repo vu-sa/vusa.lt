@@ -247,6 +247,56 @@ describe('DocumentSearchService', () => {
       }));
     });
 
+    it('hides "Negalioja" documents when effectStatuses excludes false', async () => {
+      const filters = { ...baseFilters, query: '*', effectStatuses: ['true', 'unknown'] as const };
+
+      await service.performSearch(filters, 24, false, 0);
+
+      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
+        filter_by: 'is_active:=true && is_in_effect:!=false',
+      }));
+    });
+
+    it('shows only "Negalioja" documents when effectStatuses is just false', async () => {
+      const filters = { ...baseFilters, query: '*', effectStatuses: ['false'] as const };
+
+      await service.performSearch(filters, 24, false, 0);
+
+      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
+        filter_by: 'is_active:=true && is_in_effect:=false',
+      }));
+    });
+
+    it('matches documents with no effective/expiration dates when effectStatuses is just unknown', async () => {
+      const filters = { ...baseFilters, query: '*', effectStatuses: ['unknown'] as const };
+
+      await service.performSearch(filters, 24, false, 0);
+
+      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
+        filter_by: 'is_active:=true && is_in_effect:!=true && is_in_effect:!=false',
+      }));
+    });
+
+    it('applies no effect-status restriction when effectStatuses is empty or omitted', async () => {
+      const filters = { ...baseFilters, query: '*', effectStatuses: [] as const };
+
+      await service.performSearch(filters, 24, false, 0);
+
+      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
+        filter_by: 'is_active:=true',
+      }));
+    });
+
+    it('overrides the smart sort default with an explicit sort choice', async () => {
+      const filters = { ...baseFilters, query: 'test', sort: 'date_asc' as const };
+
+      await service.performSearch(filters, 24, false, 0);
+
+      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
+        sort_by: 'document_date:asc,created_at:asc',
+      }));
+    });
+
     it('handles load more correctly', async () => {
       const filters = { ...baseFilters, query: '*' };
 

@@ -86,6 +86,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
    * the raw translation array `App.Entities.Category['name']` would suggest.
    */
   categories: Array<{ id: number; alias: string | null; name: string }>;
+  /** Global tag lookup for rich-content news filters. */
+  tags: Array<{ id: number; alias: string | null; name: string }>;
   tenant:
   | (Pick<App.Entities.Tenant, 'id' | 'alias' | 'shortname' | 'type'> & {
     subdomain: string;

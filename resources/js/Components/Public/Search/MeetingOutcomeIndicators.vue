@@ -5,20 +5,20 @@
         <TooltipTrigger class="flex items-center gap-0.5">
           <!-- Vote matches (student position accepted) -->
           <span v-if="matches > 0" class="flex items-center">
-            <CheckIcon class="h-3 w-3 text-green-600 dark:text-green-400" />
-            <span class="text-[0.625rem] text-green-600 dark:text-green-400 font-medium">{{ matches }}</span>
+            <IFluentCheckmark12Regular class="h-3 w-3 text-status-success" />
+            <span class="text-[0.625rem] text-status-success font-medium">{{ matches }}</span>
           </span>
 
           <!-- Vote mismatches (student position not accepted) -->
           <span v-if="mismatches > 0" class="flex items-center ml-1">
-            <XIcon class="h-3 w-3 text-amber-600 dark:text-amber-400" />
-            <span class="text-[0.625rem] text-amber-600 dark:text-amber-400 font-medium">{{ mismatches }}</span>
+            <IFluentDismiss12Regular class="h-3 w-3 text-status-warning" />
+            <span class="text-[0.625rem] text-status-warning font-medium">{{ mismatches }}</span>
           </span>
 
           <!-- Incomplete vote data -->
           <span v-if="incomplete > 0" class="flex items-center ml-1">
-            <MinusIcon class="h-3 w-3 text-zinc-500 dark:text-zinc-400" />
-            <span class="text-[0.625rem] text-zinc-500 dark:text-zinc-400 font-medium">{{ incomplete }}</span>
+            <IFluentSubtract12Regular class="h-3 w-3 text-muted-foreground" />
+            <span class="text-[0.625rem] text-muted-foreground font-medium">{{ incomplete }}</span>
           </span>
         </TooltipTrigger>
         <TooltipContent>
@@ -41,10 +41,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { CheckIcon, XIcon, MinusIcon } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import IFluentCheckmark12Regular from '~icons/fluent/checkmark-12-regular';
+import IFluentDismiss12Regular from '~icons/fluent/dismiss-12-regular';
+import IFluentSubtract12Regular from '~icons/fluent/subtract-12-regular';
 
 const props = withDefaults(defineProps<{
   matches?: number;

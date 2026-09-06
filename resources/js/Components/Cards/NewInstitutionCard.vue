@@ -1,117 +1,113 @@
 <template>
-  <SmartLink :href="institutionUrl" class="plain">
-    <Card class="border transition-all duration-300 hover:scale-105 hover:border-primary/40 hover:bg-accent/40 dark:border-zinc-200/20"
-      as="button">
-      <!-- Cover Image Section with Placeholder -->
-      <div class="relative h-32 w-full">
-        <img
-          v-if="institution.image_url"
-          class="size-full rounded-t-md object-cover"
-          :src="institution.image_url"
-          :alt="institution.name"
+  <article
+    class="group flex h-full flex-col border border-border bg-card transition-colors duration-200 hover:border-brand"
+    data-slot="institution-card"
+  >
+    <SmartLink :href="institutionUrl" class="plain flex flex-1 flex-col">
+      <div class="relative">
+        <MediaFrame
+          :src="institution.image_url ?? undefined"
+          :alt="String(institution.name || '')"
+          :grayscale="false"
+          hover-zoom
+          class="bg-secondary"
         >
-        <div
-          v-else
-          class="size-full rounded-t-md bg-gradient-to-br from-muted/50 to-muted"
-        />
-        <!-- Logo with Placeholder -->
+          <template #fallback>
+            <IFluentImage24Regular class="size-10 text-muted-foreground/50" />
+          </template>
+        </MediaFrame>
+
         <div
           v-if="institution.logo_url"
-          class="absolute -bottom-4 left-8 size-16 rounded-full border bg-white shadow-xs overflow-hidden"
+          class="absolute -bottom-6 left-5 flex size-14 items-center justify-center border border-border bg-card p-1.5"
         >
           <img
-            class="size-full object-contain p-1"
+            class="size-full object-contain"
             :src="institution.logo_url"
-            :alt="`${institution.name} logo`"
+            :alt="`${String(institution.name || '')} logo`"
           >
         </div>
         <div
           v-else
-          class="absolute -bottom-4 left-8 size-16 rounded-full border bg-white shadow-xs flex items-center justify-center"
+          class="absolute -bottom-6 left-5 flex size-14 items-center justify-center border border-border bg-card"
         >
-          <Building2 class="w-6 h-6 text-muted-foreground" />
+          <IFluentBuilding24Regular class="size-6 text-muted-foreground" />
         </div>
       </div>
 
-      <CardHeader class="mt-2">
-        <!-- Metadata Row (tenant + types) - only shown when showMetadata is true -->
-        <div v-if="showMetadata && (tenantName || displayTypes.length > 0)" class="flex flex-wrap items-center gap-1.5 mb-1.5">
-          <Badge v-if="tenantName" variant="secondary" class="text-xs">
-            {{ tenantName }}
-          </Badge>
-          <span
-            v-for="(type, index) in displayTypes"
-            :key="type.id || index"
-            class="text-xs text-muted-foreground"
-          >
-            {{ type.title }}{{ index < displayTypes.length - 1 ? ',' : '' }}
-          </span>
+      <div class="flex flex-1 flex-col px-5 pb-5 pt-10">
+        <div v-if="showMetadata && (tenantName || displayTypes.length > 0)" class="mb-3 flex flex-wrap items-center gap-1.5">
+          <TagChip v-if="tenantName && !isPkp" variant="muted">
+            <span class="normal-case tracking-normal font-medium">{{ tenantName }}</span>
+          </TagChip>
+          <TagChip v-for="(type, index) in displayTypes" :key="type.id || index" variant="muted">
+            <span class="normal-case tracking-normal font-medium">{{ type.title }}</span>
+          </TagChip>
           <span v-if="hasMoreTypes" class="text-xs text-muted-foreground">
-            +{{ institution.types.length - 2 }}
+            +{{ (institution.types?.length || 0) - 2 }}
           </span>
         </div>
 
-        <CardTitle class="font-bold">
+        <h3 class="text-pretty text-xl font-bold leading-tight text-foreground transition-colors group-hover:text-brand sm:text-2xl">
           {{ institution.name }}
-        </CardTitle>
-      </CardHeader>
+        </h3>
 
-      <CardContent>
-        <div v-if="institution.description" v-html="institution.description" />
+        <div
+          v-if="institution.description"
+          class="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground"
+          v-html="institution.description"
+        />
 
-        <!-- Duties count (contacts) -->
-        <div v-if="showMetadata && dutiesCount > 0" class="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Users class="w-3.5 h-3.5" />
-          <span>{{ dutiesCount }} {{ dutiesCount === 1 ? $t('search.contact_singular') : $t('search.contacts_plural') }}</span>
+        <!-- Spacer: pushes separator to bottom but guarantees a minimum gap -->
+        <div class="flex-1 min-h-6" />
+
+        <!-- Separator + action row -->
+        <div class="border-t border-border pt-4 flex items-center gap-1.5">
+          <a
+            v-if="institution.facebook_url"
+            :href="institution.facebook_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex size-9 items-center justify-center border border-border bg-transparent text-muted-foreground transition-colors hover:border-brand hover:text-brand"
+            @click.stop
+          >
+            <span class="sr-only">Facebook</span>
+            <ISimpleIconsFacebook class="size-3.5" />
+          </a>
+          <a
+            v-if="institution.instagram_url"
+            :href="institution.instagram_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex size-9 items-center justify-center border border-border bg-transparent text-muted-foreground transition-colors hover:border-brand hover:text-brand"
+            @click.stop
+          >
+            <span class="sr-only">Instagram</span>
+            <ISimpleIconsInstagram class="size-3.5" />
+          </a>
+          <span class="ml-auto inline-flex h-9 items-center gap-1.5 border border-border bg-transparent px-3 text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:border-brand group-hover:text-brand">
+            {{ $t('Kontaktai') }}
+            <IFluentArrowUpRight16Regular class="size-3.5" />
+          </span>
         </div>
-      </CardContent>
-
-      <CardFooter class="flex gap-2">
-        <a v-if="institution.facebook_url" :href="institution.facebook_url" target="_blank" rel="noopener noreferrer">
-          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
-            <ISimpleIconsFacebook />
-          </Button>
-        </a>
-        <a v-if="institution.instagram_url" :href="institution.instagram_url" target="_blank" rel="noopener noreferrer">
-          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
-            <ISimpleIconsInstagram />
-          </Button>
-        </a>
-        <a v-if="institution.website" :href="institution.website" target="_blank" rel="noopener noreferrer">
-          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
-            <IFluentGlobe20Regular />
-          </Button>
-        </a>
-        <a v-if="institution.email" :href="`mailto:${institution.email}`">
-          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
-            <IFluentMail20Regular />
-          </Button>
-        </a>
-        <a v-if="institution.phone" :href="`tel:${institution.phone}`">
-          <Button variant="ghost" size="icon-sm" class="rounded-full" @click.stop>
-            <IFluentPhone20Regular />
-          </Button>
-        </a>
-      </CardFooter>
-    </Card>
-  </SmartLink>
+      </div>
+    </SmartLink>
+  </article>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { TenantType } from '@/Types/enums';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, Users } from 'lucide-vue-next';
 
-import { Badge } from '../ui/badge';
-import { Button } from '../ui/button';
-import Card from '../ui/card/Card.vue';
-import CardContent from '../ui/card/CardContent.vue';
-import CardFooter from '../ui/card/CardFooter.vue';
-import CardHeader from '../ui/card/CardHeader.vue';
-import CardTitle from '../ui/card/CardTitle.vue';
-import SmartLink from '../Public/SmartLink.vue';
+import { TenantType } from '@/Types/enums';
+import SmartLink from '@/Components/Public/SmartLink.vue';
+import { MediaFrame, TagChip } from '@/Components/Public/Base';
+import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
+import IFluentBuilding24Regular from '~icons/fluent/building-24-regular';
+import IFluentImage24Regular from '~icons/fluent/image24-regular';
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
+import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
 
 // Support both full Institution entity and processed search result structure
 interface InstitutionData {
@@ -147,7 +143,6 @@ const props = withDefaults(defineProps<{
   showMetadata?: boolean;
   href?: string | null;
 }>(), {
-  showMetadata: false,
   href: null,
 });
 
@@ -161,7 +156,7 @@ const institutionUrl = computed(() => {
   }
 
   // Generate URL from institution data
-  const locale = (page.props.app as any)?.locale || 'lt';
+  const locale = (page.props.app as { locale?: string })?.locale || 'lt';
   // Use www subdomain for: vusa alias, pkp type tenants, or when no tenant
   const { tenant } = props.institution;
   const subdomain = (!tenant || tenant.alias === 'vusa' || tenant.type === TenantType.Pkp)
@@ -201,9 +196,12 @@ const hasMoreTypes = computed(() => {
   return types.length > 2;
 });
 
-// Get duties count (active contacts)
-const dutiesCount = computed(() => {
-  return props.institution.duties_count || 0;
+// Check if this institution belongs to a PKP-type tenant (don't show tenant chip for these)
+const isPkp = computed(() => {
+  const { tenant, types } = props.institution;
+  return tenant?.type === TenantType.Pkp
+    || types?.some((t: any) => t.slug === 'pkp')
+    || false;
 });
 
 </script>

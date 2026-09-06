@@ -1,16 +1,6 @@
 import { computed } from 'vue';
 import { format, formatDistanceToNow } from 'date-fns';
 import { lt } from 'date-fns/locale';
-import {
-  FileText,
-  FileImage,
-  FileSpreadsheet,
-  FileVideo,
-  Link,
-  FileCode,
-  Archive,
-} from 'lucide-vue-next';
-import { Icon } from '@iconify/vue';
 
 import { trackEvent } from '@/Plugins/umami';
 
@@ -196,22 +186,10 @@ export const useDocumentDisplay = (document: DocumentDisplayItem) => {
   };
 
   const getDocumentIconClasses = (): string => {
-    const extension = getFileExtension();
-    const baseClasses = 'flex items-center justify-center w-10 h-10 rounded-lg';
-
-    const colorMap = {
-      pdf: 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400',
-      doc: 'bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
-      docx: 'bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
-      xls: 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400',
-      xlsx: 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400',
-      ppt: 'bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
-      pptx: 'bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
-      html: 'bg-purple-100 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
-      url: 'bg-purple-100 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
-    } as const;
-
-    return `${baseClasses} ${colorMap[extension as keyof typeof colorMap] || 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`;
+    // Simplified, non-colorful styling for all file types — the glyph itself
+    // (see getDocumentIcon) already distinguishes them, matching the badge
+    // treatment in getContentTypeBadgeClasses below.
+    return 'flex items-center justify-center w-10 h-10 bg-muted text-muted-foreground';
   };
 
   // Content type utilities

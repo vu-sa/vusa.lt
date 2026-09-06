@@ -1,131 +1,74 @@
 <template>
-  <div
-    class="group transition-all duration-200 border border-border/50 rounded-md bg-card hover:shadow-lg hover:bg-accent/20 hover:border-primary/30 cursor-pointer"
-    @click="navigateToMeeting"
-  >
-    <div class="block sm:flex sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3">
-      <!-- Mobile Layout: Stacked -->
-      <div class="sm:hidden space-y-1.5">
-        <!-- Date Row -->
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <!-- Alignment Status Dot -->
-            <span
-              v-if="meeting.vote_alignment_status"
-              class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-              :class="alignmentDotClass"
-              :title="alignmentDotTitle"
-            />
-            <time class="text-sm font-semibold text-card-foreground group-hover:text-primary transition-colors">
-              {{ formatCompactDate() }}
-            </time>
-          </div>
-          <!-- Arrow -->
-          <ArrowRightIcon class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-        </div>
+  <!-- Bleeds past the list's own edge on hover (-mx/px, equal and opposite) instead of boxing
+       the row — the house idiom for full-width list rows, see .ai/rules/public.md. The stretched
+       Link (not the li itself) carries the hover fill, since it is also what the whole row
+       navigates through. -->
+  <li class="group relative -mx-3 px-3 sm:-mx-4 sm:px-4">
+    <Link
+      :href="getMeetingUrl()"
+      class="absolute inset-0 z-0 transition-colors hover:bg-secondary/50"
+    >
+      <span class="sr-only">{{ meeting.title || formatCompactDate() }}</span>
+    </Link>
 
-        <!-- Institution Row -->
-        <div class="text-sm text-muted-foreground">
+    <!-- pointer-events-none lets clicks/hover on empty space fall through to the stretched
+         Link above; only the genuinely interactive pieces (the institution link, the outcome
+         tooltips) opt back in with pointer-events-auto — not their containers, or the
+         whitespace around them would swallow the row's own hover and click. -->
+    <div class="relative z-10 flex items-center gap-3 py-4 pointer-events-none sm:gap-4 sm:py-5">
+      <DatePlate :date="meetingDate" />
+
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span
+            v-if="meeting.vote_alignment_status"
+            class="size-2 shrink-0 rounded-full"
+            :class="alignmentDotClass"
+            :title="alignmentDotTitle"
+          />
           <Link
             v-if="institutionName && meeting.institution_id"
             :href="getInstitutionUrl()"
-            class="font-medium hover:text-primary hover:underline transition-colors"
-            @click.stop
+            class="pointer-events-auto truncate font-bold text-foreground transition-colors hover:text-brand hover:underline"
           >
             {{ institutionName }}
           </Link>
-          <span v-else-if="institutionName" class="font-medium">
+          <span v-else-if="institutionName" class="truncate font-bold text-foreground">
             {{ institutionName }}
           </span>
         </div>
-
-        <!-- Metadata Row -->
-        <div class="flex items-center gap-3 text-xs text-muted-foreground">
-          <!-- Agenda Count -->
+        <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <time>{{ formatCompactDate() }}</time>
           <span class="whitespace-nowrap">
             {{ agendaItemsCount }} {{ agendaItemsCount === 1 ? $t('klausimas') : $t('klausimai') }}
           </span>
-
-          <!-- Outcome Indicators (vote alignment) -->
-          <MeetingOutcomeIndicators
-            v-if="hasOutcomes"
-            :matches="meeting.vote_matches || 0"
-            :mismatches="meeting.vote_mismatches || 0"
-            :incomplete="meeting.incomplete_vote_data || 0"
-          />
         </div>
       </div>
 
-      <!-- Desktop Layout: Horizontal -->
-      <div class="hidden sm:flex sm:items-center sm:gap-4 sm:w-full">
-        <!-- Alignment Status Dot -->
-        <span
-          v-if="meeting.vote_alignment_status"
-          class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-          :class="alignmentDotClass"
-          :title="alignmentDotTitle"
-        />
-
-        <!-- Date -->
-        <time class="text-sm font-semibold text-card-foreground group-hover:text-primary transition-colors whitespace-nowrap flex-shrink-0 min-w-[200px]">
-          {{ formatCompactDate() }}
-        </time>
-
-        <!-- Separator -->
-        <span class="text-border">|</span>
-
-        <!-- Institution Name (clickable link) -->
-        <div class="flex-1 min-w-0">
-          <Link
-            v-if="institutionName && meeting.institution_id"
-            :href="getInstitutionUrl()"
-            class="text-sm text-muted-foreground line-clamp-1 hover:text-primary hover:underline transition-colors"
-            :title="institutionName"
-            @click.stop
-          >
-            {{ institutionName }}
-          </Link>
-          <span
-            v-else-if="institutionName"
-            class="text-sm text-muted-foreground line-clamp-1"
-            :title="institutionName"
-          >
-            {{ institutionName }}
-          </span>
-        </div>
-
-        <!-- Compact Metadata -->
-        <div class="flex items-center gap-3 flex-shrink-0">
-          <!-- Agenda Count -->
-          <span class="text-xs text-muted-foreground whitespace-nowrap">
-            {{ agendaItemsCount }} {{ agendaItemsCount === 1 ? $t('klausimas') : $t('klausimai') }}
-          </span>
-
-          <!-- Outcome Indicators (vote alignment) -->
+      <div class="flex shrink-0 items-center gap-3">
+        <span v-if="hasOutcomes" class="pointer-events-auto">
           <MeetingOutcomeIndicators
-            v-if="hasOutcomes"
             :matches="meeting.vote_matches || 0"
             :mismatches="meeting.vote_mismatches || 0"
             :incomplete="meeting.incomplete_vote_data || 0"
           />
-
-          <!-- Arrow -->
-          <ArrowRightIcon class="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-        </div>
+        </span>
+        <IFluentArrowRight20Regular class="hidden size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand sm:block" />
       </div>
     </div>
-  </div>
+  </li>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Link, usePage, router } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRightIcon } from 'lucide-vue-next';
 
 import MeetingOutcomeIndicators from './MeetingOutcomeIndicators.vue';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
+import { DatePlate } from '@/Components/Public/Base';
+import IFluentArrowRight20Regular from '~icons/fluent/arrow-right-20-regular';
 
 // Typesense search result document structure
 interface MeetingSearchDocument {
@@ -147,7 +90,7 @@ interface MeetingSearchDocument {
   incomplete_vote_data?: number;
   vote_alignment_status?: 'all_match' | 'mixed' | 'all_mismatch' | 'neutral';
   is_recent?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const props = defineProps<{
@@ -156,6 +99,9 @@ const props = defineProps<{
 
 const page = usePage();
 const locale = computed(() => page.props.app?.locale || 'lt');
+
+// start_time is a Unix timestamp in seconds; DatePlate and formatCompactDate both need a Date.
+const meetingDate = computed(() => new Date(props.meeting.start_time * 1000));
 
 // Get institution name based on current locale
 const institutionName = computed(() => {
@@ -181,14 +127,14 @@ const hasOutcomes = computed(() => {
 const alignmentDotClass = computed(() => {
   switch (props.meeting.vote_alignment_status) {
     case 'all_match':
-      return 'bg-green-500';
+      return 'bg-status-success';
     case 'mixed':
-      return 'bg-amber-500';
+      return 'bg-status-warning';
     case 'all_mismatch':
-      return 'bg-red-700';
+      return 'bg-status-danger';
     case 'neutral':
     default:
-      return 'bg-zinc-400';
+      return 'bg-status-neutral';
   }
 });
 
@@ -207,18 +153,15 @@ const alignmentDotTitle = computed(() => {
   }
 });
 
-// Format compact date from Unix timestamp (seconds)
-const formatCompactDate = () => {
-  // start_time is Unix timestamp in seconds, multiply by 1000 for JS Date
-  const date = new Date(props.meeting.start_time * 1000);
-  return formatStaticTime(date, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }, locale.value as 'lt' | 'en');
-};
+// Full localized date + time — DatePlate shows only day/month, so the archive (which spans many
+// years) still needs the year spelled out somewhere.
+const formatCompactDate = () => formatStaticTime(meetingDate.value, {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+}, locale.value as 'lt' | 'en');
 
 // Build meeting detail URL
 const getMeetingUrl = () => {
@@ -227,11 +170,6 @@ const getMeetingUrl = () => {
     meeting: props.meeting.id,
     ...(subdomain ? { subdomain } : {}),
   });
-};
-
-// Navigate to meeting (used for card click)
-const navigateToMeeting = () => {
-  router.visit(getMeetingUrl());
 };
 
 // Build institution URL
@@ -243,5 +181,4 @@ const getInstitutionUrl = () => {
     ...(subdomain ? { subdomain } : {}),
   });
 };
-
 </script>

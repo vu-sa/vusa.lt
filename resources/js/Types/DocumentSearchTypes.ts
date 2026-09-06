@@ -1,3 +1,12 @@
+export type DocumentSearchSort = 'relevance' | 'date_desc' | 'date_asc';
+
+/**
+ * The three states `calculateIsInEffect()` (app/Models/Document.php) can produce:
+ * `true`/`false` when the document has effective/expiration dates, `unknown` when it has
+ * neither (indexed as an absent optional field, not a literal null).
+ */
+export type DocumentEffectStatusValue = 'true' | 'false' | 'unknown';
+
 // Core search interfaces
 export interface DocumentSearchFilters {
   query: string;
@@ -9,6 +18,10 @@ export interface DocumentSearchFilters {
     to?: Date;
     preset?: 'recent' | '1year' | 'year-range' | 'custom';
   };
+  /** Optional so existing partial-filter object literals elsewhere keep type-checking. */
+  sort?: DocumentSearchSort;
+  /** Defaults to `['true', 'unknown']` — hides "Negalioja" until explicitly selected. */
+  effectStatuses?: DocumentEffectStatusValue[];
 }
 
 export interface DocumentFacet {
@@ -174,6 +187,9 @@ export interface DocumentSearchController {
   toggleContentType: (contentType: string) => void;
   toggleLanguage: (language: string) => void;
   setDateRange: (dateRange: any) => void;
+  setSortBy: (sort: DocumentSearchSort) => void;
+  toggleEffectStatus: (value: DocumentEffectStatusValue) => void;
+  clearEffectStatuses: () => void;
   setViewMode: (mode: 'list' | 'compact') => void;
   clearFilters: () => void;
   clearRecentSearches: () => void;

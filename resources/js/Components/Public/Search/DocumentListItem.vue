@@ -1,38 +1,47 @@
 <template>
-  <div
-    class="group transition-all duration-200 border rounded-lg bg-card hover:shadow-lg hover:bg-accent/20">
-    <!-- Main clickable content -->
-    <a :href="documentUrl" target="_blank" rel="noopener noreferrer"
-      class="block p-3 sm:p-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring rounded-lg"
-      @click="trackDocumentClick">
+  <li class="group">
+    <!-- Main clickable content. Bleeds slightly past the list's own edge on hover
+         (-mx/px, equal and opposite) rather than boxing the row — the house idiom
+         for full-width list rows, see .ai/rules/public.md. -->
+    <a
+      :href="documentUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="-mx-3 block px-3 py-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:-mx-4 sm:px-4 sm:py-5 hover:bg-secondary/50"
+      @click="trackDocumentClick"
+    >
       <div class="flex items-start gap-3 sm:gap-4">
         <!-- Document Icon -->
-        <div :class="getDocumentIconClasses()" class="flex-shrink-0 mt-0.5">
-          <Icon :icon="getDocumentIcon()" class="w-4 h-4 sm:w-5 sm:h-5" />
+        <div :class="getDocumentIconClasses()" class="shrink-0 border border-border">
+          <Icon :icon="getDocumentIcon()" class="size-4 sm:size-5" />
         </div>
 
         <!-- Main Content -->
         <div class="flex-1 min-w-0">
           <!-- Title + Actions row -->
-          <div class="flex items-start justify-between gap-3 mb-1.5">
+          <div class="flex items-start justify-between gap-3 mb-2">
             <h3
-              class="text-sm sm:text-base font-semibold text-card-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight sm:leading-normal">
+              class="text-pretty text-base font-bold leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg"
+            >
               {{ document.title }}
             </h3>
 
-            <!-- Actions -->
-            <div class="flex-shrink-0">
+            <!-- Actions. A plain flex row with a small gap, not ButtonGroup — connected
+                 buttons share a border pixel with their neighbour, so hovering the middle
+                 button couldn't recolour its left edge (that edge belongs to the button
+                 beside it). A gap gives every button its own complete border. -->
+            <div class="shrink-0">
               <TooltipProvider>
-                <ButtonGroup class="opacity-50 group-hover:opacity-100 transition-opacity">
+                <div class="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                   <Tooltip>
                     <TooltipTrigger as-child>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        class="h-7 w-8 text-muted-foreground hover:text-primary"
+                        class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
                         @click.prevent.stop="openDocument"
                       >
-                        <ExternalLink class="w-3.5 h-3.5" />
+                        <IFluentOpen20Regular class="size-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">{{ $t('open') }}</TooltipContent>
@@ -41,12 +50,12 @@
                   <Tooltip v-if="downloadUrl">
                     <TooltipTrigger as-child>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        class="h-7 w-8 text-muted-foreground hover:text-primary"
+                        class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
                         @click.prevent.stop="downloadDocument"
                       >
-                        <Download class="w-3.5 h-3.5" />
+                        <IFluentArrowDownload20Regular class="size-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">{{ $t('download') }}</TooltipContent>
@@ -55,157 +64,111 @@
                   <Tooltip v-if="document.link_url || document.share_url">
                     <TooltipTrigger as-child>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="icon"
-                        class="h-7 w-8 text-muted-foreground hover:text-primary"
+                        class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
                         @click.prevent.stop="copyShareUrl"
                       >
-                        <LinkIcon class="w-3.5 h-3.5" />
+                        <IFluentLink20Regular class="size-3.5" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">{{ $t('copy_link') }}</TooltipContent>
                   </Tooltip>
-                </ButtonGroup>
+                </div>
               </TooltipProvider>
             </div>
           </div>
 
-          <!-- Mobile Layout: Stack everything -->
-          <div class="sm:hidden space-y-2">
-            <!-- Primary badges row -->
-            <div class="flex items-center gap-1 flex-wrap">
-              <!-- Organization -->
-              <Badge variant="outline" class="text-xs px-1.5 py-0.5 max-w-40">
-                <Building2 class="w-3 h-3 mr-1 flex-shrink-0" />
-                <span class="truncate">{{ getTenantDisplayName() }}</span>
-              </Badge>
-
-              <!-- Date Badge -->
-              <Badge variant="outline" class="text-xs px-1.5 py-0.5 flex-shrink-0">
-                <Calendar class="w-3 h-3 mr-1" />
-                {{ formatDocumentDate() }}
-              </Badge>
-            </div>
-
-            <!-- Secondary badges row -->
-            <div class="flex items-center gap-1 flex-wrap">
-              <!-- Link (shortcut) -->
-              <Badge v-if="isShortcut" variant="secondary" class="text-xs px-1.5 py-0.5 flex-shrink-0">
-                <LinkIcon class="w-3 h-3 mr-1" />
-                {{ $t('search.document_link_badge') }}
-              </Badge>
-
-              <!-- Content Type -->
-              <Badge v-if="document.content_type" variant="outline" class="text-xs px-1.5 py-0.5 max-w-36">
-                <FileText class="w-3 h-3 mr-1 flex-shrink-0" />
-                <span class="truncate">{{ document.content_type }}</span>
-              </Badge>
-
-              <!-- Language -->
-              <Badge v-if="document.language" variant="secondary" class="text-xs px-1.5 py-0.5 flex-shrink-0">
-                {{ getLanguageCode() }}
-              </Badge>
-
-              <!-- Status -->
-              <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null"
-                :variant="document.is_in_effect ? 'default' : 'secondary'"
-                class="text-xs px-1.5 py-0.5 flex-shrink-0">
-                <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
-                <span class="hidden xs:inline">{{ document.is_in_effect ? 'Galioja' : 'Negalioja' }}</span>
-                <span class="xs:hidden">{{ document.is_in_effect ? '✓' : '○' }}</span>
-              </Badge>
-            </div>
-          </div>
-
-          <!-- Desktop Layout: Badges and date row -->
-          <div class="hidden sm:flex items-center gap-1.5 flex-wrap">
+          <!-- Badges row: one flow that wraps, instead of a separate mobile/desktop pair —
+               TagChip is compact enough to not need the split. -->
+          <div class="flex items-center gap-1.5 flex-wrap">
             <!-- Organization -->
-            <Badge variant="outline" class="text-xs max-w-48">
-              <Building2 class="w-3 h-3 mr-1 flex-shrink-0" />
-              <span class="truncate">{{ getTenantDisplayName() }}</span>
-            </Badge>
+            <TagChip variant="muted" class="max-w-40 sm:max-w-48">
+              <IFluentBuilding20Regular class="size-3 mr-1 shrink-0" />
+              <span class="truncate normal-case tracking-normal font-medium">{{ getTenantDisplayName() }}</span>
+            </TagChip>
 
             <!-- Link (shortcut) -->
-            <Badge v-if="isShortcut" variant="secondary" class="text-xs flex-shrink-0">
-              <LinkIcon class="w-3 h-3 mr-1" />
+            <TagChip v-if="isShortcut" variant="outline" class="shrink-0">
+              <IFluentLink20Regular class="size-3 mr-1" />
               {{ $t('search.document_link_badge') }}
-            </Badge>
+            </TagChip>
 
             <!-- Content Type -->
-            <Badge v-if="document.content_type" variant="outline" class="text-xs max-w-52">
-              <FileText class="w-3 h-3 mr-1 flex-shrink-0" />
-              <span class="truncate">{{ document.content_type }}</span>
-            </Badge>
+            <TagChip v-if="document.content_type" variant="muted" class="max-w-36 sm:max-w-52">
+              <IFluentDocument20Regular class="size-3 mr-1 shrink-0" />
+              <span class="truncate normal-case tracking-normal font-medium">{{ document.content_type }}</span>
+            </TagChip>
 
             <!-- Language -->
-            <Badge v-if="document.language" variant="secondary" class="text-xs flex-shrink-0">
-              {{ getLanguageCode() }}
-            </Badge>
+            <TagChip v-if="document.language" variant="muted" class="shrink-0">
+              <span class="inline-flex items-center gap-1.5">
+                <LocaleFlag v-if="languageFlagLocale" :locale="languageFlagLocale" />
+                <span class="normal-case tracking-normal">{{ getLanguageCode() }}</span>
+              </span>
+            </TagChip>
 
             <!-- Status -->
-            <Badge v-if="'is_in_effect' in document && document.is_in_effect !== null"
-              :variant="document.is_in_effect ? 'default' : 'secondary'"
-              class="text-xs flex-shrink-0">
-              <component :is="document.is_in_effect ? CheckCircle : Clock" class="w-3 h-3 mr-1" />
-              {{ document.is_in_effect ? 'Galioja' : 'Negalioja' }}
-            </Badge>
+            <TagChip
+              v-if="'is_in_effect' in document && document.is_in_effect !== null"
+              variant="muted"
+              class="shrink-0"
+            >
+              <span
+                class="mr-1.5 size-1.5 shrink-0"
+                :class="document.is_in_effect ? 'bg-status-success' : 'bg-status-neutral'"
+              />
+              <span class="normal-case tracking-normal font-medium">
+                {{ document.is_in_effect ? $t('Galioja') : $t('Negalioja') }}
+              </span>
+            </TagChip>
 
-            <!-- Date — inline with badges -->
-            <Badge variant="outline" class="text-xs flex-shrink-0">
-              <Calendar class="w-3 h-3 mr-1" />
-              {{ formatDocumentDate() }}
-            </Badge>
+            <!-- Date -->
+            <TagChip variant="muted" class="shrink-0">
+              <IFluentCalendarLtr20Regular class="size-3 mr-1" />
+              <span class="normal-case tracking-normal">{{ formatDocumentDate() }}</span>
+            </TagChip>
           </div>
 
           <!-- Unresolved shortcut warning -->
-          <div v-if="isUnresolvedShortcut"
-            class="mt-2 flex items-start gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-            <AlertTriangle class="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+          <div
+            v-if="isUnresolvedShortcut"
+            class="mt-2 flex items-start gap-1.5 text-xs text-brand"
+          >
+            <IFluentWarning20Regular class="size-3.5 mt-0.5 shrink-0" />
             <span>{{ $t('search.document_link_unresolved') }}</span>
           </div>
 
           <!-- Summary -->
-          <div v-if="document.summary" class="mt-2 sm:mt-3">
-            <p class="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+          <div v-if="document.summary" class="mt-2.5">
+            <p class="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
               {{ document.summary }}
             </p>
           </div>
         </div>
       </div>
     </a>
-  </div>
+  </li>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-
-// ShadcnVue components
-import {
-  AlertTriangle,
-  Building2,
-  Calendar,
-  Download,
-  ExternalLink,
-  CheckCircle,
-  Clock,
-  FileText,
-  Link as LinkIcon,
-} from 'lucide-vue-next';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { ButtonGroup } from '@/Components/ui/button-group';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-
-// Icons
-
-// Icons
-
-// Composables
 import { useDocumentDisplay, getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { useToasts } from '@/Composables/useToasts';
+import { Button } from '@/Components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { TagChip } from '@/Components/Public/Base';
+import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
+import IFluentArrowDownload20Regular from '~icons/fluent/arrow-download-20-regular';
+import IFluentBuilding20Regular from '~icons/fluent/building-20-regular';
+import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';
+import IFluentDocument20Regular from '~icons/fluent/document-20-regular';
+import IFluentLink20Regular from '~icons/fluent/link-20-regular';
+import IFluentOpen20Regular from '~icons/fluent/open-20-regular';
+import IFluentWarning20Regular from '~icons/fluent/warning-20-regular';
 
 // Props
 interface Props {
@@ -229,6 +192,15 @@ const {
 
 // For list view, use simple date format
 const formatDocumentDate = formatDocumentDateSimple;
+
+// The flag is purely decorative (LocaleFlag is aria-hidden) and only means something for the
+// two locales it can actually draw — an "OTHER" language keeps the plain text label alone.
+const languageFlagLocale = computed(() => {
+  const code = getLanguageCode();
+  if (code === 'LT') return 'lt';
+  if (code === 'EN') return 'en';
+  return null;
+});
 
 // .url shortcuts link straight to their resolved target; otherwise share_url
 // goes through DocumentRedirectController which appends web=1 server-side,
@@ -277,14 +249,3 @@ const copyShareUrl = async () => {
   }
 };
 </script>
-
-<style scoped>
-/* Custom breakpoint for very small screens */
-@media (min-width: 375px) {
-  .xs\:inline {
-    display: inline;
-  }
-  .xs\:hidden {
-    display: none;
-  }
-}</style>

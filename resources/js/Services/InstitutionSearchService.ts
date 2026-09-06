@@ -97,8 +97,8 @@ export class InstitutionSearchService {
         throw new Error('Search was cancelled');
       }
 
-      // Process results
-      const hits = response.hits?.map((hit: any) => hit.document) || [];
+      // Process results — normalize Typesense flat fields into the shape components expect
+      const hits = response.hits?.map((hit: any) => this.normalizeDocument(hit.document, locale)) || [];
       const totalHits = response.found || 0;
       const totalPages = Math.ceil(totalHits / perPage);
       const newCurrentPage = isLoadMore ? currentPage + 1 : 1;
@@ -192,6 +192,38 @@ export class InstitutionSearchService {
     }
 
     return filterConditions;
+  }
+
+  private normalizeDocument(doc: any, locale: string): any {
+    // Pick the locale-appropriate name/short_name, falling back to the other locale
+    const name = (locale === 'en' ? doc.name_en || doc.name_lt : doc.name_lt || doc.name_en) || '';
+    const short_name = (locale === 'en' ? doc.short_name_en || doc.short_name_lt : doc.short_name_lt || doc.short_name_en) || null;
+
+    // Reconstruct types array from parallel Typesense arrays
+    const typeSlugs: string[] = doc.type_slugs || [];
+    const typeTitlesLt: string[] = doc.type_titles_lt || [];
+    const typeTitlesEn: string[] = doc.type_titles_en || [];
+    const types = typeSlugs.map((slug, i) => ({
+      slug,
+      title: locale === 'en' ? (typeTitlesEn[i] || typeTitlesLt[i] || slug) : (typeTitlesLt[i] || typeTitlesEn[i] || slug),
+    }));
+
+    // Reconstruct nested tenant object from flat tenant_* fields
+    const tenant = doc.tenant_alias != null
+      ? {
+          alias: doc.tenant_alias,
+          shortname: doc.tenant_shortname || null,
+          type: doc.tenant_type || null,
+        }
+      : null;
+
+    return {
+      ...doc,
+      name,
+      short_name,
+      types,
+      tenant,
+    };
   }
 
   private processFacets(facetCounts: Array<{

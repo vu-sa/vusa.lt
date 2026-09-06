@@ -1,141 +1,123 @@
 <template>
-  <SmartLink :href="institutionUrl" class="plain block">
-    <div
-      class="group transition-all duration-200 border border-border/50 rounded-md bg-card hover:shadow-lg hover:bg-accent/20 hover:border-primary/30 cursor-pointer">
-      <div class="block sm:flex sm:items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2">
-        <!-- Mobile Layout: Stacked -->
-        <div class="sm:hidden space-y-2">
-          <!-- Title Row -->
-          <div class="flex items-center gap-3">
-            <!-- Logo/Placeholder -->
-            <div class="flex-shrink-0">
-              <div v-if="institution.logo_url"
-                class="size-10 rounded-full border border-border/50 bg-white overflow-hidden shadow-sm">
-                <img :src="institution.logo_url" :alt="`${institution.name} logo`"
-                  class="w-full h-full object-contain p-0.5" loading="lazy">
-              </div>
-              <div v-else
-                class="size-10 rounded-full border border-border/50 bg-muted flex items-center justify-center">
-                <Building2 class="w-4 h-4 text-muted-foreground" />
-              </div>
-            </div>
-
-            <!-- Name -->
-            <div class="flex-1 min-w-0">
-              <h3
-                class="text-sm font-medium text-card-foreground group-hover:text-primary transition-colors line-clamp-1">
-                {{ institution.name }}
-              </h3>
-            </div>
-
-            <!-- Arrow -->
-            <ArrowRightIcon
-              class="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-          </div>
-
-          <!-- Metadata Row -->
-          <div class="flex items-center gap-2 text-xs text-muted-foreground ml-13">
-            <!-- Tenant Badge -->
-            <Badge v-if="institution.tenant?.shortname" variant="secondary"
-              class="text-[0.625rem] font-medium px-1.5 py-0 flex-shrink-0">
-              {{ institution.tenant.shortname }}
-            </Badge>
-
-            <!-- Types (max 1 on mobile) -->
-            <span v-if="displayTypes.length > 0" class="truncate max-w-32 flex-shrink-0" :title="allTypesText">
-              {{ displayTypes[0].title }}
-              <template v-if="institution.types && institution.types.length > 1">
-                +{{ institution.types.length - 1 }}
-              </template>
-            </span>
-
-            <!-- Contact indicators -->
-            <span v-if="institution.duties_count && institution.duties_count > 0"
-              class="whitespace-nowrap flex-shrink-0">
-              {{ institution.duties_count }} {{ institution.duties_count === 1 ? $t('search.contact_singular') :
-                $t('search.contacts_plural') }}
-            </span>
-          </div>
+  <li>
+    <!-- Bleeds past the list's own edge on hover (-mx/px, equal and opposite) instead of boxing
+         the row — the house idiom for full-width list rows, see .ai/rules/public.md. -->
+    <SmartLink
+      :href="institutionUrl"
+      class="plain group -mx-3 flex items-center gap-3 px-3 py-3 transition-colors hover:bg-secondary/50 sm:-mx-4 sm:gap-4 sm:px-4 sm:py-3.5"
+    >
+      <!-- Logo/Placeholder -->
+      <div class="shrink-0">
+        <div
+          v-if="institution.logo_url"
+          class="size-11 border border-border bg-white overflow-hidden shadow-2xs"
+        >
+          <img
+            :src="institution.logo_url"
+            :alt="`${institution.name} logo`"
+            class="size-full object-contain p-1"
+            loading="lazy"
+          >
         </div>
-
-        <!-- Desktop Layout: Horizontal -->
-        <div class="hidden sm:flex sm:items-center sm:gap-3 sm:w-full">
-          <!-- Logo/Placeholder -->
-          <div class="flex-shrink-0">
-            <div v-if="institution.logo_url"
-              class="size-12 rounded-full border border-border/50 bg-white overflow-hidden shadow-sm">
-              <img :src="institution.logo_url" :alt="`${institution.name} logo`"
-                class="w-full h-full object-contain p-1" loading="lazy">
-            </div>
-            <div v-else class="size-12 rounded-full border border-border/50 bg-muted flex items-center justify-center">
-              <Building2 class="w-5 h-5 text-muted-foreground" />
-            </div>
-          </div>
-
-          <!-- Name -->
-          <div class="flex-1 min-w-0">
-            <h3
-              class="text-sm font-medium text-card-foreground group-hover:text-primary transition-colors line-clamp-1">
-              {{ institution.name }}
-            </h3>
-            <!-- Types as subtitle -->
-            <p v-if="displayTypes.length > 0" class="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-              {{ displayTypesText }}
-            </p>
-          </div>
-
-          <!-- Compact Metadata -->
-          <div class="flex items-center gap-2 flex-shrink-0 min-w-0">
-            <!-- Contact Count -->
-            <span v-if="institution.duties_count && institution.duties_count > 0"
-              class="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1">
-              <Users class="w-3 h-3" />
-              {{ institution.duties_count }}
-            </span>
-
-            <!-- Social Icons -->
-            <div class="flex items-center gap-1">
-              <a v-if="institution.facebook_url" :href="institution.facebook_url" target="_blank"
-                rel="noopener noreferrer" class="text-muted-foreground hover:text-blue-600 transition-colors"
-                @click.stop>
-                <ISimpleIconsFacebook class="w-4 h-4" />
-              </a>
-              <a v-if="institution.instagram_url" :href="institution.instagram_url" target="_blank"
-                rel="noopener noreferrer" class="text-muted-foreground hover:text-pink-600 transition-colors"
-                @click.stop>
-                <ISimpleIconsInstagram class="w-4 h-4" />
-              </a>
-              <a v-if="institution.website" :href="institution.website" target="_blank" rel="noopener noreferrer"
-                class="text-muted-foreground hover:text-primary transition-colors" @click.stop>
-                <IFluentGlobe20Regular class="w-4 h-4" />
-              </a>
-            </div>
-
-            <!-- Tenant Badge -->
-            <Badge v-if="institution.tenant?.shortname" variant="secondary"
-              class="text-xs font-medium px-1.5 py-0.5 flex-shrink-0">
-              {{ institution.tenant.shortname }}
-            </Badge>
-
-            <!-- Arrow -->
-            <ArrowRightIcon
-              class="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-          </div>
+        <div
+          v-else
+          class="size-11 border border-border bg-muted flex items-center justify-center"
+        >
+          <IFluentBuilding20Regular class="size-5 text-muted-foreground" />
         </div>
       </div>
-    </div>
-  </SmartLink>
+
+      <!-- Name + types -->
+      <div class="min-w-0 flex-1">
+        <h3 class="truncate text-base font-bold text-foreground transition-colors group-hover:text-brand">
+          {{ institution.name }}
+        </h3>
+        <div v-if="displayTypes.length > 0" class="mt-1 flex flex-wrap items-center gap-1" :title="allTypesText">
+          <TagChip v-for="type in displayTypes" :key="type.id ?? type.title" variant="muted" class="max-w-32 sm:max-w-40">
+            <span class="truncate normal-case tracking-normal font-medium">{{ type.title }}</span>
+          </TagChip>
+          <span v-if="moreTypesCount > 0" class="text-xs text-muted-foreground shrink-0">
+            +{{ moreTypesCount }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Metadata -->
+      <div class="flex shrink-0 items-center gap-2.5">
+        <div class="hidden items-center gap-3 sm:flex">
+          <!-- Contact Count -->
+          <span
+            v-if="institution.duties_count && institution.duties_count > 0"
+            class="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1"
+          >
+            <IFluentPeople20Regular class="size-3.5" />
+            {{ institution.duties_count }}
+          </span>
+
+          <!-- Social Icons -->
+          <div class="flex items-center gap-1">
+            <a
+              v-if="institution.facebook_url"
+              :href="institution.facebook_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-muted-foreground hover:text-brand transition-colors inline-flex"
+              @click.stop
+            >
+              <span class="sr-only">Facebook</span>
+              <ISimpleIconsFacebook class="size-3.5" />
+            </a>
+            <a
+              v-if="institution.instagram_url"
+              :href="institution.instagram_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-muted-foreground hover:text-brand transition-colors inline-flex"
+              @click.stop
+            >
+              <span class="sr-only">Instagram</span>
+              <ISimpleIconsInstagram class="size-3.5" />
+            </a>
+            <a
+              v-if="institution.website"
+              :href="institution.website"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-muted-foreground hover:text-brand transition-colors inline-flex"
+              @click.stop
+            >
+              <span class="sr-only">{{ $t('Svetainė') }}</span>
+              <IFluentGlobe20Regular class="size-3.5" />
+            </a>
+          </div>
+        </div>
+
+        <!-- Tenant Badge -->
+        <TagChip v-if="institution.tenant?.shortname" variant="muted" class="shrink-0">
+          <span class="normal-case tracking-normal font-medium">{{ institution.tenant.shortname }}</span>
+        </TagChip>
+
+        <!-- Arrow -->
+        <IFluentArrowRight20Regular class="size-4 text-muted-foreground group-hover:text-brand transition-colors shrink-0" />
+      </div>
+    </SmartLink>
+  </li>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { TenantType } from '@/Types/enums';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRightIcon, Building2, Users } from 'lucide-vue-next';
 
-import { Badge } from '@/Components/ui/badge';
+import { TenantType } from '@/Types/enums';
 import SmartLink from '@/Components/Public/SmartLink.vue';
+import { TagChip } from '@/Components/Public/Base';
+import IFluentArrowRight20Regular from '~icons/fluent/arrow-right-20-regular';
+import IFluentBuilding20Regular from '~icons/fluent/building-20-regular';
+import IFluentPeople20Regular from '~icons/fluent/people-20-regular';
+import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
+import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
 
 // Processed institution result structure
 interface InstitutionData {
@@ -172,31 +154,15 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const locale = computed(() => (page.props.app as any)?.locale || 'lt');
+const locale = computed(() => (page.props.app as { locale?: string })?.locale || 'lt');
 
-// Get types to display (max 2 on desktop)
-const displayTypes = computed(() => {
-  const types = props.institution.types || [];
-  return types.slice(0, 2);
-});
+// Get types to display (max 2)
+const displayTypes = computed(() => (props.institution.types || []).slice(0, 2));
+
+const moreTypesCount = computed(() => (props.institution.types?.length || 0) - displayTypes.value.length);
 
 // Text for all types (for tooltip)
-const allTypesText = computed(() => {
-  const types = props.institution.types || [];
-  return types.map(t => t.title).join(', ');
-});
-
-// Formatted types text for display
-const displayTypesText = computed(() => {
-  const types = props.institution.types || [];
-  if (types.length === 0) return '';
-
-  const displayedTypes = types.slice(0, 2).map(t => t.title).join(', ');
-  if (types.length > 2) {
-    return `${displayedTypes} +${types.length - 2}`;
-  }
-  return displayedTypes;
-});
+const allTypesText = computed(() => (props.institution.types || []).map(t => t.title).join(', '));
 
 // Build institution detail URL
 const institutionUrl = computed(() => {

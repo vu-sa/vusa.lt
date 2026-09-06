@@ -86,8 +86,11 @@
             ]"
             @click="emit('toggle', option.value)"
           >
-            <span class="text-sm font-medium text-foreground truncate">
-              {{ option.label }}
+            <span class="flex items-center gap-1.5 min-w-0">
+              <IFluentStar16Filled v-if="option.starred" class="size-3 shrink-0 text-brand" />
+              <span class="text-sm font-medium text-foreground truncate">
+                {{ option.label }}
+              </span>
             </span>
 
             <div class="flex items-center gap-2 shrink-0">
@@ -128,11 +131,14 @@ import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
 import IFluentCheckmark16Filled from '~icons/fluent/checkmark-16-filled';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
+import IFluentStar16Filled from '~icons/fluent/star-16-filled';
 
 export interface FilterOption {
   label: string;
   value: string;
   count?: number;
+  /** Marks an editorially-important option (e.g. a document type) with a star. */
+  starred?: boolean;
 }
 
 const props = withDefaults(defineProps<{

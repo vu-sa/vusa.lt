@@ -295,8 +295,20 @@ export interface Calendar {
 export interface News {
   json_content: {
     title: string;
+    /** Small uppercase label above the title. */
+    eyebrow?: string;
   };
-  options: null;
+  options: {
+    width?: BlockWidth;
+    /** Server-resolved fetch options — see `NewsBlockResolver`. */
+    limit?: number;
+    categoryAlias?: string;
+    tagAlias?: string;
+    /** `current` preserves the behaviour of news blocks saved before filtering existed. */
+    tenantScope?: 'current' | 'all' | number[];
+    presentation?: BlockPresentation;
+    plainPadding?: PlainPadding;
+  } | null;
 }
 
 export interface TextBox {

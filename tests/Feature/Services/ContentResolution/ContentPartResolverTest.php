@@ -5,6 +5,7 @@ use App\Models\Category;
 use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\ContentResolution\ResolutionContext;
@@ -383,6 +384,52 @@ describe('NewsBlockResolver / CalendarBlockResolver bridges', function (): void 
 
         expect($categories)->toContain('Akademinė informacija')
             ->and($categories)->toContain(null);
+    });
+
+    test('news bridge filters by category, tag, selected tenants and limit', function (): void {
+        $otherTenant = Tenant::factory()->create();
+        $category = Category::factory()->create(['alias' => 'announcements']);
+        $tag = Tag::factory()->create(['alias' => 'important']);
+        $matching = News::factory()->for($otherTenant)->for($category)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+        ]);
+        $matching->tags()->attach($tag);
+
+        $wrongTag = News::factory()->for($otherTenant)->for($category)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(2),
+        ]);
+        $wrongTenant = News::factory()->for($this->tenant)->for($category)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(3),
+        ]);
+        $wrongTenant->tags()->attach($tag);
+
+        $part = makeResolvablePart('news', ['title' => ''], [
+            'categoryAlias' => 'announcements',
+            'tagAlias' => 'important',
+            'tenantScope' => [$otherTenant->id],
+            'limit' => 1,
+        ]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(1)
+            ->and($resolved[$part->id]['items'][0]['id'])->toBe($matching->id)
+            ->and($resolved[$part->id]['items'][0]['id'])->not->toBe($wrongTag->id);
+    });
+
+    test('news bridge keeps legacy blocks scoped to the current tenant', function (): void {
+        $own = News::factory()->for($this->tenant)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+        ]);
+        $other = News::factory()->for(Tenant::factory())->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
+        ]);
+
+        $part = makeResolvablePart('news', ['title' => '']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect(collect($resolved[$part->id]['items'])->pluck('id')->all())
+            ->toContain($own->id)
+            ->not->toContain($other->id);
     });
 
     test('calendar bridge excludes drafts and defaults to every tenant (tenantScope unset)', function (): void {

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import NewsElement from '../NewsElement.vue';
+
 import type { News, NewsItem } from '@/Types/contentParts';
 
 /**
@@ -25,8 +26,8 @@ function makeItem(overrides: Partial<NewsItem> = {}): NewsItem {
   };
 }
 
-function makeElement(title = ''): News {
-  return { json_content: { title } } as unknown as News;
+function makeElement(title = '', eyebrow = ''): News {
+  return { json_content: { title, eyebrow }, options: null } as News;
 }
 
 const stubs = {
@@ -109,7 +110,7 @@ describe('NewsElement', () => {
       global: { stubs },
     });
 
-    const title = wrapper.find('[contenteditable]');
+    const title = wrapper.find('h2 [contenteditable]');
     expect(title.exists()).toBe(true);
 
     title.element.textContent = 'Kas naujo';
@@ -119,5 +120,20 @@ describe('NewsElement', () => {
     const emitted = wrapper.emitted('update:element');
     expect(emitted).toBeTruthy();
     expect((emitted!.at(-1)![0] as News).json_content.title).toBe('Kas naujo');
+  });
+
+  it('in full-screen editor mode, editing the eyebrow bubbles update:element', async () => {
+    const wrapper = mount(NewsElement, {
+      props: { element: makeElement('Naujausios', 'Aktualu'), resolved: { type: 'news', items: [makeItem()] }, editable: true, blockKey: 'news-1' },
+      global: { stubs },
+    });
+
+    const eyebrow = wrapper.find('[data-slot="eyebrow-label"] [contenteditable]');
+    eyebrow.element.textContent = 'Studentams';
+    await eyebrow.trigger('input');
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const emitted = wrapper.emitted('update:element');
+    expect((emitted!.at(-1)![0] as News).json_content.eyebrow).toBe('Studentams');
   });
 });
