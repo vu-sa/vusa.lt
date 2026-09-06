@@ -24,7 +24,7 @@
             <Button type="button" variant="outline" size="sm" @click="isImageModalOpen = true">
               {{ $t('rich-content.select_image') }}
             </Button>
-            <Button type="button" variant="destructive" size="sm" @click="$emit('delete')">
+            <Button type="button" variant="destructive" size="sm" :disabled="!canDelete" @click="onDelete">
               {{ $t('rich-content.delete_image') }}
             </Button>
           </div>
@@ -32,7 +32,7 @@
             <Button type="button" variant="outline" size="sm" @click="isImageModalOpen = true">
               {{ $t('rich-content.select_image') }}
             </Button>
-            <Button type="button" variant="destructive" size="sm" @click="$emit('delete')">
+            <Button type="button" variant="destructive" size="sm" :disabled="!canDelete" @click="onDelete">
               {{ $t('rich-content.delete_image') }}
             </Button>
           </div>
@@ -80,7 +80,7 @@ import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   imageUrl: string;
   alt?: string;
   objectPosition?: string;
@@ -89,7 +89,13 @@ const props = defineProps<{
   fullTileTrigger?: boolean;
   canMoveUp?: boolean;
   canMoveDown?: boolean;
-}>();
+  canDelete?: boolean;
+}>(), {
+  alt: undefined,
+  objectPosition: undefined,
+  // eslint-disable-next-line vue/no-boolean-default
+  canDelete: true,
+});
 const emit = defineEmits<{
   (e: 'update:image', image: { src: string; alt: string; title: string }): void;
   (e: 'update:alt', value: string): void;
@@ -98,6 +104,11 @@ const emit = defineEmits<{
   (e: 'move-up'): void;
   (e: 'move-down'): void;
 }>();
+
+function onDelete(): void {
+  if (!props.canDelete) return;
+  emit('delete');
+}
 
 const hotspots = injectActiveHotspot();
 const hotspotId = computed(() => `${props.blockKey}:image-${props.imageIndex}`);

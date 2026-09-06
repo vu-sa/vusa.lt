@@ -11,7 +11,7 @@
     >
       <HeroButtonHotspot
         v-for="(button, index) in buttons ?? []" :key="index"
-        :button :index :block-key="blockKey"
+        :button :index :block-key :on-dark="resolvedOnDark"
         @update:button="updateButton(index, $event)"
         @remove="removeButton(index)"
       />
@@ -31,12 +31,14 @@
  * (not just the first, even on `banner` — see the hint text below), plus an overlaid
  * add affordance that never changes the published row's alignment or height.
  */
-import { nextTick } from 'vue';
+import { computed, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import HeroButtonHotspot from './HeroButtonHotspot.vue';
 import RCAddPlaceholder from '../Editor/Fullscreen/RCAddPlaceholder.vue';
 import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
+
+import HeroButtonHotspot from './HeroButtonHotspot.vue';
+
 import type { Hero } from '@/Types/contentParts';
 
 type HeroButton = NonNullable<Hero['json_content']['buttons']>[number];
@@ -50,12 +52,13 @@ const props = defineProps<{
   buttons?: HeroButton[];
   blockKey: string;
   variant?: Hero['options']['variant'];
+  onDark?: boolean;
   class?: string;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:buttons', value: HeroButton[]): void;
-}>();
+const resolvedOnDark = computed(() => Boolean(props.onDark || props.class?.includes('dark')));
+
+const emit = defineEmits<(e: 'update:buttons', value: HeroButton[]) => void>();
 
 const hotspots = injectActiveHotspot();
 

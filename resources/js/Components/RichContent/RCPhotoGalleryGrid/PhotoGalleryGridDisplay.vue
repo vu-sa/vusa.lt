@@ -43,6 +43,7 @@
               full-tile-trigger
               :can-move-up="entry.index > 0"
               :can-move-down="entry.index < element.json_content.length - 1"
+              :can-delete="element.json_content.length > 1"
               @update:image="replaceImage(entry.index, $event)"
               @update:alt="updateImage(entry.index, { alt: $event })"
               @update:object-position="updateImage(entry.index, { objectPosition: $event })"
@@ -161,6 +162,7 @@ function replaceImage(index: number, image: { src: string; alt: string; title: s
 }
 
 function removeImage(index: number): void {
+  if (element.json_content.length <= 1) return;
   emit('update:element', { ...element, json_content: element.json_content.filter((_, currentIndex) => currentIndex !== index) });
 }
 

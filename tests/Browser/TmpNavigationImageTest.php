@@ -2,7 +2,6 @@
 
 use App\Models\Navigation;
 use App\Models\Tenant;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -21,31 +20,29 @@ it('shows the image preview right after picking a file', function (): void {
     $page->page()->waitForSelector('button:has-text("Įkelti paveikslėlį")', ['timeout' => 10000]);
     $page->click('button:has-text("Įkelti paveikslėlį")');
 
-    $page->page()->waitForSelector('button.aspect-square', ['timeout' => 15000]);
-    $page->page()->locator('button.aspect-square')->first()->click();
+    $firstFile = $page->page()->locator('button.aspect-square')->first();
+    $firstFile->waitFor(['state' => 'visible', 'timeout' => 15000]);
+    $firstFile->click();
 
     $page->page()->locator('button:has-text("Toliau")')->first()->click();
     $page->page()->waitForSelector('input[maxlength="125"]', ['timeout' => 10000]);
     $page->fill('input[maxlength="125"]', 'Testas');
     $page->page()->locator('button:has-text("Įterpti")')->first()->click();
 
-    // Give Vue a tick to patch.
-    $page->page()->waitForTimeout(1500);
+    $page->page()->waitForSelector('input[maxlength="125"]', ['state' => 'detached', 'timeout' => 10000]);
 
-    $state = $page->script(<<<'JS'
+    $hasVisiblePreview = $page->script(<<<'JS'
         (() => {
           const imgs = Array.from(document.querySelectorAll('form img'));
-          return JSON.stringify(imgs.map((img) => ({
-            src: img.getAttribute('src'),
-            visible: img.getClientRects().length > 0,
-            w: img.clientWidth,
-            h: img.clientHeight,
-            complete: img.complete,
-            natural: img.naturalWidth,
-          })));
+          return imgs.some((img) => img.getAttribute('src')
+            && img.getClientRects().length > 0
+            && img.clientWidth > 0
+            && img.clientHeight > 0
+            && img.complete
+            && img.naturalWidth > 0);
         })()
     JS);
 
-    dump($state);
-    $page->screenshot(filename: 'nav-image-after-pick');
+    expect($hasVisiblePreview)->toBeTrue();
+    $page->assertNoJavaScriptErrors();
 })->group('tmp');

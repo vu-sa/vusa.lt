@@ -362,32 +362,14 @@ class PublicPageController extends PublicController
         return Inertia::render('Public/IndividualStudies');
     }
 
-    // dynamically grabs list of pkp
+    // PKP is now a standard ContentPage using the institution-list content part
     public function pkp()
     {
-        $this->getBanners();
-        $this->getTenantLinks();
-        $this->shareOtherLangURL('pkp');
+        $permalink = app()->getLocale() === 'en' ? 'programs-clubs-and-projects' : 'programos-klubai-projektai';
+        request()->route()->setParameter('permalink', $permalink);
+        request()->merge(['permalink' => $permalink]);
 
-        $institutions = (new InstitutionService)->getInstitutionsByTypeSlug('pkp')->where('is_active', true);
-
-        // Global content - use null for current tenant. This route only exists on the www
-        // domain group, so the derived " - VU SA" suffix matches what was hardcoded here.
-        $this->applyPageHead(
-            contentTenant: null,
-            title: __('Studentiškos iniciatyvos'),
-            description: 'VU SA studentiškos iniciatyvos – plati erdvė Vilniaus universiteto studentų(-čių) idėjoms, kūrybiškumui ir savirealizacijai.'
-        );
-
-        return Inertia::render('Public/PKP', [
-            'institutions' => $institutions->map(function ($institution) {
-                /** @var Institution $institution */
-                return [
-                    ...$institution->toArray(),
-                    'description' => Str::limit(strip_tags($institution->description), 100, '...'),
-                ];
-            }),
-        ]);
+        return $this->page();
     }
 
     public function curatorRegistrations()

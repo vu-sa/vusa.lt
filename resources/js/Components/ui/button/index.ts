@@ -8,26 +8,26 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
+        'default':
           'bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90',
-        destructive:
+        'destructive':
           'bg-red-500 text-white hover:bg-red-500/90 focus-visible:ring-red-500/20 dark:bg-red-900/60 dark:hover:bg-red-900/90 dark:focus-visible:ring-red-900/40',
-        outline:
+        'outline':
           'border bg-white shadow-xs hover:bg-zinc-100 hover:text-zinc-900 dark:bg-zinc-800/30 dark:border-zinc-800 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-50',
-        secondary:
+        'secondary':
           'bg-zinc-100 text-zinc-900 hover:bg-zinc-100/80 dark:bg-zinc-800 dark:text-zinc-50 dark:hover:bg-zinc-800/80',
-        ghost:
+        'ghost':
           'hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-50',
-        link: 'text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50',
-        success:
+        'link': 'text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-50',
+        'success':
           'bg-green-600 text-white shadow-xs hover:bg-green-600/90 focus-visible:ring-green-500/20 dark:bg-green-700 dark:hover:bg-green-700/90',
-        warning:
+        'warning':
           'bg-amber-500 text-white shadow-xs hover:bg-amber-500/90 focus-visible:ring-amber-500/20 dark:bg-amber-600 dark:hover:bg-amber-600/90',
         // The public site's primary call to action. Token-driven rather than a fixed colour, so
         // it is VU SA red on the light canvas and amber on near-black — see `--brand-fill` in
         // app.css. Added as a variant rather than a new component because public code already
         // imports this Button in ~38 places.
-        brand:
+        'brand':
           'bg-brand-fill text-brand-foreground hover:bg-brand-fill/90 focus-visible:ring-brand/30 '
           + 'dark:bg-brand-fill dark:text-brand-foreground dark:hover:bg-brand-fill/90',
         // The hairline secondary that sits beside a `brand` primary all over the public site —
@@ -36,6 +36,11 @@ export const buttonVariants = cva(
         'brand-outline':
           'border border-border bg-transparent text-foreground hover:border-brand hover:bg-transparent hover:text-brand '
           + 'dark:bg-transparent dark:hover:bg-transparent dark:hover:text-brand',
+        // Hairline secondary for fixed-dark grounds (hero scrim, ink panels) where light-mode
+        // `--foreground` is unreadable near-black. Preserves dark-mode conventions in both themes.
+        'brand-outline-on-dark':
+          'border border-white/25 bg-transparent text-white hover:border-brand hover:bg-transparent hover:text-brand '
+          + 'dark:border-white/25 dark:bg-transparent dark:text-white dark:hover:border-brand dark:hover:bg-transparent dark:hover:text-brand',
       },
       size: {
         'default': 'h-9 px-4 py-2 has-[>svg]:px-3',

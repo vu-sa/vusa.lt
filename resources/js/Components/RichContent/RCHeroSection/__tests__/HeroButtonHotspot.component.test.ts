@@ -5,6 +5,7 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import HeroButtonHotspot from '../HeroButtonHotspot.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
+
 import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 const stubs = {
@@ -43,6 +44,13 @@ describe('HeroButtonHotspot', () => {
   it('renders the button text and the outline variant', () => {
     const { wrapper } = mountHotspot({ button: { text: 'Skaityti', link: '#', variant: 'outline' as const } });
     expect(wrapper.text()).toContain('Skaityti');
+    expect(wrapper.find('button').classes()).toContain('border-border');
+  });
+
+  it('renders brand-outline-on-dark when onDark is true', () => {
+    const { wrapper } = mountHotspot({ button: { text: 'Skaityti', link: '#', variant: 'outline' as const }, onDark: true });
+    expect(wrapper.find('button').classes()).toContain('border-white/25');
+    expect(wrapper.find('button').classes()).toContain('text-white');
   });
 
   it('renders the icon when the button has one', () => {

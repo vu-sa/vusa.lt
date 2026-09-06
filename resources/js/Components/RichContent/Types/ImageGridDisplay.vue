@@ -17,7 +17,7 @@
         >
         <RCImageHotspot v-if="editable" :image-url="image.image" :alt="image.alt" :object-position="image.objectPosition"
           :block-key="blockKey ?? ''" :image-index="index" full-tile-trigger :can-move-up="index > 0"
-          :can-move-down="index < element.json_content.length - 1" @update:image="replaceImage(index, $event)"
+          :can-move-down="index < element.json_content.length - 1" :can-delete="element.json_content.length > 1" @update:image="replaceImage(index, $event)"
           @update:alt="updateImage(index, { alt: $event })" @update:object-position="updateImage(index, { objectPosition: $event })"
           @delete="removeImage(index)" @move-up="moveImage(index, index - 1)" @move-down="moveImage(index, index + 1)">
           <template #options>
@@ -88,6 +88,7 @@ function replaceImage(index: number, image: { src: string; alt: string; title: s
 }
 
 function removeImage(index: number): void {
+  if (props.element.json_content.length <= 1) return;
   emit('update:element', { ...props.element, json_content: props.element.json_content.filter((_, currentIndex) => currentIndex !== index) });
 }
 

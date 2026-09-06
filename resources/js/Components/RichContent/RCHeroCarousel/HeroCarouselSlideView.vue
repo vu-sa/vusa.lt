@@ -148,11 +148,12 @@
         </div>
 
         <!-- Call to action buttons -->
-        <HeroButtons v-if="!editable" :buttons="slide.buttons" class="mt-7" />
+        <HeroButtons v-if="!editable" :buttons="slide.buttons" on-dark class="mt-7" />
         <HeroButtonsEditable
           v-else
           :buttons="slide.buttons"
           :block-key="`${blockKey ?? ''}:slide-${slideIndex}`"
+          on-dark
           class="mt-7"
           @update:buttons="patchSlide({ buttons: $event })"
         />

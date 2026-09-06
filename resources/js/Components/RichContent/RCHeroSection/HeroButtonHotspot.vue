@@ -15,7 +15,11 @@
         class="pointer-events-none absolute size-0 overflow-hidden"
       />
       <SmartLink :href="button.link" class="w-fit">
-        <Button :variant="button.variant === 'outline' ? 'brand-outline' : 'brand'" size="public" class="w-full sm:w-auto">
+        <Button
+          :variant="button.variant === 'outline' ? (onDark ? 'brand-outline-on-dark' : 'brand-outline') : 'brand'"
+          size="public"
+          class="w-full sm:w-auto"
+        >
           <RCIcon v-if="button.icon" :name="button.icon" class="size-4" />
           {{ button.text || $t('rich-content.button_text') }}
         </Button>
@@ -54,8 +58,12 @@
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default">{{ $t('rich-content.default') }}</SelectItem>
-                <SelectItem value="outline">{{ $t('rich-content.outline') }}</SelectItem>
+                <SelectItem value="default">
+                  {{ $t('rich-content.default') }}
+                </SelectItem>
+                <SelectItem value="outline">
+                  {{ $t('rich-content.outline') }}
+                </SelectItem>
               </SelectContent>
             </Select>
           </Field>
@@ -92,10 +100,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
 import RCIconSelect from '../RCIconSelect.vue';
-import type { Hero } from '@/Types/contentParts';
-
-import SmartLink from '@/Components/Public/SmartLink.vue';
 import RCIcon from '../RCIcon.vue';
+
+import type { Hero } from '@/Types/contentParts';
+import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
@@ -108,6 +116,7 @@ const props = defineProps<{
   button: HeroButton;
   index: number;
   blockKey: string;
+  onDark?: boolean;
 }>();
 
 defineEmits<{

@@ -511,7 +511,7 @@ class News extends Model implements Feedable, Sitemapable
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
-            'tenant_shortname' => $this->tenant?->shortname,
+            'tenant_shortname' => $this->tenant->shortname,
             'category_id' => $this->category_id,
             'category_name' => $categoryName,
             'year' => (int) ($this->publish_time ?? $this->created_at)->format('Y'),

@@ -5,6 +5,7 @@ namespace App\Services\ContentResolution;
 use App\Models\ContentPart;
 use App\Services\ContentResolution\Resolvers\CalendarBlockResolver;
 use App\Services\ContentResolution\Resolvers\EventListResolver;
+use App\Services\ContentResolution\Resolvers\InstitutionListResolver;
 use App\Services\ContentResolution\Resolvers\LinkListResolver;
 use App\Services\ContentResolution\Resolvers\NewsBlockResolver;
 use Illuminate\Support\Collection;
@@ -29,6 +30,7 @@ final class ContentPartResolver
         'event-list' => EventListResolver::class,
         'news' => NewsBlockResolver::class,
         'calendar' => CalendarBlockResolver::class,
+        'institution-list' => InstitutionListResolver::class,
     ];
 
     /** @return list<string> */

@@ -50,7 +50,11 @@
             </DropdownMenuItem>
             <slot name="tile-menu" :item="item" :index="index" :update="(patch: Partial<T>) => updateAt(index, patch)" />
             <DropdownMenuSeparator />
-            <DropdownMenuItem class="text-red-600 focus:text-red-600" @click="removeAt(index)">
+            <DropdownMenuItem
+              class="text-red-600 focus:text-red-600"
+              :disabled="(modelValue?.length ?? 0) <= 1"
+              @click="removeAt(index)"
+            >
               <IFluentDelete24Regular class="mr-2 h-4 w-4" />
               {{ $t('common.delete') }}
             </DropdownMenuItem>
@@ -180,6 +184,7 @@ function updateAt(index: number, patch: Partial<T>) {
 }
 
 function removeAt(index: number) {
+  if ((modelValue.value?.length ?? 0) <= 1) return;
   const next = [...(modelValue.value ?? [])];
   next.splice(index, 1);
   modelValue.value = next;

@@ -3,10 +3,12 @@
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\ContentPart;
+use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tag;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\ContentResolution\ResolutionContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,7 +39,7 @@ function makeResolvablePart(string $type, array $jsonContent = [], ?array $optio
 describe('ContentPartResolver::resolvableTypes', function (): void {
     test('lists exactly the dynamic types', function (): void {
         expect(ContentPartResolver::resolvableTypes())->toEqualCanonicalizing([
-            'link-list', 'event-list', 'news', 'calendar',
+            'link-list', 'event-list', 'news', 'calendar', 'institution-list',
         ]);
     });
 });
@@ -531,5 +533,83 @@ describe('NewsBlockResolver / CalendarBlockResolver bridges', function (): void 
         $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
         expect($ids)->toContain($matching->id)
             ->and($ids)->not->toContain($other->id);
+    });
+});
+
+describe('InstitutionListResolver', function (): void {
+    test('filters institutions by typeSlug', function (): void {
+        $pkpType = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+        $otherType = Type::factory()->create(['slug' => 'other', 'title' => ['lt' => 'Other', 'en' => 'Other']]);
+
+        $pkpInstitution = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'PKP Club', 'en' => 'PKP Club']]);
+        $pkpInstitution->types()->attach($pkpType);
+
+        $otherInstitution = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'Other Org', 'en' => 'Other Org']]);
+        $otherInstitution->types()->attach($otherType);
+
+        $part = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($pkpInstitution->id)
+            ->and($ids)->not->toContain($otherInstitution->id)
+            ->and($resolved[$part->id]['meta']['total'])->toBe(1);
+    });
+
+    test('filters institutions by tenantScope current vs all', function (): void {
+        $otherTenant = Tenant::factory()->create(['alias' => 'othertenant']);
+        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+
+        $currentInst = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'Current Inst', 'en' => 'Current Inst']]);
+        $currentInst->types()->attach($type);
+
+        $otherInst = Institution::factory()->for($otherTenant)->create(['is_active' => true, 'name' => ['lt' => 'Other Inst', 'en' => 'Other Inst']]);
+        $otherInst->types()->attach($type);
+
+        // tenantScope: current
+        $currentPart = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp', 'tenantScope' => 'current']);
+        $currentResolved = $this->resolver->resolveAll(collect([$currentPart->id => $currentPart]), $this->context);
+        $currentIds = collect($currentResolved[$currentPart->id]['items'])->pluck('id')->all();
+        expect($currentIds)->toContain($currentInst->id)
+            ->and($currentIds)->not->toContain($otherInst->id);
+
+        // tenantScope: all
+        $allPart = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp', 'tenantScope' => 'all']);
+        $allResolved = $this->resolver->resolveAll(collect([$allPart->id => $allPart]), $this->context);
+        $allIds = collect($allResolved[$allPart->id]['items'])->pluck('id')->all();
+        expect($allIds)->toContain($currentInst->id)
+            ->and($allIds)->toContain($otherInst->id);
+    });
+
+    test('excludes inactive institutions', function (): void {
+        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+
+        $active = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'Active', 'en' => 'Active']]);
+        $active->types()->attach($type);
+
+        $inactive = Institution::factory()->for($this->tenant)->create(['is_active' => false, 'name' => ['lt' => 'Inactive', 'en' => 'Inactive']]);
+        $inactive->types()->attach($type);
+
+        $part = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp']);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
+        expect($ids)->toContain($active->id)
+            ->and($ids)->not->toContain($inactive->id);
+    });
+
+    test('clamps limit to maximum and respects limit option', function (): void {
+        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+
+        for ($i = 0; $i < 5; $i++) {
+            $inst = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => "Inst {$i}", 'en' => "Inst {$i}"]]);
+            $inst->types()->attach($type);
+        }
+
+        $part = makeResolvablePart('institution-list', ['title' => ''], ['typeSlug' => 'pkp', 'limit' => 2]);
+        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
+
+        expect($resolved[$part->id]['items'])->toHaveCount(2)
+            ->and($resolved[$part->id]['meta']['total'])->toBe(2);
     });
 });

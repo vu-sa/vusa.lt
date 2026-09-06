@@ -4,13 +4,16 @@ namespace App\Http\Middleware;
 
 use App\Models\Category;
 use App\Models\Form;
+use App\Models\Institution;
 use App\Models\Tag;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\FormSettings;
 use App\Settings\SiteSettings;
+use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -118,6 +121,7 @@ class HandleInertiaRequests extends Middleware
             // "not worth a search endpoint" rationale for categories.
             'categories' => $this->getCategoriesForInertia(...),
             'tags' => $this->getTagsForInertia(...),
+            'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
             'map' => [
@@ -177,6 +181,16 @@ class HandleInertiaRequests extends Middleware
     {
         return Cache::rememberForever('all-tags-for-inertia',
             fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias'])
+        );
+    }
+
+    /**
+     * @return Collection<int, Type>
+     */
+    private function getInstitutionTypesForInertia(): Collection
+    {
+        return Cache::rememberForever('all-institution-types-for-inertia',
+            fn () => Type::where('model_type', MorphMap::alias(Institution::class))->get(['id', 'title', 'slug'])
         );
     }
 

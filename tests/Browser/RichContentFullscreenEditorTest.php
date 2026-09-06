@@ -196,7 +196,7 @@ it('shows the published hero without editing affordances in full-screen preview 
     $page->click('button:has-text("Redaguoti per visą ekraną")');
     waitForInertiaRender($page, '[data-rc-interactive]');
 
-    $page->click('button[aria-pressed="false"]');
+    $page->click('button[title="Peržiūrėti"][aria-pressed="false"]');
     $page->page()->waitForSelector('[data-rc-interactive]', ['state' => 'detached', 'timeout' => 10_000]);
 
     expect($page->script('document.querySelectorAll("[data-rc-interactive]").length'))->toBe(0);

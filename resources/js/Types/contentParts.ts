@@ -568,3 +568,53 @@ export interface PersonQuote {
     showAvatar?: boolean;
   };
 }
+
+export interface InstitutionList {
+  json_content: {
+    title: string;
+    eyebrow?: string;
+  };
+  options: {
+    width?: BlockWidth;
+    typeSlug?: string;
+    tenantScope?: 'current' | 'all' | number[];
+    limit?: number | null;
+    order?: 'name' | 'order';
+    presentation?: BlockPresentation;
+    plainPadding?: PlainPadding;
+  } | null;
+}
+
+export interface InstitutionListItem {
+  id: string | number;
+  name: string;
+  short_name?: string | null;
+  alias?: string;
+  description?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  image_url?: string | null;
+  logo_url?: string | null;
+  facebook_url?: string | null;
+  instagram_url?: string | null;
+  tenant?: {
+    id?: number | null;
+    shortname?: string | null;
+    alias?: string | null;
+    type?: string | null;
+  } | null;
+  types?: Array<{
+    id?: number;
+    slug?: string;
+    title?: string;
+  }>;
+}
+
+export interface InstitutionListResolved {
+  type: 'institution-list';
+  items: InstitutionListItem[];
+  meta: {
+    total: number;
+  };
+}

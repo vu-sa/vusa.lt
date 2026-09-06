@@ -48,6 +48,7 @@
           <slot />
 
           <RCPresentationPicker
+            v-if="shouldShowVerticalSpacing"
             :presentation="false"
             :plain-padding="verticalSpacing"
             default-plain-padding="none"
@@ -74,7 +75,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import type { ContentPart } from '../../Types';
 import type { VerticalSpacing } from '../../sectionClasses';
-
+import { resolveBandRole } from '../../bandLayout';
 import RCPresentationPicker from '../RCPresentationPicker.vue';
 
 import { injectActiveHotspot } from './useActiveHotspot';
@@ -86,7 +87,7 @@ import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
 import IFluentLayoutColumnTwoSplitLeft24Regular from '~icons/fluent/layout-column-two-split-left24-regular';
 import IFluentDismiss24Regular from '~icons/fluent/dismiss24-regular';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   content: ContentPart;
   blockKey: string;
   /** The block's rendered root element — anchors the popover to the block's own
@@ -95,7 +96,11 @@ const props = defineProps<{
   canMoveUp: boolean;
   canMoveDown: boolean;
   canDelete: boolean;
-}>();
+  showVerticalSpacing?: boolean | null;
+}>(), {
+  reference: null,
+  showVerticalSpacing: null,
+});
 
 const emit = defineEmits<{
   (e: 'update:content', value: ContentPart): void;
@@ -109,6 +114,13 @@ const hotspots = injectActiveHotspot();
 const toolbarId = computed(() => `${props.blockKey}:toolbar`);
 const toolbarButtonRef = ref<HTMLElement | null>(null);
 const verticalSpacing = computed(() => props.content.options?.verticalSpacing as VerticalSpacing | undefined);
+
+const shouldShowVerticalSpacing = computed(() => {
+  if (typeof props.showVerticalSpacing === 'boolean') {
+    return props.showVerticalSpacing;
+  }
+  return resolveBandRole(props.content.type, props.content.options) !== 'band';
+});
 
 function onOpenChange(open: boolean): void {
   if (open) hotspots.openPopover(toolbarId.value);

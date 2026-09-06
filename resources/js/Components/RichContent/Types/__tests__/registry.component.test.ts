@@ -16,7 +16,7 @@ const EXPECTED_TYPES = [
   'spotify-embed', 'social-embed', 'flow-graph', 'number-stat-section', 'text-box',
   'content-grid', 'carousel-slide-deck', 'hero-carousel', 'card-stack', 'photo-gallery',
   'link-list', 'event-list', 'person-quote', 'section', 'process-steps', 'cta-band',
-  'timetable',
+  'timetable', 'institution-list',
 ];
 
 describe('contentTypeRegistry', () => {
@@ -74,6 +74,18 @@ describe('contentTypeRegistry', () => {
 
     expect(item.json_content).toEqual({ title: '', eyebrow: '' });
     expect(item.options).toMatchObject({ tenantScope: 'all', limit: 4 });
+  });
+
+  it('seeds a new image-grid with one empty image item', () => {
+    const item = createContentItem('image-grid');
+
+    expect(item.json_content).toEqual([{ colspan: 'col-span-2', image: '', alt: '', title: '' }]);
+  });
+
+  it('seeds a new photo-gallery with one empty image item', () => {
+    const item = createContentItem('photo-gallery');
+
+    expect(item.json_content).toEqual([{ src: '', alt: '', heightClass: 'h-52', decorations: [] }]);
   });
 
   it('getSkeletonForType falls back to a generic skeleton for types without one', () => {

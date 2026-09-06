@@ -28,6 +28,7 @@ import SectionIcon from '~icons/fluent/text-header-1-24-regular';
 import TimetableIcon from '~icons/fluent/calendar-clock20-regular';
 import ProcessStepsIcon from '~icons/fluent/text-number-list-ltr-24-regular';
 import CtaBandIcon from '~icons/fluent/megaphone-loud-24-regular';
+import InstitutionListIcon from '~icons/fluent/building-multiple24-regular';
 
 /**
  * Canvas column a block resolves to (see `.rc-canvas` in app.css). `prose` is the
@@ -196,7 +197,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     defaultWidth: 'wide',
     allowedWidths: ['content', 'wide', 'full'],
     inlineEditable: true,
-    defaultContent: () => ([]),
+    defaultContent: () => ([
+      { colspan: 'col-span-2', image: '', alt: '', title: '' },
+    ]),
     editor: defineAsyncComponent(() => import('./ImageGridEditor.vue')),
     display: defineAsyncComponent(() => import('./ImageGridDisplay.vue')),
     skeleton: {
@@ -332,6 +335,38 @@ export const contentTypeRegistry: Record<string, ContentType> = {
               <Skeleton class="h-4 w-24" />
               <Skeleton class="h-6 w-full" />
               <Skeleton class="h-3 w-3/4" />
+            </div>
+          </div>
+        </div>
+      `,
+    },
+  },
+  'institution-list': {
+    value: 'institution-list',
+    label: 'Institucijų sąrašas',
+    icon: InstitutionListIcon,
+    description: 'Institucijų ar iniciatyvų sąrašo blokas pagal tipą',
+    category: 'special',
+    defaultWidth: 'full',
+    allowedWidths: ['content', 'wide', 'full'],
+    selfSpaced: true,
+    serverResolved: true,
+    inlineEditable: true,
+    defaultContent: () => ({ title: '', eyebrow: '' }),
+    defaultOptions: () => ({ tenantScope: 'all', typeSlug: 'pkp', limit: null }),
+    bandRole: 'band',
+    editor: defineAsyncComponent(() => import('./InstitutionListEditor.vue')),
+    display: defineAsyncComponent(() => import('../RCInstitutionList/InstitutionListDisplay.vue')),
+    skeleton: {
+      height: 'min-h-[400px]',
+      template: `
+        <div class="w-full py-8 px-4 md:px-8">
+          <Skeleton class="h-8 w-48 mb-6" />
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="i in 3" :key="i" class="space-y-3 p-4 border border-border bg-card">
+              <Skeleton class="aspect-[16/10] w-full" />
+              <Skeleton class="h-6 w-3/4" />
+              <Skeleton class="h-4 w-full" />
             </div>
           </div>
         </div>
@@ -621,7 +656,9 @@ export const contentTypeRegistry: Record<string, ContentType> = {
     // (background/padding) regardless of width, so authors can still narrow them.
     allowedWidths: ['content', 'wide', 'full'],
     selfSpaced: true,
-    defaultContent: () => ([]),
+    defaultContent: () => ([
+      { src: '', alt: '', heightClass: 'h-52', decorations: [] },
+    ]),
     defaultOptions: () => ({
       columns: '4',
       gap: 'medium',

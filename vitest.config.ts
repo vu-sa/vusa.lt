@@ -10,6 +10,12 @@ import IconsResolver from 'unplugin-icons/resolver';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 
+import { generateI18nTranslationFiles } from './vite-plugins/i18n-split';
+
+// Storybook imports the generated catalogues through its i18n mock, but CI checkouts do not
+// contain ignored generated files. Generate them before Vitest discovers any stories.
+generateI18nTranslationFiles(__dirname);
+
 const alias = {
   '@': path.resolve(__dirname, 'resources/js'),
 };

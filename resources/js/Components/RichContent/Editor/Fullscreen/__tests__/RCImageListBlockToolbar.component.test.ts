@@ -83,4 +83,29 @@ describe('RCImageListBlockToolbar', () => {
     const galleryUpdate = wrapper.emitted('update:content')?.at(-1)?.[0] as { options: { showLightbox: boolean } };
     expect(galleryUpdate.options.showLightbox).toBe(false);
   });
+
+  it('disables deleting an image when only one image is left', async () => {
+    const wrapper = mount(RCImageListBlockToolbar, {
+      props: {
+        content: {
+          type: 'image-grid',
+          json_content: [
+            { colspan: 'col-span-2', image: '/only.webp', alt: 'Only' },
+          ],
+          options: null,
+        },
+        blockKey: 'image-grid-1',
+        canMoveUp: true,
+        canMoveDown: true,
+        canDelete: true,
+      },
+      global: { stubs },
+    });
+
+    const deleteBtn = wrapper.find('button[title="rich-content.delete_image"]');
+    expect(deleteBtn.attributes('disabled')).toBeDefined();
+    await deleteBtn.trigger('click');
+
+    expect(wrapper.emitted('update:content')).toBeUndefined();
+  });
 });

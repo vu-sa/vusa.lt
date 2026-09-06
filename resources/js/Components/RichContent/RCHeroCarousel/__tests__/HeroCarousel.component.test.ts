@@ -89,6 +89,17 @@ describe('HeroCarouselDisplay', () => {
     expect(description.classes()).toContain('rc-prose-invert');
   });
 
+  it('renders outline buttons with dark mode styling so they stay readable on the photo scrim in light mode', () => {
+    const element = makeElement([{
+      buttons: [{ text: 'Plačiau', link: '/lt/placiau', variant: 'outline' }],
+    }]);
+    const wrapper = mount(HeroCarouselDisplay, { props: { element }, global: { stubs } });
+
+    const button = wrapper.findAll('button').find(b => b.text().includes('Plačiau'));
+    expect(button?.classes()).toContain('border-white/25');
+    expect(button?.classes()).toContain('text-white');
+  });
+
   it('renders the first slide image eager with high fetchpriority, the rest lazy', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 

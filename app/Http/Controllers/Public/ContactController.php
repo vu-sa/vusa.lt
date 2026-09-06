@@ -403,7 +403,7 @@ class ContactController extends PublicController
             $institutions = $type->load(['institutions' => function ($query): void {
                 $query->orderBy('name')->with(['tenant' => function ($query): void {
                     $query->where('type', TenantType::Padalinys);
-                }]);
+                }, 'types']);
             }])->institutions;
 
             // Title suffix now derives from the current tenant instead of a hardcoded "VU SA" — on a

@@ -40,6 +40,7 @@
             <IFluentArrowDown24Regular class="size-3.5" />
           </Button>
           <Button type="button" variant="ghost" size="icon" class="size-7 text-muted-foreground hover:text-destructive"
+            :disabled="images.length <= 1"
             :title="$t('rich-content.delete_image')" @click="removeImage(index)">
             <IFluentDelete24Regular class="size-3.5" />
           </Button>
@@ -199,6 +200,7 @@ function onImageSubmit(image: PickerImage): void {
 }
 
 function removeImage(index: number): void {
+  if (props.content.json_content.length <= 1) return;
   emit('update:content', { ...props.content, json_content: props.content.json_content.filter((_, currentIndex) => currentIndex !== index) });
 }
 

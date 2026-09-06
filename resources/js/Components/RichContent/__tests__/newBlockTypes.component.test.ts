@@ -189,8 +189,10 @@ describe('photo-gallery', () => {
       },
     };
     const item = createContentItem('photo-gallery');
+    expect(item.json_content).toHaveLength(1);
+
     const wrapper = mount(PhotoGalleryGridEditor, {
-      props: { modelValue: item.json_content, options: item.options },
+      props: { modelValue: [], options: item.options },
       global: { stubs },
     });
 

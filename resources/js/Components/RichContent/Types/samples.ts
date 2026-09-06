@@ -31,8 +31,8 @@ const LOREM = [
 ];
 
 export interface ContentSample {
-  json_content: any;
-  options?: Record<string, any>;
+  json_content: unknown;
+  options?: Record<string, unknown>;
   /**
    * Fabricated server-resolved payload for `serverResolved` types (link-list,
    * event-list) — the picker still never hits the network; this is what
@@ -227,6 +227,34 @@ export const contentSamples: Record<string, () => ContentSample> = {
       { startTime: '11:30', endTime: '12:30', title: 'Diskusijų panelė' },
     ],
     options: {},
+  }),
+  'institution-list': () => ({
+    json_content: { title: 'Visos iniciatyvos', eyebrow: 'VU SA' },
+    options: { typeSlug: 'pkp', tenantScope: 'all' },
+    resolved: {
+      type: 'institution-list',
+      items: [
+        {
+          id: 1,
+          name: 'VU Debatų klubas',
+          alias: 'debatu-klubas',
+          description: 'Kritinio mąstymo ir viešojo kalbėjimo erdvė studentams.',
+          image_url: PLACEHOLDER_IMAGES[0],
+          tenant: { id: 1, shortname: 'VU SA', alias: 'vusa', type: 'pagrindinis' },
+          types: [{ id: 1, slug: 'pkp', title: 'Programos, klubai, projektai' }],
+        },
+        {
+          id: 2,
+          name: 'Rašytojų klubas',
+          alias: 'rasytoju-klubas',
+          description: 'Kūrybiško rašymo ir literatūros entuziastų bendruomenė.',
+          image_url: PLACEHOLDER_IMAGES[1],
+          tenant: { id: 1, shortname: 'VU SA', alias: 'vusa', type: 'pagrindinis' },
+          types: [{ id: 1, slug: 'pkp', title: 'Programos, klubai, projektai' }],
+        },
+      ],
+      meta: { total: 2 },
+    },
   }),
 };
 

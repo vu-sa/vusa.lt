@@ -6,14 +6,15 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import HeroButtonsEditable from '../HeroButtonsEditable.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
+
 import { commonStubs } from '@/tests/stubs';
 
 const stubs = {
   ...commonStubs,
   HeroButtonHotspot: {
-    props: ['button', 'index', 'blockKey'],
+    props: ['button', 'index', 'blockKey', 'onDark'],
     emits: ['update:button', 'remove'],
-    template: '<div class="hotspot-stub" :data-index="index">{{ button.text }}</div>',
+    template: '<div class="hotspot-stub" :data-index="index" :data-on-dark="String(onDark)">{{ button.text }}</div>',
   },
 };
 
@@ -35,6 +36,15 @@ describe('HeroButtonsEditable', () => {
     const { wrapper } = mountEditable({ buttons: [{ text: 'A', link: '#a' }, { text: 'B', link: '#b' }] });
 
     expect(wrapper.findAll('.hotspot-stub')).toHaveLength(2);
+  });
+
+  it('forwards onDark to each hotspot', () => {
+    const { wrapper } = mountEditable({
+      buttons: [{ text: 'A', link: '#a' }],
+      onDark: true,
+    });
+
+    expect(wrapper.find('.hotspot-stub').attributes('data-on-dark')).toBe('true');
   });
 
   it('keeps the published row alignment while the add affordance is overlaid', () => {

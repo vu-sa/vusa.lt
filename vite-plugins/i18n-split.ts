@@ -1,21 +1,22 @@
 /**
  * Custom Vite plugin for split i18n translation compilation
- * 
+ *
  * Compiles PHP translation files from separate directories (admin, public, shared)
  * into separate JSON files that can be loaded independently by each entry point.
- * 
+ *
  * This allows the public bundle to only include shared+public translations,
  * while the admin bundle gets shared+admin translations.
- * 
+ *
  * Uses php-parser for robust PHP parsing (same as laravel-vue-i18n).
  */
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { basename, extname, join, resolve } from 'path';
-import type { Plugin } from 'vite';
-import { Engine } from 'php-parser';
 
-interface I18nSplitOptions {
+import type { Plugin } from 'vite';
+import { Engine, type Node } from 'php-parser';
+
+export interface I18nSplitOptions {
   /** Base language directory path */
   langPath?: string;
   /** Languages to compile */
@@ -26,67 +27,107 @@ interface ParsedTranslations {
   [key: string]: string;
 }
 
+type ParsedValue = string | null | ParsedValue[] | { [key: string]: ParsedValue };
+
+interface PhpNode extends Node {
+  kind: string;
+  children?: unknown[];
+  expr?: unknown;
+  items?: unknown[];
+  key?: unknown;
+  left?: unknown;
+  name?: unknown;
+  right?: unknown;
+  value?: unknown;
+}
+
 // PHP parser engine
 const phpParser = new Engine({});
+
+function isPhpNode(value: unknown): value is PhpNode {
+  return typeof value === 'object' && value !== null && 'kind' in value;
+}
 
 /**
  * Parse a PHP array item recursively
  */
-function parsePhpItem(expr: any): any {
-  if (!expr) return null;
-  
-  if (expr.kind === 'string') {
+function parsePhpItem(expr: unknown): ParsedValue {
+  if (!isPhpNode(expr)) return null;
+
+  if (expr.kind === 'string' && typeof expr.value === 'string') {
     return expr.value;
   }
-  
+
   if (expr.kind === 'nullkeyword') {
     return null;
   }
-  
+
   if (expr.kind === 'array') {
-    const items = expr.items.map((item: any) => parsePhpItem(item));
-    if (expr.items.every((item: any) => item.key !== null)) {
-      return items.reduce((acc: any, val: any) => Object.assign({}, acc, val), {});
+    const items = expr.items ?? [];
+    const values = items.map(item => parsePhpItem(item));
+
+    if (items.every(item => isPhpNode(item) && item.key !== null)) {
+      return values.reduce<Record<string, ParsedValue>>((result, value) => {
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+          Object.assign(result, value);
+        }
+
+        return result;
+      }, {});
     }
-    return items;
+
+    return values;
   }
-  
+
   if (expr.kind === 'bin') {
-    return parsePhpItem(expr.left) + parsePhpItem(expr.right);
+    const left = parsePhpItem(expr.left);
+    const right = parsePhpItem(expr.right);
+
+    return `${typeof left === 'string' ? left : ''}${typeof right === 'string' ? right : ''}`;
   }
-  
-  if (expr.key) {
-    const key = expr.key.value || expr.key.name;
+
+  if (isPhpNode(expr.key)) {
+    const key = typeof expr.key.value === 'string'
+      ? expr.key.value
+      : typeof expr.key.name === 'string'
+        ? expr.key.name
+        : null;
+
+    if (key === null) {
+      return null;
+    }
+
     return { [key]: parsePhpItem(expr.value) };
   }
-  
+
   if (expr.value) {
     return parsePhpItem(expr.value);
   }
-  
+
   return null;
 }
 
 /**
  * Convert nested object to dot notation
  */
-function convertToDotNotation(obj: any, prefix = ''): ParsedTranslations {
+function convertToDotNotation(obj: unknown, prefix = ''): ParsedTranslations {
   const result: ParsedTranslations = {};
-  
+
   if (obj === null || obj === undefined) {
     return result;
   }
-  
+
   for (const [key, value] of Object.entries(obj)) {
     const fullKey = prefix ? `${prefix}.${key}` : key;
-    
+
     if (typeof value === 'string') {
       result[fullKey] = value;
-    } else if (typeof value === 'object' && value !== null) {
+    }
+    else if (typeof value === 'object' && value !== null) {
       Object.assign(result, convertToDotNotation(value, fullKey));
     }
   }
-  
+
   return result;
 }
 
@@ -96,15 +137,18 @@ function convertToDotNotation(obj: any, prefix = ''): ParsedTranslations {
 function parsePhpContent(content: string): ParsedTranslations {
   try {
     const ast = phpParser.parseCode(content, 'translation.php');
-    const returnStatement = ast.children.find((child: any) => child.kind === 'return');
-    
-    if (!returnStatement || returnStatement.expr?.kind !== 'array') {
+    const returnStatement = ast.children.find(
+      (child): child is PhpNode => isPhpNode(child) && child.kind === 'return',
+    );
+
+    if (!returnStatement || !isPhpNode(returnStatement.expr) || returnStatement.expr.kind !== 'array') {
       return {};
     }
-    
+
     const parsed = parsePhpItem(returnStatement.expr);
     return convertToDotNotation(parsed);
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('[i18n-split] Failed to parse PHP:', error);
     return {};
   }
@@ -117,31 +161,33 @@ function parsePhpContent(content: string): ParsedTranslations {
 function parseTranslationsFromDir(dirPath: string, locale: string): ParsedTranslations {
   const result: ParsedTranslations = {};
   const localePath = join(dirPath, locale);
-  
+
   if (!existsSync(localePath)) {
     return result;
   }
 
   try {
     const files = readdirSync(localePath).filter(file => extname(file) === '.php');
-    
+
     for (const file of files) {
       const filePath = join(localePath, file);
       const namespace = basename(file, '.php');
-      
+
       try {
         const content = readFileSync(filePath, 'utf-8');
         const parsed = parsePhpContent(content);
-        
+
         // Add namespace prefix to all keys
         for (const [key, value] of Object.entries(parsed)) {
           result[`${namespace}.${key}`] = value;
         }
-      } catch (parseError) {
+      }
+      catch (parseError) {
         console.warn(`[i18n-split] Warning: Failed to parse ${filePath}:`, parseError);
       }
     }
-  } catch (readError) {
+  }
+  catch (readError) {
     console.warn(`[i18n-split] Warning: Failed to read directory ${localePath}:`, readError);
   }
 
@@ -153,7 +199,7 @@ function parseTranslationsFromDir(dirPath: string, locale: string): ParsedTransl
  */
 function mergeTranslations(...sources: ParsedTranslations[]): ParsedTranslations {
   const result: ParsedTranslations = {};
-  
+
   for (const source of sources) {
     Object.assign(result, source);
   }
@@ -161,47 +207,47 @@ function mergeTranslations(...sources: ParsedTranslations[]): ParsedTranslations
   return result;
 }
 
+export function generateI18nTranslationFiles(rootDir: string, options: I18nSplitOptions = {}): void {
+  const langPath = options.langPath || 'lang';
+  const languages = options.languages || ['lt', 'en'];
+  const langDir = resolve(rootDir, langPath);
+
+  for (const lang of languages) {
+    const sharedTranslations = parseTranslationsFromDir(join(langDir, 'shared'), lang);
+    const adminTranslations = parseTranslationsFromDir(join(langDir, 'admin'), lang);
+    const publicTranslations = parseTranslationsFromDir(join(langDir, 'public'), lang);
+
+    const adminCombined = mergeTranslations(sharedTranslations, adminTranslations);
+    writeFileSync(
+      join(langDir, `php_admin_${lang}.json`),
+      JSON.stringify(adminCombined, null, 2),
+      'utf-8',
+    );
+
+    const publicCombined = mergeTranslations(sharedTranslations, publicTranslations);
+    writeFileSync(
+      join(langDir, `php_public_${lang}.json`),
+      JSON.stringify(publicCombined, null, 2),
+      'utf-8',
+    );
+
+    console.log(`[i18n-split] Generated translations for ${lang}:`);
+    console.log(`  - php_admin_${lang}.json (${Object.keys(adminCombined).length} keys)`);
+    console.log(`  - php_public_${lang}.json (${Object.keys(publicCombined).length} keys)`);
+  }
+}
+
 export default function i18nSplit(options: I18nSplitOptions = {}): Plugin {
   const langPath = options.langPath || 'lang';
   const languages = options.languages || ['lt', 'en'];
-  
+
   let rootDir: string;
 
-  const generateTranslationFiles = () => {
-    const langDir = resolve(rootDir, langPath);
-
-    for (const lang of languages) {
-      // Parse translations from each category
-      const sharedTranslations = parseTranslationsFromDir(join(langDir, 'shared'), lang);
-      const adminTranslations = parseTranslationsFromDir(join(langDir, 'admin'), lang);
-      const publicTranslations = parseTranslationsFromDir(join(langDir, 'public'), lang);
-
-      // Generate combined files for each bundle type
-      // Admin bundle: shared + admin
-      const adminCombined = mergeTranslations(sharedTranslations, adminTranslations);
-      writeFileSync(
-        join(langDir, `php_admin_${lang}.json`),
-        JSON.stringify(adminCombined, null, 2),
-        'utf-8'
-      );
-
-      // Public bundle: shared + public  
-      const publicCombined = mergeTranslations(sharedTranslations, publicTranslations);
-      writeFileSync(
-        join(langDir, `php_public_${lang}.json`),
-        JSON.stringify(publicCombined, null, 2),
-        'utf-8'
-      );
-
-      console.log(`[i18n-split] Generated translations for ${lang}:`);
-      console.log(`  - php_admin_${lang}.json (${Object.keys(adminCombined).length} keys)`);
-      console.log(`  - php_public_${lang}.json (${Object.keys(publicCombined).length} keys)`);
-    }
-  };
+  const generateTranslationFiles = () => generateI18nTranslationFiles(rootDir, options);
 
   return {
     name: 'vite-plugin-i18n-split',
-    
+
     configResolved(config) {
       rootDir = config.root;
     },
@@ -212,7 +258,7 @@ export default function i18nSplit(options: I18nSplitOptions = {}): Plugin {
 
     configureServer(server) {
       const langDir = resolve(rootDir, langPath);
-      
+
       // Watch for changes in translation files
       const watchDirs = [
         join(langDir, 'admin'),

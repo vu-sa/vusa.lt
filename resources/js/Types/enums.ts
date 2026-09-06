@@ -69,6 +69,7 @@ export enum ContentPartEnum {
     PROCESS_STEPS = 'PROCESS_STEPS',
     CTA_BAND = 'CTA_BAND',
     TIMETABLE = 'TIMETABLE',
+    INSTITUTION_LIST = 'INSTITUTION_LIST',
 }
 export enum DegreeEnum {
     BA = 'BA',

@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 import RCBlockToolbarShell from '../RCBlockToolbarShell.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../useActiveHotspot';
 import type { ContentPart } from '../../../Types';
+
 import { commonStubs, stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -104,5 +105,24 @@ describe('RCBlockToolbarShell', () => {
   it('does not render popover content until the toolbar hotspot is open', () => {
     const { wrapper } = mountShell({}, { default: '<div class="type-specific">Width picker</div>' });
     expect(wrapper.find('.type-specific').exists()).toBe(false);
+  });
+
+  it('does not render vertical-spacing picker for band blocks', async () => {
+    const bandContent: ContentPart = { type: 'institution-list', json_content: {}, key: 'k2' };
+    const { wrapper, hotspots } = mountShell({ content: bandContent, blockKey: 'k2' });
+    hotspots.openPopover('k2:toolbar');
+    await wrapper.vm.$nextTick();
+
+    const paddingButton = wrapper.findAll('button').find(button => button.text().includes('rich-content.plain_padding_compact'));
+    expect(paddingButton).toBeUndefined();
+  });
+
+  it('hides vertical-spacing picker when showVerticalSpacing is false', async () => {
+    const { wrapper, hotspots } = mountShell({ showVerticalSpacing: false });
+    hotspots.openPopover('k1:toolbar');
+    await wrapper.vm.$nextTick();
+
+    const paddingButton = wrapper.findAll('button').find(button => button.text().includes('rich-content.plain_padding_compact'));
+    expect(paddingButton).toBeUndefined();
   });
 });
