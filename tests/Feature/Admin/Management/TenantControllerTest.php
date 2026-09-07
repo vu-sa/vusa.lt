@@ -174,6 +174,43 @@ describe('authorized access', function (): void {
             ->and($otherContent->fresh()->parts)->toHaveCount(1);
     });
 
+    test('persists hero-carousel options that have no validation rule of their own', function (): void {
+        // ValidatesContentParts' rules are a deliberately permissive union (see its own
+        // docblock) — most option keys (autoplay, scrim, grayscale, height, ...) have no
+        // rule at all. $request->validated() would silently strip them the moment ANY
+        // sibling option key elsewhere in the shared rule set has a rule (Laravel only
+        // keeps declared sub-keys once a nested array gets any sub-rule), so the
+        // controller must read `parts` from raw input instead — same as
+        // PageController::update().
+        asUser($this->admin)
+            ->post(route('tenants.updateMainPage', $this->tenant), [
+                'locale' => 'lt',
+                'parts' => [[
+                    'type' => 'hero-carousel',
+                    'json_content' => [[
+                        'title' => 'Slide',
+                        'description' => ['type' => 'doc', 'content' => []],
+                        'imageSrc' => '',
+                        'imageAlt' => '',
+                        'align' => 'start',
+                        'buttons' => [],
+                    ]],
+                    'options' => ['autoplay' => true, 'grayscale' => false, 'scrim' => 'strong', 'height' => 'lg'],
+                ]],
+            ])
+            ->assertRedirect();
+
+        $homepageContent = $this->tenant->homepageContents()->where('locale', 'lt')->firstOrFail();
+        $part = $homepageContent->content->parts()->first();
+
+        expect($part->options->toArray())->toBe([
+            'autoplay' => true,
+            'grayscale' => false,
+            'scrim' => 'strong',
+            'height' => 'lg',
+        ]);
+    });
+
     test('rejects a homepage part missing json_content with a validation error instead of a 500', function (): void {
         // EditHomePage.vue submits via `forceFormData: true` — multipart/form-data has no
         // way to represent an empty object, so a fresh, still-empty tiptap block's

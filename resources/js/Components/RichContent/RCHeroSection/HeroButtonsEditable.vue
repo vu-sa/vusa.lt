@@ -5,7 +5,8 @@
     </p>
     <div
       :class="[
-        'relative flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center 2xl:gap-4',
+        'relative flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center 2xl:gap-4',
+        center ? 'items-center sm:justify-center' : 'items-start',
         buttons?.length ? props.class : undefined,
       ]"
     >
@@ -53,6 +54,8 @@ const props = defineProps<{
   blockKey: string;
   variant?: Hero['options']['variant'];
   onDark?: boolean;
+  /** Center the row (and each button, once wrapped) instead of the default left alignment. */
+  center?: boolean;
   class?: string;
 }>();
 

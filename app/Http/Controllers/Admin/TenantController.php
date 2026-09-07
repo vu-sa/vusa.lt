@@ -149,22 +149,30 @@ class TenantController extends AdminController
 
     public function updateMainPage(UpdateContentRequest $request, Tenant $tenant)
     {
-        $validated = $request->validated();
+        // `validated()` only keeps array-shaped fields (`parts.*.options`, `json_content.*`
+        // sub-values) down to the wildcard sub-keys the shared union of block-type rules
+        // happens to name — a type-specific option no other block also declares (hero-carousel's
+        // `scrim`/`grayscale`/`autoplay`, say) is silently dropped, not merely left unvalidated.
+        // Read the already-validated request's raw `parts` instead, same as
+        // PageController::update()/NewsController's `$request->content['parts']` — the rules
+        // above still ran and would have failed the request on genuinely malformed input.
+        $locale = $request->validated('locale');
+        $parts = $request->input('parts', []);
 
-        DB::transaction(function () use ($tenant, $validated): void {
+        DB::transaction(function () use ($tenant, $locale, $parts): void {
             $lockedTenant = Tenant::query()->lockForUpdate()->findOrFail($tenant->id);
             $homepageContent = $lockedTenant->homepageContents()
-                ->where('locale', $validated['locale'])
+                ->where('locale', $locale)
                 ->first();
 
             if ($homepageContent === null) {
                 $homepageContent = $lockedTenant->homepageContents()->create([
                     'content_id' => Content::query()->create()->id,
-                    'locale' => $validated['locale'],
+                    'locale' => $locale,
                 ]);
             }
 
-            app(ContentService::class)->updateContentParts($homepageContent->content, $validated['parts']);
+            app(ContentService::class)->updateContentParts($homepageContent->content, $parts);
         });
 
         foreach (LocaleEnum::cases() as $locale) {

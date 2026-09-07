@@ -126,6 +126,24 @@ describe('HeroCarouselDisplay', () => {
     expect(textBlocks[1]!.classes()).toContain('items-start');
   });
 
+  it('centers the button row too when the slide is center-aligned', () => {
+    const centered = mount(HeroCarouselDisplay, {
+      props: { element: makeElement([{ align: 'center' as const }]) },
+      global: { stubs },
+    });
+    const centeredButtonRow = centered.findAll('.carousel-item-stub')[0]!.find('.mt-7');
+    expect(centeredButtonRow.classes()).toContain('items-center');
+    expect(centeredButtonRow.classes()).toContain('sm:justify-center');
+
+    const start = mount(HeroCarouselDisplay, {
+      props: { element: makeElement() },
+      global: { stubs },
+    });
+    const startButtonRow = start.findAll('.carousel-item-stub')[0]!.find('.mt-7');
+    expect(startButtonRow.classes()).toContain('items-start');
+    expect(startButtonRow.classes()).not.toContain('sm:justify-center');
+  });
+
   it('applies the scrim strength option to the photo, not an extra overlay', () => {
     const light = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'light' }) }, global: { stubs } });
     expect(light.find('img').classes()).toContain('opacity-100');

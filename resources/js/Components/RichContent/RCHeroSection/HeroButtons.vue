@@ -1,5 +1,12 @@
 <template>
-  <div v-if="buttons && buttons.length > 0" :class="['flex flex-col items-start gap-3 sm:flex-row sm:items-center 2xl:gap-4', props.class]">
+  <div
+    v-if="buttons && buttons.length > 0"
+    :class="[
+      'flex flex-col gap-3 sm:flex-row sm:items-center 2xl:gap-4',
+      center ? 'items-center sm:justify-center' : 'items-start',
+      props.class,
+    ]"
+  >
     <template v-for="(button, index) in buttons" :key="index">
       <SmartLink :href="button.link" class="w-fit">
         <!-- No `mr-2` on the icon: Button's base already applies `gap-2`, and adding a margin
@@ -38,6 +45,8 @@ import type { Hero } from '@/Types/contentParts';
 const props = defineProps<{
   buttons?: Hero['json_content']['buttons'];
   onDark?: boolean;
+  /** Center the row (and each button, once wrapped) instead of the default left alignment. */
+  center?: boolean;
   class?: string;
 }>();
 
