@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TenantType;
+use App\Models\Content;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -145,6 +146,32 @@ describe('authorized access', function (): void {
         $this->assertDatabaseMissing('tenants', [
             'id' => $tenant->id,
         ]);
+    });
+
+    test('creates and updates homepage content for the selected locale only', function (): void {
+        $otherContent = Content::factory()->create();
+        $otherContent->parts()->create([
+            'type' => 'tiptap',
+            'json_content' => ['type' => 'doc', 'content' => []],
+            'order' => 0,
+        ]);
+
+        asUser($this->admin)
+            ->post(route('tenants.updateMainPage', $this->tenant), [
+                'id' => $otherContent->id,
+                'locale' => 'en',
+                'parts' => [[
+                    'type' => 'tiptap',
+                    'json_content' => ['type' => 'doc', 'content' => []],
+                ]],
+            ])
+            ->assertRedirect();
+
+        $homepageContent = $this->tenant->homepageContents()->where('locale', 'en')->firstOrFail();
+
+        expect($homepageContent->content_id)->not->toBe($otherContent->id)
+            ->and($homepageContent->content->parts)->toHaveCount(1)
+            ->and($otherContent->fresh()->parts)->toHaveCount(1);
     });
 });
 

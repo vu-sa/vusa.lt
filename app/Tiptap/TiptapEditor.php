@@ -2,6 +2,7 @@
 
 namespace App\Tiptap;
 
+use Tiptap\Core\DOMSerializer;
 use Tiptap\Editor;
 use Tiptap\Extensions\StarterKit;
 use Tiptap\Marks\Link;
@@ -105,5 +106,23 @@ class TiptapEditor extends Editor
                 new Superscript,
             ],
         ]);
+    }
+
+    /**
+     * The PHP renderer (unlike the JS editor's NodeView) can't nest a wrapper tag around
+     * a node that itself renders nested content — {@see DOMSerializer}'s
+     * render-tree walker only unwraps one level of tag nesting. A resized table's explicit
+     * column widths can add up past the reading measure, so tables get a scrollable wrapper
+     * here instead, after rendering. Mirrors the wrapper `resources/js/Components/RichContent
+     * /RichContentTiptapHTML.vue`'s client-side fallback renderer adds.
+     */
+    #[\Override]
+    public function getHTML(): string
+    {
+        return preg_replace_callback(
+            '/<table\b.*?<\/table>/s',
+            fn (array $match): string => '<div class="tableWrapper">'.$match[0].'</div>',
+            parent::getHTML(),
+        );
     }
 }

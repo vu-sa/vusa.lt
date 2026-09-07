@@ -284,7 +284,7 @@ test('homepage falls back to main tenant content when tenant has empty content p
         'json_content' => (new Editor)->setContent('<p>Main tenant content</p>')->getDocument(),
     ]);
 
-    $this->tenant->update(['content_id' => $mainContent->id]);
+    $this->tenant->homepageContents()->create(['content_id' => $mainContent->id, 'locale' => 'lt']);
 
     // Create padalinys tenant with content but no parts
     $emptyContent = Content::factory()->create();
@@ -294,8 +294,8 @@ test('homepage falls back to main tenant content when tenant has empty content p
         'type' => 'padalinys',
         'alias' => 'test-padalinys',
         'shortname' => 'Test Padalinys',
-        'content_id' => $emptyContent->id,
     ]);
+    $padalinysTenant->homepageContents()->create(['content_id' => $emptyContent->id, 'locale' => 'lt']);
 
     $response = $this->get(route('home', ['subdomain' => 'test-padalinys', 'lang' => 'lt']));
 
@@ -317,7 +317,7 @@ test('homepage uses tenant content when it has content parts', function (): void
         'json_content' => (new Editor)->setContent('<p>Main tenant content</p>')->getDocument(),
     ]);
 
-    $this->tenant->update(['content_id' => $mainContent->id]);
+    $this->tenant->homepageContents()->create(['content_id' => $mainContent->id, 'locale' => 'lt']);
 
     // Create padalinys tenant with actual content parts
     $padalinysContent = Content::factory()->create();
@@ -331,8 +331,8 @@ test('homepage uses tenant content when it has content parts', function (): void
         'type' => 'padalinys',
         'alias' => 'test-padalinys-2',
         'shortname' => 'Test Padalinys 2',
-        'content_id' => $padalinysContent->id,
     ]);
+    $padalinysTenant->homepageContents()->create(['content_id' => $padalinysContent->id, 'locale' => 'lt']);
 
     $response = $this->get(route('home', ['subdomain' => 'test-padalinys-2', 'lang' => 'lt']));
 
@@ -343,6 +343,39 @@ test('homepage uses tenant content when it has content parts', function (): void
             ->where('content.id', $padalinysContent->id) // Should use padalinys's own content
             ->has('content.parts', 1)
     );
+});
+
+test('homepage uses its English content when it is available', function (): void {
+    $lithuanianContent = Content::factory()->create();
+    $englishContent = Content::factory()->create();
+
+    ContentPart::factory()->for($lithuanianContent)->create(['type' => 'tiptap']);
+    ContentPart::factory()->for($englishContent)->create(['type' => 'tiptap']);
+
+    $this->tenant->homepageContents()->createMany([
+        ['content_id' => $lithuanianContent->id, 'locale' => 'lt'],
+        ['content_id' => $englishContent->id, 'locale' => 'en'],
+    ]);
+
+    $this->get(route('home', ['subdomain' => 'www', 'lang' => 'en']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/HomePage')
+            ->where('app.locale', 'en')
+            ->where('content.id', $englishContent->id)
+        );
+});
+
+test('English homepage falls back to its Lithuanian content when English is missing', function (): void {
+    $lithuanianContent = Content::factory()->create();
+    ContentPart::factory()->for($lithuanianContent)->create(['type' => 'tiptap']);
+    $this->tenant->homepageContents()->create(['content_id' => $lithuanianContent->id, 'locale' => 'lt']);
+
+    $this->get(route('home', ['subdomain' => 'www', 'lang' => 'en']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/HomePage')
+            ->where('app.locale', 'en')
+            ->where('content.id', $lithuanianContent->id)
+        );
 });
 
 test('pkp page renders ContentPage with institution-list content', function (): void {

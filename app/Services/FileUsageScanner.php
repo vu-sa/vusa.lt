@@ -13,6 +13,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
+use App\Models\TenantHomepageContent;
 use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
@@ -919,7 +920,7 @@ class FileUsageScanner
 
     /**
      * Resolve primary owning model for given content_id.
-     * Priority order: Page, News, Tenant (extendable later).
+     * Priority order: Page, News, Tenant homepage (extendable later).
      *
      * No caching: callers iterate groups keyed by content_id, so every id is
      * resolved exactly once per scan anyway, and a static cache would leak
@@ -929,7 +930,7 @@ class FileUsageScanner
     {
         return Page::where('content_id', $contentId)->first()
             ?? News::where('content_id', $contentId)->first()
-            ?? Tenant::where('content_id', $contentId)->first();
+            ?? TenantHomepageContent::query()->where('content_id', $contentId)->with('tenant')->first()?->tenant;
     }
 
     /**

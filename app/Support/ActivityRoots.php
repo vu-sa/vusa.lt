@@ -7,6 +7,7 @@ use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Duty;
 use App\Models\Pivots\AgendaItem;
+use App\Models\TenantHomepageContent;
 use App\Models\Vote;
 
 /**
@@ -35,8 +36,9 @@ class ActivityRoots
         Duty::class => 'institution',
         ContentPart::class => 'content',
         // Inverse hasOne on content_id, ambiguous between three owners -- see
-        // App\Models\Content::news()/page()/tenant().
-        Content::class => ['news', 'page', 'tenant'],
+        // App\Models\Content::news()/page()/tenantHomepageContent().
+        Content::class => ['news', 'page', 'tenantHomepageContent'],
+        TenantHomepageContent::class => 'tenant',
     ];
 
     /**

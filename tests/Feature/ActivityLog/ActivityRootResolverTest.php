@@ -115,7 +115,7 @@ test('a ContentPart activity roots to its owning Page', function (): void {
 test('a ContentPart activity roots to its owning Tenant', function (): void {
     $tenant = Tenant::factory()->create();
     $content = Content::factory()->create();
-    $tenant->content()->associate($content)->save();
+    $tenant->homepageContents()->create(['content_id' => $content->id, 'locale' => 'lt']);
 
     $part = $content->parts()->create([
         'type' => 'tiptap',

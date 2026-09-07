@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\LocaleEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateContentRequest extends FormRequest
 {
@@ -23,7 +25,7 @@ class UpdateContentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|exists:contents,id',
+            'locale' => ['required', new Enum(LocaleEnum::class)],
             'parts' => 'required|array',
         ];
     }

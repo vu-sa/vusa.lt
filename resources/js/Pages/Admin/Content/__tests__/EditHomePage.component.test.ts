@@ -17,6 +17,8 @@ describe('EditHomePage', () => {
     const wrapper = mount(EditHomePage, {
       props: {
         tenant: { id: 42, content: { parts: [] } } as unknown as App.Entities.Tenant,
+        content: { parts: [] } as App.Entities.Content,
+        locale: 'lt',
       },
       global: {
         stubs: {
@@ -24,11 +26,15 @@ describe('EditHomePage', () => {
           AdminContentPage: { template: '<div><slot name="aside-header" /><slot /></div>' },
           AdminForm: { template: '<div><slot /></div>' },
           UpsertModelLayout: { template: '<div><slot /></div>' },
+          ToggleGroup: { template: '<div><slot /></div>' },
+          ToggleGroupItem: { template: '<button type="button"><slot /></button>' },
           RichContentFormElement: { props: ['tenantId'], template: '<div :data-tenant-id="tenantId" />' },
         },
       },
     });
 
     expect(wrapper.get('[data-tenant-id]').attributes('data-tenant-id')).toBe('42');
+    expect(wrapper.text()).toContain('🇱🇹 Lietuvių');
+    expect(wrapper.text()).toContain('🇬🇧 English');
   });
 });

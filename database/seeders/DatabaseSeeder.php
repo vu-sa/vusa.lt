@@ -190,8 +190,10 @@ class DatabaseSeeder extends Seeder
             'order' => 1,
         ]);
 
-        // Update the tenant to reference this content
-        $pagrindinisTenant->update(['content_id' => $content->id]);
+        $pagrindinisTenant->homepageContents()->create([
+            'content_id' => $content->id,
+            'locale' => 'lt',
+        ]);
     }
 
     /**
