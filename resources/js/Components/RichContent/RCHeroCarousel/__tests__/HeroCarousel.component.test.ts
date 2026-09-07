@@ -144,15 +144,49 @@ describe('HeroCarouselDisplay', () => {
     expect(startButtonRow.classes()).not.toContain('sm:justify-center');
   });
 
+  it('centers the narrower subtitle and description boxes too, not just the button row', () => {
+    const centered = mount(HeroCarouselDisplay, {
+      props: { element: makeElement([{ align: 'center' as const }]) },
+      global: { stubs },
+    });
+    const slide = centered.findAll('.carousel-item-stub')[0]!;
+    expect(slide.find('.mt-5').classes()).toContain('mx-auto');
+    expect(slide.find('.mt-3').classes()).toContain('mx-auto');
+
+    const start = mount(HeroCarouselDisplay, {
+      props: { element: makeElement() },
+      global: { stubs },
+    });
+    const startSlide = start.findAll('.carousel-item-stub')[0]!;
+    expect(startSlide.find('.mt-5').classes()).not.toContain('mx-auto');
+    expect(startSlide.find('.mt-3').classes()).not.toContain('mx-auto');
+  });
+
+  it('adds a radial vignette behind center-aligned text only, on top of the edge-anchored scrims', () => {
+    const centered = mount(HeroCarouselDisplay, {
+      props: { element: makeElement([{ align: 'center' as const }]) },
+      global: { stubs },
+    });
+    const centeredSlide = centered.findAll('.carousel-item-stub')[0]!;
+    expect(centeredSlide.find('.bg-radial').exists()).toBe(true);
+
+    const start = mount(HeroCarouselDisplay, {
+      props: { element: makeElement() },
+      global: { stubs },
+    });
+    const startSlide = start.findAll('.carousel-item-stub')[0]!;
+    expect(startSlide.find('.bg-radial').exists()).toBe(false);
+  });
+
   it('applies the scrim strength option to the photo, not an extra overlay', () => {
     const light = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'light' }) }, global: { stubs } });
     expect(light.find('img').classes()).toContain('opacity-100');
 
     const strong = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'strong' }) }, global: { stubs } });
-    expect(strong.find('img').classes()).toContain('opacity-80');
+    expect(strong.find('img').classes()).toContain('opacity-65');
 
     const dark = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'dark' }) }, global: { stubs } });
-    expect(dark.find('img').classes()).toContain('opacity-70');
+    expect(dark.find('img').classes()).toContain('opacity-55');
   });
 
   it('lets a slide override the carousel-wide scrim strength', () => {
@@ -160,7 +194,7 @@ describe('HeroCarouselDisplay', () => {
       props: { element: makeElement([{ scrim: 'dark' }], { scrim: 'light' }) },
       global: { stubs },
     });
-    expect(wrapper.find('img').classes()).toContain('opacity-70');
+    expect(wrapper.find('img').classes()).toContain('opacity-55');
   });
 
   it('renders one labelled dot per slide with aria-current on the active one', () => {

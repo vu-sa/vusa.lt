@@ -34,9 +34,13 @@
       </div>
     </div>
 
-    <!-- Dual scrims -->
+    <!-- Dual scrims: both are edge-anchored (left, bottom), built for start/end-aligned
+         copy. A center-aligned slide puts the text in the middle of the photo instead,
+         which is exactly where those two leave the least coverage — add a radial vignette
+         centered on the text so it isn't the least-darkened spot on the image. -->
     <div :class="['absolute inset-0 bg-gradient-to-r', SCRIM_GRADIENT_X[effectiveScrim]]" />
     <div :class="['absolute inset-0 bg-gradient-to-t', SCRIM_GRADIENT_Y[effectiveScrim]]" />
+    <div v-if="slideAlign === 'center'" :class="['absolute inset-0 bg-radial', SCRIM_GRADIENT_RADIAL[effectiveScrim]]" />
 
     <!-- Slide actions / hotspots when editable. Top-left, not top-right: the block's own
          "more options" trigger (RCBlockToolbarShell) sits at top-6 right-3 z-30 and would
@@ -121,7 +125,7 @@
         </div>
 
         <!-- Subtitle -->
-        <p v-if="slide.subtitle || editable" class="mt-5 max-w-xl text-pretty leading-relaxed text-white/85">
+        <p v-if="slide.subtitle || editable" :class="['mt-5 max-w-xl text-pretty leading-relaxed text-white/85', slideAlign === 'center' && 'mx-auto']">
           <RCInlineText
             as="span"
             :model-value="slide.subtitle ?? ''"
@@ -132,7 +136,7 @@
         </p>
 
         <!-- Description -->
-        <div v-if="hasDesc || editable" class="mt-3 max-w-xl">
+        <div v-if="hasDesc || editable" :class="['mt-3 max-w-xl', slideAlign === 'center' && 'mx-auto']">
           <div v-if="!isDescriptionLive" class="rc-prose rc-prose-invert text-sm leading-relaxed text-white/85 sm:text-base">
             <button v-if="editable" type="button" class="block w-full cursor-text text-left text-inherit" data-rc-interactive @click="claimDescription">
               <RichContentTiptapHTML v-if="hasTiptapContent(slide.description)" :json_content="slide.description" />
@@ -224,9 +228,9 @@ const emit = defineEmits<{
 
 const SCRIM_IMAGE_OPACITY = {
   light: 'opacity-100',
-  medium: 'opacity-88',
-  strong: 'opacity-80',
-  dark: 'opacity-70',
+  medium: 'opacity-75',
+  strong: 'opacity-65',
+  dark: 'opacity-55',
 } as const;
 
 // Left-to-right scrim: carries the text-legibility contrast, so it scales the most
@@ -247,6 +251,16 @@ const SCRIM_GRADIENT_Y = {
   medium: 'from-ink/68 via-transparent to-ink/12',
   strong: 'from-ink/78 via-transparent to-ink/18',
   dark: 'from-ink/92 via-transparent to-ink/28',
+} as const;
+
+// Centered on the photo, same as the copy is: the two edge-anchored scrims above both fade
+// toward transparent right around the middle of the image, which is exactly where a
+// center-aligned slide's text sits. This soft halo darkens that spot directly instead.
+const SCRIM_GRADIENT_RADIAL = {
+  light: 'from-ink/45 via-ink/15 to-transparent',
+  medium: 'from-ink/60 via-ink/28 to-transparent',
+  strong: 'from-ink/72 via-ink/38 to-transparent',
+  dark: 'from-ink/85 via-ink/48 to-transparent',
 } as const;
 
 const hotspots = inject(ACTIVE_HOTSPOT_KEY, undefined);
