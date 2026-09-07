@@ -274,7 +274,7 @@
             :key="n"
             class="flex flex-col animate-pulse"
           >
-            <div class="aspect-[16/10] bg-secondary border border-border" />
+            <div class="aspect-[16/9] bg-secondary border border-border" />
             <div class="mt-4 h-5 w-3/4 bg-secondary" />
             <div class="mt-2 h-4 w-1/2 bg-secondary" />
             <div class="mt-4 h-4 w-1/4 bg-secondary" />

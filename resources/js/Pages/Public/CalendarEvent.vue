@@ -193,7 +193,7 @@
             :href="route('calendar.event', { calendar: otherEvent.id, lang: locale })"
             class="group flex flex-col"
           >
-            <div class="relative aspect-[16/10] overflow-hidden border border-border bg-secondary">
+            <div class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary">
               <img
                 v-if="otherEventImage(otherEvent)"
                 :src="otherEventImage(otherEvent)"

@@ -12,7 +12,7 @@
     <MediaFrame
       :src="news.image ?? undefined"
       :alt="news.title"
-      :ratio="size === 'lg' ? '16/9' : '16/10'"
+      ratio="16/9"
       :grayscale="false"
       :eager
       hover-zoom
