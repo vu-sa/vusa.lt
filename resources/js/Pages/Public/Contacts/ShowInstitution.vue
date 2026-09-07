@@ -9,7 +9,7 @@
     <section class="border-b border-border">
       <div
         class="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8 lg:py-16"
-        :class="institution.image_url ? 'grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16' : ''"
+        :class="institution.image_url ? 'grid gap-x-10 gap-y-0 lg:grid-cols-[1.1fr_0.9fr] lg:gap-x-16' : ''"
       >
         <div class="flex flex-col justify-center">
           <!-- Inline Breadcrumbs -->
@@ -22,23 +22,16 @@
             <span class="block text-xs font-bold uppercase tracking-[0.28em] text-brand">
               {{ institution.tenant?.shortname ?? $t('Kontaktai') }}
             </span>
-            <h1 class="u-display mt-3 text-3xl font-bold uppercase tracking-tight text-foreground sm:text-5xl lg:text-6xl leading-tight">
+            <h1 :class="institutionTitleClass">
               {{ institution.name }}
             </h1>
           </div>
-
-          <!-- Description -->
-          <div
-            v-if="institution.description"
-            class="typography mt-6 max-w-xl pl-5 text-base leading-relaxed text-muted-foreground sm:pl-7"
-            v-html="institution.description"
-          />
         </div>
 
         <!-- Right-column photo card (photo only, no text or logo) -->
         <div
           v-if="institution.image_url"
-          class="relative flex aspect-video sm:aspect-4/3 lg:aspect-auto min-h-[240px] overflow-hidden border border-border bg-muted/20"
+          class="relative flex aspect-video min-h-[240px] overflow-hidden border border-border bg-muted/20 sm:aspect-4/3 lg:max-h-[30rem]"
         >
           <img
             :src="institution.image_url"
@@ -46,6 +39,25 @@
             class="size-full object-cover contrast-105"
             :style="{ objectPosition: institution.image_focal_point ?? '50% 30%' }"
           >
+        </div>
+
+        <div v-if="institution.description" class="mt-2 max-w-3xl pl-5 sm:mt-3 sm:pl-7 lg:col-span-2">
+          <div
+            :class="[
+              'typography text-base leading-relaxed text-muted-foreground',
+              hasLongDescription && !showFullDescription && 'line-clamp-8',
+            ]"
+            v-html="institution.description"
+          />
+          <button
+            v-if="hasLongDescription"
+            type="button"
+            class="mt-4 text-sm font-bold text-brand underline decoration-brand/40 underline-offset-4 transition-colors hover:decoration-brand"
+            :aria-expanded="showFullDescription"
+            @click="showFullDescription = !showFullDescription"
+          >
+            {{ showFullDescription ? $t('Rodyti mažiau') : $t('Skaityti daugiau') }}
+          </button>
         </div>
       </div>
     </section>
@@ -126,7 +138,7 @@
             <!-- Section header -->
             <div class="mb-5 border-b border-border pb-2">
               <h3 class="text-lg font-bold text-foreground">
-                {{ section.dutyName }}
+                {{ institutionDutyName(section.dutyName) }}
               </h3>
             </div>
 
@@ -299,6 +311,7 @@ import IFluentGlobe24Regular from '~icons/fluent/globe-24-regular';
 import IFluentInfo16Regular from '~icons/fluent/info-16-regular';
 import IFluentMail24Regular from '~icons/fluent/mail-24-regular';
 import IFluentCall24Regular from '~icons/fluent/call-24-regular';
+import IFluentClock24Regular from '~icons/fluent/clock-24-regular';
 import IFluentLocation24Regular from '~icons/fluent/location-24-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import ISimpleIconsInstagram from '~icons/simple-icons/instagram';
@@ -396,6 +409,18 @@ usePageBreadcrumbs(() => {
 const showMeetings = ref(true);
 const showPreviousYears = ref(false);
 const showInfoModal = ref(false);
+const showFullDescription = ref(false);
+
+const institutionTitleClass = computed(() => [
+  'u-display mt-3 font-bold uppercase tracking-tight text-foreground',
+  String(props.institution.name).length > 52
+    ? 'text-3xl leading-[1.08] sm:text-4xl sm:leading-[1.05] lg:text-5xl'
+    : 'text-3xl leading-[1.08] sm:text-5xl sm:leading-tight lg:text-6xl',
+]);
+
+const hasLongDescription = computed(() =>
+  String(props.institution.description ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().length > 520,
+);
 
 // Extract domain from URL for display
 const extractDomain = (url: string): string => {
@@ -406,6 +431,41 @@ const extractDomain = (url: string): string => {
   catch {
     return url;
   }
+};
+
+const extractSocialTag = (url: string, prefix = ''): string => {
+  try {
+    const parsedUrl = new URL(url.trim());
+    const pathSegments = parsedUrl.pathname.split('/').filter(Boolean);
+    const tag = pathSegments.at(0) === 'pages' ? pathSegments.at(1) : pathSegments.at(0);
+
+    if (tag && tag !== 'profile.php') {
+      return `${prefix}${tag}`;
+    }
+
+    if (tag === 'profile.php') {
+      return parsedUrl.searchParams.get('id') ?? url.trim();
+    }
+  }
+  catch {
+    return url.trim();
+  }
+
+  return url.trim();
+};
+
+const institutionDutyName = (name: string): string => {
+  const normalizedName = name.trim().toLocaleLowerCase();
+
+  if (['koordinatorius (-ė)', 'coordinator'].includes(normalizedName)) {
+    return $t('Koordinatoriai');
+  }
+
+  if (['kuratorius (-ė)', 'mentor'].includes(normalizedName)) {
+    return $t('Kuratoriai');
+  }
+
+  return name;
 };
 
 // Available details for mini-card grid (v0 redesign)
@@ -434,7 +494,6 @@ const availableDetails = computed(() => {
       icon: IFluentCall24Regular,
       label: $t('Telefonas'),
       value: props.institution.phone,
-      sub: $t('Darbo dienomis'),
       href: `tel:${props.institution.phone}`,
     });
   }
@@ -445,6 +504,14 @@ const availableDetails = computed(() => {
       label: $t('El. paštas'),
       value: props.institution.email,
       href: `mailto:${props.institution.email}`,
+    });
+  }
+
+  if (props.institution.working_hours) {
+    items.push({
+      icon: IFluentClock24Regular,
+      label: $t('Darbo laikas'),
+      value: String(props.institution.working_hours),
     });
   }
 
@@ -462,7 +529,7 @@ const availableDetails = computed(() => {
     items.push({
       icon: ISimpleIconsFacebook,
       label: 'Facebook',
-      value: 'VU SA',
+      value: extractSocialTag(props.institution.facebook_url),
       href: props.institution.facebook_url,
       external: true,
     });
@@ -472,7 +539,7 @@ const availableDetails = computed(() => {
     items.push({
       icon: ISimpleIconsInstagram,
       label: 'Instagram',
-      value: '@vusa',
+      value: extractSocialTag(props.institution.instagram_url, '@'),
       href: props.institution.instagram_url,
       external: true,
     });

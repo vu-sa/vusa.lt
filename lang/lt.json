@@ -6,6 +6,9 @@
     "Site under maintenance": "Tinklalapis atnaujinamas",
     "We are performing scheduled maintenance and will be back shortly.": "Šiuo metu atliekami techninės priežiūros darbai. Netrukus grįšime!",
     "Skaityti daugiau": "Skaityti daugiau",
+    "Rodyti mažiau": "Rodyti mažiau",
+    "Kuratoriai": "Kuratoriai",
+    "Darbo laikas": "Darbo laikas",
     "Puslapis egzistuoja kita kalba": "🇬🇧 There's a version of this page in English",
     "Atidaryti": "Open",
     "Super Admin": "Super administratorius",
@@ -146,5 +149,6 @@
     "Previous page": "Ankstesnis puslapis",
     "Next page": "Kitas puslapis",
     "Last page": "Paskutinis puslapis",
-    "Išjungti greitus veiksmus?": "Išjungti greitus veiksmus?"
+    "Išjungti greitus veiksmus?": "Išjungti greitus veiksmus?",
+    "Naudojamas naujienos įvade ir paieškos rezultatuose (SEO).": "Naudojamas naujienos įvade ir paieškos rezultatuose (SEO)."
 }

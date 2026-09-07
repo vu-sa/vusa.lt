@@ -44,6 +44,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property array|string|null $address
  * @property string|null $phone
  * @property string|null $email
+ * @property array|string|null $working_hours
  * @property string|null $website
  * @property string|null $image_url
  * @property string|null $image_focal_point
@@ -119,7 +120,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     // Note: has_public_meetings is NOT auto-appended due to performance.
     // Append it explicitly where needed: $institution->append('has_public_meetings')
 
-    public $translatable = ['name', 'short_name', 'description', 'address'];
+    public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
     /**
      * `description` is Tiptap `full` preset HTML, rendered with `v-html` on the

@@ -29,6 +29,7 @@ use Laravel\Scout\Searchable;
  * @property array|string|null $address
  * @property string|null $phone
  * @property string|null $email
+ * @property array|string|null $working_hours
  * @property string|null $website
  * @property string|null $image_url
  * @property string|null $image_focal_point

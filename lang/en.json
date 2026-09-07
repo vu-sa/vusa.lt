@@ -236,6 +236,7 @@
     "Istorinių Europos kovos menų klubas": "Historical European Martial Arts Club",
     "Koordinatoriai": "Coordinators",
     "Kuratoriai": "Mentors",
+    "Darbo laikas": "Working hours",
     "VU SA archyvo nuotrauka": "Photo from VU SR archive",
     "Šaltinis": "Source",
     "Įmonės kodas": "Company code",
@@ -1216,6 +1217,8 @@
     "Seniausi pirmi": "Oldest first",
     "Išvalyti filtrus": "Clear filters",
     "Rodyti daugiau": "Show more",
+    "Rodyti mažiau": "Show less",
+    "Kuratoriai": "Mentors",
     "Be pavadinimo": "Untitled",
     "Pradėkite rašyti": "Start typing",
     "Ieškokite visose jums prieinamose srityse vienu metu": "Search across everything you can access at once",
@@ -1374,5 +1377,8 @@
     "Rodyti daugiau naujienų": "Show more news",
     "Visos naujienos": "All news",
     "Ieškoti metų": "Search year",
-    "Ieškoti žymos": "Search tags"
+    "Ieškoti žymos": "Search tags",
+    "Naudojamas naujienos įvade ir paieškos rezultatuose (SEO).": "Used in the news introduction and search results (SEO).",
+    "Maksimalus ženklų skaičius": "Maximum characters",
+    "Įvadinis tekstas": "Introductory text"
 }

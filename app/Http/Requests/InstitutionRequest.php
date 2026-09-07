@@ -34,6 +34,8 @@ class InstitutionRequest extends FormRequest
             'address.en' => 'nullable|string',
             'website' => 'nullable|string',
             'email' => 'nullable|email',
+            'working_hours.lt' => 'nullable|string|max:255',
+            'working_hours.en' => 'nullable|string|max:255',
             'phone' => 'nullable|string',
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],
             'image_url' => 'nullable|string',

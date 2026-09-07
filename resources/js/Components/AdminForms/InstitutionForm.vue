@@ -108,6 +108,10 @@
             <MultiLocaleInput v-model:input="form.address" />
           </FormFieldWrapper>
 
+          <FormFieldWrapper id="working_hours" :label="$t('Darbo laikas')">
+            <MultiLocaleInput v-model:input="form.working_hours" input-type="textarea" />
+          </FormFieldWrapper>
+
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <InputWithOverlappingLabel v-model="form.email" :label="$t('El. paštas')" type="email"
               placeholder="info@vusa.lt">
@@ -395,6 +399,10 @@ const isCreate = computed(() => !!props.rememberKey);
 const form = props.rememberKey
   ? useForm(props.rememberKey, props.institution as any)
   : useForm(props.institution as any);
+
+if (!form.working_hours || Array.isArray(form.working_hours)) {
+  form.working_hours = { lt: '', en: '' };
+}
 
 // Section completion states
 const mainInfoComplete = computed(() =>
