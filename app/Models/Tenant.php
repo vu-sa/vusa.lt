@@ -168,6 +168,9 @@ class Tenant extends Model
         return $this->belongsTo(Institution::class, 'primary_institution_id');
     }
 
+    /**
+     * @return HasMany<TenantHomepageContent, $this>
+     */
     public function homepageContents(): HasMany
     {
         return $this->hasMany(TenantHomepageContent::class);

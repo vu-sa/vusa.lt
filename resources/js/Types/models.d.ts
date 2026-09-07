@@ -336,14 +336,14 @@ declare global {
       parts?: ContentPart[]
       news?: News
       page?: Page
-      tenant?: Tenant
+      tenant_homepage_content?: TenantHomepageContent
       // counts
       parts_count: number
       // exists
       parts_exists: boolean
       news_exists: boolean
       page_exists: boolean
-      tenant_exists: boolean
+      tenant_homepage_content_exists: boolean
     }
 
     export interface ContentPart {
@@ -1769,7 +1769,6 @@ declare global {
       address?: string | null
       shortname_vu?: string | null
       primary_institution_id?: string | null
-      content_id?: number | null
       // relations
       banners?: Banner[]
       calendar?: Calendar[]
@@ -1783,7 +1782,7 @@ declare global {
       users?: User
       reservations?: Reservation
       primary_institution?: Institution
-      content?: Content
+      homepage_contents?: TenantHomepageContent[]
       // counts
       banners_count: number
       calendar_count: number
@@ -1794,6 +1793,7 @@ declare global {
       quick_links_count: number
       resources_count: number
       study_sets_count: number
+      homepage_contents_count: number
       // exists
       banners_exists: boolean
       calendar_exists: boolean
@@ -1805,7 +1805,22 @@ declare global {
       resources_exists: boolean
       study_sets_exists: boolean
       primary_institution_exists: boolean
+      homepage_contents_exists: boolean
+    }
+
+    export interface TenantHomepageContent {
+      // columns
+      id: number
+      tenant_id: number
+      content_id: number
+      locale: string
+      // relations
+      content?: Content
+      tenant?: Tenant
+      // counts
+      // exists
       content_exists: boolean
+      tenant_exists: boolean
     }
 
     export interface TextBoxSubmission {
@@ -2068,4 +2083,3 @@ declare global {
 
   }
 }
-

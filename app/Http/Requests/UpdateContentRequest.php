@@ -3,12 +3,15 @@
 namespace App\Http\Requests;
 
 use App\Enums\LocaleEnum;
+use App\Http\Requests\Concerns\ValidatesContentParts;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
 class UpdateContentRequest extends FormRequest
 {
+    use ValidatesContentParts;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -26,7 +29,16 @@ class UpdateContentRequest extends FormRequest
     {
         return [
             'locale' => ['required', new Enum(LocaleEnum::class)],
-            'parts' => 'required|array',
+            ...$this->contentPartRules('parts'),
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    #[\Override]
+    public function messages(): array
+    {
+        return $this->contentPartMessages('parts');
     }
 }

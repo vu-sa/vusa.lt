@@ -76,6 +76,7 @@ final class MorphMap
         'tag' => Models\Tag::class,
         'task' => Models\Task::class,
         'tenant' => Models\Tenant::class,
+        'tenant_homepage_content' => Models\TenantHomepageContent::class,
         'text_box_submission' => Models\TextBoxSubmission::class,
         'type' => Models\Type::class,
         'typeable' => Models\Typeable::class,

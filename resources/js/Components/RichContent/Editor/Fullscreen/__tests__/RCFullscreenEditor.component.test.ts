@@ -26,7 +26,7 @@ const stubs = {
     emits: ['move-up'],
     template: '<button class="rc-block-stub" :data-block-key="blockKey" :data-resolved="JSON.stringify(resolved)" @click="$emit(\'move-up\')" />',
   },
-  RCInsertAffordance: { template: '<div class="insert-affordance" />' },
+  RCInsertAffordance: { name: 'RCInsertAffordance', props: { alwaysVisible: { type: Boolean, default: false } }, template: '<div class="insert-affordance" />' },
   RCSideBySideDialog: { template: '<div />' },
 };
 
@@ -107,6 +107,34 @@ describe('RCFullscreenEditor', () => {
     });
 
     expect(wrapper.findAll('.insert-affordance')).toHaveLength(2);
+  });
+
+  it('makes the trailing affordance visible without hover when the document is empty, where it doubles as "add first block"', () => {
+    const wrapper = mount(RCFullscreenEditor, {
+      props: {
+        contents: [],
+        history: { commit: () => {}, undo: () => {}, redo: () => {}, canUndo: false, canRedo: false },
+      },
+      global: { stubs },
+    });
+
+    const affordances = wrapper.findAllComponents({ name: 'RCInsertAffordance' });
+    expect(affordances).toHaveLength(1);
+    expect(affordances[0]!.props('alwaysVisible')).toBe(true);
+  });
+
+  it('keeps the trailing affordance visible without hover once the document has blocks too', () => {
+    const wrapper = mount(RCFullscreenEditor, {
+      props: {
+        contents: [{ type: 'tiptap', json_content: {}, key: 'first-block' }],
+        history: { commit: () => {}, undo: () => {}, redo: () => {}, canUndo: false, canRedo: false },
+      },
+      global: { stubs },
+    });
+
+    const affordances = wrapper.findAllComponents({ name: 'RCInsertAffordance' });
+    const trailing = affordances[affordances.length - 1]!;
+    expect(trailing.props('alwaysVisible')).toBe(true);
   });
 
   it('scrolls the moved block into view at its new position', async () => {

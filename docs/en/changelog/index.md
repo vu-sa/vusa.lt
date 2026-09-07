@@ -5,21 +5,21 @@ lastUpdated: true
 
 # Platform Updates
 
-Here you'll find all changes and improvements to the mano.vusa.lt platform.
+## v2.1 — Bilingual homepage (2026-09-07) {#v2-1}
+
+- ⭐ **English homepage content** — administrators can now edit Lithuanian and English homepage versions independently; visitors see the Lithuanian content until an English version is ready
+- ✨ **Clearer institution pages** — social cards show the real account tags, working hours can be added, long descriptions can be expanded from a compact preview, and long institution and content-page titles remain easy to read
+- ✨ **Links in TipTap bubble menu and process steps block** — wherever the text formatting bubble menu is available, you can now insert links; the process steps block now supports rich text formatting and links
+- ✨ **Improved news form structure** — the intro text field is now positioned above the rich content block, matching the actual article reading order, and its description clarifies that it serves both as the article's intro lead and for SEO
+- ✨ **Improved calendar synchronization** — the calendar sync dialog is now wider and more spacious, and the sync action button is properly translated into English
 
 ## v2.0 — Public site redesign and visual content editor (2026-09-05) {#v2-0}
 
-> All updates and improvements from this branch (feature/new-style) are consolidated into the v2.0 release.
-
-- ⭐ **New public website design** — modern editorial typography (Atkinson Hyperlegible), warm paper and deep dark palettes, sharp architectural lines, and a unified design token system, keeping the admin surface untouched
-- ⭐ **Full-screen WYSIWYG rich content editor** — copy, buttons, images, cards, statistics, grids, galleries, hero carousels, headers, flow diagrams, accordions, news and podcast blocks are now edited directly on the live public layout with instant preview, replacing the old repeating forms with a clean content card and an "Edit content" action
-- ⭐ **Built-in accessibility menu** — native drawer lets visitors adjust text size, enable high contrast, and underline links without third-party scripts (UserWay)
-- ✨ **Refreshed navigation and footer** — two-tier navigation with full-bleed mega menus (photo cards, link descriptions, category headings), plus a redesigned footer with up to 4 admin-managed navigation columns
+- ⭐ **New public website design** 
 - ✨ **Redesigned events and calendar pages** — full-bleed hero with date plate, facts sidebar, interactive map, instant Typesense search, upcoming/past tabs, and year/category filters
 - ✨ **Contacts, unit, category, registration, and study programme pages migrated** — structured contact summaries, duty filter tabs, link-list categories, and a study programme catalog with faculty filter
 - ✨ **Linked event in the documents list** — a document produced for a meeting with a published calendar announcement now has a button that opens that meeting's event page
 - ✨ **"Mano VU SA" is now a clear navigation button, and site notices are consistent** — the account link matches the site controls, while the cookie reminder and staging warning match the new style
-- 🔧 **Assorted fixes** — compact hero carousel alignment, phone top-bar theme switching, tenant map interaction, hero section jump-on-edit, member registration notifications, and staging environment isolation from production email and SharePoint
 - ✨ **The turtle now marks both loading and empty pages** — the corner spinner is replaced by the organisation's mascot taking a slow walk, and lists with nothing to show yet rest the same turtle in the middle of the empty space
 
 ## v1.38 — English agendas and breaks (2026-09-02) {#v1-38}

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Concerns;
 
 use App\Enums\ContentPartEnum;
 use App\Rules\SoftDeleteRules;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 /**
@@ -26,9 +27,9 @@ trait ValidatesContentParts
     /**
      * @return array<string, mixed>
      */
-    protected function contentPartRules(): array
+    protected function contentPartRules(string $prefix = 'content.parts'): array
     {
-        return [
+        $rules = [
             'content.parts' => 'required|array',
             'content.parts.*.id' => 'nullable|integer',
             'content.parts.*.type' => ['required', 'string', Rule::in(ContentPartEnum::toArray())],
@@ -117,5 +118,46 @@ trait ValidatesContentParts
             'content.parts.*.json_content.*.endTime' => ['nullable', 'string', 'max:8'],
             'content.parts.*.json_content.*.title' => ['nullable', 'string', 'max:255'],
         ];
+
+        if ($prefix === 'content.parts') {
+            return $rules;
+        }
+
+        // UpdateContentRequest (the homepage editor) validates a bare `parts` array
+        // rather than `content.parts` — rewrite both the field-path keys and any
+        // cross-field reference baked into a rule string (dateTo's `after_or_equal`).
+        return collect($rules)->mapWithKeys(function ($rule, string $key) use ($prefix) {
+            $newKey = Str::replaceFirst('content.parts', $prefix, $key);
+            $newRule = is_string($rule) ? str_replace('content.parts', $prefix, $rule) : $rule;
+
+            return [$newKey => $newRule];
+        })->all();
+    }
+
+    /**
+     * User-facing messages for the structural rules above (id/type/json_content —
+     * not the permissive per-type option union, which exists to reject obviously-wrong
+     * input rather than to be explained to an author). Without these, a `present` or
+     * `Rule::in()` failure falls back to Laravel's generic "field must be present" /
+     * "field is invalid", naming the raw `parts.0.json_content` path.
+     *
+     * @return array<string, string>
+     */
+    protected function contentPartMessages(string $prefix = 'content.parts'): array
+    {
+        $messages = [
+            'content.parts.required' => trans('forms.validation.content.parts_required'),
+            'content.parts.*.type.required' => trans('forms.validation.content.part_type_required'),
+            'content.parts.*.type.in' => trans('forms.validation.content.part_type_exists'),
+            'content.parts.*.json_content.present' => trans('forms.validation.content.part_content_required'),
+        ];
+
+        if ($prefix === 'content.parts') {
+            return $messages;
+        }
+
+        return collect($messages)->mapWithKeys(fn (string $message, string $key) => [
+            Str::replaceFirst('content.parts', $prefix, $key) => $message,
+        ])->all();
     }
 }
