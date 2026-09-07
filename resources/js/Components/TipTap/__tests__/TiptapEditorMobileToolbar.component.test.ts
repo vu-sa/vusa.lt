@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
 import TiptapEditor from '../TiptapEditor.vue';
+import TiptapLinkButton from '../TiptapLinkButton.vue';
 
 /**
  * The full toolbar is too wide for a phone screen above the keyboard, so most
@@ -69,5 +70,39 @@ describe('TiptapEditor mobile toolbar collapse', () => {
     expect(wrapper.find('[data-testid="tiptap-format-bold"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="tiptap-format-italic"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="tiptap-format-underline"]').exists()).toBe(true);
+  });
+});
+
+describe('TiptapEditor bubble menu link support', () => {
+  it('renders link button in bubble menu for marks, compact, and full presets', async () => {
+    for (const preset of ['marks', 'compact', 'full'] as const) {
+      const wrapper = mount(TiptapEditor, {
+        props: { modelValue: null, preset, toolbar: 'bubble' },
+      });
+      await nextTick();
+
+      const linkButton = wrapper.findComponent(TiptapLinkButton);
+      expect(linkButton.exists(), `link button should exist for preset ${preset}`).toBe(true);
+    }
+  });
+
+  it('does not render bubble menu or link button for minimal preset', async () => {
+    const wrapper = mount(TiptapEditor, {
+      props: { modelValue: null, preset: 'minimal', toolbar: 'bubble' },
+    });
+    await nextTick();
+
+    const linkButton = wrapper.findComponent(TiptapLinkButton);
+    expect(linkButton.exists()).toBe(false);
+  });
+
+  it('does not render link button when disableLinks is true', async () => {
+    const wrapper = mount(TiptapEditor, {
+      props: { modelValue: null, preset: 'marks', disableLinks: true, toolbar: 'bubble' },
+    });
+    await nextTick();
+
+    const linkButton = wrapper.findComponent(TiptapLinkButton);
+    expect(linkButton.exists()).toBe(false);
   });
 });

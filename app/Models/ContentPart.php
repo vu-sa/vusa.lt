@@ -220,6 +220,19 @@ class ContentPart extends Model
             $content['title'] = $sanitizer->sanitizeRichContent($content['title']);
         }
 
+        if ($this->type === 'process-steps') {
+            foreach ($content as $index => $step) {
+                if (is_array($step)) {
+                    if (isset($step['title']) && is_string($step['title'])) {
+                        $content[$index]['title'] = $sanitizer->sanitizeRichContent($step['title']);
+                    }
+                    if (isset($step['text']) && is_string($step['text'])) {
+                        $content[$index]['text'] = $sanitizer->sanitizeRichContent($step['text']);
+                    }
+                }
+            }
+        }
+
         return $content;
     }
 
@@ -409,6 +422,14 @@ class ContentPart extends Model
                 $content = ($this->options['title'] ?? '').' ';
                 foreach ($this->json_content ?? [] as $row) {
                     $content .= ($row['title'] ?? '').' ';
+                }
+                break;
+            case 'process-steps':
+                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' ';
+                foreach ($this->json_content ?? [] as $step) {
+                    $title = is_array($step['title'] ?? null) ? $this->extractTextFromTiptap($step['title']) : strip_tags($step['title'] ?? '');
+                    $text = is_array($step['text'] ?? null) ? $this->extractTextFromTiptap($step['text']) : strip_tags($step['text'] ?? '');
+                    $content .= $title.' '.$text.' ';
                 }
                 break;
         }

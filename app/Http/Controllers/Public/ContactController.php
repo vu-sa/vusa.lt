@@ -241,7 +241,11 @@ class ContactController extends PublicController
 
                 foreach ($typesWithDuties as $t) {
                     $dutyTypeTabs[] = [
-                        'label' => $t->getTranslation('title', app()->getLocale()) ?: ucfirst($t->slug),
+                        'label' => match ($t->slug) {
+                            'koordinatoriai' => __('Koordinatoriai'),
+                            'kuratoriai', 'mentors' => __('Kuratoriai'),
+                            default => $t->getTranslation('title', app()->getLocale()) ?: ucfirst($t->slug),
+                        },
                         'slug' => $t->slug,
                         'href' => route('contacts.dutyType', [
                             'subdomain' => $this->subdomain,
