@@ -138,6 +138,9 @@ class HtmlSanitizerService
             ->allowElement('th', ['colspan', 'rowspan', 'colwidth', 'align', 'class'])
             ->allowElement('td', ['colspan', 'rowspan', 'colwidth', 'align', 'class'])
             ->allowLinkSchemes(['https', 'http', 'mailto'])
+            // Uploaded files (e.g. `/uploads/files/...`) are linked by app-relative
+            // paths — without this, Symfony strips the `href` and the link vanishes.
+            ->allowRelativeLinks()
             // `data:` is required — AccessibleImage is configured with
             // `allowBase64: true`, and a data: URI in an <img src> is not a
             // script-execution context.
