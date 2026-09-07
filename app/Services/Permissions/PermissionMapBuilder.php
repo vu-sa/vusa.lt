@@ -93,10 +93,10 @@ class PermissionMapBuilder
      */
     public function forceDeleteMap(User $user): array
     {
-        $authorizer = app(ModelAuthorizer::class)->forUser($user);
+        $authorizer = app(ModelAuthorizer::class);
 
         return collect($this->manageableLabels())
-            ->mapWithKeys(function (string $model) use ($authorizer) {
+            ->mapWithKeys(function (string $model) use ($authorizer, $user) {
                 $resource = Str::plural($model);
 
                 if (! ModelEnum::isSoftDeletable($resource)) {
@@ -106,7 +106,7 @@ class PermissionMapBuilder
                 $allowed = collect([
                     PermissionScopeEnum::PADALINYS->label(),
                     PermissionScopeEnum::ALL->label(),
-                ])->contains(fn (string $scope) => $authorizer->check($resource.'.'.CRUDEnum::FORCE_DELETE->label().'.'.$scope));
+                ])->contains(fn (string $scope) => $authorizer->allows($user, $resource.'.'.CRUDEnum::FORCE_DELETE->label().'.'.$scope));
 
                 return [$model => $allowed];
             })

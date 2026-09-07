@@ -11,6 +11,7 @@ lastUpdated: true
 - ✨ **Aiškesni institucijų puslapiai** — socialinių tinklų kortelėse rodomos tikros paskyrų žymos, galima nurodyti darbo laiką, ilgi aprašymai suskleidžiami, o ilgos institucijų ir turinio puslapių antraštės išlieka lengvai skaitomos
 - ✨ **Nuorodos Tiptap burbuliniame meniu ir žingsnių bloke** — visur, kur veikia teksto formatavimo burbulinis meniu, dabar galima įterpti nuorodą; procesų žingsnių („process-steps“) bloke atsirado raiškiojo teksto ir nuorodų palaikymas
 - ✨ **Aiškiau išdėstyta naujienos forma** — įvadinio teksto laukelis perkeltas virš turinio bloko, atitinkant realią naujienos struktūrą, bei patikslinta jo paskirtis (naudojamas ne tik paieškos sistemose, bet ir pačios naujienos įvade)
+- 🔧 **Tikslesnės padalinių teisės** — anksčiau viena visos organizacijos mastu galiojanti teisė (pvz. žymų ar kategorijų tvarkymas) galėjo tame pačiame puslapio užklausos cikle netyčia išplėsti ir kitas, tik savo padaliniui skirtas teises į visus padalinius; dabar kiekviena teisė vertinama atskirai, o teisės neturintis naudotojas nebegauna jokių padalinių
 - ✨ **Patogesnis kalendoriaus sinchronizavimas** — kalendoriaus sinchronizavimo langas tapo erdvesnis, o sinchronizavimo mygtukas teisingai išverstas į anglų kalbą
 
 ## v2.0 — Naujas svetainės dizainas ir vizualus turinio redaktorius (2026-09-05) {#v2-0}

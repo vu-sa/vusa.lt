@@ -81,7 +81,6 @@ class TypesenseScopedKeyService
         $expiresAt = time() + self::KEY_EXPIRY;
         $prefix = config('scout.prefix', '');
 
-        $this->authorizer->forUser($user);
         $isSuperAdmin = $user->isSuperAdmin();
 
         $collections = [];
@@ -125,7 +124,7 @@ class TypesenseScopedKeyService
                     'scope' => 'public',
                 ];
             } elseif ($skipTenantFilter) {
-                if (! $this->authorizer->check($permission)) {
+                if (! $this->authorizer->allows($user, $permission)) {
                     continue;
                 }
 
@@ -143,12 +142,12 @@ class TypesenseScopedKeyService
                     'scope' => 'public',
                 ];
             } elseif ($permission) {
-                if (! $this->authorizer->check($permission)) {
+                if (! $this->authorizer->allows($user, $permission)) {
                     continue;
                 }
 
                 // User has .padalinys permission - get their accessible tenants for this collection
-                $tenantIds = $this->getTenantIdsForPermission($permission);
+                $tenantIds = $this->getTenantIdsForPermission($user, $permission);
 
                 // Include institution-based access only when .own permission is defined for this collection
                 $institutionIds = collect();
@@ -184,7 +183,7 @@ class TypesenseScopedKeyService
                     'has_access' => true,
                     'scope' => 'combined',
                 ];
-            } elseif ($ownPermission && $this->authorizer->check($ownPermission)) {
+            } elseif ($ownPermission && $this->authorizer->allows($user, $ownPermission)) {
                 // User has .own permission - filter by their accessible institutions
                 // Includes: direct duties, relationships, and coordinator access
                 $isInstitutionsCollection = $collection === 'institutions';
@@ -238,15 +237,13 @@ class TypesenseScopedKeyService
      *
      * @return Collection<int, int>
      */
-    protected function getTenantIdsForPermission(string $permission): Collection
+    protected function getTenantIdsForPermission(User $user, string $permission): Collection
     {
-        if ($this->authorizer->check($permission)) {
-            $tenants = $this->authorizer->getTenants($permission);
-
-            return $tenants->pluck('id')->map(fn ($id) => (int) $id)->unique()->values();
-        }
-
-        return collect();
+        return $this->authorizer->tenants($user, $permission)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
     }
 
     /**
@@ -267,7 +264,7 @@ class TypesenseScopedKeyService
      */
     protected function getInstitutionIdsForOwnPermission(string $ownPermission, User $user, bool $isInstitutionsCollection = false): Collection
     {
-        if ($this->authorizer->check($ownPermission)) {
+        if ($this->authorizer->allows($user, $ownPermission)) {
             // Get accessible institutions (direct duties + related institutions)
             return $this->institutionAccessService->getAccessibleInstitutionIds(
                 $user,

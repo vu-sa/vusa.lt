@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Authorization runs per path in the controller, since each file lives in its own directory
- * and is checked with `can('viewDirectory', ...)` as the loop walks the selection.
+ * and is checked with `can('deleteInDirectory', ...)` as the loop walks the selection.
  */
 class BulkDeleteFilesRequest extends FormRequest
 {

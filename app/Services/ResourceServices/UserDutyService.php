@@ -117,7 +117,7 @@ class UserDutyService
     {
         $user = Auth::user();
 
-        if (! $authorizer->forUser($user)->checkAllRoleables($permission)) {
+        if (! $authorizer->allows($user, $permission)) {
             return Tenant::orderBy('shortname')
                 ->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')
                 ->whereIn('id', User::find(Auth::id())->tenants->pluck('id'))
@@ -150,10 +150,10 @@ class UserDutyService
             return Tenant::all();
         }
 
-        if (! $authorizer->forUser($currentUser)->check($permission)) {
+        if (! $authorizer->allows($currentUser, $permission)) {
             return new EloquentCollection;
         }
 
-        return $authorizer->getTenants($permission);
+        return $authorizer->tenants($currentUser, $permission);
     }
 }

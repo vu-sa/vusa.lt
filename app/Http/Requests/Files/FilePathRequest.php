@@ -10,7 +10,9 @@ use Illuminate\Foundation\Http\FormRequest;
  *
  * Authorization is deliberately left to the controller: it depends on the *normalized* path
  * (`FilesController::validateAndNormalizePath()`), which only exists after validation has run,
- * and is checked there with `can('viewDirectory', [File::class, $directory])`.
+ * and is checked there with the ability matching the action — `viewDirectory` for reads,
+ * `createInDirectory` for adding a file or folder, `updateInDirectory` for rewriting a file,
+ * `deleteInDirectory` for deleting one, and `deleteDirectory` for removing the folder itself.
  */
 class FilePathRequest extends FormRequest
 {

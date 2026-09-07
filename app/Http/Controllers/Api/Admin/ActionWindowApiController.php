@@ -62,11 +62,12 @@ class ActionWindowApiController extends ApiController
      */
     private function institutionSearchScope(Authorizer $authorizer): array
     {
+        $scope = $authorizer->scope(request()->user(), 'meetings.create.padalinys');
         $tenants = GetTenantsForUpserts::execute('meetings.create.padalinys', $authorizer);
 
         return [
-            'enabled' => $authorizer->isAllScope || $tenants->isNotEmpty(),
-            'tenant_ids' => $authorizer->isAllScope
+            'enabled' => $scope->isAllScope || $tenants->isNotEmpty(),
+            'tenant_ids' => $scope->isAllScope
                 ? []
                 : $tenants->pluck('id')->map(fn ($id): int => (int) $id)->values()->all(),
         ];

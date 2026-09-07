@@ -33,15 +33,14 @@ class DutyPolicy extends ModelPolicy
 
         // Cross-tenant: must hold duties.update.padalinys for a tenant that
         // appears in the duty's assignableTenants list.
-        $authorizer = app(ModelAuthorizer::class)->forUser($user);
+        $adminTenantIds = app(ModelAuthorizer::class)
+            ->tenants($user, 'duties.update.padalinys')->pluck('id');
 
-        if (! $authorizer->check('duties.update.padalinys')) {
+        if ($adminTenantIds->isEmpty()) {
             return false;
         }
 
         $duty->loadMissing('assignableTenants');
-
-        $adminTenantIds = $authorizer->getTenants('duties.update.padalinys')->pluck('id');
         $assignableTenantIds = $duty->assignableTenants->pluck('id');
 
         $sharedTenantIds = $adminTenantIds->intersect($assignableTenantIds);

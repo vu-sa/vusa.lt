@@ -22,7 +22,7 @@ class UserAttributionApiController extends ApiController
     public function index(Request $request, User $user, ModelAuthorizer $authorizer): JsonResponse
     {
         abort_unless(
-            $authorizer->forUser($this->requireAuth($request))->checkAllRoleables('pages.update.padalinys'),
+            $authorizer->allows($this->requireAuth($request), 'pages.update.padalinys'),
             403,
         );
 

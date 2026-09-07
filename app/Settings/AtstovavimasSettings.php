@@ -175,17 +175,17 @@ class AtstovavimasSettings extends Settings
             return Tenant::query()->representational()->pluck('id');
         }
 
-        $authorizer = app(ModelAuthorizer::class)->forUser($user);
+        $authorizer = app(ModelAuthorizer::class);
 
         // Check for global read permission
-        if ($authorizer->check('institutions.read.*')) {
+        if ($authorizer->allows($user, 'institutions.read.*')) {
             return Tenant::query()->representational()->pluck('id');
         }
 
         // Check for padalinys-level permission
-        if ($authorizer->check('institutions.read.padalinys')) {
-            $tenants = $authorizer->getTenants('institutions.read.padalinys');
+        $tenants = $authorizer->tenants($user, 'institutions.read.padalinys');
 
+        if ($tenants->isNotEmpty()) {
             return $tenants
                 ->whereIn('type', TenantType::representational())
                 ->pluck('id')

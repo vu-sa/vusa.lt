@@ -213,14 +213,15 @@ class TanstackTableService
         ModelAuthorizer $authorizer
     ): Builder {
         $user = User::find(Auth::id());
+        $scope = $authorizer->scope($user, $permission);
 
-        if ($authorizer->isAllScope || $user->isSuperAdmin()) {
+        if ($scope->isAllScope || $user->isSuperAdmin()) {
             return $query;
         }
 
-        return $query->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer): void {
+        return $query->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $scope): void {
             $columnName = $tenantRelation === 'tenants' ? 'tenants.id' : 'id';
-            $q->whereIn($columnName, $authorizer->getTenants($permission)->pluck('id'));
+            $q->whereIn($columnName, $scope->tenantIds());
         });
     }
 
@@ -304,18 +305,21 @@ class TanstackTableService
         ModelAuthorizer $authorizer,
         ?\Closure $orInclude = null
     ): Builder {
+        $user = auth()->user();
+        $scope = $authorizer->scope($user, $permission);
+
         // Only apply if not all scope and not super admin
-        if ($authorizer->isAllScope || auth()->user()?->isSuperAdmin()) {
+        if ($scope->isAllScope || $user?->isSuperAdmin()) {
             return $query;
         }
 
         // This runs *after* search, filters and the soft-delete toggle, so the tenant
         // constraint and the escape hatch have to be ORed inside a single nested
         // group. A top-level orWhere would let escape-hatch rows past every filter.
-        return $query->where(function (Builder $outer) use ($tenantRelation, $permission, $authorizer, $orInclude): void {
-            $outer->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $permission, $authorizer): void {
+        return $query->where(function (Builder $outer) use ($tenantRelation, $scope, $orInclude): void {
+            $outer->whereHas($tenantRelation, function (Builder $q) use ($tenantRelation, $scope): void {
                 $columnName = $tenantRelation === 'tenants' ? 'tenants.id' : 'id';
-                $q->whereIn($columnName, $authorizer->getTenants($permission)->pluck('id'));
+                $q->whereIn($columnName, $scope->tenantIds());
             });
 
             if ($orInclude) {

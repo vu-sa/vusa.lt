@@ -21,45 +21,73 @@ class FilePolicy extends ModelPolicy
      */
     public function viewDirectory(User $user, $directory): bool
     {
-        $directoryPath = $directory; // Assuming 'path' is an attribute of the Model
-        $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
+        $dir = $directory instanceof Model ? $directory->getAttribute('path') : $directory;
 
-        $padalinysDirectory = $this->getDirectoryPadalinysAlias($directoryPath);
-
-        if ($check) {
-            if ($this->authorizer->isAllScope) {
-                return true;
-            }
-
-            if (in_array($padalinysDirectory, $this->authorizer->getTenants()->pluck('alias')->toArray())) {
-                return true;
-            }
-        }
-
-        return false;
+        return is_string($dir) && $this->allowsDirectory($user, $dir, $this->pluralModelName.'.read.padalinys');
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Determine whether the user can delete the directory.
      */
     public function deleteDirectory(User $user, $path): bool
     {
-        $filePath = $path->getAttribute('path'); // Assuming 'path' is an attribute of the Model
-        $check = $this->authorizer->forUser($user)->check($this->pluralModelName.'.read.padalinys');
+        $dir = $path instanceof Model ? $path->getAttribute('path') : $path;
 
-        $padalinysDirectory = $this->getDirectoryPadalinysAlias($filePath);
+        return is_string($dir) && $this->allowsDirectory($user, $dir, $this->pluralModelName.'.delete.padalinys');
+    }
 
-        if ($check) {
-            if ($this->authorizer->isAllScope) {
-                return true;
-            }
+    /**
+     * Determine whether the user can add files or folders inside a directory.
+     *
+     * `StoreFilesRequest::authorize()` only asks whether the actor may create files at all;
+     * this is what binds the destination to a tenant they actually administer.
+     */
+    public function createInDirectory(User $user, $directory): bool
+    {
+        $dir = $directory instanceof Model ? $directory->getAttribute('path') : $directory;
 
-            if (in_array($padalinysDirectory, $this->authorizer->getTenants()->pluck('alias')->toArray())) {
-                return true;
-            }
+        return is_string($dir) && $this->allowsDirectory($user, $dir, $this->pluralModelName.'.create.padalinys');
+    }
+
+    /**
+     * Determine whether the user can modify files inside a directory.
+     *
+     * Rewriting a file in place is an update, not a read — image compression overwrites
+     * the author's original.
+     */
+    public function updateInDirectory(User $user, $directory): bool
+    {
+        $dir = $directory instanceof Model ? $directory->getAttribute('path') : $directory;
+
+        return is_string($dir) && $this->allowsDirectory($user, $dir, $this->pluralModelName.'.update.padalinys');
+    }
+
+    /**
+     * Determine whether the user can delete files inside a directory.
+     *
+     * Same permission as deleting the directory itself, but named for the call site: the
+     * argument is the directory a file lives in, not the thing being deleted.
+     */
+    public function deleteInDirectory(User $user, $directory): bool
+    {
+        $dir = $directory instanceof Model ? $directory->getAttribute('path') : $directory;
+
+        return is_string($dir) && $this->allowsDirectory($user, $dir, $this->pluralModelName.'.delete.padalinys');
+    }
+
+    /**
+     * Whether the actor's scope reaches the tenant folder this path sits in.
+     */
+    protected function allowsDirectory(User $user, string $directory, string $permission): bool
+    {
+        $scope = $this->authorizer->scope($user, $permission);
+
+        if (! $scope->granted) {
+            return false;
         }
 
-        return false;
+        return $scope->isAllScope
+            || $scope->tenants->contains('alias', $this->getDirectoryPadalinysAlias($directory));
     }
 
     /**

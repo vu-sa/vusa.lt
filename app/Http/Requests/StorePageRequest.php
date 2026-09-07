@@ -38,10 +38,9 @@ class StorePageRequest extends FormRequest
             return Tenant::main()?->id;
         }
 
-        $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
-        $authorizer->check('pages.create.padalinys');
-
-        return $authorizer->getPermissableDuties()->first()?->getAttribute('tenants')->first()?->id;
+        return app(ModelAuthorizer::class)
+            ->duties($this->user(), 'pages.create.padalinys')
+            ->first()?->getAttribute('tenants')->first()?->id;
     }
 
     /**

@@ -36,7 +36,7 @@ class TaskPolicy extends ModelPolicy
     #[\Override]
     public function viewAny(User $user): bool
     {
-        return $this->authorizer->forUser($user)->check('tasks.read.padalinys');
+        return $this->authorizer->allows($user, 'tasks.read.padalinys');
     }
 
     /**
@@ -54,7 +54,7 @@ class TaskPolicy extends ModelPolicy
         }
 
         // Check if user has tasks.read.padalinys permission
-        if (! $this->authorizer->forUser($user)->check('tasks.read.padalinys')) {
+        if (! $this->authorizer->allows($user, 'tasks.read.padalinys')) {
             return false;
         }
 
@@ -101,13 +101,13 @@ class TaskPolicy extends ModelPolicy
         $permission = $resourceName.'.read.padalinys';
 
         // Check if user has the padalinys permission for the taskable
-        if (! $this->authorizer->forUser($user)->check($permission)) {
+        if (! $this->authorizer->allows($user, $permission)) {
             return false;
         }
 
         // Get user's permissible tenants for this permission
         $permissibleTenants = $user->tenants()
-            ->whereIn('duties.id', $this->authorizer->getPermissableDuties()->pluck('id'))
+            ->whereIn('duties.id', $this->authorizer->duties($user, $permission)->pluck('id'))
             ->get();
 
         // Get taskable's tenants

@@ -217,8 +217,8 @@ test('permission service works correctly', function (): void {
         ->and($permissionService->checkScope('news', 'read', 'padalinys', $this->tenantAdmin))->toBeTrue()
         ->and($permissionService->checkScope('news', 'read', 'all', $this->tenantAdmin))->toBeFalse();
 
-    $superAdminTenants = $permissionService->getTenants($this->superAdmin);
-    $tenantAdminTenants = $permissionService->getTenants($this->tenantAdmin);
+    $superAdminTenants = $permissionService->getTenants('news.read.padalinys', $this->superAdmin);
+    $tenantAdminTenants = $permissionService->getTenants('news.read.padalinys', $this->tenantAdmin);
 
     expect($superAdminTenants->count())->toBeGreaterThan(0)
         ->and($tenantAdminTenants->count())->toEqual(1)

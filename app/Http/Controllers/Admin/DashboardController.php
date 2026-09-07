@@ -55,9 +55,6 @@ class DashboardController extends AdminController
         $user = User::query()->find(Auth::id()) ?? abort(404);
         $userTenantId = $user->current_duties->first()?->institution?->tenant_id;
 
-        // TODO: for some reasoning, the chaining doesn't work
-        $this->authorizer = $this->authorizer->forUser($user);
-
         // Get notification count
         $unreadNotificationsCount = $user->unreadNotifications()->count();
 
@@ -379,24 +376,13 @@ class DashboardController extends AdminController
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
 
-        $this->authorizer = $this->authorizer->forUser($user);
-
         /**
-         * Resolve the tenants whose resources this user manages once.
-         * ReservationResource::canBeApprovedBy() applies the same rule per pivot, which would
-         * re-resolve the authorizer — and query the reservation's users — for every single row.
-         * getTenants() is relative to the last checked permission, hence the explicit check().
+         * Resolved once: ReservationResource::canBeApprovedBy() applies the same rule per pivot,
+         * which would re-resolve the authorizer — and query the reservation's users — for every row.
          */
-        $managesResources = $this->authorizer->check(config('permission.resource_managership_indicating_permission'));
-
-        /**
-         * The check result must gate getTenants(): with no permissable duties it falls back to
-         * *all* of the user's duties, which would hand resource-management rights to someone who
-         * merely holds a duty in the tenant. canBeApprovedBy() gates it the same way.
-         */
-        $managedTenantIds = $managesResources
-            ? $this->authorizer->getTenants()->pluck('id')
-            : collect();
+        $managedTenantIds = $this->authorizer
+            ->tenants($user, config('permission.resource_managership_indicating_permission'))
+            ->pluck('id');
 
         $eagerLoads = [
             'resources.tenant:id,shortname',

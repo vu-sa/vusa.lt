@@ -48,20 +48,16 @@ beforeEach(function (): void {
 
 describe('request-level memoization', function (): void {
     test('repeated permission check returns cached result', function (): void {
-        $this->authorizer->forUser($this->superAdmin);
-
-        $result1 = $this->authorizer->checkAllRoleables('news.read.padalinys');
-        $result2 = $this->authorizer->checkAllRoleables('news.read.padalinys');
+        $result1 = $this->authorizer->allows($this->superAdmin, 'news.read.padalinys');
+        $result2 = $this->authorizer->allows($this->superAdmin, 'news.read.padalinys');
 
         expect($result1)->toBe($result2)
             ->toBeTrue();
     });
 
     test('different permissions are cached independently', function (): void {
-        $this->authorizer->forUser($this->normalUser);
-
-        $readResult = $this->authorizer->checkAllRoleables('news.read.padalinys');
-        $updateResult = $this->authorizer->checkAllRoleables('news.update.padalinys');
+        $readResult = $this->authorizer->allows($this->normalUser, 'news.read.padalinys');
+        $updateResult = $this->authorizer->allows($this->normalUser, 'news.update.padalinys');
 
         // Both should be false for normal user without role
         expect($readResult)->toBeFalse();
@@ -69,38 +65,21 @@ describe('request-level memoization', function (): void {
     });
 
     test('super admin returns true for all permission checks', function (): void {
-        $this->authorizer->forUser($this->superAdmin);
-
-        expect($this->authorizer->checkAllRoleables('news.read.padalinys'))->toBeTrue()
-            ->and($this->authorizer->checkAllRoleables('news.create.padalinys'))->toBeTrue()
-            ->and($this->authorizer->checkAllRoleables('news.update.padalinys'))->toBeTrue()
-            ->and($this->authorizer->checkAllRoleables('nonexistent.permission.scope'))->toBeTrue();
+        expect($this->authorizer->allows($this->superAdmin, 'news.read.padalinys'))->toBeTrue()
+            ->and($this->authorizer->allows($this->superAdmin, 'news.create.padalinys'))->toBeTrue()
+            ->and($this->authorizer->allows($this->superAdmin, 'news.update.padalinys'))->toBeTrue()
+            ->and($this->authorizer->allows($this->superAdmin, 'nonexistent.permission.scope'))->toBeTrue();
     });
 
-    test('switching users clears the memoization cache', function (): void {
-        $this->authorizer->forUser($this->superAdmin);
-
+    test('one users result is never reused for another', function (): void {
         // Super admin has all permissions
-        $superResult = $this->authorizer->checkAllRoleables('news.read.padalinys');
-        expect($superResult)->toBeTrue();
+        expect($this->authorizer->allows($this->superAdmin, 'news.read.padalinys'))->toBeTrue();
 
-        // Switch to normal user - should not reuse super admin's cached result
-        $this->authorizer->forUser($this->normalUser);
+        // The normal user must not inherit that cached result
+        expect($this->authorizer->allows($this->normalUser, 'news.read.padalinys'))->toBeFalse();
 
-        $normalResult = $this->authorizer->checkAllRoleables('news.read.padalinys');
-        expect($normalResult)->toBeFalse();
-    });
-
-    test('same user does not clear cache', function (): void {
-        $this->authorizer->forUser($this->superAdmin);
-        $this->authorizer->checkAllRoleables('news.read.padalinys');
-
-        // Calling forUser with same user should not clear cache
-        $this->authorizer->forUser($this->superAdmin);
-
-        // This should still return the memoized result
-        $result = $this->authorizer->checkAllRoleables('news.read.padalinys');
-        expect($result)->toBeTrue();
+        // ...and resolving the normal user must not have evicted the super admin's
+        expect($this->authorizer->allows($this->superAdmin, 'news.read.padalinys'))->toBeTrue();
     });
 
     test('user with duty role gets correct memoized results', function (): void {
@@ -108,29 +87,29 @@ describe('request-level memoization', function (): void {
         $duty = $userWithRole->duties()->first();
         $duty->assignRole($this->role);
 
-        $this->authorizer->forUser($userWithRole);
-
         // Should have read permission via duty role
-        $readResult = $this->authorizer->checkAllRoleables('news.read.padalinys');
+        $readResult = $this->authorizer->allows($userWithRole, 'news.read.padalinys');
         expect($readResult)->toBeTrue();
 
         // Repeated check should use cache
-        $readResult2 = $this->authorizer->checkAllRoleables('news.read.padalinys');
+        $readResult2 = $this->authorizer->allows($userWithRole, 'news.read.padalinys');
         expect($readResult2)->toBeTrue();
 
         // Check a permission the role doesn't have
-        $updateResult = $this->authorizer->checkAllRoleables('news.update.padalinys');
+        $updateResult = $this->authorizer->allows($userWithRole, 'news.update.padalinys');
         expect($updateResult)->toBeFalse();
     });
 });
 
-describe('check alias method', function (): void {
-    test('check method delegates to checkAllRoleables with memoization', function (): void {
-        $this->authorizer->forUser($this->superAdmin);
+describe('derived accessors', function (): void {
+    test('allows, tenants and duties all read from the same memoized resolution', function (): void {
+        $userWithRole = makeUser($this->tenant);
+        $userWithRole->duties()->first()->assignRole($this->role);
 
-        $result1 = $this->authorizer->check('news.read.padalinys');
-        $result2 = $this->authorizer->check('news.read.padalinys');
+        $scope = $this->authorizer->scope($userWithRole, 'news.read.padalinys');
 
-        expect($result1)->toBe($result2)->toBeTrue();
+        expect($this->authorizer->allows($userWithRole, 'news.read.padalinys'))->toBe($scope->granted)
+            ->and($this->authorizer->tenants($userWithRole, 'news.read.padalinys'))->toBe($scope->tenants)
+            ->and($this->authorizer->duties($userWithRole, 'news.read.padalinys'))->toBe($scope->duties);
     });
 });

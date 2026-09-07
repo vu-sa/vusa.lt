@@ -163,15 +163,14 @@ class TaskController extends AdminController
         $this->handleAuthorization('viewAny', Task::class);
 
         $user = Auth::user();
-        $this->authorizer->forUser($user);
 
         // Get user's accessible tenants for tasks
-        $taskPermissibleTenants = $this->authorizer->getTenants('tasks.read.padalinys');
+        $taskPermissibleTenants = $this->authorizer->tenants($user, 'tasks.read.padalinys');
 
         // Get user's accessible tenants for meetings, reservations, and institutions
-        $meetingPermissibleTenants = $this->authorizer->getTenants('meetings.read.padalinys');
-        $reservationPermissibleTenants = $this->authorizer->getTenants('reservations.read.padalinys');
-        $institutionPermissibleTenants = $this->authorizer->getTenants('institutions.read.padalinys');
+        $meetingPermissibleTenants = $this->authorizer->tenants($user, 'meetings.read.padalinys');
+        $reservationPermissibleTenants = $this->authorizer->tenants($user, 'reservations.read.padalinys');
+        $institutionPermissibleTenants = $this->authorizer->tenants($user, 'institutions.read.padalinys');
 
         // Build base query with compound authorization
         $baseQuery = Task::with(['users:id,name,email,profile_photo_path', 'taskable', 'tenants'])

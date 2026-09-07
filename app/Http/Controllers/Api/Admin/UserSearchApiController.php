@@ -54,7 +54,7 @@ class UserSearchApiController extends ApiController
 
         $user = $this->requireAuth($request);
 
-        $this->authorizer->forUser($user)->checkAllRoleables($permission);
+        $scope = $this->authorizer->scope($user, $permission);
 
         $query = User::query()
             ->select('id', 'name', 'email', 'profile_photo_path')
@@ -69,11 +69,9 @@ class UserSearchApiController extends ApiController
             ->orderBy('name')
             ->limit(20);
 
-        $actorTenantIds = $this->authorizer->isAllScope
-            ? collect()
-            : $this->authorizer->getTenants($permission)->pluck('id');
+        $actorTenantIds = $scope->isAllScope ? collect() : $scope->tenantIds();
 
-        if (! $this->authorizer->isAllScope && ! $searchAllTenants) {
+        if (! $scope->isAllScope && ! $searchAllTenants) {
             // Nested group: the tenant constraint and the unclaimed escape hatch must
             // be ORed together *inside* the search constraint, never beside it.
             $query->where(function (Builder $outer) use ($actorTenantIds): void {
@@ -87,7 +85,7 @@ class UserSearchApiController extends ApiController
             });
         }
 
-        $seesEveryEmail = $this->authorizer->isAllScope;
+        $seesEveryEmail = $scope->isAllScope;
 
         $users = $query->get()->map(function (User $found) use ($actorTenantIds, $seesEveryEmail) {
             $tenants = $found->tenants;

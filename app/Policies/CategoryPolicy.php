@@ -30,30 +30,30 @@ class CategoryPolicy extends ModelPolicy
     #[\Override]
     public function viewAny(User $user): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('categories.read.*');
+        return $this->authorizer->allows($user, 'categories.read.*');
     }
 
     #[\Override]
     public function create(User $user): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('categories.create.*');
+        return $this->authorizer->allows($user, 'categories.create.*');
     }
 
     #[\Override]
     public function view(User $user, Model $category): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('categories.read.*');
+        return $this->authorizer->allows($user, 'categories.read.*');
     }
 
     #[\Override]
     public function update(User $user, Model $category): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('categories.update.*');
+        return $this->authorizer->allows($user, 'categories.update.*');
     }
 
     #[\Override]
     public function delete(User $user, Model $category): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('categories.delete.*');
+        return $this->authorizer->allows($user, 'categories.delete.*');
     }
 }

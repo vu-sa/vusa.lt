@@ -35,7 +35,7 @@ class FileStorageService
      */
     public function resolveTipTapDirectory(User $user, Authorizer $authorizer): string
     {
-        $tenant = $user->isSuperAdmin() ? null : $authorizer->getTenants()->first();
+        $tenant = $user->isSuperAdmin() ? null : $authorizer->tenants($user, 'files.create.padalinys')->first();
 
         if ($tenant === null || $tenant->isMain()) {
             return 'public/files/content/'.date('Y/m');

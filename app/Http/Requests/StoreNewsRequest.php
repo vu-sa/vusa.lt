@@ -44,10 +44,9 @@ class StoreNewsRequest extends NewsRequest
             return Tenant::main()?->id;
         }
 
-        $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
-        $authorizer->check('news.create.padalinys');
-
-        return $authorizer->getPermissableDuties()->first()?->getAttribute('tenants')->first()?->id;
+        return app(ModelAuthorizer::class)
+            ->duties($this->user(), 'news.create.padalinys')
+            ->first()?->getAttribute('tenants')->first()?->id;
     }
 
     /**

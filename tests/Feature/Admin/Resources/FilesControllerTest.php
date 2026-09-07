@@ -394,6 +394,60 @@ describe('Files Controller - Directory Creation', function (): void {
     });
 });
 
+/**
+ * An actor who may browse this tenant's files but holds no `files.delete.padalinys`.
+ */
+function makeFileReader(Institution $institution): User
+{
+    $role = Role::create(['name' => 'File Reader', 'guard_name' => 'web']);
+    $role->givePermissionTo(['files.read.padalinys']);
+
+    $user = User::factory()->create();
+    $duty = Duty::factory()->create([
+        'institution_id' => $institution->id,
+        'name' => 'File Reader',
+    ]);
+    $user->duties()->attach($duty, [
+        'start_date' => now()->subDay(),
+        'end_date' => now()->addDays(1),
+    ]);
+    $duty->assignRole($role);
+
+    return $user;
+}
+
+describe('Files Controller - Directory Deletion', function (): void {
+    test('actor with files.read.padalinys but not files.delete.padalinys can browse but cannot delete directory; actor with both can do both', function (): void {
+        $readerUser = makeFileReader($this->institution);
+
+        $dirPath = 'files/padaliniai/vusa'.$this->tenant->alias.'/to-delete';
+        $fullPath = $this->allowedPath.'/to-delete';
+        Storage::disk('public')->makeDirectory($dirPath);
+        Storage::makeDirectory($fullPath);
+
+        // Actor with read-only can browse tenant directory
+        $browseResponse = asUser($readerUser)->get(route('files.index', ['path' => $this->allowedPath]));
+        expect($browseResponse->status())->toBeIn([200, 302]);
+        $apiBrowseResponse = asUser($readerUser)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath));
+        expect($apiBrowseResponse->status())->toBe(200);
+
+        // Actor with read-only cannot delete directory
+        $deleteResponse = asUser($readerUser)->delete(route('files.deleteDirectory'), [
+            'path' => $fullPath,
+        ]);
+        expect($deleteResponse->status())->toBe(302);
+        $deleteResponse->assertSessionHasErrors('permission');
+        expect(Storage::directoryExists($fullPath))->toBeTrue();
+
+        // Actor with both read and delete permissions can delete directory
+        $successResponse = asUser($this->fileManager)->delete(route('files.deleteDirectory'), [
+            'path' => $fullPath,
+        ]);
+        expect($successResponse->status())->toBe(302);
+        $successResponse->assertSessionDoesntHaveErrors();
+    });
+});
+
 describe('Files Controller - File Deletion', function (): void {
     test('file manager can delete files in allowed directory', function (): void {
         // Use one of the existing test files
@@ -1070,5 +1124,135 @@ describe('Files Controller - Image Upload Path Hardening', function (): void {
             'file' => $image,
             'path' => 'banners',
         ])->assertStatus(403);
+    });
+});
+
+describe('Files Controller - Deletion requires the delete permission', function (): void {
+    beforeEach(function (): void {
+        // The controller reads and deletes files through the default disk, which the outer
+        // beforeEach does not fake — without this these tests would write to real storage.
+        Storage::fake('local');
+    });
+
+    test('read-only actor cannot delete a single file in a directory they may browse', function (): void {
+        $reader = makeFileReader($this->institution);
+
+        $filePath = $this->allowedPath.'/keep-me.txt';
+        Storage::put($filePath, 'content');
+
+        // The directory is readable...
+        expect(asUser($reader)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath))->status())
+            ->toBe(200);
+
+        // ...but deleting inside it is not.
+        $response = asUser($reader)->delete(route('files.delete'), ['path' => $filePath]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHasErrors('permission');
+        expect(Storage::exists($filePath))->toBeTrue();
+    });
+
+    test('read-only actor cannot bulk delete files', function (): void {
+        $reader = makeFileReader($this->institution);
+
+        $paths = [$this->allowedPath.'/bulk-keep1.txt', $this->allowedPath.'/bulk-keep2.txt'];
+
+        foreach ($paths as $path) {
+            Storage::put($path, 'content');
+        }
+
+        $response = asUser($reader)->delete(route('files.bulkDelete'), ['paths' => $paths]);
+
+        expect($response->status())->toBe(302);
+
+        foreach ($paths as $path) {
+            expect(Storage::exists($path))->toBeTrue();
+        }
+    });
+
+    test('an actor holding files.delete.padalinys can still delete', function (): void {
+        $filePath = $this->allowedPath.'/remove-me.txt';
+        Storage::put($filePath, 'content');
+
+        $response = asUser($this->fileManager)->delete(route('files.delete'), ['path' => $filePath]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHasNoErrors();
+        expect(Storage::exists($filePath))->toBeFalse();
+    });
+});
+
+describe('Files Controller - Compression requires the update permission', function (): void {
+    beforeEach(function (): void {
+        Storage::fake('local');
+    });
+
+    test('read-only actor cannot compress an image they may browse', function (): void {
+        $reader = makeFileReader($this->institution);
+
+        $imagePath = $this->allowedPath.'/photo.jpg';
+        Storage::put($imagePath, 'not-really-a-jpeg');
+
+        $response = asUser($reader)->post(route('files.compress'), ['path' => $imagePath]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHasErrors('permission');
+
+        // The original is untouched — the permission check runs before any re-encoding.
+        expect(Storage::get($imagePath))->toBe('not-really-a-jpeg');
+    });
+
+    test('an actor holding files.update.padalinys gets past the permission check', function (): void {
+        $imagePath = $this->allowedPath.'/photo.jpg';
+        Storage::put($imagePath, 'not-really-a-jpeg');
+
+        $response = asUser($this->fileManager)->post(route('files.compress'), ['path' => $imagePath]);
+
+        expect($response->status())->toBe(302);
+
+        // The payload is not a real JPEG, so compression itself fails — what matters here is
+        // that it failed on the image, not on authorization.
+        $response->assertSessionDoesntHaveErrors(['permission']);
+    });
+});
+
+describe('Files Controller - Creation requires the create permission', function (): void {
+    beforeEach(function (): void {
+        Storage::fake('local');
+    });
+
+    test('read-only actor cannot create a directory they may browse', function (): void {
+        $reader = makeFileReader($this->institution);
+
+        $response = asUser($reader)->post(route('files.createDirectory'), [
+            'path' => $this->allowedPath,
+            'name' => 'new-folder',
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionHasErrors('permission');
+        expect(Storage::disk('public')->directoryExists('files/padaliniai/vusa'.$this->tenant->alias.'/new-folder'))
+            ->toBeFalse();
+    });
+
+    test('read-only actor cannot upload an image into a directory they may browse', function (): void {
+        $reader = makeFileReader($this->institution);
+
+        $response = asUser($reader)->postJson(route('files.uploadImage'), [
+            'path' => $this->allowedPath,
+            'image' => UploadedFile::fake()->image('photo.jpg'),
+        ]);
+
+        expect($response->status())->toBe(403);
+    });
+
+    test('an actor holding files.create.padalinys can create a directory', function (): void {
+        $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
+            'path' => $this->allowedPath,
+            'name' => 'new-folder',
+        ]);
+
+        expect($response->status())->toBe(302);
+        $response->assertSessionDoesntHaveErrors(['permission']);
     });
 });
