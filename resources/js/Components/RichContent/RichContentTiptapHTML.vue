@@ -19,6 +19,29 @@ export const generateHTMLfromTiptap = (json_content: any) => {
     return '';
   }
 
-  return generateHTMLCore(json_content, createRenderExtensionsCore());
+  return wrapTablesForScroll(generateHTMLCore(json_content, createRenderExtensionsCore()));
 };
+
+/**
+ * Static `generateHTML` output (unlike the live editor's ProseMirror NodeView) never
+ * gets the `.tableWrapper` div, so a resized table's explicit column widths can overflow
+ * the reading measure with no way to scroll to the rest of it. Mirrors the wrapper
+ * `App\Tiptap\TiptapEditor::getHTML()` adds to the server-rendered HTML.
+ */
+function wrapTablesForScroll(html: string): string {
+  if (!html.includes('<table')) {
+    return html;
+  }
+
+  const container = document.createElement('div');
+  container.innerHTML = html;
+  container.querySelectorAll('table').forEach((table) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tableWrapper';
+    table.replaceWith(wrapper);
+    wrapper.append(table);
+  });
+
+  return container.innerHTML;
+}
 </script>

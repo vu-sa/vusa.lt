@@ -102,7 +102,7 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
 
   it('defaults show_breadcrumbs to true when the news omits it', () => {
     wrapper = createWrapper({ news: { ...defaultNews, show_breadcrumbs: undefined } });
-    const vm = wrapper.vm as any;
+    const vm = wrapper.vm as unknown as { form: { show_breadcrumbs: boolean } };
 
     expect(vm.form.show_breadcrumbs).toBe(true);
   });
@@ -116,7 +116,7 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
 
   it('toggles form.show_breadcrumbs when the switch is clicked (model-value binding)', async () => {
     wrapper = createWrapper();
-    const vm = wrapper.vm as any;
+    const vm = wrapper.vm as unknown as { form: { show_breadcrumbs: boolean } };
     expect(vm.form.show_breadcrumbs).toBe(true);
 
     await wrapper.find('[role="switch"]').trigger('click');

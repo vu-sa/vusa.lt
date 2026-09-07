@@ -32,11 +32,11 @@
             <ToggleGroup v-model="form.lang" type="single" class="justify-start"
               @update:model-value="form.validate('lang')">
               <ToggleGroupItem value="lt" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
+                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" alt="" class="h-4 w-4 rounded-full">
                 Lietuvių
               </ToggleGroupItem>
               <ToggleGroupItem value="en" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
+                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="" class="h-4 w-4 rounded-full">
                 English
               </ToggleGroupItem>
             </ToggleGroup>
@@ -246,7 +246,7 @@ const isCreate = computed(() => props.rememberKey === 'CreateNews');
 // Advanced settings collapsed by default
 const advancedSettingsOpen = ref(false);
 
-const formData = { ...newsTemplate, ...props.news, show_breadcrumbs: props.news?.show_breadcrumbs ?? true, highlights: props.news?.highlights || [] } as any;
+const formData = { ...newsTemplate, ...props.news, show_breadcrumbs: props.news?.show_breadcrumbs ?? true, highlights: props.news?.highlights || [] };
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)

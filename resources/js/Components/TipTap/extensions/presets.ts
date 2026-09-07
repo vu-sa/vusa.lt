@@ -32,6 +32,23 @@ export interface PresetOptions {
   onFilePaste?: (editor: Editor, files: File[]) => void;
 }
 
+function getStarterKitLinkConfig(disableLinks: boolean) {
+  if (disableLinks) {
+    return false;
+  }
+
+  return {
+    openOnClick: false,
+    HTMLAttributes: {
+      // `text-brand`, not the old `text-vusa-red`: it resolves per theme (red on
+      // light, amber on dark) via the token system. Rich-content surfaces let
+      // `.rc-prose a` own the final colour anyway — this is for editors and
+      // stored HTML outside a prose wrapper (comments).
+      class: 'text-brand underline font-medium',
+    },
+  };
+}
+
 /**
  * Shared StarterKit configuration used across all presets
  */
@@ -39,16 +56,7 @@ function createStarterKit(enableHeading: boolean = false, disableLinks: boolean 
   return StarterKit.configure({
     heading: enableHeading ? undefined : false,
     codeBlock: false,
-    link: disableLinks ? false : {
-      openOnClick: false,
-      HTMLAttributes: {
-        // `text-brand`, not the old `text-vusa-red`: it resolves per theme (red on
-        // light, amber on dark) via the token system. Rich-content surfaces let
-        // `.rc-prose a` own the final colour anyway — this is for editors and
-        // stored HTML outside a prose wrapper (comments).
-        class: 'text-brand underline font-medium',
-      },
-    },
+    link: getStarterKitLinkConfig(disableLinks),
   });
 }
 
@@ -109,12 +117,7 @@ export function createMarksExtensions(options: PresetOptions = {}): AnyExtension
       codeBlock: false,
       code: false,
       strike: false,
-      link: options.disableLinks ? false : {
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-brand underline font-medium',
-        },
-      },
+      link: getStarterKitLinkConfig(!!options.disableLinks),
       blockquote: false,
       bulletList: false,
       orderedList: false,
