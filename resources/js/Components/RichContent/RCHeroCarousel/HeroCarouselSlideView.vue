@@ -6,7 +6,7 @@
       :src="slide.imageSrc"
       :alt="slide.imageAlt"
       :style="slide.objectPosition ? { objectPosition: slide.objectPosition } : undefined"
-      :class="['absolute inset-0 size-full object-cover object-center', grayscale && 'grayscale', SCRIM_IMAGE_OPACITY[scrimStrength]]"
+      :class="['absolute inset-0 size-full object-cover object-center', grayscale && 'grayscale', SCRIM_IMAGE_OPACITY[effectiveScrim]]"
       :loading="isFirstSlide || preloadImage ? 'eager' : 'lazy'"
       :fetchpriority="isFirstSlide ? 'high' : undefined"
       draggable="false"
@@ -35,11 +35,13 @@
     </div>
 
     <!-- Dual scrims -->
-    <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/25" />
-    <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40" />
+    <div :class="['absolute inset-0 bg-gradient-to-r', SCRIM_GRADIENT_X[effectiveScrim]]" />
+    <div :class="['absolute inset-0 bg-gradient-to-t', SCRIM_GRADIENT_Y[effectiveScrim]]" />
 
-    <!-- Slide actions / image hotspot when editable -->
-    <div v-if="editable" class="absolute top-4 right-4 z-20 flex items-center gap-2">
+    <!-- Slide actions / hotspots when editable. Top-left, not top-right: the block's own
+         "more options" trigger (RCBlockToolbarShell) sits at top-6 right-3 z-30 and would
+         otherwise sit on top of these. -->
+    <div v-if="editable" class="absolute top-4 left-4 z-20 flex items-center gap-3">
       <Button
         v-if="canDeleteSlide"
         variant="ghost"
@@ -54,6 +56,13 @@
       </Button>
 
       <HeroCarouselImageHotspot
+        :slide
+        :slide-index
+        :block-key="blockKey ?? ''"
+        @update:slide="$emit('update:slide', $event)"
+      />
+
+      <HeroCarouselSlideSettingsHotspot
         :slide
         :slide-index
         :block-key="blockKey ?? ''"
@@ -188,6 +197,7 @@ const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/Tipt
 // page that renders a hero carousel.
 const HeroButtonsEditable = defineAsyncComponent(() => import('../RCHeroSection/HeroButtonsEditable.vue'));
 const HeroCarouselImageHotspot = defineAsyncComponent(() => import('./HeroCarouselImageHotspot.vue'));
+const HeroCarouselSlideSettingsHotspot = defineAsyncComponent(() => import('./HeroCarouselSlideSettingsHotspot.vue'));
 
 type Slide = HeroCarousel['json_content'][number];
 
@@ -196,7 +206,8 @@ const props = defineProps<{
   slideIndex: number;
   slideHeightClass: string;
   height: NonNullable<HeroCarousel['options']['height']>;
-  scrimStrength: 'light' | 'medium' | 'dark';
+  /** Carousel-level fallback; `slide.scrim` wins when set (see `effectiveScrim`). */
+  scrimStrength: 'light' | 'medium' | 'strong' | 'dark';
   grayscale: boolean;
   isFirstSlide?: boolean;
   preloadImage?: boolean;
@@ -211,14 +222,37 @@ const emit = defineEmits<{
 }>();
 
 const SCRIM_IMAGE_OPACITY = {
-  light: 'opacity-85',
-  medium: 'opacity-70',
-  dark: 'opacity-55',
+  light: 'opacity-100',
+  medium: 'opacity-88',
+  strong: 'opacity-80',
+  dark: 'opacity-70',
+} as const;
+
+// Left-to-right scrim: carries the text-legibility contrast, so it scales the most
+// across strengths. Stops are pulled in (via/to below 50%) so the darkness stays
+// concentrated over the left third, where the copy sits, and the right side of the
+// photo stays clear rather than fading out gradually across the whole width.
+const SCRIM_GRADIENT_X = {
+  light: 'from-ink/75 from-0% via-ink/30 via-30% to-transparent to-60%',
+  medium: 'from-ink/88 from-0% via-ink/50 via-30% to-ink/12 to-60%',
+  strong: 'from-ink/95 from-0% via-ink/68 via-32% to-ink/22 to-62%',
+  dark: 'from-ink from-0% via-ink/90 via-38% to-ink/45 to-68%',
+} as const;
+
+// Bottom-to-top scrim: darkest at the bottom (where the copy sits), fading out
+// toward the top so the photo stays visible above the text.
+const SCRIM_GRADIENT_Y = {
+  light: 'from-ink/50 via-transparent to-transparent',
+  medium: 'from-ink/68 via-transparent to-ink/12',
+  strong: 'from-ink/78 via-transparent to-ink/18',
+  dark: 'from-ink/92 via-transparent to-ink/28',
 } as const;
 
 const hotspots = inject(ACTIVE_HOTSPOT_KEY, undefined);
 
 const slideAlign = computed(() => props.slide.align ?? 'start');
+// Per-slide override wins over the carousel-wide default set in the block toolbar.
+const effectiveScrim = computed(() => props.slide.scrim ?? props.scrimStrength);
 
 const titleHotspotId = computed(() => `${props.blockKey ?? ''}:slide-${props.slideIndex}:title`);
 const descriptionHotspotId = computed(() => `${props.blockKey ?? ''}:slide-${props.slideIndex}:description`);
@@ -230,22 +264,20 @@ const hasDesc = computed(() => hasTiptapContent(props.slide.description) || hasH
 const isTitleLive = computed(() => !!props.editable && !!hotspots?.isTextFieldLive(titleHotspotId.value));
 const isDescriptionLive = computed(() => !!props.editable && !!hotspots?.isTextFieldLive(descriptionHotspotId.value));
 
-function slideContainerClass(align: 'start' | 'center' | 'end'): string {
+function slideContainerClass(align: 'start' | 'center'): string {
   const base = 'relative z-10 mx-auto flex min-h-[inherit] max-w-7xl flex-col px-5 pt-24 sm:px-6 lg:px-8';
   const bottomPadding = props.height === 'sm' ? 'pb-16 sm:pb-20' : 'pb-20 sm:pb-24';
   const map = {
     start: `justify-end items-start ${bottomPadding} text-left`,
     center: 'items-center justify-center pb-16 text-center',
-    end: `justify-end items-end ${bottomPadding} text-right`,
   } as const;
   return [base, map[align]].join(' ');
 }
 
-function slideCopyClass(align: 'start' | 'center' | 'end'): string {
+function slideCopyClass(align: 'start' | 'center'): string {
   const map = {
     start: 'border-l-2 border-brand-fill pl-5 sm:pl-7',
     center: 'mx-auto',
-    end: 'border-r-2 border-brand-fill pr-5 sm:pr-7',
   } as const;
   return ['max-w-2xl', map[align]].join(' ');
 }

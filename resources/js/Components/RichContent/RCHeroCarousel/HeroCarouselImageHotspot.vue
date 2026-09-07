@@ -64,26 +64,6 @@
               />
             </div>
           </template>
-
-          <Field class="border-t border-border pt-4">
-            <FieldLabel>{{ $t('rich-content.hero_carousel_text_position') }}</FieldLabel>
-            <Select :model-value="slide.align ?? 'start'" @update:model-value="patchSlide({ align: $event as 'start' | 'center' | 'end' })">
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="start">
-                  {{ $t('rich-content.hero_carousel_position_start') }}
-                </SelectItem>
-                <SelectItem value="center">
-                  {{ $t('rich-content.hero_carousel_position_center') }}
-                </SelectItem>
-                <SelectItem value="end">
-                  {{ $t('rich-content.hero_carousel_position_end') }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
         </div>
       </PopoverContent>
     </Popover>
@@ -97,7 +77,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+/**
+ * One of two per-slide hotspots rendered in `HeroCarouselSlideView.vue`'s slide-actions
+ * row (the other is `HeroCarouselSlideSettingsHotspot.vue`, for text position/darkness).
+ * That row sits at the slide's top-left — not top-right, where the block's own
+ * "more options" trigger (`RCBlockToolbarShell.vue`, `top-6 right-3 z-30`) already lives
+ * and would otherwise overlap it.
+ */
+import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
@@ -107,7 +94,6 @@ import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import type { HeroCarousel } from '@/Types/contentParts';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
@@ -123,7 +109,7 @@ const props = defineProps<{
 const emit = defineEmits<(e: 'update:slide', value: Slide) => void>();
 
 const hotspots = injectActiveHotspot();
-const hotspotId = computed(() => `${props.blockKey}:slide-${props.slideIndex}:image`);
+const hotspotId = `${props.blockKey}:slide-${props.slideIndex}:image`;
 const spotlightRef = ref<HTMLElement | null>(null);
 const isImageModalOpen = ref(false);
 
@@ -138,7 +124,7 @@ function onImageSubmit(img: { src: string; alt: string }): void {
 
 function onOpenChange(open: boolean): void {
   if (isImageModalOpen.value) return;
-  if (open) hotspots.openPopover(hotspotId.value);
-  else hotspots.close(hotspotId.value);
+  if (open) hotspots.openPopover(hotspotId);
+  else hotspots.close(hotspotId);
 }
 </script>

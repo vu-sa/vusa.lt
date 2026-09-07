@@ -135,6 +135,9 @@
               <SelectItem value="medium">
                 {{ $t('rich-content.scrim_medium') }}
               </SelectItem>
+              <SelectItem value="strong">
+                {{ $t('rich-content.scrim_strong') }}
+              </SelectItem>
               <SelectItem value="dark">
                 {{ $t('rich-content.scrim_dark') }}
               </SelectItem>

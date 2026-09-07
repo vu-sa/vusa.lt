@@ -378,8 +378,10 @@ export interface HeroCarousel {
     imageAlt: string;
     /** `"x% y%"` CSS object-position, set via FocalPointPicker. Optional — old rows crop from center. */
     objectPosition?: string;
-    /** Where the overlaid text block sits on the photo. Defaults to 'start' (bottom-left). */
-    align?: 'start' | 'center' | 'end';
+    /** Where the overlaid text block sits on the photo. Defaults to 'start' (bottom-left). Right-align is not offered — the brand rule and buttons read awkwardly mirrored. */
+    align?: 'start' | 'center';
+    /** Per-slide scrim override. Falls back to `options.scrim` when unset. */
+    scrim?: 'light' | 'medium' | 'strong' | 'dark';
     /** Exact Hero button shape — rendered by the shared HeroButtons.vue. */
     buttons?: Hero['json_content']['buttons'];
   }[];
@@ -388,8 +390,8 @@ export interface HeroCarousel {
     autoplayDelay?: number;
     showArrows?: boolean;
     showIndicators?: boolean;
-    /** Gradient scrim strength over the photos — keeps overlaid text legible. */
-    scrim?: 'light' | 'medium' | 'dark';
+    /** Default gradient scrim strength — keeps overlaid text legible. Overridable per slide. */
+    scrim?: 'light' | 'medium' | 'strong' | 'dark';
     /** Panel height preset — the photo panel is inset, so this is the panel's own height. */
     height?: 'sm' | 'md' | 'lg';
     /** Desaturate the background photo. Defaults to true (existing hero look). */

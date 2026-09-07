@@ -53,6 +53,9 @@
               <SelectItem value="medium">
                 {{ $t('rich-content.scrim_medium') }}
               </SelectItem>
+              <SelectItem value="strong">
+                {{ $t('rich-content.scrim_strong') }}
+              </SelectItem>
               <SelectItem value="dark">
                 {{ $t('rich-content.scrim_dark') }}
               </SelectItem>
@@ -180,8 +183,31 @@
                   <SelectItem value="center">
                     {{ $t('rich-content.hero_carousel_position_center') }}
                   </SelectItem>
-                  <SelectItem value="end">
-                    {{ $t('rich-content.hero_carousel_position_end') }}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <Field v-if="item.imageSrc">
+              <FieldLabel>{{ $t('rich-content.slide_scrim_strength') }}</FieldLabel>
+              <Select :model-value="item.scrim ?? 'default'" @update:model-value="(val) => update({ ...item, scrim: val === 'default' ? undefined : val })">
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">
+                    {{ $t('rich-content.scrim_default') }}
+                  </SelectItem>
+                  <SelectItem value="light">
+                    {{ $t('rich-content.scrim_light') }}
+                  </SelectItem>
+                  <SelectItem value="medium">
+                    {{ $t('rich-content.scrim_medium') }}
+                  </SelectItem>
+                  <SelectItem value="strong">
+                    {{ $t('rich-content.scrim_strong') }}
+                  </SelectItem>
+                  <SelectItem value="dark">
+                    {{ $t('rich-content.scrim_dark') }}
                   </SelectItem>
                 </SelectContent>
               </Select>

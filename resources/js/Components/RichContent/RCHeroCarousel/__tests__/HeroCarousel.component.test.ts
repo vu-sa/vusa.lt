@@ -128,10 +128,21 @@ describe('HeroCarouselDisplay', () => {
 
   it('applies the scrim strength option to the photo, not an extra overlay', () => {
     const light = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'light' }) }, global: { stubs } });
-    expect(light.find('img').classes()).toContain('opacity-85');
+    expect(light.find('img').classes()).toContain('opacity-100');
+
+    const strong = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'strong' }) }, global: { stubs } });
+    expect(strong.find('img').classes()).toContain('opacity-80');
 
     const dark = mount(HeroCarouselDisplay, { props: { element: makeElement([], { scrim: 'dark' }) }, global: { stubs } });
-    expect(dark.find('img').classes()).toContain('opacity-55');
+    expect(dark.find('img').classes()).toContain('opacity-70');
+  });
+
+  it('lets a slide override the carousel-wide scrim strength', () => {
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: { element: makeElement([{ scrim: 'dark' }], { scrim: 'light' }) },
+      global: { stubs },
+    });
+    expect(wrapper.find('img').classes()).toContain('opacity-70');
   });
 
   it('renders one labelled dot per slide with aria-current on the active one', () => {
