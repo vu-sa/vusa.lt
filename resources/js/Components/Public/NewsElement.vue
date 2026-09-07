@@ -35,14 +35,14 @@
 
       <div v-if="loading" class="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-10">
         <div class="space-y-4">
-          <Skeleton class="aspect-[16/10] w-full" />
+          <Skeleton class="aspect-[16/9] w-full" />
           <Skeleton class="h-4 w-32" />
           <Skeleton class="h-8 w-3/4" />
           <Skeleton class="h-20 w-full" />
         </div>
         <div class="flex flex-col">
           <div v-for="i in 3" :key="i" class="flex gap-4 border-t border-border py-5 first:border-t-0 first:pt-0 sm:gap-5">
-            <Skeleton class="aspect-[16/10] w-32 shrink-0 sm:w-44" />
+            <Skeleton class="aspect-[16/9] w-32 shrink-0 sm:w-44" />
             <div class="flex-1 space-y-2 py-1">
               <Skeleton class="h-3 w-20" />
               <Skeleton class="h-4 w-full" />
@@ -79,7 +79,7 @@
             <MediaFrame
               :src="item.image ?? undefined"
               :alt="item.title"
-              ratio="16/10"
+              ratio="16/9"
               :grayscale="false"
               hover-zoom
               class="w-32 shrink-0 sm:w-44"

@@ -97,6 +97,7 @@ return [
     'subtitle' => 'Subtitle',
     'content' => 'Content',
     'enter_title' => 'Enter title...',
+    'enter_text' => 'Enter text...',
     'variant' => 'Variant',
     'color' => 'Color',
     'show_icon' => 'Show icon',

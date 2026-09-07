@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TenantType;
+use App\Models\Content;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -145,6 +146,75 @@ describe('authorized access', function (): void {
         $this->assertDatabaseMissing('tenants', [
             'id' => $tenant->id,
         ]);
+    });
+
+    test('creates and updates homepage content for the selected locale only', function (): void {
+        $otherContent = Content::factory()->create();
+        $otherContent->parts()->create([
+            'type' => 'tiptap',
+            'json_content' => ['type' => 'doc', 'content' => []],
+            'order' => 0,
+        ]);
+
+        asUser($this->admin)
+            ->post(route('tenants.updateMainPage', $this->tenant), [
+                'id' => $otherContent->id,
+                'locale' => 'en',
+                'parts' => [[
+                    'type' => 'tiptap',
+                    'json_content' => ['type' => 'doc', 'content' => []],
+                ]],
+            ])
+            ->assertRedirect();
+
+        $homepageContent = $this->tenant->homepageContents()->where('locale', 'en')->firstOrFail();
+
+        expect($homepageContent->content_id)->not->toBe($otherContent->id)
+            ->and($homepageContent->content->parts)->toHaveCount(1)
+            ->and($otherContent->fresh()->parts)->toHaveCount(1);
+    });
+
+    test('rejects a homepage part missing json_content with a validation error instead of a 500', function (): void {
+        // EditHomePage.vue submits via `forceFormData: true` — multipart/form-data has no
+        // way to represent an empty object, so a fresh, still-empty tiptap block's
+        // `json_content: {}` arrives with the key missing entirely, not merely empty.
+        // ContentService::updateContentParts() reads it with a bare array access, so
+        // without this rule the request 500s instead of failing validation.
+        $response = asUser($this->admin)
+            ->post(route('tenants.updateMainPage', $this->tenant), [
+                'locale' => 'en',
+                'parts' => [[
+                    'type' => 'tiptap',
+                ]],
+            ]);
+
+        $response->assertStatus(302)
+            ->assertSessionHasErrors('parts.0.json_content');
+
+        expect(session('errors')->first('parts.0.json_content'))
+            ->toBe(trans('forms.validation.content.part_content_required'));
+    });
+
+    test('translates the validation message per admin UI language, not the content locale being edited', function (): void {
+        // `lang` (the admin's own interface language, set by AppSidebar's toggle) and
+        // `locale` (which lt/en homepage document is being saved) are independent — this
+        // asserts the error text follows the former.
+        // Read each response's error bag before the next request overwrites the shared
+        // test session's `errors` key.
+        $enMessage = asUser($this->admin)->post(route('tenants.updateMainPage', $this->tenant), [
+            'lang' => 'en',
+            'locale' => 'en',
+            'parts' => [['type' => 'tiptap']],
+        ])->getSession()->get('errors')->first('parts.0.json_content');
+
+        $ltMessage = asUser($this->admin)->post(route('tenants.updateMainPage', $this->tenant), [
+            'lang' => 'lt',
+            'locale' => 'en',
+            'parts' => [['type' => 'tiptap']],
+        ])->getSession()->get('errors')->first('parts.0.json_content');
+
+        expect($enMessage)->toBe('Each content part must have content.')
+            ->and($ltMessage)->toBe('Kiekvienas turinio blokas turi turėti turinį.');
     });
 });
 

@@ -5,7 +5,7 @@ import { StarterKit } from '@tiptap/starter-kit';
 import { CustomHeading } from '../CustomHeading';
 import { TextAlign } from '../TextAlign';
 import { RCTag } from '../RCTag';
-import { createCompactExtensions, createFullExtensions } from '../extensions/presets';
+import { createCompactExtensions, createFullExtensions, createMarksExtensions } from '../extensions/presets';
 import { toCssWidth } from '../imageResizeNodeView';
 
 /**
@@ -205,6 +205,49 @@ describe('createCompactExtensions (content-grid cells, etc.)', () => {
 
     editor.chain().setNodeSelection(0).updateAttributes('paragraph', { align: 'center' }).run();
     expect(editor.getHTML()).toContain('rc-align-center');
+  });
+});
+
+describe('createMarksExtensions (hero fields, process steps, etc.)', () => {
+  it('registers the link mark and allows setting a link', () => {
+    const editor = new Editor({ extensions: createMarksExtensions() });
+    editors.push(editor);
+
+    editor.commands.setContent('<p>Check out our link</p>');
+    editor.commands.selectAll();
+    editor.chain().setLink({ href: 'https://vusa.lt' }).run();
+
+    const html = editor.getHTML();
+    expect(html).toContain('<a');
+    expect(html).toContain('href="https://vusa.lt"');
+    expect(html).toContain('text-brand');
+  });
+
+  it('keeps bold, italic and underline marks without allowing block nodes like headings or lists', () => {
+    const editor = new Editor({ extensions: createMarksExtensions() });
+    editors.push(editor);
+
+    expect(editor.schema.marks.bold).toBeDefined();
+    expect(editor.schema.marks.italic).toBeDefined();
+    expect(editor.schema.marks.underline).toBeDefined();
+    expect(editor.schema.marks.link).toBeDefined();
+
+    expect(editor.schema.nodes.heading).toBeUndefined();
+    expect(editor.schema.nodes.bulletList).toBeUndefined();
+  });
+
+  it('omits the link mark when disableLinks is true, allowing only bold, italic and underline', () => {
+    const editor = new Editor({ extensions: createMarksExtensions({ disableLinks: true }) });
+    editors.push(editor);
+
+    expect(editor.schema.marks.bold).toBeDefined();
+    expect(editor.schema.marks.italic).toBeDefined();
+    expect(editor.schema.marks.underline).toBeDefined();
+    expect(editor.schema.marks.link).toBeUndefined();
+    expect(editor.schema.marks.strike).toBeUndefined();
+    expect(editor.schema.marks.code).toBeUndefined();
+    expect(editor.schema.nodes.heading).toBeUndefined();
+    expect(editor.schema.nodes.bulletList).toBeUndefined();
   });
 });
 

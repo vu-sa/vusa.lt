@@ -43,4 +43,21 @@ describe('RCInsertAffordance', () => {
     expect(wrapper.classes()).toContain('h-5');
     expect(wrapper.classes()).not.toContain('h-12');
   });
+
+  it('hides the button until hover by default', () => {
+    const wrapper = mountAffordance();
+    const button = wrapper.find('button');
+    expect(button.classes()).toContain('opacity-0');
+    expect(button.classes()).not.toContain('opacity-100');
+  });
+
+  it('shows the button without hover when alwaysVisible, for the empty-document "add first block" state', () => {
+    const wrapper = mount(RCInsertAffordance, {
+      props: { quickAddTypes, alwaysVisible: true },
+      global: { stubs: commonStubs },
+    });
+    const button = wrapper.find('button');
+    expect(button.classes()).toContain('opacity-100');
+    expect(button.classes()).not.toContain('opacity-0');
+  });
 });

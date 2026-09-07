@@ -90,10 +90,13 @@
 
             <!-- Trailing insert affordance: doubles as "add the first block" when the
                document is empty (appendType/insertAt(0) are the same operation on an
-               empty array), so no separate empty-state control is needed. -->
+               empty array), so no separate empty-state control is needed. Always visible
+               (not hover-only) — it's the one spot with no block below it whose hover a
+               user could stumble onto to discover the control. -->
             <div v-if="!isPreviewing" class="relative">
               <RCInsertAffordance
                 :quick-add-types
+                always-visible
                 @insert="appendType($event)"
                 @more="openInsertMenuAt(contents?.length ?? 0)"
               />

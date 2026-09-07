@@ -8,7 +8,7 @@
       <TiptapFormattingButtons v-model:editor="editor" :show-bold="showBold" bubble />
 
       <!-- Link controls in bubble menu -->
-      <template v-if="preset === 'full'">
+      <template v-if="!disableLinks && editor.schema.marks.link">
         <Separator orientation="vertical" class="h-5 mx-0.5" />
         <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
           <Button size="icon-sm" :variant="editor.isActive('link') ? 'secondary' : 'ghost'">
@@ -32,16 +32,16 @@
            control set doesn't fit above the keyboard, so only bold/italic/underline
            show by default and everything else is one tap away. `sm:hidden` means
            desktop always sees the full toolbar regardless of this state. -->
-      <Button size="sm" variant="ghost" class="sm:hidden" data-testid="tiptap-toolbar-mobile-toggle"
+      <Button v-if="preset !== 'marks'" size="sm" variant="ghost" class="sm:hidden" data-testid="tiptap-toolbar-mobile-toggle"
         :title="mobileToolbarExpanded ? $t('rich-content.toolbar_less') : $t('rich-content.toolbar_more')"
         @click="mobileToolbarExpanded = !mobileToolbarExpanded">
         <IFluentChevronUp20Regular v-if="mobileToolbarExpanded" />
         <IFluentChevronDown20Regular v-else />
       </Button>
 
-      <div data-testid="tiptap-toolbar-extra" :class="mobileToolbarExpanded ? 'contents' : 'hidden sm:contents'">
+      <div data-testid="tiptap-toolbar-extra" :class="preset === 'marks' || mobileToolbarExpanded ? 'contents' : 'hidden sm:contents'">
         <!-- Link buttons -->
-        <ButtonGroup>
+        <ButtonGroup v-if="!disableLinks && editor.schema.marks.link">
           <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
             <Button size="sm" :variant="editor.isActive('link') ? 'default' : 'outline'">
               <IFluentLink24Regular />
@@ -54,11 +54,11 @@
         </ButtonGroup>
 
         <!-- Clear formatting -->
-        <Button size="sm" variant="outline" @click="editor?.chain().focus().unsetAllMarks().run()">
+        <Button v-if="preset !== 'marks'" size="sm" variant="outline" @click="editor?.chain().focus().unsetAllMarks().run()">
           <IFluentClearFormatting20Filled />
         </Button>
 
-        <Separator orientation="vertical" class="h-5" />
+        <Separator v-if="preset !== 'marks'" orientation="vertical" class="h-5" />
 
         <!-- Headings (compact and full). `full` gets a level dropdown (up to h4) instead
              of the plain paragraph/h2 toggle pair, since it also needs room for size/
@@ -131,7 +131,7 @@
              content-grid cells and other compact-preset surfaces edit exactly this kind
              of content (e.g. the MembershipPage-style mascot column), so an author needs
              to be able to apply them there, not just view them if they arrived seeded. -->
-        <template v-if="preset !== 'minimal'">
+        <template v-if="preset === 'compact' || preset === 'full'">
           <!-- Alignment — applies to whichever block type (heading or paragraph) has
                focus. Hidden while an image node is selected: it would sit next to the
                image's own alignment control doing something else entirely. -->
@@ -180,7 +180,7 @@
         </template>
 
         <!-- Lists -->
-        <ButtonGroup>
+        <ButtonGroup v-if="preset !== 'marks'">
           <Button size="sm" :variant="editor.isActive('bulletList') ? 'default' : 'outline'"
             @click="editor?.chain().focus().toggleBulletList().run()">
             <IFluentTextBulletListLtr24Filled />
@@ -203,7 +203,7 @@
         </template>
 
         <!-- Media buttons (compact and full) -->
-        <template v-if="preset !== 'minimal'">
+        <template v-if="preset === 'compact' || preset === 'full'">
           <Suspense>
             <TiptapImageButton as-child @submit:object="attachImage">
               <Button size="sm" variant="outline">
@@ -395,6 +395,8 @@ const props = withDefaults(defineProps<{
   html?: boolean;
   /** Disable table support (full preset) */
   disableTables?: boolean;
+  /** Disable link support */
+  disableLinks?: boolean;
   /** Maximum character count */
   maxCharacters?: number;
   /** Placeholder text */
@@ -454,6 +456,7 @@ const extensions = getExtensionsForPreset(props.preset, {
   placeholder: props.placeholder ?? $t('rich-content.text_placeholder'),
   maxCharacters: props.maxCharacters ?? null,
   disableTables: props.disableTables,
+  disableLinks: props.disableLinks,
   onFileDrop: props.preset === 'full' ? handleFileDrop : undefined,
   onFilePaste: props.preset === 'full' ? handleFilePaste : undefined,
 });

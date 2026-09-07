@@ -33,10 +33,10 @@
             </span>
             <div class="min-w-0 flex-1">
               <p class="truncate font-medium text-foreground">
-                {{ step.title || `${$t('rich-content.steps')} ${index + 1}` }}
+                {{ stripHtmlTags(step.title) || `${$t('rich-content.steps')} ${index + 1}` }}
               </p>
               <p v-if="step.text" class="truncate text-xs text-muted-foreground">
-                {{ step.text }}
+                {{ stripHtmlTags(step.text) }}
               </p>
             </div>
           </div>
@@ -129,20 +129,24 @@
         <div class="flex flex-col gap-4 py-2">
           <Field>
             <FieldLabel>{{ $t('rich-content.step_title') }}</FieldLabel>
-            <Input
-              :model-value="steps[editingStepIndex].title"
-              type="text"
+            <TiptapEditor
+              :model-value="steps[editingStepIndex].title ?? ''"
+              preset="marks"
+              toolbar="bubble"
+              html
               :placeholder="$t('rich-content.enter_step_title')"
-              @update:model-value="updateEditingStep({ title: $event })"
+              @update:model-value="updateEditingStep({ title: String($event ?? '') })"
             />
           </Field>
           <Field>
             <FieldLabel>{{ $t('rich-content.step_text') }}</FieldLabel>
-            <Textarea
-              :model-value="steps[editingStepIndex].text"
-              :rows="3"
+            <TiptapEditor
+              :model-value="steps[editingStepIndex].text ?? ''"
+              preset="marks"
+              toolbar="bubble"
+              html
               :placeholder="$t('rich-content.enter_step_text')"
-              @update:model-value="updateEditingStep({ text: $event })"
+              @update:model-value="updateEditingStep({ text: String($event ?? '') })"
             />
           </Field>
         </div>
@@ -162,10 +166,10 @@ import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
 
 import type { ProcessSteps, SectionOptions } from '@/Types/contentParts';
+import { stripHtmlTags } from '@/Utils/String';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldLabel } from '@/Components/ui/field';
-import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';

@@ -32,11 +32,11 @@
             <ToggleGroup v-model="form.lang" type="single" class="justify-start"
               @update:model-value="form.validate('lang')">
               <ToggleGroupItem value="lt" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
+                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" alt="" class="h-4 w-4 rounded-full">
                 Lietuvių
               </ToggleGroupItem>
               <ToggleGroupItem value="en" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
+                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="" class="h-4 w-4 rounded-full">
                 English
               </ToggleGroupItem>
             </ToggleGroup>
@@ -105,8 +105,20 @@
       </div>
     </FormElement>
 
-    <!-- Section 3: Content (Main editing area) -->
-    <FormElement :section-number="3" :is-complete="(form.content?.parts?.length ?? 0) > 0">
+    <!-- Section 3: Short description / Intro text -->
+    <FormElement :section-number="3" :is-complete="!!form.short">
+      <template #title>
+        {{ $t('Įvadinis tekstas') }}
+      </template>
+      <template #description>
+        <p>{{ $t('Naudojamas naujienos įvade ir paieškos rezultatuose (SEO).') }} {{ $t('Maksimalus ženklų skaičius') }}: 200.</p>
+      </template>
+
+      <TiptapEditor v-model="form.short" preset="marks" disable-links :max-characters="200" html />
+    </FormElement>
+
+    <!-- Section 4: Content (Main editing area) -->
+    <FormElement :section-number="4" :is-complete="(form.content?.parts?.length ?? 0) > 0">
       <template #title>
         {{ $t('Turinys') }}
       </template>
@@ -117,8 +129,8 @@
       <RichContentFormElement v-model="form.content.parts" :tenant-id="news?.tenant_id" @save="$emit('submit:form', form)" />
     </FormElement>
 
-    <!-- Section 4: Highlights (Optional but prominent) -->
-    <FormElement :section-number="4" :is-complete="form.highlights.length > 0">
+    <!-- Section 5: Highlights (Optional but prominent) -->
+    <FormElement :section-number="5" :is-complete="form.highlights.length > 0">
       <template #title>
         {{ $t('Akcentai') }}
       </template>
@@ -129,18 +141,6 @@
       <OrderedListInput v-model="form.highlights" :max="3" :placeholder="$t('Akcentas') + ' {n}...'"
         :empty-text="$t('Dar nepridėta jokių akcentų')" :add-first-text="$t('Pridėti pirmą akcentą')"
         :add-text="$t('Pridėti akcentą')" />
-    </FormElement>
-
-    <!-- Section 5: Short description -->
-    <FormElement :section-number="5">
-      <template #title>
-        {{ $t('Įvadinis tekstas') }}
-      </template>
-      <template #description>
-        <p>{{ $t('Šiuo metu naudojamas') }} <strong>{{ $t('tik paieškos rezultatuose') }}</strong>. {{ $t('Maksimalus ženklų skaičius') }}: 200.</p>
-      </template>
-
-      <TiptapEditor v-model="form.short" preset="full" :disable-tables="true" :max-characters="200" :html="true" />
     </FormElement>
 
     <!-- Section 6: Advanced Settings (Collapsible) -->
@@ -246,7 +246,7 @@ const isCreate = computed(() => props.rememberKey === 'CreateNews');
 // Advanced settings collapsed by default
 const advancedSettingsOpen = ref(false);
 
-const formData = { ...newsTemplate, ...props.news, show_breadcrumbs: props.news?.show_breadcrumbs ?? true, highlights: props.news?.highlights || [] } as any;
+const formData = { ...newsTemplate, ...props.news, show_breadcrumbs: props.news?.show_breadcrumbs ?? true, highlights: props.news?.highlights || [] };
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)

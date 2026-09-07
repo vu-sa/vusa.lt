@@ -12,7 +12,7 @@
     >
       <IFluentPlay20Filled v-if="isLive" class="size-4" />
       <IFluentPersonAdd20Regular v-else class="size-4" />
-      {{ isLive ? $t('Dalyvauk dabar') : $t('Registruotis') }}
+      {{ $t('Dalyvauk!') }}
     </Button>
 
     <Button

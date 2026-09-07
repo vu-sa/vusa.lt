@@ -90,6 +90,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
+ * @property-read array|string $working_hours
  *
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution hasActiveDuties()
@@ -119,7 +120,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     // Note: has_public_meetings is NOT auto-appended due to performance.
     // Append it explicitly where needed: $institution->append('has_public_meetings')
 
-    public $translatable = ['name', 'short_name', 'description', 'address'];
+    public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
     /**
      * `description` is Tiptap `full` preset HTML, rendered with `v-html` on the

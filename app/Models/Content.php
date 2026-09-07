@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property-read News|null $news
  * @property-read Page|null $page
  * @property-read Collection<int, ContentPart> $parts
- * @property-read Tenant|null $tenant
+ * @property-read TenantHomepageContent|null $tenantHomepageContent
  *
  * @method static \Database\Factories\ContentFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Content newModelQuery()
@@ -40,9 +40,9 @@ class Content extends Model
     }
 
     /**
-     * Inverse side of News/Page/Tenant's `content_id` -- there is no
-     * discriminator column, a Content row is owned by exactly one of the
-     * three. withTrashed() matters here: News/Page soft-delete, and without
+     * Inverse side of News/Page/TenantHomepageContent's `content_id` -- there
+     * is no discriminator column, a Content row is owned by exactly one of
+     * the three. withTrashed() matters here: News/Page soft-delete, and without
      * it a block edited on a trashed record would silently fall back to
      * self-rooting in App\Services\ActivityRootResolver and vanish from the
      * trash-management view.
@@ -57,9 +57,9 @@ class Content extends Model
         return $this->hasOne(Page::class)->withTrashed();
     }
 
-    public function tenant(): HasOne
+    public function tenantHomepageContent(): HasOne
     {
-        return $this->hasOne(Tenant::class);
+        return $this->hasOne(TenantHomepageContent::class);
     }
 
     /**
@@ -71,6 +71,6 @@ class Content extends Model
      */
     public function owner(): ?Model
     {
-        return $this->news ?? $this->page ?? $this->tenant;
+        return $this->news ?? $this->page ?? $this->tenantHomepageContent?->tenant;
     }
 }

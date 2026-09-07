@@ -256,6 +256,7 @@ describe('authorized access', function (): void {
         $institutionData = [
             'name' => ['lt' => 'Test Institution', 'en' => 'Test Institution EN'],
             'short_name' => ['lt' => 'TI', 'en' => 'TI'],
+            'working_hours' => ['lt' => 'I–V 9:00–17:00', 'en' => 'Mon–Fri 9:00–17:00'],
             'tenant_id' => $this->tenant->id,
             'alias' => 'test-institution',
         ];
@@ -268,6 +269,9 @@ describe('authorized access', function (): void {
             'alias' => 'test-institution',
             'tenant_id' => $this->tenant->id,
         ]);
+
+        expect(Institution::query()->where('alias', 'test-institution')->firstOrFail()
+            ->getTranslation('working_hours', 'lt'))->toBe('I–V 9:00–17:00');
     });
 
     test('can access institution edit page', function (): void {

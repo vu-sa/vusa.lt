@@ -25,6 +25,7 @@ const institution = {
   short_name: { lt: '', en: '' },
   description: { lt: '', en: '' },
   address: { lt: '', en: '' },
+  working_hours: { lt: '', en: '' },
   website: '',
   alias: '',
   image_url: null,

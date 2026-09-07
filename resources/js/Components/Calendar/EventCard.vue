@@ -7,7 +7,7 @@
     <!-- 16:10 fixed-ratio image frame per v0 design -->
     <Link
       :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })"
-      class="relative aspect-[16/10] overflow-hidden border border-border bg-secondary"
+      class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary"
     >
       <img
         v-if="imageUrl && !imageLoadError"

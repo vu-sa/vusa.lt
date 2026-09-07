@@ -131,7 +131,7 @@
         <!-- Photo beside content -->
         <div
           v-if="heroImageUrl"
-          class="relative aspect-[16/10] overflow-hidden border border-border bg-secondary"
+          class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary"
         >
           <img
             :src="heroImageUrl"

@@ -50,7 +50,7 @@ export function useNewsFetch() {
 }
 
 /**
- * Default timeline configuration (matches EventTimeline component defaults)
+ * Default timeline configuration (matches EventCalendarElement component defaults)
  *
  * FETCH_CHUNK_DAYS: How many days to fetch at once (larger = fewer requests)
  * BUFFER_DAYS: Trigger fetch when view is within this many days of loaded boundary
@@ -68,7 +68,7 @@ const TIMELINE_DEFAULTS = {
 };
 
 /**
- * Fetch calendar events with date-based loading for the EventTimeline component.
+ * Fetch calendar events with date-based loading for the EventCalendarElement component.
  *
  * Uses smart fetching to minimize API calls:
  * - Fetches large chunks (6 months) at a time

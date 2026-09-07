@@ -56,4 +56,13 @@ class UpdatePageRequest extends FormRequest
             'show_breadcrumbs' => ['boolean'],
         ];
     }
+
+    /**
+     * @return array<string, string>
+     */
+    #[\Override]
+    public function messages(): array
+    {
+        return $this->contentPartMessages();
+    }
 }

@@ -75,6 +75,7 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
+ * @property-read array|string $working_hours
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution hasActiveDuties()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution newModelQuery()

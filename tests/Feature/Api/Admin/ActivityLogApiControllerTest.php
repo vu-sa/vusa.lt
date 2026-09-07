@@ -227,7 +227,7 @@ test('subjectType=contentPart 404s as a root -- it is descendant-only in the all
 test('a tenant homepage content-part edit is reachable via the tenant root feed, and requires super admin', function (): void {
     $tenant = Tenant::factory()->create();
     $content = Content::factory()->create();
-    $tenant->content()->associate($content)->save();
+    $tenant->homepageContents()->create(['content_id' => $content->id, 'locale' => 'lt']);
     $part = $content->parts()->create(['type' => 'tiptap', 'json_content' => [], 'order' => 0]);
 
     $part->update(['json_content' => (new Editor)->setContent('<p>Edited homepage block</p>')->getDocument()]);

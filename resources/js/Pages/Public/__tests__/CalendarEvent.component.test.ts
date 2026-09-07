@@ -21,7 +21,7 @@ const stubs = {
   },
   PhotoGalleryGridDisplay: {
     props: { element: Object },
-    template: '<div class="photo-gallery-grid-stub" />',
+    template: '<div class="photo-gallery-grid-stub" :data-columns="element.options.columns" />',
   },
 };
 
@@ -188,6 +188,23 @@ describe('Public/CalendarEvent.vue', () => {
     const related = wrapper.find('section.rc-viewport');
     expect(related.exists()).toBe(true);
     expect(related.find('.mx-auto.max-w-7xl').exists()).toBe(true);
+  });
+
+  it('uses each related event’s main image and a three-column photo gallery', () => {
+    const wrapper = mountPage({
+      event: makeEvent({
+        images: [
+          { id: 1, original_url: 'https://example.com/one.jpg' },
+          { id: 2, original_url: 'https://example.com/two.jpg' },
+        ],
+      }),
+      calendar: [
+        { id: 2, title: 'Related event', date: '2030-01-02T18:00:00+00:00', main_image_url: 'https://example.com/related.jpg' },
+      ],
+    });
+
+    expect(wrapper.find('.photo-gallery-grid-stub').attributes('data-columns')).toBe('3');
+    expect(wrapper.find('img[alt="Related event"]').attributes('src')).toBe('https://example.com/related.jpg');
   });
 
   /**

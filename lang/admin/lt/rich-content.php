@@ -97,6 +97,7 @@ return [
     'subtitle' => 'Paantraštė',
     'content' => 'Turinys',
     'enter_title' => 'Įveskite pavadinimą...',
+    'enter_text' => 'Įveskite tekstą...',
     'variant' => 'Variantas',
     'color' => 'Spalva',
     'show_icon' => 'Rodyti ikoną',

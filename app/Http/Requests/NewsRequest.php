@@ -43,10 +43,7 @@ class NewsRequest extends FormRequest
     {
         return [
             'content.required' => trans('forms.validation.content.required'),
-            'content.parts.required' => trans('forms.validation.content.parts_required'),
-            'content.parts.*.type.required' => trans('forms.validation.content.part_type_required'),
-            'content.parts.*.type.exists' => trans('forms.validation.content.part_type_exists'),
-            'content.parts.*.json_content.required' => trans('forms.validation.content.part_content_required'),
+            ...$this->contentPartMessages(),
         ];
     }
 }

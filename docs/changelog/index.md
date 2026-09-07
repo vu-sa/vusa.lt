@@ -5,21 +5,24 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
-Čia rasite visus mano.vusa.lt platformos pakeitimus ir patobulinimus.
+## v2.1 — Dvikalbis pagrindinis puslapis (2026-09-07) {#v2-1}
+
+- ⭐ **Pagrindinio puslapio turinys anglų kalba** — administravimo aplinkoje galima atskirai redaguoti lietuvišką ir anglišką pagrindinio puslapio versijas; kol angliška versija neparengta, lankytojai matys lietuvišką turinį
+- ✨ **Aiškesni institucijų puslapiai** — socialinių tinklų kortelėse rodomos tikros paskyrų žymos, galima nurodyti darbo laiką, ilgi aprašymai suskleidžiami, o ilgos institucijų ir turinio puslapių antraštės išlieka lengvai skaitomos
+- ✨ **Nuorodos Tiptap burbuliniame meniu ir žingsnių bloke** — visur, kur veikia teksto formatavimo burbulinis meniu, dabar galima įterpti nuorodą; procesų žingsnių („process-steps“) bloke atsirado raiškiojo teksto ir nuorodų palaikymas
+- ✨ **Aiškiau išdėstyta naujienos forma** — įvadinio teksto laukelis perkeltas virš turinio bloko, atitinkant realią naujienos struktūrą, bei patikslinta jo paskirtis (naudojamas ne tik paieškos sistemose, bet ir pačios naujienos įvade)
+- ✨ **Patogesnis kalendoriaus sinchronizavimas** — kalendoriaus sinchronizavimo langas tapo erdvesnis, o sinchronizavimo mygtukas teisingai išverstas į anglų kalbą
 
 ## v2.0 — Naujas svetainės dizainas ir vizualus turinio redaktorius (2026-09-05) {#v2-0}
 
-> Visi šios šakos („feature/new-style“) pakeitimai ir patobulinimai sujungti į v2.0 versiją.
-
-- ⭐ **Naujas viešosios svetainės dizainas** — moderni tipografija („Atkinson Hyperlegible“), šilta šviesi paletė ir sodri tamsi tema, griežtos kampuotos formos bei vientisa dizaino žetonų sistema, nepaliečianti vidinės administravimo aplinkos
+- ⭐ **Naujas viešosios svetainės dizainas** 
 - ⭐ **Pilno ekrano vizualus turinio redaktorius (WYSIWYG)** — tekstai, mygtukai, nuotraukos, kortelės, statistika, tinkleliai, galerijos, hero karuselės, antraštės, procesų schemos, akordeonai, naujienų ir tinklalaidžių blokai dabar redaguojami tiesiogiai realiame puslapio vaizde su gyva peržiūra, be pasikartojančių formų; puslapių ir naujienų formose vietoje jų rodoma tik švari turinio kortelė su mygtuku „Redaguoti turinį“
 - ⭐ **Integruotas prieinamumo meniu** — vietinė prieinamumo juosta leidžia pasirinkti teksto dydį, įjungti aukštą kontrastą ir pabraukti nuorodas be trečiųjų šalių („UserWay“) įrankių
 - ✨ **Atnaujinta navigacija ir apatinė dalis (footer)** — dviejų lygių navigacija su mega-meniu (nuotraukų kortelės, nuorodų aprašymai, kategorijų antraštės), naujas footeris su administratoriams valdomais iki 4 navigacijos stulpelių
 - ✨ **Perdaryti renginių ir kalendoriaus puslapiai** — viso pločio antraštė su datos plokštele, informacijos šoninė juosta, interaktyvus žemėlapis, greita momentinė „Typesense“ paieška, būsimų/praėjusių renginių skirtukai bei metų ir kategorijų filtrai
-- ✨ **Kontaktų, padalinių, kategorijų, registracijos ir studijų programų puslapiai pritaikyti naujam stiliui** — atnaujinta kontaktinė informacija, pareigybių filtrai, nuorodų sąrašai bei studijų programų tinklelis su fakulteto filtru
+- ✨ **Kontaktų, padalinių, kategorijų, registracijos ir studijų rinkinių puslapiai pritaikyti naujam stiliui** — atnaujinta kontaktinė informacija, pareigybių filtrai, nuorodų sąrašai bei studijų programų tinklelis su fakulteto filtru
 - ✨ **Dokumentų sąraše — susietas renginys** — prie dokumento, parengto posėdžiui ir turinčio paskelbtą kalendoriaus renginį, galima vienu mygtuku atverti to posėdžio renginio puslapį
 - ✨ **„Mano VU SA“ tapo aiškiu navigacijos mygtuku, o pranešimai suvienodinti** — paskyros nuoroda dera prie kitų svetainės valdiklių, slapukų priminimas bei bandomosios aplinkos įspėjimas priderinti prie naujo stiliaus
-- 🔧 **Keli smulkūs pataisymai** — kompaktiškų hero karuselių sulygiavimas, telefono viršutinės juostos temos perjungimas, padalinių žemėlapio veikimas, antraštės redagavimo šokinėjimas, narių registracijos laiškai, bandomosios (staging) aplinkos izoliacija nuo gamybinių el. laiškų ir „SharePoint“ failų
 - ✨ **Vėžliukas puslapio įkėlimo indikatoriuje ir tuščiuose sąrašuose** — vietoje įprasto sukamo apskritimo dabar lėtai žingsniuoja organizacijos talismanas, o ten, kur dar nėra ką rodyti, sąrašo viduryje ilsisi tas pats vėžliukas
 
 ## v1.38 — Angliška darbotvarkė ir pertraukos (2026-09-02) {#v1-38}

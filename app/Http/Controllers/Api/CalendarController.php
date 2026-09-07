@@ -23,7 +23,7 @@ class CalendarController extends ApiController
     /**
      * Get calendar events for a tenant (public endpoint).
      *
-     * Designed for the EventCalendarElement/EventTimeline component with date-based fetching.
+     * Designed for the EventCalendarElement component with date-based fetching.
      *
      * @route GET /api/v1/tenants/{tenant}/calendar
      *

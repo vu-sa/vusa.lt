@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\LocaleEnum;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTenantRequest;
 use App\Http\Requests\StoreTenantRequest;
@@ -14,6 +15,7 @@ use App\Models\Tenant;
 use App\Services\ContentService;
 use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Inertia\Response;
 
 class TenantController extends AdminController
@@ -132,16 +134,16 @@ class TenantController extends AdminController
     {
         $this->handleAuthorization('updateMainPage', $tenant);
 
-        $tenant->load('content.parts');
-
-        if ($tenant->content === null) {
-            $content = new Content;
-            $content->save();
-            $tenant->content()->associate($content)->save();
-        }
+        $locale = LocaleEnum::tryFrom(request()->string('locale')->toString()) ?? LocaleEnum::LT;
+        $content = $tenant->homepageContents()
+            ->where('locale', $locale->value)
+            ->with('content.parts')
+            ->first()?->content;
 
         return $this->inertiaResponse('Admin/Content/EditHomePage', [
-            'tenant' => $tenant->load('content.parts'),
+            'tenant' => $tenant,
+            'content' => $content,
+            'locale' => $locale->value,
         ]);
     }
 
@@ -149,13 +151,26 @@ class TenantController extends AdminController
     {
         $validated = $request->validated();
 
-        $content = Content::query()->find($validated['id']);
+        DB::transaction(function () use ($tenant, $validated): void {
+            $lockedTenant = Tenant::query()->lockForUpdate()->findOrFail($tenant->id);
+            $homepageContent = $lockedTenant->homepageContents()
+                ->where('locale', $validated['locale'])
+                ->first();
 
-        // Use ContentService to efficiently update content parts
-        app(ContentService::class)->updateContentParts($content, $validated['parts']);
+            if ($homepageContent === null) {
+                $homepageContent = $lockedTenant->homepageContents()->create([
+                    'content_id' => Content::query()->create()->id,
+                    'locale' => $validated['locale'],
+                ]);
+            }
 
-        // Clear homepage cache for this tenant (both locales)
-        Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
+            app(ContentService::class)->updateContentParts($homepageContent->content, $validated['parts']);
+        });
+
+        foreach (LocaleEnum::cases() as $locale) {
+            Cache::tags(['homepage', "tenant_{$tenant->id}", "locale_{$locale->value}"])
+                ->forget("homepage_content_{$tenant->id}_{$locale->value}");
+        }
 
         return redirect()->back()->with('success', $this->entityMessage('updated', 'tenant'));
     }

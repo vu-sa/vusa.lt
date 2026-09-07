@@ -4,7 +4,7 @@
  * Centralized extension configurations for different editor use cases.
  * Presets: minimal, compact, full
  */
-import type { AnyExtension } from '@tiptap/core';
+import type { AnyExtension, Editor } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
 import { CharacterCount, Placeholder } from '@tiptap/extensions';
 import { FileHandler } from '@tiptap/extension-file-handler';
@@ -27,27 +27,36 @@ export interface PresetOptions {
   placeholder?: string;
   maxCharacters?: number | null;
   disableTables?: boolean;
-  onFileDrop?: (editor: any, files: File[], pos?: number) => void;
-  onFilePaste?: (editor: any, files: File[]) => void;
+  disableLinks?: boolean;
+  onFileDrop?: (editor: Editor, files: File[], pos?: number) => void;
+  onFilePaste?: (editor: Editor, files: File[]) => void;
+}
+
+function getStarterKitLinkConfig(disableLinks: boolean) {
+  if (disableLinks) {
+    return false;
+  }
+
+  return {
+    openOnClick: false,
+    HTMLAttributes: {
+      // `text-brand`, not the old `text-vusa-red`: it resolves per theme (red on
+      // light, amber on dark) via the token system. Rich-content surfaces let
+      // `.rc-prose a` own the final colour anyway — this is for editors and
+      // stored HTML outside a prose wrapper (comments).
+      class: 'text-brand underline font-medium',
+    },
+  };
 }
 
 /**
  * Shared StarterKit configuration used across all presets
  */
-function createStarterKit(enableHeading: boolean = false) {
+function createStarterKit(enableHeading: boolean = false, disableLinks: boolean = false) {
   return StarterKit.configure({
     heading: enableHeading ? undefined : false,
     codeBlock: false,
-    link: {
-      openOnClick: false,
-      HTMLAttributes: {
-        // `text-brand`, not the old `text-vusa-red`: it resolves per theme (red on
-        // light, amber on dark) via the token system. Rich-content surfaces let
-        // `.rc-prose a` own the final colour anyway — this is for editors and
-        // stored HTML outside a prose wrapper (comments).
-        class: 'text-brand underline font-medium',
-      },
-    },
+    link: getStarterKitLinkConfig(disableLinks),
   });
 }
 
@@ -78,7 +87,7 @@ const ALLOWED_MIME_TYPES = [
  */
 export function createMinimalExtensions(options: PresetOptions = {}): AnyExtension[] {
   const extensions: AnyExtension[] = [
-    createStarterKit(false),
+    createStarterKit(false, options.disableLinks),
   ];
 
   if (options.placeholder) {
@@ -93,8 +102,8 @@ export function createMinimalExtensions(options: PresetOptions = {}): AnyExtensi
 }
 
 /**
- * Marks preset - a single inline run of text with bold/italic/underline only. No
- * headings, lists, blockquote, hr, code, strike, or link — those nodes/marks aren't
+ * Marks preset - a single inline run of text with bold/italic/underline/link marks. No
+ * headings, lists, blockquote, hr, code, or strike — those nodes/marks aren't
  * just hidden from the toolbar, they're unregistered, so their markdown input rules
  * ("# ", "- ", "> ", "---") can't fire either. For fields like the hero title/
  * description, where the value is a single styled line, not a document. Always pair
@@ -108,7 +117,7 @@ export function createMarksExtensions(options: PresetOptions = {}): AnyExtension
       codeBlock: false,
       code: false,
       strike: false,
-      link: false,
+      link: getStarterKitLinkConfig(!!options.disableLinks),
       blockquote: false,
       bulletList: false,
       orderedList: false,
@@ -134,7 +143,7 @@ export function createMarksExtensions(options: PresetOptions = {}): AnyExtension
  */
 export function createCompactExtensions(options: PresetOptions = {}): AnyExtension[] {
   const extensions: AnyExtension[] = [
-    createStarterKit(false),
+    createStarterKit(false, options.disableLinks),
     CustomHeading.configure({
       levels: [2],
     }),
@@ -178,7 +187,7 @@ export function createCompactExtensions(options: PresetOptions = {}): AnyExtensi
  */
 export function createFullExtensions(options: PresetOptions = {}): AnyExtension[] {
   const extensions: AnyExtension[] = [
-    createStarterKit(false),
+    createStarterKit(false, options.disableLinks),
     CustomHeading.configure({
       levels: [2, 3, 4],
     }),

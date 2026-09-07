@@ -27,11 +27,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $address
  * @property string|null $shortname_vu
  * @property string|null $primary_institution_id
- * @property int|null $content_id
  * @property-read Collection<int, Banner> $banners
  * @property-read Collection<int, Calendar> $calendar
- * @property-read Content|null $content
  * @property-read Collection<int, Duty> $duties
+ * @property-read Collection<int, TenantHomepageContent> $homepageContents
  * @property-read Collection<int, Institution> $institutions
  * @property-read Collection<int, News> $news
  * @property-read Collection<int, Page> $pages
@@ -169,9 +168,12 @@ class Tenant extends Model
         return $this->belongsTo(Institution::class, 'primary_institution_id');
     }
 
-    public function content()
+    /**
+     * @return HasMany<TenantHomepageContent, $this>
+     */
+    public function homepageContents(): HasMany
     {
-        return $this->belongsTo(Content::class);
+        return $this->hasMany(TenantHomepageContent::class);
     }
 
     /**

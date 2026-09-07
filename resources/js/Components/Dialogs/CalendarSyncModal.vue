@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="showModal" @update:open="(open) => !open && $emit('close')">
-    <DialogContent class="max-w-2xl rounded-none border border-border bg-background p-6 shadow-xl">
+    <DialogContent class="sm:max-w-3xl max-h-[90vh] overflow-y-auto rounded-none border border-border bg-background p-6 shadow-xl">
       <DialogHeader class="border-b border-border pb-4 text-left">
         <div class="flex items-center gap-2">
           <span class="u-eyebrow">{{ $t('Sinchronizavimas') }}</span>
@@ -56,8 +56,8 @@
                   <CopyToClipboardButton
                     show-icon
                     :text-to-copy="route('calendar.ics', { lang: 'en' })"
-                    error-text="Couldn't copy the link..."
-                    success-text="Link copied!"
+                    :error-text="$t('Nepavyko nukopijuoti nuorodos...')"
+                    :success-text="$t('Nuoroda nukopijuota!')"
                     class="shrink-0 h-9 px-3 text-xs font-bold uppercase tracking-wide border-border hover:border-brand hover:text-brand"
                   >
                     {{ $t('Kopijuoti') }}

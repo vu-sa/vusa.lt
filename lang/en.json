@@ -236,6 +236,7 @@
     "Istorinių Europos kovos menų klubas": "Historical European Martial Arts Club",
     "Koordinatoriai": "Coordinators",
     "Kuratoriai": "Mentors",
+    "Darbo laikas": "Working hours",
     "VU SA archyvo nuotrauka": "Photo from VU SR archive",
     "Šaltinis": "Source",
     "Įmonės kodas": "Company code",
@@ -542,6 +543,8 @@
     "Rasta :count renginių": "Found :count events",
     "Visų renginių sąrašas": "List of all events",
     "Sinchronizuoti": "Synchronize",
+    "Sinchronizuoti kalendorių": "Sync calendar",
+    "Sinchronizuoti kalendoriu": "Sync calendar",
     "Sinchronizavimas": "Synchronization",
     "Kalendoriaus sinchronizavimo instrukcija": "Calendar Synchronization Instructions",
     "Visi renginiai": "All events",
@@ -940,6 +943,7 @@
     "Renginys įvyks": "Upcoming event",
     "Vyksta dabar": "Happening now",
     "Dalyvauk dabar": "Join now",
+    "Dalyvauk!": "Join!",
     "Šiuo metu kontaktų nėra": "No contacts currently",
     "Ši institucija šiuo metu neturi viešai skelbiamų kontaktų.": "This institution currently has no publicly listed contacts.",
     "Tapk studentų(-čių) atstovu(-e)!": "Become a student representative!",
@@ -1215,6 +1219,8 @@
     "Seniausi pirmi": "Oldest first",
     "Išvalyti filtrus": "Clear filters",
     "Rodyti daugiau": "Show more",
+    "Rodyti mažiau": "Show less",
+    "Kuratoriai": "Mentors",
     "Be pavadinimo": "Untitled",
     "Pradėkite rašyti": "Start typing",
     "Ieškokite visose jums prieinamose srityse vienu metu": "Search across everything you can access at once",
@@ -1373,5 +1379,8 @@
     "Rodyti daugiau naujienų": "Show more news",
     "Visos naujienos": "All news",
     "Ieškoti metų": "Search year",
-    "Ieškoti žymos": "Search tags"
+    "Ieškoti žymos": "Search tags",
+    "Naudojamas naujienos įvade ir paieškos rezultatuose (SEO).": "Used in the news introduction and search results (SEO).",
+    "Maksimalus ženklų skaičius": "Maximum characters",
+    "Įvadinis tekstas": "Introductory text"
 }

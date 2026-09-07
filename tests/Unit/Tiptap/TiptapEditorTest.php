@@ -113,6 +113,30 @@ describe('TiptapEditor', function (): void {
             ->toContain('<td');
     });
 
+    it('wraps a rendered table in a scrollable container, so a wide resized table scrolls instead of overflowing the page', function (): void {
+        $content = [
+            'type' => 'doc',
+            'content' => [
+                [
+                    'type' => 'table',
+                    'content' => [
+                        [
+                            'type' => 'tableRow',
+                            'content' => [
+                                ['type' => 'tableHeader', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Header']]]]],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $editor = new TiptapEditor;
+        $html = $editor->setContent($content)->getHTML();
+
+        expect($html)->toMatch('/<div class="tableWrapper"><table[^>]*>.*<\/table><\/div>/s');
+    });
+
     it('renders links with styling', function (): void {
         $content = [
             'type' => 'doc',

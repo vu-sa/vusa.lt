@@ -32,33 +32,47 @@
             {{ String(index + 1).padStart(2, '0') }}
           </span>
 
-          <RCInlineText
+          <TiptapEditor
             v-if="editable"
-            as="h3"
             :model-value="step.title ?? ''"
-            :editable
+            preset="marks"
+            toolbar="bubble"
+            html
+            class="rc-step-title-editor mt-3 text-lg font-bold text-foreground"
             :placeholder="$t('rich-content.enter_step_title')"
-            class="mt-3 text-lg font-bold text-foreground"
             data-rc-step-title
-            @update:model-value="updateStep(index, { title: $event })"
+            data-rc-interactive
+            @update:model-value="updateStep(index, { title: ($event as string) ?? '' })"
           />
-          <h3 v-else class="mt-3 text-lg font-bold text-foreground">
-            {{ step.title }}
+          <h3 v-else class="rc-step-title mt-3 text-lg font-bold text-foreground">
+            <RichContentTiptapHTML v-if="hasTiptapContent(step.title)" :json_content="step.title" />
+            <span v-else-if="hasHtmlText(step.title)" v-html="step.title" />
+            <template v-else>
+              {{ step.title }}
+            </template>
           </h3>
 
-          <RCInlineText
+          <TiptapEditor
             v-if="editable"
-            as="p"
             :model-value="step.text ?? ''"
-            :editable
+            preset="marks"
+            toolbar="bubble"
+            html
+            class="rc-step-text-editor mt-2 text-pretty leading-relaxed text-muted-foreground"
             :placeholder="$t('rich-content.enter_step_text')"
-            class="mt-2 text-pretty leading-relaxed text-muted-foreground"
             data-rc-step-text
-            @update:model-value="updateStep(index, { text: $event })"
+            data-rc-interactive
+            @update:model-value="updateStep(index, { text: ($event as string) ?? '' })"
           />
-          <p v-else-if="step.text" class="mt-2 text-pretty leading-relaxed text-muted-foreground">
-            {{ step.text }}
-          </p>
+          <template v-else>
+            <div v-if="hasTiptapContent(step.text)" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground">
+              <RichContentTiptapHTML :json_content="step.text" />
+            </div>
+            <p v-else-if="hasHtmlText(step.text)" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground" v-html="step.text" />
+            <p v-else-if="step.text" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground">
+              {{ step.text }}
+            </p>
+          </template>
         </li>
       </ol>
 
@@ -92,14 +106,15 @@ import RCSection from '../RCSection.vue';
 import type { BandResolution } from '../bandLayout';
 
 import type { ProcessSteps } from '@/Types/contentParts';
+import { hasHtmlText } from '@/Utils/String';
 import { Button } from '@/Components/ui/button';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 
 // Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
-// full-screen editor's inline-text/add-placeholder controls into every public page
-// that renders a process-steps block, which never reaches these branches at all.
-const RCInlineText = defineAsyncComponent(() => import('../Editor/Fullscreen/RCInlineText.vue'));
+// full-screen editor's Tiptap controls into every public page that renders a process-steps block.
+const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
+const RichContentTiptapHTML = defineAsyncComponent(() => import('../RichContentTiptapHTML.vue'));
 const RCAddPlaceholder = defineAsyncComponent(() => import('../Editor/Fullscreen/RCAddPlaceholder.vue'));
 
 /**
@@ -125,6 +140,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<(e: 'update:element', value: ProcessSteps) => void>();
+
+function hasTiptapContent(node: unknown): boolean {
+  if (!node || typeof node !== 'object' || !('content' in node)) {
+    return false;
+  }
+  const { content } = node as { content: unknown };
+  return Array.isArray(content) && content.length > 0;
+}
 
 function updateOptions(patch: { title?: string; subtitle?: string; eyebrow?: string }): void {
   emit('update:element', { ...props.element, options: { ...props.element.options, ...patch } });
@@ -168,3 +191,47 @@ function addStep(): void {
   });
 }
 </script>
+
+<style scoped>
+.rc-step-title-editor :deep(.tiptap-content),
+.rc-step-text-editor :deep(.tiptap-content) {
+  min-height: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.rc-step-title-editor :deep(.ProseMirror),
+.rc-step-text-editor :deep(.ProseMirror) {
+  min-height: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+}
+
+.rc-step-title-editor :deep(.ProseMirror p),
+.rc-step-text-editor :deep(.ProseMirror p) {
+  margin: 0;
+}
+
+.rc-step-title :deep(p) {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  display: inline;
+}
+
+.rc-step-text :deep(p) {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.rc-step-title :deep(a),
+.rc-step-text :deep(a) {
+  color: var(--brand);
+  text-decoration: underline;
+  font-weight: 500;
+}
+</style>

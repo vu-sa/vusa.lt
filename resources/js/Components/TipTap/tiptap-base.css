@@ -167,7 +167,17 @@
 /* Tables. On the prose surface the published cells carry the classes the render
    presets bake (`border border-zinc-400 px-4 py-1 …`, see presets.ts /
    App\Tiptap\TiptapEditor) — only the compact chrome is scoped away here.
-   `position: relative` stays unscoped: the selectedCell overlay anchors to it. */
+   `position: relative` stays unscoped: the selectedCell overlay anchors to it.
+
+   A resized table's explicit column widths can add up past the reading measure —
+   every render path (the live NodeView, App\Tiptap\TiptapEditor::getHTML(), and
+   generateHTMLfromTiptap's client-side fallback) wraps the table in a `.tableWrapper`
+   div so it scrolls horizontally instead of overflowing the page. Unscoped by
+   `.tiptap`/`.rc-prose`: the wrapper only ever exists around a table. */
+.tableWrapper {
+  overflow-x: auto;
+}
+
 .tiptap table {
   border-collapse: collapse;
   width: 100%;

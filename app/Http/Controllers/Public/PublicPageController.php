@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Public;
 
 use App\Actions\GetPublicMeetingDocuments;
 use App\Collections\NewsCollection;
+use App\Enums\LocaleEnum;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Models\Calendar;
 use App\Models\Category;
+use App\Models\Content;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Navigation;
@@ -69,16 +71,9 @@ class PublicPageController extends PublicController
         $cacheKey = "homepage_content_{$this->tenant->id}_{$locale}";
 
         $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
-            ->remember($cacheKey, 3600, function () {
-                // Check if tenant has content with actual content parts
-                $tenantContent = $this->tenant->content;
-
-                // If no content or content has no parts, fall back to main tenant
-                if (! $tenantContent || $tenantContent->parts->isEmpty()) {
-                    return Tenant::main()?->content;
-                }
-
-                return $tenantContent;
+            ->remember($cacheKey, 3600, function () use ($locale) {
+                return $this->homepageContentForLocale($this->tenant, $locale)
+                    ?? $this->homepageContentForLocale(Tenant::main(), $locale);
             });
 
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
@@ -88,7 +83,7 @@ class PublicPageController extends PublicController
         // content is actually shown — subdomains without their own content show main's.
         if (Auth::check()) {
             // @phpstan-ignore nullsafe.neverNull (main tenant / its content can be null at runtime)
-            $this->sharePublicEditLink($content?->tenant ?? $this->tenant);
+            $this->sharePublicEditLink($content?->tenantHomepageContent?->tenant ?? $this->tenant);
         }
 
         $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
@@ -116,6 +111,26 @@ class PublicPageController extends PublicController
             'calendarEvents' => $calendarEvents,
             'firstNewsImageUrl' => $firstNewsImageUrl,
         ]);
+    }
+
+    private function homepageContentForLocale(?Tenant $tenant, string $locale): ?Content
+    {
+        if ($tenant === null) {
+            return null;
+        }
+
+        $tenant->loadMissing('homepageContents.content.parts');
+        $homepageContents = $tenant->homepageContents->keyBy('locale');
+
+        foreach (array_unique([$locale, LocaleEnum::LT->value]) as $candidateLocale) {
+            $content = $homepageContents->get($candidateLocale)?->content;
+
+            if ($content?->parts->isNotEmpty()) {
+                return $content;
+            }
+        }
+
+        return null;
     }
 
     public function page()
