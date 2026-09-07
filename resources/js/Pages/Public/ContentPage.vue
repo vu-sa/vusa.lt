@@ -18,7 +18,7 @@
           <EyebrowLabel v-if="categoryName">
             {{ categoryName }}
           </EyebrowLabel>
-          <h1 :class="['u-display text-4xl sm:text-6xl', categoryName && 'mt-3']">
+          <h1 :class="[pageTitleClass, categoryName && 'mt-3']">
             {{ page.title }}
           </h1>
         </div>
@@ -90,7 +90,7 @@ import TableOfContents from '@/Components/Public/TableOfContents.vue';
 import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
 import { usePageBreadcrumbs, useBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
-type PageContentPart = AnchorablePart & { [key: string]: any };
+type PageContentPart = AnchorablePart & { [key: string]: unknown };
 
 interface Page {
   title: string;
@@ -124,6 +124,13 @@ const pageLayout = computed(() => props.page.layout || 'default');
 
 // `category` arrives as the whole relation (the controller's `only()` resolves it).
 const categoryName = computed(() => props.page.category?.name ?? undefined);
+
+const pageTitleClass = computed(() => [
+  'u-display',
+  props.page.title.length > 52
+    ? 'text-3xl leading-[1.08] sm:text-5xl sm:leading-[1.05] lg:text-6xl'
+    : 'text-4xl leading-[1.08] sm:text-6xl sm:leading-none',
+]);
 
 // The sidebar ToC only applies to the `default` layout, requires at least one anchor,
 // and can be turned off per-page (Advanced Settings in PageForm).

@@ -96,6 +96,23 @@ describe('Public/ContentPage.vue', () => {
     expect(canvas.classes()).toContain('md:text-[1.0625rem]');
   });
 
+  it('uses a smaller, more open title style for long page titles', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage());
+
+    const wrapper = mount(ContentPage, {
+      props: {
+        navigationItemId: 1,
+        page: makePage({ title: 'A long title that needs more room to remain readable across every viewport' }),
+      },
+      global: { stubs },
+    });
+
+    const title = wrapper.find('h1');
+    expect(title.classes()).toContain('text-3xl');
+    expect(title.classes()).toContain('sm:text-5xl');
+    expect(title.classes()).toContain('leading-[1.08]');
+  });
+
   it('renders no footer when the page has no last-edited/updated date', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage());
 
