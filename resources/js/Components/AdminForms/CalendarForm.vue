@@ -327,6 +327,12 @@ const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)
   : useForm(formData).withPrecognition(props.submitMethod, props.submitUrl);
 
+if (isCreate.value && form.tenant_id == null) {
+  form.tenant_id = props.assignableTenants.find(tenant => tenant.type === 'pagrindinis')?.id
+    ?? props.assignableTenants[0]?.id
+    ?? null;
+}
+
 // Set validation timeout
 form.setValidationTimeout(500);
 

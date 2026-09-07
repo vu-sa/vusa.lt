@@ -32,11 +32,14 @@ class GetTenantsForUpserts
             );
         }
 
-        $duties = $authorizer->getPermissableDuties();
+        $tenants = $authorizer->getPermissableDuties()
+            ->load('institution.tenant')
+            ->pluck('institution.tenant');
 
-        $tenants = $duties->load('institution.tenant')->pluck('institution.tenant');
+        // TODO: Resolve tenant access solely from permission-granting current duties; user-level
+        // roles must never widen it, except for the super-admin role.
 
-        return $tenants->unique('id')->map(
+        return $tenants->filter()->unique('id')->map(
             fn ($tenant) => [
                 'id' => $tenant->id,
                 'shortname' => __($tenant->shortname),

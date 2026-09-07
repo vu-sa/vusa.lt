@@ -425,11 +425,10 @@ const statusLinks = computed(() => {
   });
 
   // Public view link (by ID - always works)
-  const tenant = props.assignableTenants.find(t => t.id === props.institution.tenant_id);
   links.push({
     url: route('contacts.institution', {
       institution: props.institution.id,
-      subdomain: resolveTenantSubdomain(tenant?.id),
+      subdomain: resolveTenantSubdomain(props.institution.tenant_id ?? undefined),
       lang: page.props.app?.locale || 'lt',
     }),
     label: 'Public',
