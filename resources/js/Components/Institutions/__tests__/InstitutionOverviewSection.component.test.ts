@@ -13,20 +13,32 @@ const stubs = {
 };
 
 type InstitutionProp = InstanceType<typeof InstitutionOverviewSection>['$props']['institution'];
+type OverviewProp = InstanceType<typeof InstitutionOverviewSection>['$props']['overview'];
 
 const makeInstitution = (overrides: Record<string, unknown> = {}): InstitutionProp => ({
   id: '1',
   name: 'Test Institution',
   short_name: 'TI',
   description: 'A short description.',
+  types: [],
+  managers: [],
+  administrators: [],
+  sharepointPath: null,
+  duties_count: 1,
+  meetings_count: 0,
+  tasks_count: 0,
+  related_institutions_count: 0,
+  comments_count: 0,
+  meeting_periodicity_days: 30,
+  ...overrides,
+}) as unknown as InstitutionProp;
+
+const makeOverview = (overrides: Record<string, unknown> = {}): OverviewProp => ({
   current_users: [{ id: 1, name: 'Alice' }],
   duties: [{ id: 'd1', name: 'Chair', current_users: [{ id: 1, name: 'Alice' }] }],
-  meetings: [],
-  allTasks: [],
-  comments_count: 0,
+  recentMeetings: [],
+  meetings_count: 0,
   recentComments: [],
-  relatedInstitutionsFlat: [],
-  meeting_periodicity_days: 30,
   activity_status: {
     status: 'healthy',
     requires_action: false,
@@ -41,12 +53,12 @@ const makeInstitution = (overrides: Record<string, unknown> = {}): InstitutionPr
     active_check_in_until: null,
   },
   ...overrides,
-}) as unknown as InstitutionProp;
+}) as unknown as OverviewProp;
 
 describe('InstitutionOverviewSection', () => {
   it('renders the About section when a description is present', () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution() },
+      props: { institution: makeInstitution(), overview: makeOverview() },
       global: { stubs },
     });
 
@@ -56,7 +68,7 @@ describe('InstitutionOverviewSection', () => {
 
   it('hides the About section when there is no description', () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution({ description: '' }) },
+      props: { institution: makeInstitution({ description: '' }), overview: makeOverview() },
       global: { stubs },
     });
 
@@ -65,7 +77,7 @@ describe('InstitutionOverviewSection', () => {
 
   it('renders members with the duty they hold', () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution() },
+      props: { institution: makeInstitution(), overview: makeOverview() },
       global: { stubs },
     });
 
@@ -76,9 +88,8 @@ describe('InstitutionOverviewSection', () => {
   it('keeps tasks out of the overview — they live in their own tab', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: {
-        institution: makeInstitution({
-          allTasks: [{ id: 't1', name: 'Overdue task', completed_at: null }],
-        }),
+        institution: makeInstitution(),
+        overview: makeOverview(),
       },
       global: { stubs },
     });
@@ -89,9 +100,8 @@ describe('InstitutionOverviewSection', () => {
   it('keeps related institutions out of the overview — they have their own tab', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: {
-        institution: makeInstitution({
-          relatedInstitutionsFlat: [{ id: 'other', name: 'VU MIF Taryba' }],
-        }),
+        institution: makeInstitution(),
+        overview: makeOverview(),
       },
       global: { stubs },
     });
@@ -102,8 +112,9 @@ describe('InstitutionOverviewSection', () => {
   it('folds the last meeting date into the activity highlight', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: {
-        institution: makeInstitution({
-          meetings: [{ id: 'm1', start_time: '2025-11-01T10:00:00.000Z', title: 'Posėdis' }],
+        institution: makeInstitution(),
+        overview: makeOverview({
+          recentMeetings: [{ id: 'm1', start_time: '2025-11-01T10:00:00.000Z', title: 'Posėdis' }],
         }),
       },
       global: { stubs },
@@ -115,9 +126,10 @@ describe('InstitutionOverviewSection', () => {
   it('renders the shared backend activity status', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: {
-        institution: makeInstitution({
+        institution: makeInstitution(),
+        overview: makeOverview({
           activity_status: {
-            ...makeInstitution().activity_status,
+            ...makeOverview().activity_status,
             status: 'overdue',
             requires_action: true,
             priority: 50,
@@ -136,7 +148,8 @@ describe('InstitutionOverviewSection', () => {
   it('links the overflow member count to the duties tab', async () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: {
-        institution: makeInstitution({
+        institution: makeInstitution(),
+        overview: makeOverview({
           current_users: Array.from({ length: 9 }, (_, i) => ({ id: i + 1, name: `Member ${i + 1}` })),
         }),
       },
@@ -152,7 +165,7 @@ describe('InstitutionOverviewSection', () => {
 
   it('emits navigate-tab when the members action is used', async () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution() },
+      props: { institution: makeInstitution(), overview: makeOverview() },
       global: { stubs },
     });
 

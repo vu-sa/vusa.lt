@@ -652,6 +652,7 @@ declare global {
       address?: Array<unknown> | null
       phone?: string | null
       email?: string | null
+      working_hours?: Array<unknown> | null
       website?: string | null
       image_url?: string | null
       image_focal_point?: string | null
@@ -1108,6 +1109,7 @@ declare global {
       address?: Array<unknown> | null
       phone?: string | null
       email?: string | null
+      working_hours?: Array<unknown> | null
       website?: string | null
       image_url?: string | null
       image_focal_point?: string | null
@@ -1814,6 +1816,8 @@ declare global {
       tenant_id: number
       content_id: number
       locale: string
+      created_at?: string | null
+      updated_at?: string | null
       // relations
       content?: Content
       tenant?: Tenant
@@ -2083,3 +2087,4 @@ declare global {
 
   }
 }
+

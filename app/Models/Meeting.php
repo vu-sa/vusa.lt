@@ -116,11 +116,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         ];
     }
 
-    /**
-     * Check if meeting involves multiple institutions (joint meeting / jungtinis posėdis).
-     * Note: is_joint is NOT auto-appended due to performance (triggers N+1 queries).
-     * Append it explicitly where needed: $meeting->append('is_joint')
-     */
+    /** Not auto-appended because it needs the institutions relation. */
     protected function isJoint(): Attribute
     {
         return Attribute::make(get: function () {
@@ -164,11 +160,12 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     }
 
     /**
-     * Calculate vote statistics from agenda items' votes.
-     * Delegates to VoteStatisticsCalculator.
+     * @return array<string, mixed>
      */
-    protected function calculateVoteStatistics(): array
+    public function voteStatistics(): array
     {
+        $this->loadMissing('agendaItems.votes');
+
         $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
 
         return app(VoteStatisticsCalculator::class)->calculate($allVotes, $this->requiresStudentPerspective());
@@ -217,7 +214,6 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
      */
     public function toSearchableArray(): array
     {
-        // Load required relationships
         $this->loadMissing([
             'institutions.types',
             'institutions.tenant',
@@ -225,7 +221,6 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             'users',
         ]);
 
-        // Get tenant IDs for filtering with scoped API keys
         $tenantIds = $this->institutions
             ->pluck('tenant.id')
             ->filter()
@@ -234,7 +229,6 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             ->values()
             ->toArray();
 
-        // Get tenant shortnames for faceting/display
         $tenantShortnames = $this->institutions
             ->pluck('tenant.shortname')
             ->filter()
@@ -242,8 +236,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             ->values()
             ->toArray();
 
-        // Aggregate vote statistics from agenda items' votes
-        $voteStats = $this->calculateVoteStatistics();
+        $voteStats = $this->voteStatistics();
 
         return [
             'id' => $this->id,
@@ -254,53 +247,40 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             'year' => $this->start_time->year,
             'month' => $this->start_time->month,
 
-            // Tenant filtering (CRITICAL for scoped API keys)
             'tenant_ids' => $tenantIds,
             'tenant_shortnames' => $tenantShortnames,
 
-            // Institution info (first institution for primary display)
             'institution_id' => $this->institutions->first()?->id,
             'institution_name_lt' => $this->institutions->first()?->getTranslation('name', 'lt'),
             'institution_name_en' => $this->institutions->first()?->getTranslation('name', 'en'),
 
-            // All institutions (for multi-institution meetings and .own scope filtering)
-            // Institution IDs are ULIDs (strings)
             'institution_ids' => $this->institutions->pluck('id')->toArray(),
             'institution_names' => $this->institutions->map(fn ($i) => $i->getTranslation('name', 'lt'))->toArray(),
 
-            // Institution type (for faceting)
             'institution_type_id' => $this->institutions->first()?->types->first()?->id,
             'institution_type_title' => $this->institutions->first()?->types->first()?->title,
 
-            // Agenda items count
             'agenda_items_count' => $this->agendaItems->count(),
 
-            // Total votes count
             'votes_count' => $voteStats['total_votes'],
 
-            // Meeting type (enum)
             'type' => $this->type?->value,
             'type_slug' => $this->type_slug,
             'type_label_lt' => $this->type?->label('lt'),
             'type_label_en' => $this->type?->label('en'),
 
-            // Vote alignment statistics
             'vote_matches' => $voteStats['vote_matches'],
             'vote_mismatches' => $voteStats['vote_mismatches'],
             'incomplete_vote_data' => $voteStats['incomplete_vote_data'],
             'vote_alignment_status' => $this->calculateVoteAlignmentStatus($voteStats),
 
-            // Completion status for filtering
             'completion_status' => $this->completion_status,
 
-            // Which governance world the meeting belongs to (facet + vote-field vocabulary)
             'governance_scope' => $this->institutions->first()?->governance_scope->value,
 
-            // Visibility status
             'is_public' => $this->is_public,
             'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
 
-            // Representatives attending the meeting
             'user_names' => $this->users->pluck('name')->filter()->unique()->values()->all(),
 
             'created_at' => $this->created_at->timestamp,

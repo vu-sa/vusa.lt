@@ -44,6 +44,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property array|string|null $address
  * @property string|null $phone
  * @property string|null $email
+ * @property array|string|null $working_hours
  * @property string|null $website
  * @property string|null $image_url
  * @property string|null $image_focal_point
@@ -90,7 +91,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
- * @property-read array|string $working_hours
  *
  * @method static \Database\Factories\InstitutionFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution hasActiveDuties()
@@ -111,14 +111,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 class Institution extends Model implements Commentable, GuardsForceDelete, SharepointFileableContract
 {
     use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
-
-    // Note: types are NOT auto-loaded to prevent N+1 in collections.
-    // Load explicitly where needed: ->with('types') or ->load('types').
-    // Computed attributes like has_public_meetings and meeting_periodicity_days
-    // will lazy-load types if not already loaded.
-
-    // Note: has_public_meetings is NOT auto-appended due to performance.
-    // Append it explicitly where needed: $institution->append('has_public_meetings')
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
@@ -238,8 +230,6 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
 
     public function users(): HasManyDeep
     {
-        /* report('Institution::users() is deprecated. Use Institution::duties()->users() instead.'); */
-
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }
 

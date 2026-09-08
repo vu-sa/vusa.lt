@@ -113,9 +113,8 @@ describe('Global Communication Coordinator', function (): void {
     });
 
     test('a global tag scope does not grant the main page of another tenant', function (): void {
-        expect($this->authorizer->allows($this->coordinator, 'tags.update.*'))->toBeTrue();
-
-        expect(Gate::forUser($this->coordinator)->allows('updateMainPage', $this->tenantA))->toBeTrue()
+        expect($this->authorizer->allows($this->coordinator, 'tags.update.*'))->toBeTrue()
+            ->and(Gate::forUser($this->coordinator)->allows('updateMainPage', $this->tenantA))->toBeTrue()
             ->and(Gate::forUser($this->coordinator)->allows('updateMainPage', $this->tenantB))->toBeFalse();
     });
 

@@ -11,14 +11,13 @@ use App\Http\Requests\AttachMeetingInstitutionRequest;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Http\Requests\UpdateMeetingRequest;
+use App\Http\Resources\TaskResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
-use App\Models\Task;
-use App\Models\User;
 use App\Services\CheckInService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -27,7 +26,6 @@ use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
 use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -251,59 +249,15 @@ class MeetingController extends AdminController
         $this->handleAuthorization('view', $meeting);
 
         $meeting->load('institutions.types', 'institutions.tenant', 'fileableFiles', 'comments', 'calendarEvent')->load([
-            'tasks' => function ($query): void {
-                $query->with('users:id,name,email,profile_photo_path', 'taskable');
-            },
             'agendaItems' => function ($query): void {
                 $query->with('votes')->withCount('comments')
                     ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')])
                     ->orderBy('order');
             },
-            'documents' => function ($query): void {
-                $query->orderBy('document_date')->orderBy('title');
-            },
-        ])->loadCount('comments');
+        ])->loadCount(['comments', 'tasks', 'documents']);
 
         // Append is_public, is_joint and file status now that relations are loaded (avoids N+1)
         $meeting->append(['is_public', 'is_joint', 'has_protocol', 'has_report']);
-
-        // Derived, so it has to be appended to reach the panel that labels each document
-        // by language.
-        $meeting->documents->each->append('language_code');
-
-        // Transform tasks with computed properties (same as userTasks method)
-        $transformedTasks = $meeting->tasks->map(function (Task $task, int $key) {
-            /** @var Model|null $taskable */
-            $taskable = $task->taskable;
-
-            return [
-                'id' => $task->id,
-                'name' => $task->name,
-                'description' => $task->description,
-                'due_date' => $task->due_date?->toISOString(),
-                'completed_at' => $task->completed_at?->toISOString(),
-                'created_at' => $task->created_at->toISOString(),
-                'action_type' => $task->action_type?->value,
-                'metadata' => $task->metadata,
-                'progress' => $task->getProgress(),
-                'is_overdue' => $task->isOverdue(),
-                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                'icon' => $task->icon,
-                'color' => $task->color,
-                'taskable' => $taskable ? [
-                    'id' => $taskable->getKey(),
-                    'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                    'type' => $task->taskable_type,
-                ] : null,
-                'taskable_type' => $task->taskable_type ?? '',
-                'taskable_id' => $task->taskable_id,
-                'users' => $task->users->map(fn (User $u) => [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'profile_photo_path' => $u->profile_photo_path,
-                ])->all(),
-            ];
-        });
 
         // Get representatives who were active at meeting time
         $representatives = $meeting->getRepresentativesActiveAt();
@@ -338,7 +292,6 @@ class MeetingController extends AdminController
                 // The edit dialog writes the description, so it needs every locale rather
                 // than the current one — the rest of the page reads the localized array above.
                 'description' => $meeting->getTranslations('description'),
-                'tasks' => $transformedTasks,
                 'sharepointPath' => $meeting->institutions->isNotEmpty() ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
             ],
             'representatives' => $representatives,
@@ -347,9 +300,17 @@ class MeetingController extends AdminController
             'administrators' => InstitutionAdministratorController::forMeetingPayload($meeting),
             'previousMeeting' => $previousMeeting,
             'nextMeeting' => $nextMeeting,
-            'taskableInstitutions' => Inertia::optional(fn () => $meeting->institutions->load('users')),
             'availableInstitutionsForAttach' => $this->getAvailableInstitutionsForAttach($meeting),
             'governanceScope' => $this->governanceScopeFor($meeting),
+            'tasks' => Inertia::defer(fn () => TaskResource::collection(
+                $meeting->tasks()->with('users:id,name,email,profile_photo_path', 'taskable')->get()
+            )->resolve(), 'meetingPanels'),
+            'documents' => Inertia::defer(fn () => $meeting->documents()
+                ->orderBy('document_date')
+                ->orderBy('title')
+                ->get()
+                ->each->append('language_code')
+                ->toArray(), 'meetingPanels'),
         ]);
     }
 

@@ -245,7 +245,9 @@ test('the admin meeting page renders the linked event and the documents tab', fu
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Representation/ShowMeeting')
             ->has('meeting.calendar_event')
-            ->has('meeting.documents', 1)
+            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+                ->has('documents', 1)
+            )
             ->where('governanceScope', InstitutionScope::Vusa->value));
 });
 

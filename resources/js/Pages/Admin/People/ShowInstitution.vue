@@ -98,6 +98,7 @@
     <template #overview>
       <InstitutionOverviewSection
         :institution
+        :overview
         :can-edit-members="canManageMembers"
         @navigate-tab="navigateToTab"
         @schedule-meeting="openMeetingWindow"
@@ -110,7 +111,14 @@
     </template>
 
     <template #duties>
-      <div v-if="institution.duties?.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Deferred data="duties">
+        <template #fallback>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Skeleton class="h-32 w-full" />
+            <Skeleton class="h-32 w-full" />
+          </div>
+        </template>
+        <div v-if="duties?.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <DutySummaryCard
           v-for="duty in sortedDuties"
           :key="duty.id"
@@ -119,40 +127,49 @@
         />
       </div>
 
-      <EmptyState
-        v-else
-        :title="$t('Nėra pareigų')"
-        :description="$t('Šiai institucijai dar nėra priskirta pareigų.')"
-      >
-        <template #icon>
-          <UserCheck class="h-10 w-10 text-muted-foreground" />
-        </template>
-      </EmptyState>
+        <EmptyState
+          v-else
+          :title="$t('Nėra pareigų')"
+          :description="$t('Šiai institucijai dar nėra priskirta pareigų.')"
+        >
+          <template #icon>
+            <UserCheck class="h-10 w-10 text-muted-foreground" />
+          </template>
+        </EmptyState>
+      </Deferred>
     </template>
 
     <template #meetings>
-      <InstitutionMeetingsList
-        v-if="institution.meetings?.length > 0"
-        :meetings="institution.meetings"
-        :institution-name="institution.name"
-        :can-delete="canDeleteMeetings"
-        @select="(meeting) => router.visit(route('meetings.show', meeting.id))"
-        @delete="handleDeleteMeeting"
-      />
-
-      <EmptyState
-        v-else
-        :title="$t('Nėra susitikimų')"
-        :description="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
-      >
-        <template #icon>
-          <CalendarIcon class="h-10 w-10 text-muted-foreground" />
+      <Deferred data="meetings">
+        <template #fallback>
+          <div class="space-y-3">
+            <Skeleton class="h-16 w-full" />
+            <Skeleton class="h-16 w-full" />
+          </div>
         </template>
-        <Button class="gap-2" @click="openMeetingWindow">
-          <CalendarIcon class="h-4 w-4" />
-          {{ $t('Suplanuoti susitikimą') }}
-        </Button>
-      </EmptyState>
+        <InstitutionMeetingsList
+          v-if="meetings?.length"
+          :meetings="meetings"
+          :institution-name="institution.name"
+          :can-delete="canDeleteMeetings"
+          @select="(meeting) => router.visit(route('meetings.show', meeting.id))"
+          @delete="handleDeleteMeeting"
+        />
+
+        <EmptyState
+          v-else
+          :title="$t('Nėra susitikimų')"
+          :description="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
+        >
+          <template #icon>
+            <CalendarIcon class="h-10 w-10 text-muted-foreground" />
+          </template>
+          <Button class="gap-2" @click="openMeetingWindow">
+            <CalendarIcon class="h-4 w-4" />
+            {{ $t('Suplanuoti susitikimą') }}
+          </Button>
+        </EmptyState>
+      </Deferred>
     </template>
 
     <template #files>
@@ -170,17 +187,33 @@
     </template>
 
     <template #tasks>
-      <TaskManager
-        :tasks="taskManagerTasks"
-        :taskable="{ id: institution.id, type: ModelEnum.INSTITUTION }"
-        @open-meeting-modal="openMeetingWindow"
-        @open-check-in-dialog="openCheckInModalFromTask"
-        @open-task-detail="openTaskDetail"
-      />
+      <Deferred data="tasks">
+        <template #fallback>
+          <div class="space-y-3">
+            <Skeleton class="h-10 w-full" />
+            <Skeleton class="h-24 w-full" />
+          </div>
+        </template>
+        <TaskManager
+          :tasks="taskManagerTasks"
+          :taskable="{ id: institution.id, type: ModelEnum.INSTITUTION }"
+          @open-meeting-modal="openMeetingWindow"
+          @open-check-in-dialog="openCheckInModalFromTask"
+          @open-task-detail="openTaskDetail"
+        />
+      </Deferred>
     </template>
 
     <template #related>
-      <RelatedInstitutions :institution="legacyInstitution" />
+      <Deferred data="relatedInstitutions">
+        <template #fallback>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Skeleton class="h-20 w-full" />
+            <Skeleton class="h-20 w-full" />
+          </div>
+        </template>
+        <RelatedInstitutions :items="relatedInstitutions ?? []" />
+      </Deferred>
     </template>
 
     <template #discussion>
@@ -214,7 +247,7 @@
 <script setup lang="tsx">
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { Deferred, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Calendar as CalendarIcon,
@@ -243,11 +276,19 @@ import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { DutySummaryCard } from '@/Components/Duties';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
-import type { InstitutionPageData, InstitutionPageMeeting } from '@/Types/InstitutionPage';
+import type {
+  InstitutionOverviewData,
+  InstitutionPageData,
+  InstitutionPageDuty,
+  InstitutionPageMeeting,
+  InstitutionPageRelatedInstitution,
+  InstitutionPageTask,
+} from '@/Types/InstitutionPage';
 // UI Components
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import { Skeleton } from '@/Components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 // Utils
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
@@ -262,6 +303,11 @@ const permissions = computed(
 
 const props = defineProps<{
   institution: InstitutionPageData;
+  overview: InstitutionOverviewData;
+  duties?: InstitutionPageDuty[];
+  meetings?: InstitutionPageMeeting[];
+  tasks?: InstitutionPageTask[];
+  relatedInstitutions?: InstitutionPageRelatedInstitution[];
   subscription?: {
     is_followed: boolean;
     is_muted: boolean;
@@ -269,11 +315,8 @@ const props = defineProps<{
   } | null;
 }>();
 
-const legacyInstitution = computed(
-  () => props.institution as unknown as App.Entities.Institution,
-);
 const taskManagerTasks = computed(
-  () => props.institution.allTasks as unknown as InstanceType<typeof TaskManager>['$props']['tasks'],
+  () => (props.tasks ?? []) as unknown as InstanceType<typeof TaskManager>['$props']['tasks'],
 );
 
 // State - use shared composable for tab persistence and deferred rendering
@@ -412,21 +455,6 @@ usePageBreadcrumbs(
 );
 
 // Computed properties
-const relatedInstitutionCount = computed(() => {
-  // Use the flat format which includes all relationship types (direct, type-based, sibling)
-  if (props.institution.relatedInstitutionsFlat?.length) {
-    return props.institution.relatedInstitutionsFlat.length;
-  }
-  // Fallback to legacy format
-  return Object.values(props.institution.relatedInstitutions || {}).reduce(
-    (acc, val) => acc + (val?.length || 0),
-    0,
-  );
-});
-
-// Note: totalPositions, lastMeeting, daysSinceLastMeeting, isOverdue, and periodicityStatusColor
-// are now calculated in useInstitutionUrgency composable and InstitutionOverviewSection
-
 const administrators = computed(() => props.institution.administrators ?? []);
 
 const primaryType = computed(() => {
@@ -467,8 +495,7 @@ const handleDeleteMeeting = (meeting: InstitutionPageMeeting) => {
 };
 
 const sortedDuties = computed(() => {
-  if (!props.institution.duties) return [];
-  return [...props.institution.duties].sort((a, b) => (a.order || 0) - (b.order || 0));
+  return [...(props.duties ?? [])].sort((a, b) => (a.order || 0) - (b.order || 0));
 });
 
 /**
@@ -477,13 +504,12 @@ const sortedDuties = computed(() => {
  */
 const tabs = computed(() => [
   { value: 'overview', label: $t('Apžvalga') },
-  { value: 'duties', label: $t('Pareigos'), count: props.institution.duties?.length },
-  { value: 'meetings', label: $t('Susitikimai'), count: props.institution.meetings?.length },
+  { value: 'duties', label: $t('Pareigos'), count: props.institution.duties_count },
+  { value: 'meetings', label: $t('Susitikimai'), count: props.institution.meetings_count },
   { value: 'files', label: $t('Failai') },
-  // Outstanding only: a finished task is not something the reader still has to act on.
-  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.institution.allTasks) },
-  ...(relatedInstitutionCount.value > 0
-    ? [{ value: 'related', label: $t('Susijusios institucijos'), count: relatedInstitutionCount.value }]
+  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
+  ...(props.institution.related_institutions_count > 0
+    ? [{ value: 'related', label: $t('Susijusios institucijos'), count: props.institution.related_institutions_count }]
     : []),
   { value: 'discussion', label: $t('Diskusija'), count: props.institution.comments_count },
 ]);

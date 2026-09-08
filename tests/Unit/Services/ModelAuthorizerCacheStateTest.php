@@ -79,9 +79,9 @@ describe('memoized resolutions stay independent', function (): void {
 
         $normalUser = makeUser($this->tenant);
 
-        expect($this->authorizer->tenants($superAdmin, 'users.read.padalinys')->count())->toBeGreaterThan(1);
-        expect($this->authorizer->tenants($normalUser, 'users.read.padalinys'))->toBeEmpty();
-        expect($this->authorizer->tenants($superAdmin, 'users.read.padalinys')->count())->toBeGreaterThan(1);
+        expect($this->authorizer->tenants($superAdmin, 'users.read.padalinys')->count())->toBeGreaterThan(1)
+            ->and($this->authorizer->tenants($normalUser, 'users.read.padalinys'))->toBeEmpty()
+            ->and($this->authorizer->tenants($superAdmin, 'users.read.padalinys')->count())->toBeGreaterThan(1);
     });
 });
 

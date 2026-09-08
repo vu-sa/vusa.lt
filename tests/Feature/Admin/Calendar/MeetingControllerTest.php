@@ -373,6 +373,29 @@ describe('end-to-end refactored meeting flow', function (): void {
     });
 });
 
+describe('meeting show payload', function (): void {
+    test('defers task and document panels', function (): void {
+        $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
+        $meeting->institutions()->attach($this->institution);
+        $meeting->tasks()->create(['name' => 'Deferred task']);
+
+        $response = asUser($this->admin)->get(route('meetings.show', $meeting));
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/Representation/ShowMeeting')
+            ->missing('meeting.tasks')
+            ->missing('meeting.documents')
+            ->missing('tasks')
+            ->missing('documents')
+            ->loadDeferredProps('meetingPanels', fn ($page) => $page
+                ->has('tasks', 1)
+                ->where('tasks.0.name', 'Deferred task')
+                ->has('documents')
+            )
+        );
+    });
+});
+
 describe('joint meeting institution management', function (): void {
     beforeEach(function (): void {
         $this->meeting = Meeting::factory()->create(['start_time' => Carbon::now()->addDays(1)]);

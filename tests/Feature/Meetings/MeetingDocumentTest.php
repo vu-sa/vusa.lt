@@ -139,9 +139,10 @@ test('the meeting page labels each linked document by language and date', functi
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             // `language_code` is derived, so it only reaches the panel if it is appended.
-            ->where('meeting.documents.0.language_code', 'lt')
-            // A DATE column, not a moment: no time and no timezone suffix to render.
-            ->where('meeting.documents.0.document_date', '2026-07-23'));
+            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+                ->where('documents.0.language_code', 'lt')
+                ->where('documents.0.document_date', '2026-07-23')
+            ));
 });
 
 test('a document of unrecorded language carries no language claim', function (): void {
@@ -154,5 +155,7 @@ test('a document of unrecorded language carries no language claim', function ():
         ->get(route('meetings.show', $this->meeting))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('meeting.documents.0.language_code', 'unknown'));
+            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+                ->where('documents.0.language_code', 'unknown')
+            ));
 });

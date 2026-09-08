@@ -34,7 +34,6 @@ const baseMeeting = {
   start_time: '2026-03-04T10:00:00.000Z',
   institutions: [],
   agenda_items: [{ id: 'a1' }, { id: 'a2' }],
-  tasks: [],
   sharepointPath: null,
 };
 
@@ -189,14 +188,12 @@ describe('ShowMeeting.vue', () => {
 
     it('counts only the tasks still outstanding', () => {
       const wrapper = createWrapper({
-        meeting: {
-          ...baseMeeting,
-          tasks: [
-            { id: 't1', completed_at: null },
-            { id: 't2', completed_at: '2026-03-04T10:00:00.000Z' },
-            { id: 't3', completed_at: null },
-          ],
-        },
+        meeting: { ...baseMeeting },
+        tasks: [
+          { id: 't1', completed_at: null },
+          { id: 't2', completed_at: '2026-03-04T10:00:00.000Z' },
+          { id: 't3', completed_at: null },
+        ],
       });
 
       // Three tasks, one done — the badge reports what is left to act on.
@@ -205,10 +202,8 @@ describe('ShowMeeting.vue', () => {
 
     it('shows no number once every task is done', () => {
       const wrapper = createWrapper({
-        meeting: {
-          ...baseMeeting,
-          tasks: [{ id: 't1', completed_at: '2026-03-04T10:00:00.000Z' }],
-        },
+        meeting: { ...baseMeeting },
+        tasks: [{ id: 't1', completed_at: '2026-03-04T10:00:00.000Z' }],
       });
 
       expect(tasksTabText(wrapper)).not.toContain('1');

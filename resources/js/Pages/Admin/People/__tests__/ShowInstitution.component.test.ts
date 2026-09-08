@@ -18,7 +18,7 @@ vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () =>
 const stubs = {
   InstitutionOverviewSection: {
     name: 'InstitutionOverviewSection',
-    props: ['institution', 'canEditMembers'],
+    props: ['institution', 'overview', 'canEditMembers'],
     emits: ['navigate-tab'],
     template: '<button data-testid="goto-duties" @click="$emit(\'navigate-tab\', \'duties\')" />',
   },
@@ -44,20 +44,45 @@ const baseInstitution = {
   name: 'Studentų atstovybė',
   short_name: 'SA',
   types: [],
-  duties: [],
-  meetings: [],
   managers: [],
   administrators: [],
-  allTasks: [],
-  relatedInstitutionsFlat: [],
-  relatedInstitutions: {},
+  sharepointPath: null,
+  duties_count: 0,
+  meetings_count: 0,
+  tasks_count: 0,
+  related_institutions_count: 0,
 };
 
-const createWrapper = (institution: Record<string, unknown> = {}) =>
-  mount(ShowInstitution, {
-    props: { institution: { ...baseInstitution, ...institution } },
+const createWrapper = (props: Record<string, unknown> = {}) => {
+  const {
+    duties = [],
+    meetings = [],
+    tasks = [],
+    relatedInstitutions = [],
+    overview = {},
+    ...institution
+  } = props;
+
+  return mount(ShowInstitution, {
+    props: {
+      institution: { ...baseInstitution, ...institution },
+      overview: {
+        activity_status: { status: 'healthy' },
+        current_users: [],
+        duties: [],
+        recentMeetings: [],
+        meetings_count: 0,
+        recentComments: [],
+        ...overview,
+      },
+      duties,
+      meetings,
+      tasks,
+      relatedInstitutions,
+    },
     global: { stubs },
   });
+};
 
 const tabLabels = (wrapper: ReturnType<typeof mount>) =>
   wrapper.findAll('[role="tab"]').map(tab => tab.text());
@@ -98,7 +123,7 @@ describe('ShowInstitution.vue', () => {
 
   it('offers the related tab once related institutions exist', () => {
     const labels = tabLabels(createWrapper({
-      relatedInstitutionsFlat: [{ id: 'other', name: 'Kita' }],
+      related_institutions_count: 1,
     }));
 
     expect(labels).toHaveLength(7);
@@ -108,6 +133,7 @@ describe('ShowInstitution.vue', () => {
   it('switches panels when the overview section asks to navigate to another tab', async () => {
     const wrapper = createWrapper({
       duties: [{ id: 'd1', name: 'Pirmininkas', order: 1 }],
+      duties_count: 1,
     });
 
     expect(wrapper.find('[data-testid="goto-duties"]').exists()).toBe(true);

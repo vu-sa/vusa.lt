@@ -71,10 +71,8 @@ class PublicPageController extends PublicController
         $cacheKey = "homepage_content_{$this->tenant->id}_{$locale}";
 
         $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
-            ->remember($cacheKey, 3600, function () use ($locale) {
-                return $this->homepageContentForLocale($this->tenant, $locale)
-                    ?? $this->homepageContentForLocale(Tenant::main(), $locale);
-            });
+            ->remember($cacheKey, 3600, fn () => $this->homepageContentForLocale($this->tenant, $locale)
+                ?? $this->homepageContentForLocale(Tenant::main(), $locale));
 
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
         $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";

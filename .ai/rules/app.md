@@ -12,3 +12,6 @@ PHPStan ≤2.2.9 reports `nullsafe.neverNull` ("Using nullsafe property access ?
 Policies, controllers, form requests and services must resolve authorization with
 `$authorizer->scope($user, $permission)` (or `allows()` / `tenants()` / `duties()`), never from
 ambient state on the service. See `.ai/rules/services.md`, "ModelAuthorizer has no ambient state".
+
+## Verify Sail before reporting it unavailable
+A transient Sail failure is not a blocker. Before reporting Docker or Podman unavailable, retry the requested Sail command and run `./vendor/bin/sail ps`; report it only if that health check also fails.

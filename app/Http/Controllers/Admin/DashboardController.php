@@ -13,6 +13,7 @@ use App\Http\Requests\SendFeedbackRequest;
 use App\Http\Requests\UpdateNotificationPreferencesRequest;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateUserSettingsRequest;
+use App\Http\Resources\TaskResource;
 use App\Mail\FeedbackMail;
 use App\Mail\NotificationDigest;
 use App\Models\Calendar;
@@ -659,35 +660,9 @@ class DashboardController extends AdminController
         $perPage = $request->getPerPage();
         $paginatedTasks = $tasksQuery->paginate($perPage)->withQueryString();
 
-        // Transform tasks with computed properties
         $tasks = $paginatedTasks->through(fn ($task) => [
-            'id' => $task->id,
-            'name' => $task->name,
-            'description' => $task->description,
-            'due_date' => $task->due_date?->toISOString(),
-            'completed_at' => $task->completed_at?->toISOString(),
-            'created_at' => $task->created_at?->toISOString(),
-            'action_type' => $task->action_type?->value,
-            'metadata' => $task->metadata,
-            'progress' => $task->getProgress(),
-            'is_overdue' => $task->isOverdue(),
-            'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+            ...new TaskResource($task)->resolve(),
             'can_delete' => $task->isDeletableBy($user),
-            'icon' => $task->icon,
-            'color' => $task->color,
-            // Subject model - lightweight taskable info
-            'taskable' => $task->taskable ? [
-                'id' => $task->taskable->id,
-                'name' => $task->taskable->title ?? $task->taskable->name ?? null,
-                'type' => $task->taskable_type,
-            ] : null,
-            'taskable_type' => $task->taskable_type ?? '',
-            'taskable_id' => $task->taskable_id,
-            'users' => $task->users->map(fn ($u) => [
-                'id' => $u->id,
-                'name' => $u->name,
-                'profile_photo_path' => $u->profile_photo_path,
-            ]),
         ]);
 
         return $this->inertiaResponse('Admin/ShowTasks', [

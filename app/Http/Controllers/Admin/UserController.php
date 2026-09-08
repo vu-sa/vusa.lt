@@ -11,17 +11,16 @@ use App\Http\Requests\IndexUserRequest;
 use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\TaskResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Role;
-use App\Models\Task;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
@@ -162,6 +161,7 @@ class UserController extends AdminController
             'previous_duties.institution.tenant',
             'roles',
             'tasks.taskable',
+            'tasks.users:id,name,email,profile_photo_path',
         ]);
 
         $user->append('has_password');
@@ -175,42 +175,9 @@ class UserController extends AdminController
             'autoCompleting' => $tasks->filter(fn ($t) => ! $t->canBeManuallyCompleted())->count(),
         ];
 
-        $transformedTasks = $tasks->map(function (Task $task) {
-            /** @var Model|null $taskable */
-            $taskable = $task->taskable;
-
-            return [
-                'id' => $task->id,
-                'name' => $task->name,
-                'description' => $task->description,
-                'due_date' => $task->due_date?->toISOString(),
-                'completed_at' => $task->completed_at?->toISOString(),
-                'created_at' => $task->created_at->toISOString(),
-                'action_type' => $task->action_type?->value,
-                'metadata' => $task->metadata,
-                'progress' => $task->getProgress(),
-                'is_overdue' => $task->isOverdue(),
-                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                'icon' => $task->icon,
-                'color' => $task->color,
-                'taskable' => $taskable ? [
-                    'id' => $taskable->getKey(),
-                    'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                    'type' => $task->taskable_type,
-                ] : null,
-                'taskable_type' => $task->taskable_type ?? '',
-                'taskable_id' => $task->taskable_id,
-                'users' => $task->users->map(fn (User $u) => [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'profile_photo_path' => $u->profile_photo_path,
-                ])->all(),
-            ];
-        });
-
         return $this->inertiaResponse('Admin/People/ShowUser', [
             'user' => $user->toFullArray(),
-            'tasks' => $transformedTasks,
+            'tasks' => TaskResource::collection($tasks)->resolve(),
             'taskStats' => $taskStats,
             // Per-record, not from `auth.can`, which carries no flat permission names.
             'can' => [

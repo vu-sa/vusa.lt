@@ -25,6 +25,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Components/ui/alert-dialog/**,resources/js/Components/ui/dialog/** | .ai/rules/dialog.md |
 | app/Enums/** | .ai/rules/enums.md |
 | tests/Feature/** | .ai/rules/feature.md |
+| app/Http/Controllers/Admin/** | .ai/rules/http-controllers-admin.md |
 | app/Actions/Cadences/**,app/Http/Requests/UpdateInstitutionAdministratorsRequest.php | .ai/rules/http-requests.md |
 | app/Enums/AgendaItemType.php,app/Services/MeetingCompletionService.php,app/Tasks/Handlers/AgendaCompletionTaskHandler.php,resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/js-composables.md |
 | resources/css/components/turtle-loader.css,resources/views/turtle-loader.blade.php,resources/js/admin.ts,resources/js/public.ts | .ai/rules/js-js.md |

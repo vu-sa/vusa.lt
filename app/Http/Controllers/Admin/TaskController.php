@@ -6,14 +6,13 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTaskSummaryRequest;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Resources\TaskResource;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Reservation;
 use App\Models\Task;
-use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Support\MorphMap;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -41,7 +40,7 @@ class TaskController extends AdminController
             ->get();
 
         return $this->inertiaResponse('Admin/ShowTasks', [
-            'tasks' => $tasks,
+            'tasks' => TaskResource::collection($tasks)->resolve(),
         ]);
     }
 
@@ -299,40 +298,10 @@ class TaskController extends AdminController
         $tasks = $baseQuery->paginate($request->getPerPage())
             ->withQueryString();
 
-        // Transform tasks for frontend
-        $transformedTasks = $tasks->getCollection()->map(function (Task $task) use ($user) {
-            /** @var Model|null $taskable */
-            $taskable = $task->taskable;
-
-            return [
-                'id' => $task->id,
-                'name' => $task->name,
-                'description' => $task->description,
-                'due_date' => $task->due_date?->toISOString(),
-                'completed_at' => $task->completed_at?->toISOString(),
-                'created_at' => $task->created_at->toISOString(),
-                'action_type' => $task->action_type?->value,
-                'metadata' => $task->metadata,
-                'progress' => $task->getProgress(),
-                'is_overdue' => $task->isOverdue(),
-                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                'can_delete' => $task->isDeletableBy($user),
-                'icon' => $task->icon,
-                'color' => $task->color,
-                'taskable' => $taskable ? [
-                    'id' => $taskable->getKey(),
-                    'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                    'type' => $task->taskable_type,
-                ] : null,
-                'taskable_type' => $task->taskable_type ?? '',
-                'taskable_id' => $task->taskable_id,
-                'users' => $task->users->map(fn (User $u) => [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'profile_photo_path' => $u->profile_photo_path,
-                ])->all(),
-            ];
-        });
+        $transformedTasks = $tasks->getCollection()->map(fn (Task $task) => [
+            ...new TaskResource($task)->resolve(),
+            'can_delete' => $task->isDeletableBy($user),
+        ]);
 
         return $this->inertiaResponse('Admin/ShowTasksSummary', [
             'tasks' => [

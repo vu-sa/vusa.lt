@@ -131,18 +131,15 @@ describe('purity across permissions', function (): void {
     test('a padalinys resolution does not narrow a later all-scope resolution', function (): void {
         $user = actorWithPermissions($this->tenant, ['tags.update.*', 'news.update.padalinys']);
 
-        expect($this->authorizer->scope($user, 'news.update.padalinys')->isAllScope)->toBeFalse();
-
-        expect($this->authorizer->scope($user, 'tags.update.*')->isAllScope)->toBeTrue();
+        expect($this->authorizer->scope($user, 'news.update.padalinys')->isAllScope)->toBeFalse()
+            ->and($this->authorizer->scope($user, 'tags.update.*')->isAllScope)->toBeTrue();
     });
 
     test('a denied resolution does not poison a granted one for the same actor', function (): void {
         $user = actorWithPermissions($this->tenant, ['news.update.padalinys']);
 
-        expect($this->authorizer->scope($user, 'documents.update.padalinys')->tenants)->toBeEmpty();
-
-        expect($this->authorizer->scope($user, 'news.update.padalinys')->tenantIds()->all())
-            ->toBe([$this->tenant->id]);
+        expect($this->authorizer->scope($user, 'documents.update.padalinys')->tenants)->toBeEmpty()
+            ->and($this->authorizer->scope($user, 'news.update.padalinys')->tenantIds()->all())->toBe([$this->tenant->id]);
     });
 });
 

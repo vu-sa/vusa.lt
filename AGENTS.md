@@ -137,6 +137,14 @@ Language specifics: PHPDoc over inline comments (PHP), JSDoc rules under [TypeSc
 | Cross-component data sharing | History-state-bound data |
 | Real-time updates | Partial reloads via `router.reload` |
 
+### Inertia v3 data loading
+
+Keep the first visit to the page shell and immediately useful overview data. Defer large, non-default tabs or panels with `Inertia::defer()`; pair each with `<Deferred>` and a skeleton fallback. Group only props normally needed together; use `WhenVisible` for below-the-fold work.
+
+Use a shared Resource or named mapper when several full admin surfaces need the same payload. Keep dashboard and indicator payloads intentionally compact.
+
+Feature-test a deferred contract: assert the prop is absent initially, then load and assert its group with `loadDeferredProps()`.
+
 **Standard API response shape** (via `ApiResponses` trait):
 - Success: `{ success: true, data, message?, meta? }`
 - Error: `{ success: false, message, errors?, code? }`
