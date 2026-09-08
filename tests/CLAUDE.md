@@ -155,13 +155,55 @@ Frontend conventions (stubs, mock forms, fake timers) are documented in [resourc
 
 **Don't**: test framework behavior; mix `assertStatus(403)` with `assertRedirect()` (a 403 doesn't redirect); use `followRedirects()` when expecting business-logic failure; create overly complex setups; skip security cases.
 
+## Running backend tests
+
+Anything wider than a single file runs with `--parallel`. The full suite is ~22s parallel against
+~130s serial, so a serial full run is a mistake, not a preference.
+
+| Scope | Command |
+|---|---|
+| Full suite | `vendor/bin/sail artisan test --parallel --compact` |
+| One directory | `vendor/bin/sail artisan test --parallel --compact tests/Feature` |
+| Several files | `vendor/bin/sail artisan test --parallel --compact --filter="AaaTest\|BbbTest"` |
+| One file | `vendor/bin/sail artisan test --compact path/to/OneTest.php` (worker startup outweighs the win) |
+
+**`--parallel` takes exactly one path.** Passing two files or directories fails with
+`Too many arguments, expected arguments "path"` — that is paratest's signature, not Pest's. When it
+happens, narrow to a single common path or switch to `--filter`; do **not** fall back to a serial
+full run.
+
+If a parallel run fails, re-run that one file serially before treating the failure as real —
+cross-process Typesense contention is possible.
+
+### Test Impact Analysis (TIA)
+
+`sail artisan test` reruns only tests affected by your changes and replays cached results for the
+rest — enabled by default for local/Sail runs via `pest()->tia()->locally()` in `tests/Pest.php`,
+so a full run is nearly as cheap as a filtered one and actually verifies impact beyond what you
+thought to name.
+
+| Context | Behaviour |
+|---|---|
+| Local / Sail | TIA on, against the baseline fetched from `main`. |
+| Pull requests | TIA on (`--ci --tia` in `ci.yml`), against the same baseline. |
+| Pushes to `main` | **Full run.** The safety net for anything a stale graph missed on a PR. |
+
+`.github/workflows/tia-baseline.yml` records the shared baseline on every push to `main` (plus
+nightly) and uploads it as the `pest-tia-baseline` artifact, so neither a fresh clone nor a PR pays
+the record cost. Baseline fetching shells out to `gh`, which is why the `php-tests` job needs
+`actions: read`, a `GH_TOKEN`, and `fetch-depth: 0` — without any of those TIA silently degrades to a
+full run, or hard-fails on a 403/404.
+
+| Command | When |
+|---|---|
+| `sail artisan test --parallel` | Default. TIA reruns affected tests, replays the rest. |
+| `sail artisan test --parallel --no-tia` | Full run, no replay — when you distrust the graph. |
+| `sail artisan test --parallel --fresh` | Discard the graph and re-record (after a large refactor). |
+
+Use `--filter=testName` when iterating on one failing test, not as the default.
+
 ## Notes
 
-- Prefer running the full suite: `./vendor/bin/sail artisan test --compact`. Test Impact Analysis
-  (Tia) is enabled by default for local/Sail runs (`tests/Pest.php`) — it reruns only tests affected
-  by your change and replays cached results for the rest, so a full run is nearly as cheap as a
-  filtered one and actually verifies impact beyond what you thought to name. Use
-  `--filter=testName` when iterating on one failing test, not as the default.
 - Don't delete tests without approval — they're part of the application contract.
 
 ## Test performance patterns
