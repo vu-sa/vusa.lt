@@ -27,17 +27,17 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('profile', [DashboardController::class, 'userSettings'])->name('profile');
+Route::get('profile', [ProfileController::class, 'userSettings'])->name('profile');
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration')->middleware('can:access-administration');
-Route::get('dashboard/atstovavimas', [DashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
-Route::get('dashboard/svetaine', [DashboardController::class, 'svetaine'])->name('dashboard.svetaine');
-Route::get('dashboard/reservations', [DashboardController::class, 'reservations'])->name('dashboard.reservations');
+Route::get('dashboard/atstovavimas', [AtstovavimasDashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
+Route::get('dashboard/svetaine', [SvetaineDashboardController::class, 'svetaine'])->name('dashboard.svetaine');
+Route::get('dashboard/reservations', [ReservationsDashboardController::class, 'reservations'])->name('dashboard.reservations');
 
-Route::patch('profile', [DashboardController::class, 'updateUserSettings'])->name('profile.update');
-Route::patch('profile/password', [DashboardController::class, 'updatePassword'])->name('profile.updatePassword');
-Route::patch('profile/notification-preferences', [DashboardController::class, 'updateNotificationPreferences'])->name('profile.updateNotificationPreferences');
-Route::post('profile/notification-preferences/test-email', [DashboardController::class, 'sendTestNotificationEmail'])->name('profile.sendTestNotificationEmail');
-Route::get('tasks', [DashboardController::class, 'userTasks'])->name('userTasks');
+Route::patch('profile', [ProfileController::class, 'updateUserSettings'])->name('profile.update');
+Route::patch('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
+Route::patch('profile/notification-preferences', [ProfileController::class, 'updateNotificationPreferences'])->name('profile.updateNotificationPreferences');
+Route::post('profile/notification-preferences/test-email', [ProfileController::class, 'sendTestNotificationEmail'])->name('profile.sendTestNotificationEmail');
+Route::get('tasks', [TaskController::class, 'index'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
 // System Status

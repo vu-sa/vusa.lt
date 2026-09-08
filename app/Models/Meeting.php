@@ -466,7 +466,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
      * Whether the meeting is announced in the public calendar at all.
      *
      * Appended rather than computed in the DTO because the dashboard's user section
-     * serialises the relation straight through — see DashboardController::atstovavimas().
+     * serialises the relation straight through — see AtstovavimasDashboardController::atstovavimas().
      */
     protected function hasCalendarEvent(): Attribute
     {

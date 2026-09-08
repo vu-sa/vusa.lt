@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTaskSummaryRequest;
+use App\Http\Requests\IndexUserTasksRequest;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
@@ -11,6 +12,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Reservation;
 use App\Models\Task;
+use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Support\MorphMap;
 use Illuminate\Http\JsonResponse;
@@ -24,23 +26,58 @@ class TaskController extends AdminController
     public function __construct(public Authorizer $authorizer) {}
 
     /**
-     * Display a listing of tasks.
-     *
-     * @return Response
+     * Display a listing of the current user's own tasks.
      */
-    public function index()
+    public function index(IndexUserTasksRequest $request)
     {
-        $tasks = Task::with(['users', 'taskable'])
-            ->whereHas('users', function ($query): void {
-                $query->where('users.id', Auth::id());
-            })
-            ->orderBy('completed_at', 'asc')
-            ->orderBy('due_date', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = User::find(Auth::id());
+
+        $tasksQuery = $user->tasks()->with('taskable', 'users:id,name,email,profile_photo_path', 'tenants');
+
+        // Get task statistics (before any filtering for accurate counts)
+        $taskStats = [
+            'total' => (clone $tasksQuery)->whereNull('completed_at')->count(),
+            'completed' => (clone $tasksQuery)->whereNotNull('completed_at')->count(),
+            'overdue' => (clone $tasksQuery)->whereNull('completed_at')->where('due_date', '<', now())->count(),
+            'autoCompleting' => (clone $tasksQuery)->whereNull('completed_at')->whereNotNull('action_type')->where('action_type', '!=', 'manual')->count(),
+        ];
+
+        // Apply status filter
+        $status = $request->input('status', 'incomplete');
+
+        match ($status) {
+            'completed' => $tasksQuery->whereNotNull('completed_at'),
+            'incomplete' => $tasksQuery->whereNull('completed_at'),
+            default => null, // 'all' - no filter
+        };
+
+        // Apply ordering based on status filter
+        if ($status === 'completed') {
+            // Completed tasks: most recently completed first
+            $tasksQuery->latest('completed_at');
+        } else {
+            // Incomplete/all: overdue first, then by due date, then by creation date
+            $tasksQuery
+                // Put incomplete tasks first when showing all
+                ->orderByRaw('completed_at IS NOT NULL')
+                ->orderByRaw('CASE WHEN due_date IS NOT NULL AND due_date < ? THEN 0 ELSE 1 END', [now()])
+                ->orderBy('due_date')
+                ->latest('created_at');
+        }
+
+        // Paginate tasks
+        $perPage = $request->getPerPage();
+        $paginatedTasks = $tasksQuery->paginate($perPage)->withQueryString();
+
+        $tasks = $paginatedTasks->through(fn ($task) => [
+            ...new TaskResource($task)->resolve(),
+            'can_delete' => $task->isDeletableBy($user),
+        ]);
 
         return $this->inertiaResponse('Admin/ShowTasks', [
-            'tasks' => TaskResource::collection($tasks)->resolve(),
+            'tasks' => $tasks,
+            'taskStats' => $taskStats,
+            'status' => $status,
         ]);
     }
 
