@@ -1,5 +1,6 @@
 export const calendarTemplate: Omit<App.Entities.Calendar, 'created_at' | 'updated_at' | 'registration_form_id' | 'tenant' | 'registration_form' | 'media'> = {
   title: { lt: '', en: '' },
+  permalink: { lt: '', en: '' },
   date: null,
   end_date: null,
   description: { lt: '', en: '' },
@@ -29,7 +30,7 @@ export const formTemplate: Pick<
   tenant_id: null,
 };
 
-export const formFieldTemplate: Pick<App.Entities.FormField, 'label' | 'description' | 'default_value' | 'placeholder' | 'type' | 'subtype' | 'is_required'>
+export const formFieldTemplate: Pick<App.Entities.FormField, 'label' | 'description' | 'default_value' | 'placeholder' | 'type' | 'subtype' | 'is_required'> & { option_source: null }
   = {
     label: { lt: '', en: '' },
     description: { lt: '', en: '' },
@@ -38,6 +39,7 @@ export const formFieldTemplate: Pick<App.Entities.FormField, 'label' | 'descript
     type: 'string',
     subtype: null,
     is_required: false,
+    option_source: null,
   };
 
 export const meetingTemplate = {

@@ -50,9 +50,7 @@ class UserPolicy extends ModelPolicy
      */
     public function merge(User $user)
     {
-        return $this->authorizer->forUser($user)->check(
-            $this->permission(CRUDEnum::UPDATE->label(), PermissionScopeEnum::ALL)
-        );
+        return $this->authorizer->allows($user, $this->permission(CRUDEnum::UPDATE->label(), PermissionScopeEnum::ALL));
     }
 
     /**
@@ -67,7 +65,7 @@ class UserPolicy extends ModelPolicy
     {
         $update = CRUDEnum::UPDATE->label();
 
-        if ($this->authorizer->forUser($user)->check($this->permission($update, PermissionScopeEnum::ALL))) {
+        if ($this->authorizer->allows($user, $this->permission($update, PermissionScopeEnum::ALL))) {
             return true;
         }
 
@@ -83,7 +81,7 @@ class UserPolicy extends ModelPolicy
         $permission = $this->permission($update, PermissionScopeEnum::PADALINYS);
 
         if ($this->isUnclaimed($target)) {
-            return $this->authorizer->forUser($user)->check($permission);
+            return $this->authorizer->allows($user, $permission);
         }
 
         return $this->tenantsContained($user, $target, $permission);
@@ -119,9 +117,7 @@ class UserPolicy extends ModelPolicy
             return false;
         }
 
-        return $this->authorizer->forUser($user)->check(
-            $this->permission($ability, PermissionScopeEnum::PADALINYS)
-        );
+        return $this->authorizer->allows($user, $this->permission($ability, PermissionScopeEnum::PADALINYS));
     }
 
     /**
@@ -135,7 +131,7 @@ class UserPolicy extends ModelPolicy
     public function blockingTenantNames(User $user, User $target): SupportCollection
     {
         $permission = $this->permission(CRUDEnum::UPDATE->label(), PermissionScopeEnum::PADALINYS);
-        $actorTenantIds = $this->authorizer->forUser($user)->getTenants($permission)->pluck('id');
+        $actorTenantIds = $this->authorizer->tenants($user, $permission)->pluck('id');
 
         return $target->tenants()
             ->whereNotIn('tenants.id', $actorTenantIds)
@@ -188,9 +184,7 @@ class UserPolicy extends ModelPolicy
             return false;
         }
 
-        $authorizer = $this->authorizer->forUser($user);
-
-        if ($authorizer->check($this->permission($ability, PermissionScopeEnum::ALL))) {
+        if ($this->authorizer->allows($user, $this->permission($ability, PermissionScopeEnum::ALL))) {
             return true;
         }
 
@@ -201,7 +195,7 @@ class UserPolicy extends ModelPolicy
         $permission = $this->permission($ability, PermissionScopeEnum::PADALINYS);
 
         if ($this->isUnclaimed($model)) {
-            return $authorizer->check($permission);
+            return $this->authorizer->allows($user, $permission);
         }
 
         return $this->tenantsContained($user, $model, $permission);
@@ -216,9 +210,9 @@ class UserPolicy extends ModelPolicy
      */
     protected function tenantsContained(User $user, User $target, string $permission): bool
     {
-        $authorizer = $this->authorizer->forUser($user);
+        $actorTenantIds = $this->authorizer->tenants($user, $permission)->pluck('id');
 
-        if (! $authorizer->check($permission)) {
+        if ($actorTenantIds->isEmpty()) {
             return false;
         }
 
@@ -229,8 +223,6 @@ class UserPolicy extends ModelPolicy
         if ($targetTenantIds->isEmpty()) {
             return false;
         }
-
-        $actorTenantIds = $authorizer->getTenants($permission)->pluck('id');
 
         return $targetTenantIds->diff($actorTenantIds)->isEmpty();
     }

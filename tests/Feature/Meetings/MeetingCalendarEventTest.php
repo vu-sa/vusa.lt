@@ -194,6 +194,7 @@ test('the calendar form cannot move an event that announces a meeting', function
 
     asUser($this->admin)->patch(route('calendar.update', $event), [
         'title' => ['lt' => 'Pakeista', 'en' => 'Changed'],
+        'permalink' => ['lt' => 'pakeista', 'en' => 'changed'],
         'date' => now()->addMonths(2)->format('Y-m-d H:i:s'),
         'tenant_id' => $this->tenant->id,
     ])->assertSessionHasNoErrors();
@@ -210,6 +211,7 @@ test('an ordinary event can still be moved from the calendar form', function ():
 
     asUser($this->admin)->patch(route('calendar.update', $event), [
         'title' => ['lt' => 'Renginys', 'en' => 'Event'],
+        'permalink' => ['lt' => 'renginys', 'en' => 'event'],
         'date' => $newDate->format('Y-m-d H:i:s'),
         'tenant_id' => $this->tenant->id,
     ])->assertSessionHasNoErrors();
@@ -245,7 +247,9 @@ test('the admin meeting page renders the linked event and the documents tab', fu
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Representation/ShowMeeting')
             ->has('meeting.calendar_event')
-            ->has('meeting.documents', 1)
+            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page
+                ->has('documents', 1)
+            )
             ->where('governanceScope', InstitutionScope::Vusa->value));
 });
 
@@ -254,6 +258,7 @@ test('meeting_id cannot be set through the ordinary calendar form', function ():
 
     asUser($this->admin)->patch(route('calendar.update', $event), [
         'title' => ['lt' => 'Pakeista', 'en' => 'Changed'],
+        'permalink' => ['lt' => 'pakeista', 'en' => 'changed'],
         'date' => now()->addDay()->format('Y-m-d H:i:s'),
         'tenant_id' => $this->tenant->id,
         'meeting_id' => $this->meeting->id,

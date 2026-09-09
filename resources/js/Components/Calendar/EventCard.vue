@@ -6,7 +6,7 @@
   >
     <!-- 16:10 fixed-ratio image frame per v0 design -->
     <Link
-      :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })"
+      :href="eventHref"
       class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary"
     >
       <img
@@ -62,7 +62,7 @@
     <div class="flex flex-1 flex-col pt-4">
       <!-- Title -->
       <h3 class="text-pretty text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
-        <Link :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })">
+        <Link :href="eventHref">
           {{ eventTitle }}
         </Link>
       </h3>
@@ -87,7 +87,7 @@
       <!-- Action -->
       <div class="mt-auto flex items-center justify-between gap-3 pt-4">
         <Link
-          :href="route('calendar.event', { calendar: event.id, lang: $page.props.app.locale })"
+          :href="eventHref"
           class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:text-brand"
         >
           <span>{{ variant === 'past' ? $t('Peržiūrėti') : $t('Daugiau') }}</span>
@@ -105,6 +105,7 @@ import { ref, computed } from 'vue';
 
 import DatePlate from '@/Components/Public/Base/DatePlate.vue';
 import { formatEventDateSpan } from '@/Utils/IntlTime';
+import { getCalendarEvent2Route } from '@/Utils/Route';
 import type { LocaleEnum } from '@/Types/enums';
 import IFluentCalendarLtr20Regular from '~icons/fluent/calendar-ltr-20-regular';
 import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
@@ -128,6 +129,7 @@ interface CalendarEventLike {
   category_name?: string | null;
   tenant?: { shortname: string } | null;
   tenant_shortname?: string | null;
+  public_url?: string | null;
 }
 
 const page = usePage();
@@ -167,6 +169,8 @@ const tenantShortname = computed(() => {
   const ev = props.event as CalendarEventLike;
   return ev.tenant?.shortname ?? ev.tenant_shortname ?? null;
 });
+
+const eventHref = computed(() => getCalendarEvent2Route(props.event, page.props.app.locale));
 
 const imageUrl = computed(() => {
   const ev = props.event as CalendarEventLike;

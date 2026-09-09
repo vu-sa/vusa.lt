@@ -140,6 +140,29 @@ describe('agenda items controller', function (): void {
             ->and($vote->student_benefit)->toEqual('negative');
     });
 
+    test('cannot update a vote owned by another agenda item', function (): void {
+        $agendaItem = $this->meeting->agendaItems()->create([
+            'title' => ['lt' => 'First item', 'en' => 'First item'],
+            'order' => 1,
+        ]);
+        $otherAgendaItem = $this->meeting->agendaItems()->create([
+            'title' => ['lt' => 'Second item', 'en' => 'Second item'],
+            'order' => 2,
+        ]);
+        $foreignVote = Vote::factory()->create(['agenda_item_id' => $otherAgendaItem->id]);
+
+        asUser($this->admin)
+            ->patch(route('agendaItems.update', $agendaItem), [
+                'votes' => [[
+                    'id' => $foreignVote->id,
+                    'is_main' => false,
+                ]],
+            ])
+            ->assertForbidden();
+
+        expect($foreignVote->fresh()->is_main)->toBeTrue();
+    });
+
     test('validates agenda item vote values', function (): void {
         // First create an agenda item
         asUser($this->admin)

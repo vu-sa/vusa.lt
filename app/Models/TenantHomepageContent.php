@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Cache;
  * @property int $tenant_id
  * @property int $content_id
  * @property string $locale
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read Content $content
  * @property-read Tenant $tenant
  *

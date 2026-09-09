@@ -10,24 +10,21 @@ use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest;
-use App\Http\Traits\HandlesSoftDeletes; // Create this request class
+use App\Http\Resources\InstitutionMeetingResource;
+use App\Http\Resources\TaskResource;
+use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Meeting;
-use App\Models\Task;
 use App\Models\Type;
-use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\TanstackTableService;
 use App\Settings\CadenceSettings;
 use App\Support\MorphMap;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -154,101 +151,16 @@ class InstitutionController extends AdminController
     {
         $this->handleAuthorization('view', $institution);
 
-        // TODO: only show current_users
-        $institution->load('tenant', 'types', 'duties.current_users', 'checkIns')->load([
-            'tasks' => function ($query): void {
-                $query->with('users:id,name,email,profile_photo_path', 'taskable');
-            },
-            'meetings' => function ($query): void {
-                $query->withCount('agendaItems')
-                    ->with([
-                        'tasks' => fn ($q) => $q->with('users:id,name,email,profile_photo_path', 'taskable'),
-                        'comments',
-                        'institutions.types',
-                        'fileableFiles',
-                        'agendaItems.votes',
-                    ])->orderBy('start_time', 'asc');
-            },
-        ])->loadCount('comments');
+        $institution->load('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns')
+            ->loadCount(['comments', 'duties', 'meetings', 'tasks', 'tasksFromMeetings']);
 
-        // Append public visibility flags now that types are loaded (avoids N+1)
-        $institution->append('has_public_meetings');
-        $institution->append('meeting_periodicity_days');
-        // Whether this is one of VU SA's own bodies or one it delegates into decides half of
-        // what the page means; the types it is inherited from are already loaded above.
-        $institution->append('governance_scope');
-        $institution->setAttribute(
-            'activity_status',
-            $this->activityStatusService->resolve($institution)->toArray()
-        );
-        $institution->meetings->each(function (Meeting $meeting): void {
-            $meeting->append(['is_public', 'has_report', 'has_protocol']);
-
-            // Compute vote stats from loaded agendaItems.votes
-            $allVotes = $meeting->agendaItems->flatMap(fn ($item) => $item->votes);
-            $votesWithBoth = $allVotes->filter(fn ($v) => ! empty($v->student_vote) && ! empty($v->decision));
-            $voteMatches = $votesWithBoth->filter(fn ($v) => $v->student_vote === $v->decision)->count();
-
-            $meeting->setAttribute('vote_matches', $voteMatches);
-            $meeting->setAttribute('vote_mismatches', $votesWithBoth->count() - $voteMatches);
-            $meeting->setAttribute('incomplete_vote_data', $allVotes->filter(
-                fn ($v) => ! empty($v->student_vote) xor ! empty($v->decision)
-            )->count());
-
-            // The overview previews a meeting's first items, but the loaded relation carries
-            // every vote with it — send the titles alone and drop the rest.
-            $meeting->setAttribute(
-                'agenda_item_titles',
-                $meeting->agendaItems->sortBy('order')->take(3)->pluck('title')->values()
-            );
-
-            // Hide heavy relations not needed by frontend
-            $meeting->makeHidden('agendaItems');
-        });
-
-        // Combine direct institution tasks + tasks from meetings into a flat list
-        // Transform tasks with computed properties (same as MeetingController)
-        $allTasks = $institution->tasks
-            ->merge($institution->meetings->pluck('tasks')->flatten())
-            ->sortByDesc('created_at')
-            ->values()
-            ->map(function (Task $task) {
-                /** @var Model|null $taskable */
-                $taskable = $task->taskable;
-
-                return [
-                    'id' => $task->id,
-                    'name' => $task->name,
-                    'description' => $task->description,
-                    'due_date' => $task->due_date?->toISOString(),
-                    'completed_at' => $task->completed_at?->toISOString(),
-                    'created_at' => $task->created_at->toISOString(),
-                    'action_type' => $task->action_type?->value,
-                    'metadata' => $task->metadata,
-                    'progress' => $task->getProgress(),
-                    'is_overdue' => $task->isOverdue(),
-                    'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                    'icon' => $task->icon,
-                    'color' => $task->color,
-                    'taskable' => $taskable ? [
-                        'id' => $taskable->getKey(),
-                        'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                        'type' => $task->taskable_type,
-                    ] : null,
-                    'taskable_type' => $task->taskable_type ?? '',
-                    'taskable_id' => $task->taskable_id,
-                    'users' => $task->users->map(fn (User $u) => [
-                        'id' => $u->id,
-                        'name' => $u->name,
-                        'profile_photo_path' => $u->profile_photo_path,
-                    ])->all(),
-                ];
-            });
-
-        // Latest root comments for the overview discussion preview (bodies are
-        // not otherwise loaded — the DiscussionPanel fetches its own data via API).
+        $institution->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
+        $activityStatus = $this->activityStatusService->resolve($institution)->toArray();
+        $tasksCount = (int) $institution->getAttribute('tasks_count');
+        $tasksFromMeetingsCount = (int) $institution->getAttribute('tasks_from_meetings_count');
         $recentComments = $institution->comments()
             ->roots()
+            ->with('user:id,name,profile_photo_path')
             ->withCount('replies')
             ->latest()
             ->limit(3)
@@ -266,8 +178,24 @@ class InstitutionController extends AdminController
                 ] : null,
             ]);
 
-        // Get related institutions as flat list with metadata (cached)
-        $relatedInstitutionsFlat = RelationshipService::getRelatedInstitutionsCached($institution);
+        $overviewMeetings = $institution->meetings()
+            ->withCount('agendaItems')
+            ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
+            ->orderByDesc('start_time')
+            ->limit(3)
+            ->get()
+            ->each->append(['has_report', 'has_protocol']);
+
+        $overviewDuties = $institution->duties
+            ->sortBy('order')
+            ->map(fn (Duty $duty) => [
+                'id' => $duty->id,
+                'name' => $duty->name,
+                'order' => $duty->order,
+                'places_to_occupy' => $duty->places_to_occupy,
+                'current_users' => $duty->current_users,
+            ])
+            ->values();
 
         // Get subscription status for the current user
         $user = request()->user();
@@ -281,30 +209,66 @@ class InstitutionController extends AdminController
 
         return $this->inertiaResponse('Admin/People/ShowInstitution', [
             'institution' => [
-                ...$institution->toArray(),
-                'current_users' => $institution->duties->load('current_users')->pluck('current_users')->flatten()->unique('id')->values(),
+                'id' => $institution->id,
+                'name' => $institution->name,
+                'short_name' => $institution->short_name,
+                'description' => $institution->description,
+                'types' => $institution->types,
+                'has_public_meetings' => $institution->has_public_meetings,
+                'meeting_periodicity_days' => $institution->meeting_periodicity_days,
+                'governance_scope' => $institution->governance_scope,
+                'comments_count' => $institution->comments_count,
+                'duties_count' => $institution->duties_count,
+                'meetings_count' => $institution->meetings_count,
+                'tasks_count' => $tasksCount + $tasksFromMeetingsCount,
+                'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
                 'managers' => $institution->managers(),
-                // Nominated for the current term. Kept separate from current_users on
-                // purpose — an administrator is not a member of the body.
                 'administrators' => InstitutionAdministratorController::usersPayload(
                     GetInstitutionAdministrators::execute($institution)
                 ),
-                // Provide both formats for backwards compatibility during transition
-                'relatedInstitutions' => $institution->related_institution_relationshipables(),
-                'relatedInstitutionsFlat' => $relatedInstitutionsFlat->map(fn ($item) => [
-                    // Only load meetings for authorized relationships
-                    ...($item['authorized']
-                        ? $item['institution']->load('meetings', 'tenant')->toArray()
-                        : $item['institution']->load('tenant')->toArray()),
+                'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
+            ],
+            'overview' => [
+                'activity_status' => $activityStatus,
+                'current_users' => $institution->duties->pluck('current_users')->flatten()->unique('id')->values(),
+                'duties' => $overviewDuties,
+                'recentMeetings' => InstitutionMeetingResource::collection($overviewMeetings)->resolve(),
+                'meetings_count' => $institution->meetings_count,
+                'recentComments' => $recentComments,
+            ],
+            'duties' => Inertia::defer(fn () => $institution->duties()
+                ->with('current_users')
+                ->orderBy('order')
+                ->get()
+                ->toArray(), 'institutionPanels'),
+            'meetings' => Inertia::defer(fn () => InstitutionMeetingResource::collection(
+                $institution->meetings()
+                    ->withCount('agendaItems')
+                    ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
+                    ->orderByDesc('start_time')
+                    ->get()
+                    ->each->append(['has_report', 'has_protocol'])
+            )->resolve(), 'institutionPanels'),
+            'tasks' => Inertia::defer(fn () => TaskResource::collection(
+                $institution->tasks()
+                    ->with('users:id,name,email,profile_photo_path', 'taskable')
+                    ->get()
+                    ->merge($institution->tasksFromMeetings()
+                        ->with('users:id,name,email,profile_photo_path', 'taskable')
+                        ->get())
+                    ->sortByDesc('created_at')
+                    ->values()
+            )->resolve(), 'institutionPanels'),
+            'relatedInstitutions' => Inertia::defer(fn () => RelationshipService::getRelatedInstitutionsCached($institution)
+                ->map(fn (array $item) => [
+                    'id' => $item['institution']->id,
+                    'name' => $item['institution']->name,
                     'direction' => $item['direction'],
                     'type' => $item['type'],
                     'authorized' => $item['authorized'],
-                ])->values(),
-                'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
-                'lastMeeting' => $institution->lastMeeting(),
-                'allTasks' => $allTasks,
-                'recentComments' => $recentComments,
-            ],
+                ])
+                ->values()
+                ->all(), 'institutionPanels'),
             'subscription' => $subscriptionStatus,
         ]);
     }

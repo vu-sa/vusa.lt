@@ -91,7 +91,8 @@ class QuickLinkController extends AdminController
         if (request()->user()->isSuperAdmin()) {
             $tenant_id = Tenant::main()?->id;
         } else {
-            $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
+            $tenant_id = $this->authorizer->duties(request()->user(), 'quickLinks.create.padalinys')
+                ->first()?->tenants->first()?->id;
         }
 
         DB::transaction(function () use ($request, $tenant_id): void {

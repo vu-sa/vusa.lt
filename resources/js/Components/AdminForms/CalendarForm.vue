@@ -257,6 +257,54 @@
         <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
       </div>
     </FormElement>
+
+    <!-- Permalink (editable only once the event exists — see auto-fill watcher above for create) -->
+    <div v-if="!isCreate" class="mt-4 space-y-4">
+      <PermalinkField
+        :permalink="form.permalink?.lt ?? ''"
+        :base-url="`www.vusa.test/kalendorius/${eventYear}`"
+        :disabled="false"
+        :label="$t('Nuoroda (LT)')"
+        :validating="form.validating"
+        :valid="form.valid('permalink.lt')"
+        :invalid="form.invalid('permalink.lt')"
+        @update:permalink="form.permalink = { ...form.permalink, lt: $event }"
+        @change="form.validate('permalink.lt')"
+      />
+      <PermalinkField
+        :permalink="form.permalink?.en ?? ''"
+        :base-url="`www.vusa.test/calendar/${eventYear}`"
+        :disabled="false"
+        :label="$t('Nuoroda (EN)')"
+        :validating="form.validating"
+        :valid="form.valid('permalink.en')"
+        :invalid="form.invalid('permalink.en')"
+        @update:permalink="form.permalink = { ...form.permalink, en: $event }"
+        @change="form.validate('permalink.en')"
+      />
+    </div>
+
+    <PublicUrlHistoryCard
+      v-if="!isCreate"
+      :urls="props.calendar.public_urls ?? []"
+      :destroy-route="(id) => route('calendar.publicUrls.destroy', [props.calendar.id, id])"
+    />
+
+    <Alert v-if="!isCreate && (legacyDateUrlLt || legacyDateUrlEn)" class="mt-4">
+      <Info class="size-4" />
+      <AlertTitle>{{ $t('Sena, data pagrįsta nuoroda') }}</AlertTitle>
+      <AlertDescription>
+        <p>{{ $t('Ši nuoroda vis dar veikia ir nukreipia į renginį, bet yra pasenusi ir niekur nerodoma.') }}</p>
+        <ul class="mt-1 space-y-0.5">
+          <li v-if="legacyDateUrlLt">
+            <a :href="legacyDateUrlLt" target="_blank" rel="noopener noreferrer" class="break-all underline">{{ legacyDateUrlLt }}</a>
+          </li>
+          <li v-if="legacyDateUrlEn">
+            <a :href="legacyDateUrlEn" target="_blank" rel="noopener noreferrer" class="break-all underline">{{ legacyDateUrlEn }}</a>
+          </li>
+        </ul>
+      </AlertDescription>
+    </Alert>
   </AdminForm>
 </template>
 
@@ -271,11 +319,13 @@ import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
+import PermalinkField from './PermalinkField.vue';
+import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 import AdminForm from './AdminForm.vue';
 
-import { translitLithuanian } from '@/Utils/String';
-import { getCalendarEvent2Route } from '@/Utils/Route';
-import { ArrowUpRight, CalendarClock } from 'lucide-vue-next';
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
+import { generateSlug } from '@/Utils/String';
+import { ArrowUpRight, CalendarClock, Info } from 'lucide-vue-next';
 
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
@@ -335,6 +385,16 @@ if (isCreate.value && form.tenant_id == null) {
 
 // Set validation timeout
 form.setValidationTimeout(500);
+
+// Auto-fill the permalink from the title as the user types, for a new event only.
+if (isCreate.value) {
+  watch(() => form.title?.lt, (title) => {
+    form.permalink = { ...form.permalink, lt: generateSlug(String(title || '')) };
+  });
+  watch(() => form.title?.en, (title) => {
+    form.permalink = { ...form.permalink, en: generateSlug(String(title || '')) };
+  });
+}
 
 // Handle main image update explicitly
 function handleMainImageUpdate(file: File | null) {
@@ -399,19 +459,22 @@ const heroStyle = computed({
   },
 });
 
+// The year the event's URL is nested under — same value the backend derives from `date`.
+const eventYear = computed(() => (form.date ? new Date(form.date).getFullYear() : new Date().getFullYear()));
+
 // Status header links
 const statusLinks = computed(() => {
-  // Need id, date, and title to construct a valid public URL
-  if (!props.calendar.id || !props.calendar.date || !form.title?.lt) return [];
+  const permalink = form.permalink?.[locale.value];
 
-  const locale = usePage().props.app?.locale ?? 'lt';
-  const url = getCalendarEvent2Route(
-    { date: props.calendar.date, title: translitLithuanian(form.title.lt) },
-    locale,
-  );
+  if (!props.calendar.id || !permalink) return [];
+
+  const url = localizedRoute('calendar.show', { year: eventYear.value, permalink }, locale.value);
 
   return [{ url, label: 'Public' }];
 });
+
+const legacyDateUrlLt = computed(() => props.calendar.legacy_date_urls?.lt ?? null);
+const legacyDateUrlEn = computed(() => props.calendar.legacy_date_urls?.en ?? null);
 
 const defaultOrganizer = computed(() => {
   return (

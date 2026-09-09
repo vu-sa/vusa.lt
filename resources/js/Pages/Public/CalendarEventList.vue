@@ -402,10 +402,12 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { useCalendarSearch, type CalendarSearchSort } from '@/Composables/useCalendarSearch';
+import { TenantType } from '@/Types/enums';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import TagChip from '@/Components/Public/Base/TagChip.vue';
@@ -454,6 +456,7 @@ const props = defineProps<{
   allTenants?: Array<{ id: number; shortname: string }>;
 }>();
 
+const page = usePage();
 const showModal = ref(false);
 const showFilterBar = useStorage('vusa-calendar-show-filters', false);
 const isSortPopoverOpen = ref(false);
@@ -487,6 +490,14 @@ const {
 } = useCalendarSearch({
   initialTab: (props.activeTab as 'upcoming' | 'past' | 'all') || 'upcoming',
 });
+
+// Landing here via a subdomain switch (see PadalinysSelector) carries the previous tenant's
+// query string along with it — override rather than merge, so the new subdomain always wins.
+const currentTenant = page.props.tenant;
+if (currentTenant?.type === TenantType.Padalinys && currentTenant.shortname) {
+  selectedTenants.value = [currentTenant.shortname];
+  showFilterBar.value = true;
+}
 
 const sortOptions: Array<{ value: CalendarSearchSort; label: string }> = [
   { value: 'relevance', label: $t('Pagal aktualumą') },
@@ -527,18 +538,21 @@ const categoryOptions = computed<FilterOption[]>(() => {
   return [];
 });
 
-// Tenant options combining Typesense facets with backend props if available
+// The backend's `allTenants` is the full list regardless of filters; Typesense's facet
+// counts, once a tenant is selected, only cover the now-filtered subset (Typesense counts
+// facet values *within* the active filter, so every other tenant would otherwise drop out
+// of the list the moment one is picked — see PadalinysSelector's auto-filter above). Use
+// `allTenants` for which options exist, and overlay live counts where available.
 const tenantOptions = computed<FilterOption[]>(() => {
-  if (tenantFacets.value.length > 0) {
-    return tenantFacets.value;
-  }
   if (props.allTenants?.length) {
+    const counts = new Map(tenantFacets.value.map(f => [f.value, f.count]));
     return props.allTenants.map(t => ({
       label: t.shortname,
       value: t.shortname,
+      count: counts.get(t.shortname),
     }));
   }
-  return [];
+  return tenantFacets.value;
 });
 
 // Year options derived from Typesense facets with fallback range

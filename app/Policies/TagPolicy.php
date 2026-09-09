@@ -23,30 +23,30 @@ class TagPolicy extends ModelPolicy
     #[\Override]
     public function viewAny(User $user): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('tags.read.*');
+        return $this->authorizer->allows($user, 'tags.read.*');
     }
 
     #[\Override]
     public function create(User $user): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('tags.create.*');
+        return $this->authorizer->allows($user, 'tags.create.*');
     }
 
     #[\Override]
     public function view(User $user, Model $tag): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('tags.read.*');
+        return $this->authorizer->allows($user, 'tags.read.*');
     }
 
     #[\Override]
     public function update(User $user, Model $tag): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('tags.update.*');
+        return $this->authorizer->allows($user, 'tags.update.*');
     }
 
     #[\Override]
     public function delete(User $user, Model $tag): bool
     {
-        return $this->authorizer->forUser($user)->checkAllRoleables('tags.delete.*');
+        return $this->authorizer->allows($user, 'tags.delete.*');
     }
 }

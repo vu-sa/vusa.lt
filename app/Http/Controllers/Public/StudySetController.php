@@ -14,7 +14,10 @@ class StudySetController extends PublicController
     {
         $this->getBanners();
         $this->getTenantLinks();
-        $this->shareOtherLangURL('studySets');
+        $this->shareOtherLangURL(
+            $this->tenant->isMain() ? 'studySets' : 'tenant.studySets',
+            $this->tenant->isMain() ? null : $this->subdomain,
+        );
 
         $this->applyPageHead(
             contentTenant: null,
@@ -48,6 +51,7 @@ class StudySetController extends PublicController
             ]));
 
         return Inertia::render('Public/ShowStudySets', [
+            'tenantSwitchTarget' => 'same-page',
             'tenants' => $tenants,
             'studySetsByTenant' => $studySets,
         ]);

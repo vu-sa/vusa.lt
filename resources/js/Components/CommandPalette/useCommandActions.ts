@@ -166,7 +166,7 @@ export function useCommandActions() {
         keywords: ['tasks', 'uzduotys', 'darbai'],
         icon: TaskIcon,
         category: 'navigation',
-        action: () => router.visit(route('tasks.index')),
+        action: () => router.visit(route('userTasks')),
       });
     }
 

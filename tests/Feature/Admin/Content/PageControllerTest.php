@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\Page;
+use App\Models\PublicUrl;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -88,8 +90,6 @@ describe('authorized access', function (): void {
     test('can store page with valid data', function (): void {
         $validData = getControllerTestData('Page')['valid'];
         $validData['tenant_id'] = $this->tenant->id;
-        $uniqueSuffix = time();
-        $validData['permalink'] = 'test-page-'.$uniqueSuffix;
 
         asUser($this->admin)
             ->post(route('pages.store'), $validData)
@@ -97,9 +97,11 @@ describe('authorized access', function (): void {
             ->assertRedirect(route('pages.index'))
             ->assertSessionHas('success');
 
+        // The permalink is no longer client-supplied — the server derives it from the title
+        // (GenerateUniqueSlug), so this asserts what it actually generates, not a fixed literal.
         $this->assertDatabaseHas('pages', [
             'title' => $validData['title'],
-            'permalink' => $validData['permalink'],
+            'permalink' => Str::slug($validData['title']),
             'lang' => $validData['lang'],
             'is_active' => $validData['is_active'],
             'tenant_id' => $this->tenant->id,
@@ -147,7 +149,6 @@ describe('authorized access', function (): void {
     test('show_table_of_contents round-trips through store and update', function (): void {
         $validData = getControllerTestData('Page')['valid'];
         $validData['tenant_id'] = $this->tenant->id;
-        $validData['permalink'] = 'test-page-toc-'.time();
         $validData['show_table_of_contents'] = false;
 
         asUser($this->admin)
@@ -156,7 +157,7 @@ describe('authorized access', function (): void {
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('pages', [
-            'permalink' => $validData['permalink'],
+            'permalink' => Str::slug($validData['title']),
             'show_table_of_contents' => false,
         ]);
 
@@ -179,7 +180,6 @@ describe('authorized access', function (): void {
     test('show_breadcrumbs round-trips through store and update', function (): void {
         $validData = getControllerTestData('Page')['valid'];
         $validData['tenant_id'] = $this->tenant->id;
-        $validData['permalink'] = 'test-page-breadcrumbs-'.time();
         $validData['show_breadcrumbs'] = false;
 
         asUser($this->admin)
@@ -188,7 +188,7 @@ describe('authorized access', function (): void {
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('pages', [
-            'permalink' => $validData['permalink'],
+            'permalink' => Str::slug($validData['title']),
             'show_breadcrumbs' => false,
         ]);
 
@@ -271,26 +271,38 @@ describe('filtering and search', function (): void {
 });
 
 describe('edge cases and business logic', function (): void {
-    test('page permalink must be unique within tenant', function (): void {
+    test('a colliding title within the same tenant gets a suffixed permalink instead of a validation error', function (): void {
+        // An existing page already occupies the exact slug the new title would produce, so this
+        // forces a genuine collision (unlike $this->page, whose 'test-page' permalink was set
+        // explicitly by its factory and doesn't itself match Str::slug('Test puslapis')).
+        Page::factory()->for($this->tenant)->create(['permalink' => 'test-puslapis']);
+
         $duplicateData = getControllerTestData('Page')['valid'];
-        $duplicateData['permalink'] = $this->page->permalink; // Same permalink
+        $duplicateData['title'] = 'Test puslapis';
         $duplicateData['tenant_id'] = $this->tenant->id;
 
         asUser($this->admin)
             ->post(route('pages.store'), $duplicateData)
             ->assertStatus(302)
-            ->assertSessionHasErrors(['permalink']);
+            ->assertSessionDoesntHaveErrors('permalink')
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('pages', [
+            'title' => 'Test puslapis',
+            'permalink' => 'test-puslapis-2',
+            'tenant_id' => $this->tenant->id,
+        ]);
     });
 
-    test('page permalink can be reused across tenants', function (): void {
+    test('the same title-derived permalink can exist in two different tenants', function (): void {
         $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
 
-        Page::factory()->for($otherTenant)->create([
-            'permalink' => 'shared-cross-tenant-page',
-        ]);
+        // Created directly (not through the controller): a non-super-admin actor's own tenant
+        // always wins regardless of a submitted tenant_id, so this is the only way to seed a
+        // colliding slug in a tenant $this->admin doesn't belong to.
+        Page::factory()->for($otherTenant)->create(['permalink' => 'test-puslapis']);
 
         $validData = getControllerTestData('Page')['valid'];
-        $validData['permalink'] = 'shared-cross-tenant-page';
         $validData['tenant_id'] = $this->tenant->id;
 
         asUser($this->admin)
@@ -299,9 +311,14 @@ describe('edge cases and business logic', function (): void {
             ->assertRedirect(route('pages.index'))
             ->assertSessionHas('success');
 
+        // Scoped per tenant: the other tenant's identical slug doesn't force a suffix here.
         $this->assertDatabaseHas('pages', [
-            'permalink' => 'shared-cross-tenant-page',
+            'permalink' => Str::slug($validData['title']),
             'tenant_id' => $this->tenant->id,
+        ]);
+        $this->assertDatabaseHas('pages', [
+            'permalink' => 'test-puslapis',
+            'tenant_id' => $otherTenant->id,
         ]);
     });
 
@@ -342,7 +359,6 @@ describe('edge cases and business logic', function (): void {
                 ],
             ],
         ];
-        $specialCharsData['permalink'] = 'special-chars-page';
         $specialCharsData['tenant_id'] = $this->tenant->id;
 
         asUser($this->admin)
@@ -350,9 +366,10 @@ describe('edge cases and business logic', function (): void {
             ->assertStatus(302)
             ->assertRedirect(route('pages.index'));
 
+        // Str::slug transliterates Lithuanian diacritics on its own — no explicit permalink needed.
         $this->assertDatabaseHas('pages', [
             'title' => 'Puslapis su šiaudiniais žodžiais',
-            'permalink' => 'special-chars-page',
+            'permalink' => 'puslapis-su-siaudiniais-zodziais',
         ]);
     });
 });
@@ -585,6 +602,86 @@ describe('content part width validation', function (): void {
             ->post(route('pages.store'), $data)
             ->assertStatus(302)
             ->assertSessionDoesntHaveErrors();
+    });
+});
+
+describe('public URL history', function (): void {
+    test('can delete a legacy public url', function (): void {
+        $legacy = PublicUrl::factory()->create([
+            'urlable_type' => $this->page->getMorphClass(),
+            'urlable_id' => $this->page->id,
+        ]);
+
+        asUser($this->admin)
+            ->delete(route('pages.publicUrls.destroy', [$this->page, $legacy]))
+            ->assertStatus(302)
+            ->assertSessionHas('info');
+
+        $this->assertDatabaseMissing('public_urls', ['id' => $legacy->id]);
+    });
+
+    test('cannot delete a public url belonging to another page', function (): void {
+        $otherPage = Page::factory()->for($this->tenant)->create();
+        $foreign = PublicUrl::factory()->create([
+            'urlable_type' => $otherPage->getMorphClass(),
+            'urlable_id' => $otherPage->id,
+        ]);
+
+        asUser($this->admin)
+            ->delete(route('pages.publicUrls.destroy', [$this->page, $foreign]))
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('public_urls', ['id' => $foreign->id]);
+    });
+
+    test('user without update permission cannot delete a public url', function (): void {
+        $legacy = PublicUrl::factory()->create([
+            'urlable_type' => $this->page->getMorphClass(),
+            'urlable_id' => $this->page->id,
+        ]);
+
+        asUser($this->user)
+            ->delete(route('pages.publicUrls.destroy', [$this->page, $legacy]))
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('public_urls', ['id' => $legacy->id]);
+    });
+
+    test('cannot claim a permalink another page has already retired', function (): void {
+        // 'lang' set explicitly: a freshly-created model's lang attribute isn't hydrated from
+        // the column's DB default until refreshed, and the legacy-write guard in Page::booted()
+        // requires it — see NewsController::update()'s equivalent regression test.
+        $original = Page::factory()->for($this->tenant)->create(['permalink' => 'the-original-slug', 'lang' => 'lt']);
+        // Retires 'the-original-slug' into public_urls, owned by $original.
+        $original->update(['permalink' => 'moved-on']);
+
+        $updateData = getControllerTestData('Page')['valid'];
+        $updateData['permalink'] = 'the-original-slug';
+        $updateData['tenant_id'] = $this->tenant->id;
+
+        asUser($this->admin)
+            ->patch(route('pages.update', $this->page), $updateData)
+            ->assertStatus(302)
+            ->assertSessionHasErrors(['permalink']);
+
+        $this->assertDatabaseMissing('pages', ['id' => $this->page->id, 'permalink' => 'the-original-slug']);
+    });
+
+    test('a page can re-adopt its own retired permalink', function (): void {
+        $originalPermalink = $this->page->permalink;
+        $this->page->update(['permalink' => 'went-away']);
+        $this->page->refresh();
+
+        $updateData = getControllerTestData('Page')['valid'];
+        $updateData['permalink'] = $originalPermalink;
+        $updateData['tenant_id'] = $this->tenant->id;
+
+        asUser($this->admin)
+            ->patch(route('pages.update', $this->page), $updateData)
+            ->assertStatus(302)
+            ->assertSessionDoesntHaveErrors('permalink');
+
+        $this->assertDatabaseHas('pages', ['id' => $this->page->id, 'permalink' => $originalPermalink]);
     });
 });
 

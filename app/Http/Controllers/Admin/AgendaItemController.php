@@ -27,8 +27,7 @@ class AgendaItemController extends AdminController
             $maxOrder = AgendaItem::where('meeting_id', $validatedData['meeting_id'])
                 ->max('order') ?? 0;
 
-            // Get broughtByStudentsFlags array (defaults to empty array)
-            $broughtByStudentsFlags = $request->input('broughtByStudentsFlags', []);
+            $broughtByStudentsFlags = $validatedData['broughtByStudentsFlags'] ?? [];
 
             foreach ($validatedData['agendaItemTitles'] as $index => $agendaItemTitle) {
                 AgendaItem::create([
@@ -149,20 +148,21 @@ class AgendaItemController extends AdminController
             $voteId = $voteData['id'] ?? null;
             if ($voteId !== null) {
                 // Update existing vote
-                $vote = Vote::find($voteId);
-                if ($vote && $vote->agenda_item_id === $agendaItem->id) {
-                    $vote->update([
-                        'is_main' => $voteData['is_main'] ?? false,
-                        'is_consensus' => $voteData['is_consensus'] ?? false,
-                        'title' => $voteData['title'] ?? null,
-                        'student_vote' => $voteData['student_vote'] ?? null,
-                        'decision' => $voteData['decision'] ?? null,
-                        'student_benefit' => $voteData['student_benefit'] ?? null,
-                        'note' => $voteData['note'] ?? null,
-                        'order' => $voteData['order'] ?? 0,
-                    ]);
-                    $updatedVoteIds[] = (string) $vote->getKey();
-                }
+                $vote = $agendaItem->votes()->find($voteId);
+
+                abort_if($vote === null, 403, 'Vote does not belong to this agenda item.');
+
+                $vote->update([
+                    'is_main' => $voteData['is_main'] ?? false,
+                    'is_consensus' => $voteData['is_consensus'] ?? false,
+                    'title' => $voteData['title'] ?? null,
+                    'student_vote' => $voteData['student_vote'] ?? null,
+                    'decision' => $voteData['decision'] ?? null,
+                    'student_benefit' => $voteData['student_benefit'] ?? null,
+                    'note' => $voteData['note'] ?? null,
+                    'order' => $voteData['order'] ?? 0,
+                ]);
+                $updatedVoteIds[] = (string) $vote->getKey();
             } else {
                 // Create new vote
                 $vote = $agendaItem->votes()->create([

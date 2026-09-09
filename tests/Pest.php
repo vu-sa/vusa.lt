@@ -458,14 +458,12 @@ function getControllerTestData(string $controller): array
                         ],
                     ],
                 ],
-                'permalink' => 'test-page',
                 'lang' => 'lt',
                 'is_active' => true,
             ],
             'invalid' => [
                 'title' => '', // Required field empty
                 'content' => ['parts' => []],
-                'permalink' => '',
                 'lang' => 'invalid',
             ],
         ],
@@ -523,7 +521,7 @@ function getControllerTestData(string $controller): array
 function getControllerValidationErrors(string $controller): array
 {
     return match ($controller) {
-        'Page' => ['title', 'content.parts', 'permalink', 'lang'],
+        'Page' => ['title', 'content.parts', 'lang'],
         'Category' => ['name.lt', 'name.en'],
         'Banner' => ['title'],
         'Navigation' => ['name', 'url'],

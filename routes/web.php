@@ -57,22 +57,29 @@ Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(funct
 Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware' => ['main']], function (): void {
     Route::domain('www.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
 
-        Route::get('{registrationString}/{registrationForm}', [Public\PublicPageController::class, 'registrationPage'])->name('registrationPage')
+        Route::get('{registrationString}/{registrationForm}', [Public\PublicRegistrationController::class, 'show'])->name('registrationPage')
             ->whereIn('registrationString', LocalizedRouteSlugs::accepted('registrationString'));
 
-        Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
-
-        Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarMain'])->name('calendar.event.2')->whereNumber('year')->whereNumber('month')->whereNumber('day');
-
-        Route::get('kalendorius/renginiu-sarasas', [Public\PublicPageController::class, 'calendarEventList'])->name('calendar.list');
-
-        Route::get('pirmakursiu-stovyklos/{year}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')->whereNumber('year');
-
-        Route::get('programos-klubai-projektai', [Public\PublicPageController::class, 'pkp'])->name('pkp');
-
-        Route::get('kategorija/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category');
-
+        Route::get('{calendarString}', [Public\PublicPageController::class, 'calendarEventList'])->name('calendar.list')
+            ->whereIn('calendarString', LocalizedRouteSlugs::accepted('calendarString'));
+        Route::get('kalendorius/renginiu-sarasas', [Public\PublicPageController::class, 'calendarListLegacy'])->name('calendar.list.legacy');
         Route::get('kalendorius/ics', [Public\MainController::class, 'publicAllEventCalendar'])->name('calendar.ics');
+        Route::get('{calendarString}/{year}/{permalink}', [Public\PublicPageController::class, 'calendarCanonical'])->name('calendar.show')
+            ->whereIn('calendarString', LocalizedRouteSlugs::accepted('calendarString'))
+            ->whereNumber('year');
+
+        Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
+        Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarLegacy'])->name('calendar.event.legacy')->whereNumber('year')->whereNumber('month')->whereNumber('day');
+
+        Route::get('{summerCampsString}/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')
+            ->whereIn('summerCampsString', LocalizedRouteSlugs::accepted('summerCampsString'))
+            ->whereNumber('year');
+
+        Route::get('{pkpString}', [Public\PublicPageController::class, 'pkp'])->name('pkp')
+            ->whereIn('pkpString', LocalizedRouteSlugs::accepted('pkpString'));
+
+        Route::get('{categoryString}/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category')
+            ->whereIn('categoryString', LocalizedRouteSlugs::accepted('categoryString'));
 
         Route::permanentRedirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija')->name('member-registration');
         Route::permanentRedirect('member-registration', config('app.url').'/registration/member-registration')->name('member-registration.en');
@@ -96,6 +103,11 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('/', [Public\PublicPageController::class, 'home'])->name('home');
         Route::get('{documentsString}', [Public\DocumentController::class, 'index'])->name('tenant.documents')
             ->whereIn('documentsString', LocalizedRouteSlugs::accepted('documentsString'));
+        Route::get('{calendarString}', [Public\PublicPageController::class, 'calendarEventList'])->name('tenant.calendar.list')
+            ->whereIn('calendarString', LocalizedRouteSlugs::accepted('calendarString'));
+        Route::get('{searchString}', [Public\SearchController::class, 'index'])->name('tenant.search')
+            ->whereIn('searchString', LocalizedRouteSlugs::accepted('searchString'));
+        Route::get('ind-komplektai', [Public\StudySetController::class, 'index'])->name('tenant.studySets');
         Route::get('{newsArchiveString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')
             ->whereIn('newsArchiveString', LocalizedRouteSlugs::accepted('newsArchiveString'));
         Route::permanentRedirect('/admin', '/mano');

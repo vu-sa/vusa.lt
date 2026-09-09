@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTaskSummaryRequest;
+use App\Http\Requests\IndexUserTasksRequest;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Resources\TaskResource;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Reservation;
@@ -13,7 +15,6 @@ use App\Models\Task;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Support\MorphMap;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -25,23 +26,58 @@ class TaskController extends AdminController
     public function __construct(public Authorizer $authorizer) {}
 
     /**
-     * Display a listing of tasks.
-     *
-     * @return Response
+     * Display a listing of the current user's own tasks.
      */
-    public function index()
+    public function index(IndexUserTasksRequest $request)
     {
-        $tasks = Task::with(['users', 'taskable'])
-            ->whereHas('users', function ($query): void {
-                $query->where('users.id', Auth::id());
-            })
-            ->orderBy('completed_at', 'asc')
-            ->orderBy('due_date', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = User::find(Auth::id());
+
+        $tasksQuery = $user->tasks()->with('taskable', 'users:id,name,email,profile_photo_path', 'tenants');
+
+        // Get task statistics (before any filtering for accurate counts)
+        $taskStats = [
+            'total' => (clone $tasksQuery)->whereNull('completed_at')->count(),
+            'completed' => (clone $tasksQuery)->whereNotNull('completed_at')->count(),
+            'overdue' => (clone $tasksQuery)->whereNull('completed_at')->where('due_date', '<', now())->count(),
+            'autoCompleting' => (clone $tasksQuery)->whereNull('completed_at')->whereNotNull('action_type')->where('action_type', '!=', 'manual')->count(),
+        ];
+
+        // Apply status filter
+        $status = $request->input('status', 'incomplete');
+
+        match ($status) {
+            'completed' => $tasksQuery->whereNotNull('completed_at'),
+            'incomplete' => $tasksQuery->whereNull('completed_at'),
+            default => null, // 'all' - no filter
+        };
+
+        // Apply ordering based on status filter
+        if ($status === 'completed') {
+            // Completed tasks: most recently completed first
+            $tasksQuery->latest('completed_at');
+        } else {
+            // Incomplete/all: overdue first, then by due date, then by creation date
+            $tasksQuery
+                // Put incomplete tasks first when showing all
+                ->orderByRaw('completed_at IS NOT NULL')
+                ->orderByRaw('CASE WHEN due_date IS NOT NULL AND due_date < ? THEN 0 ELSE 1 END', [now()])
+                ->orderBy('due_date')
+                ->latest('created_at');
+        }
+
+        // Paginate tasks
+        $perPage = $request->getPerPage();
+        $paginatedTasks = $tasksQuery->paginate($perPage)->withQueryString();
+
+        $tasks = $paginatedTasks->through(fn ($task) => [
+            ...new TaskResource($task)->resolve(),
+            'can_delete' => $task->isDeletableBy($user),
+        ]);
 
         return $this->inertiaResponse('Admin/ShowTasks', [
             'tasks' => $tasks,
+            'taskStats' => $taskStats,
+            'status' => $status,
         ]);
     }
 
@@ -163,15 +199,14 @@ class TaskController extends AdminController
         $this->handleAuthorization('viewAny', Task::class);
 
         $user = Auth::user();
-        $this->authorizer->forUser($user);
 
         // Get user's accessible tenants for tasks
-        $taskPermissibleTenants = $this->authorizer->getTenants('tasks.read.padalinys');
+        $taskPermissibleTenants = $this->authorizer->tenants($user, 'tasks.read.padalinys');
 
         // Get user's accessible tenants for meetings, reservations, and institutions
-        $meetingPermissibleTenants = $this->authorizer->getTenants('meetings.read.padalinys');
-        $reservationPermissibleTenants = $this->authorizer->getTenants('reservations.read.padalinys');
-        $institutionPermissibleTenants = $this->authorizer->getTenants('institutions.read.padalinys');
+        $meetingPermissibleTenants = $this->authorizer->tenants($user, 'meetings.read.padalinys');
+        $reservationPermissibleTenants = $this->authorizer->tenants($user, 'reservations.read.padalinys');
+        $institutionPermissibleTenants = $this->authorizer->tenants($user, 'institutions.read.padalinys');
 
         // Build base query with compound authorization
         $baseQuery = Task::with(['users:id,name,email,profile_photo_path', 'taskable', 'tenants'])
@@ -300,40 +335,10 @@ class TaskController extends AdminController
         $tasks = $baseQuery->paginate($request->getPerPage())
             ->withQueryString();
 
-        // Transform tasks for frontend
-        $transformedTasks = $tasks->getCollection()->map(function (Task $task) use ($user) {
-            /** @var Model|null $taskable */
-            $taskable = $task->taskable;
-
-            return [
-                'id' => $task->id,
-                'name' => $task->name,
-                'description' => $task->description,
-                'due_date' => $task->due_date?->toISOString(),
-                'completed_at' => $task->completed_at?->toISOString(),
-                'created_at' => $task->created_at->toISOString(),
-                'action_type' => $task->action_type?->value,
-                'metadata' => $task->metadata,
-                'progress' => $task->getProgress(),
-                'is_overdue' => $task->isOverdue(),
-                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                'can_delete' => $task->isDeletableBy($user),
-                'icon' => $task->icon,
-                'color' => $task->color,
-                'taskable' => $taskable ? [
-                    'id' => $taskable->getKey(),
-                    'name' => $taskable->getAttribute('title') ?? $taskable->getAttribute('name') ?? null,
-                    'type' => $task->taskable_type,
-                ] : null,
-                'taskable_type' => $task->taskable_type ?? '',
-                'taskable_id' => $task->taskable_id,
-                'users' => $task->users->map(fn (User $u) => [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'profile_photo_path' => $u->profile_photo_path,
-                ])->all(),
-            ];
-        });
+        $transformedTasks = $tasks->getCollection()->map(fn (Task $task) => [
+            ...new TaskResource($task)->resolve(),
+            'can_delete' => $task->isDeletableBy($user),
+        ]);
 
         return $this->inertiaResponse('Admin/ShowTasksSummary', [
             'tasks' => [

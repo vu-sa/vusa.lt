@@ -169,13 +169,21 @@
     </template>
 
     <template #documents>
-      <MeetingDocumentsPanel
-        :meeting-id="meeting.id"
-        :documents="meeting.documents ?? []"
-        :institution-ids="institutionIds"
-        :tenant-shortnames="tenantShortnames"
-        can-update
-      />
+      <Deferred data="documents">
+        <template #fallback>
+          <div class="space-y-3">
+            <Skeleton class="h-10 w-full" />
+            <Skeleton class="h-24 w-full" />
+          </div>
+        </template>
+        <MeetingDocumentsPanel
+          :meeting-id="meeting.id"
+          :documents="documents ?? []"
+          :institution-ids="institutionIds"
+          :tenant-shortnames="tenantShortnames"
+          can-update
+        />
+      </Deferred>
     </template>
 
     <template #files>
@@ -183,13 +191,21 @@
     </template>
 
     <template #tasks>
-      <TaskManager
-        :taskable="{ id: meeting.id, type: ModelEnum.MEETING }"
-        :tasks="meeting.tasks"
-        @open-meeting-modal="openMeetingModal"
-        @open-check-in-dialog="openCheckInDialog"
-        @open-task-detail="openTaskDetail"
-      />
+      <Deferred data="tasks">
+        <template #fallback>
+          <div class="space-y-3">
+            <Skeleton class="h-10 w-full" />
+            <Skeleton class="h-24 w-full" />
+          </div>
+        </template>
+        <TaskManager
+          :taskable="{ id: meeting.id, type: ModelEnum.MEETING }"
+          :tasks="tasks ?? []"
+          @open-meeting-modal="openMeetingModal"
+          @open-check-in-dialog="openCheckInDialog"
+          @open-task-detail="openTaskDetail"
+        />
+      </Deferred>
     </template>
 
     <!-- Modals -->
@@ -334,8 +350,8 @@
             </p>
             <ul class="text-xs text-red-700 dark:text-red-400 mt-1 space-y-1">
               <li>• {{ meeting.agenda_items?.length ?? 0 }} {{ $t("darbotvarkės punktai") }}</li>
-              <li v-if="meeting.tasks && meeting.tasks.length">
-                • {{ meeting.tasks.length }} {{ $t("užduotys") }}
+              <li v-if="tasks?.length">
+                • {{ tasks.length }} {{ $t("užduotys") }}
               </li>
               <li v-if="meeting.files && meeting.files.length">
                 • {{ meeting.files.length }} {{ $t("failai") }}
@@ -388,7 +404,7 @@
 <script setup lang="tsx">
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
+import { Deferred, router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, Plus, Trash2, X, Clock, Globe, Edit, MoreHorizontal, Video, Link2, Check, FileText, FileBarChart, CalendarDays, CalendarPlus, CalendarX } from 'lucide-vue-next';
@@ -406,6 +422,7 @@ import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 // UI Components
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
+import { Skeleton } from '@/Components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import {
@@ -444,6 +461,8 @@ const props = defineProps<{
   nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
   availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
   governanceScope?: string;
+  tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
+  documents?: NonNullable<App.Entities.Meeting['documents']>;
 }>();
 
 const institutionIds = computed(() => props.meeting.institutions?.map(institution => institution.id) ?? []);
@@ -571,11 +590,11 @@ watch(currentTab, (newTab) => {
 const tabs = computed(() => [
   { value: 'agenda', label: $t('Darbotvarkė'), count: props.meeting.agenda_items?.length },
   ...(isInternalBody.value
-    ? [{ value: 'documents', label: $t('Dokumentai'), count: props.meeting.documents?.length }]
+    ? [{ value: 'documents', label: $t('Dokumentai'), count: props.documents?.length }]
     : []),
   { value: 'files', label: $t('Failai') },
   // Outstanding only: a finished task is not something the reader still has to act on.
-  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.meeting.tasks) },
+  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
 ]);
 
 onMounted(() => {

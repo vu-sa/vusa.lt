@@ -30,7 +30,7 @@ class PermissionService
             return false;
         }
 
-        return $this->authorizer->forUser($user)->check($permission);
+        return $this->authorizer->allows($user, $permission);
     }
 
     /**
@@ -65,12 +65,12 @@ class PermissionService
     }
 
     /**
-     * Get available tenants for the specified user based on their permissions
+     * Get the tenants this permission grants the user, empty when they do not hold it.
      *
+     * @param  string  $permission  The permission the tenants must be granted through
      * @param  User|null  $user  User to check, or null for current authenticated user
-     * @param  string|null  $permission  Optional permission to filter tenants by
      */
-    public function getTenants(?User $user = null, ?string $permission = null): Collection
+    public function getTenants(string $permission, ?User $user = null): Collection
     {
         $user = $user ?: Auth::user();
 
@@ -78,7 +78,7 @@ class PermissionService
             return new Collection;
         }
 
-        return $this->authorizer->forUser($user)->getTenants($permission);
+        return $this->authorizer->tenants($user, $permission);
     }
 
     /**

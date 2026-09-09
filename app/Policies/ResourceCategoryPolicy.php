@@ -52,14 +52,13 @@ class ResourceCategoryPolicy
     }
 
     /**
-     * ModelAuthorizer::check() matches one exact permission string, so both scopes are tried.
+     * A permission check matches one exact string, so both scopes are tried.
      */
     private function checkResourceAbility(User $user, string $ability): bool
     {
         $base = Str::plural(ModelEnum::RESOURCE->label()).'.'.$ability.'.';
-        $authorizer = $this->authorizer->forUser($user);
 
-        return $authorizer->check($base.PermissionScopeEnum::ALL->label())
-            || $authorizer->check($base.PermissionScopeEnum::PADALINYS->label());
+        return $this->authorizer->allows($user, $base.PermissionScopeEnum::ALL->label())
+            || $this->authorizer->allows($user, $base.PermissionScopeEnum::PADALINYS->label());
     }
 }

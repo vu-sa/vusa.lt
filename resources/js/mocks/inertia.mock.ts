@@ -217,6 +217,13 @@ export const Link = defineComponent({
   },
 });
 
+export const Deferred = defineComponent({
+  name: 'InertiaDeferred',
+  setup(_, { slots }) {
+    return () => slots.default?.();
+  },
+});
+
 // Export default
 export default {
   usePage,
@@ -225,4 +232,5 @@ export default {
   useHttp,
   Head,
   Link,
+  Deferred,
 };

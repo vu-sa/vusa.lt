@@ -160,7 +160,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
   },
   {
     id: 'nav-tasks',
-    routeName: 'tasks.index',
+    routeName: 'userTasks',
     labelKey: 'Užduotys',
     icon: TaskIcon,
     category: 'navigation',

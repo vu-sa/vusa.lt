@@ -7,6 +7,7 @@ use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\HtmlSanitizerService;
+use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -124,6 +126,32 @@ class News extends Model implements Feedable, Sitemapable
         static::saved(function ($news): void {
             // Clear sitemap cache when news is updated
             Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
+
+            // A freshly inserted row's `lang` attribute isn't hydrated from the column's DB
+            // default until the model is refreshed — guard here rather than in publicUrl(),
+            // which trusts an already-persisted, freshly-queried row (true for every other
+            // caller, e.g. NormalizePermalinks).
+            if (! is_string($news->lang)) {
+                return;
+            }
+
+            if (! $news->wasChanged(['permalink', 'tenant_id', 'lang'])) {
+                return;
+            }
+
+            // A throwaway instance carrying the pre-save attributes, so publicUrl() can compute
+            // the URL this article used to have. On a fresh create getOriginal() is empty
+            // (Eloquent syncs original before fill() in the constructor), so this resolves to
+            // null and no legacy row is written — there is no "old" URL to preserve yet.
+            $original = (new self)->setRawAttributes($news->getRawOriginal(), true);
+            $oldUrl = $original->publicUrl();
+            $newUrl = $news->publicUrl();
+
+            if ($oldUrl === null || $oldUrl === $newUrl) {
+                return;
+            }
+
+            app(PublicUrlService::class)->recordLegacyUrl($news, $news->lang, $oldUrl);
         });
 
         static::saved(fn (News $news) => $news->syncPublicSearchIndex());
@@ -233,6 +261,30 @@ class News extends Model implements Feedable, Sitemapable
     public function content(): BelongsTo
     {
         return $this->belongsTo(Content::class);
+    }
+
+    /** @return MorphMany<PublicUrl, $this> */
+    public function publicUrls(): MorphMany
+    {
+        return $this->morphMany(PublicUrl::class, 'urlable')->latest();
+    }
+
+    /**
+     * The article's current canonical URL, built directly from its permalink + tenant — no
+     * public_urls lookup needed. Null when the article has no permalink yet.
+     */
+    public function publicUrl(): ?string
+    {
+        if (blank($this->permalink)) {
+            return null;
+        }
+
+        $subdomain = $this->tenant_id === Tenant::main()?->id ? 'www' : $this->tenant->alias;
+
+        return LocalizedRouteSlugs::route('news', [
+            'subdomain' => $subdomain,
+            'news' => $this->permalink,
+        ], $this->lang);
     }
 
     /**

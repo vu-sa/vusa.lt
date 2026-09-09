@@ -97,6 +97,10 @@ return [
         'no_available_tenant' => 'Nėra prieinamo padalinio, kuriam galėtumėte sukurti naujieną.',
     ],
 
+    'pages' => [
+        'no_available_tenant' => 'Nėra prieinamo padalinio, kuriam galėtumėte sukurti puslapį.',
+    ],
+
     'quick_link' => [
         'order_updated' => 'Greitųjų nuorodų tvarka sėkmingai atnaujinta!',
     ],

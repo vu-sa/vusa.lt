@@ -24,10 +24,7 @@
         <div class="absolute left-0 top-2 bottom-2 w-0.5 bg-gradient-to-b from-vusa-red via-vusa-red/50 to-zinc-200 dark:to-zinc-700 rounded-full" />
 
         <div class="flex flex-col space-y-1">
-          <a v-for="(event, index) in eventsList" :key="event.id" :href="route('calendar.event', {
-            calendar: event.id,
-            lang: locale,
-          })"
+          <a v-for="(event, index) in eventsList" :key="event.id" :href="getCalendarEvent2Route(event, locale)"
             class="group relative flex items-center gap-3 py-2 px-2 -mx-2 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700/50">
 
             <!-- Timeline dot -->
@@ -119,6 +116,7 @@ import { CalendarDays as CalendarDaysIcon, ChevronRight as ChevronRightIcon } fr
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { dashboardCardClasses } from '@/Composables/useDashboardCardStyles';
+import { getCalendarEvent2Route } from '@/Utils/Route';
 
 const props = defineProps<{
   eventsList: App.Entities.Calendar[];

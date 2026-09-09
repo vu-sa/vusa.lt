@@ -31,13 +31,16 @@ class AppServiceProvider extends ServiceProvider
     #[\Override]
     public function register()
     {
-        $this->app->singleton(ModelAuthorizer::class, fn ($app) => new ModelAuthorizer);
+        // scoped, not singleton: the authorizer memoizes finished (user, permission)
+        // resolutions for the duration of one request and must not carry them across
+        // requests under Octane.
+        $this->app->scoped(ModelAuthorizer::class, fn ($app) => new ModelAuthorizer);
 
         // Singleton so the institution-type scope map is built at most once per request.
         $this->app->singleton(InstitutionScopeResolver::class);
 
         // Register our new permission service
-        $this->app->singleton('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));
+        $this->app->scoped('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));
     }
 
     /**

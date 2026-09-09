@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\FormOptionSource;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\FormFieldFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property array|string|null $default_value
  * @property array|string|null $placeholder
  * @property bool $use_model_options
+ * @property FormOptionSource|null $option_source
  * @property string|null $options_model
  * @property string|null $options_model_field
  * @property Carbon $created_at
@@ -53,6 +55,7 @@ use Illuminate\Support\Carbon;
     'placeholder',
     'order',
     'use_model_options',
+    'option_source',
     'options_model',
     'options_model_field',
 ])]
@@ -85,6 +88,7 @@ class FormField extends Model
             'options' => 'array',
             'is_required' => 'boolean',
             'use_model_options' => 'boolean',
+            'option_source' => FormOptionSource::class,
         ];
     }
 
@@ -96,5 +100,22 @@ class FormField extends Model
     public function fieldResponses()
     {
         return $this->hasMany(FieldResponse::class);
+    }
+
+    public function resolvedOptionSource(): ?FormOptionSource
+    {
+        if (! $this->use_model_options) {
+            return null;
+        }
+
+        if ($this->option_source !== null) {
+            return $this->option_source;
+        }
+
+        return match ($this->options_model) {
+            Tenant::class => FormOptionSource::Tenant,
+            Institution::class => FormOptionSource::Institution,
+            default => null,
+        };
     }
 }

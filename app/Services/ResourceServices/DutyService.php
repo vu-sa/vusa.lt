@@ -27,16 +27,14 @@ class DutyService
     public static function getInstitutionsForUpserts(ModelAuthorizer $authorizer)
     {
         $user = request()->user();
-        $authorizer = $authorizer->forUser($user);
 
         // Check for global access
-        $hasGlobalAccess = $authorizer->check('duties.create.*');
+        $hasGlobalAccess = $authorizer->allows($user, 'duties.create.*');
 
         // Get tenant IDs where user can create duties
-        $tenantIds = collect();
-        if (! $hasGlobalAccess && $authorizer->check('duties.create.padalinys')) {
-            $tenantIds = $authorizer->getTenants('duties.create.padalinys')->pluck('id');
-        }
+        $tenantIds = $hasGlobalAccess
+            ? collect()
+            : $authorizer->tenants($user, 'duties.create.padalinys')->pluck('id');
 
         return Institution::select('id', 'name', 'alias', 'tenant_id')
             ->when(! $hasGlobalAccess, function ($query) use ($tenantIds): void {
@@ -64,7 +62,6 @@ class DutyService
     public static function getAssignableExOfficioDuties(ModelAuthorizer $authorizer, ?Duty $duty = null): Collection
     {
         $user = request()->user();
-        $authorizer = $authorizer->forUser($user);
 
         $query = Duty::select('id', 'name', 'institution_id')
             ->with(['institution:id,name,short_name,tenant_id', 'institution.tenant:id,shortname'])
@@ -73,12 +70,12 @@ class DutyService
         if ($duty) {
             $query->where('id', '!=', $duty->id);
 
-            if (! $authorizer->check('duties.update.*')) {
+            if (! $authorizer->allows($user, 'duties.update.*')) {
                 $tenantId = $duty->institution?->tenant_id;
                 $query->whereHas('institution', fn ($q) => $q->where('tenant_id', $tenantId));
             }
-        } elseif (! $authorizer->check('duties.create.*')) {
-            $tenantIds = $authorizer->getTenants('duties.create.padalinys')->pluck('id');
+        } elseif (! $authorizer->allows($user, 'duties.create.*')) {
+            $tenantIds = $authorizer->tenants($user, 'duties.create.padalinys')->pluck('id');
             $query->whereHas('institution', fn ($q) => $q->whereIn('tenant_id', $tenantIds));
         }
 

@@ -267,7 +267,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
@@ -278,6 +278,7 @@ import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Badge } from '@/Components/ui/badge';
 import { formatVuFacultyShortname } from '@/Utils/Tenant';
+import { TenantType } from '@/Types/enums';
 import IFluentDocumentDismiss24Regular from '~icons/fluent/document-dismiss-24-regular';
 import IFluentHatGraduation24Regular from '~icons/fluent/hat-graduation-24-regular';
 import IFluentHatGraduation16Regular from '~icons/fluent/hat-graduation-16-regular';
@@ -332,6 +333,8 @@ usePageBreadcrumbs(() => {
   ]);
 }, { placement: 'band' });
 
+const page = usePage();
+
 const tenantOptions = computed(() =>
   props.tenants.map(t => ({
     value: String(t.id),
@@ -340,6 +343,16 @@ const tenantOptions = computed(() =>
 );
 
 const getInitialTenantId = (): string => {
+  // Landing here via a subdomain switch (see PadalinysSelector) carries the previous
+  // tenant's `?faculty=` along with it — the current subdomain wins over that.
+  const currentTenant = page.props.tenant;
+  if (currentTenant?.type === TenantType.Padalinys) {
+    const match = props.tenants.find(t => t.alias === currentTenant.alias);
+    if (match) {
+      return String(match.id);
+    }
+  }
+
   const params = new URLSearchParams(window.location.search);
   const facultyParam = params.get('faculty');
 

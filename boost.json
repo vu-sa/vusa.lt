@@ -14,8 +14,7 @@
         "spatie/laravel-permission",
         "spatie/laravel-translatable",
         "pestphp/pest-plugin-agent",
-        "barryvdh/laravel-debugbar",
-        "spatie/laravel-activitylog"
+        "barryvdh/laravel-debugbar"
     ],
     "sail": true,
     "skills": [

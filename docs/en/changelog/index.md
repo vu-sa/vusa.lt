@@ -11,6 +11,7 @@ lastUpdated: true
 - ✨ **Clearer institution pages** — social cards show the real account tags, working hours can be added, long descriptions can be expanded from a compact preview, and long institution and content-page titles remain easy to read
 - ✨ **Links in TipTap bubble menu and process steps block** — wherever the text formatting bubble menu is available, you can now insert links; the process steps block now supports rich text formatting and links
 - ✨ **Improved news form structure** — the intro text field is now positioned above the rich content block, matching the actual article reading order, and its description clarifies that it serves both as the article's intro lead and for SEO
+- 🔧 **Tighter tenant-scoped permissions** — a single organisation-wide permission (managing tags or categories, say) could previously widen your other, tenant-scoped permissions to every tenant for the rest of a page request; each permission is now resolved on its own, and a permission you do not hold grants no tenants at all
 - ✨ **Improved calendar synchronization** — the calendar sync dialog is now wider and more spacious, and the sync action button is properly translated into English
 
 ## v2.0 — Public site redesign and visual content editor (2026-09-05) {#v2-0}

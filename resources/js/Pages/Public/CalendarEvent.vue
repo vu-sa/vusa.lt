@@ -190,7 +190,7 @@
           <Link
             v-for="otherEvent in otherEvents"
             :key="otherEvent.id"
-            :href="route('calendar.event', { calendar: otherEvent.id, lang: locale })"
+            :href="getCalendarEvent2Route(otherEvent, locale)"
             class="group flex flex-col"
           >
             <div class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary">

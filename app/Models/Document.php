@@ -130,6 +130,7 @@ class Document extends Model
             'share_url' => $this->anonymous_url ? ShortUrlHelper::documentUrl($this->id) : null,
             'link_url' => $this->link_url,
             'calendar_event_id' => $calendarEvent?->is_draft === false ? $calendarEvent->id : null,
+            'calendar_event_public_url' => $calendarEvent?->is_draft === false ? $calendarEvent->publicUrl(app()->getLocale()) : null,
             'is_active' => $this->is_active,
             'sync_status' => $this->sync_status,
             'checked_at' => $this->checked_at ? $this->checked_at->timestamp : null,

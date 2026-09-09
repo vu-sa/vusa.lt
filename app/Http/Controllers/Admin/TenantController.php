@@ -165,12 +165,10 @@ class TenantController extends AdminController
                 ->where('locale', $locale)
                 ->first();
 
-            if ($homepageContent === null) {
-                $homepageContent = $lockedTenant->homepageContents()->create([
-                    'content_id' => Content::query()->create()->id,
-                    'locale' => $locale,
-                ]);
-            }
+            $homepageContent ??= $lockedTenant->homepageContents()->create([
+                'content_id' => Content::query()->create()->id,
+                'locale' => $locale,
+            ]);
 
             app(ContentService::class)->updateContentParts($homepageContent->content, $parts);
         });

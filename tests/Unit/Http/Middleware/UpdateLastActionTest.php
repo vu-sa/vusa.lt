@@ -59,7 +59,7 @@ test('does not invalidate the requesting user\'s permission cache', function ():
     $tenant = Tenant::factory()->create();
     $user = makeUser($tenant);
 
-    app(ModelAuthorizer::class)->forUser($user)->check('news.read.padalinys');
+    app(ModelAuthorizer::class)->allows($user, 'news.read.padalinys');
     expect(Cache::has("auth:duties:{$user->id}"))->toBeTrue();
 
     $this->actingAs($user);

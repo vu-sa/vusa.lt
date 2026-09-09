@@ -102,7 +102,7 @@
       </div>
     </FormElement>
     <CardModal v-model:show="showFormFieldModal" :title="$t('forms.sections.form_field')" @close="showFormFieldModal = false">
-      <FormFieldForm :field-models="fieldModelOptions" :field-model-attributes="fieldModelFields" :has-registrations
+      <FormFieldForm :field-models="fieldModelOptions" :has-registrations
         :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
     </CardModal>
   </AdminForm>
@@ -141,7 +141,6 @@ const props = defineProps<{
   form: any;
   assignableTenants: any[];
   fieldModelOptions?: { value: string; label: string }[];
-  fieldModelFields?: { value: string; label: string }[];
 }>();
 
 const locale = ref('lt');

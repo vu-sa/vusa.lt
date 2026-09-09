@@ -101,12 +101,12 @@ class FormAccessService
     public function hasGlobalRead(User $user): bool
     {
         return $user->isSuperAdmin()
-            || $this->authorizer->forUser($user)->check('forms.read.*');
+            || $this->authorizer->allows($user, 'forms.read.*');
     }
 
     public function hasTenantRead(User $user): bool
     {
-        return $this->authorizer->forUser($user)->check('forms.read.padalinys');
+        return $this->authorizer->allows($user, 'forms.read.padalinys');
     }
 
     /**
@@ -119,8 +119,7 @@ class FormAccessService
         }
 
         return $this->authorizer
-            ->forUser($user)
-            ->getTenants('forms.read.padalinys')
+            ->tenants($user, 'forms.read.padalinys')
             ->pluck('id')
             ->unique()
             ->values();

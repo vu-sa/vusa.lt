@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import PageForm from '@/Components/AdminForms/PageForm.vue';
 import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
+import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', async () => {
@@ -11,7 +12,7 @@ vi.mock('@inertiajs/vue3', async () => {
     ...actual,
     usePage: () => ({
       props: {
-        app: { locale: 'lt', url: 'https://vusa.test' },
+        app: { locale: 'lt', url: 'https://www.vusa.test' },
       },
     }),
   };
@@ -164,18 +165,28 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     const field = wrapper.findComponent(PermalinkField);
     expect(field.exists()).toBe(true);
     expect(field.props('disabled')).toBe(false);
-    expect(field.props('warning')).toBe('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!');
+    expect(field.props('warning')).toBe('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.');
   });
 
-  it('keeps the permalink editable and warns when editing on create mode too', () => {
+  it('does not double up the main tenant into the displayed base url', () => {
+    // app.url ("https://www.vusa.test") already carries the "www." the main tenant's own
+    // subdomain would add — regression for a bug that produced "vusa.www.vusa.test".
+    wrapper = createWrapper({
+      page: { ...defaultPage, tenant: { id: 16, alias: 'vusa', shortname: 'VU SA' } },
+    });
+
+    const field = wrapper.findComponent(PermalinkField);
+    expect(field.props('baseUrl')).toBe('www.vusa.test');
+  });
+
+  it('hides the permalink field on create — the server generates it', () => {
     wrapper = createWrapper({
       page: defaultPage,
       rememberKey: 'CreatePage',
       submitMethod: 'post',
     });
 
-    const field = wrapper.findComponent(PermalinkField);
-    expect(field.exists()).toBe(true);
-    expect(field.props('disabled')).toBe(false);
+    expect(wrapper.findComponent(PermalinkField).exists()).toBe(false);
+    expect(wrapper.findComponent(PermalinkPreviewHint).exists()).toBe(true);
   });
 });

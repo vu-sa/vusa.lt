@@ -162,7 +162,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
 
         return [
             'id' => (string) $this->id,
-            'name_lt' => $this->getTranslation('name', 'lt'),
+            'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
             'email' => $this->email,
             'tenant_ids' => $tenantIds,

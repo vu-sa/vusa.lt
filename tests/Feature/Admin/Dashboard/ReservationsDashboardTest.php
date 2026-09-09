@@ -15,6 +15,9 @@ beforeEach(function (): void {
     // Manages $this->tenant's resources, but not $this->otherTenant's.
     $this->manager = makeTenantUser('Resource Manager', $this->tenant);
 
+    // Holds a duty in the tenant, but no resources.update.padalinys — administers nothing.
+    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+
     $this->myResource = Resource::factory()->for($this->tenant)->create();
     $this->foreignResource = Resource::factory()->for($this->otherTenant)->create();
 });
@@ -175,6 +178,31 @@ describe('fully resolving', function (): void {
 
         expect($pivot->state->getValue())->toBe('returned')
             ->and($pivot->approvals()->count())->toBe(0);
+    });
+});
+
+describe('non-manager access', function (): void {
+    test('admin can access reservations dashboard', function (): void {
+        asUser($this->admin)
+            ->get(route('dashboard.reservations'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowReservations')
+                ->has('myReservations')
+                ->has('administeredReservations')
+                ->has('managedTenants')
+            );
+    });
+
+    test('reservations dashboard grants no resource managership to a role that lacks it', function (): void {
+        asUser($this->admin)
+            ->get(route('dashboard.reservations'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowReservations')
+                ->has('managedTenants', 0)
+                ->has('administeredReservations', 0)
+            );
     });
 });
 

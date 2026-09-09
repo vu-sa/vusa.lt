@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
  * This service consolidates institution access logic that was previously scattered across:
  * - MeetingPolicy::hasAuthorizedRelationshipAccess()
  * - TypesenseScopedKeyService::getInstitutionIdsForOwnPermission()
- * - DashboardController::atstovavimas() related institutions logic
+ * - AtstovavimasDashboardController::atstovavimas() related institutions logic
  *
  * Access Types:
  * 1. **Direct duty access**: Institutions where user has an active duty

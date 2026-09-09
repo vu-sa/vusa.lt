@@ -61,11 +61,11 @@ class DutyController extends AdminController
 
         $this->applyDataQualityFilter($query, $request->getFilters()['data_quality'] ?? null);
 
-        $authorizer = $this->authorizer->forUser($request->user());
-        $hasGlobalReadScope = $authorizer->check('duties.read.*') || $request->user()?->isSuperAdmin();
+        $actor = $request->user();
+        $hasGlobalReadScope = $this->authorizer->allows($actor, 'duties.read.*') || $actor?->isSuperAdmin();
 
         if (! $hasGlobalReadScope) {
-            $adminTenantIds = $authorizer->getTenants('duties.read.padalinys')->pluck('id')->all();
+            $adminTenantIds = $this->authorizer->tenants($actor, 'duties.read.padalinys')->pluck('id')->all();
             // Cross-tenant duties (the user's tenant is in assignableTenants) are
             // included by default; the `show_external` table filter hides them.
             $includeExternal = ($request->getFilters()['show_external'] ?? true) !== false;
@@ -264,7 +264,7 @@ class DutyController extends AdminController
 
         $actingAssignableTenantIds = $canEditDuty
             ? collect()
-            : $this->authorizer->forUser($user)->getTenants('duties.update.padalinys')->pluck('id');
+            : $this->authorizer->tenants($user, 'duties.update.padalinys')->pluck('id');
 
         $baseRelations = ['institution', 'types', 'roles', 'exOfficioTargetDuties', 'assignableTenants'];
 
@@ -723,8 +723,8 @@ class DutyController extends AdminController
         // Also surface cross-tenant duties the user's tenant may assign reps to.
         // Each such institution is loaded with ONLY the assignable duty(ies),
         // carrying the `assignableTenants` pivot (quota) for the acting tenant.
-        $adminReadTenantIds = $this->authorizer->forUser(request()->user())
-            ->getTenants('duties.read.padalinys')->pluck('id');
+        $adminReadTenantIds = $this->authorizer
+            ->tenants(request()->user(), 'duties.read.padalinys')->pluck('id');
 
         if ($adminReadTenantIds->isNotEmpty()) {
             // For cross-tenant duties the acting tenant only assigns *into*, show
@@ -791,8 +791,7 @@ class DutyController extends AdminController
 
             if ($actingTenantId === null) {
                 $duty->loadMissing('assignableTenants');
-                $authorizer = $this->authorizer->forUser($request->user());
-                $adminTenantIds = $authorizer->getTenants('duties.update.padalinys')->pluck('id');
+                $adminTenantIds = $this->authorizer->tenants($request->user(), 'duties.update.padalinys')->pluck('id');
                 $actingTenantId = $adminTenantIds->intersect($duty->assignableTenants->pluck('id'))->first();
             }
         }

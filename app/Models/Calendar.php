@@ -6,6 +6,8 @@ use App\Enums\CalendarHeroStyleEnum;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\IcalendarService;
+use App\Services\PublicUrlService;
+use App\Support\LocalizedRouteSlugs;
 use Datetime;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
@@ -16,6 +18,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -33,6 +36,7 @@ use Spatie\SchemaOrg\Place;
 /**
  * @property int $id
  * @property array|string|null $title
+ * @property array|string|null $permalink
  * @property array|string|null $description
  * @property array|string|null $location
  * @property bool $is_remote
@@ -151,6 +155,7 @@ class Calendar extends Model implements HasMedia
 
     public $translatable = [
         'title',
+        'permalink',
         'description',
         'location',
         'organizer',
@@ -191,12 +196,37 @@ class Calendar extends Model implements HasMedia
     #[\Override]
     protected static function booted()
     {
-        static::saved(function ($calendar): void {
+        static::saved(function (self $calendar): void {
             // Flush calendar cache for all locales since calendar events can be international
             Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
             $calendar->syncMeetingDocumentsSearchIndex();
+
+            if (! $calendar->wasChanged(['permalink', 'date'])) {
+                return;
+            }
+
+            // A throwaway instance carrying the pre-save attributes, so publicUrl() can compute
+            // the URL this event used to have. getRawOriginal(), not getOriginal(): permalink is
+            // translatable, so Spatie merges an 'array' cast onto it — getOriginal() would apply
+            // that cast and hand back a decoded array, which setRawAttributes() (expecting the
+            // same raw/undecoded shape $attributes normally holds) can't round-trip. On a fresh
+            // create the raw original is empty (Eloquent syncs original before fill() in the
+            // constructor), so this resolves to null and no legacy row is written — exactly
+            // right, there is no "old" URL to preserve yet.
+            $original = (new self)->setRawAttributes($calendar->getRawOriginal(), true);
+
+            foreach (['lt', 'en'] as $locale) {
+                $oldUrl = $original->publicUrl($locale);
+                $newUrl = $calendar->publicUrl($locale);
+
+                if ($oldUrl === null || $oldUrl === $newUrl) {
+                    continue;
+                }
+
+                app(PublicUrlService::class)->recordLegacyUrl($calendar, $locale, $oldUrl);
+            }
         });
 
         static::deleted(function ($calendar): void {
@@ -249,6 +279,34 @@ class Calendar extends Model implements HasMedia
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /** @return MorphMany<PublicUrl, $this> */
+    public function publicUrls(): MorphMany
+    {
+        return $this->morphMany(PublicUrl::class, 'urlable')->latest();
+    }
+
+    /**
+     * The event's current canonical URL, built directly from its permalink + year — no
+     * public_urls lookup needed, since both already live on the row. Null when the event has
+     * no permalink for this locale (should only happen transiently, before its first save).
+     *
+     * useFallbackLocale: false — an event with no English permalink of its own has no English
+     * page, full stop; falling back to the Lithuanian one would be wrong here.
+     */
+    public function publicUrl(string $locale): ?string
+    {
+        $permalink = $this->getTranslation('permalink', $locale, false);
+
+        if (blank($permalink)) {
+            return null;
+        }
+
+        return LocalizedRouteSlugs::route('calendar.show', [
+            'year' => $this->date->format('Y'),
+            'permalink' => $permalink,
+        ], $locale);
     }
 
     public function registerMediaCollections(): void
@@ -309,6 +367,7 @@ class Calendar extends Model implements HasMedia
             'main_image_url' => $this->main_image_url,
             'facebook_url' => $this->facebook_url,
             'cto_url' => $this->getTranslation('cto_url', app()->getLocale()) ?: $this->cto_url,
+            'public_url' => $this->publicUrl(app()->getLocale()) ?? $this->publicUrl('lt') ?? $this->publicUrl('en'),
             'created_at' => $this->created_at->timestamp,
         ];
     }

@@ -32,7 +32,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
         if (! empty($this->input('new_users', []))) {
             $authorizer = app(ModelAuthorizer::class);
 
-            if (! $authorizer->forUser($this->user())->checkAllRoleables('users.create.padalinys')) {
+            if (! $authorizer->allows($this->user(), 'users.create.padalinys')) {
                 return false;
             }
         }
@@ -88,8 +88,8 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             }
 
             $duty->loadMissing('assignableTenants');
-            $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
-            $adminTenantIds = $authorizer->getTenants('duties.update.padalinys')->pluck('id');
+            $adminTenantIds = app(ModelAuthorizer::class)
+                ->tenants($this->user(), 'duties.update.padalinys')->pluck('id');
 
             foreach ($duty->assignableTenants as $tenant) {
                 $quota = $tenant->getAttribute('pivot')?->quota;

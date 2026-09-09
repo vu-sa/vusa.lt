@@ -130,9 +130,9 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
                 ->has('institution')
-                ->has('institution.activity_status')
-                ->has('institution.activity_status.status')
-                ->has('institution.activity_status.effective_days_since_activity')
+                ->has('overview.activity_status')
+                ->has('overview.activity_status.status')
+                ->has('overview.activity_status.effective_days_since_activity')
             );
     });
 
@@ -156,10 +156,12 @@ describe('authorized access', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
-                ->has('institution.allTasks', 1)
-                ->where('institution.allTasks.0.taskable.name', 'Test Meeting Title')
-                // The morph alias, not a class basename — see App\Support\MorphMap.
-                ->where('institution.allTasks.0.taskable.type', 'meeting')
+                ->missing('tasks')
+                ->loadDeferredProps('institutionPanels', fn ($page) => $page
+                    ->has('tasks', 1)
+                    ->where('tasks.0.taskable.name', 'Test Meeting Title')
+                    ->where('tasks.0.taskable.type', 'meeting')
+                )
             );
     });
 
@@ -181,14 +183,12 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
                 ->has('institution.types', 1)
-                ->has('institution.recentComments', 1)
-                ->where('institution.recentComments.0.body', '<p>Hello overview</p>')
-                ->where('institution.recentComments.0.replies_count', 0)
+                ->has('overview.recentComments', 1)
+                ->where('overview.recentComments.0.body', '<p>Hello overview</p>')
+                ->where('overview.recentComments.0.replies_count', 0)
             );
     });
 
-    // The overview previews a meeting's agenda, so the titles must ship with the meeting
-    // while the relation itself (which drags every vote along) stays hidden.
     test('exposes the first agenda item titles of a meeting', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
@@ -203,9 +203,9 @@ describe('authorized access', function (): void {
 
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
-                ->where('institution.meetings.0.agenda_item_titles', ['Pirmas', 'Antras', 'Trecias'])
-                ->where('institution.meetings.0.agenda_items_count', 4)
-                ->missing('institution.meetings.0.agenda_items')
+                ->where('overview.recentMeetings.0.agenda_item_titles', ['Pirmas', 'Antras', 'Trecias'])
+                ->where('overview.recentMeetings.0.agenda_items_count', 4)
+                ->missing('overview.recentMeetings.0.agenda_items')
             );
     });
 

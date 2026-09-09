@@ -11,7 +11,6 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -50,6 +49,16 @@ function publishEventFor(Meeting $meeting, Tenant $tenant): Calendar
         'meeting_id' => $meeting->id,
         'is_draft' => false,
         'date' => $meeting->start_time,
+    ]);
+}
+
+function meetingCalendarEventUrl(Calendar $calendar): string
+{
+    return route('calendar.show', [
+        'subdomain' => 'www',
+        'lang' => 'lt',
+        'year' => $calendar->date->format('Y'),
+        'permalink' => $calendar->getTranslation('permalink', 'lt'),
     ]);
 }
 
@@ -112,14 +121,7 @@ test('the calendar event page carries the meeting agenda regardless of settings,
         'anonymous_url' => 'https://example.test/nutarimas.pdf',
     ]);
 
-    $this->get(route('calendar.event.2', [
-        'subdomain' => 'www',
-        'lang' => 'lt',
-        'year' => $event->date->format('Y'),
-        'month' => $event->date->format('m'),
-        'day' => $event->date->format('d'),
-        'slug' => Str::slug($event->title),
-    ]))
+    $this->get(meetingCalendarEventUrl($event))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/CalendarEvent')
@@ -138,14 +140,7 @@ test('the calendar event page links to the meeting page once settings make it re
 
     $event = publishEventFor($this->meeting, $this->tenant);
 
-    $this->get(route('calendar.event.2', [
-        'subdomain' => 'www',
-        'lang' => 'lt',
-        'year' => $event->date->format('Y'),
-        'month' => $event->date->format('m'),
-        'day' => $event->date->format('d'),
-        'slug' => Str::slug($event->title),
-    ]))
+    $this->get(meetingCalendarEventUrl($event))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('meeting.is_publicly_visible', true));
@@ -168,14 +163,7 @@ test('the calendar event page links to sibling announcements for the same instit
     $otherMeeting->institutions()->attach($otherInstitution);
     publishEventFor($otherMeeting, $this->tenant);
 
-    $this->get(route('calendar.event.2', [
-        'subdomain' => 'www',
-        'lang' => 'lt',
-        'year' => $event->date->format('Y'),
-        'month' => $event->date->format('m'),
-        'day' => $event->date->format('d'),
-        'slug' => Str::slug($event->title),
-    ]))
+    $this->get(meetingCalendarEventUrl($event))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('previousMeetingEvent.id', $earlierEvent->id)
@@ -185,14 +173,7 @@ test('the calendar event page links to sibling announcements for the same instit
 test('an ordinary event carries no meeting', function (): void {
     $event = Calendar::factory()->for($this->tenant)->create(['is_draft' => false]);
 
-    $this->get(route('calendar.event.2', [
-        'subdomain' => 'www',
-        'lang' => 'lt',
-        'year' => $event->date->format('Y'),
-        'month' => $event->date->format('m'),
-        'day' => $event->date->format('d'),
-        'slug' => Str::slug($event->title),
-    ]))
+    $this->get(meetingCalendarEventUrl($event))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('meeting', null));
 });

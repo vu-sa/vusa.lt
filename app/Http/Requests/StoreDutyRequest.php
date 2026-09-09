@@ -52,8 +52,8 @@ class StoreDutyRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v): void {
-            $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
-            $hasGlobalDutyScope = $authorizer->check('duties.create.*');
+            $authorizer = app(ModelAuthorizer::class);
+            $hasGlobalDutyScope = $authorizer->allows($this->user(), 'duties.create.*');
 
             $sourceTenantId = Institution::whereKey($this->input('institution_id'))->value('tenant_id');
 
@@ -61,7 +61,7 @@ class StoreDutyRequest extends FormRequest
             // (unless global scope) — otherwise an admin could create a duty inside
             // another tenant's institution.
             if (! $hasGlobalDutyScope) {
-                $allowedCreateTenantIds = $authorizer->getTenants('duties.create.padalinys')->pluck('id')->all();
+                $allowedCreateTenantIds = $authorizer->tenants($this->user(), 'duties.create.padalinys')->pluck('id')->all();
                 if (! in_array((int) $sourceTenantId, $allowedCreateTenantIds, true)) {
                     $v->errors()->add('institution_id', __('Negalite kurti pareigybės šiame padalinyje.'));
                 }
@@ -85,7 +85,7 @@ class StoreDutyRequest extends FormRequest
 
             // Assignable tenants must be ones the user can manage (unless global scope).
             if (! $hasGlobalDutyScope) {
-                $allowedTenantIds = $authorizer->getTenants('duties.create.padalinys')->pluck('id')->all();
+                $allowedTenantIds = $authorizer->tenants($this->user(), 'duties.create.padalinys')->pluck('id')->all();
                 foreach ((array) $this->input('assignable_tenants', []) as $i => $row) {
                     if (isset($row['tenant_id']) && ! in_array((int) $row['tenant_id'], $allowedTenantIds, true)) {
                         $v->errors()->add("assignable_tenants.$i.tenant_id", __('Negalite priskirti šio padalinio.'));

@@ -55,7 +55,7 @@ class ReservationController extends AdminController
         $reservations = $query->paginate($request->getPerPage())
             ->withQueryString();
 
-        $allowedTenantIds = $this->authorizer->getTenants()->pluck('id');
+        $allowedTenantIds = $this->authorizer->tenants($request->user(), 'reservations.read.padalinys')->pluck('id');
 
         return $this->inertiaResponse('Admin/Reservations/IndexReservation', [
             'reservations' => [

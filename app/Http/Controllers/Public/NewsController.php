@@ -8,12 +8,13 @@ use App\Models\Category;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
+use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
 use Inertia\Inertia;
 
 class NewsController extends PublicController
 {
-    public function news($subdomain, $lang, $newsString, $news)
+    public function news($subdomain, $lang, $newsString, $news, PublicUrlService $publicUrls)
     {
         $this->getBanners();
         $this->getTenantLinks();
@@ -21,7 +22,18 @@ class NewsController extends PublicController
         $news = News::query()->where([
             ['permalink', '=', $news],
             ['tenant_id', '=', $this->tenant->id],
-        ])->firstOrFail();
+        ])->first();
+
+        if ($news === null) {
+            $publicUrl = $publicUrls->resolve(request()->url());
+            $destination = $publicUrl === null ? null : $publicUrls->destinationFor($publicUrl);
+
+            if ($destination !== null) {
+                return redirect($destination, 301);
+            }
+
+            abort(404);
+        }
 
         $other_lang_page = $news->other_language_news;
 

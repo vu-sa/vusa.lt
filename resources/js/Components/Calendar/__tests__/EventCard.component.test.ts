@@ -79,4 +79,19 @@ describe('Calendar/EventCard.vue', () => {
     expect(wrapper.text()).toContain('Daugiau');
     expect(wrapper.text()).not.toContain('Peržiūrėti');
   });
+
+  it('links to the canonical public_url when the list provides one', () => {
+    const wrapper = mountCard({
+      event: makeEvent({ public_url: 'https://vusa.lt/lt/kalendorius/renginio-pavadinimas' }),
+    });
+
+    expect(wrapper.find('a[href="https://vusa.lt/lt/kalendorius/renginio-pavadinimas"]').exists()).toBe(true);
+    expect(wrapper.html()).not.toContain('calendar.event?calendar=1');
+  });
+
+  it('falls back to the id-based redirect route when no public_url is provided', () => {
+    const wrapper = mountCard();
+
+    expect(wrapper.find('a[href^="/mocked-route/calendar.event"]').exists()).toBe(true);
+  });
 });

@@ -72,3 +72,53 @@ describe('CalendarForm.vue — create tenant default', () => {
     expect(vm.form.tenant_id).toBe(2);
   });
 });
+
+describe('CalendarForm.vue — public URL status link', () => {
+  let wrapper: ReturnType<typeof mount>;
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  function createEditWrapper(calendar: Partial<CalendarEventForm> & { id: number }) {
+    return mount(CalendarForm, {
+      shallow: true,
+      props: {
+        calendar: calendar as CalendarEventForm,
+        categories: [],
+        assignableTenants: [],
+        submitUrl: '/mano/calendar/1',
+        submitMethod: 'patch',
+      },
+    });
+  }
+
+  it('links to the URL built from permalink and year once both exist', () => {
+    wrapper = createEditWrapper({
+      id: 5,
+      title: { lt: 'Renginys', en: 'Event' },
+      permalink: { lt: 'renginys', en: '' },
+      date: '2026-05-01T10:00:00',
+    });
+
+    const vm = wrapper.vm as unknown as { statusLinks: { url: string; label: string }[] };
+    expect(vm.statusLinks).toHaveLength(1);
+    expect(vm.statusLinks[0].label).toBe('Public');
+    expect(vm.statusLinks[0].url).toContain('permalink=renginys');
+    expect(vm.statusLinks[0].url).toContain('year=2026');
+  });
+
+  it('shows no link while the event has no permalink for the active locale yet', () => {
+    wrapper = createEditWrapper({ id: 7, title: { lt: 'Renginys', en: 'Event' }, permalink: { lt: '', en: '' } });
+
+    const vm = wrapper.vm as unknown as { statusLinks: { url: string; label: string }[] };
+    expect(vm.statusLinks).toEqual([]);
+  });
+
+  it('shows no link before the event has been saved', () => {
+    wrapper = createEditWrapper({ id: 0, title: { lt: '', en: '' }, permalink: { lt: '', en: '' } });
+
+    const vm = wrapper.vm as unknown as { statusLinks: { url: string; label: string }[] };
+    expect(vm.statusLinks).toEqual([]);
+  });
+});

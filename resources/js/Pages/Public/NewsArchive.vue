@@ -370,7 +370,6 @@ import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import type { NewsItem } from '@/Types/contentParts';
-import { TenantType } from '@/Types/enums';
 import IFluentNews24Regular from '~icons/fluent/news-24-regular';
 import IFluentArrowSync20Regular from '~icons/fluent/arrow-sync-20-regular';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
@@ -461,9 +460,12 @@ const {
   initialTag: initialTagName.value,
 });
 
+// Unlike other search pages, the news archive defaults to *no* tenant filter once
+// Typesense takes over client-side — the main tenant would otherwise show every
+// tenant's news instead of its own. Seed the current tenant either way.
 const currentTenant = page.props.tenant;
 
-if (currentTenant?.type === TenantType.Padalinys && currentTenant.shortname) {
+if (currentTenant?.shortname) {
   selectedTenants.value = [currentTenant.shortname];
   showFilterBar.value = true;
 }
@@ -507,18 +509,21 @@ const categoryOptions = computed<FilterOption[]>(() => {
   return [];
 });
 
-// Tenant options combining Typesense facets with backend props if available
+// The backend's `allTenants` is the full list regardless of filters; Typesense's facet
+// counts, once a tenant is selected, only cover the now-filtered subset (Typesense counts
+// facet values *within* the active filter, so every other tenant would otherwise drop out
+// of the list the moment one is picked). Use `allTenants` for which options exist, and
+// overlay live counts from the facet response where available.
 const tenantOptions = computed<FilterOption[]>(() => {
-  if (tenantFacets.value.length > 0) {
-    return tenantFacets.value;
-  }
   if (props.allTenants?.length) {
+    const counts = new Map(tenantFacets.value.map(f => [f.value, f.count]));
     return props.allTenants.map(t => ({
       label: t.shortname,
       value: t.shortname,
+      count: counts.get(t.shortname),
     }));
   }
-  return [];
+  return tenantFacets.value;
 });
 
 // Year options derived from Typesense facets with fallback range

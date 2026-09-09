@@ -2,11 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\FormOptionSource;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Form;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 
 class StoreFormRequest extends FormRequest
 {
@@ -66,8 +68,7 @@ class StoreFormRequest extends FormRequest
             'form_fields.*.default_value' => 'nullable',
             'form_fields.*.placeholder' => 'nullable|array',
             'form_fields.*.use_model_options' => 'nullable|boolean',
-            'form_fields.*.options_model' => 'nullable|string',
-            'form_fields.*.options_model_field' => 'nullable|string',
+            'form_fields.*.option_source' => ['nullable', Rule::enum(FormOptionSource::class)],
             'publish_time' => 'nullable|date',
         ];
     }

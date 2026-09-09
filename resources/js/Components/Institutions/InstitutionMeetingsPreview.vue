@@ -102,7 +102,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'view-all': [];
   'schedule-meeting': [];
-  'view-meeting': [meeting: App.Entities.Meeting];
+  'view-meeting': [meeting: InstitutionPageMeeting];
 }>();
 
 /** Items the preview could not fit — the count comes from the controller's withCount. */
@@ -110,11 +110,11 @@ const remainingAgendaItems = (meeting: InstitutionPageMeeting): number => {
   return (meeting.agenda_items_count ?? 0) - (meeting.agenda_item_titles?.length ?? 0);
 };
 
-const isFutureMeeting = (meeting: App.Entities.Meeting) => {
+const isFutureMeeting = (meeting: InstitutionPageMeeting) => {
   return new Date(meeting.start_time) > new Date();
 };
 
-const getMeetingTitle = (meeting: App.Entities.Meeting) => {
+const getMeetingTitle = (meeting: InstitutionPageMeeting) => {
   if (meeting.title) return meeting.title;
   return `${formatStaticTime(new Date(meeting.start_time), {
     year: 'numeric',

@@ -80,8 +80,7 @@ class UpdateDutyRequest extends FormRequest
             /** @var Duty $duty */
             $duty = $this->route('duty');
 
-            $authorizer = app(ModelAuthorizer::class)->forUser($this->user());
-            $hasGlobalDutyScope = $authorizer->check('duties.update.*');
+            $hasGlobalDutyScope = app(ModelAuthorizer::class)->allows($this->user(), 'duties.update.*');
 
             if (! $hasGlobalDutyScope) {
                 $sourceTenantId = $duty->institution?->tenant_id;

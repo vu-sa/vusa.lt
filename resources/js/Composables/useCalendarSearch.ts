@@ -26,6 +26,7 @@ export interface CalendarEventDocument {
   main_image_url?: string | null;
   facebook_url?: string | null;
   cto_url?: string | null;
+  public_url?: string | null;
   created_at?: number;
 }
 

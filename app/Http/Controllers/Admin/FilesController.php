@@ -115,8 +115,10 @@ class FilesController extends AdminController
         // Check if user can view this specific directory
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
             // Try to redirect to user's allowed directory
-            if ($this->authorizer->getTenants()->count() > 0) {
-                $allowedPath = 'public/files/padaliniai/vusa'.($this->authorizer->getTenants()->first()->alias ?? '');
+            $readableTenants = $this->authorizer->tenants($request->user(), 'files.read.padalinys');
+
+            if ($readableTenants->isNotEmpty()) {
+                $allowedPath = 'public/files/padaliniai/vusa'.($readableTenants->first()->alias ?? '');
 
                 // Check if user can access their tenant directory
                 if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
@@ -155,8 +157,10 @@ class FilesController extends AdminController
         // Check if user can view this specific directory
         if (! $request->user()->can('viewDirectory', [File::class, $path])) {
             // Mirror index() behaviour but only for root directory requests
-            if (in_array($requestedPath, [null, '', 'public/files'], true) && $this->authorizer->getTenants()->count() > 0) {
-                $allowedPath = 'public/files/padaliniai/vusa'.($this->authorizer->getTenants()->first()->alias ?? '');
+            $readableTenants = $this->authorizer->tenants($request->user(), 'files.read.padalinys');
+
+            if (in_array($requestedPath, [null, '', 'public/files'], true) && $readableTenants->isNotEmpty()) {
+                $allowedPath = 'public/files/padaliniai/vusa'.($readableTenants->first()->alias ?? '');
 
                 if ($request->user()->can('viewDirectory', [File::class, $allowedPath])) {
                     try {
@@ -244,7 +248,7 @@ class FilesController extends AdminController
             }
 
             // Check if user has permission to upload to this directory
-            if (! $request->user()->can('viewDirectory', [File::class, $path])) {
+            if (! $request->user()->can('createInDirectory', [File::class, $path])) {
                 return back()->withErrors(['permission' => __('files.errors.no_upload_permission')]);
             }
         }
@@ -332,7 +336,7 @@ class FilesController extends AdminController
         $name = trim($request->input('name'));
 
         // Check if user has permission to create directories in this path
-        if (! $request->user()->can('viewDirectory', [File::class, $path])) {
+        if (! $request->user()->can('createInDirectory', [File::class, $path])) {
             return back()->withErrors(['permission' => __('files.errors.no_create_directory_permission')]);
         }
 
@@ -407,7 +411,7 @@ class FilesController extends AdminController
                 // as a FileManager path and must clear the directory policy.
                 $validatedPath = $this->validateAndNormalizePath($path);
 
-                if (! $request->user()->can('viewDirectory', [File::class, $validatedPath])) {
+                if (! $request->user()->can('createInDirectory', [File::class, $validatedPath])) {
                     return response()->json(['error' => __('files.errors.no_upload_permission')], 403);
                 }
             }
@@ -546,7 +550,7 @@ class FilesController extends AdminController
         }
 
         $directoryPath = dirname($path);
-        if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
+        if (! $request->user()->can('updateInDirectory', [File::class, $directoryPath])) {
             return back()->withErrors(['permission' => __('files.errors.no_modify_permission')]);
         }
 
@@ -606,7 +610,7 @@ class FilesController extends AdminController
 
         // Check if user has permission to delete files in this directory
         $directoryPath = dirname($path);
-        if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
+        if (! $request->user()->can('deleteInDirectory', [File::class, $directoryPath])) {
             return back()->withErrors(['permission' => __('files.errors.no_delete_permission')]);
         }
 
@@ -660,7 +664,7 @@ class FilesController extends AdminController
 
                 // Check permissions for each file
                 $directoryPath = dirname($validatedPath);
-                if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
+                if (! $request->user()->can('deleteInDirectory', [File::class, $directoryPath])) {
                     $errors[] = __('files.errors.bulk_no_delete_permission', ['name' => basename($path)]);
                     $skippedCount++;
 
@@ -752,7 +756,7 @@ class FilesController extends AdminController
 
         // Check if user has permission to delete directories in the parent directory
         $parentDirectory = dirname($path);
-        if (! $request->user()->can('viewDirectory', [File::class, $parentDirectory])) {
+        if (! $request->user()->can('deleteDirectory', [File::class, $parentDirectory])) {
             return back()->withErrors(['permission' => __('files.errors.no_directory_delete_permission')]);
         }
 

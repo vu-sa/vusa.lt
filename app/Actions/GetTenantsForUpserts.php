@@ -2,7 +2,6 @@
 
 namespace App\Actions;
 
-use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -20,31 +19,13 @@ class GetTenantsForUpserts
      */
     public static function execute(string $permission, Authorizer $authorizer): Collection
     {
-        $authorizer->forUser(Auth::user())->checkAllRoleables($permission);
-
-        if ($authorizer->isAllScope) {
-            return Tenant::query()->orderBy('shortname_vu')->get(['id', 'shortname', 'type'])->map(
-                fn ($tenant) => [
-                    'id' => $tenant->id,
-                    'shortname' => __($tenant->shortname),
-                    'type' => $tenant->type?->value,
-                ]
-            );
-        }
-
-        $tenants = $authorizer->getPermissableDuties()
-            ->load('institution.tenant')
-            ->pluck('institution.tenant');
-
-        // TODO: Resolve tenant access solely from permission-granting current duties; user-level
-        // roles must never widen it, except for the super-admin role.
-
-        return $tenants->filter()->unique('id')->map(
-            fn ($tenant) => [
+        return $authorizer->tenants(Auth::user(), $permission)
+            ->sortBy('shortname_vu')
+            ->values()
+            ->map(fn ($tenant) => [
                 'id' => $tenant->id,
                 'shortname' => __($tenant->shortname),
                 'type' => $tenant->type?->value,
-            ]
-        );
+            ]);
     }
 }

@@ -12,7 +12,7 @@
         class="fixed z-50 -translate-x-1/2 -translate-y-full"
         :style="{ left: `${coordinates.x}px`, top: `${coordinates.y}px` }"
       >
-        <Button variant="destructive" size="icon" @click="handleFeedbackClick">
+        <Button variant="brand" size="icon" :aria-label="$t('Pranešk apie klaidą!')" @click="handleFeedbackClick">
           <IFluentPersonFeedback24Filled />
         </Button>
       </div>
@@ -22,16 +22,19 @@
   <Dialog :open="showModal" @update:open="(val) => !val && handleModalClose()">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>Pranešk apie klaidą!</DialogTitle>
+        <DialogTitle>{{ $t('Pranešk apie klaidą!') }}</DialogTitle>
+        <DialogDescription>
+          {{ $t('Pažymėtas tekstas bus pridėtas prie jūsų pranešimo.') }}
+        </DialogDescription>
       </DialogHeader>
       <div>
-        <p class="mb-4 text-xs opacity-80">
+        <p class="mb-4 text-xs text-muted-foreground">
           {{ textInQuestion }}
         </p>
-        <Textarea v-model="feedback" rows="4" placeholder="Jūsų atsiliepimas, pastaba..." />
+        <Textarea v-model="feedback" rows="4" :placeholder="$t('Jūsų atsiliepimas, pastaba...')" />
       </div>
       <DialogFooter>
-        <Button :disabled="loading" @click="handleSend">
+        <Button variant="brand" :disabled="loading" @click="handleSend">
           <Spinner v-if="loading" />
           <IFluentSend24Filled v-else />
           {{ $t("Siųsti") }}
@@ -47,7 +50,7 @@ import { router } from '@inertiajs/vue3';
 import { useMousePressed, useTextSelection } from '@vueuse/core';
 
 import { Button } from '@/Components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Spinner } from '@/Components/ui/spinner';
 import { Textarea } from '@/Components/ui/textarea';
 

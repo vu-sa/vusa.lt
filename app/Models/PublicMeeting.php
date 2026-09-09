@@ -184,7 +184,6 @@ class PublicMeeting extends Meeting
      * Calculate vote statistics from agenda items' votes.
      * Delegates to VoteStatisticsCalculator.
      */
-    #[\Override]
     protected function calculateVoteStatistics(): array
     {
         $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
@@ -198,7 +197,6 @@ class PublicMeeting extends Meeting
      *
      * @return string 'all_match' (green), 'mixed' (amber), 'all_mismatch' (red), 'neutral' (grey)
      */
-    #[\Override]
     protected function calculateVoteAlignmentStatus(array $voteStats): string
     {
         return app(VoteStatisticsCalculator::class)->alignmentStatusFromCounts(

@@ -29,6 +29,7 @@ use Laravel\Scout\Searchable;
  * @property array|string|null $address
  * @property string|null $phone
  * @property string|null $email
+ * @property array|string|null $working_hours
  * @property string|null $website
  * @property string|null $image_url
  * @property string|null $image_focal_point
@@ -75,7 +76,6 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
- * @property-read array|string $working_hours
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution hasActiveDuties()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution newModelQuery()

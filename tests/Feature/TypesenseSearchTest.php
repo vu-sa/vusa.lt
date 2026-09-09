@@ -3,13 +3,16 @@
 use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\PublicNews;
 use App\Models\PublicPage;
+use App\Models\Resource;
 use App\Models\User;
 use App\Services\Typesense\TypesenseManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -171,6 +174,24 @@ test('duty search array carries index-aligned member ids for current and previou
         // Names and ids share the same index so the detail pane can zip them into links.
         ->and($array['current_user_ids'])->toHaveSameSize($array['current_user_names'])
         ->and($array['previous_user_ids'])->toContain((string) $previous->id);
+});
+
+test('duty, institution and resource search arrays coalesce a missing lt name to an empty string, not null', function (): void {
+    // Typesense's name_lt field is required (non-optional) for these collections. A
+    // null value here 500s the whole import job with "Field `name_lt` must be a
+    // string" — hit in production by soft-deleted legacy duties/institutions whose
+    // `name` column was never populated, reindexed via Institution::reindexDuties().
+    $duty = Duty::factory()->create();
+    DB::table('duties')->where('id', $duty->id)->update(['name' => null]);
+    expect($duty->fresh()->toSearchableArray()['name_lt'])->toBe('');
+
+    $institution = Institution::factory()->create();
+    DB::table('institutions')->where('id', $institution->id)->update(['name' => null]);
+    expect($institution->fresh()->toSearchableArray()['name_lt'])->toBe('');
+
+    $resource = Resource::factory()->create();
+    DB::table('resources')->where('id', $resource->id)->update(['name' => '{}']);
+    expect($resource->fresh()->toSearchableArray()['name_lt'])->toBe('');
 });
 
 test('user search array carries current and previous duties with aligned ids', function (): void {

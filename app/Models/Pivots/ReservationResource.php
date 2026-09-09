@@ -265,10 +265,9 @@ class ReservationResource extends Pivot implements Approvable
         // Check if user has resource management permission for this tenant (can approve/reject)
         $authorizer = app(ModelAuthorizer::class);
 
-        if ($authorizer->forUser($user)->check(config('permission.resource_managership_indicating_permission'))) {
-            if ($authorizer->getTenants()->contains($this->resource->tenant)) {
-                return true;
-            }
+        if ($authorizer->scope($user, config('permission.resource_managership_indicating_permission'))
+            ->allowsTenant($this->resource->tenant)) {
+            return true;
         }
 
         // Reservation owners can only cancel their own reservations

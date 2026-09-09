@@ -13,7 +13,6 @@ use App\Models\Type;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -38,13 +37,11 @@ function editLinkPageUrl(Page $page, Tenant $tenant): string
 
 function editLinkCalendarEventUrl(Calendar $calendar): string
 {
-    return route('calendar.event.2', [
+    return route('calendar.show', [
         'subdomain' => 'www',
         'lang' => 'lt',
         'year' => $calendar->date->format('Y'),
-        'month' => $calendar->date->format('m'),
-        'day' => $calendar->date->format('d'),
-        'slug' => Str::slug($calendar->title),
+        'permalink' => $calendar->getTranslation('permalink', 'lt'),
     ]);
 }
 

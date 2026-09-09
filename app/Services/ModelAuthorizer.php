@@ -5,295 +5,82 @@ namespace App\Services;
 use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Authorization\PermissionScope;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
 
+/**
+ * Resolves what a user may do, and where, from a permission string.
+ *
+ * Permissions are `{resource}.{action}.{scope}`, resolved in this order: super admin,
+ * then a permission granted directly to the user, then permissions granted through the
+ * user's *current* duties. `*` scope means every tenant.
+ *
+ * Every public method takes the user and the permission explicitly and returns an
+ * immutable {@see PermissionScope}. The service holds no notion of a "current user" or
+ * a "last checked permission" — only a memo of finished results — so no caller can be
+ * affected by a check some other caller made earlier in the request.
+ */
 class ModelAuthorizer
 {
-    /**
-     * The ModelAuthorizer service handles authorization checks against users and their duties.
-     *
-     * It provides methods to check if a user has permissions through:
-     * - Direct user permissions
-     * - Duties with associated roles and permissions
-     * - Tenant-specific permissions
-     */
-    public User $user;
-
-    /** @var Collection<int, Duty> */
-    public Collection $duties;
-
-    /** @var Collection<int, Duty> */
-    public Collection $permissableDuties;
-
-    public bool $isAllScope = false;
-
-    /**
-     * Last permission that was checked with checkAllRoleables
-     * This is used to retain context when getTenants is called without specifying a permission
-     */
-    protected ?string $lastCheckedPermission = null;
-
     /**
      * Cache TTL in seconds (1 hour)
      */
     protected const CACHE_TTL = 3600;
 
     /**
-     * Request-level memoization cache for permission checks.
-     * Stores result, permissableDuties, and isAllScope state per check.
+     * Finished resolutions, keyed "{userId}:{permission}".
      *
-     * @var array<string, array{result: bool, duties: Collection, isAllScope: bool}>
+     * @var array<string, PermissionScope>
      */
-    protected array $requestPermissionCache = [];
+    private array $scopes = [];
 
     /**
-     * Request-level memoization cache for resolved tenant collections.
-     * Keyed per user + permission scope so repeated getTenants() calls within
-     * a single request avoid re-querying tenant resolution.
+     * Current duties per user, keyed by user id.
      *
-     * @var array<string, Collection<int, Tenant>>
+     * @var array<string, Collection<int, Duty>>
      */
-    protected array $requestTenantCache = [];
+    private array $duties = [];
 
-    public function __construct()
+    /**
+     * Resolve what a permission grants this user.
+     */
+    public function scope(User $user, string $permission): PermissionScope
     {
-        $this->duties = new Collection;
-        $this->permissableDuties = new Collection;
-    }
-
-    public function getPermissableDuties(): Collection
-    {
-        return $this->permissableDuties;
+        return $this->scopes["{$user->id}:{$permission}"] ??= $this->resolve($user, $permission);
     }
 
     /**
-     * Set the user for subsequent permission checks.
+     * Whether the user holds the permission at any scope.
+     */
+    public function allows(User $user, string $permission): bool
+    {
+        return $this->scope($user, $permission)->granted;
+    }
+
+    /**
+     * Tenants the user may act in through this permission. Empty when they do not hold it.
      *
-     * @param  User  $user  The user to check permissions for
-     */
-    public function forUser(User $user): self
-    {
-        if (! isset($this->user) || $this->user->id !== $user->id) {
-            $this->user = $user;
-            $this->duties = new Collection;
-            $this->isAllScope = false;
-            $this->lastCheckedPermission = null;
-            // Clear request-level caches when switching users
-            $this->requestPermissionCache = [];
-            $this->requestTenantCache = [];
-        }
-
-        return $this;
-    }
-
-    /**
-     * Check all roles and duties for the given permission.
-     *
-     * @phpstan-impure
-     *
-     * @param  string  $permission  Permission to check in format "resource.action.scope"
-     * @return bool Whether the user has the permission
-     */
-    public function checkAllRoleables(string $permission): bool
-    {
-        $this->lastCheckedPermission = $permission;
-
-        // Check request-level cache first to avoid repeated checks within same request
-        $requestCacheKey = "{$this->user->id}:{$permission}";
-        if (isset($this->requestPermissionCache[$requestCacheKey])) {
-            $cached = $this->requestPermissionCache[$requestCacheKey];
-            $this->permissableDuties = $cached['duties'];
-            $this->isAllScope = $cached['isAllScope'];
-
-            return $cached['result'];
-        }
-
-        $this->permissableDuties = new Collection;
-
-        // Super admin check
-        if ($this->user->isSuperAdmin()) {
-            $this->isAllScope = true;
-            $this->cachePermissionResult($requestCacheKey, true);
-
-            return true;
-        }
-
-        // Direct user permission check
-        if ($this->user->hasPermissionTo($permission)) {
-            // Check if user also has global scope through direct permissions
-            $permParts = explode('.', $permission);
-
-            if (count($permParts) >= 3) {
-                $permParts[2] = '*';
-                $globalPermVariant = implode('.', $permParts);
-
-                if ($this->user->hasPermissionTo($globalPermVariant)) {
-                    $this->isAllScope = true;
-                }
-            }
-
-            $this->cachePermissionResult($requestCacheKey, true);
-
-            return true;
-        }
-
-        $this->loadDuties();
-
-        $result = false;
-
-        foreach ($this->duties as $duty) {
-            if ($duty->hasPermissionTo($permission)) {
-                $this->permissableDuties->push($duty);
-
-                // Check if this permission has global scope
-                if ($this->hasGlobalPermission($duty, $permission)) {
-                    $this->isAllScope = true;
-                }
-
-                $result = true;
-            }
-        }
-
-        $this->cachePermissionResult($requestCacheKey, $result);
-
-        return $result;
-    }
-
-    /**
-     * Cache a permission check result along with the current state.
-     */
-    private function cachePermissionResult(string $cacheKey, bool $result): void
-    {
-        $this->requestPermissionCache[$cacheKey] = [
-            'result' => $result,
-            'duties' => clone $this->permissableDuties,
-            'isAllScope' => $this->isAllScope,
-        ];
-    }
-
-    /**
-     * Alias for checkAllRoleables
-     */
-    public function check(string $permission): bool
-    {
-        return $this->checkAllRoleables($permission);
-    }
-
-    /**
-     * Load user duties with necessary relations
-     */
-    protected function loadDuties(): Collection
-    {
-        if ($this->duties->isEmpty()) {
-            $cacheKey = "auth:duties:{$this->user->id}";
-
-            $this->duties = Cache::remember($cacheKey, static::CACHE_TTL, fn () => $this->user->load([
-                'current_duties:id,name,institution_id',
-                // tenant_id (not just id) so getTenants()'s loadMissing('institution.tenant')
-                // can resolve the nested tenant relation without re-fetching institution.
-                'current_duties.institution:id,tenant_id',
-                'current_duties.roles.permissions',
-                // Without this, checkAllRoleables()'s `foreach ($this->duties as $duty)`
-                // loop lazy-loads $duty->permissions (direct, not via role) once per duty —
-                // an N+1 on every permission check that falls through to the duty loop.
-                'current_duties.permissions',
-            ])->current_duties);
-        }
-
-        return $this->duties;
-    }
-
-    /**
-     * Get tenants from permissible duties based on a specific permission.
-     * If no permission is provided but a permission was previously checked,
-     * that permission will be used as context.
-     *
-     * @param  string|null  $permission  Optional permission to filter duties by
      * @return Collection<int, Tenant>
      */
-    public function getTenants(?string $permission = null): Collection
+    public function tenants(User $user, string $permission): Collection
     {
-        // Ensure user is set before proceeding
-        if (! isset($this->user)) {
-            $this->forUser(auth()->user());
-        }
-
-        // Use the provided permission or fall back to the last checked one
-        $effectivePermission = $permission ?? $this->lastCheckedPermission;
-
-        $allScopeKey = "{$this->user->id}:__all__";
-
-        // Cross-request duty caching is handled by loadDuties(); here we only
-        // memoize tenant resolution for the duration of the request. The
-        // side-effecting checkAllRoleables() below is always invoked so callers
-        // that read isAllScope / permissableDuties afterwards see correct state.
-        // Super admin has access to all tenants
-        if ($this->user->isSuperAdmin() || $this->isAllScope) {
-            return $this->requestTenantCache[$allScopeKey] ??= Tenant::all();
-        }
-
-        // If a specific permission is provided, filter duties by that permission
-        if ($effectivePermission) {
-            $this->checkAllRoleables($effectivePermission);
-        }
-
-        // Re-check after checkAllRoleables may have set isAllScope
-        if ($this->isAllScope) {
-            return $this->requestTenantCache[$allScopeKey] ??= Tenant::all();
-        }
-
-        $resolutionKey = "{$this->user->id}:".($effectivePermission ?? '__none__');
-
-        if (isset($this->requestTenantCache[$resolutionKey])) {
-            return $this->requestTenantCache[$resolutionKey];
-        }
-
-        // If no specific permission, or no permissible duties found, use all current duties
-        $dutiesToUse = $this->permissableDuties->isNotEmpty()
-            ? $this->permissableDuties
-            : $this->loadDuties();
-
-        /** @var Collection<int, Tenant> $tenants */
-        $tenants = $dutiesToUse
-            // loadMissing, not load: loadDuties() already eager-loads current_duties.institution,
-            // and a second getTenants() call in the same request (different permission) will
-            // already have the .tenant leg loaded too — load() re-queried both unconditionally.
-            ->loadMissing('institution.tenant')
-            ->pluck('institution.tenant')
-            ->filter()
-            ->unique('id')
-            ->values();
-
-        // Convert to Eloquent Collection to match return type
-        return $this->requestTenantCache[$resolutionKey] = new Collection($tenants->all());
+        return $this->scope($user, $permission)->tenants;
     }
 
     /**
-     * Check if the duty has a global permission.
-     * Global permissions use "*" as scope (e.g., "resource.action.*")
+     * The current duties that granted this permission.
      *
-     * @param  mixed  $duty  The duty to check
-     * @param  string  $permission  Permission string in format "resource.action.scope"
+     * @return Collection<int, Duty>
      */
-    protected function hasGlobalPermission($duty, string $permission): bool
+    public function duties(User $user, string $permission): Collection
     {
-        $permParts = explode('.', $permission);
-
-        // Check for malformed permission string
-        if (count($permParts) < 3) {
-            return false;
-        }
-
-        $permParts[2] = '*';
-        $globalPermVariant = implode('.', $permParts);
-
-        return $duty->hasPermissionTo($globalPermVariant);
+        return $this->scope($user, $permission)->duties;
     }
 
     /**
-     * Reset the internal cache for a specific user.
+     * Reset the cached authorization state for a specific user.
      *
      * @param  User|int|string  $user  User instance or user ID
      * @param  bool  $flushGlobal  Also drop Spatie's shared `spatie.permission.cache` key and
@@ -311,18 +98,15 @@ class ModelAuthorizer
      */
     public function resetCache($user, bool $flushGlobal = false): void
     {
-        $userId = $user instanceof User ? $user->id : $user;
+        $userId = (string) ($user instanceof User ? $user->id : $user);
 
-        // Clear in-memory caches if this is the currently loaded user
-        if (isset($this->user) && (string) $this->user->id === (string) $userId) {
-            $this->requestPermissionCache = [];
-            $this->requestTenantCache = [];
-            $this->duties = new Collection;
-            $this->permissableDuties = new Collection;
-            $this->isAllScope = false;
-            // Reset user so forUser() re-accepts the (potentially refreshed) model
-            unset($this->user); // @phpstan-ignore unset.possiblyHookedProperty
+        foreach (array_keys($this->scopes) as $key) {
+            if (str_starts_with($key, "{$userId}:")) {
+                unset($this->scopes[$key]);
+            }
         }
+
+        unset($this->duties[$userId]);
 
         // Persisted duty cache (loadDuties) is the only cross-request entry for this user.
         Cache::forget("auth:duties:{$userId}");
@@ -330,5 +114,115 @@ class ModelAuthorizer
         if ($flushGlobal) {
             app(PermissionRegistrar::class)->forgetCachedPermissions();
         }
+    }
+
+    private function resolve(User $user, string $permission): PermissionScope
+    {
+        if ($user->isSuperAdmin()) {
+            return new PermissionScope(true, true, new Collection, Tenant::all());
+        }
+
+        // A permission granted directly to the user, rather than through a duty. It is
+        // genuinely held, so it scopes to the tenants of that user's current duties —
+        // narrowing it further is a separate policy decision that would lock out anyone
+        // holding a directly-assigned role today.
+        if ($user->hasPermissionTo($permission)) {
+            $isAllScope = $this->hasGlobalPermission($user, $permission);
+
+            return new PermissionScope(
+                true,
+                $isAllScope,
+                new Collection,
+                $isAllScope ? Tenant::all() : $this->tenantsOf($this->loadDuties($user)),
+            );
+        }
+
+        /** @var Collection<int, Duty> $granting */
+        $granting = new Collection;
+        $isAllScope = false;
+
+        foreach ($this->loadDuties($user) as $duty) {
+            if (! $duty->hasPermissionTo($permission)) {
+                continue;
+            }
+
+            $granting->push($duty);
+
+            if ($this->hasGlobalPermission($duty, $permission)) {
+                $isAllScope = true;
+            }
+        }
+
+        if ($granting->isEmpty()) {
+            return PermissionScope::denied();
+        }
+
+        return new PermissionScope(
+            true,
+            $isAllScope,
+            $granting,
+            $isAllScope ? Tenant::all() : $this->tenantsOf($granting),
+        );
+    }
+
+    /**
+     * @param  Collection<int, Duty>  $duties
+     * @return Collection<int, Tenant>
+     */
+    private function tenantsOf(Collection $duties): Collection
+    {
+        /** @var \Illuminate\Support\Collection<int, Tenant> $tenants */
+        $tenants = $duties
+            // loadMissing, not load: loadDuties() already eager-loads current_duties.institution,
+            // and a second resolution in the same request will already have the .tenant leg
+            // loaded too — load() re-queried both unconditionally.
+            ->loadMissing('institution.tenant')
+            ->pluck('institution.tenant')
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        return new Collection($tenants->all());
+    }
+
+    /**
+     * Load the user's current duties with the relations every resolution needs.
+     *
+     * @return Collection<int, Duty>
+     */
+    private function loadDuties(User $user): Collection
+    {
+        return $this->duties[(string) $user->id] ??= Cache::remember(
+            "auth:duties:{$user->id}",
+            static::CACHE_TTL,
+            fn () => $user->load([
+                'current_duties:id,name,institution_id',
+                // tenant_id (not just id) so tenantsOf()'s loadMissing('institution.tenant')
+                // can resolve the nested tenant relation without re-fetching institution.
+                'current_duties.institution:id,tenant_id',
+                'current_duties.roles.permissions',
+                // Without this, the duty loop lazy-loads $duty->permissions (direct, not via
+                // role) once per duty — an N+1 on every permission check.
+                'current_duties.permissions',
+            ])->current_duties
+        );
+    }
+
+    /**
+     * Whether the holder has the `*`-scope variant of a `resource.action.scope` permission.
+     *
+     * @param  User|Duty  $holder
+     */
+    private function hasGlobalPermission($holder, string $permission): bool
+    {
+        $parts = explode('.', $permission);
+
+        if (count($parts) < 3) {
+            return false;
+        }
+
+        $parts[2] = '*';
+
+        return $holder->hasPermissionTo(implode('.', $parts));
     }
 }

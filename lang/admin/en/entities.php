@@ -50,6 +50,10 @@ return [
         'model' => '{1} page|[2,*] pages',
         'gender' => 'm',
     ],
+    'publicUrl' => [
+        'model' => '{1} public URL|[2,*] public URLs',
+        'gender' => 'm',
+    ],
     'banner' => [
         'model' => '{1} banner|[2,*] banners',
         'gender' => 'm',

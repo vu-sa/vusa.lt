@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GenerateUniqueSlug;
 use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexPageRequest;
@@ -12,6 +13,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Category;
 use App\Models\Content;
 use App\Models\Page;
+use App\Models\PublicUrl;
 use App\Models\Tenant;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -98,7 +100,8 @@ class PageController extends AdminController
         if (request()->user()->isSuperAdmin()) {
             $tenant_id = Tenant::main()?->id;
         } else {
-            $tenant_id = $this->authorizer->permissableDuties->first()?->tenants->first()?->id;
+            $tenant_id = $this->authorizer->duties(request()->user(), 'pages.create.padalinys')
+                ->first()?->tenants->first()?->id;
         }
 
         $content = new Content;
@@ -109,7 +112,7 @@ class PageController extends AdminController
             'title' => $request->title,
             'category_id' => $request->category_id,
             'content_id' => $content->id,
-            'permalink' => $request->permalink,
+            'permalink' => GenerateUniqueSlug::execute(Page::class, $request->title, $tenant_id),
             'lang' => $request->lang,
             'is_active' => $request->is_active,
             'layout' => $request->layout ?? 'default',
@@ -149,6 +152,7 @@ class PageController extends AdminController
                 ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs'),
                 'tenant' => $page->tenant->only('id', 'alias', 'shortname'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'] ?? null,
+                'public_urls' => $page->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
             ],
             'otherLangPages' => $other_lang_pages,
             'categories' => Category::all(['id', 'name']),
@@ -199,5 +203,22 @@ class PageController extends AdminController
     public function forceDelete(Page $page): RedirectResponse
     {
         return $this->forceDeleteModel($page);
+    }
+
+    /**
+     * Remove a legacy public URL (an old permalink that still 301-redirects here).
+     */
+    public function destroyPublicUrl(Page $page, PublicUrl $publicUrl): RedirectResponse
+    {
+        $this->handleAuthorization('update', $page);
+
+        // Resolve through the relation so a crafted payload cannot reach another page's URLs.
+        $publicUrlFromDb = $page->publicUrls()->find($publicUrl->id);
+
+        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this page.');
+
+        $publicUrlFromDb->delete();
+
+        return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }
 }

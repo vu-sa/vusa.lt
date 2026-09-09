@@ -31,6 +31,7 @@ import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 
 import { formatEventDateSpan, formatMonthShort, formatStaticTime } from '@/Utils/IntlTime';
+import { getCalendarEvent2Route } from '@/Utils/Route';
 import { LocaleEnum } from '@/Types/enums';
 
 const props = defineProps<{
@@ -49,7 +50,7 @@ const title = computed(() =>
   Array.isArray(props.event.title) ? props.event.title.join(' ') : String(props.event.title ?? ''),
 );
 
-const href = computed(() => route('calendar.event', { calendar: props.event.id, lang: locale.value }));
+const href = computed(() => getCalendarEvent2Route(props.event, locale.value));
 
 /**
  * The badge already carries the start day, so the line under the title adds only what it

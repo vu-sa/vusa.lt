@@ -21,15 +21,14 @@ Specialized guidance lives in sub-directory `CLAUDE.md` files:
 - Components (tiers, which one to use): [resources/js/Components/CLAUDE.md](resources/js/Components/CLAUDE.md)
 - Data tables: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tables/CLAUDE.md)
 - Storybook: [.storybook/CLAUDE.md](.storybook/CLAUDE.md)
-- Breadcrumbs: [resources/js/Composables/BREADCRUMBS_GUIDE.md](resources/js/Composables/BREADCRUMBS_GUIDE.md)
 - Controllers: [app/Http/Controllers/CLAUDE.md](app/Http/Controllers/CLAUDE.md)
 - Composables: [resources/js/Composables/CLAUDE.md](resources/js/Composables/CLAUDE.md)
 
 ## Testing
 
-Add or update a test when a change affects observable behaviour, a business rule, a security boundary, a data transformation, or a regression likely to recur. Do not add a test solely for deleting dead code, an unused asset/preload or retired integration; comments, formatting, copy-only edits; framework behaviour; or implementation details without a user-facing contract. A test must protect a plausible future regression — “every change needs one” is not sufficient reason.
+Add or update a test when a change affects observable behaviour, a business rule, a security boundary, a data transformation, or a regression likely to recur. Do not add a test solely for deleting dead code, an unused asset/preload or retired integration; comments, formatting, copy-only edits; framework behaviour; or implementation details without a user-facing contract.
 
-For a component behaviour that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model), assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion. Leave a comment in the test explaining what is intentionally not covered and why, so the gap is documented rather than accidental.
+For a component behaviour that depends on a real browser + CSS pipeline (e.g. whether Tailwind's `dark:` variant actually matches a `.dark` ancestor, or other visual rendering that jsdom can't model), assert the wiring instead (props, emitted events, class bindings, refs toggled) and skip the visual assertion. 
 
 ## Development Commands
 
@@ -46,53 +45,17 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run storybook
 ```
 
-Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only).
+Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only). Don't run ESLint fixes or chase typecheck findings unless explicitly asked — verify frontend changes with Vitest instead.
 
 ### Running backend tests — always `--parallel`
 
-Anything wider than a single file runs with `--parallel`. The full suite is ~22s parallel against
-~130s serial, so a serial full run is a mistake, not a preference. `brianium/paratest` ships in
-`vendor/bin/` (it is not in `composer.json`), so no install is needed.
-
-| Scope | Command |
-|---|---|
-| Full suite | `vendor/bin/sail artisan test --parallel --compact` |
-| One directory | `vendor/bin/sail artisan test --parallel --compact tests/Feature` |
-| Several files | `vendor/bin/sail artisan test --parallel --compact --filter="AaaTest\|BbbTest"` |
-| One file | `vendor/bin/sail artisan test --compact path/to/OneTest.php` (worker startup outweighs the win) |
-
-**`--parallel` takes exactly one path.** Passing two files or directories fails with
-`Too many arguments, expected arguments "path"` — that is paratest's signature, not Pest's. When it
-happens, narrow to a single common path or switch to `--filter`; do **not** fall back to a serial
-full run.
-
-If a parallel run fails, re-run that one file serially before treating the failure as real —
-cross-process Typesense contention is possible.
-
-### Test Impact Analysis (TIA)
-
-`sail artisan test` reruns only tests affected by your changes and replays cached results for the
-rest — enabled by default for local/Sail runs via `pest()->tia()->locally()` in `tests/Pest.php`.
-
-Where TIA applies:
-
-| Context | Behaviour |
-|---|---|
-| Local / Sail | TIA on, against the baseline fetched from `main`. |
-| Pull requests | TIA on (`--ci --tia` in `ci.yml`), against the same baseline. |
-| Pushes to `main` | **Full run.** The safety net for anything a stale graph missed on a PR. |
-
-`.github/workflows/tia-baseline.yml` records the shared baseline on every push to `main` (plus
-nightly) and uploads it as the `pest-tia-baseline` artifact, so neither a fresh clone nor a PR pays
-the record cost. Baseline fetching shells out to `gh`, which is why the `php-tests` job needs
-`actions: read`, a `GH_TOKEN`, and `fetch-depth: 0` — without any of those TIA silently degrades to a
-full run, or hard-fails on a 403/404.
-
-| Command | When |
-|---|---|
-| `sail artisan test --parallel` | Default. TIA reruns affected tests, replays the rest. |
-| `sail artisan test --parallel --no-tia` | Full run, no replay — when you distrust the graph. |
-| `sail artisan test --parallel --fresh` | Discard the graph and re-record (after a large refactor). |
+Anything wider than a single file runs with `--parallel` (~22s parallel vs ~130s serial — a serial
+full run is a mistake, not a preference). Test Impact Analysis (TIA) reruns only tests affected by
+your change locally and on PRs; pushes to `main` run the full suite as a safety net. `--parallel`
+takes exactly one path — passing two files/directories fails with paratest's
+`Too many arguments, expected arguments "path"`; narrow to a common path or use `--filter` instead
+of falling back to a serial run. Full command reference, the TIA baseline/CI mechanics, and the
+`--no-tia`/`--fresh` escape hatches: [tests/CLAUDE.md](tests/CLAUDE.md#running-backend-tests).
 
 ### Linting
 
@@ -137,6 +100,14 @@ Language specifics: PHPDoc over inline comments (PHP), JSDoc rules under [TypeSc
 | Cross-component data sharing | History-state-bound data |
 | Real-time updates | Partial reloads via `router.reload` |
 
+### Inertia v3 data loading
+
+Keep the first visit to the page shell and immediately useful overview data. Defer large, non-default tabs or panels with `Inertia::defer()`; pair each with `<Deferred>` and a skeleton fallback. Group only props normally needed together; use `WhenVisible` for below-the-fold work.
+
+Use a shared Resource or named mapper when several full admin surfaces need the same payload. Keep dashboard and indicator payloads intentionally compact.
+
+Feature-test a deferred contract: assert the prop is absent initially, then load and assert its group with `loadDeferredProps()`.
+
 **Standard API response shape** (via `ApiResponses` trait):
 - Success: `{ success: true, data, message?, meta? }`
 - Error: `{ success: false, message, errors?, code? }`
@@ -161,12 +132,18 @@ Use Ziggy's `route()` helper — types are auto-generated by `vite.config.mts`.
 **Format**: `{resource}.{action}.{scope}` — e.g. `news.update.padalinys`.
 
 - Resource: plural model (`news`, `users`, `documents`)
-- Action: `read | create | update | delete`
-- Scope: `all` (global) | `own` (directly associated) | `padalinys` (within user's tenant)
+- Action: `read | create | update | delete | forceDelete`
+- Scope: `*` (global — `PermissionScopeEnum::ALL`, written `*` in the permission string, not `all`) | `own` (directly associated) | `padalinys` (within user's tenant)
 
 **Resolution order**: super-admin short-circuit → direct user permission → permission via duty/role → scope evaluation.
 
-Key components: `ModelAuthorizer` (cached service), `Permission` facade, `HasCommonChecks` trait, `ModelPolicy` base class, `TenantPermission` middleware. Vue receives `$page.props.auth.can`.
+Key components: `ModelAuthorizer`, `Permission` facade, `HasCommonChecks` trait, `ModelPolicy` base class, `TenantPermission` middleware. Vue receives `$page.props.auth.can`.
+
+`ModelAuthorizer` holds no ambient state: resolve one permission at a time with
+`scope($user, $permission)` (returning an immutable `PermissionScope` with `granted`,
+`isAllScope`, `duties`, `tenants`) or its readers `allows()` / `tenants()` / `duties()`. A
+permission the actor does not hold resolves to **zero** tenants — never a wider fallback. See
+`.ai/rules/services.md`.
 
 Always either call `$this->authorize(...)` in controllers or apply the `tenant.permission` middleware. Validate inputs through Form Requests. Return **403** for forbidden, never 302 for direct hits — see "Authorization responses" below.
 
@@ -204,6 +181,14 @@ Public controllers extending `PublicController` should call `shareOtherLangURL()
 - Default Scout driver: `database` (`SCOUT_DRIVER` env). Admin searches **must** use it (avoids circular dependencies).
 - Public search: Typesense (fast, typo-tolerant).
 - Redis: caching + sessions; target >80% hit ratio.
+
+### Activity log (spatie/laravel-activitylog)
+
+- Add `use LogsActivity;` to a model; override `getActivitylogOptions()` returning `LogOptions::defaults()->logFillable()->logOnlyDirty()->dontLogEmptyChanges()` to auto-log create/update/delete.
+- Manual entries: `activity()->performedOn($model)->causedBy($user)->event(ActivityEvent::Updated)->withProperties([...])->log('message');`
+- Query: `Activity::forSubject($model)->get()`, `::causedBy($user)`, `::forEvent(ActivityEvent::Created)`.
+- `attribute_changes` column = `{attributes, old}` (auto, from `LogsActivity`); `properties` column = your `withProperties()` data.
+- Config: `config/activitylog.php` (`enabled`, `clean_after_days`, `default_except_attributes`).
 
 ### Common helper patterns
 
@@ -604,159 +589,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 Vue components must have a single root element.
 - IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
-
-=== spatie/laravel-activitylog/core rules ===
-
-# spatie/laravel-activitylog
-
-Activity logging package for Laravel. Logs model events and manual activities to a database table.
-
-## Key Concepts
-
-- **Activity**: An Eloquent model (`Spatie\Activitylog\Models\Activity`) storing log entries with subject, causer, event, attribute_changes, and properties.
-- **Subject**: The model being acted upon (polymorphic `subject_type`/`subject_id`).
-- **Causer**: The model that caused the action, typically the authenticated user (polymorphic `causer_type`/`causer_id`).
-- **LogOptions**: Fluent configuration object returned by `getActivitylogOptions()` on models using the `LogsActivity` trait.
-- **ActivityEvent**: Enum with cases `Created`, `Updated`, `Deleted`, `Restored`.
-- **`attribute_changes`** column: stores `{"attributes": {...}, "old": {...}}` for tracked model changes.
-- **`properties`** column: stores custom user data set via `withProperties()`.
-
-## Traits
-
-### `LogsActivity`
-
-Add to models to automatically log create/update/delete events. Optionally implement `getActivitylogOptions()` to configure which attributes to track (defaults to logging events without attribute changes).
-
-```php
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
-
-class Article extends Model
-{
-    use LogsActivity;
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges();
-    }
-}
-```
-
-### `CausesActivity`
-
-Add to user/causer models. Provides `activitiesAsCauser()` relationship.
-
-### `HasActivity`
-
-Combines `LogsActivity` and `CausesActivity`. Provides `activities()`, `activitiesAsSubject()`, and `activitiesAsCauser()`.
-
-## Manual Logging
-
-```php
-activity()
-    ->performedOn($article)
-    ->causedBy($user)
-    ->event(ActivityEvent::Updated)
-    ->withProperties(['key' => 'value'])
-    ->log('Article was updated');
-```
-
-## LogOptions Methods
-
-| Method | Description |
-|--------|-------------|
-| `logFillable()` | Log all fillable attributes |
-| `logAll()` | Log all attributes |
-| `logOnly(array)` | Log specific attributes |
-| `logExcept(array)` | Exclude attributes |
-| `logOnlyDirty()` | Only log changed attributes |
-| `dontLogEmptyChanges()` | Skip logging when no tracked attributes changed |
-| `dontLogIfAttributesChangedOnly(array)` | Ignore updates that only change these attributes |
-| `useLogName(string)` | Set custom log name |
-| `setDescriptionForEvent(Closure)` | Custom description per event |
-| `useAttributeRawValues(array)` | Store raw (uncast) values |
-
-## Querying Activities
-
-```php
-use Spatie\Activitylog\Models\Activity;
-use Spatie\Activitylog\Enums\ActivityEvent;
-
-Activity::forEvent(ActivityEvent::Created)->get();
-Activity::causedBy($user)->get();
-Activity::forSubject($article)->get();
-Activity::inLog('orders')->get();
-```
-
-## Setting the causer
-
-Override the causer for a block of code:
-
-```php
-use Spatie\Activitylog\Facades\Activity;
-
-Activity::defaultCauser($admin, function () {
-    // all activities here are caused by $admin
-});
-
-// or set globally for the rest of the request
-Activity::defaultCauser($admin);
-```
-
-## Disabling Logging
-
-```php
-activity()->withoutLogging(function () {
-    // no activities logged here
-});
-```
-
-## Accessing Changes and Properties
-
-```php
-$activity = Activity::latest()->first();
-
-// Tracked model changes (set automatically by LogsActivity)
-$activity->attribute_changes; // Collection: {"attributes": {...}, "old": {...}}
-
-// Custom user data (set via withProperties)
-$activity->properties; // Collection
-$activity->getProperty('key'); // single value
-```
-
-## Custom Activity Model
-
-Set `activity_model` in `config/activitylog.php` to a class that extends `Model` and implements `Spatie\Activitylog\Contracts\Activity`. Use a custom model for custom table names or database connections.
-
-## Customizing Actions
-
-The package uses action classes (`LogActivityAction`, `CleanActivityLogAction`) that can be extended and swapped via config:
-
-```php
-// config/activitylog.php
-'actions' => [
-    'log_activity' => \App\Actions\CustomLogActivityAction::class,
-    'clean_log' => \App\Actions\CustomCleanAction::class,
-],
-```
-
-Custom action classes must extend the originals. Override protected methods (`save()`, `beforeActivityLogged()`, `resolveDescription()`, etc.) to customize behavior.
-
-## Configuration
-
-Key config options in `config/activitylog.php`:
-- `enabled`: Master on/off switch (env: `ACTIVITYLOG_ENABLED`)
-- `clean_after_days`: Days to keep records for `activitylog:clean` command
-- `default_log_name`: Default log name (string)
-- `default_auth_driver`: Auth driver for causer resolution
-- `include_soft_deleted_subjects`: Include soft-deleted subjects
-- `activity_model`: Custom Activity model class
-- `default_except_attributes`: Globally excluded attributes
-- `actions.log_activity`: Action class for logging activities
-- `actions.clean_log`: Action class for cleaning old activities
 
 === spatie/laravel-medialibrary/core rules ===
 

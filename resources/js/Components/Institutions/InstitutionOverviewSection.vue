@@ -18,7 +18,7 @@
         </Card>
 
         <InstitutionMeetingsPreview
-          v-if="institution.meetings && institution.meetings.length > 0"
+          v-if="overview.recentMeetings.length > 0"
           :meetings="recentMeetings"
           :institution
           :total-count="meetingsCount"
@@ -214,12 +214,13 @@ import { Button } from '@/Components/ui/button';
 import { useInstitutionUrgency } from '@/Composables/useInstitutionUrgency';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import type { InstitutionPageData } from '@/Types/InstitutionPage';
+import type { InstitutionOverviewData, InstitutionPageData, InstitutionPageMeeting } from '@/Types/InstitutionPage';
 
 const MEMBER_PREVIEW_LIMIT = 6;
 
 const props = defineProps<{
   institution: InstitutionPageData;
+  overview: InstitutionOverviewData;
   canEditMembers?: boolean;
 }>();
 
@@ -230,17 +231,23 @@ defineEmits<{
   'add-member': [];
   'view-profile': [member: App.Entities.User];
   'edit-member': [member: App.Entities.User];
-  'view-meeting': [meeting: App.Entities.Meeting];
+  'view-meeting': [meeting: InstitutionPageMeeting];
 }>();
 
 // Use urgency composable
+const urgencyInstitution = computed(() => ({
+  ...props.institution,
+  ...props.overview,
+  meetings: props.overview.recentMeetings,
+}));
+
 const {
   lastMeeting,
   totalPositions,
   filledPositions,
-} = useInstitutionUrgency(() => props.institution);
+} = useInstitutionUrgency(() => urgencyInstitution.value);
 
-const activityStatus = computed(() => props.institution.activity_status);
+const activityStatus = computed(() => props.overview.activity_status);
 const activityLabel = computed(() => $t(`visak.activity.activity_status.${activityStatus.value.status}`));
 const activityIcon = computed(() => ({
   no_activity: CalendarX,
@@ -266,7 +273,7 @@ const description = computed(() => {
 });
 
 // Members
-const members = computed<App.Entities.User[]>(() => props.institution.current_users ?? []);
+const members = computed<App.Entities.User[]>(() => props.overview.current_users);
 const previewMembers = computed(() => members.value.slice(0, MEMBER_PREVIEW_LIMIT));
 const hiddenMembers = computed(() => members.value.slice(MEMBER_PREVIEW_LIMIT));
 
@@ -277,7 +284,7 @@ const showCapacityWarning = computed(() => {
 // Map each member to the name of a duty they currently hold (for a role label).
 const dutyNameByMemberId = computed(() => {
   const map = new Map<string, string>();
-  (props.institution.duties ?? []).forEach((duty) => {
+  props.overview.duties.forEach((duty) => {
     (duty.current_users ?? []).forEach((user) => {
       if (!map.has(String(user.id))) {
         map.set(String(user.id), duty.name);
@@ -292,17 +299,17 @@ const roleForMember = (member: App.Entities.User): string | undefined => {
 };
 
 // Meetings
-const meetingsCount = computed(() => props.institution.meetings?.length || 0);
+const meetingsCount = computed(() => props.overview.meetings_count);
 
 const recentMeetings = computed(() => {
-  const meetings = props.institution.meetings || [];
+  const meetings = props.overview.recentMeetings;
   return [...meetings]
     .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())
     .slice(0, 3);
 });
 
 // Discussion preview (provided by the controller)
-const recentComments = computed(() => props.institution.recentComments ?? []);
+const recentComments = computed(() => props.overview.recentComments);
 
 const formatLastMeetingDate = (dateString: string) => {
   return formatStaticTime(new Date(dateString), {

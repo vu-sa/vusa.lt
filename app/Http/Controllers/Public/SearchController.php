@@ -12,7 +12,10 @@ class SearchController extends PublicController
     {
         $this->getBanners();
         $this->getTenantLinks();
-        $this->shareOtherLangURL('search');
+        $this->shareOtherLangURL(
+            $this->tenant->isMain() ? 'search' : 'tenant.search',
+            $this->tenant->isMain() ? null : $this->subdomain,
+        );
 
         // Global content - use null for current tenant
         $this->applyPageHead(
@@ -22,6 +25,7 @@ class SearchController extends PublicController
         );
 
         return Inertia::render('Public/Search', [
+            'tenantSwitchTarget' => 'same-page',
             'initialQuery' => $request->string('q')->toString(),
         ]);
     }

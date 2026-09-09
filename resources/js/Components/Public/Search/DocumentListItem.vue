@@ -233,9 +233,12 @@ const downloadUrl = computed(() => {
   return `${base}${separator}download=1`;
 });
 
-const calendarEventUrl = computed(() => props.document.calendar_event_id
-  ? route('calendar.event', { calendar: props.document.calendar_event_id })
-  : undefined);
+const calendarEventUrl = computed(() => {
+  if (props.document.calendar_event_public_url) return props.document.calendar_event_public_url;
+  return props.document.calendar_event_id
+    ? route('calendar.event', { calendar: props.document.calendar_event_id })
+    : undefined;
+});
 
 // Open document in new tab
 const openDocument = () => {

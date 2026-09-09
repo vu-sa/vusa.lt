@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Enums\ModelEnum;
 use App\Enums\TenantType;
-use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -57,20 +56,7 @@ class TenantPolicy extends ModelPolicy
 
     public function updateMainPage(User $user, Tenant $tenant): bool
     {
-        $this->authorizer->forUser($user)->check('pages.update.padalinys');
-
-        if ($this->authorizer->isAllScope) {
-            return true;
-        }
-
-        $tenants = $this->authorizer->getPermissableDuties()->filter(function ($duty) {
-            /** @var Duty $duty */
-            return $duty->hasPermissionTo('pages.update.padalinys');
-        })->load('institution.tenant')->pluck('institution.tenant');
-
-        // Compare by key, not model identity: the caller's Tenant instance may carry
-        // loaded relations, which makes loose model comparison (==) fail.
-        return $tenants->contains('id', $tenant->id);
+        return $this->authorizer->scope($user, 'pages.update.padalinys')->allowsTenant($tenant);
     }
 
     /**

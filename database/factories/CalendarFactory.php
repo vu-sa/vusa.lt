@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class CalendarFactory extends Factory
 {
@@ -31,6 +32,7 @@ class CalendarFactory extends Factory
 
         return [
             'title' => ['lt' => fake()->sentence, 'en' => fake()->sentence],
+            'permalink' => ['lt' => 'event-'.Str::uuid(), 'en' => 'event-'.Str::uuid()],
             'description' => ['lt' => fake()->paragraph, 'en' => fake()->paragraph],
             'location' => ['lt' => fake()->city, 'en' => fake()->city],
             'organizer' => ['lt' => fake()->name, 'en' => fake()->name],

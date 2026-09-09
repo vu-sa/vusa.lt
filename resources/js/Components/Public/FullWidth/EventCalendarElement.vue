@@ -138,6 +138,7 @@ import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
 import Skeleton from '@/Components/ui/skeleton/Skeleton.vue';
 import { useCalendarFetch } from '@/Services/ContentService';
 import { formatEventDateSpan, formatMonthAbbr } from '@/Utils/IntlTime';
+import { getCalendarEvent2Route } from '@/Utils/Route';
 import type { Calendar } from '@/Types/contentParts';
 import { LocaleEnum } from '@/Types/enums';
 import type { BandResolution } from '@/Components/RichContent/bandLayout';
@@ -153,6 +154,7 @@ interface CalendarEvent {
   is_all_day?: boolean;
   category: { id: number; name: string } | null;
   images: Array<{ url: string }>;
+  public_url?: string | null;
   [key: string]: unknown;
 }
 
@@ -271,5 +273,5 @@ const eventDateLabel = (event: CalendarEvent) => formatEventDateSpan(
   { allDay: event.is_all_day, locale: locale.value },
 ).primary;
 
-const eventHref = (event: CalendarEvent) => route('calendar.event', { calendar: event.id, lang: locale.value });
+const eventHref = (event: CalendarEvent) => getCalendarEvent2Route(event, locale.value);
 </script>

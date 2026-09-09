@@ -19,20 +19,20 @@ class SearchController extends AdminController
      */
     public function index(): InertiaResponse
     {
-        $authorizer = $this->authorizer->forUser(auth()->user());
+        $user = auth()->user();
 
         return Inertia::render('Admin/Search/SearchIndex', [
             'can' => [
                 'create' => [
-                    'meetings' => $authorizer->check('meetings.create.padalinys'),
-                    'institutions' => $authorizer->check('institutions.create.padalinys'),
-                    'resources' => $authorizer->check('resources.create.padalinys'),
-                    'duties' => $authorizer->check('duties.create.padalinys'),
-                    'documents' => $authorizer->check('documents.create.padalinys'),
-                    'news' => $authorizer->check('news.create.padalinys'),
-                    'pages' => $authorizer->check('pages.create.padalinys'),
-                    'calendar' => $authorizer->check('calendars.create.padalinys'),
-                    'users' => $authorizer->check('users.create.padalinys'),
+                    'meetings' => $this->authorizer->allows($user, 'meetings.create.padalinys'),
+                    'institutions' => $this->authorizer->allows($user, 'institutions.create.padalinys'),
+                    'resources' => $this->authorizer->allows($user, 'resources.create.padalinys'),
+                    'duties' => $this->authorizer->allows($user, 'duties.create.padalinys'),
+                    'documents' => $this->authorizer->allows($user, 'documents.create.padalinys'),
+                    'news' => $this->authorizer->allows($user, 'news.create.padalinys'),
+                    'pages' => $this->authorizer->allows($user, 'pages.create.padalinys'),
+                    'calendar' => $this->authorizer->allows($user, 'calendars.create.padalinys'),
+                    'users' => $this->authorizer->allows($user, 'users.create.padalinys'),
                 ],
             ],
         ]);
