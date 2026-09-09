@@ -5,6 +5,7 @@ declare global {
     extends Pick<
       App.Entities.Calendar,
       | 'title'
+      | 'permalink'
       | 'date'
       | 'end_date'
       | 'description'
@@ -21,6 +22,7 @@ declare global {
       | 'tenant_id'
       | 'category_id'
       | 'tenant'
+      | 'public_urls'
     > {
     id?: number;
     // Form-specific properties (not in base model)
@@ -34,6 +36,8 @@ declare global {
       status?: string;
     }>;
     youtube_url?: string | null;
+    /** Informational only — still resolves live, never stored, nothing to delete. */
+    legacy_date_urls?: Partial<Record<'lt' | 'en', string | null>>;
   }
 
   interface InstitutionForm

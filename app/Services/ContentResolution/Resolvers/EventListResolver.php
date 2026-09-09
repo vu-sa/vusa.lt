@@ -172,8 +172,10 @@ final class EventListResolver implements ResolvesContentPart
             'imageUrl' => $event->main_image_url,
             // 'www' matches the existing SummerCampCard.vue precedent for this route —
             // it's a redirect route that resolves the event's real URL server-side
-            // regardless of which subdomain it was reached through.
-            'href' => route('calendar.event', ['calendar' => $event->id, 'lang' => $context->locale, 'subdomain' => 'www']),
+            // regardless of which subdomain it was reached through. Falls back to the
+            // id-based redirect only when the event has no permalink for this locale yet.
+            'href' => $event->publicUrl($context->locale)
+                ?? route('calendar.event', ['calendar' => $event->id, 'lang' => $context->locale, 'subdomain' => 'www']),
         ];
     }
 

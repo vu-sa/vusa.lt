@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\FormOptionSource;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Tenant;
@@ -63,6 +64,7 @@ class MemberRegistrationFormSeeder extends Seeder
         $tenantField->is_required = true;
         $tenantField->order = 3;
         $tenantField->use_model_options = true;
+        $tenantField->option_source = FormOptionSource::Tenant;
         $tenantField->options_model = Tenant::class;
         $tenantField->options_model_field = 'fullname';
 

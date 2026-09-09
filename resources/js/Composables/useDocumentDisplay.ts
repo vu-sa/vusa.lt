@@ -19,6 +19,7 @@ export interface DocumentDisplayItem {
   share_url?: string;
   link_url?: string | null;
   calendar_event_id?: number | null;
+  calendar_event_public_url?: string | null;
   tenant_shortname?: string;
   tenant_name?: string;
   institution_name_lt?: string;

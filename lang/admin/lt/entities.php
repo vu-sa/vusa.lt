@@ -54,6 +54,10 @@ return [
         'model' => '{1} puslapis|[2,9] puslapiai|[10,*] puslapių',
         'gender' => 'm',
     ],
+    'publicUrl' => [
+        'model' => '{1} viešas adresas|[2,9] vieši adresai|[10,*] viešų adresų',
+        'gender' => 'm',
+    ],
     'banner' => [
         'model' => '{1} baneris|[2,9] baneriai|[10,*] banerių',
         'gender' => 'm',

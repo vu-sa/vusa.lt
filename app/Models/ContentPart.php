@@ -141,6 +141,24 @@ class ContentPart extends Model
                 $part->options = new ArrayObject($part->normalizeFormDataScalars($options->toArray()));
             }
         });
+
+        static::saved(fn (self $part) => $part->forgetPublicContentCaches());
+        static::deleted(fn (self $part) => $part->forgetPublicContentCaches());
+    }
+
+    private function forgetPublicContentCaches(): void
+    {
+        $this->loadMissing('content.page', 'content.tenantHomepageContent');
+        $content = $this->content;
+
+        if ($content?->page !== null) {
+            $page = $content->page;
+            Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+        }
+
+        if ($content?->tenantHomepageContent !== null) {
+            Cache::tags(['homepage'])->flush();
+        }
     }
 
     /**

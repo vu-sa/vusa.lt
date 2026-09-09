@@ -182,6 +182,7 @@ declare global {
       // columns
       id: number
       title?: Array<unknown> | null
+      permalink?: Array<unknown> | null
       description?: Array<unknown> | null
       location?: Array<unknown> | null
       is_remote: boolean
@@ -212,15 +213,18 @@ declare global {
       tenant?: Tenant
       meeting?: Meeting
       category?: Category
+      public_urls?: PublicUrl[]
       media?: Media[]
       activities_as_subject?: Activity[]
       // counts
+      public_urls_count: number
       media_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       meeting_exists: boolean
       category_exists: boolean
+      public_urls_exists: boolean
       media_exists: boolean
       activities_as_subject_exists: boolean
     }
@@ -625,6 +629,7 @@ declare global {
       default_value?: Array<unknown> | null
       placeholder?: Array<unknown> | null
       use_model_options: boolean
+      option_source?: FormOptionSource | null
       options_model?: string | null
       options_model_field?: string | null
       created_at: string
@@ -948,9 +953,11 @@ declare global {
       other_language_news?: News
       tags?: Tag[]
       content?: Content
+      public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
       tags_count: number
+      public_urls_count: number
       activities_as_subject_count: number
       // exists
       user_exists: boolean
@@ -959,6 +966,7 @@ declare global {
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
+      public_urls_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1006,14 +1014,17 @@ declare global {
       other_language_page?: Page
       category?: Category
       content?: Content
+      public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
+      public_urls_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
       category_exists: boolean
       content_exists: boolean
+      public_urls_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1288,9 +1299,11 @@ declare global {
       other_language_news?: News
       tags?: Tag[]
       content?: Content
+      public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
       tags_count: number
+      public_urls_count: number
       activities_as_subject_count: number
       // exists
       user_exists: boolean
@@ -1299,6 +1312,7 @@ declare global {
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
+      public_urls_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1330,15 +1344,34 @@ declare global {
       other_language_page?: Page
       category?: Category
       content?: Content
+      public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
+      public_urls_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
       category_exists: boolean
       content_exists: boolean
+      public_urls_exists: boolean
       activities_as_subject_exists: boolean
+    }
+
+    export interface PublicUrl {
+      // columns
+      id: number
+      urlable_type: string
+      urlable_id: number
+      locale: string
+      url: string
+      is_canonical: boolean
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      urlable?: PublicUrl
+      // counts
+      // exists
     }
 
     export interface QuickLink {
@@ -2056,6 +2089,13 @@ declare global {
     } as const;
 
     export type CommentKind = typeof CommentKind[keyof typeof CommentKind]
+
+    const FormOptionSource = {
+      Tenant: 'tenant',
+      Institution: 'institution',
+    } as const;
+
+    export type FormOptionSource = typeof FormOptionSource[keyof typeof FormOptionSource]
 
     const MeetingType = {
       InPerson: 'in-person',

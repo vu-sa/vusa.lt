@@ -39,6 +39,10 @@ final class LocalizedRouteSlugs
         'newsArchiveString' => ['lt' => 'naujienos', 'en' => 'news'],
         'newsString' => ['lt' => 'naujiena', 'en' => 'news'],
         'registrationString' => ['lt' => 'registracija', 'en' => 'registration'],
+        'calendarString' => ['lt' => 'kalendorius', 'en' => 'calendar'],
+        'summerCampsString' => ['lt' => 'pirmakursiu-stovyklos', 'en' => 'freshmen-camps'],
+        'pkpString' => ['lt' => 'programos-klubai-projektai', 'en' => 'programs-clubs-projects'],
+        'categoryString' => ['lt' => 'kategorija', 'en' => 'category'],
 
         'documentsString' => ['lt' => 'dokumentai', 'en' => 'documents'],
         'searchString' => ['lt' => 'paieska', 'en' => 'search'],

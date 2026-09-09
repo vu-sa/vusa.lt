@@ -114,7 +114,7 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
     {
         return [
             'id' => (string) $this->id,
-            'name_lt' => $this->getTranslation('name', 'lt'),
+            'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
             'description_lt' => $this->getTranslation('description', 'lt'),
             'description_en' => $this->getTranslation('description', 'en'),

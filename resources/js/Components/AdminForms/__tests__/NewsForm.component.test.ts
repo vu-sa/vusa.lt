@@ -131,7 +131,7 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
 
     const alert = wrapper.find('[data-testid="alert"]');
     expect(alert.exists()).toBe(true);
-    expect(alert.text()).toContain('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!');
+    expect(alert.text()).toContain('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.');
   });
 
   it('renders intro text above rich content with updated description', () => {

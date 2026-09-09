@@ -25,6 +25,8 @@
             @change="form.validate('title')" />
         </FormFieldWrapper>
 
+        <PermalinkPreviewHint v-if="isCreate" :preview="permalinkPreview.preview.value" :is-checking="permalinkPreview.isChecking.value" />
+
         <!-- Language selector inline with title -->
         <div class="grid gap-4 sm:grid-cols-2">
           <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang"
@@ -171,34 +173,42 @@
               </span>
             </div>
 
-            <!-- Permalink -->
-            <FormFieldWrapper id="permalink" :label="$t('Nuoroda')"
-              :error="form.errors.permalink" :valid="form.valid('permalink')" :invalid="form.invalid('permalink')">
-              <div class="flex items-center gap-2">
-                <IFluentLink24Regular class="h-4 w-4 shrink-0 text-muted-foreground" />
-                <Input id="permalink" v-model="form.permalink" type="text" :placeholder="$t('Sugeneruojama nuoroda')"
-                  @change="form.validate('permalink')" />
-              </div>
-            </FormFieldWrapper>
+            <!-- Permalink (editable only once the article exists — see PermalinkPreviewHint above for create) -->
+            <template v-if="!isCreate">
+              <FormFieldWrapper id="permalink" :label="$t('Nuoroda')"
+                :error="form.errors.permalink" :valid="form.valid('permalink')" :invalid="form.invalid('permalink')">
+                <div class="flex items-center gap-2">
+                  <IFluentLink24Regular class="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <Input id="permalink" v-model="form.permalink" type="text" :placeholder="$t('Sugeneruojama nuoroda')"
+                    @change="form.validate('permalink')" />
+                </div>
+              </FormFieldWrapper>
 
-            <Alert class="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-              <IFluentWarning24Regular />
-              <AlertTitle>{{ $t('Dėmesio') }}</AlertTitle>
-              <AlertDescription>
-                {{ $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') }}
-              </AlertDescription>
-            </Alert>
+              <Alert class="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                <IFluentWarning24Regular />
+                <AlertTitle>{{ $t('Dėmesio') }}</AlertTitle>
+                <AlertDescription>
+                  {{ $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.') }}
+                </AlertDescription>
+              </Alert>
+            </template>
           </div>
         </CollapsibleContent>
       </Collapsible>
     </FormElement>
+
+    <PublicUrlHistoryCard
+      v-if="!isCreate && props.news"
+      :urls="props.news.public_urls ?? []"
+      :destroy-route="(id) => route('news.publicUrls.destroy', [props.news!.id, id])"
+    />
   </AdminForm>
 </template>
 
 <script setup lang="ts">
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -208,8 +218,9 @@ import AdminForm from './AdminForm.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
+import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
+import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 
-import { generateSlug } from '@/Utils/String';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
@@ -221,6 +232,7 @@ import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { Switch } from '@/Components/ui/switch';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { ImageUpload } from '@/Components/ui/upload';
@@ -254,6 +266,11 @@ const form = props.rememberKey
 
 // Set validation timeout to 500ms for faster feedback
 form.setValidationTimeout(500);
+
+// Preview-only: the actual permalink is generated server-side on create (GenerateUniqueSlug).
+// Title getter returns '' outside create mode so the composable's own length guard no-ops it —
+// there is nothing to preview once the record exists and the real permalink is editable.
+const permalinkPreview = usePermalinkPreview('news', () => (isCreate.value ? form.title ?? '' : ''), () => form.lang ?? 'lt');
 
 // Ensure highlights is always an array
 if (!Array.isArray(form.highlights)) {
@@ -366,13 +383,4 @@ const selectedTags = computed({
   },
 });
 
-// Auto-generate permalink from title for new news
-if (isCreate.value) {
-  watch(
-    () => form.title,
-    (title) => {
-      form.permalink = generateSlug(String(title || ''));
-    },
-  );
-}
 </script>

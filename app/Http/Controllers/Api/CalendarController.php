@@ -71,9 +71,11 @@ class CalendarController extends ApiController
             $query->where('tenant_id', $tenant->id);
         }
 
-        $events = $query->get()->map(function ($event) {
+        $events = $query->get()->map(function ($event) use ($lang) {
             // @phpstan-ignore property.notFound
             $event->images = $event->getMedia('images');
+            // @phpstan-ignore property.notFound
+            $event->public_url = $event->publicUrl($lang);
 
             return $event;
         });

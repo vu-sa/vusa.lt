@@ -58,25 +58,13 @@
             <FormFieldWrapper id="use_model_options" label="Naudoti iš duombazės?" required>
               <Switch v-model="model.use_model_options" />
             </FormFieldWrapper>
-            <FormFieldWrapper id="model_name" label="Modelio pavadinimas">
-              <Select v-model="model.options_model" :disabled="!model.use_model_options">
+            <FormFieldWrapper id="option_source" label="Duomenų šaltinis">
+              <Select v-model="model.option_source" :disabled="!model.use_model_options">
                 <SelectTrigger>
                   <SelectValue placeholder="Pasirinkite modelį" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem v-for="opt in fieldModels" :key="opt.value" :value="opt.value">
-                    {{ opt.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </FormFieldWrapper>
-            <FormFieldWrapper id="model_field" label="Modelio laukas">
-              <Select v-model="model.options_model_field" :disabled="!model.use_model_options">
-                <SelectTrigger>
-                  <SelectValue placeholder="Pasirinkite lauką" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="opt in fieldModelAttributes" :key="opt.value" :value="opt.value">
                     {{ opt.label }}
                   </SelectItem>
                 </SelectContent>
@@ -123,7 +111,6 @@ const props = defineProps<{
   formField: App.Entities.FormField | Record<string, any>;
   hasRegistrations?: boolean;
   fieldModels?: { value: string; label: string }[];
-  fieldModelAttributes?: { value: string; label: string }[];
 }>();
 
 const model = useForm(props.formField);

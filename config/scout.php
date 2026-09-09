@@ -352,6 +352,7 @@ return [
                         ['name' => 'main_image_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'facebook_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'cto_url', 'type' => 'string', 'optional' => true],
+                        ['name' => 'public_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
                     ],
                     'default_sorting_field' => 'date',
@@ -389,6 +390,7 @@ return [
                         ['name' => 'share_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'link_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'calendar_event_id', 'type' => 'int64', 'optional' => true],
+                        ['name' => 'calendar_event_public_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
                         // Enhanced faceting fields (produced by Document::toSearchableArray)
                         ['name' => 'content_type_category', 'type' => 'string', 'facet' => true, 'optional' => true],

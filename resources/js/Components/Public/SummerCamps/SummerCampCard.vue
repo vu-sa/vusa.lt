@@ -65,6 +65,7 @@ import { usePage } from '@inertiajs/vue3';
 import RCFeatureCard from '@/Components/RichContent/RCFeatureCard.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { formatEventDateSpan, formatMonthShort } from '@/Utils/IntlTime';
+import { getCalendarEvent2Route } from '@/Utils/Route';
 import { getFacultyName } from '@/Utils/String';
 import { LocaleEnum } from '@/Types/enums';
 
@@ -96,10 +97,5 @@ const dateSpan = (event: App.Entities.Calendar) =>
 
 const dayOfMonth = (date: string) => new Date(date).getDate();
 
-const eventHref = (event: App.Entities.Calendar) =>
-  route('calendar.event', {
-    calendar: event.id,
-    lang: locale.value,
-    subdomain: 'www',
-  });
+const eventHref = (event: App.Entities.Calendar) => getCalendarEvent2Route(event, locale.value);
 </script>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
+use App\Actions\GenerateUniqueSlug;
 use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexNewsRequest;
@@ -12,6 +13,7 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Content;
 use App\Models\News;
+use App\Models\PublicUrl;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\ContentService;
@@ -126,7 +128,7 @@ class NewsController extends AdminController
 
         $news = News::create([
             'title' => $request->title,
-            'permalink' => $request->permalink,
+            'permalink' => GenerateUniqueSlug::execute(News::class, $request->title, $tenant_id),
             'short' => $request->short,
             'lang' => $request->lang,
             'content_id' => $content->id,
@@ -184,6 +186,7 @@ class NewsController extends AdminController
                 'publish_time' => $news->publish_time,
                 'show_breadcrumbs' => $news->show_breadcrumbs ?? true,
                 'highlights' => $news->highlights ?? [],
+                'public_urls' => $news->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
             ],
             'otherLangNews' => $other_lang_pages,
             'availableTags' => $tags->map->toFullArray(),
@@ -198,6 +201,7 @@ class NewsController extends AdminController
         $news->update([
             ...$request->safe()->only(
                 'title',
+                'permalink',
                 'lang',
                 'draft',
                 'publish_time',
@@ -250,5 +254,22 @@ class NewsController extends AdminController
     public function forceDelete(News $news): RedirectResponse
     {
         return $this->forceDeleteModel($news);
+    }
+
+    /**
+     * Remove a legacy public URL (an old permalink that still 301-redirects here).
+     */
+    public function destroyPublicUrl(News $news, PublicUrl $publicUrl): RedirectResponse
+    {
+        $this->handleAuthorization('update', $news);
+
+        // Resolve through the relation so a crafted payload cannot reach another article's URLs.
+        $publicUrlFromDb = $news->publicUrls()->find($publicUrl->id);
+
+        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this news article.');
+
+        $publicUrlFromDb->delete();
+
+        return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }
 }

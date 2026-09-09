@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\FormOptionSource;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
@@ -64,6 +65,7 @@ class StudentRepRegistrationFormSeeder extends Seeder
         $institutionField->is_required = true;
         $institutionField->order = 3;
         $institutionField->use_model_options = true;
+        $institutionField->option_source = FormOptionSource::Institution;
         $institutionField->options_model = Institution::class;
         $institutionField->options_model_field = 'name';
 

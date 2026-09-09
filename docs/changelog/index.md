@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.2 — Patikimesnės viešosios nuorodos (2026-09-08) {#v2-2}
+
+- ✨ **Aiškios kalendoriaus nuorodos abiem kalbomis** — renginių nuorodos dabar naudoja trumpus, skaitomus adresus (`/lt/kalendorius/...` ir `/en/calendar/...`), o pakeitus pavadinimą ar datą ankstesnės nuorodos automatiškai nukreipia į dabartinį renginio puslapį
+- 🔧 **Saugesnės registracijos formos** — formų pasirinkimai iš sistemos duomenų dabar aprašomi aiškiais leidžiamais šaltiniais, todėl registruojantis nebegalima pateikti neegzistuojančios institucijos ar padalinio
+
 ## v2.1 — Dvikalbis pagrindinis puslapis (2026-09-07) {#v2-1}
 
 - ⭐ **Pagrindinio puslapio turinys anglų kalba** — administravimo aplinkoje galima atskirai redaguoti lietuvišką ir anglišką pagrindinio puslapio versijas; kol angliška versija neparengta, lankytojai matys lietuvišką turinį

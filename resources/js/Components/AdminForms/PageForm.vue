@@ -26,6 +26,8 @@
             @change="form.validate('title')" />
         </FormFieldWrapper>
 
+        <PermalinkPreviewHint v-if="isCreate" :preview="permalinkPreview.preview.value" :is-checking="permalinkPreview.isChecking.value" />
+
         <!-- Category and Language -->
         <div class="grid gap-4 lg:grid-cols-2">
           <FormFieldWrapper id="category" :label="$t('Kategorija')" required :error="form.errors.category_id"
@@ -184,11 +186,10 @@
               </AlertDescription>
             </Alert>
 
-            <!-- Permalink -->
-            <PermalinkField :permalink="form.permalink" :base-url="pageBaseUrl" :disabled="false"
-              :view-url="!isCreate ? fullPageUrl : undefined"
-              :explanation="isCreate ? $t('Nuoroda generuojama automatiškai pagal pavadinimą') : undefined"
-              :warning="!isCreate ? $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') : undefined"
+            <!-- Permalink (editable only once the page exists — see PermalinkPreviewHint above for create) -->
+            <PermalinkField v-if="!isCreate" :permalink="form.permalink" :base-url="pageBaseUrl" :disabled="false"
+              :view-url="fullPageUrl"
+              :warning="$t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.')"
               :validating="form.validating" :valid="form.valid('permalink')" :invalid="form.invalid('permalink')"
               @update:permalink="form.permalink = $event"
               @change="form.validate('permalink')" />
@@ -223,11 +224,17 @@
         </CollapsibleContent>
       </Collapsible>
     </FormElement>
+
+    <PublicUrlHistoryCard
+      v-if="!isCreate"
+      :urls="page.public_urls ?? []"
+      :destroy-route="(id) => route('pages.publicUrls.destroy', [page.id, id])"
+    />
   </AdminForm>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, h } from 'vue';
+import { computed, ref, h } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -240,9 +247,10 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
 import PermalinkField from './PermalinkField.vue';
+import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
+import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 import SEOPreview from './SEOPreview.vue';
 
-import { generateSlug } from '@/Utils/String';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
@@ -252,6 +260,7 @@ import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Textarea } from '@/Components/ui/textarea';
@@ -267,8 +276,6 @@ const props = defineProps<{
   rememberKey?: 'CreatePage';
   submitUrl: string;
   submitMethod: 'post' | 'patch';
-  /** Public URL for preview button */
-  publicUrl?: string;
 }>();
 
 defineEmits<{
@@ -301,6 +308,11 @@ const form = props.rememberKey
 // Set validation timeout to 500ms for faster feedback
 form.setValidationTimeout(500);
 
+// Preview-only: the actual permalink is generated server-side on create (GenerateUniqueSlug).
+// Title getter returns '' outside create mode so the composable's own length guard no-ops it —
+// there is nothing to preview once the record exists and the real permalink is editable.
+const permalinkPreview = usePermalinkPreview('page', () => (isCreate.value ? form.title ?? '' : ''), () => form.lang ?? 'lt');
+
 // Ensure highlights is always an array
 if (!Array.isArray(form.highlights)) {
   form.highlights = [];
@@ -309,14 +321,12 @@ if (!Array.isArray(form.highlights)) {
 // URL helpers - use the page's tenant and app URL from config
 const pageBaseUrl = computed(() => {
   const appUrl = usePage().props.app?.url ?? 'https://vusa.lt';
-  // Extract domain from URL (remove protocol)
-  const domain = appUrl.replace(/^https?:\/\//, '');
+  // app.url is itself the main tenant's own URL (e.g. "https://www.vusa.test"), so strip a
+  // leading "www." before prefixing the resolved subdomain — otherwise the main tenant doubles
+  // up into "vusa.www.vusa.test".
+  const rootDomain = appUrl.replace(/^https?:\/\//, '').replace(/^www\./, '');
 
-  const { tenant } = props.page;
-  if (tenant?.alias) {
-    return `${tenant.alias}.${domain}`;
-  }
-  return `www.${domain}`;
+  return `${resolveTenantSubdomain(props.page.tenant?.id)}.${rootDomain}`;
 });
 
 const seoBaseUrl = computed(() => pageBaseUrl.value);
@@ -479,14 +489,4 @@ const publishTimeDate = computed({
     form.publish_time = val ? val.toISOString() : null;
   },
 });
-
-// Watch form.title and update form.permalink for new pages
-if (isCreate.value) {
-  watch(
-    () => form.title,
-    (title) => {
-      form.permalink = generateSlug(String(title || ''), 30);
-    },
-  );
-}
 </script>

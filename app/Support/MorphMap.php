@@ -58,6 +58,7 @@ final class MorphMap
         'permission' => Models\Permission::class,
         'problem' => Models\Problem::class,
         'problem_category' => Models\ProblemCategory::class,
+        'public_url' => Models\PublicUrl::class,
         'quick_link' => Models\QuickLink::class,
         'registration' => Models\Registration::class,
         'relationship' => Models\Relationship::class,

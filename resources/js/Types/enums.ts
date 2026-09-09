@@ -78,6 +78,10 @@ export enum DegreeEnum {
     PROFESSIONAL_PEDAGOGY = 'PROFESSIONAL_PEDAGOGY',
     OTHER = 'OTHER',
 }
+export enum FormOptionSource {
+    Tenant = 'tenant',
+    Institution = 'institution',
+}
 export enum InstitutionActivityStatus {
     NoActivity = 'no_activity',
     Healthy = 'healthy',

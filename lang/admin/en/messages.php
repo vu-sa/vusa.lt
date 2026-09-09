@@ -95,6 +95,10 @@ return [
         'no_available_tenant' => 'There is no unit available for you to create news for.',
     ],
 
+    'pages' => [
+        'no_available_tenant' => 'There is no unit available for you to create a page for.',
+    ],
+
     'quick_link' => [
         'order_updated' => 'Quick link order updated successfully!',
     ],

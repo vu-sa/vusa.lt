@@ -82,6 +82,7 @@ final class CalendarBlockResolver implements ResolvesContentPart
             ...$event->toArray(),
             'images' => $event->getMedia('images'),
             'googleLink' => $event->googleLink(),
+            'public_url' => $event->publicUrl($context->locale),
         ])->all();
 
         return [

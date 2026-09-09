@@ -7,22 +7,19 @@ use App\Collections\NewsCollection;
 use App\Enums\LocaleEnum;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
+use App\Http\Requests\IndexPublicCalendarRequest;
 use App\Models\Calendar;
 use App\Models\Category;
 use App\Models\Content;
-use App\Models\Form;
-use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\LocationGeocoder;
+use App\Services\PublicUrlService;
 use App\Services\ResourceServices\InstitutionService;
-use App\Settings\FormSettings;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -44,6 +41,7 @@ class PublicPageController extends PublicController
                             ...$event->toArray(),
                             'images' => $event->getMedia('images'),
                             'googleLink' => $event->googleLink(),
+                            'public_url' => $event->publicUrl($locale),
                         ]);
                 } else {
                     return Calendar::query()->with(['category', 'media'])->where('is_draft', false)
@@ -51,6 +49,7 @@ class PublicPageController extends PublicController
                             ...$event->toArray(),
                             'images' => $event->getMedia('images'),
                             'googleLink' => $event->googleLink(),
+                            'public_url' => $event->publicUrl($locale),
                         ]);
                 }
             });
@@ -131,8 +130,9 @@ class PublicPageController extends PublicController
         return null;
     }
 
-    public function page()
+    public function page(?PublicUrlService $publicUrls = null)
     {
+        $publicUrls ??= app(PublicUrlService::class);
         // HACK: At first, since for PKP we want to redirect old pages to contacts page, we check in this function
         $pkps = (new InstitutionService)->getInstitutionsByTypeSlug('pkp');
         $institution = $pkps->firstWhere('alias', request()->permalink);
@@ -173,6 +173,13 @@ class PublicPageController extends PublicController
             });
 
         if ($pageData === null) {
+            $publicUrl = $publicUrls->resolve(request()->url());
+            $destination = $publicUrl === null ? null : $publicUrls->destinationFor($publicUrl);
+
+            if ($destination !== null) {
+                return redirect($destination, 301);
+            }
+
             abort(404);
         }
 
@@ -254,7 +261,7 @@ class PublicPageController extends PublicController
         ]);
     }
 
-    public function category($lang, Category $category)
+    public function category(string $lang, string $categoryString, Category $category)
     {
         $this->getBanners();
         $this->getTenantLinks();
@@ -282,7 +289,7 @@ class PublicPageController extends PublicController
         ]);
     }
 
-    public function summerCamps($lang, $year = null)
+    public function summerCamps(string $lang, string $summerCampsString, ?string $year = null)
     {
         $this->getBanners();
         $this->getTenantLinks();
@@ -351,7 +358,11 @@ class PublicPageController extends PublicController
             [
                 // `location` is shown on the camp cards; `description` stays hidden because
                 // the cards never render it and it is heavy rich text.
-                'events' => $events->makeHidden(['description', 'category', 'user_id'])->values()->all(),
+                'events' => $events->makeHidden(['description', 'category', 'user_id'])
+                    ->map(fn (Calendar $event) => [
+                        ...$event->toArray(),
+                        'public_url' => $event->publicUrl(app()->getLocale()),
+                    ])->values()->all(),
                 'year' => $year,
                 'yearsWhenEventsExist' => $yearsWhenEventsExist,
             ]);
@@ -376,7 +387,7 @@ class PublicPageController extends PublicController
     }
 
     // PKP is now a standard ContentPage using the institution-list content part
-    public function pkp()
+    public function pkp(string $lang, string $pkpString)
     {
         $permalink = app()->getLocale() === 'en' ? 'programs-clubs-and-projects' : 'programos-klubai-projektai';
         request()->route()->setParameter('permalink', $permalink);
@@ -390,30 +401,7 @@ class PublicPageController extends PublicController
         return $this->calendarEventMain('lt', $calendar, $geocoder);
     }
 
-    public function calendarMain($lang, string $year, string $month, string $day, string $slug, LocationGeocoder $geocoder)
-    {
-
-        // Find the calendar event by date and slug
-        $calendarEvents = Calendar::query()->whereDate('date', $year.'-'.$month.'-'.$day)->get();
-
-        $returnableEvent = null;
-
-        // Sluggify each event title and compare with the slug from the URL
-        $calendarEvents->each(function ($event) use ($slug, &$returnableEvent): void {
-            $sluggifiedTitle = Str::slug($event->title);
-            if ($sluggifiedTitle === $slug) {
-                $returnableEvent = $event;
-            }
-        });
-
-        if ($returnableEvent === null) {
-            abort(404);
-        }
-
-        return $this->calendarEventMain($lang, $returnableEvent, $geocoder);
-    }
-
-    public function calendarEventList()
+    public function calendarEventList(IndexPublicCalendarRequest $request)
     {
         $this->getBanners();
         $this->getTenantLinks();
@@ -421,7 +409,7 @@ class PublicPageController extends PublicController
 
         $now = Carbon::now();
         $perPage = 20; // Number of events per page
-        $tab = request()->input('tab', 'upcoming'); // Default tab is upcoming
+        $tab = $request->validated('tab', 'upcoming');
 
         // Create base query with common filters
         $query = Calendar::query()
@@ -434,7 +422,7 @@ class PublicPageController extends PublicController
         }
 
         // Apply common filters from request parameters
-        $this->applyCalendarFilters($query);
+        $this->applyCalendarFilters($query, $request);
 
         // Apply tab-specific filters and ordering
         if ($tab === 'past') {
@@ -452,6 +440,7 @@ class PublicPageController extends PublicController
                 ...$event->toArray(),
                 'googleLink' => $event->googleLink(),
                 'images' => $event->getMedia('images'),
+                'public_url' => $event->publicUrl(app()->getLocale()),
             ]);
 
         // Get all available filter options based on tab
@@ -472,6 +461,11 @@ class PublicPageController extends PublicController
             'allCategories' => $filterOptions['categories'],
             'allTenants' => $filterOptions['tenants'],
         ]);
+    }
+
+    public function calendarListLegacy(string $lang)
+    {
+        return redirect(LocalizedRouteSlugs::route('calendar.list', request()->query(), $lang), 301);
     }
 
     /**
@@ -559,21 +553,18 @@ class PublicPageController extends PublicController
     /**
      * Apply filters to calendar query
      */
-    private function applyCalendarFilters($query)
+    private function applyCalendarFilters(Builder $query, IndexPublicCalendarRequest $request): Builder
     {
-        // Filter by category if provided
-        if (request()->has('category') && request()->category) {
-            $query->where('category_id', request()->category);
+        if ($request->validated('category') !== null) {
+            $query->where('category_id', $request->validated('category'));
         }
 
-        // Filter by tenant if provided
-        if (request()->has('tenant') && request()->tenant) {
-            $query->where('tenant_id', request()->tenant);
+        if ($request->validated('tenant') !== null) {
+            $query->where('tenant_id', $request->validated('tenant'));
         }
 
-        // Filter by search term if provided
-        if (request()->has('search') && request()->search) {
-            $search = request()->search;
+        $search = $request->validated('search');
+        if ($search !== null && $search !== '') {
             $query->where(function ($q) use ($search): void {
                 $q->where('title', 'like', '%'.$search.'%')
                     ->orWhere('description', 'like', '%'.$search.'%')
@@ -586,66 +577,49 @@ class PublicPageController extends PublicController
 
     public function calendarEventRedirect($lang, Calendar $calendar)
     {
-        // Get a non-empty title with fallback to other locales
-        $titleData = $this->getNonEmptyCalendarTitle($calendar);
-        $title = $titleData['title'];
-        $usedLocale = $titleData['locale'];
-
-        // Generate slug from the non-empty title
-        $slug = Str::slug($title);
-
-        // Fallback to ID-based slug if still empty (shouldn't happen, but defensive)
-        if (empty($slug)) {
-            $slug = 'event-'.$calendar->id;
-        }
-
-        return redirect(route('calendar.event.2', [
-            'year' => $calendar->date->format('Y'),
-            'month' => $calendar->date->format('m'),
-            'day' => $calendar->date->format('d'),
-            'slug' => $slug,
-            'lang' => $usedLocale,
-        ]), 301);
+        return redirect($calendar->publicUrl($lang) ?? route('calendar.list', ['lang' => $lang]), 301);
     }
 
-    /**
-     * Get a non-empty calendar title with fallback to other locales
-     *
-     * @return array{title: string, locale: string}
-     */
-    private function getNonEmptyCalendarTitle(Calendar $calendar): array
+    public function calendarCanonical(string $lang, string $calendarString, string $year, string $permalink, LocationGeocoder $geocoder, PublicUrlService $publicUrls)
     {
-        $currentLocale = app()->getLocale();
+        $calendar = Calendar::query()
+            ->whereYear('date', $year)
+            ->where("permalink->{$lang}", $permalink)
+            ->first();
 
-        // Try current locale first
-        $title = $calendar->getTranslation('title', $currentLocale);
-        if (! empty(trim($title))) {
-            return ['title' => $title, 'locale' => $currentLocale];
+        if ($calendar !== null) {
+            return $this->calendarEventMain($lang, $calendar, $geocoder);
         }
 
-        // Fallback priority: lt -> en -> any available
-        $fallbackLocales = ['lt', 'en'];
+        // No event currently holds this permalink — it may be one the event has since moved on
+        // from, in which case public_urls still has the redirect history.
+        $url = route('calendar.show', ['lang' => $lang, 'year' => $year, 'permalink' => $permalink]);
+        $publicUrl = $publicUrls->resolve($url);
+        $destination = $publicUrl === null ? null : $publicUrls->destinationFor($publicUrl);
 
-        foreach ($fallbackLocales as $locale) {
-            if ($locale === $currentLocale) {
-                continue; // Already tried
-            }
-            $title = $calendar->getTranslation('title', $locale);
-            if (! empty(trim($title))) {
-                return ['title' => $title, 'locale' => $locale];
-            }
+        if ($destination === null) {
+            abort(404);
         }
 
-        // Try any available translation
-        $translations = $calendar->getTranslations('title');
-        foreach ($translations as $locale => $translation) {
-            if (! empty(trim($translation))) {
-                return ['title' => $translation, 'locale' => $locale];
-            }
+        return redirect($destination, 301);
+    }
+
+    public function calendarLegacy(string $lang, string $year, string $month, string $day, string $slug, LocationGeocoder $geocoder, PublicUrlService $publicUrls)
+    {
+        // Deliberately not backed by a stored row: date + title are still on the row, so this
+        // stays resolvable forever without ever writing to public_urls.
+        // Zero-padded: SQLite's whereDate() compares against strftime()'s zero-padded output and
+        // silently misses "2026-4-5", even though MySQL tolerates it.
+        $calendar = Calendar::query()
+            ->whereDate('date', sprintf('%04d-%02d-%02d', $year, $month, $day))
+            ->get()
+            ->first(fn (Calendar $event) => Str::slug($event->getTranslation('title', $lang)) === $slug);
+
+        if ($calendar === null) {
+            abort(404);
         }
 
-        // Last resort: use calendar ID
-        return ['title' => 'Event '.$calendar->id, 'locale' => $currentLocale];
+        return redirect($calendar->publicUrl($lang) ?? route('calendar.list', ['lang' => $lang]), 301);
     }
 
     /**
@@ -709,12 +683,20 @@ class PublicPageController extends PublicController
             ->whereHas('meeting.institutions', fn ($q) => $q->where('institutions.id', $institutionId))
             ->where('date', $direction === 'previous' ? '<' : '>', $calendar->date)
             ->orderBy('date', $direction === 'previous' ? 'desc' : 'asc')
-            ->first(['id', 'title', 'date']);
+            ->first(['id', 'title', 'date', 'permalink']);
 
-        return [
-            $siblingsFor('previous')?->only(['id', 'title', 'date']),
-            $siblingsFor('next')?->only(['id', 'title', 'date']),
-        ];
+        $toArray = function (?Calendar $event): ?array {
+            if ($event === null) {
+                return null;
+            }
+
+            return [
+                ...$event->only(['id', 'title', 'date']),
+                'public_url' => $event->publicUrl(app()->getLocale()),
+            ];
+        };
+
+        return [$toArray($siblingsFor('previous')), $toArray($siblingsFor('next'))];
     }
 
     /**
@@ -760,6 +742,7 @@ class PublicPageController extends PublicController
             ...$event->toArray(),
             'images' => $event->getMedia('images'),
             'googleLink' => $event->googleLink(),
+            'public_url' => $event->publicUrl(app()->getLocale()),
         ])->all();
     }
 
@@ -767,7 +750,7 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getTenantLinks();
-        $this->shareOtherLangURL('calendar.event', calendarId: $calendar->id);
+        Inertia::share('otherLangURL', $calendar->publicUrl($this->getOtherLang()));
 
         $calendar->load(['tenant:id,alias,fullname,shortname', 'category']);
 
@@ -804,14 +787,7 @@ class PublicPageController extends PublicController
             ],
             [
                 'name' => $calendar->title,
-                'url' => route('calendar.event.2', [
-                    'subdomain' => $this->subdomain,
-                    'lang' => $locale,
-                    'year' => $calendar->date->format('Y'),
-                    'month' => $calendar->date->format('m'),
-                    'day' => $calendar->date->format('d'),
-                    'slug' => Str::slug($calendar->title),
-                ]),
+                'url' => $calendar->publicUrl($locale),
             ],
         ];
 
@@ -835,100 +811,5 @@ class PublicPageController extends PublicController
                     ],
                 ]
             );
-    }
-
-    public function registrationPage($lang, $registrationString, string $registrationForm)
-    {
-
-        $this->getBanners();
-        $this->getTenantLinks();
-
-        $form = Form::query()->whereJsonContains('path->'.$lang, $registrationForm)->with(['formFields' => function ($query): void {
-            $query->orderBy('order');
-        }])->firstOrFail();
-
-        // Submissions are rejected before publish_time, so don't show a form that cannot be submitted.
-        if ($form->publish_time?->isFuture()) {
-            abort(404);
-        }
-
-        $otherLocale = app()->getLocale() === 'lt' ? 'en' : 'lt';
-
-        Inertia::share('otherLangURL', LocalizedRouteSlugs::route('registrationPage', [
-            'registrationForm' => $form->getTranslation('path', $otherLocale),
-        ], $otherLocale));
-
-        // Global content - use null for current tenant
-        $this->applyPageHead(
-            contentTenant: null,
-            title: $form->name,
-        );
-
-        // Check if this is the student rep registration form
-        $formSettings = app(FormSettings::class);
-        $isStudentRepForm = $form->id === $formSettings->student_rep_registration_form_id;
-
-        // Get pre-selected institution from query param (for autofill)
-        $preselectedInstitutionId = request()->query('institution');
-
-        return Inertia::render('Public/RegistrationPage', [
-            'form' => [
-                ...$form->toArray(),
-                'form_fields' => $form->formFields->map(function ($field) use ($isStudentRepForm, $formSettings, $preselectedInstitutionId) {
-                    $options = $field->options;
-
-                    if ($field->use_model_options) {
-                        // Special handling for Institution model on student rep form
-                        if ($isStudentRepForm && $field->options_model === Institution::class) {
-                            $options = $this->getInstitutionsWithoutActiveReps($formSettings, $preselectedInstitutionId)->map(fn ($model) => [
-                                'value' => $model->getKey(),
-                                'label' => $model->getAttribute($field->options_model_field),
-                            ]);
-                        } else {
-                            $options = $field->options_model::all()->map(fn (Model $model) => [
-                                'value' => $model->getKey(),
-                                'label' => $model->getAttribute($field->options_model_field),
-                            ]);
-                        }
-                    }
-
-                    return [
-                        ...$field->toArray(),
-                        'options' => $options,
-                    ];
-                }),
-            ],
-        ]);
-    }
-
-    /**
-     * Get institutions that have duties with no active members (for student rep registration).
-     * Always includes the preselected institution if provided.
-     */
-    protected function getInstitutionsWithoutActiveReps(FormSettings $formSettings, ?string $preselectedInstitutionId = null): Collection
-    {
-        $allowedTypeIds = $formSettings->getStudentRepInstitutionTypeIds();
-
-        $query = Institution::query()
-            ->where(function ($q) use ($preselectedInstitutionId): void {
-                // Include institutions that do not have duties with active users.
-                // Here `duties` is the Institution -> Duty relationship and `current_users` is a nested
-                // relationship/scope on Duty that returns only the members currently active in that duty.
-                $q->whereDoesntHave('duties.current_users');
-
-                // Always include the preselected institution
-                if ($preselectedInstitutionId) {
-                    $q->orWhere('id', $preselectedInstitutionId);
-                }
-            });
-
-        // Filter by allowed institution types if configured
-        if ($allowedTypeIds->isNotEmpty()) {
-            $query->whereHas('types', function ($q) use ($allowedTypeIds): void {
-                $q->whereIn('types.id', $allowedTypeIds);
-            });
-        }
-
-        return $query->get();
     }
 }

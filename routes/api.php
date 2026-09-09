@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
+use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
@@ -222,6 +223,11 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Attribution-line suggestions for the person-quote rich-content block —
         // derives "Role, Tenant" labels from a user's current duties.
         Route::get('users/{user}/attributions', [UserAttributionApiController::class, 'index'])->name('users.attributions');
+
+        // Previews the permalink/URL a News/Page create form would end up with for the title
+        // as typed, including the `-2` collision suffix — nothing is written.
+        Route::get('news/permalink-preview', [PermalinkPreviewApiController::class, 'news'])->name('news.permalinkPreview');
+        Route::get('pages/permalink-preview', [PermalinkPreviewApiController::class, 'page'])->name('pages.permalinkPreview');
 
         // Warns about an existing duty before a duplicate is created (typically a
         // gendered twin — see DutyNameNormalizer).

@@ -13,10 +13,13 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
 use App\Models\Category;
+use App\Models\PublicUrl;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class CalendarController extends AdminController
@@ -144,6 +147,10 @@ class CalendarController extends AdminController
                         'status' => 'finished',
                     ]
                 ),
+                'public_urls' => $calendar->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
+                // Informational only — still resolves live (PublicPageController::calendarLegacy()),
+                // never stored, so nothing to delete here.
+                'legacy_date_urls' => $this->legacyDateUrls($calendar),
             ],
             'categories' => Category::all(),
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
@@ -151,6 +158,29 @@ class CalendarController extends AdminController
             // opens that meeting's agenda to the public, so the form has to say so.
             'meeting' => $this->announcedMeeting($calendar),
         ]);
+    }
+
+    /**
+     * @return array<string, string|null>
+     */
+    private function legacyDateUrls(Calendar $calendar): array
+    {
+        return collect(['lt', 'en'])->mapWithKeys(function (string $locale) use ($calendar) {
+            // useFallbackLocale: false — don't show an "English" legacy URL that's actually
+            // just the Lithuanian title, for an event with no English title of its own.
+            $title = $calendar->getTranslation('title', $locale, false);
+
+            if (blank($title)) {
+                return [$locale => null];
+            }
+
+            return [$locale => LocalizedRouteSlugs::route('calendar.event.legacy', [
+                'year' => $calendar->date->format('Y'),
+                'month' => $calendar->date->format('m'),
+                'day' => $calendar->date->format('d'),
+                'slug' => Str::slug($title),
+            ], $locale)];
+        })->all();
     }
 
     /**
@@ -227,6 +257,23 @@ class CalendarController extends AdminController
         $calendar->delete();
 
         return redirect()->route('calendar.index')->with('info', $this->entityMessage('deleted', 'calendar'));
+    }
+
+    /**
+     * Remove a legacy public URL (an old permalink that still 301-redirects here).
+     */
+    public function destroyPublicUrl(Calendar $calendar, PublicUrl $publicUrl): RedirectResponse
+    {
+        $this->handleAuthorization('update', $calendar);
+
+        // Resolve through the relation so a crafted payload cannot reach another event's URLs.
+        $publicUrlFromDb = $calendar->publicUrls()->find($publicUrl->id);
+
+        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this calendar event.');
+
+        $publicUrlFromDb->delete();
+
+        return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }
 
     // TODO: something with this???

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
+use App\Enums\FormOptionSource;
 use App\Exports\FormRegistrationsExport;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexFormRequest;
@@ -13,7 +14,6 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
-use App\Models\Tenant;
 use App\Services\FormAccessService;
 use App\Services\FormRegistrationVisibilityService;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -45,8 +45,7 @@ class FormController extends AdminController
         'placeholder',
         'order',
         'use_model_options',
-        'options_model',
-        'options_model_field',
+        'option_source',
     ];
 
     public function __construct(
@@ -153,21 +152,17 @@ class FormController extends AdminController
     }
 
     /**
-     * Models (and their label attributes) a form field can pull its options from.
+     * Typed option sources a form field can use.
      *
-     * @return array{fieldModelOptions: array<int, array{label: string, value: string}>, fieldModelFields: array<int, array{label: string, value: string}>}
+     * @return array{fieldModelOptions: array<int, array{label: string, value: string}>}
      */
     private function fieldModelChoices(): array
     {
         return [
             'fieldModelOptions' => [
-                ['label' => __('forms.field_models.tenant'), 'value' => Tenant::class],
-                ['label' => __('forms.field_models.institution'), 'value' => Institution::class],
-            ],
-            'fieldModelFields' => [
-                ['label' => __('forms.field_model_attributes.fullname'), 'value' => 'fullname'],
-                ['label' => __('forms.field_model_attributes.shortname'), 'value' => 'shortname'],
-                ['label' => __('forms.field_model_attributes.name'), 'value' => 'name'],
+                ...collect(FormOptionSource::cases())
+                    ->map(fn (FormOptionSource $source) => ['label' => __($source->labelKey()), 'value' => $source->value])
+                    ->all(),
             ],
         ];
     }
@@ -212,7 +207,7 @@ class FormController extends AdminController
         $institutions = collect();
         if (app(FormSettings::class)->student_rep_registration_form_id === $form->id) {
             // Get all institutions that are referenced in the registrations
-            $institutionField = $form->formFields->first(fn ($field) => $field->use_model_options && $field->options_model === Institution::class);
+            $institutionField = $form->formFields->first(fn (FormField $field) => $field->resolvedOptionSource() === FormOptionSource::Institution);
 
             if ($institutionField) {
                 $institutionIds = $registrations->flatMap(function ($registration) use ($institutionField) {

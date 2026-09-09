@@ -5,11 +5,13 @@ namespace App\Models;
 use App\Actions\PairTranslatedRecord;
 use App\Enums\PageLayoutEnum;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\PublicUrlService;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -95,6 +97,32 @@ class Page extends Model implements Feedable, Sitemapable
 
         static::saved(function ($page): void {
             Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+
+            // A freshly inserted row's `lang` attribute isn't hydrated from the column's DB
+            // default until the model is refreshed — guard here rather than in publicUrl(),
+            // which trusts an already-persisted, freshly-queried row (true for every other
+            // caller, e.g. NormalizePermalinks).
+            if (! is_string($page->lang)) {
+                return;
+            }
+
+            if (! $page->wasChanged(['permalink', 'tenant_id', 'lang'])) {
+                return;
+            }
+
+            // A throwaway instance carrying the pre-save attributes, so publicUrl() can compute
+            // the URL this page used to have. On a fresh create getOriginal() is empty (Eloquent
+            // syncs original before fill() in the constructor), so this resolves to null and no
+            // legacy row is written — there is no "old" URL to preserve yet.
+            $original = (new self)->setRawAttributes($page->getRawOriginal(), true);
+            $oldUrl = $original->publicUrl();
+            $newUrl = $page->publicUrl();
+
+            if ($oldUrl === null || $oldUrl === $newUrl) {
+                return;
+            }
+
+            app(PublicUrlService::class)->recordLegacyUrl($page, $page->lang, $oldUrl);
         });
 
         static::saved(fn (Page $page) => $page->syncPublicSearchIndex());
@@ -210,6 +238,31 @@ class Page extends Model implements Feedable, Sitemapable
     public function content()
     {
         return $this->belongsTo(Content::class);
+    }
+
+    /** @return MorphMany<PublicUrl, $this> */
+    public function publicUrls(): MorphMany
+    {
+        return $this->morphMany(PublicUrl::class, 'urlable')->latest();
+    }
+
+    /**
+     * The page's current canonical URL, built directly from its permalink + tenant — no
+     * public_urls lookup needed. Null when the page has no permalink yet.
+     */
+    public function publicUrl(): ?string
+    {
+        if (blank($this->permalink)) {
+            return null;
+        }
+
+        $subdomain = $this->tenant_id === Tenant::main()?->id ? 'www' : $this->tenant->alias;
+
+        return route('page', [
+            'subdomain' => $subdomain,
+            'lang' => $this->lang,
+            'permalink' => $this->permalink,
+        ]);
     }
 
     /**

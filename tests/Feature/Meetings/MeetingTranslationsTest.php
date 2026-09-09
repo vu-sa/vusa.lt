@@ -12,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\Vote;
 use App\Settings\MeetingSettings;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -43,14 +44,11 @@ function announceTranslatedMeeting(Meeting $meeting, Tenant $tenant): Calendar
 
 function translatedCalendarEventUrl(Calendar $event, string $lang): string
 {
-    return route('calendar.event.2', [
+    return LocalizedRouteSlugs::route('calendar.show', [
         'subdomain' => 'www',
-        'lang' => $lang,
         'year' => $event->date->format('Y'),
-        'month' => $event->date->format('m'),
-        'day' => $event->date->format('d'),
-        'slug' => Str::slug($event->getTranslation('title', $lang)),
-    ]);
+        'permalink' => $event->getTranslation('permalink', $lang),
+    ], $lang);
 }
 
 describe('public agenda', function (): void {

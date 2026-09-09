@@ -305,7 +305,7 @@
     "Žmonės": "People",
     "Registracijos": "Registrations",
     "Formos": "Forms",
-    "Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!": "Careful: changing the link will break the old one!",
+    "Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.": "After changing the link, the old one will keep redirecting here — you can delete links you no longer need.",
     "Dėmesio": "Attention",
     "Nauja registracijos forma": "New registration form",
     "Atidaryti viešą formą": "Open public form",
@@ -1382,5 +1382,9 @@
     "Ieškoti žymos": "Search tags",
     "Naudojamas naujienos įvade ir paieškos rezultatuose (SEO).": "Used in the news introduction and search results (SEO).",
     "Maksimalus ženklų skaičius": "Maximum characters",
-    "Įvadinis tekstas": "Introductory text"
+    "Įvadinis tekstas": "Introductory text",
+    "Pranešk apie klaidą!": "Report an issue!",
+    "Pažymėtas tekstas bus pridėtas prie jūsų pranešimo.": "The selected text will be included with your report.",
+    "Jūsų atsiliepimas, pastaba...": "Your feedback, comment...",
+    "Siųsti": "Send"
 }

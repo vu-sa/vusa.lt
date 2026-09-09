@@ -58,8 +58,8 @@ class PublicInstitutionSearchIndexBuilder
 
         return [
             'id' => $institution->id,
-            'title' => $institution->getTranslation('name', 'lt'),
-            'name_lt' => $institution->getTranslation('name', 'lt'),
+            'title' => $institution->getTranslation('name', 'lt') ?? '',
+            'name_lt' => $institution->getTranslation('name', 'lt') ?? '',
             'name_en' => $institution->getTranslation('name', 'en'),
             'short_name_lt' => $institution->getTranslation('short_name', 'lt'),
             'short_name_en' => $institution->getTranslation('short_name', 'en'),

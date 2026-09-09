@@ -44,8 +44,7 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 
 interface FormField {
   id: number | string;
-  use_model_options?: boolean;
-  options_model?: string;
+  option_source?: 'tenant' | 'institution' | null;
   options?: Array<{ value: string | number; label: string }>;
 }
 
@@ -81,7 +80,7 @@ const prefilledValues = computed(() => {
 
   // Find the institution field in the form
   const institutionField = form.form_fields?.find((field: FormField) =>
-    field.use_model_options && field.options_model === 'App\\Models\\Institution',
+    field.option_source === 'institution',
   );
 
   if (!institutionField) return {};
@@ -99,7 +98,7 @@ const prefilledInstitutionName = computed(() => {
   if (!institutionId.value) return null;
 
   const institutionField = form.form_fields?.find((field: FormField) =>
-    field.use_model_options && field.options_model === 'App\\Models\\Institution',
+    field.option_source === 'institution',
   );
 
   if (!institutionField?.options) return null;

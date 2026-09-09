@@ -158,7 +158,7 @@ const href = computed(() => {
       case 'pages':
         return route('page', { ...base, permalink: doc.permalink });
       case 'calendar':
-        return route('calendar.event', { ...base, calendar: doc.id });
+        return (doc.public_url as string | undefined) || route('calendar.event', { ...base, calendar: doc.id });
       default:
         return '#';
     }

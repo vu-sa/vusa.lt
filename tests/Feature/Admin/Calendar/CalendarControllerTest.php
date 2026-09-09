@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Calendar;
+use App\Models\PublicUrl;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -109,6 +110,7 @@ describe('authorized access', function (): void {
     test('calendar manager can store calendar event', function (): void {
         $calendarData = [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'permalink' => ['lt' => 'test-renginys', 'en' => 'test-event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
@@ -127,6 +129,7 @@ describe('authorized access', function (): void {
     test('calendar manager can store a calendar event with a hero style', function (): void {
         $calendarData = [
             'title' => ['lt' => 'Stilius renginys', 'en' => 'Style event'],
+            'permalink' => ['lt' => 'stilius-renginys', 'en' => 'style-event'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
@@ -146,6 +149,7 @@ describe('authorized access', function (): void {
     test('calendar manager can store a main image focal point', function (): void {
         $calendarData = [
             'title' => ['lt' => 'Renginys su fokuso tašku', 'en' => 'Event with focal point'],
+            'permalink' => ['lt' => 'renginys-su-fokuso-tasku', 'en' => 'event-with-focal-point'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
             'main_image_focal_point' => '40% 25%',
@@ -162,6 +166,7 @@ describe('authorized access', function (): void {
     test('hero style defaults to card when omitted on store', function (): void {
         $calendarData = [
             'title' => ['lt' => 'Numatyto stiliaus renginys', 'en' => 'Default style event'],
+            'permalink' => ['lt' => 'numatyto-stiliaus-renginys', 'en' => 'default-style-event'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
         ];
@@ -191,6 +196,7 @@ describe('authorized access', function (): void {
 
         $updateData = [
             'title' => ['lt' => 'Atnaujintas renginys', 'en' => 'Updated event'],
+            'permalink' => ['lt' => 'atnaujintas-renginys', 'en' => 'updated-event'],
             'description' => ['lt' => 'Atnaujintas aprašymas', 'en' => 'Updated description'],
             'date' => now()->addDays(2)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
@@ -290,6 +296,90 @@ describe('validation', function (): void {
             ->assertSessionHasErrors('date');
     });
 
+    test('requires permalink for store', function (): void {
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $response->assertStatus(302)
+            ->assertSessionHasErrors('permalink.lt');
+    });
+
+    test('rejects a permalink already used by another event in the same year', function (): void {
+        Calendar::factory()->create([
+            'permalink' => ['lt' => 'metinis-renginys', 'en' => ''],
+            'date' => '2026-03-10',
+        ]);
+
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'permalink' => ['lt' => 'metinis-renginys', 'en' => ''],
+            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            'date' => '2026-06-01',
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $response->assertStatus(302)->assertSessionHasErrors('permalink.lt');
+    });
+
+    test('allows the same permalink for events in different years', function (): void {
+        Calendar::factory()->create([
+            'permalink' => ['lt' => 'metinis-renginys', 'en' => ''],
+            'date' => '2025-03-10',
+        ]);
+
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'permalink' => ['lt' => 'metinis-renginys', 'en' => ''],
+            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            'date' => '2026-03-10',
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $response->assertStatus(302)->assertSessionDoesntHaveErrors('permalink.lt');
+    });
+
+    test('rejects a permalink another event in the same year has already retired', function (): void {
+        $original = Calendar::factory()->for($this->tenant)->create([
+            'permalink' => ['lt' => 'the-original-slug', 'en' => ''],
+            'date' => '2026-03-10',
+        ]);
+        // Retires 'the-original-slug' into public_urls, owned by $original.
+        $original->update(['permalink' => ['lt' => 'moved-on', 'en' => '']]);
+
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'permalink' => ['lt' => 'the-original-slug', 'en' => ''],
+            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            'date' => '2026-06-01',
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $response->assertStatus(302)->assertSessionHasErrors('permalink.lt');
+    });
+
+    test('an event can re-adopt its own retired permalink', function (): void {
+        $event = Calendar::factory()->for($this->tenant)->create([
+            'permalink' => ['lt' => 'went-away', 'en' => ''],
+            'date' => '2026-03-10',
+        ]);
+        $originalPermalink = $event->getTranslation('permalink', 'lt', false);
+        $event->update(['permalink' => ['lt' => 'temporarily-elsewhere', 'en' => '']]);
+
+        $response = asUser($this->calendarManager)->put(route('calendar.update', $event), [
+            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'permalink' => ['lt' => $originalPermalink, 'en' => ''],
+            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            'date' => '2026-03-10',
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $response->assertStatus(302)->assertSessionDoesntHaveErrors('permalink.lt');
+    });
+
     test('requires tenant_id for store', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
@@ -332,6 +422,7 @@ describe('validation', function (): void {
         $calendarData = [
             'date' => now()->addDays(1)->format('Y-m-d'),
             'title' => ['lt' => 'Renginys su nuotrauka', 'en' => 'Event with Image'],
+            'permalink' => ['lt' => 'renginys-su-nuotrauka', 'en' => 'event-with-image'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'tenant_id' => $this->tenant->id,
             'images' => [['file' => $image]],
@@ -387,6 +478,7 @@ describe('tenant isolation', function (): void {
     test('can store a calendar event for its own tenant', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Savas renginys', 'en' => 'Own event'],
+            'permalink' => ['lt' => 'savas-renginys', 'en' => 'own-event'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
@@ -448,5 +540,52 @@ describe('relationships', function (): void {
             ->and($calendar->getTranslation('title', 'en'))->toBe('Test event')
             ->and($calendar->getTranslation('description', 'lt'))->toBe('Test aprašymas')
             ->and($calendar->getTranslation('description', 'en'))->toBe('Test description');
+    });
+});
+
+describe('public URL history', function (): void {
+    beforeEach(function (): void {
+        $this->calendar = Calendar::factory()->for($this->tenant)->create();
+    });
+
+    test('can delete a legacy public url', function (): void {
+        $legacy = PublicUrl::factory()->create([
+            'urlable_type' => $this->calendar->getMorphClass(),
+            'urlable_id' => $this->calendar->id,
+        ]);
+
+        asUser($this->calendarManager)
+            ->delete(route('calendar.publicUrls.destroy', [$this->calendar, $legacy]))
+            ->assertStatus(302)
+            ->assertSessionHas('info');
+
+        $this->assertDatabaseMissing('public_urls', ['id' => $legacy->id]);
+    });
+
+    test('cannot delete a public url belonging to another event', function (): void {
+        $otherEvent = Calendar::factory()->for($this->tenant)->create();
+        $foreign = PublicUrl::factory()->create([
+            'urlable_type' => $otherEvent->getMorphClass(),
+            'urlable_id' => $otherEvent->id,
+        ]);
+
+        asUser($this->calendarManager)
+            ->delete(route('calendar.publicUrls.destroy', [$this->calendar, $foreign]))
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('public_urls', ['id' => $foreign->id]);
+    });
+
+    test('user without update permission cannot delete a public url', function (): void {
+        $legacy = PublicUrl::factory()->create([
+            'urlable_type' => $this->calendar->getMorphClass(),
+            'urlable_id' => $this->calendar->id,
+        ]);
+
+        asUser($this->regularUser)
+            ->delete(route('calendar.publicUrls.destroy', [$this->calendar, $legacy]))
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('public_urls', ['id' => $legacy->id]);
     });
 });

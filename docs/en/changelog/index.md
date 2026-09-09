@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.2 — More reliable public links (2026-09-08) {#v2-2}
+
+- ✨ **Readable calendar links in both languages** — event links now use short, readable addresses (`/lt/kalendorius/...` and `/en/calendar/...`); changing an event’s title or date automatically keeps previous links redirecting to its current page
+- 🔧 **Safer registration forms** — system-backed form choices now use explicit allowed sources, so a registration can no longer submit a non-existent institution or tenant
+
 ## v2.1 — Bilingual homepage (2026-09-07) {#v2-1}
 
 - ⭐ **English homepage content** — administrators can now edit Lithuanian and English homepage versions independently; visitors see the Lithuanian content until an English version is ready

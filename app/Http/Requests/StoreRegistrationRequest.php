@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Form;
 use App\Models\FormField;
+use App\Services\FormOptionResolver;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Http\FormRequest;
@@ -100,6 +101,14 @@ class StoreRegistrationRequest extends FormRequest
 
             case 'enum':
             case 'select':
+                if ($field->resolvedOptionSource() !== null) {
+                    if (! app(FormOptionResolver::class)->accepts($field, $value)) {
+                        $validator->errors()->add("data.{$fieldId}.value", "The selected {$this->fieldLabel($field)} is invalid.");
+                    }
+
+                    break;
+                }
+
                 if ($field->options) {
                     // Extract values from option objects for validation
                     $validValues = collect($field->options)->pluck('value')->filter()->toArray();

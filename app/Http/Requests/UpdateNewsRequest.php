@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Actions\GenerateUniqueSlug;
+use App\Models\News;
 use App\Rules\UniqueAmongTrashed;
+use Closure;
 
 class UpdateNewsRequest extends NewsRequest
 {
@@ -44,10 +47,32 @@ class UpdateNewsRequest extends NewsRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'permalink' => ['required', 'string', UniqueAmongTrashed::of('news', 'permalink')->ignore($this->news->id)->where('tenant_id', $this->getTargetTenantId())],
+            'permalink' => [
+                'required', 'string', 'max:255', // matches the `news.permalink` column width
+                UniqueAmongTrashed::of('news', 'permalink')->ignore($this->news->id)->where('tenant_id', $this->getTargetTenantId()),
+                fn (string $attribute, mixed $value, Closure $fail) => $this->assertPermalinkNotRetiredByAnother((string) $value, $fail),
+            ],
             'image' => 'nullable|string',
             'short' => 'nullable',
             'lang' => 'required|string',
         ]);
+    }
+
+    /**
+     * A permalink that's clear of the live `news` table can still belong to a *different*
+     * article's redirect history — see GenerateUniqueSlug::isRetiredByAnother(). Re-adopting this
+     * record's *own* history is fine and excluded via $this->news->id.
+     */
+    private function assertPermalinkNotRetiredByAnother(string $permalink, Closure $fail): void
+    {
+        $tenantId = $this->getTargetTenantId();
+
+        if (blank($permalink) || $tenantId === null) {
+            return;
+        }
+
+        if (GenerateUniqueSlug::isRetiredByAnother(News::class, $permalink, $tenantId, $this->news->id)) {
+            $fail(__('validation.unique', ['attribute' => 'permalink']));
+        }
     }
 }

@@ -69,8 +69,10 @@ Route::delete('navigation/{navigation}/force-delete', [NavigationController::cla
 Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
 Route::delete('news/{news}/force-delete', [NewsController::class, 'forceDelete'])->name('news.forceDelete')->withTrashed();
 Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
+Route::delete('news/{news}/public-urls/{publicUrl}', [NewsController::class, 'destroyPublicUrl'])->name('news.publicUrls.destroy');
 Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();
 Route::delete('pages/{page}/force-delete', [PageController::class, 'forceDelete'])->name('pages.forceDelete')->withTrashed();
+Route::delete('pages/{page}/public-urls/{publicUrl}', [PageController::class, 'destroyPublicUrl'])->name('pages.publicUrls.destroy');
 Route::patch('problems/{problem}/restore', [ProblemController::class, 'restore'])->name('problems.restore')->withTrashed();
 Route::delete('problems/{problem}/force-delete', [ProblemController::class, 'forceDelete'])->name('problems.forceDelete')->withTrashed();
 Route::patch('quickLinks/{quickLink}/restore', [QuickLinkController::class, 'restore'])->name('quickLinks.restore')->withTrashed();
@@ -138,6 +140,7 @@ Route::resource('calendar', CalendarController::class)
     ->middleware(HandlePrecognitiveRequests::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
+Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');
 Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
 Route::resource('votes', VoteController::class)->except(['index', 'create', 'show', 'edit']);

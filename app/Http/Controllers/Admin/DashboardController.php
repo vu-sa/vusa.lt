@@ -135,7 +135,11 @@ class DashboardController extends AdminController
             ->with(['tenant:id,shortname', 'category:id,name'])
             ->orderBy('date')
             ->take(3)
-            ->get();
+            ->get()
+            ->map(fn (Calendar $event) => [
+                ...$event->toArray(),
+                'public_url' => $event->publicUrl(app()->getLocale()),
+            ]);
 
         // Get latest published news - return full models for NewsCard component
         $locale = app()->getLocale();

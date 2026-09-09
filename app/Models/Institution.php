@@ -323,7 +323,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
 
         return [
             'id' => (string) $this->id,
-            'name_lt' => $this->getTranslation('name', 'lt'),
+            'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
             'short_name_lt' => $this->getTranslation('short_name', 'lt'),
             'short_name_en' => $this->getTranslation('short_name', 'en'),
