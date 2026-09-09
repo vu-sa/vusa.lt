@@ -1,11 +1,65 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
 import NewsArchive from '@/Pages/Public/NewsArchive.vue';
 import PublicFilterPopover from '@/Components/Public/Base/PublicFilterPopover.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import type { NewsItem } from '@/Types/contentParts';
+
+// Typesense counts a facet's values *within* the active filter — once the tenant filter is
+// set to one tenant, its own facet response would otherwise only ever contain that one
+// tenant. This mock reproduces that narrowed response so the regression test below can
+// confirm the popover still offers every tenant, not just the selected one. `hits` mirrors
+// `sampleNews` below so any test whose assertions run after the mount-time search resolves
+// (e.g. via `flushPromises` or an awaited `setValue`) still sees the same two articles.
+const mockSearch = vi.fn().mockResolvedValue({
+  hits: [
+    {
+      document: {
+        id: '1',
+        title: 'Pirmasis svarbus pranešimas',
+        short: 'Trumpas pirmojo pranešimo tekstas apie studentų atstovavimą.',
+        permalink: 'pirmasis-pranesimas',
+        image: '/images/news1.jpg',
+        publish_time: 1756713600,
+        lang: 'lt',
+        tenant_id: 16,
+        tenant_shortname: 'VU SA',
+        category_name: 'Atstovavimas',
+      },
+    },
+    {
+      document: {
+        id: '2',
+        title: 'Antrasis įvykis bendruomenėje',
+        short: 'Trumpas antrojo įvykio tekstas.',
+        permalink: 'antrasis-ivykis',
+        image: '/images/news2.jpg',
+        publish_time: 1756022400,
+        lang: 'lt',
+        tenant_id: 16,
+        tenant_shortname: 'VU SA',
+        category_name: 'Renginiai',
+      },
+    },
+  ],
+  found: 2,
+  facet_counts: [
+    {
+      field_name: 'tenant_shortname',
+      counts: [{ value: 'VU SA', count: 2 }],
+    },
+  ],
+});
+
+vi.mock('@/Shared/Search/services/SearchClientFactory', () => ({
+  SearchClientFactory: {
+    createPublicClient: vi.fn(() => ({
+      search: mockSearch,
+    })),
+  },
+}));
 
 const sampleNews: NewsItem[] = [
   {
@@ -102,14 +156,22 @@ describe('Public/NewsArchive.vue', () => {
     expect(wrapper.findComponent(PublicFilterPopover).props('selected')).toEqual(['VU SA']);
   });
 
-  it('does not scope results when viewing the main tenant', () => {
+  it('also scopes results to the main tenant, rather than showing every tenant\'s news', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       tenant: { shortname: 'VU SA', type: 'pagrindinis' },
     }));
 
     const wrapper = mountPage();
 
-    expect(wrapper.findComponent(PublicFilterPopover).props('selected')).toEqual([]);
+    expect(wrapper.findComponent(PublicFilterPopover).props('selected')).toEqual(['VU SA']);
+  });
+
+  it('keeps every tenant selectable in the filter even after the search narrows the facet to the selected one', async () => {
+    const wrapper = mountPage();
+    await flushPromises();
+
+    const values = wrapper.findComponent(PublicFilterPopover).props('options').map(o => o.value);
+    expect(values).toEqual(['VU SA', 'VU SA MIF']);
   });
 
   it('renders total count indicator and does not show category tabs', () => {

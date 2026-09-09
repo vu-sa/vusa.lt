@@ -197,7 +197,12 @@ it('shows the published hero without editing affordances in full-screen preview 
     waitForInertiaRender($page, '[data-rc-interactive]');
 
     $page->click('button[title="Peržiūrėti"][aria-pressed="false"]');
-    $page->page()->waitForSelector('[data-rc-interactive]', ['state' => 'detached', 'timeout' => 10_000]);
+    $page->page()->unstrict(
+        fn (Pest\Browser\Playwright\Page $playwrightPage) => $playwrightPage->waitForSelector(
+            '[data-rc-interactive]',
+            ['state' => 'detached', 'timeout' => 10_000],
+        ),
+    );
 
     expect($page->script('document.querySelectorAll("[data-rc-interactive]").length'))->toBe(0)
         ->and($page->script('document.querySelectorAll("button[title=\'Bloko nustatymai\']").length'))->toBe(0);

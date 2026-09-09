@@ -385,6 +385,33 @@ describe('Title suffixes', function (): void {
             );
     });
 
+    it('serves the calendar list on a tenant subdomain with that tenant as the switch target', function (): void {
+        $this->get(route('tenant.calendar.list', ['subdomain' => 'mif', 'lang' => 'lt']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Public/CalendarEventList')
+                ->where('tenantSwitchTarget', 'same-page')
+            );
+    });
+
+    it('serves the unified search page on a tenant subdomain with that tenant as the switch target', function (): void {
+        $this->get(route('tenant.search', ['subdomain' => 'mif', 'lang' => 'lt']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Public/Search')
+                ->where('tenantSwitchTarget', 'same-page')
+            );
+    });
+
+    it('serves study sets on a tenant subdomain with that tenant as the switch target', function (): void {
+        $this->get(route('tenant.studySets', ['subdomain' => 'mif', 'lang' => 'lt']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Public/ShowStudySets')
+                ->where('tenantSwitchTarget', 'same-page')
+            );
+    });
+
     it('suffixes a news article title with the content-owning tenant, not the accessing one', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->mifTenant->id,

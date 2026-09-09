@@ -405,7 +405,10 @@ class PublicPageController extends PublicController
     {
         $this->getBanners();
         $this->getTenantLinks();
-        $this->shareOtherLangURL('calendar.list');
+        $this->shareOtherLangURL(
+            $this->tenant->isMain() ? 'calendar.list' : 'tenant.calendar.list',
+            $this->tenant->isMain() ? null : $this->subdomain,
+        );
 
         $now = Carbon::now();
         $perPage = 20; // Number of events per page
@@ -443,8 +446,7 @@ class PublicPageController extends PublicController
                 'public_url' => $event->publicUrl(app()->getLocale()),
             ]);
 
-        // Get all available filter options based on tab
-        $filterOptions = $this->getCalendarFilterOptions($tab);
+        $filterOptions = $this->getCalendarFilterOptions();
 
         $this->applyPageHead(
             contentTenant: $this->tenant,
@@ -456,6 +458,7 @@ class PublicPageController extends PublicController
         $this->sharePaginationSeoMeta($events, $this->tenant);
 
         return Inertia::render('Public/CalendarEventList', [
+            'tenantSwitchTarget' => 'same-page',
             'events' => $events,
             'activeTab' => $tab,
             'allCategories' => $filterOptions['categories'],
@@ -469,80 +472,38 @@ class PublicPageController extends PublicController
     }
 
     /**
-     * Get filter options for calendar events based on tab
-     *
-     * For 'upcoming' tab: Only show categories and tenants that have upcoming events
-     * For 'past' tab: Show all categories and tenants
+     * Tab switches on the calendar list happen client-side against Typesense, with no
+     * Inertia reload — so these options must not be scoped to whichever tab was active at
+     * the initial page load, or the filter would stay stuck on that tab's set (e.g. only
+     * "VU SA" for "Upcoming") even after switching to "Past" in the browser.
      */
-    private function getCalendarFilterOptions(string $tab): array
+    private function getCalendarFilterOptions(): array
     {
-        $now = Carbon::now();
-        $categories = [];
-        $tenants = [];
+        $categories = Category::query()
+            ->whereHas('calendars', function ($query): void {
+                $query->where('is_draft', false);
 
-        if ($tab === 'past') {
-            // For past events, get ALL categories and tenants regardless of current filter
-            $categories = Category::query()
-                ->whereHas('calendars', function ($query): void {
-                    // Only get categories that have calendar events
-                    $query->where('is_draft', false);
+                if (app()->getLocale() === 'en') {
+                    $query->where('is_international', true);
+                }
+            })
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get()
+            ->toArray();
 
-                    // Apply language filter
-                    if (app()->getLocale() === 'en') {
-                        $query->where('is_international', true);
-                    }
-                })
-                ->select('id', 'name')
-                ->orderBy('name')
-                ->get()
-                ->toArray();
+        $tenants = Tenant::query()
+            ->whereHas('calendar', function ($query): void {
+                $query->where('is_draft', false);
 
-            $tenants = Tenant::query()
-                ->whereHas('calendar', function ($query): void {
-                    // Only get tenants that have calendar events
-                    $query->where('is_draft', false);
-
-                    // Apply language filter
-                    if (app()->getLocale() === 'en') {
-                        $query->where('is_international', true);
-                    }
-                })
-                ->select('id', 'shortname')
-                ->orderBy('shortname')
-                ->get()
-                ->toArray();
-        } else {
-            // For upcoming events, only get categories and tenants that have upcoming events
-            $categories = Category::query()
-                ->whereHas('calendars', function ($query) use ($now): void {
-                    $query->where('is_draft', false)
-                        ->where('date', '>=', $now->format('Y-m-d'));
-
-                    // Apply language filter
-                    if (app()->getLocale() === 'en') {
-                        $query->where('is_international', true);
-                    }
-                })
-                ->select('id', 'name')
-                ->orderBy('name')
-                ->get()
-                ->toArray();
-
-            $tenants = Tenant::query()
-                ->whereHas('calendar', function ($query) use ($now): void {
-                    $query->where('is_draft', false)
-                        ->where('date', '>=', $now->format('Y-m-d'));
-
-                    // Apply language filter
-                    if (app()->getLocale() === 'en') {
-                        $query->where('is_international', true);
-                    }
-                })
-                ->select('id', 'shortname')
-                ->orderBy('shortname')
-                ->get()
-                ->toArray();
-        }
+                if (app()->getLocale() === 'en') {
+                    $query->where('is_international', true);
+                }
+            })
+            ->select('id', 'shortname')
+            ->orderBy('shortname')
+            ->get()
+            ->toArray();
 
         return [
             'categories' => $categories,

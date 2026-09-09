@@ -103,6 +103,11 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('/', [Public\PublicPageController::class, 'home'])->name('home');
         Route::get('{documentsString}', [Public\DocumentController::class, 'index'])->name('tenant.documents')
             ->whereIn('documentsString', LocalizedRouteSlugs::accepted('documentsString'));
+        Route::get('{calendarString}', [Public\PublicPageController::class, 'calendarEventList'])->name('tenant.calendar.list')
+            ->whereIn('calendarString', LocalizedRouteSlugs::accepted('calendarString'));
+        Route::get('{searchString}', [Public\SearchController::class, 'index'])->name('tenant.search')
+            ->whereIn('searchString', LocalizedRouteSlugs::accepted('searchString'));
+        Route::get('ind-komplektai', [Public\StudySetController::class, 'index'])->name('tenant.studySets');
         Route::get('{newsArchiveString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')
             ->whereIn('newsArchiveString', LocalizedRouteSlugs::accepted('newsArchiveString'));
         Route::permanentRedirect('/admin', '/mano');

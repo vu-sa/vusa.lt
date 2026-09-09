@@ -141,3 +141,29 @@ test('the event list exposes each event\'s permalink-based canonical url, built 
             ->where('events.data.0.public_url', $expectedUrl)
         );
 });
+
+test('the tenant filter options include a tenant with only past events, even on the upcoming tab', function (): void {
+    $mif = Tenant::firstOrCreate(
+        ['alias' => 'mif'],
+        [
+            'shortname' => 'VU SA MIF',
+            'shortname_vu' => 'MIF',
+            'fullname' => 'VU SA Matematikos ir informatikos fakultetas',
+            'type' => 'padalinys',
+        ],
+    );
+
+    Calendar::factory()->for($mif)->create([
+        'is_draft' => false,
+        'date' => now()->subMonth(),
+    ]);
+
+    // Tab switching happens client-side against Typesense with no Inertia reload, so the
+    // "upcoming" tab's initial props must not be scoped to only tenants with an upcoming
+    // event — MIF (past-only here) still has to be a selectable filter option.
+    $this->get(route('calendar.list', ['calendarString' => 'kalendorius', 'lang' => 'lt', 'tab' => 'upcoming']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/CalendarEventList')
+            ->where('allTenants', fn ($tenants) => $tenants->pluck('shortname')->contains('VU SA MIF'))
+        );
+});

@@ -368,6 +368,7 @@ jobs:
       run: |
         cp .env.example .env
         php artisan key:generate --force
+        php artisan storage:link
 
     # routes/web.php registers public routes under Route::domain('{subdomain}.vusa.test') groups;
     # the plugin's ephemeral test server always binds to 127.0.0.1, so the runner needs to resolve
