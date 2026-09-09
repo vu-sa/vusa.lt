@@ -8,7 +8,7 @@ use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Settings\FormSettings;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 class FormOptionResolver
 {
@@ -23,11 +23,31 @@ class FormOptionResolver
             FormOptionSource::Tenant => Tenant::query()
                 ->orderBy('fullname')
                 ->get(['id', 'fullname'])
-                ->map(fn (Tenant $tenant) => ['value' => $tenant->getKey(), 'label' => $tenant->fullname]),
+                ->map(fn (Tenant $tenant) => $this->optionForTenant($tenant)),
             FormOptionSource::Institution => $this->institutionsFor($form, $preselectedInstitutionId)
-                ->map(fn (Institution $institution) => ['value' => $institution->getKey(), 'label' => $institution->name]),
+                ->map(fn (Institution $institution) => $this->optionForInstitution($institution)),
             default => collect(),
         };
+    }
+
+    /** @return array{value: int|string, label: string} */
+    private function optionForTenant(Tenant $tenant): array
+    {
+        return [
+            'value' => $tenant->id,
+            'label' => $tenant->fullname,
+        ];
+    }
+
+    /** @return array{value: int|string, label: string} */
+    private function optionForInstitution(Institution $institution): array
+    {
+        $name = $institution->name;
+
+        return [
+            'value' => $institution->id,
+            'label' => is_string($name) ? $name : '',
+        ];
     }
 
     public function accepts(FormField $field, mixed $value): bool

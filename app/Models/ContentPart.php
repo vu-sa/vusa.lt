@@ -151,12 +151,12 @@ class ContentPart extends Model
         $this->loadMissing('content.page', 'content.tenantHomepageContent');
         $content = $this->content;
 
-        if ($content?->page !== null) {
+        if ($content->page !== null) {
             $page = $content->page;
             Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
         }
 
-        if ($content?->tenantHomepageContent !== null) {
+        if ($content->tenantHomepageContent !== null) {
             Cache::tags(['homepage'])->flush();
         }
     }

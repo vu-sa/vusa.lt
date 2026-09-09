@@ -1,15 +1,28 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
 
 import BlockPickerDialog from '../BlockPickerDialog.vue';
 
 import { commonStubs } from '@/tests/stubs';
 
-async function mountDialog() {
+const BlockPreviewRendererStub = {
+  props: ['element'],
+  template: '<div data-testid="block-preview-renderer" :data-type="element?.type" />',
+};
+
+const mountedWrappers: ReturnType<typeof mount>[] = [];
+
+afterEach(() => {
+  mountedWrappers.forEach(wrapper => wrapper.unmount());
+  mountedWrappers.length = 0;
+});
+
+async function mountDialog(open = true) {
   const wrapper = mount(BlockPickerDialog, {
-    props: { open: true },
-    global: { stubs: commonStubs },
+    props: { open },
+    global: { stubs: { ...commonStubs, BlockPreviewRenderer: BlockPreviewRendererStub } },
   });
+  mountedWrappers.push(wrapper);
   await flushPromises();
   return wrapper;
 }
@@ -67,9 +80,6 @@ describe('BlockPickerDialog', () => {
 
     const cardItem = wrapper.findAll('button').find(b => b.text().includes('Kortelė'))!;
     await cardItem.trigger('click');
-    // The stub Dialog doesn't actually unmount on the emitted update:open — let the
-    // shadcn-card preview's pending async import settle before the test ends, or it
-    // resolves during a later test file's environment teardown instead.
     await flushPromises();
 
     expect(wrapper.emitted('select')).toEqual([['shadcn-card']]);
@@ -111,7 +121,7 @@ describe('BlockPickerDialog', () => {
   });
 
   it('resets search and category each time it is reopened', async () => {
-    const wrapper = mount(BlockPickerDialog, { props: { open: false }, global: { stubs: commonStubs } });
+    const wrapper = await mountDialog(false);
     await wrapper.setProps({ open: true });
     await wrapper.find('input[type="search"]').setValue('Kortelė');
     await flushPromises();
@@ -137,8 +147,5 @@ describe('BlockPickerDialog', () => {
     // content-grid is now inlineEditable, so it must carry the fullscreen badge too
     const gridBtn = wrapper.findAll('button').find(b => b.text().includes('Tinklelis'));
     expect(gridBtn?.text()).toContain('rich-content.fullscreen_badge');
-
-    await flushPromises();
-    wrapper.unmount();
   });
 });
