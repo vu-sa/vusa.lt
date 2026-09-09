@@ -137,6 +137,7 @@ Route::delete('push-subscription/{id}', [PushSubscriptionController::class, 'des
 Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
 
 Route::resource('calendar', CalendarController::class)
+    ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
