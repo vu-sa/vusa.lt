@@ -281,7 +281,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { usePage, Head } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { useDebounceFn } from '@vueuse/core';
+import { useDebounceFn, useStorage } from '@vueuse/core';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { useInstitutionSearch } from '@/Composables/useInstitutionSearch';
@@ -339,7 +339,7 @@ const {
   filters,
 } = searchController;
 
-const showFilterBar = ref(false);
+const showFilterBar = useStorage('vusa-show-filters-expanded', false);
 const searchInput = ref('');
 
 function applyCurrentTenantFilter(): void {
@@ -350,7 +350,6 @@ function applyCurrentTenantFilter(): void {
   }
 
   filters.value.tenants = [tenant.shortname];
-  showFilterBar.value = true;
 }
 
 // Computed eyebrow
@@ -488,7 +487,6 @@ const parseInitialUrlParams = () => {
   }
   if (tenants.length > 0) {
     filters.value.tenants = tenants;
-    showFilterBar.value = true;
   }
 
   // Parse types
@@ -504,7 +502,6 @@ const parseInitialUrlParams = () => {
   }
   if (types.length > 0) {
     filters.value.types = types;
-    showFilterBar.value = true;
   }
 };
 

@@ -458,7 +458,7 @@ const props = defineProps<{
 
 const page = usePage();
 const showModal = ref(false);
-const showFilterBar = useStorage('vusa-calendar-show-filters', false);
+const showFilterBar = useStorage('vusa-show-filters-expanded', false);
 const isSortPopoverOpen = ref(false);
 
 const {
@@ -496,7 +496,6 @@ const {
 const currentTenant = page.props.tenant;
 if (currentTenant?.type === TenantType.Padalinys && currentTenant.shortname) {
   selectedTenants.value = [currentTenant.shortname];
-  showFilterBar.value = true;
 }
 
 const sortOptions: Array<{ value: CalendarSearchSort; label: string }> = [

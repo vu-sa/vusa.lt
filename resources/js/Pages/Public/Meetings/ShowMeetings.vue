@@ -340,7 +340,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { usePage, Head } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { useDebounceFn } from '@vueuse/core';
+import { useDebounceFn, useStorage } from '@vueuse/core';
 
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
@@ -390,7 +390,7 @@ const {
   filters,
 } = searchController;
 
-const showFilterBar = ref(false);
+const showFilterBar = useStorage('vusa-show-filters-expanded', false);
 const searchInput = ref('');
 const isSortPopoverOpen = ref(false);
 
@@ -402,7 +402,6 @@ function applyCurrentTenantFilter(): void {
   }
 
   filters.value.tenants = [tenant.shortname];
-  showFilterBar.value = true;
 }
 
 // Computed eyebrow
@@ -581,7 +580,6 @@ const parseInitialUrlParams = () => {
   }
   if (years.length > 0) {
     filters.value.years = years;
-    showFilterBar.value = true;
   }
 
   // Parse tenants
@@ -597,7 +595,6 @@ const parseInitialUrlParams = () => {
   }
   if (tenants.length > 0) {
     filters.value.tenants = tenants;
-    showFilterBar.value = true;
   }
 
   // Parse institution types
@@ -613,7 +610,6 @@ const parseInitialUrlParams = () => {
   }
   if (types.length > 0) {
     filters.value.institutionTypes = types;
-    showFilterBar.value = true;
   }
 };
 

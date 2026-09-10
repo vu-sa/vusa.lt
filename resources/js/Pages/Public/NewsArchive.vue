@@ -411,7 +411,7 @@ const props = defineProps<{
   allTenants?: Array<{ id: number; shortname: string }>;
 }>();
 
-const showFilterBar = useStorage('vusa-news-archive-show-filters', false);
+const showFilterBar = useStorage('vusa-show-filters-expanded', false);
 const isSortPopoverOpen = ref(false);
 
 const initialTagName = computed<string | undefined>(() => {
@@ -467,7 +467,6 @@ const currentTenant = page.props.tenant;
 
 if (currentTenant?.shortname) {
   selectedTenants.value = [currentTenant.shortname];
-  showFilterBar.value = true;
 }
 
 const sortOptions: Array<{ value: NewsSearchSort; label: string }> = [

@@ -87,6 +87,7 @@ const sampleNews: NewsItem[] = [
 describe('Public/NewsArchive.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
     window.history.replaceState({}, '', '/lt/naujienos');
 
     vi.mocked(usePage).mockReturnValue(
@@ -224,16 +225,20 @@ describe('Public/NewsArchive.vue', () => {
     expect(wrapper.text()).not.toContain('Visos naujienos');
   });
 
-  it('shows the current tenant filter and lets visitors collapse the filter bar', async () => {
-    localStorage.clear();
+  it('keeps active filters collapsed until the visitor expands them, then remembers the preference', async () => {
     const wrapper = mountPage();
     const filterBtn = wrapper.findAll('button').find(b => b.text().includes('Filtrai'));
     expect(filterBtn?.exists()).toBe(true);
 
     const filterPopoversBar = wrapper.find('.border-t.border-border\\/60');
-    expect(filterPopoversBar.isVisible()).toBe(true);
+    expect(filterPopoversBar.isVisible()).toBe(false);
 
     await filterBtn?.trigger('click');
-    expect(filterPopoversBar.isVisible()).toBe(false);
+    expect(filterPopoversBar.isVisible()).toBe(true);
+
+    wrapper.unmount();
+
+    const revisitedWrapper = mountPage();
+    expect(revisitedWrapper.find('.border-t.border-border\\/60').isVisible()).toBe(true);
   });
 });

@@ -456,7 +456,7 @@ usePageBreadcrumbs(
   { placement: 'band' },
 );
 
-const showFilterBar = useStorage('vusa-documents-show-filters', false);
+const showFilterBar = useStorage('vusa-show-filters-expanded', false);
 const isSortPopoverOpen = ref(false);
 
 const pageEyebrow = computed(() => {
@@ -489,7 +489,6 @@ function applyCurrentTenantFilter(): void {
   }
 
   filters.value.tenants = [tenant.shortname];
-  showFilterBar.value = true;
 }
 
 const sortOptions: Array<{ value: DocumentSearchSort; label: string }> = [
