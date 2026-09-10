@@ -26,7 +26,8 @@ describe('Document Sync Jobs', function (): void {
         expect($job->document->id)->toBe($document->id)
             ->and($job->tries)->toBe(3)
             ->and($job->timeout)->toBe(120)
-            ->and($job->queue)->toBe('sharepoint-sync');
+            ->and($job->queue)->toBe('sharepoint-sync')
+            ->and($job->deleteWhenMissingModels)->toBeTrue();
     });
 
     test('rolling refresh job identifies documents for 14-day cycle correctly', function (): void {

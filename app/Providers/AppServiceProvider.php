@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Notifications\Channels\IdempotentDatabaseChannel;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
@@ -11,6 +12,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Channels\DatabaseChannel;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
@@ -41,6 +43,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Register our new permission service
         $this->app->scoped('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));
+
+        // Retried queued notifications re-run every channel, including `database` if it
+        // already committed — see App\Notifications\Channels\IdempotentDatabaseChannel.
+        $this->app->bind(DatabaseChannel::class, IdempotentDatabaseChannel::class);
     }
 
     /**
