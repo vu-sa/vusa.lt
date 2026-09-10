@@ -84,6 +84,8 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/CreatePage')
                 ->has('tenants')
+                ->has('assignableTenants', 1)
+                ->where('assignableTenants.0.id', $this->tenant->id)
             );
     });
 

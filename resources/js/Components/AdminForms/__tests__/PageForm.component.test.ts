@@ -190,3 +190,57 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     expect(wrapper.findComponent(PermalinkPreviewHint).exists()).toBe(true);
   });
 });
+
+describe('PageForm.vue — create mode tenant selection', () => {
+  let wrapper: ReturnType<typeof mount>;
+
+  // useForm('CreatePage', ...) remembers form state in Inertia's shared page singleton keyed by
+  // that literal string — every test here reuses it (PageForm's isCreate requires the exact
+  // 'CreatePage' key), so a value set by one test would otherwise leak into the next.
+  beforeEach(async () => {
+    const { router } = await vi.importActual<typeof import('@inertiajs/vue3')>('@inertiajs/vue3');
+    router.remember(undefined, 'CreatePage');
+  });
+
+  function createShallowWrapper(assignableTenants: App.Entities.Tenant[], rememberKey?: string) {
+    return mount(PageForm, {
+      shallow: true,
+      props: {
+        page: { title: '', lang: 'lt', content: { parts: [] }, tenant_id: null },
+        categories: [],
+        assignableTenants,
+        rememberKey,
+        submitUrl: '/test',
+        submitMethod: 'post' as const,
+      },
+    });
+  }
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it('leaves tenant_id unset outside create mode, even with a single assignable tenant', () => {
+    wrapper = createShallowWrapper([{ id: 2, shortname: 'VU SA FF', type: 'padalinys' }] as App.Entities.Tenant[]);
+
+    const vm = wrapper.vm as unknown as { form: { tenant_id: number | null } };
+    expect(vm.form.tenant_id).toBeNull();
+  });
+
+  it('defaults to the sole assignable tenant', () => {
+    wrapper = createShallowWrapper([{ id: 2, shortname: 'VU SA FF', type: 'padalinys' }] as App.Entities.Tenant[], 'CreatePage');
+
+    const vm = wrapper.vm as unknown as { form: { tenant_id: number | null } };
+    expect(vm.form.tenant_id).toBe(2);
+  });
+
+  it('prefers the main tenant when several are assignable (e.g. a super admin)', () => {
+    wrapper = createShallowWrapper([
+      { id: 2, shortname: 'VU SA FF', type: 'padalinys' },
+      { id: 16, shortname: 'VU SA', type: 'pagrindinis' },
+    ] as App.Entities.Tenant[], 'CreatePage');
+
+    const vm = wrapper.vm as unknown as { form: { tenant_id: number | null } };
+    expect(vm.form.tenant_id).toBe(16);
+  });
+});

@@ -52,6 +52,7 @@ export const newsTemplate = {
   permalink: '',
   lang: 'lt',
   other_lang_id: null,
+  tenant_id: null,
   content: {
     parts: [
       {
@@ -81,6 +82,7 @@ export const pageTemplate = {
   lang: 'lt',
   category_id: null,
   other_lang_id: null,
+  tenant_id: null,
   is_active: true,
   content: {
     parts: [

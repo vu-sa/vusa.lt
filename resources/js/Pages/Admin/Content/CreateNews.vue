@@ -7,6 +7,7 @@
       <NewsForm
         :news
         :available-tags
+        :assignable-tenants
         remember-key="CreateNews"
         :submit-url="route('news.store')"
         submit-method="post"
@@ -26,6 +27,7 @@ import { NewsIcon } from '@/Components/icons';
 
 defineProps<{
   availableTags?: App.Entities.Tag[];
+  assignableTenants: App.Entities.Tenant[];
 }>();
 
 // Generate breadcrumbs automatically with new simplified API
