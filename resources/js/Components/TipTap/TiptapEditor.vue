@@ -5,7 +5,7 @@
       class="flex items-center gap-0.5 rounded-lg border bg-white p-1 shadow-md dark:bg-zinc-900 dark:border-zinc-700"
       :editor plugin-key="textBubbleMenu" :should-show="shouldShowTextBubbleMenu" :options="{ placement: 'top', offset: 8 }"
       @mousedown.prevent>
-      <TiptapFormattingButtons v-model:editor="editor" :show-bold="showBold" bubble />
+      <TiptapFormattingButtons v-model:editor="editor" :show-bold bubble />
 
       <!-- Link controls in bubble menu -->
       <template v-if="!disableLinks && editor.schema.marks.link">
@@ -26,7 +26,7 @@
     <div v-if="editor && showToolbar"
       class="tiptap-toolbar flex flex-wrap items-center gap-2 rounded-lg border bg-white p-2 dark:bg-zinc-900 dark:border-zinc-700 mb-2">
       <!-- Formatting buttons -->
-      <TiptapFormattingButtons v-model:editor="editor" :show-bold="showBold" />
+      <TiptapFormattingButtons v-model:editor="editor" :show-bold />
 
       <!-- Mobile-only toggle for the rest of the toolbar — on small screens the full
            control set doesn't fit above the keyboard, so only bold/italic/underline
@@ -80,10 +80,18 @@
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="paragraph">{{ $t('rich-content.heading_paragraph') }}</SelectItem>
-              <SelectItem value="2">{{ $t('rich-content.heading_level_2') }}</SelectItem>
-              <SelectItem value="3">{{ $t('rich-content.heading_level_3') }}</SelectItem>
-              <SelectItem value="4">{{ $t('rich-content.heading_level_4') }}</SelectItem>
+              <SelectItem value="paragraph">
+                {{ $t('rich-content.heading_paragraph') }}
+              </SelectItem>
+              <SelectItem value="2">
+                {{ $t('rich-content.heading_level_2') }}
+              </SelectItem>
+              <SelectItem value="3">
+                {{ $t('rich-content.heading_level_3') }}
+              </SelectItem>
+              <SelectItem value="4">
+                {{ $t('rich-content.heading_level_4') }}
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -124,7 +132,6 @@
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
         </template>
 
         <!-- Alignment + dot-tag mark: available in `compact` too (not just `full`) —
@@ -329,6 +336,9 @@ import TiptapVideoButton from './TiptapVideoButton.vue';
 import TiptapYoutubeButton from './TiptapYoutubeButton.vue';
 import TiptapImageMenu from './TiptapImageMenu.vue';
 import { shouldShowTextBubbleMenu } from './bubbleMenuVisibility';
+import type { HeadingAccent, HeadingSize, HeadingSpacing } from './CustomHeading';
+import type { RCTagColor, RCTagVariant } from './RCTag';
+import type { TextAlignValue } from './TextAlign';
 
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
@@ -343,9 +353,6 @@ import {
 } from '@/Components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { latinizeId } from '@/Utils/String';
-import type { HeadingAccent, HeadingSize, HeadingSpacing } from './CustomHeading';
-import type { RCTagColor, RCTagVariant } from './RCTag';
-import type { TextAlignValue } from './TextAlign';
 
 // Icons
 import IFluentLink24Regular from '~icons/fluent/link24-regular';

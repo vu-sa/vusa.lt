@@ -50,10 +50,18 @@
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="stretch">{{ $t('rich-content.grid_vertical_align_stretch') }}</SelectItem>
-              <SelectItem value="start">{{ $t('rich-content.grid_vertical_align_start') }}</SelectItem>
-              <SelectItem value="center">{{ $t('rich-content.grid_vertical_align_center') }}</SelectItem>
-              <SelectItem value="end">{{ $t('rich-content.grid_vertical_align_end') }}</SelectItem>
+              <SelectItem value="stretch">
+                {{ $t('rich-content.grid_vertical_align_stretch') }}
+              </SelectItem>
+              <SelectItem value="start">
+                {{ $t('rich-content.grid_vertical_align_start') }}
+              </SelectItem>
+              <SelectItem value="center">
+                {{ $t('rich-content.grid_vertical_align_center') }}
+              </SelectItem>
+              <SelectItem value="end">
+                {{ $t('rich-content.grid_vertical_align_end') }}
+              </SelectItem>
             </SelectContent>
           </Select>
         </FormFieldWrapper>
@@ -175,10 +183,18 @@
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="top-left">{{ $t('rich-content.overlay_corner_top_left') }}</SelectItem>
-                          <SelectItem value="top-right">{{ $t('rich-content.overlay_corner_top_right') }}</SelectItem>
-                          <SelectItem value="bottom-left">{{ $t('rich-content.overlay_corner_bottom_left') }}</SelectItem>
-                          <SelectItem value="bottom-right">{{ $t('rich-content.overlay_corner_bottom_right') }}</SelectItem>
+                          <SelectItem value="top-left">
+                            {{ $t('rich-content.overlay_corner_top_left') }}
+                          </SelectItem>
+                          <SelectItem value="top-right">
+                            {{ $t('rich-content.overlay_corner_top_right') }}
+                          </SelectItem>
+                          <SelectItem value="bottom-left">
+                            {{ $t('rich-content.overlay_corner_bottom_left') }}
+                          </SelectItem>
+                          <SelectItem value="bottom-right">
+                            {{ $t('rich-content.overlay_corner_bottom_right') }}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <Select :model-value="column.content.overlayPadding ?? 'md'" @update:model-value="column.content.overlayPadding = $event">
@@ -186,9 +202,15 @@
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-                          <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-                          <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+                          <SelectItem value="sm">
+                            {{ $t('rich-content.small') }}
+                          </SelectItem>
+                          <SelectItem value="md">
+                            {{ $t('rich-content.medium') }}
+                          </SelectItem>
+                          <SelectItem value="lg">
+                            {{ $t('rich-content.large') }}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <div class="flex items-center gap-2">
@@ -282,6 +304,9 @@
 <script setup lang="ts">
 import { defineModel, computed, onMounted, ref, watch } from 'vue';
 
+import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
+
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { ContentGrid } from '@/Types/contentParts';
@@ -294,8 +319,6 @@ import { Switch } from '@/Components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
-import RCSectionOptions from '../Editor/RCSectionOptions.vue';
-import RCDecorationListEditor from '../Editor/RCDecorationListEditor.vue';
 
 const json_content = defineModel<ContentGrid['json_content']>();
 const options = defineModel<ContentGrid['options']>('options');
@@ -336,7 +359,7 @@ function isMaxColumnsReached(row) {
 // away and back would otherwise leave whatever the previous type left behind, e.g.
 // tiptap's `{}`).
 function cardValue(column) {
-  const value = column.content.value;
+  const { value } = column.content;
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     column.content.value = { image: '', imageAlt: '', title: '', description: '', href: '' };
   }

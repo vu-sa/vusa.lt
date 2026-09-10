@@ -1,11 +1,12 @@
 import { computed, onUnmounted, type ComputedRef, type Ref } from 'vue';
-import * as d3 from 'd3';
+import type * as d3 from 'd3';
 import { addMonths, startOfDay, startOfMonth } from 'date-fns';
 
-import { parseTimelineDate, toDateString } from './useDutiableTimelineData';
 import { applicableCadences } from '../cadencePools';
 import { DRAG_THRESHOLD_PX, SNAP_PX } from '../constants';
 import type { ParsedCadence, ParsedRow, StagedDates } from '../types';
+
+import { parseTimelineDate, toDateString } from './useDutiableTimelineData';
 
 export type DragMode = 'body' | 'start' | 'end';
 

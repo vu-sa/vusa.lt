@@ -5,7 +5,7 @@
   <article class="group relative flex h-full flex-col overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-brand">
     <!-- Stretched link: the whole card is clickable, but content underneath (e.g. a
          footer list of per-event links) can still carry its own, higher-stacked links. -->
-    <SmartLink v-if="href" :href="href" class="absolute inset-0 z-10" :aria-label="title" />
+    <SmartLink v-if="href" :href class="absolute inset-0 z-10" :aria-label="title" />
 
     <!-- Cover — omitted entirely (not even the fallback placeholder) when there's no
          image and the card wasn't asked to always reserve a cover slot. Grids that mix

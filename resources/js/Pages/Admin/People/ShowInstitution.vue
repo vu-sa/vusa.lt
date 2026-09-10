@@ -119,13 +119,13 @@
           </div>
         </template>
         <div v-if="duties?.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <DutySummaryCard
-          v-for="duty in sortedDuties"
-          :key="duty.id"
-          :duty
-          :show-institution="false"
-        />
-      </div>
+          <DutySummaryCard
+            v-for="duty in sortedDuties"
+            :key="duty.id"
+            :duty
+            :show-institution="false"
+          />
+        </div>
 
         <EmptyState
           v-else
@@ -149,7 +149,7 @@
         </template>
         <InstitutionMeetingsList
           v-if="meetings?.length"
-          :meetings="meetings"
+          :meetings
           :institution-name="institution.name"
           :can-delete="canDeleteMeetings"
           @select="(meeting) => router.visit(route('meetings.show', meeting.id))"
@@ -245,7 +245,6 @@
 </template>
 
 <script setup lang="tsx">
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 import { Deferred, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -262,6 +261,7 @@ import {
   Loader2,
 } from 'lucide-vue-next';
 
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 import { EmptyState } from '@/Components/Patterns';
 import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';

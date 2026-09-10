@@ -17,10 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed } from 'vue';
 
 import TruncatedBadge from './TruncatedBadge.vue';
+
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
 const props = withDefaults(defineProps<{
   items: Array<Record<string, any>>;

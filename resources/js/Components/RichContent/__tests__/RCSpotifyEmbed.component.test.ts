@@ -9,6 +9,7 @@ vi.mock('@vueuse/core', async (importOriginal) => {
 });
 
 import RCSpotifyEmbed from '../RCSpotifyEmbed.vue';
+
 import type { SpotifyEmbed } from '@/Types/contentParts';
 
 function makeElement(overrides: Partial<SpotifyEmbed['json_content']> = {}, options: SpotifyEmbed['options'] = null): SpotifyEmbed {

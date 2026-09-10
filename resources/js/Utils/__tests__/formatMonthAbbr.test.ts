@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { formatMonthAbbr } from '../IntlTime';
+
 import { LocaleEnum } from '@/Types/enums';
 
 describe('formatMonthAbbr', () => {

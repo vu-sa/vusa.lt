@@ -98,6 +98,9 @@
 import { ref } from 'vue';
 import { Plus, UserPlus, X } from 'lucide-vue-next';
 
+import { useAdministratorRoster } from './useAdministratorRoster';
+import type { AdministratorRoster, AdministratorUser } from './administratorTypes';
+
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -105,9 +108,6 @@ import { EmptyState } from '@/Components/Patterns';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import MultiCollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/MultiCollectionSelectDialog.vue';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
-
-import { useAdministratorRoster } from './useAdministratorRoster';
-import type { AdministratorRoster, AdministratorUser } from './administratorTypes';
 
 const props = defineProps<{
   institutionId: string;

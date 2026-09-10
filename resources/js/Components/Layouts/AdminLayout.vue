@@ -32,6 +32,34 @@
 
           <div class="flex items-center gap-1.5 md:gap-2">
             <slot name="headerActions" />
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  class="rounded-full"
+                  :aria-label="$t('vusa.lt pagalba')"
+                  :title="$t('vusa.lt pagalba')"
+                  data-testid="support-requests-menu-trigger"
+                >
+                  <MessageSquare class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" data-testid="support-requests-menu">
+                <DropdownMenuItem as-child>
+                  <Link :href="route('mySupportRequests.create')" prefetch>
+                    <PlusIcon class="h-4 w-4" />
+                    {{ $t('Naujas pranešimas') }}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem as-child>
+                  <Link :href="route('mySupportRequests.index')" prefetch>
+                    <MessageSquare class="h-4 w-4" />
+                    {{ $t('vusa.lt pagalba') }}
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <CommandPaletteTrigger />
             <PWAStatusButton />
             <SpotlightPopover
@@ -203,6 +231,7 @@ import {
   PlusIcon,
   UserIcon,
   HelpCircle,
+  MessageSquare,
   BellIcon,
   GraduationCapIcon,
 } from 'lucide-vue-next';
@@ -234,6 +263,12 @@ import { createTourProvider } from '@/Composables/useTourProvider';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import { Toaster } from '@/Components/ui/sonner';
 import { createActionWindowProvider } from '@/Composables/useActionWindow';
 import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';

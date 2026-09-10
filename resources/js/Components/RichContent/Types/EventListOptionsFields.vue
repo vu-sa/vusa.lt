@@ -5,17 +5,27 @@
         <FieldLabel>{{ $t('rich-content.event_list_mode') }}</FieldLabel>
         <ToggleGroup :model-value="options.mode" type="single" class="justify-start"
           @update:model-value="(v) => v && patchOptions({ mode: v as EventList['options']['mode'] })">
-          <ToggleGroupItem value="upcoming">{{ $t('rich-content.event_list_mode_upcoming') }}</ToggleGroupItem>
-          <ToggleGroupItem value="range">{{ $t('rich-content.event_list_mode_range') }}</ToggleGroupItem>
-          <ToggleGroupItem value="year">{{ $t('rich-content.event_list_mode_year') }}</ToggleGroupItem>
+          <ToggleGroupItem value="upcoming">
+            {{ $t('rich-content.event_list_mode_upcoming') }}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="range">
+            {{ $t('rich-content.event_list_mode_range') }}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="year">
+            {{ $t('rich-content.event_list_mode_year') }}
+          </ToggleGroupItem>
         </ToggleGroup>
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.style') }}</FieldLabel>
         <ToggleGroup :model-value="options.style" type="single" class="justify-start"
           @update:model-value="(v) => v && patchOptions({ style: v as EventList['options']['style'] })">
-          <ToggleGroupItem value="cards">{{ $t('rich-content.event_list_style_cards') }}</ToggleGroupItem>
-          <ToggleGroupItem value="list">{{ $t('rich-content.event_list_style_list') }}</ToggleGroupItem>
+          <ToggleGroupItem value="cards">
+            {{ $t('rich-content.event_list_style_cards') }}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="list">
+            {{ $t('rich-content.event_list_style_list') }}
+          </ToggleGroupItem>
         </ToggleGroup>
       </Field>
     </div>
@@ -58,16 +68,24 @@
       <Field>
         <FieldLabel>{{ $t('rich-content.tenant_scope') }}</FieldLabel>
         <ToggleGroup :model-value="tenantScopeToggle" type="single" class="justify-start" @update:model-value="onTenantScopeChange">
-          <ToggleGroupItem value="current">{{ $t('rich-content.tenant_scope_current') }}</ToggleGroupItem>
-          <ToggleGroupItem value="all">{{ $t('rich-content.tenant_scope_all') }}</ToggleGroupItem>
+          <ToggleGroupItem value="current">
+            {{ $t('rich-content.tenant_scope_current') }}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="all">
+            {{ $t('rich-content.tenant_scope_all') }}
+          </ToggleGroupItem>
         </ToggleGroup>
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.group_by') }}</FieldLabel>
         <ToggleGroup :model-value="options.groupBy" type="single" class="justify-start"
           @update:model-value="(v) => v && patchOptions({ groupBy: v as EventList['options']['groupBy'] })">
-          <ToggleGroupItem value="none">{{ $t('rich-content.group_by_none') }}</ToggleGroupItem>
-          <ToggleGroupItem value="tenant">{{ $t('rich-content.group_by_tenant') }}</ToggleGroupItem>
+          <ToggleGroupItem value="none">
+            {{ $t('rich-content.group_by_none') }}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="tenant">
+            {{ $t('rich-content.group_by_tenant') }}
+          </ToggleGroupItem>
         </ToggleGroup>
       </Field>
     </div>
@@ -77,8 +95,12 @@
         <FieldLabel>{{ $t('rich-content.tenant_label_style') }}</FieldLabel>
         <ToggleGroup :model-value="options.tenantLabelStyle ?? 'full'" type="single" class="justify-start"
           @update:model-value="(value) => { if (value) patchOptions({ tenantLabelStyle: value as 'full' | 'faculty' }); }">
-          <ToggleGroupItem value="full">{{ $t('rich-content.tenant_label_style_full') }}</ToggleGroupItem>
-          <ToggleGroupItem value="faculty">{{ $t('rich-content.tenant_label_style_faculty') }}</ToggleGroupItem>
+          <ToggleGroupItem value="full">
+            {{ $t('rich-content.tenant_label_style_full') }}
+          </ToggleGroupItem>
+          <ToggleGroupItem value="faculty">
+            {{ $t('rich-content.tenant_label_style_faculty') }}
+          </ToggleGroupItem>
         </ToggleGroup>
         <p class="text-xs text-zinc-500 dark:text-zinc-400">
           {{ $t('rich-content.tenant_label_style_hint') }}
@@ -105,8 +127,9 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { EventList } from '@/Types/contentParts';
 import RCCategoryAliasSelect from '../Editor/RCCategoryAliasSelect.vue';
+
+import type { EventList } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';

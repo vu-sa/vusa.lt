@@ -90,7 +90,7 @@
           <NavigationBuilder
             :roots="(contents as AdminNavigationRoot[])"
             :lang="lang ?? 'lt'"
-            :translation-summary="translationSummary"
+            :translation-summary
             @update:lang="handleLangChange"
           />
         </TabsContent>

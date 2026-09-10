@@ -1,5 +1,5 @@
 <template>
-  <Sheet :open="open" @update:open="emit('update:open', $event)">
+  <Sheet :open @update:open="emit('update:open', $event)">
     <SheetContent class="flex w-full flex-col gap-0 sm:max-w-xl">
       <SheetHeader>
         <SheetTitle>{{ $t('dutiables.timeline.diff.title') }}</SheetTitle>
@@ -96,14 +96,14 @@
 import { computed } from 'vue';
 import { ArrowRight, TriangleAlert } from 'lucide-vue-next';
 
+import type { TimelinePlanPayload } from './types';
+
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { Skeleton } from '@/Components/ui/skeleton';
-
-import type { TimelinePlanPayload } from './types';
 
 const props = defineProps<{
   open: boolean;
@@ -114,7 +114,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
-  confirm: [];
+  'confirm': [];
 }>();
 
 const canConfirm = computed(() => (props.plan?.summary.changed ?? 0) > 0);

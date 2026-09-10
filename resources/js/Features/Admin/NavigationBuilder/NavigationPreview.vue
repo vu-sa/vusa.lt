@@ -21,11 +21,11 @@
 </template>
 
 <script setup lang="ts">
-import MainNavigationMenuContent from '@/Components/Public/Nav/MainNavigationMenuContent.vue';
 
 import { toPreviewItem } from './toPreviewItem';
-
 import type { AdminNavigationRoot } from './types';
+
+import MainNavigationMenuContent from '@/Components/Public/Nav/MainNavigationMenuContent.vue';
 
 defineProps<{
   roots: AdminNavigationRoot[];

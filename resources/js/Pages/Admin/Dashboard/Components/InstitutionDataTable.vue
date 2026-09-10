@@ -127,7 +127,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { router } from '@inertiajs/vue3';
 
 import type { AtstovavimasInstitution } from '../types';
-
 import { useInstitutionSubscription } from '../Composables/useInstitutionSubscription';
 
 import RelatedInstitutionCard from '@/Components/Institutions/RelatedInstitutionCard.vue';

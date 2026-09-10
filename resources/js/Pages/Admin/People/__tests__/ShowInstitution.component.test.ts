@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
 import ShowInstitution from '@/Pages/Admin/People/ShowInstitution.vue';
-
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

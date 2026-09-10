@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import CarouselSlideDeckDisplay from '../CarouselSlideDeckDisplay.vue';
+
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { CarouselSlideDeck } from '@/Types/contentParts';
 

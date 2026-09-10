@@ -1,8 +1,8 @@
 import { computed, ref } from 'vue';
 
-import { useApiMutation } from '@/Composables/useApi';
-
 import type { TimelineOperation, TimelinePlanPayload } from '../types';
+
+import { useApiMutation } from '@/Composables/useApi';
 
 /**
  * Server-side dry run of a staged batch.

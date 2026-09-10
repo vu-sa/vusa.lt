@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import EventListDisplay from '../EventListDisplay.vue';
+
 import type { EventListResolved } from '@/Types/contentParts';
 
 const stubs = {

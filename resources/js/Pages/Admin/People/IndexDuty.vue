@@ -31,6 +31,7 @@ import { h, ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
+import { Merge as MergeIcon } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
@@ -42,7 +43,6 @@ import { resolveTranslatable } from '@/Composables/useDataTableColumns';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
-import { Merge as MergeIcon } from 'lucide-vue-next';
 import { DutyIcon, InstitutionIcon, UserIcon } from '@/Components/icons';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 

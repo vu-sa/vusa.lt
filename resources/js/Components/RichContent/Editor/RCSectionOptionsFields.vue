@@ -23,9 +23,15 @@
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem :value="2">{{ $t('rich-content.heading_level_2') }}</SelectItem>
-            <SelectItem :value="3">{{ $t('rich-content.heading_level_3') }}</SelectItem>
-            <SelectItem :value="4">{{ $t('rich-content.heading_level_4') }}</SelectItem>
+            <SelectItem :value="2">
+              {{ $t('rich-content.heading_level_2') }}
+            </SelectItem>
+            <SelectItem :value="3">
+              {{ $t('rich-content.heading_level_3') }}
+            </SelectItem>
+            <SelectItem :value="4">
+              {{ $t('rich-content.heading_level_4') }}
+            </SelectItem>
           </SelectContent>
         </Select>
       </Field>
@@ -36,14 +42,20 @@
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="center">{{ $t('rich-content.section_align_center') }}</SelectItem>
-            <SelectItem value="start">{{ $t('rich-content.section_align_start') }}</SelectItem>
+            <SelectItem value="center">
+              {{ $t('rich-content.section_align_center') }}
+            </SelectItem>
+            <SelectItem value="start">
+              {{ $t('rich-content.section_align_start') }}
+            </SelectItem>
           </SelectContent>
         </Select>
       </Field>
       <Field>
         <div class="flex items-center justify-between">
-          <FieldLabel class="mb-0">{{ $t('rich-content.section_show_separator') }}</FieldLabel>
+          <FieldLabel class="mb-0">
+            {{ $t('rich-content.section_show_separator') }}
+          </FieldLabel>
           <Switch :model-value="options.showSeparator" @update:model-value="patchOptions({ showSeparator: $event })" />
         </div>
       </Field>
@@ -60,13 +72,12 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
+import RCPresentationPicker from './RCPresentationPicker.vue';
+
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
-
-import RCPresentationPicker from './RCPresentationPicker.vue';
-
 import type { SectionOptions } from '@/Types/contentParts';
 
 defineProps<{ presentationDisabled?: boolean }>();

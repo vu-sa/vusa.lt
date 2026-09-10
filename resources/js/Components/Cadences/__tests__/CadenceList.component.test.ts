@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import { commonStubs } from '@/tests/stubs';
-
 import CadenceList from '../CadenceList.vue';
 import type { CadenceRow } from '../CadenceList.vue';
+
+import { commonStubs } from '@/tests/stubs';
 
 function makeRow(overrides: Partial<CadenceRow> = {}): CadenceRow {
   return {

@@ -1,10 +1,10 @@
 import * as d3 from 'd3';
 
-import type { GanttColors } from '@/Components/Graphs/ganttColors';
-
 import { HANDLE_WIDTH_PX } from '../constants';
 import { isActivePeriod, type TimelineColors } from '../timelineColors';
 import type { ParsedRow, StagedDates, TimelineLayoutRow } from '../types';
+
+import type { GanttColors } from '@/Components/Graphs/ganttColors';
 
 export const BAR_INSET = 4;
 

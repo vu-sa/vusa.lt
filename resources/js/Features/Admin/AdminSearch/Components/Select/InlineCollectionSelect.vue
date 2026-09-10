@@ -35,6 +35,7 @@ import { adminCollectionToKey, normalizeHit, type MapperContext, type Normalized
 import type { AdminCollection } from '../../Types/AdminSearchTypes';
 
 import SearchSelectView from './SearchSelectView.vue';
+
 import { Button } from '@/Components/ui/button';
 
 const props = withDefaults(defineProps<{

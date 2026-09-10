@@ -11,7 +11,7 @@
     :href="link.url"
     :target="link.new_tab ? '_blank' : undefined"
     :rel="link.new_tab ? 'noopener' : undefined"
-class="flex min-h-11 items-center gap-3 border-t border-border/50 px-4 py-3 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+    class="flex min-h-11 items-center gap-3 border-t border-border/50 px-4 py-3 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
     :class="link.type === 'category-link'
       ? 'u-eyebrow border-t-0 pb-1 pt-4'
       : 'text-sm hover:text-brand'"

@@ -15,6 +15,7 @@ vi.mock('@/Composables/useApi', () => ({
 }));
 
 import PersonQuoteEditor from '../PersonQuoteEditor.vue';
+
 import type { PersonQuote } from '@/Types/contentParts';
 
 /** Stands in for CollectionSelectDialog — a real search-backed dialog is out of scope here. */

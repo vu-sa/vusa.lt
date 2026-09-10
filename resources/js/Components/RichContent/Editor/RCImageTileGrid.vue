@@ -48,7 +48,7 @@
               <IFluentArrowDown24Regular class="mr-2 h-4 w-4" />
               {{ $t('rich-content.move_down') }}
             </DropdownMenuItem>
-            <slot name="tile-menu" :item="item" :index="index" :update="(patch: Partial<T>) => updateAt(index, patch)" />
+            <slot name="tile-menu" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
             <DropdownMenuSeparator />
             <DropdownMenuItem
               class="text-red-600 focus:text-red-600"
@@ -82,7 +82,7 @@
             :placeholder="$t('rich-content.image_alt_placeholder')"
             @update:model-value="updateAt(index, { alt: $event as string } as Partial<T>)"
           />
-          <slot name="tile-footer" :item="item" :index="index" :update="(patch: Partial<T>) => updateAt(index, patch)" />
+          <slot name="tile-footer" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
         </div>
       </div>
     </div>

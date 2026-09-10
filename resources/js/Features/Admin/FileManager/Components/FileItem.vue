@@ -72,9 +72,7 @@
 import { computed, ref } from 'vue';
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
-
 import { getFileIcon } from '@/Utils/fileIcons';
-
 import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
 
 const props = defineProps<{

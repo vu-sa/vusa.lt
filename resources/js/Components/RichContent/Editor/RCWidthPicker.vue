@@ -44,7 +44,5 @@ defineProps<{
   allowedWidths: BlockWidth[];
 }>();
 
-defineEmits<{
-  (e: 'update:modelValue', value: BlockWidth): void;
-}>();
+defineEmits<(e: 'update:modelValue', value: BlockWidth) => void>();
 </script>

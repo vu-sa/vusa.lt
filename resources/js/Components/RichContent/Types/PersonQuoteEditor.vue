@@ -9,7 +9,7 @@
         collection="users"
         :multiple="false"
         allow-empty
-        :initial-hits="initialHits"
+        :initial-hits
         :title="$t('rich-content.person_quote_person')"
         :confirm-label="$t('rich-content.confirm_selection')"
         @confirm="onConfirm">

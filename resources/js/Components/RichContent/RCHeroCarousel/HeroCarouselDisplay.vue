@@ -17,7 +17,7 @@
       :slide="slides[0]"
       :slide-index="0"
       :slide-height-class
-      :height="height"
+      :height
       :scrim-strength
       :grayscale
       is-first-slide
@@ -59,7 +59,7 @@
               :slide
               :slide-index="index"
               :slide-height-class
-              :height="height"
+              :height
               :scrim-strength
               :grayscale
               :is-first-slide="index === 0"

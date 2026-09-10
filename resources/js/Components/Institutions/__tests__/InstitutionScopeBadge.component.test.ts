@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import { InstitutionScope } from '@/Types/enums';
-
 import InstitutionScopeBadge from '../InstitutionScopeBadge.vue';
+
+import { InstitutionScope } from '@/Types/enums';
 
 describe('InstitutionScopeBadge', () => {
   it('names an internal VU SA body', () => {

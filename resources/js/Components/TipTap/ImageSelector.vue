@@ -17,7 +17,9 @@
                 <StepperIndicator>1</StepperIndicator>
                 <div>
                   <StepperTitle>{{ $t('common.select') }}</StepperTitle>
-                  <StepperDescription class="hidden sm:block">{{ $t('accessibility.select_file_step') || 'Pasirink failą' }}</StepperDescription>
+                  <StepperDescription class="hidden sm:block">
+                    {{ $t('accessibility.select_file_step') || 'Pasirink failą' }}
+                  </StepperDescription>
                 </div>
               </StepperTrigger>
               <StepperSeparator />
@@ -27,7 +29,9 @@
                 <StepperIndicator>2</StepperIndicator>
                 <div>
                   <StepperTitle>{{ $t('accessibility.details') || 'Aprašas' }}</StepperTitle>
-                  <StepperDescription class="hidden sm:block">{{ $t('accessibility.add_alt_title') || 'Pridėk alt ir pavadinimą' }}</StepperDescription>
+                  <StepperDescription class="hidden sm:block">
+                    {{ $t('accessibility.add_alt_title') || 'Pridėk alt ir pavadinimą' }}
+                  </StepperDescription>
                 </div>
               </StepperTrigger>
             </StepperItem>
@@ -281,7 +285,6 @@ function resetForm() {
   currentStep.value = 1;
   isDecorative.value = false;
 }
-
 
 function getImageName(url: string): string {
   return url.split('/').pop() || 'Unknown image';

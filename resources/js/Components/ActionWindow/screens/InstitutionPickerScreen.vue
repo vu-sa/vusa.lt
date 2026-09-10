@@ -66,7 +66,6 @@ import {
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
-
 import { useWindowDates } from '../useWindowDates';
 
 import { useActionWindow } from '@/Composables/useActionWindow';

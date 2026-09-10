@@ -1,6 +1,6 @@
 <template>
   <Link
-    :href="href"
+    :href
     class="group flex items-center gap-4 rounded-xl border border-zinc-200 bg-white px-4 py-3 transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700/70 dark:bg-zinc-800/60 dark:hover:border-zinc-600 dark:hover:bg-zinc-800"
   >
     <div

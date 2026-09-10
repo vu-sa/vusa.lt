@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import RCInsertAffordance from '../RCInsertAffordance.vue';
 import { getContentType } from '../../Types';
+
 import { commonStubs } from '@/tests/stubs';
 
 describe('RCInsertAffordance', () => {

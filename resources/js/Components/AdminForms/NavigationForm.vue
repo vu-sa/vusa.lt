@@ -87,7 +87,9 @@
           <FormFieldWrapper id="badge_variant" :label="$t('navigation.form.badge_variant')">
             <ToggleGroup v-model="badgeVariant" type="single" class="justify-start">
               <ToggleGroupItem v-for="variant in badgeVariantOptions" :key="variant" :value="variant">
-                <Badge :variant="variant" size="tiny">{{ form.extra_attributes.small_text || variant }}</Badge>
+                <Badge :variant size="tiny">
+                  {{ form.extra_attributes.small_text || variant }}
+                </Badge>
               </ToggleGroupItem>
             </ToggleGroup>
           </FormFieldWrapper>
@@ -128,8 +130,8 @@
                   </Button>
                 </ButtonGroup>
 
-                <FocalPointPicker v-if="form.extra_attributes.image" :image-url="form.extra_attributes.image"
-                  v-model="focalPoint" />
+                <FocalPointPicker v-if="form.extra_attributes.image" v-model="focalPoint"
+                  :image-url="form.extra_attributes.image" />
               </div>
             </div>
           </FormFieldWrapper>
@@ -148,25 +150,41 @@
 
               <FormFieldWrapper id="image_height" :label="$t('navigation.form.image_height')" :hint="$t('navigation.form.image_height_hint')">
                 <ToggleGroup v-model="imageHeight" type="single" class="justify-start">
-                  <ToggleGroupItem value="short">{{ $t('navigation.form.image_height_short') }}</ToggleGroupItem>
-                  <ToggleGroupItem value="tall">{{ $t('navigation.form.image_height_tall') }}</ToggleGroupItem>
+                  <ToggleGroupItem value="short">
+                    {{ $t('navigation.form.image_height_short') }}
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="tall">
+                    {{ $t('navigation.form.image_height_tall') }}
+                  </ToggleGroupItem>
                 </ToggleGroup>
               </FormFieldWrapper>
             </template>
 
             <FormFieldWrapper id="image_render" :label="$t('navigation.form.image_render')">
               <ToggleGroup v-model="imageRender" type="single" class="justify-start">
-                <ToggleGroupItem value="card">{{ $t('navigation.form.image_render_card') }}</ToggleGroupItem>
-                <ToggleGroupItem value="thumbnail">{{ $t('navigation.form.image_render_thumbnail') }}</ToggleGroupItem>
+                <ToggleGroupItem value="card">
+                  {{ $t('navigation.form.image_render_card') }}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="thumbnail">
+                  {{ $t('navigation.form.image_render_thumbnail') }}
+                </ToggleGroupItem>
               </ToggleGroup>
             </FormFieldWrapper>
 
             <FormFieldWrapper id="image_overlay" :label="$t('navigation.form.image_overlay')">
               <ToggleGroup v-model="imageOverlay" type="single" class="justify-start">
-                <ToggleGroupItem value="none">{{ $t('navigation.form.image_overlay_none') }}</ToggleGroupItem>
-                <ToggleGroupItem value="light">{{ $t('navigation.form.image_overlay_light') }}</ToggleGroupItem>
-                <ToggleGroupItem value="medium">{{ $t('navigation.form.image_overlay_medium') }}</ToggleGroupItem>
-                <ToggleGroupItem value="heavy">{{ $t('navigation.form.image_overlay_heavy') }}</ToggleGroupItem>
+                <ToggleGroupItem value="none">
+                  {{ $t('navigation.form.image_overlay_none') }}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="light">
+                  {{ $t('navigation.form.image_overlay_light') }}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="medium">
+                  {{ $t('navigation.form.image_overlay_medium') }}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="heavy">
+                  {{ $t('navigation.form.image_overlay_heavy') }}
+                </ToggleGroupItem>
               </ToggleGroup>
             </FormFieldWrapper>
 
@@ -180,9 +198,15 @@
 
             <FormFieldWrapper id="image_gradient" :label="$t('navigation.form.image_gradient')">
               <ToggleGroup v-model="imageGradient" type="single" class="justify-start">
-                <ToggleGroupItem value="none">{{ $t('navigation.form.image_gradient_none') }}</ToggleGroupItem>
-                <ToggleGroupItem value="bottom">{{ $t('navigation.form.image_gradient_bottom') }}</ToggleGroupItem>
-                <ToggleGroupItem value="full">{{ $t('navigation.form.image_gradient_full') }}</ToggleGroupItem>
+                <ToggleGroupItem value="none">
+                  {{ $t('navigation.form.image_gradient_none') }}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="bottom">
+                  {{ $t('navigation.form.image_gradient_bottom') }}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="full">
+                  {{ $t('navigation.form.image_gradient_full') }}
+                </ToggleGroupItem>
               </ToggleGroup>
             </FormFieldWrapper>
           </template>
@@ -235,7 +259,9 @@
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">{{ opt }}</SelectItem>
+                  <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">
+                    {{ opt }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </FormFieldWrapper>
@@ -249,7 +275,9 @@
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">{{ opt }}</SelectItem>
+                  <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">
+                    {{ opt }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </FormFieldWrapper>

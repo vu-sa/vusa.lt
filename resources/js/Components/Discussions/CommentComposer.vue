@@ -3,7 +3,11 @@
     <button
       v-if="collapsible && !isExpanded"
       type="button"
-      class="w-full rounded-lg border border-transparent bg-transparent px-3.5 py-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+      :class="[
+        'w-full rounded-lg border border-zinc-200/80 bg-white px-3.5 py-2.5 text-left transition-colors',
+        'hover:border-zinc-300 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vusa-red/30',
+        'dark:border-zinc-700/80 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:hover:bg-zinc-900/50',
+      ]"
       @click="expand"
     >
       <span class="text-zinc-500 dark:text-zinc-400">{{ placeholder || $t('Parašykite komentarą…') }}</span>
@@ -41,6 +45,7 @@ import { EditorContent, useEditor, VueRenderer } from '@tiptap/vue-3';
 import Mention from '@tiptap/extension-mention';
 import { Placeholder } from '@tiptap/extensions';
 import { StarterKit } from '@tiptap/starter-kit';
+import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
 import { computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Loader2, Send } from 'lucide-vue-next';
@@ -99,7 +104,7 @@ function createSuggestionRenderer(listComponent: Component) {
     };
 
     return {
-      onStart: (sprops: any) => {
+      onStart: (sprops: SuggestionProps<MentionableUser, { id: string; label: string }>) => {
         component = new VueRenderer(listComponent, { props: sprops, editor: sprops.editor });
         dropdown = component.element as HTMLElement;
         dropdown.style.position = 'fixed';
@@ -107,15 +112,17 @@ function createSuggestionRenderer(listComponent: Component) {
         document.body.appendChild(dropdown);
         reposition(sprops.clientRect);
       },
-      onUpdate: (sprops: any) => {
+      onUpdate: (sprops: SuggestionProps<MentionableUser, { id: string; label: string }>) => {
         component?.updateProps(sprops);
         reposition(sprops.clientRect);
       },
-      onKeyDown: (sprops: any) => {
+      onKeyDown: (sprops: SuggestionKeyDownProps) => {
         if (sprops.event.key === 'Escape') {
           return true;
         }
-        return (component?.ref as any)?.onKeyDown(sprops) ?? false;
+        const mentionList = component?.ref as { onKeyDown?: (props: SuggestionKeyDownProps) => boolean } | null;
+
+        return mentionList?.onKeyDown?.(sprops) ?? false;
       },
       onExit: () => {
         dropdown?.remove();

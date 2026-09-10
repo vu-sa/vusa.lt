@@ -114,7 +114,6 @@
 </template>
 
 <script setup lang="ts">
-import { useDateLocale } from '@/Composables/useDateLocale';
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { format, parseISO, isPast } from 'date-fns';
@@ -132,6 +131,7 @@ import {
   Clock as ClockIcon,
 } from 'lucide-vue-next';
 
+import { useDateLocale } from '@/Composables/useDateLocale';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';

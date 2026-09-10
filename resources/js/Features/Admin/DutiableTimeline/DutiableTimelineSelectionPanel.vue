@@ -291,6 +291,13 @@ import { computed, ref, watch } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from 'lucide-vue-next';
 
+import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
+import TimelineDateField from './TimelineDateField.vue';
+import { formatDuration } from './duration';
+import { resolveCadenceFor } from './composables/useDutiableDiagnostics';
+import { parseTimelineDate } from './composables/useDutiableTimelineData';
+import type { ParsedCadence, ParsedRow, StagedDates } from './types';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -309,13 +316,6 @@ import { Label } from '@/Components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Switch } from '@/Components/ui/switch';
 
-import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
-import TimelineDateField from './TimelineDateField.vue';
-import { formatDuration } from './duration';
-import { resolveCadenceFor } from './composables/useDutiableDiagnostics';
-import { parseTimelineDate } from './composables/useDutiableTimelineData';
-import type { ParsedCadence, ParsedRow, StagedDates } from './types';
-
 const props = defineProps<{
   row: ParsedRow | null;
   cadences: ParsedCadence[];
@@ -325,12 +325,12 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  stage: [rowId: string, dates: StagedDates];
+  'stage': [rowId: string, dates: StagedDates];
   'select-source': [rowId: string];
-  align: [];
-  close: [endDate: string];
-  remove: [rowId: string];
-  merge: [rowIds: string[]];
+  'align': [];
+  'close': [endDate: string];
+  'remove': [rowId: string];
+  'merge': [rowIds: string[]];
   'set-dates': [dates: { start_date: string | null; end_date: string | null }];
 }>();
 

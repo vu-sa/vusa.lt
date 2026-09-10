@@ -7,8 +7,8 @@
       <ActivityLogSheet subject-type="page" :subject-id="page.id" />
     </template>
     <ContentAnalyticsCard
-      type="page"
       :id="page.id"
+      type="page"
       :content-date="page.publish_time ?? page.created_at"
       class="mb-4" />
     <UpsertModelLayout>

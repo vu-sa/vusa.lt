@@ -1,6 +1,7 @@
 import { markRaw } from 'vue';
 
 import { getSkeletonForType } from './Types';
+
 import { Skeleton } from '@/Components/ui/skeleton';
 
 /**

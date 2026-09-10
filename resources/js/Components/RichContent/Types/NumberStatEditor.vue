@@ -30,7 +30,9 @@
           </Field>
           <Field>
             <div class="flex items-center justify-between">
-              <FieldLabel class="mb-0">{{ $t('rich-content.stat_show_plus') }}</FieldLabel>
+              <FieldLabel class="mb-0">
+                {{ $t('rich-content.stat_show_plus') }}
+              </FieldLabel>
               <Switch :model-value="item.showPlus" @update:model-value="update({ ...item, showPlus: $event })" />
             </div>
           </Field>
@@ -41,8 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import type { NumberStatSection } from '@/Types/contentParts';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+
+import type { NumberStatSection } from '@/Types/contentParts';
 import { DynamicListInput } from '@/Components/ui/dynamic-list-input';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';

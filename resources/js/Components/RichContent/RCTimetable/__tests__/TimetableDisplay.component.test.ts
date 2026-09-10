@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import TimetableDisplay from '../TimetableDisplay.vue';
+
 import type { Timetable } from '@/Types/contentParts';
 
 function makeElement(rows: Timetable['json_content'] = [], options: Timetable['options'] = null): Timetable {

@@ -53,9 +53,7 @@ const props = defineProps<{
   deletedCount?: number;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:showDeleted', showDeleted: boolean): void;
-}>();
+const emit = defineEmits<(e: 'update:showDeleted', showDeleted: boolean) => void>();
 
 /** An empty trash needs no count — the zero adds noise without informing. */
 const hasDeletedRecords = computed(() => (props.deletedCount ?? 0) > 0);

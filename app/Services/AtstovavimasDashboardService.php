@@ -258,7 +258,7 @@ class AtstovavimasDashboardService
         }
 
         $institutions = Institution::query()
-            ->select('institutions.id', 'institutions.name')
+            ->select(['institutions.id', 'institutions.name'])
             ->whereIn('institutions.id', $institutionIds)
             ->with([
                 'meetings' => fn ($query) => $query

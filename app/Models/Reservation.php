@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -39,6 +40,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, User> $users
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\ReservationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newModelQuery()
@@ -80,13 +82,14 @@ class Reservation extends Model implements Commentable
     }
 
     // TODO: maybe users can have roles inside the reservation (they already have a pivot table)
-    public function users()
+    /** @return BelongsToMany<User, $this> */
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)
             ->withTimestamps();
     }
 
-    public function tenants()
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->users(), (new User)->tenants());
     }

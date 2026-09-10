@@ -15,7 +15,9 @@
               @click.stop
               @update:model-value="updateField('eyebrow', $event)"
             />
-            <template v-else>{{ content.eyebrow }}</template>
+            <template v-else>
+              {{ content.eyebrow }}
+            </template>
           </EyebrowLabel>
 
           <h2 v-if="content.title || editable" class="u-display mt-5 text-pretty text-3xl leading-[0.95] text-foreground sm:text-4xl">
@@ -28,7 +30,9 @@
               @click.stop
               @update:model-value="updateField('title', $event)"
             />
-            <template v-else>{{ content.title }}</template>
+            <template v-else>
+              {{ content.title }}
+            </template>
           </h2>
 
           <div class="mt-4 max-w-lg">
@@ -53,7 +57,9 @@
                 @keydown.space.prevent="$emit('claim-inline-field', bodyFieldId)"
               >
                 <RichContentTiptapHTML v-if="hasBody" :json_content="content.body" />
-                <p v-else class="italic text-muted-foreground/60">{{ $t('rich-content.content') }}</p>
+                <p v-else class="italic text-muted-foreground/60">
+                  {{ $t('rich-content.content') }}
+                </p>
               </div>
               <RCAddPlaceholder
                 v-if="!hasBody && !isBodyActive"
@@ -97,7 +103,9 @@
                 @click.stop
                 @update:model-value="updateField('panelLabel', $event)"
               />
-              <template v-else>{{ content.panelLabel }}</template>
+              <template v-else>
+                {{ content.panelLabel }}
+              </template>
             </div>
 
             <iframe
@@ -115,7 +123,9 @@
               data-rc-interactive
             >
               <SpotifyIcon class="mb-2 size-8 opacity-60" />
-              <p class="text-xs uppercase tracking-wider">{{ $t('rich-content.enter_spotify_url') }}</p>
+              <p class="text-xs uppercase tracking-wider">
+                {{ $t('rich-content.enter_spotify_url') }}
+              </p>
             </div>
           </div>
         </div>
@@ -145,11 +155,12 @@ import HeroButtonsEditable from './RCHeroSection/HeroButtonsEditable.vue';
 import RCInlineText from './Editor/Fullscreen/RCInlineText.vue';
 import RCAddPlaceholder from './Editor/Fullscreen/RCAddPlaceholder.vue';
 import { isMixcloudUrl, toMixcloudEmbedUrl, toSpotifyEmbedUrl } from './embedUrl';
+import type { BandResolution } from './bandLayout';
+
 import { EyebrowLabel } from '@/Components/Public/Base';
 import IconHeadphones from '~icons/fluent/headphones24-regular';
 import SpotifyIcon from '~icons/simple-icons/spotify';
 import type { SpotifyEmbed } from '@/Types/contentParts';
-import type { BandResolution } from './bandLayout';
 
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
 

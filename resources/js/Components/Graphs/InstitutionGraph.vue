@@ -98,7 +98,6 @@
 </template>
 
 <script setup lang="ts">
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {
   type D3DragEvent,
@@ -123,6 +122,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeftRight, ArrowRight, Maximize, Minus, Plus } from 'lucide-vue-next';
 
 import { EDGE_TYPE_STYLES, edgeTypeColor, type RelationshipType, type RelationshipScope, SCOPE_STYLES, scopeColor } from './relationshipColors';
+
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
 type GraphMode = 'institutions' | 'types';
 

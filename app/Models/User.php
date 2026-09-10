@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -82,6 +83,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  * @property-read int|null $tenants_count
+ * @property-read int|null $institutions_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
@@ -251,7 +253,8 @@ class User extends Authenticatable implements GuardsForceDelete
             ->withTimestamps();
     }
 
-    public function dutiables()
+    /** @return MorphMany<Dutiable, $this> */
+    public function dutiables(): MorphMany
     {
         return $this->morphMany(Dutiable::class, 'dutiable');
     }
@@ -265,12 +268,13 @@ class User extends Authenticatable implements GuardsForceDelete
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution(), (new Institution)->tenant());
     }
 
-    public function tasks()
+    /** @return BelongsToMany<Task, $this> */
+    public function tasks(): BelongsToMany
     {
         return $this->belongsToMany(Task::class);
     }
 
-    public function institutions()
+    public function institutions(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->institution());
     }

@@ -13,6 +13,7 @@
  * options popover so the two surfaces can't drift apart.
  */
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+
 import LinkListOptionsFields from './LinkListOptionsFields.vue';
 
 import type { LinkList } from '@/Types/contentParts';

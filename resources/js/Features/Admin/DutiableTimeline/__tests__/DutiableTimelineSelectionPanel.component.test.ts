@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import { commonStubs } from '@/tests/stubs';
-
 import DutiableTimelineSelectionPanel from '../DutiableTimelineSelectionPanel.vue';
 import type { ParsedCadence, ParsedRow, StagedDates } from '../types';
+
+import { commonStubs } from '@/tests/stubs';
 
 function makeRow(overrides: Partial<ParsedRow> = {}): ParsedRow {
   return {

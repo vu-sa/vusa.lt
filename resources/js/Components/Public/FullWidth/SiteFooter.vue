@@ -59,10 +59,12 @@
 
       <div
         class="mt-10 flex flex-col gap-3 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p>{{ $t("Įmonės kodas") }}: {{ legal.company_code }} · {{ $t("PVM mokėtojo kodas") }}: {{ legal.vat_code }}. {{
-          $t("Finansiniais klausimais kreipkitės el. paštu") }}: <a :href="`mailto:${contacts.accounting}`"
+        <p>
+          {{ $t("Įmonės kodas") }}: {{ legal.company_code }} · {{ $t("PVM mokėtojo kodas") }}: {{ legal.vat_code }}. {{
+            $t("Finansiniais klausimais kreipkitės el. paštu") }}: <a :href="`mailto:${contacts.accounting}`"
             class="no-underline hover:underline">
-            {{ contacts.accounting }} </a> </p>
+            {{ contacts.accounting }} </a>
+        </p>
         <button type="button" class="text-left transition-colors hover:text-brand hover:underline" @click="reopen">
           {{ $t("Slapukų nustatymai") }}
         </button>

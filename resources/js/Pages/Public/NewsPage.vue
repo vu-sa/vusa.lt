@@ -8,8 +8,8 @@
     :article
     :other-lang-u-r-l="$page.props.otherLangURL ?? undefined"
     :locale="$page.props.app.locale"
-    :show-breadcrumbs="showBreadcrumbs"
-    :related-articles="relatedArticles"
+    :show-breadcrumbs
+    :related-articles
   >
     <RichContentParser :content="article.content?.parts ?? []" :resolved="resolvedParts" />
   </NewsArticleLayout>

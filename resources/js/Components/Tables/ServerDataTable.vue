@@ -160,6 +160,7 @@ import { useDebounceFn } from '@vueuse/core';
 import { ChevronDownIcon, PlusCircleIcon, SearchIcon, SlidersHorizontalIcon, Trash2Icon, XIcon } from 'lucide-vue-next';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
+
 import TrashViewToggle from './TrashViewToggle.vue';
 
 import { Input } from '@/Components/ui/input';
@@ -171,10 +172,10 @@ import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { LocaleEnum } from '@/Types/enums';
 
-type DataTableProviderInstance = {
+interface DataTableProviderInstance {
   getSelectedRows?: () => unknown[] | undefined;
   clearRowSelection?: () => void;
-};
+}
 
 // Define the props with TypeScript generics support
 const props = defineProps<{

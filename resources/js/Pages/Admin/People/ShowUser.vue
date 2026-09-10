@@ -74,7 +74,9 @@
             <SectionHeading :title="$t('Kontaktinė informacija')" :icon="Contact" class="mb-3" />
             <dl class="space-y-3 text-sm">
               <div v-if="user.email" class="flex items-center gap-3">
-                <dt class="sr-only">{{ $t('El. paštas') }}</dt>
+                <dt class="sr-only">
+                  {{ $t('El. paštas') }}
+                </dt>
                 <Mail class="icon-inline shrink-0 text-muted-foreground" />
                 <dd class="min-w-0 truncate">
                   <a :href="`mailto:${user.email}`" class="transition hover:text-vusa-red">
@@ -83,7 +85,9 @@
                 </dd>
               </div>
               <div v-if="user.phone" class="flex items-center gap-3">
-                <dt class="sr-only">{{ $t('Telefonas') }}</dt>
+                <dt class="sr-only">
+                  {{ $t('Telefonas') }}
+                </dt>
                 <Phone class="icon-inline shrink-0 text-muted-foreground" />
                 <dd class="min-w-0 truncate">
                   <a :href="`tel:${user.phone}`" class="tabular-nums transition hover:text-vusa-red">
@@ -92,7 +96,9 @@
                 </dd>
               </div>
               <div v-if="user.facebook_url" class="flex items-center gap-3">
-                <dt class="sr-only">Facebook</dt>
+                <dt class="sr-only">
+                  Facebook
+                </dt>
                 <Globe class="icon-inline shrink-0 text-muted-foreground" />
                 <dd class="min-w-0 truncate">
                   <a :href="user.facebook_url" target="_blank" rel="noopener" class="transition hover:text-vusa-red">
@@ -115,7 +121,6 @@
             </div>
           </section>
         </template>
-
       </ShowPageGrid>
     </template>
 
@@ -188,7 +193,6 @@
 </template>
 
 <script setup lang="ts">
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -204,6 +208,8 @@ import {
   Phone,
   Shield,
 } from 'lucide-vue-next';
+
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
 // Layout and Components
 import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';

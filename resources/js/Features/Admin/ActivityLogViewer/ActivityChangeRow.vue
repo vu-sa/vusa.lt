@@ -13,9 +13,13 @@
         <span class="italic">{{ $t('activity.rich_updated') }}</span>
       </template>
       <template v-else-if="change.type === 'boolean' || change.type === 'enum'">
-        <Badge variant="outline" class="mr-1">{{ oldDisplay }}</Badge>
+        <Badge variant="outline" class="mr-1">
+          {{ oldDisplay }}
+        </Badge>
         <ArrowRight class="mx-1 inline h-3.5 w-3.5 text-zinc-400" />
-        <Badge variant="outline" class="ml-1">{{ newDisplay }}</Badge>
+        <Badge variant="outline" class="ml-1">
+          {{ newDisplay }}
+        </Badge>
       </template>
       <template v-else>
         <span>{{ oldDisplay }}</span>

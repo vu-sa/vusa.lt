@@ -5,8 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Role as SpatieRole;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -16,11 +18,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Type> $attachable_types
+ * @property-read Collection<int, User> $currentUsersThroughDuties
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
  * @property-read Collection<int, User> $usersThroughDuties
+ * @property-read int|null $users_through_duties_count
+ * @property-read int|null $current_users_through_duties_count
  *
  * @method static \Database\Factories\RoleFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role newModelQuery()
@@ -35,23 +40,30 @@ class Role extends SpatieRole
 {
     use HasFactory, HasRelationships, HasUlids;
 
-    public function duties()
+    public function duties(): MorphToMany
     {
         return $this->morphedByMany(Duty::class, 'model', 'model_has_roles');
     }
 
-    public function usersThroughDuties()
+    public function usersThroughDuties(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
     }
 
-    // It describes the types that this role can attach to other objects.
+    public function currentUsersThroughDuties(): HasManyDeep
+    {
+        return $this->usersThroughDuties()
+            ->where(function ($query): void {
+                $query->whereNull('dutiables.end_date')
+                    ->orWhere('dutiables.end_date', '>=', now());
+            });
+    }
+
     public function attachable_types()
     {
         return $this->belongsToMany(Type::class, 'role_can_attach_types');
     }
 
-    // It describes the types of duties that grant users this role.
     public function types()
     {
         return $this->belongsToMany(Type::class);

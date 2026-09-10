@@ -149,7 +149,6 @@
 </template>
 
 <script setup lang="ts">
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -162,6 +161,7 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import Edit16Filled from '~icons/fluent/edit16-filled';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

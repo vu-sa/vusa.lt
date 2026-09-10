@@ -37,8 +37,12 @@
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="inline">{{ $t('rich-content.variant_inline') }}</SelectItem>
-            <SelectItem value="promo">{{ $t('rich-content.variant_promo') }}</SelectItem>
+            <SelectItem value="inline">
+              {{ $t('rich-content.variant_inline') }}
+            </SelectItem>
+            <SelectItem value="promo">
+              {{ $t('rich-content.variant_promo') }}
+            </SelectItem>
           </SelectContent>
         </Select>
       </Field>
@@ -54,7 +58,9 @@
         <!-- Text Left/Right layout switch -->
         <Field>
           <div class="flex items-center justify-between">
-            <FieldLabel class="mb-0 text-xs">{{ $t('rich-content.player_on_right') }}</FieldLabel>
+            <FieldLabel class="mb-0 text-xs">
+              {{ $t('rich-content.player_on_right') }}
+            </FieldLabel>
             <Switch
               :model-value="options.textLeft !== false"
               @update:model-value="updateOption('textLeft', $event)"
@@ -64,7 +70,9 @@
 
         <!-- Panel background image -->
         <Field>
-          <FieldLabel class="text-xs">{{ $t('rich-content.panel_image') }}</FieldLabel>
+          <FieldLabel class="text-xs">
+            {{ $t('rich-content.panel_image') }}
+          </FieldLabel>
           <div class="flex items-center gap-2">
             <TiptapImageButton
               v-if="!spotifyContent.panelImage"
@@ -103,6 +111,7 @@ import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
+
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { Button } from '@/Components/ui/button';
 import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';

@@ -203,7 +203,6 @@
 </template>
 
 <script setup lang="ts">
-import { useDateLocale } from '@/Composables/useDateLocale';
 import { ref, computed, onMounted } from 'vue';
 import { Link, router, usePage, useHttp } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -220,6 +219,7 @@ import {
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
+import { useDateLocale } from '@/Composables/useDateLocale';
 import {
   Popover,
   PopoverContent,

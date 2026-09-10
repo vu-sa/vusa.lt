@@ -11,7 +11,9 @@
     </div>
 
     <div v-else-if="entries.length === 0" class="py-8 text-center">
-      <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $t('activity.empty') }}</p>
+      <p class="text-sm text-zinc-500 dark:text-zinc-400">
+        {{ $t('activity.empty') }}
+      </p>
     </div>
 
     <div v-else class="flex flex-col gap-4">

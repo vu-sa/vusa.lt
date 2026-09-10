@@ -12,9 +12,10 @@
  */
 import { ref, computed, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { TenantType } from '@/Types/enums';
 
 import type { AtstovavimasInstitution, AtstovavimasTenant } from '../types';
+
+import { TenantType } from '@/Types/enums';
 
 const STORAGE_KEY = 'atstovavimas-timeline-filters';
 

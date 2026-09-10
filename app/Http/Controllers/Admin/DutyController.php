@@ -455,7 +455,7 @@ class DutyController extends AdminController
         $cutoff = now()->subYear()->toDateTimeString();
 
         return User::query()
-            ->select('users.id', 'users.name', 'users.profile_photo_path')
+            ->select(['users.id', 'users.name', 'users.profile_photo_path'])
             ->selectRaw(
                 '(users.created_at >= ? OR users.last_action >= ? OR EXISTS (
                     SELECT 1 FROM dutiables d

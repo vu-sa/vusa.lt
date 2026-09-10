@@ -150,9 +150,7 @@ const props = defineProps<{
   blockKey?: string;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:element', value: Timetable): void;
-}>();
+const emit = defineEmits<(e: 'update:element', value: Timetable) => void>();
 
 /** MySQL TIME arrives as `HH:MM:SS`; the timetable shows `HH:MM`. */
 const trimSeconds = (value?: string | null): string => (value ? value.slice(0, 5) : '');

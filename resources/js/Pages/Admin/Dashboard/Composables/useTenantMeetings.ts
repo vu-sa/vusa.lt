@@ -13,9 +13,9 @@
 import { computed, ref, shallowRef, type ComputedRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { useToasts } from '@/Composables/useToasts';
-
 import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
+
+import { useToasts } from '@/Composables/useToasts';
 
 /** Extra days fetched beyond the visible range so scrolling feels instant. */
 const BUFFER_DAYS = 30;

@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import MultiCollectionSelectContent from '../MultiCollectionSelectContent.vue';
+
 import { commonStubs } from '@/tests/stubs';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-
-import MultiCollectionSelectContent from '../MultiCollectionSelectContent.vue';
 
 const multiSearch = vi.fn(async () => createEmptyMultiSearchResults());
 

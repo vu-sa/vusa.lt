@@ -1,5 +1,4 @@
 import type { AdministratorUser } from '@/Components/Institutions';
-
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface InstitutionPageComment {
@@ -78,7 +77,7 @@ interface InstitutionPageType extends Omit<App.Entities.Type, 'title'> {
   title?: string | null;
 }
 
-export type InstitutionPageData = {
+export interface InstitutionPageData {
   id: string | number;
   name: string;
   short_name?: string | null;
@@ -95,7 +94,7 @@ export type InstitutionPageData = {
   meetings_count: number;
   tasks_count: number;
   related_institutions_count: number;
-};
+}
 
 export interface InstitutionOverviewData {
   activity_status: InstitutionActivityStatus;

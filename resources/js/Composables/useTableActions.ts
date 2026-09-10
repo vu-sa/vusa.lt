@@ -7,12 +7,12 @@ import { DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 
 type RowPermission<TData> = boolean | ((row: TData) => boolean);
 
-type ActionableRow = {
+interface ActionableRow {
   id: string | number;
   deleted_at?: string | null;
   /** Server-supplied explanation of why permanent deletion is refused for this row. */
   force_delete_blocked_reason?: string | null;
-};
+}
 
 /**
  * A page-defined row action, rendered in the overflow menu above the destructive ones.
@@ -110,9 +110,9 @@ export function createActionsColumn<TData extends ActionableRow>(
               h(
                 DropdownMenuItem,
                 {
-                  key: action.key,
+                  'key': action.key,
                   'data-testid': `row-action-${action.key}`,
-                  onSelect: () => action.onSelect(row.original),
+                  'onSelect': () => action.onSelect(row.original),
                 },
                 () => [h(action.icon), action.label],
               ),

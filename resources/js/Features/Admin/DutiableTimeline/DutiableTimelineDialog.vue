@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog :open @update:open="emit('update:open', $event)">
     <!-- `DialogContent`, not the scrolling variant: the chart and the dock do their own
          scrolling, and an outer scroller would unstick the dock. -->
     <DialogContent class="flex h-[90vh] flex-col gap-3 sm:max-w-[95vw]">
@@ -13,18 +13,19 @@
       <DutiableTimelineEditor
         v-if="open"
         class="min-h-0 flex-auto"
-        :scope-type="scopeType"
-        :scope-id="scopeId"
+        :scope-type
+        :scope-id
       />
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
 import DutiableTimelineEditor from './DutiableTimelineEditor.vue';
 import type { TimelineScopeType } from './types';
+
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
 defineProps<{
   open: boolean;

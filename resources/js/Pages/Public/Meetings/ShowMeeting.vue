@@ -133,8 +133,8 @@
 
       <PublicAgendaList
         :items="allAgendaItems"
-        :requires-student-perspective="requiresStudentPerspective"
-        :is-upcoming="isUpcoming"
+        :requires-student-perspective
+        :is-upcoming
       />
 
       <!-- Documents produced by the meeting: nutarimai, protokolai. -->

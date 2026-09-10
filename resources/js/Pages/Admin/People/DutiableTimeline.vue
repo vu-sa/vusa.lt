@@ -74,8 +74,8 @@
     -->
     <div v-else class="flex max-h-[calc(100vh-13rem)] flex-col">
       <DutiableTimelineEditor
-        class="min-h-0 flex-auto"
         :key="institution.id"
+        class="min-h-0 flex-auto"
         scope-type="institution"
         :scope-id="institution.id"
       />

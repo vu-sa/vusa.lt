@@ -65,6 +65,7 @@ use Spatie\SchemaOrg\Place;
  * @property-read mixed $main_image_url
  * @property-read MediaCollection<int, Media> $media
  * @property-read Meeting|null $meeting
+ * @property-read Collection<int, PublicUrl> $publicUrls
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *

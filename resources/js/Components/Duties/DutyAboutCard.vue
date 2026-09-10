@@ -6,7 +6,6 @@
       class="text-sm text-muted-foreground max-w-none"
       v-html="description"
     />
-
   </SectionCard>
 </template>
 

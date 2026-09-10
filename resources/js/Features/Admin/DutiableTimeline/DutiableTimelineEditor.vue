@@ -1,13 +1,13 @@
 <template>
   <div data-slot="dutiable-timeline-editor" class="flex min-h-0 flex-col gap-3">
     <DutiableTimelineToolbar
-      :scope="scope"
+      :scope
       :visible-count="visibleRows.length"
-      :include-ended="includeEnded"
-      :month-width-px="monthWidthPx"
-      :timeline-colors="timelineColors"
-      :cadence-options="cadenceOptions"
-      :tenant-options="tenantOptions"
+      :include-ended
+      :month-width-px
+      :timeline-colors
+      :cadence-options
+      :tenant-options
       :cadence-ids="cadenceFilter"
       :tenant-keys="tenantFilter"
       @update:include-ended="includeEnded = $event"
@@ -43,25 +43,25 @@
         v-else
         class="min-h-0 flex-auto"
         data-tour="timeline-chart"
-        :layout-rows="layoutRows"
+        :layout-rows
         :rows="visibleRows"
-        :cadences="cadences"
-        :band-cadences="bandCadences"
-        :highlighted-cadence-ids="highlightedCadenceIds"
-        :domain="domain"
-        :total-height="totalHeight"
-        :collapsed="collapsed"
-        :group-summaries="groupSummaries"
-        :all-collapsed="allCollapsed"
-        :sort-mode="sortMode"
-        :sortable="sortable"
-        :month-width-px="monthWidthPx"
-        :selected-ids="selectedIds"
+        :cadences
+        :band-cadences
+        :highlighted-cadence-ids
+        :domain
+        :total-height
+        :collapsed
+        :group-summaries
+        :all-collapsed
+        :sort-mode
+        :sortable
+        :month-width-px
+        :selected-ids
         :staged="drawn"
-        :diagnostic-severity-by-row="diagnosticSeverityByRow"
-        :row-top="rowTop"
-        :row-height-for="rowHeightFor"
-        :row-index="rowIndex"
+        :diagnostic-severity-by-row
+        :row-top
+        :row-height-for
+        :row-index
         @toggle-group="toggleGroup"
         @toggle-all="setAllCollapsed(!allCollapsed)"
         @update:sort-mode="sortMode = $event"
@@ -76,9 +76,9 @@
           <DutiableTimelineSelectionPanel
             data-tour="timeline-selection"
             :row="activeRow"
-            :cadences="cadences"
-            :staged="staged"
-            :selected-rows="selectedRows"
+            :cadences
+            :staged
+            :selected-rows
             @stage="stage"
             @select-source="selectRow"
             @align="onAlign"
@@ -92,10 +92,10 @@
         <template #suggestions>
           <DutiableTimelineSuggestions
             data-tour="timeline-suggestions"
-            :findings="findings"
-            :counts="counts"
+            :findings
+            :counts
             :rows="visibleRows"
-            :processing="processing"
+            :processing
             @focus="focusRows"
             @apply="onApplySuggestions"
           />
@@ -104,9 +104,9 @@
         <template #save>
           <DutiableTimelineDirtyBar
             data-tour="timeline-save"
-            :dirty-count="dirtyCount"
-            :is-dirty="isDirty"
-            :processing="processing"
+            :dirty-count
+            :is-dirty
+            :processing
             :sync-pending="pending.size > 0"
             @preview="onPreview"
             @discard="revertAll"
@@ -120,7 +120,7 @@
       :open="preview.isOpen.value"
       :plan="preview.plan.value"
       :loading="preview.isFetching.value"
-      :processing="processing"
+      :processing
       @update:open="preview.isOpen.value = $event"
       @confirm="onConfirmDiff"
     />
@@ -141,13 +141,6 @@ import { router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
-import { isDarkModeActive } from '@/Components/Graphs/ganttColors';
-import { EmptyState } from '@/Components/Patterns';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
-import { Skeleton } from '@/Components/ui/skeleton';
-import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-
 import { bandLadder } from './cadencePools';
 import DutiableGantt from './DutiableGantt.vue';
 import DutiableTimelineDiffSheet from './DutiableTimelineDiffSheet.vue';
@@ -167,6 +160,13 @@ import {
   DEFAULT_MONTH_WIDTH, MAX_MONTH_WIDTH, MIN_MONTH_WIDTH, VIEW_STORAGE_KEY,
 } from './constants';
 import type { ParsedRow, StagedDates, TimelineOperation, TimelineScopeType } from './types';
+
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
+import { Skeleton } from '@/Components/ui/skeleton';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
+import { EmptyState } from '@/Components/Patterns';
+import { isDarkModeActive } from '@/Components/Graphs/ganttColors';
+import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 
 const props = defineProps<{
   scopeType: TimelineScopeType;
@@ -270,7 +270,7 @@ const visibleRows = computed(() => rows.value.filter((row) => {
 
   return (cadenceFilter.value.length === 0
     || cadenceKeysOf(row).some(key => cadenceFilter.value.includes(key)))
-    && (tenantFilter.value.length === 0 || tenantFilter.value.includes(tenantKey));
+  && (tenantFilter.value.length === 0 || tenantFilter.value.includes(tenantKey));
 }));
 
 /**
@@ -381,7 +381,8 @@ function toggleGroupSelection(key: string): void {
 
   if (ids.every(id => next.has(id))) {
     for (const id of ids) next.delete(id);
-  } else {
+  }
+  else {
     for (const id of ids) next.add(id);
   }
 

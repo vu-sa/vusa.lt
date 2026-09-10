@@ -5,7 +5,7 @@
     :columns="6"
     :tile-class="tileHeightClass"
     :span-class="tileSpanClass"
-    :create-item="createItem"
+    :create-item
   >
     <template #tile-menu="{ item, update }">
       <DropdownMenuLabel class="text-xs font-normal text-zinc-400">

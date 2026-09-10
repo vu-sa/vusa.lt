@@ -62,8 +62,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import SocialIcon from '~icons/fluent/share-24-regular';
 
+import SocialIcon from '~icons/fluent/share-24-regular';
 import type { SocialEmbed } from '@/Types/contentParts';
 
 const props = defineProps<{
@@ -72,9 +72,7 @@ const props = defineProps<{
   blockKey?: string;
 }>();
 
-defineEmits<{
-  (e: 'update:element', value: SocialEmbed): void;
-}>();
+defineEmits<(e: 'update:element', value: SocialEmbed) => void>();
 
 const isLoading = ref(true);
 const hasRendered = ref(false);

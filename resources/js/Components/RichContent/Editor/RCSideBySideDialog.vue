@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
+  <Dialog :open @update:open="$emit('update:open', $event)">
     <DialogContent class="flex h-[min(90vh,50rem)] w-[min(96vw,90rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none">
       <DialogHeader class="border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
         <DialogTitle class="flex items-center gap-2 text-base">
@@ -18,7 +18,7 @@
         <!-- Editor pane — the exact same editor component the inline block uses, so
              nothing behaves differently here. -->
         <div class="overflow-y-auto p-4">
-          <ContentEditorFactory :content="content" :tenant-id="tenantId" @update:content="$emit('update:content', $event)" />
+          <ContentEditorFactory :content :tenant-id @update:content="$emit('update:content', $event)" />
         </div>
 
         <!-- Preview pane — reactive to every edit on the left. The width picker is
@@ -38,7 +38,7 @@
                 <RCWidthPicker
                   v-if="allowedWidths.length > 1"
                   :model-value="currentWidth"
-                  :allowed-widths="allowedWidths"
+                  :allowed-widths
                   @update:model-value="setWidth"
                 />
                 <button
@@ -77,6 +77,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import ContentEditorFactory from '../ContentEditorFactory.vue';
 import { useLiveBlockPreview } from '../composables/useLiveBlockPreview';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
+
 import BlockPreviewRenderer from './BlockPreviewRenderer.vue';
 import { withWidth } from './blockWidth';
 import RCWidthPicker from './RCWidthPicker.vue';

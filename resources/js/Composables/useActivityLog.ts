@@ -33,7 +33,7 @@ export function useActivityLog(subjectType: string, subjectId: string) {
 
   function recordSubjectTypes(list: ActivityEntry[]): void {
     if (list.length === 0) return;
-    knownSubjectTypes.value = new Set([...knownSubjectTypes.value, ...list.map((entry) => entry.subject.type)]);
+    knownSubjectTypes.value = new Set([...knownSubjectTypes.value, ...list.map(entry => entry.subject.type)]);
   }
 
   async function request(cursorParam?: string | null): Promise<{ data: ActivityEntry[]; meta: { cursor: ActivityLogCursor } }> {

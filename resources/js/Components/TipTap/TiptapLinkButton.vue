@@ -118,6 +118,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -128,7 +129,6 @@ import FileSelector from '@/Features/Admin/FileManager/FileSelector.vue';
 import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Spinner } from '@/Components/ui/spinner';
-import { trans as $t } from 'laravel-vue-i18n';
 
 const props = defineProps<{
   editor?: any;

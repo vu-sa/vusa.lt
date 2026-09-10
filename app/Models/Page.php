@@ -49,6 +49,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Category|null $category
  * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
+ * @property-read Collection<int, PublicUrl> $publicUrls
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\PageFactory factory($count = null, $state = [])
@@ -235,7 +236,8 @@ class Page extends Model implements Feedable, Sitemapable
         return $this->belongsTo(Category::class, 'category_id');
     }
 
-    public function content()
+    /** @return BelongsTo<Content, $this> */
+    public function content(): BelongsTo
     {
         return $this->belongsTo(Content::class);
     }

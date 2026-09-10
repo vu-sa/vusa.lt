@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -66,6 +67,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $type_label
  * @property-read mixed $type_slug
  * @property-read Collection<int, User> $users
+ * @property-read int|null $users_count
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\MeetingFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Meeting newModelQuery()
@@ -319,7 +322,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return $this->hasMany(Document::class, 'meeting_id');
     }
 
-    public function users()
+    public function users(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->users());
     }
@@ -335,7 +338,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         return app(MeetingRepresentativeResolver::class)->resolve($this);
     }
 
-    public function tenants()
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->tenant());
     }

@@ -4,7 +4,9 @@ import { mount } from '@vue/test-utils';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import { usePage } from '@inertiajs/vue3';
+
 import RCTenantMultiSelect from '../RCTenantMultiSelect.vue';
+
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 // The shared `tenants` mock fixture (inertia.mock.ts) uses string ids for an unrelated

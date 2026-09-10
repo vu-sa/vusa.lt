@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { useHttp } from '@inertiajs/vue3';
 
 import FileUploadArea from '../FileUploadArea.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 const wrappers: ReturnType<typeof mount>[] = [];
@@ -28,9 +29,9 @@ function mountArea(props: Record<string, unknown> = {}) {
 
 /** The mock's `get` records the call; the component's callbacks are driven from here. */
 function respondWith(payload: unknown) {
-  const results = vi.mocked(useHttp).mock.results;
+  const { results } = vi.mocked(useHttp).mock;
   const http = results[results.length - 1]?.value;
-  const calls = vi.mocked(http.get).mock.calls;
+  const { calls } = vi.mocked(http.get).mock;
   calls[calls.length - 1][1].onSuccess(payload);
 }
 
@@ -70,7 +71,7 @@ describe('FileUploadArea allowed types', () => {
   it('skips the request entirely when the caller forces its own extensions', () => {
     const wrapper = mountArea({ forceAccept: true, extensions: ['png'], accept: '.png' });
 
-    const results = vi.mocked(useHttp).mock.results;
+    const { results } = vi.mocked(useHttp).mock;
     expect(results[results.length - 1]?.value.get).not.toHaveBeenCalled();
     expect(wrapper.text()).toContain('PNG');
   });

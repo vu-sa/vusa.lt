@@ -3,6 +3,7 @@ import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 
 import TiptapImageMenu from '../TiptapImageMenu.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 /**

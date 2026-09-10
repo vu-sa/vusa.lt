@@ -9,11 +9,11 @@ use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
 
-test('the database channel binding resolves to the idempotent implementation', function () {
+test('the database channel binding resolves to the idempotent implementation', function (): void {
     expect(app(DatabaseChannel::class))->toBeInstanceOf(IdempotentDatabaseChannel::class);
 });
 
-test('re-sending a notification with the same id does not throw a duplicate-key error', function () {
+test('re-sending a notification with the same id does not throw a duplicate-key error', function (): void {
     $user = makeUser(Tenant::query()->inRandomOrder()->first());
 
     $notification = new TestPushNotification;

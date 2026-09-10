@@ -14,7 +14,9 @@
           </span>
         </div>
         <div v-if="asBoolean(options.autoplay)" class="flex items-center gap-3">
-          <FieldLabel class="min-w-fit">{{ $t('rich-content.autoplay_delay') }}</FieldLabel>
+          <FieldLabel class="min-w-fit">
+            {{ $t('rich-content.autoplay_delay') }}
+          </FieldLabel>
           <Input
             v-model.number="options.autoplayDelay"
             type="number"
@@ -81,10 +83,11 @@
 </template>
 
 <script setup lang="ts">
-import type { CardStack } from '@/Types/contentParts';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
 import RCIconSelect from '../RCIconSelect.vue';
 import { asBoolean } from '../booleanish';
+
+import type { CardStack } from '@/Types/contentParts';
 import { Switch } from '@/Components/ui/switch';
 import { Input } from '@/Components/ui/input';
 import { Field, FieldLabel } from '@/Components/ui/field';

@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import { commonStubs } from '@/tests/stubs';
-
 import ContactCard from '../ContactWithPhoto.vue';
+
+import { commonStubs } from '@/tests/stubs';
 
 // InfoPopover is stubbed to a marker so presence/absence reflects the component's
 // own v-if decision (the gating logic is what we want to assert, not the popover internals).

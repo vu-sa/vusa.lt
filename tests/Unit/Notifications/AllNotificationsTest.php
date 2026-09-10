@@ -852,4 +852,14 @@ describe('AssignedToResourceNotification', function (): void {
         $channels = $notification->via($user);
         expect($channels)->not->toContain('mail');
     });
+
+    test('renders its email with assignment details', function (): void {
+        $assigner = ['modelClass' => 'User', 'name' => 'Rūta'];
+        $resource = ['modelClass' => 'Task', 'name' => 'Monthly report', 'url' => 'https://example.test/tasks/1'];
+        $notification = new AssignedToResourceNotification($assigner, $resource);
+
+        $rendered = (string) $notification->toMail(new User)->render();
+
+        expect($rendered)->toContain('Rūta')->toContain('Monthly report');
+    });
 });

@@ -12,6 +12,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -40,10 +41,24 @@ class SendMeetingReminders extends Command
                     // Check if user wants reminders at this hour interval
                     $userReminderHours = $user->getMeetingReminderHours();
 
-                    if (in_array($hoursAhead, $userReminderHours, true)) {
-                        $user->notify(new MeetingReminderNotification($meeting, $hoursAhead));
-                        $sentCount++;
+                    if (! in_array($hoursAhead, $userReminderHours, true)) {
+                        continue;
                     }
+
+                    // The 60-minute window (±30 min around the target) is wider than the
+                    // 30-minute schedule cadence on purpose, to tolerate a delayed or
+                    // skipped run — but that means a steady-state run also catches every
+                    // meeting the previous run already caught. Cache::add() is an atomic
+                    // "set if absent", so only the first run to reach a given
+                    // meeting/user/interval within the TTL sends the reminder.
+                    $dedupeKey = "meeting-reminder-sent:{$meeting->id}:{$user->id}:{$hoursAhead}";
+
+                    if (! Cache::add($dedupeKey, true, now()->addHours(2))) {
+                        continue;
+                    }
+
+                    $user->notify(new MeetingReminderNotification($meeting, $hoursAhead));
+                    $sentCount++;
                 }
             }
         }

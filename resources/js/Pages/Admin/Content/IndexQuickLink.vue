@@ -1,138 +1,138 @@
 <template>
   <div>
     <PageContent :title="$t('Greitosios nuorodos')" :create-url="showDeleted ? undefined : route('quickLinks.create')">
-    <!-- Tenant & Language Controls -->
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div class="flex flex-wrap items-end gap-4">
-      <FormFieldWrapper v-if="tenantOptions.length > 1" id="tenant" :label="$t('Padalinys')"
-        class="min-w-[16rem]">
-        <SingleSelect v-model="selectedTenant" :options="tenantOptions" value-field="id" label-field="shortname"
-          :placeholder="$t('Pasirinkti padalinį...')" @update:model-value="handleTenantChange" />
-      </FormFieldWrapper>
+      <!-- Tenant & Language Controls -->
+      <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div class="flex flex-wrap items-end gap-4">
+          <FormFieldWrapper v-if="tenantOptions.length > 1" id="tenant" :label="$t('Padalinys')"
+            class="min-w-[16rem]">
+            <SingleSelect v-model="selectedTenant" :options="tenantOptions" value-field="id" label-field="shortname"
+              :placeholder="$t('Pasirinkti padalinį...')" @update:model-value="handleTenantChange" />
+          </FormFieldWrapper>
 
-      <FormFieldWrapper id="lang" :label="$t('Kalba')">
-        <ToggleGroup :model-value="currentLang" type="single" class="justify-start"
-          @update:model-value="handleLangChange">
-          <ToggleGroupItem value="lt" class="gap-2">
-            <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
-            Lietuvių
-          </ToggleGroupItem>
-          <ToggleGroupItem value="en" class="gap-2">
-            <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
-            English
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </FormFieldWrapper>
-      </div>
-
-      <TrashViewToggle
-        v-if="shouldShowDeletedToggle"
-        :show-deleted
-        :deleted-count
-        @update:show-deleted="handleShowDeletedChange"
-      />
-    </div>
-
-    <Alert
-      v-if="showDeleted"
-      class="mb-4 flex flex-col gap-3 border-amber-200 bg-amber-50 text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
-    >
-      <div class="flex items-start gap-2.5">
-        <Trash2 class="mt-0.5 size-4 shrink-0" />
-        <div class="space-y-0.5">
-          <AlertTitle class="font-medium">
-            {{ $t('trash.showing_deleted_only') }}
-          </AlertTitle>
-          <AlertDescription class="text-sm text-amber-900 dark:text-amber-100">
-            {{ $t('trash.showing_deleted_only_description') }}
-          </AlertDescription>
+          <FormFieldWrapper id="lang" :label="$t('Kalba')">
+            <ToggleGroup :model-value="currentLang" type="single" class="justify-start"
+              @update:model-value="handleLangChange">
+              <ToggleGroupItem value="lt" class="gap-2">
+                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
+                Lietuvių
+              </ToggleGroupItem>
+              <ToggleGroupItem value="en" class="gap-2">
+                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
+                English
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </FormFieldWrapper>
         </div>
+
+        <TrashViewToggle
+          v-if="shouldShowDeletedToggle"
+          :show-deleted
+          :deleted-count
+          @update:show-deleted="handleShowDeletedChange"
+        />
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        class="shrink-0 border-amber-300 bg-white text-amber-950 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/40"
-        @click="handleShowDeletedChange(false)"
+
+      <Alert
+        v-if="showDeleted"
+        class="mb-4 flex flex-col gap-3 border-amber-200 bg-amber-50 text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
       >
-        {{ $t('trash.exit_trash_view') }}
-      </Button>
-    </Alert>
+        <div class="flex items-start gap-2.5">
+          <Trash2 class="mt-0.5 size-4 shrink-0" />
+          <div class="space-y-0.5">
+            <AlertTitle class="font-medium">
+              {{ $t('trash.showing_deleted_only') }}
+            </AlertTitle>
+            <AlertDescription class="text-sm text-amber-900 dark:text-amber-100">
+              {{ $t('trash.showing_deleted_only_description') }}
+            </AlertDescription>
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          class="shrink-0 border-amber-300 bg-white text-amber-950 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/40"
+          @click="handleShowDeletedChange(false)"
+        >
+          {{ $t('trash.exit_trash_view') }}
+        </Button>
+      </Alert>
 
-    <!-- Empty State -->
-    <div v-if="quickLinkList.length === 0" class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-      <IFluentLink24Regular class="mb-4 h-10 w-10 text-muted-foreground" />
-      <p class="text-muted-foreground">
-        {{ showDeleted ? $t('trash.no_deleted_records') : $t('Dar nėra greitųjų nuorodų') }}
-      </p>
-      <Button v-if="!showDeleted" :as="Link" :href="route('quickLinks.create')" variant="secondary" class="mt-4" data-testid="empty-create-button">
-        <IFluentAdd24Regular class="h-4 w-4" />
-        {{ $t('Sukurti pirmą nuorodą') }}
-      </Button>
-    </div>
-
-    <!-- Sortable List -->
-    <template v-else>
-      <div v-if="!showDeleted" class="mb-4 flex items-center justify-end">
-        <Button :as="Link" :href="route('quickLinks.create')" variant="secondary" data-testid="inline-create-button">
+      <!-- Empty State -->
+      <div v-if="quickLinkList.length === 0" class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
+        <IFluentLink24Regular class="mb-4 h-10 w-10 text-muted-foreground" />
+        <p class="text-muted-foreground">
+          {{ showDeleted ? $t('trash.no_deleted_records') : $t('Dar nėra greitųjų nuorodų') }}
+        </p>
+        <Button v-if="!showDeleted" :as="Link" :href="route('quickLinks.create')" variant="secondary" class="mt-4" data-testid="empty-create-button">
           <IFluentAdd24Regular class="h-4 w-4" />
-          {{ $t('forms.add') }}
+          {{ $t('Sukurti pirmą nuorodą') }}
         </Button>
       </div>
 
-      <TransitionGroup ref="el" tag="div" class="mb-4 flex flex-col gap-2">
-        <div v-for="item in quickLinkList" :key="item.id"
-          class="group relative flex items-center gap-3 rounded-lg border bg-background p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-          <Button v-if="!showDeleted" variant="ghost" class="handle shrink-0 cursor-grab active:cursor-grabbing" size="icon-sm">
-            <IFluentReOrderDotsVertical24Regular />
+      <!-- Sortable List -->
+      <template v-else>
+        <div v-if="!showDeleted" class="mb-4 flex items-center justify-end">
+          <Button :as="Link" :href="route('quickLinks.create')" variant="secondary" data-testid="inline-create-button">
+            <IFluentAdd24Regular class="h-4 w-4" />
+            {{ $t('forms.add') }}
           </Button>
-
-          <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-5 shrink-0 text-muted-foreground" />
-          <IFluentLink24Regular v-else class="size-5 shrink-0 text-muted-foreground" />
-
-          <div class="min-w-0 flex-1">
-            <div class="font-medium">
-              {{ item.text }}
-            </div>
-            <div class="truncate text-xs text-muted-foreground">
-              {{ item.link }}
-            </div>
-          </div>
-
-          <div class="flex items-center gap-1" :class="showDeleted ? '' : 'opacity-0 transition-opacity group-hover:opacity-100'">
-            <Button v-if="!showDeleted" :as="Link" :href="route('quickLinks.edit', item.id)" variant="ghost" size="icon-sm">
-              <IFluentEdit24Regular />
-            </Button>
-
-            <Button v-if="!showDeleted" variant="ghost" size="icon-sm" class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-              @click="confirmDelete(() => handleDelete(item.id))">
-              <IFluentDelete24Regular />
-            </Button>
-            <template v-else>
-              <Button variant="ghost" size="sm" class="gap-1.5" data-testid="restore-button" @click="handleRestore(item.id)">
-                <RotateCcw class="size-4" />
-                {{ $t('trash.restore') }}
-              </Button>
-              <Button
-                v-if="canForceDelete"
-                variant="ghost"
-                size="sm"
-                class="gap-1.5 text-destructive hover:text-destructive"
-                data-testid="force-delete-button"
-                @click="openForceDeleteDialog(item)"
-              >
-                <Trash2 class="size-4" />
-                {{ $t('trash.permanently_delete') }}
-              </Button>
-            </template>
-          </div>
         </div>
-      </TransitionGroup>
 
-      <Button v-if="!showDeleted" variant="secondary" :disabled="!hasChanges" @click="handleOrderUpdate">
-        <IFluentSave24Regular class="h-4 w-4" />
-        {{ $t('Išsaugoti tvarką') }}
-      </Button>
-    </template>
+        <TransitionGroup ref="el" tag="div" class="mb-4 flex flex-col gap-2">
+          <div v-for="item in quickLinkList" :key="item.id"
+            class="group relative flex items-center gap-3 rounded-lg border bg-background p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+            <Button v-if="!showDeleted" variant="ghost" class="handle shrink-0 cursor-grab active:cursor-grabbing" size="icon-sm">
+              <IFluentReOrderDotsVertical24Regular />
+            </Button>
+
+            <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-5 shrink-0 text-muted-foreground" />
+            <IFluentLink24Regular v-else class="size-5 shrink-0 text-muted-foreground" />
+
+            <div class="min-w-0 flex-1">
+              <div class="font-medium">
+                {{ item.text }}
+              </div>
+              <div class="truncate text-xs text-muted-foreground">
+                {{ item.link }}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1" :class="showDeleted ? '' : 'opacity-0 transition-opacity group-hover:opacity-100'">
+              <Button v-if="!showDeleted" :as="Link" :href="route('quickLinks.edit', item.id)" variant="ghost" size="icon-sm">
+                <IFluentEdit24Regular />
+              </Button>
+
+              <Button v-if="!showDeleted" variant="ghost" size="icon-sm" class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                @click="confirmDelete(() => handleDelete(item.id))">
+                <IFluentDelete24Regular />
+              </Button>
+              <template v-else>
+                <Button variant="ghost" size="sm" class="gap-1.5" data-testid="restore-button" @click="handleRestore(item.id)">
+                  <RotateCcw class="size-4" />
+                  {{ $t('trash.restore') }}
+                </Button>
+                <Button
+                  v-if="canForceDelete"
+                  variant="ghost"
+                  size="sm"
+                  class="gap-1.5 text-destructive hover:text-destructive"
+                  data-testid="force-delete-button"
+                  @click="openForceDeleteDialog(item)"
+                >
+                  <Trash2 class="size-4" />
+                  {{ $t('trash.permanently_delete') }}
+                </Button>
+              </template>
+            </div>
+          </div>
+        </TransitionGroup>
+
+        <Button v-if="!showDeleted" variant="secondary" :disabled="!hasChanges" @click="handleOrderUpdate">
+          <IFluentSave24Regular class="h-4 w-4" />
+          {{ $t('Išsaugoti tvarką') }}
+        </Button>
+      </template>
     </PageContent>
 
     <DeleteConfirmationDialog

@@ -8,6 +8,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
+use App\Models\SupportRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use Carbon\Carbon;
@@ -316,5 +317,25 @@ describe('reservation', function (): void {
             ->getJson(route('api.v1.admin.comments.mentionables', ['commentableType' => 'reservation', 'commentableId' => $this->reservation->id]))
             ->assertOk()
             ->assertJsonFragment(['id' => (string) $otherUser->id, 'name' => 'Reservation Member']);
+    });
+});
+
+describe('support request', function (): void {
+    test('a user can comment on a public support request', function (): void {
+        Event::fake([CommentBroadcast::class]);
+
+        $supportRequest = SupportRequest::factory()->create(['visibility' => 'public']);
+        $commenter = makeUser($this->tenant);
+        $storeUrl = route('api.v1.admin.comments.store', [
+            'commentableType' => 'supportRequest',
+            'commentableId' => $supportRequest->id,
+        ]);
+
+        asUser($commenter)->postJson($storeUrl, ['body' => '<p>Public request comment</p>'])
+            ->assertCreated()
+            ->assertJsonPath('data.body', '<p>Public request comment</p>');
+
+        Event::assertDispatched(CommentBroadcast::class, fn ($event) => $event->action === 'created'
+            && $event->channelName === "comments.supportRequest.{$supportRequest->id}");
     });
 });

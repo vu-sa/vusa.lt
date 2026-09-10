@@ -29,7 +29,7 @@ class ImpersonateApiController extends ApiController
         $this->guardSuperAdmin($user);
 
         $users = User::query()
-            ->select('id', 'name', 'email')
+            ->select(['id', 'name', 'email'])
             ->where('name', 'like', '%'.$request->input('search').'%')
             ->orWhere('email', 'like', '%'.$request->input('search').'%')
             ->orderBy('name')

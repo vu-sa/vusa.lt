@@ -160,7 +160,8 @@ const currentTab = computed({
   set: (value: string) => {
     if (isControlled) {
       tabModel.value = value;
-    } else {
+    }
+    else {
       storedTab.value = value;
     }
   },
