@@ -201,10 +201,10 @@ describe('creating and storing support requests', function (): void {
         $response = asUser($this->user)->post(route('mySupportRequests.store'), $payload);
 
         $supportRequest = SupportRequest::where('created_by', $this->user->id)->latest()->first();
-        expect($supportRequest)->not->toBeNull();
-        expect($supportRequest->title)->toBe('Puslapio klaida formoje');
-        expect($supportRequest->visibility)->toBe(SupportRequestVisibility::Roles);
-        expect($supportRequest->roles()->pluck('roles.id')->all())->toContain($role->id);
+        expect($supportRequest)->not->toBeNull()
+            ->and($supportRequest->title)->toBe('Puslapio klaida formoje')
+            ->and($supportRequest->visibility)->toBe(SupportRequestVisibility::Roles)
+            ->and($supportRequest->roles()->pluck('roles.id')->all())->toContain($role->id);
 
         $response->assertRedirect(route('supportRequests.show', $supportRequest->id));
 

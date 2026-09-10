@@ -49,7 +49,7 @@
         <TaskManager
           :tasks="tasks.data"
           :task-stats
-          :current-filter="currentFilter"
+          :current-filter
           :total-count="tasks.meta.total"
           server-side-filter
           server-paginated
@@ -94,12 +94,12 @@
 </template>
 
 <script setup lang="ts">
-import { ModelEnum } from '@/Types/enums';
 import { router } from '@inertiajs/vue3';
 import { ref, computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building as BuildingIcon, Calendar as CalendarIcon, Package as PackageIcon } from 'lucide-vue-next';
 
+import { ModelEnum } from '@/Types/enums';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';

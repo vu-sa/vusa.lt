@@ -60,7 +60,7 @@
         :key="index"
         :ref="(instance) => setColumnRef(instance, index)"
         :links="column"
-        :index="index"
+        :index
         @toggle-active="(link, val) => $emit('toggle-link-active', link, val)"
         @delete="link => $emit('delete-link', link)"
       />
@@ -83,7 +83,6 @@ import { insertNodeAt, removeNode, useSortable } from '@vueuse/integrations/useS
 import { GripVertical, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 
 import NavigationColumn from './NavigationColumn.vue';
-
 import type { AdminNavigationLink, AdminNavigationRoot } from './types';
 
 import { Button } from '@/Components/ui/button';

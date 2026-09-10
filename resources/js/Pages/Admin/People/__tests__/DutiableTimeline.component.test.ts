@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import { commonStubs } from '@/tests/stubs';
-
 import DutiableTimeline from '../DutiableTimeline.vue';
+
+import { commonStubs } from '@/tests/stubs';
 
 const stubs = {
   ...commonStubs,
@@ -26,7 +26,7 @@ const stubs = {
   },
 };
 
-type Inst = { id: string; name: string };
+interface Inst { id: string; name: string }
 
 function mountPage(initialInstitution: Inst | null, userInstitutions: Inst[] = []) {
   return mount(DutiableTimeline, {

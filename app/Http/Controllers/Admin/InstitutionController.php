@@ -17,6 +17,8 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Meeting;
+use App\Models\Task;
 use App\Models\Type;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -253,7 +255,9 @@ class InstitutionController extends AdminController
                 $institution->tasks()
                     ->with('users:id,name,email,profile_photo_path', 'taskable')
                     ->get()
-                    ->merge($institution->tasksFromMeetings()
+                    ->merge(Task::query()
+                        ->where('taskable_type', MorphMap::alias(Meeting::class))
+                        ->whereIn('taskable_id', $institution->meetings()->select('meetings.id'))
                         ->with('users:id,name,email,profile_photo_path', 'taskable')
                         ->get())
                     ->sortByDesc('created_at')

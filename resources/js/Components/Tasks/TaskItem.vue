@@ -138,7 +138,6 @@
 </template>
 
 <script setup lang="ts">
-import { useDateLocale } from '@/Composables/useDateLocale';
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage, Link } from '@inertiajs/vue3';
@@ -153,6 +152,7 @@ import {
   Trash as TrashIcon,
 } from 'lucide-vue-next';
 
+import { useDateLocale } from '@/Composables/useDateLocale';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

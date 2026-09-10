@@ -52,7 +52,6 @@ import { useStorage } from '@vueuse/core';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
-
 import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
 import IFluentChevronRight24Regular from '~icons/fluent/chevron-right-24-regular';
 

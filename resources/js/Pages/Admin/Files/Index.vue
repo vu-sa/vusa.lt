@@ -5,7 +5,7 @@
       :directories="props.directories"
       :path="props.path"
       :list-loading="navigating"
-      :search-results="searchResults"
+      :search-results
       :searching
       @file-selected="openFile"
       @back="handleBack"

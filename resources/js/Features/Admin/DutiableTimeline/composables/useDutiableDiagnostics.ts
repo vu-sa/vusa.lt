@@ -1,8 +1,9 @@
 import { computed, type Ref } from 'vue';
 
-import { parseTimelineDate, toDateString } from './useDutiableTimelineData';
 import { applicableCadences as poolFor } from '../cadencePools';
 import type { ParsedCadence, ParsedRow, StagedDates, TimelineDiagnostic, TimelineOperation } from '../types';
+
+import { parseTimelineDate, toDateString } from './useDutiableTimelineData';
 
 /** Mirrors AnalyzeDutiableTimeline::OFF_CADENCE_MAX_DAYS. */
 export const OFF_CADENCE_MAX_DAYS = 45;

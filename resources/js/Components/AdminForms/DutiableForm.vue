@@ -142,7 +142,6 @@
 </template>
 
 <script setup lang="ts">
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { Sparkles, TriangleAlert } from 'lucide-vue-next';
@@ -153,6 +152,7 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';

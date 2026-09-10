@@ -47,11 +47,11 @@
     </template>
 
     <template #buttons>
-      <HeroButtonsEditable :buttons="element.json_content.buttons" :block-key="blockKey" :variant :class="buttonsClass" @update:buttons="updateButtons" />
+      <HeroButtonsEditable :buttons="element.json_content.buttons" :block-key :variant :class="buttonsClass" @update:buttons="updateButtons" />
     </template>
 
     <template #image>
-      <HeroImageHotspot :content="element" :block-key="blockKey" @update:content="$emit('update:element', $event)" />
+      <HeroImageHotspot :content="element" :block-key @update:content="$emit('update:element', $event)" />
     </template>
   </HeroElement>
 </template>
@@ -69,16 +69,18 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
+import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
+import type { BandResolution } from '../bandLayout';
+
 import HeroElement from './HeroElement.vue';
 import HeroButtonsEditable from './HeroButtonsEditable.vue';
 import HeroImageHotspot from './HeroImageHotspot.vue';
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
-import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
+import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTitleClass } from './heroLayout';
+
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { Hero } from '@/Types/contentParts';
 import { hasHtmlText } from '@/Utils/String';
-import type { BandResolution } from '../bandLayout';
-import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTitleClass } from './heroLayout';
 
 // Lazy-loaded: title/description only ever mount a *live* TiptapEditor while claimed.
 const TiptapEditor = defineAsyncComponent(() => import('@/Components/TipTap/TiptapEditor.vue'));
@@ -95,9 +97,7 @@ const props = defineProps<{
   html?: boolean;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:element', value: Hero): void;
-}>();
+const emit = defineEmits<(e: 'update:element', value: Hero) => void>();
 
 defineOptions({ inheritAttrs: false });
 

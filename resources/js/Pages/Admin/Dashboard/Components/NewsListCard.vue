@@ -51,14 +51,14 @@
 </template>
 
 <script setup lang="ts">
-import { localizedRoute } from '@/Utils/LocalizedRoutes';
-import { dateLocaleFor } from '@/Composables/useDateLocale';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { Newspaper as NewspaperIcon, ChevronRight as ChevronRightIcon, Image as ImageIcon } from 'lucide-vue-next';
 
+import { dateLocaleFor } from '@/Composables/useDateLocale';
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { dashboardCardClasses } from '@/Composables/useDashboardCardStyles';
 

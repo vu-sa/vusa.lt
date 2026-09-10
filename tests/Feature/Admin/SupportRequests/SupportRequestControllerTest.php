@@ -129,8 +129,8 @@ describe('authorized manager access', function (): void {
         ])->assertRedirect();
 
         $this->supportRequest->refresh();
-        expect($this->supportRequest->status)->toBe(SupportRequestStatus::Done);
-        expect($this->supportRequest->resolved_at)->not->toBeNull();
+        expect($this->supportRequest->status)->toBe(SupportRequestStatus::Done)
+            ->and($this->supportRequest->resolved_at)->not->toBeNull();
 
         Notification::assertSentTo(
             $this->user,
@@ -151,8 +151,8 @@ describe('authorized manager access', function (): void {
         ])->assertRedirect();
 
         $this->supportRequest->refresh();
-        expect($this->supportRequest->status)->toBe(SupportRequestStatus::InProgress);
-        expect($this->supportRequest->resolved_at)->toBeNull();
+        expect($this->supportRequest->status)->toBe(SupportRequestStatus::InProgress)
+            ->and($this->supportRequest->resolved_at)->toBeNull();
     });
 
     test('can assign support request to a user', function (): void {
@@ -179,8 +179,8 @@ describe('authorized manager access', function (): void {
         asUser($this->admin)->delete(route('supportRequests.destroy', $this->supportRequest->id))
             ->assertRedirect(route('mySupportRequests.index', ['tab' => 'all']));
 
-        expect(SupportRequest::find($this->supportRequest->id))->toBeNull();
-        expect(SupportRequest::withTrashed()->find($this->supportRequest->id))->not->toBeNull();
+        expect(SupportRequest::find($this->supportRequest->id))->toBeNull()
+            ->and(SupportRequest::withTrashed()->find($this->supportRequest->id))->not->toBeNull();
 
         asUser($this->admin)->post(route('supportRequests.restore', $this->supportRequest->id))
             ->assertRedirect();

@@ -1,4 +1,4 @@
-import * as d3 from 'd3';
+import type * as d3 from 'd3';
 
 import type { GroupSummary } from '../composables/useDutiableLayout';
 import type { TimelineColors } from '../timelineColors';

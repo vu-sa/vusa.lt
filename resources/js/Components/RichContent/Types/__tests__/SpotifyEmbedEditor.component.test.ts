@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import SpotifyEmbedEditor from '../SpotifyEmbedEditor.vue';
 import { createContentItem } from '../index';
+
 import type { SpotifyEmbed } from '@/Types/contentParts';
 
 const stubs = {

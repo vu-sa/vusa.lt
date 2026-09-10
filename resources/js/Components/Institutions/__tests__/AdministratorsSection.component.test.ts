@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import { commonStubs } from '@/tests/stubs';
-
 import AdministratorsSection from '../AdministratorsSection.vue';
 import type { AdministratorRoster, AdministratorUser } from '../administratorTypes';
+
+import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 

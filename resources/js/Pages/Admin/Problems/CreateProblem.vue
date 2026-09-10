@@ -19,9 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import { newEntityTitle } from '@/Utils/EntityMessages';
 import { useForm } from '@inertiajs/vue3';
 
+import { newEntityTitle } from '@/Utils/EntityMessages';
 import ProblemForm from '@/Components/AdminForms/ProblemForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';

@@ -3,6 +3,7 @@ import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 
 import TiptapLinkButton from '../TiptapLinkButton.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 /**

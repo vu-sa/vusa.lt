@@ -1,9 +1,9 @@
 <template>
   <div class="flex items-center gap-1">
     <Input
-      :id="id"
+      :id
       :model-value="modelValue ?? ''"
-      :disabled="disabled"
+      :disabled
       :aria-label="label"
       placeholder="YYYY-MM-DD"
       class="h-8 font-mono text-xs"
@@ -13,7 +13,7 @@
 
     <Popover v-model:open="open">
       <PopoverTrigger as-child>
-        <Button type="button" size="icon-xs" variant="outline" :disabled="disabled" :aria-label="label">
+        <Button type="button" size="icon-xs" variant="outline" :disabled :aria-label="label">
           <CalendarIcon class="size-3.5" />
         </Button>
       </PopoverTrigger>

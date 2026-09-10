@@ -72,7 +72,5 @@ defineProps<{
   showUseAction?: boolean;
 }>();
 
-defineEmits<{
-  (event: 'use', match: DuplicateUserMatch): void;
-}>();
+defineEmits<(event: 'use', match: DuplicateUserMatch) => void>();
 </script>

@@ -311,6 +311,7 @@
 <script setup lang="ts">
 import { computed, h, ref, watch } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
+import { ArrowUpRight, CalendarClock, Info } from 'lucide-vue-next';
 
 import InfoPopover from '../Buttons/InfoPopover.vue';
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
@@ -325,8 +326,6 @@ import AdminForm from './AdminForm.vue';
 
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';
-import { ArrowUpRight, CalendarClock, Info } from 'lucide-vue-next';
-
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

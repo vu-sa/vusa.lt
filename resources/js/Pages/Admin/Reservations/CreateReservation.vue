@@ -9,10 +9,10 @@
 </template>
 
 <script setup lang="tsx">
-import { newEntityTitle } from '@/Utils/EntityMessages';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { capitalize } from 'vue';
 
+import { newEntityTitle } from '@/Utils/EntityMessages';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ReservationForm from '@/Components/AdminForms/ReservationForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';

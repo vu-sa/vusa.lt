@@ -331,16 +331,17 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { computed, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { CalendarRange, Lock, TriangleAlert } from 'lucide-vue-next';
 
 import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
 
 import AdminForm from './AdminForm.vue';
 import AccessChangeWarningDialog from './AccessChangeWarningDialog.vue';
-import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import DuplicateUserWarning from './DuplicateUserWarning.vue';
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
+import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useApiMutation } from '@/Composables/useApi';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
@@ -349,7 +350,6 @@ import Eye16Regular from '~icons/fluent/eye16-regular';
 import DutyLabel from '@/Components/Duties/DutyLabel.vue';
 // Lucide is the icon set for admin surfaces (AGENTS.md); the Fluent imports here
 // are legacy and stay until this form is migrated wholesale.
-import { CalendarRange, Lock, TriangleAlert } from 'lucide-vue-next';
 import PersonEdit24Regular from '~icons/fluent/person-edit24-regular';
 import IFluentCopy16Regular from '~icons/fluent/copy16-regular';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';

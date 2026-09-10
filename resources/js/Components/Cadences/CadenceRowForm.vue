@@ -71,8 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
-import { useId } from 'vue';
+import { computed, reactive, ref, watch, useId } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarClock, X } from 'lucide-vue-next';
 

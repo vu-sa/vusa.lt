@@ -2,16 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import RichContentEditor from '../RichContentEditor.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 const stubs = {
   ...commonStubs,
-  'RCFullscreenEditor': {
+  RCFullscreenEditor: {
     props: ['contents', 'tenantId', 'history'],
     emits: ['update:contents', 'close'],
     template: '<div class="fullscreen-editor-stub" />',
   },
-  'SpotlightPopover': {
+  SpotlightPopover: {
     props: ['title', 'description', 'isDismissed', 'position'],
     emits: ['dismiss'],
     template: '<div class="spotlight-popover-stub" :data-dismissed="isDismissed"><slot /></div>',

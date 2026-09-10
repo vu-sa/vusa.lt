@@ -866,6 +866,8 @@ declare global {
       institutions?: Institution[]
       calendar_event?: Calendar
       documents?: Document[]
+      users?: User
+      tenants?: Tenant
       comments?: Comment[]
       root_comments?: Comment[]
       fileable_files?: FileableFile[]
@@ -1237,6 +1239,8 @@ declare global {
       agenda_items?: AgendaItem[]
       calendar_event?: Calendar
       documents?: Document[]
+      users?: User
+      tenants?: Tenant
       comments?: Comment[]
       root_comments?: Comment[]
       fileable_files?: FileableFile[]
@@ -1365,7 +1369,6 @@ declare global {
       urlable_id: number
       locale: string
       url: string
-      is_canonical: boolean
       created_at?: string | null
       updated_at?: string | null
       // relations
@@ -1471,6 +1474,7 @@ declare global {
       // relations
       resources?: Resource[]
       users?: User[]
+      tenants?: Tenant
       comments?: Comment[]
       root_comments?: Comment[]
       tasks?: Task[]
@@ -1589,6 +1593,8 @@ declare global {
       updated_at?: string | null
       // relations
       duties?: Duty[]
+      users_through_duties?: User
+      current_users_through_duties?: User
       attachable_types?: Type[]
       types?: Type[]
       permissions?: Permission[]
@@ -1744,6 +1750,120 @@ declare global {
       // exists
       study_set_exists: boolean
       reviews_exists: boolean
+    }
+
+    export interface SupportRequest {
+      // columns
+      id: string
+      created_by?: string | null
+      assigned_to?: string | null
+      support_service_id: number
+      support_request_type_id: number
+      support_request_area_id: number
+      reporter_name?: string | null
+      reporter_email?: string | null
+      visibility: SupportRequestVisibility
+      status: SupportRequestStatus
+      title: string
+      description: string
+      context_url?: string | null
+      selected_text?: string | null
+      locale: string
+      resolved_at?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      deleted_at?: string | null
+      // relations
+      creator?: User
+      assigned_to?: User
+      service?: SupportService
+      type?: SupportRequestType
+      area?: SupportRequestArea
+      roles?: Role[]
+      comments?: Comment[]
+      root_comments?: Comment[]
+      media?: Media[]
+      activities_as_subject?: Activity[]
+      // counts
+      roles_count: number
+      comments_count: number
+      root_comments_count: number
+      media_count: number
+      activities_as_subject_count: number
+      // exists
+      creator_exists: boolean
+      assigned_to_exists: boolean
+      service_exists: boolean
+      type_exists: boolean
+      area_exists: boolean
+      roles_exists: boolean
+      comments_exists: boolean
+      root_comments_exists: boolean
+      media_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface SupportRequestArea {
+      // columns
+      id: number
+      support_service_id: number
+      name: Array<unknown>
+      slug: string
+      is_active: boolean
+      sort_order: number
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      service?: SupportService
+      requests?: SupportRequest[]
+      // counts
+      requests_count: number
+      // exists
+      service_exists: boolean
+      requests_exists: boolean
+    }
+
+    export interface SupportRequestType {
+      // columns
+      id: number
+      name: Array<unknown>
+      slug: string
+      is_active: boolean
+      sort_order: number
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      requests?: SupportRequest[]
+      // counts
+      requests_count: number
+      // exists
+      requests_exists: boolean
+    }
+
+    export interface SupportService {
+      // columns
+      id: number
+      name: Array<unknown>
+      slug: string
+      is_active: boolean
+      sort_order: number
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      areas?: SupportRequestArea[]
+      // counts
+      areas_count: number
+      // exists
+      areas_exists: boolean
     }
 
     export interface Tag {
@@ -1981,6 +2101,7 @@ declare global {
       dutiables?: Dutiable[]
       tenants?: Tenant
       tasks?: Task[]
+      institutions?: Institution
       administered_institutions?: Institution[]
       followed_institutions?: Institution[]
       muted_institutions?: Institution[]
@@ -2104,6 +2225,25 @@ declare global {
     } as const;
 
     export type MeetingType = typeof MeetingType[keyof typeof MeetingType]
+
+    const SupportRequestVisibility = {
+      Private: 'private',
+      Roles: 'roles',
+      Public: 'public',
+    } as const;
+
+    export type SupportRequestVisibility = typeof SupportRequestVisibility[keyof typeof SupportRequestVisibility]
+
+    const SupportRequestStatus = {
+      New: 'new',
+      Reviewing: 'reviewing',
+      Planned: 'planned',
+      InProgress: 'in_progress',
+      Done: 'done',
+      Declined: 'declined',
+    } as const;
+
+    export type SupportRequestStatus = typeof SupportRequestStatus[keyof typeof SupportRequestStatus]
 
     const ActionType = {
       Manual: 'manual',

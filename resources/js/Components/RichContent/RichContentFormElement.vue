@@ -1,7 +1,7 @@
 <template>
   <div class="rich-content-form-element mb-6">
     <Suspense>
-      <RichContentEditor v-model:contents="contentParts" :tenant-id="tenantId" @save="$emit('save')" />
+      <RichContentEditor v-model:contents="contentParts" :tenant-id @save="$emit('save')" />
       <template #fallback>
         <div class="space-y-6">
           <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">

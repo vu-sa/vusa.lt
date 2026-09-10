@@ -63,7 +63,7 @@ class PublicUrlService
     {
         $target = $publicUrl->urlable;
 
-        if (! $target instanceof Model || ! $this->isPubliclyReachable($target)) {
+        if (! $this->isPubliclyReachable($target)) {
             return null;
         }
 

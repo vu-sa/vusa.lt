@@ -29,6 +29,7 @@ return RectorConfig::configure()
             __DIR__.'/app/Console/Commands/ProcessNotificationDigests.php',
             __DIR__.'/app/Console/Commands/TestMail.php',
             __DIR__.'/app/Http/Controllers/Admin/DashboardController.php',
+            __DIR__.'/app/Http/Controllers/Admin/ProfileController.php',
         ],
     ])
     ->withTypeCoverageLevel(0)

@@ -46,7 +46,5 @@ defineProps<{
   to: number | null;
 }>();
 
-const emit = defineEmits<{
-  (e: 'change', page: number): void;
-}>();
+const emit = defineEmits<(e: 'change', page: number) => void>();
 </script>

@@ -33,9 +33,10 @@
  */
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { Calendar } from '@/Types/contentParts';
 import RCCategoryAliasSelect from '../Editor/RCCategoryAliasSelect.vue';
 import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
+
+import type { Calendar } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { NumberField } from '@/Components/ui/number-field';
 

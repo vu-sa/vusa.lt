@@ -8,9 +8,9 @@
 </template>
 
 <script setup lang="ts">
-import { newEntityTitle } from '@/Utils/EntityMessages';
 import { usePage } from '@inertiajs/vue3';
 
+import { newEntityTitle } from '@/Utils/EntityMessages';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';

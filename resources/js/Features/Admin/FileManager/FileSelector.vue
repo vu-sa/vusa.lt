@@ -8,7 +8,7 @@
       :directories
       :path
       :list-loading="loading"
-      :search-results="searchResults"
+      :search-results
       :searching
       :allow-upload-in-selection="true"
       :upload-accept="props.uploadAccept"

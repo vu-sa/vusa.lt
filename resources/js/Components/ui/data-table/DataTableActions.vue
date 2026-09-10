@@ -214,13 +214,13 @@ const slots = useSlots();
 
 const isTrashed = computed(() => !!props.model.deleted_at);
 
-type InlineAction = {
+interface InlineAction {
   key: string;
   icon: Component;
   label: string;
   /** Set for navigational actions; renders the control as an anchor. */
   href?: string;
-};
+}
 
 /**
  * Reversible actions, rendered directly in the cell. A trashed row can only be

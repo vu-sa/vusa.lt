@@ -24,7 +24,9 @@
             @keydown.space.prevent="$emit('claim-inline-field', bodyFieldId)"
           >
             <RichContentTiptapHTML v-if="hasBody" :json_content="element.json_content" />
-            <p v-else class="italic text-muted-foreground/60">{{ $t('rich-content.content') }}</p>
+            <p v-else class="italic text-muted-foreground/60">
+              {{ $t('rich-content.content') }}
+            </p>
           </div>
           <RCAddPlaceholder
             v-if="!hasBody && !isBodyActive"

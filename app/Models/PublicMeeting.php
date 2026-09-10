@@ -57,6 +57,8 @@ use Laravel\Scout\Searchable;
  * @property-read mixed $type_slug
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
+ * @property-read int|null $users_count
+ * @property-read int|null $tenants_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting newQuery()

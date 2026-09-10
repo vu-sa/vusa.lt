@@ -1,7 +1,7 @@
 <template>
   <RCBlockToolbarShell
-    :content :block-key="blockKey" :reference
-    :can-move-up="canMoveUp" :can-move-down="canMoveDown" :can-delete="canDelete"
+    :content :block-key :reference
+    :can-move-up :can-move-down :can-delete
     @update:content="$emit('update:content', $event)"
     @move-up="$emit('move-up')"
     @move-down="$emit('move-down')"
@@ -33,13 +33,13 @@
 
       <div v-if="allowedWidths.length > 1" class="flex items-center justify-between gap-2">
         <FieldLabel>{{ $t('rich-content.width') }}</FieldLabel>
-        <RCWidthPicker :model-value="currentWidth" :allowed-widths="allowedWidths" @update:model-value="setWidth" />
+        <RCWidthPicker :model-value="currentWidth" :allowed-widths @update:model-value="setWidth" />
       </div>
 
       <RCPresentationPicker
         v-if="variant !== 'panel'"
         :model-value="presentation"
-        :plain-padding="plainPadding"
+        :plain-padding
         :disabled="presentationDisabled"
         @update:model-value="setPresentation"
         @update:plain-padding="setPlainPadding"
@@ -65,8 +65,8 @@ import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
 import type { BlockPresentation } from '../bandLayout';
 import type { PlainPadding } from '../sectionClasses';
-import type { Hero } from '@/Types/contentParts';
 
+import type { Hero } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
 

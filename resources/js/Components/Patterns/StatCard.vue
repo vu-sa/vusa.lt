@@ -77,7 +77,5 @@ withDefaults(defineProps<{
   muted: false,
 });
 
-const emit = defineEmits<{
-  (e: 'click'): void;
-}>();
+const emit = defineEmits<(e: 'click') => void>();
 </script>

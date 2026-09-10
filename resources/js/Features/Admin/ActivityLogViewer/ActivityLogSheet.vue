@@ -106,7 +106,7 @@ const subjectTypeFilter = computed(() => activityLog.filters.value.subject_type 
 // naturally without a dedicated label per type.
 const availableSubjectTypeOptions = computed(() =>
   activityLog.availableSubjectTypes.value
-    .map((type) => ({ value: type, label: humanizeSubjectType(type) }))
+    .map(type => ({ value: type, label: humanizeSubjectType(type) }))
     .sort((a, b) => a.label.localeCompare(b.label)),
 );
 

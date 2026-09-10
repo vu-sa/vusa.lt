@@ -5,6 +5,7 @@ namespace App\Models\Traits;
 use App\Models\Task;
 use App\Services\TaskService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 
 trait HasTasks
@@ -30,7 +31,8 @@ trait HasTasks
         });
     }
 
-    public function tasks()
+    /** @return MorphMany<Task, $this> */
+    public function tasks(): MorphMany
     {
         return $this->morphMany(Task::class, 'taskable');
     }

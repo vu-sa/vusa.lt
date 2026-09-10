@@ -43,6 +43,7 @@ use Laravel\Scout\Searchable;
  * @property-read Category|null $category
  * @property-read Content $content
  * @property-read News|null $other_language_news
+ * @property-read Collection<int, PublicUrl> $publicUrls
  * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  * @property-read User|null $user

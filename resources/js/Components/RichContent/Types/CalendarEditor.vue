@@ -17,8 +17,9 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 
-import type { Calendar } from '@/Types/contentParts';
 import CalendarOptionsFields from './CalendarOptionsFields.vue';
+
+import type { Calendar } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 

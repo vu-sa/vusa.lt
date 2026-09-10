@@ -1,6 +1,6 @@
-import type { NavItem, NavLink } from '@/Components/Public/Nav/types';
-
 import type { AdminNavigationLink, AdminNavigationRoot } from './types';
+
+import type { NavItem, NavLink } from '@/Components/Public/Nav/types';
 
 /**
  * Mirrors `NavigationService::getNavigationForPublic()`'s hoisting of `extra_attributes`

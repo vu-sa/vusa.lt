@@ -57,7 +57,7 @@ class UserSearchApiController extends ApiController
         $scope = $this->authorizer->scope($user, $permission);
 
         $query = User::query()
-            ->select('id', 'name', 'email', 'profile_photo_path')
+            ->select(['id', 'name', 'email', 'profile_photo_path'])
             ->withCount('duties')
             // Columns must be table-qualified: tenants is a hasManyDeep whose joins
             // give several tables an `id`, so a bare `id` is ambiguous.

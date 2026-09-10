@@ -6,8 +6,8 @@ import { DynamicListInput } from '../index';
 function mountList(props: Record<string, unknown> = {}) {
   return mount(DynamicListInput, {
     props: {
-      modelValue: ['a', 'b'],
-      createItem: () => '',
+      'modelValue': ['a', 'b'],
+      'createItem': () => '',
       'onUpdate:modelValue': () => {},
       ...props,
     },
@@ -48,7 +48,7 @@ describe('DynamicListInput', () => {
     // not crash the template on `items.length`.
     const wrapper = mount(DynamicListInput, {
       props: {
-        createItem: () => 'new',
+        'createItem': () => 'new',
         'onUpdate:modelValue': () => {},
       },
       slots: {
@@ -81,7 +81,7 @@ describe('DynamicListInput', () => {
     const wrapper = mount(DynamicListInput, {
       props: {
         modelValue,
-        createItem: () => 'new',
+        'createItem': () => 'new',
         'onUpdate:modelValue': (val: string[]) => wrapper.setProps({ modelValue: val }),
       },
       slots: { item: '<span class="item-slot" />' },
@@ -95,8 +95,8 @@ describe('DynamicListInput', () => {
   it('remove item via the delete button removes just that item', async () => {
     const wrapper = mount(DynamicListInput, {
       props: {
-        modelValue: ['a', 'b', 'c'],
-        createItem: () => 'new',
+        'modelValue': ['a', 'b', 'c'],
+        'createItem': () => 'new',
         'onUpdate:modelValue': (val: string[]) => wrapper.setProps({ modelValue: val }),
       },
       slots: { item: '<template #item="{ item }"><span class="item-slot">{{ item }}</span></template>' },

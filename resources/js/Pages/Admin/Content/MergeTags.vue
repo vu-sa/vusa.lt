@@ -54,10 +54,10 @@
 </template>
 
 <script setup lang="ts">
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { Badge } from '@/Components/ui/badge';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';

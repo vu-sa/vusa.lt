@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
-
 import NavigationBuilder from './NavigationBuilder.vue';
 import type { AdminNavigationLink, AdminNavigationRoot } from './types';
 

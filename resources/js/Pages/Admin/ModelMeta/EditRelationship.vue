@@ -309,7 +309,6 @@
 </template>
 
 <script setup lang="ts">
-import { ModelEnum } from '@/Types/enums';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
@@ -328,6 +327,7 @@ import {
   TrashIcon,
 } from 'lucide-vue-next';
 
+import { ModelEnum } from '@/Types/enums';
 import { cn } from '@/Utils/Shadcn/utils';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

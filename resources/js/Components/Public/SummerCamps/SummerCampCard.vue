@@ -9,50 +9,50 @@
          valid HTML without affecting layout — RCFeatureCard's footer div already
          supplies the flex/gap styling the <li>s render into. -->
     <ul class="contents">
-    <li v-for="event in events" :key="event.id">
-      <SmartLink
-        :href="eventHref(event)"
-        class="relative z-20 flex items-start gap-3 rounded-xl p-2.5 -mx-2.5 transition-colors hover:bg-white/70 dark:hover:bg-zinc-800/60"
-      >
-        <div
-          class="flex min-w-11 flex-col items-center justify-center rounded-lg bg-vusa-red/10 px-2 py-1.5 text-center text-vusa-red dark:bg-vusa-red/20"
+      <li v-for="event in events" :key="event.id">
+        <SmartLink
+          :href="eventHref(event)"
+          class="relative z-20 flex items-start gap-3 rounded-xl p-2.5 -mx-2.5 transition-colors hover:bg-white/70 dark:hover:bg-zinc-800/60"
         >
-          <span class="text-[0.5625rem] font-semibold uppercase leading-none">
-            {{ formatMonthShort(event.date, locale) }}
-          </span>
-          <span class="mt-0.5 text-base font-bold leading-none tabular-nums">
-            {{ dayOfMonth(event.date) }}
-          </span>
-        </div>
-
-        <div class="min-w-0 flex-1">
-          <p class="text-sm font-medium text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-200">
-            {{ dateSpan(event).primary }}
-          </p>
-          <p
-            v-if="event.location"
-            class="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400"
+          <div
+            class="flex min-w-11 flex-col items-center justify-center rounded-lg bg-vusa-red/10 px-2 py-1.5 text-center text-vusa-red dark:bg-vusa-red/20"
           >
-            <IFluentLocation20Regular class="size-3 shrink-0" />
-            <span class="truncate">{{ event.location }}</span>
-          </p>
-        </div>
+            <span class="text-[0.5625rem] font-semibold uppercase leading-none">
+              {{ formatMonthShort(event.date, locale) }}
+            </span>
+            <span class="mt-0.5 text-base font-bold leading-none tabular-nums">
+              {{ dayOfMonth(event.date) }}
+            </span>
+          </div>
 
-        <IFluentChevronRight12Regular
-          class="mt-2 size-3 shrink-0 text-zinc-300 transition-colors group-hover:text-vusa-red dark:text-zinc-600"
-        />
-      </SmartLink>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-zinc-800 transition-colors group-hover:text-vusa-red dark:text-zinc-200">
+              {{ dateSpan(event).primary }}
+            </p>
+            <p
+              v-if="event.location"
+              class="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400"
+            >
+              <IFluentLocation20Regular class="size-3 shrink-0" />
+              <span class="truncate">{{ event.location }}</span>
+            </p>
+          </div>
 
-      <a
-        v-if="event.cto_url"
-        :href="String(event.cto_url)"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="relative z-20 ml-14 inline-flex items-center gap-1 text-xs font-semibold text-vusa-red hover:underline"
-      >
-        {{ $t("Registruotis") }} →
-      </a>
-    </li>
+          <IFluentChevronRight12Regular
+            class="mt-2 size-3 shrink-0 text-zinc-300 transition-colors group-hover:text-vusa-red dark:text-zinc-600"
+          />
+        </SmartLink>
+
+        <a
+          v-if="event.cto_url"
+          :href="String(event.cto_url)"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="relative z-20 ml-14 inline-flex items-center gap-1 text-xs font-semibold text-vusa-red hover:underline"
+        >
+          {{ $t("Registruotis") }} →
+        </a>
+      </li>
     </ul>
   </RCFeatureCard>
 </template>

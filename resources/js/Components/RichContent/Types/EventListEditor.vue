@@ -13,6 +13,7 @@
  * options popover so the two surfaces can't drift apart.
  */
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+
 import EventListOptionsFields from './EventListOptionsFields.vue';
 
 import type { EventList } from '@/Types/contentParts';

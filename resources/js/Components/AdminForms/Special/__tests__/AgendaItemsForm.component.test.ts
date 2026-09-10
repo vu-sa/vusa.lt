@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
 import AgendaItemsForm from '../AgendaItemsForm.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 /** Real TimePicker drives a Popover + ScrollArea, unreliable in jsdom — stub it and drive its model directly. */

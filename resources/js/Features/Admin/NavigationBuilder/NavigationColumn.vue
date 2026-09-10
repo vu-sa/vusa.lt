@@ -23,7 +23,6 @@ import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import NavigationLinkCard from './NavigationLinkCard.vue';
-
 import type { AdminNavigationLink } from './types';
 
 const props = defineProps<{

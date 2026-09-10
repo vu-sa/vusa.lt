@@ -80,7 +80,6 @@ import { Eye, Pencil, Plus } from 'lucide-vue-next';
 
 import NavigationRootItem from './NavigationRootItem.vue';
 import NavigationPreview from './NavigationPreview.vue';
-
 import type { AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from './types';
 
 import { Button } from '@/Components/ui/button';
@@ -94,9 +93,7 @@ const props = defineProps<{
   translationSummary?: TranslationSummary;
 }>();
 
-defineEmits<{
-  (event: 'update:lang', lang: 'lt' | 'en'): void;
-}>();
+defineEmits<(event: 'update:lang', lang: 'lt' | 'en') => void>();
 
 const mode = ref<'edit' | 'preview'>('edit');
 const rootsEl = ref<HTMLElement | null>(null);

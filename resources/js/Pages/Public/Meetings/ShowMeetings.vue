@@ -395,7 +395,7 @@ const searchInput = ref('');
 const isSortPopoverOpen = ref(false);
 
 function applyCurrentTenantFilter(): void {
-  const tenant = page.props.tenant;
+  const { tenant } = page.props;
 
   if (tenant?.type !== TenantType.Padalinys || !tenant.shortname) {
     return;

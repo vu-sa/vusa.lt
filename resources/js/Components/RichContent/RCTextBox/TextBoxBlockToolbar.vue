@@ -12,7 +12,9 @@
       <!-- Open / Closed toggle -->
       <Field>
         <div class="flex items-center justify-between">
-          <FieldLabel class="mb-0 text-xs">{{ $t('rich-content.text_box_closed_label') }}</FieldLabel>
+          <FieldLabel class="mb-0 text-xs">
+            {{ $t('rich-content.text_box_closed_label') }}
+          </FieldLabel>
           <Switch
             :model-value="options.isClosed === true"
             @update:model-value="updateOption('isClosed', $event)"
@@ -25,7 +27,9 @@
 
       <!-- Closed message when closed -->
       <Field v-if="options.isClosed">
-        <FieldLabel class="text-xs">{{ $t('rich-content.text_box_closed_message_label') }}</FieldLabel>
+        <FieldLabel class="text-xs">
+          {{ $t('rich-content.text_box_closed_message_label') }}
+        </FieldLabel>
         <Input
           :model-value="closedMessageText"
           type="text"
@@ -36,7 +40,9 @@
 
       <!-- Placeholder text -->
       <Field>
-        <FieldLabel class="text-xs">{{ $t('rich-content.text_box_placeholder_label') }}</FieldLabel>
+        <FieldLabel class="text-xs">
+          {{ $t('rich-content.text_box_placeholder_label') }}
+        </FieldLabel>
         <Input
           :model-value="placeholderText"
           type="text"
@@ -69,6 +75,7 @@ import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import TextBoxSubmissionsDialog from '../Types/TextBoxSubmissionsDialog.vue';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
+
 import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';

@@ -47,9 +47,9 @@ import { computed, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AtSign, GraduationCap, Image, Tag, Text, Users } from 'lucide-vue-next';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
-
 import type { ParsedRow } from './types';
+
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
 
 const props = withDefaults(defineProps<{
   extras: ParsedRow['extras'];
@@ -70,7 +70,7 @@ interface ExtraEntry {
 }
 
 const entries = computed<ExtraEntry[]>(() => {
-  const extras = props.extras;
+  const { extras } = props;
 
   if (!extras) return [];
 

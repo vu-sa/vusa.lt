@@ -159,7 +159,6 @@
             </div>
           </template>
         </FormFieldWrapper>
-
       </div>
     </FormElement>
 
@@ -264,7 +263,7 @@
       <CadenceSection
         :institution-id="institution.id!"
         :own-cadences="cadences"
-        :global-cadences="globalCadences"
+        :global-cadences
         :defaults="cadenceDefaults"
       />
     </FormElement>

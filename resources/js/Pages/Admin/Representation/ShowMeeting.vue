@@ -179,8 +179,8 @@
         <MeetingDocumentsPanel
           :meeting-id="meeting.id"
           :documents="documents ?? []"
-          :institution-ids="institutionIds"
-          :tenant-shortnames="tenantShortnames"
+          :institution-ids
+          :tenant-shortnames
           can-update
         />
       </Deferred>
@@ -375,7 +375,7 @@
       v-if="isInternalBody"
       v-model:open="showAnnounceDialog"
       :meeting-id="meeting.id"
-      :tenant-ids="tenantIds"
+      :tenant-ids
     />
 
     <!-- Task detail dialog: the meeting's own tasks are always meeting-taskable (agenda
@@ -402,7 +402,6 @@
 </template>
 
 <script setup lang="tsx">
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
 import { Deferred, router, useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
@@ -410,6 +409,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, Plus, Trash2, X, Clock, Globe, Edit, MoreHorizontal, Video, Link2, Check, FileText, FileBarChart, CalendarDays, CalendarPlus, CalendarX } from 'lucide-vue-next';
 import { DialogDescription } from 'reka-ui';
 
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { formatStaticTime, formatMonthShort, formatRelativeTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { genitivizeEveryWord } from '@/Utils/String';

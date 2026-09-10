@@ -10,7 +10,7 @@
 
     <Suspense v-else>
       <template #default>
-        <component :is="displayComponent" :element="element" :html="false" :is-first-element="true"
+        <component :is="displayComponent" :element :html="false" :is-first-element="true"
           :resolved="resolvedForElement" :band="bandForElement"
           :editable="editableForElement" :active-inline-field="activeInlineFieldForElement"
           :block-key="blockKeyForElement"
@@ -61,8 +61,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { blockLayoutClasses } from '../blockLayout';
 import { getContentType } from '../Types';
 import { resolveBand, resolveBandRole, type BandResolution } from '../bandLayout';
-
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
+
 const props = defineProps<{
   element: { type: string; json_content: unknown; options?: Record<string, unknown> | null; id?: number };
   /** Server-resolved preview payload for this element (see useContentPartPreview), keyed by block key upstream. */

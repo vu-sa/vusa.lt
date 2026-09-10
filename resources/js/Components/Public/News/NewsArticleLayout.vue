@@ -195,10 +195,10 @@ const isoPublishTime = computed(() => (
 
 const publishedOn = computed(() => (props.article.publish_time
   ? formatStaticTime(
-    new Date(props.article.publish_time),
-    { year: 'numeric', month: 'long', day: 'numeric' },
-    props.locale,
-  )
+      new Date(props.article.publish_time),
+      { year: 'numeric', month: 'long', day: 'numeric' },
+      props.locale,
+    )
   : ''));
 
 const archiveHref = computed(() => route('newsArchive', {

@@ -9,6 +9,7 @@ use App\Models\Traits\HasComments;
 use App\Models\Traits\LogsModelActivity;
 use Database\Factories\SupportRequestFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -21,6 +22,7 @@ use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
@@ -43,12 +45,28 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
- * @property-read User|null $creator
+ * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read SupportRequestArea $area
  * @property-read User|null $assignedTo
+ * @property-read Collection<int, Comment> $comments
+ * @property-read User|null $creator
+ * @property-read MediaCollection<int, Media> $media
+ * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read SupportService $service
  * @property-read SupportRequestType $type
- * @property-read SupportRequestArea $area
- * @property-read Collection<int, Role> $roles
+ *
+ * @method static \Database\Factories\SupportRequestFactory factory($count = null, $state = [])
+ * @method static Builder<static>|SupportRequest newModelQuery()
+ * @method static Builder<static>|SupportRequest newQuery()
+ * @method static Builder<static>|SupportRequest onlyTrashed()
+ * @method static Builder<static>|SupportRequest open()
+ * @method static Builder<static>|SupportRequest query()
+ * @method static Builder<static>|SupportRequest resolved()
+ * @method static Builder<static>|SupportRequest withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|SupportRequest withoutTrashed()
+ *
+ * @mixin \Eloquent
  */
 #[Fillable([
     'created_by',
@@ -72,6 +90,7 @@ class SupportRequest extends Model implements Commentable, HasMedia
     /** @use HasFactory<SupportRequestFactory> */
     use HasComments, HasFactory, HasUlids, InteractsWithMedia, LogsModelActivity, Searchable, SoftDeletes;
 
+    #[\Override]
     protected $attributes = [
         'status' => 'new',
         'visibility' => 'private',
@@ -147,12 +166,14 @@ class SupportRequest extends Model implements Commentable, HasMedia
         return $this->status === SupportRequestStatus::New;
     }
 
-    public function scopeOpen(Builder $query): Builder
+    #[Scope]
+    protected function open(Builder $query): Builder
     {
         return $query->whereNotIn('status', [SupportRequestStatus::Done, SupportRequestStatus::Declined]);
     }
 
-    public function scopeResolved(Builder $query): Builder
+    #[Scope]
+    protected function resolved(Builder $query): Builder
     {
         return $query->whereIn('status', [SupportRequestStatus::Done, SupportRequestStatus::Declined]);
     }

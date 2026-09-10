@@ -1,5 +1,5 @@
 <template>
-  <ActionWindowScreen :title="$t('action_window.meeting.when.title')" :subtitle="subtitle">
+  <ActionWindowScreen :title="$t('action_window.meeting.when.title')" :subtitle>
     <ActionChoiceList>
       <ActionChoiceButton
         v-for="suggestion in suggestions"

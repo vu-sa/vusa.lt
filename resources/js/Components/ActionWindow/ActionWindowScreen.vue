@@ -2,13 +2,17 @@
   <div data-slot="action-window-screen" class="flex min-h-0 flex-1 flex-col">
     <div :class="['shrink-0 px-5 pb-5 sm:px-7', centered && 'text-center']">
       <h2 class="text-[1.4rem] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-2xl">
-        <slot name="title">{{ title }}</slot>
+        <slot name="title">
+          {{ title }}
+        </slot>
       </h2>
       <p
         v-if="subtitle || $slots.subtitle"
         :class="['mt-2 text-sm leading-snug text-muted-foreground', centered && 'mx-auto max-w-sm']"
       >
-        <slot name="subtitle">{{ subtitle }}</slot>
+        <slot name="subtitle">
+          {{ subtitle }}
+        </slot>
       </p>
     </div>
 

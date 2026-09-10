@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
 import ContentGridEditor from '../ContentGridEditor.vue';
+
 import type { ContentGrid } from '@/Types/contentParts';
 
 const stubs = {

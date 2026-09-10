@@ -220,8 +220,6 @@
 </template>
 
 <script setup lang="ts">
-import { localizedRoute } from '@/Utils/LocalizedRoutes';
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -235,6 +233,8 @@ import FormStatusHeader from './FormStatusHeader.vue';
 import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';

@@ -45,12 +45,12 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
-import { TenantType } from '@/Types/enums';
 
 import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
+import { TenantType } from '@/Types/enums';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { Input } from '@/Components/ui/input';
 

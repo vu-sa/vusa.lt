@@ -189,6 +189,7 @@
 
 <script setup lang="tsx">
 import { ModelEnum } from '@/Types/enums';
+
 import { Head as InertiaHead, Link } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';

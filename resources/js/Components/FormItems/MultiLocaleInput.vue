@@ -5,14 +5,14 @@
         v-if="inputType !== 'textarea'"
         v-model="currentValue"
         :placeholder="currentPlaceholder"
-        :disabled="disabled"
+        :disabled
         class="pr-12"
       />
       <Textarea
         v-else
         v-model="currentValue"
         :placeholder="currentPlaceholder"
-        :disabled="disabled"
+        :disabled
         class="pr-12 min-h-20"
       />
       <div class="absolute right-1.5 top-1/2 -translate-y-1/2">

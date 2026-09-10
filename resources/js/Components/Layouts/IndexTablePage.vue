@@ -134,12 +134,12 @@ import type {
   IndexTablePageProps,
 } from '@/Types/TableConfigTypes';
 
-type ServerDataTableInstance = {
+interface ServerDataTableInstance {
   reloadData: (page?: number) => void;
   updateFilter: (key: string, value: unknown) => void;
   getSelectedRows: () => unknown[];
   clearRowSelection: () => void;
-};
+}
 
 // Props use the combined interface for better organization
 const props = defineProps<IndexTablePageProps<TData>>();

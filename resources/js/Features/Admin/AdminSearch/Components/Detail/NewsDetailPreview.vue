@@ -47,7 +47,6 @@
 </template>
 
 <script setup lang="ts">
-import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -59,6 +58,7 @@ import { stripHtml } from '../../Utils/html';
 import DetailRow from './DetailRow.vue';
 import DetailLayout from './DetailLayout.vue';
 
+import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { NewsIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';

@@ -238,7 +238,7 @@ import { Button } from '@/Components/ui/button';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import SummerCampCard from '@/Components/Public/SummerCamps/SummerCampCard.vue';
 
-type CampTenant = { id: number; alias: string; fullname: string };
+interface CampTenant { id: number; alias: string; fullname: string }
 
 const props = defineProps<{
   events: App.Entities.Calendar[];

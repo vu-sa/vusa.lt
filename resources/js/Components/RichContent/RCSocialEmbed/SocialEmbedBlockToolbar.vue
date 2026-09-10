@@ -40,7 +40,9 @@
       <!-- Show caption toggle -->
       <Field>
         <div class="flex items-center justify-between">
-          <FieldLabel class="mb-0 text-xs">{{ $t('Rodyti įrašo aprašymą') }}</FieldLabel>
+          <FieldLabel class="mb-0 text-xs">
+            {{ $t('Rodyti įrašo aprašymą') }}
+          </FieldLabel>
           <Switch
             :model-value="options.showCaption !== false"
             @update:model-value="updateOption('showCaption', $event)"
@@ -65,6 +67,7 @@ import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
+
 import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';

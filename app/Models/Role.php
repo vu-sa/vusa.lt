@@ -18,12 +18,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Type> $attachable_types
+ * @property-read Collection<int, User> $currentUsersThroughDuties
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
- * @property-read Collection<int, User> $currentUsersThroughDuties
  * @property-read Collection<int, User> $usersThroughDuties
+ * @property-read int|null $users_through_duties_count
+ * @property-read int|null $current_users_through_duties_count
  *
  * @method static \Database\Factories\RoleFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Role newModelQuery()

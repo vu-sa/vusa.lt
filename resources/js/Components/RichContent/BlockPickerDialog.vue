@@ -1,5 +1,5 @@
 <template>
-  <Dialog :open="open" @update:open="$emit('update:open', $event)">
+  <Dialog :open @update:open="$emit('update:open', $event)">
     <DialogContent class="w-[min(96vw,86rem)] max-w-none sm:max-w-none gap-0 overflow-hidden p-0">
       <DialogHeader class="border-b border-zinc-100 px-4 py-3 dark:border-zinc-800">
         <DialogTitle class="text-base">

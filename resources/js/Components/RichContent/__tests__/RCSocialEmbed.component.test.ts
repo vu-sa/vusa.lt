@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import RCSocialEmbed from '../RCSocialEmbed.vue';
+
 import type { SocialEmbed } from '@/Types/contentParts';
 
 function makeElement(overrides: Partial<SocialEmbed['json_content']> = {}, options: SocialEmbed['options'] = null): SocialEmbed {

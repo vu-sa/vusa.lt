@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 
-
 vi.mock('@inertiajs/vue3', () => ({
   usePage: vi.fn(() => ({ props: {} })),
   router: { visit: vi.fn() },

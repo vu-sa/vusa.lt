@@ -30,7 +30,5 @@ const props = defineProps<{
   class?: HTMLAttributes['class'];
 }>();
 
-defineEmits<{
-  (e: 'click'): void;
-}>();
+defineEmits<(e: 'click') => void>();
 </script>

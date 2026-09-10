@@ -109,7 +109,6 @@
 </template>
 
 <script setup lang="ts">
-import { localizedSlug } from '@/Utils/LocalizedRoutes';
 import { Link, usePage, useForm } from '@inertiajs/vue3';
 import { computed, ref, toRaw, watch } from 'vue';
 
@@ -125,6 +124,7 @@ import FormElement from './FormElement.vue';
 import FormFieldForm from './FormFieldForm.vue';
 import PermalinkField from './PermalinkField.vue';
 
+import { localizedSlug } from '@/Utils/LocalizedRoutes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Label } from '@/Components/ui/label';
 import { DateTimePicker } from '@/Components/ui/date-picker';

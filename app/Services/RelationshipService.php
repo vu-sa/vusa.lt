@@ -123,8 +123,11 @@ class RelationshipService
         }
 
         // Direct outgoing relationships
-        $outgoingDirect = $institution->load('outgoingRelationships.pivot.related_model')
-            ->outgoingRelationships;
+        $outgoingDirect = $institution->load('outgoingRelationships')->outgoingRelationships;
+        new Collection($outgoingDirect->map(fn (Relationship $relationship) => $relationship->getRelation('pivot'))
+            ->filter()
+            ->all())
+            ->load('related_model');
 
         foreach ($outgoingDirect as $relationship) {
             /** @var Relationshipable $pivot */
@@ -143,8 +146,11 @@ class RelationshipService
         }
 
         // Direct incoming relationships
-        $incomingDirect = $institution->load('incomingRelationships.pivot.relationshipable')
-            ->incomingRelationships;
+        $incomingDirect = $institution->load('incomingRelationships')->incomingRelationships;
+        new Collection($incomingDirect->map(fn (Relationship $relationship) => $relationship->getRelation('pivot'))
+            ->filter()
+            ->all())
+            ->load('relationshipable');
 
         foreach ($incomingDirect as $relationship) {
             /** @var Relationshipable $pivot */
@@ -551,8 +557,16 @@ class RelationshipService
     public static function getRelatedInstitutionRelations(Institution $institution)
     {
         // first get direct relationships
-        $outgoingDirect = $institution->load('outgoingRelationships.pivot.related_model.meetings')->outgoingRelationships; // this gets relationshipables which may be figured out
-        $incomingDirect = $institution->load('incomingRelationships.pivot.relationshipable.meetings')->incomingRelationships; // this gets relationshipables which may be figured out
+        $outgoingDirect = $institution->load('outgoingRelationships')->outgoingRelationships;
+        new Collection($outgoingDirect->map(fn (Relationship $relationship) => $relationship->getRelation('pivot'))
+            ->filter()
+            ->all())
+            ->load('related_model.meetings');
+        $incomingDirect = $institution->load('incomingRelationships')->incomingRelationships;
+        new Collection($incomingDirect->map(fn (Relationship $relationship) => $relationship->getRelation('pivot'))
+            ->filter()
+            ->all())
+            ->load('relationshipable.meetings');
 
         // now by type - load all institutions, scope filtering is applied in the calling code
         $outgoingDirectByType = $institution->load(['types.outgoingRelationships.pivot.related_model.institutions.tenant'])->types->map(fn ($type) => $type->outgoingRelationships)->flatten(1);

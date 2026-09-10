@@ -245,4 +245,3 @@ describe('sidebar collapsed', () => {
     expect(body.sidebar.collapsed).toBe(true);
   });
 });
-

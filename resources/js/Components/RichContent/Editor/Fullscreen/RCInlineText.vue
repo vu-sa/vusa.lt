@@ -1,5 +1,7 @@
 <template>
-  <component :is="as" v-if="!editable">{{ modelValue }}</component>
+  <component :is="as" v-if="!editable">
+    {{ modelValue }}
+  </component>
   <component
     :is="as"
     v-else

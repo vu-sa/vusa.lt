@@ -66,12 +66,12 @@
                   </div>
                   <span v-if="lastMeetingByInstitution.get(row.institutionId!)"
                     class="text-[11px] text-zinc-500 dark:text-zinc-500 shrink-0">{{
-                      labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
+                    labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
                 </div>
                 <div v-if="detailsExpanded" class="mt-1 text-[11px] text-zinc-600 dark:text-zinc-500 leading-snug">
                   <div class="truncate">
                     <span class="opacity-70">{{ $t('Susitikimų') }}:</span>
-                    <span class="ml-1">{{meetings.filter(m => m.institution_id === row.institutionId).length}}</span>
+                    <span class="ml-1">{{ meetings.filter(m => m.institution_id === row.institutionId).length }}</span>
                   </div>
                 </div>
               </div>

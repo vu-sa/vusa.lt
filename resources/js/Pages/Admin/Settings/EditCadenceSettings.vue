@@ -55,7 +55,7 @@
           :editing-id="crud.editingId.value"
           :adding="crud.adding.value"
           :processing="crud.processing.value"
-          :prefill="prefill"
+          :prefill
           @edit="crud.editingId.value = $event"
           @cancel-edit="crud.editingId.value = null"
           @cancel-add="crud.adding.value = false"
@@ -143,7 +143,8 @@ const overrideGroups = computed(() => {
 
     if (existing) {
       existing.cadences.push(cadence);
-    } else {
+    }
+    else {
       groups.set(cadence.institution_id, {
         institutionId: cadence.institution_id,
         institutionName: cadence.institution_name ?? cadence.institution_id,

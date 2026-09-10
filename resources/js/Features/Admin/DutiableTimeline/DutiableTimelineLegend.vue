@@ -36,7 +36,7 @@
         </p>
 
         <ul class="space-y-1 text-[11px] text-muted-foreground">
-          <li v-for="key in HELP_KEYS" :key="key">
+          <li v-for="key in HELP_KEYS" :key>
             {{ $t(`dutiables.timeline.help.${key}`) }}
           </li>
         </ul>
@@ -49,10 +49,10 @@
 import { computed } from 'vue';
 import { Info } from 'lucide-vue-next';
 
+import type { TimelineColors } from './timelineColors';
+
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
-
-import type { TimelineColors } from './timelineColors';
 
 const props = defineProps<{
   colors: TimelineColors;

@@ -1,10 +1,11 @@
-import * as d3 from 'd3';
-
-import type { GanttColors } from '@/Components/Graphs/ganttColors';
+import type * as d3 from 'd3';
 
 import { toDateString } from '../composables/useDutiableTimelineData';
-import { BAR_INSET } from './renderDutiableBars';
 import type { BarDragState } from '../composables/useBarDrag';
+
+import { BAR_INSET } from './renderDutiableBars';
+
+import type { GanttColors } from '@/Components/Graphs/ganttColors';
 
 export interface DragGhostContext {
   layer: d3.Selection<SVGGElement, unknown, null, undefined>;

@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import HeroElement from '../HeroElement.vue';
+
 import type { Hero } from '@/Types/contentParts';
 
 function makeElement(overrides: Partial<Hero['options']> = {}, jsonOverrides: Partial<Hero['json_content']> = {}): Hero {

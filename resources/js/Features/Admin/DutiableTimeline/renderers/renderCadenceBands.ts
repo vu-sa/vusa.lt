@@ -1,9 +1,9 @@
-import * as d3 from 'd3';
-
-import type { GanttColors } from '@/Components/Graphs/ganttColors';
+import type * as d3 from 'd3';
 
 import type { TimelineColors } from '../timelineColors';
 import type { ParsedCadence } from '../types';
+
+import type { GanttColors } from '@/Components/Graphs/ganttColors';
 
 export interface CadenceBandContext {
   g: d3.Selection<SVGGElement, unknown, null, undefined>;

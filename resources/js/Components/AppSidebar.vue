@@ -230,6 +230,7 @@ import SidebarCustomizeDialog from './Sidebar/SidebarCustomizeDialog.vue';
 import SidebarStartFM from './SidebarStartFM.vue';
 import AppLogo from './AppLogo.vue';
 import KeyboardShortcutsDialog from './KeyboardShortcutsDialog.vue';
+import { Button } from './ui/button';
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -266,7 +267,6 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { capitalize } from '@/Utils/String';
-import { Button } from './ui/button';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',

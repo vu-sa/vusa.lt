@@ -16,7 +16,7 @@
           }"
           :institution-id="cadence.institution_id"
           :anchors="{ start: cadence.start_meeting ?? null, end: cadence.end_meeting ?? null }"
-          :processing="processing"
+          :processing
           @save="value => emit('update', cadence, value)"
           @cancel="emit('cancel-edit')"
         />
@@ -89,8 +89,8 @@
     <div v-if="adding" class="rounded-md border border-dashed border-border p-3">
       <CadenceRowForm
         :model-value="prefill"
-        :institution-id="institutionId"
-        :processing="processing"
+        :institution-id
+        :processing
         @save="value => emit('create', value)"
         @cancel="emit('cancel-add')"
       />
@@ -102,6 +102,8 @@
 import { CalendarClock, Pencil, Trash2 } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+
+import CadenceRowForm, { type CadenceAnchor, type CadenceDraft } from './CadenceRowForm.vue';
 
 import {
   AlertDialog,
@@ -116,8 +118,6 @@ import {
 } from '@/Components/ui/alert-dialog';
 import { Button } from '@/Components/ui/button';
 import { DateBadge } from '@/Components/Patterns';
-
-import CadenceRowForm, { type CadenceAnchor, type CadenceDraft } from './CadenceRowForm.vue';
 
 export interface CadenceRow {
   id: string;
@@ -160,11 +160,11 @@ function foreignInstitution(cadence: CadenceRow, anchor: CadenceAnchor): string 
 }
 
 const emit = defineEmits<{
-  edit: [id: string];
+  'edit': [id: string];
   'cancel-edit': [];
   'cancel-add': [];
-  create: [value: CadenceDraft];
-  update: [cadence: CadenceRow, value: CadenceDraft];
-  delete: [cadence: CadenceRow];
+  'create': [value: CadenceDraft];
+  'update': [cadence: CadenceRow, value: CadenceDraft];
+  'delete': [cadence: CadenceRow];
 }>();
 </script>

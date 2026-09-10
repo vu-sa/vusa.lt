@@ -216,9 +216,9 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
         // model_type can never name a class this method was not written for.
         return match ($this->model_type) {
             MorphMap::alias(Institution::class) => Institution::query()
-                ->select('id', 'name', 'tenant_id')->with('tenants')->orderBy('name')->get(),
+                ->select(['id', 'name', 'tenant_id'])->with('tenants')->orderBy('name')->get(),
             MorphMap::alias(Duty::class) => Duty::query()
-                ->select('id', 'name', 'institution_id')->with('tenants')->orderBy('name')->get(),
+                ->select(['id', 'name', 'institution_id'])->with('tenants')->orderBy('name')->get(),
             default => collect(),
         };
     }

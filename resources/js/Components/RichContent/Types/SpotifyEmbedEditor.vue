@@ -29,8 +29,12 @@
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="inline">Įprastas įterpimas</SelectItem>
-          <SelectItem value="promo">Reklaminė sekcija</SelectItem>
+          <SelectItem value="inline">
+            Įprastas įterpimas
+          </SelectItem>
+          <SelectItem value="promo">
+            Reklaminė sekcija
+          </SelectItem>
         </SelectContent>
       </Select>
       <FieldDescription>
@@ -111,8 +115,12 @@
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="default">{{ $t('rich-content.default') }}</SelectItem>
-                      <SelectItem value="outline">{{ $t('rich-content.outline') }}</SelectItem>
+                      <SelectItem value="default">
+                        {{ $t('rich-content.default') }}
+                      </SelectItem>
+                      <SelectItem value="outline">
+                        {{ $t('rich-content.outline') }}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
@@ -135,7 +143,9 @@
 
       <Field>
         <div class="flex items-center justify-between">
-          <FieldLabel class="mb-0">Grotuvas dešinėje</FieldLabel>
+          <FieldLabel class="mb-0">
+            Grotuvas dešinėje
+          </FieldLabel>
           <Switch :model-value="options?.textLeft !== false" @update:model-value="options = { ...options, textLeft: $event }" />
         </div>
         <FieldDescription>Kai išjungta, tekstas ir grotuvas sukeičiami vietomis darbalaukyje.</FieldDescription>
@@ -150,6 +160,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import RCIconSelect from '../RCIconSelect.vue';
 import RCPresentationPicker from '../Editor/RCPresentationPicker.vue';
+
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import type { SpotifyEmbed } from '@/Types/contentParts';

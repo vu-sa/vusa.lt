@@ -89,11 +89,12 @@ import { computed, ref, onMounted } from 'vue';
 import { useHttp, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
+
 import type { TextBox } from '@/Types/contentParts';
 import type { ApiResponse } from '@/Types/api.d';
 import { Button } from '@/Components/ui/button';
 import { Textarea } from '@/Components/ui/textarea';
-import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
 
 const MAX_LENGTH = 5000;
@@ -104,9 +105,7 @@ const props = defineProps<{
   blockKey?: string;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:element', value: TextBox): void;
-}>();
+const emit = defineEmits<(e: 'update:element', value: TextBox) => void>();
 
 const page = usePage();
 const locale = computed(() => page.props.app?.locale ?? 'lt');

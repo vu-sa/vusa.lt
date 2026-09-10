@@ -10,7 +10,7 @@ use App\Services\ModelAuthorizer;
 
 class SupportRequestPolicy
 {
-    public function __construct(private ModelAuthorizer $authorizer) {}
+    public function __construct(private readonly ModelAuthorizer $authorizer) {}
 
     /**
      * Determine whether the user can view any models (access the admin queue).

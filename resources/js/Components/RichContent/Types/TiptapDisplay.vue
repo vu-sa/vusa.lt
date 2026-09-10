@@ -4,23 +4,23 @@
       <!-- Smart Floating & Sticky Toolbar above the active paragraph -->
       <RCSmartTiptapToolbar
         v-if="editor"
-        :editor="editor"
-        :container-ref="containerRef"
+        :editor
+        :container-ref
       />
 
       <!-- Context Bubble Menu on text selection -->
       <BubbleMenu
         v-if="editor"
         class="flex items-center gap-0.5 rounded-lg border border-border bg-card p-1 shadow-md text-foreground"
-        :editor="editor"
+        :editor
         plugin-key="tiptapDisplayBubbleMenu"
         :should-show="shouldShowTextBubbleMenu"
         :options="{ placement: 'top', offset: 8 }"
         @mousedown.prevent
       >
-        <TiptapFormattingButtons :editor="editor" bubble />
+        <TiptapFormattingButtons :editor bubble />
         <Separator orientation="vertical" class="mx-0.5 h-5" />
-        <TiptapLinkButton :editor="editor" @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
+        <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
           <Button size="icon-sm" :variant="editor.isActive('link') ? 'secondary' : 'ghost'">
             <IFluentLink24Regular class="size-4" />
           </Button>
@@ -40,7 +40,7 @@
            flow rules are direct-child selectors (`> * + *`, `> h2`), and EditorContent
            mounts the root two levels below any wrapper — the same pattern
            TiptapEditor.vue uses for its `prose-style` prop. -->
-      <EditorContent :editor="editor" />
+      <EditorContent :editor />
     </template>
 
     <template v-else>
@@ -61,6 +61,7 @@ import { BubbleMenu } from '@tiptap/vue-3/menus';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
+
 import RCSmartTiptapToolbar from '@/Components/TipTap/RCSmartTiptapToolbar.vue';
 import TiptapFormattingButtons from '@/Components/TipTap/TiptapFormattingButtons.vue';
 import TiptapLinkButton from '@/Components/TipTap/TiptapLinkButton.vue';
@@ -68,7 +69,6 @@ import { shouldShowTextBubbleMenu } from '@/Components/TipTap/bubbleMenuVisibili
 import { createFullExtensions } from '@/Components/TipTap/extensions/presets';
 import { Button } from '@/Components/ui/button';
 import { Separator } from '@/Components/ui/separator';
-
 import IFluentLink24Regular from '~icons/fluent/link-24-regular';
 import IFluentLinkDismiss20Filled from '~icons/fluent/link-dismiss-20-filled';
 import '@/Components/TipTap/tiptap-base.css';
@@ -85,9 +85,7 @@ const props = defineProps<{
   blockKey?: string;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:element', value: typeof props.element): void;
-}>();
+const emit = defineEmits<(e: 'update:element', value: typeof props.element) => void>();
 
 const containerRef = ref<HTMLElement | null>(null);
 const editor = ref<Editor | null>(null);

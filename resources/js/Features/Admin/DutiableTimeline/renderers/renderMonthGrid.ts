@@ -1,10 +1,10 @@
 import * as d3 from 'd3';
 
-import type { GanttColors } from '@/Components/Graphs/ganttColors';
-import { formatMonthShort } from '@/Utils/IntlTime';
-
 import { MONTH_LABEL_MIN_WIDTH } from '../constants';
 import type { TimelineColors } from '../timelineColors';
+
+import type { GanttColors } from '@/Components/Graphs/ganttColors';
+import { formatMonthShort } from '@/Utils/IntlTime';
 
 export interface MonthGridContext {
   g: d3.Selection<SVGGElement, unknown, null, undefined>;

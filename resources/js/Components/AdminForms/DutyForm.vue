@@ -275,9 +275,9 @@
             <template #trigger>
               <Button type="button" variant="outline" class="w-full justify-between font-normal">
                 <span class="truncate" :class="{ 'text-muted-foreground': selectedExOfficioDuties.length === 0 }">
-                  {{selectedExOfficioDuties.length > 0
+                  {{ selectedExOfficioDuties.length > 0
                     ? selectedExOfficioDuties.map(d => d.name).join(', ')
-                    : $t('forms.fields.ex_officio_duties')}}
+                    : $t('forms.fields.ex_officio_duties') }}
                 </span>
                 <span class="flex shrink-0 items-center gap-2">
                   <Badge v-if="selectedExOfficioDuties.length > 0" variant="secondary" class="text-xs">
@@ -328,7 +328,7 @@
           <div class="inline-flex items-center gap-2 text-sm">
             <Switch id="show-all-users-tenant" v-model="showAllUsers" />
             <Label for="show-all-users-tenant" class="cursor-pointer font-normal">{{ $t('forms.fields.show_all_users')
-              }}</Label>
+            }}</Label>
           </div>
           <p v-if="!showAllUsers" class="text-xs text-muted-foreground">
             {{ $t('forms.fields.recent_users_only_hint', { shown: recentUsersCount, total: assignableUsersTotal }) }}
@@ -411,7 +411,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
-import { TenantType } from '@/Types/enums';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarRange, ChevronsUpDown, TriangleAlert } from 'lucide-vue-next';
 
@@ -424,6 +423,7 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 import DuplicateDutyWarning from './DuplicateDutyWarning.vue';
 
+import { TenantType } from '@/Types/enums';
 import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';

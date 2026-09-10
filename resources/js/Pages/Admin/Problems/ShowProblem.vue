@@ -233,7 +233,6 @@
 </template>
 
 <script setup lang="ts">
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed, ref } from 'vue';
 import { router, Link } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
@@ -243,6 +242,7 @@ import {
   Lightbulb, AlignLeft, List, CircleCheck, CircleX, Tags,
 } from 'lucide-vue-next';
 
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 import { EmptyState, SectionCard, ShowPageGrid } from '@/Components/Patterns';

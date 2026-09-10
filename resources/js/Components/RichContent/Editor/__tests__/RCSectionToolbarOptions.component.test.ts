@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 
 import RCSectionToolbarOptions from '../RCSectionToolbarOptions.vue';
+
 import type { SectionOptions } from '@/Types/contentParts';
 
 const stubs = {
@@ -22,7 +23,7 @@ describe('RCSectionToolbarOptions', () => {
     const options = ref<SectionOptions>({});
     const wrapper = mount(RCSectionToolbarOptions, {
       props: {
-        modelValue: options.value,
+        'modelValue': options.value,
         'onUpdate:modelValue': (val: SectionOptions) => { options.value = val; },
       },
       global: { stubs },
@@ -36,7 +37,7 @@ describe('RCSectionToolbarOptions', () => {
     const options = ref<SectionOptions>({ title: 'Mano sekcija' });
     const wrapper = mount(RCSectionToolbarOptions, {
       props: {
-        modelValue: options.value,
+        'modelValue': options.value,
         'onUpdate:modelValue': (val: SectionOptions) => { options.value = val; },
       },
       global: { stubs },
@@ -50,7 +51,7 @@ describe('RCSectionToolbarOptions', () => {
     const options = ref<SectionOptions>({});
     const wrapper = mount(RCSectionToolbarOptions, {
       props: {
-        modelValue: options.value,
+        'modelValue': options.value,
         'onUpdate:modelValue': (val: SectionOptions) => { options.value = val; },
       },
       global: { stubs },
@@ -66,7 +67,7 @@ describe('RCSectionToolbarOptions', () => {
     const options = ref<SectionOptions>({ title: 'Pavadinimas', subtitle: 'Paantraštė', eyebrow: 'Kicker' });
     const wrapper = mount(RCSectionToolbarOptions, {
       props: {
-        modelValue: options.value,
+        'modelValue': options.value,
         'onUpdate:modelValue': (val: SectionOptions) => { options.value = val; },
       },
       global: { stubs },

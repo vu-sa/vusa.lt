@@ -8,6 +8,7 @@
 import { ref, watch, type Ref } from 'vue';
 
 import { getContentType, type ContentPart } from '../Types';
+
 import { useContentPartPreview } from './useContentPartPreview';
 
 export function useLiveBlockPreview(

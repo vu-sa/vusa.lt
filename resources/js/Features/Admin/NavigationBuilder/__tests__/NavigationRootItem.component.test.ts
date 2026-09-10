@@ -24,7 +24,7 @@ const registeredSortables: Array<{ elRef: { value: HTMLElement | null }; onEnd: 
 // the DOM bookkeeping they do is where the cross-column duplicate bug actually lived
 // (stubbing them out hid it completely, and the model-level assertions below all passed
 // while the UI left a copy of the card behind).
-vi.mock('@vueuse/integrations/useSortable', async (importOriginal) => ({
+vi.mock('@vueuse/integrations/useSortable', async importOriginal => ({
   ...await importOriginal<typeof import('@vueuse/integrations/useSortable')>(),
   useSortable: vi.fn((elRef: { value: HTMLElement | null }, _list: unknown, options: { onEnd: (evt: unknown) => void; onMove: (evt: unknown) => boolean }) => {
     registeredSortables.push({ elRef, onEnd: options.onEnd, onMove: options.onMove });

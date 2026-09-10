@@ -2,11 +2,11 @@
   <RCSpotifyPromoDisplay
     v-if="isPromo"
     :element
-    :anchor-id="anchorId"
+    :anchor-id
     :band
     :editable
-    :block-key="blockKey"
-    :active-inline-field="activeInlineField"
+    :block-key
+    :active-inline-field
     @update:element="$emit('update:element', $event)"
     @claim-inline-field="$emit('claim-inline-field', $event)"
   />
@@ -53,10 +53,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 import RCMixcloudEmbed from './RCMixcloudEmbed.vue';
 import RCSpotifyPromoDisplay from './RCSpotifyPromoDisplay.vue';
 import { isMixcloudUrl, toSpotifyEmbedUrl } from './embedUrl';
-import SpotifyIcon from '~icons/simple-icons/spotify';
-
-import type { SpotifyEmbed } from '@/Types/contentParts';
 import type { BandResolution } from './bandLayout';
+
+import SpotifyIcon from '~icons/simple-icons/spotify';
+import type { SpotifyEmbed } from '@/Types/contentParts';
 
 const props = defineProps<{
   element: SpotifyEmbed;

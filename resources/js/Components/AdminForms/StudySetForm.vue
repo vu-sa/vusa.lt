@@ -167,7 +167,6 @@
 </template>
 
 <script setup lang="ts">
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -177,6 +176,7 @@ import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';

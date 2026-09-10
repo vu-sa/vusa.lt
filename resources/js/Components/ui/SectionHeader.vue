@@ -5,7 +5,7 @@
         <p v-if="eyebrow" class="u-eyebrow mb-2">
           {{ eyebrow }}
         </p>
-        <component :is="`h${resolvedLevel}`" :id="id"
+        <component :is="`h${resolvedLevel}`" :id
           :class="['u-display scroll-mt-32 text-balance', inverted ? 'text-current' : 'text-foreground', SECTION_HEADING_SIZE_CLASS[resolvedLevel]]">
           {{ title }}
         </component>
@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { SECTION_HEADING_SIZE_CLASS, type SectionHeadingLevel } from '@/Components/RichContent/sectionClasses';
 
 interface Props {

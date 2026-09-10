@@ -17,9 +17,15 @@
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="line">{{ $t('rich-content.line') }}</SelectItem>
-                  <SelectItem value="circle">{{ $t('rich-content.circle') }}</SelectItem>
-                  <SelectItem value="square">{{ $t('rich-content.square') }}</SelectItem>
+                  <SelectItem value="line">
+                    {{ $t('rich-content.line') }}
+                  </SelectItem>
+                  <SelectItem value="circle">
+                    {{ $t('rich-content.circle') }}
+                  </SelectItem>
+                  <SelectItem value="square">
+                    {{ $t('rich-content.square') }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -30,10 +36,18 @@
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="top-left">{{ $t('rich-content.top_left') }}</SelectItem>
-                  <SelectItem value="top-right">{{ $t('rich-content.top_right') }}</SelectItem>
-                  <SelectItem value="bottom-left">{{ $t('rich-content.bottom_left') }}</SelectItem>
-                  <SelectItem value="bottom-right">{{ $t('rich-content.bottom_right') }}</SelectItem>
+                  <SelectItem value="top-left">
+                    {{ $t('rich-content.top_left') }}
+                  </SelectItem>
+                  <SelectItem value="top-right">
+                    {{ $t('rich-content.top_right') }}
+                  </SelectItem>
+                  <SelectItem value="bottom-left">
+                    {{ $t('rich-content.bottom_left') }}
+                  </SelectItem>
+                  <SelectItem value="bottom-right">
+                    {{ $t('rich-content.bottom_right') }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -45,9 +59,15 @@
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-                <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-                <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+                <SelectItem value="sm">
+                  {{ $t('rich-content.small') }}
+                </SelectItem>
+                <SelectItem value="md">
+                  {{ $t('rich-content.medium') }}
+                </SelectItem>
+                <SelectItem value="lg">
+                  {{ $t('rich-content.large') }}
+                </SelectItem>
               </SelectContent>
             </Select>
           </Field>

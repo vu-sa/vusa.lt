@@ -3,6 +3,7 @@ import { defineComponent } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 
 import ImageSelector from '../ImageSelector.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 // The real file manager needs a backend; this only has to hand back a path.
@@ -75,5 +76,4 @@ describe('ImageSelector submission', () => {
       { src: '/uploads/files/test.png', alt: '', title: '' },
     ]);
   });
-
 });

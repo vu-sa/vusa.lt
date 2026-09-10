@@ -151,7 +151,7 @@ class MySupportRequestController extends AdminController
     {
         $this->authorize('create', SupportRequest::class);
 
-        return $this->inertiaResponse('Admin/SupportRequests/CreateSupportRequest', $this->formOptions());
+        return $this->inertiaResponse('Admin/SupportRequests/CreateSupportRequest', static::formOptions());
     }
 
     public function store(StoreSupportRequestRequest $request): RedirectResponse

@@ -205,23 +205,6 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDownNarrowWide, ChevronRight, ChevronsDownUp, ChevronsUpDown, Link2 } from 'lucide-vue-next';
 
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Checkbox } from '@/Components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
-import { getGanttColors, isDarkModeActive } from '@/Components/Graphs/ganttColors';
-import { horizontalScrollbarSize } from '@/Components/Graphs/scrollbarSize';
-import { useColumnResize } from '@/Components/Graphs/composables/useColumnResize';
-import { renderBackground } from '@/Components/Graphs/renderers/renderBackground';
-import { renderTodayLine } from '@/Components/Graphs/renderers/renderTodayLine';
-
 import { formatDuration } from './duration';
 import { getTimelineColors } from './timelineColors';
 import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
@@ -236,6 +219,23 @@ import type { GroupSummary, RowSortMode } from './composables/useDutiableLayout'
 import { toDateString } from './composables/useDutiableTimelineData';
 import { TIMELINE_HEADER_HEIGHT as HEADER_HEIGHT, DEFAULT_MONTH_WIDTH } from './constants';
 import type { ParsedCadence, ParsedRow, StagedDates, TimelineLayoutRow } from './types';
+
+import { renderTodayLine } from '@/Components/Graphs/renderers/renderTodayLine';
+import { renderBackground } from '@/Components/Graphs/renderers/renderBackground';
+import { useColumnResize } from '@/Components/Graphs/composables/useColumnResize';
+import { horizontalScrollbarSize } from '@/Components/Graphs/scrollbarSize';
+import { getGanttColors, isDarkModeActive } from '@/Components/Graphs/ganttColors';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Button } from '@/Components/ui/button';
+import { Badge } from '@/Components/ui/badge';
 
 const props = withDefaults(defineProps<{
   layoutRows: TimelineLayoutRow[];
@@ -276,8 +276,8 @@ const emit = defineEmits<{
   'update:sortMode': [value: RowSortMode];
   'toggle-selection': [rowId: string];
   'toggle-group-selection': [key: string];
-  select: [row: ParsedRow, event: MouseEvent];
-  stage: [edits: Array<{ rowId: string; dates: StagedDates }>];
+  'select': [row: ParsedRow, event: MouseEvent];
+  'stage': [edits: Array<{ rowId: string; dates: StagedDates }>];
 }>();
 
 const scrollContainer = ref<HTMLElement | null>(null);
@@ -292,7 +292,7 @@ const colors = shallowRef(getGanttColors(isDarkModeActive()));
 const timelineColors = shallowRef(getTimelineColors(isDarkModeActive()));
 
 const { startResize } = useColumnResize(
-  width => { labelWidth.value = width; },
+  (width) => { labelWidth.value = width; },
   () => labelWidth.value,
   { minWidth: 140, maxWidth: 420 },
 );

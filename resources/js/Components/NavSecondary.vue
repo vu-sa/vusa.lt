@@ -43,7 +43,6 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-
 import {
   SidebarGroup,
   SidebarGroupContent,

@@ -21,7 +21,9 @@
             @click.stop
             @update:model-value="updateStatistic(index, { ...numberStat, label: $event })"
           />
-          <template v-else>{{ numberStat.label }}</template>
+          <template v-else>
+            {{ numberStat.label }}
+          </template>
         </NumberStatistic>
         <button v-if="editable" type="button"
           :class="[
@@ -56,7 +58,9 @@
           </Field>
           <Field>
             <div class="flex items-center justify-between">
-              <FieldLabel class="mb-0">{{ $t('rich-content.stat_show_plus') }}</FieldLabel>
+              <FieldLabel class="mb-0">
+                {{ $t('rich-content.stat_show_plus') }}
+              </FieldLabel>
               <Switch :model-value="currentStatistic.showPlus" @update:model-value="updateStatistic(currentStatisticIndex, { ...currentStatistic, showPlus: $event })" />
             </div>
           </Field>
