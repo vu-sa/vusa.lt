@@ -217,6 +217,19 @@ export enum SharepointScopeEnum {
     ORGANIZATION = 'ORGANIZATION',
     USERS = 'USERS',
 }
+export enum SupportRequestStatus {
+    New = 'new',
+    Reviewing = 'reviewing',
+    Planned = 'planned',
+    InProgress = 'in_progress',
+    Done = 'done',
+    Declined = 'declined',
+}
+export enum SupportRequestVisibility {
+    Private = 'private',
+    Roles = 'roles',
+    Public = 'public',
+}
 export enum TenantType {
     Pagrindinis = 'pagrindinis',
     Padalinys = 'padalinys',

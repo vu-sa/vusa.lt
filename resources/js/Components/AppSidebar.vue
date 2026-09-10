@@ -180,64 +180,13 @@
           {{ latestVersion }}{{ lastUpdateDate ? ` · ${lastUpdateDate}` : '' }}
         </a>
         <span>·</span>
-        <a href="https://github.com/vu-sa/vusa.lt" target="_blank" rel="noopener noreferrer" class="hover:text-muted-foreground transition-colors">
+        <a href="https://github.com/vu-sa/vusa.lt" target="_blank" rel="noopener noreferrer" class="hover:text-muted-foreground transition-colors" aria-label="GitHub">
           <Github class="h-3 w-3" />
         </a>
       </div>
     </SidebarFooter>
     <SidebarRail />
   </Sidebar>
-
-  <!-- Feedback Dialog -->
-  <Dialog v-model:open="showFeedbackDialog">
-    <DialogContent class="sm:max-w-md">
-      <DialogHeader>
-        <DialogTitle>{{ $t('Palik grįžtamąjį ryšį') }}</DialogTitle>
-        <DialogDescription>
-          <div v-if="usePage().props.app.locale === 'lt'">
-            <p class="mb-4 text-xs">
-              <strong>mano.vusa.lt</strong> yra nuolat tobulinamas studentų projektas,
-              į kurio plėtimą norime įtraukti visus!
-            </p>
-            <p class="text-xs text-zinc-600 dark:text-zinc-400">
-              Jei turi bendrų pastebėjimų ar pasiūlymų šiai platformai, parašyk žemiau
-              esančiame laukelyje. Tekstas bus nusiųstas puslapio administratoriui.
-            </p>
-          </div>
-          <div v-else>
-            <p class="mb-4 text-xs">
-              <strong>mano.vusa.lt</strong> is a constantly improving student project
-              that we want to involve everyone in!
-            </p>
-            <p class="text-xs text-zinc-600 dark:text-zinc-400">
-              If you have any general comments or suggestions for this platform, write
-              them in the field below. The text will be sent to the site
-              administrator.
-            </p>
-          </div>
-        </DialogDescription>
-      </DialogHeader>
-      <div class="grid gap-4 py-4">
-        <div class="grid gap-2">
-          <Textarea v-model="feedbackForm.feedback" :placeholder="$t('Parašyk pastebėjimų, pasiūlymų') + '...'"
-            rows="4" />
-        </div>
-        <div class="flex items-center space-x-2">
-          <Checkbox id="anonymous" v-model="feedbackForm.anonymous" />
-          <Label for="anonymous" class="text-sm">{{ $t("Siųsti anonimiškai") }}</Label>
-        </div>
-      </div>
-      <DialogFooter>
-        <Button type="submit" :disabled="!feedbackForm.feedback || feedbackLoading" class="gap-1"
-          @click="handleSendFeedback">
-          <Send v-if="!feedbackLoading" class="h-4 w-4" />
-          <span>{{ $t("forms.submit") }}</span>
-        </Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-
-  <!-- New Meeting Modal -->
 
   <!-- Sidebar customization -->
   <SidebarCustomizeDialog v-model:open="showCustomizeDialog" />
@@ -253,14 +202,12 @@ import {
   Globe,
   Bookmark,
   Settings,
-  LifeBuoy,
   MessageSquare,
   Moon,
   Sun,
   ChevronsUpDown,
   LogOut,
   UserIcon,
-  Send,
   ExternalLink,
   Github,
   Bell,
@@ -269,7 +216,7 @@ import {
   Keyboard,
   type LucideIcon,
 } from 'lucide-vue-next';
-import { Link, router, usePage, useForm } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import { computed, markRaw, ref, watch } from 'vue';
 import { useDark, useEventListener } from '@vueuse/core';
@@ -305,19 +252,6 @@ import {
   type SidebarProps,
 } from '@/Components/ui/sidebar';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/Components/ui/dialog';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Checkbox } from '@/Components/ui/checkbox';
-import { Textarea } from '@/Components/ui/textarea';
-import {
   Avatar,
   AvatarFallback,
   AvatarImage,
@@ -340,7 +274,11 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 const { isMobile, setOpenMobile } = useSidebar();
 watch(
   () => usePage().props.app.path,
-  () => { if (isMobile.value) { setOpenMobile(false); } },
+  () => {
+    if (isMobile.value) {
+      setOpenMobile(false);
+    }
+  },
 );
 
 const isDark = useDark();
@@ -364,6 +302,12 @@ const settingsSpotlight = useFeatureSpotlight('sidebar-settings-v1', { position:
 const reservationsSpotlight = useFeatureSpotlight('reservations-dashboard-v1', {
   title: $t('Rezervacijos dabar tvarkomos vienoje vietoje'),
   description: $t('Peržiūrėk laukiančias užklausas, tvirtink, išduok ir žymėk grąžintus daiktus tiesiai iš sąrašo — nebereikia atidaryti kiekvienos rezervacijos atskirai.'),
+  position: 'right',
+});
+
+const supportRequestsSpotlight = useFeatureSpotlight('support-requests-v1', {
+  title: $t('Naujas būdas pranešti apie problemą'),
+  description: $t('Čia galite greitai užregistruoti problemą ar pasiūlymą dėl vusa.lt.'),
   position: 'right',
 });
 
@@ -530,27 +474,26 @@ const navSecondaryItems = computed(() => {
       dataTour: 'nav-dokumentacija',
     },
     {
-      title: $t('Palik atsiliepimą'),
-      url: '#feedback',
+      title: $t('vusa.lt pagalba'),
+      url: route('mySupportRequests.index'),
       icon: markRaw(MessageSquare),
-      dataTour: 'nav-feedback',
+      internal: true,
+      isActive: route().current('mySupportRequests.*') || route().current('supportRequests.*'),
+      dataTour: 'nav-support-requests',
+      spotlight: {
+        title: supportRequestsSpotlight.title,
+        description: supportRequestsSpotlight.description,
+        isDismissed: supportRequestsSpotlight.isDismissed.value,
+        dismiss: supportRequestsSpotlight.dismiss,
+      },
     },
   ];
 });
 
 // Handle secondary nav clicks
 const handleSecondaryNavClick = (url: string) => {
-  if (url === '#feedback') {
-    showFeedbackDialog.value = true;
-  }
-  else if (url.startsWith('http')) {
-    window.open(url, '_blank');
-  }
-  else {
-    if (url.startsWith('/docs')) {
-      markDocsUpdatesSeen();
-    }
-    window.open(url, '_blank');
+  if (url.startsWith('/docs')) {
+    markDocsUpdatesSeen();
   }
 };
 
@@ -567,32 +510,6 @@ const publicWebsiteUrl = computed(() => {
     subdomain: page.props.tenant?.subdomain ?? 'www',
   });
 });
-
-// Feedback dialog state and form
-const showFeedbackDialog = ref(false);
-const feedbackLoading = ref(false);
-
-const feedbackForm = useForm({
-  feedback: null as string | null,
-  anonymous: false,
-  href: typeof window !== 'undefined' ? window.location.href : '',
-  selectedText: null as string | null,
-});
-
-// Handle feedback submission
-const handleSendFeedback = () => {
-  feedbackLoading.value = true;
-  feedbackForm.post(route('feedback.send'), {
-    onSuccess: () => {
-      showFeedbackDialog.value = false;
-      feedbackLoading.value = false;
-      feedbackForm.reset();
-    },
-    onError: () => {
-      feedbackLoading.value = false;
-    },
-  });
-};
 
 // Handle logout
 const handleLogout = () => {

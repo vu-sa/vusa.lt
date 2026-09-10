@@ -30,8 +30,8 @@
 
     <div :class="framed ? 'flex flex-col gap-4 rounded-xl border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 p-4 dark:border-zinc-800' : 'contents'">
       <!-- Root composer, attributed like every comment below it -->
-      <div class="flex items-start gap-3">
-        <UserAvatar v-if="currentUser" :user="currentUser" :size="32" class="mt-0.5 shrink-0" />
+      <div class="flex items-center gap-3">
+        <UserAvatar v-if="currentUser" :user="currentUser" :size="32" class="shrink-0" />
         <CommentComposer
           ref="rootComposer"
           class="min-w-0 flex-1"

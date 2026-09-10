@@ -174,6 +174,17 @@ Route::put('reservations/{reservation}/add-users', [ReservationController::class
 Route::resource('reservations', ReservationController::class)->except(['edit', 'update']);
 Route::resource('reservationResources', ReservationResourceController::class)->except(['index', 'create', 'edit']);
 
+Route::get('my-support-requests', [MySupportRequestController::class, 'index'])->name('mySupportRequests.index');
+Route::get('my-support-requests/create', [MySupportRequestController::class, 'create'])->name('mySupportRequests.create');
+Route::post('my-support-requests', [MySupportRequestController::class, 'store'])->name('mySupportRequests.store');
+
+Route::patch('support-requests/{supportRequest}/status', [SupportRequestController::class, 'updateStatus'])->name('supportRequests.status.update');
+Route::patch('support-requests/{supportRequest}/assign', [SupportRequestController::class, 'assign'])->name('supportRequests.assign');
+Route::post('support-requests/{supportRequest}/restore', [SupportRequestController::class, 'restore'])->name('supportRequests.restore')->withTrashed();
+Route::resource('support-requests', SupportRequestController::class)
+    ->names('supportRequests')
+    ->except(['create', 'store']);
+
 // Approval routes
 Route::post('approvals', [ApprovalController::class, 'store'])->name('approvals.store');
 Route::post('approvals/bulk', [ApprovalController::class, 'bulkStore'])->name('approvals.bulkStore');

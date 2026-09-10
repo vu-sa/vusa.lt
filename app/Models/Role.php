@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Role as SpatieRole;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -20,6 +21,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
+ * @property-read Collection<int, User> $currentUsersThroughDuties
  * @property-read Collection<int, User> $usersThroughDuties
  *
  * @method static \Database\Factories\RoleFactory factory($count = null, $state = [])
@@ -40,9 +42,18 @@ class Role extends SpatieRole
         return $this->morphedByMany(Duty::class, 'model', 'model_has_roles');
     }
 
-    public function usersThroughDuties()
+    public function usersThroughDuties(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->duties(), (new Duty)->users());
+    }
+
+    public function currentUsersThroughDuties(): HasManyDeep
+    {
+        return $this->usersThroughDuties()
+            ->where(function ($query): void {
+                $query->whereNull('dutiables.end_date')
+                    ->orWhere('dutiables.end_date', '>=', now());
+            });
     }
 
     // It describes the types that this role can attach to other objects.
