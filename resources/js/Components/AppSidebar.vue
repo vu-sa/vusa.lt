@@ -306,12 +306,6 @@ const reservationsSpotlight = useFeatureSpotlight('reservations-dashboard-v1', {
   position: 'right',
 });
 
-const supportRequestsSpotlight = useFeatureSpotlight('support-requests-v1', {
-  title: $t('Naujas būdas pranešti apie problemą'),
-  description: $t('Čia galite greitai užregistruoti problemą ar pasiūlymą dėl vusa.lt.'),
-  position: 'right',
-});
-
 // Registration forms used to be buried behind cards on the forms index page. They now
 // hang off Svetainė, so returning users need to be told where they went.
 const registrationsSpotlight = useFeatureSpotlight('sidebar-registrations-v1', {
@@ -481,12 +475,6 @@ const navSecondaryItems = computed(() => {
       internal: true,
       isActive: route().current('mySupportRequests.*') || route().current('supportRequests.*'),
       dataTour: 'nav-support-requests',
-      spotlight: {
-        title: supportRequestsSpotlight.title,
-        description: supportRequestsSpotlight.description,
-        isDismissed: supportRequestsSpotlight.isDismissed.value,
-        dismiss: supportRequestsSpotlight.dismiss,
-      },
     },
   ];
 });
