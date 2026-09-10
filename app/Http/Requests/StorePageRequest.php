@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\LocaleEnum;
 use App\Enums\PageLayoutEnum;
 use App\Http\Requests\Concerns\ValidatesContentParts;
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Page;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -14,9 +15,13 @@ use Illuminate\Validation\Rules\Enum;
 class StorePageRequest extends FormRequest
 {
     use ValidatesContentParts;
+    use ValidatesTenantScope;
 
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * `can('create', Page::class)` is tenant-agnostic, so the `tenant_id` rule below is what
+     * actually confines the page to a padalinys the user may create in.
      */
     public function authorize(): bool
     {
@@ -41,6 +46,7 @@ class StorePageRequest extends FormRequest
             'show_table_of_contents' => ['boolean'],
             'show_title' => ['boolean'],
             'show_breadcrumbs' => ['boolean'],
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('pages.create.padalinys')],
         ];
     }
 

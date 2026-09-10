@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GenerateUniqueSlug;
+use App\Actions\GetTenantsForUpserts;
 use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexPageRequest;
@@ -14,7 +15,6 @@ use App\Models\Category;
 use App\Models\Content;
 use App\Models\Page;
 use App\Models\PublicUrl;
-use App\Models\Tenant;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
@@ -83,6 +83,7 @@ class PageController extends AdminController
         return $this->inertiaResponse('Admin/Content/CreatePage',
             [
                 'categories' => Category::all(['id', 'name']),
+                'assignableTenants' => GetTenantsForUpserts::execute('pages.create.padalinys', $this->authorizer),
             ]
         );
     }
@@ -94,15 +95,7 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('create', Page::class);
 
-        $tenant_id = null;
-
-        // check if super admin, else set tenant_id
-        if (request()->user()->isSuperAdmin()) {
-            $tenant_id = Tenant::main()?->id;
-        } else {
-            $tenant_id = $this->authorizer->duties(request()->user(), 'pages.create.padalinys')
-                ->first()?->tenants->first()?->id;
-        }
+        $tenant_id = $request->validated('tenant_id');
 
         $content = new Content;
 

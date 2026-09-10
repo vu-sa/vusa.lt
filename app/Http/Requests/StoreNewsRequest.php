@@ -2,13 +2,19 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\News;
 use Illuminate\Support\Carbon;
 
 class StoreNewsRequest extends NewsRequest
 {
+    use ValidatesTenantScope;
+
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * `can('create', News::class)` is tenant-agnostic, so the `tenant_id` rule below is what
+     * actually confines the article to a padalinys the user may create in.
      */
     public function authorize(): bool
     {
@@ -38,6 +44,7 @@ class StoreNewsRequest extends NewsRequest
         return array_merge(parent::rules(), [
             'image' => 'nullable|string',
             'short' => 'required',
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('news.create.padalinys')],
         ]);
     }
 }

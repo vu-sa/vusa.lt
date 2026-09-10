@@ -8,6 +8,7 @@
         remember-key="CreatePage"
         :page
         :categories
+        :assignable-tenants
         :submit-url="route('pages.store')"
         submit-method="post"
         @submit:form="(form) => form.post(route('pages.store'))"
@@ -23,6 +24,7 @@ import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   categories: App.Entities.Category[];
+  assignableTenants: App.Entities.Tenant[];
 }>();
 
 const page = {
@@ -31,6 +33,7 @@ const page = {
   permalink: '',
   lang: 'lt',
   other_lang_page: null,
+  tenant_id: null,
   is_active: true,
   content: {
     parts: [

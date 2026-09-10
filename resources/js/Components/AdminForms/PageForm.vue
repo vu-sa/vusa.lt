@@ -28,6 +28,20 @@
 
         <PermalinkPreviewHint v-if="isCreate" :preview="permalinkPreview.preview.value" :is-checking="permalinkPreview.isChecking.value" />
 
+        <FormFieldWrapper v-if="isCreate" id="tenant" :label="$t('forms.fields.tenant')" required
+          :error="form.errors.tenant_id" :valid="form.valid('tenant_id')" :invalid="form.invalid('tenant_id')">
+          <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
+            <SelectTrigger id="tenant">
+              <SelectValue :placeholder="$t('forms.placeholders.select_tenant')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
+                {{ tenant.shortname }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
         <!-- Category and Language -->
         <div class="grid gap-4 lg:grid-cols-2">
           <FormFieldWrapper id="category" :label="$t('Kategorija')" required :error="form.errors.category_id"
@@ -273,6 +287,8 @@ const props = defineProps<{
   categories: App.Entities.Category[];
   page: App.Entities.Page;
   otherLangPages?: App.Entities.Page[];
+  /** Tenants the user may create pages in — only meaningful (and rendered) on create. */
+  assignableTenants?: App.Entities.Tenant[];
   rememberKey?: 'CreatePage';
   submitUrl: string;
   submitMethod: 'post' | 'patch';
@@ -305,8 +321,23 @@ const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)
   : useForm(formData).withPrecognition(props.submitMethod, props.submitUrl);
 
+// Default to the sole assignable tenant; a multi-tenant actor (e.g. super admin) picks explicitly.
+if (isCreate.value && form.tenant_id == null) {
+  form.tenant_id = props.assignableTenants?.find(tenant => tenant.type === 'pagrindinis')?.id
+    ?? props.assignableTenants?.[0]?.id
+    ?? null;
+}
+
 // Set validation timeout to 500ms for faster feedback
 form.setValidationTimeout(500);
+
+// Handle tenant_id as string for the Select component
+const tenantIdString = computed({
+  get: () => form.tenant_id ? String(form.tenant_id) : '',
+  set: (val: string) => {
+    form.tenant_id = val ? Number(val) : null;
+  },
+});
 
 // Preview-only: the actual permalink is generated server-side on create (GenerateUniqueSlug).
 // Title getter returns '' outside create mode so the composable's own length guard no-ops it —

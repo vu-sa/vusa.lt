@@ -24,6 +24,13 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
     public $timeout = 120;
 
     /**
+     * Delete this job silently instead of failing when the Document was deleted before this
+     * job (or a retry) ran — deserializing a since-deleted model otherwise throws
+     * ModelNotFoundException.
+     */
+    public bool $deleteWhenMissingModels = true;
+
+    /**
      * Create a new job instance.
      */
     public function __construct(

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
 use App\Actions\GenerateUniqueSlug;
+use App\Actions\GetTenantsForUpserts;
 use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexNewsRequest;
@@ -15,12 +16,10 @@ use App\Models\Content;
 use App\Models\News;
 use App\Models\PublicUrl;
 use App\Models\Tag;
-use App\Models\Tenant;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\ValidationException;
 
 class NewsController extends AdminController
 {
@@ -89,6 +88,7 @@ class NewsController extends AdminController
 
         return $this->inertiaResponse('Admin/Content/CreateNews', [
             'availableTags' => $tags->map->toFullArray(),
+            'assignableTenants' => GetTenantsForUpserts::execute('news.create.padalinys', $this->authorizer),
         ]);
     }
 
@@ -106,21 +106,7 @@ class NewsController extends AdminController
      */
     public function store(StoreNewsRequest $request)
     {
-        $tenant_id = null;
-
-        // check if super admin, else set tenant_id
-        if (request()->user()->isSuperAdmin()) {
-            $tenant_id = Tenant::main()?->id;
-        } else {
-            $tenant_id = $this->authorizer->duties(request()->user(), 'news.create.padalinys')
-                ->first()?->tenants->first()?->id;
-        }
-
-        if ($tenant_id === null) {
-            throw ValidationException::withMessages([
-                'tenant_id' => __('messages.news.no_available_tenant'),
-            ]);
-        }
+        $tenant_id = $request->validated('tenant_id');
 
         $content = new Content;
 

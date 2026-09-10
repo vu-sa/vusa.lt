@@ -8,6 +8,7 @@ use App\Models\Tag;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -126,6 +127,12 @@ describe('auth: simple user', function (): void {
 describe('auth: news manager', function (): void {
     beforeEach(function (): void {
         asUser($this->newsManager)->get(route('dashboard'))->assertStatus(200);
+
+        // Duty::factory()->has(Institution::factory()->state(['tenant_id' => ...])) in the outer
+        // beforeEach doesn't actually pin the institution to $this->tenant (a pre-existing factory
+        // quirk) — read back the tenant the manager's duty actually landed on instead of assuming
+        // it matches $this->tenant.
+        $this->managerTenant = $this->newsManager->duties()->first()->institution->tenant;
     });
 
     test('can index news', function (): void {
@@ -141,7 +148,27 @@ describe('auth: news manager', function (): void {
     });
 
     test('can access news create page', function (): void {
-        asUser($this->newsManager)->get(route('news.create'))->assertStatus(200);
+        asUser($this->newsManager)->get(route('news.create'))->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Content/CreateNews')
+                ->has('assignableTenants', 1)
+                ->where('assignableTenants.0.id', $this->managerTenant->id)
+            );
+    });
+
+    test('news create page has no assignable tenants when the duty institution has none', function (): void {
+        $orphanManager = User::factory()->create();
+        $institution = Institution::factory()->create(['tenant_id' => null]);
+        $duty = Duty::factory()->for($institution)
+            ->hasAttached($orphanManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])
+            ->create();
+        $duty->assignRole('Communication Coordinator');
+
+        asUser($orphanManager)->get(route('news.create'))->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Content/CreateNews')
+                ->has('assignableTenants', 0)
+            );
     });
 
     test('can store news', function (): void {
@@ -162,6 +189,7 @@ describe('auth: news manager', function (): void {
             'image' => 'image.jpg',
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
+            'tenant_id' => $this->managerTenant->id,
         ])->assertStatus(302)->assertRedirectToRoute('news.index');
     });
 
@@ -187,6 +215,7 @@ describe('auth: news manager', function (): void {
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
             'show_breadcrumbs' => false,
+            'tenant_id' => $this->managerTenant->id,
         ])->assertStatus(302)->assertRedirectToRoute('news.index');
 
         $this->assertDatabaseHas('news', [
@@ -353,6 +382,7 @@ describe('auth: news manager', function (): void {
             'image' => 'image.jpg',
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
+            'tenant_id' => $this->managerTenant->id,
         ]);
 
         $response->assertStatus(302)->assertSessionHasErrors(['content.parts.0.options.width']);
@@ -381,6 +411,7 @@ describe('auth: news manager', function (): void {
             'image' => 'image.jpg',
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
+            'tenant_id' => $this->managerTenant->id,
         ]);
 
         $response->assertStatus(302)->assertSessionDoesntHaveErrors();
@@ -443,6 +474,7 @@ describe('auth: news manager', function (): void {
             'image' => 'image.jpg',
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
+            'tenant_id' => $managerTenant->id,
         ]);
 
         $response->assertStatus(302)->assertSessionDoesntHaveErrors('permalink')->assertSessionHas('success');
@@ -458,9 +490,9 @@ describe('auth: news manager', function (): void {
         $managerTenant = $this->newsManager->duties()->first()->institution->tenant;
         $otherTenant = Tenant::query()->where('id', '!=', $managerTenant->id)->firstOrFail();
 
-        // Created directly (not through the controller): a non-super-admin actor's own tenant
-        // always wins regardless of a submitted tenant_id, so this is the only way to seed a
-        // colliding slug in a tenant $this->newsManager doesn't belong to.
+        // Created directly (not through the controller): $this->newsManager can only ever
+        // submit their own tenant (Rule::in on the assignable scope), so this is the only way to
+        // seed a colliding slug in a tenant they don't belong to.
         News::factory()->for($otherTenant)->create(['permalink' => 'shared-news']);
 
         $response = asUser($this->newsManager)->post(route('news.store'), [
@@ -479,6 +511,7 @@ describe('auth: news manager', function (): void {
             'image' => 'image.jpg',
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
+            'tenant_id' => $managerTenant->id,
         ]);
 
         $response->assertStatus(302)
@@ -599,5 +632,44 @@ describe('public URL history', function (): void {
 
         $response->assertStatus(302)->assertSessionDoesntHaveErrors('permalink');
         $this->assertDatabaseHas('news', ['id' => $this->managedNews->id, 'permalink' => $originalPermalink]);
+    });
+});
+
+describe('auth: super admin', function (): void {
+    test('sees every tenant as assignable and can create in a non-default one', function (): void {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole(config('permission.super_admin_role_name'));
+
+        asUser($superAdmin)->get(route('news.create'))->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Content/CreateNews')
+                ->has('assignableTenants', Tenant::count())
+            );
+
+        $otherTenant = Tenant::query()->where('id', '!=', Tenant::main()->id)->firstOrFail();
+
+        asUser($superAdmin)->post(route('news.store'), [
+            'title' => 'Super admin news',
+            'content' => [
+                'parts' => [
+                    [
+                        'type' => 'tiptap',
+                        'json_content' => ['lt' => 'News content'],
+                        'options' => [],
+                        'order' => 1,
+                    ],
+                ],
+            ],
+            'lang' => 'lt',
+            'image' => 'image.jpg',
+            'publish_time' => now()->timestamp,
+            'short' => 'Short news',
+            'tenant_id' => $otherTenant->id,
+        ])->assertStatus(302)->assertSessionHas('success');
+
+        $this->assertDatabaseHas('news', [
+            'title' => 'Super admin news',
+            'tenant_id' => $otherTenant->id,
+        ]);
     });
 });
