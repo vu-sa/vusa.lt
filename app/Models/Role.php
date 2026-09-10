@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Role as SpatieRole;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
@@ -37,7 +38,7 @@ class Role extends SpatieRole
 {
     use HasFactory, HasRelationships, HasUlids;
 
-    public function duties()
+    public function duties(): MorphToMany
     {
         return $this->morphedByMany(Duty::class, 'model', 'model_has_roles');
     }
@@ -56,13 +57,11 @@ class Role extends SpatieRole
             });
     }
 
-    // It describes the types that this role can attach to other objects.
     public function attachable_types()
     {
         return $this->belongsToMany(Type::class, 'role_can_attach_types');
     }
 
-    // It describes the types of duties that grant users this role.
     public function types()
     {
         return $this->belongsToMany(Type::class);

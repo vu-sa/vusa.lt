@@ -142,9 +142,9 @@ class MySupportRequestController extends AdminController
     {
         $columns = ['title', 'status', 'created_at'];
         $sort = $sorting[0] ?? ['id' => 'created_at', 'desc' => true];
-        $column = in_array($sort['id'] ?? null, $columns, true) ? $sort['id'] : 'created_at';
+        $column = in_array($sort['id'], $columns, true) ? $sort['id'] : 'created_at';
 
-        $query->orderBy($column, ($sort['desc'] ?? true) ? 'desc' : 'asc');
+        $query->orderBy($column, $sort['desc'] ? 'desc' : 'asc');
     }
 
     public function create()
