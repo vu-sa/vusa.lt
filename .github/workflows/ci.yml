@@ -220,7 +220,7 @@ jobs:
         fetch-depth: 0
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: '20'
         cache: 'npm'
@@ -294,7 +294,7 @@ jobs:
         php artisan typescript:transform
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: lts/*
         cache: 'npm'
@@ -341,7 +341,7 @@ jobs:
       run: chmod -R +x vendor/bin
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: lts/*
         cache: 'npm'
@@ -413,7 +413,7 @@ jobs:
       run: tar -xzf vendor.tar.gz
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
         node-version: '20'
         cache: 'npm'

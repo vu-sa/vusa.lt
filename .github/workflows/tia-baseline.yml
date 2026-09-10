@@ -45,7 +45,7 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: 'npm'
