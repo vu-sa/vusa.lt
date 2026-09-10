@@ -33,20 +33,19 @@
           <div class="flex items-center gap-1.5 md:gap-2">
             <slot name="headerActions" />
             <DropdownMenu>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <DropdownMenuTrigger as-child>
-                      <Button variant="outline" size="icon" class="rounded-full">
-                        <MessageSquare class="h-4 w-4" />
-                        <span class="sr-only">{{ $t('vusa.lt pagalba') }}</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>{{ $t('vusa.lt pagalba') }}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <DropdownMenuContent align="end">
+              <DropdownMenuTrigger as-child>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  class="rounded-full"
+                  :aria-label="$t('vusa.lt pagalba')"
+                  :title="$t('vusa.lt pagalba')"
+                  data-testid="support-requests-menu-trigger"
+                >
+                  <MessageSquare class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" data-testid="support-requests-menu">
                 <DropdownMenuItem as-child>
                   <Link :href="route('mySupportRequests.create')" prefetch>
                     <PlusIcon class="h-4 w-4" />

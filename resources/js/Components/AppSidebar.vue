@@ -266,6 +266,7 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { capitalize } from '@/Utils/String';
+import { Button } from './ui/button';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   variant: 'inset',
