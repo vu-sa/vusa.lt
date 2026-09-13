@@ -205,22 +205,22 @@ function setHeading(val: string): void {
   }
 }
 
-function handleLinkSubmit(linkData: { url: string; target?: string }): void {
-  if (!linkData.url) {
+function handleLinkSubmit(url: string, text?: string): void {
+  if (!url) {
     props.editor.chain().focus().unsetLink().run();
     return;
   }
   props.editor.chain().focus().extendMarkRange('link').setLink({
-    href: linkData.url,
-    target: linkData.target ?? '_blank',
+    href: url,
+    target: '_blank',
   }).run();
 }
 
-function handleDocumentLinkSubmit(docData: { name: string; url: string }): void {
+function handleDocumentLinkSubmit(url: string, text?: string): void {
   props.editor.chain().focus().extendMarkRange('link').setLink({
-    href: docData.url,
+    href: url,
     target: '_blank',
-  }).insertContent(docData.name).run();
+  }).insertContent(text ?? url).run();
 }
 
 function handleImageSubmit(image: { src: string; alt?: string }): void {

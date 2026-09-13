@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import TiptapDisplay from '../TiptapDisplay.vue';
+import TiptapLinkButton from '@/Components/TipTap/TiptapLinkButton.vue';
 
 function makeElement(html: string | null = '<p>Test paragraph</p>', json_content: Record<string, unknown> | null = {}) {
   return {
@@ -94,5 +95,45 @@ describe('TiptapDisplay', () => {
     // A wrapper holding the class would leave the > * flow rules matching the
     // EditorContent div instead of the paragraphs.
     expect(wrapper.find('.rc-prose:not(.ProseMirror)').exists()).toBe(false);
+  });
+
+  it('adds a link to the editor when the selection bubble menu submits url and text', async () => {
+    const wrapper = mount(TiptapDisplay, {
+      props: {
+        element: makeElement('<p>Editable content</p>', {
+          type: 'doc',
+          content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Editable content' }] }],
+        }),
+        editable: true,
+        blockKey: 'tip-1',
+      },
+      global: {
+        stubs: {
+          RCSmartTiptapToolbar: { template: '<div class="smart-toolbar-mock" />' },
+          // Rendered for real (not auto-stubbed) so the slotted TiptapLinkButton mounts.
+          BubbleMenu: { template: '<div><slot /></div>' },
+        },
+      },
+    });
+
+    await nextTick();
+    await flushPromises();
+
+    // ProseMirror's own keymap handles Mod-a as selectAll, independent of native DOM
+    // selection/focus — jsdom doesn't model real text selection, but this still gives
+    // the editor a real, non-collapsed selection to attach the link mark to.
+    await wrapper.find('.tiptap.ProseMirror').trigger('keydown', { key: 'a', ctrlKey: true });
+    await nextTick();
+
+    const linkButton = wrapper.findComponent(TiptapLinkButton);
+    expect(linkButton.exists()).toBe(true);
+
+    // TiptapLinkButton emits two positional args (url, text), not a { url, target }
+    // object — a mismatched handler here previously read url as undefined and
+    // silently called unsetLink() on every "add link" submission (fullscreen-only bug).
+    await linkButton.vm.$emit('submit', 'https://example.com', 'Example link');
+    await nextTick();
+
+    expect(wrapper.find('.tiptap.ProseMirror').html()).toContain('href="https://example.com"');
   });
 });
