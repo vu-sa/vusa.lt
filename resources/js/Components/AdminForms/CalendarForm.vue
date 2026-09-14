@@ -152,18 +152,6 @@
             <DateTimePicker v-model="endDate" :disabled="Boolean(meeting)" />
           </FormFieldWrapper>
         </div>
-
-        <div class="flex w-full items-center gap-3 rounded-lg border p-3">
-          <Switch id="is_all_day" v-model="form.is_all_day" />
-          <div class="flex-1 min-w-0 flex items-center gap-2">
-            <Label for="is_all_day" class="font-medium">
-              {{ $t('Visos dienos renginys') }}
-            </Label>
-            <InfoPopover>
-              {{ $t('ICS kalendoriuje šis renginys bus žymimas kaip visos dienos renginys.') }}
-            </InfoPopover>
-          </div>
-        </div>
       </div>
     </FormElement>
 
@@ -258,6 +246,42 @@
       </div>
     </FormElement>
 
+    <!-- Section 7: Advanced settings (Collapsible) -->
+    <FormElement :section-number="7">
+      <template #title>
+        {{ $t('Papildomi nustatymai') }}
+      </template>
+      <template #subtitle>
+        {{ $t('Retai keičiami nustatymai') }}
+      </template>
+
+      <Collapsible v-model:open="advancedSettingsOpen" class="w-full">
+        <CollapsibleTrigger as-child>
+          <Button type="button" variant="ghost" class="w-full justify-between p-0 h-auto hover:bg-transparent">
+            <span class="text-sm text-muted-foreground">
+              {{ advancedSettingsOpen ? $t('Slėpti papildomus nustatymus') : $t('Rodyti papildomus nustatymus') }}
+            </span>
+            <IFluentChevronDown24Regular class="h-4 w-4 text-muted-foreground transition-transform duration-200"
+              :class="{ 'rotate-180': advancedSettingsOpen }" />
+          </Button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent class="pt-4">
+          <div class="flex w-full items-center gap-3 rounded-lg border p-3">
+            <Switch id="is_all_day" v-model="form.is_all_day" @update:model-value="isAllDayTouched = true" />
+            <div class="flex-1 min-w-0 flex items-center gap-2">
+              <Label for="is_all_day" class="font-medium">
+                {{ $t('Visos dienos renginys') }}
+              </Label>
+              <InfoPopover>
+                {{ $t('Vietoj laiko bus rodoma „Visą dieną“ ar dienų skaičius. Kelių dienų renginiams parenkama automatiškai — čia galite pakeisti.') }}
+              </InfoPopover>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </FormElement>
+
     <!-- Permalink (editable only once the event exists — see auto-fill watcher above for create) -->
     <div v-if="!isCreate" class="mt-4 space-y-4">
       <PermalinkField
@@ -324,10 +348,12 @@ import PermalinkField from './PermalinkField.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 import AdminForm from './AdminForm.vue';
 
+import { isSameDay } from '@/Utils/IntlTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -385,6 +411,9 @@ if (isCreate.value && form.tenant_id == null) {
 // Set validation timeout
 form.setValidationTimeout(500);
 
+// Advanced settings collapsed by default
+const advancedSettingsOpen = ref(false);
+
 // Auto-fill the permalink from the title as the user types, for a new event only.
 if (isCreate.value) {
   watch(() => form.title?.lt, (title) => {
@@ -394,6 +423,20 @@ if (isCreate.value) {
     form.permalink = { ...form.permalink, en: generateSlug(String(title || '')) };
   });
 }
+
+// Default "all day" for the common case (a multi-day event, where clock times aren't the
+// point) without making the admin think about the flag. Once they touch the switch directly,
+// their choice wins from then on. An existing event's flag already reflects a deliberate past
+// choice, so editing starts "touched" — nudging the dates a little must not silently flip it.
+const isAllDayTouched = ref(!isCreate.value);
+
+watch([() => form.date, () => form.end_date], () => {
+  if (isAllDayTouched.value || !form.date || !form.end_date) {
+    return;
+  }
+
+  form.is_all_day = !isSameDay(new Date(form.date), new Date(form.end_date));
+});
 
 // Handle main image update explicitly
 function handleMainImageUpdate(file: File | null) {

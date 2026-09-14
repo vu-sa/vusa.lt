@@ -14,6 +14,7 @@ declare global {
       | 'organizer'
       | 'cto_url'
       | 'facebook_url'
+      | 'video_url'
       | 'main_image_focal_point'
       | 'is_draft'
       | 'is_all_day'
@@ -35,7 +36,6 @@ declare global {
       file?: File;
       status?: string;
     }>;
-    youtube_url?: string | null;
     /** Informational only — still resolves live, never stored, nothing to delete. */
     legacy_date_urls?: Partial<Record<'lt' | 'en', string | null>>;
   }

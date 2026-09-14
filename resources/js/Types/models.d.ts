@@ -190,7 +190,6 @@ declare global {
       cto_url?: Array<unknown> | null
       facebook_url?: string | null
       video_url?: string | null
-      main_image?: string | null
       main_image_focal_point?: string | null
       is_draft: boolean
       is_all_day: boolean

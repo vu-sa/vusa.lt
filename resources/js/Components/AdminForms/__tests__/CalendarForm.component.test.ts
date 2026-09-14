@@ -122,3 +122,79 @@ describe('CalendarForm.vue — public URL status link', () => {
     expect(vm.statusLinks).toEqual([]);
   });
 });
+
+describe('CalendarForm.vue — all-day default', () => {
+  let wrapper: ReturnType<typeof mount>;
+
+  const calendar: CalendarEventForm = {
+    title: { lt: '', en: '' },
+    date: null,
+    end_date: null,
+    description: { lt: '', en: '' },
+    location: { lt: '', en: '' },
+    organizer: { lt: '', en: '' },
+    cto_url: { lt: '', en: '' },
+    tenant_id: null,
+    category_id: null,
+    facebook_url: '',
+    is_draft: false,
+    is_all_day: false,
+    is_international: false,
+    is_remote: false,
+    hero_style: 'card',
+  };
+
+  type FormVm = { form: { date: string | null; end_date: string | null; is_all_day: boolean }; isAllDayTouched: boolean };
+
+  function createWrapper(rememberKey: string) {
+    return mount(CalendarForm, {
+      shallow: true,
+      props: {
+        calendar,
+        categories: [],
+        assignableTenants: [],
+        rememberKey,
+        submitUrl: '/mano/calendar',
+        submitMethod: 'post',
+      },
+    });
+  }
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it('defaults to all-day once a new event spans more than one calendar day', async () => {
+    wrapper = createWrapper('CreateCalendarAllDayMultiDay');
+    const vm = wrapper.vm as unknown as FormVm;
+
+    vm.form.date = '2026-08-25 09:00:00';
+    vm.form.end_date = '2026-08-27 17:00:00';
+    await wrapper.vm.$nextTick();
+
+    expect(vm.form.is_all_day).toBe(true);
+  });
+
+  it('leaves a same-day event timed', async () => {
+    wrapper = createWrapper('CreateCalendarAllDaySameDay');
+    const vm = wrapper.vm as unknown as FormVm;
+
+    vm.form.date = '2026-08-25 09:00:00';
+    vm.form.end_date = '2026-08-25 17:00:00';
+    await wrapper.vm.$nextTick();
+
+    expect(vm.form.is_all_day).toBe(false);
+  });
+
+  it('stops auto-deriving once the admin has touched the switch directly', async () => {
+    wrapper = createWrapper('CreateCalendarAllDayTouched');
+    const vm = wrapper.vm as unknown as FormVm;
+
+    vm.isAllDayTouched = true;
+    vm.form.date = '2026-08-25 09:00:00';
+    vm.form.end_date = '2026-08-27 17:00:00';
+    await wrapper.vm.$nextTick();
+
+    expect(vm.form.is_all_day).toBe(false);
+  });
+});

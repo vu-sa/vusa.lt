@@ -44,7 +44,6 @@ use Spatie\SchemaOrg\Place;
  * @property array|string|null $cto_url URL for Call To Action
  * @property string|null $facebook_url
  * @property string|null $video_url
- * @property string|null $main_image
  * @property string|null $main_image_focal_point
  * @property bool $is_draft
  * @property bool $is_all_day
@@ -173,21 +172,17 @@ class Calendar extends Model implements HasMedia
     }
 
     /**
-     * Get the main image URL from Spatie Media collection with fallback to legacy URL field.
+     * Get the main image URL from the Spatie Media `main_image` collection, falling back to
+     * the first gallery image when no dedicated main image has been uploaded.
      */
     protected function mainImageUrl(): Attribute
     {
         return Attribute::make(get: function () {
-            // First try Spatie Media collection
             $mainImageMedia = $this->getFirstMedia('main_image');
             if ($mainImageMedia) {
                 return $mainImageMedia->getUrl();
             }
-            // Fallback to legacy main_image URL field (for backwards compatibility)
-            if ($this->main_image) {
-                return $this->main_image;
-            }
-            // Final fallback to first gallery image
+
             $firstMedia = $this->getFirstMedia('images');
 
             return $firstMedia?->getUrl();

@@ -122,7 +122,6 @@ interface CalendarEventLike {
   is_remote?: boolean;
   location?: string | string[] | null;
   main_image_url?: string | null;
-  main_image?: string | null;
   main_image_focal_point?: string | null;
   facebook_url?: string | null;
   category?: { name: string } | null;
@@ -174,7 +173,7 @@ const eventHref = computed(() => getCalendarEvent2Route(props.event, page.props.
 
 const imageUrl = computed(() => {
   const ev = props.event as CalendarEventLike;
-  return ev.main_image_url ?? ev.main_image ?? null;
+  return ev.main_image_url ?? null;
 });
 
 const normalizeDate = (d: number | Date | string | undefined | null): Date => {

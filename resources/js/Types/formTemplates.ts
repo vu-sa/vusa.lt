@@ -12,7 +12,7 @@ export const calendarTemplate: Omit<App.Entities.Calendar, 'created_at' | 'updat
   images: [],
   category_id: null,
   facebook_url: '',
-  youtube_url: '',
+  video_url: '',
   is_draft: false,
   is_all_day: false,
   is_international: false,
