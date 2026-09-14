@@ -8,6 +8,7 @@ lastUpdated: true
 ## v2.2 — Editing unit homepages (2026-09-14) {#v2-2}
 
 - 🔧 **Correct homepage edit link** — on a unit's homepage it opens that unit's editor, even when the central VU SR content is shown as a fallback
+- 🔧 **More accurate contact search** — updating a representative's assignment, name, or duty refreshes the related institution contacts in search; upcoming representatives are hidden until their start date, and ended assignments are automatically pruned once their term expires
 
 ## v2.1 — Bilingual homepage (2026-09-07) {#v2-1}
 

@@ -8,6 +8,7 @@ lastUpdated: true
 ## v2.2 — Padalinių puslapių redagavimas (2026-09-14) {#v2-2}
 
 - 🔧 **Teisinga pagrindinio puslapio redagavimo nuoroda** — padalinio puslapyje ji atveria to padalinio redaktorių, net jei laikinai rodomas centrinės VU SA turinys
+- 🔧 **Tikslesnė kontaktų paieška** — atnaujinus atstovo paskyrimą, vardą ar pareigybę, paieškoje atnaujinami susijusių institucijų kontaktai; būsimi atstovai nerodomi iki paskyrimo pradžios, o pasibaigęs paskyrimas automatiškai pašalinamas suėjus terminui
 
 ## v2.1 — Dvikalbis pagrindinis puslapis (2026-09-07) {#v2-1}
 

@@ -11,6 +11,7 @@ use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
+use App\Services\ContactSearchIndexSynchronizer;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -220,6 +221,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
         return $this->forceDeleteBlockedReason();
     }
 
+    /** @return MorphToMany<User, $this, Dutiable, 'pivot'> */
     public function users(): MorphToMany
     {
         return $this->morphedByMany(User::class, 'dutiable')
@@ -227,13 +229,15 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
             ->withPivot(['id', 'via_dutiable_id', 'tenant_id', 'start_date', 'end_date', 'additional_photo', 'additional_photo_focal_point', 'additional_email', 'use_original_duty_name', 'description', 'study_program_id', 'study_program_note']);
     }
 
-    // TODO: use current_duties as an example for current_users
     public function current_users(): MorphToMany
     {
         return $this->users()
             ->where(function ($query): void {
-                $query->whereNull('dutiables.end_date')
-                    ->orWhere('dutiables.end_date', '>=', now());
+                $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
+                    ->where(function ($q): void {
+                        $q->whereNull('dutiables.end_date')
+                            ->orWhere('dutiables.end_date', '>=', now());
+                    });
             })
             ->withTimestamps();
     }
@@ -324,19 +328,17 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
             }
         });
 
-        // Institution::toSearchableArray() embeds duty_names and current_user_names, and
-        // Scout only reindexes the model that changed — so without this a trashed duty
-        // stays findable through its institution until that institution is next saved.
-        static::deleted(fn (Duty $duty) => $duty->reindexInstitution());
-        static::restored(fn (Duty $duty) => $duty->reindexInstitution());
+        static::deleted(fn (Duty $duty) => $duty->reindexRelatedSearchDocuments());
+        static::restored(fn (Duty $duty) => $duty->reindexRelatedSearchDocuments());
+        static::saved(function (Duty $duty): void {
+            if ($duty->wasChanged(['name', 'institution_id', 'order'])) {
+                app(ContactSearchIndexSynchronizer::class)->dutyChanged($duty);
+            }
+        });
     }
 
-    /**
-     * Refresh the owning institution's search document after this duty's visibility
-     * changed.
-     */
-    protected function reindexInstitution(): void
+    protected function reindexRelatedSearchDocuments(): void
     {
-        $this->institution?->searchable();
+        app(ContactSearchIndexSynchronizer::class)->dutyChanged($this);
     }
 }

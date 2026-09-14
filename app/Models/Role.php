@@ -54,8 +54,11 @@ class Role extends SpatieRole
     {
         return $this->usersThroughDuties()
             ->where(function ($query): void {
-                $query->whereNull('dutiables.end_date')
-                    ->orWhere('dutiables.end_date', '>=', now());
+                $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
+                    ->where(function ($q): void {
+                        $q->whereNull('dutiables.end_date')
+                            ->orWhere('dutiables.end_date', '>=', now());
+                    });
             });
     }
 
