@@ -5,6 +5,10 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.2 — Editing unit homepages (2026-09-14) {#v2-2}
+
+- 🔧 **Correct homepage edit link** — on a unit's homepage it opens that unit's editor, even when the central VU SR content is shown as a fallback
+
 ## v2.1 — Bilingual homepage (2026-09-07) {#v2-1}
 
 - ⭐ **English homepage content** — administrators can now edit Lithuanian and English homepage versions independently; visitors see the Lithuanian content until an English version is ready

@@ -76,11 +76,9 @@ class PublicPageController extends PublicController
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
         $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
 
-        // Only authenticated users pay for edit-link resolution. The target is whoever's
-        // content is actually shown — subdomains without their own content show main's.
+        // Only authenticated users pay for edit-link resolution.
         if (Auth::check()) {
-            // @phpstan-ignore nullsafe.neverNull (main tenant / its content can be null at runtime)
-            $this->sharePublicEditLink($content?->tenantHomepageContent?->tenant ?? $this->tenant);
+            $this->sharePublicEditLink($this->tenant);
         }
 
         $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])

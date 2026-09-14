@@ -5,6 +5,10 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.2 — Padalinių puslapių redagavimas (2026-09-14) {#v2-2}
+
+- 🔧 **Teisinga pagrindinio puslapio redagavimo nuoroda** — padalinio puslapyje ji atveria to padalinio redaktorių, net jei laikinai rodomas centrinės VU SA turinys
+
 ## v2.1 — Dvikalbis pagrindinis puslapis (2026-09-07) {#v2-1}
 
 - ⭐ **Pagrindinio puslapio turinys anglų kalba** — administravimo aplinkoje galima atskirai redaguoti lietuvišką ir anglišką pagrindinio puslapio versijas; kol angliška versija neparengta, lankytojai matys lietuvišką turinį
