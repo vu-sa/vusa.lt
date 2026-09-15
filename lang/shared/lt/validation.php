@@ -167,6 +167,12 @@ return [
 
     'outside_tenant_scope' => 'Neturite teisių veikti pasirinktame padalinyje.',
 
+    'page_parent_self' => 'Puslapis negali būti pats sau tėvinis.',
+    'page_parent_lang_mismatch' => 'Tėvinis puslapis turi būti ta pačia kalba.',
+    'page_parent_tenant_mismatch' => 'Tėvinis puslapis turi priklausyti tam pačiam padaliniui.',
+    'page_parent_cycle' => 'Šis puslapis yra šio puslapio palikuonis ir negali tapti jo tėviniu.',
+    'page_parent_too_deep' => 'Puslapiai gali būti įdėti ne daugiau kaip 3 lygių gylyje.',
+
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',

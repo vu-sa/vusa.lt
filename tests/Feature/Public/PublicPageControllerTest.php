@@ -234,6 +234,51 @@ test('page with category renders successfully', function (): void {
     );
 });
 
+test('page with children renders section listing', function (): void {
+    $content = Content::factory()->create();
+    ContentPart::factory()->create([
+        'content_id' => $content->id,
+        'type' => 'tiptap',
+        'json_content' => (new Editor)->setContent('<p>Parent page content</p>')->getDocument(),
+    ]);
+
+    $parent = Page::factory()->create([
+        'title' => 'Parent Page',
+        'permalink' => 'parent-page',
+        'tenant_id' => $this->tenant->id,
+        'content_id' => $content->id,
+        'is_active' => true,
+    ]);
+
+    $child = Page::factory()->create([
+        'title' => 'Child Page',
+        'permalink' => 'child-page',
+        'tenant_id' => $this->tenant->id,
+        'parent_id' => $parent->id,
+        'is_active' => true,
+    ]);
+
+    // An inactive child must not appear in the listing.
+    Page::factory()->create([
+        'title' => 'Inactive Child',
+        'permalink' => 'inactive-child',
+        'tenant_id' => $this->tenant->id,
+        'parent_id' => $parent->id,
+        'is_active' => false,
+    ]);
+
+    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'parent-page']));
+
+    $response->assertStatus(200);
+    $response->assertInertia(
+        fn (Assert $page) => $page
+            ->component('Public/ContentPage')
+            ->where('page.title', 'Parent Page')
+            ->has('page.children', 1)
+            ->where('page.children.0.title', $child->title)
+    );
+});
+
 test('seo description is extracted from first tiptap content', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([

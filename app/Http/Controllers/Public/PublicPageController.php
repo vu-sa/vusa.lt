@@ -163,10 +163,22 @@ class PublicPageController extends PublicController
                 $navigation_item = Navigation::query()->where('name', $page->title)->first();
                 $other_lang_page = $page->getOtherLanguage();
 
+                $children = $page->children()
+                    ->where('is_active', true)
+                    ->get(['id', 'title', 'permalink', 'lang', 'tenant_id', 'meta_description'])
+                    ->map(fn (Page $child) => [
+                        'title' => $child->title,
+                        'url' => $child->publicUrl(),
+                        'meta_description' => $child->meta_description,
+                    ])
+                    ->values();
+
                 return [
                     'page' => $page,
                     'navigation_item' => $navigation_item,
                     'other_lang_page' => $other_lang_page,
+                    'ancestors' => $page->ancestors(),
+                    'children' => $children,
                 ];
             });
 
@@ -184,6 +196,8 @@ class PublicPageController extends PublicController
         $page = $pageData['page'];
         $navigation_item = $pageData['navigation_item'];
         $other_lang_page = $pageData['other_lang_page'];
+        $ancestors = $pageData['ancestors'];
+        $children = $pageData['children'];
 
         // Outside the page cache above — depends on the current user.
         $this->sharePublicEditLink($page);
@@ -214,14 +228,15 @@ class PublicPageController extends PublicController
             ],
         ];
 
-        // Add category if exists
-        if ($page->category) {
+        // Add the page's ancestor chain (root first), replacing the old category crumb —
+        // page structure is now expressed as structure, not as a category.
+        foreach ($ancestors as $ancestor) {
             $breadcrumbs[] = [
-                'name' => $page->category->name,
-                'url' => route('category', [
+                'name' => $ancestor->title,
+                'url' => route('page', [
                     'subdomain' => $this->subdomain,
                     'lang' => $locale,
-                    'category' => $page->category->alias,
+                    'permalink' => $ancestor->permalink,
                 ]),
             ];
         }
@@ -245,6 +260,9 @@ class PublicPageController extends PublicController
             'page' => [
                 ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'featured_image', 'meta_description', 'last_edited_at', 'updated_at'),
                 'content' => $page->content,
+                // Section listing for this page's direct children (`Page::children()`) —
+                // the permalink stays flat, this is presentation only.
+                'children' => $children,
                 /* 'content' => [ */
                 /*    ...$page->content->toArray(), */
                 /*    'parts' => $page->content->parts->map(function ($part) { */

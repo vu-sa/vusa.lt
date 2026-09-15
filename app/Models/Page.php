@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,6 +34,8 @@ use Spatie\Sitemap\Tags\Url;
  * @property int|null $other_lang_id
  * @property int $content_id
  * @property int|null $category_id
+ * @property int|null $parent_id
+ * @property int $sort_order
  * @property bool $is_active
  * @property array<array-key, mixed>|null $highlights
  * @property string $layout
@@ -50,7 +53,9 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Category|null $category
  * @property-read Content $content
+ * @property-read Collection<int, Page> $children
  * @property-read Page|null $otherLanguagePage
+ * @property-read Page|null $parent
  * @property-read Collection<int, PublicUrl> $publicUrls
  * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
@@ -243,6 +248,66 @@ class Page extends Model implements Feedable, Sitemapable
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Page::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Page::class, 'parent_id')->orderBy('sort_order');
+    }
+
+    /**
+     * Ancestor chain from the root down to (not including) this page, for breadcrumbs.
+     * Walked one hop at a time rather than a recursive relation — ValidPageParent caps
+     * every chain at 3 levels, so this is at most two extra queries.
+     *
+     * @return list<Page>
+     */
+    public function ancestors(): array
+    {
+        $chain = [];
+        $node = $this->parent;
+
+        while ($node !== null) {
+            $chain[] = $node;
+            $node = $node->parent;
+        }
+
+        return array_reverse($chain);
+    }
+
+    /**
+     * Ids of every descendant in this page's subtree, trashed ones included. Used by
+     * ValidPageParent to reject a candidate parent that would create a cycle.
+     *
+     * Walked iteratively, mirroring Navigation::descendantIds() — a recursive relation
+     * would N+1 one query per level instead of one query per subtree layer.
+     *
+     * @return list<int>
+     */
+    public function descendantIds(): array
+    {
+        $ids = [];
+        $frontier = [$this->id];
+
+        while (true) {
+            $children = static::withTrashed()
+                ->whereIn('parent_id', $frontier)
+                ->whereNotIn('id', [...$ids, $this->id])
+                ->pluck('id')
+                ->all();
+
+            if ($children === []) {
+                return $ids;
+            }
+
+            $ids = array_merge($ids, $children);
+            $frontier = $children;
+        }
     }
 
     public function tags(): MorphToMany

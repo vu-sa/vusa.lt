@@ -70,6 +70,18 @@
     <LastUpdatedFooter v-if="showTitle" :date="lastUpdatedDate" />
   </div>
 
+  <!-- Child pages — a plain section listing; the permalink hierarchy stays flat, this is
+       presentation only. -->
+  <section v-if="page.children?.length" class="rc-canvas pb-16 md:pb-24" style="--rc-measure: 44rem">
+    <h2 class="u-eyebrow mb-4 text-muted-foreground">
+      {{ $t('Šiame skyriuje') }}
+    </h2>
+    <HairlineList as="ul">
+      <HairlineRow v-for="child in page.children" :key="child.url" as="li" :href="child.url"
+        :title="child.title" :meta="child.meta_description ?? undefined" />
+    </HairlineList>
+  </section>
+
   <!-- Highlights floating button -->
   <HighlightsFloatingButton :highlights="page.highlights" />
 
@@ -87,7 +99,7 @@ import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import { extractAnchorLinks, type AnchorablePart } from '@/Components/RichContent/tocAnchors';
 import TableOfContents from '@/Components/Public/TableOfContents.vue';
-import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
+import { EyebrowLabel, HairlineList, HairlineRow, MediaFrame } from '@/Components/Public/Base';
 import { usePageBreadcrumbs, useBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 type PageContentPart = AnchorablePart & { [key: string]: unknown };
@@ -108,6 +120,8 @@ interface Page {
   content?: {
     parts: PageContentPart[];
   };
+  /** Direct children (`Page::children()`) — rendered as a plain section listing. */
+  children?: { title: string; url: string; meta_description?: string | null }[];
 }
 
 const props = defineProps<{

@@ -1025,6 +1025,8 @@ declare global {
       other_lang_id?: number | null
       content_id: number
       category_id?: number | null
+      parent_id?: number | null
+      sort_order: number
       is_active: boolean
       highlights?: unknown | null
       layout: string
@@ -1043,11 +1045,14 @@ declare global {
       tenant?: Tenant
       other_language_page?: Page
       category?: Category
+      parent?: Page
+      children?: Page[]
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
+      children_count: number
       tags_count: number
       public_urls_count: number
       activities_as_subject_count: number
@@ -1055,6 +1060,8 @@ declare global {
       tenant_exists: boolean
       other_language_page_exists: boolean
       category_exists: boolean
+      parent_exists: boolean
+      children_exists: boolean
       tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
@@ -1360,6 +1367,8 @@ declare global {
       other_lang_id?: number | null
       content_id: number
       category_id?: number | null
+      parent_id?: number | null
+      sort_order: number
       is_active: boolean
       highlights?: unknown | null
       layout: string
@@ -1378,11 +1387,14 @@ declare global {
       tenant?: Tenant
       other_language_page?: Page
       category?: Category
+      parent?: Page
+      children?: Page[]
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
+      children_count: number
       tags_count: number
       public_urls_count: number
       activities_as_subject_count: number
@@ -1390,6 +1402,8 @@ declare global {
       tenant_exists: boolean
       other_language_page_exists: boolean
       category_exists: boolean
+      parent_exists: boolean
+      children_exists: boolean
       tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
