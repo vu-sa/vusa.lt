@@ -52,7 +52,7 @@ return [
         'link_target_placeholder' => 'Pasirinkite puslapį, naujieną, renginį…',
         'link_target_search' => 'Ieškoti…',
         'link_target_manual' => 'Įvesti nuorodą rankiniu būdu',
-        'link_target_category' => 'Susieti su kategorija',
+        'link_target_topic' => 'Susieti su tema',
         'footer_category_url_hint' => 'Palikite tuščią, kad ši stulpelio antraštė būtų rodoma kaip paprastas tekstas, o ne nuoroda.',
         'or' => 'arba',
         'show_image' => 'Rodyti paveikslėlio nustatymus',

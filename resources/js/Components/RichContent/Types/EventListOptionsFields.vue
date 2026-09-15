@@ -49,8 +49,8 @@
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Field>
-        <FieldLabel>{{ $t('rich-content.category_alias') }}</FieldLabel>
-        <RCCategoryAliasSelect :model-value="options.categoryAlias" @update:model-value="(v) => patchOptions({ categoryAlias: v })" />
+        <FieldLabel>{{ $t('rich-content.event_type') }}</FieldLabel>
+        <RCEventTypeSelect :model-value="options.eventTypeSlug" @update:model-value="(v) => patchOptions({ eventTypeSlug: v })" />
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.limit') }}</FieldLabel>
@@ -127,7 +127,7 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCCategoryAliasSelect from '../Editor/RCCategoryAliasSelect.vue';
+import RCEventTypeSelect from '../Editor/RCEventTypeSelect.vue';
 
 import type { EventList } from '@/Types/contentParts';
 import { Field, FieldLabel } from '@/Components/ui/field';

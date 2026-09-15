@@ -62,13 +62,16 @@ describe('taggables morph pivot', function (): void {
 
 describe('is_topic flag', function (): void {
     test('scopeTopics returns only tags flagged as topics', function (): void {
-        Tag::factory()->create();
+        // Not an exact count: the taxonomy-retirement migration seeds its own topic
+        // tags (`socialine-informacija`, `vu-sa-dokumentai`), same as phase 1's
+        // `seed_topic_tags` would for any alias that happened to already exist.
+        $plain = Tag::factory()->create();
         $topic = Tag::factory()->topic()->create();
 
         $topics = Tag::topics()->get();
 
-        expect($topics)->toHaveCount(1)
-            ->and($topics->first()->id)->toBe($topic->id)
+        expect($topics->pluck('id'))->toContain($topic->id)
+            ->and($topics->pluck('id'))->not->toContain($plain->id)
             ->and($topic->is_topic)->toBeTrue();
     });
 });

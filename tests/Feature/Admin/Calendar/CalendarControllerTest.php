@@ -219,6 +219,25 @@ describe('authorized access', function (): void {
             ->and($calendar->getTranslation('title', 'en'))->toBe('Updated event');
     });
 
+    test('calendar manager can clear an event type', function (): void {
+        $calendar = Calendar::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
+        ]);
+
+        $response = asUser($this->calendarManager)->put(route('calendar.update', $calendar), [
+            'title' => ['lt' => 'Renginys be tipo', 'en' => 'Event without a type'],
+            'permalink' => ['lt' => 'renginys-be-tipo', 'en' => 'event-without-a-type'],
+            'date' => now()->addDays(2)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+            'event_type_id' => null,
+        ]);
+
+        $response->assertRedirect()
+            ->assertSessionDoesntHaveErrors('event_type_id');
+        expect($calendar->fresh()->event_type_id)->toBeNull();
+    });
+
     test('calendar manager can delete calendar event', function (): void {
         $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
 
@@ -304,7 +323,7 @@ describe('validation', function (): void {
             ->assertSessionHasErrors('date');
     });
 
-    test('requires event_type_id for store', function (): void {
+    test('allows storing an event without an event type', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'permalink' => ['lt' => 'test-renginys-be-tipo', 'en' => 'test-event-untyped'],
@@ -313,8 +332,13 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertStatus(302)
-            ->assertSessionHasErrors('event_type_id');
+        $response->assertRedirect()
+            ->assertSessionDoesntHaveErrors('event_type_id');
+
+        $this->assertDatabaseHas('calendar', [
+            'permalink->lt' => 'test-renginys-be-tipo',
+            'event_type_id' => null,
+        ]);
     });
 
     test('requires permalink for store', function (): void {
@@ -514,11 +538,11 @@ describe('tenant isolation', function (): void {
 });
 
 describe('relationships', function (): void {
-    test('calendar belongs to category', function (): void {
+    test('calendar belongs to event type', function (): void {
         $calendar = Calendar::factory()->create();
 
-        // Check if calendar can have category relationship
-        expect($calendar->category())->toBeInstanceOf(BelongsTo::class);
+        // Check if calendar can have event type relationship
+        expect($calendar->eventType())->toBeInstanceOf(BelongsTo::class);
     });
 
     test('can duplicate calendar with proper translations', function (): void {

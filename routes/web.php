@@ -78,7 +78,7 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('{pkpString}', [Public\PublicPageController::class, 'pkp'])->name('pkp')
             ->whereIn('pkpString', LocalizedRouteSlugs::accepted('pkpString'));
 
-        Route::get('{categoryString}/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category')
+        Route::get('{categoryString}/{alias}', [Public\PublicPageController::class, 'categoryRedirect'])->name('category')
             ->whereIn('categoryString', LocalizedRouteSlugs::accepted('categoryString'));
 
         Route::get('{topicString}/{tag:alias}', [Public\TopicController::class, 'show'])->name('topic')

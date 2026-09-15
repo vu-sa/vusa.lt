@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\EventType;
 use App\Models\Meeting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +15,7 @@ beforeEach(function (): void {
     // RefreshDatabase re-runs migrations, so the eight seeded types already exist.
 });
 
-test('types a meeting announcement as posedis regardless of its title', function (): void {
+test('types a meeting announcement as posedis without an explicit susirinkimas title', function (): void {
     $meeting = Meeting::factory()->create();
     $event = Calendar::factory()->create([
         'title' => ['lt' => 'Visiškai neaiškus pavadinimas', 'en' => 'Ambiguous title'],
@@ -28,21 +27,19 @@ test('types a meeting announcement as posedis regardless of its title', function
     expect($event->fresh()->eventType->slug)->toBe('posedis');
 });
 
-test('routes a former freshmen-camps category event to stovykla', function (): void {
-    // Seeded by CategoriesSeeder (TestSeeder), not a factory — a fresh alias would collide
-    // with the unique index.
-    $category = Category::query()->where('alias', 'freshmen-camps')->firstOrFail();
+test('types a linked meeting with a susirinkimas title as susirinkimas', function (): void {
+    $meeting = Meeting::factory()->create();
     $event = Calendar::factory()->create([
-        'title' => ['lt' => 'Kažkoks renginys', 'en' => 'Some event'],
-        'category_id' => $category->id,
+        'title' => ['lt' => 'Visuotinis susirinkimas', 'en' => 'General assembly'],
+        'meeting_id' => $meeting->id,
     ]);
 
     $this->artisan('taxonomy:backfill-events', ['--force' => true])->assertSuccessful();
 
-    expect($event->fresh()->eventType->slug)->toBe('stovykla');
+    expect($event->fresh()->eventType->slug)->toBe('susirinkimas');
 });
 
-test('rule 3 (konferencija) wins over rule 6 (atstovavimas) on an overlapping title', function (): void {
+test('konferencija wins over atstovavimas on an overlapping title', function (): void {
     $event = Calendar::factory()->create([
         'title' => ['lt' => 'Ataskaitinė-rinkiminė konferencija su senatu', 'en' => ''],
     ]);
@@ -61,20 +58,21 @@ test('matches each ordered title rule', function (string $title, string $expecte
 })->with([
     ['Rinkimai į Senatą', 'rinkimai'],
     ['Mokymai naujiems nariams', 'mokymai'],
-    ['Darbo grupės posėdis', 'atstovavimas'],
+    ['Darbo grupės posėdis', 'posedis'],
+    ['Padalinio susirinkimas', 'susirinkimas'],
+    ['Susitikimas su rektoratu', 'atstovavimas'],
     ['Registracijos terminas', 'terminas'],
-    ['Šventė bendruomenei', 'renginys'],
 ]);
 
-test('leaves a genuinely ambiguous title untyped and reports it', function (): void {
-    $event = Calendar::factory()->create(['title' => ['lt' => 'Fiesta Personæ 26', 'en' => '']]);
+test('leaves a generic event title untyped and reports it', function (): void {
+    $event = Calendar::factory()->create(['title' => ['lt' => 'Šventė bendruomenei', 'en' => 'Community celebration']]);
 
     $this->artisan('taxonomy:backfill-events', ['--force' => true])->assertSuccessful();
 
     expect($event->fresh()->event_type_id)->toBeNull();
 
     Storage::disk('local')->assertExists('taxonomy/unmatched-events.txt');
-    expect(Storage::disk('local')->get('taxonomy/unmatched-events.txt'))->toContain('Fiesta Personæ 26');
+    expect(Storage::disk('local')->get('taxonomy/unmatched-events.txt'))->toContain('Šventė bendruomenei');
 });
 
 test('dry run writes nothing', function (): void {
@@ -88,7 +86,7 @@ test('dry run writes nothing', function (): void {
 });
 
 test('an already-typed event is left untouched and re-running is idempotent', function (): void {
-    $manualType = EventType::query()->where('slug', 'renginys')->firstOrFail();
+    $manualType = EventType::query()->where('slug', 'terminas')->firstOrFail();
     $event = Calendar::factory()->create([
         'title' => ['lt' => 'Mokymai vadovams', 'en' => ''],
         'event_type_id' => $manualType->id,

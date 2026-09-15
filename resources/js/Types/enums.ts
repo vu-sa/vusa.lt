@@ -109,7 +109,6 @@ export enum ModelEnum {
     AGENDA_ITEM = 'agenda_item',
     BANNER = 'banner',
     CALENDAR = 'calendar',
-    CATEGORY = 'category',
     COMMENT = 'comment',
     DOCUMENT = 'document',
     DUTIABLE = 'dutiable',

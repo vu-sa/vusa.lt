@@ -30,7 +30,6 @@ final class MorphMap
         'banner' => Models\Banner::class,
         'cadence' => Models\Cadence::class,
         'calendar' => Models\Calendar::class,
-        'category' => Models\Category::class,
         'comment' => Models\Comment::class,
         'comment_poll_vote' => Models\CommentPollVote::class,
         'comment_reaction' => Models\CommentReaction::class,

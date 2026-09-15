@@ -15,10 +15,7 @@
         <PublicBreadcrumbs v-if="showBreadcrumbs" variant="inline" class="mb-8" />
 
         <div class="border-l-2 border-brand pl-5 sm:pl-7">
-          <EyebrowLabel v-if="categoryName">
-            {{ categoryName }}
-          </EyebrowLabel>
-          <h1 :class="[pageTitleClass, categoryName && 'mt-3']">
+          <h1 :class="pageTitleClass">
             {{ page.title }}
           </h1>
         </div>
@@ -99,7 +96,7 @@ import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import { extractAnchorLinks, type AnchorablePart } from '@/Components/RichContent/tocAnchors';
 import TableOfContents from '@/Components/Public/TableOfContents.vue';
-import { EyebrowLabel, HairlineList, HairlineRow, MediaFrame } from '@/Components/Public/Base';
+import { HairlineList, HairlineRow, MediaFrame } from '@/Components/Public/Base';
 import { usePageBreadcrumbs, useBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 type PageContentPart = AnchorablePart & { [key: string]: unknown };
@@ -111,8 +108,6 @@ interface Page {
   show_title?: boolean;
   show_breadcrumbs?: boolean;
   highlights?: string[] | null;
-  /** The whole Category relation — the band shows its name as the eyebrow. */
-  category?: { name?: string | null } | null;
   meta_description?: string | null;
   featured_image?: string | null;
   last_edited_at?: string | null;
@@ -135,9 +130,6 @@ const inertiaPage = usePage();
 
 // Compute layout with default fallback
 const pageLayout = computed(() => props.page.layout || 'default');
-
-// `category` arrives as the whole relation (the controller's `only()` resolves it).
-const categoryName = computed(() => props.page.category?.name ?? undefined);
 
 const pageTitleClass = computed(() => [
   'u-display',

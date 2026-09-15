@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\ContentPart;
+use App\Models\EventType;
 use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
@@ -54,7 +54,6 @@ describe('ContentPartResolver::resolveAll', function (): void {
     });
 
     test('batches one resolver call per type regardless of how many blocks of that type exist', function (): void {
-        Category::factory()->create(['alias' => 'news-cat']);
         $parts = collect([
             makeResolvablePart('link-list', ['links' => []], ['source' => 'manual'], 1),
             makeResolvablePart('link-list', ['links' => []], ['source' => 'manual'], 2),
@@ -165,30 +164,29 @@ describe('LinkListResolver — news source', function (): void {
             ->and($resolved[$part->id]['meta']['droppedForLocale'])->toBe(1);
     });
 
-    test('latest mode filters by category alias and the current tenant', function (): void {
-        $category = Category::factory()->create(['alias' => 'announcements']);
-        // Explicit, distinct category — NewsFactory's default `category_id` is
-        // `Category::inRandomOrder()->first()->id`, which could otherwise coincidentally
-        // land on `$category` itself and make this test flaky depending on how many
-        // other categories happen to exist at the time.
-        $anotherCategory = Category::factory()->create(['alias' => 'not-announcements']);
+    test('latest mode filters by topic alias and the current tenant', function (): void {
+        $topic = Tag::factory()->create(['alias' => 'announcements', 'is_topic' => true]);
+        $anotherTopic = Tag::factory()->create(['alias' => 'not-announcements', 'is_topic' => true]);
         $matching = News::factory()->for($this->tenant)->create([
-            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'category_id' => $category->id,
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
         ]);
-        $otherCategory = News::factory()->for($this->tenant)->create([
-            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'category_id' => $anotherCategory->id,
+        $matching->tags()->attach($topic);
+        $otherTopic = News::factory()->for($this->tenant)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
         ]);
+        $otherTopic->tags()->attach($anotherTopic);
         $otherTenant = Tenant::factory()->create();
-        News::factory()->for($otherTenant)->create([
-            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(), 'category_id' => $category->id,
+        $otherTenantNews = News::factory()->for($otherTenant)->create([
+            'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
         ]);
+        $otherTenantNews->tags()->attach($topic);
 
-        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'latest', 'categoryAlias' => 'announcements', 'tenantScope' => 'current']);
+        $part = makeResolvablePart('link-list', [], ['source' => 'news', 'mode' => 'latest', 'topicAlias' => 'announcements', 'tenantScope' => 'current']);
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();
         expect($ids)->toBe([$matching->id])
-            ->and($ids)->not->toContain($otherCategory->id);
+            ->and($ids)->not->toContain($otherTopic->id);
     });
 
     test('latest mode with tenantScope "all" includes news from every tenant', function (): void {
@@ -257,14 +255,14 @@ describe('EventListResolver', function (): void {
         expect($resolved[$part->id]['items'])->toBeEmpty();
     });
 
-    test('a trashed category still works as a grouping key (matches summerCamps() precedent)', function (): void {
-        // 'freshmen-camps' is a globally seeded alias (CategoriesSeeder) — reuse it
-        // rather than colliding on the unique constraint.
-        $category = Category::firstOrCreate(['alias' => 'freshmen-camps'], ['name' => ['lt' => 'Stovyklos', 'en' => 'Camps']]);
-        $event = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'category_id' => $category->id, 'date' => now()]);
-        $category->delete();
+    test('a trashed event type still works as a grouping key (matches summerCamps() precedent)', function (): void {
+        // 'stovykla' is a globally seeded slug (seed_event_types) — reuse it rather
+        // than colliding on the unique constraint.
+        $eventType = EventType::query()->where('slug', 'stovykla')->firstOrFail();
+        $event = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'event_type_id' => $eventType->id, 'date' => now()]);
+        $eventType->delete();
 
-        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'categoryAlias' => 'freshmen-camps', 'tenantScope' => 'current']);
+        $part = makeResolvablePart('event-list', [], ['mode' => 'upcoming', 'eventTypeSlug' => 'stovykla', 'tenantScope' => 'current']);
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         expect(collect($resolved[$part->id]['items'])->pluck('id')->all())->toBe([$event->id]);
@@ -371,42 +369,29 @@ describe('NewsBlockResolver / CalendarBlockResolver bridges', function (): void 
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         expect($resolved[$part->id]['type'])->toBe('news')
-            ->and($resolved[$part->id]['items'][0])->toHaveKeys(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'category']);
+            ->and($resolved[$part->id]['items'][0])->toHaveKeys(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image']);
     });
 
-    test('news bridge carries the category name, and null when the article has none', function (): void {
-        $category = Category::factory()->create(['name' => ['lt' => 'Akademinė informacija', 'en' => 'Academic information']]);
-        News::factory()->for($this->tenant)->for($category)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay()]);
-        News::factory()->for($this->tenant)->create(['lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(2), 'category_id' => null]);
-
-        $part = makeResolvablePart('news', ['title' => '']);
-        $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
-
-        $categories = collect($resolved[$part->id]['items'])->pluck('category')->all();
-
-        expect($categories)->toContain('Akademinė informacija')
-            ->and($categories)->toContain(null);
-    });
-
-    test('news bridge filters by category, tag, selected tenants and limit', function (): void {
+    test('news bridge filters by topic, tag, selected tenants and limit', function (): void {
         $otherTenant = Tenant::factory()->create();
-        $category = Category::factory()->create(['alias' => 'announcements']);
+        $topic = Tag::factory()->create(['alias' => 'announcements', 'is_topic' => true]);
         $tag = Tag::factory()->create(['alias' => 'important']);
-        $matching = News::factory()->for($otherTenant)->for($category)->create([
+        $matching = News::factory()->for($otherTenant)->create([
             'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDay(),
         ]);
-        $matching->tags()->attach($tag);
+        $matching->tags()->attach([$topic->id, $tag->id]);
 
-        $wrongTag = News::factory()->for($otherTenant)->for($category)->create([
+        $wrongTag = News::factory()->for($otherTenant)->create([
             'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(2),
         ]);
-        $wrongTenant = News::factory()->for($this->tenant)->for($category)->create([
+        $wrongTag->tags()->attach($topic);
+        $wrongTenant = News::factory()->for($this->tenant)->create([
             'lang' => 'lt', 'draft' => false, 'publish_time' => now()->subDays(3),
         ]);
-        $wrongTenant->tags()->attach($tag);
+        $wrongTenant->tags()->attach([$topic->id, $tag->id]);
 
         $part = makeResolvablePart('news', ['title' => ''], [
-            'categoryAlias' => 'announcements',
+            'topicAlias' => 'announcements',
             'tagAlias' => 'important',
             'tenantScope' => [$otherTenant->id],
             'limit' => 1,
@@ -519,15 +504,15 @@ describe('NewsBlockResolver / CalendarBlockResolver bridges', function (): void 
         expect($resolved[$part->id]['items'])->toHaveCount(10);
     });
 
-    test('calendar bridge filters by categoryAlias, keeping a trashed category working as a grouping key', function (): void {
-        $category = Category::factory()->create(['alias' => 'concerts']);
-        $category->delete();
-        $otherCategory = Category::factory()->create(['alias' => 'workshops']);
+    test('calendar bridge filters by eventTypeSlug, keeping a trashed event type working as a grouping key', function (): void {
+        $eventType = EventType::factory()->create(['slug' => 'concerts']);
+        $eventType->delete();
+        $otherEventType = EventType::factory()->create(['slug' => 'workshops']);
 
-        $matching = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now(), 'category_id' => $category->id]);
-        $other = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now(), 'category_id' => $otherCategory->id]);
+        $matching = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now(), 'event_type_id' => $eventType->id]);
+        $other = Calendar::factory()->for($this->tenant)->create(['is_draft' => false, 'date' => now(), 'event_type_id' => $otherEventType->id]);
 
-        $part = makeResolvablePart('calendar', ['title' => ''], ['categoryAlias' => 'concerts']);
+        $part = makeResolvablePart('calendar', ['title' => ''], ['eventTypeSlug' => 'concerts']);
         $resolved = $this->resolver->resolveAll(collect([$part->id => $part]), $this->context);
 
         $ids = collect($resolved[$part->id]['items'])->pluck('id')->all();

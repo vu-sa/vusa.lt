@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Category;
 use App\Models\News;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,9 +29,7 @@ function seedArticle(): News
         ]
     );
 
-    $category = Category::factory()->create(['name' => 'Atstovavimas']);
-
-    return News::factory()->for($tenant)->for($category)->create([
+    return News::factory()->for($tenant)->create([
         'lang' => 'lt',
         'title' => 'Pradedama kandidatų registracija',
         'permalink' => 'pradedama-kandidatu-registracija',

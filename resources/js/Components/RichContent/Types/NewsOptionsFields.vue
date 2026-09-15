@@ -2,8 +2,8 @@
   <div class="flex flex-col gap-4">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Field>
-        <FieldLabel>{{ $t('rich-content.category_alias') }}</FieldLabel>
-        <RCCategoryAliasSelect :model-value="options?.categoryAlias" @update:model-value="(value) => patchOptions({ categoryAlias: value })" />
+        <FieldLabel>{{ $t('rich-content.topic_alias') }}</FieldLabel>
+        <RCTopicAliasSelect :model-value="options?.topicAlias" @update:model-value="(value) => patchOptions({ topicAlias: value })" />
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.tag_alias') }}</FieldLabel>
@@ -41,8 +41,8 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCCategoryAliasSelect from '../Editor/RCCategoryAliasSelect.vue';
 import RCTagAliasSelect from '../Editor/RCTagAliasSelect.vue';
+import RCTopicAliasSelect from '../Editor/RCTopicAliasSelect.vue';
 import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
 
 import type { News } from '@/Types/contentParts';

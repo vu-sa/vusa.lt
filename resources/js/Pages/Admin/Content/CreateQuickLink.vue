@@ -1,7 +1,7 @@
 <template>
   <PageContent title="Naujas pradinio puslapio mygtukas" :back-url="route('quickLinks.index')">
     <UpsertModelLayout>
-      <QuickLinkForm remember-key="CreateQuickLink" :tenant-options :category-options :quick-link
+      <QuickLinkForm remember-key="CreateQuickLink" :tenant-options :topic-options :quick-link
         @submit:form="(form) => form.post(route('quickLinks.store'))" />
     </UpsertModelLayout>
   </PageContent>
@@ -12,7 +12,7 @@ import QuickLinkForm from '@/Components/AdminForms/QuickLinkForm.vue';
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
-interface CategoryOption {
+interface TopicOption {
   id: number;
   name: string;
   alias: string | null;
@@ -20,7 +20,7 @@ interface CategoryOption {
 
 defineProps<{
   tenantOptions: Record<string, any>[];
-  categoryOptions: CategoryOption[];
+  topicOptions: TopicOption[];
 }>();
 
 const quickLink = {

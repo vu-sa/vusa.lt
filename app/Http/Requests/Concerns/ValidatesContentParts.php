@@ -65,7 +65,8 @@ trait ValidatesContentParts
             // link-list
             'content.parts.*.options.source' => ['nullable', 'string', Rule::in(['news', 'pages', 'manual'])],
             'content.parts.*.options.mode' => ['nullable', 'string', Rule::in(['latest', 'specific', 'upcoming', 'range', 'year'])],
-            'content.parts.*.options.categoryAlias' => ['nullable', 'string', 'max:64', 'regex:/^[a-z0-9-]+$/'],
+            'content.parts.*.options.topicAlias' => ['nullable', 'string', 'max:64', 'regex:/^[a-z0-9-]+$/'],
+            'content.parts.*.options.eventTypeSlug' => ['nullable', 'string', 'max:64', 'regex:/^[a-z0-9-]+$/'],
             'content.parts.*.options.tenantScope' => 'nullable', // 'current' | 'all' | int[] — shape-checked in the resolver
             'content.parts.*.options.newsIds' => 'nullable|array|max:12',
             'content.parts.*.options.newsIds.*' => 'integer',

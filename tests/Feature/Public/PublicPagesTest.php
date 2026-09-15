@@ -2,7 +2,6 @@
 
 use App\Enums\TenantType;
 use App\Mail\FeedbackMail;
-use App\Models\Category;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\News;
@@ -185,17 +184,15 @@ test('can open student representative organ category', function (): void {
         );
 });
 
-test('can open category page', function (): void {
-    $category = Category::factory()->create();
-    $page = Page::factory()->create(['category_id' => $category->id]);
+test('a retired category alias 301s to its new destination', function (): void {
+    $this->get(route('category', ['subdomain' => 'www', 'lang' => 'lt', 'alias' => 'freshmen-camps']))
+        ->assertRedirect()
+        ->assertStatus(301);
+});
 
-    $this->get(route('category', ['subdomain' => 'www', 'lang' => 'lt', 'category' => $category->alias]))
-        ->assertOk()
-        ->assertInertia(fn (Assert $inertia) => $inertia
-            ->component('Public/CategoryPage')
-            ->has('category')
-            ->where('category.name', $category->name)
-        );
+test('an unknown category alias 404s', function (): void {
+    $this->get(route('category', ['subdomain' => 'www', 'lang' => 'lt', 'alias' => 'does-not-exist']))
+        ->assertNotFound();
 });
 
 test('padalinys institution page renders duty type tabs', function (): void {

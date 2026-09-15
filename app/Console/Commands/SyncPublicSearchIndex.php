@@ -46,7 +46,7 @@ class SyncPublicSearchIndex extends Command
     public function handle(): int
     {
         $newsSynced = $this->sync(PublicNews::query()->with('tenant'));
-        $pagesSynced = $this->sync(PublicPage::query()->with(['tenant', 'category']));
+        $pagesSynced = $this->sync(PublicPage::query()->with('tenant'));
         $institutionsSynced = $this->syncInstitutions();
 
         $this->info("Synced {$newsSynced} news, {$pagesSynced} page(s), and {$institutionsSynced} institution(s) with the public search index.");

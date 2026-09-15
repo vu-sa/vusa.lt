@@ -400,7 +400,6 @@ export interface PageSearchResult {
   lang: string;
   tenant_id?: number;
   tenant_name?: string;
-  category_name?: string;
   /** Only present in the admin `pages` index — the public index drops it. */
   is_active?: boolean;
 }

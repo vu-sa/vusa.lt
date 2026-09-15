@@ -182,7 +182,7 @@ describe('authorized access', function (): void {
                 ->component('Admin/Navigation/CreateNavigation')
                 ->has('parent_id')
                 ->has('parentElements')
-                ->has('categoryOptions')
+                ->has('topicOptions')
                 ->where('parent_id', 0)
             );
     });
@@ -287,7 +287,7 @@ describe('authorized access', function (): void {
                 ->component('Admin/Navigation/EditNavigation')
                 ->has('navigationElement')
                 ->has('parentElements')
-                ->has('categoryOptions')
+                ->has('topicOptions')
                 ->where('navigationElement.id', $this->navigation->id)
             );
     });

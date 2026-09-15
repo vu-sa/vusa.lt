@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Contracts\GuardsForceDelete;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
-use Database\Factories\EventTypeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -29,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property-read array $translatable_columns_from
  * @property-read mixed $translations
  *
- * @method static EventTypeFactory factory($count = null, $state = [])
+ * @method static \Database\Factories\EventTypeFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EventType newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EventType newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|EventType onlyTrashed()
@@ -64,6 +64,14 @@ class EventType extends Model implements GuardsForceDelete
         ];
     }
 
+    #[\Override]
+    protected static function booted(): void
+    {
+        static::saved(fn () => Cache::forget('all-event-types-for-inertia'));
+        static::deleted(fn () => Cache::forget('all-event-types-for-inertia'));
+        static::restored(fn () => Cache::forget('all-event-types-for-inertia'));
+    }
+
     public function calendarEvents(): HasMany
     {
         return $this->hasMany(Calendar::class);
@@ -72,7 +80,7 @@ class EventType extends Model implements GuardsForceDelete
     /**
      * `calendar.event_type_id` restricts deletes — the FK itself is `nullOnDelete`, so a
      * force-delete would silently un-type every event still wearing this type rather than
-     * failing outright. Same guard shape as Category, for the same reason.
+     * failing outright.
      */
     public function forceDeleteBlockedReason(): ?string
     {

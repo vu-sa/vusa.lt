@@ -21,24 +21,6 @@
       <template #fallback>
         <IFluentImage24Regular class="size-10 text-muted-foreground/50" />
       </template>
-
-      <!-- The category marker sits on the photograph, top-left, so a grid of cards reads as a
-           list of subjects before it reads as a list of pictures.
-
-           Loud on the one featured article, quiet on a grid of many — one accent per view is the
-           rule, and a dozen solid brand blocks in a grid is a dozen accents. The quiet form is
-           spelled out rather than using `variant="muted"`, which is a bordered chip for a light
-           ground and disappears against a photograph. -->
-      <TagChip
-        v-if="news.category"
-        :label="news.category"
-        class="absolute left-0 top-0"
-        :class="[
-          size === 'featured'
-            ? 'bg-brand-fill text-brand-foreground font-bold'
-            : (size === 'sm' ? 'bg-background/90 text-brand' : undefined),
-        ]"
-      />
     </MediaFrame>
 
     <div :class="size === 'featured' ? 'flex flex-col justify-center' : 'mt-4 flex flex-1 flex-col'">
@@ -88,13 +70,13 @@ import { usePage } from '@inertiajs/vue3';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
-import { MediaFrame, TagChip } from '@/Components/Public/Base';
+import { MediaFrame } from '@/Components/Public/Base';
 import type { NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 
 /**
- * One article as a card: picture, category, date, headline.
+ * One article as a card: picture, date, headline.
  *
  * Three sizes:
  * - `featured`: 2-column hero article with large typography for archive lead
@@ -116,7 +98,7 @@ const page = usePage();
 
 const showExcerpt = computed(() => props.showExcerpt ?? (props.size === 'lg' || props.size === 'featured'));
 
-const href = computed(() => localizedRoute('news', {
+const href = computed(() => props.news.public_url ?? localizedRoute('news', {
   news: props.news.permalink ?? '',
   subdomain: page.props.tenant?.subdomain ?? 'www',
 }, props.news.lang));

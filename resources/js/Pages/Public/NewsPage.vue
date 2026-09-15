@@ -29,7 +29,7 @@ import type { NewsItem } from '@/Types/contentParts';
 import IFluentNews24Regular from '~icons/fluent/news-24-regular';
 
 const props = defineProps<{
-  article: App.Entities.News & { category?: { name?: string | null } | null; reading_time?: number | null };
+  article: App.Entities.News & { reading_time?: number | null };
   relatedArticles?: NewsItem[];
   /** Server-resolved dynamic blocks (link-list, event-list, …) keyed by content-part id. */
   resolvedParts?: Record<number, unknown>;

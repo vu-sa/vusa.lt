@@ -112,7 +112,6 @@ class CalendarController extends AdminController
         // `tags` isn't a column — fill() would try to write it as one — so it's excluded here
         // and synced through the relation below instead.
         $calendar = $calendar->fill($request->safe()->except(['images', 'main_image', 'tags']));
-        $calendar->category_id = $request->validated('category_id');
         $calendar->event_type_id = $request->validated('event_type_id');
 
         $calendar->save();
@@ -240,7 +239,6 @@ class CalendarController extends AdminController
             }
 
             $calendar->fill($request->safe()->except($protected));
-            $calendar->category_id = $request->validated('category_id');
             $calendar->event_type_id = $request->validated('event_type_id');
 
             $calendar->save();

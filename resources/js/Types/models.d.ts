@@ -197,7 +197,6 @@ declare global {
       hero_style: CalendarHeroStyleEnum
       date: string
       end_date?: string | null
-      category_id?: number | null
       event_type_id?: number | null
       tenant_id: number
       meeting_id?: string | null
@@ -212,7 +211,6 @@ declare global {
       // relations
       tenant?: Tenant
       meeting?: Meeting
-      category?: Category
       event_type?: EventType
       tags?: Tag[]
       public_urls?: PublicUrl[]
@@ -226,39 +224,11 @@ declare global {
       // exists
       tenant_exists: boolean
       meeting_exists: boolean
-      category_exists: boolean
       event_type_exists: boolean
       tags_exists: boolean
       public_urls_exists: boolean
       media_exists: boolean
       activities_as_subject_exists: boolean
-    }
-
-    export interface Category {
-      // columns
-      id: number
-      alias?: string | null
-      created_at: string
-      updated_at: string
-      name?: Array<unknown> | null
-      description?: Array<unknown> | null
-      deleted_at?: string | null
-      // mutators
-      force_delete_blocked_reason: string
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      pages?: Page[]
-      news?: News[]
-      calendars?: Calendar[]
-      // counts
-      pages_count: number
-      news_count: number
-      calendars_count: number
-      // exists
-      pages_exists: boolean
-      news_exists: boolean
-      calendars_exists: boolean
     }
 
     export interface Comment {
@@ -956,7 +926,6 @@ declare global {
       // columns
       id: number
       title: string
-      category_id?: number | null
       permalink?: string | null
       short: string
       lang: string
@@ -979,7 +948,6 @@ declare global {
       // relations
       user?: User
       tenant?: Tenant
-      category?: Category
       other_language_news?: News
       tags?: Tag[]
       content?: Content
@@ -992,7 +960,6 @@ declare global {
       // exists
       user_exists: boolean
       tenant_exists: boolean
-      category_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
@@ -1024,7 +991,6 @@ declare global {
       lang: string
       other_lang_id?: number | null
       content_id: number
-      category_id?: number | null
       parent_id?: number | null
       sort_order: number
       is_active: boolean
@@ -1044,7 +1010,6 @@ declare global {
       // relations
       tenant?: Tenant
       other_language_page?: Page
-      category?: Category
       parent?: Page
       children?: Page[]
       tags?: Tag[]
@@ -1059,7 +1024,6 @@ declare global {
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
-      category_exists: boolean
       parent_exists: boolean
       children_exists: boolean
       tags_exists: boolean
@@ -1314,7 +1278,6 @@ declare global {
       // columns
       id: number
       title: string
-      category_id?: number | null
       permalink?: string | null
       short: string
       lang: string
@@ -1337,7 +1300,6 @@ declare global {
       // relations
       user?: User
       tenant?: Tenant
-      category?: Category
       other_language_news?: News
       tags?: Tag[]
       content?: Content
@@ -1350,7 +1312,6 @@ declare global {
       // exists
       user_exists: boolean
       tenant_exists: boolean
-      category_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
@@ -1366,7 +1327,6 @@ declare global {
       lang: string
       other_lang_id?: number | null
       content_id: number
-      category_id?: number | null
       parent_id?: number | null
       sort_order: number
       is_active: boolean
@@ -1386,7 +1346,6 @@ declare global {
       // relations
       tenant?: Tenant
       other_language_page?: Page
-      category?: Category
       parent?: Page
       children?: Page[]
       tags?: Tag[]
@@ -1401,7 +1360,6 @@ declare global {
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
-      category_exists: boolean
       parent_exists: boolean
       children_exists: boolean
       tags_exists: boolean

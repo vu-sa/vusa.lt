@@ -29,11 +29,7 @@ class StoreCalendarRequest extends CalendarRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
-            // Nullable at the column (legacy rows stay findable/unset), but required going
-            // forward: every new event is typed, no repeat of the Page category
-            // required-in-form/nullable-in-request mismatch.
-            'event_type_id' => ['required', 'integer', SoftDeleteRules::existsLive('event_types')],
+            'event_type_id' => ['nullable', 'integer', SoftDeleteRules::existsLive('event_types')],
         ]);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Category;
+use App\Models\Tag;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Rules\UniqueAmongTrashed;
@@ -80,11 +80,11 @@ test('nested attribute names are checked, not silently skipped', function (): vo
 });
 
 test('scoping narrows the check to the columns of a composite index', function (): void {
-    $category = Category::factory()->create(['alias' => 'shared-alias']);
+    $tag = Tag::factory()->create(['alias' => 'shared-alias']);
 
-    $unscoped = validateWith(UniqueAmongTrashed::of('categories', 'alias'), 'shared-alias', 'alias');
+    $unscoped = validateWith(UniqueAmongTrashed::of('tags', 'alias'), 'shared-alias', 'alias');
     $scopedElsewhere = validateWith(
-        UniqueAmongTrashed::of('categories', 'alias')->where('id', $category->id + 999),
+        UniqueAmongTrashed::of('tags', 'alias')->where('id', $tag->id + 999),
         'shared-alias',
         'alias',
     );

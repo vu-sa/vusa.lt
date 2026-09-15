@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
@@ -62,10 +61,8 @@ function assertTypesenseSoftDeleteLifecycle(Model $model, string $query, ?string
 
 test('news leaves the admin search index when soft deleted and returns when restored', function (): void {
     $query = 'Soft Delete News '.Str::uuid()->toString();
-    $category = Category::factory()->create();
 
     $news = News::factory()->create([
-        'category_id' => $category->id,
         'title' => $query,
         'draft' => false,
         'publish_time' => now()->subHour(),
@@ -78,10 +75,8 @@ test('news leaves the admin search index when soft deleted and returns when rest
 
 test('page leaves the admin search index when soft deleted and returns when restored', function (): void {
     $query = 'Soft Delete Page '.Str::uuid()->toString();
-    $category = Category::factory()->create();
 
     $page = Page::factory()->active()->create([
-        'category_id' => $category->id,
         'title' => $query,
         'lang' => 'lt',
     ]);
@@ -93,10 +88,8 @@ test('page leaves the admin search index when soft deleted and returns when rest
 
 test('public news index follows parent news soft delete lifecycle', function (): void {
     $query = 'Soft Delete Public News '.Str::uuid()->toString();
-    $category = Category::factory()->create();
 
     $news = News::factory()->create([
-        'category_id' => $category->id,
         'title' => $query,
         'draft' => false,
         'publish_time' => now()->subHour(),
@@ -117,10 +110,8 @@ test('public news index follows parent news soft delete lifecycle', function ():
 
 test('public pages index follows parent page soft delete lifecycle', function (): void {
     $query = 'Soft Delete Public Page '.Str::uuid()->toString();
-    $category = Category::factory()->create();
 
     $page = Page::factory()->active()->create([
-        'category_id' => $category->id,
         'title' => $query,
         'lang' => 'lt',
     ]);

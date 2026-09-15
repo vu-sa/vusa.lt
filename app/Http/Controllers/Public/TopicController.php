@@ -14,9 +14,8 @@ class TopicController extends PublicController
 {
     /**
      * A topic aggregates published news, active pages and upcoming/recent events sharing one
-     * tag — across every tenant, matching Category::pages()'s existing global (non-tenant-scoped)
-     * precedent for cross-padalinys groupings. Only tags flagged `is_topic` get a page; the rest
-     * of the vocabulary stays filter/search-only (see Tag::scopeTopics()).
+     * tag — across every tenant. Only tags flagged `is_topic` get a page; the rest of the
+     * vocabulary stays filter/search-only (see Tag::scopeTopics()).
      */
     public function show(string $lang, string $topicString, Tag $tag)
     {
@@ -37,7 +36,7 @@ class TopicController extends PublicController
             ->with('tenant:id,alias,shortname')
             ->orderByDesc('publish_time')
             ->limit(6)
-            ->get(['id', 'title', 'permalink', 'lang', 'tenant_id', 'publish_time']);
+            ->get(['id', 'title', 'short', 'image', 'permalink', 'lang', 'tenant_id', 'publish_time']);
 
         $pages = Page::query()
             ->whereHas('tags', fn ($query) => $query->whereKey($tag->id))
@@ -69,8 +68,11 @@ class TopicController extends PublicController
             'news' => $news->map(fn (News $article) => [
                 'id' => $article->id,
                 'title' => $article->title,
+                'lang' => $article->lang,
+                'short' => $article->short,
+                'image' => $article->getImageUrl(),
+                'permalink' => $article->permalink,
                 'publish_time' => $article->publish_time,
-                'tenant_name' => $article->tenant->shortname,
                 'public_url' => $article->publicUrl(),
             ]),
             'pages' => $pages->map(fn (Page $page) => [

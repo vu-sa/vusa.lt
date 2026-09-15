@@ -38,7 +38,6 @@ const related: NewsItem[] = [
     publish_time: '2026-08-12T07:33:47.000000Z',
     permalink: 'bendrabutis',
     image: PLACEHOLDER_IMAGES[1]!,
-    category: 'Gidai',
   },
   {
     id: 3,
@@ -48,7 +47,6 @@ const related: NewsItem[] = [
     publish_time: '2026-08-08T15:04:05.000000Z',
     permalink: 'stovyklos',
     image: PLACEHOLDER_IMAGES[2]!,
-    category: null,
   },
   {
     id: 4,
@@ -58,7 +56,6 @@ const related: NewsItem[] = [
     publish_time: '2026-08-02T15:04:13.000000Z',
     permalink: 'planavimas',
     image: PLACEHOLDER_IMAGES[0]!,
-    category: 'Atstovavimas',
   },
 ];
 
@@ -70,7 +67,6 @@ const article = {
   publish_time: '2026-09-01T09:00:00.000000Z',
   image: PLACEHOLDER_IMAGES[0]!,
   image_author: 'Ugniaus Bagdonavičiaus nuotr.',
-  category: 'Atstovavimas',
   reading_time: 4,
   tenant: 'VU SA',
   highlights: [
@@ -124,7 +120,7 @@ function renderArticle(overrides: Record<string, unknown> = {}) {
   };
 }
 
-/** Everything on: category, tags, photo credit, reading time, highlights, related news. */
+/** Everything on: tags, photo credit, reading time, highlights, related news. */
 export const Article: Story = { render: () => renderArticle() };
 
 /** With a counterpart in the other language, the switch joins the meta row as a hairline chip. */
@@ -133,14 +129,14 @@ export const WithLanguageSwitch: Story = {
 };
 
 /**
- * The sparse case, and the one most of the archive actually is: no category, no tags, no photo
- * credit. Nothing should leave a gap where it used to be.
+ * The sparse case, and the one most of the archive actually is: no tags, no photo credit.
+ * Nothing should leave a gap where it used to be.
  */
 export const Minimal: Story = {
   render: () => ({
     components: { NewsArticleLayout },
     setup: () => ({
-      article: { ...(article as Record<string, unknown>), category: null, tags: [], image_author: null, highlights: [] },
+      article: { ...(article as Record<string, unknown>), tags: [], image_author: null, highlights: [] },
       body: BODY,
     }),
     template: `
@@ -153,8 +149,7 @@ export const Minimal: Story = {
 
 /**
  * The card at both sizes. `lg` is the one article a band leads with; `sm` is a cell in a grid of
- * many, and its category chip goes quiet — a dozen solid brand blocks in a grid is a dozen
- * accents, and the surface allows one per view.
+ * many.
  */
 export const Cards: Story = {
   render: () => ({

@@ -36,18 +36,17 @@ final class NewsBlockResolver implements ResolvesContentPart
     {
         $options = (array) ($part->options ?? []);
         $limit = max(1, min(self::MAX_LIMIT, (int) ($options['limit'] ?? self::DEFAULT_LIMIT)));
-        $categoryAlias = $options['categoryAlias'] ?? null;
+        $topicAlias = $options['topicAlias'] ?? null;
         $tagAlias = $options['tagAlias'] ?? null;
 
         $query = News::query()
             ->where('lang', $context->locale)
             ->where('draft', false)
             ->where('publish_time', '<=', now())
-            ->with('category:id,name')
             ->orderByDesc('publish_time');
 
-        if (is_string($categoryAlias) && $categoryAlias !== '') {
-            $query->whereHas('category', fn ($category) => $category->where('alias', $categoryAlias));
+        if (is_string($topicAlias) && $topicAlias !== '') {
+            $query->whereHas('tags', fn ($tag) => $tag->where('alias', $topicAlias));
         }
 
         if (is_string($tagAlias) && $tagAlias !== '') {
@@ -63,7 +62,7 @@ final class NewsBlockResolver implements ResolvesContentPart
         }
 
         $news = $query->take($limit)
-            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'category_id', 'other_lang_id', 'tenant_id'])
+            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'other_lang_id', 'tenant_id'])
             ->all();
         $items = new NewsCollection($news)->toPublicArray();
 

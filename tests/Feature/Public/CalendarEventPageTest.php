@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Calendar;
-use App\Models\Category;
+use App\Models\EventType;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -67,22 +67,22 @@ test('eventLocation is null when the location cannot be geocoded', function (): 
         ->assertInertia(fn (Assert $page) => $page->where('eventLocation', null));
 });
 
-test('the category is eager loaded so the hero can label the event', function (): void {
+test('the event type is eager loaded so the hero can label the event', function (): void {
     Http::fake(['nominatim.openstreetmap.org/*' => Http::response([])]);
 
-    $category = Category::factory()->create([
+    $eventType = EventType::factory()->create([
         'name' => ['lt' => 'Konferencija', 'en' => 'Conference'],
     ]);
 
     $event = Calendar::factory()->create([
         'tenant_id' => $this->tenant->id,
-        'category_id' => $category->id,
+        'event_type_id' => $eventType->id,
         'is_draft' => false,
     ]);
 
     $this->get(calendarEventUrl($event))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('event.category.name', 'Konferencija'));
+        ->assertInertia(fn (Assert $page) => $page->where('event.event_type.name', 'Konferencija'));
 });
 
 test('the registration URL reaches the page as cto_url', function (): void {

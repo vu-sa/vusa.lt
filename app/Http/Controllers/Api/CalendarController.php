@@ -60,7 +60,7 @@ class CalendarController extends ApiController
         }
 
         $query = Calendar::query()
-            ->with(['category', 'media', 'tenant:id,shortname'])
+            ->with(['eventType', 'media', 'tenant:id,shortname'])
             ->where('is_draft', false)
             ->whereBetween('date', [$dateFrom, $dateTo])
             ->orderByDesc('date');

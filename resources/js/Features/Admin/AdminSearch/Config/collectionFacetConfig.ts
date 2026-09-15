@@ -176,7 +176,7 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
  * Page collection facet configuration
  */
 export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'lang,tenant_name,category_name,is_active',
+  facetBy: 'lang,tenant_name,is_active',
   queryBy: 'title,meta_description',
   defaultSortBy: 'created_at:desc',
   fields: [
@@ -186,14 +186,6 @@ export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
       type: 'checkbox',
       icon: 'Globe',
       defaultOpen: true,
-      sortBy: 'count',
-    },
-    {
-      field: 'category_name',
-      label: 'Kategorija',
-      type: 'checkbox',
-      icon: 'Tag',
-      defaultOpen: false,
       sortBy: 'count',
     },
     {

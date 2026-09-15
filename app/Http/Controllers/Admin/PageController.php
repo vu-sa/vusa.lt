@@ -103,7 +103,6 @@ class PageController extends AdminController
 
         $page = Page::query()->create([
             'title' => $request->title,
-            'category_id' => $request->category_id,
             'parent_id' => $request->validated('parent_id'),
             'content_id' => $content->id,
             'permalink' => GenerateUniqueSlug::execute(Page::class, $request->title, $tenant_id),
@@ -147,7 +146,7 @@ class PageController extends AdminController
 
         return $this->inertiaResponse('Admin/Content/EditPage', [
             'page' => [
-                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'parent_id', 'tenant_id', 'is_active', 'aside', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs'),
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'parent_id', 'tenant_id', 'is_active', 'aside', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs'),
                 'tenant' => $page->tenant->only('id', 'alias', 'shortname'),
                 'parent' => $page->parent?->only('id', 'title'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'] ?? null,
@@ -170,7 +169,7 @@ class PageController extends AdminController
         $this->handleAuthorization('update', $page);
 
         $page->update([
-            ...$request->safe()->only('title', 'lang', 'category_id', 'parent_id', 'is_active', 'layout', 'permalink'),
+            ...$request->safe()->only('title', 'lang', 'parent_id', 'is_active', 'layout', 'permalink'),
             'show_table_of_contents' => $request->boolean('show_table_of_contents', true),
             'show_title' => $request->boolean('show_title', true),
             'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),

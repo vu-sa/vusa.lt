@@ -2,7 +2,6 @@ declare namespace App.Entities {
   export type AgendaItem = models.AgendaItem;
   export type Banner = models.Banner;
   export type Calendar = models.Calendar;
-  export type Category = models.Category;
   export type Comment = models.Comment;
   export type Content = models.Content;
   export type EventType = models.EventType;

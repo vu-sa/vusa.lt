@@ -32,7 +32,7 @@ import { cn } from '@/Utils/Shadcn/utils';
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
 
 /**
- * The category marker on a news card, event tile or article header. Square by design — the
+ * The tag/topic marker on a news card, event tile or article header. Square by design — the
  * public surface zeroes the radius scale, but a chip is exactly the shape people reach for
  * `rounded-full` on, so it is spelled out here once instead of per caller.
  */

@@ -279,7 +279,7 @@ const monthAbbr = computed(() =>
 );
 
 const tagLabel = computed(() => {
-  if (props.event.category?.name) return props.event.category.name;
+  if (props.event.event_type?.name) return props.event.event_type.name;
   if (props.isMeeting) return $t('Posėdis');
   if (props.event.tenant?.shortname) return props.event.tenant.shortname;
   return '';

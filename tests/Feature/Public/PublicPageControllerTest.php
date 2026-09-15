@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Navigation;
@@ -198,39 +197,6 @@ test('page with navigation item renders successfully', function (): void {
             ->component('Public/ContentPage')
             ->where('navigationItemId', $navigationItem->id)
             ->where('page.title', 'Navigation Test Page')
-    );
-});
-
-test('page with category renders successfully', function (): void {
-    $category = Category::factory()->create([
-        'name' => 'Test Category',
-        'alias' => 'test-category',
-    ]);
-
-    $content = Content::factory()->create();
-    ContentPart::factory()->create([
-        'content_id' => $content->id,
-        'type' => 'tiptap',
-        'json_content' => (new Editor)->setContent('<p>Category page content</p>')->getDocument(),
-    ]);
-
-    $page = Page::factory()->create([
-        'title' => 'Category Test Page',
-        'permalink' => 'category-test-page',
-        'tenant_id' => $this->tenant->id,
-        'content_id' => $content->id,
-        'category_id' => $category->id,
-        'is_active' => true, // Ensure page is active for public access
-    ]);
-
-    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'category-test-page']));
-
-    $response->assertStatus(200);
-    $response->assertInertia(
-        fn (Assert $page) => $page
-            ->component('Public/ContentPage')
-            ->where('page.title', 'Category Test Page')
-            ->where('page.category.id', $category->id)
     );
 });
 

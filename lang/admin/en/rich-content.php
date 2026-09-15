@@ -410,8 +410,10 @@ return [
     // Shared list options (link-list / event-list)
     'style' => 'Style',
     'limit' => 'Count',
-    'category_alias' => 'Category',
-    'category_alias_none' => 'No category',
+    'topic_alias' => 'Topic',
+    'topic_alias_none' => 'No topic',
+    'event_type' => 'Event type',
+    'event_type_none' => 'No event type',
     'tag_alias' => 'Tag',
     'tag_alias_none' => 'No tag',
     'tenant_scope' => 'Units',

@@ -2,7 +2,7 @@
 
 use App\Models\Banner;
 use App\Models\Calendar;
-use App\Models\Category;
+use App\Models\EventType;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Role;
@@ -43,15 +43,15 @@ function softDeletableResourceCases(): array
             'prop' => 'calendar.data',
             'create' => fn (Tenant $tenant): Model => Calendar::factory()->for($tenant)->create(),
         ],
-        'category' => [
-            'model' => Category::class,
-            'table' => 'categories',
-            'route' => 'categories',
-            'permission' => 'categories',
+        'event type' => [
+            'model' => EventType::class,
+            'table' => 'event_types',
+            'route' => 'eventTypes',
+            'permission' => 'eventTypes',
             'scope' => '*',
-            'prop' => 'categories.data',
+            'prop' => 'eventTypes.data',
             'index_as_super_admin' => true,
-            'create' => fn (Tenant $tenant): Model => Category::factory()->create(),
+            'create' => fn (Tenant $tenant): Model => EventType::factory()->create(),
         ],
         'quick link' => [
             'model' => QuickLink::class,

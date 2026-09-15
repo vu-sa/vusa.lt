@@ -228,10 +228,10 @@ export interface CalendarEventData {
   description?: string;
   location?: string;
   is_international: boolean;
-  category?: {
+  event_type?: {
     id: number;
     name: string;
-    alias: string;
+    slug: string;
   };
   images?: Array<{
     id: number;

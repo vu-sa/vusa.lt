@@ -25,7 +25,7 @@ function makeEvent(id: number, daysFromNow: number) {
     end_date: null,
     location: null,
     is_all_day: false,
-    category: null,
+    event_type: null,
     images: [],
   };
 }

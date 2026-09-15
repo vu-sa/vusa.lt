@@ -19,7 +19,6 @@ use Laravel\Scout\Searchable;
  *
  * @property int $id
  * @property string $title
- * @property int|null $category_id
  * @property string|null $permalink
  * @property string|null $short
  * @property string $lang
@@ -40,7 +39,6 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Category|null $category
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, PublicUrl> $publicUrls

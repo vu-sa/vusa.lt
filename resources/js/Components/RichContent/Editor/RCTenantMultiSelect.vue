@@ -35,10 +35,10 @@
 
 <script setup lang="ts">
 /**
- * Multi-select of every tenant (padalinys), for `categoryAlias`-adjacent fetch options
- * that scope *public* data (calendar events, …) by tenant. Sourced from the `tenants`
- * prop shared globally via `HandleInertiaRequests` — same "global list, no per-user
- * filtering" rationale as `RCCategoryAliasSelect.vue` — and deliberately **not**
+ * Multi-select of every tenant (padalinys), for `eventTypeSlug`/`topicAlias`-adjacent
+ * fetch options that scope *public* data (calendar events, …) by tenant. Sourced from the
+ * `tenants` prop shared globally via `HandleInertiaRequests` — same "global list, no
+ * per-user filtering" rationale as `RCEventTypeSelect.vue` — and deliberately **not**
  * authorization-gated the way `TenantScopeSelector.vue` (Pages/Admin/Dashboard) is:
  * that component's `tenants` list is pre-filtered by the caller to what the current
  * user may administer, which is the wrong semantic here — the author is choosing which

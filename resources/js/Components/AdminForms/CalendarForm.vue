@@ -72,13 +72,16 @@
 
         <!-- Event type & Tenant -->
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="event_type" :label="$t('Renginio tipas')" required :error="form.errors.event_type_id"
+          <FormFieldWrapper id="event_type" :label="$t('Renginio tipas')" :error="form.errors.event_type_id"
             :valid="form.valid('event_type_id')" :invalid="form.invalid('event_type_id')">
             <Select v-model="eventTypeIdString" @update:model-value="form.validate('event_type_id')">
               <SelectTrigger id="event_type">
                 <SelectValue :placeholder="$t('Pasirinkti renginio tipą...')" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem :value="NO_EVENT_TYPE_VALUE">
+                  {{ $t('Nenurodyta') }}
+                </SelectItem>
                 <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
                   {{ type.name }}
                 </SelectItem>
@@ -450,7 +453,7 @@ const hasMainImage = computed(() => !!form.main_image || !!existingMainImageUrl.
 
 // Section completion states
 const mainInfoComplete = computed(() =>
-  Boolean((form.title?.lt?.length || 0) >= 3 && form.tenant_id && form.event_type_id),
+  Boolean((form.title?.lt?.length || 0) >= 3 && form.tenant_id),
 );
 
 // Hero style icons as simple SVG representations
@@ -526,11 +529,13 @@ const defaultOrganizer = computed(() => {
   );
 });
 
+const NO_EVENT_TYPE_VALUE = '__none__';
+
 // Handle event_type_id as string for Select component
 const eventTypeIdString = computed({
-  get: () => form.event_type_id ? String(form.event_type_id) : '',
+  get: () => form.event_type_id ? String(form.event_type_id) : NO_EVENT_TYPE_VALUE,
   set: (val: string) => {
-    form.event_type_id = val ? parseInt(val) : null;
+    form.event_type_id = val === NO_EVENT_TYPE_VALUE ? null : parseInt(val);
   },
 });
 

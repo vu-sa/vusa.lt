@@ -30,10 +30,10 @@ use Illuminate\Support\Collection;
  * "select none" action; here, `RCTenantMultiSelect.vue`'s "None" button produces
  * exactly this state, and it must show zero events, not silently every tenant's).
  *
- * `options.categoryAlias` lets an author narrow a specific block beyond that default —
+ * `options.eventTypeSlug` lets an author narrow a specific block beyond that default —
  * each block resolves independently (no shared/batched query) since, like
  * `EventListResolver`, two calendar blocks on the same page can carry different
- * limits/categories/tenant scopes.
+ * limits/event types/tenant scopes.
  */
 final class CalendarBlockResolver implements ResolvesContentPart
 {
@@ -58,11 +58,11 @@ final class CalendarBlockResolver implements ResolvesContentPart
     {
         $options = (array) ($part->options ?? []);
         $limit = max(1, min(self::MAX_LIMIT, (int) ($options['limit'] ?? self::DEFAULT_LIMIT)));
-        $alias = $options['categoryAlias'] ?? null;
+        $slug = $options['eventTypeSlug'] ?? null;
 
-        $query = Calendar::query()->with(['category', 'media'])
+        $query = Calendar::query()->with(['eventType', 'media'])
             ->published()->forLocale($context->locale)
-            ->inCategoryAlias(is_string($alias) && $alias !== '' ? $alias : null)
+            ->ofEventType(is_string($slug) && $slug !== '' ? $slug : null)
             // Same rolling "upcoming" window as EventListResolver's default mode — a
             // day of grace behind now so an event still in progress isn't dropped.
             ->where('date', '>=', now()->subDay());

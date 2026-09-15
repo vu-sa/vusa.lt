@@ -212,8 +212,8 @@
         </CollectionSelectDialog>
       </Field>
       <Field v-else>
-        <FieldLabel>{{ $t('rich-content.category_alias') }}</FieldLabel>
-        <RCCategoryAliasSelect :model-value="options.categoryAlias" @update:model-value="(v) => patchOptions({ categoryAlias: v })" />
+        <FieldLabel>{{ $t('rich-content.topic_alias') }}</FieldLabel>
+        <RCTopicAliasSelect :model-value="options.topicAlias" @update:model-value="(v) => patchOptions({ topicAlias: v })" />
       </Field>
 
       <Field>
@@ -294,7 +294,7 @@
  * the "HTML text fields" rule in RICH_CONTENT_EDITOR.md for why one implementation matters.
  *
  * `source: 'manual'` stores author-typed links directly; `'news'`/`'pages'` are resolved
- * server-side (see `LinkListResolver`), so only the *selector* (pinned ids, category, tenant
+ * server-side (see `LinkListResolver`), so only the *selector* (pinned ids, topic, tenant
  * scope, limit) is stored — never the resolved titles/hrefs, which would go stale.
  *
  * `pinnedNews`/`pinnedPages` in json_content are editor-only bookkeeping: without a title to
@@ -304,7 +304,7 @@
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCCategoryAliasSelect from '../Editor/RCCategoryAliasSelect.vue';
+import RCTopicAliasSelect from '../Editor/RCTopicAliasSelect.vue';
 
 import type { LinkList } from '@/Types/contentParts';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';

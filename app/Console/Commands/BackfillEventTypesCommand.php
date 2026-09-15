@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\EventType;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -12,13 +11,12 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Types every untyped calendar event from a deterministic, ordered set of rules matched
- * against the event's title (both `lt` and `en`), so the "Kita informacija" catch-all the
- * old `categories` colour palette produced stops growing.
+ * against the event's title (both `lt` and `en`) — a maintenance tool for any event that
+ * stays untyped after creation, since `event_type_id` is now the sole classification axis.
  *
- * Rule order matters: rule 3 (konferencija) must precede rule 6 (atstovavimas) — a
- * conference title routinely contains both "konferencij" and "senat"/"komisij". First
- * match wins; a row that matches nothing is left NULL and listed in the report, never
- * guessed at.
+ * Rule order matters: `konferencija` must precede `atstovavimas` — a conference title
+ * routinely contains both "konferencij" and "senat"/"komisij". First match wins; a row
+ * that matches nothing is left NULL and listed in the report, never guessed at.
  *
  * Idempotent by construction: only events with `event_type_id IS NULL` are considered, so
  * a type set by an admin (or a previous run) is never revisited or overwritten.
@@ -29,6 +27,8 @@ use Illuminate\Support\Facades\Storage;
                             {--force : Apply the proposed changes}')]
 class BackfillEventTypesCommand extends Command
 {
+    private const string SUSIRINKIMAS_PATTERN = '/susirinkim/iu';
+
     /**
      * Ordered slug => regex map. First match wins. Patterns are matched case-insensitively
      * against both the Lithuanian and English title.
@@ -38,11 +38,11 @@ class BackfillEventTypesCommand extends Command
     private const array TITLE_RULES = [
         ['stovykla', '/stovykl|camp/iu'],
         ['konferencija', '/konferencij|ataskaitin.{0,3}-rinkimin/iu'],
+        ['posedis', '/posėd/iu'],
         ['rinkimai', '/rinkim|kandidat|balsav/iu'],
         ['mokymai', '/mokym|seminar|dirbtuv|workshop|training/iu'],
-        ['atstovavimas', '/posėd|susitik|dalyvau|darbo grup|rektorat|senat|komisij/iu'],
+        ['atstovavimas', '/susitik|dalyvau|darbo grup|rektorat|senat|komisij/iu'],
         ['terminas', '/registracij|terminas|paraišk|deadline/iu'],
-        ['renginys', '/šventė|vakaras|festival|gimtadien|koncert|turnyr/iu'],
     ];
 
     public function handle(): int
@@ -52,16 +52,13 @@ class BackfillEventTypesCommand extends Command
 
         $eventTypesBySlug = EventType::query()->pluck('id', 'slug');
 
-        foreach ([...array_column(self::TITLE_RULES, 0), 'posedis'] as $slug) {
+        foreach ([...array_column(self::TITLE_RULES, 0), 'susirinkimas'] as $slug) {
             if (! $eventTypesBySlug->has($slug)) {
                 $this->error("Missing event type '{$slug}' — run migrations/seeders first.");
 
                 return self::FAILURE;
             }
         }
-
-        $freshmenCampsCategoryId = Category::query()->withTrashed()->where('alias', 'freshmen-camps')->value('id');
-        $conferencesCategoryId = Category::query()->withTrashed()->where('alias', 'vu-sa-conferences')->value('id');
 
         /** @var array<string, int> $buckets */
         $buckets = [];
@@ -71,12 +68,12 @@ class BackfillEventTypesCommand extends Command
         Calendar::query()
             ->whereNull('event_type_id')
             ->chunkById(200, function ($events) use (
-                $eventTypesBySlug, $freshmenCampsCategoryId, $conferencesCategoryId,
+                $eventTypesBySlug,
                 &$buckets, &$unmatched, &$proposed
             ): void {
                 foreach ($events as $event) {
                     /** @var Calendar $event */
-                    $slug = $this->resolveSlug($event, $freshmenCampsCategoryId, $conferencesCategoryId);
+                    $slug = $this->resolveSlug($event);
 
                     if ($slug === null) {
                         $unmatched[] = "#{$event->id}: ".$this->titleFor($event);
@@ -112,28 +109,20 @@ class BackfillEventTypesCommand extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * First match wins. Rule 1 (a meeting announcement) and rules 2-3 (the two campaign
-     * categories) are checked explicitly before falling through to the ordered title-regex
-     * table (rules 4-8).
-     */
-    private function resolveSlug(Calendar $event, ?int $freshmenCampsCategoryId, ?int $conferencesCategoryId): ?string
+    /** An explicit susirinkimas title is more specific than the linked-meeting signal. */
+    private function resolveSlug(Calendar $event): ?string
     {
-        if ($event->meeting_id !== null) {
-            return 'posedis';
-        }
-
-        if ($freshmenCampsCategoryId !== null && $event->category_id === $freshmenCampsCategoryId) {
-            return 'stovykla';
-        }
-
-        if ($conferencesCategoryId !== null && $event->category_id === $conferencesCategoryId) {
-            return 'konferencija';
-        }
-
         $titleLt = $event->getTranslation('title', 'lt', false) ?? '';
         $titleEn = $event->getTranslation('title', 'en', false) ?? '';
         $haystack = $titleLt."\n".$titleEn;
+
+        if (preg_match(self::SUSIRINKIMAS_PATTERN, $haystack) === 1) {
+            return 'susirinkimas';
+        }
+
+        if ($event->meeting_id !== null) {
+            return 'posedis';
+        }
 
         foreach (self::TITLE_RULES as [$slug, $pattern]) {
             if (preg_match($pattern, $haystack) === 1) {

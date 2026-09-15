@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ResolveNavigationUrlRequest;
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Tag;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
@@ -36,9 +36,9 @@ class NavigationLinkApiController extends ApiController
             'calendar' => $this->resolveCalendarUrl($data['id']),
             'institutions' => $this->resolveInstitutionUrl($data['id']),
             'documents' => $this->resolveDocumentUrl($data['id']),
-            // Category isn't a Typesense collection (see NavigationController::getCategoryOptions)
-            // but shares this endpoint since it's still a navigation link target.
-            'categories' => $this->resolveCategoryUrl($data['id']),
+            // Topics aren't a Typesense collection (see NavigationController::getTopicOptions)
+            // but share this endpoint since they're still a navigation link target.
+            'topics' => $this->resolveTopicUrl($data['id']),
             // Unreachable: `collection` is already validated against Rule::in() above.
             default => null,
         };
@@ -119,19 +119,19 @@ class NavigationLinkApiController extends ApiController
         return $document->anonymous_url;
     }
 
-    private function resolveCategoryUrl(int|string $id): ?string
+    private function resolveTopicUrl(int|string $id): ?string
     {
-        $category = Category::query()->find($id);
+        $tag = Tag::query()->topics()->find($id);
 
-        if (! $category || ! $category->alias) {
+        if (! $tag || ! $tag->alias) {
             return null;
         }
 
-        // Categories carry no tenant relation, so — matching the previous client-side
+        // Topics carry no tenant relation, so — matching the previous client-side
         // resolution this endpoint replaces — they always resolve against `www`.
-        return route('category', [
+        return route('topic', [
             'lang' => app()->getLocale(),
-            'category' => $category->alias,
+            'tag' => $tag->alias,
             'subdomain' => 'www',
         ]);
     }

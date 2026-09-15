@@ -268,12 +268,6 @@ const menuItems = computed(() => [
         searchTab: 'calendar',
       },
       {
-        title: $t('Kategorijos'),
-        icon: CategoryIcon,
-        href: route('categories.index'),
-        show: auth?.can.create.category,
-      },
-      {
         title: $t('Žymos'),
         icon: TagIcon,
         href: route('tags.index'),
@@ -287,7 +281,6 @@ const menuItems = computed(() => [
       || auth?.can.create.banner
       || auth?.can.create.navigation
       || auth?.can.create.calendar
-      || auth?.can.create.category
       || auth?.can.create.tag,
     visibleItems: [] as MenuItemType[],
   },

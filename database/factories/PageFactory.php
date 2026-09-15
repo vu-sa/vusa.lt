@@ -49,7 +49,6 @@ class PageFactory extends Factory
         return [
             'title' => $this->faker->sentence(),
             'permalink' => fn () => 'page-'.Str::uuid()->toString(),
-            'category_id' => $this->faker->numberBetween(1, 3),
             'content_id' => Content::factory(),
             'tenant_id' => Tenant::factory(),
             'is_active' => $this->faker->boolean(80), // 80% chance of being active

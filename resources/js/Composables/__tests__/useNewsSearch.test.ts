@@ -16,7 +16,6 @@ const mockSearch = vi.fn().mockResolvedValue({
         lang: 'lt',
         tenant_id: 16,
         tenant_shortname: 'VU SA',
-        category_name: 'Atstovavimas',
         tag_names: ['Studijos'],
         year: 2026,
       },
@@ -24,10 +23,6 @@ const mockSearch = vi.fn().mockResolvedValue({
   ],
   found: 1,
   facet_counts: [
-    {
-      field_name: 'category_name',
-      counts: [{ value: 'Atstovavimas', count: 1 }],
-    },
     {
       field_name: 'tenant_shortname',
       counts: [{ value: 'VU SA', count: 1 }],
@@ -86,14 +81,12 @@ describe('useNewsSearch', () => {
           image: '/test.jpg',
           publish_time: '2026-09-01T12:00:00.000Z',
           lang: 'lt',
-          category: 'Atstovavimas',
         },
       ],
       initialTotal: 10,
     });
 
     expect(search.query.value).toBe('');
-    expect(search.selectedCategories.value).toEqual([]);
     expect(search.selectedTenants.value).toEqual([]);
     expect(search.selectedYears.value).toEqual([]);
     expect(search.selectedTags.value).toEqual([]);
@@ -103,34 +96,23 @@ describe('useNewsSearch', () => {
   });
 
   it('initializes from URL query parameters if present', async () => {
-    window.history.replaceState({}, '', '/lt/naujienos?q=konferencija&category=Atstovavimas&tenant=VU%20SA&year=2026&tag=Studijos&sort=date_asc');
+    window.history.replaceState({}, '', '/lt/naujienos?q=konferencija&tenant=VU%20SA&year=2026&tag=Studijos&sort=date_asc');
 
     const { useNewsSearch } = await import('../useNewsSearch');
     const search = useNewsSearch();
 
     expect(search.query.value).toBe('konferencija');
-    expect(search.selectedCategories.value).toEqual(['Atstovavimas']);
     expect(search.selectedTenants.value).toEqual(['VU SA']);
     expect(search.selectedYears.value).toEqual(['2026']);
     expect(search.selectedTags.value).toEqual(['Studijos']);
     expect(search.sortBy.value).toBe('date_asc');
     expect(search.hasActiveFilters.value).toBe(true);
-    expect(search.activeFilterCount.value).toBe(4);
+    expect(search.activeFilterCount.value).toBe(3);
   });
 
   it('toggles and sets filters properly', async () => {
     const { useNewsSearch } = await import('../useNewsSearch');
     const search = useNewsSearch();
-
-    search.toggleCategory('Atstovavimas');
-    expect(search.selectedCategories.value).toEqual(['Atstovavimas']);
-    search.toggleCategory('Atstovavimas');
-    expect(search.selectedCategories.value).toEqual([]);
-
-    search.setCategory('Renginiai');
-    expect(search.selectedCategories.value).toEqual(['Renginiai']);
-    search.setCategory(null);
-    expect(search.selectedCategories.value).toEqual([]);
 
     search.toggleTenant('VU SA MIF');
     expect(search.selectedTenants.value).toEqual(['VU SA MIF']);
@@ -142,7 +124,6 @@ describe('useNewsSearch', () => {
     expect(search.selectedTags.value).toEqual(['Studijos']);
 
     search.clearFilters();
-    expect(search.selectedCategories.value).toEqual([]);
     expect(search.selectedTenants.value).toEqual([]);
     expect(search.selectedYears.value).toEqual([]);
     expect(search.selectedTags.value).toEqual([]);
@@ -158,8 +139,6 @@ describe('useNewsSearch', () => {
     expect(mockSearch).toHaveBeenCalled();
     expect(search.news.value.length).toBe(1);
     expect(search.news.value[0].title).toBe('VU SA Konferencija');
-    expect(search.news.value[0].category).toBe('Atstovavimas');
-    expect(search.categoryFacets.value).toEqual([{ label: 'Atstovavimas', value: 'Atstovavimas', count: 1 }]);
     expect(search.tenantFacets.value).toEqual([{ label: 'VU SA', value: 'VU SA', count: 1 }]);
     expect(search.yearFacets.value).toEqual([{ label: '2026', value: '2026', count: 1 }]);
     expect(search.tagFacets.value).toEqual([{ label: 'Studijos', value: 'Studijos', count: 1 }]);

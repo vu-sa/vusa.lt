@@ -33,7 +33,6 @@ use Spatie\Sitemap\Tags\Url;
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
- * @property int|null $category_id
  * @property int|null $parent_id
  * @property int $sort_order
  * @property bool $is_active
@@ -51,9 +50,8 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Category|null $category
- * @property-read Content $content
  * @property-read Collection<int, Page> $children
+ * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
  * @property-read Page|null $parent
  * @property-read Collection<int, PublicUrl> $publicUrls
@@ -61,12 +59,12 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\PageFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page withoutTrashed()
+ * @method static Builder<static>|Page newModelQuery()
+ * @method static Builder<static>|Page newQuery()
+ * @method static Builder<static>|Page onlyTrashed()
+ * @method static Builder<static>|Page query()
+ * @method static Builder<static>|Page withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Page withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -245,11 +243,6 @@ class Page extends Model implements Feedable, Sitemapable
         return $this->otherLanguagePage;
     }
 
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class, 'category_id');
-    }
-
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Page::class, 'parent_id');
@@ -392,7 +385,7 @@ class Page extends Model implements Feedable, Sitemapable
      */
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tenant', 'category', 'tags']);
+        return $query->with(['tenant', 'tags']);
     }
 
     public function toSearchableArray(): array
@@ -406,7 +399,6 @@ class Page extends Model implements Feedable, Sitemapable
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
-            'category_name' => $this->category?->name,
             'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at->timestamp,

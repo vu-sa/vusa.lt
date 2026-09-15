@@ -415,7 +415,6 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   pages: (p: PageSearchResult) => ({
     recordId: String(p.id),
     title: p.title ?? $t('Be pavadinimo'),
-    subtitle: p.category_name,
     badge: p.tenant_name,
     href: route('pages.edit', p.id),
     // No admin show page for pages — only the public page and the editor.

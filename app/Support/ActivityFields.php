@@ -4,10 +4,10 @@ namespace App\Support;
 
 use App\Models\AgendaItemNote;
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\ContentPart;
 use App\Models\Document;
 use App\Models\Duty;
+use App\Models\EventType;
 use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
@@ -85,17 +85,15 @@ class ActivityFields
             'institution_id' => [Institution::class, 'name'],
         ],
         News::class => [
-            'category_id' => [Category::class, 'name'],
             // PairTranslatedRecord::execute() runs on every News save and
             // otherwise leaves a bare numeric id in the feed.
             'other_lang_id' => [News::class, 'title'],
         ],
         Page::class => [
-            'category_id' => [Category::class, 'name'],
             'other_lang_id' => [Page::class, 'title'],
         ],
         Calendar::class => [
-            'category_id' => [Category::class, 'name'],
+            'event_type_id' => [EventType::class, 'name'],
         ],
     ];
 

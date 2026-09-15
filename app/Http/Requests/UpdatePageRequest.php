@@ -53,7 +53,6 @@ class UpdatePageRequest extends FormRequest
                 UniqueAmongTrashed::of('pages')->ignore($this->page->id)->where('tenant_id', $this->getTargetTenantId()),
                 fn (string $attribute, mixed $value, Closure $fail) => $this->assertPermalinkNotRetiredByAnother((string) $value, $fail),
             ],
-            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
             'parent_id' => [
                 'nullable', 'integer', SoftDeleteRules::existsLive('pages'),
                 new ValidPageParent(

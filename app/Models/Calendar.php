@@ -52,7 +52,6 @@ use Spatie\SchemaOrg\Place;
  * @property CalendarHeroStyleEnum $hero_style
  * @property Carbon $date
  * @property Carbon|null $end_date
- * @property int|null $category_id
  * @property int|null $event_type_id
  * @property int $tenant_id
  * @property string|null $meeting_id
@@ -61,7 +60,6 @@ use Spatie\SchemaOrg\Place;
  * @property int|null $registration_form_id
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Category|null $category
  * @property-read EventType|null $eventType
  * @property-read array $translatable_columns_from
  * @property-read mixed $main_image_url
@@ -74,10 +72,9 @@ use Spatie\SchemaOrg\Place;
  *
  * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
  * @method static Builder<static>|Calendar forLocale(string $locale)
- * @method static Builder<static>|Calendar inCategoryAlias(?string $alias)
  * @method static Builder<static>|Calendar newModelQuery()
- * @method static Builder<static>|Calendar ofEventType(?string $slug)
  * @method static Builder<static>|Calendar newQuery()
+ * @method static Builder<static>|Calendar ofEventType(?string $slug)
  * @method static Builder<static>|Calendar onlyTrashed()
  * @method static Builder<static>|Calendar published()
  * @method static Builder<static>|Calendar query()
@@ -141,27 +138,11 @@ class Calendar extends Model implements HasMedia
     }
 
     /**
-     * Restricts to one category, by alias. A no-op when `$alias` is null/empty — callers
-     * don't need to guard the call themselves. The category is a grouping key, not a
-     * publication gate — a trashed category (e.g. an old campaign) must still work as
-     * one. See the identical rationale in PublicPageController::summerCamps().
-     */
-    #[Scope]
-    protected function inCategoryAlias($query, ?string $alias)
-    {
-        if ($alias === null || $alias === '') {
-            return $query;
-        }
-
-        return $query->whereHas('category', function ($q) use ($alias): void {
-            $q->withTrashed()->where('alias', $alias);
-        });
-    }
-
-    /**
-     * Restricts to one event type, by slug. A no-op when `$slug` is null/empty — mirrors
-     * `inCategoryAlias()`'s grouping-key semantics: a trashed event type (e.g. a retired
-     * campaign) must still work as a filter for the events that already carry it.
+     * Restricts to one event type, by slug. A no-op when `$slug` is null/empty — callers
+     * don't need to guard the call themselves. The event type is a grouping key, not a
+     * publication gate — a trashed event type (e.g. a retired campaign) must still work
+     * as a filter for the events that already carry it. See the identical rationale in
+     * PublicPageController::summerCamps().
      */
     #[Scope]
     protected function ofEventType($query, ?string $slug)
@@ -302,11 +283,6 @@ class Calendar extends Model implements HasMedia
         return $this->belongsTo(Meeting::class)->withTrashed();
     }
 
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
-    }
-
     public function eventType(): BelongsTo
     {
         return $this->belongsTo(EventType::class);
@@ -375,7 +351,7 @@ class Calendar extends Model implements HasMedia
 
     protected function makeAllSearchableUsing(Builder $query): Builder
     {
-        return $query->with(['tenant', 'category', 'tags', 'media']);
+        return $query->with(['tenant', 'eventType', 'tags', 'media']);
     }
 
     public function toSearchableArray(): array
@@ -394,8 +370,8 @@ class Calendar extends Model implements HasMedia
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'tenant_shortname' => $this->tenant->shortname,
-            'category_id' => $this->category_id ? (int) $this->category_id : null,
-            'category_name' => $this->category?->name,
+            'event_type_id' => $this->event_type_id ? (int) $this->event_type_id : null,
+            'event_type_name' => $this->eventType?->name,
             'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', app()->getLocale()) ?? $tag->name)->filter()->values()->all(),
             'location' => $this->getTranslation('location', app()->getLocale()) ?: $this->location,
             'is_all_day' => (bool) $this->is_all_day,

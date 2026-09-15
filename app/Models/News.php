@@ -34,7 +34,6 @@ use Spatie\Sitemap\Tags\Url;
 /**
  * @property int $id
  * @property string $title
- * @property int|null $category_id
  * @property string|null $permalink
  * @property string|null $short
  * @property string $lang
@@ -55,7 +54,6 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Category|null $category
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, PublicUrl> $publicUrls
@@ -243,11 +241,6 @@ class News extends Model implements Feedable, Sitemapable
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
-    }
-
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
     }
 
     public function other_language_news(): HasOne
@@ -543,13 +536,12 @@ class News extends Model implements Feedable, Sitemapable
 
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tags', 'category', 'content.parts', 'tenant', 'other_language_news']);
+        return $query->with(['tags', 'content.parts', 'tenant', 'other_language_news']);
     }
 
     public function toSearchableArray(): array
     {
         $publishTimestamp = $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp;
-        $categoryName = $this->category?->getTranslation('name', $this->lang) ?? $this->category?->name;
 
         return [
             'id' => (string) $this->id,
@@ -566,8 +558,6 @@ class News extends Model implements Feedable, Sitemapable
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'tenant_shortname' => $this->tenant->shortname,
-            'category_id' => $this->category_id,
-            'category_name' => $categoryName,
             'year' => (int) ($this->publish_time ?? $this->created_at)->format('Y'),
             'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
             'important' => (bool) $this->important,

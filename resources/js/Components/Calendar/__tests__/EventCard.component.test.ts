@@ -17,7 +17,7 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     main_image_url: null,
     facebook_url: null,
     tenant: { shortname: 'VU SA' },
-    category: { name: 'Konferencija' },
+    event_type: { name: 'Konferencija' },
     ...overrides,
   };
 }
@@ -53,7 +53,7 @@ describe('Calendar/EventCard.vue', () => {
     expect(wrapper.text()).not.toContain('Nuotolinis renginys');
   });
 
-  it('renders category and tenant badges by default', () => {
+  it('renders event type and tenant badges by default', () => {
     const wrapper = mountCard();
 
     expect(wrapper.text()).toContain('Konferencija');

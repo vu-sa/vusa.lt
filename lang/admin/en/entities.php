@@ -58,10 +58,6 @@ return [
         'model' => '{1} banner|[2,*] banners',
         'gender' => 'm',
     ],
-    'category' => [
-        'model' => '{1} category|[2,*] categories',
-        'gender' => 'f',
-    ],
     'tag' => [
         'model' => '{1} tag|[2,*] tags',
         'gender' => 'f',
@@ -238,7 +234,7 @@ return [
         'max_participants' => 'participant limit',
         'tenant' => 'unit',
         'institution' => 'institution',
-        'category' => 'category',
+        'event_type' => 'event type',
         'meeting' => 'meeting',
         'agenda_item' => 'agenda item',
         // Relation names, for relation_updated activities (see

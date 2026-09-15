@@ -166,10 +166,10 @@ final class LinkListResolver implements ResolvesContentPart
         $tenantScope = $options['tenantScope'] ?? 'current';
         $tenantId = $tenantScope === 'current' ? $context->tenant->id : null;
 
-        $alias = $options['categoryAlias'] ?? null;
-        $categoryAlias = is_string($alias) && $alias !== '' ? $alias : null;
+        $alias = $options['topicAlias'] ?? null;
+        $topicAlias = is_string($alias) && $alias !== '' ? $alias : null;
 
-        return NewsCollection::getPublishedForTenant($tenantId, $context->locale, $limit, $categoryAlias);
+        return NewsCollection::getPublishedForTenant($tenantId, $context->locale, $limit, $topicAlias);
     }
 
     /** @return Collection<int, News> */

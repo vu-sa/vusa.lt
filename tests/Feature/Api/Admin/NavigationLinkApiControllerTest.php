@@ -1,11 +1,11 @@
 <?php
 
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\Tag;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -82,13 +82,13 @@ describe('resolve-url endpoint', function (): void {
             ->assertJsonPath('data.url', 'https://vusa.lt/files/doc.pdf');
     });
 
-    test('resolves a category URL against www regardless of the current tenant', function (): void {
-        $category = Category::factory()->create(['alias' => 'renginiai']);
+    test('resolves a topic URL against www regardless of the current tenant', function (): void {
+        $tag = Tag::factory()->create(['alias' => 'renginiai', 'is_topic' => true]);
 
         $response = asUser($this->admin)
             ->postJson(route('api.v1.admin.navigation.resolveUrl'), [
-                'collection' => 'categories',
-                'id' => $category->id,
+                'collection' => 'topics',
+                'id' => $tag->id,
             ]);
 
         $response->assertOk();

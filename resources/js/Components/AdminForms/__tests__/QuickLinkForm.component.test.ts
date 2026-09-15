@@ -66,7 +66,7 @@ function createWrapper(props: Record<string, unknown> = {}) {
     props: {
       quickLink: { id: 1, text: 'Stipendijos', link: '/stipendijos', lang: 'lt', icon: '', is_important: false },
       tenantOptions: [],
-      categoryOptions: [{ id: 3, name: 'Parama', alias: 'parama' }],
+      topicOptions: [{ id: 3, name: 'Parama', alias: 'parama' }],
       ...props,
     },
     global: { stubs: formStubs },
@@ -104,16 +104,16 @@ describe('QuickLinkForm.vue', () => {
     expect((linkInput.element as HTMLInputElement).value).toBe('/lt/naujiena/nauja-stipendija');
   });
 
-  it('fills the link after picking a category', async () => {
+  it('fills the link after picking a topic', async () => {
     wrapper = createWrapper();
-    resolveUrlData.value = { url: '/lt/kategorija/parama' };
+    resolveUrlData.value = { url: '/lt/tema/parama' };
 
-    const categorySelect = wrapper.findAll('select').find(s => s.findAll('option').some(o => o.text() === 'Parama'));
-    await categorySelect?.setValue('3');
+    const topicSelect = wrapper.findAll('select').find(s => s.findAll('option').some(o => o.text() === 'Parama'));
+    await topicSelect?.setValue('3');
     await wrapper.vm.$nextTick();
 
     expect(executeResolveUrl).toHaveBeenCalled();
     const linkInput = wrapper.find('#link');
-    expect((linkInput.element as HTMLInputElement).value).toBe('/lt/kategorija/parama');
+    expect((linkInput.element as HTMLInputElement).value).toBe('/lt/tema/parama');
   });
 });

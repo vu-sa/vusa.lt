@@ -3,7 +3,7 @@
     :heading-icon="NavigationIcon">
     <UpsertModelLayout>
       <Suspense v-if="navigationElement.parent_id !== 0 || location === 'footer'">
-        <NavigationForm remember-key="CreateNavigation" :navigation="navigationElement" :parent-elements :category-options
+        <NavigationForm remember-key="CreateNavigation" :navigation="navigationElement" :parent-elements :topic-options
           @submit:form="(form) => form.post(route('navigation.store'))" />
       </Suspense>
       <NavigationParentForm v-else remember-key="CreateNavigationParent" :navigation="navigationElement"
@@ -19,7 +19,7 @@ import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { NavigationIcon } from '@/Components/icons';
 
-interface CategoryOption {
+interface TopicOption {
   id: number;
   name: string;
   alias: string | null;
@@ -30,7 +30,7 @@ const props = defineProps<{
   lang?: 'lt' | 'en';
   location?: 'header' | 'footer';
   parentElements?: App.Entities.Navigation[];
-  categoryOptions?: CategoryOption[];
+  topicOptions?: TopicOption[];
 }>();
 
 const navigationElement = {

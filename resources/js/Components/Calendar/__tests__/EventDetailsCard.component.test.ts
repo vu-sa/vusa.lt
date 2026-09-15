@@ -10,7 +10,7 @@ describe('Calendar/EventDetailsCard.vue', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage());
   });
 
-  it('keeps passed-event status and category out of the sidebar and hides calendar export', () => {
+  it('keeps passed-event status and event type out of the sidebar and hides calendar export', () => {
     const wrapper = mount(EventDetailsCard, {
       props: {
         event: {
@@ -19,7 +19,7 @@ describe('Calendar/EventDetailsCard.vue', () => {
           date: '2020-01-01T18:00:00+00:00',
           is_all_day: false,
           is_remote: false,
-          category: { name: 'Konferencija' },
+          event_type: { name: 'Konferencija' },
         },
         googleLink: 'https://calendar.google.com/event?eid=abc',
       },

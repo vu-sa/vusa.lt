@@ -8,9 +8,9 @@ const stubs = {
   RCBlockToolbarShell: { template: '<div><slot /></div>' },
   RCWidthPicker: { template: '<div class="width-picker" />' },
   RCPresentationPicker: { template: '<div class="presentation-picker" />' },
-  RCCategoryAliasSelect: {
+  RCTopicAliasSelect: {
     emits: ['update:modelValue'],
-    template: '<button class="category-picker" @click="$emit(\'update:modelValue\', \'announcements\')" />',
+    template: '<button class="topic-picker" @click="$emit(\'update:modelValue\', \'announcements\')" />',
   },
   RCTagAliasSelect: {
     emits: ['update:modelValue'],
@@ -36,10 +36,10 @@ function mountToolbar(options: Record<string, unknown> = { tenantScope: 'all', l
 }
 
 describe('NewsBlockToolbar', () => {
-  it('offers category, tag, tenant and count controls', () => {
+  it('offers topic, tag, tenant and count controls', () => {
     const wrapper = mountToolbar();
 
-    expect(wrapper.text()).toContain('category_alias');
+    expect(wrapper.text()).toContain('topic_alias');
     expect(wrapper.text()).toContain('tag_alias');
     expect(wrapper.text()).toContain('tenant_scope');
     expect(wrapper.text()).toContain('limit');

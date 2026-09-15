@@ -15,11 +15,11 @@ return new class extends Migration
         $types = [
             ['atstovavimas', 'Atstovavimas', 'Representation'],
             ['posedis', 'Posėdis', 'Meeting'],
+            ['susirinkimas', 'Susirinkimas', 'Assembly'],
             ['mokymai', 'Mokymai', 'Training'],
             ['konferencija', 'Konferencija', 'Conference'],
             ['rinkimai', 'Rinkimai', 'Elections'],
             ['stovykla', 'Stovykla', 'Camp'],
-            ['renginys', 'Renginys', 'Social event'],
             ['terminas', 'Terminas', 'Deadline'],
         ];
 
@@ -43,8 +43,8 @@ return new class extends Migration
     public function down(): void
     {
         DB::table('event_types')->whereIn('slug', [
-            'atstovavimas', 'posedis', 'mokymai', 'konferencija',
-            'rinkimai', 'stovykla', 'renginys', 'terminas',
+            'atstovavimas', 'posedis', 'susirinkimas', 'mokymai',
+            'konferencija', 'rinkimai', 'stovykla', 'terminas',
         ])->delete();
     }
 };

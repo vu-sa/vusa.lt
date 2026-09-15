@@ -31,11 +31,6 @@ class RoleGlobalCommunicationCoordinatorSeeder extends Seeder
             'navigations.read.*',
             'navigations.update.*',
             'navigations.delete.*',
-            // Global category management
-            'categories.create.*',
-            'categories.read.*',
-            'categories.update.*',
-            'categories.delete.*',
             // Global event type management
             'eventTypes.create.*',
             'eventTypes.read.*',

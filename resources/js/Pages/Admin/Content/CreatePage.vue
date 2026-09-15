@@ -29,7 +29,6 @@ defineProps<{
 
 const page = {
   title: '',
-  category_id: null,
   parent_id: null,
   permalink: '',
   lang: 'lt',

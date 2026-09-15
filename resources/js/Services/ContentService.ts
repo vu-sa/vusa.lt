@@ -20,7 +20,7 @@ interface CalendarEvent {
   id: number;
   title: string;
   date: string;
-  category: { id: number; name: string } | null;
+  event_type: { id: number; name: string } | null;
   images: Array<{ url: string }>;
   [key: string]: unknown;
 }

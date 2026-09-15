@@ -83,13 +83,14 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     'id' | 'alias' | 'shortname' | 'fullname' | 'type' | 'primary_institution_id' | 'primary_institution'
   >[];
   /**
-   * Every category, global (not tenant-scoped). `name` is already the current-locale
+   * Every event type, global (not tenant-scoped). `name` is already the current-locale
    * string here (Spatie translatable resolves it server-side before serializing) — not
-   * the raw translation array `App.Entities.Category['name']` would suggest.
+   * the raw translation array `App.Entities.EventType['name']` would suggest.
    */
-  categories: Array<{ id: number; alias: string | null; name: string }>;
-  /** Global tag lookup for rich-content news filters. */
-  tags: Array<{ id: number; alias: string | null; name: string }>;
+  eventTypes: Array<{ id: number; slug: string; name: string }>;
+  /** Global tag lookup for rich-content news/link-list filters. `is_topic` tags drive
+   *  the topic picker; the rest stay descriptive-only. */
+  tags: Array<{ id: number; alias: string | null; name: string; is_topic: boolean }>;
   tenant:
   | (Pick<App.Entities.Tenant, 'id' | 'alias' | 'shortname' | 'type'> & {
     subdomain: string;

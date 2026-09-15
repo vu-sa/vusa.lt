@@ -40,7 +40,6 @@ class StorePageRequest extends FormRequest
             ...$this->contentPartRules(),
             'title' => 'required|string|max:255',
             'lang' => ['required', new Enum(LocaleEnum::class)],
-            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
             'parent_id' => [
                 'nullable', 'integer', SoftDeleteRules::existsLive('pages'),
                 new ValidPageParent(lang: (string) $this->input('lang'), tenantId: $this->filled('tenant_id') ? (int) $this->input('tenant_id') : null),

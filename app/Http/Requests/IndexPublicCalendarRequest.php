@@ -24,7 +24,7 @@ class IndexPublicCalendarRequest extends FormRequest
     {
         return [
             'tab' => ['nullable', 'in:upcoming,past'],
-            'category' => ['nullable', 'integer', 'exists:categories,id'],
+            'type' => ['nullable', 'integer', 'exists:event_types,id'],
             'tenant' => ['nullable', 'integer', 'exists:tenants,id'],
             'search' => ['nullable', 'string', 'max:120'],
             'page' => ['nullable', 'integer', 'min:1'],

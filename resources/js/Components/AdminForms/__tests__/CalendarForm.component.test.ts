@@ -25,7 +25,7 @@ describe('CalendarForm.vue — create tenant default', () => {
     organizer: { lt: '', en: '' },
     cto_url: { lt: '', en: '' },
     tenant_id: null,
-    category_id: null,
+    event_type_id: null,
     facebook_url: '',
     is_draft: false,
     is_all_day: false,
@@ -39,7 +39,7 @@ describe('CalendarForm.vue — create tenant default', () => {
       shallow: true,
       props: {
         calendar,
-        categories: [],
+        eventTypes: [],
         assignableTenants,
         rememberKey,
         submitUrl: '/mano/calendar',
@@ -71,6 +71,27 @@ describe('CalendarForm.vue — create tenant default', () => {
     const vm = wrapper.vm as unknown as { form: { tenant_id: number | null } };
     expect(vm.form.tenant_id).toBe(2);
   });
+
+  it('treats the event type as optional and allows clearing it', async () => {
+    wrapper = createWrapper([
+      { id: 16, shortname: 'VU SA', type: 'pagrindinis' },
+    ] as App.Entities.Tenant[], 'CreateCalendarOptionalEventType');
+
+    const vm = wrapper.vm as unknown as {
+      eventTypeIdString: string;
+      form: { event_type_id: number | null; title: { lt: string } };
+      mainInfoComplete: boolean;
+    };
+
+    vm.form.title.lt = 'Renginys';
+    vm.form.event_type_id = 5;
+    await wrapper.vm.$nextTick();
+    expect(vm.mainInfoComplete).toBe(true);
+
+    vm.eventTypeIdString = '__none__';
+    expect(vm.form.event_type_id).toBeNull();
+    expect(vm.mainInfoComplete).toBe(true);
+  });
 });
 
 describe('CalendarForm.vue — public URL status link', () => {
@@ -85,7 +106,7 @@ describe('CalendarForm.vue — public URL status link', () => {
       shallow: true,
       props: {
         calendar: calendar as CalendarEventForm,
-        categories: [],
+        eventTypes: [],
         assignableTenants: [],
         submitUrl: '/mano/calendar/1',
         submitMethod: 'patch',
@@ -135,7 +156,7 @@ describe('CalendarForm.vue — all-day default', () => {
     organizer: { lt: '', en: '' },
     cto_url: { lt: '', en: '' },
     tenant_id: null,
-    category_id: null,
+    event_type_id: null,
     facebook_url: '',
     is_draft: false,
     is_all_day: false,
@@ -151,7 +172,7 @@ describe('CalendarForm.vue — all-day default', () => {
       shallow: true,
       props: {
         calendar,
-        categories: [],
+        eventTypes: [],
         assignableTenants: [],
         rememberKey,
         submitUrl: '/mano/calendar',

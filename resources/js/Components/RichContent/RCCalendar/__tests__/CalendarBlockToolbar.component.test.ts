@@ -75,17 +75,17 @@ describe('CalendarBlockToolbar', () => {
     expect(last.options?.limit).toBe(3);
   });
 
-  it('renders the limit and category alias fields, and changing them emits update:content', async () => {
+  it('renders the limit and event type fields, and changing them emits update:content', async () => {
     const wrapper = mountToolbar(makeContent({ tenantScope: 'all', limit: 3 }));
-    expect(wrapper.text()).toContain('category_alias');
+    expect(wrapper.text()).toContain('event_type');
     expect(wrapper.text()).toContain('limit');
 
-    const categorySelect = wrapper.find('select');
-    await categorySelect.setValue('freshmen-camps');
+    const eventTypeSelect = wrapper.find('select');
+    await eventTypeSelect.setValue('stovykla');
 
     const emitted = wrapper.emitted('update:content');
     expect(emitted).toBeTruthy();
-    expect((emitted!.at(-1)![0] as ContentPart).options?.categoryAlias).toBe('freshmen-camps');
+    expect((emitted!.at(-1)![0] as ContentPart).options?.eventTypeSlug).toBe('stovykla');
   });
 
   it('self-heals null options on mount so the fields have something to mutate', () => {

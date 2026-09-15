@@ -161,7 +161,6 @@ class NewsController extends AdminController
                 'content' => $news->content,
                 'lang' => $news->lang,
                 'other_lang_id' => $news->other_language_news?->id,
-                'category' => $news->category_id,
                 'tenant' => $news->tenant,
                 'draft' => $news->draft,
                 'short' => $news->short,

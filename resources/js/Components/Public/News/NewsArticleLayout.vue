@@ -13,8 +13,7 @@
         <PublicBreadcrumbs v-if="showBreadcrumbs" variant="inline" class="mb-8" />
 
         <div class="border-l-2 border-brand pl-5 sm:pl-7">
-          <TagChip v-if="categoryName" :label="categoryName" />
-          <h1 :class="['u-display text-3xl sm:text-5xl', categoryName && 'mt-5']">
+          <h1 class="u-display text-3xl sm:text-5xl">
             {{ article.title }}
           </h1>
         </div>
@@ -164,7 +163,7 @@ import { formatStaticTime } from '@/Utils/IntlTime';
  * thing is four places for it to drift.
  */
 const props = withDefaults(defineProps<{
-  article: App.Entities.News & { category?: { name?: string | null } | null; reading_time?: number | null };
+  article: App.Entities.News & { reading_time?: number | null };
   otherLangURL?: string;
   locale?: string;
   /** Author-controlled (Advanced Settings in NewsForm) — the band still renders, just untrailed. */
@@ -182,10 +181,6 @@ const props = withDefaults(defineProps<{
 const page = usePage();
 
 const subdomain = computed(() => page.props.tenant?.subdomain ?? 'www');
-
-// `category` arrives as the whole relation (the controller's `only()` resolves it), not as a
-// name — the chip wants only the label.
-const categoryName = computed(() => props.article.category?.name ?? undefined);
 
 const otherLocale = computed(() => (props.locale === 'lt' ? 'en' : 'lt'));
 

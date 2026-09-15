@@ -37,7 +37,6 @@ const articles: NewsItem[] = [
     publish_time: '2026-08-19T16:26:31.000000Z',
     permalink: 'ad-astra',
     image: PLACEHOLDER_IMAGES[0]!,
-    category: 'Renginiai',
   },
   {
     id: 2,
@@ -47,7 +46,6 @@ const articles: NewsItem[] = [
     publish_time: '2026-08-12T07:33:47.000000Z',
     permalink: 'bendrabutis',
     image: PLACEHOLDER_IMAGES[1]!,
-    category: 'Gidai',
   },
   {
     id: 3,
@@ -57,7 +55,6 @@ const articles: NewsItem[] = [
     publish_time: '2026-08-08T15:04:05.000000Z',
     permalink: 'stovyklos',
     image: PLACEHOLDER_IMAGES[2]!,
-    category: null,
   },
   {
     id: 4,
@@ -67,7 +64,6 @@ const articles: NewsItem[] = [
     publish_time: '2026-08-02T15:04:13.000000Z',
     permalink: 'planavimas',
     image: PLACEHOLDER_IMAGES[3]!,
-    category: 'Atstovavimas',
   },
 ];
 
@@ -97,14 +93,6 @@ type Story = StoryObj<typeof NewsElement>;
 
 /** The default: newest article featured, the next three as rows. */
 export const Default: Story = { render: () => renderNews(articles) };
-
-/**
- * Articles filed under no category — most of the archive. The chip and the row's category label
- * are omitted rather than replaced by a placeholder.
- */
-export const WithoutCategories: Story = {
-  render: () => renderNews(articles.map(article => ({ ...article, category: null }))),
-};
 
 /**
  * An authored title that differs from the eyebrow. When the author titles the block "Naujienos"

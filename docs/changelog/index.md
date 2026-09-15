@@ -9,6 +9,7 @@ lastUpdated: true
 
 - 🔧 **Teisinga pagrindinio puslapio redagavimo nuoroda** — padalinio puslapyje ji atveria to padalinio redaktorių, net jei laikinai rodomas centrinės VU SA turinys
 - 🔧 **Tikslesnė kontaktų paieška** — atnaujinus atstovo paskyrimą, vardą ar pareigybę, paieškoje atnaujinami susijusių institucijų kontaktai; būsimi atstovai nerodomi iki paskyrimo pradžios, o pasibaigęs paskyrimas automatiškai pašalinamas suėjus terminui
+- 🔧 **Senosios „kategorijos“ pakeistos temomis ir renginių tipais** — naujienos ir puslapiai dabar žymimi temomis (temos puslapis pasiekiamas per `/tema/...`), o renginiams galima pasirinkti konkretų, bet neprivalomą tipą, įskaitant atskirus „Posėdis“ ir „Susirinkimas“ tipus; senos `/kategorija/...` nuorodos automatiškai nukreipiamos į naują vietą
 
 ## v2.1 — Dvikalbis pagrindinis puslapis (2026-09-07) {#v2-1}
 
