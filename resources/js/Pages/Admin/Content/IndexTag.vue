@@ -97,6 +97,17 @@ const columns = computed<Array<ColumnDef<App.Entities.Tag, any>>>(() => [
     size: 150,
   },
   {
+    accessorKey: 'is_topic',
+    header: () => $t('forms.fields.is_topic'),
+    cell: ({ row }) => {
+      if (!row.original.is_topic) return null;
+
+      return h(TruncatedBadge, { text: $t('forms.fields.is_topic'), variant: 'secondary' });
+    },
+    size: 120,
+    enableSorting: true,
+  },
+  {
     accessorKey: 'created_at',
     header: () => $t('forms.fields.created_at'),
     cell: ({ row }) => {

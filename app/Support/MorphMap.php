@@ -79,6 +79,7 @@ final class MorphMap
         'support_request_type' => Models\SupportRequestType::class,
         'support_service' => Models\SupportService::class,
         'tag' => Models\Tag::class,
+        'taggable' => Models\Taggable::class,
         'task' => Models\Task::class,
         'tenant' => Models\Tenant::class,
         'tenant_homepage_content' => Models\TenantHomepageContent::class,

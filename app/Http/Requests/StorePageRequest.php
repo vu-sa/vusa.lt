@@ -47,6 +47,8 @@ class StorePageRequest extends FormRequest
             'show_title' => ['boolean'],
             'show_breadcrumbs' => ['boolean'],
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('pages.create.padalinys')],
+            'tags' => 'nullable|array',
+            'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
         ];
     }
 

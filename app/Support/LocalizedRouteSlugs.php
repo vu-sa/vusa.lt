@@ -43,6 +43,7 @@ final class LocalizedRouteSlugs
         'summerCampsString' => ['lt' => 'pirmakursiu-stovyklos', 'en' => 'freshmen-camps'],
         'pkpString' => ['lt' => 'programos-klubai-projektai', 'en' => 'programs-clubs-projects'],
         'categoryString' => ['lt' => 'kategorija', 'en' => 'category'],
+        'topicString' => ['lt' => 'tema', 'en' => 'topic'],
 
         'documentsString' => ['lt' => 'dokumentai', 'en' => 'documents'],
         'searchString' => ['lt' => 'paieska', 'en' => 'search'],

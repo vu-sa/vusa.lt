@@ -31,6 +31,7 @@ class UpdateTagRequest extends FormRequest
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
             'alias' => ['nullable', 'string', 'max:255', Rule::unique('tags', 'alias')->ignore($tagId)->withoutTrashed()],
+            'is_topic' => ['boolean'],
         ];
     }
 }

@@ -188,15 +188,17 @@ class TagController extends AdminController
         $targetTag = Tag::findOrFail($targetTagId);
         $sourceTags = Tag::whereIn('id', $sourceTagIds)->get();
 
-        // Move news relationships from source tags to target tag.
-        // syncWithoutDetaching attaches only the missing ids, avoiding duplicates
-        // without a per-news existence query.
+        // Move every taggable relation (news, pages, calendar events) from source tags to the
+        // target tag. syncWithoutDetaching attaches only the missing ids, avoiding duplicates
+        // without a per-model existence query.
         foreach ($sourceTags as $sourceTag) {
-            $sourceNewsIds = $sourceTag->news()->pluck('news.id');
+            foreach (Tag::TAGGABLE_RELATIONS as $relation) {
+                $sourceIds = $sourceTag->{$relation}()->pluck($sourceTag->{$relation}()->getRelated()->getTable().'.id');
 
-            $targetTag->news()->syncWithoutDetaching($sourceNewsIds);
+                $targetTag->{$relation}()->syncWithoutDetaching($sourceIds);
 
-            $sourceTag->news()->detach();
+                $sourceTag->{$relation}()->detach();
+            }
         }
 
         // Delete source tags

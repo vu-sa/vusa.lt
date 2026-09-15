@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -173,7 +173,8 @@ class News extends Model implements Feedable, Sitemapable
             PairTranslatedRecord::releaseCounterpart($news);
 
             if ($news->isForceDeleting()) {
-                // posts_tags.news_id restricts deletes.
+                // taggable_id/taggable_type is polymorphic, so no DB-level FK can cascade
+                // this side — detach explicitly or the pivot row orphans.
                 $news->tags()->detach();
             }
         });
@@ -254,9 +255,9 @@ class News extends Model implements Feedable, Sitemapable
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
-    public function tags(): BelongsToMany
+    public function tags(): MorphToMany
     {
-        return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     public function content(): BelongsTo

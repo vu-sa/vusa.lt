@@ -212,10 +212,12 @@ declare global {
       tenant?: Tenant
       meeting?: Meeting
       category?: Category
+      tags?: Tag[]
       public_urls?: PublicUrl[]
       media?: Media[]
       activities_as_subject?: Activity[]
       // counts
+      tags_count: number
       public_urls_count: number
       media_count: number
       activities_as_subject_count: number
@@ -223,6 +225,7 @@ declare global {
       tenant_exists: boolean
       meeting_exists: boolean
       category_exists: boolean
+      tags_exists: boolean
       public_urls_exists: boolean
       media_exists: boolean
       activities_as_subject_exists: boolean
@@ -1014,16 +1017,19 @@ declare global {
       tenant?: Tenant
       other_language_page?: Page
       category?: Category
+      tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
+      tags_count: number
       public_urls_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
       category_exists: boolean
+      tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
       activities_as_subject_exists: boolean
@@ -1346,16 +1352,19 @@ declare global {
       tenant?: Tenant
       other_language_page?: Page
       category?: Category
+      tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
+      tags_count: number
       public_urls_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
       category_exists: boolean
+      tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
       activities_as_subject_exists: boolean
@@ -1868,7 +1877,9 @@ declare global {
     export interface Tag {
       // columns
       id: number
-      alias?: string | null
+      alias: string
+      is_topic: boolean
+      sort_order: number
       created_at: string
       updated_at: string
       name?: Array<unknown> | null
@@ -1879,10 +1890,32 @@ declare global {
       translations: unknown
       // relations
       news?: News[]
+      pages?: Page[]
+      calendars?: Calendar[]
       // counts
       news_count: number
+      pages_count: number
+      calendars_count: number
       // exists
       news_exists: boolean
+      pages_exists: boolean
+      calendars_exists: boolean
+    }
+
+    export interface Taggable {
+      // columns
+      id: number
+      tag_id: number
+      taggable_type: string
+      taggable_id: number
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      tag?: Tag
+      taggable?: Taggable
+      // counts
+      // exists
+      tag_exists: boolean
     }
 
     export interface Task {

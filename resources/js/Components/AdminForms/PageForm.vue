@@ -74,6 +74,8 @@
           </FormFieldWrapper>
         </div>
 
+        <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
+
         <!-- Other Language Page -->
         <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos puslapis')"
           :hint="$t('Susieti su to paties turinio puslapiu kita kalba')">
@@ -264,6 +266,7 @@ import PermalinkField from './PermalinkField.vue';
 import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 import SEOPreview from './SEOPreview.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
 
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
@@ -287,6 +290,7 @@ const props = defineProps<{
   categories: App.Entities.Category[];
   page: App.Entities.Page;
   otherLangPages?: App.Entities.Page[];
+  availableTags?: App.Entities.Tag[];
   /** Tenants the user may create pages in — only meaningful (and rendered) on create. */
   assignableTenants?: App.Entities.Tenant[];
   rememberKey?: 'CreatePage';

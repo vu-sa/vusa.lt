@@ -17,6 +17,7 @@ export const calendarTemplate: Omit<App.Entities.Calendar, 'created_at' | 'updat
   is_all_day: false,
   is_international: false,
   hero_style: 'card',
+  tags: [],
 };
 
 export const formTemplate: Pick<
@@ -115,11 +116,12 @@ export const typeTemplate: Pick<
 
 export const tagTemplate: Pick<
   App.Entities.Tag,
-  'name' | 'description' | 'alias'
+  'name' | 'description' | 'alias' | 'is_topic'
 > = {
   name: { lt: '', en: '' },
   description: { lt: '', en: '' },
   alias: '',
+  is_topic: false,
 };
 
 export const studySetTemplate = {

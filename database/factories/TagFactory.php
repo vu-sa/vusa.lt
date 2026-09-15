@@ -19,7 +19,9 @@ class TagFactory extends Factory
     public function definition(): array
     {
         $nameLt = fake('lt_LT')->words(2, true);
-        $nameEn = fake('en_US')->words(2, true);
+        // alias now carries a DB-level unique constraint — unique() keeps parallel factory
+        // calls from colliding on the same slug.
+        $nameEn = fake()->unique()->words(2, true);
         $descriptionLt = fake('lt_LT')->sentence();
         $descriptionEn = fake('en_US')->sentence();
 
@@ -33,6 +35,13 @@ class TagFactory extends Factory
                 'en' => $descriptionEn,
             ],
             'alias' => Str::slug($nameEn),
+            'is_topic' => false,
+            'sort_order' => 0,
         ];
+    }
+
+    public function topic(): static
+    {
+        return $this->state(fn (array $attributes): array => ['is_topic' => true]);
     }
 }

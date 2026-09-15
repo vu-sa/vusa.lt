@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -65,6 +66,7 @@ use Spatie\SchemaOrg\Place;
  * @property-read MediaCollection<int, Media> $media
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
@@ -233,6 +235,14 @@ class Calendar extends Model implements HasMedia
             $calendar->syncMeetingDocumentsSearchIndex();
         });
 
+        static::deleting(function (self $calendar): void {
+            if ($calendar->isForceDeleting()) {
+                // taggable_id/taggable_type is polymorphic, so no DB-level FK can cascade
+                // this side — detach explicitly or the pivot row orphans.
+                $calendar->tags()->detach();
+            }
+        });
+
         static::restored(fn (self $calendar) => $calendar->syncMeetingDocumentsSearchIndex());
     }
 
@@ -275,6 +285,11 @@ class Calendar extends Model implements HasMedia
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     /** @return MorphMany<PublicUrl, $this> */
@@ -335,7 +350,7 @@ class Calendar extends Model implements HasMedia
 
     protected function makeAllSearchableUsing(Builder $query): Builder
     {
-        return $query->with(['tenant', 'category', 'media']);
+        return $query->with(['tenant', 'category', 'tags', 'media']);
     }
 
     public function toSearchableArray(): array
@@ -356,6 +371,7 @@ class Calendar extends Model implements HasMedia
             'tenant_shortname' => $this->tenant->shortname,
             'category_id' => $this->category_id ? (int) $this->category_id : null,
             'category_name' => $this->category?->name,
+            'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', app()->getLocale()) ?? $tag->name)->filter()->values()->all(),
             'location' => $this->getTranslation('location', app()->getLocale()) ?: $this->location,
             'is_all_day' => (bool) $this->is_all_day,
             'is_remote' => (bool) $this->is_remote,

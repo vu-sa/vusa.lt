@@ -15,6 +15,7 @@ use App\Models\Category;
 use App\Models\Content;
 use App\Models\Page;
 use App\Models\PublicUrl;
+use App\Models\Tag;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
@@ -83,6 +84,7 @@ class PageController extends AdminController
         return $this->inertiaResponse('Admin/Content/CreatePage',
             [
                 'categories' => Category::all(['id', 'name']),
+                'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
                 'assignableTenants' => GetTenantsForUpserts::execute('pages.create.padalinys', $this->authorizer),
             ]
         );
@@ -124,6 +126,10 @@ class PageController extends AdminController
         // release whoever already holds the counterpart id, trashed rows included.
         PairTranslatedRecord::execute($page, $request->other_lang_id);
 
+        if ($request->has('tags') && is_array($request->tags)) {
+            $page->tags()->sync($request->tags);
+        }
+
         return redirect()->route('pages.index')->with('success', $this->entityMessage('created', 'page'));
     }
 
@@ -146,9 +152,11 @@ class PageController extends AdminController
                 'tenant' => $page->tenant->only('id', 'alias', 'shortname'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'] ?? null,
                 'public_urls' => $page->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
+                'tags' => $page->tags->pluck('id')->toArray(),
             ],
             'otherLangPages' => $other_lang_pages,
             'categories' => Category::all(['id', 'name']),
+            'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
         ]);
     }
 
@@ -172,6 +180,10 @@ class PageController extends AdminController
         app(ContentService::class)->updateContentParts($content, $request->content['parts']);
 
         PairTranslatedRecord::execute($page, $request->other_lang_id);
+
+        if ($request->has('tags') && is_array($request->tags)) {
+            $page->tags()->sync($request->tags);
+        }
 
         return back()->with('success', $this->entityMessage('updated', 'page'))->with('data', $page->load('content'));
     }

@@ -43,6 +43,7 @@ use Laravel\Scout\Searchable;
  * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage newModelQuery()

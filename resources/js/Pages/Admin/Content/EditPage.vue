@@ -18,6 +18,7 @@
       <PageForm
         :categories
         :page
+        :available-tags
         :other-lang-pages
         :submit-url="route('pages.update', page.id)"
         submit-method="patch"
@@ -42,6 +43,7 @@ import { PageIcon } from '@/Components/icons';
 const props = defineProps<{
   categories: App.Entities.Category[];
   page: App.Entities.Page;
+  availableTags?: App.Entities.Tag[];
   otherLangPages: App.Entities.Page[];
 }>();
 

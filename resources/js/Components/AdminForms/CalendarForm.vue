@@ -120,6 +120,8 @@
           </div>
         </FormFieldWrapper>
 
+        <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
+
         <!-- Hero style picker -->
         <FormFieldWrapper id="hero_style" :label="$t('Renginio vaizdas')"
           :hint="$t('Kaip renginio puslapio viršus atrodys lankytojams')">
@@ -346,6 +348,7 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
 import PermalinkField from './PermalinkField.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
 import AdminForm from './AdminForm.vue';
 
 import { isSameDay } from '@/Utils/IntlTime';
@@ -371,6 +374,7 @@ defineEmits<{
 const props = defineProps<{
   calendar: CalendarEventForm;
   categories: App.Entities.Category[];
+  availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
   /** Set when this event is the public announcement of a meeting. */
   meeting?: {
@@ -396,6 +400,7 @@ const existingMainImageUrl = ref<string | null>(props.calendar.main_image_url ??
 const formData = {
   ...props.calendar,
   main_image: null as File | null, // Reset to null, will be set if user uploads new image
+  tags: props.calendar.tags ?? [],
 } as any;
 
 const form = props.rememberKey

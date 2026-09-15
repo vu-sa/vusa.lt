@@ -61,6 +61,8 @@ class UpdatePageRequest extends FormRequest
             'show_table_of_contents' => ['boolean'],
             'show_title' => ['boolean'],
             'show_breadcrumbs' => ['boolean'],
+            'tags' => 'nullable|array',
+            'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
         ];
     }
 

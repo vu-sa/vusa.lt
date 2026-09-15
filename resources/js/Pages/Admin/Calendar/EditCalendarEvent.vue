@@ -8,6 +8,7 @@
         enable-delete
         :calendar
         :categories
+        :available-tags
         :assignable-tenants
         :meeting
         :submit-url="route('calendar.update', calendar.id)"
@@ -31,6 +32,7 @@ import { CalendarIcon } from '@/Components/icons';
 const { calendar } = defineProps<{
   calendar: App.Entities.Calendar;
   categories: App.Entities.Category[];
+  availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
   /** Set when this event announces a meeting. */
   meeting?: {

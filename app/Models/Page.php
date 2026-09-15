@@ -7,11 +7,13 @@ use App\Enums\PageLayoutEnum;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\PublicUrlService;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -50,6 +52,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\PageFactory factory($count = null, $state = [])
@@ -141,6 +144,12 @@ class Page extends Model implements Feedable, Sitemapable
             // stops linking to a page that is no longer public. This page keeps its own
             // pointer, which is what lets the pairing be re-established on restore.
             PairTranslatedRecord::releaseCounterpart($page);
+
+            if ($page->isForceDeleting()) {
+                // taggable_id/taggable_type is polymorphic, so no DB-level FK can cascade
+                // this side — detach explicitly or the pivot row orphans.
+                $page->tags()->detach();
+            }
         });
 
         static::restored(function (Page $page): void {
@@ -236,6 +245,11 @@ class Page extends Model implements Feedable, Sitemapable
         return $this->belongsTo(Category::class, 'category_id');
     }
 
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
+
     /** @return BelongsTo<Content, $this> */
     public function content(): BelongsTo
     {
@@ -302,6 +316,20 @@ class Page extends Model implements Feedable, Sitemapable
             ->get();
     }
 
+    /**
+     * No return type declared: matches Searchable::makeAllSearchableUsing()'s own signature
+     * exactly. PublicPage re-declares `use Searchable;` on its own class body, which flattens
+     * the trait's method back in as PublicPage's own — an incompatible signature here (e.g. a
+     * declared return type the trait doesn't have) makes that redeclaration a fatal LSP error.
+     *
+     * @param  Builder<Page>  $query
+     * @return Builder<Page>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->with(['tenant', 'category', 'tags']);
+    }
+
     public function toSearchableArray(): array
     {
         return [
@@ -314,6 +342,7 @@ class Page extends Model implements Feedable, Sitemapable
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'category_name' => $this->category?->name,
+            'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at->timestamp,
         ];

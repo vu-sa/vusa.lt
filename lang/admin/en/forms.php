@@ -74,6 +74,7 @@ return [
         'banner_link_url' => 'Link the banner points to',
         'technical_slug' => 'Technical tag',
         'alias' => 'Alias',
+        'is_topic' => 'Topic',
         'link' => 'Link',
         'form_publish_time' => 'Form publish time',
         'type_label' => 'Type',
@@ -126,6 +127,7 @@ return [
     ],
     'helpers' => [
         'tag_alias_hint' => 'An additional name for the tag (optional). If left empty, it will be generated automatically from the name.',
+        'is_topic_hint' => 'Topics get their own page collecting every related news article, page and event.',
         'form_main_info' => 'Basic information about the registration form.',
         'registrations_count' => 'Number of registrations: :count',
         'view_registrations' => 'View registrations',

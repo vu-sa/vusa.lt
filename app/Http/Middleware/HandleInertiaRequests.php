@@ -180,7 +180,7 @@ class HandleInertiaRequests extends Middleware
     private function getTagsForInertia(): Collection
     {
         return Cache::rememberForever('all-tags-for-inertia',
-            fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias'])
+            fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias', 'is_topic'])
         );
     }
 

@@ -38,6 +38,7 @@ declare global {
     }>;
     /** Informational only — still resolves live, never stored, nothing to delete. */
     legacy_date_urls?: Partial<Record<'lt' | 'en', string | null>>;
+    tags?: number[];
   }
 
   interface InstitutionForm

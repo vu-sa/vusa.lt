@@ -5,6 +5,7 @@
         :calendar
         remember-key="CreateCalendar"
         :categories
+        :available-tags
         :assignable-tenants
         :submit-url="route('calendar.store')"
         submit-method="post"
@@ -24,6 +25,7 @@ import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   categories: App.Entities.Category[];
+  availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
 }>();
 

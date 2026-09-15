@@ -81,6 +81,9 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('{categoryString}/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category')
             ->whereIn('categoryString', LocalizedRouteSlugs::accepted('categoryString'));
 
+        Route::get('{topicString}/{tag:alias}', [Public\TopicController::class, 'show'])->name('topic')
+            ->whereIn('topicString', LocalizedRouteSlugs::accepted('topicString'));
+
         Route::permanentRedirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija')->name('member-registration');
         Route::permanentRedirect('member-registration', config('app.url').'/registration/member-registration')->name('member-registration.en');
 

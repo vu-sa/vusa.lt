@@ -29,6 +29,7 @@ class StoreTagRequest extends FormRequest
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
             'alias' => ['nullable', 'string', 'max:255', Rule::unique('tags', 'alias')->withoutTrashed()],
+            'is_topic' => ['boolean'],
         ];
     }
 }
