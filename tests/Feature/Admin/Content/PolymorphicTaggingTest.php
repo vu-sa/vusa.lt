@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Calendar;
+use App\Models\EventType;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tag;
@@ -119,6 +120,7 @@ describe('calendar tagging via controller', function (): void {
             'permalink' => ['lt' => 'test-ivykis'],
             'date' => now()->addWeek()->toISOString(),
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => EventType::factory()->create()->id,
             'is_draft' => false,
             'tags' => [$tag1->id, $tag2->id],
         ];

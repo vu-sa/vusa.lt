@@ -82,6 +82,10 @@ return [
         'model' => '{1} event|[2,*] events',
         'gender' => 'm',
     ],
+    'eventType' => [
+        'model' => '{1} event type|[2,*] event types',
+        'gender' => 'm',
+    ],
     'form' => [
         'model' => '{1} form|[2,*] forms',
         'gender' => 'f',

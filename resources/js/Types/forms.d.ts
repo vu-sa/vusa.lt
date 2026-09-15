@@ -22,6 +22,7 @@ declare global {
       | 'hero_style'
       | 'tenant_id'
       | 'category_id'
+      | 'event_type_id'
       | 'tenant'
       | 'public_urls'
     > {

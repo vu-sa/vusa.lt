@@ -198,6 +198,7 @@ declare global {
       date: string
       end_date?: string | null
       category_id?: number | null
+      event_type_id?: number | null
       tenant_id: number
       meeting_id?: string | null
       created_at: string
@@ -212,6 +213,7 @@ declare global {
       tenant?: Tenant
       meeting?: Meeting
       category?: Category
+      event_type?: EventType
       tags?: Tag[]
       public_urls?: PublicUrl[]
       media?: Media[]
@@ -225,6 +227,7 @@ declare global {
       tenant_exists: boolean
       meeting_exists: boolean
       category_exists: boolean
+      event_type_exists: boolean
       tags_exists: boolean
       public_urls_exists: boolean
       media_exists: boolean
@@ -539,6 +542,29 @@ declare global {
       available_files_exists: boolean
       activities_as_subject_exists: boolean
       notifications_exists: boolean
+    }
+
+    export interface EventType {
+      // columns
+      id: number
+      name: Array<unknown>
+      slug: string
+      description?: Array<unknown> | null
+      is_active: boolean
+      sort_order: number
+      created_at?: string | null
+      updated_at?: string | null
+      deleted_at?: string | null
+      // mutators
+      force_delete_blocked_reason: string
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      calendar_events?: Calendar[]
+      // counts
+      calendar_events_count: number
+      // exists
+      calendar_events_exists: boolean
     }
 
     export interface FieldResponse {

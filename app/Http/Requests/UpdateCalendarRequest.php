@@ -24,6 +24,7 @@ class UpdateCalendarRequest extends CalendarRequest
             // The controller persists `category_id`, not `category` — the old key meant the
             // soft-delete guard never ran on update.
             'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
+            'event_type_id' => ['required', 'integer', SoftDeleteRules::existsLive('event_types')],
         ]);
     }
 }

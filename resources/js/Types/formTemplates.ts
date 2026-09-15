@@ -11,6 +11,7 @@ export const calendarTemplate: Omit<App.Entities.Calendar, 'created_at' | 'updat
   main_image: null,
   images: [],
   category_id: null,
+  event_type_id: null,
   facebook_url: '',
   video_url: '',
   is_draft: false,

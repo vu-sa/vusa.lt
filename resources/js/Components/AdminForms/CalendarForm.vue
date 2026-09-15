@@ -40,7 +40,6 @@
         {{ $t('Pagrindiniai renginio nustatymai') }}
       </template>
       <template #description>
-        <p><strong>{{ $t('Kategorija') }}</strong> {{ $t('keičia spalvą renginių kalendoriuje.') }}</p>
         <p>
           <strong>{{ $t('Organizatorius') }}</strong>, {{ $t('jeigu neįrašytas, bus') }} <strong>{{ defaultOrganizer
           }}</strong>
@@ -71,19 +70,17 @@
           </FormFieldWrapper>
         </div>
 
-        <!-- Category & Tenant -->
+        <!-- Event type & Tenant -->
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="category" :label="$t('Kategorija')" :hint="$t('Kategorija keičia spalvą kalendoriuje')">
-            <Select v-model="categoryIdString">
-              <SelectTrigger id="category">
-                <SelectValue :placeholder="$t('Pasirinkti kategoriją...')" />
+          <FormFieldWrapper id="event_type" :label="$t('Renginio tipas')" required :error="form.errors.event_type_id"
+            :valid="form.valid('event_type_id')" :invalid="form.invalid('event_type_id')">
+            <Select v-model="eventTypeIdString" @update:model-value="form.validate('event_type_id')">
+              <SelectTrigger id="event_type">
+                <SelectValue :placeholder="$t('Pasirinkti renginio tipą...')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">
-                  -- {{ $t('Be kategorijos') }} --
-                </SelectItem>
-                <SelectItem v-for="cat in categories" :key="cat.id" :value="String(cat.id)">
-                  {{ cat.name }}
+                <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
+                  {{ type.name }}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -373,7 +370,7 @@ defineEmits<{
 
 const props = defineProps<{
   calendar: CalendarEventForm;
-  categories: App.Entities.Category[];
+  eventTypes: App.Entities.EventType[];
   availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
   /** Set when this event is the public announcement of a meeting. */
@@ -453,7 +450,7 @@ const hasMainImage = computed(() => !!form.main_image || !!existingMainImageUrl.
 
 // Section completion states
 const mainInfoComplete = computed(() =>
-  Boolean((form.title?.lt?.length || 0) >= 3 && form.tenant_id),
+  Boolean((form.title?.lt?.length || 0) >= 3 && form.tenant_id && form.event_type_id),
 );
 
 // Hero style icons as simple SVG representations
@@ -529,11 +526,11 @@ const defaultOrganizer = computed(() => {
   );
 });
 
-// Handle category_id as string for Select component
-const categoryIdString = computed({
-  get: () => form.category_id ? String(form.category_id) : '__none__',
+// Handle event_type_id as string for Select component
+const eventTypeIdString = computed({
+  get: () => form.event_type_id ? String(form.event_type_id) : '',
   set: (val: string) => {
-    form.category_id = val && val !== '__none__' ? parseInt(val) : null;
+    form.event_type_id = val ? parseInt(val) : null;
   },
 });
 

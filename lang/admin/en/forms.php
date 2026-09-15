@@ -75,6 +75,7 @@ return [
         'technical_slug' => 'Technical tag',
         'alias' => 'Alias',
         'is_topic' => 'Topic',
+        'sort_order' => 'Order',
         'link' => 'Link',
         'form_publish_time' => 'Form publish time',
         'type_label' => 'Type',

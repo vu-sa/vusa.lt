@@ -36,6 +36,11 @@ class RoleGlobalCommunicationCoordinatorSeeder extends Seeder
             'categories.read.*',
             'categories.update.*',
             'categories.delete.*',
+            // Global event type management
+            'eventTypes.create.*',
+            'eventTypes.read.*',
+            'eventTypes.update.*',
+            'eventTypes.delete.*',
             // Other global content management permissions can be added here
         ]);
 

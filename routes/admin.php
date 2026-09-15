@@ -56,6 +56,8 @@ Route::patch('calendar/{calendar}/restore', [CalendarController::class, 'restore
 Route::delete('calendar/{calendar}/force-delete', [CalendarController::class, 'forceDelete'])->name('calendar.forceDelete')->withTrashed();
 Route::patch('categories/{category}/restore', [CategoryController::class, 'restore'])->name('categories.restore')->withTrashed();
 Route::delete('categories/{category}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.forceDelete')->withTrashed();
+Route::patch('eventTypes/{eventType}/restore', [EventTypeController::class, 'restore'])->name('eventTypes.restore')->withTrashed();
+Route::delete('eventTypes/{eventType}/force-delete', [EventTypeController::class, 'forceDelete'])->name('eventTypes.forceDelete')->withTrashed();
 Route::patch('duties/{duty}/restore', [DutyController::class, 'restore'])->name('duties.restore')->withTrashed();
 Route::delete('duties/{duty}/force-delete', [DutyController::class, 'forceDelete'])->name('duties.forceDelete')->withTrashed();
 Route::patch('forms/{form}/restore', [FormController::class, 'restore'])->name('forms.restore')->withTrashed();
@@ -136,6 +138,7 @@ Route::delete('push-subscription', [PushSubscriptionController::class, 'destroy'
 Route::delete('push-subscription/{id}', [PushSubscriptionController::class, 'destroyById'])->name('push-subscription.destroyById');
 Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
 
+Route::resource('eventTypes', EventTypeController::class)->except(['show']);
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);

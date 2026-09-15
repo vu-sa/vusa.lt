@@ -39,6 +39,7 @@ final class MorphMap
         'document' => Models\Document::class,
         'dutiable' => Models\Pivots\Dutiable::class,
         'duty' => Models\Duty::class,
+        'event_type' => Models\EventType::class,
         'field_response' => Models\FieldResponse::class,
         'file' => Models\File::class,
         'fileable_file' => Models\FileableFile::class,

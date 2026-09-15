@@ -75,6 +75,7 @@ return [
         'technical_slug' => 'Techninė žymė',
         'alias' => 'Alias',
         'is_topic' => 'Tema',
+        'sort_order' => 'Eiliškumas',
         'link' => 'Nuoroda',
         'form_publish_time' => 'Formos paskelbimo laikas',
         'type_label' => 'Tipas',

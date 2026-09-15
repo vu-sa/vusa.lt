@@ -53,6 +53,7 @@ use Spatie\SchemaOrg\Place;
  * @property Carbon $date
  * @property Carbon|null $end_date
  * @property int|null $category_id
+ * @property int|null $event_type_id
  * @property int $tenant_id
  * @property string|null $meeting_id
  * @property Carbon $created_at
@@ -61,6 +62,7 @@ use Spatie\SchemaOrg\Place;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Category|null $category
+ * @property-read EventType|null $eventType
  * @property-read array $translatable_columns_from
  * @property-read mixed $main_image_url
  * @property-read MediaCollection<int, Media> $media
@@ -74,6 +76,7 @@ use Spatie\SchemaOrg\Place;
  * @method static Builder<static>|Calendar forLocale(string $locale)
  * @method static Builder<static>|Calendar inCategoryAlias(?string $alias)
  * @method static Builder<static>|Calendar newModelQuery()
+ * @method static Builder<static>|Calendar ofEventType(?string $slug)
  * @method static Builder<static>|Calendar newQuery()
  * @method static Builder<static>|Calendar onlyTrashed()
  * @method static Builder<static>|Calendar published()
@@ -152,6 +155,23 @@ class Calendar extends Model implements HasMedia
 
         return $query->whereHas('category', function ($q) use ($alias): void {
             $q->withTrashed()->where('alias', $alias);
+        });
+    }
+
+    /**
+     * Restricts to one event type, by slug. A no-op when `$slug` is null/empty — mirrors
+     * `inCategoryAlias()`'s grouping-key semantics: a trashed event type (e.g. a retired
+     * campaign) must still work as a filter for the events that already carry it.
+     */
+    #[Scope]
+    protected function ofEventType($query, ?string $slug)
+    {
+        if ($slug === null || $slug === '') {
+            return $query;
+        }
+
+        return $query->whereHas('eventType', function ($q) use ($slug): void {
+            $q->withTrashed()->where('slug', $slug);
         });
     }
 
@@ -285,6 +305,11 @@ class Calendar extends Model implements HasMedia
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function eventType(): BelongsTo
+    {
+        return $this->belongsTo(EventType::class);
     }
 
     public function tags(): MorphToMany

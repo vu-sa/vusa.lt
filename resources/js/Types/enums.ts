@@ -114,6 +114,7 @@ export enum ModelEnum {
     DOCUMENT = 'document',
     DUTIABLE = 'dutiable',
     DUTY = 'duty',
+    EVENT_TYPE = 'event_type',
     FILE = 'file',
     FORM = 'form',
     INSTITUTION = 'institution',

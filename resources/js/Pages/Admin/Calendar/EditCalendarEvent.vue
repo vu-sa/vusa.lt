@@ -7,7 +7,7 @@
       <CalendarForm
         enable-delete
         :calendar
-        :categories
+        :event-types="eventTypes"
         :available-tags
         :assignable-tenants
         :meeting
@@ -31,7 +31,7 @@ import { CalendarIcon } from '@/Components/icons';
 
 const { calendar } = defineProps<{
   calendar: App.Entities.Calendar;
-  categories: App.Entities.Category[];
+  eventTypes: App.Entities.EventType[];
   availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
   /** Set when this event announces a meeting. */

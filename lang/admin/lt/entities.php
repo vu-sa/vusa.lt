@@ -86,6 +86,10 @@ return [
         'model' => '{1} renginys|[2,9] renginiai|[10,*] renginių',
         'gender' => 'm',
     ],
+    'eventType' => [
+        'model' => '{1} renginio tipas|[2,9] renginio tipai|[10,*] renginio tipų',
+        'gender' => 'm',
+    ],
     'form' => [
         'model' => '{1} forma|[2,9] formos|[10,*] formų',
         'gender' => 'f',
