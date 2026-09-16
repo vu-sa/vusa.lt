@@ -467,15 +467,6 @@ function getControllerTestData(string $controller): array
                 'lang' => 'invalid',
             ],
         ],
-        'Category' => [
-            'valid' => [
-                'name' => ['lt' => 'Test kategorija', 'en' => 'Test category'],
-                'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
-            ],
-            'invalid' => [
-                'name' => ['lt' => '', 'en' => ''], // Required field empty
-            ],
-        ],
         'Banner' => [
             'valid' => [
                 'title' => 'Test baneris',
@@ -522,7 +513,6 @@ function getControllerValidationErrors(string $controller): array
 {
     return match ($controller) {
         'Page' => ['title', 'content.parts', 'lang'],
-        'Category' => ['name.lt', 'name.en'],
         'Banner' => ['title'],
         'Navigation' => ['name', 'url'],
         'Relationship' => ['name', 'slug'],

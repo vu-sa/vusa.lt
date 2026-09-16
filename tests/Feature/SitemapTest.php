@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\SitemapController;
-use App\Models\Category;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
@@ -289,11 +288,8 @@ describe('Multi-tenant Support', function (): void {
             ['shortname' => 'VU SA IF']
         );
 
-        $category = Category::factory()->create();
-
         News::factory()->create([
             'tenant_id' => $ifTenant->id,
-            'category_id' => $category->id,
             'permalink' => 'if-news',
             'title' => 'IF News',
             'draft' => false,
@@ -303,7 +299,6 @@ describe('Multi-tenant Support', function (): void {
 
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $category->id,
             'permalink' => 'vusa-news',
             'title' => 'VUSA News',
             'draft' => false,

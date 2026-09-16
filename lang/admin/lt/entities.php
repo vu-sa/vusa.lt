@@ -62,10 +62,6 @@ return [
         'model' => '{1} baneris|[2,9] baneriai|[10,*] banerių',
         'gender' => 'm',
     ],
-    'category' => [
-        'model' => '{1} kategorija|[2,9] kategorijos|[10,*] kategorijų',
-        'gender' => 'f',
-    ],
     'tag' => [
         'model' => '{1} žyma|[2,9] žymos|[10,*] žymų',
         'gender' => 'f',
@@ -84,6 +80,10 @@ return [
     ],
     'calendar' => [
         'model' => '{1} renginys|[2,9] renginiai|[10,*] renginių',
+        'gender' => 'm',
+    ],
+    'eventType' => [
+        'model' => '{1} renginio tipas|[2,9] renginio tipai|[10,*] renginio tipų',
         'gender' => 'm',
     ],
     'form' => [
@@ -238,7 +238,7 @@ return [
         'max_participants' => 'dalyvių limitas',
         'tenant' => 'padalinys',
         'institution' => 'institucija',
-        'category' => 'kategorija',
+        'event_type' => 'renginio tipas',
         'meeting' => 'susitikimas',
         'agenda_item' => 'darbotvarkės klausimas',
         // Relation names, for relation_updated activities (see

@@ -15,10 +15,7 @@
         <PublicBreadcrumbs v-if="showBreadcrumbs" variant="inline" class="mb-8" />
 
         <div class="border-l-2 border-brand pl-5 sm:pl-7">
-          <EyebrowLabel v-if="categoryName">
-            {{ categoryName }}
-          </EyebrowLabel>
-          <h1 :class="[pageTitleClass, categoryName && 'mt-3']">
+          <h1 :class="pageTitleClass">
             {{ page.title }}
           </h1>
         </div>
@@ -70,6 +67,18 @@
     <LastUpdatedFooter v-if="showTitle" :date="lastUpdatedDate" />
   </div>
 
+  <!-- Child pages — a plain section listing; the permalink hierarchy stays flat, this is
+       presentation only. -->
+  <section v-if="page.children?.length" class="rc-canvas pb-16 md:pb-24" style="--rc-measure: 44rem">
+    <h2 class="u-eyebrow mb-4 text-muted-foreground">
+      {{ $t('Šiame skyriuje') }}
+    </h2>
+    <HairlineList as="ul">
+      <HairlineRow v-for="child in page.children" :key="child.url" as="li" :href="child.url"
+        :title="child.title" :meta="child.meta_description ?? undefined" />
+    </HairlineList>
+  </section>
+
   <!-- Highlights floating button -->
   <HighlightsFloatingButton :highlights="page.highlights" />
 
@@ -87,7 +96,7 @@ import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import { extractAnchorLinks, type AnchorablePart } from '@/Components/RichContent/tocAnchors';
 import TableOfContents from '@/Components/Public/TableOfContents.vue';
-import { EyebrowLabel, MediaFrame } from '@/Components/Public/Base';
+import { HairlineList, HairlineRow, MediaFrame } from '@/Components/Public/Base';
 import { usePageBreadcrumbs, useBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 type PageContentPart = AnchorablePart & { [key: string]: unknown };
@@ -99,8 +108,6 @@ interface Page {
   show_title?: boolean;
   show_breadcrumbs?: boolean;
   highlights?: string[] | null;
-  /** The whole Category relation — the band shows its name as the eyebrow. */
-  category?: { name?: string | null } | null;
   meta_description?: string | null;
   featured_image?: string | null;
   last_edited_at?: string | null;
@@ -108,6 +115,10 @@ interface Page {
   content?: {
     parts: PageContentPart[];
   };
+  /** Direct children (`Page::children()`) — rendered as a plain section listing. */
+  children?: { title: string; url: string; meta_description?: string | null }[];
+  /** Hierarchical ancestors (`Page::ancestors()`) — root first. */
+  ancestors?: { id: number; title: string; permalink: string; url?: string }[];
 }
 
 const props = defineProps<{
@@ -121,9 +132,6 @@ const inertiaPage = usePage();
 
 // Compute layout with default fallback
 const pageLayout = computed(() => props.page.layout || 'default');
-
-// `category` arrives as the whole relation (the controller's `only()` resolves it).
-const categoryName = computed(() => props.page.category?.name ?? undefined);
 
 const pageTitleClass = computed(() => [
   'u-display',
@@ -167,6 +175,17 @@ usePageBreadcrumbs(() => {
   // If we have navigation path, use it for breadcrumbs
   if (navigationPath.length > 0) {
     return BreadcrumbHelpers.publicContent(navigationPath);
+  }
+
+  // If the page has hierarchical ancestors, display the parent trail
+  if (props.page.ancestors && props.page.ancestors.length > 0) {
+    const ancestorItems = props.page.ancestors.map(ancestor =>
+      BreadcrumbHelpers.createBreadcrumbItem(ancestor.title, ancestor.url),
+    );
+    return BreadcrumbHelpers.publicContent([
+      ...ancestorItems,
+      BreadcrumbHelpers.createBreadcrumbItem(props.page.title),
+    ]);
   }
 
   // Otherwise just show the current page title

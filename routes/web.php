@@ -78,8 +78,11 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('{pkpString}', [Public\PublicPageController::class, 'pkp'])->name('pkp')
             ->whereIn('pkpString', LocalizedRouteSlugs::accepted('pkpString'));
 
-        Route::get('{categoryString}/{category:alias}', [Public\PublicPageController::class, 'category'])->name('category')
+        Route::get('{categoryString}/{alias}', [Public\PublicPageController::class, 'categoryRedirect'])->name('category')
             ->whereIn('categoryString', LocalizedRouteSlugs::accepted('categoryString'));
+
+        Route::get('{topicString}/{tag:alias}', [Public\TopicController::class, 'show'])->name('topic')
+            ->whereIn('topicString', LocalizedRouteSlugs::accepted('topicString'));
 
         Route::permanentRedirect('nariu-registracija', config('app.url').'/registracija/nariu-registracija')->name('member-registration');
         Route::permanentRedirect('member-registration', config('app.url').'/registration/member-registration')->name('member-registration.en');
@@ -110,6 +113,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('ind-komplektai', [Public\StudySetController::class, 'index'])->name('tenant.studySets');
         Route::get('{newsArchiveString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')
             ->whereIn('newsArchiveString', LocalizedRouteSlugs::accepted('newsArchiveString'));
+        Route::get('{categoryString}/{alias}', [Public\PublicPageController::class, 'categoryRedirect'])->name('tenant.category')
+            ->whereIn('categoryString', LocalizedRouteSlugs::accepted('categoryString'));
         Route::permanentRedirect('/admin', '/mano');
 
         Route::get('{contactsString}/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution')

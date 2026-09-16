@@ -261,7 +261,7 @@ export interface Calendar {
     width?: BlockWidth;
     /** Server-resolved fetch options — see `CalendarBlockResolver`. */
     limit?: number;
-    categoryAlias?: string;
+    eventTypeSlug?: string;
     /**
      * Which tenants' events to show. `'all'` (default, unset counts as this too) or a
      * specific list of tenant ids — `[]` means "none selected" and shows zero events,
@@ -288,7 +288,7 @@ export interface News {
     width?: BlockWidth;
     /** Server-resolved fetch options — see `NewsBlockResolver`. */
     limit?: number;
-    categoryAlias?: string;
+    topicAlias?: string;
     tagAlias?: string;
     /** `current` preserves the behaviour of news blocks saved before filtering existed. */
     tenantScope?: 'current' | 'all' | number[];
@@ -320,8 +320,10 @@ export interface NewsItem {
   publish_time: string;
   permalink: string | null;
   image: string | null;
-  /** Localized category name, or null for the many articles filed under none. */
-  category?: string | null;
+  /** Precomputed absolute URL — only set by callers that aggregate across tenants (e.g.
+   *  TopicController), where the card can't assume the article belongs to the current
+   *  page's tenant/subdomain. Falls back to the current-tenant-relative route otherwise. */
+  public_url?: string | null;
 }
 
 export interface CarouselSlideDeck {
@@ -440,7 +442,7 @@ export interface LinkList {
   options: SectionOptions & {
     source?: 'news' | 'pages' | 'manual';
     mode?: 'latest' | 'specific';
-    categoryAlias?: string;
+    topicAlias?: string;
     tenantScope?: 'current' | 'all' | number[];
     newsIds?: number[];
     pageIds?: number[];
@@ -477,7 +479,7 @@ export interface EventList {
     year?: number;
     dateFrom?: string;
     dateTo?: string;
-    categoryAlias?: string;
+    eventTypeSlug?: string;
     tenantScope?: 'current' | 'all' | number[];
     groupBy?: 'none' | 'tenant';
     limit?: number;

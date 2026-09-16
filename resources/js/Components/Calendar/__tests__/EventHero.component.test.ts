@@ -16,7 +16,7 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     is_all_day: false,
     main_image_url: null,
     tenant: { shortname: 'VU SA' },
-    category: { name: 'Konferencija' },
+    event_type: { name: 'Konferencija' },
     ...overrides,
   };
 }
@@ -86,9 +86,9 @@ describe('Calendar/EventHero.vue', () => {
     expect(datePlate.text()).toContain('GEG');
   });
 
-  it('renders category tag and title in the brand-rule container', () => {
+  it('renders event type tag and title in the brand-rule container', () => {
     const wrapper = mountHero({
-      category: { name: 'Konferencija' },
+      event_type: { name: 'Konferencija' },
       title: 'Nuostabus Renginys',
     });
 

@@ -190,7 +190,6 @@ declare global {
       cto_url?: Array<unknown> | null
       facebook_url?: string | null
       video_url?: string | null
-      main_image?: string | null
       main_image_focal_point?: string | null
       is_draft: boolean
       is_all_day: boolean
@@ -198,7 +197,7 @@ declare global {
       hero_style: CalendarHeroStyleEnum
       date: string
       end_date?: string | null
-      category_id?: number | null
+      event_type_id?: number | null
       tenant_id: number
       meeting_id?: string | null
       created_at: string
@@ -212,48 +211,24 @@ declare global {
       // relations
       tenant?: Tenant
       meeting?: Meeting
-      category?: Category
+      event_type?: EventType
+      tags?: Tag[]
       public_urls?: PublicUrl[]
       media?: Media[]
       activities_as_subject?: Activity[]
       // counts
+      tags_count: number
       public_urls_count: number
       media_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       meeting_exists: boolean
-      category_exists: boolean
+      event_type_exists: boolean
+      tags_exists: boolean
       public_urls_exists: boolean
       media_exists: boolean
       activities_as_subject_exists: boolean
-    }
-
-    export interface Category {
-      // columns
-      id: number
-      alias?: string | null
-      created_at: string
-      updated_at: string
-      name?: Array<unknown> | null
-      description?: Array<unknown> | null
-      deleted_at?: string | null
-      // mutators
-      force_delete_blocked_reason: string
-      translatable_columns_from: Array<unknown>
-      translations: unknown
-      // relations
-      pages?: Page[]
-      news?: News[]
-      calendars?: Calendar[]
-      // counts
-      pages_count: number
-      news_count: number
-      calendars_count: number
-      // exists
-      pages_exists: boolean
-      news_exists: boolean
-      calendars_exists: boolean
     }
 
     export interface Comment {
@@ -537,6 +512,29 @@ declare global {
       available_files_exists: boolean
       activities_as_subject_exists: boolean
       notifications_exists: boolean
+    }
+
+    export interface EventType {
+      // columns
+      id: number
+      name: Array<unknown>
+      slug: string
+      description?: Array<unknown> | null
+      is_active: boolean
+      sort_order: number
+      created_at?: string | null
+      updated_at?: string | null
+      deleted_at?: string | null
+      // mutators
+      force_delete_blocked_reason: string
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      calendar_events?: Calendar[]
+      // counts
+      calendar_events_count: number
+      // exists
+      calendar_events_exists: boolean
     }
 
     export interface FieldResponse {
@@ -928,7 +926,6 @@ declare global {
       // columns
       id: number
       title: string
-      category_id?: number | null
       permalink?: string | null
       short: string
       lang: string
@@ -951,7 +948,6 @@ declare global {
       // relations
       user?: User
       tenant?: Tenant
-      category?: Category
       other_language_news?: News
       tags?: Tag[]
       content?: Content
@@ -964,7 +960,6 @@ declare global {
       // exists
       user_exists: boolean
       tenant_exists: boolean
-      category_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
@@ -996,7 +991,8 @@ declare global {
       lang: string
       other_lang_id?: number | null
       content_id: number
-      category_id?: number | null
+      parent_id?: number | null
+      sort_order: number
       is_active: boolean
       highlights?: unknown | null
       layout: string
@@ -1014,17 +1010,24 @@ declare global {
       // relations
       tenant?: Tenant
       other_language_page?: Page
-      category?: Category
+      parent?: Page
+      children?: Page[]
+      ancestors?: Array<{ id: number; title: string; permalink: string; url?: string }>
+      tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
+      children_count: number
+      tags_count: number
       public_urls_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
-      category_exists: boolean
+      parent_exists: boolean
+      children_exists: boolean
+      tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
       activities_as_subject_exists: boolean
@@ -1276,7 +1279,6 @@ declare global {
       // columns
       id: number
       title: string
-      category_id?: number | null
       permalink?: string | null
       short: string
       lang: string
@@ -1299,7 +1301,6 @@ declare global {
       // relations
       user?: User
       tenant?: Tenant
-      category?: Category
       other_language_news?: News
       tags?: Tag[]
       content?: Content
@@ -1312,7 +1313,6 @@ declare global {
       // exists
       user_exists: boolean
       tenant_exists: boolean
-      category_exists: boolean
       other_language_news_exists: boolean
       tags_exists: boolean
       content_exists: boolean
@@ -1328,7 +1328,8 @@ declare global {
       lang: string
       other_lang_id?: number | null
       content_id: number
-      category_id?: number | null
+      parent_id?: number | null
+      sort_order: number
       is_active: boolean
       highlights?: unknown | null
       layout: string
@@ -1346,17 +1347,23 @@ declare global {
       // relations
       tenant?: Tenant
       other_language_page?: Page
-      category?: Category
+      parent?: Page
+      children?: Page[]
+      tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
       activities_as_subject?: Activity[]
       // counts
+      children_count: number
+      tags_count: number
       public_urls_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
       other_language_page_exists: boolean
-      category_exists: boolean
+      parent_exists: boolean
+      children_exists: boolean
+      tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
       activities_as_subject_exists: boolean
@@ -1869,7 +1876,9 @@ declare global {
     export interface Tag {
       // columns
       id: number
-      alias?: string | null
+      alias: string
+      is_topic: boolean
+      sort_order: number
       created_at: string
       updated_at: string
       name?: Array<unknown> | null
@@ -1880,10 +1889,32 @@ declare global {
       translations: unknown
       // relations
       news?: News[]
+      pages?: Page[]
+      calendars?: Calendar[]
       // counts
       news_count: number
+      pages_count: number
+      calendars_count: number
       // exists
       news_exists: boolean
+      pages_exists: boolean
+      calendars_exists: boolean
+    }
+
+    export interface Taggable {
+      // columns
+      id: number
+      tag_id: number
+      taggable_type: string
+      taggable_id: number
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      tag?: Tag
+      taggable?: Taggable
+      // counts
+      // exists
+      tag_exists: boolean
     }
 
     export interface Task {

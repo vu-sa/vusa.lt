@@ -92,13 +92,11 @@ test('a Duty <-> users sync appears on the parent Institution activity feed via 
 });
 
 describe('duty grants made through the user form', function (): void {
-    // Attaching somebody to a duty is what places them inside a tenant, and so what
-    // gives that tenant's admins authority over their record. Logged on the User via
-    // AuditedRelations rather than on the Dutiable pivot, which is not an audit
-    // subject and would flood the feed from the ex-officio sync.
     beforeEach(function (): void {
         $this->coordinator = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
-        $this->member = User::factory()->create(['name' => 'Rasa Rasaitė']);
+        $this->member = makeUser($this->tenant);
+        $this->member->update(['name' => 'Rasa Rasaitė']);
+        $this->existingDuty = $this->member->current_duties()->first();
     });
 
     $latestRelationActivity = fn (User $user) => Activity::where('subject_type', MorphMap::alias(User::class))
@@ -111,7 +109,7 @@ describe('duty grants made through the user form', function (): void {
         asUser($this->coordinator)->patch(route('users.update', $this->member), [
             'name' => $this->member->name,
             'email' => $this->member->email,
-            'current_duties' => [$this->duty->id],
+            'current_duties' => [$this->existingDuty->id, $this->duty->id],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $activity = $latestRelationActivity($this->member);
@@ -127,7 +125,7 @@ describe('duty grants made through the user form', function (): void {
         asUser($this->coordinator)->patch(route('users.update', $this->member), [
             'name' => $this->member->name,
             'email' => $this->member->email,
-            'current_duties' => [],
+            'current_duties' => [$this->existingDuty->id],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         $activity = $latestRelationActivity($this->member);

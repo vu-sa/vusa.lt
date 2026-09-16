@@ -23,7 +23,8 @@ use Laravel\Scout\Searchable;
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
- * @property int|null $category_id
+ * @property int|null $parent_id
+ * @property int $sort_order
  * @property bool $is_active
  * @property array<array-key, mixed>|null $highlights
  * @property string $layout
@@ -39,10 +40,12 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Category|null $category
+ * @property-read Collection<int, Page> $children
  * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
+ * @property-read Page|null $parent
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicPage newModelQuery()

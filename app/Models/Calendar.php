@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -44,7 +45,6 @@ use Spatie\SchemaOrg\Place;
  * @property array|string|null $cto_url URL for Call To Action
  * @property string|null $facebook_url
  * @property string|null $video_url
- * @property string|null $main_image
  * @property string|null $main_image_focal_point
  * @property bool $is_draft
  * @property bool $is_all_day
@@ -52,7 +52,7 @@ use Spatie\SchemaOrg\Place;
  * @property CalendarHeroStyleEnum $hero_style
  * @property Carbon $date
  * @property Carbon|null $end_date
- * @property int|null $category_id
+ * @property int|null $event_type_id
  * @property int $tenant_id
  * @property string|null $meeting_id
  * @property Carbon $created_at
@@ -60,20 +60,21 @@ use Spatie\SchemaOrg\Place;
  * @property int|null $registration_form_id
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Category|null $category
+ * @property-read EventType|null $eventType
  * @property-read array $translatable_columns_from
  * @property-read mixed $main_image_url
  * @property-read MediaCollection<int, Media> $media
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\CalendarFactory factory($count = null, $state = [])
  * @method static Builder<static>|Calendar forLocale(string $locale)
- * @method static Builder<static>|Calendar inCategoryAlias(?string $alias)
  * @method static Builder<static>|Calendar newModelQuery()
  * @method static Builder<static>|Calendar newQuery()
+ * @method static Builder<static>|Calendar ofEventType(?string $slug)
  * @method static Builder<static>|Calendar onlyTrashed()
  * @method static Builder<static>|Calendar published()
  * @method static Builder<static>|Calendar query()
@@ -137,20 +138,21 @@ class Calendar extends Model implements HasMedia
     }
 
     /**
-     * Restricts to one category, by alias. A no-op when `$alias` is null/empty — callers
-     * don't need to guard the call themselves. The category is a grouping key, not a
-     * publication gate — a trashed category (e.g. an old campaign) must still work as
-     * one. See the identical rationale in PublicPageController::summerCamps().
+     * Restricts to one event type, by slug. A no-op when `$slug` is null/empty — callers
+     * don't need to guard the call themselves. The event type is a grouping key, not a
+     * publication gate — a trashed event type (e.g. a retired campaign) must still work
+     * as a filter for the events that already carry it. See the identical rationale in
+     * PublicPageController::summerCamps().
      */
     #[Scope]
-    protected function inCategoryAlias($query, ?string $alias)
+    protected function ofEventType($query, ?string $slug)
     {
-        if ($alias === null || $alias === '') {
+        if ($slug === null || $slug === '') {
             return $query;
         }
 
-        return $query->whereHas('category', function ($q) use ($alias): void {
-            $q->withTrashed()->where('alias', $alias);
+        return $query->whereHas('eventType', function ($q) use ($slug): void {
+            $q->withTrashed()->where('slug', $slug);
         });
     }
 
@@ -173,21 +175,17 @@ class Calendar extends Model implements HasMedia
     }
 
     /**
-     * Get the main image URL from Spatie Media collection with fallback to legacy URL field.
+     * Get the main image URL from the Spatie Media `main_image` collection, falling back to
+     * the first gallery image when no dedicated main image has been uploaded.
      */
     protected function mainImageUrl(): Attribute
     {
         return Attribute::make(get: function () {
-            // First try Spatie Media collection
             $mainImageMedia = $this->getFirstMedia('main_image');
             if ($mainImageMedia) {
                 return $mainImageMedia->getUrl();
             }
-            // Fallback to legacy main_image URL field (for backwards compatibility)
-            if ($this->main_image) {
-                return $this->main_image;
-            }
-            // Final fallback to first gallery image
+
             $firstMedia = $this->getFirstMedia('images');
 
             return $firstMedia?->getUrl();
@@ -238,6 +236,14 @@ class Calendar extends Model implements HasMedia
             $calendar->syncMeetingDocumentsSearchIndex();
         });
 
+        static::deleting(function (self $calendar): void {
+            if ($calendar->isForceDeleting()) {
+                // taggable_id/taggable_type is polymorphic, so no DB-level FK can cascade
+                // this side — detach explicitly or the pivot row orphans.
+                $calendar->tags()->detach();
+            }
+        });
+
         static::restored(fn (self $calendar) => $calendar->syncMeetingDocumentsSearchIndex());
     }
 
@@ -277,9 +283,14 @@ class Calendar extends Model implements HasMedia
         return $this->belongsTo(Meeting::class)->withTrashed();
     }
 
-    public function category(): BelongsTo
+    public function eventType(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(EventType::class);
+    }
+
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     /** @return MorphMany<PublicUrl, $this> */
@@ -340,7 +351,7 @@ class Calendar extends Model implements HasMedia
 
     protected function makeAllSearchableUsing(Builder $query): Builder
     {
-        return $query->with(['tenant', 'category', 'media']);
+        return $query->with(['tenant', 'eventType', 'tags', 'media']);
     }
 
     public function toSearchableArray(): array
@@ -359,8 +370,9 @@ class Calendar extends Model implements HasMedia
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'tenant_shortname' => $this->tenant->shortname,
-            'category_id' => $this->category_id ? (int) $this->category_id : null,
-            'category_name' => $this->category?->name,
+            'event_type_id' => $this->event_type_id ? (int) $this->event_type_id : null,
+            'event_type_name' => $this->eventType?->name,
+            'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', app()->getLocale()) ?? $tag->name)->filter()->values()->all(),
             'location' => $this->getTranslation('location', app()->getLocale()) ?: $this->location,
             'is_all_day' => (bool) $this->is_all_day,
             'is_remote' => (bool) $this->is_remote,

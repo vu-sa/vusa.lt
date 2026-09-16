@@ -89,8 +89,8 @@
             </div>
 
             <div class="min-w-0 flex-1">
-              <span v-if="event.category?.name" class="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-brand">
-                {{ event.category.name }}
+              <span v-if="event.event_type?.name" class="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-brand">
+                {{ event.event_type.name }}
               </span>
               <h3 class="mt-1 text-pretty font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
                 {{ event.title }}
@@ -152,7 +152,7 @@ interface CalendarEvent {
   end_date?: string | null;
   location?: string | null;
   is_all_day?: boolean;
-  category: { id: number; name: string } | null;
+  event_type: { id: number; name: string } | null;
   images: Array<{ url: string }>;
   public_url?: string | null;
   [key: string]: unknown;
@@ -165,7 +165,7 @@ const props = defineProps<{
   /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
   prefetchedCalendar?: CalendarEvent[];
   /** Full-screen editor mode: the title and eyebrow become click-to-edit. Undefined/false
-   *  elsewhere. The fetch configuration (limit/category/tenantScope) is edited through
+   *  elsewhere. The fetch configuration (limit/eventType/tenantScope) is edited through
    *  `CalendarBlockToolbar.vue`'s options popover instead. */
   editable?: boolean;
   /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
@@ -230,7 +230,7 @@ const {
 });
 
 // Reactive, not a one-time call at setup: `props.resolved` changes whenever the editor
-// re-fetches this block's preview (e.g. after a limit/category change in
+// re-fetches this block's preview (e.g. after a limit/event-type change in
 // CalendarBlockToolbar.vue) — a plain `if (...) initializeWithData(...)` here only ran
 // once at mount, so the display stayed frozen on whatever data it first received and
 // never picked up a later options change. This is the actual "changing the amount does

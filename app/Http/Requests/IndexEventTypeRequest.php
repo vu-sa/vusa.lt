@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests;
 
-class IndexCategoryRequest extends BaseIndexRequest
+class IndexEventTypeRequest extends BaseIndexRequest
 {
     /** @var array<int, array{id: string, desc: bool}> */
     #[\Override]
     protected array $defaultSorting = [
-        ['id' => 'name', 'desc' => false],
+        ['id' => 'sort_order', 'desc' => false],
     ];
 }

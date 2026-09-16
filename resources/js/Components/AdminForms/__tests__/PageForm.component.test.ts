@@ -28,7 +28,6 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     permalink: 'test-puslapis',
     text: null,
     lang: 'lt',
-    category_id: 1,
     tenant_id: 1,
     is_active: true,
     aside: null,
@@ -46,7 +45,6 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
   const createWrapper = (props = {}) => {
     return mount(PageForm, {
       props: {
-        categories: [{ id: 1, name: 'Kategorija' }],
         page: defaultPage,
         submitUrl: '/test',
         submitMethod: 'patch' as const,
@@ -207,7 +205,6 @@ describe('PageForm.vue — create mode tenant selection', () => {
       shallow: true,
       props: {
         page: { title: '', lang: 'lt', content: { parts: [] }, tenant_id: null },
-        categories: [],
         assignableTenants,
         rememberKey,
         submitUrl: '/test',

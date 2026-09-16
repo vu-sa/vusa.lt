@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -34,7 +34,6 @@ use Spatie\Sitemap\Tags\Url;
 /**
  * @property int $id
  * @property string $title
- * @property int|null $category_id
  * @property string|null $permalink
  * @property string|null $short
  * @property string $lang
@@ -55,7 +54,6 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Category|null $category
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, PublicUrl> $publicUrls
@@ -173,7 +171,8 @@ class News extends Model implements Feedable, Sitemapable
             PairTranslatedRecord::releaseCounterpart($news);
 
             if ($news->isForceDeleting()) {
-                // posts_tags.news_id restricts deletes.
+                // taggable_id/taggable_type is polymorphic, so no DB-level FK can cascade
+                // this side — detach explicitly or the pivot row orphans.
                 $news->tags()->detach();
             }
         });
@@ -244,19 +243,15 @@ class News extends Model implements Feedable, Sitemapable
         return $this->belongsTo(Tenant::class);
     }
 
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
-    }
-
     public function other_language_news(): HasOne
     {
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
-    public function tags(): BelongsToMany
+    /** @return MorphToMany<Tag, $this> */
+    public function tags(): MorphToMany
     {
-        return $this->belongsToMany(Tag::class, 'posts_tags', 'news_id', 'tag_id');
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     public function content(): BelongsTo
@@ -542,13 +537,12 @@ class News extends Model implements Feedable, Sitemapable
 
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tags', 'category', 'content.parts', 'tenant', 'other_language_news']);
+        return $query->with(['tags', 'content.parts', 'tenant', 'other_language_news']);
     }
 
     public function toSearchableArray(): array
     {
         $publishTimestamp = $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp;
-        $categoryName = $this->category?->getTranslation('name', $this->lang) ?? $this->category?->name;
 
         return [
             'id' => (string) $this->id,
@@ -565,8 +559,6 @@ class News extends Model implements Feedable, Sitemapable
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
             'tenant_shortname' => $this->tenant->shortname,
-            'category_id' => $this->category_id,
-            'category_name' => $categoryName,
             'year' => (int) ($this->publish_time ?? $this->created_at)->format('Y'),
             'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
             'important' => (bool) $this->important,

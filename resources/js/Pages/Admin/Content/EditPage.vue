@@ -16,8 +16,8 @@
         <span>Puslapio informacija</span>
       </template>
       <PageForm
-        :categories
         :page
+        :available-tags
         :other-lang-pages
         :submit-url="route('pages.update', page.id)"
         submit-method="patch"
@@ -40,8 +40,9 @@ import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { PageIcon } from '@/Components/icons';
 
 const props = defineProps<{
-  categories: App.Entities.Category[];
-  page: App.Entities.Page;
+  // `descendant_ids` is server-computed (Page::descendantIds()), not a real relation.
+  page: App.Entities.Page & { descendant_ids?: number[] };
+  availableTags?: App.Entities.Tag[];
   otherLangPages: App.Entities.Page[];
 }>();
 

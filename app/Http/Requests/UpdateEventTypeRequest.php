@@ -6,14 +6,14 @@ use App\Rules\UniqueAmongTrashed;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCategoryRequest extends FormRequest
+class UpdateEventTypeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', $this->route('category'));
+        return $this->user()->can('update', $this->route('eventType'));
     }
 
     /**
@@ -23,14 +23,16 @@ class UpdateCategoryRequest extends FormRequest
      */
     public function rules(): array
     {
-        $categoryId = $this->route('category')?->id;
+        $eventTypeId = $this->route('eventType')?->id;
 
         return [
             'name.lt' => 'required|string|max:255',
             'name.en' => 'required|string|max:255',
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',
-            'alias' => ['nullable', 'string', 'max:255', UniqueAmongTrashed::of('categories', 'alias')->ignore($categoryId)],
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9-]+$/', UniqueAmongTrashed::of('event_types', 'slug')->ignore($eventTypeId)],
+            'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
         ];
     }
 }

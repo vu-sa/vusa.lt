@@ -410,8 +410,10 @@ return [
     // Shared list options (link-list / event-list)
     'style' => 'Stilius',
     'limit' => 'Kiekis',
-    'category_alias' => 'Kategorija',
-    'category_alias_none' => 'Be kategorijos',
+    'topic_alias' => 'Tema',
+    'topic_alias_none' => 'Be temos',
+    'event_type' => 'Renginio tipas',
+    'event_type_none' => 'Be tipo',
     'tag_alias' => 'Žymė',
     'tag_alias_none' => 'Be žymės',
     'tenant_scope' => 'Padaliniai',

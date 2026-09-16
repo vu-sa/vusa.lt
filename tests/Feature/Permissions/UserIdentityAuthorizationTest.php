@@ -2,6 +2,7 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -13,8 +14,8 @@ pest()->use(RefreshDatabase::class);
  * A user's tenants are derived from their duties, and any tenant admin can attach
  * any person to one of their own duties. Because AuthController::callback resolves
  * the Microsoft account by users.email, an unrestricted email edit is an account
- * takeover — so identity fields require UserPolicy::updateIdentity (full tenant
- * containment) rather than the any-overlap rule that governs the rest of the record.
+ * takeover. Email changes therefore require full tenant containment, while a name
+ * change is reserved for super administrators.
  */
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
@@ -58,9 +59,8 @@ test('coordinator cannot change the email of a user who also belongs to another 
     expect($target->fresh()->email)->not->toBe('taken.over@attacker.test');
 });
 
-test('coordinator cannot change the name of a user who also belongs to another tenant', function (): void {
+test('coordinator cannot change the name of a user wholly within their tenant', function (): void {
     $target = makeUser($this->tenant);
-    giveDutyInOtherTenant($target);
 
     asUser($this->coordinator)
         ->patch(route('users.update', $target), identityPayload($target, [
@@ -69,6 +69,16 @@ test('coordinator cannot change the name of a user who also belongs to another t
         ->assertSessionHasErrors('name');
 
     expect($target->fresh()->name)->not->toBe('Renamed Person');
+});
+
+test('coordinator cannot change their own name through user administration', function (): void {
+    asUser($this->coordinator)
+        ->patch(route('users.update', $this->coordinator), identityPayload($this->coordinator, [
+            'name' => 'Renamed Coordinator',
+        ]))
+        ->assertSessionHasErrors('name');
+
+    expect($this->coordinator->fresh()->name)->not->toBe('Renamed Coordinator');
 });
 
 test('coordinator can still edit non-identity fields of a multi-tenant user', function (): void {
@@ -94,6 +104,23 @@ test('coordinator cannot change the email of a super admin attached to their own
     $target->assignRole(config('permission.super_admin_role_name'));
 
     asUser($this->coordinator)
+        ->patch(route('users.update', $target), identityPayload($target, [
+            'email' => 'taken.over@attacker.test',
+        ]))
+        ->assertSessionHasErrors('email');
+
+    expect($target->fresh()->email)->not->toBe('taken.over@attacker.test');
+});
+
+test('a non-super admin with global user update permission cannot change a super admin email', function (): void {
+    $permission = Permission::firstOrCreate(['name' => 'users.update.*', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Global User Manager', 'guard_name' => 'web']);
+    $role->givePermissionTo($permission);
+
+    $globalUpdater = makeTenantUserWithRole($role->name, $this->tenant);
+    $target = makeAdminUser($this->tenant);
+
+    asUser($globalUpdater)
         ->patch(route('users.update', $target), identityPayload($target, [
             'email' => 'taken.over@attacker.test',
         ]))
@@ -139,6 +166,34 @@ test('a super admin can change any email', function (): void {
         ->assertSessionHasNoErrors();
 
     expect($target->fresh()->email)->toBe('central.office@vusa.lt');
+});
+
+test('a super admin can change another super admin email', function (): void {
+    $admin = makeAdminUser($this->tenant);
+    $target = makeAdminUser($this->tenant);
+
+    asUser($admin)
+        ->patch(route('users.update', $target), identityPayload($target, [
+            'email' => 'central.admin@vusa.lt',
+        ]))
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($target->fresh()->email)->toBe('central.admin@vusa.lt');
+});
+
+test('a super admin can change a user name', function (): void {
+    $admin = makeAdminUser($this->tenant);
+    $target = makeUser($this->tenant);
+
+    asUser($admin)
+        ->patch(route('users.update', $target), identityPayload($target, [
+            'name' => 'Corrected Person',
+        ]))
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($target->fresh()->name)->toBe('Corrected Person');
 });
 
 test('a user can always change their own email', function (): void {

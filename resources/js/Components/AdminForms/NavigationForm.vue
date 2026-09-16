@@ -33,13 +33,13 @@
 
             <span class="text-xs text-muted-foreground">{{ $t('navigation.form.or') }}</span>
 
-            <Select :model-value="categorySelectValue" @update:model-value="onCategorySelected">
+            <Select :model-value="topicSelectValue" @update:model-value="onTopicSelected">
               <SelectTrigger class="w-auto min-w-40">
-                <SelectValue :placeholder="$t('navigation.form.link_target_category')" />
+                <SelectValue :placeholder="$t('navigation.form.link_target_topic')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem v-for="category in categoryOptions" :key="category.id" :value="String(category.id)">
-                  {{ category.name }}
+                <SelectItem v-for="topic in topicOptions" :key="topic.id" :value="String(topic.id)">
+                  {{ topic.name }}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -328,7 +328,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
-interface CategoryOption {
+interface TopicOption {
   id: number;
   name: string;
   alias: string | null;
@@ -337,7 +337,7 @@ interface CategoryOption {
 const props = defineProps<{
   navigation: App.Entities.Navigation;
   parentElements: App.Entities.Navigation[];
-  categoryOptions?: CategoryOption[];
+  topicOptions?: TopicOption[];
   rememberKey?: 'CreateNavigation';
 }>();
 
@@ -477,7 +477,7 @@ const selectedParent = computed({
 });
 
 // --- Link target picker -----------------------------------------------------
-// The picker (and category select) are convenience fillers for `url` — the field
+// The picker (and topic select) are convenience fillers for `url` — the field
 // itself always stays editable as a manual override. Neither the collection nor the
 // record id is persisted, so on edit there is nothing to pre-select the picker with.
 
@@ -509,13 +509,13 @@ const onTargetConfirm = (hits: NormalizedSearchHit[]) => {
   resolveAndFillUrl(hit.collection, hit.recordId, hit.title);
 };
 
-const categorySelectValue = ref<string | undefined>(undefined);
-const onCategorySelected = (val: unknown) => {
+const topicSelectValue = ref<string | undefined>(undefined);
+const onTopicSelected = (val: unknown) => {
   const value = val as string | undefined;
-  categorySelectValue.value = value;
-  const category = props.categoryOptions?.find(c => String(c.id) === value);
-  if (category) {
-    resolveAndFillUrl('categories', category.id, category.name);
+  topicSelectValue.value = value;
+  const topic = props.topicOptions?.find(t => String(t.id) === value);
+  if (topic) {
+    resolveAndFillUrl('topics', topic.id, topic.name);
   }
 };
 </script>

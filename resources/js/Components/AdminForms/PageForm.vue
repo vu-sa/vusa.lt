@@ -42,37 +42,51 @@
           </Select>
         </FormFieldWrapper>
 
-        <!-- Category and Language -->
-        <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="category" :label="$t('Kategorija')" required :error="form.errors.category_id"
-            :valid="form.valid('category_id')" :invalid="form.invalid('category_id')">
-            <Select v-model="form.category_id" @update:model-value="form.validate('category_id')">
-              <SelectTrigger id="category">
-                <SelectValue :placeholder="$t('Pasirinkti kategoriją...')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="category in categories" :key="category.id" :value="category.id">
-                  {{ category.name }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </FormFieldWrapper>
+        <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang"
+          :valid="form.valid('lang')" :invalid="form.invalid('lang')">
+          <ToggleGroup v-model="form.lang" type="single" class="justify-start"
+            @update:model-value="form.validate('lang')">
+            <ToggleGroupItem value="lt" class="gap-2">
+              <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
+              Lietuvių
+            </ToggleGroupItem>
+            <ToggleGroupItem value="en" class="gap-2">
+              <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
+              English
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </FormFieldWrapper>
 
-          <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang"
-            :valid="form.valid('lang')" :invalid="form.invalid('lang')">
-            <ToggleGroup v-model="form.lang" type="single" class="justify-start"
-              @update:model-value="form.validate('lang')">
-              <ToggleGroupItem value="lt" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
-                Lietuvių
-              </ToggleGroupItem>
-              <ToggleGroupItem value="en" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
-                English
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </FormFieldWrapper>
-        </div>
+        <!-- Parent page — drives breadcrumbs, section navigation and child listings; the
+             permalink itself stays flat. -->
+        <FormFieldWrapper id="parent_page" :label="$t('Tėvinis puslapis')" :error="form.errors.parent_id"
+          :hint="$t('Puslapio vieta struktūroje — neturi įtakos nuorodai')"
+          :valid="form.valid('parent_id')" :invalid="form.invalid('parent_id')">
+          <CollectionSelectDialog
+            v-model:open="parentDialogOpen"
+            collection="pages"
+            allow-empty
+            :base-filter-by="parentBaseFilterBy"
+            :disabled-ids="parentDisabledIds"
+            :initial-hits="parentInitialHits"
+            :title="$t('Tėvinis puslapis')"
+            :confirm-label="$t('Pasirinkti')"
+            :search-placeholder="$t('Ieškoti puslapio pagal pavadinimą...')"
+            :empty-message="$t('Puslapių nerasta')"
+            @confirm="onParentConfirm"
+          >
+            <template #trigger>
+              <Button type="button" variant="outline" class="w-full justify-between font-normal">
+                <span class="truncate" :class="{ 'text-muted-foreground': !form.parent_id }">
+                  {{ selectedParentLabel }}
+                </span>
+                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+              </Button>
+            </template>
+          </CollectionSelectDialog>
+        </FormFieldWrapper>
+
+        <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
 
         <!-- Other Language Page -->
         <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos puslapis')"
@@ -264,6 +278,7 @@ import PermalinkField from './PermalinkField.vue';
 import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 import SEOPreview from './SEOPreview.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
 
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
@@ -284,9 +299,11 @@ import { ImageUpload } from '@/Components/ui/upload';
 import IFluentWarning24Regular from '~icons/fluent/warning24-regular';
 
 const props = defineProps<{
-  categories: App.Entities.Category[];
-  page: App.Entities.Page;
+  // `descendant_ids` is server-computed (Page::descendantIds()), not a real relation —
+  // it disables invalid parent-picker options and has no model-typer equivalent.
+  page: App.Entities.Page & { descendant_ids?: number[] };
   otherLangPages?: App.Entities.Page[];
+  availableTags?: App.Entities.Tag[];
   /** Tenants the user may create pages in — only meaningful (and rendered) on create. */
   assignableTenants?: App.Entities.Tenant[];
   rememberKey?: 'CreatePage';
@@ -376,7 +393,7 @@ const fullPageUrl = computed(() => {
 
 // Section completion states
 const mainInfoComplete = computed(() =>
-  (form.title?.length || 0) >= 3 && form.category_id && form.lang,
+  (form.title?.length || 0) >= 3 && form.lang,
 );
 
 // Status header links
@@ -511,6 +528,49 @@ const otherLangInitialHits = computed<NormalizedSearchHit[]>(() => {
 
 function onOtherLangPageConfirm(hits: NormalizedSearchHit[]) {
   form.other_lang_id = hits[0] ? Number(hits[0].recordId) : null;
+}
+
+const parentDialogOpen = ref(false);
+
+// Bridge: the dialog stores parent_id; this local label tracks the current selection
+// without needing a full candidate-page list from the server (unlike other_lang_id
+// above — a picker scoped by the form's own reactive lang/tenant needs no such list).
+const parentLabel = ref<string | null>(props.page.parent?.title ?? null);
+
+const selectedParentLabel = computed(() => parentLabel.value ?? `-- ${$t('Nepasirinkta')} --`);
+
+// Same lang + tenant as this page — ValidPageParent enforces this server-side too.
+const parentBaseFilterBy = computed(() => {
+  const parts: string[] = [];
+  if (form.tenant_id) {
+    parts.push(`tenant_ids:[${form.tenant_id}]`);
+  }
+  parts.push(`lang:=${form.lang}`);
+  return parts.join(' && ');
+});
+
+// A page cannot become its own parent, nor hang off one of its own descendants
+// (a cycle) — also enforced server-side, this just keeps the picker from offering
+// an option that would only bounce back as a validation error.
+const parentDisabledIds = computed<Set<string>>(() => {
+  const ids = [props.page.id, ...(props.page.descendant_ids ?? [])].filter((id): id is number => id != null);
+  return new Set(ids.map(id => `pages-${id}`));
+});
+
+const parentInitialHits = computed<NormalizedSearchHit[]>(() => {
+  if (!form.parent_id || !props.page.parent) {
+    return [];
+  }
+  return [normalizeHit('pages', {
+    id: props.page.parent.id,
+    title: props.page.parent.title,
+    tenant_name: props.page.tenant?.shortname,
+  })];
+});
+
+function onParentConfirm(hits: NormalizedSearchHit[]) {
+  form.parent_id = hits[0] ? Number(hits[0].recordId) : null;
+  parentLabel.value = hits[0]?.title ?? null;
 }
 
 // Date/time picker compatibility

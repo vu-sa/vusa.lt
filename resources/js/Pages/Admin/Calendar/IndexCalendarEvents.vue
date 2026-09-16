@@ -6,19 +6,27 @@
     @sorting-changed="handleSortingChange"
     @page-changed="handlePageChange"
     @filter-changed="handleFilterChange"
-  />
+  >
+    <template #headerActions>
+      <Button variant="outline" :class="{ 'border-primary text-primary': isUntyped }" class="gap-1.5" @click="toggleUntyped">
+        <TagIcon class="h-4 w-4" />
+        {{ $t('Be tipo') }}
+      </Button>
+    </template>
+  </IndexTablePage>
 </template>
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { CalendarPlus } from 'lucide-vue-next';
+import { CalendarPlus, Tag as TagIcon } from 'lucide-vue-next';
 
 import type { IndexTablePageInstance,
   IndexTablePageProps } from '@/Types/TableConfigTypes';
-import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
+import { Button } from '@/Components/ui/button';
+import { DateCell, TruncatedBadge, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
 import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
 import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import { createTenantColumn } from '@/Composables/useDataTableColumns';
@@ -37,12 +45,26 @@ const props = defineProps<{
       to: number;
     };
   };
-  allCategories: App.Entities.Category[];
+  eventTypes: App.Entities.EventType[];
   filters?: Record<string, any>;
   sorting?: { id: string; desc: boolean }[];
   showDeleted?: boolean;
   deletedCount?: number;
+  untyped?: boolean;
 }>();
+
+const isUntyped = computed(() => !!props.untyped);
+
+/**
+ * The backfill review queue: a dedicated query param rather than a Tanstack column
+ * filter, since "no type" has no value to filter by (see IndexCalendarRequest::getUntyped()).
+ */
+function toggleUntyped() {
+  router.get(route('calendar.index'), {
+    ...(props.filters ?? {}),
+    untyped: isUntyped.value ? undefined : 'true',
+  }, { preserveState: true, replace: true });
+}
 
 const modelName = 'calendar';
 const entityName = 'calendar';
@@ -106,14 +128,16 @@ const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
     enableSorting: true,
   },
   {
-    id: 'category',
-    header: () => $t('Kategorija'),
+    id: 'event_type',
+    header: () => $t('Renginio tipas'),
     cell: ({ row }) => {
-      const { category } = row.original;
-      if (!category) return null;
-      const name = typeof category.name === 'object' && category.name !== null
-        ? ((category.name as any).lt || (category.name as any).en || '-')
-        : category.name;
+      const eventType = row.original.event_type;
+      if (!eventType) {
+        return h(TruncatedBadge, { text: $t('Be tipo'), variant: 'destructive' });
+      }
+      const name = typeof eventType.name === 'object' && eventType.name !== null
+        ? ((eventType.name as any).lt || (eventType.name as any).en || '-')
+        : eventType.name;
       return h(TruncatedText, { text: name });
     },
     size: 150,

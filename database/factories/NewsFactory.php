@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\News;
@@ -64,7 +63,6 @@ class NewsFactory extends Factory
         return [
             'title' => $this->faker->sentence(),
             'permalink' => fn () => 'news-'.Str::uuid()->toString(),
-            'category_id' => Category::inRandomOrder()->select('id')->first()->id,
             'short' => $this->faker->paragraph(1),
             'content_id' => Content::factory(),
             'image' => '/images/placeholders/foto'.rand(1, 5).'.jpg',

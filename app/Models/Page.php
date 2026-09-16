@@ -7,11 +7,14 @@ use App\Enums\PageLayoutEnum;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\PublicUrlService;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -30,7 +33,8 @@ use Spatie\Sitemap\Tags\Url;
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
- * @property int|null $category_id
+ * @property int|null $parent_id
+ * @property int $sort_order
  * @property bool $is_active
  * @property array<array-key, mixed>|null $highlights
  * @property string $layout
@@ -46,19 +50,21 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $last_edited_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Category|null $category
+ * @property-read Collection<int, Page> $children
  * @property-read Content $content
  * @property-read Page|null $otherLanguagePage
+ * @property-read Page|null $parent
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\PageFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Page withoutTrashed()
+ * @method static Builder<static>|Page newModelQuery()
+ * @method static Builder<static>|Page newQuery()
+ * @method static Builder<static>|Page onlyTrashed()
+ * @method static Builder<static>|Page query()
+ * @method static Builder<static>|Page withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Page withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -141,6 +147,12 @@ class Page extends Model implements Feedable, Sitemapable
             // stops linking to a page that is no longer public. This page keeps its own
             // pointer, which is what lets the pairing be re-established on restore.
             PairTranslatedRecord::releaseCounterpart($page);
+
+            if ($page->isForceDeleting()) {
+                // taggable_id/taggable_type is polymorphic, so no DB-level FK can cascade
+                // this side — detach explicitly or the pivot row orphans.
+                $page->tags()->detach();
+            }
         });
 
         static::restored(function (Page $page): void {
@@ -231,9 +243,70 @@ class Page extends Model implements Feedable, Sitemapable
         return $this->otherLanguagePage;
     }
 
-    public function category(): BelongsTo
+    public function parent(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(Page::class, 'parent_id');
+    }
+
+    /** @return HasMany<Page, $this> */
+    public function children(): HasMany
+    {
+        return $this->hasMany(Page::class, 'parent_id')->orderBy('sort_order');
+    }
+
+    /**
+     * Ancestor chain from the root down to (not including) this page, for breadcrumbs.
+     * Walked one hop at a time rather than a recursive relation — ValidPageParent caps
+     * every chain at 3 levels, so this is at most two extra queries.
+     *
+     * @return list<Page>
+     */
+    public function ancestors(): array
+    {
+        $chain = [];
+        $node = $this->parent;
+
+        while ($node !== null) {
+            $chain[] = $node;
+            $node = $node->parent;
+        }
+
+        return array_reverse($chain);
+    }
+
+    /**
+     * Ids of every descendant in this page's subtree, trashed ones included. Used by
+     * ValidPageParent to reject a candidate parent that would create a cycle.
+     *
+     * Walked iteratively, mirroring Navigation::descendantIds() — a recursive relation
+     * would N+1 one query per level instead of one query per subtree layer.
+     *
+     * @return list<int>
+     */
+    public function descendantIds(): array
+    {
+        $ids = [];
+        $frontier = [$this->id];
+
+        while (true) {
+            $children = static::withTrashed()
+                ->whereIn('parent_id', $frontier)
+                ->whereNotIn('id', [...$ids, $this->id])
+                ->pluck('id')
+                ->all();
+
+            if ($children === []) {
+                return $ids;
+            }
+
+            $ids = array_merge($ids, $children);
+            $frontier = $children;
+        }
+    }
+
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
     }
 
     /** @return BelongsTo<Content, $this> */
@@ -302,6 +375,20 @@ class Page extends Model implements Feedable, Sitemapable
             ->get();
     }
 
+    /**
+     * No return type declared: matches Searchable::makeAllSearchableUsing()'s own signature
+     * exactly. PublicPage re-declares `use Searchable;` on its own class body, which flattens
+     * the trait's method back in as PublicPage's own — an incompatible signature here (e.g. a
+     * declared return type the trait doesn't have) makes that redeclaration a fatal LSP error.
+     *
+     * @param  Builder<Page>  $query
+     * @return Builder<Page>
+     */
+    protected function makeAllSearchableUsing(Builder $query)
+    {
+        return $query->with(['tenant', 'tags']);
+    }
+
     public function toSearchableArray(): array
     {
         return [
@@ -313,7 +400,7 @@ class Page extends Model implements Feedable, Sitemapable
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
-            'category_name' => $this->category?->name,
+            'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at->timestamp,
         ];

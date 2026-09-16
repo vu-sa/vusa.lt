@@ -1,7 +1,6 @@
 <?php
 
 use App\Feed\FeedHtml;
-use App\Models\Category;
 use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Tag;
@@ -20,15 +19,12 @@ beforeEach(function (): void {
             'fullname' => 'Vilniaus universiteto Studentų atstovybė',
         ]
     );
-
-    $this->category = Category::factory()->create();
 });
 
 describe('feed rendering', function (): void {
     it('returns RSS 2.0 XML', function (): void {
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $this->category->id,
             'permalink' => 'feed-render-test',
             'title' => 'Feed Render Test',
             'draft' => false,
@@ -51,7 +47,6 @@ describe('feed rendering', function (): void {
     it('includes the full article body in content:encoded', function (): void {
         $news = News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $this->category->id,
             'permalink' => 'full-body-test',
             'title' => 'Full Body Test',
             'short' => 'Short excerpt text',
@@ -80,7 +75,6 @@ describe('feed rendering', function (): void {
 
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $this->category->id,
             'permalink' => 'enclosure-test',
             'title' => 'Enclosure Test',
             'image' => '/images/placeholders/foto1.jpg',
@@ -106,7 +100,6 @@ describe('feed rendering', function (): void {
 
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $this->category->id,
             'permalink' => 'absolute-url-test',
             'title' => 'Absolute URL Test',
             'image' => '/images/placeholders/foto2.jpg',
@@ -126,7 +119,6 @@ describe('feed rendering', function (): void {
 
         $news = News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $this->category->id,
             'permalink' => 'tags-author-test',
             'title' => 'Tags Author Test',
             'draft' => false,
@@ -146,7 +138,6 @@ describe('feed rendering', function (): void {
     it('emits an alternate-language link for translated articles', function (): void {
         $lt = News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $this->category->id,
             'permalink' => 'lang-pair-lt',
             'title' => 'LT version',
             'draft' => false,
@@ -156,7 +147,6 @@ describe('feed rendering', function (): void {
 
         $en = News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $this->category->id,
             'permalink' => 'lang-pair-en',
             'title' => 'EN version',
             'draft' => false,
@@ -178,7 +168,6 @@ describe('feed rendering', function (): void {
     it('excludes draft news', function (): void {
         News::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'category_id' => $this->category->id,
             'permalink' => 'draft-hidden',
             'title' => 'Draft Should Be Hidden',
             'draft' => true,

@@ -6,6 +6,7 @@ use App\Enums\CalendarHeroStyleEnum;
 use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Calendar;
+use App\Rules\SoftDeleteRules;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
 use Closure;
@@ -62,6 +63,8 @@ class CalendarRequest extends FormRequest
             'date' => 'required|date',
             'end_date' => 'nullable|date|after:date',
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],
+            'tags' => 'nullable|array',
+            'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
         ];
 
         // Skip file validation during precognitive requests

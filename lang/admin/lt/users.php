@@ -1,8 +1,9 @@
 <?php
 
 return [
-    'identity_locked_tenants' => 'Vardo ir el. pašto keisti negalite: šis asmuo priklauso ir kitiems padaliniams (:tenants). Kreipkitės į tų padalinių arba centrinio biuro administratorius.',
-    'identity_locked_protected' => 'Vardo ir el. pašto keisti negalite: šios paskyros rolė priskirta tiesiogiai. Kreipkitės į centrinio biuro administratorius.',
+    'name_locked' => 'Vardą ir pavardę gali keisti tik sistemos administratoriai arba naudotojas, vieną kartą.',
+    'identity_locked_tenants' => 'El. pašto keisti negalite: šis asmuo priklauso ir kitiems padaliniams (:tenants). Kreipkitės į vusa.lt pagalbą.',
+    'identity_locked_protected' => 'El. pašto keisti negalite: šios paskyros rolė priskirta tiesiogiai. Kreipkitės į centrinio biuro administratorius.',
     'identity_locked_hint' => 'El. paštas naudojamas prisijungimui, todėl jį gali keisti tik administratoriai, kuriems priklauso visi šio asmens padaliniai.',
     'duty_outside_tenant' => 'Negalite priskirti ar pašalinti pareigybių, kurios priklauso kitiems padaliniams: :duties.',
     'cannot_delete_self' => 'Savo paskyros ištrinti negalite.',

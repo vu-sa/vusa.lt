@@ -7,8 +7,8 @@ use App\Http\Requests\ReorderNavigationRequest;
 use App\Http\Requests\StoreNavigationRequest;
 use App\Http\Requests\UpdateNavigationRequest;
 use App\Http\Traits\HandlesSoftDeletes;
-use App\Models\Category;
 use App\Models\Navigation;
+use App\Models\Tag;
 use App\Services\NavigationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -81,7 +81,7 @@ class NavigationController extends AdminController
                 'lang' => $this->resolveLang($request),
                 'location' => $location,
                 'parentElements' => $this->rootElementsForLocation($location),
-                'categoryOptions' => $this->getCategoryOptions(),
+                'topicOptions' => $this->getTopicOptions(),
             ]
         );
     }
@@ -128,7 +128,7 @@ class NavigationController extends AdminController
         return $this->inertiaResponse('Admin/Navigation/EditNavigation', [
             'navigationElement' => $navigation,
             'parentElements' => $this->rootElementsForLocation($location)->where('lang', $navigation->lang)->values(),
-            'categoryOptions' => $this->getCategoryOptions(),
+            'topicOptions' => $this->getTopicOptions(),
         ]);
     }
 
@@ -246,19 +246,19 @@ class NavigationController extends AdminController
     }
 
     /**
-     * Categories aren't Typesense-searchable (7 rows repo-wide, not worth indexing —
-     * see AGENTS.md), so the form's link-target picker falls back to a plain list here
+     * Topics aren't Typesense-searchable (a few dozen rows repo-wide, not worth indexing
+     * — see AGENTS.md), so the form's link-target picker falls back to a plain list here
      * instead of the multi-collection search dialog used for pages/news/etc.
      *
      * @return array<int, array{id: int, name: string, alias: string|null}>
      */
-    private function getCategoryOptions(): array
+    private function getTopicOptions(): array
     {
-        return Category::query()->get(['id', 'name', 'alias'])
-            ->map(fn (Category $category): array => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'alias' => $category->alias,
+        return Tag::query()->topics()->orderBy('sort_order')->get(['id', 'name', 'alias'])
+            ->map(fn (Tag $tag): array => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'alias' => $tag->alias,
             ])
             ->all();
     }

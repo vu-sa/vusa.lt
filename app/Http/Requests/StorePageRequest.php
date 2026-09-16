@@ -8,6 +8,7 @@ use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Page;
 use App\Rules\SoftDeleteRules;
+use App\Rules\ValidPageParent;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
@@ -39,7 +40,10 @@ class StorePageRequest extends FormRequest
             ...$this->contentPartRules(),
             'title' => 'required|string|max:255',
             'lang' => ['required', new Enum(LocaleEnum::class)],
-            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
+            'parent_id' => [
+                'nullable', 'integer', SoftDeleteRules::existsLive('pages'),
+                new ValidPageParent(lang: (string) $this->input('lang'), tenantId: $this->filled('tenant_id') ? (int) $this->input('tenant_id') : null),
+            ],
             'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages')],
             'is_active' => 'required|boolean',
             'layout' => ['nullable', new Enum(PageLayoutEnum::class)],
@@ -47,6 +51,8 @@ class StorePageRequest extends FormRequest
             'show_title' => ['boolean'],
             'show_breadcrumbs' => ['boolean'],
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('pages.create.padalinys')],
+            'tags' => 'nullable|array',
+            'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
         ];
     }
 

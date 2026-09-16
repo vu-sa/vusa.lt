@@ -3,6 +3,8 @@
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Models\Calendar;
+use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
@@ -209,6 +211,24 @@ describe('homepage', function (): void {
                 ->where('publicEditLink.url', route('tenants.editMainPage', $this->tenant))
                 ->where('publicEditLink.type', 'homepage')
                 ->where('publicEditLink.id', $this->tenant->id));
+    });
+
+    test('a tenant editor gets the tenant homepage link when main content is shown as fallback', function (): void {
+        $mainContent = Content::factory()->create();
+        ContentPart::factory()->for($mainContent)->create();
+        $this->tenant->homepageContents()->create(['content_id' => $mainContent->id, 'locale' => 'lt']);
+
+        $otherTenant = Tenant::factory()->create(['alias' => 'edit-link-tenant']);
+        $tenantEditor = makeTenantUserWithRole('Communication Coordinator', $otherTenant);
+
+        asUser($tenantEditor)
+            ->get(route('home', ['subdomain' => $otherTenant->alias, 'lang' => 'lt']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $props) => $props
+                ->where('content.id', $mainContent->id)
+                ->where('publicEditLink.url', route('tenants.editMainPage', $otherTenant))
+                ->where('publicEditLink.type', 'homepage')
+                ->where('publicEditLink.id', $otherTenant->id));
     });
 });
 

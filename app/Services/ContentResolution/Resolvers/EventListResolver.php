@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 /**
  * Resolves `event-list` blocks: a filtered, optionally tenant-grouped list of Calendar
  * events (see RCEventList/EventListDisplay.vue). Modeled on
- * `PublicPageController::summerCamps()` — the `year` + `freshmen-camps` category +
+ * `PublicPageController::summerCamps()` — the `year` + `stovykla` event type +
  * tenant-grouping combination this block generalizes.
  */
 final class EventListResolver implements ResolvesContentPart
@@ -52,9 +52,9 @@ final class EventListResolver implements ResolvesContentPart
         // fullname.
         $tenantLabelStyle = ($options['tenantLabelStyle'] ?? 'full') === 'faculty' ? 'faculty' : 'full';
 
-        $alias = $options['categoryAlias'] ?? null;
+        $slug = $options['eventTypeSlug'] ?? null;
         $query = Calendar::query()->published()->forLocale($context->locale)
-            ->inCategoryAlias(is_string($alias) && $alias !== '' ? $alias : null)
+            ->ofEventType(is_string($slug) && $slug !== '' ? $slug : null)
             ->with(['media', 'tenant:id,alias,fullname,shortname']);
 
         $tenantScope = $options['tenantScope'] ?? 'current';

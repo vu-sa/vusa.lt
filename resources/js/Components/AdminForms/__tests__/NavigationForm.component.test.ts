@@ -99,7 +99,7 @@ function createWrapper(props: Record<string, unknown> = {}) {
         extra_attributes: {},
       },
       parentElements: [],
-      categoryOptions: [{ id: 5, name: 'Renginiai', alias: 'renginiai' }],
+      topicOptions: [{ id: 5, name: 'Renginiai', alias: 'renginiai' }],
       ...props,
     },
     global: { stubs: formStubs },
@@ -187,17 +187,17 @@ describe('NavigationForm.vue', () => {
     expect((urlInput.element as HTMLInputElement).value).toBe('/lt/stipendijos-ir-parama');
   });
 
-  it('fills the url after picking a category', async () => {
+  it('fills the url after picking a topic', async () => {
     wrapper = createWrapper();
-    resolveUrlData.value = { url: '/lt/kategorija/renginiai' };
+    resolveUrlData.value = { url: '/lt/tema/renginiai' };
 
-    const categorySelect = wrapper.findAll('select').find(s => s.findAll('option').some(o => o.text() === 'Renginiai'));
-    await categorySelect?.setValue('5');
+    const topicSelect = wrapper.findAll('select').find(s => s.findAll('option').some(o => o.text() === 'Renginiai'));
+    await topicSelect?.setValue('5');
     await wrapper.vm.$nextTick();
 
     expect(executeResolveUrl).toHaveBeenCalled();
     const urlInput = wrapper.find('#url');
-    expect((urlInput.element as HTMLInputElement).value).toBe('/lt/kategorija/renginiai');
+    expect((urlInput.element as HTMLInputElement).value).toBe('/lt/tema/renginiai');
   });
 
   describe('footer mode', () => {

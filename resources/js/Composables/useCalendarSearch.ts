@@ -17,8 +17,8 @@ export interface CalendarEventDocument {
   tenant_ids?: number[];
   tenant_name?: string;
   tenant_shortname?: string;
-  category_id?: number | null;
-  category_name?: string | null;
+  event_type_id?: number | null;
+  event_type_name?: string | null;
   location?: string | null;
   is_all_day?: boolean;
   is_remote?: boolean;
@@ -56,7 +56,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
 
   const query = ref('');
   const tab = ref<CalendarSearchTab>(options.initialTab ?? 'upcoming');
-  const selectedCategories = ref<string[]>([]);
+  const selectedEventTypes = ref<string[]>([]);
   const selectedTenants = ref<string[]>([]);
   const selectedYears = ref<string[]>([]);
   const isRemoteOnly = ref(false);
@@ -70,7 +70,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
   const error = ref<string | null>(null);
 
   // Facets
-  const categoryFacets = ref<FacetOption[]>([]);
+  const eventTypeFacets = ref<FacetOption[]>([]);
   const tenantFacets = ref<FacetOption[]>([]);
   const yearFacets = ref<FacetOption[]>([]);
 
@@ -81,13 +81,13 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
   const hasMore = computed(() => events.value.length < totalHits.value);
   const hasActiveFilters = computed(() =>
     Boolean(query.value.trim())
-    || selectedCategories.value.length > 0
+    || selectedEventTypes.value.length > 0
     || selectedTenants.value.length > 0
     || selectedYears.value.length > 0
     || isRemoteOnly.value,
   );
   const activeFilterCount = computed(() =>
-    selectedCategories.value.length
+    selectedEventTypes.value.length
     + selectedTenants.value.length
     + selectedYears.value.length
     + (isRemoteOnly.value ? 1 : 0),
@@ -125,10 +125,10 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
       conditions.push('is_international:=true');
     }
 
-    // Category filter
-    if (selectedCategories.value.length > 0) {
-      const escaped = selectedCategories.value.map(c => `\`${c.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
-      conditions.push(`category_name:=[${escaped}]`);
+    // Event type filter
+    if (selectedEventTypes.value.length > 0) {
+      const escaped = selectedEventTypes.value.map(c => `\`${c.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
+      conditions.push(`event_type_name:=[${escaped}]`);
     }
 
     // Tenant filter
@@ -156,8 +156,8 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
 
     if (tab.value !== 'upcoming') params.set('tab', tab.value);
     if (query.value.trim()) params.set('q', query.value.trim());
-    if (selectedCategories.value.length > 0) {
-      params.set('category', selectedCategories.value.join(','));
+    if (selectedEventTypes.value.length > 0) {
+      params.set('type', selectedEventTypes.value.join(','));
     }
     if (selectedTenants.value.length > 0) {
       params.set('tenant', selectedTenants.value.join(','));
@@ -190,9 +190,9 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
       query.value = searchParam;
     }
 
-    const categoryParam = params.get('category');
-    if (categoryParam) {
-      selectedCategories.value = categoryParam.split(',').filter(Boolean);
+    const typeParam = params.get('type');
+    if (typeParam) {
+      selectedEventTypes.value = typeParam.split(',').filter(Boolean);
     }
 
     const tenantParam = params.get('tenant');
@@ -220,8 +220,8 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     if (!facetCounts) return;
 
     for (const facet of facetCounts) {
-      if (facet.field_name === 'category_name') {
-        categoryFacets.value = facet.counts.map(c => ({
+      if (facet.field_name === 'event_type_name') {
+        eventTypeFacets.value = facet.counts.map(c => ({
           label: c.value,
           value: c.value,
           count: c.count,
@@ -285,7 +285,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
       query_by_weights: '10,8,8,3,2',
       filter_by: filterConditions.join(' && '),
       sort_by: sortExpression,
-      facet_by: 'category_name,tenant_shortname,year',
+      facet_by: 'event_type_name,tenant_shortname,year',
       max_facet_values: 50,
       per_page: perPage,
       page: targetPage,
@@ -338,7 +338,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
   });
 
   // Watch filters and tab with immediate search
-  watch([tab, selectedCategories, selectedTenants, selectedYears, isRemoteOnly, sortBy], () => {
+  watch([tab, selectedEventTypes, selectedTenants, selectedYears, isRemoteOnly, sortBy], () => {
     performSearch(false);
   }, { deep: true });
 
@@ -347,13 +347,13 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     tab.value = newTab;
   };
 
-  const toggleCategory = (categoryName: string) => {
-    const idx = selectedCategories.value.indexOf(categoryName);
+  const toggleEventType = (eventTypeName: string) => {
+    const idx = selectedEventTypes.value.indexOf(eventTypeName);
     if (idx >= 0) {
-      selectedCategories.value.splice(idx, 1);
+      selectedEventTypes.value.splice(idx, 1);
     }
     else {
-      selectedCategories.value.push(categoryName);
+      selectedEventTypes.value.push(eventTypeName);
     }
   };
 
@@ -389,7 +389,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
 
   const clearFilters = () => {
     query.value = '';
-    selectedCategories.value = [];
+    selectedEventTypes.value = [];
     selectedTenants.value = [];
     selectedYears.value = [];
     isRemoteOnly.value = false;
@@ -418,7 +418,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
   return {
     query,
     tab,
-    selectedCategories,
+    selectedEventTypes,
     selectedTenants,
     selectedYears,
     isRemoteOnly,
@@ -431,12 +431,12 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     hasMore,
     hasActiveFilters,
     activeFilterCount,
-    categoryFacets,
+    eventTypeFacets,
     tenantFacets,
     yearFacets,
     error,
     setTab,
-    toggleCategory,
+    toggleEventType,
     toggleTenant,
     toggleYear,
     toggleRemote,

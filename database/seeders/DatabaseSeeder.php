@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Banner;
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Document;
@@ -34,18 +33,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call(CategoriesSeeder::class);
         $this->call(AdminSeeder::class);
         $this->call(TenantSeeder::class);
         $this->call(StudySetSeeder::class);
         $this->call(TypeSeeder::class);
+        $this->call(EventTypeSeeder::class);
         $this->call(MemberRegistrationFormSeeder::class);
 
         // Generate Typesense search key if needed
         $this->generateTypesenseSearchKey();
 
         $tenants = Tenant::all();
-        $categories = Category::all();
 
         // Create main page content for the pagrindinis tenant
         $this->createMainPageContent();
@@ -81,7 +79,7 @@ class DatabaseSeeder extends Seeder
         $this->call(DeleteAndSeedPermissions::class);
 
         Banner::factory(20)->recycle($tenants)->create();
-        Calendar::factory(50)->recycle($tenants)->recycle($categories)->create();
+        Calendar::factory(50)->recycle($tenants)->create();
         News::factory(75)->recycle($tenants)->create();
         Page::factory(75)->recycle($tenants)->create();
 

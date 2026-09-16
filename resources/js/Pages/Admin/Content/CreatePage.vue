@@ -7,7 +7,7 @@
       <PageForm
         remember-key="CreatePage"
         :page
-        :categories
+        :available-tags
         :assignable-tenants
         :submit-url="route('pages.store')"
         submit-method="post"
@@ -23,18 +23,19 @@ import PageForm from '@/Components/AdminForms/PageForm.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
-  categories: App.Entities.Category[];
+  availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
 }>();
 
 const page = {
   title: '',
-  category_id: null,
+  parent_id: null,
   permalink: '',
   lang: 'lt',
   other_lang_page: null,
   tenant_id: null,
   is_active: true,
+  tags: [],
   content: {
     parts: [
       {

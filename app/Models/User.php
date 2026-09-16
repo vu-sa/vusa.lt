@@ -11,6 +11,7 @@ use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUIPreferences;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
+use App\Services\ContactSearchIndexSynchronizer;
 use App\Services\NotificationRouter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -221,6 +222,7 @@ class User extends Authenticatable implements GuardsForceDelete
         return app(NotificationRouter::class)->routeForMail($this, $notification);
     }
 
+    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
     public function duties(): MorphToMany
     {
         return $this->morphToMany(Duty::class, 'dutiable')
@@ -238,19 +240,33 @@ class User extends Authenticatable implements GuardsForceDelete
             ->withTimestamps();
     }
 
-    // this needs more debugging. don't use with withWhereHas
-    // TODO: implement current_duties where appropriate
     /**
-     * @return MorphToMany<Duty, $this>
+     * @return MorphToMany<Duty, $this, Dutiable, 'pivot'>
      */
     public function current_duties(): MorphToMany
     {
         return $this->duties()
             ->where(function ($query): void {
-                $query->whereNull('dutiables.end_date')
-                    ->orWhere('dutiables.end_date', '>=', now());
+                $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
+                    ->where(function ($q): void {
+                        $q->whereNull('dutiables.end_date')
+                            ->orWhere('dutiables.end_date', '>=', now());
+                    });
             })
             ->withTimestamps();
+    }
+
+    #[\Override]
+    protected static function booted(): void
+    {
+        static::saved(function (User $user): void {
+            if ($user->wasChanged(['name', 'profile_photo_path', 'profile_photo_focal_point'])) {
+                app(ContactSearchIndexSynchronizer::class)->userChanged($user);
+            }
+        });
+
+        static::deleted(fn (User $user) => app(ContactSearchIndexSynchronizer::class)->userChanged($user));
+        static::restored(fn (User $user) => app(ContactSearchIndexSynchronizer::class)->userChanged($user));
     }
 
     /** @return MorphMany<Dutiable, $this> */

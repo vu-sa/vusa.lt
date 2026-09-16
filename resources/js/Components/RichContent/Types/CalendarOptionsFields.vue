@@ -2,8 +2,8 @@
   <div class="flex flex-col gap-4">
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <Field>
-        <FieldLabel>{{ $t('rich-content.category_alias') }}</FieldLabel>
-        <RCCategoryAliasSelect :model-value="options?.categoryAlias" @update:model-value="(v) => patchOptions({ categoryAlias: v })" />
+        <FieldLabel>{{ $t('rich-content.event_type') }}</FieldLabel>
+        <RCEventTypeSelect :model-value="options?.eventTypeSlug" @update:model-value="(v) => patchOptions({ eventTypeSlug: v })" />
       </Field>
       <Field>
         <FieldLabel>{{ $t('rich-content.limit') }}</FieldLabel>
@@ -21,8 +21,8 @@
 
 <script setup lang="ts">
 /**
- * `calendar`'s fetch-configuration fields — how many events (`limit`), from which
- * category (`categoryAlias`), and which tenants (`tenantScope`). Shared between
+ * `calendar`'s fetch-configuration fields — how many events (`limit`), of which event
+ * type (`eventTypeSlug`), and which tenants (`tenantScope`). Shared between
  * `CalendarEditor.vue` (the regular side form) and `CalendarBlockToolbar.vue`'s
  * full-screen options popover, so both surfaces offer the same controls in one place
  * rather than scattering them.
@@ -33,7 +33,7 @@
  */
 import { trans as $t } from 'laravel-vue-i18n';
 
-import RCCategoryAliasSelect from '../Editor/RCCategoryAliasSelect.vue';
+import RCEventTypeSelect from '../Editor/RCEventTypeSelect.vue';
 import RCTenantMultiSelect from '../Editor/RCTenantMultiSelect.vue';
 
 import type { Calendar } from '@/Types/contentParts';

@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Calendar;
-use App\Models\Category;
+use App\Models\EventType;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -19,10 +19,7 @@ beforeEach(function (): void {
         ]
     );
 
-    $this->campCategory = Category::firstOrCreate(
-        ['alias' => 'freshmen-camps'],
-        ['name' => ['lt' => 'Pirmakursių stovyklos', 'en' => 'Freshmen camps']]
-    );
+    $this->campEventType = EventType::query()->where('slug', 'stovykla')->firstOrFail();
 
     $this->faculty = Tenant::firstOrCreate(
         ['alias' => 'mif'],
@@ -46,7 +43,7 @@ function summerCampsUrl(?int $year = null): string
 
 test('camp cards receive the location, which the page shows', function (): void {
     Calendar::factory()->create([
-        'category_id' => $this->campCategory->id,
+        'event_type_id' => $this->campEventType->id,
         'tenant_id' => $this->faculty->id,
         'date' => now()->setMonth(8)->setDay(20),
         'location' => ['lt' => 'Molėtų r., Kulionių k.', 'en' => 'Molėtai district'],
@@ -64,14 +61,14 @@ test('camp cards receive the location, which the page shows', function (): void 
 
 test('a faculty running two camps gets both of them, in chronological order', function (): void {
     $later = Calendar::factory()->create([
-        'category_id' => $this->campCategory->id,
+        'event_type_id' => $this->campEventType->id,
         'tenant_id' => $this->faculty->id,
         'date' => now()->setMonth(8)->setDay(28)->startOfDay(),
         'end_date' => now()->setMonth(8)->setDay(30)->startOfDay(),
     ]);
 
     $earlier = Calendar::factory()->create([
-        'category_id' => $this->campCategory->id,
+        'event_type_id' => $this->campEventType->id,
         'tenant_id' => $this->faculty->id,
         'date' => now()->setMonth(8)->setDay(20)->startOfDay(),
         'end_date' => now()->setMonth(8)->setDay(22)->startOfDay(),
@@ -89,7 +86,7 @@ test('a faculty running two camps gets both of them, in chronological order', fu
 
 test('camps are grouped so that every event carries its tenant', function (): void {
     Calendar::factory()->create([
-        'category_id' => $this->campCategory->id,
+        'event_type_id' => $this->campEventType->id,
         'tenant_id' => $this->faculty->id,
         'date' => now()->setMonth(8)->setDay(20),
     ]);
@@ -131,7 +128,7 @@ test('camp and unit counts are pluralised in English', function (): void {
 
 test('the heavy description is not shipped to the camp cards', function (): void {
     Calendar::factory()->create([
-        'category_id' => $this->campCategory->id,
+        'event_type_id' => $this->campEventType->id,
         'tenant_id' => $this->faculty->id,
         'date' => now()->setMonth(8)->setDay(20),
     ]);

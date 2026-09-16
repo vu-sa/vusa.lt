@@ -1,11 +1,11 @@
 <?php
 
-use App\Models\Category;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Navigation;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tiptap\Editor;
@@ -201,36 +201,48 @@ test('page with navigation item renders successfully', function (): void {
     );
 });
 
-test('page with category renders successfully', function (): void {
-    $category = Category::factory()->create([
-        'name' => 'Test Category',
-        'alias' => 'test-category',
-    ]);
-
+test('page with children renders section listing', function (): void {
     $content = Content::factory()->create();
     ContentPart::factory()->create([
         'content_id' => $content->id,
         'type' => 'tiptap',
-        'json_content' => (new Editor)->setContent('<p>Category page content</p>')->getDocument(),
+        'json_content' => (new Editor)->setContent('<p>Parent page content</p>')->getDocument(),
     ]);
 
-    $page = Page::factory()->create([
-        'title' => 'Category Test Page',
-        'permalink' => 'category-test-page',
+    $parent = Page::factory()->create([
+        'title' => 'Parent Page',
+        'permalink' => 'parent-page',
         'tenant_id' => $this->tenant->id,
         'content_id' => $content->id,
-        'category_id' => $category->id,
-        'is_active' => true, // Ensure page is active for public access
+        'is_active' => true,
     ]);
 
-    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'category-test-page']));
+    $child = Page::factory()->create([
+        'title' => 'Child Page',
+        'permalink' => 'child-page',
+        'tenant_id' => $this->tenant->id,
+        'parent_id' => $parent->id,
+        'is_active' => true,
+    ]);
+
+    // An inactive child must not appear in the listing.
+    Page::factory()->create([
+        'title' => 'Inactive Child',
+        'permalink' => 'inactive-child',
+        'tenant_id' => $this->tenant->id,
+        'parent_id' => $parent->id,
+        'is_active' => false,
+    ]);
+
+    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => 'parent-page']));
 
     $response->assertStatus(200);
     $response->assertInertia(
         fn (Assert $page) => $page
             ->component('Public/ContentPage')
-            ->where('page.title', 'Category Test Page')
-            ->where('page.category.id', $category->id)
+            ->where('page.title', 'Parent Page')
+            ->has('page.children', 1)
+            ->where('page.children.0.title', $child->title)
     );
 });
 
@@ -405,3 +417,58 @@ test('pkp page renders ContentPage with institution-list content', function (): 
             ->has('resolvedParts')
     );
 });
+
+test('categoryRedirect permanently redirects legacy category URLs on www', function (): void {
+    $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'stipendijos'], 'lt'))
+        ->assertStatus(301)
+        ->assertRedirect(LocalizedRouteSlugs::route('topic', ['tag' => 'finansine-parama-stipendijos'], 'lt'));
+
+    $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'freshmen-camps'], 'lt'))
+        ->assertStatus(301)
+        ->assertRedirect(LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], 'lt'));
+
+    $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'non-existent-category'], 'lt'))
+        ->assertNotFound();
+});
+
+test('categoryRedirect permanently redirects legacy category URLs on tenant subdomains to www', function (): void {
+    Tenant::factory()->create(['alias' => 'mif']);
+
+    $this->get(LocalizedRouteSlugs::route('tenant.category', ['subdomain' => 'mif', 'alias' => 'freshmen-camps'], 'lt'))
+        ->assertStatus(301)
+        ->assertRedirect(LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], 'lt'));
+});
+
+test('contentPage includes hierarchical ancestors in page prop', function (): void {
+    $rootContent = Content::factory()->create();
+    $rootPage = Page::factory()->create([
+        'title' => 'Tėvinis puslapis',
+        'permalink' => 'tevinis-puslapis',
+        'tenant_id' => $this->tenant->id,
+        'content_id' => $rootContent->id,
+        'is_active' => true,
+    ]);
+
+    $childContent = Content::factory()->create();
+    $childPage = Page::factory()->create([
+        'title' => 'Vaikinis puslapis',
+        'permalink' => 'vaikinis-puslapis',
+        'tenant_id' => $this->tenant->id,
+        'content_id' => $childContent->id,
+        'parent_id' => $rootPage->id,
+        'is_active' => true,
+    ]);
+
+    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => $childPage->permalink]));
+
+    $response->assertOk();
+    $response->assertInertia(fn (Assert $page) => $page
+        ->component('Public/ContentPage')
+        ->where('page.title', 'Vaikinis puslapis')
+        ->has('page.ancestors', 1)
+        ->where('page.ancestors.0.id', $rootPage->id)
+        ->where('page.ancestors.0.title', 'Tėvinis puslapis')
+        ->where('page.ancestors.0.permalink', 'tevinis-puslapis')
+    );
+});
+

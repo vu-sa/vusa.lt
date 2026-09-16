@@ -17,8 +17,6 @@ export interface NewsDocument {
   tenant_ids?: number[];
   tenant_name?: string;
   tenant_shortname?: string;
-  category_id?: number | null;
-  category_name?: string | null;
   tag_names?: string[];
   year?: number;
   important?: boolean;
@@ -36,7 +34,6 @@ export type NewsSearchSort = 'relevance' | 'date_desc' | 'date_asc';
 export interface UseNewsSearchOptions {
   initialNews?: NewsItem[];
   initialTotal?: number;
-  initialCategory?: string;
   initialTenant?: string;
   initialTag?: string;
   initialYear?: string;
@@ -54,7 +51,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
   const perPage = options.perPage ?? 15;
 
   const query = ref('');
-  const selectedCategories = ref<string[]>(options.initialCategory ? [options.initialCategory] : []);
   const selectedTenants = ref<string[]>(options.initialTenant ? [options.initialTenant] : []);
   const selectedYears = ref<string[]>(options.initialYear ? [options.initialYear] : []);
   const selectedTags = ref<string[]>(options.initialTag ? [options.initialTag] : []);
@@ -68,7 +64,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
   const error = ref<string | null>(null);
 
   // Facets
-  const categoryFacets = ref<FacetOption[]>([]);
   const tenantFacets = ref<FacetOption[]>([]);
   const yearFacets = ref<FacetOption[]>([]);
   const tagFacets = ref<FacetOption[]>([]);
@@ -80,15 +75,13 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
   const hasMore = computed(() => news.value.length < totalHits.value);
   const hasActiveFilters = computed(() =>
     Boolean(query.value.trim())
-    || selectedCategories.value.length > 0
     || selectedTenants.value.length > 0
     || selectedYears.value.length > 0
     || selectedTags.value.length > 0,
   );
 
   const activeFilterCount = computed(() =>
-    selectedCategories.value.length
-    + selectedTenants.value.length
+    selectedTenants.value.length
     + selectedYears.value.length
     + selectedTags.value.length,
   );
@@ -113,12 +106,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
     // Locale condition
     conditions.push(`lang:=${locale.value}`);
-
-    // Category filter
-    if (selectedCategories.value.length > 0) {
-      const escaped = selectedCategories.value.map(c => `\`${c.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
-      conditions.push(`category_name:=[${escaped}]`);
-    }
 
     // Tenant filter
     if (selectedTenants.value.length > 0) {
@@ -145,9 +132,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
     const params = new URLSearchParams();
 
     if (query.value.trim()) params.set('q', query.value.trim());
-    if (selectedCategories.value.length > 0) {
-      params.set('category', selectedCategories.value.join(','));
-    }
     if (selectedTenants.value.length > 0) {
       params.set('tenant', selectedTenants.value.join(','));
     }
@@ -176,11 +160,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       query.value = searchParam;
     }
 
-    const categoryParam = params.get('category');
-    if (categoryParam) {
-      selectedCategories.value = categoryParam.split(',').filter(Boolean);
-    }
-
     const tenantParam = params.get('tenant');
     if (tenantParam) {
       selectedTenants.value = tenantParam.split(',').filter(Boolean);
@@ -206,14 +185,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
     if (!facetCounts) return;
 
     for (const facet of facetCounts) {
-      if (facet.field_name === 'category_name') {
-        categoryFacets.value = facet.counts.map(c => ({
-          label: c.value,
-          value: c.value,
-          count: c.count,
-        }));
-      }
-      else if (facet.field_name === 'tenant_shortname') {
+      if (facet.field_name === 'tenant_shortname') {
         tenantFacets.value = facet.counts.map(c => ({
           label: c.value,
           value: c.value,
@@ -252,7 +224,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       image: doc.image ?? '',
       publish_time: publishIso,
       lang: doc.lang ?? locale.value,
-      category: doc.category_name ?? null,
     };
   };
 
@@ -290,11 +261,11 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
     const searchParams: Record<string, unknown> = {
       q: query.value.trim() || '*',
-      query_by: 'title,short,tenant_name,tenant_shortname,category_name,tag_names',
-      query_by_weights: '10,4,2,2,3,3',
+      query_by: 'title,short,tenant_name,tenant_shortname,tag_names',
+      query_by_weights: '10,4,2,2,3',
       filter_by: filterConditions.join(' && '),
       sort_by: sortExpression,
-      facet_by: 'category_name,tenant_shortname,year,tag_names',
+      facet_by: 'tenant_shortname,year,tag_names',
       max_facet_values: 50,
       per_page: perPage,
       page: targetPage,
@@ -347,28 +318,9 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
   });
 
   // Watch filters and sort with immediate search
-  watch([selectedCategories, selectedTenants, selectedYears, selectedTags, sortBy], () => {
+  watch([selectedTenants, selectedYears, selectedTags, sortBy], () => {
     performSearch(false);
   }, { deep: true });
-
-  const toggleCategory = (categoryName: string) => {
-    const idx = selectedCategories.value.indexOf(categoryName);
-    if (idx >= 0) {
-      selectedCategories.value.splice(idx, 1);
-    }
-    else {
-      selectedCategories.value.push(categoryName);
-    }
-  };
-
-  const setCategory = (categoryName: string | null) => {
-    if (!categoryName) {
-      selectedCategories.value = [];
-    }
-    else {
-      selectedCategories.value = [categoryName];
-    }
-  };
 
   const toggleTenant = (tenantShortname: string) => {
     const idx = selectedTenants.value.indexOf(tenantShortname);
@@ -408,7 +360,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
   const clearFilters = () => {
     query.value = '';
-    selectedCategories.value = [];
     selectedTenants.value = [];
     selectedYears.value = [];
     selectedTags.value = [];
@@ -426,7 +377,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       // If we have URL parameters or no initial items, perform initial search
       const hasUrlParams = Boolean(
         query.value.trim()
-        || selectedCategories.value.length > 0
         || selectedTenants.value.length > 0
         || selectedYears.value.length > 0
         || selectedTags.value.length > 0
@@ -452,7 +402,6 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
   return {
     query,
-    selectedCategories,
     selectedTenants,
     selectedYears,
     selectedTags,
@@ -465,13 +414,10 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
     hasMore,
     hasActiveFilters,
     activeFilterCount,
-    categoryFacets,
     tenantFacets,
     yearFacets,
     tagFacets,
     error,
-    toggleCategory,
-    setCategory,
     toggleTenant,
     toggleYear,
     toggleTag,

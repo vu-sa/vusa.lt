@@ -52,9 +52,13 @@ const defaultPageProps = {
     { id: 'vuif', name: 'VU IF', shortname: 'VU IF' },
     { id: 'vumif', name: 'VU MIF', shortname: 'VU MIF' },
   ],
-  categories: [
-    { id: 1, alias: 'freshmen-camps', name: 'Freshmen camps' },
-    { id: 2, alias: 'announcements', name: 'Announcements' },
+  eventTypes: [
+    { id: 1, slug: 'stovykla', name: 'Stovykla' },
+    { id: 2, slug: 'konferencija', name: 'Konferencija' },
+  ],
+  tags: [
+    { id: 1, alias: 'akademine-informacija', name: 'Akademinė informacija', is_topic: true },
+    { id: 2, alias: 'renginys', name: 'Renginys', is_topic: false },
   ],
   flash: {
     success: null,

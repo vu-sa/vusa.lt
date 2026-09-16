@@ -139,13 +139,13 @@ class PublicController extends Controller
      *
      * Pages whose content differs per language (news, pages) share their own URL instead.
      */
-    protected function shareOtherLangURL($name, ?string $subdomain = null, $calendarId = null)
+    protected function shareOtherLangURL($name, ?string $subdomain = null, $calendarId = null, array $extraParameters = [])
     {
         try {
-            $otherLangURL = LocalizedRouteSlugs::route($name, array_filter([
+            $otherLangURL = LocalizedRouteSlugs::route($name, array_filter(array_merge([
                 'calendar' => $calendarId,
                 'subdomain' => $subdomain,
-            ]), $this->getOtherLang());
+            ], $extraParameters)), $this->getOtherLang());
 
             Inertia::share('otherLangURL', $otherLangURL);
         } catch (\Exception $exception) {

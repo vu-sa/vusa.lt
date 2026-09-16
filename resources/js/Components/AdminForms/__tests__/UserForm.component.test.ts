@@ -194,8 +194,8 @@ describe('UserForm.vue', () => {
   });
 
   describe('identity field lock', () => {
-    // Mirrors UserPolicy::updateIdentity — email is the login identity, so a tenant
-    // admin who only shares one tenant with this person must not be able to edit it.
+    // Email is the login identity, so a tenant admin who only shares one tenant
+    // with this person must not be able to edit it.
     const emailInput = (w: ReturnType<typeof mount>) =>
       w.findAll('input').find(i => i.attributes('placeholder') === 'vardas.pavarde@stud.vu.lt');
 
@@ -236,7 +236,7 @@ describe('UserForm.vue', () => {
 
       it('lets a super-admin edit an existing user name that would otherwise be locked', async () => {
         // The base user ships with a non-empty name, which hard-locks the field
-        // for everyone except super-admins (UpdateUserRequest + UserPolicy::updateIdentity).
+        // for everyone except super-admins.
         vi.mocked(usePage).mockReturnValue(
           createMockPage({ auth: { user: { isSuperAdmin: true } } }),
         );

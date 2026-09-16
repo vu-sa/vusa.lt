@@ -2,7 +2,6 @@
 
 namespace App\Collections;
 
-use App\Models\Category;
 use App\Models\News;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -25,8 +24,7 @@ class NewsCollection extends Collection
      *     short: string,
      *     publish_time: Carbon|null,
      *     permalink: string|null,
-     *     image: string|null,
-     *     category: string|null
+     *     image: string|null
      * }>
      */
     public function toPublicArray(): array
@@ -39,9 +37,6 @@ class NewsCollection extends Collection
             'publish_time' => $item->publish_time,
             'permalink' => $item->permalink,
             'image' => $item->getImageUrl(),
-            // The category chip on a news card. Nullable: most historic articles have no
-            // category, and the chip is simply omitted for those.
-            'category' => $item->category?->name,
         ])->values()->all();
     }
 
@@ -64,9 +59,9 @@ class NewsCollection extends Collection
      * @param  int|null  $tenantId  The tenant ID to filter by, or null for every tenant
      * @param  string  $lang  The language to filter by
      * @param  int  $limit  Maximum number of items to return
-     * @param  string|null  $categoryAlias  Restrict to one category, by alias
+     * @param  string|null  $topicAlias  Restrict to one topic tag, by alias
      */
-    public static function getPublishedForTenant(?int $tenantId, string $lang, int $limit = 5, ?string $categoryAlias = null): self
+    public static function getPublishedForTenant(?int $tenantId, string $lang, int $limit = 5, ?string $topicAlias = null): self
     {
         $query = News::query()
             ->where('lang', $lang)
@@ -77,17 +72,13 @@ class NewsCollection extends Collection
             $query->where('tenant_id', $tenantId);
         }
 
-        if ($categoryAlias !== null && $categoryAlias !== '') {
-            $categoryId = Category::query()->where('alias', $categoryAlias)->value('id');
-            if ($categoryId) {
-                $query->where('category_id', $categoryId);
-            }
+        if ($topicAlias !== null && $topicAlias !== '') {
+            $query->whereHas('tags', fn ($tag) => $tag->where('alias', $topicAlias));
         }
 
         $news = $query->orderByDesc('publish_time')
-            ->with('category:id,name')
             ->take($limit)
-            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'category_id', 'other_lang_id', 'tenant_id']);
+            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'other_lang_id', 'tenant_id']);
 
         return new self($news->all());
     }

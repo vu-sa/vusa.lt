@@ -36,6 +36,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Pages/Admin/People/Show*.vue,app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |
 | app/Models/**, app/Models/Tenant.php, app/Models/Calendar.php | .ai/rules/models.md |
 | app/Http/Controllers/Admin/MailQueueController.php,app/Console/Commands/PruneNotificationDigests.php,resources/js/Pages/Admin/MailQueue.vue | .ai/rules/pages-admin.md |
+| app/Http/Controllers/Admin/UserController.php,app/Policies/UserPolicy.php,app/Http/Requests/UpdateUserRequest.php | .ai/rules/policies-http-requests.md |
 | app/Providers/** | .ai/rules/providers.md |
 | resources/js/**/Public/** | .ai/rules/public.md |
 | app/Http/Requests/** | .ai/rules/requests.md |

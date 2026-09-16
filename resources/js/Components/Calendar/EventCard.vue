@@ -34,17 +34,17 @@
 
       <!-- Badges (top-right) -->
       <div
-        v-if="showBadges && (categoryName || tenantShortname)"
+        v-if="showBadges && (eventTypeName || tenantShortname)"
         class="absolute right-0 top-0 flex max-w-[65%] flex-wrap justify-end"
       >
         <span
-          v-if="categoryName"
+          v-if="eventTypeName"
           :class="[
             'border-b border-l border-border bg-background/90 px-2 py-0.5',
             'text-[0.625rem] font-bold uppercase tracking-wider text-brand backdrop-blur-xs truncate',
           ]"
         >
-          {{ categoryName }}
+          {{ eventTypeName }}
         </span>
         <span
           v-if="tenantShortname"
@@ -122,11 +122,10 @@ interface CalendarEventLike {
   is_remote?: boolean;
   location?: string | string[] | null;
   main_image_url?: string | null;
-  main_image?: string | null;
   main_image_focal_point?: string | null;
   facebook_url?: string | null;
-  category?: { name: string } | null;
-  category_name?: string | null;
+  event_type?: { name: string } | null;
+  event_type_name?: string | null;
   tenant?: { shortname: string } | null;
   tenant_shortname?: string | null;
   public_url?: string | null;
@@ -160,9 +159,9 @@ const eventLocation = computed(() => {
   return String(loc);
 });
 
-const categoryName = computed(() => {
+const eventTypeName = computed(() => {
   const ev = props.event as CalendarEventLike;
-  return ev.category?.name ?? ev.category_name ?? null;
+  return ev.event_type?.name ?? ev.event_type_name ?? null;
 });
 
 const tenantShortname = computed(() => {
@@ -174,7 +173,7 @@ const eventHref = computed(() => getCalendarEvent2Route(props.event, page.props.
 
 const imageUrl = computed(() => {
   const ev = props.event as CalendarEventLike;
-  return ev.main_image_url ?? ev.main_image ?? null;
+  return ev.main_image_url ?? null;
 });
 
 const normalizeDate = (d: number | Date | string | undefined | null): Date => {

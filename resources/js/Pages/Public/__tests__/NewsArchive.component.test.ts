@@ -26,7 +26,6 @@ const mockSearch = vi.fn().mockResolvedValue({
         lang: 'lt',
         tenant_id: 16,
         tenant_shortname: 'VU SA',
-        category_name: 'Atstovavimas',
       },
     },
     {
@@ -40,7 +39,6 @@ const mockSearch = vi.fn().mockResolvedValue({
         lang: 'lt',
         tenant_id: 16,
         tenant_shortname: 'VU SA',
-        category_name: 'Renginiai',
       },
     },
   ],
@@ -70,7 +68,6 @@ const sampleNews: NewsItem[] = [
     image: '/images/news1.jpg',
     publish_time: '2026-09-01T10:00:00.000Z',
     lang: 'lt',
-    category: 'Atstovavimas',
   },
   {
     id: 2,
@@ -80,7 +77,6 @@ const sampleNews: NewsItem[] = [
     image: '/images/news2.jpg',
     publish_time: '2026-08-25T10:00:00.000Z',
     lang: 'lt',
-    category: 'Renginiai',
   },
 ];
 
@@ -126,10 +122,6 @@ describe('Public/NewsArchive.vue', () => {
           path: '/lt/naujienos',
           links: [],
         },
-        allCategories: [
-          { id: 1, name: 'Atstovavimas' },
-          { id: 2, name: 'Renginiai' },
-        ],
         allTenants: [
           { id: 16, shortname: 'VU SA' },
           { id: 11, shortname: 'VU SA MIF' },

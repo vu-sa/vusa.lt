@@ -331,7 +331,7 @@ const otherEventImage = (ev: App.Entities.Calendar & { images?: Array<{ original
 };
 
 const otherEventTag = (ev: App.Entities.Calendar): string | null =>
-  ev.category?.name ?? ev.tenant?.shortname ?? null;
+  ev.event_type?.name ?? ev.tenant?.shortname ?? null;
 
 const otherEventDate = (ev: App.Entities.Calendar): string =>
   formatStaticTime(new Date(ev.date), { weekday: 'short', month: 'short', day: 'numeric' }, locale.value as LocaleEnum);

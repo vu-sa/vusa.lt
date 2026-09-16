@@ -12,8 +12,9 @@ use App\Http\Requests\UpdateCalendarRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
-use App\Models\Category;
+use App\Models\EventType;
 use App\Models\PublicUrl;
+use App\Models\Tag;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use App\Support\LocalizedRouteSlugs;
@@ -35,7 +36,7 @@ class CalendarController extends AdminController
     {
         $this->handleAuthorization('viewAny', Calendar::class);
 
-        $query = Calendar::query()->with(['category', 'tenant:id,shortname']);
+        $query = Calendar::query()->with(['eventType', 'tenant:id,shortname']);
 
         $searchableColumns = ['title'];
 
@@ -50,6 +51,10 @@ class CalendarController extends AdminController
                 'permission' => 'calendars.read.padalinys',
             ]
         );
+
+        if ($request->getUntyped()) {
+            $query->whereNull('event_type_id');
+        }
 
         $deletedCount = $this->getTrashedCount($query);
 
@@ -72,11 +77,12 @@ class CalendarController extends AdminController
                     'to' => $calendar->lastItem(),
                 ],
             ],
-            'allCategories' => Category::all(['id', 'alias', 'name', 'description']),
+            'eventTypes' => EventType::query()->orderBy('sort_order')->get(['id', 'slug', 'name']),
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
             'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
+            'untyped' => $request->getUntyped(),
         ]);
     }
 
@@ -89,7 +95,8 @@ class CalendarController extends AdminController
 
         return $this->inertiaResponse('Admin/Calendar/CreateCalendarEvent', [
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.create.padalinys', $this->authorizer),
-            'categories' => Category::all(),
+            'eventTypes' => EventType::query()->orderBy('sort_order')->get(),
+            'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
         ]);
     }
 
@@ -102,10 +109,14 @@ class CalendarController extends AdminController
 
         // safe(), not except(): on a FormRequest, $request->except() returns raw input minus the
         // named keys, so anything unvalidated would be mass-assigned straight through fill().
-        $calendar = $calendar->fill($request->safe()->except(['images', 'main_image']));
-        $calendar->category_id = $request->validated('category_id');
+        // `tags` isn't a column — fill() would try to write it as one — so it's excluded here
+        // and synced through the relation below instead.
+        $calendar = $calendar->fill($request->safe()->except(['images', 'main_image', 'tags']));
+        $calendar->event_type_id = $request->validated('event_type_id');
 
         $calendar->save();
+
+        $calendar->tags()->sync($request->validated('tags') ?? []);
 
         // Handle media uploads using centralized action
         HandleModelMediaUploads::execute($calendar, $request, [
@@ -151,8 +162,10 @@ class CalendarController extends AdminController
                 // Informational only — still resolves live (PublicPageController::calendarLegacy()),
                 // never stored, so nothing to delete here.
                 'legacy_date_urls' => $this->legacyDateUrls($calendar),
+                'tags' => $calendar->tags->pluck('id')->toArray(),
             ],
-            'categories' => Category::all(),
+            'eventTypes' => EventType::query()->orderBy('sort_order')->get(),
+            'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
             'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
             // An event standing for a meeting is not an ordinary event: publishing it is what
             // opens that meeting's agenda to the public, so the form has to say so.
@@ -216,7 +229,9 @@ class CalendarController extends AdminController
             // timing: the meeting owns it and pushes changes down (Meeting::syncCalendarEventTiming),
             // so accepting a date here would only let the two drift. The form disables the
             // fields; this is what actually enforces it.
-            $protected = ['images', 'main_image'];
+            // `tags` isn't a column — fill() would try to write it as one — so it's excluded
+            // here and synced through the relation below instead.
+            $protected = ['images', 'main_image', 'tags'];
 
             if ($calendar->meeting_id !== null) {
                 $protected[] = 'date';
@@ -224,9 +239,11 @@ class CalendarController extends AdminController
             }
 
             $calendar->fill($request->safe()->except($protected));
-            $calendar->category_id = $request->validated('category_id');
+            $calendar->event_type_id = $request->validated('event_type_id');
 
             $calendar->save();
+
+            $calendar->tags()->sync($request->validated('tags') ?? []);
 
             // Handle media uploads using centralized action
             HandleModelMediaUploads::execute($calendar, $request, [

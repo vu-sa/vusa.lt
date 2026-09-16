@@ -74,6 +74,8 @@ return [
         'banner_link_url' => 'Nuoroda, į kurią nukreipia baneris',
         'technical_slug' => 'Techninė žymė',
         'alias' => 'Alias',
+        'is_topic' => 'Tema',
+        'sort_order' => 'Eiliškumas',
         'link' => 'Nuoroda',
         'form_publish_time' => 'Formos paskelbimo laikas',
         'type_label' => 'Tipas',
@@ -126,6 +128,7 @@ return [
     ],
     'helpers' => [
         'tag_alias_hint' => 'Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.',
+        'is_topic_hint' => 'Temos rodomos atskirame puslapyje, kuriame surenkamos visos su ja susijusios naujienos, puslapiai ir renginiai.',
         'form_main_info' => 'Pagrindinė informacija apie registracijos formą.',
         'registrations_count' => 'Registracijų skaičius: :count',
         'view_registrations' => 'Peržiūrėti registracijas',

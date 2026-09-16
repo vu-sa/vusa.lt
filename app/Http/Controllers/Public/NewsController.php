@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Public;
 
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
-use App\Models\Category;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
+use Illuminate\Database\Eloquent\Builder;
 use Inertia\Inertia;
 
 class NewsController extends PublicController
@@ -62,24 +62,21 @@ class NewsController extends PublicController
 
         // Fetch related articles from the same tenant. The shape matches `NewsItem`
         // (resources/js/Types/contentParts.ts) so they render through the same `NewsCard` as the
-        // homepage's news block and the archive — image and category included, since the design
-        // shows these as cards rather than as a list of headlines.
+        // homepage's news block and the archive.
         $relatedArticles = News::where('tenant_id', $news->tenant_id)
             ->where('id', '!=', $news->id)
             ->where('lang', $news->lang)
             ->where('draft', false)
             ->where('publish_time', '<=', now())
-            ->with('category:id,name')
             ->orderByDesc('publish_time')
             ->take(3)
-            ->get(['id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'category_id'])
+            ->get(['id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang'])
             ->map(fn ($article) => [
                 'id' => $article->id,
                 'title' => $article->title,
                 'short' => $article->short,
                 'lang' => $article->lang,
                 'image' => $article->getImageUrl(),
-                'category' => $article->category?->name,
                 'permalink' => $article->permalink,
                 'publish_time' => $article->publish_time,
                 'url' => LocalizedRouteSlugs::route('news', [
@@ -112,7 +109,7 @@ class NewsController extends PublicController
             // the most obvious use of the new dynamic block types inside a news body.
             'resolvedParts' => (object) $this->resolveContentParts($news->content),
             'article' => [
-                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'category', 'content', 'image_author', 'important', 'main_points', 'read_more', 'show_breadcrumbs', 'highlights'),
+                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'content', 'image_author', 'important', 'main_points', 'read_more', 'show_breadcrumbs', 'highlights'),
                 'tags' => $news->tags->map(fn ($tag) => [
                     'id' => $tag->id,
                     'name' => $tag->name,
@@ -145,22 +142,20 @@ class NewsController extends PublicController
             ->where('lang', app()->getLocale())
             ->where('draft', false);
 
-        // Filter by tag if provided
+        // Filter by tag if provided. `?tag=` arrives as either an alias (links built
+        // server-side, e.g. NavigationLinkApiController) or a translated name (the
+        // client-side Typesense filter — useNewsSearch's `tag_names:=[...]` condition
+        // matches by name, and `parseUrlParams()` feeds this same raw param straight into
+        // it once the page hydrates) — match either, so the initial SSR list agrees with
+        // what the page filters down to a moment later.
         if (request('tag')) {
-            $query->whereHas('tags', function ($q): void {
-                $tagParam = request('tag');
-                // Try to find by alias first, fallback to ID if it's numeric
-                $q->where('alias', $tagParam)
-                    ->orWhere(function ($query) use ($tagParam): void {
-                        if (is_numeric($tagParam)) {
-                            $query->where('id', $tagParam);
-                        }
-                    });
+            $query->whereHas('tags', function (Builder $query): void {
+                $this->matchTagParam($query, request('tag'));
             });
         }
 
-        $news = $query->with('category:id,name')
-            ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'category_id', 'created_at')
+        $news = $query
+            ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'created_at')
             ->orderBy('publish_time', 'desc')
             ->paginate(15)
             ->through(fn ($item) => [
@@ -168,25 +163,10 @@ class NewsController extends PublicController
                 'title' => $item->title,
                 'short' => $item->short,
                 'image' => $item->getImageUrl(),
-                'category' => $item->category?->name,
                 'permalink' => $item->permalink,
                 'publish_time' => $item->publish_time?->toISOString() ?? $item->created_at->toISOString(),
                 'lang' => $item->lang,
             ]);
-
-        $allCategories = Category::query()
-            ->whereHas('news', function ($q): void {
-                $q->where('draft', false)
-                    ->where('lang', app()->getLocale());
-            })
-            ->select('id', 'name')
-            ->orderBy('name')
-            ->get()
-            ->map(fn ($c) => [
-                'id' => $c->id,
-                'name' => $c->name,
-            ])
-            ->toArray();
 
         $allTenants = Tenant::query()
             ->whereHas('news', function ($q): void {
@@ -205,16 +185,11 @@ class NewsController extends PublicController
         // Get the current tag for display purposes
         $currentTag = null;
         if (request('tag')) {
-            $tagParam = request('tag');
-            // Try to find by alias first, fallback to ID if it's numeric
-            $currentTag = Tag::where('alias', $tagParam)
-                ->orWhere(function ($query) use ($tagParam): void {
-                    if (is_numeric($tagParam)) {
-                        $query->where('id', $tagParam);
-                    }
-                })
-                ->first();
+            $currentTag = $this->matchTagParam(Tag::query(), request('tag'))->first();
         }
+
+        $locale = app()->getLocale();
+        $isLt = $locale === 'lt';
 
         // Pass the current tenant for proper canonical URL
         // Title suffix (" - <tenant>") is applied by applyPageHead(), so the org name
@@ -222,18 +197,21 @@ class NewsController extends PublicController
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: $currentTag
-                ? "Naujienos - {$currentTag->name}"
-                : 'Naujienų archyvas',
+                ? ($isLt ? "Naujienos - {$currentTag->name}" : "News - {$currentTag->name}")
+                : ($isLt ? 'Naujienų archyvas' : 'News Archive'),
             description: $currentTag
-                ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
-                : "Naršyk per visas {$this->tenant->shortname} naujienas"
+                ? ($isLt
+                    ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
+                    : "Browse {$this->tenant->shortname} news tagged with '{$currentTag->name}'")
+                : ($isLt
+                    ? "Naršyk per visas {$this->tenant->shortname} naujienas"
+                    : "Browse all {$this->tenant->shortname} news")
         );
 
         // Share pagination SEO metadata for rel=next/prev links
         $this->sharePaginationSeoMeta($news, $this->tenant);
 
         // Generate breadcrumb schema for archive
-        $locale = app()->getLocale();
         $breadcrumbs = [
             [
                 'name' => $locale === 'lt' ? 'Pradžia' : 'Home',
@@ -260,12 +238,34 @@ class NewsController extends PublicController
             'tenantSwitchTarget' => 'same-page',
             'news' => $news,
             'currentTag' => $currentTag,
-            'allCategories' => $allCategories,
             'allTenants' => $allTenants,
         ])->withViewData(
             [
                 'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
             ]
         );
+    }
+
+    /**
+     * Matches `?tag=` against a Tag's alias, its current-locale translated name, or (for a
+     * purely numeric value) its id — see the comment above `newsArchive()`'s filter for why
+     * both alias and name have to work.
+     *
+     * @param  Builder<Tag>  $query
+     * @return Builder<Tag>
+     */
+    private function matchTagParam(Builder $query, string $tagParam): Builder
+    {
+        return $query->where(function (Builder $query) use ($tagParam): void {
+            // Local scopes have no "or" magic of their own (that only exists for real
+            // `where*` builder methods) — the closure groups `whereJsonContainsLocale`
+            // as its own single-condition OR branch instead.
+            $query->where('alias', $tagParam)
+                ->orWhere(fn (Builder $q) => $q->whereJsonContainsLocale('name', app()->getLocale(), $tagParam));
+
+            if (is_numeric($tagParam)) {
+                $query->orWhere('id', $tagParam);
+            }
+        });
     }
 }

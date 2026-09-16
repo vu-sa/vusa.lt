@@ -5,6 +5,12 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.2 — Editing unit homepages (2026-09-14) {#v2-2}
+
+- 🔧 **Correct homepage edit link** — on a unit's homepage it opens that unit's editor, even when the central VU SR content is shown as a fallback
+- 🔧 **More accurate contact search** — updating a representative's assignment, name, or duty refreshes the related institution contacts in search; upcoming representatives are hidden until their start date, and ended assignments are automatically pruned once their term expires
+- 🔧 **Old content "categories" replaced with topics and event types** — news and pages are now tagged with topics (browsable at `/topic/...`), while events can have a specific but optional type, including separate Meeting and Assembly types; old `/category/...` links redirect automatically to their new destination
+
 ## v2.1 — Bilingual homepage (2026-09-07) {#v2-1}
 
 - ⭐ **English homepage content** — administrators can now edit Lithuanian and English homepage versions independently; visitors see the Lithuanian content until an English version is ready

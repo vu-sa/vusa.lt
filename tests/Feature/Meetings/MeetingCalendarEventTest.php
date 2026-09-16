@@ -4,6 +4,7 @@ use App\Enums\CalendarHeroStyleEnum;
 use App\Enums\InstitutionScope;
 use App\Models\Calendar;
 use App\Models\Document;
+use App\Models\EventType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
@@ -16,6 +17,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->admin = makeAdminUser($this->tenant);
+    $this->eventType = EventType::factory()->create();
     // A VU SA body: only those are announced in the calendar, so anything exercising the
     // announcement path has to be one. An institution with no types resolves to external.
     $this->institution = Institution::factory()->for($this->tenant)->create();
@@ -197,6 +199,7 @@ test('the calendar form cannot move an event that announces a meeting', function
         'permalink' => ['lt' => 'pakeista', 'en' => 'changed'],
         'date' => now()->addMonths(2)->format('Y-m-d H:i:s'),
         'tenant_id' => $this->tenant->id,
+        'event_type_id' => $this->eventType->id,
     ])->assertSessionHasNoErrors();
 
     // The rest of the payload went through, so the date being ignored is the rule working.
@@ -214,6 +217,7 @@ test('an ordinary event can still be moved from the calendar form', function ():
         'permalink' => ['lt' => 'renginys', 'en' => 'event'],
         'date' => $newDate->format('Y-m-d H:i:s'),
         'tenant_id' => $this->tenant->id,
+        'event_type_id' => $this->eventType->id,
     ])->assertSessionHasNoErrors();
 
     expect($event->fresh()->date->toDateTimeString())->toBe($newDate->toDateTimeString());
@@ -261,6 +265,7 @@ test('meeting_id cannot be set through the ordinary calendar form', function ():
         'permalink' => ['lt' => 'pakeista', 'en' => 'changed'],
         'date' => now()->addDay()->format('Y-m-d H:i:s'),
         'tenant_id' => $this->tenant->id,
+        'event_type_id' => $this->eventType->id,
         'meeting_id' => $this->meeting->id,
     ])->assertSessionHasNoErrors();
 

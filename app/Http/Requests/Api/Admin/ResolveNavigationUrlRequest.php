@@ -20,7 +20,7 @@ class ResolveNavigationUrlRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'collection' => ['required', 'string', Rule::in(['pages', 'news', 'calendar', 'institutions', 'documents', 'categories'])],
+            'collection' => ['required', 'string', Rule::in(['pages', 'news', 'calendar', 'institutions', 'documents', 'topics'])],
             'id' => ['required'],
         ];
     }

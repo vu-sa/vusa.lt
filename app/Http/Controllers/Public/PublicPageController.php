@@ -9,8 +9,8 @@ use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Http\Requests\IndexPublicCalendarRequest;
 use App\Models\Calendar;
-use App\Models\Category;
 use App\Models\Content;
+use App\Models\EventType;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
@@ -20,6 +20,7 @@ use App\Services\PublicUrlService;
 use App\Services\ResourceServices\InstitutionService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -36,7 +37,7 @@ class PublicPageController extends PublicController
         return Cache::tags(['calendar', "locale_{$locale}"])
             ->remember($cacheKey, 1800, function () use ($locale) { // 30 minutes TTL
                 if ($locale === 'en') {
-                    return Calendar::query()->with(['category', 'media'])->where('is_international', true)->where('is_draft', false)
+                    return Calendar::query()->with(['eventType', 'media'])->where('is_international', true)->where('is_draft', false)
                         ->orderBy('date', 'desc')->take(100)->get()->map(fn ($event) => [
                             ...$event->toArray(),
                             'images' => $event->getMedia('images'),
@@ -44,7 +45,7 @@ class PublicPageController extends PublicController
                             'public_url' => $event->publicUrl($locale),
                         ]);
                 } else {
-                    return Calendar::query()->with(['category', 'media'])->where('is_draft', false)
+                    return Calendar::query()->with(['eventType', 'media'])->where('is_draft', false)
                         ->orderBy('date', 'desc')->take(100)->get()->map(fn ($event) => [
                             ...$event->toArray(),
                             'images' => $event->getMedia('images'),
@@ -76,11 +77,9 @@ class PublicPageController extends PublicController
         // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
         $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
 
-        // Only authenticated users pay for edit-link resolution. The target is whoever's
-        // content is actually shown — subdomains without their own content show main's.
+        // Only authenticated users pay for edit-link resolution.
         if (Auth::check()) {
-            // @phpstan-ignore nullsafe.neverNull (main tenant / its content can be null at runtime)
-            $this->sharePublicEditLink($content?->tenantHomepageContent?->tenant ?? $this->tenant);
+            $this->sharePublicEditLink($this->tenant);
         }
 
         $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
@@ -165,10 +164,23 @@ class PublicPageController extends PublicController
                 $navigation_item = Navigation::query()->where('name', $page->title)->first();
                 $other_lang_page = $page->getOtherLanguage();
 
+                $children = $page->children()
+                    ->where('is_active', true)
+                    ->get(['id', 'title', 'permalink', 'lang', 'tenant_id', 'meta_description'])
+                    ->map(fn (Page $child) => [
+                        'title' => $child->title,
+                        'url' => $child->publicUrl(),
+                        'meta_description' => $child->meta_description,
+                    ])
+                    ->values()
+                    ->all();
+
                 return [
                     'page' => $page,
                     'navigation_item' => $navigation_item,
                     'other_lang_page' => $other_lang_page,
+                    'ancestors' => $page->ancestors(),
+                    'children' => $children,
                 ];
             });
 
@@ -186,6 +198,8 @@ class PublicPageController extends PublicController
         $page = $pageData['page'];
         $navigation_item = $pageData['navigation_item'];
         $other_lang_page = $pageData['other_lang_page'];
+        $ancestors = $pageData['ancestors'];
+        $children = $pageData['children'];
 
         // Outside the page cache above — depends on the current user.
         $this->sharePublicEditLink($page);
@@ -216,14 +230,15 @@ class PublicPageController extends PublicController
             ],
         ];
 
-        // Add category if exists
-        if ($page->category) {
+        // Add the page's ancestor chain (root first), replacing the old category crumb —
+        // page structure is now expressed as structure, not as a category.
+        foreach ($ancestors as $ancestor) {
             $breadcrumbs[] = [
-                'name' => $page->category->name,
-                'url' => route('category', [
+                'name' => $ancestor->title,
+                'url' => route('page', [
                     'subdomain' => $this->subdomain,
                     'lang' => $locale,
-                    'category' => $page->category->alias,
+                    'permalink' => $ancestor->permalink,
                 ]),
             ];
         }
@@ -245,8 +260,21 @@ class PublicPageController extends PublicController
             // time-relative (`latest`/`upcoming` modes) while that cache is not.
             'resolvedParts' => (object) $this->resolveContentParts($page->content),
             'page' => [
-                ...$page->only('id', 'title', 'lang', 'category', 'tenant', 'permalink', 'other_lang_id', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'featured_image', 'meta_description', 'last_edited_at', 'updated_at'),
+                ...$page->only('id', 'title', 'lang', 'tenant', 'permalink', 'other_lang_id', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'featured_image', 'meta_description', 'last_edited_at', 'updated_at'),
                 'content' => $page->content,
+                // Section listing for this page's direct children (`Page::children()`) —
+                // the permalink stays flat, this is presentation only.
+                'children' => $children,
+                'ancestors' => array_map(fn ($ancestor) => [
+                    'id' => $ancestor->id,
+                    'title' => $ancestor->title,
+                    'permalink' => $ancestor->permalink,
+                    'url' => route('page', [
+                        'subdomain' => $this->subdomain,
+                        'lang' => $locale,
+                        'permalink' => $ancestor->permalink,
+                    ]),
+                ], $ancestors),
                 /* 'content' => [ */
                 /*    ...$page->content->toArray(), */
                 /*    'parts' => $page->content->parts->map(function ($part) { */
@@ -261,32 +289,31 @@ class PublicPageController extends PublicController
         ]);
     }
 
-    public function category(string $lang, string $categoryString, Category $category)
+    /**
+     * `categories` was retired in favor of topics/event types/page hierarchy (taxonomy
+     * redesign phase 4). The seven aliases that ever existed are a fixed, known set —
+     * this is a permanent redirect table, not a lookup against live data.
+     */
+    public function categoryRedirect(): RedirectResponse
     {
-        $this->getBanners();
-        $this->getTenantLinks();
+        $alias = (string) request()->route('alias');
+        $locale = (string) (request()->route('lang') ?: app()->getLocale());
 
-        // Share other language URL for locale switching
-        Inertia::share('otherLangURL', route('category', [
-            'category' => $category->alias,
-            'lang' => $this->getOtherLang(),
-            'subdomain' => $this->subdomain,
-        ]));
+        // Categories carried no tenant relation, so — matching
+        // NavigationLinkApiController::resolveCategoryUrl()'s previous rationale — every
+        // destination resolves against `www` regardless of which subdomain was requested.
+        $destination = match ($alias) {
+            'red', 'yellow', 'grey' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => 'www'], $locale),
+            'freshmen-camps' => LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], $locale),
+            'vu-sa-conferences' => LocalizedRouteSlugs::route('calendar.list', ['type' => 'konferencija'], $locale),
+            'stipendijos' => LocalizedRouteSlugs::route('topic', ['tag' => 'finansine-parama-stipendijos'], $locale),
+            'vu-sa-dokumentai' => LocalizedRouteSlugs::route('documents', [], $locale),
+            default => null,
+        };
 
-        $category->load(['pages' => function ($query): void {
-            $query->select(['id', 'title', 'permalink', 'lang', 'category_id', 'tenant_id'])
-                ->where('is_active', true);
-        }])->load('pages.tenant:id,alias');
+        abort_if($destination === null, 404);
 
-        $this->applyPageHead(
-            contentTenant: $this->tenant,
-            title: $category->name,
-            description: $category->description,
-        );
-
-        return Inertia::render('Public/CategoryPage', [
-            'category' => $category->only('id', 'name', 'description', 'pages'),
-        ]);
+        return redirect()->away($destination, 301);
     }
 
     public function summerCamps(string $lang, string $summerCampsString, ?string $year = null)
@@ -301,12 +328,12 @@ class PublicPageController extends PublicController
             $year = intval($year);
         }
 
-        // TODO: add alias in global settings instead
-        // The category is a grouping key here, not a publication gate: trashing the
-        // "freshmen-camps" category must not silently empty this public archive.
-        $events = Calendar::query()->whereHas('category', function (Builder $query): void {
-            /** @var Builder<Category> $query */
-            $query->withTrashed()->where('alias', '=', 'freshmen-camps');
+        // TODO: add slug in global settings instead
+        // The event type is a grouping key here, not a publication gate: trashing the
+        // "stovykla" event type must not silently empty this public archive.
+        $events = Calendar::query()->whereHas('eventType', function (Builder $query): void {
+            /** @var Builder<EventType> $query */
+            $query->withTrashed()->where('slug', '=', 'stovykla');
         })->with('tenant:id,alias,fullname')->whereYear('date', $year)
             ->with(['media']);
 
@@ -326,9 +353,9 @@ class PublicPageController extends PublicController
             return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
         }
 
-        $yearsWhenEventsExist = Calendar::query()->whereHas('category', function (Builder $query): void {
-            /** @var Builder<Category> $query */
-            $query->withTrashed()->where('alias', '=', 'freshmen-camps');
+        $yearsWhenEventsExist = Calendar::query()->whereHas('eventType', function (Builder $query): void {
+            /** @var Builder<EventType> $query */
+            $query->withTrashed()->where('slug', '=', 'stovykla');
         });
 
         // Filter by locale for years when events exist
@@ -358,7 +385,7 @@ class PublicPageController extends PublicController
             [
                 // `location` is shown on the camp cards; `description` stays hidden because
                 // the cards never render it and it is heavy rich text.
-                'events' => $events->makeHidden(['description', 'category', 'user_id'])
+                'events' => $events->makeHidden(['description', 'user_id'])
                     ->map(fn (Calendar $event) => [
                         ...$event->toArray(),
                         'public_url' => $event->publicUrl(app()->getLocale()),
@@ -416,7 +443,7 @@ class PublicPageController extends PublicController
 
         // Create base query with common filters
         $query = Calendar::query()
-            ->with(['category', 'tenant:id,alias,shortname,fullname'])
+            ->with(['eventType', 'tenant:id,alias,shortname,fullname'])
             ->where('is_draft', false);
 
         // Filter by locale
@@ -461,7 +488,7 @@ class PublicPageController extends PublicController
             'tenantSwitchTarget' => 'same-page',
             'events' => $events,
             'activeTab' => $tab,
-            'allCategories' => $filterOptions['categories'],
+            'allEventTypes' => $filterOptions['eventTypes'],
             'allTenants' => $filterOptions['tenants'],
         ]);
     }
@@ -479,8 +506,8 @@ class PublicPageController extends PublicController
      */
     private function getCalendarFilterOptions(): array
     {
-        $categories = Category::query()
-            ->whereHas('calendars', function ($query): void {
+        $eventTypes = EventType::query()
+            ->whereHas('calendarEvents', function ($query): void {
                 $query->where('is_draft', false);
 
                 if (app()->getLocale() === 'en') {
@@ -488,7 +515,7 @@ class PublicPageController extends PublicController
                 }
             })
             ->select('id', 'name')
-            ->orderBy('name')
+            ->orderBy('sort_order')
             ->get()
             ->toArray();
 
@@ -506,7 +533,7 @@ class PublicPageController extends PublicController
             ->toArray();
 
         return [
-            'categories' => $categories,
+            'eventTypes' => $eventTypes,
             'tenants' => $tenants,
         ];
     }
@@ -516,8 +543,8 @@ class PublicPageController extends PublicController
      */
     private function applyCalendarFilters(Builder $query, IndexPublicCalendarRequest $request): Builder
     {
-        if ($request->validated('category') !== null) {
-            $query->where('category_id', $request->validated('category'));
+        if ($request->validated('type') !== null) {
+            $query->where('event_type_id', $request->validated('type'));
         }
 
         if ($request->validated('tenant') !== null) {
@@ -675,7 +702,7 @@ class PublicPageController extends PublicController
         $now = Carbon::now();
 
         $base = fn () => Calendar::query()
-            ->with(['category', 'media', 'tenant:id,alias,shortname,fullname'])
+            ->with(['eventType', 'media', 'tenant:id,alias,shortname,fullname'])
             ->forLocale(app()->getLocale())
             ->where('is_draft', false)
             ->whereKeyNot($calendar->id);
@@ -713,7 +740,7 @@ class PublicPageController extends PublicController
         $this->getTenantLinks();
         Inertia::share('otherLangURL', $calendar->publicUrl($this->getOtherLang()));
 
-        $calendar->load(['tenant:id,alias,fullname,shortname', 'category']);
+        $calendar->load(['tenant:id,alias,fullname,shortname', 'eventType']);
 
         $this->sharePublicEditLink($calendar);
 

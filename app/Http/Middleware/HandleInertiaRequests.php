@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Category;
+use App\Models\EventType;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Tag;
@@ -114,12 +114,12 @@ class HandleInertiaRequests extends Middleware
             // 'tenants' property is shared in public pages from \App\Http\Controllers\PublicController.php
             // 'tenant.banners' property is shared in public pages from \App\Http\Controllers\PublicController.php
             'tenants' => $this->getTenantsForInertia(...),
-            // Global, not tenant-scoped, ~7 rows repo-wide — cheap enough to always share
-            // rather than thread a `categories` prop through every controller/form that
-            // needs a category picker (Page/Calendar admin forms, RichContent's
-            // event-list/calendar block editors). See QuickLinkController's identical
-            // "not worth a search endpoint" rationale for categories.
-            'categories' => $this->getCategoriesForInertia(...),
+            // Global, not tenant-scoped, a handful of rows repo-wide — cheap enough to
+            // always share rather than thread an `eventTypes` prop through every
+            // controller/form that needs an event-type picker (Calendar admin form,
+            // RichContent's event-list/calendar block editors). See QuickLinkController's
+            // identical "not worth a search endpoint" rationale for topics.
+            'eventTypes' => $this->getEventTypesForInertia(...),
             'tags' => $this->getTagsForInertia(...),
             'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
@@ -165,12 +165,12 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return Collection<int, Category>
+     * @return Collection<int, EventType>
      */
-    private function getCategoriesForInertia(): Collection
+    private function getEventTypesForInertia(): Collection
     {
-        return Cache::rememberForever('all-categories-for-inertia',
-            fn () => Category::orderBy('alias')->get(['id', 'name', 'alias'])
+        return Cache::rememberForever('all-event-types-for-inertia',
+            fn () => EventType::orderBy('sort_order')->get(['id', 'name', 'slug'])
         );
     }
 
@@ -180,7 +180,7 @@ class HandleInertiaRequests extends Middleware
     private function getTagsForInertia(): Collection
     {
         return Cache::rememberForever('all-tags-for-inertia',
-            fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias'])
+            fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias', 'is_topic'])
         );
     }
 

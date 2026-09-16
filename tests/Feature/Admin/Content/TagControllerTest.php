@@ -126,6 +126,22 @@ describe('auth: admin user with permissions', function (): void {
             ->and($tag->alias)->toBe('new-tag');
     });
 
+    test('can store a tag flagged as a topic', function (): void {
+        $tagData = [
+            'name' => ['lt' => 'Tema', 'en' => 'Topic'],
+            'description' => ['lt' => '', 'en' => ''],
+            'alias' => 'tema-tag',
+            'is_topic' => true,
+        ];
+
+        asUser($this->admin)
+            ->post(route('tags.store'), $tagData)
+            ->assertStatus(302);
+
+        $tag = Tag::where('alias', 'tema-tag')->firstOrFail();
+        expect($tag->is_topic)->toBeTrue();
+    });
+
     test('can edit existing tag', function (): void {
         asUser($this->admin)
             ->get(route('tags.edit', $this->tag))

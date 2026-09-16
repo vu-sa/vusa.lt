@@ -40,7 +40,6 @@
         {{ $t('Pagrindiniai renginio nustatymai') }}
       </template>
       <template #description>
-        <p><strong>{{ $t('Kategorija') }}</strong> {{ $t('keičia spalvą renginių kalendoriuje.') }}</p>
         <p>
           <strong>{{ $t('Organizatorius') }}</strong>, {{ $t('jeigu neįrašytas, bus') }} <strong>{{ defaultOrganizer
           }}</strong>
@@ -71,19 +70,20 @@
           </FormFieldWrapper>
         </div>
 
-        <!-- Category & Tenant -->
+        <!-- Event type & Tenant -->
         <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="category" :label="$t('Kategorija')" :hint="$t('Kategorija keičia spalvą kalendoriuje')">
-            <Select v-model="categoryIdString">
-              <SelectTrigger id="category">
-                <SelectValue :placeholder="$t('Pasirinkti kategoriją...')" />
+          <FormFieldWrapper id="event_type" :label="$t('Renginio tipas')" :error="form.errors.event_type_id"
+            :valid="form.valid('event_type_id')" :invalid="form.invalid('event_type_id')">
+            <Select v-model="eventTypeIdString" @update:model-value="form.validate('event_type_id')">
+              <SelectTrigger id="event_type">
+                <SelectValue :placeholder="$t('Pasirinkti renginio tipą...')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__">
-                  -- {{ $t('Be kategorijos') }} --
+                <SelectItem :value="NO_EVENT_TYPE_VALUE">
+                  {{ $t('Nenurodyta') }}
                 </SelectItem>
-                <SelectItem v-for="cat in categories" :key="cat.id" :value="String(cat.id)">
-                  {{ cat.name }}
+                <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
+                  {{ type.name }}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -120,6 +120,8 @@
           </div>
         </FormFieldWrapper>
 
+        <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
+
         <!-- Hero style picker -->
         <FormFieldWrapper id="hero_style" :label="$t('Renginio vaizdas')"
           :hint="$t('Kaip renginio puslapio viršus atrodys lankytojams')">
@@ -151,18 +153,6 @@
           <FormFieldWrapper id="end_date" :label="$t('Renginio pabaiga')" :error="form.errors.end_date">
             <DateTimePicker v-model="endDate" :disabled="Boolean(meeting)" />
           </FormFieldWrapper>
-        </div>
-
-        <div class="flex w-full items-center gap-3 rounded-lg border p-3">
-          <Switch id="is_all_day" v-model="form.is_all_day" />
-          <div class="flex-1 min-w-0 flex items-center gap-2">
-            <Label for="is_all_day" class="font-medium">
-              {{ $t('Visos dienos renginys') }}
-            </Label>
-            <InfoPopover>
-              {{ $t('ICS kalendoriuje šis renginys bus žymimas kaip visos dienos renginys.') }}
-            </InfoPopover>
-          </div>
         </div>
       </div>
     </FormElement>
@@ -258,6 +248,42 @@
       </div>
     </FormElement>
 
+    <!-- Section 7: Advanced settings (Collapsible) -->
+    <FormElement :section-number="7">
+      <template #title>
+        {{ $t('Papildomi nustatymai') }}
+      </template>
+      <template #subtitle>
+        {{ $t('Retai keičiami nustatymai') }}
+      </template>
+
+      <Collapsible v-model:open="advancedSettingsOpen" class="w-full">
+        <CollapsibleTrigger as-child>
+          <Button type="button" variant="ghost" class="w-full justify-between p-0 h-auto hover:bg-transparent">
+            <span class="text-sm text-muted-foreground">
+              {{ advancedSettingsOpen ? $t('Slėpti papildomus nustatymus') : $t('Rodyti papildomus nustatymus') }}
+            </span>
+            <IFluentChevronDown24Regular class="h-4 w-4 text-muted-foreground transition-transform duration-200"
+              :class="{ 'rotate-180': advancedSettingsOpen }" />
+          </Button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent class="pt-4">
+          <div class="flex w-full items-center gap-3 rounded-lg border p-3">
+            <Switch id="is_all_day" v-model="form.is_all_day" @update:model-value="isAllDayTouched = true" />
+            <div class="flex-1 min-w-0 flex items-center gap-2">
+              <Label for="is_all_day" class="font-medium">
+                {{ $t('Visos dienos renginys') }}
+              </Label>
+              <InfoPopover>
+                {{ $t('Vietoj laiko bus rodoma „Visą dieną“ ar dienų skaičius. Kelių dienų renginiams parenkama automatiškai — čia galite pakeisti.') }}
+              </InfoPopover>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </FormElement>
+
     <!-- Permalink (editable only once the event exists — see auto-fill watcher above for create) -->
     <div v-if="!isCreate" class="mt-4 space-y-4">
       <PermalinkField
@@ -322,12 +348,15 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
 import PermalinkField from './PermalinkField.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
 import AdminForm from './AdminForm.vue';
 
+import { isSameDay } from '@/Utils/IntlTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -344,7 +373,8 @@ defineEmits<{
 
 const props = defineProps<{
   calendar: CalendarEventForm;
-  categories: App.Entities.Category[];
+  eventTypes: App.Entities.EventType[];
+  availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
   /** Set when this event is the public announcement of a meeting. */
   meeting?: {
@@ -370,6 +400,7 @@ const existingMainImageUrl = ref<string | null>(props.calendar.main_image_url ??
 const formData = {
   ...props.calendar,
   main_image: null as File | null, // Reset to null, will be set if user uploads new image
+  tags: props.calendar.tags ?? [],
 } as any;
 
 const form = props.rememberKey
@@ -385,6 +416,9 @@ if (isCreate.value && form.tenant_id == null) {
 // Set validation timeout
 form.setValidationTimeout(500);
 
+// Advanced settings collapsed by default
+const advancedSettingsOpen = ref(false);
+
 // Auto-fill the permalink from the title as the user types, for a new event only.
 if (isCreate.value) {
   watch(() => form.title?.lt, (title) => {
@@ -394,6 +428,20 @@ if (isCreate.value) {
     form.permalink = { ...form.permalink, en: generateSlug(String(title || '')) };
   });
 }
+
+// Default "all day" for the common case (a multi-day event, where clock times aren't the
+// point) without making the admin think about the flag. Once they touch the switch directly,
+// their choice wins from then on. An existing event's flag already reflects a deliberate past
+// choice, so editing starts "touched" — nudging the dates a little must not silently flip it.
+const isAllDayTouched = ref(!isCreate.value);
+
+watch([() => form.date, () => form.end_date], () => {
+  if (isAllDayTouched.value || !form.date || !form.end_date) {
+    return;
+  }
+
+  form.is_all_day = !isSameDay(new Date(form.date), new Date(form.end_date));
+});
 
 // Handle main image update explicitly
 function handleMainImageUpdate(file: File | null) {
@@ -481,11 +529,13 @@ const defaultOrganizer = computed(() => {
   );
 });
 
-// Handle category_id as string for Select component
-const categoryIdString = computed({
-  get: () => form.category_id ? String(form.category_id) : '__none__',
+const NO_EVENT_TYPE_VALUE = '__none__';
+
+// Handle event_type_id as string for Select component
+const eventTypeIdString = computed({
+  get: () => form.event_type_id ? String(form.event_type_id) : NO_EVENT_TYPE_VALUE,
   set: (val: string) => {
-    form.category_id = val && val !== '__none__' ? parseInt(val) : null;
+    form.event_type_id = val === NO_EVENT_TYPE_VALUE ? null : parseInt(val);
   },
 });
 

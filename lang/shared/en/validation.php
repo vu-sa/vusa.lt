@@ -166,6 +166,12 @@ return [
 
     'outside_tenant_scope' => 'You are not allowed to act in the selected tenant.',
 
+    'page_parent_self' => 'A page cannot be its own parent.',
+    'page_parent_lang_mismatch' => 'The parent page must be in the same language.',
+    'page_parent_tenant_mismatch' => 'The parent page must belong to the same padalinys.',
+    'page_parent_cycle' => 'That page is a descendant of this one and cannot become its parent.',
+    'page_parent_too_deep' => 'Pages can only be nested up to 3 levels deep.',
+
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',

@@ -203,14 +203,14 @@
             @clear="selectedYears = []"
           />
 
-          <!-- Category Filter Popover -->
+          <!-- Event Type Filter Popover -->
           <CalendarFilterPopover
-            :label="$t('Kategorija')"
-            :options="categoryOptions"
-            :selected="selectedCategories"
+            :label="$t('Tipas')"
+            :options="eventTypeOptions"
+            :selected="selectedEventTypes"
             trigger-class="h-9 px-3"
-            @toggle="toggleCategory"
-            @clear="selectedCategories = []"
+            @toggle="toggleEventType"
+            @clear="selectedEventTypes = []"
           />
 
           <!-- Tenant/Padalinys Filter Popover -->
@@ -257,15 +257,15 @@
             @remove="query = ''"
           />
 
-          <!-- Category chips -->
+          <!-- Event type chips -->
           <TagChip
-            v-for="cat in selectedCategories"
-            :key="`cat-${cat}`"
+            v-for="type in selectedEventTypes"
+            :key="`type-${type}`"
             variant="muted"
             removable
             class="normal-case font-medium text-xs tracking-normal bg-background text-foreground"
-            :label="cat"
-            @remove="toggleCategory(cat)"
+            :label="type"
+            @remove="toggleEventType(type)"
           />
 
           <!-- Tenant chips -->
@@ -452,7 +452,7 @@ const props = defineProps<{
     links: unknown[];
   };
   activeTab?: string;
-  allCategories?: Array<{ id: number; name: string }>;
+  allEventTypes?: Array<{ id: number; name: string }>;
   allTenants?: Array<{ id: number; shortname: string }>;
 }>();
 
@@ -464,7 +464,7 @@ const isSortPopoverOpen = ref(false);
 const {
   query,
   tab,
-  selectedCategories,
+  selectedEventTypes,
   selectedTenants,
   selectedYears,
   isRemoteOnly,
@@ -476,11 +476,11 @@ const {
   hasMore,
   hasActiveFilters,
   activeFilterCount,
-  categoryFacets,
+  eventTypeFacets,
   tenantFacets,
   yearFacets,
   setTab,
-  toggleCategory,
+  toggleEventType,
   toggleTenant,
   toggleYear,
   toggleRemote,
@@ -523,15 +523,15 @@ const getSortIcon = (mode: CalendarSearchSort) => {
 
 const currentSortIcon = computed(() => getSortIcon(sortBy.value));
 
-// Category options combining Typesense facets with backend props if available
-const categoryOptions = computed<FilterOption[]>(() => {
-  if (categoryFacets.value.length > 0) {
-    return categoryFacets.value;
+// Event type options combining Typesense facets with backend props if available
+const eventTypeOptions = computed<FilterOption[]>(() => {
+  if (eventTypeFacets.value.length > 0) {
+    return eventTypeFacets.value;
   }
-  if (props.allCategories?.length) {
-    return props.allCategories.map(c => ({
-      label: c.name,
-      value: c.name,
+  if (props.allEventTypes?.length) {
+    return props.allEventTypes.map(t => ({
+      label: t.name,
+      value: t.name,
     }));
   }
   return [];

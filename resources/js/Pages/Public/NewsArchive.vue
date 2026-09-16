@@ -13,7 +13,7 @@
 
     <!-- Main Content -->
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
-      <!-- Search, Categories + Filter Controls -->
+      <!-- Search + Filter Controls -->
       <div class="space-y-4">
         <!-- Search Bar and Filters Button in the same row on desktop -->
         <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
@@ -153,16 +153,6 @@
             @clear="selectedYears = []"
           />
 
-          <!-- Category Filter Popover -->
-          <PublicFilterPopover
-            :label="$t('Kategorija')"
-            :options="categoryOptions"
-            :selected="selectedCategories"
-            trigger-class="h-9 px-3"
-            @toggle="toggleCategory"
-            @clear="selectedCategories = []"
-          />
-
           <!-- Tag Filter Popover (if tags exist) -->
           <PublicFilterPopover
             v-if="tagOptions.length > 0"
@@ -194,17 +184,6 @@
                 class="normal-case font-medium text-xs tracking-normal bg-background text-foreground"
                 :label="`&quot;${query.trim()}&quot;`"
                 @remove="query = ''"
-              />
-
-              <!-- Category chips -->
-              <TagChip
-                v-for="cat in selectedCategories"
-                :key="`cat-${cat}`"
-                variant="muted"
-                removable
-                class="normal-case font-medium text-xs tracking-normal bg-background text-foreground"
-                :label="cat"
-                @remove="toggleCategory(cat)"
               />
 
               <!-- Tenant chips -->
@@ -407,7 +386,6 @@ const props = defineProps<{
     links: unknown[];
   };
   currentTag?: App.Entities.Tag | null;
-  allCategories?: Array<{ id: number; name: string }>;
   allTenants?: Array<{ id: number; shortname: string }>;
 }>();
 
@@ -431,7 +409,6 @@ const pageEyebrow = computed(() => {
 
 const {
   query,
-  selectedCategories,
   selectedTenants,
   selectedYears,
   selectedTags,
@@ -443,11 +420,9 @@ const {
   hasMore,
   hasActiveFilters,
   activeFilterCount,
-  categoryFacets,
   tenantFacets,
   yearFacets,
   tagFacets,
-  toggleCategory,
   toggleTenant,
   toggleYear,
   toggleTag,
@@ -493,20 +468,6 @@ const getSortIcon = (mode: NewsSearchSort) => {
 };
 
 const currentSortIcon = computed(() => getSortIcon(sortBy.value));
-
-// Category options combining Typesense facets with backend props if available
-const categoryOptions = computed<FilterOption[]>(() => {
-  if (categoryFacets.value.length > 0) {
-    return categoryFacets.value;
-  }
-  if (props.allCategories?.length) {
-    return props.allCategories.map(c => ({
-      label: c.name,
-      value: c.name,
-    }));
-  }
-  return [];
-});
 
 // The backend's `allTenants` is the full list regardless of filters; Typesense's facet
 // counts, once a tenant is selected, only cover the now-filtered subset (Typesense counts

@@ -373,9 +373,8 @@ const props = withDefaults(defineProps<{
   permissableTenants: App.Entities.Tenant[];
   rememberKey?: 'CreateUser';
   /**
-   * Whether the acting admin may change this person's name and email. Defaults to
-   * true so the create form (where both are always being set) needs no prop; the
-   * edit page passes the real value from UserPolicy::updateIdentity.
+   * Whether the acting admin may change this person's login email. Existing names
+   * are independently restricted to super administrators.
    */
   canUpdateIdentity?: boolean;
 }>(), {

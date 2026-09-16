@@ -19,11 +19,11 @@ enum ModelEnum: string
     case AGENDA_ITEM = 'agenda_item';
     case BANNER = 'banner';
     case CALENDAR = 'calendar';
-    case CATEGORY = 'category';
     case COMMENT = 'comment';
     case DOCUMENT = 'document';
     case DUTIABLE = 'dutiable';
     case DUTY = 'duty';
+    case EVENT_TYPE = 'event_type';
     case FILE = 'file';
     case FORM = 'form';
     case INSTITUTION = 'institution';
@@ -88,7 +88,7 @@ enum ModelEnum: string
             // Global/system-wide models that don't belong to users or padaliniai
             'tags' => ['*'],
             'types' => ['*'],
-            'categories' => ['*'],
+            'eventTypes' => ['*'],
             'permissions' => ['*'],
             'roles' => ['*'],
             'navigations' => ['*'],

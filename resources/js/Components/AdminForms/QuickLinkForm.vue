@@ -89,13 +89,13 @@
 
             <span class="text-xs text-muted-foreground">{{ $t('navigation.form.or') }}</span>
 
-            <Select :model-value="categorySelectValue" @update:model-value="onCategorySelected">
+            <Select :model-value="topicSelectValue" @update:model-value="onTopicSelected">
               <SelectTrigger class="w-auto min-w-40">
-                <SelectValue :placeholder="$t('navigation.form.link_target_category')" />
+                <SelectValue :placeholder="$t('navigation.form.link_target_topic')" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem v-for="category in categoryOptions" :key="category.id" :value="String(category.id)">
-                  {{ category.name }}
+                <SelectItem v-for="topic in topicOptions" :key="topic.id" :value="String(topic.id)">
+                  {{ topic.name }}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -141,7 +141,7 @@ import { QuickLinkIcon } from '@/Components/icons';
 import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 
-interface CategoryOption {
+interface TopicOption {
   id: number;
   name: string;
   alias: string | null;
@@ -150,7 +150,7 @@ interface CategoryOption {
 const props = defineProps<{
   quickLink: App.Entities.QuickLink;
   tenantOptions: Record<string, any>[];
-  categoryOptions?: CategoryOption[];
+  topicOptions?: TopicOption[];
   rememberKey?: 'CreateQuickLink';
 }>();
 
@@ -187,7 +187,7 @@ const basicInfoComplete = computed(() =>
 const linkTargetComplete = computed(() => (form.link?.length || 0) > 0);
 
 // --- Link target picker -----------------------------------------------------
-// The picker (and category select) are convenience fillers for `link` — the field
+// The picker (and topic select) are convenience fillers for `link` — the field
 // itself always stays editable as a manual override. `type` is a legacy column the
 // backend no longer persists (see QuickLinkController::store()/update()), so nothing
 // here needs to track or submit it.
@@ -220,13 +220,13 @@ const onTargetConfirm = (hits: NormalizedSearchHit[]) => {
   resolveAndFillUrl(hit.collection, hit.recordId, hit.title);
 };
 
-const categorySelectValue = ref<string | undefined>(undefined);
-const onCategorySelected = (val: unknown) => {
+const topicSelectValue = ref<string | undefined>(undefined);
+const onTopicSelected = (val: unknown) => {
   const value = val as string | undefined;
-  categorySelectValue.value = value;
-  const category = props.categoryOptions?.find(c => String(c.id) === value);
-  if (category) {
-    resolveAndFillUrl('categories', category.id, category.name);
+  topicSelectValue.value = value;
+  const topic = props.topicOptions?.find(t => String(t.id) === value);
+  if (topic) {
+    resolveAndFillUrl('topics', topic.id, topic.name);
   }
 };
 </script>

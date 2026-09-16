@@ -29,7 +29,7 @@ class StoreCalendarRequest extends CalendarRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
+            'event_type_id' => ['nullable', 'integer', SoftDeleteRules::existsLive('event_types')],
         ]);
     }
 }

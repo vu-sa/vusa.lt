@@ -58,10 +58,7 @@
             </ToggleGroup>
           </FormFieldWrapper>
 
-          <FormFieldWrapper id="tags" :label="$t('Žymos')" :hint="$t('Pasirinkite temas')">
-            <MultiSelect v-model="selectedTags" :options="tagOptions" value-field="value"
-              :placeholder="$t('Pasirinkite žymas...')" />
-          </FormFieldWrapper>
+          <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
         </div>
 
         <!-- Other Language News -->
@@ -232,8 +229,8 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
 import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
+import TagMultiSelect from './TagMultiSelect.vue';
 
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
@@ -241,7 +238,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Component
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import IFluentWarning24Regular from '~icons/fluent/warning24-regular';
-import { MultiSelect } from '@/Components/ui/multi-select';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
@@ -382,37 +378,5 @@ const otherLangInitialHits = computed<NormalizedSearchHit[]>(() => {
 function onOtherLangNewsConfirm(hits: NormalizedSearchHit[]) {
   form.other_lang_id = hits[0] ? Number(hits[0].recordId) : null;
 }
-
-const tagOptions = computed(() => {
-  return (props.availableTags || []).map((tag) => {
-    const label = getTranslatedValue(tag.name, undefined, 'Unknown');
-    return { label, value: tag.id };
-  });
-});
-
-const tagOptionsMap = computed(() => {
-  const map = new Map<number, { label: string; value: number }>();
-
-  for (const option of tagOptions.value) {
-    map.set(option.value, option);
-  }
-
-  return map;
-});
-
-// Computed to handle tag selection - converts between objects and IDs
-const selectedTags = computed({
-  get: () => {
-    const tagIds = Array.isArray(form.tags) ? form.tags : [];
-    const map = tagOptionsMap.value;
-
-    return tagIds
-      .map(id => map.get(id))
-      .filter((option): option is { label: string; value: number } => Boolean(option));
-  },
-  set: (items: { label: string; value: number }[]) => {
-    form.tags = items.map(item => item.value);
-  },
-});
 
 </script>

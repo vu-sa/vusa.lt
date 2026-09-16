@@ -9,9 +9,6 @@
       <Badge v-if="page.lang" variant="outline" class="uppercase">
         {{ page.lang }}
       </Badge>
-      <Badge v-if="page.category_name" variant="secondary">
-        {{ page.category_name }}
-      </Badge>
       <Badge v-if="page.tenant_name" variant="secondary">
         {{ page.tenant_name }}
       </Badge>
@@ -36,7 +33,6 @@
       <DetailRow :label="$t('Pavadinimas')" :value="page.title || '—'" />
       <DetailRow v-if="page.meta_description" :label="$t('Meta aprašymas')" :value="stripHtml(page.meta_description)" />
       <DetailRow :label="$t('Kalba')" :value="page.lang?.toUpperCase() || '—'" />
-      <DetailRow v-if="page.category_name" :label="$t('Kategorija')" :value="page.category_name" />
       <DetailRow v-if="page.tenant_name" :label="$t('Padalinys')" :value="page.tenant_name" />
       <DetailRow v-if="page.permalink" :label="$t('Nuoroda')" :value="page.permalink" />
     </div>

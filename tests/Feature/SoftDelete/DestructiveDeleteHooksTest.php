@@ -11,10 +11,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * `Meeting` and `Tag` both cascaded their children away in an unguarded `deleting`
- * hook, so a *soft* delete destroyed data restore could not bring back. These tests
- * pin down the distinction the guards introduce: soft delete preserves everything,
- * force delete clears exactly what the restricting foreign keys require.
+ * `Meeting` cascaded its children away in an unguarded `deleting` hook, so a *soft*
+ * delete destroyed data restore could not bring back. `Tag`'s taggable links cascade
+ * at the DB level (`taggables.tag_id` is `cascadeOnDelete`) instead. These tests pin
+ * down the distinction: soft delete preserves everything, force delete clears exactly
+ * what the restricting/cascading foreign keys require.
  */
 describe('meeting', function (): void {
     test('soft delete preserves the agenda, its votes and its notes', function (): void {
@@ -75,7 +76,7 @@ describe('tag', function (): void {
         $tag->delete();
 
         $this->assertSoftDeleted('tags', ['id' => $tag->id]);
-        $this->assertDatabaseHas('posts_tags', ['tag_id' => $tag->id, 'news_id' => $news->id]);
+        $this->assertDatabaseHas('taggables', ['tag_id' => $tag->id, 'taggable_type' => 'news', 'taggable_id' => $news->id]);
     });
 
     test('restore returns the news links', function (): void {
@@ -88,7 +89,10 @@ describe('tag', function (): void {
         expect($tag->fresh()->news)->toHaveCount(2);
     });
 
-    test('force delete detaches the news so the restricting key does not block it', function (): void {
+    // taggables.tag_id cascades at the DB level (unlike the old posts_tags.tag_id, which
+    // restricted deletes and needed a manual detach-before-force-delete hook), so force
+    // deleting the tag alone is enough to clear its taggable rows.
+    test('force delete cascades the news links so the restricting key does not block it', function (): void {
         $tag = Tag::factory()->create();
         $news = News::factory()->create();
         $tag->news()->attach($news);
@@ -97,7 +101,7 @@ describe('tag', function (): void {
         $tag->forceDelete();
 
         $this->assertDatabaseMissing('tags', ['id' => $tag->id]);
-        $this->assertDatabaseMissing('posts_tags', ['tag_id' => $tag->id]);
+        $this->assertDatabaseMissing('taggables', ['tag_id' => $tag->id]);
         // The article itself is untouched.
         $this->assertDatabaseHas('news', ['id' => $news->id]);
     });

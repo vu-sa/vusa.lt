@@ -52,7 +52,7 @@ return [
         'link_target_placeholder' => 'Pick a page, news item, event…',
         'link_target_search' => 'Search…',
         'link_target_manual' => 'Enter a URL manually',
-        'link_target_category' => 'Link to a category',
+        'link_target_topic' => 'Link to a topic',
         'footer_category_url_hint' => 'Leave empty to show this column heading as plain text instead of a link.',
         'or' => 'or',
         'show_image' => 'Show image settings',

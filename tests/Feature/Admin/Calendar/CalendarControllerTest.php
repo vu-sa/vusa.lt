@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Calendar;
+use App\Models\EventType;
 use App\Models\PublicUrl;
 use App\Models\Tenant;
 use App\Models\User;
@@ -15,6 +16,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->calendarManager = makeCalendarManager($this->tenant);
+    $this->eventType = EventType::factory()->create();
 });
 
 function makeCalendarManager($tenant): User
@@ -94,7 +96,7 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Calendar/IndexCalendarEvents')
                 ->has('calendar')
-                ->has('allCategories')
+                ->has('eventTypes')
             );
     });
 
@@ -114,6 +116,7 @@ describe('authorized access', function (): void {
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
             'is_draft' => false,
         ];
 
@@ -123,6 +126,7 @@ describe('authorized access', function (): void {
         $this->assertDatabaseHas('calendar', [
             'title->lt' => 'Test renginys',
             'title->en' => 'Test event',
+            'event_type_id' => $this->eventType->id,
         ]);
     });
 
@@ -133,6 +137,7 @@ describe('authorized access', function (): void {
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
             'hero_style' => 'split',
             'is_draft' => false,
         ];
@@ -152,6 +157,7 @@ describe('authorized access', function (): void {
             'permalink' => ['lt' => 'renginys-su-fokuso-tasku', 'en' => 'event-with-focal-point'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
             'main_image_focal_point' => '40% 25%',
         ];
 
@@ -169,6 +175,7 @@ describe('authorized access', function (): void {
             'permalink' => ['lt' => 'numatyto-stiliaus-renginys', 'en' => 'default-style-event'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
         ];
 
         asUser($this->calendarManager)->post(route('calendar.store'), $calendarData)->assertRedirect();
@@ -200,6 +207,7 @@ describe('authorized access', function (): void {
             'description' => ['lt' => 'Atnaujintas aprašymas', 'en' => 'Updated description'],
             'date' => now()->addDays(2)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
             'is_draft' => true,
         ];
 
@@ -209,6 +217,25 @@ describe('authorized access', function (): void {
         $calendar->refresh();
         expect($calendar->getTranslation('title', 'lt'))->toBe('Atnaujintas renginys')
             ->and($calendar->getTranslation('title', 'en'))->toBe('Updated event');
+    });
+
+    test('calendar manager can clear an event type', function (): void {
+        $calendar = Calendar::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
+        ]);
+
+        $response = asUser($this->calendarManager)->put(route('calendar.update', $calendar), [
+            'title' => ['lt' => 'Renginys be tipo', 'en' => 'Event without a type'],
+            'permalink' => ['lt' => 'renginys-be-tipo', 'en' => 'event-without-a-type'],
+            'date' => now()->addDays(2)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+            'event_type_id' => null,
+        ]);
+
+        $response->assertRedirect()
+            ->assertSessionDoesntHaveErrors('event_type_id');
+        expect($calendar->fresh()->event_type_id)->toBeNull();
     });
 
     test('calendar manager can delete calendar event', function (): void {
@@ -296,6 +323,24 @@ describe('validation', function (): void {
             ->assertSessionHasErrors('date');
     });
 
+    test('allows storing an event without an event type', function (): void {
+        $response = asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'permalink' => ['lt' => 'test-renginys-be-tipo', 'en' => 'test-event-untyped'],
+            'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
+            'date' => now()->addDays(1)->format('Y-m-d'),
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $response->assertRedirect()
+            ->assertSessionDoesntHaveErrors('event_type_id');
+
+        $this->assertDatabaseHas('calendar', [
+            'permalink->lt' => 'test-renginys-be-tipo',
+            'event_type_id' => null,
+        ]);
+    });
+
     test('requires permalink for store', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
@@ -337,6 +382,7 @@ describe('validation', function (): void {
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
             'date' => '2026-03-10',
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
         ]);
 
         $response->assertStatus(302)->assertSessionDoesntHaveErrors('permalink.lt');
@@ -375,6 +421,7 @@ describe('validation', function (): void {
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
             'date' => '2026-03-10',
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
         ]);
 
         $response->assertStatus(302)->assertSessionDoesntHaveErrors('permalink.lt');
@@ -425,6 +472,7 @@ describe('validation', function (): void {
             'permalink' => ['lt' => 'renginys-su-nuotrauka', 'en' => 'event-with-image'],
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
             'images' => [['file' => $image]],
         ];
 
@@ -482,6 +530,7 @@ describe('tenant isolation', function (): void {
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
+            'event_type_id' => $this->eventType->id,
         ]);
 
         $response->assertSessionHasNoErrors();
@@ -489,11 +538,11 @@ describe('tenant isolation', function (): void {
 });
 
 describe('relationships', function (): void {
-    test('calendar belongs to category', function (): void {
+    test('calendar belongs to event type', function (): void {
         $calendar = Calendar::factory()->create();
 
-        // Check if calendar can have category relationship
-        expect($calendar->category())->toBeInstanceOf(BelongsTo::class);
+        // Check if calendar can have event type relationship
+        expect($calendar->eventType())->toBeInstanceOf(BelongsTo::class);
     });
 
     test('can duplicate calendar with proper translations', function (): void {

@@ -10,13 +10,14 @@ export const calendarTemplate: Omit<App.Entities.Calendar, 'created_at' | 'updat
   tenant_id: null,
   main_image: null,
   images: [],
-  category_id: null,
+  event_type_id: null,
   facebook_url: '',
-  youtube_url: '',
+  video_url: '',
   is_draft: false,
   is_all_day: false,
   is_international: false,
   hero_style: 'card',
+  tags: [],
 };
 
 export const formTemplate: Pick<
@@ -80,7 +81,6 @@ export const pageTemplate = {
   title: '',
   permalink: '',
   lang: 'lt',
-  category_id: null,
   other_lang_id: null,
   tenant_id: null,
   is_active: true,
@@ -115,11 +115,12 @@ export const typeTemplate: Pick<
 
 export const tagTemplate: Pick<
   App.Entities.Tag,
-  'name' | 'description' | 'alias'
+  'name' | 'description' | 'alias' | 'is_topic'
 > = {
   name: { lt: '', en: '' },
   description: { lt: '', en: '' },
   alias: '',
+  is_topic: false,
 };
 
 export const studySetTemplate = {

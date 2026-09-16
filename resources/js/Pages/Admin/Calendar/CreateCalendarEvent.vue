@@ -4,7 +4,8 @@
       <CalendarForm
         :calendar
         remember-key="CreateCalendar"
-        :categories
+        :event-types="eventTypes"
+        :available-tags
         :assignable-tenants
         :submit-url="route('calendar.store')"
         submit-method="post"
@@ -23,7 +24,8 @@ import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
-  categories: App.Entities.Category[];
+  eventTypes: App.Entities.EventType[];
+  availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
 }>();
 

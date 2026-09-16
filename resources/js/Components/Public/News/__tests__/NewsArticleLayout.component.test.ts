@@ -21,7 +21,6 @@ const article = {
   publish_time: '2026-08-19T16:26:31.000000Z',
   image: '/images/placeholders/foto1.jpg',
   image_author: 'Vardenė Pavardenė',
-  category: { id: 1, name: 'Atstovavimas' },
   reading_time: 4,
   tenant: 'VU SA',
   tags: [],
@@ -43,13 +42,6 @@ function render(overrides: Record<string, unknown> = {}) {
 }
 
 describe('NewsArticleLayout', () => {
-  it('renders the category chip only when the article has a category', () => {
-    expect(render().find('[data-slot="tag-chip"]').text()).toBe('Atstovavimas');
-
-    const withoutCategory = render({ article: { ...article, category: null } });
-    expect(withoutCategory.find('[data-slot="tag-chip"]').exists()).toBe(false);
-  });
-
   /**
    * Tags used to be `<button>` + `router.visit`, which cannot be middle-clicked, opened in a new
    * tab, or followed by a crawler. They are links now, and the name resolves from either a plain
@@ -127,7 +119,6 @@ describe('NewsArticleLayout', () => {
         publish_time: '2026-08-01T00:00:00.000000Z',
         permalink: 'kita',
         image: '/images/placeholders/foto2.jpg',
-        category: null,
       }],
     });
 

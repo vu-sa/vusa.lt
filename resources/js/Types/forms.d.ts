@@ -14,13 +14,14 @@ declare global {
       | 'organizer'
       | 'cto_url'
       | 'facebook_url'
+      | 'video_url'
       | 'main_image_focal_point'
       | 'is_draft'
       | 'is_all_day'
       | 'is_international'
       | 'hero_style'
       | 'tenant_id'
-      | 'category_id'
+      | 'event_type_id'
       | 'tenant'
       | 'public_urls'
     > {
@@ -35,9 +36,9 @@ declare global {
       file?: File;
       status?: string;
     }>;
-    youtube_url?: string | null;
     /** Informational only — still resolves live, never stored, nothing to delete. */
     legacy_date_urls?: Partial<Record<'lt' | 'en', string | null>>;
+    tags?: number[];
   }
 
   interface InstitutionForm

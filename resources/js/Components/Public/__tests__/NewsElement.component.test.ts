@@ -9,8 +9,8 @@ import type { News, NewsItem } from '@/Types/contentParts';
 
 /**
  * The news block is a featured article plus a hairline list — no carousel. These cover that
- * split, the optional category chip, and the eyebrow's de-duplication rule. How it *looks* in
- * either theme is Storybook's job; jsdom cannot resolve Tailwind's `dark:` variant.
+ * split and the eyebrow's de-duplication rule. How it *looks* in either theme is Storybook's
+ * job; jsdom cannot resolve Tailwind's `dark:` variant.
  */
 function makeItem(overrides: Partial<NewsItem> = {}): NewsItem {
   return {
@@ -21,7 +21,6 @@ function makeItem(overrides: Partial<NewsItem> = {}): NewsItem {
     publish_time: '2026-08-19T16:26:31.000000Z',
     permalink: 'pirmoji-naujiena',
     image: '/uploads/news/one.webp',
-    category: null,
     ...overrides,
   };
 }
@@ -54,16 +53,6 @@ describe('NewsElement', () => {
     expect(wrapper.findAll('h3')).toHaveLength(4);
     expect(wrapper.text()).toContain('Naujiena 4');
     expect(wrapper.text()).not.toContain('Naujiena 5');
-  });
-
-  it('renders a category chip only for articles that have one', () => {
-    const wrapper = mountWith([
-      makeItem({ id: 1, category: 'Akademinė informacija' }),
-      makeItem({ id: 2, title: 'Antra', permalink: 'antra', category: null }),
-    ]);
-
-    expect(wrapper.find('[data-slot="tag-chip"]').text()).toBe('Akademinė informacija');
-    expect(wrapper.findAll('[data-slot="tag-chip"]')).toHaveLength(1);
   });
 
   it('drops the eyebrow when the authored title already says "Naujienos"', () => {

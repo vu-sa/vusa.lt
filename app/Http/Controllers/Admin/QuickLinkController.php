@@ -11,8 +11,8 @@ use App\Http\Requests\UpdateQuickLinkOrderRequest;
 use App\Http\Requests\UpdateQuickLinkRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Category;
 use App\Models\QuickLink;
+use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
@@ -76,7 +76,7 @@ class QuickLinkController extends AdminController
         $this->handleAuthorization('create', QuickLink::class);
 
         return $this->inertiaResponse('Admin/Content/CreateQuickLink', [
-            'categoryOptions' => $this->getCategoryOptions(),
+            'topicOptions' => $this->getTopicOptions(),
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer),
         ]);
     }
@@ -135,7 +135,7 @@ class QuickLinkController extends AdminController
         return $this->inertiaResponse('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
-            'categoryOptions' => $this->getCategoryOptions(),
+            'topicOptions' => $this->getTopicOptions(),
         ]);
     }
 
@@ -189,9 +189,9 @@ class QuickLinkController extends AdminController
     }
 
     /**
-     * Categories aren't Typesense-searchable (7 rows repo-wide — see AGENTS.md), so the
-     * link-target picker falls back to a plain list here instead of the multi-collection
-     * search dialog used for pages/news/calendar events/institutions.
+     * Topics aren't Typesense-searchable (a few dozen rows repo-wide — see AGENTS.md), so
+     * the link-target picker falls back to a plain list here instead of the
+     * multi-collection search dialog used for pages/news/calendar events/institutions.
      *
      * Page/news/calendar/institution options used to be built the same way (an
      * unpaginated, unfiltered full-table dump per type) until the picker moved to
@@ -199,13 +199,13 @@ class QuickLinkController extends AdminController
      *
      * @return array<int, array{id: int, name: string, alias: string|null}>
      */
-    private function getCategoryOptions(): array
+    private function getTopicOptions(): array
     {
-        return Category::query()->get(['id', 'name', 'alias'])
-            ->map(fn (Category $category): array => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'alias' => $category->alias,
+        return Tag::query()->topics()->orderBy('sort_order')->get(['id', 'name', 'alias'])
+            ->map(fn (Tag $tag): array => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+                'alias' => $tag->alias,
             ])
             ->all();
     }

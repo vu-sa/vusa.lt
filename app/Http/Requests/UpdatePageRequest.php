@@ -9,6 +9,7 @@ use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Models\Page;
 use App\Rules\SoftDeleteRules;
 use App\Rules\UniqueAmongTrashed;
+use App\Rules\ValidPageParent;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -52,7 +53,14 @@ class UpdatePageRequest extends FormRequest
                 UniqueAmongTrashed::of('pages')->ignore($this->page->id)->where('tenant_id', $this->getTargetTenantId()),
                 fn (string $attribute, mixed $value, Closure $fail) => $this->assertPermalinkNotRetiredByAnother((string) $value, $fail),
             ],
-            'category_id' => ['nullable', SoftDeleteRules::existsLive('categories')],
+            'parent_id' => [
+                'nullable', 'integer', SoftDeleteRules::existsLive('pages'),
+                new ValidPageParent(
+                    lang: (string) $this->input('lang', $this->page->lang),
+                    tenantId: $this->page->tenant_id,
+                    excludeDescendantsOf: $this->page->id,
+                ),
+            ],
             // `different:id` was inert — the payload has no `id` field — so a page
             // could be paired with itself. Compare against the route model instead.
             'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages'), Rule::notIn([$this->page->id])],
@@ -61,6 +69,8 @@ class UpdatePageRequest extends FormRequest
             'show_table_of_contents' => ['boolean'],
             'show_title' => ['boolean'],
             'show_breadcrumbs' => ['boolean'],
+            'tags' => 'nullable|array',
+            'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
         ];
     }
 

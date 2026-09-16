@@ -17,6 +17,13 @@
       <FormFieldWrapper id="alias" :label="$t('forms.fields.alias')" :helper-text="$t('forms.helpers.tag_alias_hint')">
         <Input id="alias" v-model="form.alias" placeholder="Pvz: stipendijos" />
       </FormFieldWrapper>
+
+      <FormFieldWrapper id="is_topic" :label="$t('forms.fields.is_topic')" :helper-text="$t('forms.helpers.is_topic_hint')">
+        <label class="flex items-center gap-2 text-sm text-muted-foreground">
+          <Switch id="is_topic" v-model="form.is_topic" />
+          {{ $t('forms.fields.is_topic') }}
+        </label>
+      </FormFieldWrapper>
     </FormElement>
   </AdminForm>
 </template>
@@ -29,6 +36,7 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import AdminForm from './AdminForm.vue';
 
 import { Input } from '@/Components/ui/input';
+import { Switch } from '@/Components/ui/switch';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import MultiLocaleTiptapFormItem from '@/Components/FormItems/MultiLocaleTiptapFormItem.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';

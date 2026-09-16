@@ -14,7 +14,7 @@ const mockSearch = vi.fn().mockResolvedValue({
         is_all_day: false,
         is_remote: false,
         location: 'Vilnius',
-        category_name: 'Konferencija',
+        event_type_name: 'Konferencija',
         tenant_shortname: 'VU SA',
         url: '/lt/renginiai/1',
       },
@@ -23,7 +23,7 @@ const mockSearch = vi.fn().mockResolvedValue({
   found: 1,
   facet_counts: [
     {
-      field_name: 'category_name',
+      field_name: 'event_type_name',
       counts: [{ value: 'Konferencija', count: 1 }],
     },
     {
@@ -73,21 +73,21 @@ describe('useCalendarSearch', () => {
 
     expect(search.tab.value).toBe('upcoming');
     expect(search.query.value).toBe('');
-    expect(search.selectedCategories.value).toEqual([]);
+    expect(search.selectedEventTypes.value).toEqual([]);
     expect(search.selectedTenants.value).toEqual([]);
     expect(search.selectedYears.value).toEqual([]);
     expect(search.isRemoteOnly.value).toBe(false);
   });
 
   it('initializes from URL query parameters if present', async () => {
-    window.history.replaceState({}, '', '/lt/renginiai?tab=past&q=test&category=Konferencija&year=2026&remote=1');
+    window.history.replaceState({}, '', '/lt/renginiai?tab=past&q=test&type=Konferencija&year=2026&remote=1');
 
     const { useCalendarSearch } = await import('../useCalendarSearch');
     const search = useCalendarSearch();
 
     expect(search.tab.value).toBe('past');
     expect(search.query.value).toBe('test');
-    expect(search.selectedCategories.value).toEqual(['Konferencija']);
+    expect(search.selectedEventTypes.value).toEqual(['Konferencija']);
     expect(search.selectedYears.value).toEqual(['2026']);
     expect(search.isRemoteOnly.value).toBe(true);
   });
@@ -103,15 +103,15 @@ describe('useCalendarSearch', () => {
     expect(search.sortBy.value).toBe('date_asc');
   });
 
-  it('toggles category selection', async () => {
+  it('toggles event type selection', async () => {
     const { useCalendarSearch } = await import('../useCalendarSearch');
     const search = useCalendarSearch();
 
-    search.toggleCategory('Seminaras');
-    expect(search.selectedCategories.value).toEqual(['Seminaras']);
+    search.toggleEventType('Seminaras');
+    expect(search.selectedEventTypes.value).toEqual(['Seminaras']);
 
-    search.toggleCategory('Seminaras');
-    expect(search.selectedCategories.value).toEqual([]);
+    search.toggleEventType('Seminaras');
+    expect(search.selectedEventTypes.value).toEqual([]);
   });
 
   it('toggles tenant selection', async () => {
@@ -208,7 +208,7 @@ describe('useCalendarSearch', () => {
     const search = useCalendarSearch();
 
     search.query.value = 'abc';
-    search.selectedCategories.value = ['Konferencija'];
+    search.selectedEventTypes.value = ['Konferencija'];
     search.selectedTenants.value = ['MIF'];
     search.selectedYears.value = ['2025'];
     search.isRemoteOnly.value = true;
@@ -218,7 +218,7 @@ describe('useCalendarSearch', () => {
     search.clearFilters();
 
     expect(search.query.value).toBe('');
-    expect(search.selectedCategories.value).toEqual([]);
+    expect(search.selectedEventTypes.value).toEqual([]);
     expect(search.selectedTenants.value).toEqual([]);
     expect(search.selectedYears.value).toEqual([]);
     expect(search.isRemoteOnly.value).toBe(false);
@@ -234,7 +234,7 @@ describe('useCalendarSearch', () => {
     expect(mockSearch).toHaveBeenCalled();
     expect(search.events.value).toHaveLength(1);
     expect(search.events.value[0].title).toBe('VU SA Konferencija');
-    expect(search.categoryFacets.value).toEqual([
+    expect(search.eventTypeFacets.value).toEqual([
       { value: 'Konferencija', label: 'Konferencija', count: 1 },
     ]);
     expect(search.tenantFacets.value).toEqual([

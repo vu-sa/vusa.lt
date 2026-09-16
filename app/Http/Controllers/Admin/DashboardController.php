@@ -132,7 +132,7 @@ class DashboardController extends AdminController
         $upcomingCalendarEvents = Calendar::query()
             ->where('is_draft', false)
             ->where('date', '>=', now())
-            ->with(['tenant:id,shortname', 'category:id,name'])
+            ->with(['tenant:id,shortname', 'eventType:id,name'])
             ->orderBy('date')
             ->take(3)
             ->get()

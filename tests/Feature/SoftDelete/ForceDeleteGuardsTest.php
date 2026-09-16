@@ -1,11 +1,11 @@
 <?php
 
 use App\Contracts\GuardsForceDelete;
-use App\Models\Category;
+use App\Models\Calendar;
+use App\Models\EventType;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Meeting;
-use App\Models\News;
 use App\Models\Registration;
 use App\Models\Reservation;
 use App\Models\Resource;
@@ -39,11 +39,11 @@ describe('blocked', function (): void {
         expect($form->forceDeleteBlockedReason())->toBeString();
     });
 
-    test('a category still used by news cannot be permanently deleted', function (): void {
-        $category = Category::factory()->create();
-        News::factory()->create(['category_id' => $category->id]);
+    test('an event type still used by a calendar event cannot be permanently deleted', function (): void {
+        $eventType = EventType::factory()->create();
+        Calendar::factory()->create(['event_type_id' => $eventType->id]);
 
-        expect($category->forceDeleteBlockedReason())->toBeString();
+        expect($eventType->forceDeleteBlockedReason())->toBeString();
     });
 
     test('a resource with reservation history cannot be permanently deleted', function (): void {
@@ -57,16 +57,16 @@ describe('blocked', function (): void {
     });
 
     test('an unreferenced record reports no blocker', function (): void {
-        expect(Category::factory()->create()->forceDeleteBlockedReason())->toBeNull()
+        expect(EventType::factory()->create()->forceDeleteBlockedReason())->toBeNull()
             ->and(Form::factory()->create()->forceDeleteBlockedReason())->toBeNull()
             ->and(StudyProgram::factory()->create()->forceDeleteBlockedReason())->toBeNull();
     });
 
     test('the reason names the referencing records rather than being generic', function (): void {
-        $category = Category::factory()->create();
-        News::factory()->count(2)->create(['category_id' => $category->id]);
+        $eventType = EventType::factory()->create();
+        Calendar::factory()->count(2)->create(['event_type_id' => $eventType->id]);
 
-        expect($category->forceDeleteBlockedReason())
+        expect($eventType->forceDeleteBlockedReason())
             ->toContain('2')
             ->not->toBe(__('trash.blocked.has_related_records'));
     });
@@ -77,31 +77,31 @@ describe('through the controller', function (): void {
         $tenant = Tenant::query()->first();
         $admin = makeAdminUser($tenant);
 
-        $category = Category::factory()->create();
-        News::factory()->create(['category_id' => $category->id]);
-        $category->delete();
+        $eventType = EventType::factory()->create();
+        Calendar::factory()->create(['event_type_id' => $eventType->id]);
+        $eventType->delete();
 
         asUser($admin)
-            ->delete(route('categories.forceDelete', $category->id))
+            ->delete(route('eventTypes.forceDelete', $eventType->id))
             ->assertRedirect()
-            ->assertSessionHas('error', $category->forceDeleteBlockedReason());
+            ->assertSessionHas('error', $eventType->forceDeleteBlockedReason());
 
-        $this->assertSoftDeleted('categories', ['id' => $category->id]);
+        $this->assertSoftDeleted('event_types', ['id' => $eventType->id]);
     });
 
     test('an unblocked record is permanently deleted', function (): void {
         $tenant = Tenant::query()->first();
         $admin = makeAdminUser($tenant);
 
-        $category = Category::factory()->create();
-        $category->delete();
+        $eventType = EventType::factory()->create();
+        $eventType->delete();
 
         asUser($admin)
-            ->delete(route('categories.forceDelete', $category->id))
+            ->delete(route('eventTypes.forceDelete', $eventType->id))
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+        $this->assertDatabaseMissing('event_types', ['id' => $eventType->id]);
     });
 });
 
@@ -125,7 +125,7 @@ test('every guarded model exposes the reason as an appendable attribute', functi
     // The admin index serializes `force_delete_blocked_reason` so the table can disable
     // the action before it is clicked.
     $models = [
-        Category::factory()->create(),
+        EventType::factory()->create(),
         Form::factory()->create(),
         StudyProgram::factory()->create(),
         Institution::factory()->create(),

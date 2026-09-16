@@ -11,10 +11,10 @@ use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Category;
 use App\Models\Content;
 use App\Models\Page;
 use App\Models\PublicUrl;
+use App\Models\Tag;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
@@ -82,7 +82,7 @@ class PageController extends AdminController
 
         return $this->inertiaResponse('Admin/Content/CreatePage',
             [
-                'categories' => Category::all(['id', 'name']),
+                'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
                 'assignableTenants' => GetTenantsForUpserts::execute('pages.create.padalinys', $this->authorizer),
             ]
         );
@@ -103,7 +103,7 @@ class PageController extends AdminController
 
         $page = Page::query()->create([
             'title' => $request->title,
-            'category_id' => $request->category_id,
+            'parent_id' => $request->validated('parent_id'),
             'content_id' => $content->id,
             'permalink' => GenerateUniqueSlug::execute(Page::class, $request->title, $tenant_id),
             'lang' => $request->lang,
@@ -124,6 +124,10 @@ class PageController extends AdminController
         // release whoever already holds the counterpart id, trashed rows included.
         PairTranslatedRecord::execute($page, $request->other_lang_id);
 
+        if ($request->has('tags') && is_array($request->tags)) {
+            $page->tags()->sync($request->tags);
+        }
+
         return redirect()->route('pages.index')->with('success', $this->entityMessage('created', 'page'));
     }
 
@@ -134,7 +138,7 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('update', $page);
 
-        $page->load('tenant:id,alias,shortname');
+        $page->load('tenant:id,alias,shortname', 'parent:id,title');
 
         $other_lang_pages = Page::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($page): void {
             $query->where('tenant_id', $page->tenant_id);
@@ -142,13 +146,18 @@ class PageController extends AdminController
 
         return $this->inertiaResponse('Admin/Content/EditPage', [
             'page' => [
-                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'category_id', 'tenant_id', 'is_active', 'aside', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs'),
+                ...$page->only('id', 'title', 'content', 'permalink', 'text', 'lang', 'parent_id', 'tenant_id', 'is_active', 'aside', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs'),
                 'tenant' => $page->tenant->only('id', 'alias', 'shortname'),
+                'parent' => $page->parent?->only('id', 'title'),
                 'other_lang_id' => $page->getOtherLanguage()?->only('id')['id'] ?? null,
                 'public_urls' => $page->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
+                'tags' => $page->tags->pluck('id')->toArray(),
+                // Excluded from the parent picker client-side (also enforced server-side
+                // by ValidPageParent) — a page cannot hang off its own subtree.
+                'descendant_ids' => $page->descendantIds(),
             ],
             'otherLangPages' => $other_lang_pages,
-            'categories' => Category::all(['id', 'name']),
+            'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
         ]);
     }
 
@@ -160,7 +169,7 @@ class PageController extends AdminController
         $this->handleAuthorization('update', $page);
 
         $page->update([
-            ...$request->safe()->only('title', 'lang', 'category_id', 'is_active', 'layout', 'permalink'),
+            ...$request->safe()->only('title', 'lang', 'parent_id', 'is_active', 'layout', 'permalink'),
             'show_table_of_contents' => $request->boolean('show_table_of_contents', true),
             'show_title' => $request->boolean('show_title', true),
             'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),
@@ -172,6 +181,10 @@ class PageController extends AdminController
         app(ContentService::class)->updateContentParts($content, $request->content['parts']);
 
         PairTranslatedRecord::execute($page, $request->other_lang_id);
+
+        if ($request->has('tags') && is_array($request->tags)) {
+            $page->tags()->sync($request->tags);
+        }
 
         return back()->with('success', $this->entityMessage('updated', 'page'))->with('data', $page->load('content'));
     }

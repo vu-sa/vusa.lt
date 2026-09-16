@@ -89,9 +89,6 @@
               </template>
             </MediaFrame>
             <div class="flex flex-1 flex-col justify-center gap-1.5">
-              <span v-if="item.category" class="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-brand">
-                {{ item.category }}
-              </span>
               <h3 class="text-pretty font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
                 {{ item.title }}
               </h3>
