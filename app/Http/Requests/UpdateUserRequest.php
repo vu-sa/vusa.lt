@@ -49,8 +49,7 @@ class UpdateUserRequest extends FormRequest
     }
 
     /**
-     * Refuse changes to the identity fields (name, email) when the actor lacks the
-     * `updateIdentity` ability.
+     * Refuse name and email changes when the actor lacks the corresponding ability.
      *
      * Email is the login identity — AuthController::callback resolves the Microsoft
      * account by users.email — so an unchecked change is an account takeover.
@@ -66,22 +65,26 @@ class UpdateUserRequest extends FormRequest
             /** @var User $target */
             $target = $this->route('user');
 
-            $changed = collect(['name', 'email'])->filter(
-                fn (string $field) => $this->has($field)
-                    && trim((string) $this->input($field)) !== (string) $target->getAttribute($field)
-            );
+            foreach (['name' => 'updateName', 'email' => 'updateIdentity'] as $field => $ability) {
+                if (! $this->has($field)
+                    || trim((string) $this->input($field)) === (string) $target->getAttribute($field)
+                    || $this->user()->can($ability, $target)) {
+                    continue;
+                }
 
-            if ($changed->isEmpty() || $this->user()->can('updateIdentity', $target)) {
-                return;
+                if ($field === 'name') {
+                    $validator->errors()->add($field, __('users.name_locked'));
+
+                    continue;
+                }
+
+                $blocking = app(UserPolicy::class)->blockingTenantNames($this->user(), $target);
+                $message = $blocking->isNotEmpty()
+                    ? __('users.identity_locked_tenants', ['tenants' => $blocking->join(', ')])
+                    : __('users.identity_locked_protected');
+
+                $validator->errors()->add($field, $message);
             }
-
-            $blocking = app(UserPolicy::class)->blockingTenantNames($this->user(), $target);
-
-            $message = $blocking->isNotEmpty()
-                ? __('users.identity_locked_tenants', ['tenants' => $blocking->join(', ')])
-                : __('users.identity_locked_protected');
-
-            $changed->each(fn (string $field) => $validator->errors()->add($field, $message));
         });
     }
 

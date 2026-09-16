@@ -177,7 +177,7 @@ describe('authorized access', function (): void {
         $user = makeUser($this->tenant);
 
         $updateData = [
-            'name' => 'Updated User',
+            'name' => $user->name,
             'email' => 'updated@example.com',
             'phone' => '+370 987 6543',
         ];
@@ -188,8 +188,9 @@ describe('authorized access', function (): void {
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
-            'name' => 'Updated User',
+            'name' => $user->name,
             'email' => 'updated@example.com',
+            'phone' => '+370 987 6543',
         ]);
     });
 
@@ -269,7 +270,7 @@ describe('validation', function (): void {
         $user->update(['email' => 'user@example.com']);
 
         $response = asUser($this->admin)->put(route('users.update', $user), [
-            'name' => 'Updated User',
+            'name' => $user->name,
             'email' => 'existing@example.com',
         ]);
 

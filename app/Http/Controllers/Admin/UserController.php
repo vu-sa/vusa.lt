@@ -39,11 +39,15 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('viewAny', User::class);
 
-        $query = User::query()->with([
-            'duties:id,institution_id',
-            'duties.institution:id,tenant_id',
-            'duties.institution.tenant:id,shortname',
-        ])->withCount('duties');
+        $query = User::query()
+            ->where(fn ($query) => $query
+                ->whereHas('duties')
+                ->orWhereHas('roles'))
+            ->with([
+                'duties:id,institution_id',
+                'duties.institution:id,tenant_id',
+                'duties.institution.tenant:id,shortname',
+            ])->withCount('duties');
 
         $searchableColumns = ['name', 'email', 'phone'];
 
@@ -56,16 +60,6 @@ class UserController extends AdminController
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
-                // A user's tenants are derived from their duties, so someone with no
-                // duties at all belongs to no tenant and would be invisible to every
-                // tenant admin — including the one who just created them and now needs
-                // to assign a duty (GitHub issue #249). Surface them to everyone;
-                // UserPolicy applies the same carve-out, and refuses the ones holding
-                // a directly assigned role.
-                'permissionOrInclude' => fn ($query) => $query
-                    ->orWhere(fn ($unclaimed) => $unclaimed
-                        ->whereDoesntHave('duties')
-                        ->whereDoesntHave('roles')),
             ]
         );
 
@@ -227,8 +221,12 @@ class UserController extends AdminController
         // through by skipping that validator.
         $fields = ['facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'];
 
+        if ($actor->can('updateName', $user)) {
+            $fields[] = 'name';
+        }
+
         if ($actor->can('updateIdentity', $user)) {
-            $fields = array_merge(['name', 'email'], $fields);
+            $fields[] = 'email';
         }
 
         $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin, $fields): void {

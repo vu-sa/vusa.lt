@@ -28,9 +28,9 @@ use Illuminate\Support\Str;
  *
  * - Tenant-local edits (phone, photo, pronouns, duties in your own tenant) stay on
  *   the inherited intersection rule.
- * - Identity fields (name, email) and every destructive action require full
- *   *containment* — all of the target's tenants must be within the actor's — and
- *   are refused outright for users holding a direct role.
+ * - Names are super-admin-only. A super admin's email may only be changed by a
+ *   super admin; other email changes and destructive actions require full tenant
+ *   containment and are refused for users holding a direct role.
  */
 class UserPolicy extends ModelPolicy
 {
@@ -54,16 +54,27 @@ class UserPolicy extends ModelPolicy
     }
 
     /**
-     * Determine whether the user may change the target's identity fields (name, email).
+     * Determine whether the user may change the target's name.
+     */
+    public function updateName(User $user, User $target): bool
+    {
+        return $user->isSuperAdmin();
+    }
+
+    /**
+     * Determine whether the user may change the target's login email.
      *
      * Email is the login identity — AuthController::callback resolves the Microsoft
      * account by users.email — so changing it is equivalent to taking the account
-     * over. Name is included because the edit form has always presented it as
-     * immutable; this only enforces server-side what the UI already states.
+     * over.
      */
     public function updateIdentity(User $user, User $target): bool
     {
         $update = CRUDEnum::UPDATE->label();
+
+        if ($target->isSuperAdmin()) {
+            return $user->isSuperAdmin();
+        }
 
         if ($this->authorizer->allows($user, $this->permission($update, PermissionScopeEnum::ALL))) {
             return true;
@@ -78,46 +89,11 @@ class UserPolicy extends ModelPolicy
             return false;
         }
 
-        $permission = $this->permission($update, PermissionScopeEnum::PADALINYS);
-
-        if ($this->isUnclaimed($target)) {
-            return $this->authorizer->allows($user, $permission);
-        }
-
-        return $this->tenantsContained($user, $target, $permission);
-    }
-
-    /**
-     * A user with no duties belongs to no tenant, so the inherited tenant
-     * intersection can never match and they would be unreachable by every tenant
-     * admin (GitHub issue #249) — including whoever just created them. Let any
-     * tenant admin claim such a record; isUnclaimed() excludes role holders.
-     */
-    #[\Override]
-    public function view(User $user, Model $model): bool
-    {
-        return $this->allowsUnclaimed($user, $model, CRUDEnum::READ->label())
-            || parent::view($user, $model);
-    }
-
-    #[\Override]
-    public function update(User $user, Model $model): bool
-    {
-        return $this->allowsUnclaimed($user, $model, CRUDEnum::UPDATE->label())
-            || parent::update($user, $model);
-    }
-
-    /**
-     * Whether the target is an unclaimed record the actor may act on at the given
-     * tenant-scoped ability.
-     */
-    protected function allowsUnclaimed(User $user, Model $model, string $ability): bool
-    {
-        if (! $model instanceof User || ! $this->isUnclaimed($model)) {
-            return false;
-        }
-
-        return $this->authorizer->allows($user, $this->permission($ability, PermissionScopeEnum::PADALINYS));
+        return $this->tenantsContained(
+            $user,
+            $target,
+            $this->permission($update, PermissionScopeEnum::PADALINYS)
+        );
     }
 
     /**
@@ -192,13 +168,11 @@ class UserPolicy extends ModelPolicy
             return false;
         }
 
-        $permission = $this->permission($ability, PermissionScopeEnum::PADALINYS);
-
-        if ($this->isUnclaimed($model)) {
-            return $this->authorizer->allows($user, $permission);
-        }
-
-        return $this->tenantsContained($user, $model, $permission);
+        return $this->tenantsContained(
+            $user,
+            $model,
+            $this->permission($ability, PermissionScopeEnum::PADALINYS)
+        );
     }
 
     /**
@@ -218,8 +192,6 @@ class UserPolicy extends ModelPolicy
 
         $targetTenantIds = $target->tenants()->pluck('tenants.id')->unique();
 
-        // No tenants at all is handled by the isUnclaimed() branch; reaching here
-        // with an empty set means the target is unreachable, so deny.
         if ($targetTenantIds->isEmpty()) {
             return false;
         }
@@ -235,18 +207,6 @@ class UserPolicy extends ModelPolicy
     protected function isProtected(User $target): bool
     {
         return $target->isSuperAdmin() || $target->roles()->exists();
-    }
-
-    /**
-     * A user with no duties has no tenants, so no tenant admin can reach them
-     * through the normal scoping rules — they would be invisible and unmanageable
-     * (GitHub issue #249). Such a record carries no authority of its own, so any
-     * tenant admin may claim it. The roles() clause is load-bearing: AdminSeeder
-     * creates a duty-less Super Admin in every dev and CI database.
-     */
-    protected function isUnclaimed(User $target): bool
-    {
-        return $target->duties()->doesntExist() && $target->roles()->doesntExist();
     }
 
     /**

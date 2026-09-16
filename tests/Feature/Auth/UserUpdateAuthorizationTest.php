@@ -26,13 +26,14 @@ describe('user update authorization with singleton authorizer', function (): voi
     test('coordinator can update user in same tenant', function (): void {
         $response = asUser($this->admin)
             ->patch(route('users.update', $this->targetUser), [
-                'name' => 'Updated Name',
+                'name' => $this->targetUser->name,
                 'email' => $this->targetUser->email,
+                'phone' => '+370 600 00001',
                 'current_duties' => [],
             ]);
 
         $response->assertRedirect();
-        expect($this->targetUser->fresh()->name)->toBe('Updated Name');
+        expect($this->targetUser->fresh()->phone)->toBe('+370 600 00001');
     });
 
     test('edit then update in same session succeeds with cached authorizer', function (): void {
@@ -44,13 +45,14 @@ describe('user update authorization with singleton authorizer', function (): voi
 
         // Second request — update (should succeed using cached permissions)
         $response = $admin->patch(route('users.update', $this->targetUser), [
-            'name' => 'Updated Via Sequential Requests',
+            'name' => $this->targetUser->name,
             'email' => $this->targetUser->email,
+            'phone' => '+370 600 00002',
             'current_duties' => [],
         ]);
 
         $response->assertRedirect();
-        expect($this->targetUser->fresh()->name)->toBe('Updated Via Sequential Requests');
+        expect($this->targetUser->fresh()->phone)->toBe('+370 600 00002');
     });
 
     test('coordinator cannot update user in different tenant', function (): void {
@@ -85,20 +87,22 @@ describe('user update authorization with singleton authorizer', function (): voi
         // First cycle — edit + update user 1
         $admin->get(route('users.edit', $this->targetUser))->assertStatus(200);
         $admin->patch(route('users.update', $this->targetUser), [
-            'name' => 'First Update',
+            'name' => $this->targetUser->name,
             'email' => $this->targetUser->email,
+            'phone' => '+370 600 00003',
             'current_duties' => [],
         ])->assertRedirect();
 
         // Second cycle — edit + update user 2
         $admin->get(route('users.edit', $secondUser))->assertStatus(200);
         $admin->patch(route('users.update', $secondUser), [
-            'name' => 'Second Update',
+            'name' => $secondUser->name,
             'email' => $secondUser->email,
+            'phone' => '+370 600 00004',
             'current_duties' => [],
         ])->assertRedirect();
 
-        expect($this->targetUser->fresh()->name)->toBe('First Update')
-            ->and($secondUser->fresh()->name)->toBe('Second Update');
+        expect($this->targetUser->fresh()->phone)->toBe('+370 600 00003')
+            ->and($secondUser->fresh()->phone)->toBe('+370 600 00004');
     });
 });

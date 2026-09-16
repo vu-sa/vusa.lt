@@ -142,7 +142,7 @@ test('contact manager can detach duty from user', function (): void {
     );
 
     $response = $admin->patch(route('users.update', $this->user->id), [
-        'name' => 'Test 4',
+        'name' => $this->user->name,
         'email' => $this->user->email,
         'current_duties' => [],
     ]);
