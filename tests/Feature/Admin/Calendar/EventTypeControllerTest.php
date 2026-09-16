@@ -177,4 +177,31 @@ describe('authorized access', function (): void {
 
         $this->assertSoftDeleted('event_types', ['id' => $this->eventType->id]);
     });
+
+    test('can restore a soft-deleted event type', function (): void {
+        $this->eventType->delete();
+        $this->assertSoftDeleted('event_types', ['id' => $this->eventType->id]);
+
+        asUser($this->globalCoordinator)
+            ->patch(route('eventTypes.restore', $this->eventType))
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->assertNotSoftDeleted('event_types', ['id' => $this->eventType->id]);
+    });
+
+    test('can force-delete an event type not in use', function (): void {
+        $admin = makeAdminUser($this->tenant);
+        $this->eventType->delete();
+
+        asUser($admin)
+            ->from(route('eventTypes.index'))
+            ->delete(route('eventTypes.forceDelete', $this->eventType))
+            ->assertStatus(302)
+            ->assertRedirect(route('eventTypes.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('event_types', ['id' => $this->eventType->id]);
+    });
 });
+

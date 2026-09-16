@@ -117,6 +117,8 @@ interface Page {
   };
   /** Direct children (`Page::children()`) — rendered as a plain section listing. */
   children?: { title: string; url: string; meta_description?: string | null }[];
+  /** Hierarchical ancestors (`Page::ancestors()`) — root first. */
+  ancestors?: { id: number; title: string; permalink: string; url?: string }[];
 }
 
 const props = defineProps<{
@@ -173,6 +175,17 @@ usePageBreadcrumbs(() => {
   // If we have navigation path, use it for breadcrumbs
   if (navigationPath.length > 0) {
     return BreadcrumbHelpers.publicContent(navigationPath);
+  }
+
+  // If the page has hierarchical ancestors, display the parent trail
+  if (props.page.ancestors && props.page.ancestors.length > 0) {
+    const ancestorItems = props.page.ancestors.map(ancestor =>
+      BreadcrumbHelpers.createBreadcrumbItem(ancestor.title, ancestor.url),
+    );
+    return BreadcrumbHelpers.publicContent([
+      ...ancestorItems,
+      BreadcrumbHelpers.createBreadcrumbItem(props.page.title),
+    ]);
   }
 
   // Otherwise just show the current page title

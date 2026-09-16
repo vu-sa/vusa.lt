@@ -5,6 +5,7 @@ use App\Models\ContentPart;
 use App\Models\Navigation;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tiptap\Editor;
@@ -416,3 +417,58 @@ test('pkp page renders ContentPage with institution-list content', function (): 
             ->has('resolvedParts')
     );
 });
+
+test('categoryRedirect permanently redirects legacy category URLs on www', function (): void {
+    $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'stipendijos'], 'lt'))
+        ->assertStatus(301)
+        ->assertRedirect(LocalizedRouteSlugs::route('topic', ['tag' => 'finansine-parama-stipendijos'], 'lt'));
+
+    $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'freshmen-camps'], 'lt'))
+        ->assertStatus(301)
+        ->assertRedirect(LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], 'lt'));
+
+    $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'non-existent-category'], 'lt'))
+        ->assertNotFound();
+});
+
+test('categoryRedirect permanently redirects legacy category URLs on tenant subdomains to www', function (): void {
+    Tenant::factory()->create(['alias' => 'mif']);
+
+    $this->get(LocalizedRouteSlugs::route('tenant.category', ['subdomain' => 'mif', 'alias' => 'freshmen-camps'], 'lt'))
+        ->assertStatus(301)
+        ->assertRedirect(LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], 'lt'));
+});
+
+test('contentPage includes hierarchical ancestors in page prop', function (): void {
+    $rootContent = Content::factory()->create();
+    $rootPage = Page::factory()->create([
+        'title' => 'Tėvinis puslapis',
+        'permalink' => 'tevinis-puslapis',
+        'tenant_id' => $this->tenant->id,
+        'content_id' => $rootContent->id,
+        'is_active' => true,
+    ]);
+
+    $childContent = Content::factory()->create();
+    $childPage = Page::factory()->create([
+        'title' => 'Vaikinis puslapis',
+        'permalink' => 'vaikinis-puslapis',
+        'tenant_id' => $this->tenant->id,
+        'content_id' => $childContent->id,
+        'parent_id' => $rootPage->id,
+        'is_active' => true,
+    ]);
+
+    $response = $this->get(route('page', ['subdomain' => 'www', 'lang' => 'lt', 'permalink' => $childPage->permalink]));
+
+    $response->assertOk();
+    $response->assertInertia(fn (Assert $page) => $page
+        ->component('Public/ContentPage')
+        ->where('page.title', 'Vaikinis puslapis')
+        ->has('page.ancestors', 1)
+        ->where('page.ancestors.0.id', $rootPage->id)
+        ->where('page.ancestors.0.title', 'Tėvinis puslapis')
+        ->where('page.ancestors.0.permalink', 'tevinis-puslapis')
+    );
+});
+

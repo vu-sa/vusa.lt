@@ -1012,6 +1012,7 @@ declare global {
       other_language_page?: Page
       parent?: Page
       children?: Page[]
+      ancestors?: Array<{ id: number; title: string; permalink: string; url?: string }>
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]

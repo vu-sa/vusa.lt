@@ -113,6 +113,8 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('ind-komplektai', [Public\StudySetController::class, 'index'])->name('tenant.studySets');
         Route::get('{newsArchiveString}', [Public\NewsController::class, 'newsArchive'])->name('newsArchive')
             ->whereIn('newsArchiveString', LocalizedRouteSlugs::accepted('newsArchiveString'));
+        Route::get('{categoryString}/{alias}', [Public\PublicPageController::class, 'categoryRedirect'])->name('tenant.category')
+            ->whereIn('categoryString', LocalizedRouteSlugs::accepted('categoryString'));
         Route::permanentRedirect('/admin', '/mano');
 
         Route::get('{contactsString}/id/{institution}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.institution')

@@ -49,3 +49,15 @@ test('the news archive filters by the tag\'s translated name', function (): void
             ->where('currentTag.id', $tag->id)
         );
 });
+
+test('the news archive serves English locale with localized route', function (): void {
+    $tag = Tag::factory()->create(['alias' => 'akademine-informacija', 'name' => ['lt' => 'Akademinė informacija', 'en' => 'Academic info']]);
+
+    $this->get(\App\Support\LocalizedRouteSlugs::route('newsArchive', ['subdomain' => 'www', 'tag' => 'akademine-informacija'], 'en'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/NewsArchive')
+            ->where('currentTag.id', $tag->id)
+        );
+});
+

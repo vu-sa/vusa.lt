@@ -264,6 +264,16 @@ class PublicPageController extends PublicController
                 // Section listing for this page's direct children (`Page::children()`) —
                 // the permalink stays flat, this is presentation only.
                 'children' => $children,
+                'ancestors' => array_map(fn ($ancestor) => [
+                    'id' => $ancestor->id,
+                    'title' => $ancestor->title,
+                    'permalink' => $ancestor->permalink,
+                    'url' => route('page', [
+                        'subdomain' => $this->subdomain,
+                        'lang' => $locale,
+                        'permalink' => $ancestor->permalink,
+                    ]),
+                ], $ancestors),
                 /* 'content' => [ */
                 /*    ...$page->content->toArray(), */
                 /*    'parts' => $page->content->parts->map(function ($part) { */
@@ -283,17 +293,20 @@ class PublicPageController extends PublicController
      * redesign phase 4). The seven aliases that ever existed are a fixed, known set —
      * this is a permanent redirect table, not a lookup against live data.
      */
-    public function categoryRedirect(string $lang, string $categoryString, string $alias): RedirectResponse
+    public function categoryRedirect(): RedirectResponse
     {
+        $alias = (string) request()->route('alias');
+        $locale = (string) (request()->route('lang') ?: app()->getLocale());
+
         // Categories carried no tenant relation, so — matching
         // NavigationLinkApiController::resolveCategoryUrl()'s previous rationale — every
         // destination resolves against `www` regardless of which subdomain was requested.
         $destination = match ($alias) {
-            'red', 'yellow', 'grey' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => 'www'], $lang),
-            'freshmen-camps' => LocalizedRouteSlugs::route('pirmakursiuStovyklos', ['subdomain' => 'www'], $lang),
-            'vu-sa-conferences' => LocalizedRouteSlugs::route('calendar.list', ['subdomain' => 'www', 'type' => 'konferencija'], $lang),
-            'stipendijos' => LocalizedRouteSlugs::route('topic', ['tag' => 'finansine-parama-stipendijos', 'subdomain' => 'www'], $lang),
-            'vu-sa-dokumentai' => LocalizedRouteSlugs::route('documents', ['subdomain' => 'www'], $lang),
+            'red', 'yellow', 'grey' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => 'www'], $locale),
+            'freshmen-camps' => LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], $locale),
+            'vu-sa-conferences' => LocalizedRouteSlugs::route('calendar.list', ['type' => 'konferencija'], $locale),
+            'stipendijos' => LocalizedRouteSlugs::route('topic', ['tag' => 'finansine-parama-stipendijos'], $locale),
+            'vu-sa-dokumentai' => LocalizedRouteSlugs::route('documents', [], $locale),
             default => null,
         };
 

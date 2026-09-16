@@ -1,9 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
+import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 
 import ContentPage from '../ContentPage.vue';
 
+import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
@@ -122,5 +124,36 @@ describe('Public/ContentPage.vue', () => {
     });
 
     expect(wrapper.find('footer').exists()).toBe(false);
+  });
+
+  it('populates breadcrumbs with ancestor chain when ancestors exist and no main navigation matches', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      props: {
+        mainNavigation: [],
+      },
+    }));
+
+    let state!: ReturnType<typeof createBreadcrumbState>;
+    const Host = defineComponent({
+      setup() {
+        state = createBreadcrumbState('public');
+        return () =>
+          h(ContentPage, {
+            navigationItemId: 999,
+            page: makePage({
+              title: 'Vaikinis puslapis',
+              ancestors: [
+                { id: 1, title: 'Tėvinis puslapis', permalink: 'tevinis', url: '/lt/tevinis' },
+              ],
+            }),
+          });
+      },
+    });
+
+    mount(Host, { global: { stubs } });
+
+    const labels = state.breadcrumbs.value.map(b => b.label);
+    expect(labels).toContain('Tėvinis puslapis');
+    expect(labels).toContain('Vaikinis puslapis');
   });
 });

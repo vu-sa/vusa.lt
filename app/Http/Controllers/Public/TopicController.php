@@ -24,7 +24,7 @@ class TopicController extends PublicController
         $this->getBanners();
         $this->getTenantLinks();
 
-        $this->shareOtherLangURL('topic');
+        $this->shareOtherLangURL('topic', null, null, ['tag' => $tag->alias]);
 
         $locale = app()->getLocale();
 

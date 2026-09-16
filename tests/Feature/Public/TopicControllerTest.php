@@ -81,3 +81,22 @@ test('a topic page aggregates published news, active pages and upcoming events',
             ->where('events.0.id', $event->id)
         );
 });
+
+test('a topic page shares the other language URL with the tag alias', function (): void {
+    $tag = Tag::factory()->topic()->create(['alias' => 'stipendijos']);
+
+    $this->get(route('topic', ['subdomain' => 'www', 'lang' => 'lt', 'tag' => $tag->alias]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $inertia) => $inertia
+            ->component('Public/TopicPage')
+            ->where('otherLangURL', \App\Support\LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'en'))
+        );
+
+    $this->get(\App\Support\LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'en'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $inertia) => $inertia
+            ->component('Public/TopicPage')
+            ->where('otherLangURL', \App\Support\LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'lt'))
+        );
+});
+

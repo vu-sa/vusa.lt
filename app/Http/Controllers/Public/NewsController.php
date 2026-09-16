@@ -186,24 +186,30 @@ class NewsController extends PublicController
             $currentTag = $this->matchTagParam(Tag::query(), request('tag'))->first();
         }
 
+        $locale = app()->getLocale();
+        $isLt = $locale === 'lt';
+
         // Pass the current tenant for proper canonical URL
         // Title suffix (" - <tenant>") is applied by applyPageHead(), so the org name
         // must not also appear at the front of the title here.
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: $currentTag
-                ? "Naujienos - {$currentTag->name}"
-                : 'Naujienų archyvas',
+                ? ($isLt ? "Naujienos - {$currentTag->name}" : "News - {$currentTag->name}")
+                : ($isLt ? 'Naujienų archyvas' : 'News Archive'),
             description: $currentTag
-                ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
-                : "Naršyk per visas {$this->tenant->shortname} naujienas"
+                ? ($isLt
+                    ? "Naršyk per {$this->tenant->shortname} naujienas pagal žymą '{$currentTag->name}'"
+                    : "Browse {$this->tenant->shortname} news tagged with '{$currentTag->name}'")
+                : ($isLt
+                    ? "Naršyk per visas {$this->tenant->shortname} naujienas"
+                    : "Browse all {$this->tenant->shortname} news")
         );
 
         // Share pagination SEO metadata for rel=next/prev links
         $this->sharePaginationSeoMeta($news, $this->tenant);
 
         // Generate breadcrumb schema for archive
-        $locale = app()->getLocale();
         $breadcrumbs = [
             [
                 'name' => $locale === 'lt' ? 'Pradžia' : 'Home',

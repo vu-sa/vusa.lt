@@ -268,6 +268,12 @@ const menuItems = computed(() => [
         searchTab: 'calendar',
       },
       {
+        title: $t('Renginių tipai'),
+        icon: CalendarIcon,
+        href: route('eventTypes.index'),
+        show: auth?.can.create.calendar || auth?.can.create.eventType,
+      },
+      {
         title: $t('Žymos'),
         icon: TagIcon,
         href: route('tags.index'),
@@ -281,6 +287,7 @@ const menuItems = computed(() => [
       || auth?.can.create.banner
       || auth?.can.create.navigation
       || auth?.can.create.calendar
+      || auth?.can.create.eventType
       || auth?.can.create.tag,
     visibleItems: [] as MenuItemType[],
   },
