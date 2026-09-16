@@ -164,6 +164,35 @@ describe('RCSmartTiptapToolbar', () => {
     vi.unstubAllGlobals();
   });
 
+  it('applies the submitted link via setLink when the link dialog submits url and text', async () => {
+    const setLink = vi.fn(() => ({ run: vi.fn() }));
+    const extendMarkRange = vi.fn(() => ({ setLink }));
+    const focus = vi.fn(() => ({ extendMarkRange, unsetLink: () => ({ run: vi.fn() }) }));
+    const chain = vi.fn(() => ({ focus }));
+    const editor = makeMockEditor({ chain });
+
+    const wrapper = mount(RCSmartTiptapToolbar, {
+      props: { editor },
+      global: {
+        stubs: {
+          TiptapFormattingButtons: true,
+          TiptapLinkButton: true,
+          TiptapImageButton: true,
+        },
+      },
+    });
+
+    const linkButton = wrapper.findComponent({ name: 'TiptapLinkButton' });
+    expect(linkButton.exists()).toBe(true);
+
+    // TiptapLinkButton emits two positional args (url, text) — a handler that
+    // destructured a single { url, target } object here previously read `linkData.url`
+    // as undefined and silently called unsetLink() on every "add link" submission.
+    await linkButton.vm.$emit('submit', 'https://example.com', 'Example link');
+
+    expect(setLink).toHaveBeenCalledWith(expect.objectContaining({ href: 'https://example.com' }));
+  });
+
   it('renders into a provided dialog-owned portal', async () => {
     const portal = document.createElement('div');
     document.body.append(portal);
