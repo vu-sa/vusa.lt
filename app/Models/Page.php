@@ -248,6 +248,7 @@ class Page extends Model implements Feedable, Sitemapable
         return $this->belongsTo(Page::class, 'parent_id');
     }
 
+    /** @return HasMany<Page, $this> */
     public function children(): HasMany
     {
         return $this->hasMany(Page::class, 'parent_id')->orderBy('sort_order');

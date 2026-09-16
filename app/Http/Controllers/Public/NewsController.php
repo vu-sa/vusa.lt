@@ -149,7 +149,9 @@ class NewsController extends PublicController
         // it once the page hydrates) — match either, so the initial SSR list agrees with
         // what the page filters down to a moment later.
         if (request('tag')) {
-            $query->whereHas('tags', fn ($q) => $this->matchTagParam($q, request('tag')));
+            $query->whereHas('tags', function (Builder $query): void {
+                $this->matchTagParam($query, request('tag'));
+            });
         }
 
         $news = $query

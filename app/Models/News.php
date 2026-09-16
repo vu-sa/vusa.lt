@@ -248,6 +248,7 @@ class News extends Model implements Feedable, Sitemapable
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
+    /** @return MorphToMany<Tag, $this> */
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable');

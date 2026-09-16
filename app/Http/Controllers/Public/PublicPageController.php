@@ -172,7 +172,8 @@ class PublicPageController extends PublicController
                         'url' => $child->publicUrl(),
                         'meta_description' => $child->meta_description,
                     ])
-                    ->values();
+                    ->values()
+                    ->all();
 
                 return [
                     'page' => $page,
