@@ -12,6 +12,14 @@ Shared instructions for any AI agent (Claude Code, Copilot, Cursor, etc.) workin
 
 This is a **student-run project**. Prioritize maintainability and approachability over clever solutions.
 
+## ⚠ Admin redesign in progress
+
+Before changing admin UI — `resources/js/Pages/Admin/**`, admin components, `AdminLayout`, admin emails
+or notifications — read [.ai/redesign/admin/README.md](.ai/redesign/admin/README.md) and
+[playbook.md](.ai/redesign/admin/playbook.md), then only the rules file your task needs (the README
+indexes them). Decisions marked ✅ are settled; if one blocks you, stop and add it to *Open questions*
+in [plan.md](.ai/redesign/admin/plan.md) rather than deciding differently.
+
 ## Documentation Hub
 
 Specialized guidance lives in sub-directory `CLAUDE.md` files:
