@@ -1,8 +1,12 @@
 <?php
 
+use App\Enums\ApprovalDecision;
+use App\Models\Approval;
+use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -103,6 +107,31 @@ describe('scoping', function (): void {
         asUser($this->manager)->get(route('dashboard.reservations'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('myReservations.0.resources.0.pivot.cancellable', true)
+            );
+    });
+
+    test('backtrackable requires a managed resource with an active approved decision', function (): void {
+        $reservation = Reservation::factory()->create();
+        attachResource($reservation, $this->myResource, 'reserved');
+        $pivot = ReservationResource::query()->where('reservation_id', $reservation->id)->firstOrFail();
+
+        $approval = Approval::factory()->create([
+            'approvable_type' => MorphMap::alias(ReservationResource::class),
+            'approvable_id' => (string) $pivot->id,
+            'user_id' => $this->manager->id,
+            'decision' => ApprovalDecision::Approved,
+        ]);
+
+        asUser($this->manager)->get(route('dashboard.reservations'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('administeredReservations.0.resources.0.pivot.backtrackable', true)
+            );
+
+        $approval->update(['reverted_at' => now(), 'reverted_by_id' => $this->manager->id]);
+
+        asUser($this->manager)->get(route('dashboard.reservations'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('administeredReservations.0.resources.0.pivot.backtrackable', false)
             );
     });
 });

@@ -92,6 +92,10 @@
             {{ $t('reservations.bulk.resolve_hint') }}
           </p>
 
+          <p v-if="decision === 'backtracked'" class="text-xs text-muted-foreground">
+            {{ $t('reservations.bulk.backtrack_hint') }}
+          </p>
+
           <div class="space-y-2">
             <Label>
               {{ $t('reservations.actions.notes') }}
@@ -102,7 +106,9 @@
               rows="2"
               :placeholder="decision === 'rejected'
                 ? $t('reservations.actions.reject_notes_placeholder')
-                : $t('reservations.actions.notes_placeholder')"
+                : decision === 'backtracked'
+                  ? $t('reservations.actions.backtrack_notes_placeholder')
+                  : $t('reservations.actions.notes_placeholder')"
             />
           </div>
 
@@ -132,6 +138,7 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef, RowSelectionState } from '@tanstack/vue-table';
 import { Ban, Check, CheckCheck, Undo2, X } from 'lucide-vue-next';
 
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import ReservationBulkActionBar from '@/Components/Tables/ReservationBulkActionBar.vue';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
 import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
@@ -149,8 +156,10 @@ import {
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import {
   getActionablePivotIds,
+  getBacktrackAction,
   getCancellablePivotIds,
   getPrimaryAction,
   getRejectablePivotIds,
@@ -179,7 +188,7 @@ defineEmits<{
 }>();
 
 /** `resolved` is not a server decision — it fast-forwards items to their final approved state. */
-type Decision = 'approved' | 'rejected' | 'cancelled' | 'resolved';
+type Decision = 'approved' | 'rejected' | 'cancelled' | 'resolved' | 'backtracked';
 
 /** Beyond this, the chips roll up into a "+N" with the rest on hover. */
 const VISIBLE_RESOURCE_CHIPS = 4;
@@ -198,6 +207,11 @@ const notes = ref('');
 const showDecisionDialog = ref(false);
 const decision = ref<Decision>('approved');
 const decisionTargets = ref<DashboardReservation[]>([]);
+const backtrackSpotlight = useFeatureSpotlight('reservation-approval-backtrack-v1');
+
+const spotlightReservationId = computed(() =>
+  props.reservations.find(reservation => getBacktrackAction(reservation) !== null)?.id ?? null,
+);
 
 const clearSelection = () => {
   rowSelection.value = {};
@@ -238,6 +252,9 @@ const pivotIdsFor = (reservation: DashboardReservation): string[] => {
   if (decision.value === 'resolved') {
     return getActionablePivotIds(reservation);
   }
+  if (decision.value === 'backtracked') {
+    return getBacktrackAction(reservation)?.pivotIds ?? [];
+  }
 
   return getCancellablePivotIds(reservation);
 };
@@ -272,7 +289,7 @@ const decisionGroups = computed(() => {
       .filter(resource => pivotIds.includes(String(resource.pivot.id)))
       .forEach((resource) => {
         // Approving advances each state differently, so group by state. The others are uniform.
-        const key = decision.value === 'approved'
+        const key = decision.value === 'approved' || decision.value === 'backtracked'
           ? resource.pivot.state
           : decision.value;
 
@@ -295,11 +312,19 @@ const decisionGroups = computed(() => {
     resolved: 'reservations.bulk.will_resolve',
   };
 
+  const BACKTRACK_LABELS: Partial<Record<ReservationResourceState, string>> = {
+    reserved: 'reservations.bulk.will_backtrack_approval',
+    lent: 'reservations.bulk.will_backtrack_hand_over',
+    returned: 'reservations.bulk.will_backtrack_return',
+  };
+
   return [...groups.entries()].map(([state, items]) => ({
     state,
     label: decision.value === 'approved'
       ? $t(TRANSITION_LABELS[state as ReservationResourceState] ?? '')
-      : $t(OUTCOME_LABELS[decision.value] ?? ''),
+      : decision.value === 'backtracked'
+        ? $t(BACKTRACK_LABELS[state as ReservationResourceState] ?? '')
+        : $t(OUTCOME_LABELS[decision.value] ?? ''),
     items,
   }));
 });
@@ -313,6 +338,9 @@ const decisionTitle = computed(() => {
   }
   if (decision.value === 'resolved') {
     return $t('reservations.bulk.resolve_title');
+  }
+  if (decision.value === 'backtracked') {
+    return $t('reservations.bulk.backtrack_title');
   }
 
   return $t('reservations.bulk.approve_title');
@@ -334,6 +362,9 @@ const decisionConfirmLabel = computed(() => {
   if (decision.value === 'resolved') {
     return $t('reservations.actions.resolve');
   }
+  if (decision.value === 'backtracked') {
+    return $t('reservations.actions.backtrack');
+  }
 
   return $t('reservations.actions.approve');
 });
@@ -346,6 +377,8 @@ const decisionIcon = computed(() => {
       return CheckCheck;
     case 'cancelled':
       return Ban;
+    case 'backtracked':
+      return Undo2;
     default:
       return X;
   }
@@ -363,7 +396,9 @@ const submitDecision = () => {
   // Fully resolving walks the state chain server-side; the others are a single decision.
   const url = decision.value === 'resolved'
     ? route('approvals.resolve')
-    : route('approvals.bulkStore');
+    : decision.value === 'backtracked'
+      ? route('approvals.backtrack')
+      : route('approvals.bulkStore');
 
   const payload: Record<string, unknown> = {
     approvable_type: 'reservation_resource',
@@ -371,7 +406,7 @@ const submitDecision = () => {
     notes: notes.value || null,
   };
 
-  if (decision.value !== 'resolved') {
+  if (decision.value !== 'resolved' && decision.value !== 'backtracked') {
     payload.decision = decision.value;
     payload.step = 1;
   }
@@ -401,7 +436,7 @@ const ACTION_LABELS: Record<string, string> = {
   lent: 'reservations.actions.mark_returned',
 };
 
-const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
+const columns = computed<ColumnDef<DashboardReservation, unknown>[]>(() => [
   {
     accessorKey: 'name',
     header: () => $t('reservations.dashboard.columns.reservation'),
@@ -556,7 +591,7 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
   {
     id: 'actions',
     header: () => $t('reservations.dashboard.columns.actions'),
-    size: 180,
+    size: 220,
     cell: ({ row }) => {
       const reservation = row.original;
 
@@ -580,25 +615,60 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
       }
 
       const action = getPrimaryAction(reservation);
+      const backtrackAction = getBacktrackAction(reservation);
 
-      if (!action) {
+      if (!action && !backtrackAction) {
         return null;
       }
 
+      const backtrackButton = backtrackAction
+        ? (
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              disabled={processing.value}
+              title={$t('reservations.actions.backtrack')}
+              onClick={() => {
+                void backtrackSpotlight.dismiss();
+                openDecision([reservation], 'backtracked');
+              }}
+            >
+              <Undo2 class="size-4" />
+            </Button>
+          )
+        : null;
+
+      const decoratedBacktrackButton = backtrackButton
+        && String(reservation.id) === String(spotlightReservationId.value)
+        ? (
+            <SpotlightPopover
+              title={$t('reservations.spotlight.backtrack_title')}
+              description={$t('reservations.spotlight.backtrack_description')}
+              position="left"
+              isDismissed={backtrackSpotlight.isDismissed.value}
+              onDismiss={backtrackSpotlight.dismiss}
+            >
+              {backtrackButton}
+            </SpotlightPopover>
+          )
+        : backtrackButton;
+
       return (
         <div class="flex items-center gap-1">
-          <Button
-            size="sm"
-            variant={action.state === 'lent' ? 'outline' : 'default'}
-            disabled={processing.value}
-            onClick={() => openDecision([reservation], 'approved')}
-          >
-            {action.state === 'lent' ? <Undo2 class="size-4" /> : <Check class="size-4" />}
-            {$t(ACTION_LABELS[action.state])}
-          </Button>
+          {action && (
+            <Button
+              size="sm"
+              variant={action.state === 'lent' ? 'outline' : 'default'}
+              disabled={processing.value}
+              onClick={() => openDecision([reservation], 'approved')}
+            >
+              <Check class="size-4" />
+              {$t(ACTION_LABELS[action.state])}
+            </Button>
+          )}
 
           {/* Rejection is only a legal transition out of `created`. */}
-          {action.state === 'created' && (
+          {action?.state === 'created' && (
             <Button
               size="icon-sm"
               variant="ghost"
@@ -610,6 +680,8 @@ const columns = computed<ColumnDef<DashboardReservation, any>[]>(() => [
               <X class="size-4" />
             </Button>
           )}
+
+          {decoratedBacktrackButton}
         </div>
       );
     },

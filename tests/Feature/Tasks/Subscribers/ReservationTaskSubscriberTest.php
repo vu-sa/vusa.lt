@@ -283,4 +283,47 @@ describe('ReservationTaskSubscriber', function (): void {
             expect($returnTask->completed_at)->not->toBeNull();
         });
     });
+
+    test('reopens and resynchronizes tasks when lifecycle steps move backwards', function (): void {
+        $tenant = Tenant::query()->first() ?? Tenant::factory()->create();
+        $user = User::factory()->create();
+        $resource = Resource::factory()->create([
+            'tenant_id' => $tenant->id,
+            'resource_category_id' => ResourceCategory::factory()->create()->id,
+        ]);
+        $reservation = Reservation::factory()->create();
+        $reservation->users()->attach($user);
+        $reservation->resources()->attach($resource, [
+            'quantity' => 1,
+            'start_time' => $reservation->start_time,
+            'end_time' => $reservation->end_time,
+            'state' => Created::$name,
+        ]);
+        $pivot = ReservationResource::query()->where('reservation_id', $reservation->id)->firstOrFail();
+
+        $pivot->state->transitionTo(Reserved::class);
+        $pivot->refresh()->state->transitionTo(Lent::class);
+        $pivot->refresh()->state->transitionTo(Returned::class);
+
+        $pickupTask = Task::query()->whereMorphedTo('taskable', $reservation)
+            ->where('action_type', ActionType::Pickup)->firstOrFail();
+        $returnTask = Task::query()->whereMorphedTo('taskable', $reservation)
+            ->where('action_type', ActionType::Return)->firstOrFail();
+
+        expect($pickupTask->completed_at)->not->toBeNull()
+            ->and($returnTask->completed_at)->not->toBeNull();
+
+        $pivot->refresh()->state->transitionTo(Lent::class);
+        $returnTask->refresh();
+
+        expect($returnTask->completed_at)->toBeNull()
+            ->and($returnTask->metadata)->toMatchArray(['items_total' => 1, 'items_completed' => 0])
+            ->and($returnTask->users()->whereKey($user->id)->exists())->toBeTrue();
+
+        $pivot->refresh()->state->transitionTo(Reserved::class);
+        $pickupTask->refresh();
+
+        expect($pickupTask->completed_at)->toBeNull()
+            ->and($pickupTask->metadata)->toMatchArray(['items_total' => 1, 'items_completed' => 0]);
+    });
 });

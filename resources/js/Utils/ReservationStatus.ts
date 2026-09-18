@@ -46,6 +46,9 @@ export interface ReservationStats {
 /** The states an administrator can still advance. Ordered by which action takes priority. */
 export const ACTIONABLE_STATES: ReservationResourceState[] = ['created', 'reserved', 'lent'];
 
+/** Reverse actions start with the latest lifecycle step represented in a mixed reservation. */
+export const BACKTRACKABLE_STATES: ReservationResourceState[] = ['returned', 'lent', 'reserved'];
+
 /** States nobody can act on any more. Hidden by default — they are archive, not work. */
 export const TERMINAL_STATUSES: ReservationRowStatus[] = ['returned', 'rejected', 'cancelled'];
 
@@ -67,6 +70,8 @@ export interface ReservationPivot {
   state_properties?: { tagType: string; description: string };
   /** The current user manages this resource's tenant, so may approve/reject/hand over/return it. */
   approvable: boolean;
+  /** The latest approval for this item is active and may be moved back one lifecycle step. */
+  backtrackable: boolean;
   /** The current user is on the reservation and the item can still be called off. */
   cancellable: boolean;
 }
@@ -231,6 +236,27 @@ export function getPrimaryAction(
     .filter(pivot => pivot.state === state);
 
   return { state, pivotIds: matching.map(pivot => String(pivot.id)) };
+}
+
+/** The most advanced reversible row action, limited to pivots the server marked eligible. */
+export function getBacktrackAction(
+  reservation: DashboardReservation,
+): { state: ReservationResourceState; pivotIds: string[] } | null {
+  const pivots = scopedPivots(reservation, { approvableOnly: true });
+  const state = BACKTRACKABLE_STATES.find(candidate =>
+    pivots.some(pivot => pivot.backtrackable && pivot.state === candidate),
+  );
+
+  if (state === undefined) {
+    return null;
+  }
+
+  return {
+    state,
+    pivotIds: pivots
+      .filter(pivot => pivot.backtrackable && pivot.state === state)
+      .map(pivot => String(pivot.id)),
+  };
 }
 
 /** Pivot IDs in the given states that the current user may act on. Used by row and bulk actions. */

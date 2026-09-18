@@ -189,6 +189,7 @@ Route::resource('support-requests', SupportRequestController::class)
 Route::post('approvals', [ApprovalController::class, 'store'])->name('approvals.store');
 Route::post('approvals/bulk', [ApprovalController::class, 'bulkStore'])->name('approvals.bulkStore');
 Route::post('approvals/resolve', [ApprovalController::class, 'resolve'])->name('approvals.resolve');
+Route::post('approvals/backtrack', [ApprovalController::class, 'backtrack'])->name('approvals.backtrack');
 Route::get('approvals/history', [ApprovalController::class, 'history'])->name('approvals.history');
 
 // File management routes

@@ -7,11 +7,14 @@ use App\Enums\ApprovalDecision;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Requests\Approvals\ApprovalHistoryRequest;
+use App\Http\Requests\Approvals\BacktrackApprovalsRequest;
 use App\Http\Requests\Approvals\BulkStoreApprovalRequest;
 use App\Http\Requests\Approvals\ResolveApprovalsRequest;
 use App\Http\Requests\Approvals\StoreApprovalRequest;
 use App\Models\Approval;
+use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\HasApprovals;
+use App\Models\User;
 use App\Services\ApprovalService;
 use App\Support\MorphMap;
 
@@ -164,6 +167,45 @@ class ApprovalController extends AdminController
     }
 
     /**
+     * Backtrack reservation resources by one approved lifecycle step.
+     */
+    public function backtrack(BacktrackApprovalsRequest $request)
+    {
+        $validated = $request->validated();
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            abort(401);
+        }
+
+        $reservationResources = collect($validated['approvable_ids'])
+            ->map(fn ($id) => $this->resolveApprovable($validated['approvable_type'], $id))
+            ->filter(fn ($approvable) => $approvable instanceof ReservationResource)
+            ->each(fn ($approvable) => $this->handleAuthorization('view', $approvable));
+
+        $result = $this->approvalService->bulkBacktrack(
+            $reservationResources,
+            $user,
+            $validated['notes'] ?? null,
+        );
+
+        $count = $result['approvals']->count();
+        $errors = $result['errors'];
+
+        if ($count === 0) {
+            return back()->with('error', $errors[0] ?? __('reservations.messages.backtrack_failed'));
+        }
+
+        $message = trans_choice('reservations.messages.backtracked', $count, ['count' => $count]);
+
+        if ($errors !== []) {
+            $message .= ' '.trans_choice('reservations.messages.backtrack_skipped', count($errors), ['count' => count($errors)]);
+        }
+
+        return back()->with('success', $message);
+    }
+
+    /**
      * Resolve the approvable model from its morph alias and ID.
      *
      * The alias comes straight from the morph map, so pivots resolve like any other model —
@@ -216,7 +258,10 @@ class ApprovalController extends AdminController
         $this->handleAuthorization('view', $approvable);
 
         $approvals = $approvable->approvals()
-            ->with('user:id,name,profile_photo_path')
+            ->with([
+                'user:id,name,profile_photo_path',
+                'revertedBy:id,name,profile_photo_path',
+            ])
             ->orderBy('created_at', 'desc')
             ->get();
 

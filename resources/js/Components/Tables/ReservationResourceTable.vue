@@ -118,6 +118,40 @@
     </DialogContent>
   </Dialog>
 
+  <Dialog v-model:open="showBacktrackDialog">
+    <DialogContent class="max-w-md">
+      <DialogHeader>
+        <DialogTitle>{{ $t('reservations.bulk.backtrack_title') }}</DialogTitle>
+        <DialogDescription>{{ $t('reservations.bulk.backtrack_hint') }}</DialogDescription>
+      </DialogHeader>
+      <div class="space-y-4">
+        <InfoText v-if="selectedReservationResource">
+          {{ $t('Išteklius') }}: <strong>{{ getResourceName(selectedReservationResource) }}</strong>
+        </InfoText>
+        <div class="space-y-2">
+          <label class="text-sm font-medium">
+            {{ $t('reservations.actions.notes') }}
+            <span class="text-muted-foreground">({{ $t('reservations.actions.notes_optional') }})</span>
+          </label>
+          <Textarea
+            v-model="backtrackNotes"
+            :placeholder="$t('reservations.actions.backtrack_notes_placeholder')"
+            rows="2"
+          />
+        </div>
+        <div class="flex justify-end gap-2">
+          <Button variant="ghost" @click="showBacktrackDialog = false">
+            {{ $t('reservations.actions.cancel') }}
+          </Button>
+          <Button :disabled="backtrackLoading" @click="handleBacktrack">
+            <Undo2 class="size-4" />
+            {{ $t('reservations.actions.backtrack') }}
+          </Button>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+
   <!-- Bulk Approve Dialog with notes -->
   <Dialog v-model:open="showBulkApproveDialog">
     <DialogContent class="max-w-lg">
@@ -245,14 +279,15 @@
 </template>
 
 <script setup lang="tsx">
-import type { ColumnDef, RowSelectionState } from '@tanstack/vue-table';
+import type { ColumnDef, Row, RowSelectionState } from '@tanstack/vue-table';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
-import { CheckCheck } from 'lucide-vue-next';
+import { CheckCheck, Undo2 } from 'lucide-vue-next';
 
 import InfoText from '../SmallElements/InfoText.vue';
+import SpotlightPopover from '../Onboarding/SpotlightPopover.vue';
 import ReservationPeriod from '../SmallElements/ReservationPeriod.vue';
 import ReservationResourceStateTag from '../Tag/ReservationResourceStateTag.vue';
 import StateProgressIndicator from '../SmallElements/StateProgressIndicator.vue';
@@ -271,10 +306,11 @@ import InfoIcon from '~icons/fluent/info-24-regular';
 import { ApprovalActions } from '@/Features/Admin/Approvals';
 import { Button } from '@/Components/ui/button';
 import { DataTable } from '@/Components/ui/data-table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { Textarea } from '@/Components/ui/textarea';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { capitalize } from '@/Utils/String';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { isPivotUnresolved } from '@/Utils/ReservationStatus';
@@ -301,13 +337,35 @@ const isMobile = breakpoints.smaller('md');
 // Modal states
 const showCommentModal = ref(false);
 const showApprovalModal = ref(false);
+const showBacktrackDialog = ref(false);
 const showBulkApproveDialog = ref(false);
 const showBulkRejectDialog = ref(false);
 const showBulkResolveDialog = ref(false);
 const bulkNotes = ref('');
+const backtrackNotes = ref('');
+const backtrackLoading = ref(false);
+const backtrackSpotlight = useFeatureSpotlight('reservation-approval-backtrack-v1');
 
 // Resources - use directly from props (DataTable handles sorting)
 const reservationResources = computed(() => props.reservation?.resources ?? []);
+
+type ReservationResourceWithApprovals = App.Entities.ReservationResource & {
+  approvals?: App.Entities.Approval[];
+};
+
+const canBacktrackResource = (resource: App.Entities.Resource): boolean => {
+  const pivot = resource.pivot as ReservationResourceWithApprovals | undefined;
+
+  return Boolean(
+    pivot?.approvable
+    && ['reserved', 'lent', 'returned'].includes(pivot.state ?? '')
+    && pivot.approvals?.some(approval => approval.decision === 'approved' && !approval.reverted_at),
+  );
+};
+
+const spotlightResourceId = computed(() =>
+  reservationResources.value.find(canBacktrackResource)?.pivot?.id ?? null,
+);
 
 // Row selection for bulk actions
 const rowSelection = ref<RowSelectionState>({});
@@ -319,7 +377,7 @@ const hasAnyApprovable = computed(() =>
 );
 
 // Function-based row selection - disable for rejected/returned/cancelled rows
-const canSelectRow = (row: any) => {
+const canSelectRow = (row: Row<App.Entities.Resource>) => {
   const state = row.original?.pivot?.state;
   // Only allow selection for rows that can still be acted upon
   return ['created', 'reserved', 'lent'].includes(state) && row.original?.pivot?.approvable;
@@ -348,7 +406,9 @@ const handleRowSelectionChange = (newSelection: RowSelectionState) => {
 
 const handleCardSelectionChange = (newIds: string[]) => {
   const newSelection: RowSelectionState = {};
-  newIds.forEach((id) => { newSelection[id] = true; });
+  newIds.forEach((id) => {
+    newSelection[id] = true;
+  });
   rowSelection.value = newSelection;
 };
 
@@ -544,8 +604,21 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
     cell: ({ row }) => {
       const resource = row.original;
       const stateDescription = resource.pivot?.state_properties?.description;
-      const approvals = (resource.pivot as any)?.approvals ?? [];
+      const approvals = (resource.pivot as typeof resource.pivot & {
+        approvals?: App.Entities.Approval[];
+      })?.approvals ?? [];
       const hasApprovals = approvals.length > 0;
+      const approvalDotClass = (approval: App.Entities.Approval) => {
+        if (approval.reverted_at) {
+          return 'bg-zinc-400';
+        }
+
+        if (approval.decision === 'approved') {
+          return 'bg-green-500';
+        }
+
+        return approval.decision === 'rejected' ? 'bg-red-500' : 'bg-amber-500';
+      };
 
       return (
         <HoverCard openDelay={200}>
@@ -571,24 +644,50 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
                 <div class="border-t pt-3 space-y-2">
                   <p class="text-xs font-medium text-muted-foreground">{$t('Patvirtinimai')}</p>
                   <div class="space-y-1.5 max-h-32 overflow-y-auto">
-                    {approvals.map((approval: any) => (
+                    {approvals.map(approval => (
                       <div key={approval.id} class="flex items-start gap-2 text-xs">
                         <div class={[
                           'mt-0.5 size-1.5 shrink-0 rounded-full',
-                          approval.decision === 'approved'
-                            ? 'bg-green-500'
-                            : approval.decision === 'rejected' ? 'bg-red-500' : 'bg-amber-500',
+                          approvalDotClass(approval),
                         ].join(' ')}
                         />
                         <div class="min-w-0 flex-1">
                           <div class="flex items-baseline justify-between gap-1">
-                            <span class="font-medium truncate">{approval.user?.name ?? $t('Nežinomas')}</span>
+                            <span
+                              class={[
+                                'font-medium truncate',
+                                approval.reverted_at ? 'text-muted-foreground line-through' : '',
+                              ].join(' ')}
+                            >
+                              {approval.user?.name ?? $t('Nežinomas')}
+                            </span>
                             <span class="shrink-0 text-muted-foreground text-[10px]">
                               {formatStaticTime(new Date(approval.created_at), 'MM-dd HH:mm', usePage().props.app.locale)}
                             </span>
                           </div>
                           {approval.notes && (
                             <p class="text-muted-foreground mt-0.5 line-clamp-2">{approval.notes}</p>
+                          )}
+                          {approval.reverted_at && (
+                            <div class="mt-1 rounded bg-muted px-1.5 py-1 text-[10px] text-muted-foreground">
+                              <p>
+                                {$t('reservations.history.reverted', {
+                                  user: approval.reverted_by?.name ?? $t('Nežinomas'),
+                                  date: formatStaticTime(
+                                    new Date(approval.reverted_at),
+                                    'MM-dd HH:mm',
+                                    usePage().props.app.locale,
+                                  ),
+                                })}
+                              </p>
+                              {approval.reversion_notes && (
+                                <p class="line-clamp-2">
+                                  {$t('reservations.history.reversion_reason', {
+                                    reason: approval.reversion_notes,
+                                  })}
+                                </p>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -617,6 +716,19 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
       const resource = row.original;
       const pivotState = resource.pivot?.state;
       const isApprovable = resource.pivot?.approvable;
+      const isBacktrackable = canBacktrackResource(resource);
+      const backtrackButton = isBacktrackable
+        ? (
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              title={$t('reservations.actions.backtrack')}
+              onClick={() => openBacktrackDialog(resource)}
+            >
+              <Undo2 class="size-4" />
+            </Button>
+          )
+        : null;
 
       return (
         <div class="flex items-center gap-2">
@@ -643,6 +755,20 @@ const columns = computed<ColumnDef<App.Entities.Resource>[]>(() => [
               {$t('Komentuoti')}
             </Button>
           )}
+
+          {backtrackButton && String(resource.pivot?.id) === String(spotlightResourceId.value)
+            ? (
+                <SpotlightPopover
+                  title={$t('reservations.spotlight.backtrack_title')}
+                  description={$t('reservations.spotlight.backtrack_description')}
+                  position="left"
+                  isDismissed={backtrackSpotlight.isDismissed.value}
+                  onDismiss={backtrackSpotlight.dismiss}
+                >
+                  {backtrackButton}
+                </SpotlightPopover>
+              )
+            : backtrackButton}
 
           {/* Delete button for cancelled/rejected */}
           {['cancelled', 'rejected'].includes(pivotState ?? '') && (
@@ -695,6 +821,36 @@ const bulkLoading = ref(false);
 const handleApprovalAction = (row: App.Entities.Resource) => {
   selectedReservationResource.value = row.pivot ?? null;
   showApprovalModal.value = true;
+};
+
+const openBacktrackDialog = (row: App.Entities.Resource) => {
+  selectedReservationResource.value = row.pivot ?? null;
+  backtrackNotes.value = '';
+  showBacktrackDialog.value = true;
+  void backtrackSpotlight.dismiss();
+};
+
+const handleBacktrack = () => {
+  if (!selectedReservationResource.value) {
+    return;
+  }
+
+  backtrackLoading.value = true;
+  router.post(route('approvals.backtrack'), {
+    approvable_type: 'reservation_resource',
+    approvable_ids: [String(selectedReservationResource.value.id)],
+    notes: backtrackNotes.value || null,
+  }, {
+    preserveScroll: true,
+    onSuccess: () => {
+      showBacktrackDialog.value = false;
+      selectedReservationResource.value = null;
+      backtrackNotes.value = '';
+    },
+    onFinish: () => {
+      backtrackLoading.value = false;
+    },
+  });
 };
 
 // Open comment modal for non-approvable resources

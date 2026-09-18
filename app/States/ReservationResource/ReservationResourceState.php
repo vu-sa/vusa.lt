@@ -27,6 +27,9 @@ abstract class ReservationResourceState extends State
                 [Created::class, Reserved::class],
                 [Reserved::class, Lent::class],
                 [Lent::class, Returned::class],
+                [Returned::class, Lent::class],
+                [Lent::class, Reserved::class],
+                [Reserved::class, Created::class],
             ])
             ->allowTransition(Created::class, Rejected::class)
             ->allowTransition([Created::class, Reserved::class], Cancelled::class);

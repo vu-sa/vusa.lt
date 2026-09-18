@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.2 — Padalinių puslapių redagavimas (2026-09-14) {#v2-2}
 
+- ✨ **Rezervacijos veiksmą galima atšaukti** — išteklių valdytojas gali grąžinti klaidingą patvirtinimą, išdavimą ar grąžinimą vienu žingsniu atgal; kas ir kodėl veiksmą atšaukė, lieka istorijoje
 - 🔧 **Teisinga pagrindinio puslapio redagavimo nuoroda** — padalinio puslapyje ji atveria to padalinio redaktorių, net jei laikinai rodomas centrinės VU SA turinys
 - 🔧 **Tikslesnė kontaktų paieška** — atnaujinus atstovo paskyrimą, vardą ar pareigybę, paieškoje atnaujinami susijusių institucijų kontaktai; būsimi atstovai nerodomi iki paskyrimo pradžios, o pasibaigęs paskyrimas automatiškai pašalinamas suėjus terminui
 - 🔧 **Senosios „kategorijos“ pakeistos temomis ir renginių tipais** — naujienos ir puslapiai dabar žymimi temomis (temos puslapis pasiekiamas per `/tema/...`), o renginiams galima pasirinkti konkretų, bet neprivalomą tipą, įskaitant atskirus „Posėdis“ ir „Susirinkimas“ tipus; senos `/kategorija/...` nuorodos automatiškai nukreipiamos į naują vietą

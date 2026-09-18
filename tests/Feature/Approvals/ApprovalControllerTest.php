@@ -230,3 +230,82 @@ describe('ApprovalController@history', function (): void {
             ->assertStatus(403);
     });
 });
+
+describe('ApprovalController@backtrack', function (): void {
+    test('resource manager can undo each approved lifecycle step and keeps the audit trail', function (): void {
+        for ($step = 0; $step < 3; $step++) {
+            asUser($this->resourceManager)
+                ->post(route('approvals.store'), [
+                    'approvable_type' => 'reservation_resource',
+                    'approvable_id' => (string) $this->reservationResource->id,
+                    'decision' => 'approved',
+                    'step' => 1,
+                ])
+                ->assertRedirect();
+        }
+
+        $this->reservationResource->refresh();
+        expect($this->reservationResource->state->getValue())->toBe('returned')
+            ->and($this->reservationResource->returned_at)->not->toBeNull();
+
+        foreach (['lent', 'reserved', 'created'] as $index => $expectedState) {
+            asUser($this->resourceManager)
+                ->post(route('approvals.backtrack'), [
+                    'approvable_type' => 'reservation_resource',
+                    'approvable_ids' => [(string) $this->reservationResource->id],
+                    'notes' => $index === 0 ? 'Returned by mistake' : null,
+                ])
+                ->assertRedirect()
+                ->assertSessionHas('success');
+
+            $this->reservationResource->refresh();
+            expect($this->reservationResource->state->getValue())->toBe($expectedState);
+        }
+
+        expect($this->reservationResource->returned_at)->toBeNull()
+            ->and($this->reservationResource->approvals()->whereNotNull('reverted_at')->count())->toBe(3)
+            ->and($this->reservationResource->approvals()->where('reversion_notes', 'Returned by mistake')->exists())->toBeTrue();
+    });
+
+    test('user without resource management cannot undo an approval', function (): void {
+        asUser($this->resourceManager)->post(route('approvals.store'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_id' => (string) $this->reservationResource->id,
+            'decision' => 'approved',
+            'step' => 1,
+        ]);
+
+        asUser($this->user)
+            ->post(route('approvals.backtrack'), [
+                'approvable_type' => 'reservation_resource',
+                'approvable_ids' => [(string) $this->reservationResource->id],
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        expect($this->reservationResource->refresh()->state->getValue())->toBe('reserved')
+            ->and($this->reservationResource->approvals()->whereNotNull('reverted_at')->exists())->toBeFalse();
+    });
+
+    test('history identifies who undid an approval', function (): void {
+        $approval = Approval::factory()->create([
+            'approvable_type' => MorphMap::alias(ReservationResource::class),
+            'approvable_id' => (string) $this->reservationResource->id,
+            'user_id' => $this->resourceManager->id,
+            'decision' => ApprovalDecision::Approved,
+            'reverted_at' => now(),
+            'reverted_by_id' => $this->resourceManager->id,
+            'reversion_notes' => 'Wrong resource',
+        ]);
+
+        asUser($this->resourceManager)
+            ->getJson(route('approvals.history', [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $approval->id)
+            ->assertJsonPath('data.0.reverted_by.id', $this->resourceManager->id)
+            ->assertJsonPath('data.0.reversion_notes', 'Wrong resource');
+    });
+});
