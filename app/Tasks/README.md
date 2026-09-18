@@ -17,9 +17,11 @@ app/Tasks/
 │   ├── ApprovalTaskHandler.php # Handles approval workflow tasks
 │   ├── PickupTaskHandler.php   # Handles pickup tasks with progress tracking
 │   └── ReturnTaskHandler.php   # Handles return tasks with progress tracking
-└── Subscribers/
-    ├── ApprovalTaskSubscriber.php      # Listens for approval events
-    └── ReservationTaskSubscriber.php   # Listens for reservation state changes
+├── Subscribers/
+│   ├── ApprovalTaskSubscriber.php      # Listens for approval events
+│   └── ReservationTaskSubscriber.php   # Listens for reservation state changes
+└── Synchronizers/
+    └── ReservationTaskSynchronizer.php # Rebuilds reservation pickup/return tasks from resource states
 ```
 
 ## Task Types (ActionType)

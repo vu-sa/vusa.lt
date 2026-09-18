@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tasks\Handlers;
+namespace App\Tasks\Synchronizers;
 
 use App\Models\Reservation;
 use App\Models\Task;
@@ -8,6 +8,8 @@ use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use App\States\ReservationResource\Returned;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\Handlers\PickupTaskHandler;
+use App\Tasks\Handlers\ReturnTaskHandler;
 use Illuminate\Support\Carbon;
 
 class ReservationTaskSynchronizer

@@ -3,7 +3,7 @@
 namespace App\Tasks\Subscribers;
 
 use App\Models\Pivots\ReservationResource;
-use App\Tasks\Handlers\ReservationTaskSynchronizer;
+use App\Tasks\Synchronizers\ReservationTaskSynchronizer;
 use Illuminate\Events\Dispatcher;
 use Spatie\ModelStates\Events\StateChanged;
 
