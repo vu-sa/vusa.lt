@@ -1,5 +1,8 @@
 <template>
-  <div class="bg-background font-admin">
+  <!-- `font-admin` is dropped once the new shell is opted in: its [data-surface="admin"] scope
+       sets `font-family: var(--font-public)` on <html> itself (so teleported content inherits
+       it too), and font-admin here would otherwise outrank that inherited value. -->
+  <div class="bg-background" :class="{ 'font-admin': !uiPreferences.newShell.value }">
     <Head :title />
 
     <SidebarProvider v-model:open="sidebarOpen">
@@ -60,6 +63,25 @@
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <!-- Admin redesign opt-in (.ai/redesign/admin, PR 2.1) — deliberately plain, no
+                 spotlight or dialog: nothing here reaches staging before the whole redesign is
+                 done. Replaced by an account-menu entry in PR 4.4. -->
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    :aria-pressed="uiPreferences.newShell.value"
+                    :aria-label="$t('Naujas dizainas (beta)')"
+                    @click="toggleNewShell"
+                  >
+                    <Palette class="h-4 w-4" :class="{ 'text-brand': uiPreferences.newShell.value }" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{{ $t('Naujas dizainas (beta)') }}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <CommandPaletteTrigger />
             <PWAStatusButton />
             <SpotlightPopover
@@ -234,6 +256,7 @@ import {
   MessageSquare,
   BellIcon,
   GraduationCapIcon,
+  Palette,
 } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -338,6 +361,24 @@ const isMac = computed(() => {
   }
   return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 });
+
+// Admin redesign opt-in (.ai/redesign/admin, PR 2.1). app.blade.php stamps
+// [data-surface="admin"] on <html> from the persisted flag on every subsequent page load; this
+// updates the live DOM too, so the toggle takes visible effect without a reload.
+function toggleNewShell(): void {
+  const next = !uiPreferences.newShell.value;
+  uiPreferences.setNewShell(next);
+
+  if (typeof document === 'undefined') {
+    return;
+  }
+  if (next) {
+    document.documentElement.setAttribute('data-surface', 'admin');
+  }
+  else {
+    document.documentElement.removeAttribute('data-surface');
+  }
+}
 
 // The action window is openable from any admin page, so its state is provided
 // here rather than owned by whichever page holds a trigger.

@@ -33,11 +33,14 @@ setup((app) => {
 /**
  * Surface + theme switching.
  *
- * The design tokens are scoped exactly as they are in production: `data-surface="public"` and
- * `.dark`, both on <html> (see resources/css/app.css and resources/views/app.blade.php). The
- * decorator sets them on the story iframe's own documentElement rather than on a wrapper div,
- * so a story renders against the same cascade the real page does — including the rules that
- * are written against `html` itself, such as the a11y font scale.
+ * The design tokens are scoped exactly as they are in production: `data-surface="public"` /
+ * `data-surface="admin"` and `.dark`, both on <html> (see resources/css/app.css and
+ * resources/views/app.blade.php — the admin scope is the redesign's opt-in new shell,
+ * .ai/redesign/admin PR 2.1; a component not pinning `admin` renders on the legacy admin
+ * palette, i.e. no attribute, same as today). The decorator sets them on the story iframe's own
+ * documentElement rather than on a wrapper div, so a story renders against the same cascade the
+ * real page does — including the rules that are written against `html` itself, such as the a11y
+ * font scale.
  *
  * This is the only place dark mode can be checked at all: jsdom does not implement the CSS
  * needed for Tailwind's `dark:` variant to resolve, so component tests can assert that a class
@@ -49,8 +52,8 @@ const withSurfaceAndTheme: Decorator = (story, context) => {
   if (typeof document !== 'undefined') {
     const root = document.documentElement;
 
-    if (surface === 'public') {
-      root.setAttribute('data-surface', 'public');
+    if (surface === 'public' || surface === 'admin') {
+      root.setAttribute('data-surface', surface);
     } else {
       root.removeAttribute('data-surface');
     }

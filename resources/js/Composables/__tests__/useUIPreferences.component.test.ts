@@ -245,3 +245,16 @@ describe('sidebar collapsed', () => {
     expect(body.sidebar.collapsed).toBe(true);
   });
 });
+
+describe('new shell opt-in (.ai/redesign/admin, PR 2.1)', () => {
+  it('seeds from server prefs and setNewShell persists appearance.new_shell', () => {
+    const ctx = mountProvider();
+    expect(ctx.newShell.value).toBe(false);
+
+    ctx.setNewShell(true);
+    expect(ctx.newShell.value).toBe(true);
+    const { url, body } = lastFetch();
+    expect(url).toContain('api.v1.admin.user-preferences.update');
+    expect(body.appearance.new_shell).toBe(true);
+  });
+});

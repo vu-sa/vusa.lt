@@ -15,7 +15,7 @@
 | D4 | **Home's attention queue is Tasks.** No photo hero. Attention items and **+** in the first mobile viewport. Empty = one line. |
 | D5 | **Command palette is an accelerator, never the only path.** One catalog feeds every surface. |
 | D6 | **One create entry** (**+ Sukurti**) → ActionWindow. Guided flow for infrequent ≤ ~6-decision tasks; full form otherwise. |
-| D7 | **Operational type scale and uppercase budget.** |
+| D7 | **Operational type scale and uppercase budget.** The type-scale half is deferred past PR 2.1 (2026-09-18) — the admin surface resets `font-size` from admin.css's 90% to 100% (the floor its own 12px-minimum rule needs), but ships no `--text-*` scale yet; Tailwind's defaults apply until a page shows whether 100% reads too loose. The uppercase budget is unaffected and not deferred. |
 | D8 | **Status colours never use the brand hue**; warning/danger clearly distinct from dark-mode amber; always icon + text. |
 | D9 | **Square everywhere**, inputs and checkboxes included, strong focus rings. |
 | D10 | **Same font as public**, `tabular-nums` in tables, `AccessibilityMenu` in the account menu. |

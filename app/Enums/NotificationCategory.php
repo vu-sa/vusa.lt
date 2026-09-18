@@ -42,6 +42,11 @@ enum NotificationCategory: string
 
     /**
      * Get a color class for the notification category.
+     *
+     * @todo PR 6.5 (.ai/redesign/admin) remaps this onto the `--cat-*` categorical tokens —
+     * these bare hue names collide with the six status roles from PR 2.2 (Task orange ==
+     * attention, System red == danger, Duty amber == the dark-mode brand) and are not what the
+     * new colour system means by "status". Do not "fix" this into `--status-*` in the meantime.
      */
     public function color(): string
     {

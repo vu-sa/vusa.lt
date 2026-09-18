@@ -36,6 +36,10 @@ class UserPreferencesApiController extends ApiController
             $user->setDensity($density);
         }
 
+        if ($request->has('appearance.new_shell')) {
+            $user->setNewAdminShellEnabled($request->boolean('appearance.new_shell'));
+        }
+
         $pinnedPages = $request->input('pinned_pages');
         if (is_array($pinnedPages)) {
             $user->setPinnedPages($pinnedPages);

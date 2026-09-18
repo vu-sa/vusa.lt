@@ -59,7 +59,7 @@ Rules:
    through `StatusBadge`, category marks or tokens.
 6. Charts: one series → foreground + one highlight; several → categorical hues in a fixed order.
 
-#### Concrete tokens (first pass — validate in Phase 2)
+#### Concrete tokens (shipped in PR 2.2, 2026-09-18)
 
 `oklch`, light / dark. `-surface` is the badge tint, `-border` its hairline (usually the text colour
 at 30–40% alpha).
@@ -117,15 +117,33 @@ Content — published → `success`, scheduled → `info`, draft → `neutral`.
 - More than one solid brand fill per region.
 - `NotificationCategory::color()`'s current list (blue, orange, purple, green, cyan, gray, amber, red,
   indigo, teal) — it collides with the status roles (Task orange, System red, Duty amber). Remap it
-  onto `--cat-*` in Phase 2.
+  onto `--cat-*` in PR 6.5 (carries a `@todo` in the enum pointing here — don't "fix" it into
+  `--status-*` in the meantime, it means something different).
 
 #### Validation
 
-- A script resolves every token pair in a real browser and asserts: status text ≥ 4.5:1 on its own
-  surface **and** on both canvases; marks ≥ 3:1 on both canvases; no two categorical hues closer than
-  ~25° (`.design-reference/tokens.mjs` is the pattern).
-- A Storybook swatch story shows all roles and categories in light and dark.
-- A snapshot test guards the token list so a rename can't silently drop one.
+**Settled 2026-09-18 (PR 2.2):** not a script. `.design-reference/tokens.mjs`, the pattern this
+section used to point at, is untracked (`.git/info/exclude`) and asserts nothing — it only prints
+resolved colours to a console for a human to read; no repo script computes a contrast ratio
+anywhere, so there was no existing tool to extend.
+
+- **Contrast** is checked by a Storybook story rendering real text on its real surface —
+  `Patterns/ColourSystem.stories.ts`, `parameters: { a11y: { test: 'error' } }` — so
+  `@storybook/addon-a11y`'s `color-contrast` rule asserts the 4.5:1 requirement in a real browser
+  (Playwright/Chromium via `@storybook/addon-vitest`), across every Surface × Theme combination the
+  toolbar offers. `npm run test:storybook` is the gate. Known limit: axe checks *text* contrast
+  only — a category's mark (the 3:1, non-text rule) is covered by rendering its label *in* the
+  category colour, which pushes it through the same, stricter text check; and axe cannot see "no
+  two categorical hues closer than ~25°" at all, so that is asserted by the Vitest guard below, not
+  by Storybook. CI's `storybook-tests` job is `continue-on-error: true`, so today this gates the
+  local per-phase gate, not CI — tightening that is a separate decision.
+- **The token *list*** (every role has text/surface/border in both themes, every category has
+  text/surface in both themes, mapped through `var()` rather than inlined so a surface could
+  re-scope them, and no two categorical hues closer than 25°) is guarded by a plain jsdom Vitest
+  test that reads the compiled CSS source: `resources/js/__tests__/designTokens.test.ts`, runs in
+  `npm run test` on every change. It cannot see rendered contrast — that is Storybook's job, above.
+- `Patterns/AdminSurface.stories.ts` is the equivalent swatch for the surface tokens themselves
+  (canvas, card, popover, the edit-mode `--secondary` tint, radius, typeface) from PR 2.1.
 
 
 ### Wayfinding and distinctness

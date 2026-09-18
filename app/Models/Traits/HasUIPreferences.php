@@ -71,6 +71,9 @@ trait HasUIPreferences
             ],
             'appearance' => [
                 'density' => 'comfortable',
+                // Admin redesign (.ai/redesign/admin) opt-in — see PR 2.1. Not user-facing until
+                // Phase 4 replaces this with the shell's own toggle.
+                'new_shell' => false,
             ],
             'pinned_pages' => [],
             'recent_pages' => [],
@@ -220,6 +223,24 @@ trait HasUIPreferences
 
         $preferences = $this->ui_preferences;
         $preferences['appearance']['density'] = $density;
+        $this->update(['ui_preferences' => $preferences]);
+    }
+
+    /**
+     * Get whether the admin redesign's new shell (.ai/redesign/admin) is opted in.
+     */
+    public function getNewAdminShellEnabled(): bool
+    {
+        return (bool) ($this->ui_preferences['appearance']['new_shell'] ?? false);
+    }
+
+    /**
+     * Persist the new-shell opt-in.
+     */
+    public function setNewAdminShellEnabled(bool $enabled): void
+    {
+        $preferences = $this->ui_preferences;
+        $preferences['appearance']['new_shell'] = $enabled;
         $this->update(['ui_preferences' => $preferences]);
     }
 

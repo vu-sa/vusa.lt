@@ -78,6 +78,9 @@ interface UIPreferencesContext {
   /** Whether the sidebar is collapsed (icon-only) */
   sidebarCollapsed: Ref<boolean>;
   setSidebarCollapsed: (value: boolean) => void;
+  /** Admin redesign opt-in (.ai/redesign/admin, PR 2.1) — drives [data-surface="admin"] */
+  newShell: Ref<boolean>;
+  setNewShell: (value: boolean) => void;
 }
 
 const UI_PREFERENCES_INJECTION_KEY: InjectionKey<UIPreferencesContext> = Symbol('ui-preferences');
@@ -90,6 +93,7 @@ interface ServerPrefs {
   order: string[];
   collapsed: boolean;
   density: SidebarDensity;
+  newShell: boolean;
   pinned: StoredPinnedPage[];
   recent: StoredRecentPage[];
 }
@@ -99,7 +103,7 @@ function readServerPrefs(): ServerPrefs {
   const prefs = (page.props.auth as { user?: { ui_preferences?: unknown } })?.user?.ui_preferences as
     | {
       sidebar?: { sections?: Record<string, boolean>; order?: string[]; collapsed?: boolean };
-      appearance?: { density?: string };
+      appearance?: { density?: string; new_shell?: boolean };
       pinned_pages?: StoredPinnedPage[];
       recent_pages?: StoredRecentPage[];
     }
@@ -110,6 +114,7 @@ function readServerPrefs(): ServerPrefs {
     order: prefs?.sidebar?.order ?? [],
     collapsed: prefs?.sidebar?.collapsed ?? false,
     density: prefs?.appearance?.density === 'compact' ? 'compact' : 'comfortable',
+    newShell: prefs?.appearance?.new_shell === true,
     pinned: prefs?.pinned_pages ?? [],
     recent: prefs?.recent_pages ?? [],
   };
@@ -260,6 +265,9 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
   const density = ref<SidebarDensity>(server.density);
   const sidebarCollapsed = ref<boolean>(server.collapsed);
 
+  // Admin redesign opt-in (.ai/redesign/admin, PR 2.1).
+  const newShell = ref<boolean>(server.newShell);
+
   const isSectionVisible = (key: ToggleableSection) => sectionVisibility[key] !== false;
 
   const persistSections = () => {
@@ -352,6 +360,11 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
     persist('api.v1.admin.user-preferences.update', { sidebar: { collapsed: value } });
   };
 
+  const setNewShell = (value: boolean) => {
+    newShell.value = value;
+    persist('api.v1.admin.user-preferences.update', { appearance: { new_shell: value } });
+  };
+
   const trackVisit = (
     routeName: string,
     params: Record<string, unknown> = {},
@@ -406,6 +419,8 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
     setDensity,
     sidebarCollapsed,
     setSidebarCollapsed,
+    newShell,
+    setNewShell,
   };
 
   provide(UI_PREFERENCES_INJECTION_KEY, context);
@@ -447,6 +462,8 @@ export function useUIPreferences(): UIPreferencesContext {
       setDensity: noop,
       sidebarCollapsed: ref(false),
       setSidebarCollapsed: noop,
+      newShell: ref(false),
+      setNewShell: noop,
     };
   }
 

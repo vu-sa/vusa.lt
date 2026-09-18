@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 
 {{-- TODO: Enable class="scroll-smooth" when Inertia scroll reset is fixed --}}
-{{-- `data-surface="public"` switches the design-token scope in resources/css/app.css: the
-     public site takes the editorial palette (warm paper / near-black, zero radius), admin keeps
-     its own. Emitted server-side, from the same component check that gates @head and Umami
-     below, so it is correct before the first paint. --}}
+{{-- `data-surface` switches the design-token scope in resources/css/app.css: the public site
+     always takes the editorial palette (warm paper / near-black, zero radius); admin takes the
+     same scope only for a user who opted into the redesign's new shell (ui_preferences.appearance.new_shell,
+     .ai/redesign/admin, PR 2.1) — everyone else keeps the legacy admin palette. Resolved once
+     server-side via App\Support\DesignSurface, so it is correct before the first paint and the
+     three checks below (this attribute, @head/Umami further down, and the <body> classes) agree. --}}
+@php($designSurface = \App\Support\DesignSurface::for($page['component'] ?? null, auth()->user()))
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark-mode-init"
-    @if (str_starts_with($page['component'] ?? '', 'Public/')) data-surface="public" @endif>
+    @if ($designSurface) data-surface="{{ $designSurface }}" @endif>
 
 <head>
     <meta charset="utf-8">
@@ -143,11 +146,11 @@
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}
-{{-- The public surface paints from its own tokens; admin keeps the zinc canvas it has today
-     until its own revamp. The font is set here rather than only on PublicLayout's root div
-     because Reka teleports popovers, dialogs and dropdowns to <body> — outside that div, they
-     otherwise fall back to the default sans instead of Atkinson. --}}
-<body class="antialiased @if (str_starts_with($page['component'] ?? '', 'Public/')) font-public bg-background text-foreground @else font-sans bg-zinc-50 dark:bg-zinc-900 @endif" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
+{{-- Public and opted-in admin paint from their surface tokens; legacy admin keeps the zinc
+     canvas it has today. The font is set here rather than only on the layout's root div because
+     Reka teleports popovers, dialogs and dropdowns to <body> — outside that div, they otherwise
+     fall back to the default sans instead of the surface's typeface. --}}
+<body class="antialiased @if ($designSurface) font-public bg-background text-foreground @else font-sans bg-zinc-50 dark:bg-zinc-900 @endif" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
     @inertia
 
     @include('turtle-loader')

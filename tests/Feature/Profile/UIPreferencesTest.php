@@ -173,6 +173,35 @@ describe('sidebar collapsed', function (): void {
     });
 });
 
+describe('new shell opt-in (.ai/redesign/admin, PR 2.1)', function (): void {
+    test('defaults to false', function (): void {
+        expect($this->user->getNewAdminShellEnabled())->toBeFalse();
+    });
+
+    test('setNewAdminShellEnabled persists and survives array_replace_recursive', function (): void {
+        $this->user->setNewAdminShellEnabled(true);
+        $this->user->refresh();
+        expect($this->user->getNewAdminShellEnabled())->toBeTrue()
+            // The accessor's array_replace_recursive must not clobber it against the default.
+            ->and($this->user->getDensity())->toBe('comfortable');
+    });
+
+    test('endpoint rejects a non-boolean value', function (): void {
+        asUser($this->user)->patchJson(route('api.v1.admin.user-preferences.update'), [
+            'appearance' => ['new_shell' => 'not-a-boolean'],
+        ])->assertStatus(422);
+    });
+
+    test('endpoint persists the flag', function (): void {
+        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
+            'appearance' => ['new_shell' => true],
+        ])->assertNoContent();
+
+        $this->user->refresh();
+        expect($this->user->getNewAdminShellEnabled())->toBeTrue();
+    });
+});
+
 describe('api.v1.admin.user-preferences.update endpoint', function (): void {
     test('guests are not authorized', function (): void {
         $this->patch(route('api.v1.admin.user-preferences.update'), [
@@ -233,12 +262,14 @@ describe('Inertia payload', function (): void {
         $this->user->setSidebarSectionVisibility(['secondary' => false]);
         $this->user->setDensity('compact');
         $this->user->setSidebarCollapsed(true);
+        $this->user->setNewAdminShellEnabled(true);
 
         asUser($this->user)->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('auth.user.ui_preferences.sidebar.sections.secondary', false)
                 ->where('auth.user.ui_preferences.appearance.density', 'compact')
                 ->where('auth.user.ui_preferences.sidebar.collapsed', true)
+                ->where('auth.user.ui_preferences.appearance.new_shell', true)
             );
     });
 });

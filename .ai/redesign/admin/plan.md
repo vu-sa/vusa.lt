@@ -23,8 +23,8 @@ One PR = one row. Rules:
 | **0.4** | Browser-session continuity (U22): survive browser close, retain the Microsoft account picker, optional Microsoft federated logout | — |  ✅  |
 | **0.5** | Rename `InstitutionAdministrator` → `InstitutionSecretary` everywhere (O22), incl. the table and lang keys | — | ✅ |
 | **0.6** | Role label "Resursų administratorius" → "Išteklių administratorius" (data migration + seeder/test grep) | — | ✅ |
-| **2.1** | Admin surface tokens: `[data-surface="admin"]`, type scale, radius 0, font | — |
-| **2.2** | Colour system tokens: 6 status roles + 8 categories, contrast script, Storybook swatches | 2.1 |
+| **2.1** | Admin surface tokens: `[data-surface="admin"]`, radius 0, font, opt-in flag (pulled forward from 4.1) | — | ✅ |
+| **2.2** | Colour system tokens: 6 status roles + 8 categories, Storybook + axe contrast, Storybook swatches | 2.1 | ✅ |
 | **2.3** | `StatusBadge` + a label map per state enum (reservations, votes, tasks, content, support) | 2.2 |
 | **2.4** | Entity-type registry: icon + category colour, one source for every surface | 2.2 |
 | **2.5** | `EmptyState`, content-shaped skeletons, navigation progress bar (O16) | 2.1 |
@@ -148,21 +148,66 @@ Brief:
 
 ## Phase 2 — Foundation: the admin surface
 
-- [ ] `[data-surface="admin"]` token block (+ `.dark`), emitted **only by the new shell**
-- [ ] **Colour system (O23):** six status roles + eight categories as tokens, both themes, validated
-      by script; `StatusBadge` + one label map per state enum (U10); category mark component
+- [x] `[data-surface="admin"]` token block (+ `.dark`), `resources/css/admin/surface.css` (PR 2.1,
+      2026-09-18) — emitted per-user via the opt-in flag (see Notes), not only by the new shell;
+      4.1 inherits the flag rather than inventing it
+- [x] Colour system (O23): six status roles + eight categories as tokens, both themes, validated by
+      Storybook + `@storybook/addon-a11y` (PR 2.2, 2026-09-18) — see Notes for why "validated by
+      script" became Storybook. `StatusBadge` + one label map per state enum (U10) and the category
+      mark component are **not** done here; that is PR 2.3
 - [ ] **Entity-type registry (O24):** icon + category colour per entity type, shared by title bands,
       rows, palette, notifications and Veikla
-- [ ] Operational type scale; `tabular-nums` for tables
-- [ ] Radius 0 under the admin surface; audit `rounded-full` survivors
-- [ ] Font follows the surface (D10)
-- [ ] Touch-target utility on `pointer-coarse:`
+- [ ] Operational type scale (deferred, see Notes); [x] `tabular-nums` for tables (PR 2.1)
+- [x] Radius 0 under the admin surface (PR 2.1); audit of `rounded-full` survivors **not done** —
+      358 occurrences / 185 files measured (see Notes), left for PR 2.8 and per-page migration
+- [x] Font follows the surface (D10) — PR 2.1
+- [x] Touch-target utility on `pointer-coarse:` — `u-touch` in `admin/surface.css` (PR 2.1), unused
+      until PR 4.1 becomes its first consumer
 - [ ] Primitive audit for hardcoded `bg-white`/`zinc-*` the public work did not need (input, select,
       table, tabs, sheet, dialog, calendar, command)
 - [ ] `EmptyState` (U11), content-shaped skeletons, navigation progress bar (O16)
 - [ ] Date formatter (U9); the picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs) (U18)
-- [ ] Storybook: admin surface, status-role and category swatches; a11y `error` on new admin patterns (U17)
+- [x] Storybook: admin surface, status-role and category swatches; a11y `error` on new admin patterns
+      (U17) — `Patterns/AdminSurface.stories.ts`, `Patterns/ColourSystem.stories.ts` (PR 2.1 + 2.2)
 - [ ] Lint fence scaffolding: a `MIGRATED_ADMIN_PATHS` glob list, empty at first
+
+### PR 2.1 + 2.2 Notes (2026-09-18)
+
+- **Decision — opt-in flag pulled forward from PR 4.1.** `ui_preferences.appearance.new_shell`
+  (`HasUIPreferences::getNewAdminShellEnabled()`/`setNewAdminShellEnabled()`), resolved by the new
+  `App\Support\DesignSurface::for()` and read by `app.blade.php`. A plain ghost-button toggle
+  ("Naujas dizainas (beta)", no spotlight, no dialog) sits in `AdminLayout`'s header; PR 4.1
+  inherits the flag, PR 4.4 replaces the button with an account-menu entry. Nothing here reaches
+  staging before the whole redesign is done, so no announcement/changelog/spotlight.
+- **Decision — no contrast script.** `.design-reference/tokens.mjs` (the public revamp's pattern)
+  is untracked and asserts nothing — it only prints resolved colours for a human to read; no repo
+  script computes a contrast ratio anywhere. Validation is instead two Storybook stories
+  (`Patterns/ColourSystem.stories.ts`, `a11y: { test: 'error' }`) rendering real text on real
+  surfaces, so axe's `color-contrast` rule asserts the 4.5:1 requirement in a real browser, in
+  every Surface × Theme combination. `resources/js/__tests__/designTokens.test.ts` guards the
+  token *list* (completeness, var()-indirection) since axe can't see that. Known gaps: axe checks
+  text contrast only (the "no two categorical hues < 25° apart" rule is asserted by the Vitest
+  guard, not axe), and CI's `storybook-tests` job is `continue-on-error: true`, so this gates the
+  local per-phase gate, not CI yet.
+- **Decision — type scale deferred (D7).** Admin's root `font-size` resets from admin.css's 90% to
+  100% under the surface (the floor rules/visual.md's 12px rule needs), but no operational
+  `--text-*` scale ships yet — Tailwind's defaults apply. Revisit once real pages show whether
+  100% reads too loose.
+- **Decision — `--color-status-*` replaced in place**, no legacy aliases. The old literal block
+  (success/warning/danger/info/neutral, inside `@theme inline` so it could never be re-scoped) had
+  exactly 9 consumers, all in `Components/Public/Search/**`; all 9 migrated in PR 2.2
+  (`warning` → `danger` for a vote mismatch, `warning` → `attention` for a mixed alignment dot).
+- **Not done, left for later phases:** `rounded-full` audit (358 / 185 files, PR 2.8 + per-page);
+  the operational type scale (D7, deferred above); `driver-tour.css` (277 lines of hardcoded hex
+  with `!important` — does not follow any surface; retired with the tours in PR 4.8, not migrated);
+  `NotificationCategory::color()` remap onto `--cat-*` (flagged with a `@todo` pointing at PR 6.5,
+  left alone rather than "fixed" into the status vocabulary it collides with).
+- **Storybook decorator fix, not scoped to a story file:** `.storybook/preview.ts`'s
+  `withSurfaceAndTheme` decorator previously treated the toolbar's `admin` Surface value as "no
+  scope" (it only special-cased `public`) — existing admin stories pinning
+  `globals: { surface: 'admin' }` (`MeetingForm`, `AgendaItemsForm`, `NavigationBuilder`) were
+  silently rendering on the *legacy* palette. Now `admin` stamps `data-surface="admin"`, same as
+  `public` stamps `data-surface="public"`; all three existing pins were re-verified green.
 
 ## Phase 3 — Navigation catalog
 
@@ -176,7 +221,10 @@ Brief:
 
 ## Phase 4 — The shell (behind the opt-in)
 
-- [ ] Opt-in flag in `ui_preferences` + "Naujas dizainas (beta)" in the account menu
+- [x] Opt-in flag in `ui_preferences` — pulled forward into PR 2.1 (2026-09-18) so the surface
+      tokens could be inspected as they landed. `appearance.new_shell` already exists; this phase
+      only needs to move "Naujas dizainas (beta)" from AdminLayout's plain header button into the
+      account menu proper, alongside Paskyra/Išvaizda/Pagalba below
 - [ ] Top bar, workspace tabs + Daugiau, section tabs, field-shaped palette trigger, **+ Sukurti**, bell, account
 - [ ] Mobile bottom bar (all mobile) + Meniu accordion
 - [ ] Palette: catalog go-to, create, workspace ranking, Neseniai, pin star (D5, O20)

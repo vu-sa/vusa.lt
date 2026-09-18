@@ -57,13 +57,13 @@
     @apply underline;
   }
 
-  /* The h1-h4 rules above hardcode gray-900/zinc-100, which is wrong for the public palette's
-     warm near-black ink. Overriding inside the *same* base layer (rather than editing those
-     rules, or writing an unlayered selector) is what keeps precedence sane: it beats the bare
-     `h1` selector on specificity, and the utilities layer still comes after `base`, so a
-     component's own `text-brand`/`text-muted-foreground` continues to win. Admin headings are
-     untouched. */
-  [data-surface="public"] :is(h1, h2, h3, h4) {
+  /* The h1-h4 rules above hardcode gray-900/zinc-100, which is wrong for the warm near-black ink
+     both opted-in surfaces use. Overriding inside the *same* base layer (rather than editing
+     those rules, or writing an unlayered selector) is what keeps precedence sane: it beats the
+     bare `h1` selector on specificity, and the utilities layer still comes after `base`, so a
+     component's own `text-brand`/`text-muted-foreground` continues to win. Legacy (non-opted-in)
+     admin headings are untouched. */
+  :is([data-surface="public"], [data-surface="admin"]) :is(h1, h2, h3, h4) {
     @apply text-foreground;
   }
 }
