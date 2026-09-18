@@ -25,6 +25,7 @@ function pivot(
     state,
     state_properties: { tagType: 'info', description: '' },
     approvable: true,
+    backtrackable: false,
     cancellable: false,
     ...overrides,
   };
@@ -67,6 +68,7 @@ const MARK_RETURNED = 'reservations.actions.mark_returned';
 const REJECT = 'reservations.actions.reject';
 const CANCEL_RESERVATION = 'reservations.actions.cancel_reservation';
 const RESOLVE = 'reservations.actions.resolve';
+const BACKTRACK = 'reservations.actions.backtrack';
 
 /** Buttons in the table body, excluding the confirmation dialog (which reuses the same labels). */
 const findRowButton = (wrapper: ReturnType<typeof mount>, key: string) =>
@@ -176,6 +178,30 @@ describe('row actions', () => {
 
     expect(findRowButton(wrapper, APPROVE)).toBeUndefined();
     expect(findRowButton(wrapper, MARK_RETURNED)).toBeUndefined();
+  });
+
+  it('undoes only the most advanced reversible state through the backtrack endpoint', async () => {
+    const wrapper = createWrapper([
+      reservation('res-1', [
+        pivot('p-reserved', 'reserved', { backtrackable: true }),
+        pivot('p-returned', 'returned', { backtrackable: true }),
+      ]),
+    ]);
+
+    const backtrack = wrapper.findAll('button')
+      .filter(button => button.element.closest('[role="dialog"]') === null)
+      .find(button => button.attributes('title')?.includes(BACKTRACK));
+
+    await backtrack!.trigger('click');
+    await confirmDialog(wrapper, BACKTRACK);
+
+    const [url, payload] = lastPost()!;
+    expect(url).toBe('/mocked/approvals.backtrack');
+    expect(payload).toMatchObject({
+      approvable_type: 'reservation_resource',
+      approvable_ids: ['p-returned'],
+    });
+    expect(payload).not.toHaveProperty('decision');
   });
 });
 

@@ -20,10 +20,14 @@ use Illuminate\Support\Carbon;
  * @property ApprovalDecision $decision
  * @property int $step
  * @property string|null $notes
+ * @property Carbon|null $reverted_at
+ * @property string|null $reverted_by_id
+ * @property string|null $reversion_notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $approvable
+ * @property-read User|null $revertedBy
  * @property-read User|null $user
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Approval approved()
@@ -48,6 +52,7 @@ class Approval extends Model
         return [
             'decision' => ApprovalDecision::class,
             'step' => 'integer',
+            'reverted_at' => 'datetime',
         ];
     }
 
@@ -67,6 +72,11 @@ class Approval extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function revertedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reverted_by_id');
+    }
+
     /**
      * Scope to filter by step number.
      */
@@ -80,7 +90,9 @@ class Approval extends Model
      */
     public function scopeApproved($query)
     {
-        return $query->where('decision', ApprovalDecision::Approved);
+        return $query
+            ->where('decision', ApprovalDecision::Approved)
+            ->whereNull('reverted_at');
     }
 
     /**

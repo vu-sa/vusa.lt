@@ -44,6 +44,7 @@ function pivot(id: string, state: ReservationResourceState, overrides: Partial<R
     state,
     state_properties: { tagType: 'info', description: '' },
     approvable: true,
+    backtrackable: false,
     cancellable: false,
     ...overrides,
   };

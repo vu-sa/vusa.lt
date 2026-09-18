@@ -177,7 +177,7 @@ class ReservationController extends AdminController
         return $this->inertiaResponse('Admin/Reservations/ShowReservation', [
             'reservation' => [
                 ...$reservation->load('users')->toArray(),
-                'resources' => $reservation->load('resources.media', 'resources.pivot.approvals.user', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
+                'resources' => $reservation->load('resources.media', 'resources.pivot.approvals.user', 'resources.pivot.approvals.revertedBy', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
 
                     // This is used to update the left capacity of resources already attached to the reservation
                     $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($reservation->start_time, $reservation->end_time);

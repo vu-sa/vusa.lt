@@ -8,6 +8,7 @@ use App\Events\ApprovalDecisionMade;
 use App\Events\ApprovalFlowCompleted;
 use App\Events\ApprovalRequested;
 use App\Models\Approval;
+use App\Models\Pivots\ReservationResource;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -137,6 +138,76 @@ class ApprovalService
                 $approvals->push($approval);
             } catch (\InvalidArgumentException $e) {
                 $errors[] = $e->getMessage();
+            }
+        }
+
+        return ['approvals' => $approvals, 'errors' => $errors];
+    }
+
+    /**
+     * Move one reservation resource back by one approved lifecycle step.
+     *
+     * @throws \InvalidArgumentException If the user cannot backtrack the item or no active approval exists.
+     */
+    public function backtrack(ReservationResource $reservationResource, User $user, ?string $notes = null): Approval
+    {
+        return DB::transaction(function () use ($reservationResource, $user, $notes): Approval {
+            $lockedResource = ReservationResource::query()
+                ->with(['resource.tenant', 'reservation.users'])
+                ->lockForUpdate()
+                ->findOrFail($reservationResource->getKey());
+
+            if (! $lockedResource->canBeApprovedBy($user, null, ApprovalDecision::Approved)) {
+                throw new \InvalidArgumentException(__('reservations.messages.backtrack_forbidden'));
+            }
+
+            $targetState = $lockedResource->getBacktrackTargetState();
+
+            if ($targetState === null) {
+                throw new \InvalidArgumentException(__('reservations.messages.backtrack_invalid_state'));
+            }
+
+            $approval = $lockedResource->approvals()
+                ->approved()
+                ->latest('created_at')
+                ->latest('id')
+                ->lockForUpdate()
+                ->first();
+
+            if ($approval === null) {
+                throw new \InvalidArgumentException(__('reservations.messages.backtrack_missing_approval'));
+            }
+
+            $approval->forceFill([
+                'reverted_at' => now(),
+                'reverted_by_id' => $user->id,
+                'reversion_notes' => $notes,
+            ])->save();
+
+            if ($lockedResource->state->getValue() === 'returned') {
+                $lockedResource->returned_at = null;
+            }
+
+            $lockedResource->state->transitionTo($targetState);
+
+            return $approval;
+        });
+    }
+
+    /**
+     * @param  Collection<int, ReservationResource>  $reservationResources
+     * @return array{approvals: Collection<int, Approval>, errors: array<string>}
+     */
+    public function bulkBacktrack(Collection $reservationResources, User $user, ?string $notes = null): array
+    {
+        $approvals = collect();
+        $errors = [];
+
+        foreach ($reservationResources as $reservationResource) {
+            try {
+                $approvals->push($this->backtrack($reservationResource, $user, $notes));
+            } catch (\InvalidArgumentException $exception) {
+                $errors[] = $exception->getMessage();
             }
         }
 

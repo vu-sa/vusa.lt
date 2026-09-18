@@ -100,11 +100,15 @@ declare global {
       decision: ApprovalDecision
       step: number
       notes?: string | null
+      reverted_at?: string | null
+      reverted_by_id?: string | null
+      reversion_notes?: string | null
       created_at?: string | null
       updated_at?: string | null
       // relations
       approvable?: Approval
       user?: User
+      reverted_by?: User
       activities_as_subject?: Activity[]
       // counts
       activities_as_subject_count: number
@@ -2298,4 +2302,3 @@ declare global {
 
   }
 }
-

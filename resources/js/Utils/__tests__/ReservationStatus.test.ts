@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeReservationStats,
   daysUnresolved,
+  getBacktrackAction,
   getPrimaryAction,
   getRejectablePivotIds,
   getReservationStates,
@@ -29,6 +30,7 @@ function pivot(overrides: Partial<ReservationPivot> & { state: ReservationResour
     quantity: 1,
     state_properties: { tagType: 'info', description: '' },
     approvable: true,
+    backtrackable: false,
     cancellable: false,
     ...overrides,
   };
@@ -206,6 +208,27 @@ describe('getPrimaryAction', () => {
 
   it('returns null when there is nothing left to advance', () => {
     expect(getPrimaryAction(reservation([pivot({ state: 'returned' })]))).toBeNull();
+  });
+});
+
+describe('getBacktrackAction', () => {
+  it('acts on the most advanced reversible state only', () => {
+    const row = reservation([
+      pivot({ id: 'p-reserved', state: 'reserved', backtrackable: true }),
+      pivot({ id: 'p-lent', state: 'lent', backtrackable: true }),
+      pivot({ id: 'p-returned', state: 'returned', backtrackable: true }),
+    ]);
+
+    expect(getBacktrackAction(row)).toEqual({ state: 'returned', pivotIds: ['p-returned'] });
+  });
+
+  it('ignores resources without an active approval or tenant access', () => {
+    const row = reservation([
+      pivot({ id: 'p-reverted', state: 'returned', backtrackable: false }),
+      pivot({ id: 'p-foreign', state: 'lent', backtrackable: true, approvable: false }),
+    ]);
+
+    expect(getBacktrackAction(row)).toBeNull();
   });
 });
 

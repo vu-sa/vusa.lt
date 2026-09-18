@@ -15,6 +15,7 @@ use App\Models\Traits\HasComments;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\States\ReservationResource\Cancelled;
+use App\States\ReservationResource\Created;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Rejected;
 use App\States\ReservationResource\ReservationResourceState;
@@ -223,6 +224,19 @@ class ReservationResource extends Pivot implements Approvable
             'created' => Reserved::class,
             'reserved' => Lent::class,
             'lent' => Returned::class,
+            default => null,
+        };
+    }
+
+    /**
+     * @return class-string<ReservationResourceState>|null
+     */
+    public function getBacktrackTargetState(): ?string
+    {
+        return match ($this->state->getValue()) {
+            'reserved' => Created::class,
+            'lent' => Reserved::class,
+            'returned' => Lent::class,
             default => null,
         };
     }

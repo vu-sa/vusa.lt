@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ApprovalDecision;
 use App\Http\Controllers\AdminController;
+use App\Models\Approval;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -31,6 +33,7 @@ class ReservationsDashboardController extends AdminController
 
         $eagerLoads = [
             'resources.tenant:id,shortname',
+            'resources.pivot.approvals:id,approvable_type,approvable_id,decision,reverted_at',
             'users:id,name,email,profile_photo_path',
         ];
 
@@ -121,6 +124,12 @@ class ReservationsDashboardController extends AdminController
                 'state' => $state,
                 'state_properties' => $pivot->state_properties,
                 'approvable' => $managedTenantIds->contains($resource->tenant_id),
+                'backtrackable' => $managedTenantIds->contains($resource->tenant_id)
+                    && in_array($state, ['reserved', 'lent', 'returned'], true)
+                    && $pivot->approvals->contains(
+                        fn (Approval $approval) => $approval->decision === ApprovalDecision::Approved
+                            && $approval->reverted_at === null
+                    ),
                 'cancellable' => $isParticipant && in_array($state, ['created', 'reserved'], true),
             ],
         ];
