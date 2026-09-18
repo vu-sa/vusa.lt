@@ -55,9 +55,8 @@ export const StatusRoles: Story = {
 };
 
 /**
- * Small marks, always with a label (never for status). The entity → category assignment itself
- * is PR 2.4's job (the entity-type registry); these are illustrative labels that only exercise
- * the eight tokens. The label is rendered IN the category colour so axe's text-contrast check —
+ * Small marks, always with a label (never for status). These are the eight primary assignments
+ * from the entity-type registry. The label is rendered IN the category colour so axe's text-contrast check —
  * the stricter 4.5:1, not the mark's own 3:1 — covers the mark too.
  */
 export const Categories: Story = {

@@ -16,6 +16,7 @@ export { default as SectionHeading } from './SectionHeading.vue';
 export { default as ShowPageGrid } from './ShowPageGrid.vue';
 export { default as StatCard } from './StatCard.vue';
 export { default as StatTile } from './StatTile.vue';
+export { default as StatusBadge } from './StatusBadge.vue';
 
 /**
  * Re-exported so callers have one import path for the whole pattern tier and

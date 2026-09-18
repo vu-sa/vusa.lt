@@ -25,8 +25,8 @@ One PR = one row. Rules:
 | **0.6** | Role label "Resursų administratorius" → "Išteklių administratorius" (data migration + seeder/test grep) | — | ✅ |
 | **2.1** | Admin surface tokens: `[data-surface="admin"]`, radius 0, font, opt-in flag (pulled forward from 4.1) | — | ✅ |
 | **2.2** | Colour system tokens: 6 status roles + 8 categories, Storybook + axe contrast, Storybook swatches | 2.1 | ✅ |
-| **2.3** | `StatusBadge` + a label map per state enum (reservations, votes, tasks, content, support) | 2.2 |
-| **2.4** | Entity-type registry: icon + category colour, one source for every surface | 2.2 |
+| **2.3** | `StatusBadge` + a label map per state enum (reservations, votes, tasks, content, support) | 2.2 | ✅ |
+| **2.4** | Entity-type registry: icon + category colour, one source for every surface | 2.2 | ✅ |
 | **2.5** | `EmptyState`, content-shaped skeletons, navigation progress bar (O16) | 2.1 |
 | **2.6** | Date/time formatter (U9) | — |
 | **2.7** | Picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs): native on coarse pointers, one per data kind | 2.1 |
@@ -153,9 +153,10 @@ Brief:
       4.1 inherits the flag rather than inventing it
 - [x] Colour system (O23): six status roles + eight categories as tokens, both themes, validated by
       Storybook + `@storybook/addon-a11y` (PR 2.2, 2026-09-18) — see Notes for why "validated by
-      script" became Storybook. `StatusBadge` + one label map per state enum (U10) and the category
-      mark component are **not** done here; that is PR 2.3
-- [ ] **Entity-type registry (O24):** icon + category colour per entity type, shared by title bands,
+      script" became Storybook
+- [x] `StatusBadge` + canonical presentation maps for reservation resources, votes, student benefit,
+      tasks, content and support requests (U10, PR 2.3, 2026-09-18)
+- [x] **Entity-type registry (O24):** icon + category colour per entity type, shared by title bands,
       rows, palette, notifications and Veikla
 - [ ] Operational type scale (deferred, see Notes); [x] `tabular-nums` for tables (PR 2.1)
 - [x] Radius 0 under the admin surface (PR 2.1); audit of `rounded-full` survivors **not done** —
@@ -208,6 +209,19 @@ Brief:
   `globals: { surface: 'admin' }` (`MeetingForm`, `AgendaItemsForm`, `NavigationBuilder`) were
   silently rendering on the *legacy* palette. Now `admin` stamps `data-surface="admin"`, same as
   `public` stamps `data-surface="public"`; all three existing pins were re-verified green.
+
+### PR 2.3 + 2.4 Notes (2026-09-18)
+
+- `StatusBadge` accepts a canonical `StatusPresentation` rather than separate label, role and icon
+  props. The maps in `Constants/statuses.ts` therefore keep all three parts of U10 together and
+  make colour-only or caller-specific variants harder to introduce accidentally.
+- `Constants/entityTypes.ts` covers every generated `ModelEnum` value and is now the source behind
+  the existing `getModelIcon()` compatibility helper as well as `EntityTypeMark`. The eight anchor
+  assignments remain Posėdis · Rezervacija · Narys · Pareigybė · Naujiena · Renginys · Dokumentas ·
+  Institucija; related models reuse the nearest category.
+- Both components have admin-surface Storybook stories with a11y set to `error`; registry and
+  state-map completeness are guarded by Vitest so newly generated enum values cannot silently ship
+  without presentation metadata.
 
 ## Phase 3 — Navigation catalog
 
