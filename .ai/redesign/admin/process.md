@@ -84,7 +84,7 @@ this project's current set (Claude Code, Codex, Gemini); the tier is what matter
 | PR | Tier | Why |
 |---|---|---|
 | 0.2 recently-visited fix · 0.3 inventory · 0.6 role label | C | bounded, verifiable |
-| 0.4 stay logged in | B | touches auth and session config |
+| 0.4 session continuity | B | touches auth and session config |
 | 0.5 sekretorius rename | B | wide but mechanical; a missed reference breaks tasks and reminders |
 | 2.1 surface tokens · 2.2 colour system | **A** | every later PR inherits these values |
 | 2.3 StatusBadge · 2.4 entity registry · 2.7 pickers · 2.8 primitive audit | B | pattern work with real trade-offs |

@@ -17,12 +17,12 @@ One PR = one row. Rules:
 
 | PR | Scope | → |
 |---|---|---|
-| **0.1** | This plan + the `AGENTS.md` pointer | — |
-| **0.2** | Fix recently-visited tracking (`route: "page"` for every entry) | — |
-| **0.3** | Admin route inventory → committed as a plan appendix (no code) | — |
-| **0.4** | Stay logged in (U22): remember-me, `expire_on_close`, no forced account picker | — |
-| **0.5** | Rename `InstitutionAdministrator` → `InstitutionSecretary` everywhere (O22), incl. the table and lang keys | — |
-| **0.6** | Role label "Resursų administratorius" → "Išteklių administratorius" (data migration + seeder/test grep) | — |
+| **0.1** | This plan + the `AGENTS.md` pointer | — | ✅ |
+| **0.2** | Fix recently-visited tracking (`route: "page"` for every entry) | — | ✅ |
+| **0.3** | Admin route inventory → committed as a plan appendix ([inventory.md](inventory.md)) | — | ✅ |
+| **0.4** | Browser-session continuity (U22): survive browser close, retain the Microsoft account picker, optional Microsoft federated logout | — |  ✅  |
+| **0.5** | Rename `InstitutionAdministrator` → `InstitutionSecretary` everywhere (O22), incl. the table and lang keys | — | ✅ |
+| **0.6** | Role label "Resursų administratorius" → "Išteklių administratorius" (data migration + seeder/test grep) | — | ✅ |
 | **2.1** | Admin surface tokens: `[data-surface="admin"]`, type scale, radius 0, font | — |
 | **2.2** | Colour system tokens: 6 status roles + 8 categories, contrast script, Storybook swatches | 2.1 |
 | **2.3** | `StatusBadge` + a label map per state enum (reservations, votes, tasks, content, support) | 2.2 |
@@ -95,13 +95,28 @@ One PR = one row. Rules:
 - [x] O18 glossary, O22 term (**sekretorius**), O25 picker, workspace names (**Organizacija**, **ViSAK**) settled (2026-09-17)
 - [x] U1–U15, U17–U20, U22–U26 settled; U16 dropped; U21 is an experiment (2026-09-17)
 - [x] Plan committed to `dev` with the `AGENTS.md` pointer, so every branch inherits it (2026-09-17)
-- [ ] Inventory: every `/mano` GET route → workspace, section, page type, default view, backend, gate,
-      audience, reach. Resolves every `?` in the workspace map and the O1 defaults table.
-- [ ] **Baseline:** run the rep metrics (U25) and record them here
-- [ ] Check production session settings and Microsoft login friction (U22)
-- [ ] **Fix recently-visited tracking:** every stored entry has `route: "page"` (the public catch-all
-      route name), so recent-item icons cannot resolve
+- [x] Inventory: every `/mano` GET route → workspace, section, page type, default view, backend, gate,
+      audience, reach. Resolves every `?` in the workspace map and the O1 defaults table. (See [inventory.md](inventory.md)) (2026-09-18)
+- [x] **Baseline:** run the rep metrics (U25) and record them here (2026-09-17 snapshot below)
+- [ ] Check production session settings and Microsoft login friction (U22) [Deferred by user instruction]
+- [x] **Fix recently-visited tracking:** resolved catch-all `page` route collision with `fallback()` constraint, added client-side route name protection, and repaired existing DB records via migration `2026_09_18_100000_repair_recently_visited_admin_routes.php` (2026-09-18)
+- [x] **Rename InstitutionAdministrator → InstitutionSecretary** everywhere (O22, PR 0.5): migration `2026_09_18_100100_rename_institution_administrators_to_secretaries.php`, model, morph map, relations, controller, form request, routes, translations, Vue components, and tests (2026-09-18)
+- [x] **Role label "Resursų administratorius" → "Išteklių administratorius"** (PR 0.6): migration `2026_09_18_100200_rename_resource_manager_roles.php` (2026-09-18)
 - [ ] Beta end date (D12)
+
+### Rep Metrics Baseline (Snapshot 2026-09-17)
+
+Measured on the production database clone (last meeting 2026-09-16):
+
+| Metric | Baseline Value | Target |
+|---|---|---|
+| Meeting recorded within 7 days | **91.9%** (582 of 633 in past 12m) | > 95% |
+| Agenda items with vote information | **35.1%** (1,582 of 4,510) | > 50% |
+| Active rep duties active in last 30 days | **27.0%** (83 of 307) | > 50% |
+| Task completion rate (overall) | **67.2%** | > 80% |
+| Task completion: Meeting agenda | **67.8%** | > 80% |
+| Task completion: Periodicity gap | **44.9%** | > 65% |
+| Task completion: Reservations | **93.6%** | > 95% |
 
 ## Phase 1 — Second prototype round (v0) against the real structure
 

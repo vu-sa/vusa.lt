@@ -44,6 +44,7 @@ const baseInstitution = {
   short_name: 'SA',
   types: [],
   managers: [],
+  secretaries: [],
   administrators: [],
   sharepointPath: null,
   duties_count: 0,
@@ -96,21 +97,21 @@ describe('ShowInstitution.vue', () => {
     });
   });
 
-  it('shows the current term administrators apart from the managers', () => {
-    // An administrator need not hold a duty here, so they must never read as a member.
+  it('shows the current term secretaries apart from the managers', () => {
+    // A secretary need not hold a duty here, so they must never read as a member (O22).
     const wrapper = createWrapper({
-      administrators: [{ id: 'u1', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
+      secretaries: [{ id: 'u1', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
     });
 
-    expect(wrapper.text()).toContain('administrators.label');
+    expect(wrapper.text()).toContain('secretaries.label');
   });
 
   it('keeps the short name out of the hero — it only echoes the full name', () => {
     expect(createWrapper().find('[data-slot="show-page-hero-subtitle"]').exists()).toBe(false);
   });
 
-  it('hides the administrator group when nobody is nominated', () => {
-    expect(createWrapper().text()).not.toContain('administrators.label');
+  it('hides the secretary group when nobody is nominated', () => {
+    expect(createWrapper().text()).not.toContain('secretaries.label');
   });
 
   it('omits the related tab when the institution has no related institutions', () => {

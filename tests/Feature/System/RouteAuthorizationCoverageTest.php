@@ -32,6 +32,7 @@ pest()->use(RefreshDatabase::class);
  */
 const SELF_SCOPED_ROUTE_NAMES = [
     'logout',
+    'logout.microsoft',
     'profile.update',
     'profile.updatePassword',
     'profile.updateNotificationPreferences',

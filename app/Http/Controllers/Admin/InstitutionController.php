@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetInstitutionAdministrators;
 use App\Actions\GetInstitutionMembers;
+use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\InstitutionSecretaryController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
@@ -225,8 +226,11 @@ class InstitutionController extends AdminController
                 'tasks_count' => $tasksCount + $tasksFromMeetingsCount,
                 'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
                 'managers' => $institution->managers(),
-                'administrators' => InstitutionAdministratorController::usersPayload(
-                    GetInstitutionAdministrators::execute($institution)
+                'secretaries' => InstitutionSecretaryController::usersPayload(
+                    GetInstitutionSecretaries::execute($institution)
+                ),
+                'administrators' => InstitutionSecretaryController::usersPayload(
+                    GetInstitutionSecretaries::execute($institution)
                 ),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
             ],
@@ -311,9 +315,13 @@ class InstitutionController extends AdminController
                 'default_end_month_day' => app(CadenceSettings::class)->default_end_month_day,
             ],
             // One roster per applicable term, edited beside the terms themselves.
-            'administratorRosters' => InstitutionAdministratorController::payload($institution),
+            'secretaryRosters' => InstitutionSecretaryController::payload($institution),
+            'administratorRosters' => InstitutionSecretaryController::payload($institution),
             // Suggested first in the picker: the people already in the body.
-            'suggestedAdministrators' => InstitutionAdministratorController::usersPayload(
+            'suggestedSecretaries' => InstitutionSecretaryController::usersPayload(
+                GetInstitutionMembers::execute($institution)
+            ),
+            'suggestedAdministrators' => InstitutionSecretaryController::usersPayload(
                 GetInstitutionMembers::execute($institution)
             ),
         ]);

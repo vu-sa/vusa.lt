@@ -9,11 +9,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * Who carries a task for an institution: its nominated administrators, or — when
+ * Who carries a task for an institution: its nominated secretaries, or — when
  * nobody is nominated for the relevant term — the members who were genuinely active
- * on the relevant date.
+ * on the relevant date (O22).
  *
- * Nominating administrators is what keeps a sitting of a 46-seat body from landing in
+ * Nominating secretaries is what keeps a sitting of a 46-seat body from landing in
  * 46 inboxes, so this is a replacement, not a union. Notification audiences (meeting
  * reminders, meeting-created) merge the two instead; only task assignment narrows.
  */
@@ -24,10 +24,10 @@ class ResolveTaskAssignees
      */
     public static function forMeeting(Meeting $meeting): Collection
     {
-        $administrators = GetInstitutionAdministrators::forMeeting($meeting);
+        $secretaries = GetInstitutionSecretaries::forMeeting($meeting);
 
-        if ($administrators->isNotEmpty()) {
-            return $administrators;
+        if ($secretaries->isNotEmpty()) {
+            return $secretaries;
         }
 
         return collect($meeting->getRepresentativesActiveAt()->all());
@@ -38,10 +38,10 @@ class ResolveTaskAssignees
      */
     public static function forInstitution(Institution $institution, ?Carbon $date = null): Collection
     {
-        $administrators = GetInstitutionAdministrators::execute($institution, $date);
+        $secretaries = GetInstitutionSecretaries::execute($institution, $date);
 
-        if ($administrators->isNotEmpty()) {
-            return $administrators;
+        if ($secretaries->isNotEmpty()) {
+            return $secretaries;
         }
 
         return collect(GetInstitutionRepresentatives::execute($institution, $date)->all());

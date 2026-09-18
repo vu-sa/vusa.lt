@@ -18,7 +18,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->documentManager = makeUser($this->tenant);
-    $this->documentManager->duties()->first()->assignRole('Resource Manager');
+    $this->documentManager->duties()->first()->assignRole('Išteklių administratorius');
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });
 
@@ -75,7 +75,7 @@ describe('authorized access', function (): void {
     });
 
     test('admin can access documents index', function (): void {
-        $admin = makeTenantUserWithRole('Resource Manager', $this->tenant);
+        $admin = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
         Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
 
         $response = asUser($admin)->get(route('documents.index'));

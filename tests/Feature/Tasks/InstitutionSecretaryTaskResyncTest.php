@@ -4,7 +4,7 @@ use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\InstitutionAdministrator;
+use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
@@ -56,8 +56,8 @@ test('the open task starts with the members active at the meeting date', functio
     expect($this->task->users()->pluck('users.id')->all())->toBe([$this->member->id]);
 });
 
-test('nominating an administrator takes the open task off the membership', function (): void {
-    asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+test('nominating a secretary takes the open task off the membership', function (): void {
+    asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
         'cadence_id' => $this->cadence->id,
         'user_ids' => [$this->nominee->id],
     ])->assertRedirect();
@@ -66,13 +66,13 @@ test('nominating an administrator takes the open task off the membership', funct
 });
 
 test('emptying the roster hands the open task back to the members', function (): void {
-    InstitutionAdministrator::create([
+    InstitutionSecretary::create([
         'institution_id' => $this->institution->id,
         'cadence_id' => $this->cadence->id,
         'user_id' => $this->nominee->id,
     ]);
 
-    asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+    asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
         'cadence_id' => $this->cadence->id,
         'user_ids' => [],
     ])->assertRedirect();
@@ -83,7 +83,7 @@ test('emptying the roster hands the open task back to the members', function ():
 test('a completed task is left alone', function (): void {
     $this->task->update(['completed_at' => now()]);
 
-    asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+    asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
         'cadence_id' => $this->cadence->id,
         'user_ids' => [$this->nominee->id],
     ])->assertRedirect();
@@ -104,7 +104,7 @@ test('a meeting outside the edited term keeps its own assignees', function (): v
         ->where('action_type', ActionType::AgendaCompletion)
         ->firstOrFail();
 
-    asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+    asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
         'cadence_id' => $this->cadence->id,
         'user_ids' => [$this->nominee->id],
     ])->assertRedirect();
@@ -117,7 +117,7 @@ test('re-syncing sends nobody a task-assigned notification', function (): void {
     // itself produce a burst of it.
     Notification::fake();
 
-    asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+    asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
         'cadence_id' => $this->cadence->id,
         'user_ids' => [$this->nominee->id],
     ])->assertRedirect();

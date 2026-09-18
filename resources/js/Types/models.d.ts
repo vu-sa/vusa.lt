@@ -696,7 +696,9 @@ declare global {
       users?: User
       followers?: User[]
       administrators?: User[]
-      administrator_assignments?: InstitutionAdministrator[]
+      administrator_assignments?: InstitutionSecretary[]
+      secretaries?: User[]
+      secretary_assignments?: InstitutionSecretary[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -716,6 +718,8 @@ declare global {
       followers_count: number
       administrators_count: number
       administrator_assignments_count: number
+      secretaries_count: number
+      secretary_assignments_count: number
       comments_count: number
       root_comments_count: number
       outgoing_relationships_count: number
@@ -737,6 +741,8 @@ declare global {
       followers_exists: boolean
       administrators_exists: boolean
       administrator_assignments_exists: boolean
+      secretaries_exists: boolean
+      secretary_assignments_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       outgoing_relationships_exists: boolean
@@ -747,7 +753,7 @@ declare global {
       activities_as_subject_exists: boolean
     }
 
-    export interface InstitutionAdministrator {
+    export interface InstitutionSecretary {
       // columns
       id: string
       institution_id: string
@@ -765,6 +771,8 @@ declare global {
       cadence_exists: boolean
       user_exists: boolean
     }
+
+    export type InstitutionAdministrator = InstitutionSecretary;
 
     export interface InstitutionCheckIn {
       // columns
@@ -1166,7 +1174,9 @@ declare global {
       users?: User
       followers?: User[]
       administrators?: User[]
-      administrator_assignments?: InstitutionAdministrator[]
+      administrator_assignments?: InstitutionSecretary[]
+      secretaries?: User[]
+      secretary_assignments?: InstitutionSecretary[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -1186,6 +1196,8 @@ declare global {
       followers_count: number
       administrators_count: number
       administrator_assignments_count: number
+      secretaries_count: number
+      secretary_assignments_count: number
       comments_count: number
       root_comments_count: number
       outgoing_relationships_count: number
@@ -1207,6 +1219,8 @@ declare global {
       followers_exists: boolean
       administrators_exists: boolean
       administrator_assignments_exists: boolean
+      secretaries_exists: boolean
+      secretary_assignments_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       outgoing_relationships_exists: boolean

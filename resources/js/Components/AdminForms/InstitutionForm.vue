@@ -268,27 +268,27 @@
       />
     </FormElement>
 
-    <!-- Section 5: Administrators. Hangs off a term, so it needs the terms above it. -->
+    <!-- Section 5: Secretaries. Hangs off a term, so it needs the terms above it. (O22) -->
     <FormElement v-if="!isCreate" :section-number="5" no-sider>
       <template #title>
-        {{ $t('administrators.institution.title') }}
+        {{ $t('secretaries.institution.title') }}
       </template>
       <template #subtitle>
-        {{ $t('administrators.institution.description') }}
+        {{ $t('secretaries.institution.description') }}
       </template>
 
       <SpotlightPopover
-        :title="$t('administrators.spotlight.title')"
-        :description="$t('administrators.spotlight.description')"
-        :is-dismissed="!administratorsSpotlight.isVisible.value"
+        :title="$t('secretaries.spotlight.title')"
+        :description="$t('secretaries.spotlight.description')"
+        :is-dismissed="!secretariesSpotlight.isVisible.value"
         position="top"
-        @dismiss="administratorsSpotlight.dismiss"
+        @dismiss="secretariesSpotlight.dismiss"
       >
-        <AdministratorsSection
+        <SecretariesSection
           :institution-id="institution.id!"
-          :rosters="administratorRosters"
-          :suggested="suggestedAdministrators"
-          @engaged="administratorsSpotlight.dismiss"
+          :rosters="resolvedSecretaryRosters"
+          :suggested="resolvedSuggestedSecretaries"
+          @engaged="secretariesSpotlight.dismiss"
         />
       </SpotlightPopover>
     </FormElement>
@@ -345,7 +345,7 @@ import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
 import { CadenceSection, type CadenceRow } from '@/Components/Cadences';
-import { AdministratorsSection, type AdministratorRoster, type AdministratorUser } from '@/Components/Institutions';
+import { SecretariesSection, type SecretaryRoster, type SecretaryUser } from '@/Components/Institutions';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -367,16 +367,20 @@ const props = withDefaults(defineProps<{
   /** The shared ladder, shown read-only beside them. */
   globalCadences?: CadenceRow[];
   cadenceDefaults?: { default_start_month_day: string; default_end_month_day: string };
-  /** One administrator roster per term that applies here. Absent on create. */
-  administratorRosters?: AdministratorRoster[];
+  /** One secretary roster per term that applies here. Absent on create. */
+  secretaryRosters?: SecretaryRoster[];
+  administratorRosters?: SecretaryRoster[];
   /** Current members, offered as one-tap suggestions in the roster picker. */
-  suggestedAdministrators?: AdministratorUser[];
+  suggestedSecretaries?: SecretaryUser[];
+  suggestedAdministrators?: SecretaryUser[];
   rememberKey?: string;
 }>(), {
   cadences: () => [],
   globalCadences: () => [],
   cadenceDefaults: () => ({ default_start_month_day: '07-01', default_end_month_day: '06-30' }),
+  secretaryRosters: () => [],
   administratorRosters: () => [],
+  suggestedSecretaries: () => [],
   suggestedAdministrators: () => [],
 });
 
@@ -386,8 +390,14 @@ defineEmits<{
 }>();
 
 const locale = ref('lt');
-// Nothing to point at while creating: the roster section only renders on edit.
-const administratorsSpotlight = useFeatureSpotlight('institution-administrators-v1', {
+const resolvedSecretaryRosters = computed(() =>
+  props.secretaryRosters?.length ? props.secretaryRosters : (props.administratorRosters ?? []),
+);
+const resolvedSuggestedSecretaries = computed(() =>
+  props.suggestedSecretaries?.length ? props.suggestedSecretaries : (props.suggestedAdministrators ?? []),
+);
+// Nothing to point at while creating: the roster section only renders on edit (O22).
+const secretariesSpotlight = useFeatureSpotlight('institution-secretaries-v1', {
   enabled: !props.rememberKey,
 });
 const dutiesWereReordered = ref(false);

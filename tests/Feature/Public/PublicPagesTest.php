@@ -67,6 +67,16 @@ test('catch-all fallback route 404s for an unrecognized host instead of crashing
         ->assertNotFound();
 });
 
+test('page route is registered as fallback and does not match admin routes', function (): void {
+    $route = app('router')->getRoutes()->getByName('page');
+
+    expect($route)->not->toBeNull()
+        ->and($route->isFallback)->toBeTrue();
+
+    $match = app('router')->getRoutes()->match(Illuminate\Http\Request::create('https://www.vusa.test/mano/users'));
+    expect($match->getName())->toBe('users.index');
+});
+
 test('can open news archive', function (): void {
     $this->get(route('newsArchive', ['subdomain' => 'www', 'lang' => 'lt', 'newsString' => 'naujienos']))
         ->assertInertia(fn (Assert $page) => $page

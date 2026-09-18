@@ -62,8 +62,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionAdministrator|null $pivot
+ * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
  * @property-read Collection<int, Institution> $administeredInstitutions
+ * @property-read Collection<int, Institution> $secretariedInstitutions
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -296,19 +297,29 @@ class User extends Authenticatable implements GuardsForceDelete
     }
 
     /**
-     * Institutions this user has been nominated to look after for a term.
+     * Institutions this user is nominated to look after as secretary (O22).
      *
      * Grants the tasks, the notifications and `.own` visibility — never membership,
      * so this must not be merged into institutions()/duties() anywhere.
      *
-     * @return BelongsToMany<Institution, $this, InstitutionAdministrator, 'pivot'>
+     * @return BelongsToMany<Institution, $this, InstitutionSecretary, 'pivot'>
+     */
+    public function secretariedInstitutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_secretaries')
+            ->using(InstitutionSecretary::class)
+            ->withPivot('cadence_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Backwards-compatibility alias for secretariedInstitutions().
+     *
+     * @return BelongsToMany<Institution, $this, InstitutionSecretary, 'pivot'>
      */
     public function administeredInstitutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class, 'institution_administrators')
-            ->using(InstitutionAdministrator::class)
-            ->withPivot('cadence_id')
-            ->withTimestamps();
+        return $this->secretariedInstitutions();
     }
 
     /**

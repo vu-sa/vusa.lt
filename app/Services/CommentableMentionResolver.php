@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Actions\GetInstitutionAdministrators;
 use App\Actions\GetInstitutionMembers;
+use App\Actions\GetInstitutionSecretaries;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -59,7 +59,7 @@ class CommentableMentionResolver
 
     /**
      * Everyone holding a duty in the meeting's institutions on its own date, plus the
-     * nominated administrators.
+     * nominated secretaries (O22).
      *
      * `$meeting->users` used to be concatenated here, but that deep relation reaches
      * every person who ever held a duty in the institution — mentioning a meeting
@@ -68,12 +68,12 @@ class CommentableMentionResolver
     private function meetingUsers(Meeting $meeting): Collection
     {
         return GetInstitutionMembers::forMeeting($meeting)
-            ->concat(GetInstitutionAdministrators::forMeeting($meeting))
+            ->concat(GetInstitutionSecretaries::forMeeting($meeting))
             ->values();
     }
 
     /**
-     * Current duty holders plus administrators. Institution::users() is the all-time
+     * Current duty holders plus secretaries. Institution::users() is the all-time
      * deep relation and must not be used for an audience.
      *
      * @return Collection<int, User>
@@ -81,7 +81,7 @@ class CommentableMentionResolver
     private function institutionUsers(Institution $institution): Collection
     {
         return GetInstitutionMembers::execute($institution)
-            ->concat(GetInstitutionAdministrators::execute($institution))
+            ->concat(GetInstitutionSecretaries::execute($institution))
             ->values();
     }
 }

@@ -16,7 +16,7 @@ class RoleResourceManagerSeeder extends Seeder
     {
         $role = new Role;
 
-        $role->name = 'Resource Manager';
+        $role->name = 'Išteklių administratorius';
         $role->guard_name = 'web';
 
         $role->save();

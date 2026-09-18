@@ -75,7 +75,7 @@ describe('tasks.summary listing', function (): void {
     test('does not offer deletion to a user who merely holds the task', function (): void {
         // tasks.delete is seeded for no role, so offering the action in the table only ever
         // produced a 403 on click.
-        $manager = makeTenantUserWithRole('Resource Manager', $this->tenant);
+        $manager = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
         orphanTaskFor($manager, ActionType::Manual);
 
         $response = asUser($manager)->get(route('tasks.summary'));

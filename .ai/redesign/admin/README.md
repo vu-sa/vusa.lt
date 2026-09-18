@@ -15,6 +15,7 @@ the public site. Split into files so a session reads only what it needs.
 | [reps.md](reps.md) | touching anything a rep uses: Pradžia, meetings, agenda items, tasks, reminders | ~95 |
 | [plan.md](plan.md) | picking up work or opening a PR: PR map, phases, open questions, scope | ~355 |
 | [process.md](process.md) | starting a session, choosing a model and thinking mode, handing over | ~120 |
+| [testing.md](testing.md) | manually verifying phase 0.4 session continuity and Microsoft logout | ~110 |
 | [decisions.md](decisions.md) | you need the *why* behind a rule, or think a decision should change | ~355 |
 | [evidence.md](evidence.md) | prioritising, or challenging an assumption — role and usage data + the queries | ~70 |
 

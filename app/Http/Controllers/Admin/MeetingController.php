@@ -7,6 +7,7 @@ use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\InstitutionSecretaryController;
 use App\Http\Requests\AttachMeetingInstitutionRequest;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
@@ -295,9 +296,10 @@ class MeetingController extends AdminController
                 'sharepointPath' => $meeting->institutions->isNotEmpty() ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
             ],
             'representatives' => $representatives,
-            // Nominated for the term the meeting fell in. When present, these are the
+            // Nominated for the term the meeting fell in (O22). When present, these are the
             // people the agenda tasks went to instead of the whole membership.
-            'administrators' => InstitutionAdministratorController::forMeetingPayload($meeting),
+            'secretaries' => InstitutionSecretaryController::forMeetingPayload($meeting),
+            'administrators' => InstitutionSecretaryController::forMeetingPayload($meeting),
             'previousMeeting' => $previousMeeting,
             'nextMeeting' => $nextMeeting,
             'availableInstitutionsForAttach' => $this->getAvailableInstitutionsForAttach($meeting),

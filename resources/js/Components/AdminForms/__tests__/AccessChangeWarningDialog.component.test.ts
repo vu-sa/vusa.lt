@@ -25,13 +25,13 @@ function mountDialog(report: Record<string, unknown>) {
 describe('AccessChangeWarningDialog', () => {
   test('lists the roles the user would lose', () => {
     const wrapper = mountDialog({
-      lostRoles: ['Communication Coordinator', 'Resource Manager'],
+      lostRoles: ['Communication Coordinator', 'Išteklių administratorius'],
       severity: 'warning',
     });
 
     const text = wrapper.text();
     expect(text).toContain('Communication Coordinator');
-    expect(text).toContain('Resource Manager');
+    expect(text).toContain('Išteklių administratorius');
   });
 
   test('renders the intro and note copy', () => {

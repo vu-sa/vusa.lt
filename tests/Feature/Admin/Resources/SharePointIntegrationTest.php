@@ -13,7 +13,7 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
 
     $this->documentManager = makeUser($this->tenant);
-    $this->documentManager->duties()->first()->assignRole('Resource Manager');
+    $this->documentManager->duties()->first()->assignRole('Išteklių administratorius');
 
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });

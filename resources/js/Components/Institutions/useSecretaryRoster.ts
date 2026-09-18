@@ -3,13 +3,13 @@ import { router } from '@inertiajs/vue3';
 
 /**
  * The roster is replaced wholesale per term — one idempotent PUT rather than
- * add/remove endpoints, matching how the server stores it as a set.
+ * add/remove endpoints, matching how the server stores it as a set (O22).
  */
-export function useAdministratorRoster(institutionId: string) {
+export function useSecretaryRoster(institutionId: string) {
   const processingCadenceId = ref<string | null>(null);
 
   function save(cadenceId: string, userIds: string[]): void {
-    router.put(route('institutions.administrators.update', institutionId), {
+    router.put(route('institutions.secretaries.update', institutionId), {
       cadence_id: cadenceId,
       user_ids: userIds,
     }, {
@@ -21,3 +21,5 @@ export function useAdministratorRoster(institutionId: string) {
 
   return { processingCadenceId, save };
 }
+
+export const useAdministratorRoster = useSecretaryRoster;

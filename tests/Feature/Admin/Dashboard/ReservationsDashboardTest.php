@@ -17,7 +17,7 @@ beforeEach(function (): void {
     $this->otherTenant = Tenant::factory()->create();
 
     // Manages $this->tenant's resources, but not $this->otherTenant's.
-    $this->manager = makeTenantUser('Resource Manager', $this->tenant);
+    $this->manager = makeTenantUser('Išteklių administratorius', $this->tenant);
 
     // Holds a duty in the tenant, but no resources.update.padalinys — administers nothing.
     $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);

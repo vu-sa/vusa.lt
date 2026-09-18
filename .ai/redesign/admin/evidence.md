@@ -13,7 +13,7 @@ Measured on the local database (a recent production copy — last meeting 2026-0
 |---|---|
 | Studentų atstovas | 343 |
 | Komunikacijos koordinatorius | 61 |
-| Resursų administratorius | 39 |
+| Išteklių administratorius | 39 |
 | Studentų atstovų koordinatorius | 33 |
 | PKP administratorius | 25 |
 | Narių registracijos duomenų gavėjas | 23 |

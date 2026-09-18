@@ -38,11 +38,11 @@ beforeEach(function (): void {
     $this->authorizer = app(ModelAuthorizer::class);
 });
 
-describe('Resource Manager', function (): void {
+describe('Išteklių administratorius', function (): void {
     beforeEach(function (): void {
-        // 'Resource Manager' holds resources.read.* and reservations.read.* at global
+        // 'Išteklių administratorius' holds resources.read.* and reservations.read.* at global
         // scope, but resources.update.padalinys only within its own tenant.
-        $this->manager = makeTenantUserWithRole('Resource Manager', $this->tenantA);
+        $this->manager = makeTenantUserWithRole('Išteklių administratorius', $this->tenantA);
 
         $resource = Resource::factory()->create([
             'tenant_id' => $this->tenantB->id,

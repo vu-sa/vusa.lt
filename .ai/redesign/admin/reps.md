@@ -21,10 +21,11 @@
 | *Periodicity gap* tasks ("no meeting recorded lately") | **45% completed, avg 40 days**, 219 open overdue |
 | Reservation approval / pickup / return tasks | 99% / 80% / 88% completed, 4–5 days |
 
-Also: `config/session.php` sets `expire_on_close => true`, Microsoft login sends
-`prompt=select_account`, and `Auth::login()` is called without "remember". Unless production
-overrides it, **every visit from an email link starts with a Microsoft round trip and an account
-picker.** The `sessions` table is stale (Redis driver), so nobody knows the phone/desktop split.
+Also: standard browser sessions used to expire on browser close, while installed PWA sessions
+already persist for 14 days. Microsoft login deliberately sends `prompt=select_account`: users
+commonly have several Microsoft accounts, and automatic SSO can otherwise choose the wrong one.
+The picker is only part of a new Microsoft login, not an authenticated visit. The `sessions` table
+is stale (Redis driver), so nobody knows the phone/desktop split.
 
 Caveat: September is the start of the academic year; summer inactivity inflates the 7/30-day
 numbers. The recording delay and missing votes are year-round.
@@ -52,8 +53,9 @@ is mostly ignored. A beautiful shell does not move those numbers; a shorter loop
 - **R-a. Answerable notifications.** Every reminder carries its answer as buttons: *"Ar vyko
   posėdis nuo 09-01?"* → **Taip, fiksuoti** / **Ne, nevyko**. Each deep-links into the ActionWindow
   at the right screen with the institution pre-filled.
-- **R-b. Staying logged in.** Remember-me on Microsoft login, no forced account picker for a
-  returning user, `intended` redirect preserved through login (it already is).
+- **R-b. Session continuity.** Browser sessions survive closing the browser until their idle
+  lifetime ends; the Microsoft account picker stays; local logout and Microsoft federated logout
+  are separate choices; `intended` redirect is preserved through login (it already is).
 - **R-c. Record in minutes, complete later.** A meeting can be saved with just institution + date;
   what is missing becomes a visible, one-tap "Papildyk" list — never a blocker.
 - **R-d. Paste intake.** Agenda items from pasted invitation text into editable rows (the bulk

@@ -69,11 +69,11 @@
         <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
         <UsersAvatarGroup :users="representatives" :max="4" :size="24" expandable />
       </div>
-      <!-- Nominated for the term this sitting fell in. Shown apart from the
+      <!-- Nominated for the term this sitting fell in (O22). Shown apart from the
            representatives because they are who the agenda tasks actually went to. -->
-      <div v-if="administrators && administrators.length > 0" class="flex items-center gap-2">
-        <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('administrators.label') }}:</span>
-        <UsersAvatarGroup :users="(administrators as unknown as App.Entities.User[])" :max="4" :size="24" expandable />
+      <div v-if="resolvedSecretaries.length > 0" class="flex items-center gap-2">
+        <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('secretaries.label') }}:</span>
+        <UsersAvatarGroup :users="(resolvedSecretaries as unknown as App.Entities.User[])" :max="4" :size="24" expandable />
       </div>
 
       <!-- Protocol / report status (past meetings only). This is meeting metadata,
@@ -444,7 +444,7 @@ import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import type { AdministratorUser } from '@/Components/Institutions';
+import type { SecretaryUser } from '@/Components/Institutions';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
@@ -455,8 +455,9 @@ import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 const props = defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
-  /** Institution administrators resolved at the meeting's own date. */
-  administrators: AdministratorUser[];
+  /** Institution secretaries resolved at the meeting's own date (O22). */
+  secretaries?: SecretaryUser[];
+  administrators?: SecretaryUser[];
   previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
   nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
   availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
@@ -464,6 +465,8 @@ const props = defineProps<{
   tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
   documents?: NonNullable<App.Entities.Meeting['documents']>;
 }>();
+
+const resolvedSecretaries = computed(() => props.secretaries ?? props.administrators ?? []);
 
 const institutionIds = computed(() => props.meeting.institutions?.map(institution => institution.id) ?? []);
 const tenantIds = computed(() =>

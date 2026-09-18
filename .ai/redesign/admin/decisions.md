@@ -344,7 +344,7 @@ Round 3, 2026-09-17. "Before" = the phase that needs it.
 | # | Status | Practice | Before |
 |---|---|---|---|
 | U21 | 🧪 | **Answerable reminders** (R-a) — an experiment on one reminder type (periodicity gap), judged by that task type's completion rate | 7 |
-| U22 | ✅ | **Stay logged in** (R-b) — remember-me, no forced account picker for returning users; check production `SESSION_LIFETIME` / `expire_on_close` | 4 |
+| U22 | ✅ | **Session continuity** (R-b) — browser sessions survive browser close until the idle lifetime ends; retain the forced Microsoft account picker because users commonly hold several accounts; offer local-only logout and optional Microsoft federated logout | 4 |
 | U23 | ✅ | **Record now, complete later** (R-c) + paste intake (R-d) + votes as taps (R-e) | 5 |
 | U24 | ✅ | **Visible impact and a named coordinator** (R-f, R-g; design in O22) | 7 |
 | U25 | ✅ | **Outcome metrics report** — the five metrics, monthly trend | 7 |

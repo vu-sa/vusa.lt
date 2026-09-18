@@ -9,7 +9,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->resourceManager = makeUser($this->tenant);
-    $this->resourceManager->duties()->first()->assignRole('Resource Manager');
+    $this->resourceManager->duties()->first()->assignRole('Išteklių administratorius');
 
     $this->plainUser = makeUser($this->tenant);
 

@@ -10,13 +10,13 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * The people nominated to look after an institution on a given date.
+ * The people nominated to look after an institution on a given date (O22).
  *
  * Nominations hang off a term, so a date outside every cadence resolves to nobody —
  * which is what makes historical meetings fall back to the members who were actually
  * active then, rather than to today's roster.
  */
-class GetInstitutionAdministrators
+class GetInstitutionSecretaries
 {
     /**
      * @return Collection<int, User>
@@ -29,16 +29,16 @@ class GetInstitutionAdministrators
             return collect();
         }
 
-        /** @var Collection<int, User> $administrators */
-        $administrators = $institution->administrators()
+        /** @var Collection<int, User> $secretaries */
+        $secretaries = $institution->secretaries()
             ->wherePivot('cadence_id', $cadence->id)
             ->get();
 
-        return $administrators;
+        return $secretaries;
     }
 
     /**
-     * Administrators of every institution the meeting belongs to, resolved at the
+     * Secretaries of every institution the meeting belongs to, resolved at the
      * meeting's own date.
      *
      * @return Collection<int, User>

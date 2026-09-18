@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.3 — Easier sign-in and administration (2026-09-18) {#v2-3}
+
+- ✨ **More flexible logout** — the browser session no longer ends merely because the browser was closed, and the account menu now lets you log out of either Mano VU SR alone or the Microsoft account as well
+- 🔧 **More reliable recently visited page tracking** — resolved an issue where admin visits were stored as public pages; correct route icons and links now appear in the recent items menu
+- ✨ **Institution secretaries** — the operational nominee who records meetings for a term is now termed a "secretary" instead of "administrator", clearly separating this technical role from institution managers and coordinators
+- ✨ **Resource Manager role label** — updated the Lithuanian label for the Resource Manager role to "Išteklių administratorius"
+
 ## v2.2 — Editing unit homepages (2026-09-14) {#v2-2}
 
 - ✨ **Reservation actions can be undone** — a resource manager can move a mistaken approval, hand-over, or return one step back; who undid it and why remain visible in the history

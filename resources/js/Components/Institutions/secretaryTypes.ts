@@ -1,0 +1,23 @@
+export interface SecretaryUser {
+  id: string;
+  name: string;
+  email: string | null;
+  profile_photo_path: string | null;
+}
+
+/** One term plus the people nominated to look after the institution during it (O22). */
+export interface SecretaryRoster {
+  cadence_id: string;
+  label: string;
+  start_date: string;
+  end_date: string;
+  /** The term comes from the shared ladder rather than an override of this institution. */
+  is_global: boolean;
+  is_current: boolean;
+  secretaries: SecretaryUser[];
+  /** Backwards compatibility alias */
+  administrators?: SecretaryUser[];
+}
+
+export type AdministratorUser = SecretaryUser;
+export type AdministratorRoster = SecretaryRoster;

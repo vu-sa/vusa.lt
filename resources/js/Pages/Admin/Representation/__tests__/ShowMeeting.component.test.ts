@@ -39,7 +39,7 @@ const baseMeeting = {
 
 const createWrapper = (props: Record<string, unknown> = {}) =>
   mount(ShowMeeting, {
-    props: { meeting: baseMeeting, representatives: [], administrators: [], ...props },
+    props: { meeting: baseMeeting, representatives: [], secretaries: [], administrators: [], ...props },
     global: { stubs },
   });
 
@@ -49,19 +49,19 @@ describe('ShowMeeting.vue', () => {
     window.history.replaceState({}, '', '/');
   });
 
-  it('shows the term administrators apart from the representatives', () => {
+  it('shows the term secretaries apart from the representatives', () => {
     // They are who the agenda tasks actually went to, so they must be legible as a
-    // separate group rather than merged into the representatives.
+    // separate group rather than merged into the representatives (O22).
     const wrapper = createWrapper({
       representatives: [{ id: 'u1', name: 'Jonas Jonaitis' }],
-      administrators: [{ id: 'u2', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
+      secretaries: [{ id: 'u2', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
     });
 
-    expect(wrapper.text()).toContain('administrators.label');
+    expect(wrapper.text()).toContain('secretaries.label');
   });
 
-  it('hides the administrator group when nobody is nominated', () => {
-    expect(createWrapper().text()).not.toContain('administrators.label');
+  it('hides the secretary group when nobody is nominated', () => {
+    expect(createWrapper().text()).not.toContain('secretaries.label');
   });
 
   it('renders a trigger for each tab, with the agenda item count', () => {

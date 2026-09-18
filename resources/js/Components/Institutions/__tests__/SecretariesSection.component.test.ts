@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
-import AdministratorsSection from '../AdministratorsSection.vue';
-import type { AdministratorRoster, AdministratorUser } from '../administratorTypes';
+import SecretariesSection from '../SecretariesSection.vue';
+import type { SecretaryRoster, SecretaryUser } from '../secretaryTypes';
 
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-function makeUser(overrides: Partial<AdministratorUser> = {}): AdministratorUser {
+function makeUser(overrides: Partial<SecretaryUser> = {}): SecretaryUser {
   return {
     id: 'user-1',
     name: 'Jonas Jonaitis',
@@ -19,7 +19,7 @@ function makeUser(overrides: Partial<AdministratorUser> = {}): AdministratorUser
   };
 }
 
-function makeRoster(overrides: Partial<AdministratorRoster> = {}): AdministratorRoster {
+function makeRoster(overrides: Partial<SecretaryRoster> = {}): SecretaryRoster {
   return {
     cadence_id: 'cadence-1',
     label: '2025–2026',
@@ -27,19 +27,19 @@ function makeRoster(overrides: Partial<AdministratorRoster> = {}): Administrator
     end_date: '2026-06-30',
     is_global: false,
     is_current: true,
-    administrators: [],
+    secretaries: [],
     ...overrides,
   };
 }
 
-function mountSection(rosters: AdministratorRoster[], suggested: AdministratorUser[] = []) {
-  return mount(AdministratorsSection, {
+function mountSection(rosters: SecretaryRoster[], suggested: SecretaryUser[] = []) {
+  return mount(SecretariesSection, {
     props: { institutionId: 'inst-1', rosters, suggested },
     global: { stubs: commonStubs },
   });
 }
 
-describe('AdministratorsSection', () => {
+describe('SecretariesSection', () => {
   beforeEach(() => {
     vi.mocked(router.put).mockClear();
   });
@@ -55,14 +55,14 @@ describe('AdministratorsSection', () => {
   });
 
   it('lists the people already nominated for a term', () => {
-    const wrapper = mountSection([makeRoster({ administrators: [makeUser()] })]);
+    const wrapper = mountSection([makeRoster({ secretaries: [makeUser()] })]);
 
     expect(wrapper.text()).toContain('Jonas Jonaitis');
   });
 
   it('offers current members as suggestions, minus the ones already nominated', () => {
     const wrapper = mountSection(
-      [makeRoster({ administrators: [makeUser()] })],
+      [makeRoster({ secretaries: [makeUser()] })],
       [makeUser(), makeUser({ id: 'user-2', name: 'Rūta Petraitė' })],
     );
 
@@ -74,7 +74,7 @@ describe('AdministratorsSection', () => {
 
   it('adds a suggested member to the term roster', async () => {
     const wrapper = mountSection(
-      [makeRoster({ administrators: [makeUser()] })],
+      [makeRoster({ secretaries: [makeUser()] })],
       [makeUser({ id: 'user-2', name: 'Rūta Petraitė' })],
     );
 
@@ -90,10 +90,10 @@ describe('AdministratorsSection', () => {
 
   it('removes a nominee without touching the rest of the roster', async () => {
     const wrapper = mountSection([makeRoster({
-      administrators: [makeUser(), makeUser({ id: 'user-2', name: 'Rūta Petraitė' })],
+      secretaries: [makeUser(), makeUser({ id: 'user-2', name: 'Rūta Petraitė' })],
     })]);
 
-    await wrapper.get('[data-slot="remove-administrator"][data-user-id="user-1"]').trigger('click');
+    await wrapper.get('[data-slot="remove-secretary"][data-user-id="user-1"]').trigger('click');
 
     expect(router.put).toHaveBeenCalledWith(
       expect.anything(),
@@ -102,12 +102,12 @@ describe('AdministratorsSection', () => {
     );
   });
 
-  it('explains that a term with administrators stops assigning to the membership', () => {
+  it('explains that a term with secretaries stops assigning to the membership', () => {
     // The consequence is the whole point of the feature, so it must be on screen.
-    expect(mountSection([makeRoster()]).text()).toContain('administrators.institution.effect_warning');
+    expect(mountSection([makeRoster()]).text()).toContain('secretaries.institution.effect_warning');
   });
 
   it('says so when the institution has no terms to nominate against', () => {
-    expect(mountSection([]).text()).toContain('administrators.institution.no_cadences');
+    expect(mountSection([]).text()).toContain('secretaries.institution.no_cadences');
   });
 });

@@ -362,6 +362,11 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
       return;
     }
 
+    // Never record the public catch-all 'page' route for admin paths
+    if (routeName === 'page' && (url?.startsWith('/mano') || window.location.pathname.startsWith('/mano'))) {
+      return;
+    }
+
     // Identity is the path when known (query string excluded, so the same
     // page is never stored twice); otherwise route+params.
     const identity = (e: StoredRecentPage) =>

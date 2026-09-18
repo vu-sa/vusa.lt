@@ -162,8 +162,9 @@ Route::prefix('search')->name('search.')->group(function (): void {
 Route::post('institutions/{institution}/check-ins', [InstitutionCheckInController::class, 'store'])->name('institutions.check-ins.store');
 Route::delete('institutions/{institution}/check-ins/active', [InstitutionCheckInController::class, 'destroyActive'])->name('institutions.check-ins.destroyActive');
 
-// One idempotent roster replacement per term; authorized by InstitutionPolicy::update.
-Route::put('institutions/{institution}/administrators', [InstitutionAdministratorController::class, 'update'])->name('institutions.administrators.update');
+// One idempotent roster replacement per term; authorized by InstitutionPolicy::update (O22).
+Route::put('institutions/{institution}/secretaries', [InstitutionSecretaryController::class, 'update'])->name('institutions.secretaries.update');
+Route::put('institutions/{institution}/administrators', [InstitutionSecretaryController::class, 'update'])->name('institutions.administrators.update');
 
 Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);
@@ -289,4 +290,5 @@ Route::delete('settings/cadences/{cadence}', [CadenceController::class, 'destroy
 Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');
 Route::post('settings/authorization', [SettingsController::class, 'updateAuthorization'])->name('settings.authorization.update');
 
+Route::post('/logout/microsoft', [AuthController::class, 'logoutFromMicrosoft'])->name('logout.microsoft');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

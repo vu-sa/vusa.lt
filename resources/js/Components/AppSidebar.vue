@@ -169,6 +169,10 @@
                   <LogOut class="mr-2 h-4 w-4" />
                   <span>{{ $t('auth.logout') }}</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem @click="handleMicrosoftLogout">
+                  <ISimpleIconsMicrosoft class="mr-2 h-4 w-4" />
+                  <span>{{ $t('auth.logout_microsoft') }}</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SpotlightPopover>
@@ -232,6 +236,7 @@ import AppLogo from './AppLogo.vue';
 import KeyboardShortcutsDialog from './KeyboardShortcutsDialog.vue';
 import { Button } from './ui/button';
 
+import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
@@ -510,5 +515,9 @@ const handleLogout = () => {
       console.error('Logout failed.');
     },
   });
+};
+
+const handleMicrosoftLogout = () => {
+  router.post(route('logout.microsoft'));
 };
 </script>

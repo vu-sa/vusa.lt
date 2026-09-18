@@ -77,8 +77,8 @@ describe('tenant data isolation', function (): void {
     });
 
     test('database queries are automatically scoped by tenant', function (): void {
-        // Give admin users the Resource Manager role for this test
-        $this->adminA->duties()->first()->assignRole('Resource Manager');
+        // Give admin users the Išteklių administratorius role for this test
+        $this->adminA->duties()->first()->assignRole('Išteklių administratorius');
 
         // Create resources for each tenant
         $resourceA = Resource::factory()->create(['tenant_id' => $this->tenantA->id, 'name' => 'Resource A']);

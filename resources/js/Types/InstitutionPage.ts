@@ -1,4 +1,4 @@
-import type { AdministratorUser } from '@/Components/Institutions';
+import type { SecretaryUser } from '@/Components/Institutions';
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface InstitutionPageComment {
@@ -84,7 +84,8 @@ export interface InstitutionPageData {
   description?: string | null;
   types: InstitutionPageType[];
   managers: App.Entities.User[];
-  administrators: AdministratorUser[];
+  secretaries?: SecretaryUser[];
+  administrators?: SecretaryUser[];
   sharepointPath: string | null;
   has_public_meetings?: boolean;
   meeting_periodicity_days?: number | null;

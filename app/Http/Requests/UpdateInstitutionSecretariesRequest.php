@@ -14,7 +14,7 @@ use Illuminate\Validation\Rule;
  * Staffing a term is the same right as defining one, so this uses the gate
  * {@see CadencePolicy} applies to an institution override.
  */
-class UpdateInstitutionAdministratorsRequest extends FormRequest
+class UpdateInstitutionSecretariesRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -30,7 +30,7 @@ class UpdateInstitutionAdministratorsRequest extends FormRequest
             'cadence_id' => ['required', 'ulid', $this->applicableCadenceRule()],
             'user_ids' => ['present', 'array'],
             // Deliberately any user: a tenant coordinator with no duty in the body is a
-            // legitimate administrator. The picker only *suggests* current members.
+            // legitimate secretary. The picker only *suggests* current members.
             'user_ids.*' => ['ulid', Rule::exists('users', 'id')->whereNull('deleted_at')],
         ];
     }

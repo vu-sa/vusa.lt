@@ -89,19 +89,19 @@ describe('ResolveTaskAudience', function (): void {
         expect($task->notifiableUsers())->toBeEmpty();
     });
 
-    test('keeps an administrator nominated for the term the meeting falls in', function (): void {
-        $administrator = User::factory()->create();
+    test('keeps a secretary nominated for the term the meeting falls in', function (): void {
+        $secretary = User::factory()->create();
 
         $cadence = Cadence::factory()->create([
             'start_date' => now()->subYears(2),
             'end_date' => now()->addMonths(2),
         ]);
 
-        $this->institution->administrators()->attach($administrator, ['cadence_id' => $cadence->id]);
+        $this->institution->secretaries()->attach($secretary, ['cadence_id' => $cadence->id]);
 
-        $task = meetingTaskFor($this->institution, [$administrator]);
+        $task = meetingTaskFor($this->institution, [$secretary]);
 
-        expect($task->notifiableUsers()->pluck('id')->all())->toBe([$administrator->id]);
+        expect($task->notifiableUsers()->pluck('id')->all())->toBe([$secretary->id]);
     });
 
     test('a manual task keeps assignees a person picked by hand', function (): void {

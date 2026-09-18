@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\GetInstitutionAdministrators;
 use App\Actions\GetInstitutionMembers;
+use App\Actions\GetInstitutionSecretaries;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Notifications\MeetingReminderNotification;
@@ -105,7 +105,7 @@ class SendMeetingReminders extends Command
 
     /**
      * Get users who should receive reminders for a meeting: everyone holding a duty in
-     * its institutions on the meeting's own date, plus the nominated administrators.
+     * its institutions on the meeting's own date, plus the nominated secretaries (O22).
      *
      * This used to flatMap `$duty->users`, i.e. every person who had ever held a duty
      * in the institution, with no date filter at all — a body with a decade of
@@ -117,7 +117,7 @@ class SendMeetingReminders extends Command
     protected function getMeetingParticipants(Meeting $meeting): Collection
     {
         return GetInstitutionMembers::forMeeting($meeting)
-            ->merge(GetInstitutionAdministrators::forMeeting($meeting))
+            ->merge(GetInstitutionSecretaries::forMeeting($meeting))
             ->unique('id')
             ->values();
     }

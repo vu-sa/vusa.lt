@@ -5,7 +5,7 @@ use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\InstitutionAdministrator;
+use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\NotificationDigestQueue;
 use App\Models\Pivots\AgendaItem;
@@ -20,8 +20,8 @@ use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /**
- * Nominating an administrator is meant to keep a sitting of a large body out of every
- * member's inbox. These assert the whole way through: assignment, the mail scheduled for
+ * Nominating a secretary is meant to keep a sitting of a large body out of every
+ * member's inbox (O22). These assert the whole way through: assignment, the mail scheduled for
  * it, and the mail scheduled when it auto-completes.
  *
  * Notifications are deliberately NOT faked — "a mail is scheduled" means a row in
@@ -52,12 +52,12 @@ beforeEach(function (): void {
         'end_date' => null,
     ]));
 
-    $this->administrator = User::factory()->create();
+    $this->secretary = User::factory()->create();
 });
 
-function nominateAdministrator(Institution $institution, Cadence $cadence, User $user): void
+function nominateSecretary(Institution $institution, Cadence $cadence, User $user): void
 {
-    InstitutionAdministrator::create([
+    InstitutionSecretary::create([
         'institution_id' => $institution->id,
         'cadence_id' => $cadence->id,
         'user_id' => $user->id,
@@ -110,21 +110,21 @@ function scheduledMailFor(User $user): array
         ->all();
 }
 
-test('the administrator carries the task alone and is the only one mailed about it', function (): void {
-    nominateAdministrator($this->institution, $this->cadence, $this->administrator);
+test('the secretary carries the task alone and is the only one mailed about it', function (): void {
+    nominateSecretary($this->institution, $this->cadence, $this->secretary);
 
     $meeting = meetingNeedingItsAgendaFilled($this->institution);
 
     expect(agendaCompletionTaskFor($meeting)->users()->pluck('users.id')->all())
-        ->toBe([$this->administrator->id])
-        ->and(scheduledMailFor($this->administrator))->toContain(TaskAssignedNotification::class);
+        ->toBe([$this->secretary->id])
+        ->and(scheduledMailFor($this->secretary))->toContain(TaskAssignedNotification::class);
 
     $this->members->each(fn (User $member) => expect(scheduledMailFor($member))
         ->not->toContain(TaskAssignedNotification::class));
 });
 
-test('auto-completing the agenda mails the administrator, not the members', function (): void {
-    nominateAdministrator($this->institution, $this->cadence, $this->administrator);
+test('auto-completing the agenda mails the secretary, not the members', function (): void {
+    nominateSecretary($this->institution, $this->cadence, $this->secretary);
 
     $meeting = meetingNeedingItsAgendaFilled($this->institution);
     NotificationDigestQueue::query()->delete();
@@ -132,12 +132,12 @@ test('auto-completing the agenda mails the administrator, not the members', func
     fillEveryAgendaItem($meeting);
 
     expect(agendaCompletionTaskFor($meeting)->completed_at)->not->toBeNull()
-        ->and(scheduledMailFor($this->administrator))->toContain(TaskAutoCompletedNotification::class);
+        ->and(scheduledMailFor($this->secretary))->toContain(TaskAutoCompletedNotification::class);
 
     $this->members->each(fn (User $member) => expect(scheduledMailFor($member))->toBeEmpty());
 });
 
-test('a task reopened after the nomination is re-staffed, and mails only the administrator', function (): void {
+test('a task reopened after the nomination is re-staffed, and mails only the secretary', function (): void {
     // The production case: the task was assigned and completed while the body still
     // carried it collectively, so the nomination could not touch it — the re-sync leaves
     // completed tasks alone. Reopening it must not revive that roster.
@@ -150,7 +150,7 @@ test('a task reopened after the nomination is re-staffed, and mails only the adm
     fillEveryAgendaItem($meeting);
     expect($task->fresh()->completed_at)->not->toBeNull();
 
-    nominateAdministrator($this->institution, $this->cadence, $this->administrator);
+    nominateSecretary($this->institution, $this->cadence, $this->secretary);
     expect($task->fresh()->users()->pluck('users.id')->all())
         ->toEqualCanonicalizing($this->members->pluck('id')->all());
 
@@ -160,7 +160,7 @@ test('a task reopened after the nomination is re-staffed, and mails only the adm
     $reopener->save();
 
     expect($task->fresh()->completed_at)->toBeNull()
-        ->and($task->fresh()->users()->pluck('users.id')->all())->toBe([$this->administrator->id]);
+        ->and($task->fresh()->users()->pluck('users.id')->all())->toBe([$this->secretary->id]);
 
     NotificationDigestQueue::query()->delete();
 
@@ -168,13 +168,13 @@ test('a task reopened after the nomination is re-staffed, and mails only the adm
     $reopener->save();
 
     expect($task->fresh()->completed_at)->not->toBeNull()
-        ->and(scheduledMailFor($this->administrator))->toContain(TaskAutoCompletedNotification::class);
+        ->and(scheduledMailFor($this->secretary))->toContain(TaskAutoCompletedNotification::class);
 
     $this->members->each(fn (User $member) => expect(scheduledMailFor($member))->toBeEmpty());
 });
 
-test('extending a term over a meeting hands its open task to the administrator', function (): void {
-    nominateAdministrator($this->institution, $this->cadence, $this->administrator);
+test('extending a term over a meeting hands its open task to the secretary', function (): void {
+    nominateSecretary($this->institution, $this->cadence, $this->secretary);
 
     // Held after the term ends, so it falls back to the membership.
     $meeting = Meeting::factory()->hasAttached($this->institution)->create([
@@ -190,5 +190,5 @@ test('extending a term over a meeting hands its open task to the administrator',
 
     $this->cadence->update(['end_date' => now()->addYear()->toDateString()]);
 
-    expect($task->fresh()->users()->pluck('users.id')->all())->toBe([$this->administrator->id]);
+    expect($task->fresh()->users()->pluck('users.id')->all())->toBe([$this->secretary->id]);
 });

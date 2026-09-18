@@ -3,7 +3,8 @@
     <UpsertModelLayout>
       <InstitutionForm enable-delete :assignable-tenants :institution :institution-types
         :cadences :global-cadences :cadence-defaults
-        :administrator-rosters :suggested-administrators
+        :secretary-rosters="secretaryRosters ?? administratorRosters"
+        :suggested-secretaries="suggestedSecretaries ?? suggestedAdministrators"
         @submit:form="(form) => form.patch(route('institutions.update', institution.id), { preserveScroll: true })"
         @delete="() => router.delete(route('institutions.destroy', institution.id))" />
     </UpsertModelLayout>
@@ -18,7 +19,7 @@ import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { InstitutionIcon } from '@/Components/icons';
 import type { CadenceRow } from '@/Components/Cadences';
-import type { AdministratorRoster, AdministratorUser } from '@/Components/Institutions';
+import type { SecretaryRoster, SecretaryUser } from '@/Components/Institutions';
 
 defineProps<{
   institution: App.Entities.Institution;
@@ -27,8 +28,10 @@ defineProps<{
   cadences: CadenceRow[];
   globalCadences: CadenceRow[];
   cadenceDefaults: { default_start_month_day: string; default_end_month_day: string };
-  administratorRosters: AdministratorRoster[];
-  suggestedAdministrators: AdministratorUser[];
+  secretaryRosters?: SecretaryRoster[];
+  administratorRosters?: SecretaryRoster[];
+  suggestedSecretaries?: SecretaryUser[];
+  suggestedAdministrators?: SecretaryUser[];
 }>();
 </script>
 

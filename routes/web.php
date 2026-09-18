@@ -152,8 +152,13 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             ->name('news');
 
         Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
-        Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*')->name('page');
+        Route::get('{permalink}', [Public\PublicPageController::class, 'page'])
+            ->where('permalink', '.*')
+            ->fallback()
+            ->name('page');
     });
 });
 
-Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*');
+Route::get('{permalink}', [Public\PublicPageController::class, 'page'])
+    ->where('permalink', '.*')
+    ->fallback();

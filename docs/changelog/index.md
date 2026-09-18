@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.3 — Patogesnis prisijungimas ir administravimas (2026-09-18) {#v2-3}
+
+- ✨ **Lankstesnis atsijungimas** — naršyklės sesija nebesibaigia vien užvėrus naršyklę, o paskyros meniu galima pasirinkti, ar atsijungti tik iš „Mano VU SA“, ar ir iš „Microsoft“ paskyros
+- 🔧 **Tikslesnis neseniai lankytų puslapių fiksavimas** — ištaisyta klaida, dėl kurios visos administravimo nuorodos neseniai lankytų sąraše būdavo įrašomos kaip bendrinis viešas puslapis; dabar rodomos teisingos piktogramos ir nuorodos
+- ✨ **Institucijų sekretoriai** — kadencijai paskirtas posėdžių fiksuotojas dabar vadinamas sekretoriumi („sekretorius“ vietoje „administratorius“), aiškiai atskiriant šį vaidmenį nuo institucijos vadovų bei koordinatorių
+- ✨ **Išteklių administratoriaus rolė** — patikslintas rolės pavadinimas lietuvių kalba į „Išteklių administratorius“
+
 ## v2.2 — Padalinių puslapių redagavimas (2026-09-14) {#v2-2}
 
 - ✨ **Rezervacijos veiksmą galima atšaukti** — išteklių valdytojas gali grąžinti klaidingą patvirtinimą, išdavimą ar grąžinimą vienu žingsniu atgal; kas ir kodėl veiksmą atšaukė, lieka istorijoje

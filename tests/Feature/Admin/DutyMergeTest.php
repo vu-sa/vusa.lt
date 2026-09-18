@@ -192,7 +192,7 @@ describe('merging related pivots', function (): void {
     });
 
     test('moves admin roles onto the kept duty', function (): void {
-        $extraRole = Role::firstOrCreate(['name' => 'Resource Manager', 'guard_name' => 'web']);
+        $extraRole = Role::firstOrCreate(['name' => 'Išteklių administratorius', 'guard_name' => 'web']);
         $this->source->assignRole($extraRole);
 
         asUser($this->dutyManager)->post(route('duties.mergeDuties'), [

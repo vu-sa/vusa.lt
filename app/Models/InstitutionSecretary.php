@@ -14,9 +14,9 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 
 /**
- * A person nominated to look after an institution for one term.
+ * A person nominated to look after an institution for one term (O22).
  *
- * An administrator is deliberately not a member of the body: nothing here feeds
+ * A secretary is deliberately not a member of the body: nothing here feeds
  * Institution::users(), duties.current_users, the contacts pages or the search
  * index. They carry the institution's tasks and notifications, nothing else.
  *
@@ -30,16 +30,16 @@ use Illuminate\Support\Carbon;
  * @property-read Institution|null $institution
  * @property-read User|null $user
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionAdministrator newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionAdministrator newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionAdministrator query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionSecretary newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionSecretary newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionSecretary query()
  *
  * @mixin \Eloquent
  */
-#[Table(name: 'institution_administrators', keyType: 'string')]
+#[Table(name: 'institution_secretaries', keyType: 'string')]
 #[WithoutIncrementing]
 #[Fillable(['id', 'institution_id', 'cadence_id', 'user_id'])]
-class InstitutionAdministrator extends Pivot
+class InstitutionSecretary extends Pivot
 {
     use HasFactory, HasUlids;
 
@@ -50,9 +50,9 @@ class InstitutionAdministrator extends Pivot
     #[\Override]
     protected static function booted(): void
     {
-        $invalidate = function (InstitutionAdministrator $administrator): void {
-            InstitutionAccessService::invalidateForUser($administrator->user_id);
-            TypesenseScopedKeyService::invalidateForUser($administrator->user_id);
+        $invalidate = function (InstitutionSecretary $secretary): void {
+            InstitutionAccessService::invalidateForUser($secretary->user_id);
+            TypesenseScopedKeyService::invalidateForUser($secretary->user_id);
         };
 
         static::saved($invalidate);

@@ -26,11 +26,11 @@
         <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('Vadovai') }}:</span>
         <UsersAvatarGroup :users="institution.managers ?? []" :max="3" :size="24" />
       </div>
-      <!-- Nominated for the current term. Distinct from the body's members, and
-           labelled as such — an administrator need not hold a duty here at all. -->
-      <div v-if="administrators.length > 0" class="flex items-center gap-2">
-        <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('administrators.label') }}:</span>
-        <UsersAvatarGroup :users="(administrators as unknown as App.Entities.User[])" :max="3" :size="24" />
+      <!-- Nominated for the current term (O22). Distinct from the body's members, and
+           labelled as such — a secretary need not hold a duty here at all. -->
+      <div v-if="secretaries.length > 0" class="flex items-center gap-2">
+        <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('secretaries.label') }}:</span>
+        <UsersAvatarGroup :users="(secretaries as unknown as App.Entities.User[])" :max="3" :size="24" />
       </div>
     </template>
 
@@ -455,7 +455,8 @@ usePageBreadcrumbs(
 );
 
 // Computed properties
-const administrators = computed(() => props.institution.administrators ?? []);
+const secretaries = computed(() => props.institution.secretaries ?? props.institution.administrators ?? []);
+const administrators = secretaries;
 
 const primaryType = computed(() => {
   const type = props.institution.types?.[0];

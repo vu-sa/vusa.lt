@@ -1,11 +1,11 @@
 <?php
 
-use App\Actions\GetInstitutionAdministrators;
+use App\Actions\GetInstitutionSecretaries;
 use App\Actions\ResolveTaskAssignees;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\InstitutionAdministrator;
+use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
@@ -28,13 +28,13 @@ beforeEach(function (): void {
 });
 
 describe('the roster endpoint', function (): void {
-    test('nominates administrators for a term', function (): void {
-        asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+    test('nominates secretaries for a term', function (): void {
+        asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
             'cadence_id' => $this->cadence->id,
             'user_ids' => [$this->candidate->id],
         ])->assertRedirect();
 
-        expect($this->institution->administrators()->pluck('users.id')->all())
+        expect($this->institution->secretaries()->pluck('users.id')->all())
             ->toBe([$this->candidate->id]);
     });
 
@@ -42,71 +42,71 @@ describe('the roster endpoint', function (): void {
         $other = User::factory()->create();
         $secondTerm = Cadence::factory()->forYear(2026)->create(['institution_id' => $this->institution->id]);
 
-        InstitutionAdministrator::create([
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $this->cadence->id,
             'user_id' => $this->candidate->id,
         ]);
-        InstitutionAdministrator::create([
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $secondTerm->id,
             'user_id' => $this->candidate->id,
         ]);
 
-        asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+        asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
             'cadence_id' => $this->cadence->id,
             'user_ids' => [$other->id],
         ])->assertRedirect();
 
-        expect($this->institution->administratorAssignments()->where('cadence_id', $this->cadence->id)->pluck('user_id')->all())
+        expect($this->institution->secretaryAssignments()->where('cadence_id', $this->cadence->id)->pluck('user_id')->all())
             ->toBe([$other->id])
             // The other term is untouched.
-            ->and($this->institution->administratorAssignments()->where('cadence_id', $secondTerm->id)->pluck('user_id')->all())
+            ->and($this->institution->secretaryAssignments()->where('cadence_id', $secondTerm->id)->pluck('user_id')->all())
             ->toBe([$this->candidate->id]);
     });
 
     test('an empty roster clears the term', function (): void {
-        InstitutionAdministrator::create([
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $this->cadence->id,
             'user_id' => $this->candidate->id,
         ]);
 
-        asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+        asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
             'cadence_id' => $this->cadence->id,
             'user_ids' => [],
         ])->assertRedirect();
 
-        expect($this->institution->administrators()->count())->toBe(0);
+        expect($this->institution->secretaries()->count())->toBe(0);
     });
 });
 
 describe('authorization', function (): void {
     test('a user who cannot update the institution is forbidden', function (): void {
-        asUser($this->outsider)->put(route('institutions.administrators.update', $this->institution), [
+        asUser($this->outsider)->put(route('institutions.secretaries.update', $this->institution), [
             'cadence_id' => $this->cadence->id,
             'user_ids' => [$this->candidate->id],
         ])->assertForbidden();
 
-        expect(InstitutionAdministrator::count())->toBe(0);
+        expect(InstitutionSecretary::count())->toBe(0);
     });
 
     test('a cadence belonging to another institution is rejected', function (): void {
         $otherInstitution = Institution::factory()->for($this->tenant)->create();
         $foreignCadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $otherInstitution->id]);
 
-        asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+        asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
             'cadence_id' => $foreignCadence->id,
             'user_ids' => [$this->candidate->id],
         ])->assertSessionHasErrors('cadence_id');
 
-        expect(InstitutionAdministrator::count())->toBe(0);
+        expect(InstitutionSecretary::count())->toBe(0);
     });
 
     test('an institution with its own terms cannot staff a global one', function (): void {
         $globalCadence = Cadence::factory()->forYear(2025)->create();
 
-        asUser($this->admin)->put(route('institutions.administrators.update', $this->institution), [
+        asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
             'cadence_id' => $globalCadence->id,
             'user_ids' => [$this->candidate->id],
         ])->assertSessionHasErrors('cadence_id');
@@ -116,33 +116,33 @@ describe('authorization', function (): void {
         $bare = Institution::factory()->for($this->tenant)->create();
         $globalCadence = Cadence::factory()->forYear(2025)->create();
 
-        asUser($this->admin)->put(route('institutions.administrators.update', $bare), [
+        asUser($this->admin)->put(route('institutions.secretaries.update', $bare), [
             'cadence_id' => $globalCadence->id,
             'user_ids' => [$this->candidate->id],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
-        expect($bare->administrators()->count())->toBe(1);
+        expect($bare->secretaries()->count())->toBe(1);
     });
 });
 
-describe('resolving administrators for a date', function (): void {
+describe('resolving secretaries for a date', function (): void {
     beforeEach(function (): void {
-        InstitutionAdministrator::create([
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $this->cadence->id,
             'user_id' => $this->candidate->id,
         ]);
     });
 
-    test('a date inside the term resolves to its administrators', function (): void {
-        expect(GetInstitutionAdministrators::execute($this->institution, Carbon::parse('2025-11-01'))->pluck('id')->all())
+    test('a date inside the term resolves to its secretaries', function (): void {
+        expect(GetInstitutionSecretaries::execute($this->institution, Carbon::parse('2025-11-01'))->pluck('id')->all())
             ->toBe([$this->candidate->id]);
     });
 
     test('a date outside every term resolves to nobody', function (): void {
         // The fallback to date-scoped members is what stops a nomination made today
         // from being applied retroactively to a sitting held years earlier.
-        expect(GetInstitutionAdministrators::execute($this->institution, Carbon::parse('2019-11-01')))
+        expect(GetInstitutionSecretaries::execute($this->institution, Carbon::parse('2019-11-01')))
             ->toBeEmpty();
     });
 });
@@ -169,8 +169,8 @@ describe('task assignment', function (): void {
             ->toBe([$this->member->id]);
     });
 
-    test('administrators replace the membership once nominated', function (): void {
-        InstitutionAdministrator::create([
+    test('secretaries replace the membership once nominated', function (): void {
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $this->cadence->id,
             'user_id' => $this->candidate->id,
@@ -181,7 +181,7 @@ describe('task assignment', function (): void {
     });
 
     test('a meeting outside every term still goes to the members active then', function (): void {
-        InstitutionAdministrator::create([
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $this->cadence->id,
             'user_id' => $this->candidate->id,

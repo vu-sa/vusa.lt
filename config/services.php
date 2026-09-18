@@ -34,6 +34,8 @@ return [
         'client_id' => env('MICROSOFT_CLIENT_ID'),
         'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
         'redirect' => env('MICROSOFT_REDIRECT_URI'),
+        'logout_redirect' => env('MICROSOFT_POST_LOGOUT_REDIRECT_URI', rtrim((string) env('APP_URL'), '/').'/login'),
+        'tenant' => env('MICROSOFT_TENANT_ID', 'common'),
     ],
 
     'google' => [

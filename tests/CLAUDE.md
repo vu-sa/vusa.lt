@@ -56,7 +56,7 @@ Every controller test file should cover **unauthorized access**, **authorized ac
 ## Helpers
 
 - `makeUser($tenant)` — plain user attached to a tenant.
-- `makeTenantUserWithRole($role, $tenant)` — pick a role aligned with the feature: `'Communication Coordinator'` for content/duties, `'Resource Manager'` for resources, etc. Use `config('permission.super_admin_role_name')` only when comprehensive coverage is needed.
+- `makeTenantUserWithRole($role, $tenant)` — pick a role aligned with the feature: `'Communication Coordinator'` for content/duties, `'Išteklių administratorius'` for resources, etc. Use `config('permission.super_admin_role_name')` only when comprehensive coverage is needed.
 - `asUser($user)` — direct request, no Inertia headers (expect **403** for forbidden).
 - `asUserWithInertia($user)` — Inertia-style request (expect **302** redirect with flash for forbidden).
 
@@ -232,4 +232,3 @@ $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds
 **Fixture cost, post-null-engine** (use the smallest fixture that exercises the branch under test): `makeUser()` ≈ 6ms, a bare `News`/`Page`/`Institution` create ≈ 3-4ms. Reuse a seeded tenant (`Tenant::query()->first()` — `TestSeeder` already inserts all 16) rather than `Tenant::factory()->create()`, create the fewest users the assertion needs, and never `->count(N)` a factory past the smallest N that actually exercises the code path (e.g. a pagination test only needs one page-size boundary crossed, not an arbitrary round number).
 
 **Scout queueing** is globally disabled in `phpunit.xml` (`SCOUT_QUEUE=false`) — inert while the null engine is active, and only takes effect once a test calls `usesTypesense()`, at which point indexing happens synchronously instead of through the sync queue connection. A handful of files still set `config(['scout.queue' => false])` in their own `beforeEach`; that's now redundant but harmless, so no need to remove it on sight.
-

@@ -28,7 +28,7 @@ beforeEach(function (): void {
         ['tenant_id' => $this->tenant->id]
     ))->hasAttached($this->admin, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
 
-    $resourceManagerDuty->assignRole('Resource Manager');
+    $resourceManagerDuty->assignRole('Išteklių administratorius');
 
     $this->reservation = Reservation::factory()->hasAttached($this->resources)->create();
 

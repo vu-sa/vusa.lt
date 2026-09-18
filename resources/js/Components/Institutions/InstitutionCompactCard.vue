@@ -29,7 +29,7 @@
             <TooltipTrigger as-child>
               <ShieldCheck class="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
             </TooltipTrigger>
-            <TooltipContent>{{ $t('administrators.dashboard.administered_hint') }}</TooltipContent>
+            <TooltipContent>{{ $t('secretaries.dashboard.administered_hint') }}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
         <!-- Muted indicator -->
