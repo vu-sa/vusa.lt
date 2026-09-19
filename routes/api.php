@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
+use App\Http\Controllers\Api\Admin\MergeCandidateApiController;
 use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
@@ -125,6 +126,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Guided action window ("Veiksmų langas") personalised choices
         Route::get('action-window/context', [ActionWindowApiController::class, 'context'])->name('actionWindow.context');
+        Route::get('merge-candidates/{type}', [MergeCandidateApiController::class, 'index'])->name('mergeCandidates.index');
 
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');

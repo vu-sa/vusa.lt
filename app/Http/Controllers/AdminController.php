@@ -183,7 +183,7 @@ abstract class AdminController extends Controller
     private function forgetActorPermissionMaps(User $actor): void
     {
         PermissionMapBuilder::forgetCachedMaps($actor->id);
-        Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($actor->id));
+        Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($actor->id));
     }
 
     /**

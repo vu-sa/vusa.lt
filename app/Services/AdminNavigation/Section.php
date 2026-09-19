@@ -16,6 +16,7 @@ final readonly class Section
      * @param  string|null  $entityType  A `ModelEnum` value, for icon + category colour
      *                                   (`Constants/entityTypes.ts`). Null for sections with no
      *                                   backing entity (an overview, settings, system status).
+     * @param  list<CollectionAction>  $collectionActions
      */
     public function __construct(
         public string $key,
@@ -24,10 +25,11 @@ final readonly class Section
         public array $routeParams,
         public ?string $entityType,
         public Visibility $visibility,
+        public array $collectionActions = [],
     ) {}
 
     /**
-     * @return array{key: string, label: string, routeName: string, routeParams: array<string, mixed>, entityType: string|null}
+     * @return array{key: string, label: string, routeName: string, routeParams: array<string, mixed>, entityType: string|null, collectionActions: list<array{key: string, label: string, target: string}>}
      */
     public function toArray(): array
     {
@@ -37,6 +39,7 @@ final readonly class Section
             'routeName' => $this->routeName,
             'routeParams' => $this->routeParams,
             'entityType' => $this->entityType,
+            'collectionActions' => array_map(fn (CollectionAction $action) => $action->toArray(), $this->collectionActions),
         ];
     }
 }

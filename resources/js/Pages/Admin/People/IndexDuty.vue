@@ -6,6 +6,7 @@
     @sorting-changed="handleSortingChange"
     @page-changed="handlePageChange"
     @filter-changed="handleFilterChange"
+    @update:row-selection="handleRowSelectionChange"
   >
     <template #filters>
       <DataTableFilter
@@ -23,12 +24,36 @@
         <Label for="show-external-duties" class="text-sm font-normal">{{ $t('forms.fields.show_external_duties') }}</Label>
       </div>
     </template>
+    <template #headerActions>
+      <Button v-if="canMerge" variant="outline" class="gap-1.5" @click="enterMergeMode">
+        <MergeIcon class="h-4 w-4" />
+        {{ $t('Sujungti įrašus') }}
+      </Button>
+    </template>
+    <template #actions>
+      <Button v-if="isMergeMode && selectedRows.length > 1" variant="secondary" @click="mergeRecords = selectedRows">
+        {{ $t('Sujungti pasirinktus') }}
+      </Button>
+      <Button v-if="isMergeMode" variant="ghost" @click="leaveMergeMode">
+        {{ $t('Cancel') }}
+      </Button>
+    </template>
   </IndexTablePage>
+  <MergeRecordsDialog
+    :open="mergeRecords.length > 0"
+    type="duties"
+    :records="mergeRecords"
+    :submit-url="route('duties.mergeDuties')"
+    target-field="target_duty_id"
+    source-field="source_duty_ids"
+    @close="mergeRecords = []"
+    @merged="merged"
+  />
 </template>
 
 <script setup lang="ts">
 import { h, ref, computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { Merge as MergeIcon } from 'lucide-vue-next';
@@ -45,6 +70,8 @@ import { createStandardActionsColumn } from '@/Composables/useTableActions';
 import type { IndexTablePageProps } from '@/Types/TableConfigTypes';
 import { DutyIcon, InstitutionIcon, UserIcon } from '@/Components/icons';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
+import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 
 const props = defineProps<{
   duties: {
@@ -68,6 +95,11 @@ const modelName = 'duties';
 const entityName = 'duty';
 
 const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
+const selectedRows = ref<MergeRecord[]>([]);
+const mergeRecords = ref<MergeRecord[]>([]);
+const { hasCollectionAction } = useAdminNavigation();
+const canMerge = computed(() => hasCollectionAction('duties.index', 'merge'));
+const isMergeMode = computed(() => new URLSearchParams(usePage().url.split('?')[1] ?? '').get('merge') === '1');
 
 const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.duty ?? false);
 
@@ -103,11 +135,6 @@ const secondaryActions = computed(() => [
     label: $t('forms.fields.duty_user_wizard'),
     icon: UserIcon,
     href: route('duties.updateUsersWizard'),
-  },
-  {
-    label: $t('Sulieti pareigybes'),
-    icon: MergeIcon,
-    href: route('duties.merge'),
   },
 ]);
 
@@ -179,6 +206,14 @@ const columns = computed<Array<ColumnDef<App.Entities.Duty, any>>>(() => [
     canDelete: true,
     canRestore: true,
     canForceDelete: canForceDelete.value,
+    customActions: canMerge.value
+      ? [{
+          key: 'merge',
+          label: $t('Sujungti su…'),
+          icon: MergeIcon,
+          onSelect: (row) => { mergeRecords.value = [{ id: row.id, label: resolveTranslatable(row.name), context: row.institution ? resolveTranslatable(row.institution.name) : null }]; },
+        }]
+      : [],
   }),
 ]);
 
@@ -196,7 +231,8 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Duty>>(() => ({
   initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
   enableFiltering: true,
   enableColumnVisibility: false,
-  enableRowSelection: false,
+  enableRowSelection: isMergeMode.value,
+  enableRowSelectionColumn: isMergeMode.value,
   allowToggleDeleted: true,
   showDeleted: props.showDeleted,
   deletedCount: props.deletedCount,
@@ -207,6 +243,21 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.Duty>>(() => ({
   canCreate: true,
   secondaryActions: secondaryActions.value,
 }));
+
+const enterMergeMode = () => router.get(route('duties.index'), { merge: 1 }, { preserveState: true, preserveScroll: true });
+const leaveMergeMode = () => router.get(route('duties.index'), {}, { preserveState: true, preserveScroll: true });
+const merged = () => {
+  mergeRecords.value = [];
+  indexTablePageRef.value?.clearRowSelection();
+  router.reload({ only: ['duties'] });
+};
+const handleRowSelectionChange = () => {
+  selectedRows.value = (indexTablePageRef.value?.getSelectedRows() ?? []).map(row => ({
+    id: row.id,
+    label: resolveTranslatable(row.name),
+    context: row.institution ? resolveTranslatable(row.institution.name) : null,
+  }));
+};
 
 const onDataLoaded = (data: any) => {};
 const handleSortingChange = (sorting: any) => {};

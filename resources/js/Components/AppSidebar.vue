@@ -241,6 +241,7 @@ import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
+import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
 import {
   Sidebar,
@@ -357,39 +358,25 @@ const currentUser = computed(() => {
   };
 });
 
-// The member and student rep registration forms are the two forms admins actually work with.
-// The backend only shares an id when this user is allowed to open that form, so no extra
-// permission checks are needed here.
+const { workspaces } = useAdminNavigation();
+
 const registrationFormItems = computed(() => {
-  const registrationForms = usePage().props.auth?.registrationForms;
-  const children: { title: string; url: string }[] = [];
+  const organization = workspaces.value.find(workspace => workspace.key === 'organizacija');
 
-  if (registrationForms?.member) {
-    children.push({
-      title: $t('Narių registracija'),
-      url: route('forms.show', registrationForms.member),
-    });
-  }
-
-  if (registrationForms?.studentRep) {
-    children.push({
-      title: $t('Studentų atstovų registracija'),
-      url: route('forms.show', registrationForms.studentRep),
-    });
-  }
-
-  return children;
+  return (organization?.sections ?? [])
+    .filter(section => section.key.startsWith('registracija_'))
+    .map(section => ({ title: $t(section.label), url: route(section.routeName, section.routeParams) }));
 });
 
 // Primary navigation items
 const navMainItems = computed(() => {
   const items = [];
 
-  // Representation (ViSAK - Virtualus Studentų Atstovų Koordinatorius)
-  if (usePage().props.auth?.can.create.meeting) {
+  const representation = workspaces.value.find(workspace => workspace.key === 'atstovavimas');
+  if (representation?.sections[0]) {
     items.push({
-      title: 'ViSAK',
-      url: route('dashboard.atstovavimas'),
+      title: $t(representation.label),
+      url: route(representation.sections[0].routeName, representation.sections[0].routeParams),
       icon: markRaw(GraduationCap),
       isActive: route().current('dashboard.atstovavimas')
         || route().current('meetings.show')
@@ -407,14 +394,15 @@ const navMainItems = computed(() => {
     isActive: route().current('search.*'),
   });
 
-  // Website (Svetainė) — with direct links to the registration forms this user may open
-  const canManagePages = usePage().props.auth?.can.create.page;
+  const website = workspaces.value.find(workspace => workspace.key === 'svetaine');
   const registrationChildren = registrationFormItems.value;
-  const websiteUrl = canManagePages ? route('dashboard.svetaine') : registrationChildren[0]?.url;
+  const websiteUrl = website?.sections[0]
+    ? route(website.sections[0].routeName, website.sections[0].routeParams)
+    : registrationChildren[0]?.url;
 
-  if ((canManagePages || registrationChildren.length > 0) && websiteUrl) {
+  if (websiteUrl) {
     items.push({
-      title: $t('Svetainė'),
+      title: website ? $t(website.label) : $t('Svetainė'),
       url: websiteUrl,
       icon: markRaw(Globe),
       // Drives both the highlight and whether the dropdown starts open.
@@ -433,25 +421,26 @@ const navMainItems = computed(() => {
     });
   }
 
-  // Reservations
-  items.push({
-    title: $t('Rezervacijos'),
-    url: route('dashboard.reservations'),
-    icon: markRaw(Bookmark),
-    isActive: route().current('dashboard.reservations*')
-      || route().current('reservations.create')
-      || route().current('reservations.show'),
-    spotlight: {
+  const reservations = workspaces.value.find(workspace => workspace.key === 'rezervacijos');
+  if (reservations?.sections[0]) {
+    items.push({
+      title: $t(reservations.label),
+      url: route(reservations.sections[0].routeName, reservations.sections[0].routeParams),
+      icon: markRaw(Bookmark),
+      isActive: route().current('dashboard.reservations*')
+        || route().current('reservations.create')
+        || route().current('reservations.show'),
+      spotlight: {
       // title/description are plain strings on the composable, not refs.
-      title: reservationsSpotlight.title,
-      description: reservationsSpotlight.description,
-      isDismissed: reservationsSpotlight.isDismissed.value,
-      dismiss: reservationsSpotlight.dismiss,
-    },
-  });
+        title: reservationsSpotlight.title,
+        description: reservationsSpotlight.description,
+        isDismissed: reservationsSpotlight.isDismissed.value,
+        dismiss: reservationsSpotlight.dismiss,
+      },
+    });
+  }
 
-  // Settings/Admin (Administravimas) - only show if user can access administration
-  if (usePage().props.auth?.can.accessAdministration) {
+  if (workspaces.value.some(workspace => ['organizacija', 'sistema'].includes(workspace.key))) {
     items.push({
       title: $t('Administravimas'),
       url: route('administration'),

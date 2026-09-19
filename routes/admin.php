@@ -105,7 +105,8 @@ Route::resource('pages', PageController::class)->except(['show'])
 Route::resource('news', NewsController::class)->except(['show'])
     ->middleware(HandlePrecognitiveRequests::class);
 Route::resource('tags', TagController::class)->except(['show']);
-Route::get('tags/merge', [TagController::class, 'mergeTags'])->name('tags.merge');
+/** @deprecated Merge records from the tags list instead. */
+Route::get('tags/merge', fn () => to_route('tags.index')->with('info', __('shell.merge.redirect')))->name('tags.merge');
 Route::post('tags/merge', [TagController::class, 'processMergeTags'])->name('tags.processMerge');
 
 Route::post('quickLinks/update-order', [QuickLinkController::class, 'updateOrder'])->name('quickLinks.update-order');
@@ -114,7 +115,8 @@ Route::resource('banners', BannerController::class)->except(['show']);
 Route::resource('navigation', NavigationController::class)->except(['show']);
 Route::post('navigation/updateOrder', [NavigationController::class, 'updateOrder'])->name('navigation.updateOrder');
 
-Route::get('users/merge', [UserController::class, 'merge'])->name('users.merge');
+/** @deprecated Merge records from the users list instead. */
+Route::get('users/merge', fn () => to_route('users.index')->with('info', __('shell.merge.redirect')))->name('users.merge');
 Route::post('users/merge', [UserController::class, 'mergeUsers'])->name('users.mergeUsers');
 Route::resource('users', UserController::class);
 
@@ -210,7 +212,8 @@ Route::resource('documents', DocumentController::class)->except('create', 'edit'
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
 Route::post('documents/bulk-sync', [DocumentController::class, 'bulkSync'])->name('documents.bulk-sync');
 
-Route::get('duties/merge', [DutyController::class, 'merge'])->name('duties.merge');
+/** @deprecated Merge records from the duties list instead. */
+Route::get('duties/merge', fn () => to_route('duties.index')->with('info', __('shell.merge.redirect')))->name('duties.merge');
 Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('duties.mergeDuties');
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
@@ -222,7 +225,8 @@ Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->
 Route::post('dutiables/timeline/apply', [DutiableTimelineController::class, 'apply'])->name('dutiables.timeline.apply');
 Route::post('dutiables/timeline/merge', [DutiableTimelineController::class, 'merge'])->name('dutiables.timeline.merge');
 Route::resource('dutiables', DutiableController::class)->only(['edit', 'update', 'destroy']);
-Route::get('studyPrograms/merge', [StudyProgramController::class, 'merge'])->name('studyPrograms.merge');
+/** @deprecated Merge records from the study-program list instead. */
+Route::get('studyPrograms/merge', fn () => to_route('studyPrograms.index')->with('info', __('shell.merge.redirect')))->name('studyPrograms.merge');
 Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');
 Route::resource('studyPrograms', StudyProgramController::class)->except(['show']);
 Route::resource('studySets', StudySetController::class)->except(['show']);

@@ -657,31 +657,6 @@ class DutyController extends AdminController
     }
 
     /**
-     * Show the form for merging duplicate duties into one.
-     *
-     * `target_duty_id` pre-selects the kept duty (arriving from the duties index
-     * row action or the duplicate-duty warning). The full duty list is sent, as
-     * MergeStudyPrograms does for study programs — institution scoping (a
-     * cross-institution merge is almost never intentional) happens client-side
-     * against `institution_id`, alongside the target selection.
-     */
-    public function merge(Request $request)
-    {
-        $this->handleAuthorization('viewAny', Duty::class);
-
-        $duties = Duty::query()
-            ->with(['institution:id,name,tenant_id', 'institution.tenant:id,shortname'])
-            ->withCount('dutiables')
-            ->orderBy('name')
-            ->get();
-
-        return $this->inertiaResponse('Admin/People/MergeDuty', [
-            'duties' => $duties->map->toFullArray(),
-            'targetDutyId' => $request->string('target_duty_id')->toString() ?: null,
-        ]);
-    }
-
-    /**
      * Merge one or more duplicate duties into a single kept duty.
      */
     public function mergeDuties(MergeDutiesRequest $request)

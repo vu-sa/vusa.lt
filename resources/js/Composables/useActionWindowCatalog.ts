@@ -20,6 +20,7 @@ import {
   CalendarOff,
   CalendarPlus,
   CalendarRange,
+  FileText,
   GraduationCap,
   Landmark,
   MessageSquareWarning,
@@ -160,6 +161,15 @@ export function buildPersonas(): ActionWindowPersona[] {
       gradient: GRADIENTS.coordinator,
       actions: [
         {
+          key: 'new_news',
+          title: $t('action_window.actions.new_news.title'),
+          description: $t('action_window.actions.new_news.description'),
+          icon: FileText,
+          gradient: tint('new_news', GRADIENTS.coordinator),
+          requiresPermission: can => !!can.create.news,
+          target: { kind: 'route', route: 'news.create' },
+        },
+        {
           key: 'duty_update',
           title: $t('action_window.actions.duty_update.title'),
           description: $t('action_window.actions.duty_update.description'),
@@ -169,7 +179,7 @@ export function buildPersonas(): ActionWindowPersona[] {
           target: { kind: 'route', route: 'duties.updateUsersWizard' },
         },
         {
-          key: 'cadences',
+          key: 'duty_periods',
           title: $t('action_window.actions.cadences.title'),
           description: $t('action_window.actions.cadences.description'),
           icon: CalendarRange,
@@ -189,19 +199,30 @@ export function buildPersonas(): ActionWindowPersona[] {
 export function useActionWindowCatalog() {
   const page = usePage();
 
-  const permissions = computed<ActionWindowPermissions>(() => {
-    const can = (page.props.auth as {
-      can?: { create?: Record<string, boolean | undefined>; index?: Record<string, boolean | undefined> };
-    } | null)?.can;
-
-    return { create: can?.create ?? {}, index: can?.index ?? {} };
-  });
+  const catalogActions = computed(() => new Map((page.props.adminNavigation?.workspaces ?? [])
+    .flatMap(workspace => workspace.createActions)
+    .map(action => [action.key, action])));
 
   const personas = computed<ActionWindowPersona[]>(() =>
     buildPersonas()
       .map(persona => ({
         ...persona,
-        actions: persona.actions.filter(action => action.requiresPermission(permissions.value)),
+        actions: persona.actions.flatMap((action) => {
+          const catalogAction = catalogActions.value.get(action.key);
+
+          if (!catalogAction) {
+            return [];
+          }
+
+          return [{
+            ...action,
+            title: $t(catalogAction.label),
+            description: catalogAction.description ? $t(catalogAction.description) : undefined,
+            target: catalogAction.target.kind === 'route'
+              ? { kind: 'route' as const, route: catalogAction.target.routeName }
+              : { kind: 'screen' as const, screen: catalogAction.target.screen as ScreenId },
+          }];
+        }),
       }))
       .filter(persona => persona.actions.length > 0),
   );

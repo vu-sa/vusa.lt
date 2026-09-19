@@ -162,24 +162,10 @@ class StudyProgramController extends AdminController
     }
 
     /**
-     * Show the form for merging study programs.
-     */
-    public function merge()
-    {
-        $this->handleAuthorization('viewAny', StudyProgram::class);
-
-        return $this->inertiaResponse('Admin/People/MergeStudyPrograms', [
-            'studyPrograms' => StudyProgram::with('tenant')->get()->map->toArray(),
-        ]);
-    }
-
-    /**
      * Merge multiple study programs into one.
      */
     public function mergeStudyPrograms(MergeStudyProgramsRequest $request)
     {
-        $this->handleAuthorization('create', StudyProgram::class);
-
         $targetId = $request->validated()['target_study_program_id'];
         $sourceIds = $request->validated()['source_study_program_ids'];
 

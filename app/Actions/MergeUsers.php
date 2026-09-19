@@ -9,6 +9,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 
 /**
  * Merges one user account into another, repointing every relationship from the
@@ -27,47 +28,50 @@ class MergeUsers
 {
     /**
      * @param  User  $keptUser  The user account to keep
-     * @param  User  $mergedUser  The user account to merge and delete
+     * @param  Collection<int, User>  $sources  User accounts to merge and delete
      */
-    public static function execute(User $keptUser, User $mergedUser): void
+    public static function execute(User $keptUser, Collection $sources): void
     {
-        DB::transaction(function () use ($keptUser, $mergedUser): void {
-            // Capture the merged user's duties before repointing, so each can be
-            // collapsed afterwards for overlaps with the kept user's own rows.
-            $affectedDutyIds = Dutiable::query()
-                ->where('dutiable_type', MorphMap::alias(User::class))
-                ->where('dutiable_id', $mergedUser->id)
-                ->pluck('duty_id')
-                ->unique();
+        DB::transaction(function () use ($keptUser, $sources): void {
+            $affectedDutyIds = collect();
 
-            // Repoint every dutiable row the merged user holds onto the kept user.
-            Dutiable::query()
-                ->where('dutiable_type', MorphMap::alias(User::class))
-                ->where('dutiable_id', $mergedUser->id)
-                ->update(['dutiable_id' => $keptUser->id]);
+            foreach ($sources as $source) {
+                $affectedDutyIds = $affectedDutyIds->merge(self::mergeOne($keptUser, $source));
+            }
 
-            // A duty both users held now carries two rows for the kept user — fold
-            // any that overlap into one (per tenant scope), keeping separate stints.
-            foreach ($affectedDutyIds as $dutyId) {
+            foreach ($affectedDutyIds->unique() as $dutyId) {
                 $duty = Duty::find($dutyId);
 
                 if ($duty) {
                     CollapseOverlappingDutiables::execute($duty);
                 }
             }
-
-            // Many-to-many pivots: drop rows that would duplicate one the kept user
-            // already has, then repoint the rest. (table, related-key column)
-            self::repointPivot('task_user', 'task_id', $keptUser, $mergedUser);
-            self::repointPivot('reservation_user', 'reservation_id', $keptUser, $mergedUser);
-
-            // HasMany records — repoint the foreign key directly.
-            Comment::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
-            InstitutionCheckIn::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
-
-            // Finally, soft-delete the merged user (recoverable, like MergeDuties).
-            $mergedUser->delete();
         });
+    }
+
+    /** @return Collection<int, string> */
+    private static function mergeOne(User $keptUser, User $mergedUser): Collection
+    {
+        $affectedDutyIds = Dutiable::query()
+            ->where('dutiable_type', MorphMap::alias(User::class))
+            ->where('dutiable_id', $mergedUser->id)
+            ->pluck('duty_id')
+            ->unique();
+
+        Dutiable::query()
+            ->where('dutiable_type', MorphMap::alias(User::class))
+            ->where('dutiable_id', $mergedUser->id)
+            ->update(['dutiable_id' => $keptUser->id]);
+
+        self::repointPivot('task_user', 'task_id', $keptUser, $mergedUser);
+        self::repointPivot('reservation_user', 'reservation_id', $keptUser, $mergedUser);
+
+        Comment::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
+        InstitutionCheckIn::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
+
+        $mergedUser->delete();
+
+        return $affectedDutyIds;
     }
 
     /**

@@ -6,6 +6,9 @@
  * relabelling — the label itself lives only here.
  */
 return [
+    'merge' => [
+        'redirect' => 'Record merging is now available from the list actions.',
+    ],
     'workspaces' => [
         'pradzia' => [
             'title' => 'Home',
@@ -78,6 +81,9 @@ return [
     ],
 
     'actions' => [
+        'merge' => [
+            'title' => 'Merge records',
+        ],
         'new_meeting' => [
             'title' => 'New meeting',
             'description' => 'Record a meeting and its agenda',

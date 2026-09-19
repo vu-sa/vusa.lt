@@ -15,21 +15,37 @@
     </template>
 
     <template #headerActions>
-      <Button variant="outline" as-child class="gap-1.5">
-        <Link :href="route('studyPrograms.merge')">
-          <MergeIcon class="h-4 w-4" />
-          {{ $t('Sujungti programas') }}
-        </Link>
+      <Button v-if="canMerge" variant="outline" class="gap-1.5" @click="enterMergeMode">
+        <MergeIcon class="h-4 w-4" />
+        {{ $t('Sujungti įrašus') }}
+      </Button>
+    </template>
+    <template #actions>
+      <Button v-if="isMergeMode && selectedRows.length > 1" variant="secondary" @click="mergeRecords = selectedRows">
+        {{ $t('Sujungti pasirinktus') }}
+      </Button>
+      <Button v-if="isMergeMode" variant="ghost" @click="leaveMergeMode">
+        {{ $t('Cancel') }}
       </Button>
     </template>
   </IndexTablePage>
+  <MergeRecordsDialog
+    :open="mergeRecords.length > 0"
+    type="study-programs"
+    :records="mergeRecords"
+    :submit-url="route('studyPrograms.mergeStudyPrograms')"
+    target-field="target_study_program_id"
+    source-field="source_study_program_ids"
+    @close="mergeRecords = []"
+    @merged="merged"
+  />
 </template>
 
 <script setup lang="ts">
 import { h, ref, computed, watch, capitalize } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { router, usePage, Link } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import {
   MergeIcon,
   PlusIcon,
@@ -48,6 +64,8 @@ import {
   createTitleColumn,
   createTenantColumn,
 } from '@/Composables/useDataTableColumns';
+import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
+import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 
 const props = defineProps<{
   studyPrograms: {
@@ -84,7 +102,11 @@ const selectedDegrees = ref<string[]>(props.filters?.['degree'] || []);
 const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
 
 // Row selection
-const selectedRows = ref([]);
+const selectedRows = ref<MergeRecord[]>([]);
+const mergeRecords = ref<MergeRecord[]>([]);
+const { hasCollectionAction } = useAdminNavigation();
+const canMerge = computed(() => hasCollectionAction('studyPrograms.index', 'merge'));
+const isMergeMode = computed(() => new URLSearchParams(usePage().url.split('?')[1] ?? '').get('merge') === '1');
 
 // Filter options computed values
 const degreeOptions = computed(() => props.degreeOptions || []);
@@ -127,6 +149,14 @@ const columns = computed<Array<ColumnDef<App.Entities.StudyProgram, any>>>(() =>
     canDelete: true,
     canRestore: true,
     canForceDelete: canForceDelete.value,
+    customActions: canMerge.value
+      ? [{
+          key: 'merge',
+          label: $t('Sujungti su…'),
+          icon: MergeIcon,
+          onSelect: (row) => { mergeRecords.value = [{ id: row.id, label: row.name, context: row.tenant?.shortname }]; },
+        }]
+      : [],
   }),
 ]);
 
@@ -148,8 +178,8 @@ const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() 
     initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
     enableFiltering: true,
     enableColumnVisibility: true,
-    enableRowSelection: false,
-    enableRowSelectionColumn: false,
+    enableRowSelection: isMergeMode.value,
+    enableRowSelectionColumn: isMergeMode.value,
     allowToggleDeleted: true,
     showDeleted: props.showDeleted,
     deletedCount: props.deletedCount,
@@ -179,8 +209,19 @@ const handleTenantFilterChange = (tenantIds: number[]) => {
 
 // Row selection handler
 const handleRowSelectionChange = (selection: any) => {
-  // Get the actual row objects from the selection state
-  selectedRows.value = indexTablePageRef.value?.getSelectedRows() || [];
+  selectedRows.value = (indexTablePageRef.value?.getSelectedRows() ?? []).map(row => ({
+    id: row.id,
+    label: row.name,
+    context: row.tenant?.shortname,
+  }));
+};
+
+const enterMergeMode = () => router.get(route('studyPrograms.index'), { merge: 1 }, { preserveState: true, preserveScroll: true });
+const leaveMergeMode = () => router.get(route('studyPrograms.index'), {}, { preserveState: true, preserveScroll: true });
+const merged = () => {
+  mergeRecords.value = [];
+  indexTablePageRef.value?.clearRowSelection();
+  router.reload({ only: ['studyPrograms'] });
 };
 
 // Event handler for data loaded

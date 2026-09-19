@@ -23,7 +23,7 @@
 
           <span class="ml-auto flex items-center gap-1">
             <Button v-if="match.can_manage && match.reason === 'same_institution_variant' && currentDutyId" size="xs" variant="secondary" as="a"
-              :href="route('duties.merge', { target_duty_id: match.id })" target="_blank" rel="noopener noreferrer">
+              :href="route('duties.index', { merge: 1, source: currentDutyId, target: match.id })" target="_blank" rel="noopener noreferrer">
               {{ $t('forms.duty_duplicate.merge_instead') }}
             </Button>
             <Button v-if="match.can_manage" size="xs" variant="outline" as="a"

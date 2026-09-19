@@ -79,11 +79,11 @@ describe('unauthorized access', function (): void {
         $response->assertStatus(403);
     });
 
-    test('cannot access merge study programs page', function (): void {
+    test('legacy merge study programs route redirects', function (): void {
         $this->actingAs($this->user);
 
         $response = $this->get(route('studyPrograms.merge'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('studyPrograms.index'));
     });
 
     test('cannot merge study programs', function (): void {
@@ -92,8 +92,8 @@ describe('unauthorized access', function (): void {
         $targetProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = $this->post(route('studyPrograms.merge'), [
-            'target_id' => $targetProgram->id,
-            'source_ids' => [$this->studyProgram->id],
+            'target_study_program_id' => $targetProgram->id,
+            'source_study_program_ids' => [$this->studyProgram->id],
         ]);
         $response->assertStatus(403);
     });
@@ -171,14 +171,11 @@ describe('authorized access', function (): void {
         $this->assertSoftDeleted('study_programs', ['id' => $programId]);
     });
 
-    test('can access merge study programs page', function (): void {
+    test('legacy merge study programs route redirects for an admin', function (): void {
         $this->actingAs($this->admin);
 
         $response = $this->get(route('studyPrograms.merge'));
-        $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/MergeStudyPrograms')
-        );
+        $response->assertRedirect(route('studyPrograms.index'));
     });
 });
 

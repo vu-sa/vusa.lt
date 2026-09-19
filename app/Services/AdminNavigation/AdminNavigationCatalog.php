@@ -109,7 +109,16 @@ class AdminNavigationCatalog
     {
         return collect($sections)
             ->filter(fn (Section $section) => $section->visibility->allows($user))
-            ->map(fn (Section $section) => $section->toArray())
+            ->map(function (Section $section) use ($user): array {
+                $data = $section->toArray();
+                $data['collectionActions'] = collect($section->collectionActions)
+                    ->filter(fn (CollectionAction $action) => $action->visibility->allows($user))
+                    ->map(fn (CollectionAction $action) => $action->toArray())
+                    ->values()
+                    ->all();
+
+                return $data;
+            })
             ->values()
             ->all();
     }
@@ -204,7 +213,7 @@ class AdminNavigationCatalog
                 new Section('navigacija', 'shell.sections.navigacija', 'navigation.index', [], 'navigation', Visibility::can('viewAny', Navigation::class)),
                 new Section('greitosios_nuorodos', 'shell.sections.greitosios_nuorodos', 'quickLinks.index', [], 'quick_link', Visibility::can('viewAny', QuickLink::class)),
                 new Section('renginiu_tipai', 'shell.sections.renginiu_tipai', 'eventTypes.index', [], 'event_type', Visibility::can('viewAny', EventType::class)),
-                new Section('zymos', 'shell.sections.zymos', 'tags.index', [], 'tag', Visibility::can('viewAny', Tag::class)),
+                new Section('zymos', 'shell.sections.zymos', 'tags.index', [], 'tag', Visibility::can('viewAny', Tag::class), [CollectionAction::merge(Visibility::can('viewAny', Tag::class))]),
                 // `File` is not in `ModelEnum` (its own docblock: "is not a model, but is used
                 // for generating file permissions") and has no `viewAny` policy method — gate on
                 // the raw permission the controller itself checks (`FilesController::index()`).
@@ -225,11 +234,11 @@ class AdminNavigationCatalog
             labelKey: 'shell.workspaces.organizacija.title',
             descriptionKey: 'shell.workspaces.organizacija.description',
             sections: [
-                new Section('nariai', 'shell.sections.nariai', 'users.index', [], 'user', Visibility::can('viewAny', User::class)),
-                new Section('pareigybes', 'shell.sections.pareigybes', 'duties.index', [], 'duty', Visibility::can('viewAny', Duty::class)),
+                new Section('nariai', 'shell.sections.nariai', 'users.index', [], 'user', Visibility::can('viewAny', User::class), [CollectionAction::merge(Visibility::can('viewAny', User::class))]),
+                new Section('pareigybes', 'shell.sections.pareigybes', 'duties.index', [], 'duty', Visibility::can('viewAny', Duty::class), [CollectionAction::merge(Visibility::can('viewAny', Duty::class))]),
                 new Section('pareigybiu_atnaujinimas', 'shell.sections.pareigybiu_atnaujinimas', 'duties.updateUsersWizard', [], 'duty', Visibility::can('create', Duty::class)),
                 new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class)),
-                new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class)),
+                new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))]),
             ],
             createActions: [
                 CreateAction::route('duty_update', 'shell.actions.duty_update.title', 'shell.actions.duty_update.description', 'duty', 'duties.updateUsersWizard', Visibility::can('create', Duty::class)),
@@ -245,9 +254,8 @@ class AdminNavigationCatalog
      * statically like every other section, because the id is data, not part of the definition,
      * and access is a per-record `FormPolicy::view()` check, not a class-level `viewAny`.
      *
-     * Mirrors `HandleInertiaRequests::getViewableRegistrationForms()`, which resolves the same
-     * two forms for the legacy sidebar; PR 3.2 retires that duplicate once `AppSidebar` reads
-     * this catalog instead of its own `auth.registrationForms` prop.
+     * AppSidebar reads these sections directly from the catalog, so its navigation cannot drift
+     * from the per-record FormPolicy check.
      *
      * @return list<Section>
      */

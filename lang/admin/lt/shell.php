@@ -6,6 +6,9 @@
  * relabelling — the label itself lives only here.
  */
 return [
+    'merge' => [
+        'redirect' => 'Įrašų sujungimą dabar rasite sąrašo veiksmuose.',
+    ],
     'workspaces' => [
         'pradzia' => [
             'title' => 'Pradžia',
@@ -78,6 +81,9 @@ return [
     ],
 
     'actions' => [
+        'merge' => [
+            'title' => 'Sujungti įrašus',
+        ],
         'new_meeting' => [
             'title' => 'Naujas susitikimas',
             'description' => 'Užfiksuok posėdį ir jo darbotvarkę',

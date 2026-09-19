@@ -157,26 +157,10 @@ class TagController extends AdminController
     }
 
     /**
-     * Show the form for merging tags.
-     */
-    public function mergeTags()
-    {
-        $this->handleAuthorization('create', Tag::class);
-
-        $tags = Tag::orderBy('alias')->get();
-
-        return $this->inertiaResponse('Admin/Content/MergeTags', [
-            'tags' => $tags->map->toFullArray(),
-        ]);
-    }
-
-    /**
      * Merge multiple tags into a target tag.
      */
     public function processMergeTags(MergeTagsRequest $request)
     {
-        $this->handleAuthorization('create', Tag::class);
-
         $targetTagId = $request->validated('target_tag_id');
         $sourceTagIds = $request->validated('source_tag_ids');
 

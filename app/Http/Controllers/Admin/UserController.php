@@ -277,35 +277,15 @@ class UserController extends AdminController
     }
 
     /**
-     * Show the merge users form.
-     */
-    public function merge()
-    {
-        $this->handleAuthorization('merge', User::class);
-
-        $users = User::query()
-            ->with([
-                'duties:id,institution_id',
-                'duties.institution:id,tenant_id',
-                'duties.institution.tenant:id,shortname',
-            ])
-            ->withCount('duties')
-            ->get();
-
-        return $this->inertiaResponse('Admin/People/MergeUser', [
-            'users' => $users,
-        ]);
-    }
-
     /**
      * Merge two user accounts.
      */
     public function mergeUsers(MergeUsersRequest $request)
     {
         $keptUser = User::query()->find($request->kept_user_id);
-        $mergedUser = User::query()->find($request->merged_user_id);
+        $sources = User::query()->whereIn('id', $request->validated('source_user_ids'))->get();
 
-        MergeUsers::execute($keptUser, $mergedUser);
+        MergeUsers::execute($keptUser, $sources);
 
         return back()->with('success', __('messages.user.merged'));
     }

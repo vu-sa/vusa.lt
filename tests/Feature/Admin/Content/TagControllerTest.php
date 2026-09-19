@@ -269,14 +269,11 @@ describe('tag merging', function (): void {
         asUser($this->admin)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('admin can access merge tags page', function (): void {
+    test('legacy merge tags route redirects to the index', function (): void {
         asUser($this->admin)
             ->get(route('tags.merge'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/MergeTags')
-                ->has('tags')
-            );
+            ->assertRedirect(route('tags.index'))
+            ->assertSessionHas('info');
     });
 
     test('admin can merge tags successfully', function (): void {
@@ -366,10 +363,10 @@ describe('tag merging', function (): void {
             ->assertSessionHasErrors(['source_tag_ids']);
     });
 
-    test('simple user cannot access merge tags page', function (): void {
+    test('legacy merge tags route redirects for a simple user', function (): void {
         asUser($this->user)
             ->get(route('tags.merge'))
-            ->assertStatus(403);
+            ->assertRedirect(route('tags.index'));
     });
 
     test('simple user cannot process tag merge', function (): void {

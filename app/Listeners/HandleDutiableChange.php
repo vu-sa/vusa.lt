@@ -38,7 +38,7 @@ class HandleDutiableChange implements ShouldQueue
 
         // resetCache() deliberately leaves these two maps alone, so forget them here.
         PermissionMapBuilder::forgetCachedMaps($event->modelId);
-        Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($event->modelId));
+        Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($event->modelId));
 
         Permission::resetCache($event->modelId);
     }
