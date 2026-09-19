@@ -1,149 +1,144 @@
 <template>
-  <Popover @close="onClose">
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !internalValue && 'text-muted-foreground',
-        )"
-        :disabled
-      >
-        <CalendarIcon class="mr-2 h-4 w-4" />
-        {{ displayText }}
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0">
-      <Calendar
-        v-model="internalValue"
-        initial-focus
-        :min-date
-        :max-date
-      />
-    </PopoverContent>
-  </Popover>
+  <Input
+    v-if="isCoarsePointer"
+    :model-value="dateValue"
+    type="date"
+    :min="minDateValue"
+    :max="maxDateValue"
+    :disabled
+    :class="props.class"
+    @update:model-value="updateFromInput"
+    @blur="emit('blur')"
+  />
+  <div v-else :class="cn('flex w-full items-center gap-2', props.class)">
+    <Input
+      :model-value="dateValue"
+      inputmode="numeric"
+      :placeholder="placeholder ?? 'YYYY-MM-DD'"
+      :disabled
+      @update:model-value="updateFromInput"
+      @blur="emit('blur')"
+    />
+    <Popover @close="emit('blur')">
+      <PopoverTrigger as-child>
+        <Button type="button" variant="outline" size="icon" :disabled :aria-label="$t('Pasirinkti datą')">
+          <CalendarIcon class="size-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent class="w-auto p-0" align="end">
+        <Calendar
+          :model-value="calendarValue"
+          initial-focus
+          :min-date
+          :max-date
+          @update:model-value="updateFromCalendar"
+        />
+      </PopoverContent>
+    </Popover>
+    <Button
+      v-if="clearable && calendarValue"
+      type="button"
+      variant="ghost"
+      size="icon"
+      :disabled
+      :aria-label="$t('Išvalyti')"
+      @click="clear"
+    >
+      <X class="size-4" />
+    </Button>
+  </div>
 </template>
 
 <script setup lang="ts">
-import {
-  DateFormatter,
-  type DateValue,
-  getLocalTimeZone,
-  today,
-} from '@internationalized/date';
-import { Calendar as CalendarIcon } from 'lucide-vue-next';
-import { ref, computed, watch, useAttrs } from 'vue';
+import { CalendarDate, type DateValue } from '@internationalized/date';
+import { Calendar as CalendarIcon, X } from 'lucide-vue-next';
+import { computed, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';
 import { Calendar } from '@/Components/ui/calendar';
+import { Input } from '@/Components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { useCoarsePointer } from '@/Composables/useCoarsePointer';
 
 // Define component props
 const props = defineProps<{
-  modelValue?: Date | DateValue | string;
+  modelValue?: Date | DateValue | string | null;
   minDate?: DateValue;
   maxDate?: DateValue;
   placeholder?: string;
   disabled?: boolean;
+  clearable?: boolean;
+  class?: HTMLAttributes['class'];
 }>();
 
 // Define component events
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Date): void;
-  (e: 'change', value: Date): void;
+  (e: 'update:modelValue', value: Date | undefined): void;
+  (e: 'change', value: Date | undefined): void;
   (e: 'blur'): void;
 }>();
 
-// Get any additional attributes for form field integration
-const attrs = useAttrs();
+const isCoarsePointer = useCoarsePointer();
 
-// Format dates based on current locale
-const formatter = new DateFormatter(document.documentElement.lang || 'lt', {
-  dateStyle: 'long',
+const calendarValue = computed<CalendarDate | undefined>(() => {
+  if (props.modelValue instanceof Date) {
+    return new CalendarDate(props.modelValue.getUTCFullYear(), props.modelValue.getUTCMonth() + 1, props.modelValue.getUTCDate());
+  }
+
+  if (typeof props.modelValue === 'string') {
+    return parseDate(props.modelValue);
+  }
+
+  if (props.modelValue && typeof props.modelValue.toDate === 'function') {
+    return new CalendarDate(props.modelValue.year, props.modelValue.month, props.modelValue.day);
+  }
+
+  return undefined;
 });
 
-// Internal value management
-const internalValue = computed({
-  get: () => {
-    if (props.modelValue instanceof Date) {
-      return today(getLocalTimeZone()).set({
-        year: props.modelValue.getFullYear(),
-        month: props.modelValue.getMonth() + 1,
-        day: props.modelValue.getDate(),
-      });
-    }
-    // Handle date strings from backend (e.g. "2024-06-15" or "2024-06-15 00:00:00")
-    if (typeof props.modelValue === 'string') {
-      const match = props.modelValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
-      if (match) {
-        return today(getLocalTimeZone()).set({
-          year: parseInt(match[1]),
-          month: parseInt(match[2]),
-          day: parseInt(match[3]),
-        });
-      }
-      return undefined;
-    }
-    // DateValue - verify it has the expected interface before returning
-    if (props.modelValue && typeof (props.modelValue as DateValue).toDate === 'function') {
-      return props.modelValue as DateValue;
-    }
+const dateValue = computed(() => calendarValue.value ? formatDate(calendarValue.value) : '');
+const minDateValue = computed(() => props.minDate ? formatDate(props.minDate) : undefined);
+const maxDateValue = computed(() => props.maxDate ? formatDate(props.maxDate) : undefined);
+
+function parseDate(value: string): CalendarDate | undefined {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) {
     return undefined;
-  },
-  set: (value: DateValue | undefined) => {
-    if (value) {
-      // Use noon UTC to prevent date shift during JSON serialization
-      const dateObject = new Date(Date.UTC(value.year, value.month - 1, value.day, 12, 0, 0));
-      emit('update:modelValue', dateObject);
-      emit('change', dateObject);
-    }
-    else {
-      emit('update:modelValue', undefined as any);
-      emit('change', undefined as any);
-    }
-  },
-});
-
-// Display text for the date button
-const displayText = computed(() => {
-  if (internalValue.value) {
-    return formatter.format(internalValue.value.toDate(getLocalTimeZone()));
   }
-  return props.placeholder || $t('Pick a date');
-});
 
-// For vee-validate integration - set value from field binding
-const setValueFromField = (fieldValue: any) => {
-  if (fieldValue instanceof Date) {
-    internalValue.value = today(getLocalTimeZone()).set({
-      year: fieldValue.getFullYear(),
-      month: fieldValue.getMonth() + 1,
-      day: fieldValue.getDate(),
-    });
-  }
-  else if (typeof fieldValue === 'string' && fieldValue) {
-    const match = fieldValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (match) {
-      internalValue.value = today(getLocalTimeZone()).set({
-        year: parseInt(match[1]),
-        month: parseInt(match[2]),
-        day: parseInt(match[3]),
-      });
-    }
-  }
-};
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
 
-// Watch for changes from vee-validate field
-watch(() => attrs.value, (newValue) => {
-  if (newValue) {
-    setValueFromField(newValue);
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+    return undefined;
   }
-});
 
-// Handle closing popover (for blur event)
-const onClose = () => {
-  emit('blur');
-};
+  return new CalendarDate(year, month, day);
+}
+
+function formatDate(value: DateValue): string {
+  return `${value.year}-${String(value.month).padStart(2, '0')}-${String(value.day).padStart(2, '0')}`;
+}
+
+function emitDate(value: CalendarDate | undefined): void {
+  const date = value ? new Date(Date.UTC(value.year, value.month - 1, value.day, 12)) : undefined;
+  emit('update:modelValue', date);
+  emit('change', date);
+}
+
+function updateFromInput(value: string | number): void {
+  emitDate(parseDate(String(value)));
+}
+
+function updateFromCalendar(value: DateValue | undefined): void {
+  emitDate(value ? new CalendarDate(value.year, value.month, value.day) : undefined);
+}
+
+function clear(): void {
+  emitDate(undefined);
+}
 </script>

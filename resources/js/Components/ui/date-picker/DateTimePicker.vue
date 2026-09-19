@@ -1,57 +1,37 @@
 <template>
-  <Popover @close="onClose">
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !calendarValue && 'text-muted-foreground',
-        )"
-        :disabled
-      >
-        <CalendarIcon class="mr-2 h-4 w-4 shrink-0" />
-        <span class="truncate min-w-0">{{ displayText }}</span>
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0" align="start">
-      <Calendar
-        :model-value="calendarValue as any"
-        initial-focus
-        :min-date
-        :max-date
-        @update:model-value="onCalendarChange"
-      />
-      <div class="border-t p-3">
-        <TimePicker
-          :model-value="timeValue"
-          :hour-range
-          :minute-step
-          class="w-full"
-          @update:model-value="onTimeChange"
-        />
-      </div>
-    </PopoverContent>
-  </Popover>
+  <div :class="cn('grid gap-2 sm:grid-cols-2', props.class)">
+    <DatePicker
+      :model-value="dateValue"
+      :min-date
+      :max-date
+      :disabled
+      :placeholder
+      clearable
+      :aria-label="$t('Pasirinkti datą')"
+      @update:model-value="updateDate"
+      @blur="emit('blur')"
+    />
+    <TimePicker
+      :model-value="timeValue"
+      :hour-range
+      :minute-step
+      :disabled
+      clearable
+      :aria-label="$t('Pasirinkti laiką')"
+      @update:model-value="updateTime"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import {
-  DateFormatter,
-  type DateValue,
-  getLocalTimeZone,
-  CalendarDate,
-} from '@internationalized/date';
-import { Calendar as CalendarIcon } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
-import { trans as $t } from 'laravel-vue-i18n';
+import { CalendarDate, type DateValue } from '@internationalized/date';
+import { computed, type HTMLAttributes } from 'vue';
 
-import { cn } from '@/Utils/Shadcn/utils';
-import { Button } from '@/Components/ui/button';
-import { Calendar } from '@/Components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import DatePicker from './DatePicker.vue';
+
 import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
+import { cn } from '@/Utils/Shadcn/utils';
 
-// Define component props
 const props = withDefaults(defineProps<{
   modelValue?: Date | string | null;
   minDate?: DateValue;
@@ -60,129 +40,66 @@ const props = withDefaults(defineProps<{
   disabled?: boolean;
   hourRange?: [number, number];
   minuteStep?: number;
+  class?: HTMLAttributes['class'];
 }>(), {
   hourRange: () => [0, 23],
   minuteStep: 5,
 });
 
-// Define component events
 const emit = defineEmits<{
   (e: 'update:modelValue', value: Date | null): void;
   (e: 'change', value: Date | null): void;
   (e: 'blur', event?: Event): void;
 }>();
 
-// Format dates based on current locale
-const dateFormatter = new DateFormatter(document.documentElement.lang || 'lt', {
-  dateStyle: 'long',
+const modelDate = computed(() => {
+  if (props.modelValue instanceof Date) {
+    return props.modelValue;
+  }
+
+  if (typeof props.modelValue === 'string') {
+    const value = new Date(props.modelValue);
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  return null;
 });
 
-const timeFormatter = new DateFormatter(document.documentElement.lang || 'lt', {
-  timeStyle: 'short',
+const dateValue = computed(() => {
+  const value = modelDate.value;
+  return value ? new CalendarDate(value.getFullYear(), value.getMonth() + 1, value.getDate()) : undefined;
 });
 
-// Internal state for time
-const timeValue = ref<TimeValue>({ hour: 12, minute: 0 });
+const timeValue = computed<TimeValue | undefined>(() => {
+  const value = modelDate.value;
+  return value ? { hour: value.getHours(), minute: value.getMinutes() } : undefined;
+});
 
-// Parse the model value into date and time components
-const parseModelValue = (value: Date | string | null | undefined): { date: CalendarDate | undefined; time: TimeValue } => {
+function emitValue(date: Date | null): void {
+  emit('update:modelValue', date);
+  emit('change', date);
+}
+
+function updateDate(value: Date | undefined): void {
   if (!value) {
-    return { date: undefined, time: { hour: 12, minute: 0 } };
+    emitValue(null);
+    return;
   }
 
-  let dateObj: Date;
-  if (value instanceof Date) {
-    dateObj = value;
-  }
-  else if (typeof value === 'string') {
-    dateObj = new Date(value);
-    if (isNaN(dateObj.getTime())) {
-      return { date: undefined, time: { hour: 12, minute: 0 } };
-    }
-  }
-  else {
-    return { date: undefined, time: { hour: 12, minute: 0 } };
+  const current = modelDate.value;
+  const date = new Date(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate(), current?.getHours() ?? 12, current?.getMinutes() ?? 0);
+  emitValue(date);
+}
+
+function updateTime(value: TimeValue | undefined): void {
+  const current = modelDate.value;
+  if (!current || !value) {
+    emitValue(null);
+    return;
   }
 
-  return {
-    date: new CalendarDate(
-      dateObj.getFullYear(),
-      dateObj.getMonth() + 1,
-      dateObj.getDate(),
-    ),
-    time: {
-      hour: dateObj.getHours(),
-      minute: dateObj.getMinutes(),
-    },
-  };
-};
-
-// Initialize from model value
-const initialParsed = parseModelValue(props.modelValue);
-const calendarValue = ref<CalendarDate | undefined>(initialParsed.date);
-timeValue.value = initialParsed.time;
-
-// Build the combined Date from calendar + time inputs
-const buildDateTime = (): Date | null => {
-  if (!calendarValue.value) return null;
-
-  const date = calendarValue.value.toDate(getLocalTimeZone());
-  date.setHours(timeValue.value.hour);
-  date.setMinutes(timeValue.value.minute);
-  date.setSeconds(0);
-  date.setMilliseconds(0);
-
-  return date;
-};
-
-// Emit combined value when calendar or time changes
-const emitValue = () => {
-  const dateTime = buildDateTime();
-  emit('update:modelValue', dateTime);
-  emit('change', dateTime);
-};
-
-// Handle calendar value change
-const onCalendarChange = (value: any) => {
-  if (value) {
-    calendarValue.value = new CalendarDate(value.year, value.month, value.day);
-  }
-  else {
-    calendarValue.value = undefined;
-  }
-  emitValue();
-};
-
-// Handle time change
-const onTimeChange = (value: TimeValue | undefined) => {
-  // A date always has a time here, so a cleared value is not a state this picker can enter.
-  if (!value) return;
-
-  timeValue.value = value;
-  emitValue();
-};
-
-// Watch for external model value changes
-watch(() => props.modelValue, (newValue) => {
-  const parsed = parseModelValue(newValue);
-  calendarValue.value = parsed.date;
-  timeValue.value = parsed.time;
-}, { immediate: false });
-
-// Display text for the button
-const displayText = computed(() => {
-  if (calendarValue.value) {
-    const date = buildDateTime();
-    if (date) {
-      return `${dateFormatter.format(date)} ${timeFormatter.format(date)}`;
-    }
-    return dateFormatter.format(calendarValue.value.toDate(getLocalTimeZone()));
-  }
-  return props.placeholder || $t('Pick a date and time');
-});
-
-// Handle closing popover (for blur event)
-const onClose = () => {
-  emit('blur');
-};
+  const date = new Date(current);
+  date.setHours(value.hour, value.minute, 0, 0);
+  emitValue(date);
+}
 </script>

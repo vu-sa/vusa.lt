@@ -1,7 +1,7 @@
 <template>
   <CalendarCell
     data-slot="calendar-cell"
-    :class="cn('relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([data-selected])]:rounded-md [&:has([data-selected])]:bg-zinc-100 dark:[&:has([data-selected])]:bg-zinc-800', props.class)"
+    :class="cn('relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([data-selected])]:bg-secondary', props.class)"
     v-bind="forwardedProps"
   >
     <slot />

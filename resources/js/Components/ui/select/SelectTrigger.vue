@@ -11,7 +11,7 @@
       'aria-invalid:ring-destructive/20 aria-invalid:border-destructive',
       'dark:bg-input/30',
       'flex w-fit items-center justify-between gap-2',
-      'rounded-md bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs',
+      'bg-transparent px-3 py-2 text-sm whitespace-nowrap',
       'transition-[color,box-shadow] outline-none focus-visible:ring-[3px]',
       'disabled:cursor-not-allowed disabled:opacity-50',
       'data-[size=default]:h-9',

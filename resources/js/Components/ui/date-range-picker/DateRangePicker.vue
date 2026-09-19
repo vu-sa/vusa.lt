@@ -1,5 +1,9 @@
 <template>
-  <Popover @close="onClose">
+  <div v-if="isCoarsePointer" :class="cn('grid grid-cols-2 gap-2', props.class)">
+    <DatePicker :model-value="internalValue?.start" :min-date :max-date :disabled @update:model-value="updateStart" @blur="emit('blur')" />
+    <DatePicker :model-value="internalValue?.end" :min-date="internalValue?.start ?? minDate" :max-date :disabled @update:model-value="updateEnd" @blur="emit('blur')" />
+  </div>
+  <Popover v-else @close="onClose">
     <PopoverTrigger as-child>
       <Button
         variant="outline"
@@ -34,7 +38,7 @@ import {
   CalendarDateTime,
 } from '@internationalized/date';
 import { Calendar as CalendarIcon } from 'lucide-vue-next';
-import { ref, computed, watch, useAttrs } from 'vue';
+import { computed, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { DateRange } from 'reka-ui';
 
@@ -42,6 +46,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover
 import { RangeCalendar } from '@/Components/ui/range-calendar';
 import { Button } from '@/Components/ui/button';
 import { cn } from '@/Utils/Shadcn/utils';
+import DatePicker from '@/Components/ui/date-picker/DatePicker.vue';
+import { useCoarsePointer } from '@/Composables/useCoarsePointer';
 
 // Define component props
 const props = defineProps<{
@@ -52,6 +58,7 @@ const props = defineProps<{
   disabled?: boolean;
   numberOfMonths?: number;
   includeTime?: boolean;
+  class?: HTMLAttributes['class'];
 }>();
 
 // Define component events
@@ -61,8 +68,7 @@ const emit = defineEmits<{
   (e: 'blur'): void;
 }>();
 
-// Get any additional attributes for form field integration
-const attrs = useAttrs();
+const isCoarsePointer = useCoarsePointer();
 
 // Format dates based on current locale
 const formatter = new DateFormatter(document.documentElement.lang || 'lt', {
@@ -101,4 +107,44 @@ const displayText = computed(() => {
 const onClose = () => {
   emit('blur');
 };
+
+function updateStart(value: Date | undefined): void {
+  updateRange('start', value);
+}
+
+function updateEnd(value: Date | undefined): void {
+  updateRange('end', value);
+}
+
+function updateRange(part: 'start' | 'end', value: Date | undefined): void {
+  if (!value) {
+    return;
+  }
+
+  const current = internalValue.value;
+  const previous = current?.[part];
+  const next = toDateValue(value, previous);
+  const range: DateRange = {
+    start: part === 'start' ? next : current?.start ?? next,
+    end: part === 'end' ? next : current?.end ?? next,
+  };
+
+  if (part === 'start' && !current?.end) {
+    range.end = next;
+  }
+
+  internalValue.value = range;
+}
+
+function toDateValue(value: Date, previous?: DateValue): DateValue {
+  const year = value.getUTCFullYear();
+  const month = value.getUTCMonth() + 1;
+  const day = value.getUTCDate();
+
+  if (previous instanceof CalendarDateTime) {
+    return new CalendarDateTime(year, month, day, previous.hour, previous.minute, previous.second);
+  }
+
+  return new CalendarDate(year, month, day);
+}
 </script>

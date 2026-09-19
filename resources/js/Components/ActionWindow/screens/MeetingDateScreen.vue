@@ -4,7 +4,7 @@
     :subtitle="$t('action_window.meeting.date.subtitle')"
   >
     <div class="flex justify-center">
-      <Calendar v-model="picked" class="rounded-2xl border border-border/70 p-2" />
+      <Calendar v-model="picked" class="border border-border/70 p-2" />
     </div>
 
     <template #footer>

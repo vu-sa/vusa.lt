@@ -164,13 +164,13 @@ Brief:
 - [x] Font follows the surface (D10) — PR 2.1
 - [x] Touch-target utility on `pointer-coarse:` — `u-touch` in `admin/surface.css` (PR 2.1), unused
       until PR 4.1 becomes its first consumer
-- [ ] Primitive audit for hardcoded `bg-white`/`zinc-*` the public work did not need (input, select,
-      table, tabs, sheet, dialog, calendar, command)
+- [x] Primitive audit for hardcoded `bg-white`/`zinc-*` the public work did not need (input, select,
+      table, tabs, sheet, dialog, calendar, command) (PR 2.8, 2026-09-19)
 - [x] `EmptyState` (U11), content-shaped skeletons, navigation progress bar (O16) — PR 2.5 (2026-09-19)
-- [x] Date formatter (U9) — PR 2.6 (2026-09-19); the picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs) (U18, PR 2.7)
+- [x] Date formatter (U9) — PR 2.6 (2026-09-19); picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs) (U18, PR 2.7, 2026-09-19)
 - [x] Storybook: admin surface, status-role and category swatches; a11y `error` on new admin patterns
       (U17) — `Patterns/AdminSurface.stories.ts`, `Patterns/ColourSystem.stories.ts` (PR 2.1 + 2.2)
-- [ ] Lint fence scaffolding: a `MIGRATED_ADMIN_PATHS` glob list, empty at first
+- [x] Lint fence scaffolding: a `MIGRATED_ADMIN_PATHS` glob list, empty at first (PR 2.9, 2026-09-19)
 
 ### PR 2.1 + 2.2 Notes (2026-09-18)
 
@@ -270,6 +270,24 @@ Brief:
   `surface: 'admin'` with axe a11y set to error (`test:storybook`); 100% passing across all 17 story
   test files (90 tests) and 394 Vitest test files (3,004 tests). Clean ESLint check across all
   modified/new files.
+
+### PR 2.7 + 2.8 + 2.9 Notes (2026-09-19)
+
+- **Pickers (U18):** the existing `DatePicker`, `TimePicker`, `DateTimePicker`, and occupancy
+  `DateRangePicker` exports remain the single API for their data kinds. Fine pointers now type ISO
+  dates and `HH:mm` values with calendar/time assistance; coarse pointers use native date/time
+  controls. `DateTimePicker` is two fields rather than a combined popover, while preserving its
+  `Date | null` caller contract. The date picker keeps its noon-UTC conversion to prevent date
+  shifts in JSON payloads.
+- **Primitive audit:** input, select, table, tabs, sheet, dialog, calendar/range-calendar and
+  command now use semantic surface tokens and contain no raw hue, rounded or shadow utilities.
+  The broader page-level `rounded-full` inventory remains a per-page migration concern.
+- **Lint fence:** `eslint.config.mjs` exports an empty `MIGRATED_ADMIN_PATHS` list. Paths added by a
+  future pilot receive an error for literal raw hues, rounded utilities (except `rounded-none`) and
+  shadows (except `shadow-none`); legacy paths remain unaffected until enrolled.
+- **Validation:** picker component tests, frontend build and all Storybook tests passed. The broad
+  component suite still has pre-existing failures in `TopProgressBar.component.test.ts` and
+  `StudySetForm.component.test.ts`; browser-agent setup also lacks the in-memory `users` table.
 
 ## Phase 3 — Navigation catalog
 

@@ -1,7 +1,7 @@
 <template>
   <caption
     data-slot="table-caption"
-    :class="cn('text-zinc-500 mt-4 text-sm dark:text-zinc-400', props.class)"
+    :class="cn('text-muted-foreground mt-4 text-sm', props.class)"
   >
     <slot />
   </caption>

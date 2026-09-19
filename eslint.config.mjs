@@ -6,6 +6,10 @@ import importPlugin from 'eslint-plugin-import-x';
 import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
+// Paths join this fence only after their redesign migration lands. Keeping the initial list empty
+// lets foundation work land without turning legacy debt into an unreviewable lint failure.
+export const MIGRATED_ADMIN_PATHS = [];
+
 // Shared import restriction fragments — reused in per-surface blocks so the
 // global lodash ban is not silently dropped when a later config overrides this rule.
 const lodashImportPaths = [
@@ -19,6 +23,51 @@ const removedIconPatterns = [
   { group: ['~icons/mdi/*'], message: 'MDI was removed. Use lucide-vue-next for admin icons or ~icons/simple-icons/* for brand glyphs.' },
   { group: ['@/Types/Icons/*'], message: 'Legacy default-export barrel was deleted. Use direct imports from lucide-vue-next or @/Components/icons.' },
 ];
+
+const rawHuePattern = /^(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|decoration|caret|accent)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-[\w.]+)?(?:\/[\d.]+)?$/; // eslint-disable-line max-len
+
+function legacyUtility(value) {
+  return value.split(/\s+/).map(token => token.replace(/^!/, '').split(':').at(-1)).find(token =>
+    rawHuePattern.test(token)
+    || /^rounded(?:-(?!none$)[\w-]+)?$/.test(token)
+    || /^(?:shadow|drop-shadow)(?:-(?!none$)[\w-]+)?$/.test(token),
+  );
+}
+
+const adminRedesignPlugin = {
+  rules: {
+    'no-legacy-utility': {
+      meta: {
+        type: 'problem',
+        schema: [],
+        messages: {
+          legacy: '"{{utility}}" is legacy admin styling. Use semantic tokens with square, hairline surfaces instead.',
+        },
+      },
+      create(context) {
+        function inspect(value, node) {
+          const utility = legacyUtility(value);
+          if (utility) {
+            context.report({ node, messageId: 'legacy', data: { utility } });
+          }
+        }
+
+        return {
+          Literal(node) {
+            if (typeof node.value === 'string') {
+              inspect(node.value, node);
+            }
+          },
+          TemplateLiteral(node) {
+            if (node.expressions.length === 0) {
+              inspect(node.quasis[0]?.value.cooked ?? '', node);
+            }
+          },
+        };
+      },
+    },
+  },
+};
 
 // ESLint server doesn't support 'configs' yet...
 export default tseslint.config(
@@ -195,6 +244,14 @@ export default tseslint.config(
       'vuejs-accessibility/form-control-has-label': 'off',
     },
   },
+
+  ...(MIGRATED_ADMIN_PATHS.length > 0
+    ? [{
+        files: MIGRATED_ADMIN_PATHS,
+        plugins: { 'admin-redesign': adminRedesignPlugin },
+        rules: { 'admin-redesign/no-legacy-utility': 'error' },
+      }]
+    : []),
 
   // Icon surface conventions (warn = migrate as you touch, not a hard block)
   // Admin surfaces must use Lucide; Fluent is for Public only.
