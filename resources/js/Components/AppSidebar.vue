@@ -200,6 +200,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Legacy admin shell sidebar. Slated for removal in Phase 8 (PR 8.1)
+ * when the new top bar / mobile bottom bar navigation becomes default.
+ */
 import {
   BookOpen,
   GraduationCap,

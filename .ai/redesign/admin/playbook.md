@@ -17,8 +17,9 @@
  7. States    → empty (teaches), loading (skeleton shaped like the content), error, no permission
  8. Check     → 390 · 820 · 1180 · 1440, light + dark, touch (no hover-only), keyboard only
  9. Tests     → behaviour contracts that changed (visibility gates, redirects, deferred props)
-10. Retire    → tours/spotlights pointing at old markup; update the docs/ page
-11. Tick      → the phase checklist; surprises into Notes
+10. Deprecate → mark old code, shims, or wrappers kept for backward compatibility as @deprecated
+11. Retire    → tours/spotlights pointing at old markup; update the docs/ page
+12. Tick      → the phase checklist; surprises into Notes
 ```
 
 ### Decision trees
@@ -46,6 +47,11 @@ below `md`). Worth a shareable URL or longer than one screen → page.
 
 **Does it need a spotlight?** Only if a returning user would look for it in its old place. At most
 one visible per page; bump `-v<n>` when it changes again.
+
+**What about old code kept before full migration?** Any legacy components, compatibility shims,
+temporary wrappers, old routes or composables preserved for backward compatibility must be tagged
+with `@deprecated` (JSDoc, PHPDoc, or comment) stating what replaces it and which phase/PR will
+remove it (e.g. `@deprecated Superseded by X in PR Y; slated for removal in Phase 8`).
 
 ---
 

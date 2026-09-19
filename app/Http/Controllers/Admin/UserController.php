@@ -277,7 +277,6 @@ class UserController extends AdminController
     }
 
     /**
-    /**
      * Merge two user accounts.
      */
     public function mergeUsers(MergeUsersRequest $request)

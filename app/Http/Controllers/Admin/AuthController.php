@@ -112,7 +112,7 @@ class AuthController extends Controller
         $request->session()->forget('microsoft_logout_hint');
 
         if ($microsoftProvider instanceof MicrosoftProvider) {
-            $logoutHint = $microsoftProvider->getClaims()?->login_hint ?? null;
+            $logoutHint = $microsoftProvider->getClaims()->login_hint ?? null;
 
             if (is_string($logoutHint) && $logoutHint !== '') {
                 $request->session()->put('microsoft_logout_hint', $logoutHint);

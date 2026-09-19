@@ -95,6 +95,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Legacy sidebar START FM player. Player moves into docked START FM in Phase 4 (PR 4.4 / O15);
+ * component slated for removal in Phase 8 (PR 8.1).
+ */
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, useTemplateRef, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { Radio, Play, Pause, Square, Volume1, Volume2, Loader2, GripVertical } from 'lucide-vue-next';

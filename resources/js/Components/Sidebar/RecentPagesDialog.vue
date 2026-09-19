@@ -47,6 +47,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Legacy recent pages dialog. Slated for removal in Phase 8 (PR 8.1).
+ */
 import { computed, type Component } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';

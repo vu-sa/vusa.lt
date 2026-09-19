@@ -32,9 +32,9 @@ One PR = one row. Rules:
 | **2.7** | Picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs): native on coarse pointers, one per data kind | 2.1 | ✅ |
 | **2.8** | Primitive audit: input, select, table, tabs, sheet, dialog, calendar, command tokenised | 2.1 | ✅ |
 | **2.9** | Lint fence scaffolding: `MIGRATED_ADMIN_PATHS` (empty), raw-hue and `rounded`/`shadow` rules | — | ✅ |
-| **3.1** | PHP navigation catalog + cached Inertia prop + per-persona tests + route-coverage guard | — |
-| **3.2** | Old shell reads the catalog (sidebar, Administravimas, palette, quick actions, ActionWindow) | 3.1 |
-| **3.3** | Merge tools become record/bulk actions (O10) | 3.1 |
+| **3.1** | PHP navigation catalog + cached Inertia prop + per-persona tests + route-coverage guard | — | ✅ |
+| **3.2** | Old shell reads the catalog (sidebar, Administravimas, palette, quick actions, ActionWindow) | 3.1 | ✅ |
+| **3.3** | Merge tools become record/bulk actions (O10) | 3.1 | ✅ |
 | **4.1** | Opt-in flag + shell skeleton: top bar, workspace picker (O25), section tabs | 3.1 |
 | **4.2** | Mobile bottom bar + Meniu panel | 4.1 |
 | **4.3** | Palette: catalog go-to, create, workspace ranking, Neseniai, pin star | 4.1 |
@@ -300,10 +300,38 @@ Brief:
       not 403) — `tests/Feature/System/AdminNavigationCatalogTest.php` (PR 3.1)
 - [x] Guard test: every `/mano` index (or bare landing) route is in the catalog or the exclusion
       list, and every catalog route name is real (PR 3.1)
-- [ ] The **old** shell reads it too (`AppSidebar`, `useQuickActions`, `useActionWindowCatalog`,
+- [x] The **old** shell reads it too (`AppSidebar`, `useQuickActions`, `useActionWindowCatalog`,
       `adminPageCatalog.ts`, palette, mobile bars) — drift ends before the new shell exists.
-      `ShowAdministration` already reads the catalog (PR 3.1); the rest is PR 3.2.
-- [ ] Merge tools become actions (O10)
+      `ShowAdministration` already reads the catalog (PR 3.1); the rest is PR 3.2 (2026-09-19)
+- [x] Merge tools become actions (O10) — PR 3.3 (2026-09-19)
+
+### PR 3.2 + 3.3 notes (2026-09-19)
+
+- **Old shell consumers migrated onto the catalog (PR 3.2):**
+  - `AppSidebar`, `useCommandActions`, `useQuickActions`, and `useActionWindowCatalog` now all read
+    `adminNavigation` via `useAdminNavigation` rather than hand-evaluating `auth.can` maps.
+  - `auth.registrationForms` was retired from `HandleInertiaRequests` — intake forms now arrive
+    directly through `AdminNavigationCatalog::registrationSections()`.
+  - `useCommandActions` shrank from ~340 lines to 85 lines, dynamically populating navigation and
+    create items from `adminNavigation.workspaces`.
+  - Old shell components (`AppSidebar.vue`, `NavMain.vue`, `NavSecondary.vue`, `Sidebar/*`) and
+    legacy `adminPageCatalog.ts` tagged with `@deprecated` ahead of removal in Phase 8.
+- **Merge tools converted to bulk/record actions (PR 3.3, O10):**
+  - Deleted obsolete full merge pages (`MergeUser.vue`, `MergeDuty.vue`, `MergeStudyPrograms.vue`,
+    `MergeTags.vue`) and legacy GET routes (`tags.merge`, `users.merge`, etc. now redirect to index with an info flash).
+  - Introduced `CollectionAction` onto catalog `Section`, gating collection-level actions via policies.
+  - Built reusable `MergeRecordsDialog.vue` supporting both selected rows and search candidates.
+  - Integrated merge action into index tables (`IndexTag`, `IndexDuty`, `IndexStudyProgram`, `IndexUser`)
+    with selection mode and row-action triggers.
+  - Created `MergeCandidateApiController` for debounced candidate searches across mergeable models.
+- **Review and bug fixes:**
+  - Updated `AdminNavigationCatalogTest` to assert the added `'collectionActions' => []` on sections.
+  - Updated `FormAccessTest` to assert registration forms in `adminNavigation` sections rather than
+    the retired `auth.registrationForms` prop.
+  - Updated `ActionWindow.component.test.ts` to mock `adminNavigation` actions.
+  - Fixed PHPStan type covariance and exhaustive match checks in `MergeCandidateApiController.php`.
+  - Fixed duplicate docblock in `UserController.php` and unnecessary nullsafe in `AuthController.php`.
+  - Tagged legacy compatibility code across phases 0–3 with `@deprecated`.
 
 ### PR 3.1 notes (2026-09-19)
 

@@ -772,6 +772,9 @@ declare global {
       user_exists: boolean
     }
 
+    /**
+     * @deprecated Renamed to InstitutionSecretary in PR 0.5 (O22). Use InstitutionSecretary instead.
+     */
     export type InstitutionAdministrator = InstitutionSecretary;
 
     export interface InstitutionCheckIn {

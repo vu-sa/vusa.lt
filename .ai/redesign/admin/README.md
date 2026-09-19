@@ -25,6 +25,8 @@ Conventions:
   in [plan.md](plan.md). 🟡 means still open.
 - Every PR has a row in the [PR map](plan.md#pr-map), with its model tier in
   [process.md](process.md#6-which-model-and-in-what-thinking-mode-per-pr).
+- **Deprecate transitional code:** any old code, component, route, or wrapper kept before full migration
+  must carry an explicit `@deprecated` tag stating what replaces it and when it will be removed.
 - Durable rules graduate out of here into `.ai/rules/` via `record-rule`; this folder is deleted in
   the last phase.
 

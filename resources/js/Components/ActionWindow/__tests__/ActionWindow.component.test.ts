@@ -26,8 +26,63 @@ const ALL_PERMISSIONS = {
   manageSettings: true,
 };
 
+const createActionsForPermissions = (can: Record<string, unknown>) => {
+  const actions: Array<{
+    key: string;
+    label: string;
+    description: string | null;
+    entityType: null;
+    target: { kind: 'route'; routeName: string } | { kind: 'screen'; screen: string };
+  }> = [];
+
+  const create = (can.create ?? {}) as Record<string, boolean | undefined>;
+
+  if (create.meeting) {
+    actions.push(
+      { key: 'new_meeting', label: 'action_window.actions.new_meeting.title', description: null, entityType: null, target: { kind: 'screen', screen: 'meeting.institution' } },
+      { key: 'no_meeting', label: 'action_window.actions.no_meeting.title', description: null, entityType: null, target: { kind: 'screen', screen: 'checkin.institution' } },
+      { key: 'complete_meeting', label: 'action_window.actions.complete_meeting.title', description: null, entityType: null, target: { kind: 'screen', screen: 'meeting.pick' } },
+    );
+  }
+
+  if (create.problem) {
+    actions.push({ key: 'new_problem', label: 'action_window.actions.new_problem.title', description: null, entityType: null, target: { kind: 'route', routeName: 'problems.create' } });
+  }
+
+  if (create.reservation) {
+    actions.push({ key: 'new_reservation', label: 'action_window.actions.new_reservation.title', description: null, entityType: null, target: { kind: 'route', routeName: 'reservations.create' } });
+  }
+
+  if (create.news) {
+    actions.push({ key: 'new_news', label: 'action_window.actions.new_news.title', description: null, entityType: null, target: { kind: 'route', routeName: 'news.create' } });
+  }
+
+  if (create.duty) {
+    actions.push(
+      { key: 'duty_update', label: 'action_window.actions.duty_update.title', description: null, entityType: null, target: { kind: 'route', routeName: 'duties.updateUsersWizard' } },
+      { key: 'duty_periods', label: 'action_window.actions.cadences.title', description: null, entityType: null, target: { kind: 'route', routeName: 'dutiables.timeline' } },
+    );
+  }
+
+  return actions;
+};
+
 const mountWindow = (can: Record<string, unknown> = ALL_PERMISSIONS) => {
-  vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can } }));
+  const actions = createActionsForPermissions(can);
+  vi.mocked(usePage).mockReturnValue(createMockPage({
+    auth: { can },
+    adminNavigation: {
+      workspaces: [
+        {
+          key: 'workspace',
+          label: 'Workspace',
+          description: '',
+          sections: [],
+          createActions: actions,
+        },
+      ],
+    },
+  }));
 
   let window!: ActionWindowContext;
 

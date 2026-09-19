@@ -56,6 +56,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Legacy sidebar customization dialog. Slated for removal in Phase 8 (PR 8.1).
+ */
 import { ref, watch, nextTick, type Component } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';

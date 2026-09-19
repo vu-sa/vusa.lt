@@ -28,6 +28,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Legacy sidebar pinned pages section. Slated for removal in Phase 8 (PR 8.1).
+ */
 import { computed, type Component } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';

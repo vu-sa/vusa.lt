@@ -58,6 +58,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Legacy sidebar navigation component. Slated for removal in Phase 8 (PR 8.1).
+ */
 import { ChevronRight, type LucideIcon } from 'lucide-vue-next';
 import { usePage, Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';

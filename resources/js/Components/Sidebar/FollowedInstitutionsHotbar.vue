@@ -115,6 +115,9 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Legacy sidebar followed institutions hotbar. Slated for removal in Phase 8 (PR 8.1).
+ */
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { computed, onMounted, ref, defineAsyncComponent } from 'vue';

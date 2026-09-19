@@ -67,6 +67,9 @@ what was NOT done, next step.
 - **Stories** for every pattern component, a11y `error`.
 - **Feature tests** for catalog visibility per persona; component tests for behaviour contracts.
 - **Screenshots at four widths** with each PR.
+- **Mark transitional code @deprecated**: any legacy route, shim, wrapper, or composable preserved
+  until a later phase must carry an explicit `@deprecated` tag detailing its replacement and the
+  PR/phase that will delete it.
 - **Small PRs to `dev` behind the opt-in flag** — one pilot page or one long-tail group each,
   listing which playbook steps were done.
 

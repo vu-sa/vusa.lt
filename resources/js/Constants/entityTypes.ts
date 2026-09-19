@@ -136,6 +136,9 @@ export function getEntityTypeDefinition(type: ModelEnum | keyof typeof ModelEnum
   return entityTypeRegistry[type as ModelEnum] ?? null;
 }
 
+/**
+ * @deprecated Legacy icon lookup helper. Prefer getEntityTypeDefinition() or <EntityTypeMark /> (PR 2.4).
+ */
 export function getModelIcon(
   modelKey: keyof typeof ModelEnum,
   variant: 'regular' | 'filled' = 'regular',
@@ -149,12 +152,21 @@ export function getModelIcon(
   return variant === 'filled' ? definition.iconFilled : definition.icon;
 }
 
+/**
+ * @deprecated Legacy mapping. Prefer getEntityTypeDefinition() (PR 2.4).
+ */
 export const modelIconMappingRegular = Object.fromEntries(
   Object.keys(ModelEnum).map(key => [key, entityTypeRegistry[ModelEnum[key as keyof typeof ModelEnum]].icon]),
 ) as Record<keyof typeof ModelEnum, Component>;
 
+/**
+ * @deprecated Legacy mapping. Prefer getEntityTypeDefinition() (PR 2.4).
+ */
 export const modelIconMappingFilled = Object.fromEntries(
   Object.keys(ModelEnum).map(key => [key, entityTypeRegistry[ModelEnum[key as keyof typeof ModelEnum]].iconFilled]),
 ) as Record<keyof typeof ModelEnum, Component>;
 
+/**
+ * @deprecated Legacy mapping. Prefer getEntityTypeDefinition() (PR 2.4).
+ */
 export const modelIconMapping = modelIconMappingRegular;

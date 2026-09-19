@@ -54,10 +54,11 @@ class MergeCandidateApiController extends ApiController
             'duties' => Duty::class,
             'study-programs' => StudyProgram::class,
             'tags' => Tag::class,
+            default => throw new \InvalidArgumentException("Unknown merge candidate type: {$type}"),
         };
     }
 
-    /** @return Builder<Model> */
+    /** @return Builder<Duty>|Builder<StudyProgram>|Builder<Tag>|Builder<User> */
     private function candidateQuery(string $type, string $query): Builder
     {
         return match ($type) {
@@ -69,6 +70,7 @@ class MergeCandidateApiController extends ApiController
             'tags' => Tag::query()->where(fn (Builder $builder) => $builder
                 ->whereLike('name', "%{$query}%", false)
                 ->orWhereLike('alias', "%{$query}%", false))->orderBy('alias'),
+            default => throw new \InvalidArgumentException("Unknown merge candidate type: {$type}"),
         };
     }
 
@@ -76,10 +78,27 @@ class MergeCandidateApiController extends ApiController
     private function candidate(string $type, Model $candidate): array
     {
         return match ($type) {
-            'users' => ['id' => $candidate->getKey(), 'label' => $candidate->name, 'context' => $candidate->email],
-            'duties' => ['id' => $candidate->getKey(), 'label' => $this->localized($candidate->name), 'context' => $candidate->institution?->name],
-            'study-programs' => ['id' => $candidate->getKey(), 'label' => $candidate->name, 'context' => $candidate->tenant?->shortname],
-            'tags' => ['id' => $candidate->getKey(), 'label' => $this->localized($candidate->name), 'context' => $candidate->alias],
+            'users' => [
+                'id' => $candidate->getKey(),
+                'label' => $candidate instanceof User ? $candidate->name : '',
+                'context' => $candidate instanceof User ? $candidate->email : null,
+            ],
+            'duties' => [
+                'id' => $candidate->getKey(),
+                'label' => $candidate instanceof Duty ? $this->localized($candidate->name) : '',
+                'context' => $candidate instanceof Duty ? $candidate->institution?->name : null,
+            ],
+            'study-programs' => [
+                'id' => $candidate->getKey(),
+                'label' => $candidate instanceof StudyProgram ? $candidate->name : '',
+                'context' => $candidate instanceof StudyProgram ? $candidate->tenant->shortname : null,
+            ],
+            'tags' => [
+                'id' => $candidate->getKey(),
+                'label' => $candidate instanceof Tag ? $this->localized($candidate->name) : '',
+                'context' => $candidate instanceof Tag ? $candidate->alias : null,
+            ],
+            default => throw new \InvalidArgumentException("Unknown merge candidate type: {$type}"),
         };
     }
 
