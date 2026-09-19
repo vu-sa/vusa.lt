@@ -289,13 +289,65 @@ Brief:
 
 ## Phase 3 — Navigation catalog
 
-- [ ] PHP catalog: workspaces → sections → create actions, gated by `viewAny` / `create` (O19)
-- [ ] Shared as a cached, permission-invalidated Inertia prop
-- [ ] Feature tests: the four personas see exactly their workspaces and sections
-- [ ] Guard test: every `/mano` index route is in the catalog or the exclusion list
-- [ ] The **old** shell reads it too (`AppSidebar`, `ShowAdministration` → Visi skyriai, palette,
-      quick actions, ActionWindow, mobile bars) — drift ends before the new shell exists
+- [x] PHP catalog: workspaces → sections → create actions, gated by `viewAny` / `create` (O19) —
+      `App\Services\AdminNavigation\{AdminNavigationCatalog,Workspace,Section,CreateAction,Visibility}`
+      (PR 3.1, 2026-09-19)
+- [x] Shared as a cached, permission-invalidated Inertia prop — `adminNavigation`, null outside
+      `/mano`, invalidated by the existing `PermissionMapBuilder::forgetCachedMaps()` call sites
+      (PR 3.1)
+- [x] Feature tests: five personas see exactly their workspaces and sections (`toEqual` on the
+      ordered key lists) plus an access-parity pass (every catalog-visible section actually opens,
+      not 403) — `tests/Feature/System/AdminNavigationCatalogTest.php` (PR 3.1)
+- [x] Guard test: every `/mano` index (or bare landing) route is in the catalog or the exclusion
+      list, and every catalog route name is real (PR 3.1)
+- [ ] The **old** shell reads it too (`AppSidebar`, `useQuickActions`, `useActionWindowCatalog`,
+      `adminPageCatalog.ts`, palette, mobile bars) — drift ends before the new shell exists.
+      `ShowAdministration` already reads the catalog (PR 3.1); the rest is PR 3.2.
 - [ ] Merge tools become actions (O10)
+
+### PR 3.1 notes (2026-09-19)
+
+- **Six drifted sources, not five.** O19 named `AppSidebar`, `ShowAdministration`,
+  `useCommandActions`, `useQuickActions`, `useActionWindowCatalog`. A sixth,
+  `resources/js/Composables/adminPageCatalog.ts` (405 lines, feeds the visit tracker and
+  Neseniai), has the same shape of problem and is now also PR 3.2's job.
+- **Found and fixed in passing:** `useCommandActions.ts` gated every navigation entry on
+  `auth.can.read?.*`, a map the backend has never shared (it shares `auth.can.index`). Every
+  navigation entry gated on it (Posėdžiai, Institucijos, Naudotojai, Pareigybės, Užduotys,
+  Rezervacijos, Kalendorius, Naujienos) has never appeared in ⌘K, for anyone. Fixed to
+  `auth.can.index` with a regression test.
+- **Two real authorization surprises the access-parity test surfaced** (kept as-is — the catalog
+  reflects the actual policy, it does not invent a narrower one):
+  - `MeetingPolicy` has no `viewAny()` override, so a plain "Student Representative" (who only
+    holds `meetings.read.own`) cannot see Posėdžiai, the ViSAK overview, or Darbotvarkės
+    klausimai — despite being able to create and edit their own meetings.
+  - `Išteklių administratorius` (Resource Manager) holds `tasks.read.padalinys` as part of its
+    reservation-adjacent permission set, so it incidentally sees ViSAK's Užduočių suvestinė
+    despite holding none of ViSAK's other permissions.
+  - `ResourcePolicy::viewAny()` and `ReservationPolicy::create()` are both unconditionally `true`
+    ("anyone can view the resource listing" / request a reservation), so even a plain member with
+    no role sees Rezervacijos → Ištekliai and can reach **+ Sukurti** → Nauja rezervacija.
+- **`ShowAdministration` migrated onto the catalog in this PR** (not deferred to 3.2 or 7.5),
+  since leaving it on `auth.can.create.*` while every other consumer still drifted seemed a worse
+  midpoint. It now gates on `viewAny` (was `create`) — a correction per the settled rule, shipped
+  outside the opt-in flag, so it earned a ✨ changelog line. Its markup, search box and gradient
+  tool tiles are unchanged; only the data source moved. The "Įrankiai" section is limited to
+  Organizacija's two create actions (`duty_update`, `duty_periods`) to match the page's previous
+  scope — the other workspaces' create actions (new_meeting, new_reservation, …) already have a
+  home in the sidebar quick actions and ActionWindow, and get their catalog-backed consumer in 3.2.
+  The per-item "jump to search tab" shortcut button is dropped — the catalog carries no
+  `searchTab` metadata, and inventing one would be a seventh source of truth. PR 7.5 (the proper
+  Visi skyriai redesign) or O1's search reduction (5.10) can reintroduce it once the catalog itself
+  carries that signal.
+- **Registracijos is the one dynamic section pair.** The member/student-rep registration forms'
+  ids come from `FormSettings`, and visibility is a per-record `FormPolicy::view()` check, not a
+  class-level `viewAny` — `AdminNavigationCatalog::registrationSections()` mirrors
+  `HandleInertiaRequests::getViewableRegistrationForms()`; PR 3.2 retires the latter once
+  `AppSidebar` reads the catalog instead of `auth.registrationForms`.
+- **Not required by the coverage guard, on purpose:** `search.agendaItems` / `search.meetings` /
+  `search.institutions` / `search.resources` are legacy redirects to `search.index` with a `tab`
+  param (`SearchController`'s own docblocks say so) — the catalog's Darbotvarkės klausimai section
+  links straight to `search.index?tab=agenda-items` rather than through the redirect.
 
 ## Phase 4 — The shell (behind the opt-in)
 

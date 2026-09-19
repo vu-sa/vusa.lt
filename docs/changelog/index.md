@@ -5,6 +5,10 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.4 — Tikslesnis administravimo sąrašas (2026-09-19) {#v2-4}
+
+- ✨ **Tikslesnis administravimo puslapio sąrašas** — „Administravimo“ puslapyje dabar rodomi visi skyriai, kuriuos galima peržiūrėti, o ne tik tie, kuriuos galima kurti; pavyzdžiui, institucijas ar naudotojus matantis, bet negalintis jų kurti naudotojas dabar mato ir atitinkamą nuorodą
+
 ## v2.3 — Patogesnis prisijungimas ir administravimas (2026-09-18) {#v2-3}
 
 - ✨ **Lankstesnis atsijungimas** — naršyklės sesija nebesibaigia vien užvėrus naršyklę, o paskyros meniu galima pasirinkti, ar atsijungti tik iš „Mano VU SA“, ar ir iš „Microsoft“ paskyros

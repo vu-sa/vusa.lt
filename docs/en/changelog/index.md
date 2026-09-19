@@ -5,6 +5,10 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.4 — More accurate administration list (2026-09-19) {#v2-4}
+
+- ✨ **More accurate administration page list** — the Administration page now lists every section you may view, not only those you may create; for example, a user who can view but not create institutions or members now also sees that link
+
 ## v2.3 — Easier sign-in and administration (2026-09-18) {#v2-3}
 
 - ✨ **More flexible logout** — the browser session no longer ends merely because the browser was closed, and the account menu now lets you log out of either Mano VU SR alone or the Microsoft account as well

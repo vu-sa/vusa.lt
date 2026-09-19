@@ -9,6 +9,7 @@ use App\Models\Tag;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\FormSettings;
@@ -134,6 +135,12 @@ class HandleInertiaRequests extends Middleware
                     ->pluck('endpoint')
                     ->toArray() ?? [],
             ],
+            // The navigation catalog (O19): one server-side definition of every admin
+            // destination, gated and cached per user. Null outside `/mano` so public pages pay
+            // one string comparison instead of resolving permissions nobody asked for.
+            'adminNavigation' => fn () => $user && $request->is('mano', 'mano/*')
+                ? app(AdminNavigationCatalog::class)->for($user)
+                : null,
         ]);
     }
 

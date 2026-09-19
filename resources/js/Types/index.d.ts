@@ -74,6 +74,33 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   map: {
     cartoApiKey: string | null;
   };
+  /**
+   * The navigation catalog (O19): every workspace, section and create action this user may
+   * see, gated and cached server-side by `App\Services\AdminNavigation\AdminNavigationCatalog`.
+   * Null outside `/mano`. `label`/`description` are i18n keys — resolve with `$t()`, not printed
+   * directly.
+   */
+  adminNavigation?: {
+    workspaces: Array<{
+      key: string;
+      label: string;
+      description: string;
+      sections: Array<{
+        key: string;
+        label: string;
+        routeName: string;
+        routeParams: Record<string, unknown>;
+        entityType: ModelEnum | null;
+      }>;
+      createActions: Array<{
+        key: string;
+        label: string;
+        description: string | null;
+        entityType: ModelEnum | null;
+        target: { kind: 'route'; routeName: string } | { kind: 'screen'; screen: string };
+      }>;
+    }>;
+  } | null;
   otherLangURL?: string | null;
   /** Destination used by the tenant selector: the selected tenant's home or this route. */
   tenantSwitchTarget?: 'home' | 'same-page';

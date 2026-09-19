@@ -17,6 +17,18 @@ function createWrapper() {
   });
 }
 
+/** Shapes a workspace exactly like `AdminNavigationCatalog::for()`'s resolved payload. */
+function workspace(overrides: Record<string, unknown>) {
+  return {
+    key: 'organizacija',
+    label: 'shell.workspaces.organizacija.title',
+    description: 'shell.workspaces.organizacija.description',
+    sections: [],
+    createActions: [],
+    ...overrides,
+  };
+}
+
 beforeEach(() => {
   vi.mocked(usePage).mockReturnValue(createMockPage());
 });
@@ -26,36 +38,26 @@ afterEach(() => {
   vi.mocked(usePage).mockReset();
 });
 
-describe('ShowAdministration quick actions', () => {
-  it('does not render the "Naujausi įrankiai" section or "Nauja" badge', () => {
+describe('ShowAdministration', () => {
+  it('renders nothing when adminNavigation is absent', () => {
     wrapper = createWrapper();
 
-    expect(wrapper.text()).not.toContain('Naujausi įrankiai');
-    expect(wrapper.text()).not.toContain('Nauja');
-    expect(wrapper.find('a[href="/mocked-route/problems.index"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Nerasta rezultatų');
   });
 
-  it('still lists problems under Atstovavimas for users with the problem permission', () => {
-    vi.mocked(usePage).mockReturnValue(
-      createMockPage({ auth: { can: { create: { problem: true } } } }),
-    );
-
-    wrapper = createWrapper();
-
-    const problemLink = wrapper.find('a[href="/mocked-route/problems.index"]');
-    expect(problemLink.exists()).toBe(true);
-    expect(wrapper.text()).toContain('Atstovavimas');
-
-    // The featured quick-action card must not come back with the permission.
-    expect(wrapper.text()).not.toContain('Naujausi įrankiai');
-  });
-});
-
-describe('ShowAdministration tools section', () => {
-  it('renders the duty wizard and duty-periods tools as the first section, with gradient icon tiles', () => {
-    vi.mocked(usePage).mockReturnValue(
-      createMockPage({ auth: { can: { create: { duty: true } } } }),
-    );
+  it('renders the Organizacija tools (duty_update, duty_periods) as gradient tiles', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      adminNavigation: {
+        workspaces: [
+          workspace({
+            createActions: [
+              { key: 'duty_update', label: 'shell.actions.duty_update.title', description: null, entityType: 'duty', target: { kind: 'route', routeName: 'duties.updateUsersWizard' } },
+              { key: 'duty_periods', label: 'shell.actions.duty_periods.title', description: null, entityType: 'dutiable', target: { kind: 'route', routeName: 'dutiables.timeline' } },
+            ],
+          }),
+        ],
+      },
+    }));
 
     wrapper = createWrapper();
 
@@ -63,12 +65,79 @@ describe('ShowAdministration tools section', () => {
     const periodsLink = wrapper.find('a[href="/mocked-route/dutiables.timeline"]');
     expect(wizardLink.exists()).toBe(true);
     expect(periodsLink.exists()).toBe(true);
-
-    // Tools render their icon in a gradient tile; other cards don't.
     expect(wizardLink.find('.bg-gradient-to-br').exists()).toBe(true);
+    expect(wrapper.text()).toContain('shell.actions.duty_update.title');
+  });
 
-    // "Pareigybių laikotarpiai" moved out of Žmonės into the tools section, not duplicated.
-    expect(wrapper.findAll('a[href="/mocked-route/dutiables.timeline"]')).toHaveLength(1);
+  it('renders one section per visible workspace, skipping Pradžia', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      adminNavigation: {
+        workspaces: [
+          workspace({
+            key: 'pradzia',
+            label: 'shell.workspaces.pradzia.title',
+            sections: [{ key: 'apzvalga', label: 'shell.sections.apzvalga', routeName: 'dashboard', routeParams: {}, entityType: null }],
+          }),
+          workspace({
+            key: 'svetaine',
+            label: 'shell.workspaces.svetaine.title',
+            sections: [{ key: 'naujienos', label: 'shell.sections.naujienos', routeName: 'news.index', routeParams: {}, entityType: 'news' }],
+          }),
+        ],
+      },
+    }));
+
+    wrapper = createWrapper();
+
+    expect(wrapper.text()).not.toContain('shell.workspaces.pradzia.title');
+    expect(wrapper.find('a[href="/mocked-route/dashboard"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('shell.workspaces.svetaine.title');
+    expect(wrapper.find('a[href="/mocked-route/news.index"]').exists()).toBe(true);
+  });
+
+  it('filters sections and tools by the search query', async () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      adminNavigation: {
+        workspaces: [
+          workspace({
+            key: 'svetaine',
+            label: 'shell.workspaces.svetaine.title',
+            sections: [
+              { key: 'naujienos', label: 'shell.sections.naujienos', routeName: 'news.index', routeParams: {}, entityType: 'news' },
+              { key: 'puslapiai', label: 'shell.sections.puslapiai', routeName: 'pages.index', routeParams: {}, entityType: 'page' },
+            ],
+          }),
+        ],
+      },
+    }));
+
+    wrapper = createWrapper();
+
+    // $t() is mocked to identity, so search against the raw label key.
+    await wrapper.find('input').setValue('naujienos');
+
+    expect(wrapper.find('a[href="/mocked-route/news.index"]').exists()).toBe(true);
+    expect(wrapper.find('a[href="/mocked-route/pages.index"]').exists()).toBe(false);
+  });
+
+  it('shows the empty state when the query matches nothing', async () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      adminNavigation: {
+        workspaces: [
+          workspace({
+            key: 'svetaine',
+            label: 'shell.workspaces.svetaine.title',
+            sections: [{ key: 'naujienos', label: 'shell.sections.naujienos', routeName: 'news.index', routeParams: {}, entityType: 'news' }],
+          }),
+        ],
+      },
+    }));
+
+    wrapper = createWrapper();
+
+    await wrapper.find('input').setValue('zzz-no-match');
+
+    expect(wrapper.text()).toContain('Nerasta rezultatų');
   });
 
   it('does not render the category filter dropdown or item-count badges', () => {

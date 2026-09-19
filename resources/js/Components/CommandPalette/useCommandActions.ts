@@ -51,7 +51,10 @@ interface AuthCan {
     duty?: boolean;
     user?: boolean;
   };
-  read?: {
+  // The backend shares `auth.can.index` (viewAny), never `auth.can.read` — this map was
+  // reading a key the server never sends, so every navigation entry gated on it silently
+  // never appeared in the palette.
+  index?: {
     meeting?: boolean;
     user?: boolean;
     institution?: boolean;
@@ -101,7 +104,7 @@ export function useCommandActions() {
     });
 
     // Meetings
-    if (can.value.read?.meeting) {
+    if (can.value.index?.meeting) {
       result.push({
         id: 'nav-meetings',
         label: $t('Posėdžiai'),
@@ -123,7 +126,7 @@ export function useCommandActions() {
     });
 
     // Institutions
-    if (can.value.read?.institution) {
+    if (can.value.index?.institution) {
       result.push({
         id: 'nav-institutions',
         label: $t('Institucijos'),
@@ -135,7 +138,7 @@ export function useCommandActions() {
     }
 
     // Users
-    if (can.value.read?.user) {
+    if (can.value.index?.user) {
       result.push({
         id: 'nav-users',
         label: $t('Naudotojai'),
@@ -147,7 +150,7 @@ export function useCommandActions() {
     }
 
     // Duties
-    if (can.value.read?.duty) {
+    if (can.value.index?.duty) {
       result.push({
         id: 'nav-duties',
         label: $t('Pareigybės'),
@@ -159,7 +162,7 @@ export function useCommandActions() {
     }
 
     // Tasks
-    if (can.value.read?.task) {
+    if (can.value.index?.task) {
       result.push({
         id: 'nav-tasks',
         label: $t('Užduotys'),
@@ -171,7 +174,7 @@ export function useCommandActions() {
     }
 
     // Reservations
-    if (can.value.read?.reservation) {
+    if (can.value.index?.reservation) {
       result.push({
         id: 'nav-reservations',
         label: $t('Rezervacijos'),
@@ -183,7 +186,7 @@ export function useCommandActions() {
     }
 
     // Calendar
-    if (can.value.read?.calendar) {
+    if (can.value.index?.calendar) {
       result.push({
         id: 'nav-calendar',
         label: $t('Kalendorius'),
@@ -195,7 +198,7 @@ export function useCommandActions() {
     }
 
     // News
-    if (can.value.read?.news) {
+    if (can.value.index?.news) {
       result.push({
         id: 'nav-news',
         label: $t('Naujienos'),
