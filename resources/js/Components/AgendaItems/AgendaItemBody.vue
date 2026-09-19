@@ -2,7 +2,7 @@
   <!-- The same controls in both modes, merely locked when not editing: swapping in a
        read-only rendering used to shift the whole page as the toggle flipped. -->
   <div class="space-y-8">
-    <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 p-4 sm:p-5 dark:border-zinc-800">
+    <div id="agenda-item-type" class="rounded-xl border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 p-4 sm:p-5 dark:border-zinc-800">
       <div class="flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
         <div class="min-w-0 flex-1 basis-64 space-y-3">
           <span class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -77,6 +77,7 @@
     </div>
 
     <AgendaItemVotes
+      id="agenda-item-votes"
       v-if="form.type === 'voting'"
       :form
       :editing

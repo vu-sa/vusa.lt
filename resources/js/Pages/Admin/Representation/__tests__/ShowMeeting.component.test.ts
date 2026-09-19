@@ -26,6 +26,7 @@ const stubs = {
   AddAgendaItemForm: { name: 'AddAgendaItemForm', template: '<div data-testid="single-agenda-form" />' },
   AgendaItemsForm: { name: 'AgendaItemsForm', template: '<div data-testid="bulk-agenda-form" />' },
   AnnounceMeetingDialog: { template: '<div />' },
+  RecordActivity: { template: '<div data-testid="record-activity" />' },
 };
 
 const baseMeeting = {
@@ -39,7 +40,21 @@ const baseMeeting = {
 
 const createWrapper = (props: Record<string, unknown> = {}) =>
   mount(ShowMeeting, {
-    props: { meeting: baseMeeting, representatives: [], secretaries: [], administrators: [], ...props },
+    props: {
+      meeting: baseMeeting,
+      representatives: [],
+      secretaries: [],
+      administrators: [],
+      abilities: {
+        update: true,
+        delete: true,
+        createAgendaItems: true,
+        reorderAgendaItems: true,
+        attachInstitution: true,
+      },
+      completion: { status: 'complete', missingActions: [] },
+      ...props,
+    },
     global: { stubs },
   });
 
@@ -116,7 +131,8 @@ describe('ShowMeeting.vue', () => {
     const wrapper = createWrapper();
 
     expect(wrapper.find('[data-testid="agenda-list"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="file-manager"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="agenda-list"]').element.closest('section')?.className).toContain('md:block');
+    expect(wrapper.find('[data-testid="file-manager"]').element.closest('section')?.className).toContain('md:hidden');
   });
 
   /**
@@ -162,6 +178,7 @@ describe('ShowMeeting.vue', () => {
   it('labels the edit button and keeps attaching an institution in the menu', () => {
     const wrapper = createWrapper({
       meeting: { ...baseMeeting, institutions: [{ id: 'i1', name: 'VU SA MIF' }] },
+      availableInstitutionsForAttach: [{ id: 'i2', name: 'VU SA CHGF' }],
     });
 
     const menu = wrapper.find('[data-testid="dropdown-menu-content"]');
@@ -177,7 +194,8 @@ describe('ShowMeeting.vue', () => {
     const wrapper = createWrapper();
 
     expect(wrapper.find('[data-testid="file-manager"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="agenda-list"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="file-manager"]').element.closest('section')?.className).toContain('md:block');
+    expect(wrapper.find('[data-testid="agenda-list"]').element.closest('section')?.className).toContain('md:hidden');
   });
 
   describe('tasks tab count', () => {

@@ -5,6 +5,14 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.8 — New home page and meetings list (2026-09-19) {#v2-8}
+
+- ⭐ **Home starts with what needs you** — the top shows what you have to do, linked straight to the screen where you do it; below are quick create actions, upcoming meetings, your coordinator and recently edited records
+- ⭐ **A meetings list with filters and preview** — "Meetings" shows rows, a table or a preview pane; there are quick filters ("My institutions", "Missing votes", "This year"), filters by year, status and unit, and "Show more" and going back keep the list where you left it
+- ✨ **A meeting you just changed shows up at once** — a meeting you created or updated is shown at the top of the list before the search index has caught up
+- 🔧 **Student representatives can see "Meetings"** — representatives who only hold read access to their own meetings could not open the meetings list before, even though they could create and edit meetings
+- 🔧 **Correct completion filter in the trash** — in the deleted meetings list, the completion filter wrongly treated VU SA meetings as incomplete
+
 ## v2.7 — Streamlined welcome tour and device split metrics (2026-09-19) {#v2-7}
 
 - ✨ **Faster navigation and keyboard shortcuts** — recently opened admin pages load instantly, while `?` opens a shortcut guide: `/` focuses list search and ⌘/Ctrl + Enter saves a form

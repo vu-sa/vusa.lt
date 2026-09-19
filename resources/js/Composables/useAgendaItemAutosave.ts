@@ -58,8 +58,6 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'dirty';
 /**
  * Debounced auto-save for the agenda item editor.
  *
- * Auto-save is enabled by default and can be toggled off, in which case the
- * caller is expected to render an explicit save button bound to `submit()`.
  * `flush()` performs an immediate save of any pending changes — call it before
  * navigating away so edits are not lost.
  */
@@ -68,7 +66,6 @@ export function useAgendaItemAutosave(
   agendaItemId: string,
   debounceMs = 1500,
 ) {
-  const autoSaveEnabled = ref(true);
   const lastSavedAt = ref<Date | null>(null);
 
   const submit = (onSaved?: () => void) => {
@@ -109,7 +106,7 @@ export function useAgendaItemAutosave(
   watchDebounced(
     () => form.data(),
     () => {
-      if (!autoSaveEnabled.value || !form.isDirty || form.processing) {
+      if (!form.isDirty || form.processing) {
         return;
       }
       submit();
@@ -136,5 +133,5 @@ export function useAgendaItemAutosave(
     return 'idle';
   });
 
-  return { autoSaveEnabled, lastSavedAt, saveStatus, submit, flush, saveThen };
+  return { lastSavedAt, saveStatus, submit, flush, saveThen };
 }

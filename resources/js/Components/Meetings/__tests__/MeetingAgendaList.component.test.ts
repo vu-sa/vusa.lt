@@ -18,7 +18,7 @@ const baseStubs = {
   },
 };
 
-const makeItem = (overrides: Record<string, any> = {}) => ({
+const makeItem = (overrides: Record<string, unknown> = {}) => ({
   id: 'item-1',
   meeting_id: 'm1',
   title: 'Test agenda item',
@@ -26,13 +26,14 @@ const makeItem = (overrides: Record<string, any> = {}) => ({
   brought_by_students: false,
   type: 'voting',
   votes: [],
+  can: { update: true, delete: true },
   ...overrides,
 });
 
 describe('MeetingAgendaList', () => {
   it('renders read-only rows linking to the per-item edit page', () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem()] as any, meetingId: 'm1' },
+      props: { agendaItems: [makeItem()] as App.Entities.AgendaItem[], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
 
@@ -44,7 +45,7 @@ describe('MeetingAgendaList', () => {
 
   it('does not show drag handles or remove buttons in read-only mode', () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem()] as any, meetingId: 'm1', editing: false },
+      props: { agendaItems: [makeItem()] as App.Entities.AgendaItem[], meetingId: 'm1', editing: false },
       global: { stubs: baseStubs },
     });
 
@@ -52,20 +53,26 @@ describe('MeetingAgendaList', () => {
     expect(wrapper.find('[aria-label="Šalinti"]').exists()).toBe(false);
   });
 
-  it('reveals drag handles and a remove button in edit mode', () => {
+  it('keeps deletion available in edit mode and reveals ordering controls only in order mode', async () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem()] as any, meetingId: 'm1', editing: true },
+      props: { agendaItems: [makeItem()] as App.Entities.AgendaItem[], meetingId: 'm1', editing: true, canReorder: true },
       global: { stubs: baseStubs },
     });
 
-    expect(wrapper.find('.drag-handle').exists()).toBe(true);
     expect(wrapper.find('[aria-label="Šalinti"]').exists()).toBe(true);
+    expect(wrapper.find('.drag-handle').exists()).toBe(false);
+
+    await wrapper.findAll('button').find(button => button.text().includes('Keisti tvarką'))!.trigger('click');
+
+    expect(wrapper.find('.drag-handle').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Išsaugoti tvarką');
+    expect(wrapper.text()).toContain('Atšaukti');
   });
 
   it('emits delete with the item when the remove button is clicked', async () => {
     const item = makeItem();
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [item] as any, meetingId: 'm1', editing: true },
+      props: { agendaItems: [item] as App.Entities.AgendaItem[], meetingId: 'm1', editing: true, canAdd: true },
       global: { stubs: baseStubs },
     });
 
@@ -80,7 +87,7 @@ describe('MeetingAgendaList', () => {
    */
   it('offers both the single and the bulk editor from the empty state', async () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [] as any, meetingId: 'm1', editing: true },
+      props: { agendaItems: [] as App.Entities.AgendaItem[], meetingId: 'm1', editing: true, canAdd: true },
       global: { stubs: baseStubs },
     });
 
@@ -96,7 +103,7 @@ describe('MeetingAgendaList', () => {
 
   it('hides both add affordances on an empty agenda in read-only mode', () => {
     const wrapper = mount(MeetingAgendaList, {
-      props: { agendaItems: [] as any, meetingId: 'm1', editing: false },
+      props: { agendaItems: [] as App.Entities.AgendaItem[], meetingId: 'm1', editing: false },
       global: { stubs: baseStubs },
     });
 
@@ -107,7 +114,7 @@ describe('MeetingAgendaList', () => {
   it('shows the vote count label only when there is more than one vote', () => {
     const single = mount(MeetingAgendaList, {
       props: {
-        agendaItems: [makeItem({ votes: [{ id: 'v1', is_main: true, decision: 'positive' }] })] as any,
+        agendaItems: [makeItem({ votes: [{ id: 'v1', is_main: true, decision: 'positive' }] })] as App.Entities.AgendaItem[],
         meetingId: 'm1',
       },
       global: { stubs: baseStubs },
@@ -121,7 +128,7 @@ describe('MeetingAgendaList', () => {
             { id: 'v1', is_main: true, decision: 'positive' },
             { id: 'v2', is_main: false, decision: 'negative' },
           ],
-        })] as any,
+        })] as App.Entities.AgendaItem[],
         meetingId: 'm1',
       },
       global: { stubs: baseStubs },
@@ -135,13 +142,13 @@ describe('MeetingAgendaList', () => {
    */
   it('marks notes with a neutral icon, only when the item has them', () => {
     const without = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem()] as any, meetingId: 'm1' },
+      props: { agendaItems: [makeItem()] as App.Entities.AgendaItem[], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
     expect(without.find('[aria-label="Yra pastabų"]').exists()).toBe(false);
 
     const withNotes = mount(MeetingAgendaList, {
-      props: { agendaItems: [makeItem({ has_notes: true })] as any, meetingId: 'm1' },
+      props: { agendaItems: [makeItem({ has_notes: true })] as App.Entities.AgendaItem[], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
     expect(withNotes.find('[aria-label="Yra pastabų"]').exists()).toBe(true);
@@ -154,14 +161,14 @@ describe('MeetingAgendaList', () => {
     ];
 
     const internal = mount(MeetingAgendaList, {
-      props: { agendaItems: items as any, meetingId: 'm1', requiresStudentPerspective: false },
+      props: { agendaItems: items as App.Entities.AgendaItem[], meetingId: 'm1', requiresStudentPerspective: false },
       global: { stubs: baseStubs },
     });
     expect(internal.text()).toContain('1 iš 2');
 
     // External bodies still wait for the student perspective before calling a vote discussed
     const external = mount(MeetingAgendaList, {
-      props: { agendaItems: items as any, meetingId: 'm1' },
+      props: { agendaItems: items as App.Entities.AgendaItem[], meetingId: 'm1' },
       global: { stubs: baseStubs },
     });
     expect(external.text()).toContain('0 iš 2');

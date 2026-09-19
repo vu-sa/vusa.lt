@@ -45,8 +45,8 @@ One PR = one row. Rules:
 | **4.8** | Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights | 4.1 | ✅ |
 | **4.9** | Remove the density preference (U20) | 4.1 | ✅ |
 | **4.10** | Device split counter (U26) | — | ✅ |
-| **5.1** | **P1** Pradžia: attention queue, empty state, create shortcuts, Neseniai redaguota, koordinatorius | 4.x |
-| **5.2** | **P2** Posėdžiai + extract `CollectionPage` (three views, filter bar, Rodyti daugiau, URL state) | 5.1 |
+| **5.1** | **P1** Pradžia: attention queue, empty state, create shortcuts, Neseniai redaguota, koordinatorius | 4.x | ✅ |
+| **5.2** | **P2** Posėdžiai + extract `CollectionPage` (three views, filter bar, Rodyti daugiau, URL state) | 5.1 | ✅ |
 | **5.3** | **P3** Meeting record + agenda editor + extract `RecordPage` (Veikla, ‹ 3/24 ›, edit-mode canvas) | 5.2 |
 | **5.4** | **P4** ActionWindow restyle (guided flow, bottom sheet, date presets) | 5.1 |
 | — | *Feel review with reps — no PR; findings land as plan edits* | 5.4 |
@@ -555,6 +555,85 @@ once; a page type is extracted into a shared layout only after a pilot page prov
 - [ ] **Concept review;** extract the proven layouts: Overview, Collection, Record, Form, Sheet form,
       Workbench shell; `/mano/search` reduced to cross-entity results (O1)
 - [ ] Update the [Migration playbook](playbook.md#migration-playbook) with what the pilot taught
+
+### PR 5.1 + 5.2 notes (2026-09-19)
+
+Built together on `dev` from one plan; not yet committed. Verification is split honestly at the end: what a real browser did and did not confirm.
+
+**5.1 · Pradžia**
+
+- `ShowAdminHome.vue` is now a greeting line and bands: `Home/AttentionQueue` (the one ink band, `bg-foreground
+  text-background`, only while non-empty — otherwise a teaching `EmptyState`), `CreateShortcuts` (the first three
+  `create` entries of `useCommandActions()`, so the catalog stays the only list), upcoming meetings, then a
+  deferred group. Cards, gradients, the hero search and the scoped `<style>` are gone.
+- **Deferred group `secondary`** (`DashboardController`): `institutionsNeedingAttention`, calendar events, news,
+  `recentlyEdited`, `coordinator`. The queue and upcoming meetings stay in the first response (U19). Site content
+  (calendar, news) is only assembled for users who may `viewAny` News (R-h).
+- `GetRecentlyEditedRecords` (O20): activity log by `causedBy`, deduplicated by root, then filtered through
+  `$user->can('view')` so a row never links to a 403. `GetUserCoordinator` (O22): the settings manager role via
+  `GetInstitutionManagers`, never the user themselves.
+- The task payload gained `taskable {id, name}` so a queue row can say what it is about and link to it
+  (`getMeetingAgendaUrl()` first — one tap to the agenda tab).
+- New components live in `Components/Home/`, **not** `Pages/Admin/Dashboard/Components/` as first planned: that folder
+  holds ~4.5k lines the ViSAK/Rezervacijos dashboards still use, so fencing it would have failed on unrelated files.
+  `TasksCard`, `CalendarEventsCard`, `NewsListCard`, `HomeSearchBar` are `@deprecated` (Phase 10). `UpcomingMeetingsCard`
+  is untouched — `PersonalOverviewSection` still uses it.
+
+**5.2 · Posėdžiai + `CollectionPage`**
+
+- `Layouts/CollectionPage.vue` composes `Components/Collection/*` (title band, quick filters, control row, filter bar
+  — popovers from `md`, bottom sheet below —, active chips, results, load more, view toggle). It knows nothing about
+  Typesense: it takes a `CollectionSource` (`Composables/useCollectionSource.ts`). `useTypesenseCollectionSource` is a thin
+  adapter over the existing `useAdminCollectionSearch`, which gained one thing: `?pages=N`, so back navigation replays the
+  pages that were loaded (capped at 10, reset by any new search). Scroll is saved per URL in `sessionStorage` on leaving.
+- View state (`useCollectionView`): URL wins, then the user's last choice per collection, then the entity default; only
+  *choices* are stored (`writeDefaults: false`), so an entity can change its default later.
+- The view toggle and facet rows are drawn from tokens rather than `ui/toggle-group` / `ui/checkbox`: those still
+  hardcode `zinc-*` with `dark:` twins (trap 3) and the 2.8 audit did not cover them.
+- **Typesense lag (O1):** `GetRecentlyChangedMeetings` reads the user's own meeting activity from the last 2 minutes and
+  pins those meetings above the results (only while no query or filter is active). Not `?just=<id>` as first planned —
+  nothing redirects to the collection after a save, so a server read is the only reliable trigger.
+- **Trash:** `meetings.index` now returns a lightweight shell (`deletedCount`, `recentlyChanged`); `?showDeleted=true`
+  returns the old table as `IndexMeetingTrash`. That is a separate page rather than a second `CollectionSource`: the
+  database source has no consumer until Rezervacijos (5.6), and building it now would be the "over-general monster".
+- `meetingCompletionStatuses` in `Constants/statuses.ts`. The facet popover and chips are named through the same map
+  (`valueLabel`), because the shared facet labels say *Užbaigtas/Neužbaigtas* and the map says *Užpildyta/Neužpildyta*.
+  That drift still exists in the legacy search page, `MeetingDataTable` and the Gantt legend (U10 — Phase 9 / 5.10).
+- Copy: the row names the format (*Nuotolinis posėdis*, *Sprendimas el. paštu*, no time for e-mail meetings). The create
+  action reads **Fiksuoti posėdį** (`shell.actions.new_meeting`). `MeetingType` labels still say *susitikimas* — they feed
+  the ActionWindow and a browser test, so they belong to 5.4.
+
+**Backend fixes found on the way**
+
+- `MeetingPolicy::viewAny()` now accepts `meetings.read.own`; the 3.1 note that a plain *Studentų atstovas* could not
+  open Posėdžiai is fixed, and `AdminNavigationCatalogTest` now expects it. Which rows a rep sees is still the scoped
+  Typesense key's job.
+- The SQL completion filter (now trash-only) read every trashed meeting as "external": a nested `meeting.institutions`
+  relation drops soft-deleted meetings. Fixed with `withTrashed()`. Its two tests
+  (`MeetingStudentPerspectiveTest`, `AgendaItemBreakTest`) now trash their meetings and request `showDeleted`.
+- Removed `MeetingController::search()` and `meetings.search`: they rendered `Admin/Representation/SearchMeetings`,
+  which never existed.
+
+**Not done**
+
+- **Browser verification is partial.** `tests/Browser/AdminCollectionPagesTest.php` (7 tests, real bundle) confirms both
+  pages mount, draw their anatomy, avoid sideways scroll at 390, and throw no JS errors; I also looked at screenshots of
+  both pages at 1440 and 390, light mode. **Not done:** 820 and 1180 widths, dark mode in a browser (Storybook axe passes
+  in dark for the components only), a real touch device, a keyboard-only pass, and — because the browser cannot reach the
+  Typesense host in this environment (`search?…` returns status 0) — **no run against live Typesense**, so real rows, the
+  facets, "Mano institucijos" (needs the scoped key's `directInstitutionIds`), the preview pane and back-restore of `?pages=`
+  were only exercised through component/composable tests with a fake source.
+- `CollectionSelectionBar`, the "Pasirinkti" mode and a checkbox column were **not** built — Posėdžiai has no bulk action,
+  so there was no consumer. They land with Rezervacijos (5.6) with `ReservationBulkActionBar` generalised.
+- "Papildyk" links to the meeting record, not to the first incomplete agenda item — that list is 5.3's.
+- The preview pane reuses the legacy `MeetingDetailPreview` (raw `Badge`, `rounded-*`); restyle it with 5.3 or 5.10.
+- Row "Papildyk" is shown to anyone who can see the meeting; the record page decides whether they can edit (there is no
+  per-record `update` map on the client).
+- Fence: only the files built here joined `MIGRATED_ADMIN_PATHS` (not `Components/Meetings/**` or `Dashboard/Components/**`).
+- The `docs/` page for Pradžia/Posėdžiai (playbook step 11) and retiring the `HomeSearchBar` test.
+
+**Next:** 5.3 (meeting record, agenda editor, `RecordPage`) — it already has work in progress in the same tree. The collection
+passes no filtered-list context yet, so ‹ 3 / 24 › needs the current filter set handed over (the URL already carries it).
 
 ## Phase 6 — Messages (email, push, in-app)
 

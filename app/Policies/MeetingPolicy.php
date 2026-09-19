@@ -26,6 +26,17 @@ class MeetingPolicy extends ModelPolicy
     }
 
     /**
+     * A rep holding only `meetings.read.own` may open the collection; which rows they get is
+     * decided by the scoped search key, not here.
+     */
+    #[\Override]
+    public function viewAny(User $user): bool
+    {
+        return $this->authorizer->allows($user, 'meetings.read.padalinys')
+            || $this->authorizer->allows($user, 'meetings.read.own');
+    }
+
+    /**
      * Determine whether the user can view the model.
      *
      * @param  Meeting  $meeting

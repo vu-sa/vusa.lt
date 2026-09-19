@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetRecentlyEditedRecords;
+use App\Actions\GetUserCoordinator;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Calendar;
@@ -14,7 +16,9 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class DashboardController extends AdminController
 {
@@ -62,6 +66,11 @@ class DashboardController extends AdminController
                 'is_overdue' => $task->isOverdue(),
                 'taskable_type' => $task->taskable_type ?? '',
                 'taskable_id' => $task->taskable_id,
+                // What the task is about, so a row can say "Senato posėdis" and link to it.
+                'taskable' => $task->taskable === null ? null : [
+                    'id' => (string) $task->taskable_id,
+                    'name' => $task->taskable->getAttribute('title') ?? $task->taskable->getAttribute('name'),
+                ],
                 'action_type' => $task->action_type?->value,
                 'metadata' => $task->metadata,
                 'progress' => $task->getProgress(),
@@ -88,79 +97,35 @@ class DashboardController extends AdminController
                 'institution_name' => $meeting->institutions->first()?->name,
             ]);
 
-        // Get institutions needing attention (overdue meetings based on periodicity)
-        $meetingSettings = app(MeetingSettings::class);
-        $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
-        $userInstitutions = Institution::query()
-            ->whereIn('id', $userInstitutionIds)
-            ->with([
-                'meetings:id,start_time',
-                'types',
-                // Load all check-ins: InstitutionActivityStatusService::resolve() needs
-                // completed check-ins to compute lastActivityAt, and it calls loadMissing()
-                // which is a no-op once the relation is already loaded. Filtering here
-                // would silently hide historical activity and skew the status, causing the
-                // card to disagree with the ShowAtstovavimas page.
-                'checkIns',
-            ])
-            ->get()
-            ->filter(function ($institution) use ($excludedTypeIds) {
-                // Exclude institutions with excluded types
-                if ($excludedTypeIds->isNotEmpty()) {
-                    return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
-                }
+        // Everything below the attention queue and upcoming meetings is deferred so the first
+        // paint stays cheap (U19). One group: these panels are always wanted together.
+        $secondary = 'secondary';
+        $canSeeSite = $user->can('viewAny', News::class);
 
-                return true;
-            });
+        $institutionsNeedingAttention = Inertia::defer(
+            fn () => $this->institutionsNeedingAttention($userInstitutionIds),
+            $secondary,
+        );
 
-        $institutionsNeedingAttention = $userInstitutions
-            ->map(function (Institution $institution) {
-                $activityStatus = $this->activityStatusService->resolve($institution);
+        $upcomingCalendarEvents = Inertia::defer(
+            fn () => $canSeeSite ? $this->upcomingCalendarEvents() : [],
+            $secondary,
+        );
 
-                return [
-                    'id' => $institution->id,
-                    'name' => $institution->name,
-                    ...$activityStatus->toArray(),
-                ];
-            })
-            ->filter(fn (array $status): bool => $status['requires_action'])
-            ->sortByDesc('priority')
-            ->take(3)
-            ->values();
+        $latestNews = Inertia::defer(
+            fn () => $canSeeSite ? $this->latestNews() : [],
+            $secondary,
+        );
 
-        // Get upcoming calendar events (non-draft, future) - return full models for EventCard component
-        $upcomingCalendarEvents = Calendar::query()
-            ->where('is_draft', false)
-            ->where('date', '>=', now())
-            ->with(['tenant:id,shortname', 'eventType:id,name'])
-            ->orderBy('date')
-            ->take(3)
-            ->get()
-            ->map(fn (Calendar $event) => [
-                ...$event->toArray(),
-                'public_url' => $event->publicUrl(app()->getLocale()),
-            ]);
+        $recentlyEdited = Inertia::defer(
+            fn () => GetRecentlyEditedRecords::execute($user)->all(),
+            $secondary,
+        );
 
-        // Get latest published news - return full models for NewsCard component
-        $locale = app()->getLocale();
-        $latestNews = News::query()
-            ->where('draft', false)
-            ->whereNotNull('publish_time')
-            ->where('publish_time', '<=', now())
-            ->where('lang', $locale)
-            ->with(['tenant:id,shortname,alias'])
-            ->orderByDesc('publish_time')
-            ->take(3)
-            ->get()
-            ->map(fn (News $news) => [
-                'id' => $news->id,
-                'title' => $news->title,
-                'permalink' => $news->permalink,
-                'lang' => $news->lang,
-                'publish_time' => $news->publish_time,
-                'image' => $news->getImageUrl(),
-                'tenant' => $news->tenant,
-            ]);
+        $coordinator = Inertia::defer(
+            fn () => GetUserCoordinator::execute($user),
+            $secondary,
+        );
 
         return $this->inertiaResponse('Admin/ShowAdminHome', [
             'unreadNotificationsCount' => $unreadNotificationsCount,
@@ -171,6 +136,8 @@ class DashboardController extends AdminController
             'institutionsNeedingAttention' => $institutionsNeedingAttention,
             'upcomingCalendarEvents' => $upcomingCalendarEvents,
             'latestNews' => $latestNews,
+            'recentlyEdited' => $recentlyEdited,
+            'coordinator' => $coordinator,
         ]);
     }
 
@@ -187,5 +154,100 @@ class DashboardController extends AdminController
             'types' => $typeGraph['nodes'],
             'typeRelationships' => $typeGraph['edges'],
         ]);
+    }
+
+    /**
+     * Institutions whose meeting cadence needs a nudge.
+     *
+     * @param  Collection<int, int|string>  $userInstitutionIds
+     * @return array<int, array<string, mixed>>
+     */
+    private function institutionsNeedingAttention(Collection $userInstitutionIds): array
+    {
+        $meetingSettings = app(MeetingSettings::class);
+        $excludedTypeIds = $meetingSettings->getExcludedInstitutionTypeIds();
+        $userInstitutions = Institution::query()
+            ->whereIn('id', $userInstitutionIds)
+            ->with([
+                'meetings:id,start_time',
+                'types',
+                // Load all check-ins: InstitutionActivityStatusService::resolve() needs
+                // completed check-ins to compute lastActivityAt, and it calls loadMissing()
+                // which is a no-op once the relation is already loaded. Filtering here
+                // would silently hide historical activity and skew the status, causing the
+                // card to disagree with the ShowAtstovavimas page.
+                'checkIns',
+            ])
+            ->get()
+            ->filter(function ($institution) use ($excludedTypeIds) {
+                if ($excludedTypeIds->isNotEmpty()) {
+                    return $institution->types->pluck('id')->intersect($excludedTypeIds)->isEmpty();
+                }
+
+                return true;
+            });
+
+        return $userInstitutions
+            ->map(function (Institution $institution) {
+                $activityStatus = $this->activityStatusService->resolve($institution);
+
+                return [
+                    'id' => $institution->id,
+                    'name' => $institution->name,
+                    ...$activityStatus->toArray(),
+                ];
+            })
+            ->filter(fn (array $status): bool => $status['requires_action'])
+            ->sortByDesc('priority')
+            ->take(3)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Upcoming published calendar events, as full models for the EventCard component.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function upcomingCalendarEvents(): array
+    {
+        return Calendar::query()
+            ->where('is_draft', false)
+            ->where('date', '>=', now())
+            ->with(['tenant:id,shortname', 'eventType:id,name'])
+            ->orderBy('date')
+            ->take(3)
+            ->get()
+            ->map(fn (Calendar $event) => [
+                ...$event->toArray(),
+                'public_url' => $event->publicUrl(app()->getLocale()),
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function latestNews(): array
+    {
+        return News::query()
+            ->where('draft', false)
+            ->whereNotNull('publish_time')
+            ->where('publish_time', '<=', now())
+            ->where('lang', app()->getLocale())
+            ->with(['tenant:id,shortname,alias'])
+            ->orderByDesc('publish_time')
+            ->take(3)
+            ->get()
+            ->map(fn (News $news) => [
+                'id' => $news->id,
+                'title' => $news->title,
+                'permalink' => $news->permalink,
+                'lang' => $news->lang,
+                'publish_time' => $news->publish_time,
+                'image' => $news->getImageUrl(),
+                'tenant' => $news->tenant,
+            ])
+            ->all();
     }
 }

@@ -76,6 +76,7 @@
 </template>
 
 <script setup lang="ts">
+/** @deprecated Migrated records use RecordActivity since PR 5.3; remove after Phase 10. */
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { History } from 'lucide-vue-next';

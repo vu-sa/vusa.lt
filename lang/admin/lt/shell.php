@@ -123,7 +123,7 @@ return [
             'title' => 'Sujungti įrašus',
         ],
         'new_meeting' => [
-            'title' => 'Naujas susitikimas',
+            'title' => 'Fiksuoti posėdį',
             'description' => 'Užfiksuok posėdį ir jo darbotvarkę',
         ],
         'no_meeting' => [

@@ -65,10 +65,16 @@ test('the index does not list a break-only meeting as incomplete', function (): 
     $incomplete->institutions()->attach($this->institution);
     AgendaItem::factory()->for($incomplete)->voting()->create(['order' => 1]);
 
-    // The index filter is built in SQL, so it holds its own notion of "needs a vote" and
-    // has to agree with the enum.
+    // The trash view's filter is built in SQL, so it holds its own notion of "needs a vote" and
+    // has to agree with the enum. Only trashed meetings are listed there.
+    $this->meeting->delete();
+    $incomplete->delete();
+
     asUser($this->admin)
-        ->get(route('meetings.index', ['filters' => json_encode(['completion_status' => ['incomplete']])]))
+        ->get(route('meetings.index', [
+            'showDeleted' => 'true',
+            'filters' => json_encode(['completion_status' => ['incomplete']]),
+        ]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->has('data', 1)

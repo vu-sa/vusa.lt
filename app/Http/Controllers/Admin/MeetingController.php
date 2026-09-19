@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\AnnounceMeetingInCalendar;
+use App\Actions\GetRecentlyChangedMeetings;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Admin\InstitutionSecretaryController;
 use App\Http\Requests\AttachMeetingInstitutionRequest;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
@@ -21,6 +21,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Services\CheckInService;
 use App\Services\InstitutionScopeResolver;
+use App\Services\MeetingCompletionService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
@@ -31,6 +32,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class MeetingController extends AdminController
@@ -40,7 +42,8 @@ class MeetingController extends AdminController
     public function __construct(
         public Authorizer $authorizer,
         private CheckInService $checkInService,
-        private TanstackTableService $tableService
+        private TanstackTableService $tableService,
+        private MeetingCompletionService $meetingCompletionService,
     ) {}
 
     /**
@@ -49,6 +52,15 @@ class MeetingController extends AdminController
     public function index(IndexMeetingRequest $request)
     {
         $this->handleAuthorization('viewAny', Meeting::class);
+
+        // The collection reads from Typesense (its scoped key carries the authorization), so the
+        // page needs no rows from us. Only the trash view is a database table.
+        if (! $request->getShowDeleted()) {
+            return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
+                'deletedCount' => $this->trashedCount(),
+                'recentlyChanged' => GetRecentlyChangedMeetings::execute($request->user())->all(),
+            ]);
+        }
 
         // Build base query with eager loading
         $query = Meeting::query()->with(['institutions.tenant', 'agendaItems', 'fileableFiles']);
@@ -117,7 +129,7 @@ class MeetingController extends AdminController
         $sorting = $request->getSorting();
 
         // Return response with all necessary data
-        return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
+        return $this->inertiaResponse('Admin/Representation/IndexMeetingTrash', [
             'data' => $meetings->items(),
             'meta' => [
                 'total' => $meetings->total(),
@@ -135,17 +147,18 @@ class MeetingController extends AdminController
     }
 
     /**
-     * Display the Typesense-powered search page for meetings and agenda items.
-     *
-     * This page uses scoped API keys for authorization - the search key
-     * has tenant filtering embedded, ensuring users can only see meetings
-     * they have permission to access.
+     * Soft-deleted meetings this user could see in the trash view.
      */
-    public function search()
+    private function trashedCount(): int
     {
-        $this->handleAuthorization('viewAny', Meeting::class);
+        $query = $this->tableService->applyPermissionFiltering(
+            Meeting::query(),
+            'tenants',
+            'meetings.read.padalinys',
+            $this->authorizer
+        );
 
-        return Inertia::render('Admin/Representation/SearchMeetings');
+        return $this->getTrashedCount($query, $this->tableService);
     }
 
     /**
@@ -263,33 +276,43 @@ class MeetingController extends AdminController
         // Get representatives who were active at meeting time
         $representatives = $meeting->getRepresentativesActiveAt();
 
-        // Get primary institution for navigation
+        // The primary institution determines the canonical public host.
         $primaryInstitution = $meeting->institutions->first();
 
-        // Get previous and next meetings for the same institution
-        $previousMeeting = null;
-        $nextMeeting = null;
+        $canUpdate = Gate::allows('update', $meeting);
+        $canCreateAgendaItems = $canUpdate && Gate::allows('create', AgendaItem::class);
+        $agendaItemAbilities = $meeting->agendaItems->mapWithKeys(fn (AgendaItem $item): array => [
+            (string) $item->getKey() => [
+                'update' => Gate::allows('update', $item),
+                'delete' => Gate::allows('delete', $item),
+            ],
+        ]);
+        $missingActions = collect($this->meetingCompletionService->missingActions($meeting))
+            ->filter(function (array $action) use ($agendaItemAbilities, $canCreateAgendaItems): bool {
+                if ($action['type'] === 'agenda_missing') {
+                    return $canCreateAgendaItems;
+                }
 
-        if ($primaryInstitution) {
-            $previousMeeting = Meeting::query()
-                ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
-                ->where('start_time', '<', $meeting->start_time)
-                ->orderBy('start_time', 'desc')
-                ->select(['id', 'start_time', 'type'])
-                ->first();
-
-            $nextMeeting = Meeting::query()
-                ->whereHas('institutions', fn ($q) => $q->where('institutions.id', $primaryInstitution->id))
-                ->where('start_time', '>', $meeting->start_time)
-                ->orderBy('start_time', 'asc')
-                ->select(['id', 'start_time', 'type'])
-                ->first();
-        }
+                return $agendaItemAbilities->get($action['agenda_item_id'], [])['update'] ?? false;
+            })
+            ->values()
+            ->all();
+        $publicUrl = $meeting->is_public && $primaryInstitution?->tenant
+            ? route('publicMeetings.show', [
+                'subdomain' => $primaryInstitution->tenant->subdomain,
+                'lang' => app()->getLocale(),
+                'meeting' => $meeting,
+            ])
+            : null;
 
         // show meeting
         return $this->inertiaResponse('Admin/Representation/ShowMeeting', [
             'meeting' => [
                 ...$meeting->toArray(),
+                'agenda_items' => $meeting->agendaItems->map(fn (AgendaItem $item): array => [
+                    ...$item->toArray(),
+                    'can' => $agendaItemAbilities->get((string) $item->getKey()),
+                ])->all(),
                 // The edit dialog writes the description, so it needs every locale rather
                 // than the current one — the rest of the page reads the localized array above.
                 'description' => $meeting->getTranslations('description'),
@@ -300,9 +323,21 @@ class MeetingController extends AdminController
             // people the agenda tasks went to instead of the whole membership.
             'secretaries' => InstitutionSecretaryController::forMeetingPayload($meeting),
             'administrators' => InstitutionSecretaryController::forMeetingPayload($meeting),
-            'previousMeeting' => $previousMeeting,
-            'nextMeeting' => $nextMeeting,
-            'availableInstitutionsForAttach' => $this->getAvailableInstitutionsForAttach($meeting),
+            'abilities' => [
+                'update' => $canUpdate,
+                'delete' => Gate::allows('delete', $meeting),
+                'createAgendaItems' => $canCreateAgendaItems,
+                'reorderAgendaItems' => $canUpdate,
+                'attachInstitution' => $canUpdate,
+            ],
+            'completion' => [
+                'status' => $this->meetingCompletionService->calculate($meeting),
+                'missingActions' => $missingActions,
+            ],
+            'publicUrl' => $publicUrl,
+            'availableInstitutionsForAttach' => $canUpdate
+                ? $this->getAvailableInstitutionsForAttach($meeting)
+                : [],
             'governanceScope' => $this->governanceScopeFor($meeting),
             'tasks' => Inertia::defer(fn () => TaskResource::collection(
                 $meeting->tasks()->with('users:id,name,email,profile_photo_path', 'taskable')->get()
@@ -340,10 +375,13 @@ class MeetingController extends AdminController
                         ->whereNotNull('decision')->where('decision', '!=', ''))
                     ->orWhere(function ($external) use ($externalTypeIds): void {
                         $external
-                            ->where(fn ($scopeQuery) => $scopeQuery
-                                ->whereHas('meeting.institutions.types', fn ($typeQuery) => $typeQuery
-                                    ->whereIn('types.id', $externalTypeIds))
-                                ->orWhereDoesntHave('meeting.institutions.types'))
+                            // withTrashed: this filter serves the trash view, and a trashed meeting
+                            // would otherwise vanish from the relation and read as "no institution".
+                            ->whereHas('meeting', fn ($meetingQuery) => $meetingQuery->withTrashed()
+                                ->where(fn ($scopeQuery) => $scopeQuery
+                                    ->whereHas('institutions.types', fn ($typeQuery) => $typeQuery
+                                        ->whereIn('types.id', $externalTypeIds))
+                                    ->orWhereDoesntHave('institutions.types')))
                             ->whereDoesntHave('votes', fn ($voteQuery) => $voteQuery
                                 ->whereNotNull('student_vote')->where('student_vote', '!=', '')
                                 ->whereNotNull('student_benefit')->where('student_benefit', '!=', ''));

@@ -122,10 +122,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/Components/ui/dialog';
-import { useDiscussionApi } from '@/Composables/useDiscussionApi';
-import { useDiscussionChannel } from '@/Composables/useDiscussionChannel';
-import { useToasts } from '@/Composables/useToasts';
-import type { CommentData, MentionableUser, PollDraft } from '@/Types/discussions';
+import { useDiscussionThread } from '@/Composables/useDiscussionThread';
+import type { PollDraft } from '@/Types/discussions';
 
 const props = withDefaults(defineProps<{
   commentableType: string;
@@ -136,16 +134,14 @@ const props = withDefaults(defineProps<{
   framed: false,
 });
 
-const api = useDiscussionApi(props.commentableType, props.commentableId);
-const toasts = useToasts();
-
 const currentUser = computed(() => (usePage().props.auth as { user?: App.Entities.User } | undefined)?.user ?? null);
-
-const comments = ref<CommentData[]>([]);
-const mentionables = ref<MentionableUser[]>([]);
-const loading = ref(true);
-const posting = ref(false);
-const mutating = ref(false);
+const discussion = useDiscussionThread(props.commentableType, props.commentableId);
+const comments = discussion.comments;
+const mentionables = discussion.mentionables;
+const loading = discussion.loading;
+const posting = discussion.posting;
+const mutating = discussion.mutating;
+const members = discussion.members;
 const showResolved = ref(true);
 const pollDialogOpen = ref(false);
 
@@ -156,174 +152,50 @@ const visibleComments = computed(() =>
   showResolved.value ? comments.value : comments.value.filter(comment => !comment.is_resolved),
 );
 
-// --- Real-time merge (idempotent upserts; the actor also receives its own event) ---
-
-function upsertComment(incoming: CommentData) {
-  if (!incoming.parent_id) {
-    const index = comments.value.findIndex(comment => comment.id === incoming.id);
-    if (index === -1) {
-      comments.value.push(incoming);
-    }
-    else {
-      // Preserve already-loaded replies when patching a root.
-      comments.value[index] = { ...incoming, replies: incoming.replies ?? comments.value[index].replies };
-    }
-    return;
-  }
-
-  const root = comments.value.find(comment => comment.id === (incoming.thread_root_id ?? incoming.parent_id));
-  if (!root) {
-    return;
-  }
-  root.replies = root.replies ?? [];
-  const replyIndex = root.replies.findIndex(reply => reply.id === incoming.id);
-  if (replyIndex === -1) {
-    root.replies.push(incoming);
-  }
-  else {
-    root.replies[replyIndex] = incoming;
-  }
-}
-
-function removeComment(id: string) {
-  const rootIndex = comments.value.findIndex(comment => comment.id === id);
-  if (rootIndex !== -1) {
-    comments.value.splice(rootIndex, 1);
-    return;
-  }
-  for (const root of comments.value) {
-    if (root.replies?.some(reply => reply.id === id)) {
-      root.replies = root.replies.filter(reply => reply.id !== id);
-      return;
-    }
-  }
-}
-
-const { members, connect } = useDiscussionChannel(props.commentableType, props.commentableId, {
-  onCreated: upsertComment,
-  onUpdated: upsertComment,
-  onResolved: upsertComment,
-  onReaction: upsertComment,
-  onPoll: upsertComment,
-  onDeleted: ({ id }) => removeComment(id),
-});
-
 // --- Actions ---
 
 async function onPost(html: string) {
-  posting.value = true;
-  try {
-    const comment = await api.postComment(html);
-    upsertComment(comment);
+  const comment = await discussion.post(html);
+  if (comment) {
     rootComposer.value?.reset();
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    posting.value = false;
   }
 }
 
 async function onCreatePoll(html: string, poll: PollDraft) {
-  posting.value = true;
-  try {
-    upsertComment(await api.createPoll(html, poll));
+  if (await discussion.createPoll(html, poll)) {
     pollDialogOpen.value = false;
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    posting.value = false;
   }
 }
 
 async function onPollVote(id: string, optionId: string) {
-  try {
-    upsertComment(await api.togglePollVote(id, optionId));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.vote(id, optionId);
 }
 
 async function onReply(parentId: string, html: string) {
-  mutating.value = true;
-  try {
-    upsertComment(await api.postComment(html, parentId));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    mutating.value = false;
-  }
+  await discussion.post(html, parentId);
 }
 
 async function onUpdate(id: string, html: string) {
-  mutating.value = true;
-  try {
-    upsertComment(await api.updateComment(id, html));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    mutating.value = false;
-  }
+  await discussion.update(id, html);
 }
 
 async function onDelete(id: string) {
-  try {
-    await api.deleteComment(id);
-    removeComment(id);
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.remove(id);
 }
 
 async function onResolve(id: string) {
-  try {
-    upsertComment(await api.resolveComment(id));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.resolve(id);
 }
 
 async function onUnresolve(id: string) {
-  try {
-    upsertComment(await api.unresolveComment(id));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.unresolve(id);
 }
 
 async function onToggleReaction(id: string, emoji: string) {
-  try {
-    upsertComment(await api.toggleReaction(id, emoji));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.toggleReaction(id, emoji);
 }
 
-onMounted(async () => {
-  try {
-    const [thread, mentions] = await Promise.all([api.fetchThread(), api.fetchMentionables()]);
-    comments.value = thread;
-    mentionables.value = mentions;
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    loading.value = false;
-  }
-
-  connect();
+onMounted(() => {
+  void discussion.load();
 });
 </script>

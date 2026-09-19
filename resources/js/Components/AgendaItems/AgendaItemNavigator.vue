@@ -1,10 +1,10 @@
 <template>
-  <div class="sticky top-0 z-20 -mx-6 -mt-6 mb-2 border-b border-zinc-200 dark:border-zinc-800 bg-white/85 dark:bg-zinc-950/85 px-6 py-2 backdrop-blur">
+  <div class="-mx-6 -mt-6 mb-2 border-b border-border bg-card px-6 py-2">
     <div class="flex items-center justify-between gap-4">
       <!-- Back to agenda -->
       <Link
         :href="route('meetings.show', meetingId)"
-        class="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-primary transition-colors"
+        class="u-touch inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
       >
         <ChevronLeft class="h-4 w-4" />
         {{ $t('Visa darbotvarkė') }}
@@ -15,7 +15,7 @@
         <Button
           variant="ghost"
           size="icon"
-          class="h-8 w-8"
+          class="u-touch"
           :disabled="!previousItem"
           :title="$t('Ankstesnis punktas')"
           @click="previousItem && emit('navigate', previousItem.id)"
@@ -27,17 +27,17 @@
           <PopoverTrigger as-child>
             <Button variant="ghost" size="sm" class="h-8 gap-1.5">
               {{ $t('Punktas') }}
-              <span class="font-semibold text-zinc-900 dark:text-zinc-100">{{ currentIndex + 1 }}</span>
-              <span class="text-zinc-400">/ {{ siblingAgendaItems.length }}</span>
-              <ChevronsUpDown class="h-3.5 w-3.5 text-zinc-400" />
+              <span class="font-semibold text-foreground">{{ currentIndex + 1 }}</span>
+              <span class="text-muted-foreground">/ {{ siblingAgendaItems.length }}</span>
+              <ChevronsUpDown class="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
           </PopoverTrigger>
           <PopoverContent class="w-[26rem] max-w-[calc(100vw-2rem)] p-0" align="end">
-            <div class="flex items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
-              <h4 class="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <div class="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+              <h4 class="truncate text-sm font-semibold text-foreground">
                 {{ meetingTitle || $t('Darbotvarkė') }}
               </h4>
-              <span class="shrink-0 text-xs text-zinc-400 dark:text-zinc-500">
+              <span class="shrink-0 text-xs text-muted-foreground">
                 {{ acceptedCount }} / {{ siblingAgendaItems.length }} {{ $t('priimti') }}
               </span>
             </div>
@@ -49,8 +49,8 @@
                 :href="route('agendaItems.edit', item.id)"
                 class="flex items-start gap-3 px-3 py-2 transition-colors"
                 :class="item.id === currentId
-                  ? 'bg-primary/5 dark:bg-primary/10'
-                  : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50'"
+                  ? 'bg-secondary'
+                  : 'hover:bg-secondary/70'"
                 @click="isOpen = false"
               >
                 <span
@@ -62,11 +62,11 @@
                   {{ String(index + 1).padStart(2, '0') }}
                 </span>
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm text-zinc-900 dark:text-zinc-100">
+                  <p class="truncate text-sm text-foreground">
                     {{ item.title }}
                   </p>
                   <div class="mt-0.5 flex items-center gap-2">
-                    <span class="text-[11px] uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
+                    <span class="text-[11px] uppercase tracking-wide text-muted-foreground">
                       {{ typeLabel(item.type) }}
                     </span>
                     <span
@@ -85,7 +85,7 @@
         <Button
           variant="ghost"
           size="icon"
-          class="h-8 w-8"
+          class="u-touch"
           :disabled="!nextItem"
           :title="$t('Kitas punktas')"
           @click="nextItem && emit('navigate', nextItem.id)"

@@ -14,6 +14,7 @@
       <div class="flex items-center gap-2">
         <AdminVotingHelpButton />
         <SpotlightPopover
+          v-if="canManage"
           :title="$t('Tvarkykite darbotvarkę')"
           :description="$t('Įjunkite redagavimą, kad pridėtumėte, pertvarkytumėte ar pašalintumėte darbotvarkės punktus.')"
           position="bottom"
@@ -45,7 +46,7 @@
       </p>
       <!-- Both routes in from an empty agenda: the bulk editor is how a copied
            timetable gets in, and it was previously unreachable until one item existed. -->
-      <div v-if="editing" class="flex flex-wrap items-center justify-center gap-2">
+      <div v-if="editing && canAdd" class="flex flex-wrap items-center justify-center gap-2">
         <Button @click="$emit('add')">
           <Plus class="h-4 w-4 mr-2" />
           {{ $t('Pridėti pirmą klausimą') }}
@@ -67,7 +68,7 @@
       >
         <!-- Drag handle (edit mode) -->
         <button
-          v-if="editing"
+          v-if="editing && ordering && canReorder"
           type="button"
           class="drag-handle shrink-0 pl-3 cursor-grab text-zinc-300 hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
           :aria-label="$t('Tempti')"
@@ -136,9 +137,32 @@
           </div>
         </Link>
 
+        <div v-if="editing && ordering && canReorder" class="flex shrink-0 items-center gap-1 pr-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            class="u-touch"
+            :disabled="index === 0"
+            :aria-label="$t('Perkelti aukštyn')"
+            @click="move(index, -1)"
+          >
+            <ChevronUp class="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="u-touch"
+            :disabled="index === localItems.length - 1"
+            :aria-label="$t('Perkelti žemyn')"
+            @click="move(index, 1)"
+          >
+            <ChevronDown class="size-4" />
+          </Button>
+        </div>
+
         <!-- Remove button (edit mode) -->
         <button
-          v-if="editing"
+          v-if="editing && !ordering && canDelete(item)"
           type="button"
           class="shrink-0 pr-3 text-zinc-300 hover:text-destructive dark:text-zinc-600 dark:hover:text-destructive transition-colors"
           :aria-label="$t('Šalinti')"
@@ -150,8 +174,20 @@
     </div>
 
     <!-- Add affordance (edit mode, non-empty) -->
-    <div v-if="editing && localItems.length > 0" class="flex justify-center">
-      <DropdownMenu>
+    <div v-if="editing && localItems.length > 0" class="flex flex-wrap justify-center gap-2">
+      <template v-if="ordering">
+        <Button variant="outline" size="sm" @click="cancelOrder">
+          {{ $t('Atšaukti') }}
+        </Button>
+        <Button size="sm" @click="persistOrder">
+          {{ $t('Išsaugoti tvarką') }}
+        </Button>
+      </template>
+      <Button v-else-if="canReorder" variant="outline" size="sm" @click="ordering = true">
+        <GripVertical class="size-4" />
+        {{ $t('Keisti tvarką') }}
+      </Button>
+      <DropdownMenu v-if="!ordering && canAdd">
         <DropdownMenuTrigger as-child>
           <Button variant="outline" size="sm">
             <Plus class="h-4 w-4 mr-1" />
@@ -178,7 +214,7 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FileText, GripVertical, ListPlus, MessageSquare, NotebookPen, Plus, Trash2, Users } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp, FileText, GripVertical, ListPlus, MessageSquare, NotebookPen, Plus, Trash2, Users } from 'lucide-vue-next';
 
 import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
 import VoteStatusIndicator from '@/Components/Public/VoteStatusIndicator.vue';
@@ -193,6 +229,7 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import {
+  type AgendaItem as AgendaStatusItem,
   getMainVote,
   getNumberBadgeClass,
   getStatusText,
@@ -204,10 +241,14 @@ const props = withDefaults(defineProps<{
   agendaItems: App.Entities.AgendaItem[];
   meetingId: string;
   editing?: boolean;
+  canAdd?: boolean;
+  canReorder?: boolean;
   /** False for VU SA's own bodies — a recorded decision alone means discussed. */
   requiresStudentPerspective?: boolean;
 }>(), {
   editing: false,
+  canAdd: false,
+  canReorder: false,
   requiresStudentPerspective: true,
 });
 
@@ -218,12 +259,23 @@ const emit = defineEmits<{
   'delete': [item: App.Entities.AgendaItem];
 }>();
 
-// Surface the (relocated) agenda editing controls to returning users
-const spotlight = useFeatureSpotlight('meeting-agenda-edit-v1');
+type AgendaItemWithAbilities = App.Entities.AgendaItem & {
+  can?: { update?: boolean; delete?: boolean };
+};
+
+const canManage = computed(() => props.canAdd || props.canReorder
+  || props.agendaItems.some(item => Boolean((item as AgendaItemWithAbilities).can?.delete)));
+const canDelete = (item: App.Entities.AgendaItem) => Boolean((item as AgendaItemWithAbilities).can?.delete);
+
+const spotlight = useFeatureSpotlight('meeting-record-completion-v1');
+const ordering = ref(false);
 
 const onToggleEditing = (value: boolean) => {
   if (value && spotlight.isVisible.value) {
     spotlight.dismiss();
+  }
+  if (!value) {
+    ordering.value = false;
   }
   emit('update:editing', value);
 };
@@ -239,21 +291,28 @@ watch(
   { immediate: true, deep: true },
 );
 
-const mainVoteOf = (item: App.Entities.AgendaItem) => getMainVote(item as any);
+type AgendaListItem = App.Entities.AgendaItem & {
+  comments_count?: number;
+  has_notes?: boolean;
+};
+
+const mainVoteOf = (item: App.Entities.AgendaItem) => getMainVote(item as AgendaStatusItem);
 const voteCount = (item: App.Entities.AgendaItem) => item.votes?.length ?? 0;
-const commentsCount = (item: App.Entities.AgendaItem) => (item as any).comments_count ?? 0;
-const hasNotes = (item: App.Entities.AgendaItem) => Boolean((item as any).has_notes);
+const commentsCount = (item: App.Entities.AgendaItem) => (item as AgendaListItem).comments_count ?? 0;
+const hasNotes = (item: App.Entities.AgendaItem) => Boolean((item as AgendaListItem).has_notes);
 
 const agendaSummary = computed(() => {
   const items = localItems.value;
-  if (items.length === 0) { return ''; }
+  if (items.length === 0) {
+    return '';
+  }
 
   const votingItems = items.filter(item => item.type === 'voting');
   if (votingItems.length === 0) {
     return `${items.length} ${items.length === 1 ? $t('punktas') : $t('punktai')}`;
   }
 
-  const summary = getMeetingStatusSummary(items as any, props.requiresStudentPerspective);
+  const summary = getMeetingStatusSummary(items as AgendaStatusItem[], props.requiresStudentPerspective);
   const completed = summary.consensus + summary.aligned + summary.misaligned + summary.neutralDecided
     + summary.decisionPositive + summary.decisionNegative;
   return `${completed} ${$t('iš')} ${votingItems.length} ${$t('balsavimų aptarta')}`;
@@ -266,16 +325,31 @@ const sortable = useSortable(listContainer, localItems, {
   handle: '.drag-handle',
   animation: 200,
   disabled: !props.editing,
-  onEnd: async () => {
-    await nextTick();
-    await persistOrder();
-  },
+  onEnd: async () => { await nextTick(); },
 });
 
 // Toggle drag enablement reactively with the edit switch
-watch(() => props.editing, (editing) => {
-  sortable.option('disabled', !editing);
+watch([() => props.editing, ordering], ([editing, isOrdering]) => {
+  sortable.option('disabled', !editing || !isOrdering);
 });
+
+const move = (index: number, direction: -1 | 1) => {
+  const destination = index + direction;
+  if (destination < 0 || destination >= localItems.value.length) {
+    return;
+  }
+  const next = [...localItems.value];
+  const [item] = next.splice(index, 1);
+  if (item) {
+    next.splice(destination, 0, item);
+    localItems.value = next;
+  }
+};
+
+const cancelOrder = () => {
+  localItems.value = [...props.agendaItems].sort((a, b) => a.order - b.order);
+  ordering.value = false;
+};
 
 const persistOrder = async () => {
   const reordered = localItems.value.map((item, index) => ({
@@ -289,6 +363,9 @@ const persistOrder = async () => {
   }, {
     preserveState: true,
     preserveScroll: true,
+    onSuccess: () => {
+      ordering.value = false;
+    },
     onError: () => {
       localItems.value = [...props.agendaItems].sort((a, b) => a.order - b.order);
     },

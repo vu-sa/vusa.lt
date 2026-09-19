@@ -57,6 +57,13 @@ export const MEETING_FACET_CONFIG: CollectionFacetConfig = {
       maxValues: 15,
       sortBy: 'count',
     },
+    {
+      // Not in facetBy, so it is never listed as a facet; it only carries the
+      // "Mano institucijos" quick filter through the URL and the filter string.
+      field: 'institution_ids',
+      label: 'Mano institucijos',
+      type: 'checkbox',
+    },
   ],
 };
 

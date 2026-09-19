@@ -33,6 +33,7 @@ export interface StatusPresentation {
 }
 
 export type ReservationResourceStatus = 'created' | 'reserved' | 'lent' | 'returned' | 'rejected' | 'cancelled';
+export type MeetingCompletionStatus = 'complete' | 'incomplete' | 'no_items';
 export type TaskStatus = 'completed' | 'open' | 'due_soon' | 'overdue';
 export type ContentStatus = 'published' | 'scheduled' | 'draft';
 export type MissingVoteStatus = 'not_recorded';
@@ -45,6 +46,13 @@ export const reservationResourceStatuses: Record<ReservationResourceStatus, Stat
   returned: status('Grąžinta', 'neutral', RotateCcw),
   rejected: status('Atmesta', 'danger', CircleX),
   cancelled: status('Atšaukta', 'neutral', Ban),
+};
+
+/** Mirrors MeetingCompletionService::calculate(). A complete meeting is the healthy default and shows no badge in a collection. */
+export const meetingCompletionStatuses: Record<MeetingCompletionStatus, StatusPresentation> = {
+  complete: status('Užpildyta', 'success', CircleCheck),
+  incomplete: status('Neužpildyta', 'attention', CircleDashed),
+  no_items: status('Nėra darbotvarkės', 'attention', CircleSlash),
 };
 
 export const voteStatuses: Record<VoteValue | MissingVoteStatus, StatusPresentation> = {

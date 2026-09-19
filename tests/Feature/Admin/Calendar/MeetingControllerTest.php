@@ -383,6 +383,11 @@ describe('meeting show payload', function (): void {
 
         $response->assertInertia(fn ($page) => $page
             ->component('Admin/Representation/ShowMeeting')
+            ->where('completion.status', 'no_items')
+            ->where('completion.missingActions.0.type', 'agenda_missing')
+            ->where('abilities.update', true)
+            ->where('abilities.delete', true)
+            ->where('abilities.createAgendaItems', true)
             ->missing('meeting.tasks')
             ->missing('meeting.documents')
             ->missing('tasks')
@@ -750,5 +755,72 @@ describe('cross-tenant parent scoping', function (): void {
         ])->assertStatus(403);
 
         expect($foreignMeeting->agendaItems()->count())->toEqual(0);
+    });
+});
+
+describe('Posėdžiai collection', function (): void {
+    test('serves a shell without rows, since the list is read from the search index', function (): void {
+        Meeting::factory()->hasAttached($this->institution)->create();
+
+        asUser($this->admin)
+            ->get(route('meetings.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/IndexMeeting')
+                ->missing('data')
+                ->has('deletedCount')
+                ->has('recentlyChanged')
+            );
+    });
+
+    test('a student representative holding only meetings.read.own can open it', function (): void {
+        $rep = makeTenantUserWithRole('Student Representative', $this->tenant);
+
+        asUser($rep)
+            ->get(route('meetings.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Admin/Representation/IndexMeeting'));
+    });
+
+    test('the trash view is still a database table with the trashed meetings', function (): void {
+        $trashed = Meeting::factory()->hasAttached($this->institution)->create();
+        $trashed->delete();
+
+        asUser($this->admin)
+            ->get(route('meetings.index', ['showDeleted' => 'true']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/IndexMeetingTrash')
+                ->has('data')
+                ->where('showDeleted', true)
+            );
+    });
+
+    test('counts the trash so the collection can offer it', function (): void {
+        Meeting::factory()->hasAttached($this->institution)->create()->delete();
+
+        asUser($this->admin)
+            ->get(route('meetings.index'))
+            ->assertInertia(fn ($page) => $page->where('deletedCount', 1));
+    });
+
+    test('pins meetings the user changed in the last minutes until the index catches up', function (): void {
+        $mine = Meeting::factory()->hasAttached($this->institution)->create(['title' => 'Ką tik pakeistas']);
+        $notMine = Meeting::factory()->hasAttached($this->institution)->create(['title' => 'Kažkieno kito']);
+        $stale = Meeting::factory()->hasAttached($this->institution)->create(['title' => 'Senas pakeitimas']);
+
+        activity()->performedOn($stale)->causedBy($this->admin)->log('updated');
+        $this->travel(10)->minutes();
+        activity()->performedOn($mine)->causedBy($this->admin)->log('updated');
+        activity()->performedOn($notMine)->causedBy($this->user)->log('updated');
+
+        asUser($this->admin)
+            ->get(route('meetings.index'))
+            ->assertInertia(fn ($page) => $page
+                ->has('recentlyChanged', 1)
+                ->where('recentlyChanged.0.title', 'Ką tik pakeistas')
+                ->where('recentlyChanged.0.id', $mine->id)
+                ->has('recentlyChanged.0.completion_status')
+            );
     });
 });

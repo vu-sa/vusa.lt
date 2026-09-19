@@ -76,6 +76,7 @@
 </template>
 
 <script setup lang="ts">
+/** @deprecated Superseded by Components/Home/AttentionQueue in PR 5.1; slated for removal in Phase 10. */
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';

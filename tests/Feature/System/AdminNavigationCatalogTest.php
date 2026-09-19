@@ -173,14 +173,12 @@ describe('per-persona visibility', function () {
     test('a plain Student Representative sees no Sistema or Organizacija workspace', function (): void {
         $user = makeTenantUserWithRole('Student Representative', $this->tenant);
 
-        // MeetingPolicy has no viewAny() override, so it falls back to HasCommonChecks'
-        // `meetings.read.padalinys` — a permission this role never gets (it only holds
-        // `meetings.read.own`). A rep who has not yet been handed the padalinys-wide read scope
-        // cannot see Posėdžiai, the ViSAK overview, or Darbotvarkės klausimai, even though they
-        // can create and edit their own meetings. Real, current behaviour — not introduced here.
+        // MeetingPolicy::viewAny() accepts `meetings.read.own`, which is all this role holds, so
+        // the rep sees Posėdžiai, the ViSAK overview and Darbotvarkės klausimai. Which rows they
+        // get is the scoped search key's job (own_permission), not the catalog's.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['institucijos', 'problemos', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'istekliai'],
         ]);
     });

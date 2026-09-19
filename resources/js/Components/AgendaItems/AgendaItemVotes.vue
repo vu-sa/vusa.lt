@@ -140,13 +140,13 @@
                 class="grid gap-1.5 sm:grid-cols-[7rem_1fr] sm:items-center sm:gap-x-4"
               >
                 <span class="text-xs font-medium text-muted-foreground">{{ row.label }}</span>
-                <div class="grid grid-cols-3 gap-1.5">
+                <div class="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                   <button
                     v-for="opt in row.options"
                     :key="opt.value"
                     type="button"
                     :disabled="!editing"
-                    class="flex min-w-0 items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs font-medium transition-colors disabled:cursor-default"
+                    class="u-touch flex min-w-0 items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs font-medium transition-colors disabled:cursor-default"
                     :class="vote[row.key] === opt.value ? opt.activeClass : INACTIVE_OPTION_CLASS"
                     @click="vote[row.key] = opt.value"
                   >
@@ -173,7 +173,7 @@ import { computed, ref, watch, type Component } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, ChevronUp, GripVertical, Handshake, Minus, Plus, Star, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, ChevronUp, CircleDashed, GripVertical, Handshake, Minus, Plus, Star, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-vue-next';
 
 import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
 import { Button } from '@/Components/ui/button';
@@ -204,7 +204,7 @@ const voteLabel = (vote: EditableVote): string =>
 
 type VoteField = 'decision' | 'student_vote' | 'student_benefit';
 interface VoteOption {
-  value: Exclude<VoteValue, null | undefined>;
+  value: VoteValue;
   label: string;
   icon?: Component;
   activeClass: string;
@@ -217,29 +217,32 @@ interface VoteRow {
 
 /** Unchosen options are outlined, not filled, so only the recorded answer carries weight. */
 const INACTIVE_OPTION_CLASS
-  = 'border-zinc-200 bg-white dark:bg-zinc-950/40 text-zinc-500 enabled:hover:border-zinc-400 enabled:hover:text-foreground '
-    + 'disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-400 dark:enabled:hover:border-zinc-500';
+  = 'border-border bg-card text-muted-foreground enabled:hover:text-foreground disabled:opacity-60';
 
-const POSITIVE_CLASS = 'border-emerald-600 bg-emerald-600 text-white';
-const NEGATIVE_CLASS = 'border-red-600 bg-red-600 text-white';
-const NEUTRAL_CLASS = 'border-zinc-500 bg-zinc-500 text-white';
+const POSITIVE_CLASS = 'border-status-success-border bg-status-success-surface text-status-success';
+const NEGATIVE_CLASS = 'border-status-danger-border bg-status-danger-surface text-status-danger';
+const NEUTRAL_CLASS = 'border-status-neutral-border bg-status-neutral-surface text-status-neutral';
+const MISSING_CLASS = 'border-status-attention-border bg-status-attention-surface text-status-attention';
 
 const decisionOptions: VoteOption[] = [
   { value: 'positive', label: $t('Priimtas'), activeClass: POSITIVE_CLASS },
   { value: 'negative', label: $t('Atmestas'), activeClass: NEGATIVE_CLASS },
   { value: 'neutral', label: $t('Susilaikyta'), activeClass: NEUTRAL_CLASS },
+  { value: null, label: $t('Nefiksuota'), icon: CircleDashed, activeClass: MISSING_CLASS },
 ];
 
 const studentVoteOptions: VoteOption[] = [
   { value: 'positive', label: $t('Pritarė'), activeClass: POSITIVE_CLASS },
   { value: 'negative', label: $t('Nepritarė'), activeClass: NEGATIVE_CLASS },
   { value: 'neutral', label: $t('Susilaikyta'), activeClass: NEUTRAL_CLASS },
+  { value: null, label: $t('Nebalsuota'), icon: CircleDashed, activeClass: MISSING_CLASS },
 ];
 
 const benefitOptions: VoteOption[] = [
   { value: 'positive', label: $t('Palanku'), icon: ThumbsUp, activeClass: POSITIVE_CLASS },
   { value: 'negative', label: $t('Nepalanku'), icon: ThumbsDown, activeClass: NEGATIVE_CLASS },
   { value: 'neutral', label: $t('Neutralu'), icon: Minus, activeClass: NEUTRAL_CLASS },
+  { value: null, label: $t('Nežinoma'), icon: CircleDashed, activeClass: MISSING_CLASS },
 ];
 
 const voteRows = computed<VoteRow[]>(() => {
@@ -306,24 +309,27 @@ const readLabel = (row: VoteRow, value: VoteValue): string =>
 
 const PILL_CLASSES: Record<string, { pill: string; dot: string }> = {
   positive: {
-    pill: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/25 dark:text-emerald-300',
-    dot: 'bg-emerald-500',
+    pill: 'bg-status-success-surface text-status-success',
+    dot: 'bg-status-success',
   },
   negative: {
-    pill: 'bg-red-50 text-red-700 dark:bg-red-900/25 dark:text-red-300',
-    dot: 'bg-red-500',
+    pill: 'bg-status-danger-surface text-status-danger',
+    dot: 'bg-status-danger',
   },
   neutral: {
-    pill: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300',
-    dot: 'bg-zinc-400',
+    pill: 'bg-status-neutral-surface text-status-neutral',
+    dot: 'bg-status-neutral',
+  },
+  missing: {
+    pill: 'bg-status-attention-surface text-status-attention',
+    dot: 'bg-status-attention',
   },
 };
 
 const summaryOf = (vote: EditableVote) =>
   voteRows.value
-    .filter(row => Boolean(vote[row.key]))
     .map((row) => {
-      const styling = PILL_CLASSES[String(vote[row.key])] ?? PILL_CLASSES.neutral;
+      const styling = PILL_CLASSES[String(vote[row.key])] ?? PILL_CLASSES.missing;
       return {
         key: row.key,
         rowLabel: row.label,
@@ -334,27 +340,29 @@ const summaryOf = (vote: EditableVote) =>
     });
 
 const addVote = () => {
+  const votes = props.form.votes;
   const vote: EditableVote = {
     id: null,
-    is_main: props.form.votes.length === 0,
+    is_main: votes.length === 0,
     is_consensus: false,
     title: { lt: '', en: '' },
     note: { lt: '', en: '' },
     student_vote: null,
     decision: null,
     student_benefit: null,
-    order: props.form.votes.length,
+    order: votes.length,
   };
-  props.form.votes.push(vote);
+  votes.push(vote);
 };
 
 const removeVote = (index: number) => {
-  const removed = props.form.votes[index];
-  props.form.votes.splice(index, 1);
+  const votes = props.form.votes;
+  const removed = votes[index];
+  votes.splice(index, 1);
 
   // Promote a remaining vote to main if we removed the main one
-  if (removed?.is_main && props.form.votes.length > 0) {
-    props.form.votes[0].is_main = true;
+  if (removed?.is_main && votes.length > 0) {
+    votes[0]!.is_main = true;
   }
 };
 

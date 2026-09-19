@@ -123,7 +123,7 @@ return [
             'title' => 'Merge records',
         ],
         'new_meeting' => [
-            'title' => 'New meeting',
+            'title' => 'Record a meeting',
             'description' => 'Record a meeting and its agenda',
         ],
         'no_meeting' => [

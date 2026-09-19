@@ -16,7 +16,7 @@ Patterns/      Generic, domain-free building blocks.
   ↑            SectionCard, EmptyState, EntityLinkCard, DateBadge, ShowPageGrid
 <Entity>/      Duties/, Institutions/, Meetings/, Members/, Files/ …
   ↑            Compose Patterns + domain knowledge. One barrel index.ts per folder.
-Layouts/       Page shells: AdminContentPage, ShowPageLayout, IndexTablePage, FormUpsertLayout
+Layouts/       Page shells: AdminContentPage, RecordPage, IndexTablePage, FormUpsertLayout
   ↑
 Pages/Admin/   Compose only. No raw <Card>, no hand-rolled hero or grid markup.
 ```
@@ -76,7 +76,7 @@ Rules for anything added there:
 
 | I need… | Use | From |
 |---|---|---|
-| An admin **Show** page | `ShowPageLayout` | `@/Components/Layouts/ShowPageLayout.vue` |
+| An admin **record** page | `RecordPage` | `@/Components/Layouts/RecordPage.vue` |
 | An admin **index** page (table) | `IndexTablePage` | `@/Components/Layouts/IndexTablePage.vue` |
 | A **create/edit** form page | `FormUpsertLayout` | `@/Components/Layouts/FormUpsertLayout.vue` |
 | Any other admin page shell | `AdminContentPage` | `@/Components/Layouts/AdminContentPage.vue` |
@@ -130,7 +130,18 @@ State belongs in the page; components communicate upward via typed emits or
 `defineModel`. `Pages/Admin/Dashboard/Partials/ReservationKpiStrip.vue` is a good
 example of a component that is a control rather than a container.
 
-## ShowPageLayout
+## RecordPage
+
+`RecordPage` is the canonical shell for migrated records. It owns the identity/title band,
+status and action placement, key facts, desktop tabs/mobile stacked sections, collection-context
+navigation, and the final `activity` slot. Pass resolved URLs and permission-filtered actions;
+domain behavior stays in the page.
+
+## ShowPageLayout (legacy)
+
+`ShowPageLayout` remains for records that have not reached their redesign phase. Do not add new
+consumers; migrate existing consumers to `RecordPage` in their scheduled phase and remove the
+wrapper in Phase 10.
 
 Wraps `AdminContentPage` + `ShowPageHero` + `Tabs` + the activity log, and owns
 tab persistence. Each entry in `tabs` names the slot that fills it.

@@ -149,7 +149,6 @@ Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->na
 Route::resource('votes', VoteController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('votes/{vote}/set-main', [VoteController::class, 'setMain'])->name('votes.setMain');
 Route::resource('meetings', MeetingController::class)->except(['create']);
-Route::get('meetings-search', [MeetingController::class, 'search'])->name('meetings.search');
 
 // Faceted search pages (uses scoped Typesense API keys for authorization)
 Route::prefix('search')->name('search.')->group(function (): void {

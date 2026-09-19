@@ -1,126 +1,98 @@
 <template>
-  <PageContent>
+  <div class="flex flex-col gap-8">
     <Head :title="$t('Mano VU SA')" />
 
-    <div class="space-y-6">
-      <!-- Simple greeting -->
-      <section
-        data-tour="greeting-section"
-        class="relative rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background
-          border border-zinc-200 dark:border-zinc-800 p-6 dark:from-primary/6 dark:via-primary/3"
-      >
-        <div class="absolute inset-0 overflow-hidden rounded-2xl">
-          <div class="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.015]" />
-        </div>
-        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
-              {{ greeting }}, <span class="text-primary dark:text-primary/85">{{ userNameAddress }}</span>!
-            </h1>
-          </div>
+    <h1 class="text-2xl font-semibold tracking-tight" data-tour="greeting-section">
+      {{ greeting }}, {{ userNameAddress }}!
+    </h1>
 
-          <!-- <ActionWindowTrigger variant="standalone" spotlight-position="bottom-right" class="shrink-0" /> -->
-        </div>
+    <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
 
-        <!-- Hero search: opens the command palette with the typed text -->
-        <div class="relative mt-5 w-full max-w-2xl">
-          <HomeSearchBar />
-        </div>
-      </section>
+    <CreateShortcuts />
 
-      <!-- Main content grid - responsive layout -->
-      <div :class="[
-        'grid gap-6',
-        hasAtstovavimas ? 'lg:grid-cols-2' : 'lg:grid-cols-1'
-      ]">
-        <!-- Upcoming Meetings Card (first for atstovavimas users) -->
-        <UpcomingMeetingsCard v-if="hasAtstovavimas" :upcoming-meetings="formattedMeetings"
-          :institutions-insights="{ attention: institutionsNeedingAttention }"
-          data-tour="meetings-card"
-          @show-all-meetings="() => router.visit(route('dashboard.atstovavimas'))"
-          @create-meeting="actionWindow.open({ flow: 'meeting.create' })" />
+    <UpcomingMeetingsList
+      v-if="hasAtstovavimas"
+      :meetings="upcomingMeetings"
+      :href="route('dashboard.atstovavimas')"
+    />
 
-        <!-- Tasks Card -->
-        <TasksCard :task-stats :upcoming-tasks :class="{ 'lg:max-w-2xl': !hasAtstovavimas }" data-tour="tasks-card" />
+    <!-- Everything below is deferred: the queue above is what a rep came for (U19). -->
+    <Deferred :data="deferredProps">
+      <template #fallback>
+        <CollectionSkeleton :rows="3" />
+      </template>
+
+      <InstitutionsNeedingAttention
+        v-if="hasAtstovavimas"
+        :institutions="institutionsNeedingAttention ?? []"
+        @record="recordMeetingFor"
+      />
+
+      <div class="grid gap-8 lg:grid-cols-2">
+        <CoordinatorCard :coordinator="coordinator ?? null" />
+        <RecentlyEditedList :records="recentlyEdited ?? []" />
       </div>
 
-      <!-- Calendar Events Section -->
-      <CalendarEventsCard v-if="upcomingCalendarEvents.length > 0" :events-list="upcomingCalendarEvents" />
-
-      <!-- Latest News Section -->
-      <NewsListCard v-if="latestNews.length > 0" :news-list="latestNews" />
-    </div>
-
-    <!-- New Meeting Modal -->
-  </PageContent>
+      <SiteContentLists
+        :events="calendarEvents"
+        :news="newsItems"
+      />
+    </Deferred>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Deferred, Head, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import type { DriveStep } from 'driver.js';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import HomeSearchBar from '@/Pages/Admin/Dashboard/Components/HomeSearchBar.vue';
-import TasksCard from '@/Pages/Admin/Dashboard/Components/TasksCard.vue';
-import UpcomingMeetingsCard from '@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue';
-import CalendarEventsCard from '@/Pages/Admin/Dashboard/Components/CalendarEventsCard.vue';
-import NewsListCard from '@/Pages/Admin/Dashboard/Components/NewsListCard.vue';
+import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
+import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
+import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
+import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
+import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';
+import SiteContentLists from '@/Components/Home/SiteContentLists.vue';
+import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
+import type {
+  HomeContentItem,
+  HomeCoordinator,
+  HomeMeeting,
+  HomeRecentRecord,
+  HomeTask,
+  InstitutionActivityInsight,
+} from '@/Components/Home/types';
+import { CollectionSkeleton } from '@/Components/Patterns';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
 import { useIsMobile } from '@/Composables/useIsMobile';
 import { provideTour } from '@/Composables/useTourProvider';
 import { useActionWindow } from '@/Composables/useActionWindow';
-// import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
-import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
-import type { InstitutionActivityInsight } from '@/Types/InstitutionActivity';
 
-// Types
 interface TaskStats {
   total: number;
   overdue: number;
   dueSoon: number;
 }
 
-interface UpcomingTask {
-  id: string;
-  name: string;
-  due_date: string | null;
-  is_overdue: boolean;
-  taskable_type: string;
-  taskable_id: string;
-  action_type?: TaskActionType | string | null;
-  progress?: TaskProgress | null;
-  can_be_manually_completed?: boolean;
-}
-
-interface UpcomingMeeting {
-  id: string;
-  title: string;
-  start_time: string;
-  institution_name: string;
-}
-
-// Props - use full entity types for Calendar and News to enable component reuse
+// The first response carries the queue and upcoming meetings; the rest arrives as one deferred group.
 const props = defineProps<{
   unreadNotificationsCount: number;
   hasNotifications: boolean;
   taskStats: TaskStats;
-  upcomingTasks: UpcomingTask[];
-  upcomingMeetings: UpcomingMeeting[];
-  institutionsNeedingAttention: InstitutionActivityInsight[];
-  upcomingCalendarEvents: App.Entities.Calendar[];
-  latestNews: App.Entities.News[];
+  upcomingTasks: HomeTask[];
+  upcomingMeetings: HomeMeeting[];
+  institutionsNeedingAttention?: InstitutionActivityInsight[];
+  upcomingCalendarEvents?: App.Entities.Calendar[];
+  latestNews?: App.Entities.News[];
+  recentlyEdited?: HomeRecentRecord[];
+  coordinator?: HomeCoordinator | null;
 }>();
 
-// Meeting modal state
+const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'coordinator'];
 
 // Check if user has atstovavimas permissions (can create meetings)
 const hasAtstovavimas = computed(() => usePage().props.auth?.can?.create?.meeting);
-
-// Check if user can access administration
-const canAccessAdministration = computed(() => usePage().props.auth?.can?.accessAdministration);
 
 const actionWindow = useActionWindow();
 
@@ -240,25 +212,24 @@ const greeting = computed(() => {
   return $t('Labas vakaras');
 });
 
-// Format meetings to match UpcomingMeetingsCard expected structure
-const formattedMeetings = computed(() => {
-  return props.upcomingMeetings.map(meeting => ({
-    id: meeting.id,
-    start_time: meeting.start_time,
-    institutions: meeting.institution_name
-      ? [{
-          id: '0',
-          name: meeting.institution_name,
-          has_public_meetings: false,
-        }]
-      : [],
-  }));
-});
-</script>
+const recordMeetingFor = (institution: InstitutionActivityInsight) => {
+  actionWindow.open({ flow: 'meeting.create', institution: { id: institution.id, name: institution.name } });
+};
 
-<style scoped>
-.bg-grid-pattern {
-  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-</style>
+// The calendar and news payloads are full models; the home page only needs a title and a date.
+const calendarEvents = computed<HomeContentItem[]>(() =>
+  (props.upcomingCalendarEvents ?? []).map(event => ({
+    id: String(event.id),
+    title: String(event.title),
+    date: event.date ? String(event.date) : null,
+  })),
+);
+
+const newsItems = computed<HomeContentItem[]>(() =>
+  (props.latestNews ?? []).map(item => ({
+    id: String(item.id),
+    title: String(item.title),
+    date: item.publish_time ? String(item.publish_time) : null,
+  })),
+);
+</script>

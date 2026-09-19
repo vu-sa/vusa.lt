@@ -92,8 +92,14 @@ test('the completion filter finds VU SA meetings that only recorded an outcome',
     $complete = meetingWithDecisionOnlyVote(InstitutionScope::Vusa);
     $incomplete = meetingWithDecisionOnlyVote(InstitutionScope::University);
 
+    // The collection reads completion from the search index; this SQL filter now serves the
+    // trash view, so the meetings have to be trashed to be listed at all.
+    $complete->delete();
+    $incomplete->delete();
+
     // BaseIndexRequest takes `filters` as a JSON string.
     $response = asUser($admin)->get(route('meetings.index', [
+        'showDeleted' => 'true',
         'filters' => json_encode(['completion_status' => ['complete']]),
     ]));
 

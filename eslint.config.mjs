@@ -12,6 +12,16 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Layouts/Shell/**',
   'resources/js/Components/CommandPalette/**',
   'resources/js/Pages/Admin/AccessDenied.vue',
+  'resources/js/Components/Layouts/RecordPage*.vue',
+  'resources/js/Components/Meetings/MeetingDatePlate.vue',
+  'resources/js/Components/Meetings/MeetingCompletionChecklist.vue',
+  'resources/js/Features/Admin/ActivityLogViewer/RecordActivity.vue',
+  'resources/js/Pages/Admin/ShowAdminHome.vue',
+  'resources/js/Pages/Admin/Representation/IndexMeeting.vue',
+  'resources/js/Components/Home/**',
+  'resources/js/Components/Collection/**',
+  'resources/js/Components/Layouts/CollectionPage.vue',
+  'resources/js/Components/Meetings/MeetingCollectionRow.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

@@ -344,6 +344,10 @@ export interface MeetingSearchResult {
   vote_alignment_status?: string;
   institution_type_title?: string;
   agenda_items_count?: number;
+  votes_count?: number;
+  /** MeetingType value: `in-person`, `remote` or `email`. */
+  type?: string;
+  is_public?: boolean;
   year?: number;
   user_names?: string[];
 }

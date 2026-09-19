@@ -34,6 +34,9 @@ import { getCollectionFacetConfig, getCollectionSortOptions, resolveSortValue, R
 
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 
+/** Bounds the replay of `?pages=`, so a hand-edited URL cannot fan out into hundreds of requests. */
+const MAX_RESTORED_PAGES = 10;
+
 export interface UseAdminCollectionSearchOptions {
   collection: AdminCollection;
   /** Initial query from URL or default */
@@ -94,6 +97,9 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   // state drives the default sort (relevance when querying, date when browsing).
   const isSortUserSelected = ref(false);
   const currentPage = ref(1);
+  // Pages the URL says were loaded before leaving (`?pages=3`); replayed after the first search
+  // so back navigation lands on the same rows. Consumed once.
+  let pagesToRestore = 1;
 
   // Results state (using shallowRef for performance with large arrays)
   const results = shallowRef<unknown[]>([]);
@@ -250,8 +256,13 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       facets.value = parseFacets(searchResult.facets, facetConfig, filters.value);
 
       // Sync to URL if enabled
-      if (syncToUrl && !isLoadMore) {
-        syncStateToUrl();
+      if (syncToUrl) {
+        if (isLoadMore) {
+          syncLoadedPagesToUrl();
+        }
+        else {
+          syncStateToUrl();
+        }
       }
     }
     catch (err) {
@@ -419,6 +430,16 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   };
 
   /**
+   * Record how many pages are loaded so history navigation can restore them. A fresh search
+   * rebuilds the URL without `pages`, which is what resets it.
+   */
+  const syncLoadedPagesToUrl = () => {
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('pages', String(currentPage.value));
+    window.history.replaceState({}, '', newUrl.toString());
+  };
+
+  /**
    * Load state from URL
    */
   const loadFromUrl = () => {
@@ -436,6 +457,9 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     if (urlSort) {
       sortBy.value = urlSort;
     }
+
+    const urlPages = Number(params.get('pages'));
+    pagesToRestore = Number.isInteger(urlPages) && urlPages > 1 ? Math.min(urlPages, MAX_RESTORED_PAGES) : 1;
   };
 
   // Watch for config changes to re-search
@@ -470,6 +494,11 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     if (searchOnMount) {
       await nextTick();
       await performSearch(false);
+
+      while (currentPage.value < pagesToRestore && hasMoreResults.value) {
+        await performSearch(true);
+      }
+      pagesToRestore = 1;
     }
   });
 

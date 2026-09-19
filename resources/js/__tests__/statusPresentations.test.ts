@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   contentStatuses,
   institutionActivityStatuses,
+  meetingCompletionStatuses,
   reservationResourceStatuses,
   studentBenefitStatuses,
   supportRequestStatuses,
@@ -41,10 +42,15 @@ describe('status presentation maps', () => {
     expect(Object.keys(institutionActivityStatuses)).toEqual(Object.values(InstitutionActivityStatus));
   });
 
+  it('covers every meeting completion status the backend can return', () => {
+    expect(Object.keys(meetingCompletionStatuses)).toEqual(['complete', 'incomplete', 'no_items']);
+  });
+
   it('keeps success and danger distinguishable without colour', () => {
     expect(taskStatuses.completed.icon).not.toBe(taskStatuses.overdue.icon);
     expect(voteStatuses.positive.icon).not.toBe(voteStatuses.negative.icon);
     expect(studentBenefitStatuses.positive.icon).not.toBe(studentBenefitStatuses.negative.icon);
     expect(institutionActivityStatuses.healthy.icon).not.toBe(institutionActivityStatuses.overdue.icon);
+    expect(meetingCompletionStatuses.complete.icon).not.toBe(meetingCompletionStatuses.incomplete.icon);
   });
 });

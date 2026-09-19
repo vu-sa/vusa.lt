@@ -11,21 +11,31 @@
       @navigate="navigateTo"
     />
 
-    <div class="mx-auto mt-6 grid w-full max-w-[80rem] gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div
+      :class="[
+        'mx-auto mt-6 grid w-full max-w-[80rem] gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]',
+        editing ? 'bg-secondary px-4 py-6 sm:px-6' : undefined,
+      ]"
+    >
       <div class="min-w-0 space-y-8">
         <!-- Header: the status the item ended up in reads before its title. -->
         <header class="space-y-3 border-b pb-6 dark:border-zinc-800">
           <div class="flex items-start justify-between gap-4">
-            <span
-              :class="[
-                'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
-                statusMeta.bgClass,
-                statusMeta.colorClass,
-              ]"
-            >
-              <component :is="statusMeta.icon" class="h-3.5 w-3.5" />
-              {{ statusMeta.label }}
-            </span>
+            <div class="flex flex-wrap items-center gap-2">
+              <span v-if="editing" class="text-xs font-semibold uppercase tracking-wide text-primary">
+                {{ $t('REDAGUOJI') }}
+              </span>
+              <span
+                :class="[
+                  'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
+                  statusMeta.bgClass,
+                  statusMeta.colorClass,
+                ]"
+              >
+                <component :is="statusMeta.icon" class="h-3.5 w-3.5" />
+                {{ statusMeta.label }}
+              </span>
+            </div>
             <div class="flex shrink-0 items-center gap-1">
               <!-- Bilingual agenda items are rare, so the language switch appears only
                    while editing. Its slot is held open (visibility, not v-if) for anyone who
@@ -47,6 +57,15 @@
                 <Switch :model-value="editing" @update:model-value="setEditing" />
                 {{ $t('Redaguoti') }}
               </label>
+              <Button
+                v-if="canUpdate && !isDesktop"
+                variant="outline"
+                size="sm"
+                @click="notesOpen = true"
+              >
+                <NotebookPen class="size-4" />
+                {{ $t('Pastabos') }}
+              </Button>
             </div>
           </div>
 
@@ -114,11 +133,22 @@
       </div>
 
       <AgendaItemNotesSidebar
-        v-if="canUpdate"
+        v-if="canUpdate && isDesktop"
         :agenda-item-id="agendaItem.id"
         class="lg:sticky lg:top-16 lg:self-start"
       />
     </div>
+
+    <Sheet v-if="canUpdate && !isDesktop" v-model:open="notesOpen">
+      <SheetContent side="bottom" class="h-[90vh] overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>{{ $t('Atstovų pastabos') }}</SheetTitle>
+        </SheetHeader>
+        <div class="px-4 pb-6">
+          <AgendaItemNotesSidebar :agenda-item-id="agendaItem.id" />
+        </div>
+      </SheetContent>
+    </Sheet>
 
     <!-- Sticky bottom action bar (mirrors AdminForm), edit mode only -->
     <div v-if="editing" class="fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-50 border-t bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/95 md:left-(--sidebar-width,16rem)">
@@ -143,13 +173,6 @@
 
         <!-- Actions -->
         <div class="flex items-center gap-2 sm:gap-3">
-          <label class="hidden items-center gap-2 sm:flex cursor-pointer select-none">
-            <Switch id="agenda-autosave" v-model="autoSaveEnabled" />
-            <span class="text-xs text-muted-foreground">{{ $t('Automatinis išsaugojimas') }}</span>
-          </label>
-
-          <Separator orientation="vertical" class="hidden h-6 sm:block" />
-
           <Button :disabled="form.processing" @click="submit()">
             <Save class="h-4 w-4 sm:mr-2" />
             <span class="hidden sm:inline">{{ $t('Išsaugoti') }}</span>
@@ -161,11 +184,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { Link, router, useForm, Head as InertiaHead } from '@inertiajs/vue3';
-import { useTextareaAutosize } from '@vueuse/core';
+import { useMediaQuery, useTextareaAutosize } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, CalendarDays, Check, Languages, Loader2, Save } from 'lucide-vue-next';
+import { Building2, CalendarDays, Check, Languages, Loader2, NotebookPen, Save } from 'lucide-vue-next';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
@@ -176,9 +199,9 @@ import SimpleLocaleButton from '@/Components/Buttons/SimpleLocaleButton.vue';
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
-import { Separator } from '@/Components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { getAgendaItemStatusMeta } from '@/Composables/useAgendaItemStyling';
+import { getAgendaItemStatusMeta, type Vote as AgendaStatusVote } from '@/Composables/useAgendaItemStyling';
 import { useAgendaItemAutosave, toTranslatedField, type AgendaItemFormData, type EditableVote, type VoteValue } from '@/Composables/useAgendaItemAutosave';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
@@ -214,6 +237,9 @@ const props = withDefaults(defineProps<{
   canUpdate: true,
   requiresStudentPerspective: true,
 });
+
+const isDesktop = useMediaQuery('(min-width: 1024px)');
+const notesOpen = ref(false);
 
 /** Shared by the heading and the edit textarea so the two render at identical height. */
 const TITLE_CLASSES = 'text-xl sm:text-2xl md:text-3xl font-bold leading-tight tracking-tight text-foreground';
@@ -257,14 +283,20 @@ const form = useForm<AgendaItemFormData>({
   })),
 });
 
-const { autoSaveEnabled, saveStatus, submit, saveThen } = useAgendaItemAutosave(
+const { saveStatus, submit, saveThen } = useAgendaItemAutosave(
   form,
   props.agendaItem.id,
 );
 
 // Read-first: configured items open in view mode; unconfigured ones in edit
 // mode. View-only visitors (no update right) never enter edit mode.
-const editing = ref(props.canUpdate && props.agendaItem.type == null);
+const requestedMode = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search).get('mode')
+  : null;
+const requestedFocus = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search).get('focus')
+  : null;
+const editing = ref(props.canUpdate && (props.agendaItem.type == null || requestedMode === 'edit'));
 
 /**
  * Which language the editor writes. Lithuanian is the source language; English is filled in
@@ -307,12 +339,21 @@ const navigateTo = (id: string) => {
   saveThen(() => router.visit(route('agendaItems.edit', id)));
 };
 
-const meetingIsPublic = computed(() => Boolean((props.agendaItem.meeting as any)?.is_public));
+const meetingIsPublic = computed(() => Boolean(
+  (props.agendaItem.meeting as (App.Entities.Meeting & { is_public?: boolean }) | undefined)?.is_public,
+));
 
 const statusMeta = computed(() => getAgendaItemStatusMeta({
   id: props.agendaItem.id,
   type: form.type,
-  votes: form.votes as any,
+  votes: form.votes.map(vote => ({
+    id: vote.id ?? undefined,
+    is_main: vote.is_main,
+    is_consensus: vote.is_consensus,
+    decision: vote.decision,
+    student_vote: vote.student_vote,
+    student_benefit: vote.student_benefit,
+  } satisfies AgendaStatusVote)),
 }, props.requiresStudentPerspective));
 
 const mainInstitution = computed(() => props.agendaItem.meeting?.institutions?.[0] ?? null);
@@ -324,7 +365,9 @@ const currentPosition = computed(() => {
 
 const meetingLabel = computed(() => {
   const { meeting } = props.agendaItem;
-  if (!meeting) { return ''; }
+  if (!meeting) {
+    return '';
+  }
   if (meeting.start_time) {
     return formatStaticTime(new Date(meeting.start_time), {
       year: 'numeric',
@@ -362,6 +405,17 @@ usePageBreadcrumbs(() => {
 
   items.push(BreadcrumbHelpers.createBreadcrumbItem(`${$t('Punktas')} ${currentPosition.value}`));
   return items;
+});
+
+onMounted(() => {
+  if (!editing.value || !requestedFocus) {
+    return;
+  }
+
+  nextTick(() => {
+    document.getElementById(requestedFocus === 'votes' ? 'agenda-item-votes' : 'agenda-item-type')
+      ?.scrollIntoView({ block: 'center' });
+  });
 });
 </script>
 

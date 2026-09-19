@@ -171,7 +171,7 @@ const currentUser = computed(() => {
 const notes = useAgendaItemNotes(props.agendaItemId, currentUser.value);
 
 const expanded = ref(false);
-const spotlight = useFeatureSpotlight('agenda-notes-v1');
+const spotlight = useFeatureSpotlight('agenda-notes-v2');
 
 const expand = () => {
   expanded.value = true;

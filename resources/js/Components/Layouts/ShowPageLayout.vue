@@ -70,6 +70,7 @@
 </template>
 
 <script setup lang="ts">
+/** @deprecated Superseded by RecordPage in PR 5.3; remove after long-tail record migration in Phase 10. */
 import type { Component } from 'vue';
 import { computed, watch } from 'vue';
 import { Head } from '@inertiajs/vue3';

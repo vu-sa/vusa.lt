@@ -5,6 +5,14 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.8 — Naujas pradžios puslapis ir posėdžių sąrašas (2026-09-19) {#v2-8}
+
+- ⭐ **Pradžia prasideda nuo to, kas laukia** — viršuje matai, ką turi padaryti, su nuoroda tiesiai į ekraną, kuriame tai atliekama; toliau — greiti kūrimo veiksmai, artimiausi posėdžiai, tavo koordinatorius ir neseniai redaguoti įrašai
+- ⭐ **Posėdžių sąrašas su filtrais ir peržiūra** — „Posėdžiai“ rodomi eilutėmis, lentele arba su peržiūros skydeliu; yra greiti filtrai („Mano institucijos“, „Be balsavimų“, „Šie metai“), filtrai pagal metus, būseną ir padalinį, o „Rodyti daugiau“ ir grįžimas atgal palieka sąrašą toje pačioje vietoje
+- ✨ **Ką tik pakeistas posėdis matomas iš karto** — sukurtas ar atnaujintas posėdis sąrašo viršuje rodomas dar nespėjus atsinaujinti paieškos indeksui
+- 🔧 **Studentų atstovai mato „Posėdžiai“** — atstovai, turintys tik savo posėdžių skaitymo teisę, anksčiau negalėjo atverti posėdžių sąrašo, nors galėjo posėdžius kurti ir redaguoti
+- 🔧 **Teisingas užpildymo filtras šiukšlinėje** — ištrintų posėdžių sąraše filtras pagal užpildymą VU SA posėdžius klaidingai laikė neužpildytais
+
 ## v2.7 — Naujas pradžios turas ir įrenginių statistika (2026-09-19) {#v2-7}
 
 - ✨ **Greitesnė navigacija ir klaviatūros trumpiniai** — neseniai atverti administravimo puslapiai įkeliami akimirksniu, o `?` parodo trumpinių gidą: `/` nukreipia į sąrašo paiešką, o ⌘/Ctrl + Enter išsaugo formą
