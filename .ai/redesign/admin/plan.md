@@ -27,8 +27,8 @@ One PR = one row. Rules:
 | **2.2** | Colour system tokens: 6 status roles + 8 categories, Storybook + axe contrast, Storybook swatches | 2.1 | ✅ |
 | **2.3** | `StatusBadge` + a label map per state enum (reservations, votes, tasks, content, support) | 2.2 | ✅ |
 | **2.4** | Entity-type registry: icon + category colour, one source for every surface | 2.2 | ✅ |
-| **2.5** | `EmptyState`, content-shaped skeletons, navigation progress bar (O16) | 2.1 |
-| **2.6** | Date/time formatter (U9) | — |
+| **2.5** | `EmptyState`, content-shaped skeletons, navigation progress bar (O16) | 2.1 | ✅ |
+| **2.6** | Date/time formatter (U9) | — | ✅ |
 | **2.7** | Picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs): native on coarse pointers, one per data kind | 2.1 |
 | **2.8** | Primitive audit: input, select, table, tabs, sheet, dialog, calendar, command tokenised | 2.1 |
 | **2.9** | Lint fence scaffolding: `MIGRATED_ADMIN_PATHS` (empty), raw-hue and `rounded`/`shadow` rules | — |
@@ -166,8 +166,8 @@ Brief:
       until PR 4.1 becomes its first consumer
 - [ ] Primitive audit for hardcoded `bg-white`/`zinc-*` the public work did not need (input, select,
       table, tabs, sheet, dialog, calendar, command)
-- [ ] `EmptyState` (U11), content-shaped skeletons, navigation progress bar (O16)
-- [ ] Date formatter (U9); the picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs) (U18)
+- [x] `EmptyState` (U11), content-shaped skeletons, navigation progress bar (O16) — PR 2.5 (2026-09-19)
+- [x] Date formatter (U9) — PR 2.6 (2026-09-19); the picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs) (U18, PR 2.7)
 - [x] Storybook: admin surface, status-role and category swatches; a11y `error` on new admin patterns
       (U17) — `Patterns/AdminSurface.stories.ts`, `Patterns/ColourSystem.stories.ts` (PR 2.1 + 2.2)
 - [ ] Lint fence scaffolding: a `MIGRATED_ADMIN_PATHS` glob list, empty at first
@@ -222,6 +222,54 @@ Brief:
 - Both components have admin-surface Storybook stories with a11y set to `error`; registry and
   state-map completeness are guarded by Vitest so newly generated enum values cannot silently ship
   without presentation metadata.
+
+### PR 2.5 + 2.6 Notes (2026-09-19)
+
+- **`EmptyState` (U11, O16):** Moved directly to `resources/js/Components/Patterns/EmptyState.vue` as
+  the single canonical component (with `Components/Empty/EmptyState.vue` delegating to it for
+  backwards compatibility). Supports two distinct modes:
+  - `empty` (default): first-use teaching state with mascot/custom icon, title, description, primary
+    action button, and docs link.
+  - `no-results`: search/filter empty state with `SearchX` icon, localized heading and description,
+    and clear filters action.
+  - Square hairline chip (`size-12 border border-border bg-secondary text-muted-foreground`)
+    replaces the legacy `rounded-full` chip.
+- **Content-shaped skeletons (O16, O3):** Reusable skeletons under
+  `resources/js/Components/Patterns/Skeletons/`:
+  - `CollectionSkeleton`: supports both `viewMode="rows"` (hairline row list with icon/date plate,
+    title, badges) and `viewMode="table"` (table header + tabular rows with varying column widths and
+    `sr-only` labels for axe compliance).
+  - `RecordSkeleton`: title band (icon plate, title, status, primary action button), key facts strip
+    (4 fact tiles), and card content block.
+  - `FormSkeleton`: question heading, intro text, single-column field measure (~40rem) with labels,
+    input boxes, hints, and sticky save bar placeholder.
+  - `SectionCardSkeleton`: card header with title and count badge, and hairline item rows.
+  - Uses admin semantic tokens (`bg-secondary`, `bg-secondary/70`, `border-border`, `bg-card`) with
+    zero radius and reduced-motion support.
+- **Navigation progress bar (O16, O3):**
+  - Inertia global progress bar `#nprogress .bar` tokenised in `resources/css/admin/surface.css` at 2px
+    height with brand colour (`var(--brand-fill, var(--brand))`); `#nprogress .peg` blurry box-shadow
+    removed per rule 5.
+  - Reusable hairline `TopProgressBar.vue` component in `Patterns/` (accessible progressbar with
+    `aria-label`, indeterminate scanning bar or determinate percentage). Mounted in
+    `ServerDataTable.vue` when `loading` is true, replacing empty lags with a thin top progress bar.
+- **Date/time formatter (U9):**
+  - `resources/js/Utils/dateTime.ts` is the single canonical formatter locked to `Europe/Vilnius`
+    timezone and Lithuanian formats by default.
+  - `formatDate`: default `YYYY-MM-DD` ('iso') for tables, 'full' ("2026 m. rugsėjo 19 d.") for record
+    facts, and 'short'.
+  - `formatTime`: 24-hour time `HH:mm`.
+  - `formatDateTime`: combined date and time.
+  - `formatNearDate`: relative when near ("prieš 2 val.", "po 3 d.", "vakar", "rytoj", "ką tik"),
+    falling back to absolute date beyond 7 days.
+  - `formatDateFact`: structured `{ display, tooltip, isNear, relative, absolute }` for record facts
+    strips.
+  - `useDateFormatter()` composable in `resources/js/Composables/useDateFormatter.ts` binding reactive
+    Inertia locale. Re-exported via `Utils/IntlTime.ts`.
+- **Validation:** Storybook stories for `EmptyState`, `Skeletons`, and `TopProgressBar` on
+  `surface: 'admin'` with axe a11y set to error (`test:storybook`); 100% passing across all 17 story
+  test files (90 tests) and 394 Vitest test files (3,004 tests). Clean ESLint check across all
+  modified/new files.
 
 ## Phase 3 — Navigation catalog
 

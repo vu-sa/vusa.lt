@@ -27,7 +27,7 @@ describe('EmptyState', () => {
     const withIcon = mount(EmptyState, { props, slots: { icon: '<svg />' } });
     const withMascot = mount(EmptyState, { props });
 
-    expect(withIcon.find('.rounded-full').exists()).toBe(true);
-    expect(withMascot.find('.rounded-full').exists()).toBe(false);
+    expect(withIcon.find('.size-12').exists()).toBe(true);
+    expect(withMascot.find('.size-12').exists()).toBe(false);
   });
 });

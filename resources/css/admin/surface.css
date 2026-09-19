@@ -162,3 +162,16 @@ html[data-surface="admin"] {
   background: var(--secondary);
   border-color: var(--brand);
 }
+
+/* Navigation progress bar under admin surface: crisp, 2px hairline in brand colour
+   with zero shadows, glow or peg blur (rules/visual.md #5, O16, O3). */
+html[data-surface="admin"] #nprogress .bar {
+  background: var(--brand-fill, var(--brand));
+  height: 2px;
+}
+
+html[data-surface="admin"] #nprogress .peg {
+  box-shadow: none;
+  display: none;
+}
+

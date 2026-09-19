@@ -84,7 +84,9 @@ Rules for anything added there:
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
 | A month/day date tile | `DateBadge` | `@/Components/Patterns` |
-| "Nothing here yet" | `EmptyState` | `@/Components/Patterns` |
+| "Nothing here yet" / Filter empty | `EmptyState` | `@/Components/Patterns` |
+| Loading placeholder shaped like content | `CollectionSkeleton`, `RecordSkeleton`, `FormSkeleton`, `SectionCardSkeleton` | `@/Components/Patterns` |
+| Hairline top loading bar for panels/tables | `TopProgressBar` | `@/Components/Patterns` |
 | Documents for any model | `FileablePreviewCard` | `@/Components/Files` |
 | A clickable card's hover styling | `interactiveCardClass` | `@/Utils/interactiveCard` |
 

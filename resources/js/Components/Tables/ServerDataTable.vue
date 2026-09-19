@@ -32,6 +32,7 @@
     </Alert>
 
     <!-- Actual data table -->
+    <TopProgressBar v-if="loading" indeterminate class="-mb-4 relative z-20" />
     <DataTableProvider ref="dataTableProviderRef" :columns="displayColumns" :data :is-server-side="true" :total-items="totalCount"
       :server-pagination :server-sorting="sorting" :page-size :enable-pagination="true" :row-class-name="computedRowClassName" :empty-message
       :enable-filtering="false" :enable-column-visibility :global-filter="searchText" :enable-row-selection
@@ -165,7 +166,7 @@ import TrashViewToggle from './TrashViewToggle.vue';
 
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
-import EmptyState from '@/Components/Empty/EmptyState.vue';
+import { EmptyState, TopProgressBar } from '@/Components/Patterns';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import DateCell from '@/Components/ui/data-table/cells/DateCell.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';

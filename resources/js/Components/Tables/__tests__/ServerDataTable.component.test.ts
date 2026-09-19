@@ -296,4 +296,16 @@ describe('ServerDataTable', () => {
       expect(wrapper.text()).not.toContain('No news found');
     });
   });
+
+  describe('loading progress bar (O3)', () => {
+    it('shows the hairline progress bar while the table is fetching', async () => {
+      wrapper = mountTable();
+      expect(wrapper.findComponent({ name: 'TopProgressBar' }).exists()).toBe(false);
+
+      const provider = wrapper.findComponent({ name: 'DataTableProvider' });
+      await provider.vm.$emit('page-change', 1);
+
+      expect(wrapper.findComponent({ name: 'TopProgressBar' }).exists()).toBe(true);
+    });
+  });
 });
