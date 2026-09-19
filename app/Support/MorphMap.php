@@ -35,6 +35,7 @@ final class MorphMap
         'comment_reaction' => Models\CommentReaction::class,
         'content' => Models\Content::class,
         'content_part' => Models\ContentPart::class,
+        'daily_device_metric' => Models\DailyDeviceMetric::class,
         'document' => Models\Document::class,
         'dutiable' => Models\Pivots\Dutiable::class,
         'duty' => Models\Duty::class,

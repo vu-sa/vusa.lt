@@ -1453,5 +1453,15 @@
     "Nėra veiklos": "No activity",
     "Aktyvi": "Active",
     "Suplanuotas posėdis": "Scheduled meeting",
-    "Užfiksuotas kontaktas": "Contact recorded"
+    "Užfiksuotas kontaktas": "Contact recorded",
+    "Prisijungimai pagal įrenginį (30 d.)": "Logins by device (30 d.)",
+    "Iš viso prisijungimų:": "Total logins:",
+    "Kompiuteriai": "Desktops",
+    "Telefonai": "Phones",
+    "Planšetės": "Tablets",
+    "PWA paleidimai": "PWA launches",
+    "programėlė": "app",
+    "PWA": "PWA",
+    "Nėra užfiksuotų prisijungimų duomenų": "No recorded login data",
+    "Iš viso": "Total"
 }

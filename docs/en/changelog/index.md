@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.7 — Streamlined welcome tour and device split metrics (2026-09-19) {#v2-7}
+
+- ✨ **Updated welcome tour** — the admin homepage tour is streamlined to 5 focused steps highlighting workspaces, command palette search, quick create actions, and tasks
+- ⭐ **Device split metrics** — system status now displays aggregate daily login statistics broken down by device type (desktops, phones, tablets) and PWA app launches
+
 ## v2.6 — A more useful Mano VU SA account menu (2026-09-19) {#v2-6}
 
 - ⭐ **Help is always close at hand** — the account menu now includes documentation, the page tour, updates, your requests and problem reporting; reports automatically retain the page and browser context

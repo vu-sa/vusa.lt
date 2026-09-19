@@ -34,13 +34,6 @@ trait HasUIPreferences
     public static int $maxPinnedPages = 10;
 
     /**
-     * Allowed sidebar density values.
-     *
-     * @var list<string>
-     */
-    public static array $densityValues = ['comfortable', 'compact'];
-
-    /**
      * Default UI preferences structure.
      *
      * Note: `recent_pages` is intentionally kept empty here. `array_replace_recursive`
@@ -70,7 +63,6 @@ trait HasUIPreferences
                 'collapsed' => false,
             ],
             'appearance' => [
-                'density' => 'comfortable',
                 // Admin redesign (.ai/redesign/admin) opt-in — see PR 2.1. Not user-facing until
                 // Phase 4 replaces this with the shell's own toggle.
                 'new_shell' => false,
@@ -202,29 +194,6 @@ trait HasUIPreferences
         $this->update(['ui_preferences' => $preferences]);
     }
 
-    /**
-     * Get the sidebar density. Falls back to 'comfortable' for unknown values.
-     */
-    public function getDensity(): string
-    {
-        $density = $this->ui_preferences['appearance']['density'] ?? 'comfortable';
-
-        return in_array($density, self::$densityValues, true) ? $density : 'comfortable';
-    }
-
-    /**
-     * Persist the sidebar density. Unknown values are ignored.
-     */
-    public function setDensity(string $density): void
-    {
-        if (! in_array($density, self::$densityValues, true)) {
-            return;
-        }
-
-        $preferences = $this->ui_preferences;
-        $preferences['appearance']['density'] = $density;
-        $this->update(['ui_preferences' => $preferences]);
-    }
 
     /**
      * Get whether the admin redesign's new shell (.ai/redesign/admin) is opted in.

@@ -220,19 +220,6 @@ describe('pinned pages', () => {
   });
 });
 
-describe('density', () => {
-  it('seeds from server prefs and setDensity persists appearance.density', () => {
-    const ctx = mountProvider();
-    expect(ctx.density.value).toBe('comfortable');
-
-    ctx.setDensity('compact');
-    expect(ctx.density.value).toBe('compact');
-    const { url, body } = lastFetch();
-    expect(url).toContain('api.v1.admin.user-preferences.update');
-    expect(body.appearance.density).toBe('compact');
-  });
-});
-
 describe('sidebar collapsed', () => {
   it('setSidebarCollapsed persists sidebar.collapsed', () => {
     const ctx = mountProvider();

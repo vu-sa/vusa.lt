@@ -14,6 +14,7 @@ use App\Listeners\HandleDutiableChange;
 use App\Listeners\HandleTaskCreated;
 use App\Listeners\NotifyUsersOfComment;
 use App\Listeners\QueueNotificationForDigest;
+use App\Listeners\RecordDeviceLogin;
 use App\Listeners\ReservationResource\HandleReservationResourceCreated;
 use App\Listeners\ReservationResource\HandleReservationResourceStateChanged;
 use App\Listeners\SendMemberRegistrationNotification;
@@ -44,6 +45,7 @@ use App\Tasks\Subscribers\ApprovalTaskSubscriber;
 use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use App\Tasks\Subscribers\MeetingTaskSubscriber;
 use App\Tasks\Subscribers\ReservationTaskSubscriber;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Notifications\Events\NotificationSending;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -95,6 +97,9 @@ class EventServiceProvider extends ServiceProvider
         NotificationSending::class => [
             BlockExternalNotificationsOnStaging::class,
             QueueNotificationForDigest::class,
+        ],
+        Login::class => [
+            RecordDeviceLogin::class,
         ],
     ];
 

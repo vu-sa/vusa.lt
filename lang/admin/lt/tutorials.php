@@ -90,59 +90,27 @@ return [
         ],
     ],
 
-    // Admin Home Tour
+    // Admin Home / Welcome Tour (≤ 5 steps)
     'admin_home' => [
-        'welcome' => [
-            'title' => 'Sveiki atvykę į Mano VU SA!',
-            'description' => 'Mano VU SA atsinaujino!<br><br>Tai yra jūsų <strong>pagrindinis darbalaukis</strong>, kuriame rasite svarbiausius įrankius ir informaciją. Leiskite trumpai supažindinti su pagrindinėmis funkcijomis.',
+        'workspaces' => [
+            'title' => 'Darbo sritys',
+            'description' => 'Mano VU SA suskirstyta į sritis pagal tavo pareigybes ir teises (Pradžia, Atstovavimas, Rezervacijos ir kt.). Čia greitai persijungsi tarp jų.',
         ],
-        'home_search' => [
-            'title' => 'Paieška visur',
-            'description' => 'Šioje paieškoje galite rasti <strong>posėdžius, institucijas, dokumentus ir kitus įrašus</strong>. Ją bet kada pasieksite paspaudę <strong>Ctrl+K</strong>.',
+        'command_palette' => [
+            'title' => 'Greitoji paieška',
+            'description' => 'Paspausk <strong>Ctrl+K</strong> (arba <strong>⌘K</strong>) arba paieškos laukelį – rasi puslapius, dokumentus, kontaktus ar neseniai redaguotus įrašus.',
         ],
-        'meetings_card' => [
-            'title' => 'Artėjantys susitikimai',
-            'description' => 'Ši kortelė rodo jūsų <strong>artimiausius suplanuotus susitikimus</strong>. Galite greitai sukurti naują susitikimą arba peržiūrėti visus.',
-        ],
-        'nav_visak' => [
-            'title' => 'ViSAK – Atstovavimas',
-            'description' => 'Šis mygtukas atidaro <strong>ViSAK</strong> – Virtualaus Studentų Atstovų Koordinatoriaus puslapį, kuriame galite valdyti visą savo atstovavimo veiklą.',
-        ],
-        'nav_administravimas' => [
-            'title' => 'Administravimas',
-            'description' => 'Šis mygtukas atidaro <strong>administravimo skyrių</strong>, kuriame galite valdyti vartotojus, padalinius, institucijas ir kitus nustatymus.',
-        ],
-        'action_window' => [
-            'title' => 'Greiti veiksmai',
-            'description' => 'Nežinai, nuo ko pradėti? Paspaudęs čia rasi <strong>dažniausius veiksmus</strong> – pranešti apie posėdį, pažymėti, kad posėdžių nebus, ar papildyti jau įvykusį. Klausiama po vieną dalyką, tad nereikia nieko atsiminti iš anksto.',
+        'action_create' => [
+            'title' => 'Greitas kūrimas',
+            'description' => 'Vienas mygtukas visiems veiksmams – pradėk naują posėdį, pateik rezervaciją ar sukurk registraciją.',
         ],
         'tasks_card' => [
-            'title' => 'Užduotys',
-            'description' => 'Ši kortelė rodo jūsų <strong>asmenines užduotis</strong> ir jų būseną. Matysite, kiek užduočių laukia ir kurios artėja.',
+            'title' => 'Užduotys ir dėmesio eilė',
+            'description' => 'Tavo asmeninės užduotys ir artėjantys priminimai visada matomi Pradžioje – niekas nepasimes.',
         ],
-        'tasks_indicator' => [
-            'title' => 'Užduočių indikatorius',
-            'description' => 'Šis mygtukas rodo jūsų <strong>laukiančių užduočių skaičių</strong>. Spustelėkite, kad peržiūrėtumėte užduotis ar pažymėtumėte jas kaip atliktas.',
-        ],
-        'notifications_indicator' => [
-            'title' => 'Pranešimai',
-            'description' => 'Šis mygtukas rodo jūsų <strong>neperskaitytus pranešimus</strong>. Spustelėkite, kad peržiūrėtumėte naujausius pranešimus.',
-        ],
-        'help_button' => [
-            'title' => 'Pagalbos mygtukas',
-            'description' => 'Šis mygtukas leidžia <strong>paleisti šį vadovą iš naujo</strong> bet kada. Kiekvienas puslapis su vadovu turi šį mygtuką.',
-        ],
-        'nav_dokumentacija' => [
-            'title' => 'Dokumentacija',
-            'description' => 'Spustelėkite čia, kad atidarytumėte <strong>išsamią platformos dokumentaciją</strong> su visais paaiškinimais ir instrukcijomis.',
-        ],
-        'user_menu' => [
-            'title' => 'Jūsų profilis',
-            'description' => 'Šiame meniu rasite <strong>profilio nustatymus</strong>, kalbos ir temos parinktis bei atsijungimo mygtuką.',
-        ],
-        'nav_feedback' => [
-            'title' => 'Palik atsiliepimą',
-            'description' => 'Turi pastebėjimų ar pasiūlymų? <strong>Parašyk mums!</strong> Nuolat tobuliname platformą pagal jūsų atsiliepimus. Sėkmės! ✨',
+        'account_menu' => [
+            'title' => 'Paskyra ir pagalba',
+            'description' => 'Čia rasi savo profilį, temos bei kalbos nustatymus, dokumentaciją ir pagalbos meniu.',
         ],
     ],
 

@@ -10,6 +10,7 @@
       </Link>
 
       <WorkspacePicker
+        data-tour="workspace-picker"
         class="hidden md:block"
         :workspaces
         :active-workspace
@@ -17,12 +18,13 @@
         :show-all-sections
       />
 
-      <div class="flex min-w-0 flex-1 items-center justify-end md:justify-start">
+      <div data-tour="command-palette" class="flex min-w-0 flex-1 items-center justify-end md:justify-start">
         <PaletteField />
       </div>
 
       <Button
         v-if="canCreate"
+        data-tour="action-create"
         variant="brand"
         class="hidden text-xs font-bold uppercase tracking-wide md:inline-flex"
         @click="emit('create')"
@@ -32,7 +34,7 @@
       </Button>
 
       <NotificationsIndicator />
-      <div class="hidden md:block">
+      <div data-tour="account-menu" class="hidden md:block">
         <ShellAccountMenu />
       </div>
     </div>

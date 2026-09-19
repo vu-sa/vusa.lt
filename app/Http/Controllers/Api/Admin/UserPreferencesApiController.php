@@ -31,11 +31,6 @@ class UserPreferencesApiController extends ApiController
             $user->setSidebarCollapsed($request->boolean('sidebar.collapsed'));
         }
 
-        $density = $request->input('appearance.density');
-        if (is_string($density)) {
-            $user->setDensity($density);
-        }
-
         if ($request->has('appearance.new_shell')) {
             $user->setNewAdminShellEnabled($request->boolean('appearance.new_shell'));
         }

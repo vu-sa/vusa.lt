@@ -90,59 +90,27 @@ return [
         ],
     ],
 
-    // Admin Home Tour
+    // Admin Home / Welcome Tour (≤ 5 steps)
     'admin_home' => [
-        'welcome' => [
-            'title' => 'Welcome to Mano VU SA!',
-            'description' => 'This is your <strong>main dashboard</strong> where you\'ll find the most important tools and information. Let us briefly introduce you to the main features.',
+        'workspaces' => [
+            'title' => 'Workspaces',
+            'description' => 'Mano VU SA is organized into workspaces based on your duties and permissions (Home, Representation, Reservations, etc.). Switch between them here.',
         ],
-        'home_search' => [
-            'title' => 'Search everywhere',
-            'description' => 'Use this search to find <strong>meetings, institutions, documents and other records</strong>. You can open it anywhere by pressing <strong>Ctrl+K</strong>.',
+        'command_palette' => [
+            'title' => 'Quick search',
+            'description' => 'Press <strong>Ctrl+K</strong> (or <strong>⌘K</strong>) or click the search box to find pages, documents, contacts, or recently edited records.',
         ],
-        'meetings_card' => [
-            'title' => 'Upcoming Meetings',
-            'description' => 'This card shows your <strong>nearest scheduled meetings</strong>. You can quickly create a new meeting or view all of them.',
-        ],
-        'nav_visak' => [
-            'title' => 'ViSAK – Representation',
-            'description' => 'This button opens <strong>ViSAK</strong> – the Virtual Student Representatives Coordinator page where you can manage all your representation activities.',
-        ],
-        'nav_administravimas' => [
-            'title' => 'Administration',
-            'description' => 'This button opens the <strong>administration section</strong> where you can manage users, units, institutions, and other settings.',
-        ],
-        'action_window' => [
-            'title' => 'Quick actions',
-            'description' => 'Not sure where to start? This opens the <strong>most common actions</strong> – report a meeting, note that there will be no meetings, or fill in one that already happened. It asks one thing at a time, so there is nothing to remember in advance.',
+        'action_create' => [
+            'title' => 'Quick create',
+            'description' => 'A single door for creation – start a new meeting, request a reservation, or create a registration.',
         ],
         'tasks_card' => [
-            'title' => 'Tasks',
-            'description' => 'This card shows your <strong>personal tasks</strong> and their status. You\'ll see how many tasks are pending and which are due soon.',
+            'title' => 'Tasks & attention queue',
+            'description' => 'Your personal tasks and upcoming reminders stay visible on Home – nothing gets lost.',
         ],
-        'tasks_indicator' => [
-            'title' => 'Tasks Indicator',
-            'description' => 'This button shows your <strong>pending tasks count</strong>. Click to review tasks or mark them as complete.',
-        ],
-        'notifications_indicator' => [
-            'title' => 'Notifications',
-            'description' => 'This button shows your <strong>unread notifications</strong>. Click to view the latest notifications.',
-        ],
-        'help_button' => [
-            'title' => 'Help Button',
-            'description' => 'This button allows you to <strong>restart this guide</strong> at any time. Each page with a guide has this button.',
-        ],
-        'nav_dokumentacija' => [
-            'title' => 'Documentation',
-            'description' => 'Click here to open the <strong>detailed platform documentation</strong> with all explanations and instructions.',
-        ],
-        'user_menu' => [
-            'title' => 'Your Profile',
-            'description' => 'In this menu you\'ll find <strong>profile settings</strong>, language and theme options, and the logout button.',
-        ],
-        'nav_feedback' => [
-            'title' => 'Leave Feedback',
-            'description' => 'Have observations or suggestions? <strong>Write to us!</strong> We constantly improve the platform based on your feedback. Good luck! ✨',
+        'account_menu' => [
+            'title' => 'Account & help',
+            'description' => 'Access your profile, appearance and language settings, documentation, and the help menu here.',
         ],
     ],
 

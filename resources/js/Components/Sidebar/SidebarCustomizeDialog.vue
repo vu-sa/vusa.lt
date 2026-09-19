@@ -27,25 +27,6 @@
         </div>
       </div>
 
-      <!-- Appearance -->
-      <div class="border-t pt-3">
-        <div class="flex items-center gap-2 rounded-md px-2 py-2.5">
-          <Rows3 class="size-4 shrink-0 text-muted-foreground" />
-          <div class="flex-1">
-            <Label for="density-compact" class="cursor-pointer text-sm font-normal">
-              {{ $t('Kompaktiškas vaizdas') }}
-            </Label>
-            <p class="text-xs text-muted-foreground">
-              {{ $t('Sumažina tarpus tarp elementų.') }}
-            </p>
-          </div>
-          <Switch
-            id="density-compact"
-            :model-value="density === 'compact'"
-            @update:model-value="(value: boolean) => setDensity(value ? 'compact' : 'comfortable')" />
-        </div>
-      </div>
-
       <DialogFooter>
         <Button variant="ghost" size="sm" @click="handleReset">
           {{ $t('Atstatyti numatytuosius') }}
@@ -70,7 +51,6 @@ import {
   GripVertical,
   Minus,
   Pin,
-  Rows3,
 } from 'lucide-vue-next';
 
 import { useUIPreferences, type ToggleableSection } from '@/Composables/useUIPreferences';
@@ -95,8 +75,6 @@ const {
   orderedSections,
   setSectionOrder,
   resetSections,
-  density,
-  setDensity,
 } = useUIPreferences();
 
 const sectionMeta: Record<ToggleableSection, { label: string; icon: Component }> = {

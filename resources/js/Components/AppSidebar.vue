@@ -23,9 +23,7 @@
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
-    <SidebarContent
-      :data-density="density"
-      :class="['flex flex-col group/density', density === 'compact' ? 'gap-2' : 'gap-4']">
+    <SidebarContent class="flex flex-col gap-4">
       <!-- Replaces the old "Greiti veiksmai" list. A SidebarGroup so its padding is
            the same above and below as every other section; deliberately outside
            `orderedSections`, because this is the front door for someone who does not
@@ -82,100 +80,93 @@
       <SidebarMenu>
         <!-- User account dropdown -->
         <SidebarMenuItem data-tour="user-menu">
-          <SpotlightPopover
-            :title="$t('Pritaikyk šoninę juostą sau')"
-            :description="$t('Paskyros meniu gali pritaikyti šoninę juostą, prisegti puslapius ir peržiūrėti klaviatūros trumpinius.')"
-            :is-dismissed="settingsSpotlight.isDismissed.value"
-            position="top-right"
-            style="display: block; width: 100%;"
-            @dismiss="settingsSpotlight.dismiss"
-          >
-            <DropdownMenu @update:open="(o: boolean) => { if (o) { settingsSpotlight.dismiss(); } }">
-              <DropdownMenuTrigger as-child>
-                <SidebarMenuButton size="lg"
-                  class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/60 transition-all duration-200">
-                  <Avatar class="h-9 w-9 rounded-xl ring-2 ring-primary/10 shadow-sm">
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <SidebarMenuButton size="lg"
+                class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/60 transition-all duration-200">
+                <Avatar class="h-9 w-9 rounded-xl ring-2 ring-primary/10 shadow-sm">
+                  <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
+                    :alt="currentUser.name" />
+                  <AvatarFallback
+                    class="rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                    {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
+                  </AvatarFallback>
+                </Avatar>
+                <div class="grid flex-1 text-left text-sm leading-tight">
+                  <span class="truncate font-semibold">{{ currentUser.name }}</span>
+                  <span class="truncate text-xs text-muted-foreground">{{ currentUser.email }}</span>
+                </div>
+                <ChevronsUpDown class="ml-auto size-4 text-muted-foreground" />
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <!-- User dropdown menu -->
+            <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg" align="end"
+              :side-offset="4">
+              <DropdownMenuLabel class="p-0 font-normal">
+                <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                  <Avatar class="h-8 w-8 rounded-lg">
                     <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
                       :alt="currentUser.name" />
-                    <AvatarFallback
-                      class="rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">
+                    <AvatarFallback class="rounded-lg">
                       {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
                     </AvatarFallback>
                   </Avatar>
                   <div class="grid flex-1 text-left text-sm leading-tight">
                     <span class="truncate font-semibold">{{ currentUser.name }}</span>
-                    <span class="truncate text-xs text-muted-foreground">{{ currentUser.email }}</span>
-                  </div>
-                  <ChevronsUpDown class="ml-auto size-4 text-muted-foreground" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <!-- User dropdown menu -->
-              <DropdownMenuContent class="w-[--reka-dropdown-menu-trigger-width] min-w-56 rounded-lg" align="end"
-                :side-offset="4">
-                <DropdownMenuLabel class="p-0 font-normal">
-                  <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <Avatar class="h-8 w-8 rounded-lg">
-                      <AvatarImage v-if="currentUser.profile_photo_path" :src="currentUser.profile_photo_path"
-                        :alt="currentUser.name" />
-                      <AvatarFallback class="rounded-lg">
-                        {{ currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'VU' }}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div class="grid flex-1 text-left text-sm leading-tight">
-                      <span class="truncate font-semibold">{{ currentUser.name }}</span>
-                      <span class="truncate text-xs">{{ currentUser.email }}</span>
-                    </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem as-child>
-                    <Link :href="route('profile')" prefetch class="flex items-center w-full cursor-pointer">
-                      <UserIcon class="mr-2 h-4 w-4" />
-                      <span>{{ $t('Nustatymai') }}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem class="cursor-pointer" @select="showCustomizeDialog = true">
-                    <SlidersHorizontal class="mr-2 h-4 w-4" />
-                    <span>{{ $t('Pritaikyti šoninę juostą') }}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem class="cursor-pointer" @select="showShortcutsDialog = true">
-                    <Keyboard class="mr-2 h-4 w-4" />
-                    <span>{{ $t('Klaviatūros trumpiniai') }}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <div class="p-2">
-                  <div class="flex items-center justify-between">
-                    <!-- Dark mode toggle -->
-                    <div class="flex items-center">
-                      <Button variant="ghost" size="icon" class="h-8 w-8" @click="toggleDarkMode">
-                        <Sun v-if="isDark" class="size-4" />
-                        <Moon v-else class="size-4" />
-                        <span class="sr-only">{{ $t('Tamsus režimas') }}</span>
-                      </Button>
-                      <span class="ml-2 text-sm">{{ $t(isDark ? 'Šviesus' : 'Tamsus') }}</span>
-                    </div>
-                    <!-- Language toggle -->
-                    <Button variant="ghost" size="icon" class="h-8 w-8" @click="changeLocale">
-                      <span class="flex items-center justify-center text-xs font-medium">
-                        {{ usePage().props.app.locale === 'en' ? 'LT' : 'EN' }}
-                      </span>
-                    </Button>
+                    <span class="truncate text-xs">{{ currentUser.email }}</span>
                   </div>
                 </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem @click="handleLogout">
-                  <LogOut class="mr-2 h-4 w-4" />
-                  <span>{{ $t('auth.logout') }}</span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <Link :href="route('profile')" prefetch class="flex items-center w-full cursor-pointer">
+                  <DropdownMenuItem as-child>
+                    <div class="flex items-center w-full">
+                      <UserIcon class="mr-2 h-4 w-4" />
+                      <span>{{ $t('Nustatymai') }}</span>
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuItem class="cursor-pointer" @select="showCustomizeDialog = true">
+                  <SlidersHorizontal class="mr-2 h-4 w-4" />
+                  <span>{{ $t('Pritaikyti šoninę juostą') }}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem @click="handleMicrosoftLogout">
-                  <ISimpleIconsMicrosoft class="mr-2 h-4 w-4" />
-                  <span>{{ $t('auth.logout_microsoft') }}</span>
+                <DropdownMenuItem class="cursor-pointer" @select="showShortcutsDialog = true">
+                  <Keyboard class="mr-2 h-4 w-4" />
+                  <span>{{ $t('Klaviatūros trumpiniai') }}</span>
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SpotlightPopover>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <div class="p-2">
+                <div class="flex items-center justify-between">
+                  <!-- Dark mode toggle -->
+                  <div class="flex items-center">
+                    <Button variant="ghost" size="icon" class="h-8 w-8" @click="toggleDarkMode">
+                      <Sun v-if="isDark" class="size-4" />
+                      <Moon v-else class="size-4" />
+                      <span class="sr-only">{{ $t('Tamsus režimas') }}</span>
+                    </Button>
+                    <span class="ml-2 text-sm">{{ $t(isDark ? 'Šviesus' : 'Tamsus') }}</span>
+                  </div>
+                  <!-- Language toggle -->
+                  <Button variant="ghost" size="icon" class="h-8 w-8" @click="changeLocale">
+                    <span class="flex items-center justify-center text-xs font-medium">
+                      {{ usePage().props.app.locale === 'en' ? 'LT' : 'EN' }}
+                    </span>
+                  </Button>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem @click="handleLogout">
+                <LogOut class="mr-2 h-4 w-4" />
+                <span>{{ $t('auth.logout') }}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleMicrosoftLogout">
+                <ISimpleIconsMicrosoft class="mr-2 h-4 w-4" />
+                <span>{{ $t('auth.logout_microsoft') }}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
       <!-- Version info -->
@@ -241,8 +232,6 @@ import KeyboardShortcutsDialog from './KeyboardShortcutsDialog.vue';
 import { Button } from './ui/button';
 
 import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import { useLogout } from '@/Composables/useLogout';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
@@ -295,35 +284,10 @@ watch(
 
 const isDark = useDark();
 const { lastUpdateDate, latestVersion, markAsSeen: markDocsUpdatesSeen } = useDocsUpdateIndicator();
-const { isSectionVisible, orderedSections, density } = useUIPreferences();
-
-// Density is anchored here: `group/density` + `data-density` on SidebarContent.
-// The shared sidebar primitives react via `group-data-[density=compact]/density:`
-// variants (see ui/sidebar/*), so every element — including future ones —
-// scales consistently in compact mode without per-selector tuning here.
+const { isSectionVisible, orderedSections } = useUIPreferences();
 
 const showCustomizeDialog = ref(false);
 const showShortcutsDialog = ref(false);
-
-// Draw attention to the account menu, which now hosts sidebar customization,
-// pinned pages and keyboard shortcuts. Dismisses once the menu is opened.
-const settingsSpotlight = useFeatureSpotlight('sidebar-settings-v1', { position: 'top-right' });
-
-// The reservations page is now a console: review requests, approve, hand over and mark returned
-// without opening each reservation. Dismisses as soon as the page is opened.
-const reservationsSpotlight = useFeatureSpotlight('reservations-dashboard-v1', {
-  title: $t('Rezervacijos dabar tvarkomos vienoje vietoje'),
-  description: $t('Peržiūrėk laukiančias užklausas, tvirtink, išduok ir žymėk grąžintus daiktus tiesiai iš sąrašo — nebereikia atidaryti kiekvienos rezervacijos atskirai.'),
-  position: 'right',
-});
-
-// Registration forms used to be buried behind cards on the forms index page. They now
-// hang off Svetainė, so returning users need to be told where they went.
-const registrationsSpotlight = useFeatureSpotlight('sidebar-registrations-v1', {
-  title: $t('Registracijos persikėlė į šoninę juostą'),
-  description: $t('Narių ir studentų atstovų registracijas dabar rasi po „Svetainė“ — nebereikia ieškoti formų sąraše.'),
-  position: 'right',
-});
 
 // "?" opens the keyboard-shortcuts cheatsheet, unless the user is typing.
 useEventListener('keydown', (event: KeyboardEvent) => {
@@ -413,16 +377,6 @@ const navMainItems = computed(() => {
       // Drives both the highlight and whether the dropdown starts open.
       isActive: route().current('dashboard.svetaine') || route().current('forms.*'),
       items: registrationChildren,
-      ...(registrationFormItems.value.length > 0
-        ? {
-            spotlight: {
-              title: registrationsSpotlight.title,
-              description: registrationsSpotlight.description,
-              isDismissed: registrationsSpotlight.isDismissed.value,
-              dismiss: registrationsSpotlight.dismiss,
-            },
-          }
-        : {}),
     });
   }
 
@@ -435,13 +389,6 @@ const navMainItems = computed(() => {
       isActive: route().current('dashboard.reservations*')
         || route().current('reservations.create')
         || route().current('reservations.show'),
-      spotlight: {
-      // title/description are plain strings on the composable, not refs.
-        title: reservationsSpotlight.title,
-        description: reservationsSpotlight.description,
-        isDismissed: reservationsSpotlight.isDismissed.value,
-        dismiss: reservationsSpotlight.dismiss,
-      },
     });
   }
 

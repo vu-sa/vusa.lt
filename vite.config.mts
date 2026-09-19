@@ -118,7 +118,7 @@ export default defineConfig(({ command }) => {
       background_color: '#27272a',
       display: 'standalone',
       scope: '/mano',
-      start_url: '/mano',
+      start_url: '/mano?source=pwa',
       icons: [
         {
           src: '/images/icons/favicons/pwa-192x192.png',

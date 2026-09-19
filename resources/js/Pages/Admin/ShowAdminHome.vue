@@ -67,7 +67,6 @@ import NewsListCard from '@/Pages/Admin/Dashboard/Components/NewsListCard.vue';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
-import { useOptionalSidebar } from '@/Composables/useOptionalSidebar';
 import { useActionWindow } from '@/Composables/useActionWindow';
 // import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
@@ -119,159 +118,50 @@ const hasAtstovavimas = computed(() => usePage().props.auth?.can?.create?.meetin
 // Check if user can access administration
 const canAccessAdministration = computed(() => usePage().props.auth?.can?.accessAdministration);
 
-// Get sidebar controls for expanding during tour
-const { setOpen, setOpenMobile, isMobile } = useOptionalSidebar();
 const actionWindow = useActionWindow();
 
-// Expand sidebar when highlighting sidebar elements
-const expandSidebar = () => {
-  if (isMobile.value) {
-    setOpenMobile(true);
-  }
-  else {
-    setOpen(true);
-  }
-};
-
-// Build conditional tour steps
-const tourSteps = computed(() => {
-  const steps = [];
-
-  // 1. Welcome step (always)
-  steps.push({
+// Build 5-step welcome tour for the new admin shell (Phase 4.8)
+const tourSteps = computed(() => [
+  {
+    element: '[data-tour="workspace-picker"]',
     popover: {
-      title: $t('tutorials.admin_home.welcome.title'),
-      description: $t('tutorials.admin_home.welcome.description'),
+      title: $t('tutorials.admin_home.workspaces.title'),
+      description: $t('tutorials.admin_home.workspaces.description'),
     },
-  });
-
-  // 2. Hero search bar
-  steps.push({
-    element: '[data-tour="home-search"]',
+  },
+  {
+    element: '[data-tour="command-palette"]',
     popover: {
-      title: $t('tutorials.admin_home.home_search.title'),
-      description: $t('tutorials.admin_home.home_search.description'),
+      title: $t('tutorials.admin_home.command_palette.title'),
+      description: $t('tutorials.admin_home.command_palette.description'),
     },
-  });
-
-  // 3. Upcoming meetings card (if atstovavimas)
-  if (hasAtstovavimas.value) {
-    steps.push({
-      element: '[data-tour="meetings-card"]',
-      popover: {
-        title: $t('tutorials.admin_home.meetings_card.title'),
-        description: $t('tutorials.admin_home.meetings_card.description'),
-      },
-    });
-  }
-
-  // 3. ViSAK in sidebar (if atstovavimas)
-  if (hasAtstovavimas.value) {
-    steps.push({
-      element: '[data-tour="nav-visak"]',
-      popover: {
-        title: $t('tutorials.admin_home.nav_visak.title'),
-        description: $t('tutorials.admin_home.nav_visak.description'),
-      },
-      onHighlightStarted: expandSidebar,
-    });
-  }
-
-  // 4. Administravimas button (if can manage administration)
-  if (canAccessAdministration.value) {
-    steps.push({
-      element: '[data-tour="nav-administravimas"]',
-      popover: {
-        title: $t('tutorials.admin_home.nav_administravimas.title'),
-        description: $t('tutorials.admin_home.nav_administravimas.description'),
-      },
-      onHighlightStarted: expandSidebar,
-    });
-  }
-
-  // 5. The action window, which replaced the old quick-actions list
-  steps.push({
-    element: '[data-tour="action-window"]',
+  },
+  {
+    element: '[data-tour="action-create"]',
     popover: {
-      title: $t('tutorials.admin_home.action_window.title'),
-      description: $t('tutorials.admin_home.action_window.description'),
+      title: $t('tutorials.admin_home.action_create.title'),
+      description: $t('tutorials.admin_home.action_create.description'),
     },
-    onHighlightStarted: expandSidebar,
-  });
-
-  // 6. Tasks card
-  steps.push({
+  },
+  {
     element: '[data-tour="tasks-card"]',
     popover: {
       title: $t('tutorials.admin_home.tasks_card.title'),
       description: $t('tutorials.admin_home.tasks_card.description'),
     },
-  });
-
-  // 7. Tasks indicator in top bar
-  steps.push({
-    element: '[data-tour="tasks-indicator"]',
+  },
+  {
+    element: '[data-tour="account-menu"]',
     popover: {
-      title: $t('tutorials.admin_home.tasks_indicator.title'),
-      description: $t('tutorials.admin_home.tasks_indicator.description'),
+      title: $t('tutorials.admin_home.account_menu.title'),
+      description: $t('tutorials.admin_home.account_menu.description'),
     },
-  });
-
-  // 8. Notifications indicator in top bar
-  steps.push({
-    element: '[data-tour="notifications-indicator"]',
-    popover: {
-      title: $t('tutorials.admin_home.notifications_indicator.title'),
-      description: $t('tutorials.admin_home.notifications_indicator.description'),
-    },
-  });
-
-  // 9. Help button in top bar
-  steps.push({
-    element: '[data-tour="help-button"]',
-    popover: {
-      title: $t('tutorials.admin_home.help_button.title'),
-      description: $t('tutorials.admin_home.help_button.description'),
-    },
-  });
-
-  // 10. Dokumentacija in sidebar
-  steps.push({
-    element: '[data-tour="nav-dokumentacija"]',
-    popover: {
-      title: $t('tutorials.admin_home.nav_dokumentacija.title'),
-      description: $t('tutorials.admin_home.nav_dokumentacija.description'),
-    },
-    onHighlightStarted: expandSidebar,
-  });
-
-  // 11. User menu (settings) in sidebar
-  steps.push({
-    element: '[data-tour="user-menu"]',
-    popover: {
-      title: $t('tutorials.admin_home.user_menu.title'),
-      description: $t('tutorials.admin_home.user_menu.description'),
-    },
-    onHighlightStarted: expandSidebar,
-  });
-
-  // 12. Leave feedback in sidebar (final step)
-  steps.push({
-    element: '[data-tour="nav-feedback"]',
-    popover: {
-      title: $t('tutorials.admin_home.nav_feedback.title'),
-      description: $t('tutorials.admin_home.nav_feedback.description'),
-    },
-    onHighlightStarted: expandSidebar,
-  });
-
-  return steps;
-});
+  },
+]);
 
 // Setup product tour
 const { startTour, startTourIfNew } = useProductTour({
-  tourId: 'admin-home-v1',
-  // Use function to defer translation evaluation until tour starts
+  tourId: 'admin-welcome-v1',
   steps: () => tourSteps.value,
 });
 

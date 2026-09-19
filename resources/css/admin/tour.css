@@ -1,0 +1,117 @@
+/* ==================================================================================
+   Admin tour popover tokens (.ai/redesign/admin, PR 4.8)
+   ==================================================================================
+   Retires the legacy driver-tour.css (hardcoded hexes, border-radius).
+   Popovers use the admin surface tokens (radius 0, hairline borders, brand buttons).
+   ================================================================================== */
+
+.driver-popover {
+  background-color: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 1.25rem !important;
+  max-width: 380px !important;
+  font-family: inherit !important;
+}
+
+.driver-popover-title {
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  color: var(--foreground) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.driver-popover-description {
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  color: var(--muted-foreground) !important;
+  margin-bottom: 1rem !important;
+}
+
+.driver-popover-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem !important;
+  margin-top: 0.5rem !important;
+  padding-top: 0.75rem !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.75rem !important;
+  color: var(--muted-foreground) !important;
+  font-weight: 500 !important;
+}
+
+.driver-popover-navigation-btns {
+  display: flex !important;
+  gap: 0.5rem !important;
+}
+
+.driver-popover-prev-btn,
+.driver-popover-next-btn {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.025em !important;
+  padding: 0.375rem 0.75rem !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  transition: background-color 150ms ease, color 150ms ease !important;
+  line-height: 1.25 !important;
+}
+
+.driver-popover-prev-btn {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: var(--muted) !important;
+}
+
+.driver-popover-next-btn {
+  background-color: var(--brand-fill, var(--brand, #bd2835)) !important;
+  color: var(--brand-foreground, #ffffff) !important;
+  border: 1px solid transparent !important;
+}
+
+.driver-popover-next-btn:hover {
+  opacity: 0.9 !important;
+}
+
+.driver-popover-close-btn {
+  position: absolute !important;
+  top: 0.75rem !important;
+  right: 0.75rem !important;
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: transparent !important;
+  color: var(--muted-foreground) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  font-size: 1.25rem !important;
+}
+
+.driver-popover-close-btn:hover {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+}
+
+.driver-popover-arrow {
+  display: none !important;
+}
+
+.driver-active-element {
+  outline: 2px solid var(--brand-fill, var(--brand, #bd2835)) !important;
+  outline-offset: 2px !important;
+}

@@ -40,8 +40,6 @@ export const TOGGLEABLE_SECTIONS = [
 
 export type ToggleableSection = typeof TOGGLEABLE_SECTIONS[number];
 
-export type SidebarDensity = 'comfortable' | 'compact';
-
 interface StoredRecentPage {
   route: string;
   params?: Record<string, unknown>;
@@ -72,9 +70,6 @@ interface UIPreferencesContext {
   pinnedPages: ComputedRef<RecentItem[]>;
   isPinned: (item: { routeName?: string; href?: string }) => boolean;
   togglePin: (item: { routeName?: string; href?: string; title?: string }) => void;
-  /** Sidebar density preference */
-  density: Ref<SidebarDensity>;
-  setDensity: (value: SidebarDensity) => void;
   /** Whether the sidebar is collapsed (icon-only) */
   sidebarCollapsed: Ref<boolean>;
   setSidebarCollapsed: (value: boolean) => void;
@@ -92,7 +87,6 @@ interface ServerPrefs {
   sections: Record<string, boolean>;
   order: string[];
   collapsed: boolean;
-  density: SidebarDensity;
   newShell: boolean;
   pinned: StoredPinnedPage[];
   recent: StoredRecentPage[];
@@ -103,7 +97,7 @@ function readServerPrefs(): ServerPrefs {
   const prefs = (page.props.auth as { user?: { ui_preferences?: unknown } })?.user?.ui_preferences as
     | {
       sidebar?: { sections?: Record<string, boolean>; order?: string[]; collapsed?: boolean };
-      appearance?: { density?: string; new_shell?: boolean };
+      appearance?: { new_shell?: boolean };
       pinned_pages?: StoredPinnedPage[];
       recent_pages?: StoredRecentPage[];
     }
@@ -113,7 +107,6 @@ function readServerPrefs(): ServerPrefs {
     sections: prefs?.sidebar?.sections ?? {},
     order: prefs?.sidebar?.order ?? [],
     collapsed: prefs?.sidebar?.collapsed ?? false,
-    density: prefs?.appearance?.density === 'compact' ? 'compact' : 'comfortable',
     newShell: prefs?.appearance?.new_shell === true,
     pinned: prefs?.pinned_pages ?? [],
     recent: prefs?.recent_pages ?? [],
@@ -261,8 +254,7 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
   // Pinned pages — local mirror, seeded from server, kept in sync optimistically.
   const pinnedRaw = ref<StoredPinnedPage[]>([...server.pinned]);
 
-  // Sidebar density + collapsed state.
-  const density = ref<SidebarDensity>(server.density);
+  // Sidebar collapsed state.
   const sidebarCollapsed = ref<boolean>(server.collapsed);
 
   // Admin redesign opt-in (.ai/redesign/admin, PR 2.1).
@@ -350,11 +342,6 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
     persistPinned();
   };
 
-  const setDensity = (value: SidebarDensity) => {
-    density.value = value;
-    persist('api.v1.admin.user-preferences.update', { appearance: { density: value } });
-  };
-
   const setSidebarCollapsed = (value: boolean) => {
     sidebarCollapsed.value = value;
     persist('api.v1.admin.user-preferences.update', { sidebar: { collapsed: value } });
@@ -415,8 +402,6 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
     pinnedPages,
     isPinned,
     togglePin,
-    density,
-    setDensity,
     sidebarCollapsed,
     setSidebarCollapsed,
     newShell,
@@ -458,8 +443,6 @@ export function useUIPreferences(): UIPreferencesContext {
       pinnedPages: computed(() => []) as ComputedRef<RecentItem[]>,
       isPinned: () => false,
       togglePin: noop,
-      density: ref<SidebarDensity>('comfortable'),
-      setDensity: noop,
       sidebarCollapsed: ref(false),
       setSidebarCollapsed: noop,
       newShell: ref(false),

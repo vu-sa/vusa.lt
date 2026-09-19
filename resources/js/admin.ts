@@ -1,6 +1,6 @@
 import '../css/app.css';
 import '../css/admin.css';
-import '../css/driver-tour.css';
+import '../css/admin/tour.css';
 
 import { type DefineComponent, createApp, h } from 'vue';
 

@@ -9,10 +9,12 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\AdminNavigation\AdminNavigationCatalog;
+use App\Services\DeviceMetricService;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\SiteSettings;
 use App\Support\MorphMap;
+use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +32,14 @@ class HandleInertiaRequests extends Middleware
      */
     #[\Override]
     protected $rootView = 'app';
+
+    #[\Override]
+    public function handle(Request $request, Closure $next)
+    {
+        $this->recordPwaLaunchIfDetected($request);
+
+        return parent::handle($request, $next);
+    }
 
     /**
      * Determines the current asset version.
@@ -252,5 +262,20 @@ class HandleInertiaRequests extends Middleware
     public static function adminNavigationCacheKey(string $userId): string
     {
         return AdminNavigationCatalog::CACHE_PREFIX.$userId;
+    }
+
+    private function recordPwaLaunchIfDetected(Request $request): void
+    {
+        if (! $request->hasSession()) {
+            return;
+        }
+
+        $isPwa = $request->query('source') === 'pwa'
+            || ($request->cookie('pwa_mode') === '1' && $request->is('mano*'));
+
+        if ($isPwa && ! $request->session()->has('pwa_launch_recorded')) {
+            $request->session()->put('pwa_launch_recorded', true);
+            app(DeviceMetricService::class)->recordPwaLaunch();
+        }
     }
 }

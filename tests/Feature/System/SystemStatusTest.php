@@ -51,8 +51,9 @@ describe('SystemStatus: Page Content', function (): void {
         $response->assertStatus(200);
         $props = $response->getOriginalContent()->getData()['page']['props'];
 
-        expect($props)->toHaveKeys(['status', 'lastUpdated'])
-            ->and($props['status'])->toHaveKeys(['redis', 'database', 'cache', 'integrations', 'system']);
+        expect($props)->toHaveKeys(['status', 'lastUpdated', 'deviceMetrics'])
+            ->and($props['status'])->toHaveKeys(['redis', 'database', 'cache', 'integrations', 'system'])
+            ->and($props['deviceMetrics'])->toHaveKeys(['records', 'summary']);
     });
 
     test('redis status includes essential information', function (): void {

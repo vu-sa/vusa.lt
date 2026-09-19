@@ -79,32 +79,23 @@
             </TooltipProvider>
             <CommandPaletteTrigger />
             <PWAStatusButton />
-            <SpotlightPopover
-              v-if="hasTour"
-              :title="$t('tutorials.help_button_spotlight.title')"
-              :description="$t('tutorials.help_button_spotlight.description')"
-              :is-dismissed="helpButtonSpotlight.isDismissed.value"
-              position="bottom"
-              @dismiss="helpButtonSpotlight.dismiss"
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      class="rounded-full"
-                      data-tour="help-button"
-                      @click="handleHelpClick"
-                    >
-                      <HelpCircle class="h-4 w-4" />
-                      <span class="sr-only">{{ $t('Kaip veikia?') }}</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </SpotlightPopover>
+            <TooltipProvider v-if="hasTour">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    class="rounded-full"
+                    data-tour="help-button"
+                    @click="handleHelpClick"
+                  >
+                    <HelpCircle class="h-4 w-4" />
+                    <span class="sr-only">{{ $t('Kaip veikia?') }}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <TasksIndicator />
             <NotificationsIndicator />
           </div>
@@ -260,8 +251,6 @@ import {
   SidebarTrigger,
 } from '@/Components/ui/sidebar';
 import AdminBreadcrumbs from '@/Components/AdminBreadcrumbs.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import {
   DropdownMenu,
@@ -321,12 +310,8 @@ const isMac = computed(() => {
   return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 });
 
-// Spotlight for help button - shows once to draw attention to the help feature
-const helpButtonSpotlight = useFeatureSpotlight('help-button-v1');
-
-// Handle help button click: dismiss spotlight and start tour
+// Handle help button click: start tour
 function handleHelpClick() {
-  helpButtonSpotlight.dismiss();
   emit('startTour');
 }
 

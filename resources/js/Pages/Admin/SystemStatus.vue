@@ -695,6 +695,134 @@
         </div>
       </CardContent>
     </Card>
+
+    <!-- Device Split Metrics (U26) -->
+    <Card v-if="deviceMetrics" class="mt-6 h-fit transition-colors duration-300 hover:border-primary/40 hover:bg-accent/40">
+      <CardHeader size="compact">
+        <div class="flex items-center justify-between">
+          <CardTitle class="flex items-center gap-2">
+            <MonitorIcon class="h-5 w-5" />
+            {{ $t('Prisijungimai pagal įrenginį (30 d.)') }}
+          </CardTitle>
+          <Badge variant="outline" class="font-normal text-xs text-muted-foreground">
+            {{ $t('Iš viso prisijungimų:') }} {{ deviceMetrics.summary.total_logins }}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent size="compact" class="space-y-6 pb-5">
+        <!-- Summary split cards -->
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-lg border bg-card p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mb-1">
+              <MonitorIcon class="h-3.5 w-3.5" />
+              <span>{{ $t('Kompiuteriai') }}</span>
+            </div>
+            <div class="text-xl font-bold font-mono tabular-nums">
+              {{ deviceMetrics.summary.total_desktop }}
+            </div>
+            <div class="text-xs text-muted-foreground font-mono">
+              {{ deviceMetrics.summary.desktop_percentage }}%
+            </div>
+          </div>
+
+          <div class="rounded-lg border bg-card p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mb-1">
+              <SmartphoneIcon class="h-3.5 w-3.5" />
+              <span>{{ $t('Telefonai') }}</span>
+            </div>
+            <div class="text-xl font-bold font-mono tabular-nums">
+              {{ deviceMetrics.summary.total_phone }}
+            </div>
+            <div class="text-xs text-muted-foreground font-mono">
+              {{ deviceMetrics.summary.phone_percentage }}%
+            </div>
+          </div>
+
+          <div class="rounded-lg border bg-card p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mb-1">
+              <TabletIcon class="h-3.5 w-3.5" />
+              <span>{{ $t('Planšetės') }}</span>
+            </div>
+            <div class="text-xl font-bold font-mono tabular-nums">
+              {{ deviceMetrics.summary.total_tablet }}
+            </div>
+            <div class="text-xs text-muted-foreground font-mono">
+              {{ deviceMetrics.summary.tablet_percentage }}%
+            </div>
+          </div>
+
+          <div class="rounded-lg border bg-card p-3 text-center">
+            <div class="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mb-1">
+              <DownloadIcon class="h-3.5 w-3.5" />
+              <span>{{ $t('PWA paleidimai') }}</span>
+            </div>
+            <div class="text-xl font-bold font-mono tabular-nums">
+              {{ deviceMetrics.summary.total_pwa_launches }}
+            </div>
+            <div class="text-xs text-muted-foreground">
+              {{ $t('programėlė') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily metrics table -->
+        <div class="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>
+                  {{ $t('Data') }}
+                </TableHead>
+                <TableHead class="text-right">
+                  {{ $t('Kompiuteriai') }}
+                </TableHead>
+                <TableHead class="text-right">
+                  {{ $t('Telefonai') }}
+                </TableHead>
+                <TableHead class="text-right">
+                  {{ $t('Planšetės') }}
+                </TableHead>
+                <TableHead class="text-right">
+                  {{ $t('PWA') }}
+                </TableHead>
+                <TableHead class="text-right">
+                  {{ $t('Iš viso') }}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <template v-if="deviceMetrics.records.length > 0">
+                <TableRow v-for="row in deviceMetrics.records" :key="row.date">
+                  <TableCell class="font-mono text-xs">
+                    {{ row.date }}
+                  </TableCell>
+                  <TableCell class="text-right font-mono text-xs">
+                    {{ row.desktop_logins }}
+                  </TableCell>
+                  <TableCell class="text-right font-mono text-xs">
+                    {{ row.phone_logins }}
+                  </TableCell>
+                  <TableCell class="text-right font-mono text-xs">
+                    {{ row.tablet_logins }}
+                  </TableCell>
+                  <TableCell class="text-right font-mono text-xs">
+                    {{ row.pwa_launches }}
+                  </TableCell>
+                  <TableCell class="text-right font-mono text-xs font-semibold">
+                    {{ row.total_logins }}
+                  </TableCell>
+                </TableRow>
+              </template>
+              <TableRow v-else>
+                <TableCell colspan="6" class="text-center py-6 text-xs text-muted-foreground">
+                  {{ $t('Nėra užfiksuotų prisijungimų duomenų') }}
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
   </AdminContentPage>
 </template>
 
@@ -716,10 +844,21 @@ import {
   MonitorIcon,
   TrendingUpIcon,
   SearchIcon,
+  SmartphoneIcon,
+  TabletIcon,
+  DownloadIcon,
 } from 'lucide-vue-next';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from '@/Components/ui/table';
 
 // Icons
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
@@ -897,12 +1036,33 @@ const props = defineProps<{
     };
   };
   lastUpdated: string;
+  deviceMetrics?: {
+    records: Array<{
+      date: string;
+      phone_logins: number;
+      tablet_logins: number;
+      desktop_logins: number;
+      pwa_launches: number;
+      total_logins: number;
+    }>;
+    summary: {
+      days: number;
+      total_logins: number;
+      total_phone: number;
+      total_tablet: number;
+      total_desktop: number;
+      total_pwa_launches: number;
+      phone_percentage: number;
+      tablet_percentage: number;
+      desktop_percentage: number;
+    };
+  };
 }>();
 
 // Animation state
 const countdown = ref(30);
 const isPolling = ref(false);
-const previousData = ref<Record<string, any>>({});
+const previousData = ref<Record<string, unknown>>({});
 
 // Auto-polling setup - refresh status every 30 seconds
 const { start, stop } = usePoll(30000, {

@@ -42,9 +42,9 @@ One PR = one row. Rules:
 | **4.5** | Breadcrumbs below section level; tasks indicator → badges (O12) | 4.1 | ✅ |
 | **4.6** | Prefetch + instant visits (U2), keyboard set (U3) | 4.1 |
 | **4.7** | 403 pages that explain themselves (U8) | 3.1 |
-| **4.8** | Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights | 4.1 |
-| **4.9** | Remove the density preference (U20) | 4.1 |
-| **4.10** | Device split counter (U26) | — |
+| **4.8** | Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights | 4.1 | ✅ |
+| **4.9** | Remove the density preference (U20) | 4.1 | ✅ |
+| **4.10** | Device split counter (U26) | — | ✅ |
 | **5.1** | **P1** Pradžia: attention queue, empty state, create shortcuts, Neseniai redaguota, koordinatorius | 4.x |
 | **5.2** | **P2** Posėdžiai + extract `CollectionPage` (three views, filter bar, Rodyti daugiau, URL state) | 5.1 |
 | **5.3** | **P3** Meeting record + agenda editor + extract `RecordPage` (Veikla, ‹ 3/24 ›, edit-mode canvas) | 5.2 |
@@ -471,6 +471,26 @@ Built together on `dev`, as one change set.
 - **Verified:** Vitest (badge, breadcrumbs, `belowSectionTrail`), Storybook a11y stories, a backend test
   for the shared counts, and `tests/Browser/AdminShellTest.php` (needs `npm run build` first — it runs
   against the compiled bundle). Screenshots checked by eye at 1440 and 390, light mode only.
+
+### PR 4.8 + 4.9 + 4.10 notes (2026-09-19)
+
+- **PR 4.8 — Welcome tour and spotlight retirement:**
+  - Streamlined `ShowAdminHome.vue` welcome tour to 5 focused steps (`workspace-picker`, `command-palette`, `action-create`, `tasks-card`, `account-menu`), matching the new shell top bar targets.
+  - Bumped tour identifier to `admin-welcome-v1` in `ShowAdminHome.vue` and aligned LT/EN tutorial translations (`lang/admin/*/tutorials.php`).
+  - Retired obsolete sidebar-targeting spotlights in `AppSidebar.vue` (`sidebar-settings-v1`, `reservations-dashboard-v1`, `sidebar-registrations-v1`) and `LegacyAdminShell.vue` (`help-button-v1`).
+  - Removed deprecated `resources/css/driver-tour.css` (hardcoded hexes with `!important`) and created clean `resources/css/admin/tour.css` styled with zero radius, hairlines, and brand accent button tokens, imported in `admin.ts`.
+- **PR 4.9 — Density preference removal (U20):**
+  - Removed density setting and compact classes across frontend components (`useUIPreferences.ts`, `SidebarCustomizeDialog.vue`, `AppSidebar.vue`, and shadcn `ui/sidebar/*` primitives).
+  - Removed `density` backend properties and validation from `HasUIPreferences.php`, `UpdateUIPreferencesRequest.php`, and `UserPreferencesApiController.php`.
+  - Cleaned up density assertions in `UIPreferencesTest.php`, `useUIPreferences.component.test.ts`, and `SidebarCustomization.component.test.ts`.
+- **PR 4.10 — Device split counter (U26):**
+  - Migration `daily_device_metrics` table with unique `date`, `phone_logins`, `tablet_logins`, `desktop_logins`, `pwa_launches` counters and timestamps. Strictly zero PII or user IDs stored.
+  - Model `DailyDeviceMetric` registered in `MorphMap::MAP`.
+  - `DeviceMetricService` with dependency-free coarse User-Agent classification (`desktop`, `phone`, `tablet`), login recording, PWA launch recording, and 30-day recent metrics query with summary percentages.
+  - `RecordDeviceLogin` listener listening on `Illuminate\Auth\Events\Login` and recording daily logins by device.
+  - PWA launch tracking via PWA manifest `start_url: '/mano?source=pwa'` in `vite.config.mts`, detected in `HandleInertiaRequests` middleware along with `pwa_mode=1` cookie, tracked once per session without duplicate counts.
+  - Integrated into Sistema (`/mano/system-status`) via `SystemStatusController` and `SystemStatus.vue` with summary device split cards and recent days breakdown table.
+  - Full test coverage in `DeviceMetricTest.php` and `SystemStatusTest.php`.
 
 ## Phase 5 — Pilot slice
 

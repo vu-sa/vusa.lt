@@ -127,37 +127,6 @@ describe('pinned pages', function (): void {
     });
 });
 
-describe('density', function (): void {
-    test('defaults to comfortable', function (): void {
-        expect($this->user->getDensity())->toBe('comfortable');
-    });
-
-    test('setDensity persists a valid value and ignores unknown ones', function (): void {
-        $this->user->setDensity('compact');
-        $this->user->refresh();
-        expect($this->user->getDensity())->toBe('compact');
-
-        $this->user->setDensity('bogus');
-        $this->user->refresh();
-        expect($this->user->getDensity())->toBe('compact');
-    });
-
-    test('endpoint rejects an invalid density', function (): void {
-        asUser($this->user)->patchJson(route('api.v1.admin.user-preferences.update'), [
-            'appearance' => ['density' => 'bogus'],
-        ])->assertStatus(422);
-    });
-
-    test('endpoint stores a valid density', function (): void {
-        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
-            'appearance' => ['density' => 'compact'],
-        ])->assertNoContent();
-
-        $this->user->refresh();
-        expect($this->user->getDensity())->toBe('compact');
-    });
-});
-
 describe('sidebar collapsed', function (): void {
     test('defaults to false', function (): void {
         expect($this->user->getSidebarCollapsed())->toBeFalse();
@@ -181,9 +150,7 @@ describe('new shell opt-in (.ai/redesign/admin, PR 2.1)', function (): void {
     test('setNewAdminShellEnabled persists and survives array_replace_recursive', function (): void {
         $this->user->setNewAdminShellEnabled(true);
         $this->user->refresh();
-        expect($this->user->getNewAdminShellEnabled())->toBeTrue()
-            // The accessor's array_replace_recursive must not clobber it against the default.
-            ->and($this->user->getDensity())->toBe('comfortable');
+        expect($this->user->getNewAdminShellEnabled())->toBeTrue();
     });
 
     test('endpoint rejects a non-boolean value', function (): void {
@@ -260,14 +227,12 @@ describe('api.v1.admin.user-preferences.trackRecentPage endpoint', function (): 
 describe('Inertia payload', function (): void {
     test('ui_preferences is shared on auth.user', function (): void {
         $this->user->setSidebarSectionVisibility(['secondary' => false]);
-        $this->user->setDensity('compact');
         $this->user->setSidebarCollapsed(true);
         $this->user->setNewAdminShellEnabled(true);
 
         asUser($this->user)->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('auth.user.ui_preferences.sidebar.sections.secondary', false)
-                ->where('auth.user.ui_preferences.appearance.density', 'compact')
                 ->where('auth.user.ui_preferences.sidebar.collapsed', true)
                 ->where('auth.user.ui_preferences.appearance.new_shell', true)
             );

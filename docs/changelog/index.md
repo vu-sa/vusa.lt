@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.7 — Naujas pradžios turas ir įrenginių statistika (2026-09-19) {#v2-7}
+
+- ✨ **Atnaujintas pasisveikinimo turas** — pagrindinio puslapio pradinis turas sutrumpintas iki 5 aiškių žingsnių, supažindinančių su darbo sritimis, paieška, kūrimo veiksmais ir užduotimis
+- ⭐ **Prisijungimų pagal įrenginį statistika** — sistemos būsenos puslapyje rodomi apibendrinti kasdieniai prisijungimai pagal įrenginių tipus (kompiuteriai, telefonai, planšetės) bei PWA programėlės paleidimai
+
 ## v2.6 — Patogesnė Mano VU SA paskyra (2026-09-19) {#v2-6}
 
 - ⭐ **Pagalba visada po ranka** — paskyros meniu dabar turi dokumentaciją, puslapio vadovą, naujienas, tavo užklausas ir problemos pranešimą; pranešant problemą automatiškai išsaugomas atvertas puslapis bei naršyklės informacija

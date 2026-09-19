@@ -232,30 +232,3 @@ describe('PinnedPagesSection', () => {
     expect(wrapper.find('a').exists()).toBe(false);
   });
 });
-
-describe('density toggle', () => {
-  beforeEach(() => {
-    vi.mocked(usePage).mockReturnValue(createMockPage() as any);
-  });
-
-  it('toggling compact view persists appearance.density', async () => {
-    const fetchMock = vi.mocked(globalThis.fetch);
-    const wrapper = mount(harness(defineComponent({
-      components: { SidebarCustomizeDialog },
-      template: '<SidebarCustomizeDialog :open="true" />',
-    })), {
-      global: { stubs: { ...commonStubs } },
-    });
-
-    const toggle = wrapper.find('#density-compact');
-    expect(toggle.exists()).toBe(true);
-
-    await toggle.trigger('click');
-
-    const lastCall = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
-    const url = lastCall[0] as string;
-    const body = JSON.parse((lastCall[1] as RequestInit).body as string);
-    expect(url).toContain('api.v1.admin.user-preferences.update');
-    expect(body.appearance.density).toBe('compact');
-  });
-});
