@@ -45,8 +45,10 @@ const isMac = computed(() => {
 const mod = computed(() => isMac.value ? '⌘' : 'Ctrl');
 
 const shortcuts = computed(() => [
-  { label: 'Paieška', keys: `${mod.value}${isMac.value ? '' : '+'}K` },
-  { label: 'Perjungti šoninę juostą', keys: `${mod.value}${isMac.value ? '' : '+'}B` },
+  { label: 'Atidaryti komandų paletę', keys: `${mod.value}${isMac.value ? '' : '+'}K` },
+  { label: 'Fokusuoti sąrašo paiešką', keys: '/' },
+  { label: 'Išsaugoti pakeitimus', keys: `${mod.value}${isMac.value ? '' : '+'}↵` },
+  { label: 'Uždaryti skydelį', keys: 'Esc' },
   { label: 'Klaviatūros trumpiniai', keys: '?' },
 ]);
 </script>

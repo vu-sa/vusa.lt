@@ -128,8 +128,19 @@ const isCreatePage = computed(() => {
 });
 
 const handleSubmit = () => {
+  if (isSubmitting.value || props.model.processing) {
+    return;
+  }
+
   isSubmitting.value = true;
   emit('submit:form');
+};
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (!event.repeat && (event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    event.preventDefault();
+    handleSubmit();
+  }
 };
 
 // Reset isSubmitting when Inertia finishes processing (success or error)
@@ -165,12 +176,14 @@ onMounted(() => {
 
   // Browser beforeunload event for tab close/refresh
   window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('keydown', handleKeydown);
 });
 
 onUnmounted(() => {
   // Clean up listeners
   removeBeforeListener?.();
   window.removeEventListener('beforeunload', handleBeforeUnload);
+  window.removeEventListener('keydown', handleKeydown);
 });
 
 // Browser beforeunload handler

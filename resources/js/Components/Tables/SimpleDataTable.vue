@@ -8,6 +8,7 @@
     <div v-if="enableFiltering" class="flex gap-2">
       <Input
         v-model="searchText"
+        data-admin-collection-search
         :placeholder="$t('tables.search_placeholder')"
         class="max-w-sm"
       />

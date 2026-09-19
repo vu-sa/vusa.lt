@@ -12,6 +12,8 @@ export interface ActiveNavigation {
   section: AdminSection | undefined;
 }
 
+export const SHELL_PREFETCH_CACHE_FOR: [string, string] = ['15s', '1m'];
+
 export const sectionHref = (section: AdminSection): string => route(section.routeName, section.routeParams);
 
 /** Where a workspace opens: its first section, which is always its overview. */

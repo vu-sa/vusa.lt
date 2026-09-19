@@ -51,6 +51,15 @@ describe('MobileBottomBar', () => {
     expect(wrapper.findAll('a')[1].classes()).toContain('border-brand-fill');
   });
 
+  it('prefetches each navigation destination with a short fresh and stale cache window', () => {
+    const wrapper = mountBar();
+
+    for (const link of wrapper.findAllComponents({ name: 'InertiaLink' })) {
+      expect(link.props('prefetch')).toBe(true);
+      expect(link.props('cacheFor')).toEqual(['15s', '1m']);
+    }
+  });
+
   it('emits create and menu', async () => {
     const wrapper = mountBar();
 

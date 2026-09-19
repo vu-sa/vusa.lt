@@ -196,6 +196,12 @@ describe('ServerDataTable', () => {
   });
 
   describe('search', () => {
+    it('marks the collection search as the / shortcut target', () => {
+      wrapper = mountTable();
+
+      expect(wrapper.find('input').attributes('data-admin-collection-search')).toBeDefined();
+    });
+
     it('searches as you type, so no separate search button is needed', async () => {
       vi.useFakeTimers();
       wrapper = mountTable();

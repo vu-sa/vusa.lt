@@ -40,8 +40,8 @@ One PR = one row. Rules:
 | **4.3** | Palette: catalog go-to, create, workspace ranking, Neseniai, pin star | 4.1 | ✅ |
 | **4.4** | Account menu, Pagalba (O13, U15), docked START FM, banners | 4.1 | ✅ |
 | **4.5** | Breadcrumbs below section level; tasks indicator → badges (O12) | 4.1 | ✅ |
-| **4.6** | Prefetch + instant visits (U2), keyboard set (U3) | 4.1 |
-| **4.7** | 403 pages that explain themselves (U8) | 3.1 |
+| **4.6** | Prefetch + instant visits (U2), keyboard set (U3) | 4.1 | ✅ |
+| **4.7** | 403 pages that explain themselves (U8) | 3.1 | ✅ |
 | **4.8** | Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights | 4.1 | ✅ |
 | **4.9** | Remove the density preference (U20) | 4.1 | ✅ |
 | **4.10** | Device split counter (U26) | — | ✅ |
@@ -390,7 +390,8 @@ Brief:
 - [ ] Account menu: Paskyra, Išvaizda (+ `AccessibilityMenu`), Pagalba (O13, U15), START FM (O15), Apie, Atsijungti
 - [ ] Banners (O15) — PR 4.4
 - [x] Tasks indicator removed, badges instead (O12) (PR 4.5, 2026-09-19)
-- [ ] Prefetch/instant visits on tabs (U2); keyboard set (U3); 403 explanations (U8)
+- [x] Prefetch/instant visits on tabs (U2); keyboard set (U3)
+- [ ] 403 explanations (U8)
 - [ ] Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights
 - [ ] Performance check on a throttled phone (U19); coarse device split (U26)
 - [ ] Remove the density preference (U20); stay-logged-in fixes (U22)
@@ -472,6 +473,20 @@ Built together on `dev`, as one change set.
   for the shared counts, and `tests/Browser/AdminShellTest.php` (needs `npm run build` first — it runs
   against the compiled bundle). Screenshots checked by eye at 1440 and 390, light mode only.
 
+### PR 4.6 notes (2026-09-19)
+
+- **Prefetch + immediate revisit (U2):** every new-shell navigation link — desktop and mobile workspace
+  controls, section tabs, account action, and menu rows — keeps hover prefetch and caches it for 15 seconds
+  fresh plus one minute stale-while-revalidate. This makes a recently prefetched page render immediately
+  without using Inertia's `instant` prop: the catalog links do not carry page components and the existing
+  pages expect route-specific props, so a direct instant render would be unsafe.
+- **Keyboard set (U3):** `⌘/Ctrl K` opens the existing palette; `/` focuses a collection search when one
+  exists; `⌘/Ctrl ↵` submits an `AdminForm`; `Esc` closes the active dialog/sheet; `?` opens the shortcut
+  guide. The global handlers ignore typing controls, and the guide is rendered once by `AdminLayout` for
+  both shells.
+- **Verified:** focused Vitest coverage for shell links, shortcut routing, form saving, and collection
+  search; browser checks for `?` and `/`; production build; shortcut guide checked at 1440 px.
+
 ### PR 4.8 + 4.9 + 4.10 notes (2026-09-19)
 
 - **PR 4.8 — Welcome tour and spotlight retirement:**
@@ -491,6 +506,28 @@ Built together on `dev`, as one change set.
   - PWA launch tracking via PWA manifest `start_url: '/mano?source=pwa'` in `vite.config.mts`, detected in `HandleInertiaRequests` middleware along with `pwa_mode=1` cookie, tracked once per session without duplicate counts.
   - Integrated into Sistema (`/mano/system-status`) via `SystemStatusController` and `SystemStatus.vue` with summary device split cards and recent days breakdown table.
   - Full test coverage in `DeviceMetricTest.php` and `SystemStatusTest.php`.
+
+### PR 4.7 notes (2026-09-19)
+
+- **What ships.** A *direct* GET to `/mano/**` that ends in a 403 now renders `Pages/Admin/AccessDenied.vue`
+  (status stays 403) instead of the public blade: the missing permission (`Redaguoti · naujienos` +
+  `news.update`), a link to the vusa.lt help pages (`/docs`, `/docs/en`) with "ask your coordinator" as
+  the fallback advice, and links to Mano rolės (`profile` for now) and Pradžia. Naming colleagues who can
+  grant access was built first and dropped: help pages are the durable answer. Renderer: `bootstrap/app.php`; copy: `lang/admin/*/forbidden.php`.
+- **Inertia visits are unchanged** — still a 302 back with an `error` flash → toast (AGENTS.md's
+  authorization table). Only the page a person lands on from an email/bookmark explains itself.
+- **How the permission is known.** `Gate::after` (`AuthServiceProvider`) stores what a policy denied on the
+  request; `ResolveForbiddenExplanation::permissionFor()` maps ability → action and reads the resource from
+  `ModelPolicy::resourceName()`. It is only trusted when the 403 wraps an `AuthorizationException`; a bare
+  `abort(403, '…')` shows its message instead. **The scope is not named** (`.padalinys` / `.own` / `*`) —
+  `commonChecker` tries three and the page says "which action on what", not "which scope".
+- **Not covered:** policies that don't extend `ModelPolicy` and closure gates (`can:access-administration`,
+  `manage-settings`) have no resource name, so those show only the help link. Route-level `can:` middleware
+  ditto. They show the help link only.
+- **Next for P9 (5.9):** point the primary action at *Mano rolės ir pareigybės* instead of `profile`
+  (`AccessDenied.vue`). The help link goes to the docs root; retarget it at a roles page if one is written.
+- **Verified:** `tests/Feature/Admin/ForbiddenPageTest.php`, `AccessDenied.component.test.ts`, full
+  parallel backend suite. **Not done:** screenshots at the four widths, dark mode, a real browser pass.
 
 ## Phase 5 — Pilot slice
 

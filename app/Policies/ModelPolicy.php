@@ -30,6 +30,14 @@ class ModelPolicy
     public function __construct(public ModelAuthorizer $authorizer) {}
 
     /**
+     * The resource segment of this policy's permissions, e.g. `news` in `news.update.padalinys`.
+     */
+    public function resourceName(): ?string
+    {
+        return $this->pluralModelName ?: null;
+    }
+
+    /**
      * Standard view method that most models will use.
      * Override in child classes when needed.
      *

@@ -218,7 +218,7 @@ import {
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import { computed, markRaw, ref, watch } from 'vue';
-import { useDark, useEventListener } from '@vueuse/core';
+import { useDark } from '@vueuse/core';
 
 import NavMain from './NavMain.vue';
 import NavSecondary from './NavSecondary.vue';
@@ -288,22 +288,6 @@ const { isSectionVisible, orderedSections } = useUIPreferences();
 
 const showCustomizeDialog = ref(false);
 const showShortcutsDialog = ref(false);
-
-// "?" opens the keyboard-shortcuts cheatsheet, unless the user is typing.
-useEventListener('keydown', (event: KeyboardEvent) => {
-  if (event.key !== '?' || event.metaKey || event.ctrlKey || event.altKey) {
-    return;
-  }
-  const target = event.target as HTMLElement | null;
-  if (target && (
-    target.isContentEditable
-    || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
-  )) {
-    return;
-  }
-  event.preventDefault();
-  showShortcutsDialog.value = true;
-});
 
 const docsBase = computed(() => usePage().props.app.locale === 'en' ? '/docs/en' : '/docs');
 

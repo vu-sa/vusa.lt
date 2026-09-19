@@ -110,6 +110,23 @@ describe('AdminForm.vue', () => {
       expect(wrapper.emitted('submit:form')).toBeTruthy();
     });
 
+    it('emits submit:form for Cmd+Enter', () => {
+      wrapper = createWrapper();
+
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', metaKey: true, cancelable: true }));
+
+      expect(wrapper.emitted('submit:form')).toHaveLength(1);
+    });
+
+    it('does not submit again while a save is already in progress', async () => {
+      wrapper = createWrapper();
+
+      await wrapper.findAll('button').find(button => button.text().includes('Išsaugoti'))!.trigger('click');
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true, cancelable: true }));
+
+      expect(wrapper.emitted('submit:form')).toHaveLength(1);
+    });
+
     it('disables save button during processing', async () => {
       wrapper = createWrapper();
       form.processing = true;

@@ -7,6 +7,8 @@ lastUpdated: true
 
 ## v2.7 — Streamlined welcome tour and device split metrics (2026-09-19) {#v2-7}
 
+- ✨ **Faster navigation and keyboard shortcuts** — recently opened admin pages load instantly, while `?` opens a shortcut guide: `/` focuses list search and ⌘/Ctrl + Enter saves a form
+- ✨ **The no-access page explains what is missing** — opening a page you are not allowed to see (for example from an email link) now shows which permission is missing, a link to the help pages, and a link to your roles and duties
 - ✨ **Updated welcome tour** — the admin homepage tour is streamlined to 5 focused steps highlighting workspaces, command palette search, quick create actions, and tasks
 - ⭐ **Device split metrics** — system status now displays aggregate daily login statistics broken down by device type (desktops, phones, tablets) and PWA app launches
 

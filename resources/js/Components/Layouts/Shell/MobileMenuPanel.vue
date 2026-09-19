@@ -43,6 +43,7 @@
                 <Link
                   :href="sectionHref(section)"
                   prefetch
+                  :cache-for="SHELL_PREFETCH_CACHE_FOR"
                   v-bind="ariaCurrent(section.key === activeSection?.key && workspace.key === activeWorkspace?.key)"
                   :class="[
                     'u-touch flex items-center gap-2 border-l-2 py-3 pl-12 pr-4 text-sm',
@@ -62,12 +63,12 @@
 
         <ul class="py-2">
           <li v-if="showAllSections">
-            <Link :href="route('administration')" prefetch class="u-touch flex items-center px-4 py-3 text-sm text-foreground" @click="close">
+            <Link :href="route('administration')" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" class="u-touch flex items-center px-4 py-3 text-sm text-foreground" @click="close">
               {{ $t('shell.chrome.all_sections') }}
             </Link>
           </li>
           <li>
-            <Link :href="route('profile')" prefetch class="u-touch flex items-center px-4 py-3 text-sm text-foreground" @click="close">
+            <Link :href="route('profile')" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" class="u-touch flex items-center px-4 py-3 text-sm text-foreground" @click="close">
               {{ $t('shell.chrome.account') }}
             </Link>
           </li>
@@ -99,7 +100,12 @@ import TaskCountBadge from './TaskCountBadge.vue';
 
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
-import { sectionHref, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
+import {
+  sectionHref,
+  SHELL_PREFETCH_CACHE_FOR,
+  type AdminSection,
+  type AdminWorkspace,
+} from '@/Composables/useAdminNavigation';
 import { useLogout } from '@/Composables/useLogout';
 import { useNewShellToggle } from '@/Composables/useNewShellToggle';
 import { ariaCurrent } from '@/Utils/ariaCurrent';

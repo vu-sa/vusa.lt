@@ -4,7 +4,7 @@
     :aria-label="$t('shell.chrome.main_nav')"
     class="flex h-(--shell-bottom-bar) shrink-0 items-stretch border-t border-border bg-background pb-[env(safe-area-inset-bottom,0px)] md:hidden"
   >
-    <Link :href="route('dashboard')" prefetch :class="tabClass(activeWorkspace?.key === 'pradzia' && activeSection?.key !== 'uzduotys')">
+    <Link :href="route('dashboard')" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" :class="tabClass(activeWorkspace?.key === 'pradzia' && activeSection?.key !== 'uzduotys')">
       <component :is="workspaceIcon('pradzia')" class="size-5" />
       <span>{{ $t('shell.workspaces.pradzia.title') }}</span>
     </Link>
@@ -13,6 +13,7 @@
       v-if="primary"
       :href="workspaceHref(primary) ?? '#'"
       prefetch
+      :cache-for="SHELL_PREFETCH_CACHE_FOR"
       :class="tabClass(activeWorkspace?.key === primary.key)"
     >
       <component :is="workspaceIcon(primary.key)" class="size-5" />
@@ -25,7 +26,7 @@
       </Button>
     </div>
 
-    <Link :href="route('userTasks')" prefetch :class="tabClass(activeSection?.key === 'uzduotys' && activeWorkspace?.key === 'pradzia')">
+    <Link :href="route('userTasks')" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" :class="tabClass(activeSection?.key === 'uzduotys' && activeWorkspace?.key === 'pradzia')">
       <span class="relative">
         <ClipboardCheck class="size-5" />
         <TaskCountBadge class="absolute -top-2 left-3" />
@@ -49,7 +50,12 @@ import TaskCountBadge from './TaskCountBadge.vue';
 
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
-import { workspaceHref, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
+import {
+  SHELL_PREFETCH_CACHE_FOR,
+  workspaceHref,
+  type AdminSection,
+  type AdminWorkspace,
+} from '@/Composables/useAdminNavigation';
 
 defineProps<{
   /** The workspace beside Pradžia — see `primaryWorkspace()`. */

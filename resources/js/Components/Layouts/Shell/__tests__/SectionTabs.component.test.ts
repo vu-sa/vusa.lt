@@ -28,6 +28,15 @@ describe('SectionTabs', () => {
     expect(overview.classes()).toContain('border-transparent');
   });
 
+  it('prefetches tabs with a short fresh and stale cache window', () => {
+    const wrapper = mount(SectionTabs, { props: { workspace: atstovavimas, activeSection: atstovavimas.sections[1] } });
+
+    for (const link of wrapper.findAllComponents({ name: 'InertiaLink' })) {
+      expect(link.props('prefetch')).toBe(true);
+      expect(link.props('cacheFor')).toEqual(['15s', '1m']);
+    }
+  });
+
   it('collapses to nothing when the workspace has a single section', () => {
     const wrapper = mount(SectionTabs, { props: { workspace: rezervacijos } });
 

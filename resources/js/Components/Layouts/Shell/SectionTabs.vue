@@ -21,6 +21,7 @@
         <Link
           :href="sectionHref(section)"
           prefetch
+          :cache-for="SHELL_PREFETCH_CACHE_FOR"
           v-bind="ariaCurrent(section.key === activeSection?.key)"
           :class="[
             'flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-xs font-semibold uppercase tracking-wide transition-colors',
@@ -45,7 +46,12 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';
 
-import { sectionHref, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
+import {
+  sectionHref,
+  SHELL_PREFETCH_CACHE_FOR,
+  type AdminSection,
+  type AdminWorkspace,
+} from '@/Composables/useAdminNavigation';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
 
 const props = defineProps<{

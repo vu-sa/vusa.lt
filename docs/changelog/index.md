@@ -7,6 +7,8 @@ lastUpdated: true
 
 ## v2.7 — Naujas pradžios turas ir įrenginių statistika (2026-09-19) {#v2-7}
 
+- ✨ **Greitesnė navigacija ir klaviatūros trumpiniai** — neseniai atverti administravimo puslapiai įkeliami akimirksniu, o `?` parodo trumpinių gidą: `/` nukreipia į sąrašo paiešką, o ⌘/Ctrl + Enter išsaugo formą
+- ✨ **Draudimo puslapis paaiškina, ko trūksta** — atvėrus puslapį, kurio neturi teisės matyti (pvz., iš el. laiško nuorodos), matai, kokios teisės trūksta, nuorodą į pagalbos puslapius ir į savo roles bei pareigybes
 - ✨ **Atnaujintas pasisveikinimo turas** — pagrindinio puslapio pradinis turas sutrumpintas iki 5 aiškių žingsnių, supažindinančių su darbo sritimis, paieška, kūrimo veiksmais ir užduotimis
 - ⭐ **Prisijungimų pagal įrenginį statistika** — sistemos būsenos puslapyje rodomi apibendrinti kasdieniai prisijungimai pagal įrenginių tipus (kompiuteriai, telefonai, planšetės) bei PWA programėlės paleidimai
 

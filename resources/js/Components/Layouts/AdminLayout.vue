@@ -33,12 +33,13 @@
 
     <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
     <AdminCommandPalette />
+    <KeyboardShortcutsDialog v-model:open="keyboardShortcutsOpen" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
-import { useOnline, useDebounceFn } from '@vueuse/core';
+import { useDebounceFn, useEventListener, useOnline } from '@vueuse/core';
 import { computed, onMounted, watch, ref, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -61,6 +62,7 @@ import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
 import { createStartFmProvider } from '@/Composables/useStartFm';
 import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette.vue';
 import ActionWindow from '@/Components/ActionWindow/ActionWindow.vue';
+import KeyboardShortcutsDialog from '@/Components/KeyboardShortcutsDialog.vue';
 
 const props = withDefaults(defineProps<{
   title?: string;
@@ -105,6 +107,35 @@ createCommandPaletteProvider({
   clearRecent: uiPreferences.clearRecent,
 });
 createStartFmProvider();
+
+const keyboardShortcutsOpen = ref(false);
+
+const isTypingTarget = (target: EventTarget | null): boolean => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+};
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === '?' && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget(event.target)) {
+    event.preventDefault();
+    keyboardShortcutsOpen.value = true;
+
+    return;
+  }
+
+  if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey || isTypingTarget(event.target)) {
+    return;
+  }
+
+  const search = document.querySelector<HTMLInputElement>('[data-admin-collection-search]:not(:disabled)');
+  if (search) {
+    event.preventDefault();
+    search.focus();
+  }
+});
 
 // Track every admin page the user visits. The page-specific title comes from
 // the breadcrumb trail (the last crumb), which every admin page registers —

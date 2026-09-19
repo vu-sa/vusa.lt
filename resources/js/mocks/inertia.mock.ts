@@ -208,6 +208,8 @@ export const Link = defineComponent({
     only: Array,
     headers: Object,
     queryStringArrayFormat: String,
+    prefetch: { type: [Boolean, String, Array], default: false },
+    cacheFor: [String, Number, Array],
   },
   setup(props, { slots }) {
     return () => h('a', {

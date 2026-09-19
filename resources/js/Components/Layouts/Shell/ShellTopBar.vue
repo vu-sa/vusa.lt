@@ -3,6 +3,8 @@
     <div class="flex h-14 items-center gap-2 px-4 md:gap-3 md:px-6">
       <Link
         :href="route('dashboard')"
+        prefetch
+        :cache-for="SHELL_PREFETCH_CACHE_FOR"
         class="mr-1 flex shrink-0 items-baseline gap-1 text-sm font-bold uppercase tracking-wide md:mr-3"
       >
         <span>Mano</span>
@@ -52,7 +54,7 @@ import WorkspacePicker from './WorkspacePicker.vue';
 
 import NotificationsIndicator from '@/Components/NotificationsIndicator.vue';
 import { Button } from '@/Components/ui/button';
-import type { AdminSection, AdminWorkspace } from '@/Composables/useAdminNavigation';
+import { SHELL_PREFETCH_CACHE_FOR, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 
 defineProps<{
   workspaces: AdminWorkspace[];

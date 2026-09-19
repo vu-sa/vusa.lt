@@ -52,6 +52,7 @@
               <SearchIcon class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 v-model="searchText"
+                data-admin-collection-search
                 :placeholder="$t('tables.search_placeholder')"
                 class="w-full pl-9 pr-8"
                 @keydown.enter="handleSearch"

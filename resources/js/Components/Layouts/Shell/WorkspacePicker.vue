@@ -40,6 +40,7 @@
             <Link
               :href="workspaceHref(workspace) ?? '#'"
               prefetch
+              :cache-for="SHELL_PREFETCH_CACHE_FOR"
               v-bind="ariaCurrent(workspace.key === activeWorkspace?.key, 'true')"
               :class="[
                 'flex items-start gap-3 border-l-2 px-4 py-3 transition-colors hover:bg-secondary',
@@ -63,6 +64,7 @@
                 <Link
                   :href="sectionHref(section)"
                   prefetch
+                  :cache-for="SHELL_PREFETCH_CACHE_FOR"
                   v-bind="ariaCurrent(section.key === activeSection?.key)"
                   :class="[
                     'text-sm underline-offset-4 hover:underline',
@@ -81,6 +83,7 @@
           <Link
             :href="route('administration')"
             prefetch
+            :cache-for="SHELL_PREFETCH_CACHE_FOR"
             class="flex items-center justify-between px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             @click="close"
           >
@@ -106,6 +109,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import {
   sectionHref,
+  SHELL_PREFETCH_CACHE_FOR,
   workspaceHref,
   type AdminSection,
   type AdminWorkspace,

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Actions\ResolveForbiddenExplanation;
 use App\Enums\ModelEnum;
 use App\Models\FileableFile;
 use App\Models\InstitutionCheckIn;
@@ -9,6 +10,7 @@ use App\Models\User;
 use App\Policies\FileableFilePolicy;
 use App\Policies\InstitutionCheckInPolicy;
 use App\Settings\SettingsSettings;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -40,6 +42,15 @@ class AuthServiceProvider extends ServiceProvider
         Gate::before(function (User $user, $ability) {
             if ($user->isSuperAdmin()) {
                 return true;
+            }
+        });
+
+        // Remembers what was denied so the 403 page can name the missing permission (U8).
+        Gate::after(function (User $user, string $ability, $result, array $arguments): void {
+            $denied = $result instanceof Response ? $result->denied() : $result === false;
+
+            if ($denied) {
+                request()->attributes->set('denied_ability', ResolveForbiddenExplanation::permissionFor($ability, $arguments));
             }
         });
 

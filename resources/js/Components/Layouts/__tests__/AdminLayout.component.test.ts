@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import { usePage } from '@inertiajs/vue3';
@@ -17,13 +17,19 @@ beforeEach(() => {
 });
 
 const stub = (name: string) => defineComponent({ name, setup: (_, { slots }) => () => h('div', { 'data-stub': name }, slots.default?.()) });
+const keyboardShortcutsStub = defineComponent({
+  name: 'KeyboardShortcutsDialog',
+  props: { open: Boolean },
+  template: '<div data-stub="KeyboardShortcutsDialog" :data-open="open" />',
+});
+const mountedLayouts: ReturnType<typeof mount>[] = [];
 
 const mountLayout = (newShell: boolean) => {
   vi.mocked(usePage).mockReturnValue(createMockPage({
     auth: { user: { id: 1, name: 'Test', ui_preferences: { appearance: { new_shell: newShell } } } },
   }));
 
-  return mount(AdminLayout, {
+  const wrapper = mount(AdminLayout, {
     slots: { default: '<p data-testid="page">Page content</p>' },
     global: {
       stubs: {
@@ -32,13 +38,22 @@ const mountLayout = (newShell: boolean) => {
         LegacyAdminShell: stub('LegacyAdminShell'),
         ActionWindow: true,
         AdminCommandPalette: true,
+        KeyboardShortcutsDialog: keyboardShortcutsStub,
         Toaster: true,
         InstallBanner: true,
         UpdateBanner: true,
       },
     },
   });
+
+  mountedLayouts.push(wrapper);
+
+  return wrapper;
 };
+
+afterEach(() => {
+  mountedLayouts.splice(0).forEach(wrapper => wrapper.unmount());
+});
 
 describe('AdminLayout shell switch', () => {
   it('renders the new shell when the opt-in flag is on', () => {
@@ -73,5 +88,28 @@ describe('AdminLayout shell switch', () => {
     for (const overlay of ['action-window-stub', 'admin-command-palette-stub', 'toaster-stub']) {
       expect(wrapper.find(overlay).exists()).toBe(true);
     }
+  });
+
+  it('opens the shared keyboard shortcuts dialog with ?', async () => {
+    const wrapper = mountLayout(true);
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '?', cancelable: true }));
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-stub="KeyboardShortcutsDialog"]').attributes('data-open')).toBe('true');
+  });
+
+  it('focuses the active collection search with /', () => {
+    const wrapper = mountLayout(true);
+    const search = document.createElement('input');
+    const focus = vi.spyOn(search, 'focus');
+    search.setAttribute('data-admin-collection-search', '');
+    document.body.append(search);
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '/', cancelable: true }));
+
+    expect(focus).toHaveBeenCalledOnce();
+    search.remove();
+    wrapper.unmount();
   });
 });

@@ -80,3 +80,21 @@ it('counts pending tasks as a badge on the picker instead of a top-bar indicator
     expect($page->script("document.querySelector('[data-slot=workspace-picker] [data-slot=task-count-badge]').dataset.statusRole"))->toBe('danger')
         ->and($page->script("document.querySelector('[data-tour=tasks-indicator]')"))->toBeNull();
 });
+
+it('opens the keyboard shortcut guide with ?', function (): void {
+    $page = openShell(1440, 900);
+
+    $page->script("window.dispatchEvent(new KeyboardEvent('keydown', { key: '?', cancelable: true }))");
+
+    $page
+        ->assertSee('Klaviatūros trumpiniai')
+        ->assertNoJavaScriptErrors();
+});
+
+it('focuses a collection search with /', function (): void {
+    $page = openShell(1440, 900);
+
+    $page->script("window.dispatchEvent(new KeyboardEvent('keydown', { key: '/', cancelable: true }))");
+
+    expect($page->script("document.activeElement?.hasAttribute('data-admin-collection-search')"))->toBeTrue();
+});
