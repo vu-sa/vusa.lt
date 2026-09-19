@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import {
   contentStatuses,
+  institutionActivityStatuses,
   reservationResourceStatuses,
   studentBenefitStatuses,
   supportRequestStatuses,
   taskStatuses,
   voteStatuses,
 } from '@/Constants/statuses';
-import { SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 describe('status presentation maps', () => {
   it('covers every reservation resource state', () => {
@@ -36,9 +37,14 @@ describe('status presentation maps', () => {
     expect(Object.keys(supportRequestStatuses)).toEqual(Object.values(SupportRequestStatus));
   });
 
+  it('covers every institution activity status enum value', () => {
+    expect(Object.keys(institutionActivityStatuses)).toEqual(Object.values(InstitutionActivityStatus));
+  });
+
   it('keeps success and danger distinguishable without colour', () => {
     expect(taskStatuses.completed.icon).not.toBe(taskStatuses.overdue.icon);
     expect(voteStatuses.positive.icon).not.toBe(voteStatuses.negative.icon);
     expect(studentBenefitStatuses.positive.icon).not.toBe(studentBenefitStatuses.negative.icon);
+    expect(institutionActivityStatuses.healthy.icon).not.toBe(institutionActivityStatuses.overdue.icon);
   });
 });

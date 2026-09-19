@@ -17,8 +17,6 @@ import { useVModel } from '@vueuse/core';
 
 import { cn } from '@/Utils/Shadcn/utils';
 
-defineOptions({ name: 'InputField' });
-
 const props = defineProps<{
   defaultValue?: string | number;
   modelValue?: string | number;

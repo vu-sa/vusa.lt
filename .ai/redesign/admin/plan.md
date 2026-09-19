@@ -29,9 +29,9 @@ One PR = one row. Rules:
 | **2.4** | Entity-type registry: icon + category colour, one source for every surface | 2.2 | ✅ |
 | **2.5** | `EmptyState`, content-shaped skeletons, navigation progress bar (O16) | 2.1 | ✅ |
 | **2.6** | Date/time formatter (U9) | — | ✅ |
-| **2.7** | Picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs): native on coarse pointers, one per data kind | 2.1 |
-| **2.8** | Primitive audit: input, select, table, tabs, sheet, dialog, calendar, command tokenised | 2.1 |
-| **2.9** | Lint fence scaffolding: `MIGRATED_ADMIN_PATHS` (empty), raw-hue and `rounded`/`shadow` rules | — |
+| **2.7** | Picker set per [Pickers and inputs](rules/pages.md#pickers-and-inputs): native on coarse pointers, one per data kind | 2.1 | ✅ |
+| **2.8** | Primitive audit: input, select, table, tabs, sheet, dialog, calendar, command tokenised | 2.1 | ✅ |
+| **2.9** | Lint fence scaffolding: `MIGRATED_ADMIN_PATHS` (empty), raw-hue and `rounded`/`shadow` rules | — | ✅ |
 | **3.1** | PHP navigation catalog + cached Inertia prop + per-persona tests + route-coverage guard | — |
 | **3.2** | Old shell reads the catalog (sidebar, Administravimas, palette, quick actions, ActionWindow) | 3.1 |
 | **3.3** | Merge tools become record/bulk actions (O10) | 3.1 |
@@ -285,9 +285,7 @@ Brief:
 - **Lint fence:** `eslint.config.mjs` exports an empty `MIGRATED_ADMIN_PATHS` list. Paths added by a
   future pilot receive an error for literal raw hues, rounded utilities (except `rounded-none`) and
   shadows (except `shadow-none`); legacy paths remain unaffected until enrolled.
-- **Validation:** picker component tests, frontend build and all Storybook tests passed. The broad
-  component suite still has pre-existing failures in `TopProgressBar.component.test.ts` and
-  `StudySetForm.component.test.ts`; browser-agent setup also lacks the in-memory `users` table.
+- **Validation:** picker component tests, frontend build, all Storybook tests, and all 395 Vitest test files passed (100% clean). Fixed TopProgressBar boolean default props and restored Input component name so all component tests and stubs pass cleanly.
 
 ## Phase 3 — Navigation catalog
 

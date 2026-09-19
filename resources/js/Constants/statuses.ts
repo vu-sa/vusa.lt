@@ -7,6 +7,7 @@ import {
   CircleCheck,
   CircleDashed,
   CircleMinus,
+  CircleSlash,
   CircleX,
   Clock3,
   Eye,
@@ -21,7 +22,7 @@ import {
   TriangleAlert,
 } from 'lucide-vue-next';
 
-import { SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 export type StatusRole = 'neutral' | 'info' | 'progress' | 'attention' | 'success' | 'danger';
 
@@ -80,6 +81,15 @@ export const supportRequestStatuses: Record<SupportRequestStatus, StatusPresenta
   [SupportRequestStatus.InProgress]: status('Vykdoma', 'progress', LoaderCircle),
   [SupportRequestStatus.Done]: status('Išspręsta', 'success', CircleCheck),
   [SupportRequestStatus.Declined]: status('Atmesta', 'danger', CircleX),
+};
+
+export const institutionActivityStatuses: Record<InstitutionActivityStatus, StatusPresentation> = {
+  [InstitutionActivityStatus.NoActivity]: status('Nėra veiklos', 'neutral', CircleSlash),
+  [InstitutionActivityStatus.Healthy]: status('Aktyvi', 'success', CircleCheck),
+  [InstitutionActivityStatus.Approaching]: status('Artėja terminas', 'attention', Clock3),
+  [InstitutionActivityStatus.Overdue]: status('Vėluoja', 'danger', TriangleAlert),
+  [InstitutionActivityStatus.CoveredByUpcomingMeeting]: status('Suplanuotas posėdis', 'info', CalendarClock),
+  [InstitutionActivityStatus.CoveredByCheckIn]: status('Užfiksuotas kontaktas', 'info', CalendarCheck),
 };
 
 function status(label: string, role: StatusRole, icon: LucideIcon): StatusPresentation {

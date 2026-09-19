@@ -310,4 +310,12 @@ export default tseslint.config(
       }],
     },
   },
+
+  // Shadcn UI primitives use single-word filenames by design (Button, Input, Calendar, Table, etc.).
+  {
+    files: ['resources/js/Components/ui/**/*.{vue,ts}'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
 );

@@ -43,10 +43,18 @@ interface Props {
   class?: HTMLAttributes['class'];
 }
 
-const props = defineProps<Props>();
+/* eslint-disable vue/no-boolean-default */
+const props = withDefaults(defineProps<Props>(), {
+  indeterminate: true,
+  active: true,
+  modelValue: undefined,
+  label: undefined,
+  class: undefined,
+});
+/* eslint-enable vue/no-boolean-default */
 
-const isIndeterminate = computed(() => props.indeterminate ?? true);
-const isActive = computed(() => props.active ?? true);
+const isIndeterminate = computed(() => props.indeterminate);
+const isActive = computed(() => props.active);
 const ariaLabel = computed(() => props.label || $t('Kraunama...'));
 
 const boundedValue = computed(() => {
