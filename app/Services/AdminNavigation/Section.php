@@ -17,6 +17,9 @@ final readonly class Section
      *                                   (`Constants/entityTypes.ts`). Null for sections with no
      *                                   backing entity (an overview, settings, system status).
      * @param  list<CollectionAction>  $collectionActions
+     * @param  list<string>  $matches  Route-name patterns (`Route::is()` style) that live inside this
+     *                                 section, so a record page resolves to its workspace. Empty means
+     *                                 the default: `x.index` claims `x.*`, any other name only itself.
      */
     public function __construct(
         public string $key,
@@ -26,10 +29,11 @@ final readonly class Section
         public ?string $entityType,
         public Visibility $visibility,
         public array $collectionActions = [],
+        public array $matches = [],
     ) {}
 
     /**
-     * @return array{key: string, label: string, routeName: string, routeParams: array<string, mixed>, entityType: string|null, collectionActions: list<array{key: string, label: string, target: string}>}
+     * @return array{key: string, label: string, routeName: string, routeParams: array<string, mixed>, entityType: string|null, collectionActions: list<array{key: string, label: string, target: string}>, matches: list<string>}
      */
     public function toArray(): array
     {
@@ -40,6 +44,19 @@ final readonly class Section
             'routeParams' => $this->routeParams,
             'entityType' => $this->entityType,
             'collectionActions' => array_map(fn (CollectionAction $action) => $action->toArray(), $this->collectionActions),
+            'matches' => $this->routePatterns(),
         ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function routePatterns(): array
+    {
+        if ($this->matches !== []) {
+            return $this->matches;
+        }
+
+        return [str_ends_with($this->routeName, '.index') ? substr($this->routeName, 0, -5).'*' : $this->routeName];
     }
 }

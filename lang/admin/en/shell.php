@@ -36,6 +36,30 @@ return [
         ],
     ],
 
+    'chrome' => [
+        'product' => 'Mano VU SA',
+        'workspaces' => 'Workspaces',
+        'sections_nav' => 'Workspace pages',
+        'main_nav' => 'Main navigation',
+        'all_sections' => 'All sections',
+        'create' => 'Create',
+        'search' => 'Search',
+        'search_field' => 'Search or jump to…',
+        'menu' => 'Menu',
+        'close_menu' => 'Close menu',
+        'account' => 'Account',
+        'new_design' => 'New design (beta)',
+    ],
+
+    'palette' => [
+        'go_to' => 'Go to',
+        'create' => 'Create',
+        'pinned' => 'Pinned',
+        'recent' => 'Recent',
+        'pin' => 'Pin',
+        'unpin' => 'Unpin',
+    ],
+
     'sections' => [
         'apzvalga' => 'Overview',
         'uzduotys' => 'Tasks',

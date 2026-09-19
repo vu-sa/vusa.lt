@@ -9,7 +9,7 @@
 
     <!-- Sticky Bottom Action Bar -->
     <div
-      class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur-sm px-4 py-3 dark:bg-zinc-900/95 dark:border-zinc-800 md:left-(--sidebar-width,16rem)">
+      class="fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-50 border-t bg-white/95 backdrop-blur-sm px-4 py-3 dark:bg-zinc-900/95 dark:border-zinc-800 md:left-(--sidebar-width,16rem)">
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
         <!-- Left side: Status indicators -->
         <div class="flex items-center gap-3 text-sm">

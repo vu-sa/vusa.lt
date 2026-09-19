@@ -121,7 +121,7 @@
     </div>
 
     <!-- Sticky bottom action bar (mirrors AdminForm), edit mode only -->
-    <div v-if="editing" class="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/95 md:left-(--sidebar-width,16rem)">
+    <div v-if="editing" class="fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-50 border-t bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/95 md:left-(--sidebar-width,16rem)">
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
         <!-- Status -->
         <div class="flex items-center gap-2 text-sm">

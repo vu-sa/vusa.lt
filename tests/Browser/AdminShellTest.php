@@ -1,0 +1,54 @@
+<?php
+
+use App\Models\Tenant;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+pest()->use(RefreshDatabase::class);
+
+/**
+ * The new admin shell (.ai/redesign/admin, PR 4.1-4.3). What only a browser can settle: that the
+ * catalog's route matching lights the right workspace and tab on a real page, that the bottom bar
+ * exists on a phone but not on a desktop, and that none of it throws.
+ */
+function openShell(int $width, int $height, string $path = '/mano/institutions'): mixed
+{
+    $user = makeAdminUser(Tenant::query()->first());
+    $user->setNewAdminShellEnabled(true);
+
+    $page = loginAsAdmin($user);
+    $page->resize($width, $height)->navigate($path);
+    waitForInertiaRender($page);
+
+    return $page;
+}
+
+it('shows the workspace and section a page belongs to', function (): void {
+    $page = openShell(1440, 900);
+
+    $page->assertPresent('[data-slot=admin-shell]')->assertPresent('[data-slot=section-tabs]');
+
+    expect($page->script("document.querySelector('[data-slot=workspace-picker] button').textContent"))->toContain('ViSAK')
+        ->and($page->script("document.querySelector('[data-slot=section-tabs] [aria-current=page]').textContent"))->toContain('Institucijos');
+
+    $page->assertNoJavaScriptErrors();
+});
+
+it('keeps the tab lit on a record page, not only on the index', function (): void {
+    $page = openShell(1440, 900, '/mano/institutions/create');
+
+    expect($page->script("document.querySelector('[data-slot=section-tabs] [aria-current=page]').textContent"))->toContain('Institucijos');
+});
+
+it('uses the bottom bar and hides the create button in the top bar on a phone', function (): void {
+    $page = openShell(390, 844);
+
+    expect($page->script("getComputedStyle(document.querySelector('[data-slot=mobile-bottom-bar]')).display"))->toBe('flex')
+        ->and($page->script("document.querySelector('[data-slot=shell-top-bar] button.bg-brand-fill').offsetParent"))->toBeNull();
+});
+
+it('has no bottom bar and shows the create button in the top bar on a desktop', function (): void {
+    $page = openShell(1440, 900);
+
+    expect($page->script("getComputedStyle(document.querySelector('[data-slot=mobile-bottom-bar]')).display"))->toBe('none')
+        ->and($page->script("document.querySelector('[data-slot=shell-top-bar] button.bg-brand-fill').offsetParent"))->not->toBeNull();
+});

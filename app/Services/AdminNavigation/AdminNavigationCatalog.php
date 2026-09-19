@@ -48,7 +48,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class AdminNavigationCatalog
 {
-    public const string CACHE_PREFIX = 'admin-navigation-';
+    /** Bump the suffix when the payload shape changes, so a deploy never serves the old shape from cache. */
+    public const string CACHE_PREFIX = 'admin-navigation-v2-';
 
     private const int CACHE_TTL = 1800;
 
@@ -159,7 +160,7 @@ class AdminNavigationCatalog
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.atstovavimas', [], null, Visibility::can('viewAny', Meeting::class)),
                 new Section('institucijos', 'shell.sections.institucijos', 'institutions.index', [], 'institution', Visibility::can('viewAny', Institution::class)),
-                new Section('posedziai', 'shell.sections.posedziai', 'meetings.index', [], 'meeting', Visibility::can('viewAny', Meeting::class)),
+                new Section('posedziai', 'shell.sections.posedziai', 'meetings.index', [], 'meeting', Visibility::can('viewAny', Meeting::class), matches: ['meetings.*', 'agendaItems.*']),
                 // `search.agendaItems` is a legacy redirect to this same destination — link
                 // straight to it instead (SearchController::agendaItems() docblock).
                 new Section('darbotvarkes_klausimai', 'shell.sections.darbotvarkes_klausimai', 'search.index', ['tab' => 'agenda-items'], 'agenda_item', Visibility::can('viewAny', Meeting::class)),
@@ -185,7 +186,7 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.rezervacijos.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.reservations', [], null, Visibility::always()),
-                new Section('rezervacijos', 'shell.sections.rezervacijos', 'reservations.index', [], 'reservation', Visibility::can('viewAny', Reservation::class)),
+                new Section('rezervacijos', 'shell.sections.rezervacijos', 'reservations.index', [], 'reservation', Visibility::can('viewAny', Reservation::class), matches: ['reservations.*', 'reservationResources.*']),
                 new Section('istekliai', 'shell.sections.istekliai', 'resources.index', [], 'resource', Visibility::can('viewAny', Resource::class)),
                 // ResourceCategory carries no permissions of its own — its policy delegates to
                 // the `resources.*` ability (ResourceCategoryPolicy docblock), so there is no
@@ -235,7 +236,7 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.organizacija.description',
             sections: [
                 new Section('nariai', 'shell.sections.nariai', 'users.index', [], 'user', Visibility::can('viewAny', User::class), [CollectionAction::merge(Visibility::can('viewAny', User::class))]),
-                new Section('pareigybes', 'shell.sections.pareigybes', 'duties.index', [], 'duty', Visibility::can('viewAny', Duty::class), [CollectionAction::merge(Visibility::can('viewAny', Duty::class))]),
+                new Section('pareigybes', 'shell.sections.pareigybes', 'duties.index', [], 'duty', Visibility::can('viewAny', Duty::class), [CollectionAction::merge(Visibility::can('viewAny', Duty::class))], ['duties.*', 'dutiables.edit']),
                 new Section('pareigybiu_atnaujinimas', 'shell.sections.pareigybiu_atnaujinimas', 'duties.updateUsersWizard', [], 'duty', Visibility::can('create', Duty::class)),
                 new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class)),
                 new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))]),
@@ -340,7 +341,7 @@ class AdminNavigationCatalog
                 new Section('sistemos_busena', 'shell.sections.sistemos_busena', 'systemStatus', [], null, Visibility::can('viewAny', Role::class)),
                 new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class)),
                 new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class)),
-                new Section('sharepoint_failai', 'shell.sections.sharepoint_failai', 'sharepointFiles.index', [], 'sharepoint_file', Visibility::can('viewAny', SharepointFile::class)),
+                new Section('sharepoint_failai', 'shell.sections.sharepoint_failai', 'sharepointFiles.index', [], 'sharepoint_file', Visibility::can('viewAny', SharepointFile::class), matches: ['sharepointFiles.*', 'sharepoint.*']),
             ],
         );
     }

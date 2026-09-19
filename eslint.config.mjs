@@ -8,7 +8,10 @@ import globals from 'globals';
 
 // Paths join this fence only after their redesign migration lands. Keeping the initial list empty
 // lets foundation work land without turning legacy debt into an unreviewable lint failure.
-export const MIGRATED_ADMIN_PATHS = [];
+export const MIGRATED_ADMIN_PATHS = [
+  'resources/js/Components/Layouts/Shell/**',
+  'resources/js/Components/CommandPalette/**',
+];
 
 // Shared import restriction fragments — reused in per-surface blocks so the
 // global lodash ban is not silently dropped when a later config overrides this rule.

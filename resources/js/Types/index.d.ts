@@ -88,6 +88,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
           label: string;
           target: string;
         }>;
+        /** Route-name patterns (`meetings.*`) living inside this section — see `resolveActive()`. */
+        matches: string[];
       }>;
       createActions: Array<{
         key: string;

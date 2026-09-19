@@ -17,8 +17,10 @@ use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\ModelAuthorizer;
 use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
 
@@ -42,6 +44,70 @@ const EXCLUDED_FROM_CATALOG = [
     'push-subscription.index' => 'device push-subscription settings, no navigational destination',
     'settings.cadences.index' => 'reached from within Nustatymai, not a top-level section',
 ];
+
+/**
+ * GET `/mano` routes that deliberately belong to no workspace: they are reached from the account
+ * menu or Pagalba, or are legacy redirects that never render (`SearchController`'s own docblocks).
+ */
+const WORKSPACELESS_ROUTES = [
+    'administration', 'profile', 'approvals.history', 'mySupportRequests.index', 'mySupportRequests.create',
+    'push-subscription.index', 'search.index', 'search.agendaItems', 'search.institutions',
+    'search.meetings', 'search.resources',
+];
+
+/**
+ * Every section that claims a route, best match first: a section carrying `routeParams` only
+ * claims the route when the params agree, and an exact name beats a wildcard. The frontend's
+ * `resolveActive()` (useAdminNavigation.ts) implements the same order.
+ *
+ * @param  list<array<string, mixed>>  $workspaces
+ * @param  array<string, mixed>  $params
+ * @return list<array{workspace: string, section: string}>
+ */
+function catalogCandidates(array $workspaces, string $routeName, array $params = []): array
+{
+    $candidates = [];
+
+    foreach ($workspaces as $workspace) {
+        foreach ($workspace['sections'] as $section) {
+            $pattern = collect($section['matches'])->first(fn (string $pattern) => Str::is($pattern, $routeName));
+
+            $paramsAgree = collect($section['routeParams'])
+                ->every(fn ($value, $key) => (string) ($params[$key] ?? '') === (string) $value);
+
+            if ($pattern === null || ! $paramsAgree) {
+                continue;
+            }
+
+            $candidates[] = [
+                'workspace' => $workspace['key'],
+                'section' => $section['key'],
+                'withParams' => $section['routeParams'] !== [],
+                'exact' => $pattern === $routeName,
+            ];
+        }
+    }
+
+    return collect($candidates)
+        ->sortBy([['withParams', 'desc'], ['exact', 'desc']])
+        ->map(fn (array $candidate) => ['workspace' => $candidate['workspace'], 'section' => $candidate['section']])
+        ->values()
+        ->all();
+}
+
+/**
+ * @return Collection<int, string>
+ */
+function adminGetRouteNames(): Collection
+{
+    return collect(Route::getRoutes()->getRoutes())
+        ->filter(fn ($route) => in_array('GET', $route->methods(), true))
+        ->filter(fn ($route) => str_starts_with($route->uri(), 'mano'))
+        ->map(fn ($route) => $route->getName())
+        ->filter()
+        ->unique()
+        ->values();
+}
 
 /**
  * @return array<string, list<string>> workspace key => ordered section keys
@@ -93,9 +159,9 @@ describe('per-persona visibility', function () {
             'label' => 'shell.workspaces.pradzia.title',
             'description' => 'shell.workspaces.pradzia.description',
             'sections' => [
-                ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'collectionActions' => []],
-                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'userTasks', 'routeParams' => [], 'entityType' => 'task', 'collectionActions' => []],
-                ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'collectionActions' => []],
+                ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'collectionActions' => [], 'matches' => ['dashboard']],
+                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'userTasks', 'routeParams' => [], 'entityType' => 'task', 'collectionActions' => [], 'matches' => ['userTasks']],
+                ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'collectionActions' => [], 'matches' => ['notifications.*']],
             ],
             'createActions' => [],
         ]);
@@ -214,6 +280,49 @@ describe('route-coverage guard', function () {
 
         expect($unknown)->toBeEmpty();
     });
+});
+
+describe('route resolution', function () {
+    test('every admin route belongs to a workspace or is deliberately workspace-less', function (): void {
+        $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
+
+        $unresolved = adminGetRouteNames()
+            ->reject(fn (string $name) => in_array($name, WORKSPACELESS_ROUTES, true))
+            ->filter(fn (string $name) => catalogCandidates($workspaces, $name) === [])
+            ->values()
+            ->all();
+
+        expect($unresolved)->toBeEmpty();
+    });
+
+    test('no admin route resolves into two workspaces', function (): void {
+        $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
+
+        $ambiguous = adminGetRouteNames()
+            ->filter(fn (string $name) => collect(catalogCandidates($workspaces, $name))->pluck('workspace')->unique()->count() > 1)
+            ->values()
+            ->all();
+
+        expect($ambiguous)->toBeEmpty();
+    });
+
+    test('record pages resolve to the section they belong to', function (string $routeName, string $workspace, string $section): void {
+        $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
+
+        expect(catalogCandidates($workspaces, $routeName)[0] ?? null)->toBe(['workspace' => $workspace, 'section' => $section]);
+    })->with([
+        'meeting record' => ['meetings.show', 'atstovavimas', 'posedziai'],
+        'agenda item editor' => ['agendaItems.edit', 'atstovavimas', 'posedziai'],
+        'institution form' => ['institutions.edit', 'atstovavimas', 'institucijos'],
+        'reservation record' => ['reservations.show', 'rezervacijos', 'rezervacijos'],
+        'reservation resource' => ['reservationResources.show', 'rezervacijos', 'rezervacijos'],
+        'news editor' => ['news.edit', 'svetaine', 'naujienos'],
+        'duty record' => ['duties.show', 'organizacija', 'pareigybes'],
+        'occupancy edit' => ['dutiables.edit', 'organizacija', 'pareigybes'],
+        'the duty wizard beats the duties wildcard' => ['duties.updateUsersWizard', 'organizacija', 'pareigybiu_atnaujinimas'],
+        'a settings page' => ['settings.site.edit', 'sistema', 'nustatymai'],
+        'support request record' => ['supportRequests.show', 'sistema', 'pagalbos_uzklausos'],
+    ]);
 });
 
 describe('access parity', function () {

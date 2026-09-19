@@ -244,6 +244,7 @@ import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
+import { useLogout } from '@/Composables/useLogout';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
@@ -498,19 +499,5 @@ const publicWebsiteUrl = computed(() => {
   });
 });
 
-// Handle logout
-const handleLogout = () => {
-  router.post(route('logout'), {}, {
-    onSuccess: () => {
-      window.location.href = route('login');
-    },
-    onError: () => {
-      console.error('Logout failed.');
-    },
-  });
-};
-
-const handleMicrosoftLogout = () => {
-  router.post(route('logout.microsoft'));
-};
+const { logout: handleLogout, logoutMicrosoft: handleMicrosoftLogout } = useLogout();
 </script>

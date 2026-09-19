@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.5 — Patogesnė komandų paletė (2026-09-19) {#v2-5}
+
+- ✨ **Naudingesnė komandų paletė** — paletėje (⌘/Ctrl + K) pirmiausia rodomi tavo dabartinio skyriaus puslapiai ir paieškos rezultatai, prie kiekvieno puslapio matyti, kuriam skyriui jis priklauso, o prisegimo žvaigždutė rodoma visada, ne tik užvedus žymeklį; prisegti puslapiai išvardyti pačioje viršuje
+- 🔧 **Paletėje veikia visi kūrimo veiksmai** — pasirinkus „Naujas susitikimas“, „Posėdžio nebuvo“ ar „Užbaigti posėdį“, dabar atsidaro kūrimo langas; anksčiau šie veiksmai nieko nedarydavo
+
 ## v2.4 — Tikslesnis administravimo sąrašas (2026-09-19) {#v2-4}
 
 - ✨ **Tikslesnis administravimo puslapio sąrašas** — „Administravimo“ puslapyje dabar rodomi visi skyriai, kuriuos galima peržiūrėti, o ne tik tie, kuriuos galima kurti; pavyzdžiui, institucijas ar naudotojus matantis, bet negalintis jų kurti naudotojas dabar mato ir atitinkamą nuorodą

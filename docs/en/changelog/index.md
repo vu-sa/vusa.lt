@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.5 — A more helpful command palette (2026-09-19) {#v2-5}
+
+- ✨ **More helpful command palette** — the palette (⌘/Ctrl + K) now lists pages and search results from the section you are in first, shows which section each page belongs to, and always displays the pin star instead of only on hover; pinned pages are listed at the very top
+- 🔧 **Every create action works in the palette** — choosing "New meeting", "No meeting held" or "Complete a meeting" now opens the creation window; these actions used to do nothing
+
 ## v2.4 — More accurate administration list (2026-09-19) {#v2-4}
 
 - ✨ **More accurate administration page list** — the Administration page now lists every section you may view, not only those you may create; for example, a user who can view but not create institutions or members now also sees that link

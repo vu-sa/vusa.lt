@@ -36,6 +36,30 @@ return [
         ],
     ],
 
+    'chrome' => [
+        'product' => 'Mano VU SA',
+        'workspaces' => 'Skyriai',
+        'sections_nav' => 'Skyriaus puslapiai',
+        'main_nav' => 'Pagrindinė naršymo juosta',
+        'all_sections' => 'Visi skyriai',
+        'create' => 'Sukurti',
+        'search' => 'Ieškoti',
+        'search_field' => 'Ieškoti ar pereiti…',
+        'menu' => 'Meniu',
+        'close_menu' => 'Uždaryti meniu',
+        'account' => 'Paskyra',
+        'new_design' => 'Naujas dizainas (beta)',
+    ],
+
+    'palette' => [
+        'go_to' => 'Pereiti į',
+        'create' => 'Sukurti',
+        'pinned' => 'Prisegta',
+        'recent' => 'Neseniai',
+        'pin' => 'Prisegti',
+        'unpin' => 'Atsegti',
+    ],
+
     'sections' => [
         'apzvalga' => 'Apžvalga',
         'uzduotys' => 'Užduotys',

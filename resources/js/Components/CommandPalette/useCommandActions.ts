@@ -1,9 +1,12 @@
 import { computed, type Component } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Home, Plus, Search, Settings } from 'lucide-vue-next';
+import { Plus, Search, Settings } from 'lucide-vue-next';
 
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
+import { workspaceIcon } from '@/Constants/adminWorkspaces';
+import { useActionWindow, type OpenOptions } from '@/Composables/useActionWindow';
+import { sectionHref, useAdminNavigation } from '@/Composables/useAdminNavigation';
 
 export type ActionCategory = 'navigation' | 'create' | 'action';
 
@@ -15,37 +18,61 @@ export interface CommandAction {
   category: ActionCategory;
   action: () => void;
   shortcut?: string;
+  /** The catalog workspace this entry lives in: its secondary label, and what ranks it first. */
+  workspaceKey?: string;
+  workspaceLabel?: string;
+  /** Present on catalog sections, which can be pinned. */
+  page?: { routeName: string; href: string; title: string };
 }
 
+/** Catalog `screen` targets are ActionWindow screens; each one is the first screen of a flow. */
+const flowForScreen: Record<string, OpenOptions['flow']> = {
+  'meeting.institution': 'meeting.create',
+  'checkin.institution': 'check-in',
+  'meeting.pick': 'meeting.complete',
+};
+
 export function useCommandActions() {
-  const page = usePage<PageProps>();
+  const { workspaces, activeWorkspace } = useAdminNavigation();
+  const actionWindow = useActionWindow();
 
   const actions = computed<CommandAction[]>(() => {
-    const navigation = (page.props.adminNavigation?.workspaces ?? [])
-      .flatMap(workspace => workspace.sections)
-      .map(section => ({
-        id: `nav-${section.key}`,
-        label: $t(section.label),
-        keywords: [section.key, section.routeName],
-        icon: section.entityType ? getEntityTypeDefinition(section.entityType)?.icon ?? Home : Home,
-        category: 'navigation' as const,
-        action: () => router.visit(route(section.routeName, section.routeParams)),
-      }));
+    const navigation = workspaces.value.flatMap(workspace => workspace.sections.map((section): CommandAction => {
+      const href = sectionHref(section);
+      const label = $t(section.label);
+      // Pins are stored by path (that is what visit tracking records), so pin by the relative URL.
+      const pinHref = route(section.routeName, section.routeParams, false);
 
-    const create = (page.props.adminNavigation?.workspaces ?? [])
-      .flatMap(workspace => workspace.createActions)
-      .map(action => ({
-        id: `create-${action.key}`,
-        label: $t(action.label),
-        keywords: [action.key, action.target.kind],
-        icon: Plus,
-        category: 'create' as const,
-        action: () => {
-          if (action.target.kind === 'route') {
-            router.visit(route(action.target.routeName));
-          }
-        },
-      }));
+      return {
+        id: `nav-${workspace.key}-${section.key}`,
+        label,
+        keywords: [section.key, section.routeName],
+        icon: (section.entityType && getEntityTypeDefinition(section.entityType)?.icon) || workspaceIcon(workspace.key),
+        category: 'navigation',
+        action: () => router.visit(href),
+        workspaceKey: workspace.key,
+        workspaceLabel: $t(workspace.label),
+        page: { routeName: section.routeName, href: pinHref, title: label },
+      };
+    }));
+
+    const create = workspaces.value.flatMap(workspace => workspace.createActions.map((action): CommandAction => ({
+      id: `create-${action.key}`,
+      label: $t(action.label),
+      keywords: [action.key, action.target.kind],
+      icon: (action.entityType && getEntityTypeDefinition(action.entityType)?.icon) || Plus,
+      category: 'create',
+      action: () => {
+        if (action.target.kind === 'route') {
+          router.visit(route(action.target.routeName));
+        }
+        else {
+          actionWindow.open({ flow: flowForScreen[action.target.screen] });
+        }
+      },
+      workspaceKey: workspace.key,
+      workspaceLabel: $t(workspace.label),
+    })));
 
     return [
       ...navigation,
@@ -69,16 +96,26 @@ export function useCommandActions() {
     ];
   });
 
-  const filterActions = (query: string): CommandAction[] => {
-    const normalized = query.trim().toLowerCase();
+  /** Entries in the workspace the user is standing in come first; order is otherwise the catalog's. */
+  const rankByWorkspace = <T extends { workspaceKey?: string }>(items: T[]): T[] => {
+    const current = activeWorkspace.value?.key;
 
-    if (!normalized) {
-      return actions.value;
-    }
-
-    return actions.value.filter(action => [action.label, ...action.keywords]
-      .some(value => value.toLowerCase().includes(normalized)));
+    return [...items].sort((a, b) => Number(b.workspaceKey === current) - Number(a.workspaceKey === current));
   };
 
-  return { actions, filterActions };
+  const filterActions = (query: string): CommandAction[] => {
+    const normalized = query.trim().toLowerCase();
+    const matching = normalized
+      ? actions.value.filter(action => [action.label, action.workspaceLabel ?? '', ...action.keywords]
+          .some(value => value.toLowerCase().includes(normalized)))
+      : actions.value;
+
+    return rankByWorkspace(matching);
+  };
+
+  /** The catalog workspace that owns an entity type, so search hits can rank by workspace too. */
+  const workspaceKeyForEntity = (entityType: string): string | undefined =>
+    workspaces.value.find(workspace => workspace.sections.some(section => section.entityType === entityType))?.key;
+
+  return { actions, filterActions, rankByWorkspace, workspaceKeyForEntity, activeWorkspace };
 }

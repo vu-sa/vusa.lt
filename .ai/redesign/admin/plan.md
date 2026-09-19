@@ -35,9 +35,9 @@ One PR = one row. Rules:
 | **3.1** | PHP navigation catalog + cached Inertia prop + per-persona tests + route-coverage guard | — | ✅ |
 | **3.2** | Old shell reads the catalog (sidebar, Administravimas, palette, quick actions, ActionWindow) | 3.1 | ✅ |
 | **3.3** | Merge tools become record/bulk actions (O10) | 3.1 | ✅ |
-| **4.1** | Opt-in flag + shell skeleton: top bar, workspace picker (O25), section tabs | 3.1 |
-| **4.2** | Mobile bottom bar + Meniu panel | 4.1 |
-| **4.3** | Palette: catalog go-to, create, workspace ranking, Neseniai, pin star | 4.1 |
+| **4.1** | Opt-in flag + shell skeleton: top bar, workspace picker (O25), section tabs | 3.1 | ✅ |
+| **4.2** | Mobile bottom bar + Meniu panel | 4.1 | ✅ |
+| **4.3** | Palette: catalog go-to, create, workspace ranking, Neseniai, pin star | 4.1 | ✅ |
 | **4.4** | Account menu, Pagalba (O13, U15), docked START FM, banners | 4.1 |
 | **4.5** | Breadcrumbs below section level; tasks indicator → badges (O12) | 4.1 |
 | **4.6** | Prefetch + instant visits (U2), keyboard set (U3) | 4.1 |
@@ -383,9 +383,9 @@ Brief:
       tokens could be inspected as they landed. `appearance.new_shell` already exists; this phase
       only needs to move "Naujas dizainas (beta)" from AdminLayout's plain header button into the
       account menu proper, alongside Paskyra/Išvaizda/Pagalba below
-- [ ] Top bar, workspace tabs + Daugiau, section tabs, field-shaped palette trigger, **+ Sukurti**, bell, account
-- [ ] Mobile bottom bar (all mobile) + Meniu accordion
-- [ ] Palette: catalog go-to, create, workspace ranking, Neseniai, pin star (D5, O20)
+- [x] Top bar, workspace picker (O25), section tabs, field-shaped palette trigger, **+ Sukurti**, bell, account stub (PR 4.1, 2026-09-19)
+- [x] Mobile bottom bar (all mobile) + Meniu accordion (PR 4.2, 2026-09-19)
+- [x] Palette: catalog go-to, create, workspace ranking, Neseniai, pin star (D5, O20) (PR 4.3, 2026-09-19)
 - [ ] Breadcrumbs only below section level
 - [ ] Account menu: Paskyra, Išvaizda (+ `AccessibilityMenu`), Pagalba (O13, U15), START FM (O15), Apie, Atsijungti
 - [ ] Banners (O15); tasks indicator removed, badges instead (O12)
@@ -394,6 +394,51 @@ Brief:
 - [ ] Performance check on a throttled phone (U19); coarse device split (U26)
 - [ ] Remove the density preference (U20); stay-logged-in fixes (U22)
 - [ ] Staging dogfood (internal); the public beta opens at the end of Phase 7
+
+### PR 4.1 + 4.2 + 4.3 notes (2026-09-19)
+
+Built together on `dev`, as one change set.
+
+- **Shell split.** `AdminLayout.vue` keeps only what must survive navigation and be shared (providers, visit
+  tracking, `ActionWindow`, `Toaster`, PWA banners, `AdminCommandPalette`) and renders one of two shells:
+  `Layouts/Shell/AdminShell.vue` (new) or `Layouts/LegacyAdminShell.vue` (today's sidebar shell moved
+  verbatim, `@deprecated`, removed in PR 8.1). The opt-in flag now only chooses the shell and stamps
+  `data-surface="admin"`; **no component branches on it** — the palette is restyled once for both shells.
+- **Catalog gained `matches`** (route-name patterns per section) so a record page resolves to its workspace
+  and tab (`meetings.show` → ViSAK → Posėdžiai). `resolveActive()` (`useAdminNavigation.ts`) and
+  `catalogCandidates()` (`AdminNavigationCatalogTest`) implement the same order: params must agree, exact
+  beats wildcard. Every `/mano` GET route now resolves to a section or is in `WORKSPACELESS_ROUTES`; no
+  route resolves into two workspaces. Cache prefix bumped to `admin-navigation-v2-` so a deploy never
+  serves the old payload shape.
+- **Shell pieces** (`Components/Layouts/Shell/`): `ShellTopBar`, `WorkspacePicker` (hover + click, Esc,
+  brand left rule on the current workspace, its sections listed beneath), `SectionTabs`, `PaletteField`,
+  `ShellAccountMenu` (stub), `MobileBottomBar`, `MobileMenuPanel`, `SystemAnnouncement`. Bottom bar is
+  in-flow (not fixed); `--shell-bottom-bar` lifts the two legacy fixed save bars (`AdminForm`,
+  `EditAgendaItem`) above it, and `--sidebar-width: 0px` removes their 16rem desktop gap. Both unset in the
+  legacy shell.
+- **Palette (4.3).** Groups: Prisegta · Neseniai (empty state) · Sukurti · Pereiti į, current workspace
+  first, workspace as secondary label, visible pin star, full-screen below `sm`.
+- **Found and fixed:** the palette's create filter was dead code (ids `create-new_meeting` never matched its
+  `create-meeting` map) and every `screen`-target create action (Naujas susitikimas, Posėdžio nebuvo,
+  Užbaigti posėdį) did **nothing**. They now open the ActionWindow at the right flow; regression-tested,
+  changelog v2.5.
+- **`useSidebar()` had three non-sidebar consumers** (`ActionWindow`, `ShowAdminHome`, `DutyUserUpdateWizard`)
+  that throw without a `SidebarProvider`. They use `useOptionalSidebar()` now (`@deprecated`, goes in 8.1).
+- **Fence:** `Layouts/Shell/**` and `CommandPalette/**` joined `MIGRATED_ADMIN_PATHS`.
+- **Verified in a real browser** (`tests/Browser/AdminShellTest.php`, new): workspace + tab on an index and on
+  a create page, bottom bar on 390 vs none on 1440, no JS errors. Screenshots at 1440 / 820 / 390 and the
+  open picker, palette and Meniu were checked by eye in light mode. **Not done:** dark mode, a real touch
+  device, keyboard-only pass, 1180 width. `tests/Pest.php`'s `loginAsAdmin()` now accepts either shell.
+- **Not done / left for later:** counts in the picker (catalog is cached 30 min, needs its own source — 4.5);
+  `TasksIndicator` still sits in the top bar as round outline pills until 4.5's badges; no help/tour entry
+  in the new shell until 4.4 (Pagalba); the account menu is a stub; instant visits and the keyboard set
+  (4.6). No spotlight for the shell itself (plan.md's 2.1 note settles that; 4.8 owns onboarding), which
+  conflicts with the letter of `AGENTS.md` — worth confirming.
+- **Surprises worth knowing:** super admins and comms coordinators get **Svetainė** as the bottom-bar
+  workspace (most sections), not ViSAK — the rule says so, worth checking in the rep review. Section tab
+  centring raced font swaps (fixed with a `ResizeObserver`). `lang/admin/lt/shell.php` still calls a new
+  meeting "Naujas susitikimas" — the glossary retires *susitikimas*; not touched here.
+- **Next:** PR 4.4 (account menu, Pagalba, START FM, banners), then 4.5.
 
 ## Phase 5 — Pilot slice
 

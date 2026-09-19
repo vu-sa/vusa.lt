@@ -254,7 +254,7 @@ import {
 import { toast } from 'vue-sonner';
 
 import { useDutyUserWizard, getSuggestedEndDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
-import { useSidebar } from '@/Components/ui/sidebar';
+import { useOptionalSidebar } from '@/Composables/useOptionalSidebar';
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
@@ -294,7 +294,7 @@ const addInstitution = (institution: App.Entities.Institution) => {
 
 // Sidebar state is managed by the user; do not force-close on this page
 // so the toggle trigger remains available if the sidebar is already open.
-const { setOpen, isMobile } = useSidebar();
+const { setOpen, isMobile } = useOptionalSidebar();
 
 // Initialize wizard - redirect to duty.show on success, expand sidebar
 const wizard = useDutyUserWizard({

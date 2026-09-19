@@ -67,7 +67,7 @@ import NewsListCard from '@/Pages/Admin/Dashboard/Components/NewsListCard.vue';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
-import { useSidebar } from '@/Components/ui/sidebar/utils';
+import { useOptionalSidebar } from '@/Composables/useOptionalSidebar';
 import { useActionWindow } from '@/Composables/useActionWindow';
 // import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
 import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
@@ -120,7 +120,7 @@ const hasAtstovavimas = computed(() => usePage().props.auth?.can?.create?.meetin
 const canAccessAdministration = computed(() => usePage().props.auth?.can?.accessAdministration);
 
 // Get sidebar controls for expanding during tour
-const { setOpen, setOpenMobile, isMobile } = useSidebar();
+const { setOpen, setOpenMobile, isMobile } = useOptionalSidebar();
 const actionWindow = useActionWindow();
 
 // Expand sidebar when highlighting sidebar elements
