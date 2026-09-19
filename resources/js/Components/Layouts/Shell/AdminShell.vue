@@ -6,8 +6,8 @@
     data-slot="admin-shell"
     class="flex h-svh flex-col bg-background text-foreground [--sidebar-width:0px] max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]"
   >
-    <StagingBanner class="mx-2 mt-2" />
-    <ImpersonateBanner class="mx-2 mt-2" />
+    <StagingBanner />
+    <ImpersonateBanner />
 
     <ShellTopBar
       :workspaces
@@ -18,10 +18,11 @@
       @create="actionWindow.open()"
     />
     <SectionTabs :workspace="activeWorkspace" :active-section />
+    <ShellBreadcrumbs :active-section />
+    <SystemAnnouncement :message="systemMessage" />
 
     <main class="min-h-0 flex-1 overflow-auto">
       <div class="mx-auto min-h-full w-full max-w-[100rem] p-4 md:p-6">
-        <SystemAnnouncement :message="systemMessage" />
         <slot />
       </div>
     </main>
@@ -52,6 +53,7 @@ import { computed, ref } from 'vue';
 import MobileBottomBar from './MobileBottomBar.vue';
 import MobileMenuPanel from './MobileMenuPanel.vue';
 import SectionTabs from './SectionTabs.vue';
+import ShellBreadcrumbs from './ShellBreadcrumbs.vue';
 import ShellTopBar from './ShellTopBar.vue';
 import SystemAnnouncement from './SystemAnnouncement.vue';
 

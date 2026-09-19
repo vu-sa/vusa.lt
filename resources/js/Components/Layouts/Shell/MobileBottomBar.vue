@@ -26,7 +26,10 @@
     </div>
 
     <Link :href="route('userTasks')" prefetch :class="tabClass(activeSection?.key === 'uzduotys' && activeWorkspace?.key === 'pradzia')">
-      <ClipboardCheck class="size-5" />
+      <span class="relative">
+        <ClipboardCheck class="size-5" />
+        <TaskCountBadge class="absolute -top-2 left-3" />
+      </span>
       <span>{{ $t('shell.sections.uzduotys') }}</span>
     </Link>
 
@@ -41,6 +44,8 @@
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ClipboardCheck, Menu, Plus } from 'lucide-vue-next';
+
+import TaskCountBadge from './TaskCountBadge.vue';
 
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';

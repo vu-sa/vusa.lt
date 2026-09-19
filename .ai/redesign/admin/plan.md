@@ -38,8 +38,8 @@ One PR = one row. Rules:
 | **4.1** | Opt-in flag + shell skeleton: top bar, workspace picker (O25), section tabs | 3.1 | ✅ |
 | **4.2** | Mobile bottom bar + Meniu panel | 4.1 | ✅ |
 | **4.3** | Palette: catalog go-to, create, workspace ranking, Neseniai, pin star | 4.1 | ✅ |
-| **4.4** | Account menu, Pagalba (O13, U15), docked START FM, banners | 4.1 |
-| **4.5** | Breadcrumbs below section level; tasks indicator → badges (O12) | 4.1 |
+| **4.4** | Account menu, Pagalba (O13, U15), docked START FM, banners | 4.1 | ✅ |
+| **4.5** | Breadcrumbs below section level; tasks indicator → badges (O12) | 4.1 | ✅ |
 | **4.6** | Prefetch + instant visits (U2), keyboard set (U3) | 4.1 |
 | **4.7** | 403 pages that explain themselves (U8) | 3.1 |
 | **4.8** | Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights | 4.1 |
@@ -386,9 +386,10 @@ Brief:
 - [x] Top bar, workspace picker (O25), section tabs, field-shaped palette trigger, **+ Sukurti**, bell, account stub (PR 4.1, 2026-09-19)
 - [x] Mobile bottom bar (all mobile) + Meniu accordion (PR 4.2, 2026-09-19)
 - [x] Palette: catalog go-to, create, workspace ranking, Neseniai, pin star (D5, O20) (PR 4.3, 2026-09-19)
-- [ ] Breadcrumbs only below section level
+- [x] Breadcrumbs only below section level (PR 4.5, 2026-09-19)
 - [ ] Account menu: Paskyra, Išvaizda (+ `AccessibilityMenu`), Pagalba (O13, U15), START FM (O15), Apie, Atsijungti
-- [ ] Banners (O15); tasks indicator removed, badges instead (O12)
+- [ ] Banners (O15) — PR 4.4
+- [x] Tasks indicator removed, badges instead (O12) (PR 4.5, 2026-09-19)
 - [ ] Prefetch/instant visits on tabs (U2); keyboard set (U3); 403 explanations (U8)
 - [ ] Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights
 - [ ] Performance check on a throttled phone (U19); coarse device split (U26)
@@ -439,6 +440,37 @@ Built together on `dev`, as one change set.
   centring raced font swaps (fixed with a `ResizeObserver`). `lang/admin/lt/shell.php` still calls a new
   meeting "Naujas susitikimas" — the glossary retires *susitikimas*; not touched here.
 - **Next:** PR 4.4 (account menu, Pagalba, START FM, banners), then 4.5.
+
+### PR 4.5 notes (2026-09-19)
+
+- **Breadcrumbs** (`Shell/ShellBreadcrumbs.vue`, between the tabs and the page): `belowSectionTrail()`
+  (`useAdminNavigation.ts`) takes the trail a page registered, drops Pradinis and Administravimas, and
+  keeps it from the active section down — so the section is the first, linked crumb and doubles as the
+  way back. A section index draws nothing. Phones show only `‹ nearest linked ancestor`.
+- **Coverage is the legacy shell's, not better:** only ~40 of ~138 admin pages register a trail
+  (`usePageBreadcrumbs`); the rest — most Create/Edit pages, e.g. `institutions.create` — draw nothing
+  until their Phase 9 migration registers one. The shell has no fallback on purpose: a page title is not
+  available reliably, and a wrong crumb is worse than none.
+- **Stale trails:** the breadcrumb state persists across visits (the "no flashing" decision in
+  `AdminLayout`), so a page that registers nothing inherits the previous page's trail. When a section is
+  active but absent from the trail, nothing is drawn; a stale trail *from the same section* still shows
+  (e.g. editing a meeting you just viewed). Clearing on navigation would fix it at the cost of the row
+  popping in and out — left for when most pages register.
+- **Task badges** (`TaskCountBadge`, `useTaskBadge`): the top-bar `TasksIndicator` is gone from the new
+  shell. The count sits on the Pradžia row of the workspace picker, on the **Užduotys** tab, on the
+  mobile Užduotys tab, and in the Meniu panel; while the user is *outside* Pradžia it is also on the
+  picker trigger, so a rep in ViSAK still sees that something needs them. `attention` normally, `danger`
+  (+ clock icon) when any is overdue. The label is folded into the trigger's `aria-label`, which would
+  otherwise hide the badge's text.
+- **Source of the numbers:** `auth.user.tasks_count` already existed (pending); `overdue_tasks_count`
+  is new in `HandleInertiaRequests` — one extra `withCount` on the query that already ran. The old
+  indicator's count was really the length of a 5-item API page.
+- **Not done:** the bell is still a round outline pill (no decision to restyle it here); other counts in
+  the picker (the mock's "3 laukia") need a source — only tasks have one; `data-tour="tasks-indicator"`
+  no longer exists in the new shell, so any tour step targeting it is dead until 4.8 retires the tours.
+- **Verified:** Vitest (badge, breadcrumbs, `belowSectionTrail`), Storybook a11y stories, a backend test
+  for the shared counts, and `tests/Browser/AdminShellTest.php` (needs `npm run build` first — it runs
+  against the compiled bundle). Screenshots checked by eye at 1440 and 390, light mode only.
 
 ## Phase 5 — Pilot slice
 

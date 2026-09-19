@@ -203,6 +203,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Legacy shell only. The new shell counts tasks as badges (`TaskCountBadge`,
+ * O12); this goes with `LegacyAdminShell` in PR 8.1.
+ */
 import { ref, computed, onMounted } from 'vue';
 import { Link, router, usePage, useHttp } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';

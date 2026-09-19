@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.6 — A more useful Mano VU SA account menu (2026-09-19) {#v2-6}
+
+- ⭐ **Help is always close at hand** — the account menu now includes documentation, the page tour, updates, your requests and problem reporting; reports automatically retain the page and browser context
+- ⭐ **START FM player** — open START FM from the account menu or command palette; the player remains available while navigating but never plays automatically
+
 ## v2.5 — A more helpful command palette (2026-09-19) {#v2-5}
 
 - ✨ **More helpful command palette** — the palette (⌘/Ctrl + K) now lists pages and search results from the section you are in first, shows which section each page belongs to, and always displays the pin star instead of only on hover; pinned pages are listed at the very top

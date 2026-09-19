@@ -49,6 +49,20 @@ return [
         'close_menu' => 'Uždaryti meniu',
         'account' => 'Paskyra',
         'new_design' => 'Naujas dizainas (beta)',
+        'breadcrumbs' => 'Puslapio kelias',
+        'back_to' => 'Atgal į :page',
+    ],
+
+    'account' => [
+        'appearance' => 'Išvaizda', 'light' => 'Šviesi tema', 'dark' => 'Tamsi tema', 'language' => 'Kalba: :language',
+        'help' => 'Pagalba', 'docs' => 'Dokumentacija', 'tour' => 'Parodyk, kaip veikia', 'report_problem' => 'Pranešti apie problemą',
+        'my_requests' => 'Mano užklausos', 'whats_new' => 'Kas naujo', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
+        'listen' => 'Klausyti', 'pause' => 'Pristabdyti', 'close' => 'Uždaryti',
+    ],
+
+    'badges' => [
+        'tasks_pending' => 'Laukiančios užduotys: :count',
+        'tasks_overdue' => 'Laukiančios užduotys: :count, iš jų vėluoja: :overdue',
     ],
 
     'palette' => [

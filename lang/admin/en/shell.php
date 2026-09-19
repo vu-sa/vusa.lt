@@ -49,6 +49,20 @@ return [
         'close_menu' => 'Close menu',
         'account' => 'Account',
         'new_design' => 'New design (beta)',
+        'breadcrumbs' => 'Page path',
+        'back_to' => 'Back to :page',
+    ],
+
+    'account' => [
+        'appearance' => 'Appearance', 'light' => 'Light theme', 'dark' => 'Dark theme', 'language' => 'Language: :language',
+        'help' => 'Help', 'docs' => 'Documentation', 'tour' => 'Show me how it works', 'report_problem' => 'Report a problem',
+        'my_requests' => 'My requests', 'whats_new' => "What's new", 'start_fm' => 'Listen to START FM', 'about' => 'About',
+        'listen' => 'Listen', 'pause' => 'Pause', 'close' => 'Close',
+    ],
+
+    'badges' => [
+        'tasks_pending' => 'Pending tasks: :count',
+        'tasks_overdue' => 'Pending tasks: :count, :overdue overdue',
     ],
 
     'palette' => [

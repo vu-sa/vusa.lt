@@ -144,9 +144,14 @@ class HandleInertiaRequests extends Middleware
     private function getLoggedInUserForInertia(): ?User
     {
         $user = User::query()
-            ->withCount(['tasks' => function ($query): void {
-                $query->whereNull('completed_at');
-            }])
+            ->withCount([
+                'tasks' => function ($query): void {
+                    $query->whereNull('completed_at');
+                },
+                'tasks as overdue_tasks_count' => function ($query): void {
+                    $query->whereNull('completed_at')->where('due_date', '<', now());
+                },
+            ])
             ->with('roles', 'current_duties:id,name,institution_id', 'current_duties.roles', 'current_duties.institution:id,name')
             ->find(Auth::id());
 
@@ -248,5 +253,4 @@ class HandleInertiaRequests extends Middleware
     {
         return AdminNavigationCatalog::CACHE_PREFIX.$userId;
     }
-
 }

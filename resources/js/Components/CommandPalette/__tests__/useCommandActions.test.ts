@@ -6,9 +6,11 @@ import { usePage } from '@inertiajs/vue3';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useCommandActions } from '@/Components/CommandPalette/useCommandActions';
 import { useActionWindow } from '@/Composables/useActionWindow';
+import { useStartFm } from '@/Composables/useStartFm';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useActionWindow', () => ({ useActionWindow: vi.fn() }));
+vi.mock('@/Composables/useStartFm', () => ({ useStartFm: vi.fn() }));
 
 const section = (key: string, routeName: string, entityType: string | null = null) => ({
   key,
@@ -42,10 +44,13 @@ const resolve = () => {
 };
 
 const open = vi.fn();
+const openStartFm = vi.fn();
 
 beforeEach(() => {
   open.mockClear();
+  openStartFm.mockClear();
   vi.mocked(useActionWindow).mockReturnValue({ open } as unknown as ReturnType<typeof useActionWindow>);
+  vi.mocked(useStartFm).mockReturnValue({ open: openStartFm } as unknown as ReturnType<typeof useStartFm>);
 });
 
 describe('useCommandActions', () => {
@@ -63,7 +68,15 @@ describe('useCommandActions', () => {
   it('keeps only global exclusions when the catalog is empty', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: { workspaces: [] } }));
 
-    expect(resolve().actions.value.map(action => action.id)).toEqual(['nav-search', 'nav-profile']);
+    expect(resolve().actions.value.map(action => action.id)).toEqual(['nav-search', 'nav-profile', 'action-start-fm']);
+  });
+
+  it('opens the docked START FM player from the palette', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: { workspaces: [] } }));
+
+    resolve().actions.value.find(action => action.id === 'action-start-fm')?.action();
+
+    expect(openStartFm).toHaveBeenCalledOnce();
   });
 
   it('gives sections that share a label distinct ids and their workspace as a secondary label', () => {

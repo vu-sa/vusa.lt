@@ -34,6 +34,7 @@
                 <span class="block text-sm font-bold uppercase tracking-wide">{{ $t(workspace.label) }}</span>
                 <span class="block text-sm text-muted-foreground">{{ $t(workspace.description) }}</span>
               </span>
+              <TaskCountBadge v-if="workspace.key === 'pradzia' && openKey !== workspace.key" />
               <Plus class="size-4 shrink-0 transition-transform" :class="{ 'rotate-45': openKey === workspace.key }" />
             </button>
 
@@ -44,7 +45,7 @@
                   prefetch
                   v-bind="ariaCurrent(section.key === activeSection?.key && workspace.key === activeWorkspace?.key)"
                   :class="[
-                    'u-touch flex items-center border-l-2 py-3 pl-12 pr-4 text-sm',
+                    'u-touch flex items-center gap-2 border-l-2 py-3 pl-12 pr-4 text-sm',
                     section.key === activeSection?.key && workspace.key === activeWorkspace?.key
                       ? 'border-brand-fill font-semibold text-foreground'
                       : 'border-transparent text-muted-foreground',
@@ -52,6 +53,7 @@
                   @click="close"
                 >
                   {{ $t(section.label) }}
+                  <TaskCountBadge v-if="workspace.key === 'pradzia' && section.key === 'uzduotys'" />
                 </Link>
               </li>
             </ul>
@@ -92,6 +94,8 @@ import { onKeyStroke, useScrollLock } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Check, Plus, X } from 'lucide-vue-next';
 import { nextTick, ref, watch } from 'vue';
+
+import TaskCountBadge from './TaskCountBadge.vue';
 
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';

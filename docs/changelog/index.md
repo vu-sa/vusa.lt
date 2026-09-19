@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.6 — Patogesnė Mano VU SA paskyra (2026-09-19) {#v2-6}
+
+- ⭐ **Pagalba visada po ranka** — paskyros meniu dabar turi dokumentaciją, puslapio vadovą, naujienas, tavo užklausas ir problemos pranešimą; pranešant problemą automatiškai išsaugomas atvertas puslapis bei naršyklės informacija
+- ⭐ **START FM grotuvas** — START FM gali įjungti iš paskyros meniu ar komandų paletės; grotuvas lieka atidarytas naršant, bet niekada nepradeda groti pats
+
 ## v2.5 — Patogesnė komandų paletė (2026-09-19) {#v2-5}
 
 - ✨ **Naudingesnė komandų paletė** — paletėje (⌘/Ctrl + K) pirmiausia rodomi tavo dabartinio skyriaus puslapiai ir paieškos rezultatai, prie kiekvieno puslapio matyti, kuriam skyriui jis priklauso, o prisegimo žvaigždutė rodoma visada, ne tik užvedus žymeklį; prisegti puslapiai išvardyti pačioje viršuje

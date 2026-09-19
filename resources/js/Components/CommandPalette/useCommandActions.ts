@@ -1,12 +1,13 @@
 import { computed, type Component } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus, Search, Settings } from 'lucide-vue-next';
+import { Plus, Radio, Search, Settings } from 'lucide-vue-next';
 
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import { useActionWindow, type OpenOptions } from '@/Composables/useActionWindow';
 import { sectionHref, useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { useStartFm } from '@/Composables/useStartFm';
 
 export type ActionCategory = 'navigation' | 'create' | 'action';
 
@@ -35,6 +36,7 @@ const flowForScreen: Record<string, OpenOptions['flow']> = {
 export function useCommandActions() {
   const { workspaces, activeWorkspace } = useAdminNavigation();
   const actionWindow = useActionWindow();
+  const startFm = useStartFm();
 
   const actions = computed<CommandAction[]>(() => {
     const navigation = workspaces.value.flatMap(workspace => workspace.sections.map((section): CommandAction => {
@@ -92,6 +94,14 @@ export function useCommandActions() {
         icon: Settings,
         category: 'navigation',
         action: () => router.visit(route('profile')),
+      },
+      {
+        id: 'action-start-fm',
+        label: $t('Klausyti START FM'),
+        keywords: ['start fm', 'radijas', 'radio'],
+        icon: Radio,
+        category: 'action',
+        action: startFm.open,
       },
     ];
   });

@@ -20,6 +20,7 @@
 
     <!-- Guided action window. Outside both shells: it needs neither a sidebar nor its provider. -->
     <ActionWindow />
+    <StartFmDock />
 
     <!-- Toast notifications -->
     <Toaster rich-colors />
@@ -49,6 +50,7 @@ import InstallBanner from '@/Components/PWA/InstallBanner.vue';
 import UpdateBanner from '@/Components/PWA/UpdateBanner.vue';
 import { Toaster } from '@/Components/ui/sonner';
 import AdminShell from '@/Components/Layouts/Shell/AdminShell.vue';
+import StartFmDock from '@/Components/Layouts/Shell/StartFmDock.vue';
 import LegacyAdminShell from '@/Components/Layouts/LegacyAdminShell.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
@@ -56,6 +58,7 @@ import { createTourProvider } from '@/Composables/useTourProvider';
 import { createActionWindowProvider } from '@/Composables/useActionWindow';
 import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
 import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
+import { createStartFmProvider } from '@/Composables/useStartFm';
 import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette.vue';
 import ActionWindow from '@/Components/ActionWindow/ActionWindow.vue';
 
@@ -101,6 +104,7 @@ createCommandPaletteProvider({
   recentPages: uiPreferences.recentPages,
   clearRecent: uiPreferences.clearRecent,
 });
+createStartFmProvider();
 
 // Track every admin page the user visits. The page-specific title comes from
 // the breadcrumb trail (the last crumb), which every admin page registers —

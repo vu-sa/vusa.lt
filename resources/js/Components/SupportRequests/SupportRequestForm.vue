@@ -340,10 +340,12 @@ const props = withDefaults(defineProps<{
   areas: SupportRequestTaxonomyItem[];
   roles: SupportRequestRoleOption[];
   supportRequest?: SupportRequestItem | null;
+  context?: { url?: string; viewport?: string; browser?: string };
   backUrl?: string;
   showCancel?: boolean;
 }>(), {
   supportRequest: null,
+  context: undefined,
   backUrl: undefined,
 });
 
@@ -421,7 +423,8 @@ const form = useForm({
   roles: props.supportRequest?.roles?.map(r => r.id) ?? ([] as string[]),
   title: props.supportRequest?.title ?? '',
   description: props.supportRequest?.description ?? '',
-  context_url: props.supportRequest?.context_url ?? '',
+  context_url: props.supportRequest?.context_url ?? props.context?.url ?? '',
+  context: props.context ? { viewport: props.context.viewport, browser: props.context.browser } : null,
   images: [] as File[],
   deleted_media_ids: [] as number[],
 });

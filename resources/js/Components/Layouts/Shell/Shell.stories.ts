@@ -4,8 +4,13 @@ import { expect, userEvent, within } from 'storybook/test';
 import MobileBottomBar from './MobileBottomBar.vue';
 import MobileMenuPanel from './MobileMenuPanel.vue';
 import SectionTabs from './SectionTabs.vue';
+import ShellBreadcrumbs from './ShellBreadcrumbs.vue';
 import WorkspacePicker from './WorkspacePicker.vue';
 import { atstovavimas, pradzia, rezervacijos, workspace, section } from './__tests__/fixtures';
+
+import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
+import { sectionHref } from '@/Composables/useAdminNavigation';
+import { usePage } from '@/mocks/inertia.storybook';
 
 const svetaine = workspace('svetaine', ['puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'dokumentai', 'darbotvarkes_klausimai']
   .map(key => section(key, `${key}.index`)));
@@ -66,5 +71,49 @@ export const MobileMenu: Story = {
     components: { MobileMenuPanel },
     setup: () => ({ workspaces, activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] }),
     template: '<MobileMenuPanel :open="true" :workspaces :active-workspace :active-section show-all-sections />',
+  }),
+};
+
+const withTasks = (pending: number, overdue: number) => (story: () => unknown) => {
+  usePage.mockImplementation(() => ({ props: { auth: { user: { tasks_count: pending, overdue_tasks_count: overdue } } } }));
+
+  return story();
+};
+
+const taskTabsRender = () => ({
+  components: { SectionTabs },
+  setup: () => ({ workspace: pradzia, activeSection: pradzia.sections[0] }),
+  template: '<div class="w-[390px] bg-background text-foreground"><SectionTabs :workspace :active-section /></div>',
+});
+
+/** Pending tasks count on the Užduotys tab — `attention` while none is late. */
+export const TaskBadgePending: Story = {
+  decorators: [withTasks(4, 0)],
+  render: taskTabsRender,
+};
+
+/** One late task turns the whole count `danger`, and adds an icon so colour is not the only cue. */
+export const TaskBadgeOverdue: Story = {
+  decorators: [withTasks(4, 1)],
+  render: taskTabsRender,
+};
+
+/** Below section level only: the section is the way back, then the record. */
+export const BreadcrumbsBelowSection: Story = {
+  render: () => ({
+    components: { ShellBreadcrumbs },
+    setup() {
+      const meetings = atstovavimas.sections[1];
+
+      createBreadcrumbState('admin').set([
+        { label: 'Pradinis', href: route('dashboard') },
+        { label: 'Administravimas', href: route('administration') },
+        { label: 'shell.sections.posedziai', href: sectionHref(meetings) },
+        { label: '2026-09-01 Senato posėdis' },
+      ]);
+
+      return { activeSection: meetings };
+    },
+    template: '<div class="w-[820px] bg-background text-foreground"><ShellBreadcrumbs :active-section /></div>',
   }),
 };

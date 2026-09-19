@@ -1,6 +1,8 @@
 import { computed, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
+
 type Catalog = NonNullable<PageProps['adminNavigation']>;
 export type AdminWorkspace = Catalog['workspaces'][number];
 export type AdminSection = AdminWorkspace['sections'][number];
@@ -58,6 +60,48 @@ export function resolveActive(
   }, undefined);
 
   return { workspace: best?.workspace, section: best?.section };
+}
+
+const pathOf = (href: string | undefined): string | undefined => {
+  if (!href) {
+    return undefined;
+  }
+
+  try {
+    return new URL(href, 'http://shell.invalid').pathname.replace(/\/$/, '') || '/';
+  }
+  catch {
+    return undefined;
+  }
+};
+
+/**
+ * The part of a page's breadcrumb trail that the shell still has to draw: from the active
+ * section down. Home and Administravimas are what the top bar and picker already are, and the
+ * section itself is the tab row, so a trail that ends at the section (an index page) draws
+ * nothing — breadcrumbs exist only *below* section level (record → sub-record).
+ *
+ * The section stays as the first crumb so it doubles as the way back. When a section is active
+ * but absent from the trail, the trail was left over from another page (index pages without
+ * breadcrumbs of their own don't reset it), so nothing is drawn rather than something wrong.
+ */
+export function belowSectionTrail(
+  crumbs: readonly BreadcrumbItem[],
+  activeSection: AdminSection | undefined,
+  outerPaths: readonly string[] = [],
+): BreadcrumbItem[] {
+  const outer = new Set(outerPaths.map(pathOf));
+  const trail = crumbs.filter(crumb => !outer.has(pathOf(crumb.href)));
+
+  if (activeSection) {
+    const sectionPath = pathOf(sectionHref(activeSection));
+    const at = trail.findIndex(crumb => pathOf(crumb.href) === sectionPath);
+    const below = at === -1 ? [] : trail.slice(at);
+
+    return below.length > 1 ? below : [];
+  }
+
+  return trail.length > 1 ? trail : [];
 }
 
 /**

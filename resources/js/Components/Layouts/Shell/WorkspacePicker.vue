@@ -13,10 +13,11 @@
         <Button
           variant="ghost"
           class="h-9 gap-2 border border-border px-3 text-xs font-bold uppercase tracking-wide hover:border-brand hover:bg-transparent hover:text-brand"
-          :aria-label="$t('shell.chrome.workspaces')"
+          :aria-label="triggerLabel"
         >
           <component :is="workspaceIcon(activeWorkspace?.key ?? 'pradzia')" class="size-4 text-brand" />
           <span>{{ activeWorkspace ? $t(activeWorkspace.label) : $t('shell.chrome.workspaces') }}</span>
+          <TaskCountBadge v-if="activeWorkspace?.key !== 'pradzia'" />
           <ChevronDown class="size-4 opacity-50 transition-transform" :class="{ 'rotate-180': open }" />
         </Button>
       </PopoverTrigger>
@@ -51,6 +52,7 @@
                 <span class="block text-xs font-bold uppercase tracking-wide">{{ $t(workspace.label) }}</span>
                 <span class="block text-sm text-muted-foreground">{{ $t(workspace.description) }}</span>
               </span>
+              <TaskCountBadge v-if="workspace.key === 'pradzia'" class="ml-auto mt-0.5" />
             </Link>
 
             <ul
@@ -95,6 +97,9 @@
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, ChevronDown } from 'lucide-vue-next';
+import { computed } from 'vue';
+
+import TaskCountBadge from './TaskCountBadge.vue';
 
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
@@ -106,15 +111,24 @@ import {
   type AdminWorkspace,
 } from '@/Composables/useAdminNavigation';
 import { useHoverPopover } from '@/Composables/useHoverPopover';
+import { useTaskBadge } from '@/Composables/useTaskBadge';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
 
-defineProps<{
+const props = defineProps<{
   workspaces: AdminWorkspace[];
   activeWorkspace?: AdminWorkspace;
   activeSection?: AdminSection;
   /** Whether the user may open `/mano/administration` (Visi skyriai). */
   showAllSections?: boolean;
 }>();
+
+const taskBadge = useTaskBadge();
+
+// The trigger only carries the count while Pradžia (which lists it itself) is not the current
+// workspace; an `aria-label` replaces the content, so the badge's text has to be folded in.
+const triggerLabel = computed(() => props.activeWorkspace?.key !== 'pradzia' && taskBadge.value
+  ? `${$t('shell.chrome.workspaces')}, ${taskBadge.value.label}`
+  : $t('shell.chrome.workspaces'));
 
 const { open, openedByHover, openNow, cancelClose, close, scheduleClose, onOpenChange } = useHoverPopover();
 

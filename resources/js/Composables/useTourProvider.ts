@@ -89,6 +89,20 @@ export function provideTour(startTourFn: (isVoluntary?: boolean) => void) {
   };
 }
 
+/** Reads the page-local tour registered by the current admin page. */
+export function useTour(): TourContext {
+  const context = inject(TOUR_INJECTION_KEY, null);
+
+  if (!context) {
+    return { hasTour: computed(() => false), startTour: () => {} };
+  }
+
+  return {
+    hasTour: computed(() => context.startTour.value !== null),
+    startTour: () => context.startTour.value?.(),
+  };
+}
+
 /**
  * Clears the current tour registration
  */

@@ -113,14 +113,13 @@
 /* ------------------------------------------------------------------ */
 
 /* Global text scaling — the root font size drives every rem-based size, so one variable
-   scales type, spacing and icons together. Scoped to the public surface because admin.css
-   sets its own `:root { font-size: 90% }` density and has no a11y menu; without the
-   attribute selector the two would fight on source order alone. */
-html[data-surface="public"] {
+   scales type, spacing and icons together. The same account-menu control now serves the opted-in
+   admin shell, whose surface reset sets the 100% baseline before this multiplier applies. */
+html:is([data-surface="public"], [data-surface="admin"]) {
   font-size: calc(100% * var(--a11y-font-scale, 1));
 }
 
-html.a11y-underline[data-surface="public"] a {
+html.a11y-underline:is([data-surface="public"], [data-surface="admin"]) a {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -173,7 +172,7 @@ html.a11y-underline[data-surface="public"] a {
 /* High contrast pushes ink and paper apart. The brand moves in opposite directions per theme:
    *darker* red on white, *brighter* amber on near-black. Brightening the light accent is the
    intuitive move and the wrong one — it lowers contrast on paper. */
-html.a11y-contrast[data-surface="public"] {
+html.a11y-contrast:is([data-surface="public"], [data-surface="admin"]) {
   --foreground: oklch(1 0 0);
   --muted-foreground: oklch(0.9 0.004 85);
   --border: oklch(1 0 0 / 40%);
@@ -181,7 +180,7 @@ html.a11y-contrast[data-surface="public"] {
   --brand-fill: oklch(0.86 0.17 82);
 }
 
-html.a11y-contrast[data-surface="public"]:not(.dark) {
+html.a11y-contrast:is([data-surface="public"], [data-surface="admin"]):not(.dark) {
   --background: oklch(1 0 0);
   --foreground: oklch(0.12 0.008 70);
   --muted-foreground: oklch(0.24 0.01 75);

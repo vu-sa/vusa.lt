@@ -23,13 +23,14 @@
           prefetch
           v-bind="ariaCurrent(section.key === activeSection?.key)"
           :class="[
-            'flex h-11 items-center whitespace-nowrap border-b-2 px-3 text-xs font-semibold uppercase tracking-wide transition-colors',
+            'flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-xs font-semibold uppercase tracking-wide transition-colors',
             section.key === activeSection?.key
               ? 'border-brand-fill text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground',
           ]"
         >
           {{ $t(section.label) }}
+          <TaskCountBadge v-if="workspace.key === 'pradzia' && section.key === 'uzduotys'" />
         </Link>
       </li>
     </ul>
@@ -41,6 +42,8 @@ import { Link } from '@inertiajs/vue3';
 import { useScroll } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+
+import TaskCountBadge from './TaskCountBadge.vue';
 
 import { sectionHref, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import { ariaCurrent } from '@/Utils/ariaCurrent';

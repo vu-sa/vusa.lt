@@ -6,6 +6,9 @@ interface User extends Omit<App.Entities.User, 'tenants'> {
   tenants: Pick<App.Entities.Tenant, 'id' | 'shortname'>[];
   isSuperAdmin: boolean;
   unreadNotifications: Record<string, any>[] | null;
+  /** Uncompleted tasks assigned to the user, and the subset already past its due date. */
+  tasks_count?: number;
+  overdue_tasks_count?: number;
   tutorial_progress?: Record<string, string>;
 }
 

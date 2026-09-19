@@ -1,19 +1,24 @@
 <?php
 
+use App\Models\Task;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
 /**
- * The new admin shell (.ai/redesign/admin, PR 4.1-4.3). What only a browser can settle: that the
+ * The new admin shell (.ai/redesign/admin, PR 4.1-4.5). What only a browser can settle: that the
  * catalog's route matching lights the right workspace and tab on a real page, that the bottom bar
  * exists on a phone but not on a desktop, and that none of it throws.
  */
-function openShell(int $width, int $height, string $path = '/mano/institutions'): mixed
+function openShell(int $width, int $height, string $path = '/mano/institutions', ?Closure $arrange = null): mixed
 {
     $user = makeAdminUser(Tenant::query()->first());
     $user->setNewAdminShellEnabled(true);
+
+    if ($arrange) {
+        $arrange($user);
+    }
 
     $page = loginAsAdmin($user);
     $page->resize($width, $height)->navigate($path);
@@ -51,4 +56,27 @@ it('has no bottom bar and shows the create button in the top bar on a desktop', 
 
     expect($page->script("getComputedStyle(document.querySelector('[data-slot=mobile-bottom-bar]')).display"))->toBe('none')
         ->and($page->script("document.querySelector('[data-slot=shell-top-bar] button.bg-brand-fill').offsetParent"))->not->toBeNull();
+});
+
+it('draws no breadcrumbs on a section index — the tabs already say where you are', function (): void {
+    $page = openShell(1440, 900);
+
+    expect($page->script("document.querySelector('[data-slot=shell-breadcrumbs]')"))->toBeNull();
+});
+
+it('draws breadcrumbs below section level, starting with the section as the way back', function (): void {
+    $page = openShell(1440, 900, '/mano/news/create');
+
+    expect($page->script("document.querySelector('[data-slot=shell-breadcrumbs] ol a').textContent.trim()"))->toBe('Naujienos')
+        ->and($page->script("document.querySelector('[data-slot=shell-breadcrumbs] [aria-current=page]').textContent.trim()"))->toBe('Nauja naujiena');
+    $page->assertNoJavaScriptErrors();
+});
+
+it('counts pending tasks as a badge on the picker instead of a top-bar indicator', function (): void {
+    $page = openShell(1440, 900, '/mano/institutions', function ($user): void {
+        Task::factory()->create(['due_date' => now()->subDay()])->users()->attach($user->id);
+    });
+
+    expect($page->script("document.querySelector('[data-slot=workspace-picker] [data-slot=task-count-badge]').dataset.statusRole"))->toBe('danger')
+        ->and($page->script("document.querySelector('[data-tour=tasks-indicator]')"))->toBeNull();
 });

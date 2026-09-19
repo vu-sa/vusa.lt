@@ -1,5 +1,5 @@
 <template>
-  <div v-if="message" role="status" class="mb-6 flex gap-3 border border-status-info-border bg-status-info-surface p-4 text-status-info">
+  <div v-if="message" role="status" class="flex gap-3 border-b border-status-info-border bg-status-info-surface px-4 py-3 text-status-info md:px-6">
     <Info class="mt-0.5 size-5 shrink-0" aria-hidden="true" />
     <div>
       <h3 class="font-medium">

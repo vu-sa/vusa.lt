@@ -31,10 +31,6 @@
         {{ $t('shell.chrome.create') }}
       </Button>
 
-      <!-- Temporary: PR 4.5 replaces the tasks indicator with badges (O12). -->
-      <div class="hidden md:block">
-        <TasksIndicator />
-      </div>
       <NotificationsIndicator />
       <div class="hidden md:block">
         <ShellAccountMenu />
@@ -53,7 +49,6 @@ import ShellAccountMenu from './ShellAccountMenu.vue';
 import WorkspacePicker from './WorkspacePicker.vue';
 
 import NotificationsIndicator from '@/Components/NotificationsIndicator.vue';
-import TasksIndicator from '@/Components/TasksIndicator.vue';
 import { Button } from '@/Components/ui/button';
 import type { AdminSection, AdminWorkspace } from '@/Composables/useAdminNavigation';
 

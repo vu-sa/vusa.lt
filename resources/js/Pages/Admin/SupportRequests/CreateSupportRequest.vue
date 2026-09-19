@@ -11,6 +11,7 @@
         :types
         :areas
         :roles
+        :context="reportContext"
         :back-url="route('mySupportRequests.index')"
       />
     </FormUpsertLayout>
@@ -18,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
@@ -35,6 +37,28 @@ defineProps<{
   roles: SupportRequestRoleOption[];
   service?: SupportRequestTaxonomyItem;
 }>();
+
+const reportContext = computed<{ url?: string; viewport?: string; browser?: string } | undefined>(() => {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  try {
+    const raw = new URLSearchParams(window.location.search).get('context');
+    const context = raw ? JSON.parse(raw) as Record<string, unknown> : null;
+
+    return context && typeof context.url === 'string'
+      ? {
+          url: context.url,
+          viewport: typeof context.viewport === 'string' ? context.viewport : undefined,
+          browser: typeof context.browser === 'string' ? context.browser : undefined,
+        }
+      : undefined;
+  }
+  catch {
+    return undefined;
+  }
+});
 
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.createRouteBreadcrumb($t('Mano pranešimai'), 'mySupportRequests.index'),

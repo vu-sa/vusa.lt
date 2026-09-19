@@ -195,6 +195,7 @@ describe('creating and storing support requests', function (): void {
             'visibility' => 'roles',
             'roles' => [$role->id],
             'context_url' => 'http://www.vusa.test/lt/forma',
+            'context' => ['viewport' => '390×844', 'browser' => 'Mozilla/5.0 test'],
             'images' => [$file],
         ];
 
@@ -204,6 +205,7 @@ describe('creating and storing support requests', function (): void {
         expect($supportRequest)->not->toBeNull()
             ->and($supportRequest->title)->toBe('Puslapio klaida formoje')
             ->and($supportRequest->visibility)->toBe(SupportRequestVisibility::Roles)
+            ->and($supportRequest->context)->toBe(['viewport' => '390×844', 'browser' => 'Mozilla/5.0 test'])
             ->and($supportRequest->roles()->pluck('roles.id')->all())->toContain($role->id);
 
         $response->assertRedirect(route('supportRequests.show', $supportRequest->id));
