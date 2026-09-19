@@ -52,6 +52,11 @@ return [
             'description' => 'Set when people hold their duties, on a timeline.',
         ],
     ],
+    'flows' => [
+        'new_meeting' => 'New meeting',
+        'no_meeting' => 'No meetings',
+        'complete_meeting' => 'Complete a meeting',
+    ],
     'institution' => [
         'title' => 'Which institution?',
         'subtitle' => 'Showing the institutions you hold a duty in.',
@@ -76,8 +81,10 @@ return [
             'other' => 'None of these fit.',
         ],
         'when' => [
-            'title' => 'When will the meeting happen?',
-            'subtitle' => 'Suggested from when this institution has met so far.',
+            'title' => 'When was or will the meeting be?',
+            'subtitle' => 'Today, yesterday, or suggested from when this institution has met so far.',
+            'today' => 'Today',
+            'yesterday' => 'Yesterday',
             'usual_hint' => 'The next usual slot',
             'week_after_hint' => 'A week later',
             'custom' => 'Pick another date…',
@@ -85,6 +92,7 @@ return [
         'date' => [
             'title' => 'Which day?',
             'subtitle' => 'You can pick a past day too, if the meeting already happened.',
+            'label' => 'Date',
         ],
         'time' => [
             'title' => 'At what time?',
@@ -115,8 +123,8 @@ return [
             'agenda' => 'Agenda',
             'agenda_count' => '{0} No questions|{1} :count question|[2,*] :count questions',
             'agenda_bulk' => 'Adding them right after creating',
-            'submit' => 'Create meeting',
-            'submitting' => 'Creating…',
+            'submit' => 'Record meeting',
+            'submitting' => 'Recording…',
         ],
     ],
     'check_in' => [
@@ -155,6 +163,7 @@ return [
         'close' => 'Close',
         'change' => 'Change',
         'continue' => 'Continue',
+        'step' => 'Step',
         'loading' => 'Loading…',
         'error' => 'Could not load the data. Please try again.',
     ],

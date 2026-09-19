@@ -1,14 +1,15 @@
 <template>
-  <div class="flex items-center gap-3 bg-card px-4 py-3 text-left">
+  <div class="flex items-center gap-3 px-1 py-3 text-left">
     <dt class="w-28 shrink-0 text-sm text-muted-foreground">
       {{ label }}
     </dt>
-    <dd class="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-      {{ value || '—' }}
+    <!-- The button lives inside the dd: a <dl> may only hold dt/dd groups. -->
+    <dd class="flex min-w-0 flex-1 items-center gap-3">
+      <span class="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{{ value || '—' }}</span>
+      <Button v-if="editable" variant="ghost" size="sm" class="shrink-0 pointer-coarse:h-11" @click="emit('edit')">
+        {{ $t('action_window.common.change') }}
+      </Button>
     </dd>
-    <Button v-if="editable" variant="ghost" size="sm" class="shrink-0" @click="emit('edit')">
-      {{ $t('action_window.common.change') }}
-    </Button>
   </div>
 </template>
 

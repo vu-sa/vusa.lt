@@ -1,16 +1,17 @@
 <template>
-  <div data-slot="action-choice-list" :class="cn('flex flex-col gap-2', props.class)">
-    <p v-if="heading" class="px-1 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+  <div data-slot="action-choice-list" :class="props.class">
+    <p v-if="heading" class="pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
       {{ heading }}
     </p>
-    <slot />
+    <!-- Hairlines, not a box per choice: the whole list is one thing you pick from. -->
+    <div class="flex flex-col divide-y divide-border border-y border-border">
+      <slot />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
-
-import { cn } from '@/Utils/Shadcn/utils';
 
 const props = defineProps<{
   heading?: string;

@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.9 — Paprastesnis posėdžių fiksavimo langas (2026-09-19) {#v2-9}
+
+- ✨ **Šiandien ir vakar vienu paspaudimu** — fiksuodamas posėdį dieną renkiesi iš „Šiandien“, „Vakar“ arba įprastos institucijos dienos; kalendoriaus prireikia tik kitoms datoms
+- ✨ **Ramesnis, aiškesnis langas** — veiksmų langas įgavo naują išvaizdą: sąrašai be dėžučių, aiški eiga viršuje, telefone jis kyla kaip apatinis skydelis, o visi mygtukai patogūs paspausti pirštu
+- ✨ **Aiškesnė institucijų būsena** — institucijų sąraše vėluojančios ar artėjančio termino institucijos paryškintos spalva, o įprastos lieka be jos
+- ✨ **Vienodi pavadinimai** — vietoj „susitikimas“ visur rašoma „posėdis“, o balsavimas el. paštu vadinamas „sprendimu el. paštu“
+
 ## v2.8 — Naujas pradžios puslapis ir posėdžių sąrašas (2026-09-19) {#v2-8}
 
 - ⭐ **Pradžia prasideda nuo to, kas laukia** — viršuje matai, ką turi padaryti, su nuoroda tiesiai į ekraną, kuriame tai atliekama; toliau — greiti kūrimo veiksmai, artimiausi posėdžiai, tavo koordinatorius ir neseniai redaguoti įrašai

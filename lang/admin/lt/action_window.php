@@ -52,6 +52,11 @@ return [
             'description' => 'Laiko juostoje nustatyti, nuo kada iki kada žmonės eina pareigas.',
         ],
     ],
+    'flows' => [
+        'new_meeting' => 'Naujas posėdis',
+        'no_meeting' => 'Posėdžio nebus',
+        'complete_meeting' => 'Papildyti posėdį',
+    ],
     'institution' => [
         'title' => 'Kuriai institucijai?',
         'subtitle' => 'Rodomos institucijos, kuriose eini pareigas.',
@@ -76,8 +81,10 @@ return [
             'other' => 'Nė vienas variantas netinka.',
         ],
         'when' => [
-            'title' => 'Kada vyks posėdis?',
-            'subtitle' => 'Siūlome pagal tai, kada ši institucija posėdžiaudavo iki šiol.',
+            'title' => 'Kada vyko ar vyks posėdis?',
+            'subtitle' => 'Šiandien, vakar arba pagal tai, kada ši institucija posėdžiaudavo iki šiol.',
+            'today' => 'Šiandien',
+            'yesterday' => 'Vakar',
             'usual_hint' => 'Artimiausias įprastas laikas',
             'week_after_hint' => 'Savaite vėliau',
             'custom' => 'Pasirinkti kitą datą…',
@@ -85,6 +92,7 @@ return [
         'date' => [
             'title' => 'Kurią dieną?',
             'subtitle' => 'Gali pasirinkti ir praėjusią dieną, jei posėdis jau įvyko.',
+            'label' => 'Data',
         ],
         'time' => [
             'title' => 'Kelintą valandą?',
@@ -115,8 +123,8 @@ return [
             'agenda' => 'Darbotvarkė',
             'agenda_count' => '{0} Nėra klausimų|{1} :count klausimas|[2,9] :count klausimai|[10,*] :count klausimų',
             'agenda_bulk' => 'Surašysiu sukūrus posėdį',
-            'submit' => 'Sukurti posėdį',
-            'submitting' => 'Kuriama…',
+            'submit' => 'Fiksuoti posėdį',
+            'submitting' => 'Fiksuojama…',
         ],
     ],
     'check_in' => [
@@ -155,6 +163,7 @@ return [
         'close' => 'Uždaryti',
         'change' => 'Keisti',
         'continue' => 'Toliau',
+        'step' => 'Žingsnis',
         'loading' => 'Kraunama…',
         'error' => 'Nepavyko įkelti duomenų. Bandyk dar kartą.',
     ],

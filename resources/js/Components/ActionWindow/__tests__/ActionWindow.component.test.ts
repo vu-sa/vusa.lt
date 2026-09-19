@@ -197,13 +197,30 @@ describe('ActionWindow.vue', () => {
     expect(window.isOpen.value).toBe(false);
   });
 
+  describe('flow identity', () => {
+    it('names the job with the meeting mark on flow screens only', async () => {
+      const { wrapper, window } = mountWindow();
+      window.open();
+      await settle(wrapper);
+
+      expect(wrapper.find('[data-slot="entity-type-mark"]').exists()).toBe(false);
+
+      window.open({ flow: 'meeting.create', institution: { id: '1', name: 'MIF SPK' } });
+      await settle(wrapper);
+
+      const mark = wrapper.find('[data-slot="entity-type-mark"]');
+      expect(mark.exists()).toBe(true);
+      expect(mark.text()).toContain('action_window.flows.new_meeting');
+    });
+  });
+
   describe('flow progress', () => {
     it('is absent on the persona menu, which is navigation rather than progress', async () => {
       const { wrapper, window } = mountWindow();
       window.open();
       await settle(wrapper);
 
-      expect(wrapper.find('[data-slot="action-window-body"] header div.flex-1').exists()).toBe(false);
+      expect(wrapper.find('[data-slot="action-window-progress"]').exists()).toBe(false);
     });
 
     it('drops the institution step when the caller seeded one', async () => {
@@ -211,7 +228,7 @@ describe('ActionWindow.vue', () => {
       window.open({ flow: 'meeting.create', institution: { id: '1', name: 'MIF SPK' } });
       await settle(wrapper);
 
-      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(4);
+      expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(4);
     });
 
     it('counts the institution step when the user actually picked one', async () => {
@@ -221,11 +238,11 @@ describe('ActionWindow.vue', () => {
 
       // Reached through the picker, so it is part of this run's five steps — the
       // dots must not renumber just because the stack started elsewhere.
-      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(5);
+      expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(5);
 
       window.goTo('meeting.type');
       await settle(wrapper);
-      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(5);
+      expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(5);
     });
 
     /**
@@ -242,7 +259,7 @@ describe('ActionWindow.vue', () => {
       await settle(wrapper);
 
       // Type, agenda, review — the institution came from the caller, the date from the event.
-      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(3);
+      expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(3);
     });
   });
 });

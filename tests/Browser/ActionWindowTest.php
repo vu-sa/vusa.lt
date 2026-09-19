@@ -47,13 +47,13 @@ it('opens from the sidebar and offers only the actions the user may take', funct
     ]);
 
     $page->click('[data-slot="action-choice-button"]:has-text("Kaip studentų atstovas")');
-    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Pranešti apie posėdį")');
+    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Fiksuoti posėdį")');
 
     expect(actionWindowChoices($page))->toBe([
-        'Pranešti apie posėdį',
-        'Posėdžio kurį laiką nebus',
-        'Papildyti posėdį',
-        'Pranešti apie problemą',
+        'Fiksuoti posėdį',
+        'Posėdžio nebuvo',
+        'Užbaigti posėdį',
+        'Nauja problema',
     ]);
 });
 
@@ -67,20 +67,20 @@ it('walks from the institution to the meeting type', function (): void {
     waitForInertiaRender($page, '[data-slot="action-window-screen"]');
 
     $page->click('[data-slot="action-choice-button"]:has-text("Kaip studentų atstovas")');
-    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Pranešti apie posėdį")');
-    $page->click('[data-slot="action-choice-button"]:has-text("Pranešti apie posėdį")');
+    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Fiksuoti posėdį")');
+    $page->click('[data-slot="action-choice-button"]:has-text("Fiksuoti posėdį")');
 
     // The picker is fed by the action-window API, so this also proves the endpoint
     // answers with the caller's own institutions.
     waitForInertiaRender($page, sprintf('[data-slot="action-choice-button"]:has-text("%s")', $institution->name));
     $page->click(sprintf('[data-slot="action-choice-button"]:has-text("%s")', $institution->name));
 
-    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Gyvas susitikimas")');
+    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Gyvas posėdis")');
 
     expect(actionWindowChoices($page))->toBe([
-        'Gyvas susitikimas',
-        'Nuotolinis susitikimas',
-        'Elektroninis posėdis (el. laišku)',
+        'Gyvas posėdis',
+        'Nuotolinis posėdis',
+        'Sprendimas el. paštu',
         'Kita',
     ]);
 });

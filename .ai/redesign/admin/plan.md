@@ -48,7 +48,7 @@ One PR = one row. Rules:
 | **5.1** | **P1** Pradžia: attention queue, empty state, create shortcuts, Neseniai redaguota, koordinatorius | 4.x | ✅ |
 | **5.2** | **P2** Posėdžiai + extract `CollectionPage` (three views, filter bar, Rodyti daugiau, URL state) | 5.1 | ✅ |
 | **5.3** | **P3** Meeting record + agenda editor + extract `RecordPage` (Veikla, ‹ 3/24 ›, edit-mode canvas) | 5.2 |
-| **5.4** | **P4** ActionWindow restyle (guided flow, bottom sheet, date presets) | 5.1 |
+| **5.4** | **P4** ActionWindow restyle (guided flow, bottom sheet, date presets) | 5.1 | ✅ |
 | — | *Feel review with reps — no PR; findings land as plan edits* | 5.4 |
 | **5.5** | **P5** Duty record + form + Priskirti sheet (O21) + extract `FormPage` and `SheetForm` | 5.3 |
 | **5.6** | **P6** Rezervacijos: table view, preview pane, bulk bar, optimistic approve (U4–U6) | 5.2 |
@@ -634,6 +634,52 @@ Built together on `dev` from one plan; not yet committed. Verification is split 
 
 **Next:** 5.3 (meeting record, agenda editor, `RecordPage`) — it already has work in progress in the same tree. The collection
 passes no filtered-list context yet, so ‹ 3 / 24 › needs the current filter set handed over (the URL already carries it).
+
+### PR 5.4 notes (2026-09-19)
+
+**ActionWindow: naujas posėdis** — the guided flow restyled through tokens, not re-architected: same screens, stack and draft.
+
+- **Tokens, no decoration.** Gradients, `rounded-*` and raw hues are gone from the window. Choices are hairline rows
+  (`ActionChoiceList` draws one `divide-y` list, not a box per choice) with a flat 40px tile; `ActionChoiceButton` takes a
+  status `tone` instead of `gradient`. Institution rows use the `institutionActivityStatuses` roles, and the healthy state
+  is plain (status rule: don't paint every row). The check-in explainer is a neutral note, not amber — nothing is wrong.
+- **Header says which job and how far.** `EntityTypeMark` (meeting) + a flow label from `screenRegistry`, `2 / 5` text and a
+  segment bar under the header — the current segment is `bg-brand-fill` (the location marker), so the primary button and the
+  marker are the only brand fills. Amendments from the review still show no progress.
+- **One primary button.** `ActionWindowPrimaryButton` (brand, uppercase, 44px on coarse, `loading` spinner) replaces six
+  hand-rolled footers. `ReviewRow`/`AgendaItemsEditor`/back/close buttons got `pointer-coarse:` sizes.
+- **Date presets (rules/pages.md).** `MeetingWhenScreen` always leads with **Šiandien** and **Vakar**, then the body's usual
+  slot (unchanged), then "Kita data…". A day preset carries the hour already chosen → the body's usual hour → 18:00, and goes
+  to the time screen (email meetings store the 23:59 deadline and skip it). The screen no longer auto-skips to the calendar,
+  because there is always something to offer. `MeetingDateScreen` uses the shared `DatePicker` (typed field + popover; native
+  on coarse pointers) instead of an inline calendar, and both screens now carry `returnTo`, so changing the day from the
+  review returns to the review.
+- **`DatePicker` speaks UTC-noon dates**; `toPickerDate()` (in `useWindowDates`) seeds it. The check-in range used
+  `new Date()`, which displayed the previous day between 00:00 and 03:00 in Lithuania.
+- **Bottom sheet.** Below `md` the window stays a vaul `Drawer` (swipe to dismiss) at 92dvh with a hairline top edge; from
+  `md` a bounded dialog. The primitive's own grabber still hardcodes `zinc-*` (`ui/drawer` was not in the 2.8 audit).
+- **Copy (glossary).** `MeetingType` labels: *Gyvas posėdis*, *Nuotolinis posėdis*, *Sprendimas el. paštu*; the review button
+  is **Fiksuoti posėdį** (matches `shell.actions.new_meeting`). `meeting.when.title` reads *Kada vyko ar vyks posėdis?*.
+- **Catalog.** `useActionWindowCatalog` lost its `gradient` fields; `quickActionGradient` stays for the legacy sidebar
+  (Phase 8). `ActionWindowTrigger` (legacy sidebar entry) is deliberately outside the lint fence and keeps its tint.
+- **Found by Storybook axe:** `ReviewRow` put its button directly inside `<dl>`; it now lives in the `dd`.
+- **Browser test was stale**, not only for the labels: it still expected `action_window.actions.*` titles, but the catalog
+  has read `shell.actions.*` since 5.2. Fixed; it passes against a fresh `npm run build`.
+- **Fence:** the window's components, `screens/**` and `screenRegistry.ts` joined `MIGRATED_ADMIN_PATHS`.
+- **Verified:** Vitest (component + Storybook a11y in light and dark for the new `ActionWindow.stories.ts`), full parallel
+  backend suite, `tests/Browser/ActionWindowTest.php`, and screenshots at 1440 and 390 (light) of the institution, type,
+  when and date screens through the new shell. One Vitest failure is not from this PR: `DiscussionPanel` (*posts a new root
+  comment*) fails identically on a clean tree.
+
+**Not done**
+
+- 820 and 1180 widths, dark mode in a real browser, a touch device (native date/time fields are untested), a keyboard-only pass.
+- The agenda, review, check-in and "complete a meeting" screens were not walked in a browser (covered by component tests and,
+  for the review, a story).
+- The window is still opened from the legacy sidebar trigger and Pradžia's shortcuts; the mobile bottom bar's centre **+**
+  opens the same window, which was not screenshotted.
+
+**Next:** the feel review with reps (no PR) — the flow to try is "užfiksuok vakarykštį posėdį"; findings land here as plan edits.
 
 ## Phase 6 — Messages (email, push, in-app)
 

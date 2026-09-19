@@ -8,7 +8,7 @@
     </div>
 
     <div v-if="isLoading" class="flex flex-col gap-2">
-      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full rounded-xl" />
+      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full" />
     </div>
 
     <EmptyState
@@ -27,7 +27,7 @@
         :key="institution.id"
         :title="institution.name"
         :icon="statusStyle(institution).icon"
-        :gradient="statusStyle(institution).gradient"
+        :tone="statusStyle(institution).tone"
         @click="pick(institution)"
       >
         <template #description>
@@ -42,7 +42,6 @@
         :title="$t('action_window.institution.other')"
         :description="$t('action_window.institution.other_description')"
         :icon="SearchIcon"
-        gradient="from-indigo-500/15 to-violet-500/15 dark:from-indigo-400/12 dark:to-violet-400/12"
         @click="openSearch"
       />
     </ActionChoiceList>
@@ -71,6 +70,7 @@ import { useWindowDates } from '../useWindowDates';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData, type ActionWindowInstitution } from '@/Composables/useActionWindowData';
 import { EmptyState } from '@/Components/Patterns';
+import type { StatusRole } from '@/Constants/statuses';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
 
@@ -109,20 +109,21 @@ const emptyDescription = computed(() =>
 );
 
 /**
- * Each activity status gets its own icon and tint: "overdue" and "covered by a
- * check-in" are opposite situations, and a single warning triangle for both was
- * the fastest way to make the list unreadable.
+ * Each activity status gets its own icon and status role: "overdue" and "covered by a
+ * check-in" are opposite situations, and a single warning triangle for both was the
+ * fastest way to make the list unreadable. Roles follow `institutionActivityStatuses`.
  */
-const STATUS_STYLES: Record<string, { icon: LucideIcon; gradient: string }> = {
-  overdue: { icon: CircleAlert, gradient: 'from-red-500/20 to-rose-500/15 dark:from-red-400/15 dark:to-rose-400/12' },
-  approaching: { icon: CalendarClock, gradient: 'from-amber-500/20 to-orange-500/15 dark:from-amber-400/15 dark:to-orange-400/12' },
-  no_activity: { icon: CircleHelp, gradient: 'from-zinc-500/15 to-zinc-400/15 dark:from-zinc-400/12 dark:to-zinc-300/12' },
-  covered_by_check_in: { icon: CalendarOff, gradient: 'from-violet-500/15 to-purple-500/15 dark:from-violet-400/12 dark:to-purple-400/12' },
-  covered_by_upcoming_meeting: { icon: CalendarCheck, gradient: 'from-sky-500/15 to-indigo-500/15 dark:from-sky-400/12 dark:to-indigo-400/12' },
-  healthy: { icon: Landmark, gradient: 'from-emerald-500/15 to-teal-500/15 dark:from-emerald-400/12 dark:to-teal-400/12' },
+const STATUS_STYLES: Record<string, { icon: LucideIcon; tone: StatusRole }> = {
+  overdue: { icon: CircleAlert, tone: 'danger' },
+  approaching: { icon: CalendarClock, tone: 'attention' },
+  no_activity: { icon: CircleHelp, tone: 'neutral' },
+  covered_by_check_in: { icon: CalendarOff, tone: 'info' },
+  covered_by_upcoming_meeting: { icon: CalendarCheck, tone: 'info' },
+  // The healthy state is the ordinary one and carries no colour (status rule: don't paint every row).
+  healthy: { icon: Landmark, tone: 'neutral' },
 };
 
-const FALLBACK_STYLE = { icon: Landmark, gradient: 'from-muted to-muted' };
+const FALLBACK_STYLE: { icon: LucideIcon; tone: StatusRole } = { icon: Landmark, tone: 'neutral' };
 
 const statusStyle = (institution: ActionWindowInstitution) =>
   STATUS_STYLES[institution.activity_status.status] ?? FALLBACK_STYLE;

@@ -7,7 +7,6 @@
         :title="persona.title"
         :description="persona.description"
         :icon="persona.icon"
-        :gradient="persona.gradient"
         @click="goTo('persona.actions', { persona: persona.key })"
       />
     </ActionChoiceList>

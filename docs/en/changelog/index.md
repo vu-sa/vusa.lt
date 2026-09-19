@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.9 — A simpler window for recording meetings (2026-09-19) {#v2-9}
+
+- ✨ **Today and yesterday in one tap** — when recording a meeting you choose from "Today", "Yesterday" or the institution's usual day; the calendar is only needed for other dates
+- ✨ **A calmer, clearer window** — the actions window has a new look: lists without boxes, a clear progress line at the top, a bottom sheet on phones, and buttons that are easy to tap with a finger
+- ✨ **Clearer institution status** — in the institution list, overdue or approaching-deadline institutions are highlighted with colour while ordinary ones stay plain
+- ✨ **Consistent naming** — "posėdis" replaces "susitikimas" everywhere, and voting by email is called "a decision by email"
+
 ## v2.8 — New home page and meetings list (2026-09-19) {#v2-8}
 
 - ⭐ **Home starts with what needs you** — the top shows what you have to do, linked straight to the screen where you do it; below are quick create actions, upcoming meetings, your coordinator and recently edited records

@@ -4,11 +4,11 @@
  */
 
 import { defineAsyncComponent, type AsyncComponentLoader, type Component } from 'vue';
-import { CalendarOff, CalendarPlus, PencilLine } from 'lucide-vue-next';
 
 import ScreenLoading from './ScreenLoading.vue';
 
 import type { ScreenId } from '@/Composables/useActionWindow';
+import { ModelEnum } from '@/Types/enums';
 
 /**
  * `delay` keeps the spinner off screen for chunks that arrive quickly, which is
@@ -85,34 +85,28 @@ export function flowProgress(
 }
 
 /**
- * The action that owns a screen, so the header can keep showing which job you are in
- * the middle of rather than only how far along you are.
+ * The action that owns a screen, so the header can keep saying which job you are in the
+ * middle of rather than only how far along you are. The entity marks it with its own
+ * icon and category colour, as it does everywhere else.
  */
 export interface FlowIdentity {
-  icon: Component;
-  gradient: string;
+  entity: ModelEnum;
+  /** Lang key for the eyebrow. */
+  label: string;
 }
 
-const MEETING_IDENTITY: FlowIdentity = {
-  icon: CalendarPlus,
-  gradient: 'from-amber-500/15 to-orange-500/15 dark:from-amber-400/12 dark:to-orange-400/12',
-};
-
 const FLOW_IDENTITIES: Array<{ screens: ScreenId[]; identity: FlowIdentity }> = [
-  { screens: MEETING_FLOW.flat(), identity: MEETING_IDENTITY },
+  {
+    screens: MEETING_FLOW.flat(),
+    identity: { entity: ModelEnum.MEETING, label: 'action_window.flows.new_meeting' },
+  },
   {
     screens: CHECK_IN_FLOW.flat(),
-    identity: {
-      icon: CalendarOff,
-      gradient: 'from-amber-500/20 to-yellow-500/15 dark:from-amber-400/15 dark:to-yellow-400/12',
-    },
+    identity: { entity: ModelEnum.MEETING, label: 'action_window.flows.no_meeting' },
   },
   {
     screens: ['meeting.pick'],
-    identity: {
-      icon: PencilLine,
-      gradient: 'from-sky-500/15 to-indigo-500/15 dark:from-sky-400/12 dark:to-indigo-400/12',
-    },
+    identity: { entity: ModelEnum.MEETING, label: 'action_window.flows.complete_meeting' },
   },
 ];
 

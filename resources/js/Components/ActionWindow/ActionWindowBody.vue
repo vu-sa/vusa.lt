@@ -2,53 +2,62 @@
   <!-- flex-1, not h-full: the dialog gets its height from min-height, and a
        percentage height against that resolves to auto. -->
   <div data-slot="action-window-body" class="flex min-h-0 flex-1 flex-col">
-    <header class="flex shrink-0 items-center gap-2 px-3 pb-2 pt-4 sm:px-4">
+    <header class="flex shrink-0 items-center gap-2 px-3 py-2 sm:px-4">
       <Button
         v-if="canGoBack"
         variant="ghost"
         size="icon-sm"
+        class="pointer-coarse:size-11"
         :aria-label="$t('action_window.common.back')"
         @click="back"
       >
         <ChevronLeft class="size-5" />
       </Button>
-      <span v-else class="size-8" aria-hidden="true" />
+      <span v-else class="size-8 pointer-coarse:size-11" aria-hidden="true" />
 
-      <!-- The action's own icon says which job you are in the middle of; the dots say
-           how far along. Progress dots rather than a numbered stepper, because the
+      <!-- The entity's own mark says which job you are in the middle of; the bar below
+           says how far along. Segments rather than a numbered stepper, because the
            question is "a few more taps?", not which named step this is. -->
-      <div v-if="identity" class="flex flex-1 items-center justify-center gap-2.5">
-        <span
-          :class="[
-            'flex size-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-br text-foreground/70',
-            identity.gradient,
-          ]"
-        >
-          <component :is="identity.icon" class="size-3.5" :stroke-width="2" />
-        </span>
-        <span v-if="progress" class="flex items-center gap-1.5">
-          <span
-            v-for="step in progress.total"
-            :key="step"
-            :class="[
-              'h-1.5 rounded-full transition-all duration-300',
-              step === progress.step ? 'w-5 bg-primary' : 'w-1.5',
-              step < progress.step ? 'bg-primary/40' : step !== progress.step ? 'bg-border' : '',
-            ]"
-          />
+      <div class="flex min-w-0 flex-1 items-center justify-center gap-3">
+        <EntityTypeMark
+          v-if="identity"
+          :type="identity.entity"
+          :label="$t(identity.label)"
+          class="min-w-0 truncate text-xs font-semibold uppercase tracking-wider"
+        />
+        <span v-if="progress" class="shrink-0 text-xs tabular-nums text-muted-foreground">
+          <span class="sr-only">{{ $t('action_window.common.step') }}</span>
+          {{ progress.step }} / {{ progress.total }}
         </span>
       </div>
-      <span v-else class="flex-1" />
 
       <Button
         variant="ghost"
         size="icon-sm"
+        class="pointer-coarse:size-11"
         :aria-label="$t('action_window.common.close')"
         @click="close"
       >
         <X class="size-5" />
       </Button>
     </header>
+
+    <div
+      v-if="progress"
+      data-slot="action-window-progress"
+      class="flex shrink-0 gap-1 px-3 sm:px-4"
+      aria-hidden="true"
+    >
+      <span
+        v-for="step in progress.total"
+        :key="step"
+        :class="[
+          'h-0.5 flex-1 transition-colors',
+          step === progress.step ? 'bg-brand-fill' : step < progress.step ? 'bg-foreground/40' : 'bg-border',
+        ]"
+      />
+    </div>
+    <div v-else class="h-0.5 shrink-0" aria-hidden="true" />
 
     <!-- flex, not just flex-1: the screen's sticky footer needs a parent whose height
          is resolved, or `h-full` on it collapses to its content. -->
@@ -67,6 +76,7 @@ import { ChevronLeft, X } from 'lucide-vue-next';
 import { ACTION_WINDOW_SCREENS, flowIdentity, flowProgress } from './screenRegistry';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
+import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import { Button } from '@/Components/ui/button';
 

@@ -15,7 +15,7 @@
         :ref="(el: unknown) => setInputRef(el, index)"
         :model-value="item"
         :placeholder="$t('action_window.meeting.agenda.placeholder')"
-        class="h-11 flex-1 rounded-xl"
+        class="h-11 flex-1"
         @update:model-value="(value: string | number) => update(index, String(value))"
         @keydown.enter.prevent="addAfter(index)"
         @keydown.backspace="removeIfEmpty(index, $event)"
@@ -23,7 +23,7 @@
       <Button
         variant="ghost"
         size="icon"
-        class="size-9 shrink-0 text-muted-foreground hover:text-destructive"
+        class="size-9 shrink-0 text-muted-foreground hover:text-destructive pointer-coarse:size-11"
         :aria-label="$t('action_window.meeting.agenda.remove')"
         :disabled="items.length === 1 && !item"
         @click="remove(index)"
@@ -32,7 +32,7 @@
       </Button>
     </div>
 
-    <Button variant="ghost" size="sm" class="self-start gap-1.5" @click="addAfter(items.length - 1)">
+    <Button variant="ghost" size="sm" class="self-start gap-1.5 pointer-coarse:h-11" @click="addAfter(items.length - 1)">
       <Plus class="size-4" />
       {{ $t('action_window.meeting.agenda.add_another') }}
     </Button>

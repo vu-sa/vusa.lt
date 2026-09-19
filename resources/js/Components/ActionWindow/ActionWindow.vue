@@ -1,11 +1,12 @@
 <template>
   <!--
-    One window, two presentations. On a phone it takes over the screen so a single
-    decision fills the viewport; on a desktop it is a fixed-height dialog, so the
-    window does not resize under the pointer as screens swap.
+    One window, two presentations. On a phone it is a bottom sheet that rises to nearly
+    the full height, so a single decision fills the viewport and can be swiped away; on a
+    desktop it is a bounded dialog, so the window does not resize under the pointer as
+    screens swap.
   -->
   <Drawer v-if="isMobile" :open="isOpen" @update:open="onOpenChange">
-    <DrawerContent class="h-[92dvh] max-h-[92dvh] p-0">
+    <DrawerContent class="h-[92dvh] max-h-[92dvh] border-t border-border p-0">
       <VisuallyHidden>
         <DrawerTitle>{{ $t('action_window.personas.title') }}</DrawerTitle>
       </VisuallyHidden>

@@ -7,7 +7,6 @@
         :title="option.time"
         :description="option.detail"
         :icon="Clock"
-        :gradient="TIME_TINT"
         :selected="option.time === selectedTime"
         :show-chevron="false"
         @click="pick(option.time)"
@@ -21,16 +20,16 @@
 
     <div v-else class="flex flex-col items-center gap-4 pt-2">
       <TimePicker v-model="pickedTime" :hour-range="[6, 23]" :minute-step="5" />
-      <Button variant="ghost" size="sm" @click="custom = false">
-        <ChevronLeft class="mr-1 size-4" />
+      <Button variant="ghost" size="sm" class="pointer-coarse:h-11" @click="custom = false">
+        <ChevronLeft class="size-4" />
         {{ $t('action_window.common.back') }}
       </Button>
     </div>
 
     <template v-if="custom" #footer>
-      <Button class="w-full" size="lg" :disabled="!pickedTime" @click="confirmCustom">
+      <ActionWindowPrimaryButton :disabled="!pickedTime" @click="confirmCustom">
         {{ $t('action_window.common.continue') }}
-      </Button>
+      </ActionWindowPrimaryButton>
     </template>
   </ActionWindowScreen>
 </template>
@@ -42,6 +41,7 @@ import { ChevronLeft, Clock, Clock4 } from 'lucide-vue-next';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import { useWindowDates } from '../useWindowDates';
 
@@ -51,8 +51,6 @@ import { toLocalDateTime } from '@/Composables/useMeetingCreation';
 import { Button } from '@/Components/ui/button';
 import { TimePicker } from '@/Components/ui/time-picker';
 import type { TimeValue } from '@/Components/ui/time-picker/types';
-
-const TIME_TINT = 'from-sky-500/15 to-indigo-500/15 dark:from-sky-400/12 dark:to-indigo-400/12';
 
 /** Student bodies meet after lectures; these are the hours the archive is thickest at. */
 const COMMON_TIMES = ['12:00', '15:00', '17:00', '18:00', '19:00'];
