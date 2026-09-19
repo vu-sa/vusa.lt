@@ -92,4 +92,19 @@ describe('MobileMenuPanel', () => {
     expect(mountPanel().text()).not.toContain('shell.chrome.all_sections');
     expect(mountPanel({ showAllSections: true }).text()).toContain('shell.chrome.all_sections');
   });
+
+  it('renders account, appearance, and help controls', () => {
+    const wrapper = mountPanel();
+
+    expect(wrapper.text()).toContain('shell.chrome.account');
+    expect(wrapper.text()).toContain('shell.account.appearance');
+    expect(wrapper.text()).toContain('shell.account.help');
+    expect(wrapper.text()).toContain('shell.account.docs');
+    expect(wrapper.text()).toContain('shell.account.report_problem');
+    expect(wrapper.text()).toContain('shell.account.my_requests');
+    expect(wrapper.text()).toContain('shell.account.whats_new');
+    expect(wrapper.text()).toContain('shell.account.start_fm');
+    expect(wrapper.text()).toContain('auth.logout');
+    expect(wrapper.text()).toContain('auth.logout_microsoft');
+  });
 });

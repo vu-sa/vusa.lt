@@ -21,7 +21,14 @@
     </Link>
 
     <div v-if="canCreate" class="flex flex-1 items-center justify-center">
-      <Button variant="brand" size="icon" class="u-touch" :aria-label="$t('shell.chrome.create')" @click="emit('create')">
+      <Button
+        data-tour="action-create-mobile"
+        variant="brand"
+        size="icon"
+        class="u-touch"
+        :aria-label="$t('shell.chrome.create')"
+        @click="emit('create')"
+      >
         <Plus class="size-5" />
       </Button>
     </div>
@@ -34,7 +41,13 @@
       <span>{{ $t('shell.sections.uzduotys') }}</span>
     </Link>
 
-    <button type="button" :class="tabClass(false)" :aria-expanded="menuOpen" @click="emit('menu')">
+    <button
+      data-tour="mobile-menu"
+      type="button"
+      :class="tabClass(false)"
+      :aria-expanded="menuOpen"
+      @click="emit('menu')"
+    >
       <Menu class="size-5" />
       <span>{{ $t('shell.chrome.menu') }}</span>
     </button>

@@ -38,8 +38,11 @@
             <Languages class="size-4" />
             {{ $t('shell.account.language', { language: page.props.app?.locale === 'en' ? 'Lietuvių' : 'English' }) }}
           </DropdownMenuItem>
-          <div class="px-1 py-1">
-            <AccessibilityMenu />
+          <div class="flex items-center justify-between px-2 py-1 text-sm text-foreground">
+            <span class="text-xs font-medium text-muted-foreground">
+              {{ $t('accessibility.menu_title') }}
+            </span>
+            <AccessibilityMenu class="size-7" />
           </div>
         </DropdownMenuSubContent>
       </DropdownMenuSub>

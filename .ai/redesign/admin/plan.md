@@ -387,14 +387,15 @@ Brief:
 - [x] Mobile bottom bar (all mobile) + Meniu accordion (PR 4.2, 2026-09-19)
 - [x] Palette: catalog go-to, create, workspace ranking, Neseniai, pin star (D5, O20) (PR 4.3, 2026-09-19)
 - [x] Breadcrumbs only below section level (PR 4.5, 2026-09-19)
-- [ ] Account menu: Paskyra, Išvaizda (+ `AccessibilityMenu`), Pagalba (O13, U15), START FM (O15), Apie, Atsijungti
-- [ ] Banners (O15) — PR 4.4
+- [x] Account menu: Paskyra, Išvaizda (+ `AccessibilityMenu`), Pagalba (O13, U15), START FM (O15), Apie, Atsijungti — PR 4.4 (2026-09-19)
+- [x] Banners (O15) — PR 4.4 (2026-09-19)
 - [x] Tasks indicator removed, badges instead (O12) (PR 4.5, 2026-09-19)
-- [x] Prefetch/instant visits on tabs (U2); keyboard set (U3)
-- [ ] 403 explanations (U8)
-- [ ] Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights
-- [ ] Performance check on a throttled phone (U19); coarse device split (U26)
-- [ ] Remove the density preference (U20); stay-logged-in fixes (U22)
+- [x] Prefetch/instant visits on tabs (U2); keyboard set (U3) (PR 4.6, 2026-09-19)
+- [x] 403 explanations (U8, PR 4.7, 2026-09-19)
+- [x] Welcome tour (≤ 5 steps); retire sidebar-targeting tours and spotlights (PR 4.8, 2026-09-19)
+- [x] Coarse device split counter (U26, PR 4.10, 2026-09-19); performance check on throttled phone (U19) slated for Phase 5 Wave A rep feel review
+- [x] Remove the density preference (U20, PR 4.9, 2026-09-19); stay-logged-in fixes (U22, PR 0.4; prod settings check deferred)
+- [x] Phase 4 consolidation: mobile menu parity (appearance, help, START FM, MS logout), responsive tour steps for mobile, stageRadius 0 token compliance, AccessDenied.vue in lint fence (2026-09-19)
 - [ ] Staging dogfood (internal); the public beta opens at the end of Phase 7
 
 ### PR 4.1 + 4.2 + 4.3 notes (2026-09-19)

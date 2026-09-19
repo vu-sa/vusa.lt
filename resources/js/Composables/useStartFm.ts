@@ -21,9 +21,14 @@ export function createStartFmProvider(): StartFmContext {
 }
 
 export function useStartFm(): StartFmContext {
-  const context = inject(START_FM_KEY);
+  const context = inject(START_FM_KEY, null);
   if (!context) {
-    throw new Error('useStartFm must be used within AdminLayout.');
+    const isOpen = ref(false);
+    return {
+      isOpen,
+      open: () => { isOpen.value = true; },
+      close: () => { isOpen.value = false; },
+    };
   }
 
   return context;

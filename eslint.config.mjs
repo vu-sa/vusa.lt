@@ -11,6 +11,7 @@ import globals from 'globals';
 export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Layouts/Shell/**',
   'resources/js/Components/CommandPalette/**',
+  'resources/js/Pages/Admin/AccessDenied.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

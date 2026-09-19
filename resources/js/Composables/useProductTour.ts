@@ -144,7 +144,17 @@ export function useProductTour(options: ProductTourOptions) {
    */
   function startTour(isVoluntary = false): void {
     // Resolve steps at tour start time (lazy evaluation for translations)
-    const steps = resolveSteps();
+    const rawSteps = resolveSteps();
+
+    // Skip steps whose target elements are hidden or absent from the DOM
+    const steps = rawSteps.filter((step) => {
+      if (!step.element || typeof window === 'undefined') return true;
+      const el = typeof step.element === 'string'
+        ? document.querySelector(step.element)
+        : step.element;
+      if (!el) return false;
+      return window.getComputedStyle(el).display !== 'none';
+    });
 
     if (isActive.value || steps.length === 0) return;
 
@@ -177,7 +187,7 @@ export function useProductTour(options: ProductTourOptions) {
 
       // Highlighted element styling
       stagePadding: 12,
-      stageRadius: 8,
+      stageRadius: 0,
 
       // Popover positioning and styling
       popoverOffset: 16,

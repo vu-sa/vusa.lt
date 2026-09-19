@@ -61,43 +61,166 @@
           </li>
         </ul>
 
-        <ul class="py-2">
-          <li v-if="showAllSections">
-            <Link :href="route('administration')" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" class="u-touch flex items-center px-4 py-3 text-sm text-foreground" @click="close">
-              {{ $t('shell.chrome.all_sections') }}
-            </Link>
-          </li>
-          <li>
-            <Link :href="route('profile')" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" class="u-touch flex items-center px-4 py-3 text-sm text-foreground" @click="close">
-              {{ $t('shell.chrome.account') }}
-            </Link>
-          </li>
-          <li>
-            <button type="button" class="u-touch flex w-full items-center justify-between px-4 py-3 text-left text-sm" @click="toggleNewShell">
-              {{ $t('shell.chrome.new_design') }}
-              <Check v-if="newShellEnabled" class="size-4 text-brand" />
-            </button>
-          </li>
-          <li>
-            <button type="button" class="u-touch flex w-full items-center px-4 py-3 text-left text-sm" @click="logout">
-              {{ $t('auth.logout') }}
-            </button>
-          </li>
-        </ul>
+        <div class="border-b border-border py-2">
+          <p class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {{ $t('shell.chrome.account') }}
+          </p>
+          <div v-if="user" class="px-4 py-1.5">
+            <span class="block truncate text-sm font-semibold text-foreground">{{ user.name }}</span>
+            <span class="block truncate text-xs text-muted-foreground">{{ user.email }}</span>
+          </div>
+          <ul>
+            <li>
+              <Link
+                :href="route('profile')"
+                prefetch
+                :cache-for="SHELL_PREFETCH_CACHE_FOR"
+                class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground"
+                @click="close"
+              >
+                <UserRound class="size-5 text-muted-foreground" />
+                {{ $t('shell.chrome.account') }}
+              </Link>
+            </li>
+            <li v-if="showAllSections">
+              <Link
+                :href="route('administration')"
+                prefetch
+                :cache-for="SHELL_PREFETCH_CACHE_FOR"
+                class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground"
+                @click="close"
+              >
+                <LayoutGrid class="size-5 text-muted-foreground" />
+                {{ $t('shell.chrome.all_sections') }}
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div class="border-b border-border py-2">
+          <p class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {{ $t('shell.account.appearance') }}
+          </p>
+          <ul>
+            <li>
+              <button type="button" class="u-touch flex w-full items-center justify-between px-4 py-3 text-left text-sm" @click="toggleDarkMode">
+                <span class="flex items-center gap-3">
+                  <Sun v-if="isDark" class="size-5 text-muted-foreground" />
+                  <Moon v-else class="size-5 text-muted-foreground" />
+                  {{ $t(isDark ? 'shell.account.light' : 'shell.account.dark') }}
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="u-touch flex w-full items-center justify-between px-4 py-3 text-left text-sm" @click="changeLocale">
+                <span class="flex items-center gap-3">
+                  <Languages class="size-5 text-muted-foreground" />
+                  {{ $t('shell.account.language', { language: page.props.app?.locale === 'en' ? 'Lietuvių' : 'English' }) }}
+                </span>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="border-b border-border py-2">
+          <p class="px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {{ $t('shell.account.help') }}
+          </p>
+          <ul>
+            <li>
+              <a :href="docsBase" target="_blank" rel="noopener noreferrer" class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground" @click="close">
+                <BookOpen class="size-5 text-muted-foreground" />
+                {{ $t('shell.account.docs') }}
+              </a>
+            </li>
+            <li>
+              <Link :href="reportProblemHref" prefetch class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground" @click="close">
+                <Bug class="size-5 text-muted-foreground" />
+                {{ $t('shell.account.report_problem') }}
+              </Link>
+            </li>
+            <li>
+              <Link :href="route('mySupportRequests.index')" prefetch class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground" @click="close">
+                <MessagesSquare class="size-5 text-muted-foreground" />
+                {{ $t('shell.account.my_requests') }}
+              </Link>
+            </li>
+            <li>
+              <a
+                :href="`${docsBase}/changelog/`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground"
+                @click="close"
+              >
+                <Sparkles class="size-5 text-muted-foreground" />
+                {{ $t('shell.account.whats_new') }}
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="py-2">
+          <ul>
+            <li>
+              <button type="button" class="u-touch flex w-full items-center gap-3 px-4 py-3 text-left text-sm" @click="startFm.open(); close();">
+                <Radio class="size-5 text-muted-foreground" />
+                {{ $t('shell.account.start_fm') }}
+              </button>
+            </li>
+            <li>
+              <button type="button" class="u-touch flex w-full items-center justify-between px-4 py-3 text-left text-sm" @click="toggleNewShell">
+                <span class="flex items-center gap-3">
+                  <span class="size-5" />
+                  {{ $t('shell.chrome.new_design') }}
+                </span>
+                <Check v-if="newShellEnabled" class="size-4 text-brand" />
+              </button>
+            </li>
+            <li>
+              <button type="button" class="u-touch flex w-full items-center gap-3 px-4 py-3 text-left text-sm" @click="logout">
+                <LogOut class="size-5 text-muted-foreground" />
+                {{ $t('auth.logout') }}
+              </button>
+            </li>
+            <li>
+              <button type="button" class="u-touch flex w-full items-center gap-3 px-4 py-3 text-left text-sm" @click="logoutMicrosoft">
+                <ISimpleIconsMicrosoft class="size-5 text-muted-foreground" />
+                {{ $t('auth.logout_microsoft') }}
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { onKeyStroke, useScrollLock } from '@vueuse/core';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { onKeyStroke, useDark, useScrollLock } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, Plus, X } from 'lucide-vue-next';
-import { nextTick, ref, watch } from 'vue';
+import {
+  BookOpen,
+  Bug,
+  Check,
+  Languages,
+  LayoutGrid,
+  LogOut,
+  MessagesSquare,
+  Moon,
+  Plus,
+  Radio,
+  Sparkles,
+  Sun,
+  UserRound,
+  X,
+} from 'lucide-vue-next';
+import { computed, nextTick, ref, watch } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';
 
+import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 import { Button } from '@/Components/ui/button';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
 import {
@@ -108,6 +231,7 @@ import {
 } from '@/Composables/useAdminNavigation';
 import { useLogout } from '@/Composables/useLogout';
 import { useNewShellToggle } from '@/Composables/useNewShellToggle';
+import { useStartFm } from '@/Composables/useStartFm';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
 
 const props = defineProps<{
@@ -119,13 +243,39 @@ const props = defineProps<{
 
 const open = defineModel<boolean>('open', { default: false });
 
-const page = usePage();
+const page = usePage<PageProps>();
+const user = computed(() => page.props.auth?.user);
+
 const closeRef = ref<{ $el: HTMLElement } | null>(null);
 const openKey = ref<string | undefined>(props.activeWorkspace?.key);
 const scrollLock = useScrollLock(typeof document === 'undefined' ? null : document.body);
 
-const { logout } = useLogout();
+const { logout, logoutMicrosoft } = useLogout();
 const { enabled: newShellEnabled, toggle: toggleNewShell } = useNewShellToggle();
+const startFm = useStartFm();
+const isDark = useDark();
+
+const docsBase = computed(() => page.props.app?.locale === 'en' ? '/docs/en' : '/docs');
+const reportProblemHref = computed(() => {
+  const context = typeof window === 'undefined'
+    ? {}
+    : {
+        url: window.location.href,
+        viewport: `${window.innerWidth}×${window.innerHeight}`,
+        browser: navigator.userAgent,
+      };
+
+  return `${route('mySupportRequests.create')}?context=${encodeURIComponent(JSON.stringify(context))}`;
+});
+
+function toggleDarkMode(): void {
+  isDark.value = !isDark.value;
+}
+
+function changeLocale(): void {
+  const locale = page.props.app?.locale === 'en' ? 'lt' : 'en';
+  router.reload({ data: { lang: locale } });
+}
 
 const close = () => {
   open.value = false;

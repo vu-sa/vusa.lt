@@ -8,8 +8,12 @@
     <div class="flex items-center gap-3">
       <Radio class="size-5 text-brand" />
       <div class="min-w-0 flex-1">
-        <p class="font-semibold">START FM</p>
-        <p class="text-sm text-muted-foreground">Studentų radijas 94.2</p>
+        <p class="font-semibold">
+          START FM
+        </p>
+        <p class="text-sm text-muted-foreground">
+          Studentų radijas 94.2
+        </p>
       </div>
       <Button variant="ghost" size="icon" class="u-touch" :aria-label="$t('shell.account.close')" @click="close">
         <X class="size-4" />
@@ -30,6 +34,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Pause, Play, Radio, X } from 'lucide-vue-next';
 import { ref, useTemplateRef } from 'vue';
+
 import { Button } from '@/Components/ui/button';
 import { useStartFm } from '@/Composables/useStartFm';
 

@@ -6,7 +6,9 @@
       <!-- Simple greeting -->
       <section
         data-tour="greeting-section"
-        class="relative rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background border border-zinc-200 dark:border-zinc-800 p-6 dark:from-primary/6 dark:via-primary/3">
+        class="relative rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background
+          border border-zinc-200 dark:border-zinc-800 p-6 dark:from-primary/6 dark:via-primary/3"
+      >
         <div class="absolute inset-0 overflow-hidden rounded-2xl">
           <div class="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.015]" />
         </div>
@@ -57,6 +59,7 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, onMounted } from 'vue';
+import type { DriveStep } from 'driver.js';
 
 import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import HomeSearchBar from '@/Pages/Admin/Dashboard/Components/HomeSearchBar.vue';
@@ -66,6 +69,7 @@ import CalendarEventsCard from '@/Pages/Admin/Dashboard/Components/CalendarEvent
 import NewsListCard from '@/Pages/Admin/Dashboard/Components/NewsListCard.vue';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
+import { useIsMobile } from '@/Composables/useIsMobile';
 import { provideTour } from '@/Composables/useTourProvider';
 import { useActionWindow } from '@/Composables/useActionWindow';
 // import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
@@ -120,44 +124,81 @@ const canAccessAdministration = computed(() => usePage().props.auth?.can?.access
 
 const actionWindow = useActionWindow();
 
-// Build 5-step welcome tour for the new admin shell (Phase 4.8)
-const tourSteps = computed(() => [
-  {
-    element: '[data-tour="workspace-picker"]',
-    popover: {
-      title: $t('tutorials.admin_home.workspaces.title'),
-      description: $t('tutorials.admin_home.workspaces.description'),
+const isMobile = useIsMobile();
+
+// Build welcome tour for the new admin shell (Phase 4.8), responsive to viewport
+const tourSteps = computed<DriveStep[]>(() => {
+  if (isMobile.value) {
+    return [
+      {
+        element: '[data-tour="command-palette"]',
+        popover: {
+          title: $t('tutorials.admin_home.command_palette.title'),
+          description: $t('tutorials.admin_home.command_palette.description'),
+        },
+      },
+      {
+        element: '[data-tour="action-create-mobile"]',
+        popover: {
+          title: $t('tutorials.admin_home.action_create.title'),
+          description: $t('tutorials.admin_home.action_create.description'),
+        },
+      },
+      {
+        element: '[data-tour="tasks-card"]',
+        popover: {
+          title: $t('tutorials.admin_home.tasks_card.title'),
+          description: $t('tutorials.admin_home.tasks_card.description'),
+        },
+      },
+      {
+        element: '[data-tour="mobile-menu"]',
+        popover: {
+          title: $t('tutorials.admin_home.account_menu.title'),
+          description: $t('tutorials.admin_home.account_menu.description'),
+        },
+      },
+    ];
+  }
+
+  return [
+    {
+      element: '[data-tour="workspace-picker"]',
+      popover: {
+        title: $t('tutorials.admin_home.workspaces.title'),
+        description: $t('tutorials.admin_home.workspaces.description'),
+      },
     },
-  },
-  {
-    element: '[data-tour="command-palette"]',
-    popover: {
-      title: $t('tutorials.admin_home.command_palette.title'),
-      description: $t('tutorials.admin_home.command_palette.description'),
+    {
+      element: '[data-tour="command-palette"]',
+      popover: {
+        title: $t('tutorials.admin_home.command_palette.title'),
+        description: $t('tutorials.admin_home.command_palette.description'),
+      },
     },
-  },
-  {
-    element: '[data-tour="action-create"]',
-    popover: {
-      title: $t('tutorials.admin_home.action_create.title'),
-      description: $t('tutorials.admin_home.action_create.description'),
+    {
+      element: '[data-tour="action-create"]',
+      popover: {
+        title: $t('tutorials.admin_home.action_create.title'),
+        description: $t('tutorials.admin_home.action_create.description'),
+      },
     },
-  },
-  {
-    element: '[data-tour="tasks-card"]',
-    popover: {
-      title: $t('tutorials.admin_home.tasks_card.title'),
-      description: $t('tutorials.admin_home.tasks_card.description'),
+    {
+      element: '[data-tour="tasks-card"]',
+      popover: {
+        title: $t('tutorials.admin_home.tasks_card.title'),
+        description: $t('tutorials.admin_home.tasks_card.description'),
+      },
     },
-  },
-  {
-    element: '[data-tour="account-menu"]',
-    popover: {
-      title: $t('tutorials.admin_home.account_menu.title'),
-      description: $t('tutorials.admin_home.account_menu.description'),
+    {
+      element: '[data-tour="account-menu"]',
+      popover: {
+        title: $t('tutorials.admin_home.account_menu.title'),
+        description: $t('tutorials.admin_home.account_menu.description'),
+      },
     },
-  },
-]);
+  ];
+});
 
 // Setup product tour
 const { startTour, startTourIfNew } = useProductTour({
