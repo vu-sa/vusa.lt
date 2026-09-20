@@ -29,7 +29,7 @@
           <li v-if="section.folded">
             <button
               type="button"
-              class="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left hover:bg-accent/50"
+              class="flex w-full items-center gap-2 px-1.5 py-1 text-left hover:bg-accent/50"
               @click="toggleSection(section.code)"
             >
               <ChevronRight
@@ -48,7 +48,7 @@
           <li
             v-for="entry in section.folded && !expanded.has(section.code) ? [] : section.entries"
             :key="entry.key"
-            class="flex items-start gap-2 rounded-md px-1.5 py-1 hover:bg-accent/50"
+            class="flex items-start gap-2 px-1.5 py-1 hover:bg-accent/50"
             :class="{ 'pl-5': section.folded }"
           >
             <Checkbox
@@ -196,7 +196,12 @@ const expanded = ref(new Set<string>());
 
 function toggleSection(code: string): void {
   const next = new Set(expanded.value);
-  next.has(code) ? next.delete(code) : next.add(code);
+  if (next.has(code)) {
+    next.delete(code);
+  }
+  else {
+    next.add(code);
+  }
   expanded.value = next;
 }
 
@@ -213,7 +218,12 @@ watch(entries, (next) => {
 
 function toggle(key: string): void {
   const next = new Set(checked.value);
-  next.has(key) ? next.delete(key) : next.add(key);
+  if (next.has(key)) {
+    next.delete(key);
+  }
+  else {
+    next.add(key);
+  }
   checked.value = next;
 }
 
@@ -299,7 +309,7 @@ function detailFor(finding: TimelineDiagnostic): string | null {
 
 function severityClass(severity: string): string {
   if (severity === 'error') return 'text-destructive';
-  if (severity === 'warning') return 'text-amber-600 dark:text-amber-400';
+  if (severity === 'warning') return 'text-status-attention';
 
   return 'text-muted-foreground';
 }

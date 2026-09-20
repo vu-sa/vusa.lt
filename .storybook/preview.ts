@@ -35,9 +35,7 @@ setup((app) => {
  *
  * The design tokens are scoped exactly as they are in production: `data-surface="public"` /
  * `data-surface="admin"` and `.dark`, both on <html> (see resources/css/app.css and
- * resources/views/app.blade.php — the admin scope is the redesign's opt-in new shell,
- * .ai/redesign/admin PR 2.1; a component not pinning `admin` renders on the legacy admin
- * palette, i.e. no attribute, same as today). The decorator sets them on the story iframe's own
+ * resources/views/app.blade.php). The decorator sets them on the story iframe's own
  * documentElement rather than on a wrapper div, so a story renders against the same cascade the
  * real page does — including the rules that are written against `html` itself, such as the a11y
  * font scale.
@@ -98,7 +96,7 @@ const withSurfaceAndTheme: Decorator = (story, context) => {
 const preview: Preview = {
   globalTypes: {
     surface: {
-      description: 'Design token scope — public takes the editorial palette, admin the current one',
+      description: 'Design token scope — public takes the editorial palette, admin the working-density one',
       defaultValue: 'public',
       toolbar: {
         title: 'Surface',

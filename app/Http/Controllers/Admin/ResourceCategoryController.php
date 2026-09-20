@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\ResourceCategory;
 use App\Services\TanstackTableService;
+use Illuminate\Http\RedirectResponse;
 
 class ResourceCategoryController extends AdminController
 {
@@ -58,13 +59,15 @@ class ResourceCategoryController extends AdminController
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Categories are created in a sheet over the collection (Phase 9.2).
+     *
+     * @deprecated Kept for bookmarks; remove in Phase 10.
      */
-    public function create()
+    public function create(): RedirectResponse
     {
         $this->handleAuthorization('create', ResourceCategory::class);
 
-        return $this->inertiaResponse('Admin/Reservations/CreateResourceCategory');
+        return redirect()->route('resourceCategories.index');
     }
 
     /**
@@ -82,15 +85,15 @@ class ResourceCategoryController extends AdminController
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Categories are edited in a sheet over the collection (Phase 9.2).
+     *
+     * @deprecated Kept for bookmarks; remove in Phase 10.
      */
-    public function edit(ResourceCategory $resourceCategory)
+    public function edit(ResourceCategory $resourceCategory): RedirectResponse
     {
         $this->handleAuthorization('update', $resourceCategory);
 
-        return $this->inertiaResponse('Admin/Reservations/EditResourceCategory', [
-            'resourceCategory' => $resourceCategory->toFullArray(),
-        ]);
+        return redirect()->route('resourceCategories.index');
     }
 
     /**

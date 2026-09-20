@@ -5,12 +5,9 @@ import { Input } from '@/Components/ui/input';
 
 /**
  * The admin surface (.ai/redesign/admin, PR 2.1) — `[data-surface="admin"]` in
- * resources/css/admin/surface.css, opted into per-user via `appearance.new_shell`. This is how a
- * reviewer sees the token scope without logging in and flipping the AdminLayout toggle: switch
- * the toolbar's Surface to "Admin" (pinned here via `globals`) and Theme to compare both modes.
- *
- * Legacy (non-opted-in) admin is not shown here — it is simply Tailwind's default zinc palette,
- * unaffected by this surface, and stays that way until PR 8.1 removes the opt-in.
+ * resources/css/admin/surface.css, stamped on every admin page by app.blade.php. This is how a
+ * reviewer sees the token scope without logging in: switch the toolbar's Surface to "Admin"
+ * (pinned here via `globals`) and Theme to compare both modes.
  */
 const meta: Meta = {
   title: 'Patterns/Admin Surface',

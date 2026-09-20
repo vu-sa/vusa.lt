@@ -9,25 +9,21 @@ pest()->use(RefreshDatabase::class);
  * Mirrors PublicDesignSurfaceTest.php for the admin surface (.ai/redesign/admin, PR 2.1).
  * Reaching [data-surface="admin"] depends on:
  *
- * 1. App\Support\DesignSurface / app.blade.php stamping the attribute on <html> for a user who
- *    opted in (covered server-side by tests/Feature/Public/DesignSurfaceTest.php);
+ * 1. App\Support\DesignSurface / app.blade.php stamping the attribute on <html> for every
+ *    Admin/* page (covered server-side by tests/Feature/Public/DesignSurfaceTest.php);
  * 2. the compiled CSS actually resolving through it, and admin/surface.css being imported
  *    *before* public/surface.css so a nested rich-content preview still wins its own palette.
  *
  * (2) is the one that needs a browser.
  */
-it('resolves the admin token scope in the browser for an opted-in user', function (): void {
+it('resolves the admin token scope in the browser', function (): void {
     $user = makeUser(Tenant::query()->first());
-    $user->setNewAdminShellEnabled(true);
 
     $page = loginAsAdmin($user);
 
-    // `<html data-surface>` is stamped by app.blade.php on the *document* request. The
-    // post-login redirect is an Inertia visit (LoginForm.vue's `form.post()`), which is an
-    // SPA/XHR navigation that never touches <html> — so right after login the attribute still
-    // reflects the login page's own (unauthenticated, no flag) render. A real hard navigation
-    // (any subsequent reload, a bookmark, a new tab) picks it up; force one here rather than
-    // asserting on the transient post-login state, which is not what a returning visit sees.
+    // `<html data-surface>` is stamped by app.blade.php on the *document* request; the post-login
+    // redirect is an Inertia visit that never touches <html>, so force a hard navigation rather
+    // than asserting on whatever the login page left behind.
     $page->navigate('/mano');
     waitForInertiaRender($page);
 

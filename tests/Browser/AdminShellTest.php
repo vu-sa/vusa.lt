@@ -14,7 +14,6 @@ pest()->use(RefreshDatabase::class);
 function openShell(int $width, int $height, string $path = '/mano/institutions', ?Closure $arrange = null): mixed
 {
     $user = makeAdminUser(Tenant::query()->first());
-    $user->setNewAdminShellEnabled(true);
 
     if ($arrange) {
         $arrange($user);
@@ -56,6 +55,15 @@ it('has no bottom bar and shows the create button in the top bar on a desktop', 
 
     expect($page->script("getComputedStyle(document.querySelector('[data-slot=mobile-bottom-bar]')).display"))->toBe('none')
         ->and($page->script("document.querySelector('[data-slot=shell-top-bar] button.bg-brand-fill').offsetParent"))->not->toBeNull();
+});
+
+it('opens the action window from the shell create button', function (): void {
+    $page = openShell(1440, 900);
+
+    $page->click('[data-slot=shell-top-bar] [data-tour=action-create]');
+
+    waitForInertiaRender($page, '[data-slot=action-window-screen]');
+    $page->assertNoJavaScriptErrors();
 });
 
 it('draws no breadcrumbs on a section index — the tabs already say where you are', function (): void {

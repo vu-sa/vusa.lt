@@ -1,7 +1,7 @@
 /**
  * @deprecated Legacy admin destination catalog superseded by AdminNavigationCatalog
  * (app/Services/AdminNavigation/AdminNavigationCatalog.php) and useAdminNavigation (PR 3.1 & 3.2).
- * Kept only for legacy sidebar/palette consumers and slated for removal in Phase 8 (PR 8.1).
+ * Kept only for the palette's icon lookup and recent-page titles; slated for removal in Phase 10.
  *
  * adminPageCatalog - Curated catalog of admin destinations.
  *
@@ -79,7 +79,7 @@ export interface AdminPageEntry {
 }
 
 /**
- * @deprecated Superseded by AdminNavigationCatalog (PR 3.1). Slated for removal in Phase 8.
+ * @deprecated Superseded by AdminNavigationCatalog (PR 3.1). Slated for removal in Phase 10.
  *
  * The full catalog. Add new admin destinations here.
  */
@@ -307,7 +307,7 @@ export function resolveCatalogEntryByRoute(routeName: string | undefined): Admin
 }
 
 /**
- * @deprecated Superseded by useAdminNavigation() (PR 3.1 & 3.2). Slated for removal in Phase 8.
+ * @deprecated Superseded by useAdminNavigation() (PR 3.1 & 3.2). Slated for removal in Phase 10.
  *
  * Returns the permission-filtered catalog for the current user.
  */

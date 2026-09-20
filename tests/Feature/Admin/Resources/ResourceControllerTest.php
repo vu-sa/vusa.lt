@@ -106,13 +106,20 @@ describe('update', function (): void {
     });
 });
 
+describe('index', function (): void {
+    // The collection reads from Typesense (its scoped key carries the authorization), so the page
+    // needs no rows — and, unlike the old redirect to the search tab, it renders here.
+    test('renders the resources collection instead of redirecting to the search tab', function (): void {
+        asUser($this->resourceManager)->get(route('resources.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Admin/Reservations/IndexResource'));
+    });
+});
+
 describe('destroy', function (): void {
-    test('redirects straight to the search results, not through resources.index', function (): void {
-        // resources.index itself immediately redirects to search.index. Redirecting
-        // there first (rather than straight to search.index) ages the flash message
-        // out one hop before Inertia ever renders a page, so the toast never fires.
+    test('returns to the resources collection with an info flash', function (): void {
         asUser($this->resourceManager)->delete(route('resources.destroy', $this->resource))
-            ->assertRedirect(route('search.index', ['tab' => 'resources']))
+            ->assertRedirect(route('resources.index'))
             ->assertSessionHas('info');
     });
 
@@ -122,16 +129,16 @@ describe('destroy', function (): void {
 
         $expectedMessage = __('messages.deleted.m', ['model' => trans_choice('entities.resource.model', 1)]);
 
-        asUser($this->resourceManager)->get(route('search.index', ['tab' => 'resources']))
+        asUser($this->resourceManager)->get(route('resources.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Search/SearchIndex')
+                ->component('Admin/Reservations/IndexResource')
                 ->where('flash.info', $expectedMessage));
     });
 });
 
 describe('store', function (): void {
-    test('redirects straight to the search results with a success flash', function (): void {
+    test('returns to the resources collection with a success flash', function (): void {
         $expectedMessage = __('messages.created.m', ['model' => trans_choice('entities.resource.model', 1)]);
 
         asUser($this->resourceManager)->post(route('resources.store'), [
@@ -143,13 +150,13 @@ describe('store', function (): void {
             'is_reservable' => true,
             'media' => [],
         ])
-            ->assertRedirect(route('search.index', ['tab' => 'resources']))
+            ->assertRedirect(route('resources.index'))
             ->assertSessionHas('success');
 
-        asUser($this->resourceManager)->get(route('search.index', ['tab' => 'resources']))
+        asUser($this->resourceManager)->get(route('resources.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Search/SearchIndex')
+                ->component('Admin/Reservations/IndexResource')
                 ->where('flash.success', $expectedMessage));
     });
 });

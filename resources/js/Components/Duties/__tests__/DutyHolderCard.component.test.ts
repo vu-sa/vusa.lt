@@ -9,7 +9,7 @@ const makeMember = (pivot: Record<string, unknown>) => ({
   id: '1',
   name: 'Jane Doe',
   pivot,
-}) as any;
+}) as App.Entities.User;
 
 describe('DutyHolderCard', () => {
   it('renders the holder name', () => {

@@ -8,7 +8,7 @@
       >
         <span
           :class="[
-            'absolute -left-[1.5625rem] top-1 h-3 w-3 rounded-full ring-4 ring-background',
+            'absolute -left-[1.5625rem] top-1 h-3 w-3 ring-4 ring-background',
             group.isCurrent ? 'bg-primary' : 'bg-muted-foreground/40',
           ]"
         />

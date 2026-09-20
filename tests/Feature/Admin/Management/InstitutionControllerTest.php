@@ -115,6 +115,45 @@ describe('authorized access', function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
+    // Terms, secretary rosters and the sheet's programme picker are edited on the record, so they
+    // ride a deferred group: absent on the first paint, and only ever sent to someone who may update.
+    test('the record carries per-record permissions and defers the management group', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('can.update', true)
+                ->missing('management')
+                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels
+                    ->has('management.cadences')
+                    ->has('management.globalCadences')
+                    ->has('management.secretaryRosters')
+                    ->has('management.suggestedSecretaries')
+                    ->has('management.studyPrograms')));
+    });
+
+    test('someone who may only view the institution is never sent the management group', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $viewer = makeUser($this->tenant);
+        $viewer->duties()->first()->assignRole('Student Representative');
+        $viewer->duties()->first()->update(['institution_id' => $institution->id]);
+
+        asUser($viewer)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('can.update', false)
+                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels->where('management', null)));
+    });
+
+    test('the record no longer sends the retired administrators alias', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn ($page) => $page->has('institution.secretaries')->missing('institution.administrators'));
+    });
+
     test('can show institution with tasks', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
@@ -216,7 +255,31 @@ describe('authorized access', function (): void {
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexInstitution'));
     });
 
-    // The index cell shows only the first few meetings, so they must arrive
+    // The live list reads from Typesense; only what the user could restore is counted here.
+    test('the live index carries no rows, only the trash count', function (): void {
+        Institution::factory()->create(['tenant_id' => $this->tenant->id])->delete();
+
+        asUser($this->admin)->get(route('institutions.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitution')
+                ->where('deletedCount', 1)
+                ->missing('data'));
+    });
+
+    test('the trash view is still a table of soft-deleted institutions', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $institution->delete();
+
+        asUser($this->admin)->get(route('institutions.index', ['showDeleted' => 'true']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitutionTrash')
+                ->has('data', 1)
+                ->where('data.0.id', $institution->id));
+    });
+
+    // The trash table's cell shows only the first few meetings, so they must arrive
     // newest first — an administrator is looking for what just happened.
     test('indexes institution meetings newest first', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
@@ -228,7 +291,9 @@ describe('authorized access', function (): void {
         Meeting::factory()->create(['start_time' => '2025-01-01 10:00:00'])
             ->institutions()->attach($institution);
 
-        asUser($this->admin)->get(route('institutions.index'))
+        $institution->delete();
+
+        asUser($this->admin)->get(route('institutions.index', ['showDeleted' => 'true']))
             ->assertOk()
             ->assertInertia(function ($page) use ($institution): void {
                 $meetings = collect($page->toArray()['props']['data'])

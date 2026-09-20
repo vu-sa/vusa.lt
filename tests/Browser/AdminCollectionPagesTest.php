@@ -14,7 +14,6 @@ pest()->use(RefreshDatabase::class);
 function openAdminPage(string $path, int $width, int $height = 900, ?Closure $arrange = null): mixed
 {
     $user = makeAdminUser(Tenant::query()->first());
-    $user->setNewAdminShellEnabled(true);
 
     if ($arrange) {
         $arrange($user);

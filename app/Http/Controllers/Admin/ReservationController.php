@@ -179,10 +179,14 @@ class ReservationController extends AdminController
         $exceptReservations = collect(request()->input('except-reservations'))->unique()->toArray();
         $exceptResources = collect(request()->input('except-resources'))->unique()->toArray();
 
+        $user = request()->user();
+
+        $reservation->load('users', 'resources.media', 'resources.pivot.approvals.user', 'resources.pivot.approvals.revertedBy', 'resources.tenant');
+
         return $this->inertiaResponse('Admin/Reservations/ShowReservation', [
             'reservation' => [
-                ...$reservation->load('users')->toArray(),
-                'resources' => $reservation->load('resources.media', 'resources.pivot.approvals.user', 'resources.pivot.approvals.revertedBy', 'resources.tenant')->resources->map(function ($resource) use ($reservation) {
+                ...$reservation->toArray(),
+                'resources' => $reservation->resources->map(function ($resource) use ($reservation, $user) {
 
                     // This is used to update the left capacity of resources already attached to the reservation
                     $capacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($reservation->start_time, $reservation->end_time);
@@ -192,8 +196,17 @@ class ReservationController extends AdminController
                         'managers' => $resource->managers(),
                         'pivot' => $resource->pivot->append('approvable')->toArray(),
                         'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($capacityAtDateTimeRange),
+                        // Per resource: `resources.update.padalinys` is tenant-scoped, so one flag would be wrong.
+                        'can_edit' => $user->can('update', $resource),
                     ];
                 }),
+            ],
+            // The same payload the collection page reads, so a row's approve / reject / backtrack /
+            // cancel flags cannot disagree with the list the user came from.
+            'decisionTarget' => SerializeReservationsForTable::execute([$reservation], $user, $this->authorizer)[0],
+            'can' => [
+                'update' => $user->can('update', $reservation),
+                'delete' => $user->can('delete', $reservation),
             ],
             'allResources' => Inertia::optional(fn () => Resource::query()->with('tenant')->select(['id', 'name', 'is_reservable', 'capacity', 'tenant_id'])->get()->map(function ($resource) use ($dateTimeRange, $exceptResources, $exceptReservations) {
 

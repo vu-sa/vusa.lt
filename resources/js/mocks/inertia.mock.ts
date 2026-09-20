@@ -145,7 +145,9 @@ export const router = {
 };
 
 // Mock useForm for Inertia forms
-export const useForm = mockFn((data: any = {}) => {
+export const useForm = mockFn((keyOrData: any = {}, rememberedData?: any) => {
+  // `useForm('RememberKey', data)` keeps a draft across navigations; the mock only needs the data.
+  const data = typeof keyOrData === 'string' ? (rememberedData ?? {}) : keyOrData;
   const form: Record<string, any> = {
     ...data,
     data: () => data,

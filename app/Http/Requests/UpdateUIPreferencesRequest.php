@@ -24,14 +24,6 @@ class UpdateUIPreferencesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sidebar' => ['nullable', 'array'],
-            'sidebar.sections' => ['nullable', 'array'],
-            'sidebar.sections.*' => ['boolean'],
-            'sidebar.order' => ['nullable', 'array'],
-            'sidebar.order.*' => ['string'],
-            'sidebar.collapsed' => ['nullable', 'boolean'],
-            'appearance' => ['nullable', 'array'],
-            'appearance.new_shell' => ['nullable', 'boolean'],
             'pinned_pages' => ['nullable', 'array'],
             'pinned_pages.*.route' => ['required_with:pinned_pages', 'string'],
             'pinned_pages.*.params' => ['nullable', 'array'],

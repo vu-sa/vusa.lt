@@ -156,7 +156,6 @@ export default defineConfig({
         '**/*.test.ts',
         '**/*.component.test.ts',
         '**/*.stories.ts',
-        'resources/js/Components/NavMain.vue',
       ],
       // No thresholds are enforced. This previously read `thresholds: { global: { lines: 75, … } }`,
       // an Istanbul-style shape that Vitest interprets as a glob named "global" — it matched no

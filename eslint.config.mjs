@@ -24,7 +24,6 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Collection/**',
   'resources/js/Components/Layouts/CollectionPage.vue',
   'resources/js/Components/Meetings/MeetingCollectionRow.vue',
-  // The trigger stays out: it is a legacy-sidebar entry point (removed in Phase 8) with its own tint.
   'resources/js/Components/ActionWindow/{ActionWindow,ActionWindowBody,ActionWindowScreen,ActionWindowPrimaryButton,ActionChoiceButton,ActionChoiceList,ReviewRow,ScreenLoading,AgendaItemsEditor}.vue',
   'resources/js/Components/ActionWindow/screens/**',
   'resources/js/Components/ActionWindow/screenRegistry.ts',
@@ -57,6 +56,13 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Pages/Admin/ShowAdministration.vue',
   'resources/js/Pages/Admin/ShowRepMetrics.vue',
   'resources/js/Components/Reservations/**',
+  'resources/js/Components/Duties/**',
+  'resources/js/Components/Institutions/{AddCheckInDialog,InstitutionDutiesSection,InstitutionMeetingsList,InstitutionOverviewSection,RelatedInstitutionTile,SecretariesSection}.vue',
+  'resources/js/Components/AdminForms/{DutyCard,InstitutionForm,ReservationForm,ResourceForm,UserForm}.vue',
+  'resources/js/Features/Admin/DutiableTimeline/**',
+  'resources/js/Features/Admin/ResourceCategories/**',
+  'resources/js/Pages/Admin/People/{CreateInstitution,EditInstitution,ShowInstitution,IndexInstitution,CreateUser,EditUser,ShowUser,IndexUser,IndexDuty,DutyUserUpdateWizard,DutiableTimeline}.vue',
+  'resources/js/Pages/Admin/Reservations/{CreateReservation,ShowReservation,CreateResource,EditResource,IndexResource,IndexResourceCategory}.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

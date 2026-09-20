@@ -62,7 +62,6 @@ class InstitutionSecretaryController extends AdminController
                     'is_global' => $cadence->institution_id === null,
                     'is_current' => $cadence->contains($today),
                     'secretaries' => $secretaryList,
-                    'administrators' => $secretaryList,
                 ];
             })
             ->all();

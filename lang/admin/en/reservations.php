@@ -123,6 +123,12 @@ return [
     'status_mixed' => 'Mixed',
     'unresolved_days' => '{1} :count day late|[2,*] :count days late',
     'unresolved_help' => 'The reservation window has ended, but the reservation is not formally closed yet.',
+    // What a logged decision on an item reads as in its history.
+    'decision' => [
+        'approved' => 'Approved',
+        'rejected' => 'Rejected',
+        'cancelled' => 'Cancelled',
+    ],
     'discrepancy' => [
         'available_from_ended_reservations' => '{1} :count unit free because an active reservation already ended|[2,*] :count units free because active reservations already ended',
     ],

@@ -10,30 +10,11 @@ use Illuminate\Http\Response;
 class UserPreferencesApiController extends ApiController
 {
     /**
-     * Update sidebar customization preferences (which sections are visible,
-     * their order, and which quick actions are shown).
+     * Update the user's pinned pages.
      */
     public function updateUIPreferences(UpdateUIPreferencesRequest $request): Response
     {
         $user = $this->requireAuth($request);
-
-        $sections = $request->input('sidebar.sections');
-        if (is_array($sections)) {
-            $user->setSidebarSectionVisibility($sections);
-        }
-
-        $order = $request->input('sidebar.order');
-        if (is_array($order)) {
-            $user->setSidebarSectionOrder($order);
-        }
-
-        if ($request->has('sidebar.collapsed')) {
-            $user->setSidebarCollapsed($request->boolean('sidebar.collapsed'));
-        }
-
-        if ($request->has('appearance.new_shell')) {
-            $user->setNewAdminShellEnabled($request->boolean('appearance.new_shell'));
-        }
 
         $pinnedPages = $request->input('pinned_pages');
         if (is_array($pinnedPages)) {

@@ -1,105 +1,163 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
+  <CollectionPage
+    :source
+    collection="resourceCategories"
+    entity-type="resource"
+    :eyebrow="`${$t('shell.workspaces.rezervacijos.title')} · ${$t('shell.sections.kategorijos')}`"
+    :title="$t('Išteklių kategorijos')"
+    :lead="$t('Kategorijos sugrupuoja išteklius, kad juos būtų lengviau rasti.')"
+    default-view="table"
+    :item-key="categoryKey"
+    :columns
+    :search-placeholder="$t('Ieškoti kategorijų')"
+  >
+    <template #actions>
+      <Button v-if="canCreate" variant="brand" @click="openSheet()">
+        <Plus aria-hidden="true" />
+        {{ $t('Nauja kategorija') }}
+      </Button>
+    </template>
+
+    <template #row="{ item }">
+      <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
+        <!-- The icon name is stored as data, so it can only be resolved at runtime. -->
+        <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <div class="min-w-0 flex-1">
+          <button type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
+            {{ title(item) }}
+          </button>
+          <p v-if="description(item)" class="mt-0.5 truncate text-sm text-muted-foreground">
+            {{ description(item) }}
+          </p>
+        </div>
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <button v-if="column.key === 'name'" type="button" class="inline-flex items-center gap-2 font-medium hover:text-brand" @click="openSheet(item)">
+        <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-4 text-muted-foreground" aria-hidden="true" />
+        {{ title(item) }}
+      </button>
+      <span v-else-if="column.key === 'description'" class="text-muted-foreground">{{ description(item) || '—' }}</span>
+      <div v-else-if="column.key === 'actions'" class="flex justify-end gap-1">
+        <Button variant="ghost" size="icon-sm" class="pointer-coarse:size-11" :title="$t('Redaguoti')" :aria-label="$t('Redaguoti')" @click="openSheet(item)">
+          <Pencil aria-hidden="true" />
+        </Button>
+        <Button
+          v-if="canDelete"
+          variant="ghost"
+          size="icon-sm"
+          class="text-destructive hover:text-destructive pointer-coarse:size-11"
+          :title="$t('Ištrinti')"
+          :aria-label="$t('Ištrinti')"
+          @click="toDelete = item"
+        >
+          <Trash2 aria-hidden="true" />
+        </Button>
+      </div>
+    </template>
+
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="CategoryIcon"
+        :title="$t('Kategorijų dar nėra')"
+        :description="$t('Sukurk kategoriją, kad panašūs ištekliai atsidurtų vienoje vietoje.')"
+        :action-label="canCreate ? $t('Nauja kategorija') : undefined"
+        @action="openSheet()"
+      />
+    </template>
+  </CollectionPage>
+
+  <ResourceCategorySheetForm v-model:open="sheetOpen" :category="editing" @saved="refresh" />
+
+  <ConfirmDialog
+    :open="toDelete !== null"
+    :title="$t('Ištrinti kategoriją?')"
+    :description="$t('Ištekliai šioje kategorijoje liks be kategorijos.')"
+    :confirm-label="$t('Ištrinti')"
+    destructive
+    @update:open="!$event && (toDelete = null)"
+    @confirm="remove"
   />
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, capitalize } from 'vue';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
 import { Icon } from '@iconify/vue';
+import { router, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
-import { resolveTranslatable } from '@/Composables/useDataTableColumns';
-import { TruncatedText } from '@/Components/ui/data-table/cells';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import type { IndexTablePageProps, IndexTablePageInstance } from '@/Types/TableConfigTypes';
+import type { CollectionColumn } from '@/Components/Collection/types';
 import { CategoryIcon } from '@/Components/icons';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
+import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
+import ResourceCategorySheetForm from '@/Features/Admin/ResourceCategories/ResourceCategorySheetForm.vue';
+
+type Translation = { lt?: string; en?: string };
+type Category = App.Entities.ResourceCategory & { name: Translation; description?: Translation | null; icon?: string | null };
 
 const props = defineProps<{
-  resourceCategories: {
-    data: App.Entities.ResourceCategory[];
-    meta: {
-      total: number;
-      current_page: number;
-      per_page: number;
-      last_page: number;
-      from: number;
-      to: number;
-    };
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
+  resourceCategories: { data: Category[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
 }>();
 
-const modelName = 'resourceCategories';
-const entityName = 'resourceCategory';
+const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.resource));
+const canDelete = computed(() => Boolean(usePage().props.auth?.can?.delete?.resource));
 
-const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+const sheetOpen = ref(false);
+const editing = ref<Category | null>(null);
+const toDelete = ref<Category | null>(null);
 
-const getRowId = (row: App.Entities.ResourceCategory) => {
-  return `resource-category-${row.id}`;
-};
-
-const columns = computed<Array<ColumnDef<App.Entities.ResourceCategory, any>>>(() => [
-  {
-    accessorKey: 'name',
-    header: () => $t('forms.fields.title'),
-    cell: ({ row }) => h(TruncatedText, { text: resolveTranslatable(row.getValue('name')) }),
-    size: 300,
+const source = useDatabaseCollectionSource<Category>({
+  endpoint: route('api.v1.admin.resourceCategories.index'),
+  initial: {
+    items: props.resourceCategories.data,
+    total: props.resourceCategories.meta.total,
+    perPage: props.resourceCategories.meta.per_page,
+    currentPage: props.resourceCategories.meta.current_page,
+    lastPage: props.resourceCategories.meta.last_page,
   },
-  {
-    accessorKey: 'icon',
-    header: () => $t('Ikona'),
-    cell: ({ row }) => {
-      const { icon } = row.original;
-      if (!icon) {
-        return h('span', { class: 'text-muted-foreground' }, '-');
-      }
+  defaultSort: 'created_at:desc',
+  sortOptions: [
+    { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
+    { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
+  ],
+});
 
-      return h('div', { class: 'flex items-center gap-2' }, [
-        h(Icon, { icon: `fluent:${icon}` }),
-        h('span', {}, icon),
-      ]);
-    },
-    size: 200,
-  },
-  createStandardActionsColumn<App.Entities.ResourceCategory>('resourceCategories', {
-    canEdit: true,
-    canDelete: true,
-  }),
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'name', label: $t('Kategorija') },
+  { key: 'description', label: $t('Aprašymas') },
+  { key: 'actions', label: '', class: 'w-28' },
 ]);
 
-const tableConfig = computed<IndexTablePageProps<App.Entities.ResourceCategory>>(() => ({
-  modelName,
-  entityName,
-  data: props.resourceCategories.data,
-  columns: columns.value,
-  getRowId,
-  totalCount: props.resourceCategories.meta.total,
-  initialPage: props.resourceCategories.meta.current_page,
-  pageSize: props.resourceCategories.meta.per_page,
+const categoryKey = (category: Category) => String(category.id);
+const title = (category: Category) => category.name.lt || category.name.en || '—';
+const description = (category: Category) => category.description?.lt || category.description?.en || '';
 
-  initialFilters: props.filters,
-  initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
-  enableFiltering: true,
-  enableColumnVisibility: false,
-  enableRowSelection: false,
+function openSheet(category: Category | null = null): void {
+  editing.value = category;
+  sheetOpen.value = true;
+}
 
-  headerTitle: capitalize($tChoice('entities.resourceCategory.model', 2)),
-  icon: CategoryIcon,
-  createRoute: route('resourceCategories.create'),
-  canCreate: true,
-}));
+function refresh(): void {
+  editing.value = null;
+  source.refresh();
+}
 
-const onDataLoaded = (data: any) => {};
-const handleSortingChange = (sorting: any) => {};
-const handlePageChange = (page: any) => {};
-const handleFilterChange = (filterKey: any, value: any) => {};
+function remove(): void {
+  if (!toDelete.value) {
+    return;
+  }
+
+  const { id } = toDelete.value;
+  toDelete.value = null;
+
+  router.delete(route('resourceCategories.destroy', id), {
+    preserveScroll: true,
+    onSuccess: () => source.refresh(),
+  });
+}
 </script>

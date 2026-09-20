@@ -1100,8 +1100,8 @@ The beta ends on its date; the long tail continues **inside** the new shell.
 Each page follows the playbook and lands with its lint-fence paths; tick here.
 
 - [ ] Institution record + form (+ Prižiūri, O22)
-- [ ] Reservations: create, record; resources; categories
-- [ ] Users (record + form), duties collection, the occupancy sheet everywhere (O21), *Kadencijos
+- [x] Reservations: create, record; resources; categories
+- [x] Users (record + form), duties collection, the occupancy sheet everywhere (O21), *Kadencijos
       keitimas* wizard, duty timeline (workbench)
 - [ ] Problems
 - [ ] Forms and registrations
@@ -1110,6 +1110,17 @@ Each page follows the playbook and lands with its lint-fence paths; tick here.
 - [ ] Files, documents, Sharepoint
 - [ ] Sistema: roles, permissions, types, relationships, settings, system status, mail queue, support
 - [ ] Paskyra: profile, notification settings; Užduotys; Pranešimai
+
+### PR 9.2 + 9.3 notes (2026-09-20)
+
+- **Reservations and categories:** resource categories now use the standard database-backed collection shell. Creating and editing stay in a sheet over the list; the former create/edit URLs redirect to it. The category endpoint shares the collection pagination contract, and its sheet has Storybook create/edit states plus component coverage for both write paths.
+- **People and duties:** the people records/forms, institution record/form, occupancy sheet, duty record and form are on the new surfaces. The duties index is now a collection with rows/table/preview, search, data-quality filters, merge mode and trash recovery. Its initial payload and subsequent API requests share `BuildDutyIndexQuery`, so scope and the cross-tenant rule cannot drift.
+- **Kadencijų keitimas and timeline:** the wizard is a square, hairline guided flow on the edit canvas. The timeline workbench and `Components/Duties/**` have moved into the lint fence; status warnings use the status tokens rather than raw amber hues.
+- **Fence:** every 9.2/9.3 page, feature and supporting component currently migrated is enrolled in `MIGRATED_ADMIN_PATHS`, including `UserForm`, the duties components, timeline and resource-category sheet.
+
+**Not done**
+
+- Browser review at 390 · 820 · 1180 · 1440, dark mode, touch and keyboard remains a manual gate for the 9.2/9.3 surfaces. The shell create door now has a browser regression test; this does not replace the persona pass.
 
 ## Phase 10 — Fence and clean-up
 
@@ -1128,6 +1139,7 @@ Each page follows the playbook and lands with its lint-fence paths; tick here.
 
 - [ ] Beta end date; who dogfoods on staging (Wave A feel review participants)
 - [ ] How users hear the sidebar is going away (email, system announcement, changelog)
+- [ ] Should the duties collection's occupancy column report all recorded terms (the current payload's `dutiables_count`) or only people serving today? The record page uses the latter; settle the collection metric before beta copy is final.
 
 ---
 

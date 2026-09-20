@@ -12,7 +12,7 @@
       :description="$t('secretaries.institution.no_cadences_hint')"
     />
 
-    <div v-else class="divide-y rounded-lg border bg-card">
+    <div v-else class="divide-y divide-border border-y border-border">
       <div
         v-for="roster in rosters"
         :key="roster.cadence_id"
@@ -30,9 +30,9 @@
 
         <div class="flex grow flex-wrap items-center gap-1.5">
           <span
-            v-for="secretary in (roster.secretaries ?? roster.administrators ?? [])"
+            v-for="secretary in roster.secretaries"
             :key="secretary.id"
-            class="inline-flex items-center gap-1.5 rounded-full border bg-background py-0.5 pl-0.5 pr-1.5 text-xs"
+            class="inline-flex items-center gap-1.5 border border-border bg-background py-0.5 pl-0.5 pr-1.5 text-xs"
           >
             <UserAvatar :user="(secretary as unknown as App.Entities.User)" :size="20" />
             <span class="max-w-40 truncate">{{ secretary.name }}</span>
@@ -40,7 +40,7 @@
               type="button"
               data-slot="remove-secretary"
               :data-user-id="secretary.id"
-              class="rounded-full text-muted-foreground transition-colors hover:text-destructive"
+              class="text-muted-foreground transition-colors hover:text-destructive"
               :disabled="processingCadenceId !== null"
               :aria-label="$t('secretaries.actions.remove', { name: secretary.name })"
               @click="remove(roster, secretary)"
@@ -49,7 +49,7 @@
             </button>
           </span>
 
-          <span v-if="(roster.secretaries ?? roster.administrators ?? []).length === 0" class="text-xs text-muted-foreground">
+          <span v-if="roster.secretaries.length === 0" class="text-xs text-muted-foreground">
             {{ $t('secretaries.institution.none_yet') }}
           </span>
 
@@ -61,7 +61,7 @@
             type="button"
             size="xs"
             variant="ghost"
-            class="h-6 rounded-full border border-dashed px-2 text-xs text-muted-foreground"
+            class="h-6 border border-dashed px-2 text-xs text-muted-foreground"
             :disabled="processingCadenceId !== null"
             @click="add(roster, candidate)"
           >
@@ -126,7 +126,7 @@ const { processingCadenceId, save } = useSecretaryRoster(props.institutionId);
 const pickerCadenceId = ref<string | null>(null);
 
 function getSecretaries(roster: SecretaryRoster): SecretaryUser[] {
-  return roster.secretaries ?? roster.administrators ?? [];
+  return roster.secretaries;
 }
 
 /** Members not already nominated for this term. Capped: this is a shortcut, not a list. */

@@ -15,7 +15,7 @@
 }
 
 /* Brand accent. Deliberately NOT shadcn's `--accent`: that slot means "hover/muted surface"
-   (`focus:bg-accent` on every dropdown item, `hover:bg-accent` on ghost buttons, the sidebar),
+   (`focus:bg-accent` on every dropdown item, `hover:bg-accent` on ghost buttons),
    so painting the brand colour into it turns every hover row solid red. The brand is
    theme-aware by design — VU SA red on a light canvas, amber on near-black, where red loses
    too much contrast as small text. */
@@ -70,14 +70,6 @@
      mega menu's featured card, the podcast panel. Deliberately NOT theme-swapped: the scrim
      is what keeps the copy legible, so it has to stay dark in light mode too. */
   --ink: oklch(0.11 0.004 70);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.705 0.015 286.067);
 
   /* ------------------------------------------------------------------------------------------
      Colour system (.ai/redesign/admin/rules/visual.md#colour-system, PR 2.2) — six status roles
@@ -159,14 +151,6 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.274 0.006 286.033);
-  --sidebar-ring: oklch(0.442 0.017 285.786);
 
   /* Colour system, dark values — see the :root block above for the full explanation. */
   --status-neutral: oklch(0.72 0.01 80);

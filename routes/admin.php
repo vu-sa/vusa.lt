@@ -126,6 +126,7 @@ Route::get('users/merge', fn () => to_route('users.index')->with('info', __('she
 Route::post('users/merge', [UserController::class, 'mergeUsers'])->name('users.mergeUsers');
 Route::resource('users', UserController::class);
 
+Route::put('users/{user}/roles', [UserController::class, 'updateRoles'])->name('users.roles.update');
 Route::post('users/{user}/generate-password', [UserController::class, 'generatePassword'])->name('users.generatePassword');
 Route::delete('users/{user}/delete-password', [UserController::class, 'deletePassword'])->name('users.deletePassword');
 Route::resource('users.comments', CommentController::class)->only(['store', 'update', 'destroy']);
@@ -171,7 +172,6 @@ Route::delete('institutions/{institution}/check-ins/active', [InstitutionCheckIn
 
 // One idempotent roster replacement per term; authorized by InstitutionPolicy::update (O22).
 Route::put('institutions/{institution}/secretaries', [InstitutionSecretaryController::class, 'update'])->name('institutions.secretaries.update');
-Route::put('institutions/{institution}/administrators', [InstitutionSecretaryController::class, 'update'])->name('institutions.administrators.update');
 
 Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class);

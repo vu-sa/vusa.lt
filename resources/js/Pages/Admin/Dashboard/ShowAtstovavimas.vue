@@ -58,6 +58,9 @@
     />
 
     <Deferred v-if="scope === 'user'" data="coordinator">
+      <template #fallback>
+        <Skeleton class="h-16 w-full" />
+      </template>
       <CoordinatorCard :coordinator="coordinator ?? null" compact />
     </Deferred>
 

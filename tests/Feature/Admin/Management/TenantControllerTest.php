@@ -233,7 +233,7 @@ describe('authorized access', function (): void {
     });
 
     test('translates the validation message per admin UI language, not the content locale being edited', function (): void {
-        // `lang` (the admin's own interface language, set by AppSidebar's toggle) and
+        // `lang` (the admin's own interface language, set by the account menu's language switch) and
         // `locale` (which lt/en homepage document is being saved) are independent — this
         // asserts the error text follows the former.
         // Read each response's error bag before the next request overwrites the shared

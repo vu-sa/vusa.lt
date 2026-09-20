@@ -6,7 +6,7 @@
 
 ### Single Source of Truth
 - `useBreadcrumbsUnified.ts` - Main breadcrumb composable (state management)
-- `AdminBreadcrumbs.vue` - Admin display component (in Components/)
+- `Layouts/Shell/ShellBreadcrumbs.vue` - Admin display component
 - `PublicBreadcrumbs.vue` - Public display component (in Components/Public/)
 - `BreadcrumbHelpers` - All helper functions
 

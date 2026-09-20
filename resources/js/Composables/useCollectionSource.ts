@@ -397,6 +397,9 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
         values.forEach(value => requestUrl.searchParams.append(`${facet.field}[]`, value));
       }
     }
+    if (Object.keys(filters.value).length > 0) {
+      requestUrl.searchParams.set('filters', JSON.stringify(filters.value));
+    }
 
     try {
       const response = await fetch(requestUrl, {

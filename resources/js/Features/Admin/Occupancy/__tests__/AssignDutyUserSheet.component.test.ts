@@ -28,7 +28,13 @@ const stubs = {
   ConfirmDialog: ConfirmStub,
   DatePicker: { props: ['modelValue', 'disabled'], template: '<input class="date" :value="modelValue" :disabled="disabled" />' },
   TiptapEditor: { template: '<div class="tiptap" />' },
+  ImageUpload: { template: '<div class="image-upload" />' },
   MemberSearchField: { props: ['modelValue', 'takenIds'], template: '<div data-testid="member-search" />' },
+  DutySearchField: {
+    props: ['modelValue'],
+    emits: ['update:modelValue'],
+    template: '<button type="button" data-testid="duty-search" @click="$emit(\'update:modelValue\', { id: \'duty-7\', name: \'Narys\', homeTenantId: 5 })" />',
+  },
   AccessChangeWarningDialog: true,
   UserAvatar: { template: '<span class="avatar" />' },
   InflectedDutyName: { props: ['name'], template: '<span>{{ typeof name === "string" ? name : name?.lt }}</span>' },
@@ -51,6 +57,48 @@ describe('AssignDutyUserSheet.vue', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  describe('create from a member (duty not fixed)', () => {
+    const person = { id: 'user-9', name: 'Ona', email: 'ona@vusa.lt' };
+
+    it('asks for the duty and treats the member as fixed', () => {
+      const wrapper = mountSheet({ duty: null, user: person });
+
+      expect(wrapper.text()).toContain('Pridėti pareigybę');
+      expect(wrapper.find('[data-testid="duty-search"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="member-search"]').exists()).toBe(false);
+      expect(wrapper.text()).toContain('Ona');
+    });
+
+    it('posts the chosen duty with the fixed member', async () => {
+      const wrapper = mountSheet({ duty: null, user: person });
+      const form = lastForm();
+
+      await wrapper.find('[data-testid="duty-search"]').trigger('click');
+      await wrapper.find('form').trigger('submit');
+
+      expect(form.duty_id).toBe('duty-7');
+      expect(form.user_id).toBe('user-9');
+      expect(form.post).toHaveBeenCalledWith('/mocked-route/dutiables.store', expect.any(Object));
+    });
+
+    it('only offers study programmes of the chosen duty\'s tenant', async () => {
+      const wrapper = mountSheet({
+        duty: null,
+        user: person,
+        studyPrograms: [
+          { id: 1, name: 'Ekonomika', tenant_id: 5 },
+          { id: 2, name: 'Fizika', tenant_id: 6 },
+        ],
+      });
+
+      await wrapper.find('[data-testid="duty-search"]').trigger('click');
+
+      const offered = (wrapper.vm as unknown as { availableStudyPrograms: { name: string }[] }).availableStudyPrograms;
+
+      expect(offered.map(program => program.name)).toEqual(['Ekonomika']);
+    });
   });
 
   describe('create', () => {
@@ -86,8 +134,22 @@ describe('AssignDutyUserSheet.vue', () => {
       await wrapper.find('form').trigger('submit');
 
       const transform = vi.mocked(form.transform).mock.calls[0][0] as (data: Record<string, unknown>) => Record<string, unknown>;
-      expect(transform({ description: { lt: '  ', en: '' } }).description).toBeNull();
-      expect(transform({ description: { lt: '<p>Sveiki</p>', en: '' } }).description).toEqual({ lt: '<p>Sveiki</p>', en: '' });
+      const note = { lt: '', en: '' };
+
+      expect(transform({ description: { lt: '  ', en: '' }, study_program_note: note }).description).toBeNull();
+      expect(transform({ description: { lt: '<p>Sveiki</p>', en: '' }, study_program_note: note }).description).toEqual({ lt: '<p>Sveiki</p>', en: '' });
+    });
+
+    it('sends an empty study-programme note as null, and a written one as translations', async () => {
+      const wrapper = mountSheet();
+      const form = lastForm();
+      await wrapper.find('form').trigger('submit');
+
+      const transform = vi.mocked(form.transform).mock.calls[0][0] as (data: Record<string, unknown>) => Record<string, unknown>;
+      const description = { lt: '', en: '' };
+
+      expect(transform({ description, study_program_note: { lt: ' ', en: '' } }).study_program_note).toBeNull();
+      expect(transform({ description, study_program_note: { lt: '1 kursas', en: '' } }).study_program_note).toEqual({ lt: '1 kursas', en: '' });
     });
 
     it('warns, without blocking, when every place is taken', () => {

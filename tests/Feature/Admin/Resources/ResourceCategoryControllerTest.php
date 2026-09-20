@@ -16,6 +16,22 @@ beforeEach(function (): void {
     $this->category = ResourceCategory::factory()->create();
 });
 
+describe('the collection replaces the standalone pages', function (): void {
+    test('the index page carries the first page of categories for the collection', function (): void {
+        asUser($this->resourceManager)->get(route('resourceCategories.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Reservations/IndexResourceCategory')
+                ->where('resourceCategories.data.0.id', $this->category->id)
+                ->has('resourceCategories.meta.total'));
+    });
+
+    test('the old create and edit URLs send an authorized user to the collection', function (): void {
+        asUser($this->resourceManager)->get(route('resourceCategories.create'))->assertRedirect(route('resourceCategories.index'));
+        asUser($this->resourceManager)->get(route('resourceCategories.edit', $this->category))->assertRedirect(route('resourceCategories.index'));
+    });
+});
+
 /**
  * Resource categories are not in ModelEnum, so `resourceCategories.*` permissions are never
  * seeded. ResourceCategoryPolicy maps each ability onto the matching `resources.*` permission
@@ -24,7 +40,6 @@ beforeEach(function (): void {
 describe('authorization', function (): void {
     test('a resource manager can list, edit and delete categories', function (): void {
         asUser($this->resourceManager)->get(route('resourceCategories.index'))->assertOk();
-        asUser($this->resourceManager)->get(route('resourceCategories.edit', $this->category))->assertOk();
 
         asUser($this->resourceManager)
             ->delete(route('resourceCategories.destroy', $this->category))

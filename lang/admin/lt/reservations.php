@@ -123,6 +123,12 @@ return [
     'status_mixed' => 'Mišri',
     'unresolved_days' => '{1} vėluojama :count d.|[2,*] vėluojama :count d.',
     'unresolved_help' => 'Rezervacijos numatytas laikas jau pasibaigęs, bet ji dar neuždaryta.',
+    // What a logged decision on an item reads as in its history.
+    'decision' => [
+        'approved' => 'Patvirtinta',
+        'rejected' => 'Atmesta',
+        'cancelled' => 'Atšaukta',
+    ],
     'discrepancy' => [
         'available_from_ended_reservations' => '{1} :count vnt. laisva, nes aktyvi rezervacija jau pasibaigusi|[2,*] :count vnt. laisva, nes aktyvios rezervacijos jau pasibaigusios',
     ],

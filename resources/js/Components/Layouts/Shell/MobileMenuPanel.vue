@@ -181,15 +181,6 @@
               </button>
             </li>
             <li>
-              <button type="button" class="u-touch flex w-full items-center justify-between px-4 py-3 text-left text-sm" @click="toggleNewShell">
-                <span class="flex items-center gap-3">
-                  <span class="size-5" />
-                  {{ $t('shell.chrome.new_design') }}
-                </span>
-                <Check v-if="newShellEnabled" class="size-4 text-brand" />
-              </button>
-            </li>
-            <li>
               <button type="button" class="u-touch flex w-full items-center gap-3 px-4 py-3 text-left text-sm" @click="logout">
                 <LogOut class="size-5 text-muted-foreground" />
                 {{ $t('auth.logout') }}
@@ -215,7 +206,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import {
   BookOpen,
   Bug,
-  Check,
   Languages,
   LayoutGrid,
   LogOut,
@@ -243,7 +233,6 @@ import {
   type AdminWorkspace,
 } from '@/Composables/useAdminNavigation';
 import { useLogout } from '@/Composables/useLogout';
-import { useNewShellToggle } from '@/Composables/useNewShellToggle';
 import { useStartFm } from '@/Composables/useStartFm';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
 
@@ -264,7 +253,6 @@ const openKey = ref<string | undefined>(props.activeWorkspace?.key);
 const scrollLock = useScrollLock(typeof document === 'undefined' ? null : document.body);
 
 const { logout, logoutMicrosoft } = useLogout();
-const { enabled: newShellEnabled, toggle: toggleNewShell } = useNewShellToggle();
 const startFm = useStartFm();
 const isDark = useDark();
 

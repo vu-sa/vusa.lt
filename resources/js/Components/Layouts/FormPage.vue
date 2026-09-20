@@ -141,7 +141,7 @@
     <div
       :class="[
         'fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-40',
-        'border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm md:left-(--sidebar-width,0px)',
+        'border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm',
       ]"
     >
       <div class="mx-auto flex max-w-2xl items-center justify-between gap-4">

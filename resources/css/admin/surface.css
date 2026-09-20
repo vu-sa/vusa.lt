@@ -3,10 +3,7 @@
    ==================================================================================
 
    `data-surface="admin"` is stamped on <html> server-side by app.blade.php, via
-   App\Support\DesignSurface — Public/* pages always get `public`, Admin/* pages get `admin`
-   only for a user who opted into the redesign's new shell (ui_preferences.appearance.new_shell).
-   Everyone else keeps the legacy admin palette (:root / .dark in theme/base-tokens.css,
-   untouched by this file).
+   App\Support\DesignSurface — Public/* pages get `public`, Admin/* pages get `admin`.
 
    D1's "one visual language" means this scope is deliberately the SAME palette as
    [data-surface="public"] — warm paper / near-black ink, zero radius — kept as its own scope
@@ -85,16 +82,6 @@
   --input: oklch(1 0 0 / 14%);
   --ring: oklch(0.82 0.152 72);
   --border-opaque: color-mix(in oklab, white 12%, var(--background));
-}
-
-/* admin.css sets `:root { font-size: 90% }` (its own density knob), which puts `text-xs` at
-   10.8px — under the 12px floor in rules/visual.md #6. `html[data-surface="admin"]` (specificity
-   0,1,1) outranks the bare `:root` (0,1,0) regardless of import order, which matters because
-   admin.css arrives after this file, via a dynamic import from admin.ts rather than app.css.
-   D7's operational type scale is deferred (see plan.md, PR 2.1 Notes); this is only the reset
-   that makes the 12px floor reachable once that scale lands. */
-html[data-surface="admin"] {
-  font-size: 100%;
 }
 
 /* Numbers line up in tables without every component remembering `tabular-nums` (D10). */

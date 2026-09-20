@@ -28,7 +28,7 @@
         <template #indicator>
           <EyeOff
             v-if="!includeEnded"
-            class="size-3 text-amber-600 dark:text-amber-400"
+            class="size-3 text-status-attention"
             :aria-label="$t('dutiables.timeline.ended_hidden')"
           />
         </template>

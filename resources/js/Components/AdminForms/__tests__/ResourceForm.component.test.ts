@@ -48,22 +48,14 @@ describe('ResourceForm.vue', () => {
       global: {
         stubs: {
           ...commonStubs,
-          AdminForm: {
-            template: '<form @submit.prevent><slot /></form>',
-            props: ['model'],
+          FormPage: {
+            props: ['title', 'mode'],
+            template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent><slot /><slot name="advanced" /><slot name="danger-zone" /></form>',
           },
-          FormElement: {
-            template: '<section><slot /></section>',
-            props: ['icon'],
-          },
-          FormFieldWrapper: {
-            template: '<div><label>{{ label }}</label><slot /></div>',
-            props: ['id', 'label', 'required', 'error'],
-          },
-          MultiLocaleInput: {
-            template: '<input data-testid="multi-locale" />',
-            props: ['input', 'inputType', 'placeholder'],
-          },
+          FormSection: { props: ['title'], template: '<section :data-section="title"><slot /></section>' },
+          MdSuspenseWrapper: true,
+          ConfirmDialog: true,
+          ResourceReservationsTable: { props: ['reservations'], template: '<div data-testid="reservations-table" />' },
           Select: {
             template: '<select data-testid="select" :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
             props: ['modelValue'],
@@ -83,8 +75,8 @@ describe('ResourceForm.vue', () => {
             template: '<input data-testid="number-field" type="number" :value="modelValue" @input="$emit(\'update:modelValue\', Number($event.target.value))" />',
             props: ['modelValue', 'min'],
           },
-          Switch: {
-            template: '<button type="button" role="switch" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)" />',
+          Checkbox: {
+            template: '<button type="button" role="checkbox" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)" />',
             props: ['modelValue'],
           },
           ImageUpload: {
@@ -119,16 +111,38 @@ describe('ResourceForm.vue', () => {
     expect(wrapper.find('form').exists()).toBe(true);
   });
 
-  describe('is_reservable switch', () => {
+  it('edits in edit mode and creates in create mode', () => {
+    wrapper = createWrapper();
+    expect(wrapper.find('[data-testid="form-page"]').attributes('data-mode')).toBe('edit');
+    wrapper.unmount();
+
+    wrapper = createWrapper({ rememberKey: 'CreateResource' });
+    expect(wrapper.find('[data-testid="form-page"]').attributes('data-mode')).toBe('create');
+  });
+
+  it('shows the reservation history only when editing and given one', () => {
+    wrapper = createWrapper({ reservations: [] });
+    expect(wrapper.find('[data-testid="reservations-table"]').exists()).toBe(true);
+    wrapper.unmount();
+
+    wrapper = createWrapper();
+    expect(wrapper.find('[data-testid="reservations-table"]').exists()).toBe(false);
+    wrapper.unmount();
+
+    wrapper = createWrapper({ rememberKey: 'CreateResource', reservations: [] });
+    expect(wrapper.find('[data-testid="reservations-table"]').exists()).toBe(false);
+  });
+
+  describe('is_reservable checkbox', () => {
     it('reflects a truthy initial state', () => {
       wrapper = createWrapper({ resource: { ...defaultResource, is_reservable: true } });
-      const toggle = wrapper.find('[role="switch"]');
+      const toggle = wrapper.find('[role="checkbox"]');
       expect(toggle.attributes('aria-checked')).toBe('true');
     });
 
     it('reflects a falsy initial state', () => {
       wrapper = createWrapper({ resource: { ...defaultResource, is_reservable: false } });
-      const toggle = wrapper.find('[role="switch"]');
+      const toggle = wrapper.find('[role="checkbox"]');
       expect(toggle.attributes('aria-checked')).toBe('false');
     });
 
@@ -136,10 +150,10 @@ describe('ResourceForm.vue', () => {
       wrapper = createWrapper({ resource: { ...defaultResource, is_reservable: true } });
       const vm = wrapper.vm as any;
 
-      await wrapper.find('[role="switch"]').trigger('click');
+      await wrapper.find('[role="checkbox"]').trigger('click');
       expect(vm.form.is_reservable).toBe(false);
 
-      await wrapper.find('[role="switch"]').trigger('click');
+      await wrapper.find('[role="checkbox"]').trigger('click');
       expect(vm.form.is_reservable).toBe(true);
     });
   });

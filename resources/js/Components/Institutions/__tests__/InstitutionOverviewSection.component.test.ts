@@ -6,10 +6,8 @@ import InstitutionOverviewSection from '../InstitutionOverviewSection.vue';
 // Stub render-heavy leaf components; their modules are still imported (and thus
 // compiled) by the section, so this also acts as a compile smoke-test.
 const stubs = {
-  UserPopover: true,
-  PriorityAlert: true,
-  InstitutionMeetingsPreview: true,
-  InstitutionDiscussionPreview: true,
+  UsersAvatarGroup: true,
+  InstitutionMeetingsList: true,
 };
 
 type InstitutionProp = InstanceType<typeof InstitutionOverviewSection>['$props']['institution'];
@@ -22,7 +20,7 @@ const makeInstitution = (overrides: Record<string, unknown> = {}): InstitutionPr
   description: 'A short description.',
   types: [],
   managers: [],
-  administrators: [],
+  secretaries: [],
   sharepointPath: null,
   duties_count: 1,
   meetings_count: 0,
@@ -75,55 +73,28 @@ describe('InstitutionOverviewSection', () => {
     expect(wrapper.text()).not.toContain('Apie');
   });
 
-  it('renders members with the duty they hold', () => {
+  it('keeps members, tasks and related institutions out of the overview — each has its own section', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: { institution: makeInstitution(), overview: makeOverview() },
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('Alice');
-    expect(wrapper.text()).toContain('Chair');
-  });
-
-  it('keeps tasks out of the overview — they live in their own tab', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: {
-        institution: makeInstitution(),
-        overview: makeOverview(),
-      },
-      global: { stubs },
-    });
-
+    expect(wrapper.text()).not.toContain('Alice');
     expect(wrapper.text()).not.toContain('Overdue task');
-  });
-
-  it('keeps related institutions out of the overview — they have their own tab', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: {
-        institution: makeInstitution(),
-        overview: makeOverview(),
-      },
-      global: { stubs },
-    });
-
     expect(wrapper.text()).not.toContain('VU MIF Taryba');
   });
 
-  it('folds the last meeting date into the activity highlight', () => {
+  it('paints no badge for the healthy state', () => {
     const wrapper = mount(InstitutionOverviewSection, {
-      props: {
-        institution: makeInstitution(),
-        overview: makeOverview({
-          recentMeetings: [{ id: 'm1', start_time: '2025-11-01T10:00:00.000Z', title: 'Posėdis' }],
-        }),
-      },
+      props: { institution: makeInstitution(), overview: makeOverview() },
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('Paskutinis susitikimas');
+    expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('10 d. / 30 d.');
   });
 
-  it('renders the shared backend activity status', () => {
+  it('names an overdue institution with the shared status badge and offers both answers', async () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: {
         institution: makeInstitution(),
@@ -141,37 +112,72 @@ describe('InstitutionOverviewSection', () => {
       global: { stubs },
     });
 
-    expect(wrapper.text()).toContain('visak.activity.activity_status.overdue');
+    expect(wrapper.find('[data-slot="status-badge"]').attributes('data-status-role')).toBe('danger');
     expect(wrapper.text()).toContain('35 d. / 30 d.');
+
+    const buttons = wrapper.findAll('button');
+    await buttons.find(b => b.text().includes('tasks.periodicity_gap.schedule_meeting'))!.trigger('click');
+    await buttons.find(b => b.text().includes('tasks.periodicity_gap.report_no_meeting'))!.trigger('click');
+
+    expect(wrapper.emitted('schedule-meeting')).toHaveLength(1);
+    expect(wrapper.emitted('report-activity')).toHaveLength(1);
   });
 
-  it('links the overflow member count to the duties tab', async () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: {
-        institution: makeInstitution(),
-        overview: makeOverview({
-          current_users: Array.from({ length: 9 }, (_, i) => ({ id: i + 1, name: `Member ${i + 1}` })),
-        }),
-      },
-      global: { stubs },
-    });
-
-    const more = wrapper.findAll('button').find(b => b.text().includes('ir dar :count'));
-    expect(more).toBeDefined();
-    await more!.trigger('click');
-
-    expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['duties']);
-  });
-
-  it('emits navigate-tab when the members action is used', async () => {
+  it('offers no action while nothing is due', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: { institution: makeInstitution(), overview: makeOverview() },
       global: { stubs },
     });
 
-    const allMembers = wrapper.findAll('button').find(b => b.text().includes('Visi nariai'));
-    await allMembers!.trigger('click');
+    expect(wrapper.text()).not.toContain('tasks.periodicity_gap.schedule_meeting');
+  });
 
-    expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['duties']);
+  it('shows the last meeting date from the activity status', () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: { institution: makeInstitution(), overview: makeOverview() },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('Paskutinis susitikimas');
+    expect(wrapper.text()).toContain('2025');
+  });
+
+  it('teaches an empty meetings list to schedule the first one', async () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: { institution: makeInstitution(), overview: makeOverview() },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('Nėra susitikimų');
+  });
+
+  it('links to all meetings once there are some', async () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution(),
+        overview: makeOverview({
+          recentMeetings: [{ id: 'm1', start_time: '2025-11-01T10:00:00.000Z', title: 'Posėdis' }],
+        }),
+      },
+      global: { stubs },
+    });
+
+    await wrapper.findAll('button').find(b => b.text().includes('Visi susitikimai'))!.trigger('click');
+
+    expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['meetings']);
+  });
+
+  it('shows the current-term secretaries apart from the managers', () => {
+    // A secretary need not hold a duty here, so they must never read as a member (O22).
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: {
+        institution: makeInstitution({ secretaries: [{ id: 'u1', name: 'Rūta', email: null, profile_photo_path: null }] }),
+        overview: makeOverview(),
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('secretaries.label');
+    expect(wrapper.text()).not.toContain('Koordinatoriai');
   });
 });

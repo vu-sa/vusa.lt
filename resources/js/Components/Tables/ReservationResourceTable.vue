@@ -279,6 +279,11 @@
 </template>
 
 <script setup lang="tsx">
+/**
+ * @deprecated Superseded by Components/Reservations/ReservationResourceList on the reservation record
+ * (Phase 9.2), which acts through the same decision dialog as the collection page. No page mounts
+ * this any more; slated for removal in Phase 10.
+ */
 import type { ColumnDef, Row, RowSelectionState } from '@tanstack/vue-table';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Link, router, usePage } from '@inertiajs/vue3';

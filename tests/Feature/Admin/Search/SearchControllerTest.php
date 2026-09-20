@@ -38,9 +38,9 @@ describe('authorized access', function (): void {
             ->get(route('search.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('destinations.meetings', ['href' => route('meetings.index', [], false), 'queryKey' => 'q'])
-                ->where('destinations.institutions', ['href' => route('institutions.index', [], false), 'queryKey' => 'search'])
+                ->where('destinations.institutions', ['href' => route('institutions.index', [], false), 'queryKey' => 'q'])
                 ->where('destinations.agendaItems', ['href' => route('search.index', ['tab' => 'agenda-items'], false), 'queryKey' => 'q'])
-                ->where('destinations.resources', ['href' => route('search.index', ['tab' => 'resources'], false), 'queryKey' => 'q'])
+                ->where('destinations.resources', ['href' => route('resources.index', [], false), 'queryKey' => 'q'])
             );
     });
 
@@ -50,12 +50,18 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page->where('destinations.news.href', null));
     });
 
-    test('the agenda-items and resources tabs still render the search page', function (string $tab): void {
+    test('the agenda-items tab still renders the search page', function (): void {
         asUser($this->admin)
-            ->get(route('search.index', ['tab' => $tab, 'q' => 'x']))
+            ->get(route('search.index', ['tab' => 'agenda-items', 'q' => 'x']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->component('Admin/Search/SearchIndex'));
-    })->with(['agenda-items', 'resources']);
+    });
+
+    test('the resources tab goes to the resources collection', function (): void {
+        asUser($this->admin)
+            ->get(route('search.index', ['tab' => 'resources', 'q' => 'x']))
+            ->assertRedirect(route('resources.index', ['q' => 'x'], false));
+    });
 
     test('an unknown tab from a stale bookmark falls back to the search page', function (): void {
         asUser($this->admin)
@@ -70,24 +76,27 @@ describe('tabs that have a page of their own', function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('a Typesense collection page receives the query as q', function (): void {
+    test('a Typesense collection page receives the query as q', function (string $tab, string $routeName): void {
         asUser($this->admin)
-            ->get(route('search.index', ['q' => 'test', 'tab' => 'meetings']))
-            ->assertRedirect(route('meetings.index', ['q' => 'test'], false));
-    });
+            ->get(route('search.index', ['q' => 'test', 'tab' => $tab]))
+            ->assertRedirect(route($routeName, ['q' => 'test'], false));
+    })->with([
+        ['meetings', 'meetings.index'],
+        ['institutions', 'institutions.index'],
+        ['resources', 'resources.index'],
+        ['duties', 'duties.index'],
+        ['users', 'users.index'],
+    ]);
 
     test('a database table page receives the query as search', function (string $tab, string $routeName): void {
         asUser($this->admin)
             ->get(route('search.index', ['q' => 'test', 'tab' => $tab]))
             ->assertRedirect(route($routeName, ['search' => 'test'], false));
     })->with([
-        ['institutions', 'institutions.index'],
-        ['duties', 'duties.index'],
         ['documents', 'documents.index'],
         ['news', 'news.index'],
         ['pages', 'pages.index'],
         ['calendar', 'calendar.index'],
-        ['users', 'users.index'],
     ]);
 
     test('the query is dropped, not sent empty, when there is none', function (): void {
@@ -111,7 +120,7 @@ describe('legacy redirects', function (): void {
     test('search.institutions goes straight to the institutions page', function (): void {
         asUser($this->admin)
             ->get(route('search.institutions', ['q' => 'test']))
-            ->assertRedirect(route('institutions.index', ['search' => 'test'], false));
+            ->assertRedirect(route('institutions.index', ['q' => 'test'], false));
     });
 
     test('search.agendaItems redirects to unified search with agenda-items tab', function (): void {
@@ -120,9 +129,9 @@ describe('legacy redirects', function (): void {
             ->assertRedirect(route('search.index', ['q' => 'test', 'tab' => 'agenda-items']));
     });
 
-    test('search.resources redirects to unified search with resources tab', function (): void {
+    test('search.resources goes straight to the resources page', function (): void {
         asUser($this->admin)
             ->get(route('search.resources', ['q' => 'test']))
-            ->assertRedirect(route('search.index', ['q' => 'test', 'tab' => 'resources']));
+            ->assertRedirect(route('resources.index', ['q' => 'test'], false));
     });
 });

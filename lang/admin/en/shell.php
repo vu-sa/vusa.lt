@@ -52,7 +52,6 @@ return [
         'menu' => 'Menu',
         'close_menu' => 'Close menu',
         'account' => 'Account',
-        'new_design' => 'New design (beta)',
         'breadcrumbs' => 'Page path',
         'back_to' => 'Back to :page',
     ],

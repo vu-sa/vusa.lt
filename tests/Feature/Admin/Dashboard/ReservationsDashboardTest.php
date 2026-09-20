@@ -148,6 +148,22 @@ describe('table payload flags', function (): void {
             );
     });
 
+    test('the record page hands its row actions the same flags, per item', function (): void {
+        $mixed = Reservation::factory()->create();
+        attachResource($mixed, $this->myResource, 'created');
+        attachResource($mixed, $this->foreignResource, 'created');
+
+        asUser($this->manager)->get(route('reservations.show', $mixed))
+            ->assertOk()
+            ->assertInertia(function (Assert $page): void {
+                $resources = collect($page->toArray()['props']['decisionTarget']['resources'])->keyBy('id');
+
+                expect($resources[$this->myResource->id]['pivot']['approvable'])->toBeTrue()
+                    ->and($resources[$this->foreignResource->id]['pivot']['approvable'])->toBeFalse()
+                    ->and($resources[$this->myResource->id]['pivot']['cancellable'])->toBeFalse();
+            });
+    });
+
     test('the API serves the same flags as the page', function (): void {
         $pending = Reservation::factory()->create();
         attachResource($pending, $this->myResource, 'created');

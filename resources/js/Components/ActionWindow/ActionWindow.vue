@@ -38,7 +38,7 @@ import { VisuallyHidden } from 'reka-ui';
 import ActionWindowBody from './ActionWindowBody.vue';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { useOptionalSidebar } from '@/Composables/useOptionalSidebar';
+import { useIsMobile } from '@/Composables/useIsMobile';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/Components/ui/drawer';
 
@@ -46,7 +46,7 @@ const { isOpen, close } = useActionWindow();
 
 // Inside the legacy shell this is SidebarProvider's own media query; the new shell has no
 // provider, so it falls back to the shell's `useIsMobile()`.
-const { isMobile } = useOptionalSidebar();
+const isMobile = useIsMobile();
 
 const onOpenChange = (open: boolean) => {
   if (!open) {

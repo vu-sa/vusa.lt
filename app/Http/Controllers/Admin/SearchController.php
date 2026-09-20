@@ -16,8 +16,8 @@ class SearchController extends AdminController
 
     /**
      * The cross-entity search page. Authorization is handled via scoped Typesense API keys at the
-     * search layer. A `?tab=` for an entity with its own page is sent there; only the tabs without
-     * one (agenda items, resources) still render here.
+     * search layer. A `?tab=` for an entity with its own page is sent there; only the tab without
+     * one (agenda items) still renders here.
      */
     public function index(IndexSearchRequest $request): InertiaResponse|RedirectResponse
     {

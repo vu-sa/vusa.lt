@@ -52,9 +52,6 @@
           </div>
         </DropdownMenuSubContent>
       </DropdownMenuSub>
-      <DropdownMenuCheckboxItem :model-value="newShellEnabled" @select.prevent="toggleNewShell">
-        {{ $t('shell.chrome.new_design') }}
-      </DropdownMenuCheckboxItem>
       <DropdownMenuSeparator />
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>
@@ -141,7 +138,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -152,7 +148,6 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import { useLogout } from '@/Composables/useLogout';
-import { useNewShellToggle } from '@/Composables/useNewShellToggle';
 import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
@@ -163,7 +158,6 @@ const user = computed(() => page.props.auth?.user);
 const initials = computed(() => (user.value?.name ?? '').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase());
 
 const { logout, logoutMicrosoft } = useLogout();
-const { enabled: newShellEnabled, toggle: toggleNewShell } = useNewShellToggle();
 const { hasTour, startTour } = useTour();
 const startFm = useStartFm();
 const isDark = useDark();

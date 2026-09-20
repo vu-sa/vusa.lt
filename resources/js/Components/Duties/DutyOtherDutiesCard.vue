@@ -10,7 +10,7 @@
         :key="duty.id"
         :href="route('duties.show', duty.id)"
         :class="[
-          'flex items-center gap-3 rounded-md border border-transparent px-2 py-2',
+          'flex items-center gap-3 border border-transparent px-2 py-2',
           interactiveCardClass,
         ]"
       >

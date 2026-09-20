@@ -192,3 +192,25 @@ test('a duty-less super admin stays available to another super admin', function 
             ->where('users.data', fn ($users) => collect($users)->contains('id', $target->id))
         );
 });
+
+// The collection page loads page 2+ and every filter change from the API twin, so the twin must
+// hold exactly the same boundary as the page's first paint.
+test('the member list API hides duty-less and foreign users, like the page', function (): void {
+    $unclaimed = makeUnclaimedUser();
+    $foreign = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+    $own = makeUser($this->tenant);
+
+    $ids = collect(
+        asUser($this->coordinator)->getJson(route('api.v1.admin.users.index'))
+            ->assertOk()
+            ->json('data.items')
+    )->pluck('id');
+
+    expect($ids)->toContain($own->id)
+        ->not->toContain($unclaimed->id)
+        ->not->toContain($foreign->id);
+});
+
+test('the member list API is closed to someone who may not view users', function (): void {
+    asUser(makeUser($this->tenant))->getJson(route('api.v1.admin.users.index'))->assertForbidden();
+});

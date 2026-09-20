@@ -34,7 +34,7 @@ const stubs = {
   ConfirmDialog: ConfirmStub,
   AssignDutyUserSheet: {
     props: ['open', 'dutiable', 'takenIds', 'occupiedPlaces', 'studyPrograms'],
-    template: '<div data-testid="assign-sheet" :data-open="open" :data-taken="(takenIds ?? []).join(\',\')" />',
+    template: '<div data-testid="assign-sheet" :data-open="open" :data-dutiable="dutiable?.id" :data-taken="(takenIds ?? []).join(\',\')" />',
   },
   DutiableTimelineDialog: true,
   AccessChangeWarningDialog: true,
@@ -76,6 +76,40 @@ describe('ShowDuty.vue', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  describe('?dutiable= (redirect from the retired edit page)', () => {
+    afterEach(() => {
+      window.history.replaceState({}, '', '/');
+    });
+
+    it('opens that term in the sheet and drops the parameter', async () => {
+      window.history.replaceState({}, '', '/mano/duties/duty-1?dutiable=dutiable-current&tab=members');
+
+      const wrapper = mountPage();
+      await wrapper.vm.$nextTick();
+      const sheet = wrapper.find('[data-testid="assign-sheet"]');
+
+      expect(sheet.attributes('data-open')).toBe('true');
+      expect(sheet.attributes('data-dutiable')).toBe('dutiable-current');
+      expect(window.location.search).toBe('?tab=members');
+    });
+
+    it('does not open the sheet for someone who cannot manage people', () => {
+      window.history.replaceState({}, '', '/mano/duties/duty-1?dutiable=dutiable-current');
+
+      const wrapper = mountPage({ can: { update: true, managePeople: false } });
+
+      expect(wrapper.find('[data-testid="assign-sheet"]').attributes('data-open')).toBe('false');
+    });
+
+    it('ignores a term that is not on this duty', () => {
+      window.history.replaceState({}, '', '/mano/duties/duty-1?dutiable=nope');
+
+      const wrapper = mountPage();
+
+      expect(wrapper.find('[data-testid="assign-sheet"]').attributes('data-open')).toBe('false');
+    });
   });
 
   it('paints no status for a duty that is simply occupied', () => {

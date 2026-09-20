@@ -1,19 +1,17 @@
 <template>
-  <PageContent :title="$page.props.seo.title" :heading-icon="InstitutionIcon">
-    <UpsertModelLayout>
-      <InstitutionForm remember-key="CreateInstitution" :assignable-tenants :institution :institution-types
-        @submit:form="handleSubmit" />
-    </UpsertModelLayout>
-  </PageContent>
+  <InstitutionForm
+    remember-key="CreateInstitution"
+    :assignable-tenants
+    :institution
+    :institution-types
+    @submit:form="handleSubmit"
+  />
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import InstitutionForm from '@/Components/AdminForms/InstitutionForm.vue';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import { InstitutionIcon } from '@/Components/icons';
 
 defineProps<{
   assignableTenants: Array<App.Entities.Tenant>;
@@ -33,11 +31,11 @@ const institution = {
   logo_url: null,
   is_active: true,
   tenant_id: null,
-  types: null,
-} as any;
+  types: [],
+} as unknown as App.Entities.Institution;
 
-const handleSubmit = (form: any) => {
-  form.post(route('institutions.store'), {
+const handleSubmit = (form: unknown) => {
+  (form as InertiaForm<Record<string, unknown>>).post(route('institutions.store'), {
     onSuccess: () => {
       router.visit(route('institutions.index'));
     },

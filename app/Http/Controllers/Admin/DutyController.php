@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\BackfillExOfficioTargetDuty;
+use App\Actions\BuildDutyIndexQuery;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\MergeDuties;
@@ -45,39 +46,12 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('viewAny', Duty::class);
 
-        $query = Duty::query()->with([
-            'institution:id,name,short_name,tenant_id',
-            'institution.tenant:id,shortname',
-            'types:id,title',
-            // Feeds Duty::forceDeleteBlockedReason() without a query per row.
-        ])->withCount('dutiables');
-
-        $searchableColumns = ['name', 'email'];
-
-        // Search / sort / column filters / soft-delete only — tenant scoping is
-        // applied below so the assignable-tenants alternative is ORed with the
-        // read scope inside one group (not appended after the search filters).
-        $query = $this->applyTanstackFilters($query, $request, $this->tableService, $searchableColumns);
-
-        $this->applyDataQualityFilter($query, $request->getFilters()['data_quality'] ?? null);
-
-        $actor = $request->user();
-        $hasGlobalReadScope = $this->authorizer->allows($actor, 'duties.read.*') || $actor?->isSuperAdmin();
-
-        if (! $hasGlobalReadScope) {
-            $adminTenantIds = $this->authorizer->tenants($actor, 'duties.read.padalinys')->pluck('id')->all();
-            // Cross-tenant duties (the user's tenant is in assignableTenants) are
-            // included by default; the `show_external` table filter hides them.
-            $includeExternal = ($request->getFilters()['show_external'] ?? true) !== false;
-
-            $query->where(function ($q) use ($adminTenantIds, $includeExternal): void {
-                $q->whereHas('institution.tenant', fn ($t) => $t->whereIn('id', $adminTenantIds));
-
-                if ($includeExternal) {
-                    $q->orWhereHas('assignableTenants', fn ($a) => $a->whereIn('tenants.id', $adminTenantIds));
-                }
-            });
-        }
+        $query = $this->applyTanstackFilters(
+            BuildDutyIndexQuery::execute($request, $this->authorizer),
+            $request,
+            $this->tableService,
+            ['name', 'email'],
+        );
 
         $deletedCount = $this->getTrashedCount($query);
 
@@ -104,52 +78,6 @@ class DutyController extends AdminController
             'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
-    }
-
-    /**
-     * Narrow the index to a single data-quality slice. Surfaces the cheapest
-     * cleanup levers the duties table offers: duties nobody currently holds,
-     * duties missing a localized name (so they render blank in that locale), and
-     * duties where one person holds two concurrently-active rows — the residual
-     * cross-tenant pairs the de-duplication migration left for human review.
-     */
-    private function applyDataQualityFilter($query, ?string $dataQuality): void
-    {
-        match ($dataQuality) {
-            'vacant' => $query->whereDoesntHave('current_users'),
-            'missing_en_name' => $query->whereRaw($this->localeMissingClause('en')),
-            'missing_lt_name' => $query->whereRaw($this->localeMissingClause('lt')),
-            'duplicate_holders' => $query->whereExists(function ($q): void {
-                $q->select(DB::raw(1))
-                    ->from('dutiables as dup')
-                    ->whereColumn('dup.duty_id', 'duties.id')
-                    ->where('dup.dutiable_type', MorphMap::alias(User::class))
-                    ->where(function ($q): void {
-                        $q->whereNull('dup.end_date')->orWhere('dup.end_date', '>=', now());
-                    })
-                    ->groupBy('dup.dutiable_id')
-                    ->havingRaw('COUNT(*) > 1');
-            }),
-            default => null,
-        };
-    }
-
-    /**
-     * Raw SQL matching rows whose translatable `name` lacks a non-empty value
-     * for $locale. Spatie stores the field as JSON; the extractor differs by
-     * driver. "Blank" covers three storage shapes — key absent, an explicit
-     * JSON null (`{"lt":null}`, which JSON_UNQUOTE turns into the literal
-     * string "null" on MySQL), and an empty string.
-     */
-    private function localeMissingClause(string $locale): string
-    {
-        $path = "$.{$locale}";
-
-        return DB::getDriverName() === 'sqlite'
-            // SQLite's json_extract already collapses a JSON null to SQL NULL,
-            // so key-absent and explicit-null are both caught by IS NULL.
-            ? "(json_extract(name, '{$path}') IS NULL OR json_extract(name, '{$path}') = '')"
-            : "(JSON_EXTRACT(name, '{$path}') IS NULL OR JSON_TYPE(JSON_EXTRACT(name, '{$path}')) = 'NULL' OR JSON_UNQUOTE(JSON_EXTRACT(name, '{$path}')) = '')";
     }
 
     /**

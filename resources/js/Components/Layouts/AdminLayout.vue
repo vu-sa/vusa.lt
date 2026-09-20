@@ -1,24 +1,12 @@
 <template>
-  <!-- `font-admin` is dropped once the new shell is opted in: its [data-surface="admin"] scope
-       sets `font-family: var(--font-public)` on <html> itself (so teleported content inherits
-       it too), and font-admin here would otherwise outrank that inherited value. -->
-  <div class="bg-background" :class="{ 'font-admin': !uiPreferences.newShell.value }">
+  <div class="bg-background">
     <Head :title />
 
-    <AdminShell v-if="uiPreferences.newShell.value">
+    <AdminShell>
       <slot />
     </AdminShell>
-    <LegacyAdminShell
-      v-else
-      :create-url
-      :show-mobile-action-bar
-      :has-tour
-      @start-tour="startPageTour(true)"
-    >
-      <slot />
-    </LegacyAdminShell>
 
-    <!-- Guided action window. Outside both shells: it needs neither a sidebar nor its provider. -->
+    <!-- Guided action window: outside the shell so any page can open it. -->
     <ActionWindow />
     <StartFmDock />
 
@@ -52,7 +40,6 @@ import UpdateBanner from '@/Components/PWA/UpdateBanner.vue';
 import { Toaster } from '@/Components/ui/sonner';
 import AdminShell from '@/Components/Layouts/Shell/AdminShell.vue';
 import StartFmDock from '@/Components/Layouts/Shell/StartFmDock.vue';
-import LegacyAdminShell from '@/Components/Layouts/LegacyAdminShell.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 import { createTourProvider } from '@/Composables/useTourProvider';
@@ -64,14 +51,10 @@ import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette
 import ActionWindow from '@/Components/ActionWindow/ActionWindow.vue';
 import KeyboardShortcutsDialog from '@/Components/KeyboardShortcutsDialog.vue';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   title?: string;
-  createUrl?: string | null;
   breadcrumbs?: BreadcrumbItem[];
-  showMobileActionBar?: boolean;
-}>(), {
-  showMobileActionBar: false,
-});
+}>();
 
 // PWA state
 const { setAppBadge } = usePWA();
@@ -91,9 +74,9 @@ watch(unreadNotificationsCount, (count) => {
 const breadcrumbState = createBreadcrumbState('admin');
 
 // Initialize tour provider - pages can register their tours via provideTour()
-const { hasTour, startTour: startPageTour, clearTour } = createTourProvider();
+const { clearTour } = createTourProvider();
 
-// Initialize UI preferences provider (sidebar customization + recently visited)
+// Initialize UI preferences provider (pinned + recently visited pages)
 const uiPreferences = createUIPreferencesProvider();
 
 // The action window is openable from any admin page, so its state is provided
@@ -101,7 +84,7 @@ const uiPreferences = createUIPreferencesProvider();
 createActionWindowProvider();
 
 // Initialize command palette provider for global Cmd+K / Ctrl+K search.
-// Share the recently-visited source so the palette and sidebar stay in sync.
+// Share the recently-visited source so the palette and the preferences stay in sync.
 createCommandPaletteProvider({
   recentPages: uiPreferences.recentPages,
   clearRecent: uiPreferences.clearRecent,
@@ -140,8 +123,7 @@ useEventListener('keydown', (event: KeyboardEvent) => {
 // Track every admin page the user visits. The page-specific title comes from
 // the breadcrumb trail (the last crumb), which every admin page registers —
 // document.title is unreliable (it's just the app name on pages without a
-// <Head>). The customization dialog is a Vue overlay (no component change) so
-// it is inherently excluded.
+// <Head>).
 const SITE_NAME = /^(mano\s+)?vu\s*sa$/i;
 
 // The admin landing page (/mano) is not worth keeping in history.

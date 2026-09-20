@@ -110,6 +110,9 @@
     </template>
 
     <Deferred data="coordinator">
+      <template #fallback>
+        <Skeleton class="mt-10 h-16 w-full" />
+      </template>
       <CoordinatorCard :coordinator="coordinator ?? null" class="mt-10" compact />
     </Deferred>
 

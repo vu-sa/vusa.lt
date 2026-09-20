@@ -81,7 +81,17 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/IndexUser')
                 ->has('users')
+                ->has('deletedCount')
             );
+    });
+
+    test('the trash view is still a table of soft-deleted members', function (): void {
+        $gone = makeUser($this->tenant);
+        $gone->delete();
+
+        asUser($this->admin)->get(route('users.index', ['showDeleted' => 'true']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Admin/People/IndexUserTrash'));
     });
 
     test('can access user create page', function (): void {
@@ -141,21 +151,20 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('edit page attributes each duty to its institution, not just a bare name', function (): void {
-        // A duty name alone is unattributable once it repeats across institutions
-        // (it does constantly, e.g. "Studentų atstovas") — the admin form needs
-        // the institution to tell two "Vadovas" duties apart.
+    // Duties and roles are associations with their own lifecycle: they are managed on the record
+    // (the Priskirti sheet, the Rolės section), so the form is sent none of the picker payloads.
+    test('the edit form carries the person, not the duty tree or the role list', function (): void {
         $user = makeUser($this->tenant);
-        $duty = $user->duties()->first();
 
-        $response = asUser($this->admin)->get(route('users.edit', $user));
-
-        $response->assertStatus(200)
+        asUser($this->admin)->get(route('users.edit', $user))
+            ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/EditUser')
-                ->where('user.current_duties.0.id', $duty->id)
-                ->where('user.current_duties.0.institution.tenant.shortname', $duty->institution->tenant->shortname)
-            );
+                ->has('user.current_duties.0.id')
+                ->has('canUpdateIdentity')
+                ->missing('tenantsWithDuties')
+                ->missing('permissableTenants')
+                ->missing('roles'));
     });
 
     test('show page passes per-record update and delete capabilities', function (): void {
@@ -428,5 +437,99 @@ describe('create-form field coverage', function (): void {
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         expect(User::query()->where('email', 'real.role@stud.vu.lt')->firstOrFail()->hasRole($role))->toBeTrue();
+    });
+});
+
+describe('editing the person leaves their associations alone', function (): void {
+    beforeEach(function (): void {
+        $this->admin = makeAdminUser($this->tenant);
+        $this->person = makeUser($this->tenant);
+    });
+
+    test('saving the form without duties or roles keeps both', function (): void {
+        $role = Role::firstOrCreate(['name' => 'Keeps Its Role', 'guard_name' => 'web']);
+        $this->person->roles()->sync([$role->id]);
+        $dutyIds = $this->person->current_duties()->pluck('duties.id')->all();
+
+        asUser($this->admin)->patch(route('users.update', $this->person), [
+            'name' => $this->person->name,
+            'email' => $this->person->email,
+            'phone' => '+37060000000',
+        ])->assertRedirect();
+
+        $fresh = $this->person->fresh();
+
+        expect($fresh->phone)->toBe('+37060000000')
+            ->and($fresh->hasRole($role))->toBeTrue()
+            ->and($fresh->current_duties()->pluck('duties.id')->all())->toEqualCanonicalizing($dutyIds);
+    });
+});
+
+describe('roles are edited on the record', function (): void {
+    beforeEach(function (): void {
+        $this->admin = makeAdminUser($this->tenant);
+        $this->person = makeUser($this->tenant);
+        $this->role = Role::firstOrCreate(['name' => 'Edited On The Record', 'guard_name' => 'web']);
+    });
+
+    test('a super admin replaces the roles', function (): void {
+        asUser($this->admin)->put(route('users.roles.update', $this->person), ['roles' => [$this->role->id]])
+            ->assertRedirect();
+
+        expect($this->person->fresh()->hasRole($this->role))->toBeTrue();
+
+        asUser($this->admin)->put(route('users.roles.update', $this->person), ['roles' => []])->assertRedirect();
+
+        expect($this->person->fresh()->roles)->toHaveCount(0);
+    });
+
+    test('anyone else is refused, even with permission to edit the person', function (): void {
+        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+
+        asUser($coordinator)->put(route('users.roles.update', $this->person), ['roles' => [$this->role->id]])
+            ->assertForbidden();
+
+        expect($this->person->fresh()->hasRole($this->role))->toBeFalse();
+    });
+
+    test('an unknown role id is rejected rather than synced', function (): void {
+        asUser($this->admin)->put(route('users.roles.update', $this->person), ['roles' => [999999]])
+            ->assertSessionHasErrors('roles.0');
+    });
+
+    test('the roles key must be sent, so a bare request cannot strip every role', function (): void {
+        $this->person->roles()->sync([$this->role->id]);
+
+        asUser($this->admin)->put(route('users.roles.update', $this->person), [])
+            ->assertSessionHasErrors('roles');
+
+        expect($this->person->fresh()->hasRole($this->role))->toBeTrue();
+    });
+});
+
+describe('the record hands the assignment sheets their options', function (): void {
+    test('only to someone who may update the person, deferred, and roles only to a super admin', function (): void {
+        $admin = makeAdminUser($this->tenant);
+        $person = makeUser($this->tenant);
+
+        asUser($admin)->get(route('users.show', $person))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('can.updateRoles', true)
+                ->missing('assignment')
+                ->loadDeferredProps('userPanels', fn ($panels) => $panels
+                    ->has('assignment.studyPrograms')
+                    ->has('assignment.roles')));
+    });
+
+    test('a coordinator gets the programmes but no role list', function (): void {
+        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $person = makeUser($this->tenant);
+
+        asUser($coordinator)->get(route('users.show', $person))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('can.updateRoles', false)
+                ->loadDeferredProps('userPanels', fn ($panels) => $panels->where('assignment.roles', [])));
     });
 });

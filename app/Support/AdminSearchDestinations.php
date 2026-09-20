@@ -23,22 +23,22 @@ final class AdminSearchDestinations
 {
     /**
      * One row per multi-search result key. `route` is the page that replaced the collection's search
-     * tab; null while the search page itself still serves that tab (agenda items and resources have
-     * no page of their own until Phase 9).
+     * tab; null while the search page itself still serves that tab (agenda items have no page of
+     * their own).
      *
      * @var array<string, array{tab: string, route: string|null, model: class-string, queryKey: string}>
      */
     private const array COLLECTIONS = [
         'meetings' => ['tab' => 'meetings', 'route' => 'meetings.index', 'model' => Meeting::class, 'queryKey' => 'q'],
         'agendaItems' => ['tab' => 'agenda-items', 'route' => null, 'model' => Meeting::class, 'queryKey' => 'q'],
-        'institutions' => ['tab' => 'institutions', 'route' => 'institutions.index', 'model' => Institution::class, 'queryKey' => 'search'],
-        'resources' => ['tab' => 'resources', 'route' => null, 'model' => Resource::class, 'queryKey' => 'q'],
-        'duties' => ['tab' => 'duties', 'route' => 'duties.index', 'model' => Duty::class, 'queryKey' => 'search'],
+        'institutions' => ['tab' => 'institutions', 'route' => 'institutions.index', 'model' => Institution::class, 'queryKey' => 'q'],
+        'resources' => ['tab' => 'resources', 'route' => 'resources.index', 'model' => Resource::class, 'queryKey' => 'q'],
+        'duties' => ['tab' => 'duties', 'route' => 'duties.index', 'model' => Duty::class, 'queryKey' => 'q'],
         'documents' => ['tab' => 'documents', 'route' => 'documents.index', 'model' => Document::class, 'queryKey' => 'search'],
         'news' => ['tab' => 'news', 'route' => 'news.index', 'model' => News::class, 'queryKey' => 'search'],
         'pages' => ['tab' => 'pages', 'route' => 'pages.index', 'model' => Page::class, 'queryKey' => 'search'],
         'calendar' => ['tab' => 'calendar', 'route' => 'calendar.index', 'model' => Calendar::class, 'queryKey' => 'search'],
-        'users' => ['tab' => 'users', 'route' => 'users.index', 'model' => User::class, 'queryKey' => 'search'],
+        'users' => ['tab' => 'users', 'route' => 'users.index', 'model' => User::class, 'queryKey' => 'q'],
     ];
 
     /**

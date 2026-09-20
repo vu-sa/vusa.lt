@@ -24,9 +24,9 @@ const keyboardShortcutsStub = defineComponent({
 });
 const mountedLayouts: ReturnType<typeof mount>[] = [];
 
-const mountLayout = (newShell: boolean) => {
+const mountLayout = () => {
   vi.mocked(usePage).mockReturnValue(createMockPage({
-    auth: { user: { id: 1, name: 'Test', ui_preferences: { appearance: { new_shell: newShell } } } },
+    auth: { user: { id: 1, name: 'Test', ui_preferences: {} } },
   }));
 
   const wrapper = mount(AdminLayout, {
@@ -35,7 +35,6 @@ const mountLayout = (newShell: boolean) => {
       stubs: {
         Head: true,
         AdminShell: stub('AdminShell'),
-        LegacyAdminShell: stub('LegacyAdminShell'),
         ActionWindow: true,
         AdminCommandPalette: true,
         KeyboardShortcutsDialog: keyboardShortcutsStub,
@@ -55,35 +54,15 @@ afterEach(() => {
   mountedLayouts.splice(0).forEach(wrapper => wrapper.unmount());
 });
 
-describe('AdminLayout shell switch', () => {
-  it('renders the new shell when the opt-in flag is on', () => {
-    const wrapper = mountLayout(true);
+describe('AdminLayout', () => {
+  it('puts the page inside the shell', () => {
+    const wrapper = mountLayout();
 
-    expect(wrapper.find('[data-stub="AdminShell"]').exists()).toBe(true);
-    expect(wrapper.find('[data-stub="LegacyAdminShell"]').exists()).toBe(false);
+    expect(wrapper.find('[data-stub="AdminShell"] [data-testid="page"]').exists()).toBe(true);
   });
 
-  it('keeps the legacy sidebar shell when the flag is off', () => {
-    const wrapper = mountLayout(false);
-
-    expect(wrapper.find('[data-stub="LegacyAdminShell"]').exists()).toBe(true);
-    expect(wrapper.find('[data-stub="AdminShell"]').exists()).toBe(false);
-  });
-
-  it.each([true, false])('puts the page inside whichever shell is active (newShell=%s)', (newShell) => {
-    const wrapper = mountLayout(newShell);
-    const shell = wrapper.find(newShell ? '[data-stub="AdminShell"]' : '[data-stub="LegacyAdminShell"]');
-
-    expect(shell.find('[data-testid="page"]').exists()).toBe(true);
-  });
-
-  it('drops the legacy font class once the new shell owns the typeface', () => {
-    expect(mountLayout(true).find('.bg-background').classes()).not.toContain('font-admin');
-    expect(mountLayout(false).find('.bg-background').classes()).toContain('font-admin');
-  });
-
-  it('keeps the shared overlays outside both shells', () => {
-    const wrapper = mountLayout(true);
+  it('keeps the shared overlays outside the shell', () => {
+    const wrapper = mountLayout();
 
     for (const overlay of ['action-window-stub', 'admin-command-palette-stub', 'toaster-stub']) {
       expect(wrapper.find(overlay).exists()).toBe(true);
@@ -91,7 +70,7 @@ describe('AdminLayout shell switch', () => {
   });
 
   it('opens the shared keyboard shortcuts dialog with ?', async () => {
-    const wrapper = mountLayout(true);
+    const wrapper = mountLayout();
 
     window.dispatchEvent(new KeyboardEvent('keydown', { key: '?', cancelable: true }));
     await wrapper.vm.$nextTick();
@@ -100,7 +79,7 @@ describe('AdminLayout shell switch', () => {
   });
 
   it('focuses the active collection search with /', () => {
-    const wrapper = mountLayout(true);
+    const wrapper = mountLayout();
     const search = document.createElement('input');
     const focus = vi.spyOn(search, 'focus');
     search.setAttribute('data-admin-collection-search', '');

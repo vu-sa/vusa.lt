@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
 use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
 use App\Http\Controllers\Api\Admin\DutiableTimelineApiController;
+use App\Http\Controllers\Api\Admin\DutyApiController;
 use App\Http\Controllers\Api\Admin\DutySearchApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
@@ -23,12 +24,14 @@ use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ReservationApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
+use App\Http\Controllers\Api\Admin\ResourceCategoryApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TagApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
+use App\Http\Controllers\Api\Admin\UserApiController;
 use App\Http\Controllers\Api\Admin\UserAttributionApiController;
 use App\Http\Controllers\Api\Admin\UserPreferencesApiController;
 use App\Http\Controllers\Api\Admin\UserSearchApiController;
@@ -113,6 +116,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Database-backed collection pages refresh these records without an Inertia visit.
         Route::get('reservations', [ReservationApiController::class, 'index'])->name('reservations.index');
         Route::get('tags', [TagApiController::class, 'index'])->name('tags.index');
+        Route::get('resourceCategories', [ResourceCategoryApiController::class, 'index'])->name('resourceCategories.index');
+        Route::get('duties', [DutyApiController::class, 'index'])->name('duties.index');
 
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
@@ -218,6 +223,9 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // User preferences (sidebar customization, recent pages)
         Route::patch('user-preferences', [UserPreferencesApiController::class, 'updateUIPreferences'])->name('user-preferences.update');
         Route::patch('user-preferences/recent-page', [UserPreferencesApiController::class, 'trackRecentPage'])->name('user-preferences.trackRecentPage');
+
+        // The member list's database twin (page 2+ and every filter change of the collection page).
+        Route::get('users', [UserApiController::class, 'index'])->name('users.index');
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');

@@ -1,238 +1,125 @@
 <template>
-  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
-    <template #filters>
-      <DataTableFilter v-if="types.length > 0" v-model:value="selectedTypeIds" :options="typeOptions" multiple
-        @update:value="handleTypeFilterChange">
-        {{ $tChoice('forms.fields.type', 2) }}
-      </DataTableFilter>
-
-      <DataTableFilter v-if="tenantOptions.length > 0" v-model:value="selectedTenantIds" :options="tenantOptions"
-        multiple @update:value="handleTenantFilterChange">
-        {{ capitalize($tChoice('entities.tenant.model', 1)) }}
-      </DataTableFilter>
+  <CollectionPage
+    :source
+    collection="institutions"
+    entity-type="institution"
+    :eyebrow
+    :title="$t('Institucijos')"
+    :lead="$t('VU SA ir VU organai, kuriuose dirba studentų atstovai.')"
+    default-view="rows"
+    :item-key="institutionKey"
+    :columns
+    :search-placeholder="$t('Ieškoti institucijų')"
+  >
+    <template #actions>
+      <Button v-if="deletedCount > 0" as-child variant="ghost">
+        <Link :href="route('institutions.index', { showDeleted: 'true' })">
+          <Trash2 aria-hidden="true" />
+          {{ $t('Ištrinti') }} ({{ deletedCount }})
+        </Link>
+      </Button>
+      <Button v-if="canCreate" as-child variant="brand">
+        <Link :href="route('institutions.create')">
+          <Plus aria-hidden="true" />
+          {{ $t('Nauja institucija') }}
+        </Link>
+      </Button>
     </template>
 
-    <!-- <template #emptyDescription>
-      {{ $t('No institutions found. You can add a new institution using the button above.') }}
-    </template> -->
-  </IndexTablePage>
+    <template #row="{ item }">
+      <div class="relative flex items-center gap-4 px-2 py-3 sm:px-4" data-slot="institution-collection-row">
+        <Link
+          :href="route('institutions.show', item.id)"
+          prefetch
+          data-collection-open
+          class="flex min-w-0 flex-1 items-center gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          <EntityTypeMark type="institution" size="md" />
+          <span class="min-w-0 flex-1">
+            <span class="block truncate text-base font-medium text-foreground">
+              {{ nameOf(item) }}
+            </span>
+            <span class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+              <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
+              <span v-if="item.type_titles?.length">{{ item.type_titles.join(', ') }}</span>
+              <span v-if="item.current_user_names?.length">
+                {{ $t('Narių: :count', { count: String(item.current_user_names.length) }) }}
+              </span>
+            </span>
+          </span>
+        </Link>
+      </div>
+    </template>
+
+    <template #cell="{ item, column }">
+      <Link
+        v-if="column.key === 'name'"
+        :href="route('institutions.show', item.id)"
+        prefetch
+        class="font-medium hover:text-brand"
+      >
+        {{ nameOf(item) }}
+      </Link>
+      <template v-else-if="column.key === 'tenant'">
+        {{ item.tenant_shortname ?? '—' }}
+      </template>
+      <template v-else-if="column.key === 'types'">
+        {{ item.type_titles?.join(', ') || '—' }}
+      </template>
+      <span v-else-if="column.key === 'members'" class="tabular-nums">
+        {{ item.current_user_names?.length ?? 0 }}
+      </span>
+    </template>
+
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="InstitutionIcon"
+        :title="$t('Institucijų dar nėra')"
+        :description="$t('Čia atsiras VU SA ir VU organai. Sukūrusi instituciją, jos puslapyje pridėsi pareigybes ir narius.')"
+        :action-label="canCreate ? $t('Nauja institucija') : undefined"
+        :action-href="canCreate ? route('institutions.create') : undefined"
+      />
+    </template>
+  </CollectionPage>
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, watch, capitalize } from 'vue';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { usePage } from '@inertiajs/vue3';
-import {
-  BuildingIcon,
-} from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Plus, Trash2 } from 'lucide-vue-next';
+import { computed } from 'vue';
 
-import { formatStaticTime } from '@/Utils/IntlTime';
-import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { TagList, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import {
-  createTitleColumn,
-  createTenantColumn,
-  createTagsColumn,
-} from '@/Composables/useDataTableColumns';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
+import type { CollectionColumn } from '@/Components/Collection/types';
+import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import { InstitutionIcon } from '@/Components/icons';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { EmptyState } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
+import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
+import type { InstitutionSearchResult } from '@/Shared/Search/types';
 
-const props = defineProps<{
-  data: App.Entities.Institution[];
-  meta: {
-    total: number;
-    current_page: number;
-    per_page: number;
-    last_page: number;
-    from: number;
-    to: number;
-  };
-  types: App.Entities.Type[];
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  showDeleted?: boolean;
-  deletedCount?: number;
+defineProps<{
+  /** Soft-deleted institutions the user could restore; the trash itself is a database table. */
+  deletedCount: number;
 }>();
 
-// Component constants
-const modelName = 'institutions';
-const entityName = 'institution';
+const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.institution));
 
-// Component refs
-const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
+const eyebrow = computed(() => `${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.institucijos')}`);
 
-// Permission checks
-const canCreate = computed(() => usePage().props.auth?.can?.create?.institution || false);
-const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.institution ?? false);
-
-// Filter states
-const selectedTypeIds = ref<number[]>(props.filters?.['types.id'] || []);
-const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
-
-// Filter options computed values
-const typeOptions = computed(() => {
-  return props.types.map(type => ({
-    label: $t(type.title),
-    value: type.id,
-  }));
+const source = useTypesenseCollectionSource<InstitutionSearchResult>({
+  collection: 'institutions',
+  preserveUrlKeys: ['view', 'item'],
 });
 
-const tenantOptions = computed(() => {
-  const tenants = usePage().props.tenants || [];
-  return tenants.map(tenant => ({
-    label: $t(tenant.shortname),
-    value: tenant.id,
-  }));
-});
+const institutionKey = (institution: InstitutionSearchResult) => String(institution.id);
+const nameOf = (institution: InstitutionSearchResult) => institution.name_lt || institution.name_en || $t('Be pavadinimo');
 
-// Custom row ID function to ensure stable IDs across pagination/sorting
-const getRowId = (row: App.Entities.Institution) => {
-  return `institution-${row.id}`;
-};
-
-// Table columns
-const columns = computed<Array<ColumnDef<App.Entities.Institution, any>>>(() => [
-  createTitleColumn<App.Entities.Institution>({
-    accessorKey: 'name',
-    routeName: 'institutions.edit',
-    width: 300,
-    enableSorting: true,
-    lines: 2,
-  }),
-  createTenantColumn({
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { tenant } = row.original;
-      return tenant
-        ? h('span', { class: 'flex items-center gap-1' }, [
-            tenant.logo_url ? h('img', { src: tenant.logo_url, alt: tenant.shortname, class: 'h-4 w-4 rounded-full' }) : null,
-            h(TruncatedText, { text: $t(tenant.shortname) }),
-          ])
-        : '';
-    },
-  }),
-  createTagsColumn('types', {
-    title: $tChoice('forms.fields.type', 2),
-    labelKey: 'title',
-    enableSorting: false,
-    cell: ({ row }) => {
-      const types = row.original.types || [];
-      return h(TagList, { items: types, labelKey: 'title', maxVisible: 3 });
-    },
-    width: 200,
-  }),
-  {
-    id: 'meetings',
-    header: () => $t('Meetings'),
-    cell: ({ row }) => {
-      const meetings = row.original.meetings || [];
-      if (meetings.length === 0) return null;
-
-      return h('div', { class: 'flex flex-wrap items-center gap-2' }, [
-        ...meetings.slice(0, 3).map(meeting => h('a', {
-          key: meeting.id,
-          class: 'hover:underline text-xs px-2 py-1 rounded-md bg-muted',
-          href: route('meetings.show', meeting.id),
-        }, formatStaticTime(meeting.start_time))),
-        meetings.length > 3
-          ? h('span', { class: 'text-xs text-muted-foreground' }, `+${meetings.length - 3}`)
-          : null,
-      ]);
-    },
-    size: 250,
-    enableSorting: false,
-  },
-  createStandardActionsColumn<App.Entities.Institution>('institutions', {
-    canView: true,
-    canEdit: true,
-    canDelete: true,
-    canRestore: true,
-    canForceDelete: canForceDelete.value,
-  }),
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'name', label: $t('Institucija') },
+  { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
+  { key: 'types', label: $t('Tipas') },
+  { key: 'members', label: $t('Nariai'), class: 'w-24' },
 ]);
-
-// Simplified table configuration using the new interfaces
-const tableConfig = computed<IndexTablePageProps<App.Entities.Institution>>(() => {
-  return {
-    // Essential table configuration
-    modelName,
-    entityName,
-    data: props.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.meta.total,
-    initialPage: props.meta.current_page,
-    pageSize: props.meta.per_page,
-
-    // Advanced features
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
-    enableFiltering: true,
-    enableColumnVisibility: true,
-    allowToggleDeleted: true,
-    showDeleted: props.showDeleted,
-    deletedCount: props.deletedCount,
-
-    // Page layout
-    headerTitle: 'Institutions',
-    icon: BuildingIcon,
-    createRoute: canCreate.value ? route('institutions.create') : undefined,
-    canCreate: canCreate.value,
-  };
-});
-
-// Event handlers
-const handleTypeFilterChange = (typeIds: number[]) => {
-  selectedTypeIds.value = typeIds;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('types.id', typeIds);
-  }
-};
-
-const handleTenantFilterChange = (tenantIds: number[]) => {
-  selectedTenantIds.value = tenantIds;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('tenant.id', tenantIds);
-  }
-};
-
-// Event handlers for IndexTablePage
-const handleFilterChange = (filterKey, value) => {
-  // Update local filter references if needed
-  if (filterKey === 'types.id') {
-    selectedTypeIds.value = value;
-  }
-  else if (filterKey === 'tenant.id') {
-    selectedTenantIds.value = value;
-  }
-};
-
-const handleSortingChange = (sorting) => {
-  // Handle sorting changes - data will be reloaded automatically
-};
-
-const handlePageChange = (page) => {
-  // Handle page changes - data will be reloaded automatically
-};
-
-const onDataLoaded = (data) => {
-  // Handle data loaded event if needed
-};
-
-// Sync filter values when changed externally
-watch(() => props.filters, (newFilters) => {
-  if (newFilters) {
-    if (newFilters['types.id'] !== undefined) {
-      selectedTypeIds.value = newFilters['types.id'];
-    }
-    if (newFilters['tenant.id'] !== undefined) {
-      selectedTenantIds.value = newFilters['tenant.id'];
-    }
-  }
-}, { deep: true });
 </script>

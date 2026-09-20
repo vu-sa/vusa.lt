@@ -155,7 +155,7 @@
       v-if="editing"
       :class="[
         'fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-50',
-        'border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm md:left-(--sidebar-width,16rem)',
+        'border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm',
       ]"
     >
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">

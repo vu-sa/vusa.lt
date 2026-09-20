@@ -163,34 +163,44 @@ describe('study program', function (): void {
         ])->assertSessionHasErrors('study_program_note.lt');
     });
 
-    test('edit page scopes the study program list to the duty tenant but keeps an already-selected cross-tenant value', function (): void {
+    test('the duty record offers the duty tenant study programs plus an already-selected cross-tenant one', function (): void {
         $ownTenantProgram = StudyProgram::factory()->forTenant($this->tenant)->create();
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherTenantProgram = StudyProgram::factory()->forTenant($otherTenant)->create();
 
         $this->dutiable->update(['study_program_id' => $otherTenantProgram->id]);
 
-        $response = asUser($this->dutyManager)->get(route('dutiables.edit', $this->dutiable));
+        asUser($this->dutyManager)->get(route('duties.show', $this->dutiable->duty_id))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowDuty')
+                ->loadDeferredProps('dutyPanels', fn ($panels) => $panels
+                    ->where('studyPrograms', function ($studyPrograms) use ($ownTenantProgram, $otherTenantProgram) {
+                        $ids = collect($studyPrograms)->pluck('id')->all();
 
-        $response->assertOk()->assertInertia(fn ($page) => $page
-            ->component('Admin/People/EditDutiable')
-            ->where('studyPrograms', function ($studyPrograms) use ($ownTenantProgram, $otherTenantProgram) {
-                $ids = collect($studyPrograms)->pluck('id')->all();
-
-                return in_array($ownTenantProgram->id, $ids, true)
-                    && in_array($otherTenantProgram->id, $ids, true);
-            }));
+                        return in_array($ownTenantProgram->id, $ids, true)
+                            && in_array($otherTenantProgram->id, $ids, true);
+                    })));
     });
 
-    test('edit page excludes another tenant study program that is not already selected', function (): void {
+    test('the duty record leaves out another tenant study program that is not already selected', function (): void {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherTenantProgram = StudyProgram::factory()->forTenant($otherTenant)->create();
 
-        $response = asUser($this->dutyManager)->get(route('dutiables.edit', $this->dutiable));
+        asUser($this->dutyManager)->get(route('duties.show', $this->dutiable->duty_id))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->loadDeferredProps('dutyPanels', fn ($panels) => $panels
+                    ->where('studyPrograms', fn ($studyPrograms) => ! collect($studyPrograms)->pluck('id')->contains($otherTenantProgram->id))));
+    });
 
-        $response->assertOk()->assertInertia(fn ($page) => $page
-            ->component('Admin/People/EditDutiable')
-            ->where('studyPrograms', fn ($studyPrograms) => ! collect($studyPrograms)->pluck('id')->contains($otherTenantProgram->id)));
+    test('the standalone edit page redirects to the term on its duty record', function (): void {
+        asUser($this->dutyManager)->get(route('dutiables.edit', $this->dutiable))
+            ->assertRedirect(route('duties.show', ['duty' => $this->dutiable->duty_id, 'dutiable' => $this->dutiable->id]));
+    });
+
+    test('a user who cannot manage the term is refused the edit redirect', function (): void {
+        asUser(makeUser($this->tenant))->get(route('dutiables.edit', $this->dutiable))->assertForbidden();
     });
 });
 

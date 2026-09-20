@@ -15,9 +15,4 @@ export interface SecretaryRoster {
   is_global: boolean;
   is_current: boolean;
   secretaries: SecretaryUser[];
-  /** Backwards compatibility alias */
-  administrators?: SecretaryUser[];
 }
-
-export type AdministratorUser = SecretaryUser;
-export type AdministratorRoster = SecretaryRoster;

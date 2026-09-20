@@ -2,8 +2,6 @@
 
 namespace App\Support;
 
-use App\Models\User;
-
 /**
  * Resolves the `data-surface` token scope `app.blade.php` stamps on `<html>`
  * (`resources/css/public/surface.css`, `resources/css/admin/surface.css`).
@@ -15,15 +13,15 @@ use App\Models\User;
 final class DesignSurface
 {
     /**
-     * @return 'public'|'admin'|null null leaves the legacy admin palette in place.
+     * @return 'public'|'admin'|null null for pages that belong to neither surface (errors, mail previews).
      */
-    public static function for(?string $component, ?User $user): ?string
+    public static function for(?string $component): ?string
     {
         if ($component !== null && str_starts_with($component, 'Public/')) {
             return 'public';
         }
 
-        if ($component !== null && str_starts_with($component, 'Admin/') && $user?->getNewAdminShellEnabled()) {
+        if ($component !== null && str_starts_with($component, 'Admin/')) {
             return 'admin';
         }
 

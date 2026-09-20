@@ -20,13 +20,14 @@ class ResourceController extends AdminController
     public function __construct(public Authorizer $authorizer) {}
 
     /**
-     * Redirect the resource listing to the unified search page (resources tab).
+     * The collection reads from Typesense (its scoped key carries the authorization), so the page
+     * needs no rows from us.
      */
     public function index()
     {
         $this->handleAuthorization('viewAny', Resource::class);
 
-        return redirect()->route('search.index', array_merge(request()->query(), ['tab' => 'resources']));
+        return $this->inertiaResponse('Admin/Reservations/IndexResource');
     }
 
     /**
@@ -64,7 +65,7 @@ class ResourceController extends AdminController
             $resource->addMedia($image['file'])->toMediaCollection('images');
         }
 
-        return redirect()->route('search.index', ['tab' => 'resources'])->with('success', $this->entityMessage('created', 'resource'));
+        return redirect()->route('resources.index')->with('success', $this->entityMessage('created', 'resource'));
     }
 
     /**
@@ -139,7 +140,7 @@ class ResourceController extends AdminController
 
         $resource->delete();
 
-        return redirect()->route('search.index', ['tab' => 'resources'])
+        return redirect()->route('resources.index')
             ->with('info', $this->entityMessage('deleted', 'resource'));
     }
 

@@ -40,8 +40,14 @@
         </p>
       </div>
 
+      <DutySearchField
+        v-if="pickDuty"
+        v-model="chosenDuty"
+        :error="form.errors.duty_id"
+      />
+
       <MemberSearchField
-        v-if="!isEditing"
+        v-if="pickMember"
         v-model="member"
         :taken-ids
         :error="form.errors.user_id"
@@ -126,7 +132,30 @@
           </p>
         </div>
 
-        <div v-if="studyPrograms.length > 0" class="space-y-1.5">
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <Label class="text-sm font-medium">
+              {{ $t('Papildoma nuotrauka') }}
+            </Label>
+            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
+          </div>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Matoma vusa.lt') }} · {{ $t('Rodoma vietoj nario profilio nuotraukos.') }}
+          </p>
+          <ImageUpload
+            v-model:url="form.additional_photo"
+            mode="immediate"
+            folder="contacts"
+            cropper
+            preview-aspect="4/3"
+            :existing-url="dutiable?.additional_photo as string | null | undefined"
+          />
+          <p v-if="form.errors.additional_photo" class="text-xs text-destructive">
+            {{ form.errors.additional_photo }}
+          </p>
+        </div>
+
+        <div v-if="availableStudyPrograms.length > 0" class="space-y-1.5">
           <div class="flex items-center justify-between">
             <Label for="study_program_id" class="text-sm font-medium">
               {{ $t('Studijų programa') }}
@@ -141,13 +170,48 @@
               <SelectItem :value="NO_STUDY_PROGRAM">
                 {{ $t('Nenurodyta') }}
               </SelectItem>
-              <SelectItem v-for="program in studyPrograms" :key="program.id" :value="String(program.id)">
+              <SelectItem v-for="program in availableStudyPrograms" :key="program.id" :value="String(program.id)">
                 {{ program.name }}
               </SelectItem>
             </SelectContent>
           </Select>
           <p v-if="form.errors.study_program_id" class="text-xs text-destructive">
             {{ form.errors.study_program_id }}
+          </p>
+        </div>
+
+        <div v-if="availableStudyPrograms.length > 0" class="space-y-1.5">
+          <div class="flex items-center justify-between gap-2">
+            <Label for="study_program_note" class="text-sm font-medium">
+              {{ $t('Studijų programos pastaba') }}
+            </Label>
+            <div class="inline-flex border border-border bg-secondary p-0.5" role="group" :aria-label="$t('Kalba')">
+              <button
+                v-for="loc in LOCALES"
+                :key="loc"
+                type="button"
+                :class="[
+                  'u-touch px-2 py-0.5 text-xs font-semibold uppercase tracking-wider transition-colors',
+                  descriptionLocale === loc ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground',
+                ]"
+                :aria-pressed="descriptionLocale === loc"
+                @click="descriptionLocale = loc"
+              >
+                {{ loc }}
+              </button>
+            </div>
+          </div>
+          <Input
+            id="study_program_note"
+            v-model="form.study_program_note[descriptionLocale]"
+            maxlength="100"
+            :placeholder="$t('Pvz., 1 kursas')"
+          />
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Matoma vusa.lt') }} · {{ $t('Rodoma skliaustuose po pareigybės pavadinimo.') }}
+          </p>
+          <p v-if="form.errors['study_program_note.lt'] || form.errors['study_program_note.en']" class="text-xs text-destructive">
+            {{ form.errors['study_program_note.lt'] || form.errors['study_program_note.en'] }}
           </p>
         </div>
 
@@ -279,6 +343,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, CalendarCheck, ChevronDown, Sparkles, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
+import DutySearchField, { type DutyHit } from './DutySearchField.vue';
 import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
 import { termStatus } from './occupancy';
 
@@ -292,6 +357,7 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
+import { ImageUpload } from '@/Components/ui/upload';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
@@ -308,12 +374,14 @@ const NO_STUDY_PROGRAM = '__none__';
 
 const props = withDefaults(defineProps<{
   open: boolean;
+  /** Fixed duty. Omit (with no `dutiable`) and the sheet asks which duty — the user-record entry point. */
   duty?: (App.Entities.Duty & Record<string, unknown>) | null;
   /** The term being edited; omit to assign a new member. */
   dutiable?: Dutiable | null;
-  /** Pre-selected member, e.g. when opened from that member's row. */
+  /** Pre-selected member. Without a fixed duty it is the fixed side and the sheet asks for the duty. */
   user?: (App.Entities.User & Record<string, unknown>) | MemberHit | null;
-  studyPrograms?: App.Entities.StudyProgram[];
+  /** Offered programmes; narrowed to the chosen duty's tenant when the duty is picked in the sheet. */
+  studyPrograms?: (App.Entities.StudyProgram & { tenant_id?: number | null })[];
   /** Members who already hold the duty right now; they cannot be assigned again. */
   takenIds?: string[];
   occupiedPlaces?: number;
@@ -334,6 +402,9 @@ const emit = defineEmits<{
 const { report: accessWarningReport, open: accessWarningOpen, guardedSubmit, confirm: accessWarningConfirm, cancel: accessWarningCancel } = useAccessChangeGuard();
 
 const isEditing = computed(() => !!props.dutiable);
+const pickDuty = computed(() => !props.duty && !props.dutiable);
+const pickMember = computed(() => !isEditing.value && !(pickDuty.value && props.user));
+const chosenDuty = ref<DutyHit | null>(null);
 const isExOfficio = computed(() => !!props.dutiable?.via_dutiable_id);
 const dutyContext = computed(() => props.duty ?? props.dutiable?.duty ?? null);
 const isFull = computed(() => {
@@ -343,17 +414,46 @@ const isFull = computed(() => {
 });
 const canEndTerm = computed(() => !!props.dutiable && termStatus(props.dutiable as { start_date?: string; end_date?: string | null }) === 'current');
 
-const sheetTitle = computed(() => (isEditing.value ? $t('Redaguoti kadenciją') : $t('Priskirti narį')));
-const sheetDescription = computed(() => (isEditing.value
-  ? $t('Pakeisk laikotarpį ar papildomą informaciją apie šį priskyrimą.')
-  : $t('Pasirink narį ir nurodyk, nuo kada jis eina šias pareigas.')));
+const sheetTitle = computed(() => {
+  if (isEditing.value) {
+    return $t('Redaguoti kadenciją');
+  }
+
+  return pickDuty.value ? $t('Pridėti pareigybę') : $t('Priskirti narį');
+});
+const sheetDescription = computed(() => {
+  if (isEditing.value) {
+    return $t('Pakeisk laikotarpį ar papildomą informaciją apie šį priskyrimą.');
+  }
+
+  return pickDuty.value
+    ? $t('Pasirink pareigybę ir nurodyk, nuo kada narys ją eina.')
+    : $t('Pasirink narį ir nurodyk, nuo kada jis eina šias pareigas.');
+});
+
+const availableStudyPrograms = computed(() => {
+  const tenantId = chosenDuty.value?.homeTenantId;
+
+  if (!pickDuty.value || !tenantId) {
+    return props.studyPrograms;
+  }
+
+  return props.studyPrograms.filter(program => program.tenant_id === tenantId);
+});
 const saveLabel = computed(() => (isEditing.value ? $t('Išsaugoti') : $t('Priskirti')));
 
 const asDescription = (value: unknown): DescriptionText => {
+  // A localized string means the payload was not the full translation map; keep it rather than blanking it on save.
+  if (typeof value === 'string') {
+    return { lt: value, en: '' };
+  }
+
   const text = (value && typeof value === 'object' ? value : {}) as Partial<DescriptionText>;
 
   return { lt: text.lt ?? '', en: text.en ?? '' };
 };
+
+const asNote = (value: unknown): DescriptionText => asDescription(value);
 
 const initialValues = () => ({
   duty_id: String(dutyContext.value?.id ?? props.dutiable?.duty_id ?? ''),
@@ -362,6 +462,8 @@ const initialValues = () => ({
   end_date: props.dutiable?.end_date ? String(props.dutiable.end_date).slice(0, 10) : null as string | null,
   study_program_id: (props.dutiable?.study_program_id ?? null) as string | null,
   additional_email: props.dutiable?.additional_email ?? '',
+  additional_photo: (props.dutiable?.additional_photo ?? null) as string | null,
+  study_program_note: asNote(props.dutiable?.study_program_note),
   description: asDescription(props.dutiable?.description),
   use_original_duty_name: Boolean(props.dutiable?.use_original_duty_name),
   acknowledge_access_change: false,
@@ -387,6 +489,12 @@ watch(member, (hit) => {
   form.user_id = hit ? String(hit.id) : '';
 });
 
+watch(chosenDuty, (hit) => {
+  form.duty_id = hit ? hit.id : '';
+  // A programme belongs to one tenant, so a previous choice may no longer be on offer.
+  form.study_program_id = null;
+});
+
 watch(
   () => props.open,
   (isOpen) => {
@@ -398,6 +506,7 @@ watch(
     form.reset();
     form.clearErrors();
     member.value = initialMember();
+    chosenDuty.value = null;
     descriptionOpen.value = hasDescription.value;
     descriptionLocale.value = 'lt';
   },
@@ -453,6 +562,7 @@ const submit = () => {
     const payload = form.transform(data => ({
       ...data,
       description: hasText(data.description) ? data.description : null,
+      study_program_note: hasText(data.study_program_note) ? data.study_program_note : null,
     }));
 
     if (isEditing.value) {

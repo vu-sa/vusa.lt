@@ -250,7 +250,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -436,6 +436,26 @@ const openAssignSheet = (dutiable?: (App.Entities.Dutiable & Record<string, unkn
   selectedUserForSheet.value = user ?? null;
   assignSheetOpen.value = true;
 };
+
+/** `dutiables.edit` redirects here with `?dutiable=`: open that term in the sheet, then drop the parameter. */
+onMounted(() => {
+  const params = new URLSearchParams(window.location.search);
+  const dutiableId = params.get('dutiable');
+
+  if (!dutiableId) {
+    return;
+  }
+
+  const holder = (props.duty.users ?? []).find((user: App.Entities.User) => String(user.pivot?.id) === dutiableId);
+
+  if (holder?.pivot && props.can?.managePeople) {
+    openAssignSheet(holder.pivot, holder);
+  }
+
+  params.delete('dutiable');
+  const query = params.toString();
+  window.history.replaceState(window.history.state, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
+});
 
 const deleteDuty = () => {
   router.delete(route('duties.destroy', props.duty.id));

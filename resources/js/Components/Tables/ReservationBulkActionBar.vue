@@ -1,9 +1,5 @@
 <template>
-  <!--
-    The one bulk-action bar for reservations. Both the reservation page (ReservationResourceTable)
-    and the reservations dashboard (ReservationsTable) render this, so the two can never drift apart
-    in wording, iconography or layout again.
-  -->
+  <!-- Shared by the resource table while its collection replacement lands. -->
   <Transition
     enter-active-class="transition-all duration-200 ease-out"
     enter-from-class="opacity-0 -translate-y-2 scale-95"

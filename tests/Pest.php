@@ -220,9 +220,8 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
     $page->fill('#password', $password);
     $page->click('button[type="submit"]');
 
-    // The dashboard is a different code-split chunk; without this the next visit() races it. Either
-    // shell counts: the legacy sidebar, or the new one for a user who opted in.
-    waitForInertiaRender($page, '[data-sidebar="sidebar"], [data-slot="admin-shell"]');
+    // The dashboard is a different code-split chunk; without this the next visit() races it.
+    waitForInertiaRender($page, '[data-slot="admin-shell"]');
 
     return $page;
 }

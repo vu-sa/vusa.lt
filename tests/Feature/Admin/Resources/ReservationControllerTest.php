@@ -218,6 +218,26 @@ describe('auth: reservation manager', function (): void {
         );
     });
 
+    // The record page's row actions read the same flags as the collection page (SerializeReservationsForTable),
+    // so a row can never offer what the server would refuse.
+    test('the record carries the flagged decision target and per-record permissions', function (): void {
+        $response = asUser($this->reservationManager)->get(route('reservations.show', $this->reservation->id));
+
+        $response->assertOk()->assertInertia(fn (Assert $page) => $page
+            ->where('decisionTarget.id', $this->reservation->id)
+            ->has('decisionTarget.resources', 3)
+            ->has('decisionTarget.resources.0.pivot', fn (Assert $pivot) => $pivot
+                ->has('id')
+                ->has('state')
+                ->where('cancellable', true)
+                ->where('approvable', false)
+                ->where('backtrackable', false)
+                ->etc())
+            ->has('can.update')
+            ->has('can.delete')
+            ->has('reservation.resources.0.can_edit'));
+    });
+
     test('can update reservation resource state from created to cancelled', function (): void {
         $resource = $this->reservation->resources->first();
 

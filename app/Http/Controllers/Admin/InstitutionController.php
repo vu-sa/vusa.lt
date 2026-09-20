@@ -18,6 +18,7 @@ use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\StudyProgram;
 use App\Models\Task;
 use App\Models\Type;
 use App\Services\InstitutionActivityStatusService;
@@ -46,6 +47,14 @@ class InstitutionController extends AdminController
     public function index(IndexInstitutionRequest $request): Response
     {
         $this->handleAuthorization('viewAny', Institution::class);
+
+        // The collection reads from Typesense (its scoped key carries the authorization), so the
+        // page needs no rows from us. Only the trash view is a database table.
+        if (! $request->getShowDeleted()) {
+            return $this->inertiaResponse('Admin/People/IndexInstitution', [
+                'deletedCount' => $this->trashedCount(),
+            ]);
+        }
 
         // Build base query with eager loading
         // Newest meetings first — the index cell shows only the first few, and
@@ -86,7 +95,7 @@ class InstitutionController extends AdminController
         $sorting = $request->getSorting();
 
         // Return response with all necessary data
-        return $this->inertiaResponse('Admin/People/IndexInstitution', [
+        return $this->inertiaResponse('Admin/People/IndexInstitutionTrash', [
             'data' => $institutions->items(),
             'meta' => [
                 'total' => $institutions->total(),
@@ -103,6 +112,21 @@ class InstitutionController extends AdminController
             'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
         ]);
+    }
+
+    /**
+     * Soft-deleted institutions this user could see in the trash view.
+     */
+    private function trashedCount(): int
+    {
+        $query = $this->tableService->applyPermissionFiltering(
+            Institution::query(),
+            'tenant',
+            'institutions.read.padalinys',
+            $this->authorizer
+        );
+
+        return $this->getTrashedCount($query, $this->tableService);
     }
 
     /**
@@ -215,6 +239,7 @@ class InstitutionController extends AdminController
                 'name' => $institution->name,
                 'short_name' => $institution->short_name,
                 'description' => $institution->description,
+                'tenant' => $institution->tenant,
                 'types' => $institution->types,
                 'has_public_meetings' => $institution->has_public_meetings,
                 'meeting_periodicity_days' => $institution->meeting_periodicity_days,
@@ -226,9 +251,6 @@ class InstitutionController extends AdminController
                 'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
                 'managers' => $institution->managers(),
                 'secretaries' => InstitutionSecretaryController::usersPayload(
-                    GetInstitutionSecretaries::execute($institution)
-                ),
-                'administrators' => InstitutionSecretaryController::usersPayload(
                     GetInstitutionSecretaries::execute($institution)
                 ),
                 'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
@@ -276,6 +298,30 @@ class InstitutionController extends AdminController
                 ])
                 ->values()
                 ->all(), 'institutionPanels'),
+            // Per-record, not from `auth.can`: `institutions.update.padalinys` is tenant-scoped.
+            'can' => [
+                'update' => $user?->can('update', $institution) ?? false,
+                'delete' => $user?->can('delete', $institution) ?? false,
+            ],
+            // Terms and secretary rosters are associations, edited on the record rather than in the
+            // form (O22, Forms rule 15). Only someone who may update the institution needs them.
+            'management' => Inertia::defer(fn () => $user?->can('update', $institution) ? [
+                'cadences' => CadenceController::payload($institution->id),
+                'globalCadences' => CadenceController::payload(globalOnly: true),
+                'cadenceDefaults' => [
+                    'default_start_month_day' => app(CadenceSettings::class)->default_start_month_day,
+                    'default_end_month_day' => app(CadenceSettings::class)->default_end_month_day,
+                ],
+                'secretaryRosters' => InstitutionSecretaryController::payload($institution),
+                // Suggested first in the picker: the people already in the body.
+                'suggestedSecretaries' => InstitutionSecretaryController::usersPayload(
+                    GetInstitutionMembers::execute($institution)
+                ),
+                // The Priskirti sheet's programme picker, narrowed to this institution's tenant.
+                'studyPrograms' => StudyProgram::query()
+                    ->where('tenant_id', $institution->tenant_id)
+                    ->get(['id', 'name', 'degree', 'tenant_id']),
+            ] : null, 'institutionPanels'),
             'subscription' => $subscriptionStatus,
         ]);
     }
@@ -287,13 +333,7 @@ class InstitutionController extends AdminController
     {
         $this->handleAuthorization('update', $institution);
 
-        $institution->load('types')->load(['duties' => function ($query): void {
-            $query->with([
-                'current_users',
-                // Load the most recent previous user for duties without current users
-                'previous_users' => fn ($q) => $q->orderByPivot('end_date', 'desc')->limit(1),
-            ])->orderBy('order', 'asc');
-        }]);
+        $institution->load('types');
 
         Inertia::share('seo.title', $institution->name);
 
@@ -304,25 +344,6 @@ class InstitutionController extends AdminController
             ],
             'institutionTypes' => Type::where('model_type', MorphMap::alias(Institution::class))->get(),
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer),
-            // Term boundaries are edited here rather than in settings, because they belong
-            // to the body that uses them. The global ladder rides along read-only so the
-            // editor can see what they would be overriding.
-            'cadences' => CadenceController::payload($institution->id),
-            'globalCadences' => CadenceController::payload(globalOnly: true),
-            'cadenceDefaults' => [
-                'default_start_month_day' => app(CadenceSettings::class)->default_start_month_day,
-                'default_end_month_day' => app(CadenceSettings::class)->default_end_month_day,
-            ],
-            // One roster per applicable term, edited beside the terms themselves.
-            'secretaryRosters' => InstitutionSecretaryController::payload($institution),
-            'administratorRosters' => InstitutionSecretaryController::payload($institution),
-            // Suggested first in the picker: the people already in the body.
-            'suggestedSecretaries' => InstitutionSecretaryController::usersPayload(
-                GetInstitutionMembers::execute($institution)
-            ),
-            'suggestedAdministrators' => InstitutionSecretaryController::usersPayload(
-                GetInstitutionMembers::execute($institution)
-            ),
         ]);
     }
 

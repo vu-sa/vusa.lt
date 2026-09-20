@@ -1,10 +1,8 @@
 <template>
-  <!-- `--sidebar-width: 0px` collapses the legacy save bars' `md:left-(--sidebar-width,16rem)`
-       (AdminForm, EditAgendaItem) now that there is no sidebar; `--shell-bottom-bar` lifts them
-       above the bottom bar on phones. Both are unset in the legacy shell, so it is unaffected. -->
+  <!-- `--shell-bottom-bar` lifts the fixed save bars above the bottom bar on phones. -->
   <div
     data-slot="admin-shell"
-    class="flex h-svh flex-col bg-background text-foreground [--sidebar-width:0px] max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]"
+    class="flex h-svh flex-col bg-background text-foreground max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]"
   >
     <StagingBanner />
     <ImpersonateBanner />

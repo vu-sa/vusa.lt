@@ -21,5 +21,3 @@ export function useSecretaryRoster(institutionId: string) {
 
   return { processingCadenceId, save };
 }
-
-export const useAdministratorRoster = useSecretaryRoster;

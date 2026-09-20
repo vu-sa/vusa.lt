@@ -310,6 +310,11 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Superseded by Components/Reservations/ReservationResourceList on the reservation record
+ * (Phase 9.2), which acts through the same decision dialog as the collection page. No page mounts
+ * this any more; slated for removal in Phase 10.
+ */
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';

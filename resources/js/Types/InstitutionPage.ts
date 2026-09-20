@@ -85,7 +85,6 @@ export interface InstitutionPageData {
   types: InstitutionPageType[];
   managers: App.Entities.User[];
   secretaries?: SecretaryUser[];
-  administrators?: SecretaryUser[];
   sharepointPath: string | null;
   has_public_meetings?: boolean;
   meeting_periodicity_days?: number | null;

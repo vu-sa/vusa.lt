@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildUserIndexQuery;
 use App\Actions\DeleteUserPassword;
 use App\Actions\GenerateUserPassword;
 use App\Actions\MergeUsers;
@@ -11,11 +12,13 @@ use App\Http\Requests\IndexUserRequest;
 use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\UpdateUserRolesRequest;
 use App\Http\Resources\TaskResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Role;
+use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\UserDutyService;
@@ -25,6 +28,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class UserController extends AdminController
 {
@@ -39,15 +43,7 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('viewAny', User::class);
 
-        $query = User::query()
-            ->where(fn ($query) => $query
-                ->whereHas('duties')
-                ->orWhereHas('roles'))
-            ->with([
-                'duties:id,institution_id',
-                'duties.institution:id,tenant_id',
-                'duties.institution.tenant:id,shortname',
-            ])->withCount('duties');
+        $query = BuildUserIndexQuery::execute();
 
         $searchableColumns = ['name', 'email', 'phone'];
 
@@ -77,7 +73,8 @@ class UserController extends AdminController
         $collection = $users->getCollection();
         $collection->makeVisible(['last_action']);
 
-        return $this->inertiaResponse('Admin/People/IndexUser', [
+        // The live list is a collection page over the API twin; only the trash stays a table.
+        return $this->inertiaResponse($request->getShowDeleted() ? 'Admin/People/IndexUserTrash' : 'Admin/People/IndexUser', [
             'users' => [
                 'data' => $collection->values(),
                 'meta' => [
@@ -177,7 +174,15 @@ class UserController extends AdminController
             'can' => [
                 'update' => request()->user()->can('update', $user),
                 'delete' => request()->user()->can('delete', $user),
+                'updateRoles' => request()->user()->isSuperAdmin(),
+                'managePasswords' => request()->user()->isSuperAdmin() && request()->user()->can('update', $user),
             ],
+            // The Priskirti sheet's programme picker and the roles sheet's options: only someone
+            // who may act on them needs them, and neither belongs on the first paint.
+            'assignment' => Inertia::defer(fn () => request()->user()->can('update', $user) ? [
+                'studyPrograms' => StudyProgram::query()->get(['id', 'name', 'degree', 'tenant_id']),
+                'roles' => request()->user()->isSuperAdmin() ? Role::all(['id', 'name']) : [],
+            ] : null, 'userPanels'),
         ]);
     }
 
@@ -188,18 +193,10 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('update', $user);
 
-        // Institution/tenant loaded so the duty tables and transfer-list target
-        // labels can attribute a duty rather than showing a bare, unattributable
-        // name (the same name commonly repeats across institutions).
-        $user->load('current_duties.institution.tenant', 'previous_duties.institution.tenant', 'roles');
-
         $actor = Auth::user();
 
         return $this->inertiaResponse('Admin/People/EditUser', [
-            'user' => $user->makeVisible(['last_action'])->append('has_password')->toFullArray(),
-            'roles' => Role::all(...),
-            'tenantsWithDuties' => fn () => UserDutyService::getTenantsWithDutiesForForm($this->authorizer, 'users.update.all'),
-            'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer, 'users.update.padalinys'),
+            'user' => $user->load('current_duties')->makeVisible(['last_action'])->append('has_password')->toFullArray(),
             'canUpdateIdentity' => $actor->can('updateIdentity', $user),
         ]);
     }
@@ -230,20 +227,24 @@ class UserController extends AdminController
         }
 
         $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin, $fields): void {
-            UserDutyService::syncDutiesForUser(
-                new SupportCollection($request->current_duties ?? []),
-                $currentDutyIds,
-                $user,
-                $this->authorizer,
-                'users.update.padalinys'
-            );
+            // Duties and roles are managed on the record (Priskirti sheet, Rolės section), so the
+            // form no longer posts them — and absent must mean "leave alone", never "remove all".
+            if ($request->has('current_duties')) {
+                UserDutyService::syncDutiesForUser(
+                    new SupportCollection($request->current_duties ?? []),
+                    $currentDutyIds,
+                    $user,
+                    $this->authorizer,
+                    'users.update.padalinys'
+                );
+            }
 
             DB::transaction(function () use ($request, $user, $actorIsSuperAdmin, $fields): void {
                 $user->update($request->safe()->only($fields));
 
                 // only a super admin may change roles
-                if ($actorIsSuperAdmin) {
-                    $user->roles()->sync($request->has('roles') ? $request->roles : []);
+                if ($actorIsSuperAdmin && $request->has('roles')) {
+                    $user->roles()->sync($request->roles ?? []);
                 }
             });
         };
@@ -254,6 +255,24 @@ class UserController extends AdminController
         $couldAffectSelf = $user->is($actor);
 
         if ($warning = $this->guardSelfLockout($actor, $couldAffectSelf, $request, $mutation)) {
+            return $warning;
+        }
+
+        return back()->with('success', $this->entityMessage('updated', 'user'));
+    }
+
+    /**
+     * Replace a person's roles (super admin only). Roles are an association with a lifecycle of
+     * their own, so they are edited on the record rather than in the form.
+     */
+    public function updateRoles(UpdateUserRolesRequest $request, User $user)
+    {
+        $actor = $request->user();
+
+        $mutation = fn () => $user->roles()->sync($request->validated('roles') ?? []);
+
+        // Removing your own Super Admin role locks you out, so it goes through the same guard as every access change.
+        if ($warning = $this->guardSelfLockout($actor, $user->is($actor), $request, $mutation)) {
             return $warning;
         }
 

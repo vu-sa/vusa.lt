@@ -52,7 +52,6 @@ return [
         'menu' => 'Meniu',
         'close_menu' => 'Uždaryti meniu',
         'account' => 'Paskyra',
-        'new_design' => 'Naujas dizainas (beta)',
         'breadcrumbs' => 'Puslapio kelias',
         'back_to' => 'Atgal į :page',
     ],

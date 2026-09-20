@@ -162,7 +162,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
-import EmptyState from '@/Components/Empty/EmptyState.vue';
+import EmptyState from '@/Components/Patterns/EmptyState.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { SupportRequestItem } from '@/Types/supportRequests';

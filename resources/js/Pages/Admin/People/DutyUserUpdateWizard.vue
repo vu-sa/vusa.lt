@@ -3,9 +3,8 @@
     <title>{{ $t('Pareigybių atnaujinimas') }}</title>
   </Head>
 
-  <div class="-m-6 min-h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-zinc-950 dark:via-zinc-900 dark:to-blue-950/20">
-    <!-- Header with gradient accent -->
-    <div class="border-b bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm sticky top-0 z-10">
+  <div class="-m-6 min-h-[calc(100vh-4rem)] bg-secondary">
+    <div class="sticky top-0 z-10 border-b border-border bg-background">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center gap-4">
@@ -13,7 +12,7 @@
               <ArrowLeft class="h-4 w-4" />
             </Button>
             <div class="flex items-center gap-3">
-              <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <div class="flex size-8 items-center justify-center border border-border bg-muted">
                 <Sparkles class="h-4 w-4 text-primary" />
               </div>
               <div>
@@ -27,12 +26,9 @@
             </div>
           </div>
 
-          <!-- Progress indicator -->
           <div class="hidden sm:flex items-center gap-2">
             <span class="text-sm text-muted-foreground">{{ $t('Žingsnis') }}</span>
-            <Badge variant="secondary" class="font-mono">
-              {{ wizard.state.currentStep }} / {{ wizard.totalSteps.value }}
-            </Badge>
+            <span class="font-mono text-sm tabular-nums">{{ wizard.state.currentStep }} / {{ wizard.totalSteps.value }}</span>
           </div>
         </div>
       </div>
@@ -41,53 +37,42 @@
     <!-- Main content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- Left sidebar: Stepper -->
         <aside class="lg:col-span-4 xl:col-span-3">
           <div class="lg:sticky lg:top-24">
-            <Card class="overflow-hidden border-0">
-              <!-- Card header with gradient -->
-              <div class="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 border-b">
-                <h2 class="font-medium text-foreground">
-                  {{ $t('Žingsniai') }}
-                </h2>
-              </div>
-
-              <CardContent class="p-0">
-                <nav class="flex flex-col">
+            <section class="border-y border-border">
+              <h2 class="border-b border-border px-4 py-3 text-sm font-medium text-foreground">{{ $t('Žingsniai') }}</h2>
+              <nav class="flex flex-col">
                   <button
                     v-for="(step, index) in steps"
                     :key="step.id"
                     type="button"
                     :disabled="step.id > wizard.state.maxCompletedStep + 1"
-                    class="group relative flex items-start gap-4 p-4 text-left transition-all duration-200 hover:bg-accent/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="group relative flex items-start gap-4 border-l-2 border-transparent px-4 py-3 text-left transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                     :class="{
-                      'bg-primary/5': step.active,
+                      'bg-muted': step.active,
                       'border-l-2 border-l-primary': step.active,
                       'border-l-2 border-l-transparent': !step.active
                     }"
                     @click="handleStepClick(step.id)"
                   >
-                    <!-- Step indicator -->
                     <div
-                      class="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300"
+                      class="relative z-10 flex size-10 shrink-0 items-center justify-center border transition-colors"
                       :class="{
-                        'bg-primary border-primary text-primary-foreground': step.active,
-                        'bg-green-500 border-green-500 text-white': step.completed && !step.active,
-                        'bg-background border-border text-muted-foreground group-hover:border-primary/50': !step.active && !step.completed
+                        'border-brand-fill bg-brand-fill text-brand-foreground': step.active,
+                        'border-status-success bg-status-success-surface text-status-success': step.completed && !step.active,
+                        'border-border bg-background text-muted-foreground group-hover:border-brand-fill': !step.active && !step.completed
                       }"
                     >
                       <CheckCircle2 v-if="step.completed && !step.active" class="h-5 w-5" />
                       <component :is="step.icon" v-else class="h-5 w-5" />
                     </div>
 
-                    <!-- Connector line -->
                     <div
                       v-if="index < steps.length - 1"
-                      class="absolute left-[2.25rem] top-14 h-[calc(100%-2rem)] w-0.5 -translate-x-1/2"
-                      :class="step.completed ? 'bg-green-500' : 'bg-border'"
+                      class="absolute left-9 top-14 h-[calc(100%-2rem)] w-px"
+                      :class="step.completed ? 'bg-status-success' : 'bg-border'"
                     />
 
-                    <!-- Step content -->
                     <div class="flex-1 min-w-0 pt-1">
                       <p
                         class="text-sm font-medium transition-colors"
@@ -101,28 +86,25 @@
                       <!-- Selection hint -->
                       <p
                         v-if="step.hint && step.completed"
-                        class="text-xs text-primary mt-1 font-medium truncate"
+                        class="mt-1 truncate text-xs font-medium text-brand"
                       >
                         {{ step.hint }}
                       </p>
                     </div>
                   </button>
-                </nav>
-              </CardContent>
-            </Card>
+              </nav>
+            </section>
 
-            <!-- Helpful tips -->
-            <Card class="mt-4 border-0 bg-gradient-to-br from-amber-50 to-orange-50/50 dark:from-amber-950/30 dark:to-orange-950/20">
-              <CardContent class="p-4">
+            <section class="mt-4 border-y border-status-attention-border bg-status-attention-surface px-4 py-3">
                 <div class="flex items-start gap-3">
-                  <div class="h-8 w-8 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
-                    <Lightbulb class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <div class="flex size-8 shrink-0 items-center justify-center border border-status-attention-border text-status-attention">
+                    <Lightbulb class="size-4" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-amber-900 dark:text-amber-100">
+                    <p class="text-sm font-medium text-status-attention">
                       {{ $t('Patarimas') }}
                     </p>
-                    <p class="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                    <p class="mt-1 text-xs text-foreground">
                       <template v-if="wizard.state.currentStep === 1">
                         {{ $t('Pasirinkite instituciją, kurioje norite atnaujinti pareigybes. Galite ieškoti pagal pavadinimą.') }}
                       </template>
@@ -139,19 +121,16 @@
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </section>
           </div>
         </aside>
 
-        <!-- Right: Step content -->
         <main class="lg:col-span-8 xl:col-span-9">
-          <Card class="border-0 overflow-hidden">
-            <!-- Step header -->
-            <div class="bg-gradient-to-r from-slate-50 to-white dark:from-zinc-800 dark:to-zinc-900 border-b px-6 py-4">
+          <section class="border-y border-border bg-background">
+            <div class="border-b border-border px-4 py-4 sm:px-6">
               <div class="flex items-center gap-3">
                 <div
-                  class="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-vusa-red to-vusa-red-dark text-white"
+                  class="flex size-10 items-center justify-center border border-brand-fill bg-brand-fill text-brand-foreground"
                 >
                   <component :is="currentStep?.icon" class="h-5 w-5" />
                 </div>
@@ -166,8 +145,7 @@
               </div>
             </div>
 
-            <!-- Step content -->
-            <CardContent class="p-6">
+            <div class="p-4 sm:p-6">
               <Transition name="fade" mode="out-in">
                 <Step1InstitutionSelect
                   v-if="wizard.state.currentStep === 1"
@@ -183,10 +161,9 @@
                   v-else-if="wizard.state.currentStep === 4"
                 />
               </Transition>
-            </CardContent>
+            </div>
 
-            <!-- Footer with navigation -->
-            <div class="border-t bg-slate-50/50 dark:bg-zinc-800/50 px-6 py-4">
+            <div class="border-t border-border px-4 py-4 sm:px-6">
               <div class="flex items-center justify-between">
                 <Button
                   variant="ghost"
@@ -198,7 +175,6 @@
                 </Button>
 
                 <div class="flex items-center gap-3">
-                  <!-- Skip hint for step 3 -->
                   <span
                     v-if="wizard.state.currentStep === 3 && !wizard.hasChanges"
                     class="text-sm text-muted-foreground"
@@ -209,9 +185,6 @@
                   <Button
                     :disabled="!wizard.canProceedToNext || wizard.state.loading.submission"
                     class="min-w-32"
-                    :class="{
-                      'bg-gradient-to-r from-primary to-primary/90': wizard.canProceedToNext
-                    }"
                     @click="wizard.nextStep"
                   >
                     <template v-if="wizard.state.loading.submission">
@@ -229,7 +202,7 @@
                 </div>
               </div>
             </div>
-          </Card>
+          </section>
         </main>
       </div>
     </div>
@@ -254,11 +227,7 @@ import {
 import { toast } from 'vue-sonner';
 
 import { useDutyUserWizard, getSuggestedEndDate, formatDateForDisplay } from '@/Composables/useDutyUserWizard';
-import { useOptionalSidebar } from '@/Composables/useOptionalSidebar';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-import { Separator } from '@/Components/ui/separator';
 
 // Step components
 import Step1InstitutionSelect from '@/Components/DutyUserWizard/Step1InstitutionSelect.vue';
@@ -269,12 +238,9 @@ import { DutyIcon } from '@/Components/icons';
 
 const props = defineProps<{
   institutions: App.Entities.Institution[];
-  // Lazy-loaded props (may be undefined initially)
-  studyPrograms?: App.Entities.StudyProgram[];
   // For inline creation
   assignableTenants: App.Entities.Tenant[];
   institutionTypes: App.Entities.Type[];
-  dutyTypes?: App.Entities.Type[]; // Lazy-loaded
 }>();
 
 // Get reactive page props for lazy-loaded data
@@ -292,17 +258,9 @@ const addInstitution = (institution: App.Entities.Institution) => {
   institutionsList.value = [institution, ...institutionsList.value];
 };
 
-// Sidebar state is managed by the user; do not force-close on this page
-// so the toggle trigger remains available if the sidebar is already open.
-const { setOpen, isMobile } = useOptionalSidebar();
-
-// Initialize wizard - redirect to duty.show on success, expand sidebar
+// Initialize wizard - redirect to duty.show on success
 const wizard = useDutyUserWizard({
   onSuccess: () => {
-    // Expand sidebar back when wizard is completed
-    if (!isMobile.value) {
-      setOpen(true);
-    }
     // Show success toast
     toast.success($t('Pakeitimai sėkmingai išsaugoti'));
   },

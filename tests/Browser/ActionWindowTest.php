@@ -20,8 +20,8 @@ beforeEach(function (): void {
     $this->representative->duties()->first()->assignRole('Student Representative');
 });
 
-/** Both the sidebar and the dashboard hero carry a trigger; this is the sidebar's. */
-const SIDEBAR_TRIGGER = '[data-sidebar="sidebar"] [data-testid="action-window-trigger"]';
+/** The shell's "+ Sukurti" button in the top bar. */
+const CREATE_TRIGGER = '[data-slot="shell-top-bar"] [data-tour="action-create"]';
 
 /** The visible title of every choice on the current screen. */
 function actionWindowChoices($page): array
@@ -32,11 +32,11 @@ function actionWindowChoices($page): array
     );
 }
 
-it('opens from the sidebar and offers only the actions the user may take', function (): void {
+it('opens from the create button and offers only the actions the user may take', function (): void {
     $page = loginAsAdmin($this->representative);
 
-    waitForInertiaRender($page, SIDEBAR_TRIGGER);
-    $page->click(SIDEBAR_TRIGGER);
+    waitForInertiaRender($page, CREATE_TRIGGER);
+    $page->click(CREATE_TRIGGER);
 
     waitForInertiaRender($page, '[data-slot="action-window-screen"]');
 
@@ -62,8 +62,8 @@ it('walks from the institution to the meeting type', function (): void {
 
     $page = loginAsAdmin($this->representative);
 
-    waitForInertiaRender($page, SIDEBAR_TRIGGER);
-    $page->click(SIDEBAR_TRIGGER);
+    waitForInertiaRender($page, CREATE_TRIGGER);
+    $page->click(CREATE_TRIGGER);
     waitForInertiaRender($page, '[data-slot="action-window-screen"]');
 
     $page->click('[data-slot="action-choice-button"]:has-text("Kaip studentų atstovas")');

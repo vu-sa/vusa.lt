@@ -3,9 +3,7 @@
     <DialogContent class="sm:max-w-[520px]">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
-          <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
-            <CalendarOffIcon class="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          </div>
+          <CalendarOffIcon class="size-4 text-muted-foreground" />
           {{ $t('Pranešti apie posėdžio nebuvimą') }}
         </DialogTitle>
         <DialogDescription>
@@ -14,22 +12,22 @@
       </DialogHeader>
 
       <!-- Info banner explaining what this does -->
-      <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
+      <div class="border border-border bg-secondary p-3">
         <div class="flex gap-3">
-          <InfoIcon class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-          <div class="text-sm text-amber-800 dark:text-amber-200">
+          <InfoIcon class="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+          <div class="text-sm text-foreground">
             <p class="font-medium">
               {{ $t('Ką tai reiškia?') }}
             </p>
-            <p class="mt-1 text-amber-700 dark:text-amber-300">
+            <p class="mt-1 text-muted-foreground">
               {{ $t('Jei žinote, kad nurodytu laikotarpiu posėdžių nebus (pvz., atostogos, egzaminų sesija), pranešimas padės išvengti nereikalingų priminimų.') }}
             </p>
           </div>
         </div>
       </div>
 
-      <div v-if="props.institutionName" class="flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 dark:bg-zinc-800">
-        <BuildingIcon class="h-4 w-4 text-zinc-500" />
+      <div v-if="props.institutionName" class="flex items-center gap-2 border border-border px-3 py-2">
+        <BuildingIcon class="size-4 text-muted-foreground" />
         <span class="text-sm font-medium">{{ props.institutionName }}</span>
       </div>
 
@@ -61,8 +59,8 @@
         <Button variant="outline" @click="emit('close')">
           {{ $t('Atšaukti') }}
         </Button>
-        <Button class="bg-amber-600 hover:bg-amber-700 dark:bg-amber-600 dark:hover:bg-amber-700" @click="submit">
-          <CalendarOffIcon class="mr-2 h-4 w-4" />
+        <Button variant="brand" @click="submit">
+          <CalendarOffIcon class="mr-2 size-4" />
           {{ $t('Išsaugoti pranešimą') }}
         </Button>
       </DialogFooter>
