@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.12 — Notifications show what to do (2026-09-20) {#v2-12}
+
+- ✨ **Notifications say what they are about** — on the notifications page, rows under the text show the essentials: institution, deadline, time or who assigned it
+- ✨ **One clear action** — a notification offers one button that leads straight to the job; two buttons appear only where two answers really are possible (“Register a meeting” and “Report activity”). The button also shows in the bell list
+
 ## v2.11 — New ViSAK overview, My roles and simpler search (2026-09-20) {#v2-11}
 
 - ⭐ **New ViSAK overview** — the top of the page shows which institutions are overdue or due soon, and the numbers below it link to the matching lists; coordinators switch between “My institutions” and “Unit” in one click and see how the number of overdue institutions has changed over time, and the meetings timeline loads only when you scroll to it

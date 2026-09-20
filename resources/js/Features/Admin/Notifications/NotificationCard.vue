@@ -51,6 +51,47 @@
         v-html="message"
       />
 
+      <!-- Context rows: what this is about -->
+      <dl
+        v-if="context.length"
+        data-slot="notification-context"
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 border-t border-border pt-2 text-xs"
+      >
+        <template v-for="row in context" :key="row.label">
+          <dt class="text-muted-foreground">
+            {{ row.label }}
+          </dt>
+          <dd class="min-w-0 truncate text-foreground">
+            {{ row.value }}
+          </dd>
+        </template>
+      </dl>
+
+      <!-- The ask -->
+      <div
+        v-if="primaryAction"
+        data-slot="notification-actions"
+        class="flex flex-wrap items-center gap-2 pt-1"
+      >
+        <Button
+          variant="brand-outline"
+          size="sm"
+          class="max-sm:h-11"
+          @click.stop="visit(primaryAction.url)"
+        >
+          {{ primaryAction.label }}
+        </Button>
+        <Button
+          v-if="secondaryAction"
+          variant="ghost"
+          size="sm"
+          class="max-sm:h-11"
+          @click.stop="visit(secondaryAction.url)"
+        >
+          {{ secondaryAction.label }}
+        </Button>
+      </div>
+
       <!-- Footer with timestamp and actions on mobile -->
       <div class="flex items-center justify-between pt-1">
         <span class="text-xs text-zinc-500 dark:text-zinc-500">
@@ -128,9 +169,13 @@ import {
   getNotificationTitle,
   getNotificationMessage,
   getNotificationUrl,
+  getNotificationPrimaryAction,
+  getNotificationSecondaryAction,
+  getNotificationContext,
   formatNotificationTime,
   type Notification,
 } from '@/Composables/useNotificationFormatting';
+import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
 import IFluentCheckmark24Filled from '~icons/fluent/checkmark24-filled';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
@@ -150,14 +195,21 @@ const colors = computed(() => getNotificationColorClasses(props.notification));
 const title = computed(() => getNotificationTitle(props.notification));
 const message = computed(() => getNotificationMessage(props.notification));
 const url = computed(() => getNotificationUrl(props.notification));
+const primaryAction = computed(() => getNotificationPrimaryAction(props.notification));
+const secondaryAction = computed(() => getNotificationSecondaryAction(props.notification));
+const context = computed(() => getNotificationContext(props.notification));
 const formattedTime = computed(() => formatNotificationTime(props.notification));
+
+const visit = (target: string) => {
+  if (!props.notification.read_at) {
+    emit('markAsRead', props.notification.id);
+  }
+  router.visit(target);
+};
 
 const handleNavigate = () => {
   if (url.value) {
-    if (!props.notification.read_at) {
-      emit('markAsRead', props.notification.id);
-    }
-    router.visit(url.value);
+    visit(url.value);
   }
 };
 </script>

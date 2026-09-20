@@ -52,10 +52,10 @@
             v-for="notification in notifications"
             :key="notification.id"
             class="group relative"
+            :class="{ 'bg-blue-50/50 dark:bg-blue-950/20': !notification.read_at }"
           >
             <button
               class="flex items-start gap-3 w-full p-4 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
-              :class="{ 'bg-blue-50/50 dark:bg-blue-950/20': !notification.read_at }"
               @click="navigateToNotification(notification)"
             >
               <!-- Icon -->
@@ -115,6 +115,21 @@
                 </Transition>
               </div>
             </button>
+
+            <!-- The ask. A sibling of the row button: a button cannot nest inside a button. -->
+            <div
+              v-if="getPrimaryAction(notification)"
+              class="-mt-2 pb-3 pl-16 pr-4"
+            >
+              <Button
+                variant="brand-outline"
+                size="xs"
+                class="max-sm:h-11"
+                @click="openAction(notification, getPrimaryAction(notification)!.url)"
+              >
+                {{ getPrimaryAction(notification)!.label }}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -207,6 +222,7 @@ import {
   getNotificationTitle as getNotificationTitleFn,
   getNotificationMessage as getNotificationMessageFn,
   getNotificationUrl,
+  getNotificationPrimaryAction as getPrimaryAction,
   formatNotificationTime,
   type Notification,
 } from '@/Composables/useNotificationFormatting';
@@ -288,6 +304,13 @@ const navigateToNotification = (notification: Notification) => {
     isOpen.value = false;
     router.visit(url);
   }
+};
+
+// Open an action's own URL instead of the notification's
+const openAction = (notification: Notification, url: string) => {
+  markAsRead(notification.id);
+  isOpen.value = false;
+  router.visit(url);
 };
 
 // Mark notification as read

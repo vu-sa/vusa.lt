@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Models\Institution;
 use App\Models\Task;
 use App\Models\User;
 
@@ -76,13 +77,22 @@ class TaskAssignedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        $taskable = $this->task->taskable;
+
+        return $this->contextRows([
+            'institution' => $taskable instanceof Institution ? $taskable->name : null,
+            'deadline' => $this->task->due_date?->format('Y-m-d'),
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_tasks'),
-                'url' => route('userTasks'),
-            ],
+            'label' => __('notifications.action_view_tasks'),
+            'url' => route('userTasks'),
         ];
     }
 }

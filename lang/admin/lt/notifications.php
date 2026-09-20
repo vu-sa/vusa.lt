@@ -160,6 +160,24 @@ return [
     'action_view' => 'Peržiūrėti',
     'action_review' => 'Peržiūrėti',
 
+    // Context rows (label/value pairs shown under a notification)
+    'context' => [
+        'institution' => 'Institucija',
+        'deadline' => 'Terminas',
+        'days_overdue' => 'Vėluoja',
+        'days_since_activity' => 'Be veiklos',
+        'days_value' => ':count d.',
+        'task' => 'Užduotis',
+        'date' => 'Laikas',
+        'format' => 'Formatas',
+        'object' => 'Objektas',
+        'step' => 'Etapas',
+        'assigned_by' => 'Priskyrė',
+        'duty' => 'Pareigybė',
+        'end_date' => 'Kadencija baigiasi',
+        'author' => 'Autorius',
+    ],
+
     // Preferences UI
     'preferences' => [
         'title' => 'Pranešimų nustatymai',

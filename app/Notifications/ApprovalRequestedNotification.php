@@ -68,13 +68,20 @@ class ApprovalRequestedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        return $this->contextRows([
+            'object' => $this->object()['name'] ?? null,
+            'step' => $this->step > 1 ? $this->step : null,
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view'),
-                'url' => $this->url(),
-            ],
+            'label' => __('notifications.action_view'),
+            'url' => $this->url(),
         ];
     }
 }

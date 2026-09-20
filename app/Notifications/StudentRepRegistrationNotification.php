@@ -58,13 +58,11 @@ class StudentRepRegistrationNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_registration'),
-                'url' => route('forms.show', $this->formId),
-            ],
+            'label' => __('notifications.action_view_registration'),
+            'url' => route('forms.show', $this->formId),
         ];
     }
 

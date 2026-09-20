@@ -70,13 +70,21 @@ class DutyExpiringNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        return $this->contextRows([
+            'duty' => $this->duty->name,
+            'institution' => $this->duty->institution?->name,
+            'end_date' => Carbon::parse($this->dutiable->end_date)->format('Y-m-d'),
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_duty'),
-                'url' => $this->url(),
-            ],
+            'label' => __('notifications.action_view_duty'),
+            'url' => $this->url(),
         ];
     }
 

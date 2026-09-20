@@ -70,13 +70,11 @@ class TaskCompletedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_tasks'),
-                'url' => route('userTasks'),
-            ],
+            'label' => __('notifications.action_view_tasks'),
+            'url' => route('userTasks'),
         ];
     }
 }

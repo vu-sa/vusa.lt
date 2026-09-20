@@ -59,23 +59,37 @@ class InstitutionActivityNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        $days = $this->task->metadata['effective_days_since_activity'] ?? null;
+
+        return $this->contextRows([
+            'institution' => $this->institution->name,
+            'days_since_activity' => is_numeric($days) ? __('notifications.context.days_value', ['count' => (int) $days]) : null,
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_register_meeting'),
-                'url' => route('institutions.show', [
-                    'institution' => $this->institution,
-                    'activityAction' => 'register-meeting',
-                ]),
-            ],
-            [
-                'label' => __('notifications.action_report_activity'),
-                'url' => route('institutions.show', [
-                    'institution' => $this->institution,
-                    'activityAction' => 'report-activity',
-                ]),
-            ],
+            'label' => __('notifications.action_register_meeting'),
+            'url' => route('institutions.show', [
+                'institution' => $this->institution,
+                'activityAction' => 'register-meeting',
+            ]),
+        ];
+    }
+
+    #[\Override]
+    public function secondaryAction(): ?array
+    {
+        return [
+            'label' => __('notifications.action_report_activity'),
+            'url' => route('institutions.show', [
+                'institution' => $this->institution,
+                'activityAction' => 'report-activity',
+            ]),
         ];
     }
 }

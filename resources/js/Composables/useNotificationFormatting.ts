@@ -23,6 +23,16 @@ import IFluentPerson24Regular from '~icons/fluent/person24-regular';
 import IFluentPuzzlePiece24Regular from '~icons/fluent/puzzle-piece24-regular';
 import IFluentAlert24Regular from '~icons/fluent/alert24-regular';
 
+export interface NotificationAction {
+  label: string;
+  url: string;
+}
+
+export interface NotificationContextRow {
+  label: string;
+  value: string;
+}
+
 // Notification data structure (supports both new and legacy formats)
 export interface NotificationData {
   // New standardized structure
@@ -33,7 +43,11 @@ export interface NotificationData {
   url?: string;
   icon?: string;
   color?: string;
-  actions?: Array<{ label: string; url: string }>;
+  primaryAction?: NotificationAction | null;
+  secondaryAction?: NotificationAction | null;
+  context?: NotificationContextRow[];
+  /** @deprecated Rows stored before PR 6.1; read primaryAction / secondaryAction instead. */
+  actions?: NotificationAction[];
   subject?: {
     modelClass: string;
     name: string;
@@ -377,11 +391,21 @@ export function getNotificationUrl(notification: Notification): string | null {
 }
 
 /**
- * Check if notification can be muted (has associated object)
+ * The action the notification asks for. Rows stored before PR 6.1 only carry `actions`, so fall
+ * back to its first entry.
  */
-export function canMuteNotification(notification: Notification): boolean {
-  const obj = notification.data.object;
-  return !!(obj?.modelClass && obj?.id);
+export function getNotificationPrimaryAction(notification: Notification): NotificationAction | null {
+  return notification.data.primaryAction ?? notification.data.actions?.[0] ?? null;
+}
+
+/** The second action, present only for binary answers (see getNotificationPrimaryAction for the fallback). */
+export function getNotificationSecondaryAction(notification: Notification): NotificationAction | null {
+  return notification.data.secondaryAction ?? notification.data.actions?.[1] ?? null;
+}
+
+/** Label/value rows saying what the notification is about; capped at four. */
+export function getNotificationContext(notification: Notification): NotificationContextRow[] {
+  return (notification.data.context ?? []).slice(0, 4);
 }
 
 /**

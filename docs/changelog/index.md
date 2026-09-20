@@ -5,6 +5,11 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.12 — Pranešimai parodo, ką daryti (2026-09-20) {#v2-12}
+
+- ✨ **Pranešimuose matyti, apie ką jie** — pranešimų puslapyje po tekstu rodomos eilutės su svarbiausia informacija: institucija, terminas, laikas ar kas priskyrė
+- ✨ **Vienas aiškus veiksmas** — pranešimas siūlo vieną mygtuką, kuris veda tiesiai į darbą; du mygtukai rodomi tik ten, kur tikrai galimi du atsakymai („Registruoti posėdį“ ir „Pranešti apie veiklą“). Mygtukas matomas ir varpelio sąraše
+
 ## v2.11 — Nauja ViSAK apžvalga, Mano rolės ir paprastesnė paieška (2026-09-20) {#v2-11}
 
 - ⭐ **Nauja ViSAK apžvalga** — viršuje matai, kurios institucijos vėluoja ar artėja jų terminas, o skaičiai po jomis yra nuorodos į atitinkamus sąrašus; koordinatoriai vienu paspaudimu perjungia „Mano institucijos“ ir „Padalinys“ ir mato, kaip vėluojančių institucijų skaičius keitėsi laikui bėgant, o posėdžių laiko juosta įkraunama tik tada, kai iki jos nuriti

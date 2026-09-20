@@ -75,13 +75,22 @@ class TaskOverdueNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        $oldest = $this->tasks->pluck('due_date')->filter()->min();
+
+        return $this->contextRows([
+            'deadline' => $oldest?->format('Y-m-d'),
+            'days_overdue' => $oldest ? __('notifications.context.days_value', ['count' => (int) $oldest->copy()->startOfDay()->diffInDays(today())]) : null,
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_tasks'),
-                'url' => route('userTasks'),
-            ],
+            'label' => __('notifications.action_view_tasks'),
+            'url' => route('userTasks'),
         ];
     }
 

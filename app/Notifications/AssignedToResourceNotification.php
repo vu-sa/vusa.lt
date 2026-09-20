@@ -118,13 +118,20 @@ class AssignedToResourceNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        return $this->contextRows([
+            'object' => $this->resource['name'],
+            'assigned_by' => $this->assigner['name'],
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_resource'),
-                'url' => $this->url(),
-            ],
+            'label' => __('notifications.action_view_resource'),
+            'url' => $this->url(),
         ];
     }
 

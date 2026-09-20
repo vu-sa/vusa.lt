@@ -56,7 +56,7 @@ One PR = one row. Rules:
 | **5.8** | **P8** ViSAK overview + extract `OverviewPage` (numbers-as-links, one chart) | 5.1 | ✅ |
 | **5.9** | **P9** Paskyra → Mano rolės ir pareigybės (O14) | 4.7 | ✅ |
 | **5.10** | `/mano/search` reduced to cross-entity results | 5.2 | ✅ |
-| **6.1** | `BaseNotification`: `primaryAction()` + `context()`; in-app list renders the contract | — |
+| **6.1** | `BaseNotification`: `primaryAction()` + `context()`; in-app list renders the contract | — | ✅ |
 | **6.2** | Branded mail layout + digest template; retire the bespoke blades | 6.1 |
 | **6.3** | Per-type pass 1: tasks + meetings (subjects, actions, context, channels) | 6.2 |
 | **6.4** | Per-type pass 2: reservations, registrations, comments, the rest | 6.2 |
@@ -857,7 +857,7 @@ Follow-up review of all Phase 5 pilot surfaces (P1–P10) to verify robustness, 
 See [Messages](messages.md#messages--email-push-and-in-app). Done before the beta opens, because the beta's
 reps will meet the app through these.
 
-- [ ] Extend `BaseNotification` with `primaryAction()` and `context()`; one content contract, three
+- [x] Extend `BaseNotification` with `primaryAction()` and `context()`; one content contract, three
       renderings (rule 1)
 - [ ] Brand the mail layout (`resources/views/vendor/mail/html/*`): square, hairlines, red button,
       wordmark, ~600px, light-only
@@ -870,8 +870,32 @@ reps will meet the app through these.
 - [ ] "Why you got this" footer + link to Pranešimų nustatymai; plain-text alternative checked
 - [ ] Push payloads follow the same contract; quiet hours 22:00–07:00 for non-urgent (rule 13)
 - [ ] Remap `NotificationCategory::color()` onto `--cat-*`
-- [ ] In-app notification list renders the shared contract (O12: notifications = what happened)
+- [x] In-app notification list renders the shared contract (O12: notifications = what happened)
 - [ ] Screenshots of every template from Mailpit at 360px and desktop, both locales
+
+### PR 6.1 notes (2026-09-20)
+
+- **`actions()` is now derived.** `primaryAction()` / `secondaryAction()` are the source; `actions()`
+  stays on `BaseNotification` as a `@deprecated` accessor (removal: Phase 10) so the stored
+  `notifications.data.actions` key keeps its shape. `NotificationContractTest` fails if a subclass
+  overrides it again. `InstitutionActivityNotification` is the only class with a secondary action.
+- **Legacy rows.** Every notification stored before this PR has no `primaryAction`; the frontend
+  readers fall back to `actions[0]` / `actions[1]`. Drop the fallback with `actions()`.
+- **`context()` is populated for the act-tier types only** (task assigned / overdue / reminder,
+  meeting reminder, periodicity gap, approval requested, assigned to resource, duty expiring, comment).
+  Know/record types stay empty for 6.3/6.4. Rows go through `BaseNotification::contextRows()`, which
+  drops blank values; labels are `notifications.context.*` (registered as a dynamic prefix in
+  `TranslationIntegrityTest`). `TaskAssigned` and `DutyExpiring` read one relation each
+  (`taskable`, `institution`) — everything else comes from constructor data.
+- **Rendering.** `/mano/notifications` cards show context rows and the action(s); the bell shows the
+  primary action only, as a sibling of the row button. Toast unchanged. `toDigestItem()` also stores
+  `context` and `primaryAction` so 6.2 has them; `toMail()` uses the primary action for its button.
+  `toWebPush()` is untouched (6.5).
+- **Deleted** the four unused `Features/Admin/Notifications` components (`NotificationItem`,
+  `NotificationTypes/*`) and `canMuteNotification`. The `notifications.mute_thread` /
+  `unmute_thread` lang keys are now unused; left for the Pranešimai pass (9.9).
+- **Not fixed, on purpose:** copy that breaks the glossary (`action_view_meeting` "susitikimą",
+  `action_view_resource` "resursą", `MeetingType::label()`) — per-type copy is 6.3/6.4.
 
 ## Phase 7 — Remaining overviews and the rep loop
 

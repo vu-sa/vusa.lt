@@ -160,6 +160,24 @@ return [
     'action_view' => 'View',
     'action_review' => 'Review',
 
+    // Context rows (label/value pairs shown under a notification)
+    'context' => [
+        'institution' => 'Institution',
+        'deadline' => 'Deadline',
+        'days_overdue' => 'Overdue by',
+        'days_since_activity' => 'No activity for',
+        'days_value' => ':count d',
+        'task' => 'Task',
+        'date' => 'Time',
+        'format' => 'Format',
+        'object' => 'Item',
+        'step' => 'Step',
+        'assigned_by' => 'Assigned by',
+        'duty' => 'Duty',
+        'end_date' => 'Term ends',
+        'author' => 'Author',
+    ],
+
     // Preferences UI
     'preferences' => [
         'title' => 'Notification Settings',

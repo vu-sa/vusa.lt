@@ -102,16 +102,12 @@ class TaskAutoCompletedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function primaryAction(): ?array
     {
-        $actions = [
-            [
-                'label' => __('View Details'),
-                'url' => $this->url(),
-            ],
+        return [
+            'label' => __('View Details'),
+            'url' => $this->url(),
         ];
-
-        return $actions;
     }
 
     /**

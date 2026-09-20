@@ -40,12 +40,6 @@ class WelcomeNotification extends BaseNotification
         return '🎉';
     }
 
-    #[\Override]
-    public function actions(): array
-    {
-        return [];
-    }
-
     /**
      * Welcome notifications should not be digested or emailed.
      */

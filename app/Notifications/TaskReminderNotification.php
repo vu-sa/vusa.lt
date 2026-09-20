@@ -60,13 +60,20 @@ class TaskReminderNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        return $this->contextRows([
+            'task' => $this->task->name,
+            'deadline' => $this->task->due_date?->format('Y-m-d'),
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_tasks'),
-                'url' => route('userTasks'),
-            ],
+            'label' => __('notifications.action_view_tasks'),
+            'url' => route('userTasks'),
         ];
     }
 

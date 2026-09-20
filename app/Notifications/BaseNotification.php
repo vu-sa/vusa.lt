@@ -25,7 +25,8 @@ use NotificationChannels\WebPush\WebPushMessage;
  * Optionally override:
  * - icon(): string - Emoji or icon indicator (default: from category)
  * - modelClass(): ?string - The related model type for icon mapping
- * - actions(): array - Action buttons [{label: string, url: string}]
+ * - primaryAction()/secondaryAction(): ?array - The ask, as {label: string, url: string}
+ * - context(): array - Label/value rows [{label: string, value: string}]
  * - subject(): ?array - The actor/subject who triggered the notification
  * - object(): ?array - The object the notification is about
  */
@@ -82,13 +83,66 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get action buttons for the notification.
+     * The one action this notification asks for; null when it only reports something.
      *
-     * @return array<array{label: string, url: string}>
+     * @return array{label: string, url: string}|null
+     */
+    public function primaryAction(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * A second action, only when the answer is binary.
+     *
+     * @return array{label: string, url: string}|null
+     */
+    public function secondaryAction(): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Label/value rows saying what this is about (institution, date, deadline); keep to four.
+     *
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function context(object $notifiable): array
+    {
+        return [];
+    }
+
+    /**
+     * Turn `notifications.context.*` key => value pairs into context() rows, dropping blank values
+     * so an absent relation never renders an empty row.
+     *
+     * @param  array<string, string|int|null>  $rows
+     * @return array<int, array{label: string, value: string}>
+     */
+    protected function contextRows(array $rows): array
+    {
+        $context = [];
+
+        foreach ($rows as $key => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $context[] = ['label' => __('notifications.context.'.$key), 'value' => (string) $value];
+        }
+
+        return $context;
+    }
+
+    /**
+     * @deprecated Superseded by primaryAction()/secondaryAction() in PR 6.1 (.ai/redesign/admin);
+     *             slated for removal in Phase 10. Kept so stored notification rows keep their shape.
+     *
+     * @return array<int, array{label: string, url: string}>
      */
     public function actions(): array
     {
-        return [];
+        return array_values(array_filter([$this->primaryAction(), $this->secondaryAction()]));
     }
 
     /**
@@ -151,6 +205,9 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             'url' => $this->url(),
             'icon' => $this->icon(),
             'color' => $this->category()->color(),
+            'primaryAction' => $this->primaryAction(),
+            'secondaryAction' => $this->secondaryAction(),
+            'context' => $this->context($notifiable),
             'actions' => $this->actions(),
             'subject' => $this->subject(),
             'object' => $this->object(),
@@ -171,12 +228,12 @@ abstract class BaseNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage|Mailable
     {
-        $mail = (new MailMessage)
+        $action = $this->primaryAction() ?? ['label' => __('Peržiūrėti'), 'url' => $this->url()];
+
+        return (new MailMessage)
             ->subject($this->icon().' '.$this->title($notifiable))
             ->line($this->body($notifiable))
-            ->action(__('Peržiūrėti'), $this->url());
-
-        return $mail;
+            ->action($action['label'], $action['url']);
     }
 
     /**
@@ -198,7 +255,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     /**
      * Get data for email digest grouping.
      *
-     * @return array{category: string, title: string, body: string, url: string, icon: string}
+     * @return array{category: string, title: string, body: string, url: string, icon: string, context: array<int, array{label: string, value: string}>, primaryAction: array{label: string, url: string}|null}
      */
     public function toDigestItem(object $notifiable): array
     {
@@ -208,6 +265,8 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             'body' => Str::limit(strip_tags($this->body($notifiable)), 200),
             'url' => $this->url(),
             'icon' => $this->icon(),
+            'context' => $this->context($notifiable),
+            'primaryAction' => $this->primaryAction(),
         ];
     }
 }

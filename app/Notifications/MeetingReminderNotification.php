@@ -72,13 +72,24 @@ class MeetingReminderNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        $institution = $this->meeting->institutions->first();
+        $type = $this->meeting->type;
+
+        return $this->contextRows([
+            'institution' => $institution?->name,
+            'date' => $this->meeting->start_time->format($type?->isDateOnly() ? 'Y-m-d' : 'Y-m-d H:i'),
+            'format' => $type?->label(app()->getLocale()),
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_meeting'),
-                'url' => $this->url(),
-            ],
+            'label' => __('notifications.action_view_meeting'),
+            'url' => $this->url(),
         ];
     }
 

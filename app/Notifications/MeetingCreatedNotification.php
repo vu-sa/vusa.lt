@@ -63,13 +63,11 @@ class MeetingCreatedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_meeting'),
-                'url' => $this->url(),
-            ],
+            'label' => __('notifications.action_view_meeting'),
+            'url' => $this->url(),
         ];
     }
 }
