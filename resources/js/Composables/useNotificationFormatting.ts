@@ -279,8 +279,6 @@ export function getNotificationColorKey(notification: Notification): Notificatio
       meeting: 'cat-8',
       registration: 'cat-1',
       duty: 'cat-7',
-      news: 'cat-5',
-      calendar: 'cat-3',
       user: 'neutral',
       system: 'neutral',
     };

@@ -17,17 +17,9 @@ describe('default preferences', function (): void {
 
         expect($prefs)->toHaveKeys(['channels', 'digest_frequency_hours', 'muted_until', 'muted_threads', 'reminder_settings']);
 
-        // Categories that are disabled by default (opt-in)
-        $disabledByDefault = [
-            NotificationCategory::News,
-            NotificationCategory::Calendar,
-        ];
-
-        // Check channels - most should be enabled, but News and Calendar are disabled by default
         foreach (NotificationCategory::cases() as $category) {
-            $expectedEnabled = ! in_array($category, $disabledByDefault, true);
             foreach (NotificationChannel::cases() as $channel) {
-                expect($prefs['channels'][$category->value][$channel->value])->toBe($expectedEnabled);
+                expect($prefs['channels'][$category->value][$channel->value])->toBeTrue();
             }
         }
 

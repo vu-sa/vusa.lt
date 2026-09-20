@@ -11,8 +11,6 @@ return [
         'user' => 'Vartotojas',
         'duty' => 'Pareigos',
         'system' => 'Sistema',
-        'news' => 'Naujienos',
-        'calendar' => 'Renginiai',
     ],
 
     // Channels
@@ -118,17 +116,6 @@ return [
     'meeting_agenda_type_break' => ':count pertrauka',
     'meeting_agenda_additional_votes_note' => 'Jei buvo papildomų balsavimų, nepamiršk jų įtraukti.',
 
-    // News notifications
-    'news_published_title' => 'Naujas straipsnis',
-    'news_published_body' => ':tenant paskelbė naują straipsnį: :title',
-
-    // Calendar notifications
-    'calendar_reminder_title' => 'Artėjantis renginys',
-    'calendar_reminder_soon_title' => 'Renginys netrukus!',
-    'calendar_reminder_body' => 'Maždaug po :hours val. vyks renginys: :event',
-    'calendar_reminder_body_one_hour' => 'Maždaug po 1 valandos vyks renginys: :event',
-    'calendar_reminder_body_tomorrow' => 'Rytoj vyks renginys: :event',
-
     // Duty notifications
     'duty_expiring_title' => 'Pareigos baigiasi po :days d.',
     'duty_expiring_body' => 'Tavo pareigybė „:duty" baigiasi :date. Nepamiršk perduoti patirties!',
@@ -210,8 +197,6 @@ return [
         'task_reminder_days_description' => 'Prieš kiek dienų priminti apie artėjančių užduočių terminus',
         'meeting_reminder_hours' => 'Posėdžių priminimo valandos',
         'meeting_reminder_hours_description' => 'Prieš kiek valandų priminti apie artėjančius posėdžius',
-        'calendar_reminder_hours' => 'Renginių priminimo valandos',
-        'calendar_reminder_hours_description' => 'Prieš kiek valandų priminti apie artėjančius renginius',
     ],
 
     // Legacy compatibility

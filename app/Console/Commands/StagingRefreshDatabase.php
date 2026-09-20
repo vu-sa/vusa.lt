@@ -196,8 +196,8 @@ class StagingRefreshDatabase extends Command
 
     /**
      * Staging inherits production's real student data. Even behind basic auth, the addresses are the
-     * live risk: staging's scheduler runs notifications:send-news every 15 minutes and meeting
-     * reminders every 30, so a real address in this table is a real email to a real student.
+     * live risk: staging's scheduler runs meeting reminders every 30 minutes, so a real address in
+     * this table is a real email to a real student.
      * MAIL_MAILER=log is the other half of that guard; this is the half that survives a misconfigured
      * .env.
      */

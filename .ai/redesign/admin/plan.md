@@ -928,9 +928,12 @@ Shipped as one commit.
   for email. `useNotificationFormatting.ts` maps stored hue names onto tokens (`legacyHueToToken`,
   `@deprecated`, Phase 10). The old System `red` maps to neutral.
 - **Deliberately not done / deviations from `messages.md`:**
-  - `NewsPublished` and `CalendarReminder` stay **out of the digest** (existing, tested decision — opt-in
-    categories); the table's "digest ✓" for them is not implemented. `Welcome` stays in-app only (rule 14:
-    no action, no deadline) rather than emailing as the table says.
+  - `NewsPublished` and `CalendarReminder` were **removed** (2026-09-20, scope cut): the notifications,
+    their `notifications:send-news` / `notifications:calendar-reminders` commands and schedule, the
+    `News` / `Calendar` categories, the `calendar_reminder_hours` preference and their settings-page rows.
+    Stored preference keys and old notification rows are left in place; nothing reads them. Reinstate
+    them (and their `messages.md` rows) if a news or event notification comes back. `Welcome` stays
+    in-app only (rule 14: no action, no deadline) rather than emailing as the table says.
   - **Rule 8 (locale follows recipient) is not met**: `users` stores no locale, so queued mail renders in
     the app default. Needs a locale column; open question.
   - **Subjects are the existing titles**, cut to 60 characters, emoji prefix removed. Titles that carry no

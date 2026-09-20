@@ -11,6 +11,7 @@ lastUpdated: true
 - ✨ **Skubūs pranešimai ateina iškart** — užduotis su artėjančiu terminu, posėdžio priminimas, prašymas patvirtinti, paminėjimas komentare ir pareigybės pabaiga ateina laišku tuoj pat, o kiti pranešimai – el. pašto santraukoje. Nustatymuose liko vienas stulpelis „El. paštas“
 - ✨ **Naktį nebeskamba** — nuo 22:00 iki 07:00 push pranešimai atidedami iki ryto, o el. pašto santraukos nesiunčiamos
 - ✨ **Ramesnės kategorijų spalvos** — pranešimų kategorijos žymimos ramiomis spalvomis, kurios nebesumaišomos su būsenų spalvomis
+- ✨ **Mažiau pranešimų nustatymų** — pranešimai apie naujienas ir renginius nebesiunčiami, todėl jų nebėra ir nustatymuose
 
 ## v2.12 — Pranešimai parodo, ką daryti (2026-09-20) {#v2-12}
 

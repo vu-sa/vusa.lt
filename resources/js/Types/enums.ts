@@ -149,8 +149,6 @@ export enum NotificationCategory {
     User = 'user',
     Duty = 'duty',
     System = 'system',
-    News = 'news',
-    Calendar = 'calendar',
 }
 export enum NotificationChannel {
     InApp = 'in_app',

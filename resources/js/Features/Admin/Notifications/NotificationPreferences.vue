@@ -185,22 +185,6 @@
             {{ $t('notifications.preferences.meeting_reminder_hours_description') }}
           </p>
         </FormFieldWrapper>
-
-        <!-- Calendar Reminder Hours -->
-        <FormFieldWrapper id="calendar-reminder-hours" :label="$t('notifications.preferences.calendar_reminder_hours')">
-          <ToggleGroup
-            type="multiple"
-            :model-value="calendarReminderHours.map(String)"
-            @update:model-value="updateCalendarReminderHours"
-          >
-            <ToggleGroupItem v-for="hours in [24, 12, 1]" :key="hours" :value="String(hours)">
-              {{ hours }} {{ hours === 1 ? $t('hour') : $t('hours') }}
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <p class="text-sm text-muted-foreground mt-2">
-            {{ $t('notifications.preferences.calendar_reminder_hours_description') }}
-          </p>
-        </FormFieldWrapper>
       </div>
 
       <Button :disabled="loading" @click="handleSubmit">
@@ -245,8 +229,6 @@ import IFluentDocumentBulletList24Regular from '~icons/fluent/document-bullet-li
 import IFluentPerson24Regular from '~icons/fluent/person24-regular';
 import IFluentPuzzlePiece24Regular from '~icons/fluent/puzzle-piece24-regular';
 import IFluentBuilding24Regular from '~icons/fluent/building24-regular';
-import IFluentNews24Regular from '~icons/fluent/news-24-regular';
-import IFluentCalendar24Regular from '~icons/fluent/calendar-24-regular';
 
 interface NotificationPreferences {
   channels: Record<string, Record<string, boolean>>;
@@ -257,7 +239,6 @@ interface NotificationPreferences {
   reminder_settings: {
     task_reminder_days: number[];
     meeting_reminder_hours: number[];
-    calendar_reminder_hours: number[];
   };
 }
 
@@ -314,7 +295,6 @@ const form = useForm({
   reminder_settings: {
     task_reminder_days: props.notificationPreferences.reminder_settings?.task_reminder_days || [7, 3, 1],
     meeting_reminder_hours: props.notificationPreferences.reminder_settings?.meeting_reminder_hours || [24, 1],
-    calendar_reminder_hours: props.notificationPreferences.reminder_settings?.calendar_reminder_hours || [24],
   },
 });
 
@@ -327,7 +307,6 @@ const digestFrequencyString = computed({
 
 const taskReminderDays = computed(() => form.reminder_settings?.task_reminder_days || [7, 3, 1]);
 const meetingReminderHours = computed(() => form.reminder_settings?.meeting_reminder_hours || [24, 1]);
-const calendarReminderHours = computed(() => form.reminder_settings?.calendar_reminder_hours || [24]);
 
 const updateDigestFrequency = (val: string) => {
   form.digest_frequency_hours = parseInt(val, 10);
@@ -365,10 +344,6 @@ const updateMeetingReminderHours = (values: string[]) => {
   form.reminder_settings.meeting_reminder_hours = values.map(Number).sort((a, b) => b - a);
 };
 
-const updateCalendarReminderHours = (values: string[]) => {
-  form.reminder_settings.calendar_reminder_hours = values.map(Number).sort((a, b) => b - a);
-};
-
 const getCategoryColorClass = (color: string): string => {
   const colorKey = (color in notificationColors ? color : 'neutral') as NotificationColorKey;
   return notificationColors[colorKey].combined;
@@ -384,8 +359,6 @@ const getCategoryIcon = (modelEnumKey: string) => {
     USER: IFluentPerson24Regular,
     DUTY: IFluentPuzzlePiece24Regular,
     TENANT: IFluentBuilding24Regular,
-    NEWS: IFluentNews24Regular,
-    CALENDAR: IFluentCalendar24Regular,
   };
   return iconMap[modelEnumKey] || IFluentComment24Regular;
 };

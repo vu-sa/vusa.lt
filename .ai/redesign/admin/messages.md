@@ -64,8 +64,6 @@ interface, not a follow-up project.
 | `MemberRegistration`, `StudentRepRegistration` | registration | act (recipient) | ✓ | — | — | ✓ |
 | `ReservationStatusChanged`, `ApprovalDecision` | reservation | know | — | — | ✓ | ✓ |
 | `MeetingCreated`, `MeetingAgendaCompleted` | meeting | know | — | — | ✓ | ✓ |
-| `NewsPublished` | news | know | — | — | ✓ | ✓ |
-| `CalendarReminder` | calendar | know | — | ✓ opt-in | ✓ | ✓ |
 | `TaskCompleted`, `TaskAutoCompleted` | task | record | — | — | ✓ | ✓ |
 | `SupportRequestStatusChanged` | system | know | — | — | ✓ | ✓ |
 | `Welcome` | system | onboarding | ✓ | — | — | ✓ |

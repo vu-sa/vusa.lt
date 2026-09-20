@@ -83,8 +83,6 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             NotificationCategory::User => '👤',
             NotificationCategory::Duty => '🎯',
             NotificationCategory::System => '🔔',
-            NotificationCategory::News => '📰',
-            NotificationCategory::Calendar => '📆',
         };
     }
 

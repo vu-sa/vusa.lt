@@ -11,6 +11,7 @@ lastUpdated: true
 - ✨ **Urgent notifications arrive at once** — a task with a close deadline, a meeting reminder, an approval request, a mention in a comment and an expiring duty are emailed right away; everything else waits for the email digest. Settings now show a single “Email” column
 - ✨ **Quiet at night** — between 22:00 and 07:00 push notifications are held until morning and email digests are not sent
 - ✨ **Calmer category colours** — notification categories use quiet marker colours that no longer clash with status colours
+- ✨ **Fewer notification settings** — news and event notifications are no longer sent, so they are gone from the settings too
 
 ## v2.12 — Notifications show what to do (2026-09-20) {#v2-12}
 
