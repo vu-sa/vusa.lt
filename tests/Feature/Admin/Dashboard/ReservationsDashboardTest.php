@@ -40,8 +40,8 @@ function attachResource(Reservation $reservation, Resource $resource, string $st
     ]);
 }
 
-describe('scoping', function (): void {
-    test('administered list only holds reservations touching resources the user manages', function (): void {
+describe('overview counts', function (): void {
+    test('counts only the items in tenants the user manages', function (): void {
         $mine = Reservation::factory()->create(['name' => 'Uses my resource']);
         attachResource($mine, $this->myResource, 'created');
 
@@ -52,20 +52,74 @@ describe('scoping', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowReservations')
-                ->has('administeredReservations', 1)
-                ->where('administeredReservations.0.id', $mine->id)
+                ->where('managesResources', true)
+                ->where('counts.waitingForMe', 1)
+                ->where('counts.lentOut', 0)
+                ->where('counts.overdue', 0)
             );
     });
 
+    test('lent items and overdue items are counted apart', function (): void {
+        $lent = Reservation::factory()->create();
+        attachResource($lent, $this->myResource, 'lent');
+
+        $late = Reservation::factory()->create();
+        attachResource($late, $this->myResource, 'lent', ['end_time' => now()->subDay()]);
+
+        $done = Reservation::factory()->create();
+        attachResource($done, $this->myResource, 'returned', ['end_time' => now()->subDay()]);
+
+        asUser($this->manager)->get(route('dashboard.reservations'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('counts.lentOut', 2)
+                ->where('counts.overdue', 1)
+            );
+    });
+
+    test('mine counts only the user\'s own reservations that are still in flight', function (): void {
+        $own = Reservation::factory()->hasAttached($this->manager)->create();
+        attachResource($own, $this->myResource, 'created');
+
+        $closed = Reservation::factory()->hasAttached($this->manager)->create();
+        attachResource($closed, $this->myResource, 'returned');
+
+        $someoneElses = Reservation::factory()->create();
+        attachResource($someoneElses, $this->myResource, 'created');
+
+        asUser($this->manager)->get(route('dashboard.reservations'))
+            ->assertInertia(fn (Assert $page) => $page->where('counts.mine', 1));
+    });
+
+    test('the lists are deferred and load as one group', function (): void {
+        $waiting = Reservation::factory()->create();
+        attachResource($waiting, $this->myResource, 'created');
+
+        $own = Reservation::factory()->hasAttached($this->manager)->create();
+        attachResource($own, $this->myResource, 'created');
+
+        asUser($this->manager)->get(route('dashboard.reservations'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('waitingForMe')
+                ->missing('myUpcoming')
+                ->loadDeferredProps('secondary', fn (Assert $deferred) => $deferred
+                    ->has('waitingForMe', 2)
+                    ->has('myUpcoming', 1)
+                    ->where('myUpcoming.0.id', $own->id)
+                )
+            );
+    });
+});
+
+describe('table payload flags', function (): void {
     test('approvable is true only for the pivots whose tenant the user manages', function (): void {
         // A single reservation mixing both tenants' resources — the crux of the permission model.
         $mixed = Reservation::factory()->create();
         attachResource($mixed, $this->myResource, 'created');
         attachResource($mixed, $this->foreignResource, 'created');
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUser($this->manager)->get(route('reservations.index'))
             ->assertInertia(function (Assert $page): void {
-                $resources = collect($page->toArray()['props']['administeredReservations'][0]['resources'])
+                $resources = collect($page->toArray()['props']['reservations']['data'][0]['resources'])
                     ->keyBy('id');
 
                 expect($resources[$this->myResource->id]['pivot']['approvable'])->toBeTrue()
@@ -73,30 +127,14 @@ describe('scoping', function (): void {
             });
     });
 
-    test('my reservations lists only the user\'s own bookings', function (): void {
-        $own = Reservation::factory()->hasAttached($this->manager)->create();
-        attachResource($own, $this->myResource, 'created');
-
-        $someoneElses = Reservation::factory()->create();
-        attachResource($someoneElses, $this->myResource, 'created');
-
-        asUser($this->manager)->get(route('dashboard.reservations'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->has('myReservations', 1)
-                ->where('myReservations.0.id', $own->id)
-                // The other reservation still shows up as something to administer.
-                ->has('administeredReservations', 2)
-            );
-    });
-
     test('cancellable is false once an item has been lent out', function (): void {
         $lent = Reservation::factory()->hasAttached($this->manager)->create();
         attachResource($lent, $this->myResource, 'lent');
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUser($this->manager)->get(route('reservations.index'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('myReservations.0.resources.0.pivot.cancellable', false)
-                ->where('myReservations.0.resources.0.pivot.state', 'lent')
+                ->where('reservations.data.0.resources.0.pivot.cancellable', false)
+                ->where('reservations.data.0.resources.0.pivot.state', 'lent')
             );
     });
 
@@ -104,10 +142,21 @@ describe('scoping', function (): void {
         $pending = Reservation::factory()->hasAttached($this->manager)->create();
         attachResource($pending, $this->myResource, 'created');
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUser($this->manager)->get(route('reservations.index'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('myReservations.0.resources.0.pivot.cancellable', true)
+                ->where('reservations.data.0.resources.0.pivot.cancellable', true)
             );
+    });
+
+    test('the API serves the same flags as the page', function (): void {
+        $pending = Reservation::factory()->create();
+        attachResource($pending, $this->myResource, 'created');
+
+        $this->actingAs($this->manager)->getJson(route('api.v1.admin.reservations.index'))
+            ->assertOk()
+            ->assertJsonPath('data.items.0.resources.0.pivot.approvable', true)
+            ->assertJsonPath('data.items.0.resources.0.pivot.backtrackable', false)
+            ->assertJsonPath('data.items.0.resources.0.pivot.cancellable', false);
     });
 
     test('backtrackable requires a managed resource with an active approved decision', function (): void {
@@ -122,16 +171,16 @@ describe('scoping', function (): void {
             'decision' => ApprovalDecision::Approved,
         ]);
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUser($this->manager)->get(route('reservations.index'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('administeredReservations.0.resources.0.pivot.backtrackable', true)
+                ->where('reservations.data.0.resources.0.pivot.backtrackable', true)
             );
 
         $approval->update(['reverted_at' => now(), 'reverted_by_id' => $this->manager->id]);
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUser($this->manager)->get(route('reservations.index'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('administeredReservations.0.resources.0.pivot.backtrackable', false)
+                ->where('reservations.data.0.resources.0.pivot.backtrackable', false)
             );
     });
 });
@@ -211,32 +260,18 @@ describe('fully resolving', function (): void {
 });
 
 describe('non-manager access', function (): void {
-    test('admin can access reservations dashboard', function (): void {
+    test('a role without resource managership can open the overview and administers nothing', function (): void {
         asUser($this->admin)
             ->get(route('dashboard.reservations'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowReservations')
-                ->has('myReservations')
-                ->has('administeredReservations')
-                ->has('managedTenants')
+                ->where('managesResources', false)
+                ->where('counts.waitingForMe', 0)
             );
     });
 
-    test('reservations dashboard grants no resource managership to a role that lacks it', function (): void {
-        asUser($this->admin)
-            ->get(route('dashboard.reservations'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowReservations')
-                ->has('managedTenants', 0)
-                ->has('administeredReservations', 0)
-            );
-    });
-});
-
-describe('auth', function (): void {
-    test('a user managing no resources sees an empty administered list', function (): void {
+    test('a user managing no resources sees none of the administered items', function (): void {
         $plain = makeUser($this->tenant);
 
         $reservation = Reservation::factory()->create();
@@ -245,12 +280,66 @@ describe('auth', function (): void {
         asUser($plain)->get(route('dashboard.reservations'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('administeredReservations', 0)
-                ->has('managedTenants', 0)
+                ->where('managesResources', false)
+                ->where('counts.waitingForMe', 0)
+                ->where('counts.mine', 0)
             );
     });
 
     test('guests are redirected', function (): void {
         $this->get(route('dashboard.reservations'))->assertRedirect();
+    });
+});
+
+describe('index filters', function (): void {
+    beforeEach(function (): void {
+        $this->pending = Reservation::factory()->create(['name' => 'Pending']);
+        attachResource($this->pending, $this->myResource, 'created');
+
+        $this->foreignPending = Reservation::factory()->create(['name' => 'Foreign pending']);
+        attachResource($this->foreignPending, $this->foreignResource, 'created');
+
+        $this->lentLate = Reservation::factory()->hasAttached($this->manager)->create(['name' => 'Lent late']);
+        attachResource($this->lentLate, $this->myResource, 'lent', ['end_time' => now()->subDay()]);
+    });
+
+    test('state narrows to reservations holding an item in that state', function (): void {
+        $this->actingAs($this->manager)->getJson(route('api.v1.admin.reservations.index', ['state' => ['lent']]))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $this->lentLate->id);
+    });
+
+    test('the page URL form state=a,b is accepted', function (): void {
+        asUser($this->manager)->get(route('reservations.index', ['state' => 'created,lent']))
+            ->assertInertia(fn (Assert $page) => $page->has('reservations.data', 3));
+    });
+
+    test('scope=administered only counts items in managed tenants', function (): void {
+        $this->actingAs($this->manager)->getJson(route('api.v1.admin.reservations.index', ['scope' => 'administered', 'state' => ['created']]))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $this->pending->id);
+    });
+
+    test('scope=mine only lists the user\'s own reservations', function (): void {
+        $this->actingAs($this->manager)->getJson(route('api.v1.admin.reservations.index', ['scope' => 'mine']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $this->lentLate->id);
+    });
+
+    test('overdue keeps in-flight items whose window has passed', function (): void {
+        $this->actingAs($this->manager)->getJson(route('api.v1.admin.reservations.index', ['overdue' => 1]))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $this->lentLate->id);
+    });
+
+    test('an unknown state or scope is rejected', function (): void {
+        $this->actingAs($this->manager)->getJson(route('api.v1.admin.reservations.index', ['state' => ['nonsense']]))
+            ->assertUnprocessable();
+        $this->actingAs($this->manager)->getJson(route('api.v1.admin.reservations.index', ['scope' => 'everyone']))
+            ->assertUnprocessable();
     });
 });

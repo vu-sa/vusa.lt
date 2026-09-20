@@ -5,6 +5,14 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.14 — Every workspace starts with an overview (2026-09-20) {#v2-14}
+
+- ⭐ **Organisation and System overviews** — the Organisation section opens on a page showing terms that end soon, duties without members and the member count; the System section shows new support requests, the email queue and system health. The numbers are links to the matching lists
+- ✨ **New Reservations overview** — at the top you see what needs approving, how many items are lent out and what is overdue; you can approve or reject right there without opening anything
+- ✨ **Reservation list with every action** — the Reservations list shows the requester, all resources and every state at once, and lets you approve, hand over, reject or undo the last step in one click, with a note and a preview before you confirm. Filter by “Waiting for a decision”, “Mine”, state and lateness
+- ✨ **Website overview** — the numbers show drafts and content counts for the selected unit, and the traffic chart now comes with a sentence saying what it shows
+- ✨ **All sections for everyone** — the “All sections” page now opens for every user and lists only what your account can open, Home included
+
 ## v2.13 — Emails and notifications by urgency (2026-09-20) {#v2-13}
 
 - ✨ **New Mano VU SA emails** — every notification email now looks the same: a title, the essentials as rows, one button and a note on why you got it, with a link to your notification settings. Where there is one, the email is signed by the institution's coordinator

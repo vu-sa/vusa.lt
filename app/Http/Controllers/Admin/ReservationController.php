@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ApplyReservationIndexFilters;
+use App\Actions\SerializeReservationsForTable;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexReservationRequest;
 use App\Http\Requests\StoreReservationRequest;
@@ -36,10 +38,9 @@ class ReservationController extends AdminController
     {
         $this->handleAuthorization('viewAny', Reservation::class);
 
-        $query = Reservation::query()->with([
-            'resources.tenant:id,shortname',
-            'users:id,name,profile_photo_path',
-        ]);
+        $query = Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS);
+
+        $query = ApplyReservationIndexFilters::execute($query, $request, $request->user(), $this->authorizer);
 
         $searchableColumns = ['name', 'description'];
 
@@ -56,10 +57,13 @@ class ReservationController extends AdminController
             ->withQueryString();
 
         $allowedTenantIds = $this->authorizer->tenants($request->user(), 'reservations.read.padalinys')->pluck('id');
+        $managesResources = $this->authorizer
+            ->tenants($request->user(), config('permission.resource_managership_indicating_permission'))
+            ->isNotEmpty();
 
         return $this->inertiaResponse('Admin/Reservations/IndexReservation', [
             'reservations' => [
-                'data' => $reservations->getCollection()->values(),
+                'data' => SerializeReservationsForTable::execute($reservations->getCollection(), $request->user(), $this->authorizer),
                 'meta' => [
                     'total' => $reservations->total(),
                     'per_page' => $reservations->perPage(),
@@ -73,6 +77,7 @@ class ReservationController extends AdminController
             'sorting' => $request->getSorting(),
             'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
+            'managesResources' => $managesResources,
             'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds): void {
                 $query->whereIn('resources.tenant_id', $allowedTenantIds);
             })->with(['resources.tenant', 'users'])->get(),

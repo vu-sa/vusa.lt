@@ -81,6 +81,19 @@ interface DatabaseCollectionSourceOptions<T> {
   sortOptions: CollectionSortOption[];
   defaultSort: string;
   preserveUrlKeys?: string[];
+  /**
+   * Filters the endpoint understands, sent as plain query params (`field=a` or `field[]=a`) and
+   * carried in the page URL. Values have no counts: the database source does not facet.
+   */
+  facets?: DatabaseFacetDefinition[];
+}
+
+export interface DatabaseFacetDefinition {
+  field: string;
+  label: string;
+  values: { value: string; label: string }[];
+  /** A single-choice filter (`scope`): choosing a value replaces the previous one. */
+  single?: boolean;
 }
 
 interface DatabaseCollectionResponse<T> {
@@ -218,8 +231,24 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
   };
 }
 
+/** `?state=created,reserved` → `{ state: ['created', 'reserved'] }`, for the declared facets only. */
+function readFiltersFromUrl(facets: DatabaseFacetDefinition[], params: URLSearchParams): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+
+  for (const facet of facets) {
+    const raw = params.get(facet.field);
+    const allowed = raw?.split(',').filter(value => facet.values.some(candidate => candidate.value === value)) ?? [];
+
+    if (allowed.length > 0) {
+      result[facet.field] = facet.single ? allowed[0] : allowed;
+    }
+  }
+
+  return result;
+}
+
 /**
- * Database-backed collection source. Its first consumer is Reservations; unlike the Typesense
+ * Database-backed collection source. Unlike the Typesense
  * adapter it starts with the Inertia payload, then refreshes through the admin API for search,
  * sorting and "Rodyti daugiau" without replacing the page's history state.
  */
@@ -233,7 +262,8 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
   const hasSearched = ref(true);
   const error = ref<string | null>(null);
   const query = ref(initialParams.get('search') ?? '');
-  const filters = ref<Record<string, unknown>>({});
+  const facetDefinitions = options.facets ?? [];
+  const filters = ref<Record<string, unknown>>(readFiltersFromUrl(facetDefinitions, initialParams));
   const currentPage = ref(options.initial.currentPage);
   const lastPage = ref(options.initial.lastPage);
   const sortBy = ref(initialParams.get('sort') ?? options.defaultSort);
@@ -247,13 +277,63 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     }
   });
 
-  const facets = computed<CollectionFacet[]>(() => []);
-  const chips = computed<CollectionChip[]>(() => []);
-  const activeFilterCount = computed(() => 0);
+  const selectedValues = (field: string): string[] => {
+    const raw = filters.value[field];
+
+    return (Array.isArray(raw) ? raw : raw === undefined || raw === '' ? [] : [raw]).map(String);
+  };
+
+  const facets = computed<CollectionFacet[]>(() =>
+    facetDefinitions.map(facet => ({
+      field: facet.field,
+      label: facet.label,
+      type: 'checkbox',
+      values: facet.values.map(value => ({
+        ...value,
+        count: 0,
+        isSelected: selectedValues(facet.field).includes(value.value),
+      })),
+    })),
+  );
+
+  const chips = computed<CollectionChip[]>(() =>
+    facetDefinitions.flatMap(facet =>
+      selectedValues(facet.field).map(value => ({
+        id: `${facet.field}:${value}`,
+        label: `${facet.label}: ${facet.values.find(candidate => candidate.value === value)?.label ?? value}`,
+      })),
+    ),
+  );
+  const activeFilterCount = computed(() => chips.value.length);
+
+  function setFilter(field: string, value: unknown): void {
+    const next = { ...filters.value };
+
+    if (value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
+      delete next[field];
+    }
+    else {
+      next[field] = value;
+    }
+
+    filters.value = next;
+    void fetchPage(1, false);
+  }
+
+  function toggleFilter(field: string, value: string): void {
+    const current = selectedValues(field);
+
+    if (facetDefinitions.find(facet => facet.field === field)?.single) {
+      setFilter(field, current.includes(value) ? undefined : value);
+      return;
+    }
+
+    setFilter(field, current.includes(value) ? current.filter(selected => selected !== value) : [...current, value]);
+  }
 
   function syncUrl(): void {
     const url = new URL(window.location.href);
-    const ownedKeys = ['search', 'sort', 'pages'];
+    const ownedKeys = ['search', 'sort', 'pages', ...facetDefinitions.map(facet => facet.field)];
 
     for (const key of ownedKeys) {
       url.searchParams.delete(key);
@@ -268,11 +348,23 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     if (currentPage.value > 1) {
       url.searchParams.set('pages', String(currentPage.value));
     }
+    for (const facet of facetDefinitions) {
+      const values = selectedValues(facet.field);
+
+      if (values.length > 0) {
+        url.searchParams.set(facet.field, values.join(','));
+      }
+    }
 
     window.history.replaceState(window.history.state, '', url.toString());
   }
 
+  // Two quick filter toggles start two requests; only the latest one may write its rows.
+  let latestRequest = 0;
+
   async function fetchPage(page: number, append: boolean): Promise<void> {
+    const request = ++latestRequest;
+
     if (append) {
       isLoadingMore.value = true;
     }
@@ -295,6 +387,16 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
         requestUrl.searchParams.set(key, value);
       }
     }
+    for (const facet of facetDefinitions) {
+      const values = selectedValues(facet.field);
+
+      if (facet.single && values[0]) {
+        requestUrl.searchParams.set(facet.field, values[0]);
+      }
+      else {
+        values.forEach(value => requestUrl.searchParams.append(`${facet.field}[]`, value));
+      }
+    }
 
     try {
       const response = await fetch(requestUrl, {
@@ -302,6 +404,10 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       });
       const payload = await response.json() as { success: boolean; data?: DatabaseCollectionResponse<T>; message?: string };
+
+      if (request !== latestRequest) {
+        return;
+      }
 
       if (!response.ok || !payload.success || !payload.data) {
         throw new Error(payload.message ?? 'Nepavyko įkelti sąrašo.');
@@ -314,12 +420,16 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
       syncUrl();
     }
     catch (cause) {
-      error.value = cause instanceof Error ? cause.message : 'Nepavyko įkelti sąrašo.';
+      if (request === latestRequest) {
+        error.value = cause instanceof Error ? cause.message : 'Nepavyko įkelti sąrašo.';
+      }
     }
     finally {
-      isLoading.value = false;
-      isLoadingMore.value = false;
-      hasSearched.value = true;
+      if (request === latestRequest) {
+        isLoading.value = false;
+        isLoadingMore.value = false;
+        hasSearched.value = true;
+      }
     }
   }
 
@@ -349,10 +459,16 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
         void debouncedRefresh();
       }
     },
-    toggleFilter: () => undefined,
-    setFilter: () => undefined,
-    clearFilters: () => undefined,
-    clearChip: () => undefined,
+    toggleFilter,
+    setFilter,
+    clearFilters: () => {
+      filters.value = {};
+      void fetchPage(1, false);
+    },
+    clearChip: (id) => {
+      const [field, ...rest] = id.split(':');
+      toggleFilter(field, rest.join(':'));
+    },
     replaceItems: (next) => { items.value = next; },
     setSortBy: (next) => {
       sortBy.value = next;

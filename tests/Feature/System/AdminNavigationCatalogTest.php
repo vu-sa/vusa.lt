@@ -30,6 +30,7 @@ pest()->use(RefreshDatabase::class);
  */
 const SECTION_LANDING_ROUTES = [
     'dashboard', 'dashboard.atstovavimas', 'dashboard.reservations', 'dashboard.svetaine',
+    'dashboard.organizacija', 'dashboard.sistema',
     'userTasks', 'institutionGraph', 'dutiables.timeline', 'tasks.summary', 'systemStatus',
     'mailQueue', 'administration', 'duties.updateUsersWizard', 'profile',
 ];
@@ -38,7 +39,7 @@ const SECTION_LANDING_ROUTES = [
  * Routes deliberately left out of the catalog, with the reason review should hold it to.
  */
 const EXCLUDED_FROM_CATALOG = [
-    'administration' => 'the workspace picker panel doubles as Visi skyriai (O25); PR 7.5 re-homes this page itself',
+    'administration' => 'Visi skyriai is the catalog rendered as a map (PR 7.5); it lists every section, so it is not one itself',
     'profile' => 'reached from the account menu, not a workspace section (PR 4.4)',
     'profile.roles' => 'Mano rolės ir pareigybės, reached from the account menu and every 403 page (PR 5.9)',
     'mySupportRequests.index' => 'Pagalba entry point, not a workspace section (PR 4.4)',
@@ -197,7 +198,7 @@ describe('per-persona visibility', function (): void {
             'atstovavimas' => ['apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
-            'organizacija' => ['nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'studiju_programos', 'formos'],
+            'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'studiju_programos', 'formos'],
         ]);
     });
 
@@ -225,9 +226,19 @@ describe('per-persona visibility', function (): void {
             'atstovavimas' => ['apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'uzduociu_suvestine', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
-            'organizacija' => ['nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'formos'],
-            'sistema' => ['roles', 'leidimai', 'tipai', 'rysiai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'pagalbos_uzklausos', 'sharepoint_failai'],
+            'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'formos'],
+            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'rysiai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'pagalbos_uzklausos', 'sharepoint_failai'],
         ]);
+    });
+
+    test('a workspace overview never appears on its own', function (): void {
+        // Organizacija and Sistema have no model gating their Apžvalga: it shows exactly when some
+        // other section does, so a user with none of them gets neither the tab nor the workspace.
+        $user = makeUser($this->tenant);
+
+        expect($this->catalog->opensWorkspace($user, 'organizacija'))->toBeFalse()
+            ->and($this->catalog->opensWorkspace($user, 'sistema'))->toBeFalse()
+            ->and($this->catalog->opensWorkspace(makeAdminUser($this->tenant), 'sistema'))->toBeTrue();
     });
 
     test('an empty workspace does not render at all', function (): void {

@@ -5,6 +5,14 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.14 — Visos darbo sritys prasideda apžvalga (2026-09-20) {#v2-14}
+
+- ⭐ **Organizacijos ir Sistemos apžvalgos** — Organizacijos skiltis atsidaro puslapiu, kuriame matai besibaigiančias kadencijas, pareigybes be narių ir narių skaičių; Sistemos skiltis rodo naujas pagalbos užklausas, laiškų eilę ir sistemos būklę. Skaičiai yra nuorodos į atitinkamus sąrašus
+- ✨ **Nauja Rezervacijų apžvalga** — viršuje matai, ką reikia patvirtinti, kiek daiktų išduota ir kas vėluoja; patvirtinti ar atmesti galima čia pat, nieko neatidarant
+- ✨ **Rezervacijų sąrašas su visais veiksmais** — Rezervacijų sąraše matai prašytoją, visus išteklius, kelias būsenas ir vienu paspaudimu patvirtini, išduodi, atmeti ar atšauki paskutinį veiksmą, su pastaba ir peržiūra prieš patvirtinant. Sąrašą gali filtruoti pagal „Laukia sprendimo“, „Mano“, būseną ir vėlavimą
+- ✨ **Svetainės apžvalga** — skaičiai rodo juodraščius ir turinio kiekį pasirinktame padalinyje, o lankomumo grafiką papildo sakinys, aprašantis, ką jis rodo
+- ✨ **Visi skyriai visiems** — puslapis „Visi skyriai“ dabar atsidaro kiekvienam ir rodo tik tai, ką gali atverti su savo paskyra, įskaitant Pradžią
+
 ## v2.13 — Laiškai ir pranešimai pagal skubumą (2026-09-20) {#v2-13}
 
 - ✨ **Nauji Mano VU SA laiškai** — visi pranešimų laiškai turi vieną aiškų vaizdą: pavadinimas, svarbiausia informacija eilutėmis, vienas mygtukas ir pastaba, kodėl gavai laišką, su nuoroda į pranešimų nustatymus. Kai yra, laiškas pasirašomas institucijos koordinatoriumi

@@ -132,6 +132,10 @@
 </template>
 
 <script setup lang="tsx">
+/**
+ * @deprecated Superseded by the collection page (`IndexReservation`) with `ReservationDecisionDialog`
+ * in PR 7.1; slated for removal in Phase 10.
+ */
 import { computed, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';

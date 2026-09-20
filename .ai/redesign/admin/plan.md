@@ -61,11 +61,11 @@ One PR = one row. Rules:
 | **6.3** | Per-type pass 1: tasks + meetings (subjects, actions, context, channels) | 6.2 | ✅ |
 | **6.4** | Per-type pass 2: reservations, registrations, comments, the rest | 6.2 | ✅ |
 | **6.5** | Push payloads + quiet hours (rules 12–13); `NotificationCategory::color()` → `--cat-*` | 6.1, 2.2 | ✅ |
-| **7.1** | Rezervacijos overview | 5.8 |
-| **7.2** | Svetainė overview (analytics compact) | 5.8 |
-| **7.3** | Organizacija overview (new) | 5.8 |
-| **7.4** | Sistema overview (new) | 5.8 |
-| **7.5** | Visi skyriai at `/mano/administration` | 3.1 |
+| **7.1** | Rezervacijos overview | 5.8 | ✅ |
+| **7.2** | Svetainė overview (analytics compact) | 5.8 | ✅ |
+| **7.3** | Organizacija overview (new) | 5.8 | ✅ |
+| **7.4** | Sistema overview (new) | 5.8 | ✅ |
+| **7.5** | Visi skyriai at `/mano/administration` | 3.1 | ✅ |
 | **7.6** | First-login checklist (U13) | 5.1 |
 | **7.7** | Access-change notice + history (U14) | 5.9 |
 | **7.8** | Visible impact + koordinatorius on rep screens (U24, O22) | 5.1 |
@@ -945,15 +945,87 @@ Shipped as one commit.
 
 ## Phase 7 — Remaining overviews and the rep loop
 
-- [ ] Rezervacijos ← `ShowReservations`
-- [ ] Svetainė ← `ShowSvetaine` (analytics compact, O17)
-- [ ] Organizacija (new) · Sistema (new)
-- [ ] Visi skyriai at `/mano/administration`
+- [x] Rezervacijos ← `ShowReservations` (PR 7.1)
+- [x] Svetainė ← `ShowSvetaine` (analytics compact, O17) (PR 7.2)
+- [x] Organizacija (new) · Sistema (new) (PR 7.3, 7.4)
+- [x] Visi skyriai at `/mano/administration` (PR 7.5)
 - [ ] First-login checklist (U13); access-change notice (U14)
 - [ ] Visible impact (U24); outcome metrics report (U25); device split (U26)
 - [ ] **Experiment:** answerable reminders on the periodicity-gap reminder; compare that task type's
       completion rate with the Phase 0 baseline (U21)
 - [ ] **Open beta** (2–4 weeks, end date announced)
+
+### PR 7.1 – 7.5 notes (2026-09-20)
+
+Built together on `dev`, one commit. Decisions taken with the user before building: **7.1 goes all the way** (the overview
+stops being a table and the table's presentation moves onto `reservations.index`, "which is a mess right now"); Organizacija
+and Sistema carry **work-shaped numbers plus an attention band**, not a bare directory; `/mano/administration` **opens to any
+signed-in user**.
+
+**Shared groundwork**
+
+- **`useDatabaseCollectionSource` now filters.** It hardcoded `facets = []`, `chips = []` and a zero filter count, so no database
+  collection could carry a filter or be deep-linked to. It takes `facets: DatabaseFacetDefinition[]` (`single` for a one-choice
+  filter), reads them from the URL (`?state=created,lent`), sends them as plain params (`scope=…`, `state[]=…`), writes them back
+  and produces chips. A request counter drops a stale response, so two quick toggles cannot leave the rows of the first.
+- **`App\Actions\SerializeReservationsForTable`** is the one reservation row payload (the `approvable` / `backtrackable` /
+  `cancellable` flags per pivot); the Inertia page, its API and the overview all call it, so a first paint and a later
+  "Rodyti daugiau" page cannot disagree about what a user may do. `ApplyReservationIndexFilters` is the one place `scope`, `state`
+  and `overdue` are applied. Under `scope=administered` the state conditions apply to the items the user *manages*, the same way a
+  row's status is scoped — "Laukia sprendimo" never surfaces a reservation whose only pending item is someone else's.
+- **`AdminController::authorizeWorkspace()` + `AdminNavigationCatalog::opensWorkspace()`.** An overview with no model of its own
+  (Organizacija, Sistema) is gated on the catalog itself, so the page and its tab cannot disagree. `Workspace::$overview` prepends
+  `apzvalga` exactly when another section is visible; the cache prefix moved to `admin-navigation-v3-`.
+
+**7.1 · Rezervacijos** — overview: attention (deferred, ≤ 5, each row with its approve / reject action and the shared decision
+dialog) → four linked numbers (managers) or two (requesters) → *Mano rezervacijos*. Counts stay on the first paint; the two lists are
+one deferred `secondary` group. **`IndexReservation`** gained the requester, every resource as a chip (foreign ones muted, `+N` past
+four), the mixed-state badge (`ReservationStateSummary` — the single `StatusBadge` was losing information), per-row Tvirtinti /
+Išduoti / Grąžinti, Atmesti, Atšaukti paskutinį veiksmą, Atšaukti; quick filters *Laukia sprendimo · Mano rezervacijos ·
+Administruoju*; bulk Patvirtinti / Atmesti / Užbaigti. The optimistic client-side approve went: it advanced state with no note and
+no reject or backtrack. **`ReservationDecisionDialog`** (`Components/Reservations/`) is now the only place a decision is made.
+`@deprecated` (Phase 10): `Partials/ReservationsTable`, `Partials/ReservationKpiStrip`. `Tables/ReservationBulkActionBar` is *not*
+deprecated — `ReservationResourceTable` still uses it. The `reservation-approval-backtrack-v1` spotlight moved with its button and
+kept its key, so nobody sees it twice.
+
+**7.2 · Svetainė** — four counts for the selected unit (news drafts, event drafts, news, pages), each `null` when the user may not
+open the list, each linking to that list with `filters={"draft":true,"tenant_id":…}`. One chart inside `OverviewChart` with a
+generated sentence (`summarizeTrafficTrend`: totals, busiest day, second half against first — the Umami endpoint has no previous
+period, so a "vs last period" figure would have needed backend work). The plot reads `var(--brand-fill)` instead of a hex.
+
+**7.3 · Organizacija** — attention: terms ending within 30 days (soonest first, each opening its duty). Numbers: *Baigiasi per
+30 d.* → the duty timeline, *Pareigybės be narių* and *Pareigybės* → `duties.index`, *Nariai* → `users.index`. Scoped through
+`duties.read.padalinys`. *Neseniai atnaujinta* reuses `GetRecentlyEditedRecords`, now taking an optional type filter.
+
+**7.4 · Sistema** — attention: new support requests (≤ 5). Numbers: open requests, queued mail, roles, users — each omitted when the
+user may not open it. The system check is a deferred one-liner over the seven core checks (`SystemMonitorService` probes Redis,
+Typesense and the mailer over the network, so it never blocks the first paint); integrations being unconfigured is not a problem.
+
+**7.5 · Visi skyriai** — `OverviewPage` with a search field, the Įrankiai group, then one section per workspace as hairline
+rows, **Pradžia included**. The `can:access-administration` middleware is gone from the route and the picker / Meniu link is
+unconditional; the gate itself stays (the shared prop still exposes it).
+
+**Drift found and fixed:** `IndexReservation` read `shell.workspaces.reservations.title`, which does not exist (the key is
+`rezervacijos`). `EmptyState`'s modes are `empty` and `no-results`, not `filter`.
+
+**Fence added:** the four overviews, `ShowAdministration`, `Components/Reservations/**`.
+
+**Verified:** Vitest (full, 3300), the backend suite (3989 passed) and `tests/Browser/AdminCollectionPagesTest.php` against a fresh
+build (27 passed, including every overview at 1440 and 390 and a deep link into the filtered reservation list). I also looked at
+screenshots of the reservation list (1440 and 390), the overview (1440) and Visi skyriai (1440), light mode.
+
+**Not done**
+
+- 820 and 1180 widths, dark mode and touch in a real browser, a keyboard-only pass and the four-persona pass; Storybook a11y was
+  not re-run, and none of the new components has a story.
+- **Organizacija's *Naujos registracijos* number** from the plan: the registration forms live in `FormSettings` and no count of
+  new submissions exists to link to a filtered list, so it was left out rather than invent one.
+- **No spotlight** for the new overviews, per the playbook (a returning user finds them behind the same workspace tab they used
+  before), over AGENTS.md's blanket rule.
+- `activeReservations` (a full, unscoped reservation dump for `ReservationsWithUnitResources`) is still sent by
+  `ReservationController::index`; a test pins it and it is not part of this work.
+- Svetainė's *Suplanuotos naujienos* count: the list filter cannot express "publish time in the future", so a number that led to a
+  list showing something else was not added.
 
 ## Phase 8 — Switch
 

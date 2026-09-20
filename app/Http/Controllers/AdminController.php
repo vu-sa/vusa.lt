@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Traits\TranslatesEntityMessages;
 use App\Models\User;
+use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\Permissions\AccessChangeAnalyzer;
 use App\Services\Permissions\AccessChangeReport;
 use App\Services\Permissions\PermissionMapBuilder;
 use Closure;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -118,6 +120,19 @@ abstract class AdminController extends Controller
     protected function handleAuthorization(string $ability, mixed $model = null): void
     {
         $this->authorize($ability, $model);
+    }
+
+    /**
+     * Gate a workspace's overview page on the navigation catalog: it opens for exactly the users
+     * whose tab row would show it, so the page and its tab can never disagree.
+     */
+    protected function authorizeWorkspace(string $workspaceKey): void
+    {
+        $user = request()->user();
+
+        if ($user === null || ! app(AdminNavigationCatalog::class)->opensWorkspace($user, $workspaceKey)) {
+            throw new AuthorizationException;
+        }
     }
 
     /**

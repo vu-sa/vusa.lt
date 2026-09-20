@@ -47,6 +47,23 @@ return [
         'managers' => '{1} :count valdytojas|[2,9] :count valdytojai|[10,*] :count valdytojų',
         'not_yours' => 'Šis išteklius priklauso padaliniui :tenant — jo tvirtinti negali.',
     ],
+    'overview' => [
+        'title' => 'Rezervacijos',
+        'lead' => 'Kas laukia tavo sprendimo, kas išduota ir kas vėluoja.',
+        'rules' => 'Taisyklės',
+        'attention' => 'Laukia tavo sprendimo',
+        'attention_empty' => 'nėra ko tvirtinti',
+        'numbers' => [
+            'waiting' => 'Laukia sprendimo',
+            'lent' => 'Išduota',
+            'overdue' => 'Vėluoja grąžinti',
+            'mine' => 'Mano aktyvios',
+            'my_overdue' => 'Mano vėluojančios',
+        ],
+        'mine' => 'Mano rezervacijos',
+        'mine_empty' => 'aktyvių rezervacijų neturi',
+        'mine_link' => 'Visos mano rezervacijos',
+    ],
     'actions' => [
         'approve' => 'Tvirtinti',
         'hand_over' => 'Išduoti',

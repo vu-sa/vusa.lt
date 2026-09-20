@@ -27,6 +27,10 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * @deprecated Superseded by `OverviewNumbers` on the Rezervacijos overview in PR 7.1; slated for
+ * removal in Phase 10.
+ */
 import { computed } from 'vue';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { TriangleAlert } from 'lucide-vue-next';

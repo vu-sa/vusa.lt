@@ -68,6 +68,7 @@ const actionWindow = useActionWindow();
 
 const menuOpen = ref(false);
 const canCreate = computed(() => workspaces.value.some(workspace => workspace.createActions.length > 0));
-const showAllSections = computed(() => Boolean(page.props.auth?.can?.accessAdministration));
+// Visi skyriai lists only what the user may open, so it is never a dead end and is offered to everyone.
+const showAllSections = true;
 const systemMessage = computed(() => page.props.app?.systemMessage ?? null);
 </script>

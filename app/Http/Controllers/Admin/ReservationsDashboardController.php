@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\ApprovalDecision;
+use App\Actions\SerializeReservationsForTable;
 use App\Http\Controllers\AdminController;
-use App\Models\Approval;
 use App\Models\Reservation;
-use App\Models\Resource;
-use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ReservationsDashboardController extends AdminController
 {
+    /** Item states that still need someone: neither returned, rejected nor cancelled. */
+    private const array IN_FLIGHT = ['created', 'reserved', 'lent'];
+
+    private const int LIST_SIZE = 5;
+
     public function __construct(
         public Authorizer $authorizer,
     ) {}
@@ -23,130 +27,77 @@ class ReservationsDashboardController extends AdminController
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
 
-        /**
-         * Resolved once: ReservationResource::canBeApprovedBy() applies the same rule per pivot,
-         * which would re-resolve the authorizer — and query the reservation's users — for every row.
-         */
         $managedTenantIds = $this->authorizer
             ->tenants($user, config('permission.resource_managership_indicating_permission'))
             ->pluck('id');
 
-        $eagerLoads = [
-            'resources.tenant:id,shortname',
-            'resources.pivot.approvals:id,approvable_type,approvable_id,decision,reverted_at',
-            'users:id,name,email,profile_photo_path',
-        ];
-
-        $myReservations = $user->reservations()->with($eagerLoads)->get();
-
-        $administeredReservations = Reservation::query()
-            ->whereHas('resources', fn ($query) => $query->whereIn('resources.tenant_id', $managedTenantIds))
-            ->with($eagerLoads)
-            ->get();
-
+        // Counts are aggregates and stay on the first paint; the two lists are the secondary group.
         return $this->inertiaResponse('Admin/Dashboard/ShowReservations', [
-            'myReservations' => $this->serializeReservations($myReservations, $managedTenantIds, $user),
-            'administeredReservations' => $this->serializeReservations($administeredReservations, $managedTenantIds, $user),
-            // KPI counts are derived on the client, from whatever the table is currently showing:
-            // the tiles filter the table, so their numbers have to agree with the rows.
-            'managedTenants' => Tenant::query()
-                ->whereIn('id', $managedTenantIds)
-                ->orderBy('shortname')
-                ->get(['id', 'shortname']),
+            'managesResources' => $managedTenantIds->isNotEmpty(),
+            'counts' => [
+                'waitingForMe' => $this->administered($managedTenantIds, ['created'])->count(),
+                'lentOut' => $this->administered($managedTenantIds, ['lent'])->count(),
+                'overdue' => $this->administered($managedTenantIds, self::IN_FLIGHT, overdue: true)->count(),
+                'mine' => $this->mine($user, self::IN_FLIGHT)->count(),
+                'myOverdue' => $this->mine($user, self::IN_FLIGHT, overdue: true)->count(),
+            ],
+            'waitingForMe' => Inertia::defer(fn (): array => $this->serialize(
+                $this->administered($managedTenantIds, ['created'])->orderBy('start_time'),
+                $user,
+            ), 'secondary'),
+            'myUpcoming' => Inertia::defer(fn (): array => $this->serialize(
+                $this->mine($user, self::IN_FLIGHT)->orderBy('start_time'),
+                $user,
+            ), 'secondary'),
         ]);
     }
 
     /**
-     * Flatten reservations for the dashboard table.
+     * Reservations holding an item, in one of the states, that belongs to a tenant the user manages.
      *
-     * Each resource carries its pivot plus two permission flags that mirror the two branches of
-     * ReservationResource::canBeApprovedBy(), so the table never offers an action the server
-     * would reject. Pivot fields are listed explicitly: the pivot model declares
-     * $with = ['comments', 'approvals'], which has no business in a list payload.
-     *
-     * @param  SupportCollection<int, Reservation>  $reservations
-     * @param  SupportCollection<int, int>  $managedTenantIds
+     * @param  Collection<int, int|string>  $managedTenantIds
+     * @param  list<string>  $states
+     * @return Builder<Reservation>
+     */
+    private function administered(Collection $managedTenantIds, array $states, bool $overdue = false): Builder
+    {
+        return Reservation::query()->whereHas('resources', function ($resources) use ($managedTenantIds, $states, $overdue): void {
+            $resources->whereIn('resources.tenant_id', $managedTenantIds)
+                ->whereIn('reservation_resource.state', $states);
+
+            if ($overdue) {
+                $resources->where('reservation_resource.end_time', '<', now());
+            }
+        });
+    }
+
+    /**
+     * @param  list<string>  $states
+     * @return Builder<Reservation>
+     */
+    private function mine(User $user, array $states, bool $overdue = false): Builder
+    {
+        return Reservation::query()
+            ->whereHas('users', fn ($users) => $users->where('users.id', $user->id))
+            ->whereHas('resources', function ($resources) use ($states, $overdue): void {
+                $resources->whereIn('reservation_resource.state', $states);
+
+                if ($overdue) {
+                    $resources->where('reservation_resource.end_time', '<', now());
+                }
+            });
+    }
+
+    /**
+     * @param  Builder<Reservation>  $query
      * @return list<array<string, mixed>>
      */
-    private function serializeReservations(SupportCollection $reservations, SupportCollection $managedTenantIds, User $user): array
+    private function serialize(Builder $query, User $user): array
     {
-        return $reservations->map(function (Reservation $reservation) use ($managedTenantIds, $user) {
-            $isParticipant = $reservation->users->contains('id', $user->id);
-
-            return [
-                'id' => $reservation->id,
-                'name' => $reservation->name,
-                'description' => $reservation->description,
-                'start_time' => $reservation->start_time,
-                'end_time' => $reservation->end_time,
-                'created_at' => $reservation->created_at,
-                'users' => $reservation->users
-                    ->map(fn (User $manager) => $this->serializeReservationUser($manager))
-                    ->values()
-                    ->all(),
-                'resources' => $reservation->resources
-                    ->map(fn (Resource $resource) => $this->serializeReservationResource($resource, $managedTenantIds, $isParticipant))
-                    ->values()
-                    ->all(),
-            ];
-        })->values()->all();
-    }
-
-    /**
-     * Serialize one reserved resource, with the pivot the table acts on.
-     *
-     * @param  SupportCollection<int, int>  $managedTenantIds
-     * @return array<string, mixed>
-     */
-    private function serializeReservationResource(Resource $resource, SupportCollection $managedTenantIds, bool $isParticipant): array
-    {
-        $pivot = $resource->pivot;
-        $state = $pivot->state->getValue();
-
-        return [
-            'id' => $resource->id,
-            'name' => $resource->name,
-            'tenant' => [
-                'id' => $resource->tenant->id,
-                'shortname' => $resource->tenant->shortname,
-            ],
-            'pivot' => [
-                'id' => $pivot->id,
-                'reservation_id' => $pivot->reservation_id,
-                'resource_id' => $pivot->resource_id,
-                'start_time' => $pivot->start_time,
-                'end_time' => $pivot->end_time,
-                'returned_at' => $pivot->returned_at,
-                // Fallback for returned_at, which is only stamped on items returned
-                // since it started being written.
-                'updated_at' => $pivot->updated_at,
-                'quantity' => $pivot->quantity,
-                'state' => $state,
-                'state_properties' => $pivot->state_properties,
-                'approvable' => $managedTenantIds->contains($resource->tenant_id),
-                'backtrackable' => $managedTenantIds->contains($resource->tenant_id)
-                    && in_array($state, ['reserved', 'lent', 'returned'], true)
-                    && $pivot->approvals->contains(
-                        fn (Approval $approval) => $approval->decision === ApprovalDecision::Approved
-                            && $approval->reverted_at === null
-                    ),
-                'cancellable' => $isParticipant && in_array($state, ['created', 'reserved'], true),
-            ],
-        ];
-    }
-
-    /**
-     * Serialize a single user attached to a reservation.
-     *
-     * @return array<string, mixed>
-     */
-    private function serializeReservationUser(User $user): array
-    {
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'profile_photo_path' => $user->profile_photo_path,
-        ];
+        return SerializeReservationsForTable::execute(
+            $query->with(SerializeReservationsForTable::EAGER_LOADS)->take(self::LIST_SIZE)->get(),
+            $user,
+            $this->authorizer,
+        );
     }
 }

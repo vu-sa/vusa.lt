@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape changes, so a deploy never serves the old shape from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v2-';
+    public const string CACHE_PREFIX = 'admin-navigation-v3-';
 
     private const int CACHE_TTL = 1800;
 
@@ -62,6 +62,15 @@ class AdminNavigationCatalog
     public function for(User $user): array
     {
         return Cache::remember(self::CACHE_PREFIX.$user->id, self::CACHE_TTL, fn () => $this->resolve($user));
+    }
+
+    /**
+     * Whether the user has any section of a workspace. An overview controller asks this instead of
+     * re-deriving the gate, so the page and its tab can never disagree.
+     */
+    public function opensWorkspace(User $user, string $workspaceKey): bool
+    {
+        return collect($this->for($user)['workspaces'])->contains(fn (array $workspace): bool => $workspace['key'] === $workspaceKey);
     }
 
     /**
@@ -97,9 +106,20 @@ class AdminNavigationCatalog
             'key' => $workspace->key,
             'label' => $workspace->labelKey,
             'description' => $workspace->descriptionKey,
-            'sections' => $sections,
+            'sections' => $this->withOverview($workspace, $sections),
             'createActions' => $this->visibleCreateActions($workspace->createActions, $user),
         ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $sections  already filtered to what the user may see; never empty here
+     * @return list<array<string, mixed>>
+     */
+    private function withOverview(Workspace $workspace, array $sections): array
+    {
+        return $workspace->overview === null
+            ? $sections
+            : [$workspace->overview->toArray(), ...$sections];
     }
 
     /**
@@ -241,6 +261,7 @@ class AdminNavigationCatalog
                 new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class)),
                 new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))]),
             ],
+            overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.organizacija', [], null, Visibility::always()),
             createActions: [
                 CreateAction::route('duty_update', 'shell.actions.duty_update.title', 'shell.actions.duty_update.description', 'duty', 'duties.updateUsersWizard', Visibility::can('create', Duty::class)),
                 CreateAction::route('duty_periods', 'shell.actions.duty_periods.title', 'shell.actions.duty_periods.description', 'dutiable', 'dutiables.timeline', Visibility::can('viewAny', Duty::class)),
@@ -318,7 +339,7 @@ class AdminNavigationCatalog
             'key' => $workspace->key,
             'label' => $workspace->labelKey,
             'description' => $workspace->descriptionKey,
-            'sections' => $sections,
+            'sections' => $this->withOverview($workspace, $sections),
             'createActions' => $this->visibleCreateActions($workspace->createActions, $user),
         ];
     }
@@ -343,6 +364,7 @@ class AdminNavigationCatalog
                 new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class)),
                 new Section('sharepoint_failai', 'shell.sections.sharepoint_failai', 'sharepointFiles.index', [], 'sharepoint_file', Visibility::can('viewAny', SharepointFile::class), matches: ['sharepointFiles.*', 'sharepoint.*']),
             ],
+            overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.sistema', [], null, Visibility::always()),
         );
     }
 }

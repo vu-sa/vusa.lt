@@ -29,10 +29,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('profile', [ProfileController::class, 'userSettings'])->name('profile');
 Route::get('profile/roles', [ProfileController::class, 'roles'])->name('profile.roles');
-Route::inertia('administration', 'Admin/ShowAdministration')->name('administration')->middleware('can:access-administration');
+Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
 Route::get('dashboard/atstovavimas', [AtstovavimasDashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
 Route::get('dashboard/svetaine', [SvetaineDashboardController::class, 'svetaine'])->name('dashboard.svetaine');
 Route::get('dashboard/reservations', [ReservationsDashboardController::class, 'reservations'])->name('dashboard.reservations');
+Route::get('dashboard/organizacija', [OrganizacijaDashboardController::class, 'index'])->name('dashboard.organizacija');
+Route::get('dashboard/sistema', [SistemaDashboardController::class, 'index'])->name('dashboard.sistema');
 
 Route::patch('profile', [ProfileController::class, 'updateUserSettings'])->name('profile.update');
 Route::patch('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');

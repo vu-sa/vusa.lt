@@ -3,13 +3,15 @@
     :source
     collection="reservations"
     entity-type="reservation"
-    :eyebrow="$t('shell.workspaces.reservations.title') + ' · ' + $t('shell.sections.rezervacijos')"
+    :eyebrow="$t('shell.workspaces.rezervacijos.title') + ' · ' + $t('shell.sections.rezervacijos')"
     :title="$t('Rezervacijos')"
     :lead="$t('Stebėk prašymus, patvirtink išdavimą ir pažymėk grąžinimą.')"
     default-view="table"
     :item-key="reservationKey"
     :columns
+    :quick-filters
     :search-placeholder="$t('Ieškoti rezervacijų')"
+    @quick-filter="toggleQuickFilter"
   >
     <template #actions>
       <Button v-if="isDeleted" as-child variant="ghost">
@@ -32,23 +34,27 @@
     </template>
 
     <template #row="{ item }">
-      <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
+      <article class="flex min-h-16 items-start gap-3 px-3 py-3 sm:px-4">
         <Checkbox
-          v-if="!isDeleted"
+          v-if="!isDeleted && isReservationSelectable(item)"
+          class="mt-1"
           :model-value="selectedIds.includes(reservationKey(item))"
           :aria-label="$t('Pasirinkti :name', { name: item.name })"
           @update:model-value="toggleReservation(item)"
         />
-        <StatusBadge v-if="primaryStatus(item)" :status="primaryStatus(item)!" class="shrink-0" />
         <div class="min-w-0 flex-1">
-          <Link :href="route('reservations.show', item.id)" data-collection-open class="font-medium hover:text-brand">
-            {{ item.name }}
-          </Link>
-          <p class="mt-0.5 truncate text-sm text-muted-foreground">
-            {{ resourceNames(item) }} · {{ reservationPeriod(item) }}
+          <div class="flex items-start justify-between gap-3">
+            <Link :href="route('reservations.show', item.id)" data-collection-open class="font-medium hover:text-brand">
+              {{ item.name }}
+            </Link>
+            <ReservationStateSummary :states="statesOf(item)" :unresolved="isUnresolved(item)" class="shrink-0" />
+          </div>
+          <ReservationResourceChips class="mt-1.5" :resources="item.resources" :muted-foreign="isAdministrator(item)" />
+          <p class="mt-1.5 text-sm tabular-nums text-muted-foreground">
+            {{ reservationPeriod(item) }}
           </p>
+          <ReservationRowActions v-if="!isDeleted" class="mt-2 flex-wrap" :reservation="item" @decide="openDecision" />
         </div>
-        <span class="text-xs tabular-nums text-muted-foreground">{{ item.users?.length ?? 0 }}</span>
       </article>
     </template>
 
@@ -56,42 +62,86 @@
       <Checkbox
         v-if="column.key === 'select'"
         :model-value="selectedIds.includes(reservationKey(item))"
+        :disabled="!isReservationSelectable(item)"
         :aria-label="$t('Pasirinkti :name', { name: item.name })"
         @update:model-value="toggleReservation(item)"
       />
-      <Link
-        v-else-if="column.key === 'name'"
-        :href="route('reservations.show', item.id)"
-        data-collection-open
-        prefetch
-        class="font-medium hover:text-brand"
-      >
-        {{ item.name }}
-      </Link>
-      <span v-else-if="column.key === 'resources'">{{ resourceNames(item) }}</span>
-      <span v-else-if="column.key === 'period'" class="tabular-nums">{{ reservationPeriod(item) }}</span>
-      <StatusBadge v-else-if="column.key === 'status' && primaryStatus(item)" :status="primaryStatus(item)!" />
-      <span v-else-if="column.key === 'status'">—</span>
-      <span v-else-if="column.key === 'managers'" class="tabular-nums">{{ item.users?.length ?? 0 }}</span>
+      <div v-else-if="column.key === 'name'" class="min-w-0">
+        <Link
+          :href="route('reservations.show', item.id)"
+          data-collection-open
+          prefetch
+          class="block truncate font-medium hover:text-brand"
+        >
+          {{ item.name }}
+        </Link>
+        <span v-if="item.users?.length" class="text-xs text-muted-foreground">
+          {{ $tChoice('reservations.dashboard.managers', item.users.length, { count: item.users.length }) }}
+        </span>
+      </div>
+      <div v-else-if="column.key === 'requester'" class="flex items-center gap-2">
+        <template v-if="item.users?.length">
+          <UsersAvatarGroup :users="item.users" :size="24" :max="2" />
+          <span class="max-w-30 truncate text-sm">{{ item.users[0].name }}</span>
+        </template>
+        <span v-else class="text-sm text-muted-foreground">—</span>
+      </div>
+      <ReservationResourceChips
+        v-else-if="column.key === 'resources'"
+        :resources="item.resources"
+        :muted-foreign="isAdministrator(item)"
+      />
+      <ReservationPeriod v-else-if="column.key === 'period'" :start-time="item.start_time" :end-time="item.end_time" />
+      <ReservationStateSummary
+        v-else-if="column.key === 'status'"
+        :states="statesOf(item)"
+        :unresolved="isUnresolved(item)"
+      />
+      <ReservationRowActions
+        v-else-if="column.key === 'actions' && !isDeleted"
+        :reservation="item"
+        :spotlight="reservationKey(item) === spotlightKey"
+        @decide="openDecision"
+      />
     </template>
 
     <template #preview="{ item }">
       <section class="flex flex-col gap-5 p-5">
         <div>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{{ $t('Rezervacija') }}</p>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {{ $t('Rezervacija') }}
+          </p>
           <Link :href="route('reservations.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
             {{ item.name }}
           </Link>
-          <p v-if="item.description" class="mt-2 text-sm text-muted-foreground">{{ item.description }}</p>
+          <p v-if="item.description" class="mt-2 text-sm text-muted-foreground">
+            {{ item.description }}
+          </p>
         </div>
         <dl class="grid gap-3 border-y border-border py-4 text-sm">
           <div>
-            <dt class="text-xs text-muted-foreground">{{ $t('Laikas') }}</dt>
-            <dd class="mt-1 tabular-nums">{{ reservationPeriod(item) }}</dd>
+            <dt class="text-xs text-muted-foreground">
+              {{ $t('Būsena') }}
+            </dt>
+            <dd class="mt-1">
+              <ReservationStateSummary :states="statesOf(item)" :unresolved="isUnresolved(item)" />
+            </dd>
           </div>
           <div>
-            <dt class="text-xs text-muted-foreground">{{ $t('Ištekliai') }}</dt>
-            <dd class="mt-1">{{ resourceNames(item) }}</dd>
+            <dt class="text-xs text-muted-foreground">
+              {{ $t('Laikas') }}
+            </dt>
+            <dd class="mt-1 tabular-nums">
+              {{ reservationPeriod(item) }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs text-muted-foreground">
+              {{ $t('Ištekliai') }}
+            </dt>
+            <dd class="mt-1">
+              <ReservationResourceChips :resources="item.resources" :muted-foreign="isAdministrator(item)" :max="12" />
+            </dd>
           </div>
         </dl>
         <template v-if="isDeleted">
@@ -106,16 +156,13 @@
             </Button>
           </div>
         </template>
-        <Button v-else-if="approvableResourceIds(item).length" variant="brand" :disabled="approving" @click="approve(item)">
-          <Check aria-hidden="true" />
-          {{ $t('Patvirtinti') }}
-        </Button>
+        <ReservationRowActions v-else :reservation="item" class="flex-wrap" @decide="openDecision" />
       </section>
     </template>
 
     <template #empty>
       <EmptyState
-        mode="empty"
+        :mode="isFiltered ? 'no-results' : 'empty'"
         :icon="ReservationIcon"
         :title="isDeleted ? $t('Ištrintų rezervacijų nėra') : $t('Rezervacijų dar nėra')"
         :description="isDeleted ? $t('Šiukšliadėžėje nėra pašalintų rezervacijų.') : $t('Čia matysi patalpų ir įrangos prašymus bei jų eigą.')"
@@ -126,16 +173,36 @@
   </CollectionPage>
 
   <CollectionSelectionBar
-    v-if="selectedResourceIds.length && !isDeleted"
-    :count="selectedResourceIds.length"
+    v-if="selectedReservations.length && !isDeleted"
+    :count="selectedReservations.length"
     :count-label="$t('Pasirinkta')"
     @clear="selectedIds = []"
   >
-    <Button variant="brand" size="sm" :disabled="approving" @click="approveSelected">
+    <Button variant="brand" size="sm" @click="openDecision('approved', selectedReservations)">
       <Check aria-hidden="true" />
-      {{ $t('Patvirtinti') }}
+      {{ $t('reservations.actions.approve') }}
+    </Button>
+    <Button
+      v-if="selectedReservations.some(reservation => getRejectablePivotIds(reservation).length > 0)"
+      variant="outline"
+      size="sm"
+      @click="openDecision('rejected', selectedReservations)"
+    >
+      <X aria-hidden="true" />
+      {{ $t('reservations.actions.reject') }}
+    </Button>
+    <Button variant="outline" size="sm" @click="openDecision('resolved', selectedReservations)">
+      <CheckCheck aria-hidden="true" />
+      {{ $t('reservations.actions.resolve') }}
     </Button>
   </CollectionSelectionBar>
+
+  <ReservationDecisionDialog
+    v-model:open="decisionOpen"
+    :decision
+    :targets="decisionTargets"
+    @done="onDecided"
+  />
 
   <ConfirmDialog
     :open="targetReservationToForceDelete !== null"
@@ -150,42 +217,72 @@
 
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
-import { Check, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { Check, CheckCheck, Plus, RotateCcw, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
-import type { CollectionColumn } from '@/Components/Collection/types';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
+import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
+import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
+import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
+import ReservationResourceChips from '@/Components/Reservations/ReservationResourceChips.vue';
+import ReservationRowActions from '@/Components/Reservations/ReservationRowActions.vue';
+import type { ReservationDecision } from '@/Components/Reservations/types';
+import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
+import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { ReservationIcon } from '@/Components/icons';
-import { reservationResourceStatuses, type ReservationResourceStatus, type StatusPresentation } from '@/Constants/statuses';
-import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
+import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { formatDate } from '@/Utils/dateTime';
+import { capitalize } from '@/Utils/String';
+import {
+  getBacktrackAction,
+  getReservationStates,
+  getRejectablePivotIds,
+  isReservationSelectable,
+  isReservationUnresolved,
+  type DashboardReservation,
+} from '@/Utils/ReservationStatus';
 
 const entityName = 'reservation';
 
-type ReservationResource = App.Entities.Resource & {
-  pivot?: App.Entities.ReservationResource & { approvable?: boolean };
-};
-type Reservation = App.Entities.Reservation & { resources?: ReservationResource[] };
-
 const props = defineProps<{
-  reservations: { data: Reservation[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
+  reservations: { data: DashboardReservation[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
   deletedCount: number;
+  managesResources?: boolean;
   showDeleted?: boolean;
 }>();
 
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.reservation));
 const selectedIds = ref<string[]>([]);
-const approving = ref(false);
-const targetReservationToForceDelete = ref<Reservation | null>(null);
+const targetReservationToForceDelete = ref<DashboardReservation | null>(null);
 
-const source = useDatabaseCollectionSource<Reservation>({
+const STATES = ['created', 'reserved', 'lent', 'returned', 'rejected', 'cancelled'] as const;
+
+const facets = computed<DatabaseFacetDefinition[]>(() => [
+  {
+    field: 'scope',
+    label: $t('Rodyti'),
+    single: true,
+    values: [
+      { value: 'mine', label: $t('Mano rezervacijos') },
+      ...(props.managesResources ? [{ value: 'administered', label: $t('Administruoju') }] : []),
+    ],
+  },
+  {
+    field: 'state',
+    label: $t('Būsena'),
+    values: STATES.map(state => ({ value: state, label: capitalize($t(`state.status.${state}`)) })),
+  },
+  { field: 'overdue', label: $t('Terminas'), single: true, values: [{ value: '1', label: $t('Vėluoja grąžinti') }] },
+]);
+
+const source = useDatabaseCollectionSource<DashboardReservation>({
   endpoint: route('api.v1.admin.reservations.index'),
   initial: {
     items: props.reservations.data,
@@ -201,88 +298,104 @@ const source = useDatabaseCollectionSource<Reservation>({
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
   ],
   preserveUrlKeys: ['showDeleted'],
+  facets: facets.value,
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  ...(!isDeleted.value ? [{ key: 'select', label: $t('Pasirinkti'), class: 'w-12' }] : []),
+  ...(!isDeleted.value && props.managesResources ? [{ key: 'select', label: $t('Pasirinkti'), class: 'w-12' }] : []),
   { key: 'name', label: $t('Rezervacija') },
+  { key: 'requester', label: $t('Prašytojas'), class: 'w-44' },
   { key: 'resources', label: $t('Ištekliai') },
-  { key: 'period', label: $t('Laikas'), class: 'w-48' },
+  { key: 'period', label: $t('Laikas'), class: 'w-36' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
-  { key: 'managers', label: $t('Valdytojai'), class: 'w-24' },
+  ...(!isDeleted.value ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-56' }] : []),
 ]);
 
-const reservationKey = (reservation: Reservation) => String(reservation.id);
-const resourceNames = (reservation: Reservation) => reservation.resources?.map(resource => resource.name).join(', ') || '—';
-const reservationPeriod = (reservation: Reservation) => `${formatDate(new Date(reservation.start_time))} – ${formatDate(new Date(reservation.end_time))}`;
+// --- Quick filters: the URL state an overview number links to ---------------------------------
 
-function primaryStatus(reservation: Reservation): StatusPresentation | null {
-  const state = reservation.resources?.find(resource => resource.pivot?.state && resource.pivot.state !== 'returned')?.pivot?.state as ReservationResourceStatus | undefined;
-  return state ? reservationResourceStatuses[state] : null;
+const asList = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : value ? [String(value)] : []);
+
+const quickFilters = computed<CollectionQuickFilter[]>(() => {
+  const filters = source.filters.value;
+  const scope = asList(filters.scope);
+  const states = asList(filters.state);
+
+  return [
+    ...(props.managesResources
+      ? [{
+          id: 'waiting',
+          label: $t('Laukia sprendimo'),
+          active: scope.includes('administered') && states.length === 1 && states[0] === 'created',
+        }]
+      : []),
+    { id: 'mine', label: $t('Mano rezervacijos'), active: scope.includes('mine') },
+    ...(props.managesResources
+      ? [{ id: 'administered', label: $t('Administruoju'), active: scope.includes('administered') && states.length === 0 }]
+      : []),
+  ];
+});
+
+function toggleQuickFilter(id: string): void {
+  const active = quickFilters.value.find(filter => filter.id === id)?.active ?? false;
+
+  if (id === 'waiting') {
+    source.setFilter('scope', active ? undefined : 'administered');
+    source.setFilter('state', active ? undefined : ['created']);
+  }
+  else {
+    source.setFilter('state', undefined);
+    source.toggleFilter('scope', id);
+  }
 }
 
-function approvableResourceIds(reservation: Reservation): string[] {
-  return reservation.resources
-    ?.filter(resource => resource.pivot?.approvable && ['created', 'reserved', 'lent'].includes(resource.pivot.state))
-    .map(resource => String(resource.pivot?.id)) ?? [];
-}
+const isFiltered = computed(() => source.query.value.trim() !== '' || source.activeFilterCount.value > 0);
 
-const selectedResourceIds = computed(() => source.items.value
-  .filter(reservation => selectedIds.value.includes(reservationKey(reservation)))
-  .flatMap(approvableResourceIds));
+// --- Row presentation ---------------------------------------------------------------------------
 
-function toggleReservation(reservation: Reservation): void {
+const reservationKey = (reservation: DashboardReservation) => String(reservation.id);
+const reservationPeriod = (reservation: DashboardReservation) => `${formatDate(new Date(reservation.start_time))} – ${formatDate(new Date(reservation.end_time))}`;
+
+/** An administrator's row is scoped to the items they manage; a requester sees the whole reservation. */
+const isAdministrator = (reservation: DashboardReservation) => reservation.resources.some(resource => resource.pivot.approvable);
+const statesOf = (reservation: DashboardReservation) => getReservationStates(reservation, { approvableOnly: isAdministrator(reservation) });
+const isUnresolved = (reservation: DashboardReservation) => isReservationUnresolved(reservation, { approvableOnly: isAdministrator(reservation) });
+
+/** One row carries the backtrack hint, so it never shows twice on a page. */
+const spotlightKey = computed(() => {
+  const first = source.items.value.find(reservation => getBacktrackAction(reservation) !== null);
+
+  return first ? reservationKey(first) : null;
+});
+
+// --- Selection and decisions ---------------------------------------------------------------------
+
+const selectedReservations = computed(() =>
+  source.items.value.filter(reservation => selectedIds.value.includes(reservationKey(reservation)) && isReservationSelectable(reservation)),
+);
+
+function toggleReservation(reservation: DashboardReservation): void {
   const id = reservationKey(reservation);
   selectedIds.value = selectedIds.value.includes(id)
     ? selectedIds.value.filter(selected => selected !== id)
     : [...selectedIds.value, id];
 }
 
-function advance(state: ReservationResourceStatus): ReservationResourceStatus {
-  return ({ created: 'reserved', reserved: 'lent', lent: 'returned' } as Partial<Record<ReservationResourceStatus, ReservationResourceStatus>>)[state] ?? state;
+const decisionOpen = ref(false);
+const decision = ref<ReservationDecision>('approved');
+const decisionTargets = ref<DashboardReservation[]>([]);
+
+function openDecision(next: ReservationDecision, target: DashboardReservation | DashboardReservation[]): void {
+  decision.value = next;
+  decisionTargets.value = Array.isArray(target) ? target : [target];
+  decisionOpen.value = true;
 }
 
-function approve(reservation: Reservation): void {
-  approveIds(approvableResourceIds(reservation));
+function onDecided(): void {
+  selectedIds.value = [];
+  source.refresh();
 }
 
-function approveSelected(): void {
-  approveIds(selectedResourceIds.value);
-}
-
-function approveIds(ids: string[]): void {
-  if (!ids.length) return;
-
-  const before = structuredClone(source.items.value) as Reservation[];
-  approving.value = true;
-  source.items.value.forEach((reservation) => {
-    reservation.resources?.forEach((resource) => {
-      if (resource.pivot && ids.includes(String(resource.pivot.id))) {
-        resource.pivot.state = advance(resource.pivot.state as ReservationResourceStatus);
-      }
-    });
-  });
-
-  router.post(route('approvals.bulkStore'), {
-    approvable_type: 'reservation_resource',
-    approvable_ids: ids,
-    decision: 'approved',
-    step: 1,
-  }, {
-    preserveScroll: true,
-    onSuccess: () => {
-      selectedIds.value = [];
-      toast.success($t('Rezervacija patvirtinta.'));
-    },
-    onError: () => {
-      source.replaceItems(before);
-      toast.error($t('Nepavyko patvirtinti rezervacijos.'));
-    },
-    onFinish: () => { approving.value = false; },
-  });
-}
-
-function restoreReservation(reservation: Reservation): void {
+function restoreReservation(reservation: DashboardReservation): void {
   router.patch(route('reservations.restore', reservation.id), {}, {
     preserveScroll: true,
     onSuccess: () => {

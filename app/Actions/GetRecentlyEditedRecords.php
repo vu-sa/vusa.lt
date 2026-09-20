@@ -37,15 +37,16 @@ class GetRecentlyEditedRecords
     ];
 
     /**
+     * @param  list<string>|null  $types  Restrict to these root types, e.g. a workspace overview's own entities.
      * @return Collection<int, array{type: string, id: string, title: string, href: string, changed_at: string}>
      */
-    public static function execute(User $user, int $limit = 3): Collection
+    public static function execute(User $user, int $limit = 3, ?array $types = null): Collection
     {
         // A handful of activities usually share a root (one meeting, many vote edits), so
         // over-read and dedupe instead of paging until $limit distinct roots turn up.
         $activities = Activity::query()
             ->causedBy($user)
-            ->whereIn('root_subject_type', array_keys(self::ROUTES))
+            ->whereIn('root_subject_type', $types === null ? array_keys(self::ROUTES) : array_intersect($types, array_keys(self::ROUTES)))
             ->whereNotNull('root_subject_id')
             ->latest()
             ->limit($limit * 15)

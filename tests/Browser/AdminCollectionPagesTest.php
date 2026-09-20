@@ -114,6 +114,13 @@ describe('Rezervacijos ir žymos', function (): void {
             ->toBe('Rezervacijos');
     });
 
+    it('opens a deep link from an overview number with its filter already applied', function (): void {
+        $page = openAdminPage('/mano/reservations?scope=administered&state=created', 1440);
+
+        $page->assertPresent('[data-slot=collection-page]')->assertNoJavaScriptErrors();
+        expect($page->script('window.location.search'))->toContain('state=created');
+    });
+
     it('opens the tag editor as a phone-sized sheet without JavaScript errors', function (): void {
         $page = openAdminPage('/mano/tags', 390, 844);
 
@@ -188,5 +195,49 @@ describe('Paieška', function (): void {
 
         $page->assertPresent('[data-slot=overview-page]');
         expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+    });
+});
+
+/**
+ * PR 7.1 – 7.5: the four remaining workspace overviews and Visi skyriai. Same bar again: each
+ * mounts against the real bundle on the shared Overview layout, fits a phone and throws nothing.
+ */
+describe('Workspace overviews', function (): void {
+    it('opens every overview on the shared layout with its numbers as links', function (string $path, string $eyebrow): void {
+        $page = openAdminPage($path, 1440);
+        waitForInertiaRender($page, '[data-slot=overview-page]');
+
+        $page->assertPresent('[data-slot=overview-title-band]')->assertNoJavaScriptErrors();
+        expect($page->script("document.querySelector('[data-slot=overview-title-band]').textContent"))->toContain($eyebrow)
+            ->and($page->script("document.querySelectorAll('[data-slot=overview-numbers] a').length"))->toBeGreaterThan(0);
+    })->with([
+        'Rezervacijos' => ['/mano/dashboard/reservations', 'Rezervacijos'],
+        'Svetainė' => ['/mano/dashboard/svetaine', 'Svetainė'],
+        'Organizacija' => ['/mano/dashboard/organizacija', 'Organizacija'],
+        'Sistema' => ['/mano/dashboard/sistema', 'Sistema'],
+    ]);
+
+    it('fits a phone without scrolling sideways', function (string $path): void {
+        $page = openAdminPage($path, 390, 844);
+        waitForInertiaRender($page, '[data-slot=overview-page]');
+
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+    })->with([
+        'Rezervacijos' => ['/mano/dashboard/reservations'],
+        'Svetainė' => ['/mano/dashboard/svetaine'],
+        'Organizacija' => ['/mano/dashboard/organizacija'],
+        'Sistema' => ['/mano/dashboard/sistema'],
+        'Visi skyriai' => ['/mano/administration'],
+    ]);
+});
+
+describe('Visi skyriai', function (): void {
+    it('lists every workspace as hairline rows, Pradžia included', function (): void {
+        $page = openAdminPage('/mano/administration', 1440);
+        waitForInertiaRender($page, '[data-slot=overview-page]');
+
+        $page->assertNoJavaScriptErrors();
+        expect($page->script("document.querySelectorAll('[data-workspace]').length"))->toBeGreaterThanOrEqual(5)
+            ->and($page->script("document.querySelectorAll('[data-workspace=pradzia] a').length"))->toBe(3);
     });
 });

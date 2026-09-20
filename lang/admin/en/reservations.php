@@ -47,6 +47,23 @@ return [
         'managers' => '{1} :count manager|[2,*] :count managers',
         'not_yours' => 'This resource belongs to :tenant — you cannot approve it.',
     ],
+    'overview' => [
+        'title' => 'Reservations',
+        'lead' => 'What waits for your decision, what is lent out and what is overdue.',
+        'rules' => 'Rules',
+        'attention' => 'Waiting for your decision',
+        'attention_empty' => 'nothing to approve',
+        'numbers' => [
+            'waiting' => 'Waiting for a decision',
+            'lent' => 'Lent out',
+            'overdue' => 'Overdue for return',
+            'mine' => 'My active',
+            'my_overdue' => 'My overdue',
+        ],
+        'mine' => 'My reservations',
+        'mine_empty' => 'you have no active reservations',
+        'mine_link' => 'All my reservations',
+    ],
     'actions' => [
         'approve' => 'Approve',
         'hand_over' => 'Hand over',

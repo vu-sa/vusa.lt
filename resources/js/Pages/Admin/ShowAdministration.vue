@@ -1,120 +1,90 @@
 <template>
-  <AdminContentPage :title="$t('Administravimas')">
-    <!-- Search bar -->
-    <div class="mb-6">
-      <div class="relative w-full max-w-md">
+  <OverviewPage
+    :eyebrow="$t('shell.chrome.product')"
+    :title="$t('shell.chrome.all_sections')"
+    :lead="$t('shell.chrome.all_sections_lead')"
+  >
+    <template #actions>
+      <div class="relative w-full sm:w-64">
+        <SearchIcon aria-hidden="true" class="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           v-model="searchQuery"
-          :placeholder="$t('Ieškoti įrankių...')"
-          class="w-full"
-        >
-          <template #prefix>
-            <SearchIcon class="h-4 w-4 text-muted-foreground" />
-          </template>
-          <template v-if="searchQuery" #suffix>
-            <Button variant="ghost" size="icon" @click="searchQuery = ''">
-              <XIcon class="h-4 w-4" />
-            </Button>
-          </template>
-        </Input>
+          type="search"
+          class="pl-8 pointer-coarse:h-11"
+          :aria-label="$t('shell.chrome.find_section')"
+          :placeholder="$t('shell.chrome.find_section')"
+        />
       </div>
-    </div>
-
-    <!-- Tools first — the two Organizacija shortcuts that used to live in this hand-written
-         category (duty_update, duty_periods). Other workspaces' create actions already have a
-         home in the sidebar quick actions / ActionWindow, so they are not repeated here. -->
-    <section v-if="filteredTools.length" class="my-8">
-      <h2 class="mb-4 text-xl font-semibold">
-        {{ $t('Įrankiai') }}
-      </h2>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <Link v-for="tool in filteredTools" :key="tool.key" :href="tool.href" class="group relative block h-full w-full rounded-lg transition-all duration-200 hover:scale-[1.01]">
-          <div class="relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300">
-            <span :class="cn('inline-flex self-start shrink-0 items-center justify-center rounded-md bg-gradient-to-br p-1.5', tool.gradient ?? 'from-muted to-muted')">
-              <component :is="tool.icon" width="20" height="20" />
-            </span>
-            {{ $t(tool.label) }}
-          </div>
-        </Link>
-      </div>
-    </section>
-
-    <!-- One category per workspace the user holds sections in (Pradžia's Apžvalga/Užduotys/
-         Pranešimai already sit one tap away in the sidebar, so it is left out here — PR 7.5
-         turns this page into the full Visi skyriai map, including it). -->
-    <template v-for="workspace in filteredWorkspaces" :key="workspace.key">
-      <section class="my-8">
-        <h2 class="mb-4 text-xl font-semibold">
-          {{ $t(workspace.label) }}
-        </h2>
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <Link v-for="section in workspace.sections" :key="section.key" :href="section.href" class="group relative block h-full w-full rounded-lg transition-all duration-200 hover:scale-[1.01]">
-            <div class="relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300">
-              <component :is="section.icon" width="28" height="28" />
-              {{ $t(section.label) }}
-            </div>
-          </Link>
-        </div>
-      </section>
     </template>
 
-    <!-- Empty state when no items match filter -->
-    <Alert v-if="!hasVisibleItems" variant="default" class="mt-8">
-      <AlertCircleIcon class="h-4 w-4" />
-      <AlertTitle>{{ $t("Nerasta rezultatų") }}</AlertTitle>
-      <AlertDescription>
-        {{ $t("Bandykite pakeisti paieškos kriterijus arba filtrus.") }}
-      </AlertDescription>
-    </Alert>
-  </AdminContentPage>
+    <!-- The Organizacija shortcuts that are tools rather than sections (duty_update, duty_periods). -->
+    <OverviewSection v-if="filteredTools.length" :title="$t('shell.chrome.tools')">
+      <ul class="grid gap-x-8 md:grid-cols-2 lg:grid-cols-3" data-slot="all-sections-tools">
+        <li v-for="tool in filteredTools" :key="tool.key">
+          <SectionLink :href="tool.href" :label="$t(tool.label)" :icon="tool.icon" />
+        </li>
+      </ul>
+    </OverviewSection>
+
+    <OverviewSection v-for="workspace in filteredWorkspaces" :key="workspace.key" :title="$t(workspace.label)">
+      <p class="-mt-1 text-sm text-muted-foreground">
+        {{ $t(workspace.description) }}
+      </p>
+      <ul class="grid gap-x-8 md:grid-cols-2 lg:grid-cols-3" :data-workspace="workspace.key">
+        <li v-for="section in workspace.sections" :key="section.key">
+          <SectionLink :href="section.href" :label="$t(section.label)" :icon="section.icon" />
+        </li>
+      </ul>
+    </OverviewSection>
+
+    <EmptyState
+      v-if="!hasVisibleItems"
+      mode="no-results"
+      :title="$t('shell.chrome.no_sections')"
+      :description="$t('Bandykite pakeisti paieškos kriterijus arba filtrus.')"
+    />
+  </OverviewPage>
 </template>
 
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref, type Component } from 'vue';
+import { computed, defineComponent, h, ref, type Component, type PropType } from 'vue';
+import { ChevronRight, LayoutDashboard, Mail, MessageSquare, SearchIcon } from 'lucide-vue-next';
 
-import {
-  SearchIcon,
-  XIcon,
-  AlertCircleIcon,
-  LayoutDashboard,
-  Mail,
-  MessageSquare,
-} from 'lucide-vue-next';
-
-import { cn } from '@/Utils/Shadcn/utils';
-import { getEntityTypeDefinition } from '@/Constants/entityTypes';
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-
-import { Button } from '@/Components/ui/button';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import { EmptyState, OverviewSection } from '@/Components/Patterns';
+import { CategoryIcon, NotificationIcon, PageIcon, SettingIcon, SharepointFileIcon } from '@/Components/icons';
 import { Input } from '@/Components/ui/input';
-import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
-import { CategoryIcon, PageIcon, SharepointFileIcon, SettingIcon, NotificationIcon, TypeIcon } from '@/Components/icons';
-import { quickActionGradient } from '@/Composables/useQuickActions';
-import {
-  usePageBreadcrumbs,
-  BreadcrumbHelpers,
-} from '@/Composables/useBreadcrumbsUnified';
-
-usePageBreadcrumbs([{ label: $t('Administravimas'), icon: TypeIcon }]);
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 
 const adminNavigation = computed(() => usePage().props.adminNavigation);
 
 const searchQuery = ref('');
 
 const matchesQuery = (label: string): boolean => {
-  if (!searchQuery.value) return true;
-  return $t(label).toLowerCase().includes(searchQuery.value.toLowerCase());
+  const query = searchQuery.value.trim().toLowerCase();
+
+  return query === '' || $t(label).toLowerCase().includes(query);
 };
 
-interface ToolItem {
-  key: string;
-  label: string;
-  icon: Component;
-  gradient?: string;
-  href: string;
-}
+/** One hairline row: icon, name, chevron. Touch targets reach 44px on coarse pointers. */
+const SectionLink = defineComponent({
+  props: {
+    href: { type: String, required: true },
+    label: { type: String, required: true },
+    icon: { type: Object as PropType<Component>, required: true },
+  },
+  setup: props => () => h(Link, {
+    href: props.href,
+    prefetch: true,
+    class: 'group flex min-h-11 items-center gap-3 border-b border-border px-1 py-2.5 hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
+  }, () => [
+    h(props.icon, { 'class': 'size-4 shrink-0 text-muted-foreground', 'aria-hidden': 'true' }),
+    h('span', { class: 'min-w-0 flex-1 truncate text-sm font-medium' }, props.label),
+    h(ChevronRight, { 'class': 'size-4 shrink-0 text-muted-foreground group-hover:text-foreground', 'aria-hidden': 'true' }),
+  ]),
+});
 
 /** A section with no backing `ModelEnum` entity — icon keyed by the section's own key. */
 const SECTION_FALLBACK_ICONS: Record<string, Component> = {
@@ -135,8 +105,15 @@ function iconFor(section: { key: string; entityType: string | null }): Component
   return SECTION_FALLBACK_ICONS[section.key] ?? PageIcon;
 }
 
+interface ToolItem {
+  key: string;
+  label: string;
+  icon: Component;
+  href: string;
+}
+
 const filteredTools = computed<ToolItem[]>(() => {
-  const organizacija = adminNavigation.value?.workspaces.find(w => w.key === 'organizacija');
+  const organizacija = adminNavigation.value?.workspaces.find(workspace => workspace.key === 'organizacija');
 
   return (organizacija?.createActions ?? [])
     .filter(action => action.target.kind === 'route')
@@ -144,31 +121,17 @@ const filteredTools = computed<ToolItem[]>(() => {
       key: action.key,
       label: action.label,
       icon: action.entityType ? (getEntityTypeDefinition(action.entityType)?.icon ?? PageIcon) : PageIcon,
-      gradient: quickActionGradient(action.key),
       href: route((action.target as { kind: 'route'; routeName: string }).routeName),
     }))
     .filter(tool => matchesQuery(tool.label));
 });
 
-interface SectionItem {
-  key: string;
-  label: string;
-  icon: Component;
-  href: string;
-}
-
-interface WorkspaceGroup {
-  key: string;
-  label: string;
-  sections: SectionItem[];
-}
-
-const filteredWorkspaces = computed<WorkspaceGroup[]>(() => {
-  return (adminNavigation.value?.workspaces ?? [])
-    .filter(workspace => workspace.key !== 'pradzia')
+const filteredWorkspaces = computed(() =>
+  (adminNavigation.value?.workspaces ?? [])
     .map(workspace => ({
       key: workspace.key,
       label: workspace.label,
+      description: workspace.description,
       sections: workspace.sections
         .filter(section => matchesQuery(section.label))
         .map(section => ({
@@ -178,8 +141,8 @@ const filteredWorkspaces = computed<WorkspaceGroup[]>(() => {
           href: route(section.routeName, section.routeParams),
         })),
     }))
-    .filter(workspace => workspace.sections.length > 0);
-});
+    .filter(workspace => workspace.sections.length > 0),
+);
 
 const hasVisibleItems = computed(() => filteredTools.value.length > 0 || filteredWorkspaces.value.length > 0);
 </script>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Calendar;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\QuickLink;
@@ -68,6 +69,24 @@ describe('svetaine dashboard', function (): void {
                 ->missing('providedTenant.news')
                 ->missing('providedTenant.quick_links')
                 ->missing('providedTenant.calendar')
+            );
+    });
+});
+
+describe('svetaine counts', function (): void {
+    test('counts the selected tenant\'s content, drafts apart from the total', function (): void {
+        News::factory()->for($this->tenant)->count(2)->create(['draft' => true]);
+        News::factory()->for($this->tenant)->create(['draft' => false]);
+        Calendar::factory()->for($this->tenant)->create(['is_draft' => true]);
+        News::factory()->for(Tenant::query()->where('id', '!=', $this->tenant->id)->first())->create(['draft' => true]);
+
+        asUser($this->admin)
+            ->get(route('dashboard.svetaine', ['tenant_id' => $this->tenant->id]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('counts.newsDrafts', 2)
+                ->where('counts.news', 4)
+                ->where('counts.calendarDrafts', 1)
+                ->where('counts.pages', fn ($pages) => $pages >= 1)
             );
     });
 });

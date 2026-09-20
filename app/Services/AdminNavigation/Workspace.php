@@ -16,6 +16,11 @@ final readonly class Workspace
      * @param  string  $descriptionKey  i18n key for the one-line description in the picker panel (O25).
      * @param  list<Section>  $sections
      * @param  list<CreateAction>  $createActions
+     * @param  Section|null  $overview  The workspace's Apžvalga, for workspaces whose overview is
+     *                                  not gated on a model of its own: it is prepended exactly
+     *                                  when at least one other section is visible, so "any section
+     *                                  below" lives in one place instead of a second gate that
+     *                                  would have to be kept in step with the list.
      */
     public function __construct(
         public string $key,
@@ -23,5 +28,6 @@ final readonly class Workspace
         public string $descriptionKey,
         public array $sections,
         public array $createActions = [],
+        public ?Section $overview = null,
     ) {}
 }
