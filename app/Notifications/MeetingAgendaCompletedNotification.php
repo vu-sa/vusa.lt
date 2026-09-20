@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
@@ -23,6 +24,11 @@ class MeetingAgendaCompletedNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Meeting;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Know;
     }
 
     public function title(object $notifiable): string

@@ -23,6 +23,8 @@ use Tests\Feature\Notifications\NotificationTestHelpers;
 pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
 beforeEach(function (): void {
+    // The command holds digests during quiet hours, so pin the clock to midday.
+    $this->travelTo(now()->setTime(12, 0));
     $this->clearDigestQueue();
 });
 
@@ -365,12 +367,36 @@ describe('digest frequency settings', function (): void {
         // Should NOT be queued yet
         Mail::assertNothingSent();
 
-        // Travel to 25 hours after creation
-        $this->travelTo(now()->addHours(13));
+        // Travel past 24 hours after creation, landing outside quiet hours (08:00)
+        $this->travelTo(now()->addHours(20));
 
         Artisan::call('notifications:send-digests');
 
         // NOW it should be queued
+        Mail::assertSent(NotificationDigest::class);
+    });
+
+    test('nothing is sent during quiet hours, then the queue goes out at the first run after', function (): void {
+        Mail::fake();
+
+        $user = $this->createUserWithPreferences();
+        $item = NotificationDigestQueue::create([
+            'user_id' => $user->id,
+            'notification_class' => CommentPostedNotification::class,
+            'category' => 'comment',
+            'data' => ['title' => 'Test', 'body' => 'Body', 'url' => '/test', 'icon' => '💬'],
+        ]);
+        $item->forceFill(['created_at' => now()->subHours(10)])->saveQuietly();
+
+        $this->travelTo(now()->setTimezone(config('app.timezone'))->setTime(23, 0));
+        Artisan::call('notifications:send-digests');
+
+        Mail::assertNothingSent();
+        expect($this->getDigestQueueCountForUser($user))->toBe(1);
+
+        $this->travelTo(now()->addDay()->setTime(7, 0));
+        Artisan::call('notifications:send-digests');
+
         Mail::assertSent(NotificationDigest::class);
     });
 

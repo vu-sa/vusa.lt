@@ -3,9 +3,9 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Str;
 
 /**
@@ -33,7 +33,11 @@ class CommentPostedNotification extends BaseNotification
         /**
          * The user who posted the comment.
          */
-        protected array $commenter
+        protected array $commenter,
+        /**
+         * Whether the recipient was @-mentioned (asks for a reply) rather than following the thread.
+         */
+        protected bool $isMention = false
     ) {}
 
     /**
@@ -62,6 +66,11 @@ class CommentPostedNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Comment;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return $this->isMention ? NotificationUrgency::Act : NotificationUrgency::Know;
     }
 
     public function title(object $notifiable): string
@@ -138,20 +147,5 @@ class CommentPostedNotification extends BaseNotification
         }
 
         return parent::via($notifiable);
-    }
-
-    /**
-     * Custom mail for better formatting.
-     */
-    #[\Override]
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject($this->icon().' '.__('notifications.comment_posted_title', ['name' => $this->commentedObject['name']]))
-            ->markdown('emails.comment-posted', [
-                'commentText' => $this->commentText,
-                'object' => $this->commentedObject,
-                'commenter' => $this->commenter,
-            ]);
     }
 }

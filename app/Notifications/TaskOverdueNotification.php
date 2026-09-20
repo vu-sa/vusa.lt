@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\Task;
 use Illuminate\Support\Collection;
 
@@ -28,6 +29,11 @@ class TaskOverdueNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Task;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Act;
     }
 
     public function title(object $notifiable): string
@@ -92,14 +98,5 @@ class TaskOverdueNotification extends BaseNotification
             'label' => __('notifications.action_view_tasks'),
             'url' => route('userTasks'),
         ];
-    }
-
-    /**
-     * Overdue notifications are important and should not be digested.
-     */
-    #[\Override]
-    public function supportsEmailDigest(): bool
-    {
-        return false;
     }
 }

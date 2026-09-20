@@ -3,9 +3,9 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Str;
 
 /**
@@ -67,6 +67,17 @@ class AssignedToResourceNotification extends BaseNotification
             'Meeting' => NotificationCategory::Meeting,
             default => NotificationCategory::User,
         };
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Act;
+    }
+
+    #[\Override]
+    public function sendsPush(): bool
+    {
+        return false;
     }
 
     public function title(object $notifiable): string
@@ -133,19 +144,5 @@ class AssignedToResourceNotification extends BaseNotification
             'label' => __('notifications.action_view_resource'),
             'url' => $this->url(),
         ];
-    }
-
-    /**
-     * Custom mail for better formatting.
-     */
-    #[\Override]
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject($this->icon().' '.__('notifications.assigned_to_resource_title', ['resource' => $this->resource['name']]))
-            ->markdown('emails.assigned-to-resource', [
-                'assigner' => $this->assigner,
-                'resource' => $this->resource,
-            ]);
     }
 }

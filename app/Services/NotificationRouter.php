@@ -14,11 +14,18 @@ class NotificationRouter
      */
     public function routeForMail(User $user, Notification $notification): array|string
     {
-        if ($user->current_duties()->count() > 0) {
-            foreach ($user->current_duties()->get() as $duty) {
-                if (str_ends_with($duty->email, 'vusa.lt')) {
-                    return $duty->email;
-                }
+        return $this->preferredEmail($user);
+    }
+
+    /**
+     * The first current duty email ending in vusa.lt, else the personal email. Also the address a
+     * mail signature shows, so a reply reaches the role rather than one person's inbox.
+     */
+    public function preferredEmail(User $user): string
+    {
+        foreach ($user->current_duties()->get() as $duty) {
+            if (str_ends_with((string) $duty->email, 'vusa.lt')) {
+                return $duty->email;
             }
         }
 

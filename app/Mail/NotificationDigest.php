@@ -23,7 +23,7 @@ class NotificationDigest extends Mailable implements ShouldQueue
     /**
      * Create a new message instance.
      *
-     * @param  array<string, array<array{title: string, body: string, url: string, icon: string}>>  $groupedItems
+     * @param  array<string, array<array{title: string, body: string, url: string, icon: string, context?: array<int, array{label: string, value: string}>, primaryAction?: array{label: string, url: string}|null}>>  $groupedItems
      */
     public function __construct(
         public User $user,
@@ -38,7 +38,7 @@ class NotificationDigest extends Mailable implements ShouldQueue
         $totalCount = collect($this->groupedItems)->flatten(1)->count();
 
         return new Envelope(
-            subject: '📬 '.trans_choice('notifications.digest_subject', $totalCount, ['count' => $totalCount]),
+            subject: trans_choice('notifications.digest_subject', $totalCount, ['count' => $totalCount]),
         );
     }
 
@@ -55,7 +55,7 @@ class NotificationDigest extends Mailable implements ShouldQueue
         foreach ($this->groupedItems as $categoryValue => $items) {
             $category = NotificationCategory::tryFrom($categoryValue);
             $label = $category ? __($category->labelKey()) : $categoryValue;
-            $color = $category ? $category->color() : 'gray';
+            $color = $category ? $category->colorHex() : '#58554f';
 
             $itemsCollection = collect($items);
             $totalInCategory = $itemsCollection->count();
@@ -80,6 +80,7 @@ class NotificationDigest extends Mailable implements ShouldQueue
                 'categoryColors' => $categoryColors,
                 'totalCount' => collect($this->groupedItems)->flatten(1)->count(),
                 'dashboardUrl' => route('notifications.index'),
+                'settingsUrl' => route('profile'),
             ],
         );
     }

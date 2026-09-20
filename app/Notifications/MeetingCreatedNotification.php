@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\Meeting;
 
 /**
@@ -18,6 +19,11 @@ class MeetingCreatedNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Meeting;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Know;
     }
 
     public function title(object $notifiable): string

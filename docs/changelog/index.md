@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.13 — Laiškai ir pranešimai pagal skubumą (2026-09-20) {#v2-13}
+
+- ✨ **Nauji Mano VU SA laiškai** — visi pranešimų laiškai turi vieną aiškų vaizdą: pavadinimas, svarbiausia informacija eilutėmis, vienas mygtukas ir pastaba, kodėl gavai laišką, su nuoroda į pranešimų nustatymus. Kai yra, laiškas pasirašomas institucijos koordinatoriumi
+- ✨ **Skubūs pranešimai ateina iškart** — užduotis su artėjančiu terminu, posėdžio priminimas, prašymas patvirtinti, paminėjimas komentare ir pareigybės pabaiga ateina laišku tuoj pat, o kiti pranešimai – el. pašto santraukoje. Nustatymuose liko vienas stulpelis „El. paštas“
+- ✨ **Naktį nebeskamba** — nuo 22:00 iki 07:00 push pranešimai atidedami iki ryto, o el. pašto santraukos nesiunčiamos
+- ✨ **Ramesnės kategorijų spalvos** — pranešimų kategorijos žymimos ramiomis spalvomis, kurios nebesumaišomos su būsenų spalvomis
+
 ## v2.12 — Pranešimai parodo, ką daryti (2026-09-20) {#v2-12}
 
 - ✨ **Pranešimuose matyti, apie ką jie** — pranešimų puslapyje po tekstu rodomos eilutės su svarbiausia informacija: institucija, terminas, laikas ar kas priskyrė

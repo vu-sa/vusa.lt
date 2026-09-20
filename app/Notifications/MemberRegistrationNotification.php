@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Mail\InformChairAboutMemberRegistration;
 use App\Models\Institution;
 use Illuminate\Contracts\Mail\Mailable;
@@ -22,6 +23,17 @@ class MemberRegistrationNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Registration;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Act;
+    }
+
+    #[\Override]
+    public function sendsPush(): bool
+    {
+        return false;
     }
 
     public function title(object $notifiable): string

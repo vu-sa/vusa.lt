@@ -157,6 +157,12 @@ export enum NotificationChannel {
     Push = 'push',
     EmailDigest = 'email_digest',
 }
+export enum NotificationUrgency {
+    Act = 'act',
+    Know = 'know',
+    Record = 'record',
+    Onboarding = 'onboarding',
+}
 export enum PageLayoutEnum {
     DEFAULT = 'default',
     WIDE = 'wide',

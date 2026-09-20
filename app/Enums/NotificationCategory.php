@@ -41,26 +41,41 @@ enum NotificationCategory: string
     }
 
     /**
-     * Get a color class for the notification category.
+     * The categorical colour token (`cat-1`…`cat-8`, or `neutral`) marking this category.
      *
-     * @todo PR 6.5 (.ai/redesign/admin) remaps this onto the `--cat-*` categorical tokens —
-     * these bare hue names collide with the six status roles from PR 2.2 (Task orange ==
-     * attention, System red == danger, Duty amber == the dark-mode brand) and are not what the
-     * new colour system means by "status". Do not "fix" this into `--status-*` in the meantime.
+     * Small marks only, always beside a label: these are never status colours.
      */
     public function color(): string
     {
         return match ($this) {
-            self::Comment => 'blue',
-            self::Task => 'orange',
-            self::Reservation => 'purple',
-            self::Meeting => 'green',
-            self::Registration => 'cyan',
-            self::User => 'gray',
-            self::Duty => 'amber',
-            self::System => 'red',
-            self::News => 'indigo',
-            self::Calendar => 'teal',
+            self::Comment => 'cat-2',
+            self::Task => 'cat-6',
+            self::Reservation => 'cat-4',
+            self::Meeting => 'cat-8',
+            self::Registration => 'cat-1',
+            self::Duty => 'cat-7',
+            self::News => 'cat-5',
+            self::Calendar => 'cat-3',
+            self::User, self::System => 'neutral',
+        };
+    }
+
+    /**
+     * Light-mode hex of color() for email, which cannot read CSS variables. Mirrors
+     * `--cat-*` and `--status-neutral` in resources/css/theme/base-tokens.css.
+     */
+    public function colorHex(): string
+    {
+        return match ($this->color()) {
+            'cat-1' => '#007c7c',
+            'cat-2' => '#007598',
+            'cat-3' => '#4966a8',
+            'cat-4' => '#73599e',
+            'cat-5' => '#8f4e82',
+            'cat-6' => '#9c522e',
+            'cat-7' => '#7d6700',
+            'cat-8' => '#007d5f',
+            default => '#58554f',
         };
     }
 

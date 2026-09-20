@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Mail\NotificationDigest;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
+use App\Support\QuietHours;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -16,7 +17,8 @@ use Illuminate\Support\Facades\Mail;
  * Process notification digest queue and send batched email digests.
  *
  * This command runs hourly and checks each user's digest frequency setting
- * to determine if it's time to send their digest.
+ * to determine if it's time to send their digest. Nothing is sent during quiet hours
+ * (22:00–07:00); the queue simply waits for the first run after they end.
  */
 #[Description('Process and send notification email digests based on user preferences')]
 #[Signature('notifications:send-digests')]
@@ -24,6 +26,12 @@ class ProcessNotificationDigests extends Command
 {
     public function handle(): int
     {
+        if (QuietHours::isQuiet(now())) {
+            $this->info('Quiet hours — digests are held until 07:00.');
+
+            return self::SUCCESS;
+        }
+
         $usersWithPendingDigests = NotificationDigestQueue::query()
             ->select('user_id')
             ->distinct()

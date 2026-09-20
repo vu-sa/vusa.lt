@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.13 — Emails and notifications by urgency (2026-09-20) {#v2-13}
+
+- ✨ **New Mano VU SA emails** — every notification email now looks the same: a title, the essentials as rows, one button and a note on why you got it, with a link to your notification settings. Where there is one, the email is signed by the institution's coordinator
+- ✨ **Urgent notifications arrive at once** — a task with a close deadline, a meeting reminder, an approval request, a mention in a comment and an expiring duty are emailed right away; everything else waits for the email digest. Settings now show a single “Email” column
+- ✨ **Quiet at night** — between 22:00 and 07:00 push notifications are held until morning and email digests are not sent
+- ✨ **Calmer category colours** — notification categories use quiet marker colours that no longer clash with status colours
+
 ## v2.12 — Notifications show what to do (2026-09-20) {#v2-12}
 
 - ✨ **Notifications say what they are about** — on the notifications page, rows under the text show the essentials: institution, deadline, time or who assigned it

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\Task;
 use App\Models\User;
 
@@ -26,6 +27,11 @@ class TaskAutoCompletedNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Task;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Record;
     }
 
     public function title(object $notifiable): string

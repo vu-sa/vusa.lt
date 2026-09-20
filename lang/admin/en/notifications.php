@@ -24,8 +24,8 @@ return [
         'push_enable' => 'Enable',
         'push_disable' => 'Disable',
         'push_blocked' => 'Blocked',
-        'email_digest' => 'Email Digest',
-        'email_digest_description' => 'Receive notifications via periodic email digest',
+        'email_digest' => 'Email',
+        'email_digest_description' => 'Urgent notifications arrive right away, the rest in an email digest',
     ],
 
     // Digest
@@ -37,6 +37,7 @@ return [
     'digest_count_label' => '{1} notification|[2,*] notifications',
     'digest_total' => 'total',
     'digest_more_items' => '{1} :count more item|[2,*] :count more items',
+    'digest_open_system' => 'Open Mano VU SA',
     'digest_view_all' => 'View all notifications',
     'view_all' => 'View All Notifications',
     'toast_fallback_title' => 'New Notification',
@@ -159,6 +160,14 @@ return [
     'action_explore_dashboard' => 'Explore Dashboard',
     'action_view' => 'View',
     'action_review' => 'Review',
+
+    // Email footer: signature and "why you got this"
+    'mail' => [
+        'why_received' => 'You are getting this email because “:category” emails are turned on in your notification settings.',
+        'settings_link' => 'Change notification settings',
+        'signature_intro' => 'Questions? Write to:',
+        'sign_off' => 'Mano VU SA',
+    ],
 
     // Context rows (label/value pairs shown under a notification)
     'context' => [

@@ -61,7 +61,7 @@ class NotifyUsersOfComment implements ShouldQueue
 
         if ($mentioned->isNotEmpty()) {
             $text = $this->text($user->name, $objectName, 'notifications.mentioned_you_in_comment');
-            Notification::send($mentioned, new CommentPostedNotification($text, $object, $subject));
+            Notification::send($mentioned, new CommentPostedNotification($text, $object, $subject, isMention: true));
         }
 
         // The rest of the audience (reps for a root comment, thread participants

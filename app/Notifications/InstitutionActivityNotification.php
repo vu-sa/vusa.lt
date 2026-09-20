@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\InstitutionActivityStatus;
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\Institution;
 use App\Models\Task;
 
@@ -17,6 +18,17 @@ class InstitutionActivityNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Task;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Act;
+    }
+
+    #[\Override]
+    public function sendsPush(): bool
+    {
+        return false;
     }
 
     public function title(object $notifiable): string
@@ -67,6 +79,12 @@ class InstitutionActivityNotification extends BaseNotification
             'institution' => $this->institution->name,
             'days_since_activity' => is_numeric($days) ? __('notifications.context.days_value', ['count' => (int) $days]) : null,
         ]);
+    }
+
+    #[\Override]
+    public function mailSignature(object $notifiable): ?array
+    {
+        return $this->coordinatorSignature($notifiable, $this->institution);
     }
 
     #[\Override]

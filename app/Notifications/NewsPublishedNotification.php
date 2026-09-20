@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
+use App\Enums\NotificationUrgency;
 use App\Models\News;
 use NotificationChannels\WebPush\WebPushChannel;
 
@@ -21,6 +22,20 @@ class NewsPublishedNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::News;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Know;
+    }
+
+    /**
+     * News is opt-in and stays out of the digest for now.
+     */
+    #[\Override]
+    public function supportsEmailDigest(): bool
+    {
+        return false;
     }
 
     public function title(object $notifiable): string
@@ -62,15 +77,6 @@ class NewsPublishedNotification extends BaseNotification
             'url' => $this->url(),
             'id' => $this->news->id,
         ];
-    }
-
-    /**
-     * Do not support email digest for now.
-     */
-    #[\Override]
-    public function supportsEmailDigest(): bool
-    {
-        return false;
     }
 
     /**

@@ -57,10 +57,10 @@ One PR = one row. Rules:
 | **5.9** | **P9** Paskyra → Mano rolės ir pareigybės (O14) | 4.7 | ✅ |
 | **5.10** | `/mano/search` reduced to cross-entity results | 5.2 | ✅ |
 | **6.1** | `BaseNotification`: `primaryAction()` + `context()`; in-app list renders the contract | — | ✅ |
-| **6.2** | Branded mail layout + digest template; retire the bespoke blades | 6.1 |
-| **6.3** | Per-type pass 1: tasks + meetings (subjects, actions, context, channels) | 6.2 |
-| **6.4** | Per-type pass 2: reservations, registrations, comments, the rest | 6.2 |
-| **6.5** | Push payloads + quiet hours (rules 12–13); `NotificationCategory::color()` → `--cat-*` | 6.1, 2.2 |
+| **6.2** | Branded mail layout + digest template; retire the bespoke blades | 6.1 | ✅ |
+| **6.3** | Per-type pass 1: tasks + meetings (subjects, actions, context, channels) | 6.2 | ✅ |
+| **6.4** | Per-type pass 2: reservations, registrations, comments, the rest | 6.2 | ✅ |
+| **6.5** | Push payloads + quiet hours (rules 12–13); `NotificationCategory::color()` → `--cat-*` | 6.1, 2.2 | ✅ |
 | **7.1** | Rezervacijos overview | 5.8 |
 | **7.2** | Svetainė overview (analytics compact) | 5.8 |
 | **7.3** | Organizacija overview (new) | 5.8 |
@@ -859,17 +859,17 @@ reps will meet the app through these.
 
 - [x] Extend `BaseNotification` with `primaryAction()` and `context()`; one content contract, three
       renderings (rule 1)
-- [ ] Brand the mail layout (`resources/views/vendor/mail/html/*`): square, hairlines, red button,
+- [x] Brand the mail layout (`resources/views/vendor/mail/html/*`): square, hairlines, red button,
       wordmark, ~600px, light-only
-- [ ] Retire the bespoke blades that exist only because the layout was ugly (`comment-posted`,
+- [x] Retire the bespoke blades that exist only because the layout was ugly (`comment-posted`,
       `assigned-to-resource`, `feedback`, the registration pairs, `reminder-to-login`) — keep only what
       genuinely differs
-- [ ] Digest template on the same structure (grouped by category; title + context + link per item)
-- [ ] Per-type pass over the 24 notifications with the channel-policy table: subject, primary action,
+- [x] Digest template on the same structure (grouped by category; title + context + link per item)
+- [x] Per-type pass over the 24 notifications with the channel-policy table: subject, primary action,
       context rows, channel, signature (rules 2–9)
-- [ ] "Why you got this" footer + link to Pranešimų nustatymai; plain-text alternative checked
-- [ ] Push payloads follow the same contract; quiet hours 22:00–07:00 for non-urgent (rule 13)
-- [ ] Remap `NotificationCategory::color()` onto `--cat-*`
+- [x] "Why you got this" footer + link to Pranešimų nustatymai; plain-text alternative checked
+- [x] Push payloads follow the same contract; quiet hours 22:00–07:00 for non-urgent (rule 13)
+- [x] Remap `NotificationCategory::color()` onto `--cat-*`
 - [x] In-app notification list renders the shared contract (O12: notifications = what happened)
 - [ ] Screenshots of every template from Mailpit at 360px and desktop, both locales
 
@@ -896,6 +896,49 @@ reps will meet the app through these.
   `unmute_thread` lang keys are now unused; left for the Pranešimai pass (9.9).
 - **Not fixed, on purpose:** copy that breaks the glossary (`action_view_meeting` "susitikimą",
   `action_view_resource` "resursą", `MeetingType::label()`) — per-type copy is 6.3/6.4.
+
+### PR 6.2 + 6.3 + 6.4 + 6.5 notes (2026-09-20)
+
+Shipped as one commit.
+
+- **One template, one theme.** `emails/notification.blade.php` renders the 6.1 contract (title, body,
+  `x-mail::context` rows, primary button, secondary link, muted subcopy with signature and "why you got
+  this"). `vendor/mail/html/themes/default.css` is square, hairline, light-only, one brand fill (the
+  button); the wordmark is text. `comment-posted` and `assigned-to-resource` are deleted with their
+  `toMail()` overrides. **Kept**: `feedback`, `reminder-to-login`, both registration pairs — long-form
+  prose, and they inherit the brand through `x-mail::message`. New `vendor/mail/text/context` and
+  `text/digest-category` exist because the text render resolves `mail::` to the `text/` directory; without
+  them the plain-text alternative is raw table markup (the old digest's was).
+- **`NotificationUrgency` (Act / Know / Record / Onboarding) decides the channels.** `via()` is now the one
+  implementation: in-app always; push when the tier or `sendsPush()` says so and the user's push toggle
+  allows; immediate mail for `Act` when the user's email toggle allows. `TaskAssigned` is `Act` only when
+  due within 7 days; `CommentPosted` is `Act` only for a mention (`isMention`). This **removes push for
+  know/record types**, and finally makes the push toggle bite for every category (it was ignored outside
+  News/Calendar).
+- **One email toggle** (`email_digest` preference, relabelled "El. paštas"): on = act-tier mails at once
+  *and* know-tier lands in the digest; off = neither. A user cannot keep the digest while refusing instant mail.
+- **Quiet hours** (`App\Support\QuietHours`, 22:00–07:00 `Europe/Vilnius`) hold **push** (`withDelay()`) and
+  **digest dispatch** (`notifications:send-digests` returns early). In-app and act-tier mail are never
+  delayed. Digest-command tests pin the clock to midday.
+- **Signatures**: `BaseNotification::mailSignature()`; `MeetingReminder`, `InstitutionActivity`,
+  `TaskAssigned` (institution tasks) and `DutyExpiring` sign as the institution's coordinator
+  (`GetInstitutionManagers`), on the duty address (`NotificationRouter::preferredEmail()`), never the
+  recipient themself. No person → "Mano VU SA".
+- **`NotificationCategory::color()`** returns `cat-1…8` / `neutral`; `colorHex()` mirrors the light-mode tokens
+  for email. `useNotificationFormatting.ts` maps stored hue names onto tokens (`legacyHueToToken`,
+  `@deprecated`, Phase 10). The old System `red` maps to neutral.
+- **Deliberately not done / deviations from `messages.md`:**
+  - `NewsPublished` and `CalendarReminder` stay **out of the digest** (existing, tested decision — opt-in
+    categories); the table's "digest ✓" for them is not implemented. `Welcome` stays in-app only (rule 14:
+    no action, no deadline) rather than emailing as the table says.
+  - **Rule 8 (locale follows recipient) is not met**: `users` stores no locale, so queued mail renders in
+    the app default. Needs a locale column; open question.
+  - **Subjects are the existing titles**, cut to 60 characters, emoji prefix removed. Titles that carry no
+    object ("Nauja užduotis") were not rewritten to front-load it — that needs the title to take parameters.
+  - Copy pass covers the notification and preferences strings (*tu*, posėdis / išteklius, `MeetingType::label()`);
+    other `lang/admin` files were not touched.
+  - Mailpit screenshots at 360px / desktop, both locales, are a manual gate item and are **not** in this commit.
+  - Answerable email buttons (U21) remain Phase 7.10.
 
 ## Phase 7 — Remaining overviews and the rep loop
 

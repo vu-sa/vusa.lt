@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 
 /**
  * Welcome notification sent to users after completing their first tutorial.
@@ -15,6 +16,11 @@ class WelcomeNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::System;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Onboarding;
     }
 
     public function title(object $notifiable): string
@@ -38,14 +44,5 @@ class WelcomeNotification extends BaseNotification
     public function icon(): string
     {
         return '🎉';
-    }
-
-    /**
-     * Welcome notifications should not be digested or emailed.
-     */
-    #[\Override]
-    public function supportsEmailDigest(): bool
-    {
-        return false;
     }
 }

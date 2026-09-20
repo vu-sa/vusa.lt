@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  getNotificationColorClasses,
+  getNotificationColorKey,
   getNotificationContext,
   getNotificationPrimaryAction,
   getNotificationSecondaryAction,
@@ -60,5 +62,28 @@ describe('notification contract readers', () => {
     const rows = Array.from({ length: 6 }, (_, i) => ({ label: `L${i}`, value: `V${i}` }));
 
     expect(getNotificationContext(make({ context: rows }))).toHaveLength(4);
+  });
+});
+
+describe('notification category colour', () => {
+  it('uses the categorical token stored on new rows', () => {
+    const notification = make({ category: 'task', color: 'cat-6' });
+
+    expect(getNotificationColorKey(notification)).toBe('cat-6');
+    expect(getNotificationColorClasses(notification).combined).toBe('bg-cat-6-surface text-cat-6');
+  });
+
+  it('maps a hue name stored before the remap onto its token', () => {
+    expect(getNotificationColorKey(make({ category: 'comment', color: 'blue' }))).toBe('cat-2');
+    expect(getNotificationColorKey(make({ category: 'meeting', color: 'green' }))).toBe('cat-8');
+  });
+
+  it('shows the old System red as neutral, so a category never reads as danger', () => {
+    expect(getNotificationColorKey(make({ category: 'system', color: 'red' }))).toBe('neutral');
+  });
+
+  it('falls back to the category, then to neutral', () => {
+    expect(getNotificationColorKey(make({ category: 'duty' }))).toBe('cat-7');
+    expect(getNotificationColorKey({ ...make({}), type: 'App\\Notifications\\SomethingElse' })).toBe('neutral');
   });
 });

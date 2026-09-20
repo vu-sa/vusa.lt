@@ -72,59 +72,82 @@ export interface Notification {
   read_at: string | null;
 }
 
-// Color palette for notification categories
+// Category marks: the eight categorical tokens plus neutral — small marks with a label, never status.
 export const notificationColors = {
-  blue: {
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-600 dark:text-blue-400',
-    combined: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-    border: 'border-blue-200 dark:border-blue-800',
+  'cat-1': {
+    bg: 'bg-cat-1-surface',
+    text: 'text-cat-1',
+    combined: 'bg-cat-1-surface text-cat-1',
+    border: 'border-cat-1/30',
   },
-  orange: {
-    bg: 'bg-orange-100 dark:bg-orange-900/30',
-    text: 'text-orange-600 dark:text-orange-400',
-    combined: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
-    border: 'border-orange-200 dark:border-orange-800',
+  'cat-2': {
+    bg: 'bg-cat-2-surface',
+    text: 'text-cat-2',
+    combined: 'bg-cat-2-surface text-cat-2',
+    border: 'border-cat-2/30',
   },
-  purple: {
-    bg: 'bg-purple-100 dark:bg-purple-900/30',
-    text: 'text-purple-600 dark:text-purple-400',
-    combined: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-    border: 'border-purple-200 dark:border-purple-800',
+  'cat-3': {
+    bg: 'bg-cat-3-surface',
+    text: 'text-cat-3',
+    combined: 'bg-cat-3-surface text-cat-3',
+    border: 'border-cat-3/30',
   },
-  green: {
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    text: 'text-green-600 dark:text-green-400',
-    combined: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-    border: 'border-green-200 dark:border-green-800',
+  'cat-4': {
+    bg: 'bg-cat-4-surface',
+    text: 'text-cat-4',
+    combined: 'bg-cat-4-surface text-cat-4',
+    border: 'border-cat-4/30',
   },
-  cyan: {
-    bg: 'bg-cyan-100 dark:bg-cyan-900/30',
-    text: 'text-cyan-600 dark:text-cyan-400',
-    combined: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400',
-    border: 'border-cyan-200 dark:border-cyan-800',
+  'cat-5': {
+    bg: 'bg-cat-5-surface',
+    text: 'text-cat-5',
+    combined: 'bg-cat-5-surface text-cat-5',
+    border: 'border-cat-5/30',
   },
-  gray: {
-    bg: 'bg-zinc-100 dark:bg-zinc-800/50',
-    text: 'text-zinc-600 dark:text-zinc-400',
-    combined: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800/50 dark:text-zinc-400',
-    border: 'border-zinc-200 dark:border-zinc-700',
+  'cat-6': {
+    bg: 'bg-cat-6-surface',
+    text: 'text-cat-6',
+    combined: 'bg-cat-6-surface text-cat-6',
+    border: 'border-cat-6/30',
   },
-  amber: {
-    bg: 'bg-amber-100 dark:bg-amber-900/30',
-    text: 'text-amber-600 dark:text-amber-400',
-    combined: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-    border: 'border-amber-200 dark:border-amber-800',
+  'cat-7': {
+    bg: 'bg-cat-7-surface',
+    text: 'text-cat-7',
+    combined: 'bg-cat-7-surface text-cat-7',
+    border: 'border-cat-7/30',
   },
-  red: {
-    bg: 'bg-red-100 dark:bg-red-900/30',
-    text: 'text-red-600 dark:text-red-400',
-    combined: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-    border: 'border-red-200 dark:border-red-800',
+  'cat-8': {
+    bg: 'bg-cat-8-surface',
+    text: 'text-cat-8',
+    combined: 'bg-cat-8-surface text-cat-8',
+    border: 'border-cat-8/30',
+  },
+  'neutral': {
+    bg: 'bg-status-neutral-surface',
+    text: 'text-status-neutral',
+    combined: 'bg-status-neutral-surface text-status-neutral',
+    border: 'border-status-neutral-border',
   },
 } as const;
 
 export type NotificationColorKey = keyof typeof notificationColors;
+
+/**
+ * @deprecated Rows stored before PR 6.5 carry a hue name in `data.color`; drop this map (and the
+ * fallback in getNotificationColorKey) once those rows have aged out — Phase 10.
+ */
+const legacyHueToToken: Record<string, NotificationColorKey> = {
+  blue: 'cat-2',
+  orange: 'cat-6',
+  purple: 'cat-4',
+  green: 'cat-8',
+  cyan: 'cat-1',
+  amber: 'cat-7',
+  indigo: 'cat-5',
+  teal: 'cat-3',
+  gray: 'neutral',
+  red: 'neutral',
+};
 
 /**
  * Extract notification type (class name without namespace)
@@ -238,30 +261,33 @@ function getIconByType(type: string): Component {
 export function getNotificationColorKey(notification: Notification): NotificationColorKey {
   const { data } = notification;
 
-  // New standardized structure uses color
   if (data.color && data.color in notificationColors) {
     return data.color as NotificationColorKey;
   }
 
-  // Map category to color
+  if (data.color && data.color in legacyHueToToken) {
+    return legacyHueToToken[data.color];
+  }
+
+  // Mirrors NotificationCategory::color()
   const { category } = data;
   if (category) {
     const categoryColorMap: Record<string, NotificationColorKey> = {
-      comment: 'blue',
-      task: 'orange',
-      reservation: 'purple',
-      meeting: 'green',
-      registration: 'green',
-      user: 'cyan',
-      duty: 'amber',
-      system: 'gray',
+      comment: 'cat-2',
+      task: 'cat-6',
+      reservation: 'cat-4',
+      meeting: 'cat-8',
+      registration: 'cat-1',
+      duty: 'cat-7',
+      news: 'cat-5',
+      calendar: 'cat-3',
+      user: 'neutral',
+      system: 'neutral',
     };
-    return categoryColorMap[category] || 'gray';
+    return categoryColorMap[category] || 'neutral';
   }
 
-  // Legacy type-based styling
-  const type = getNotificationType(notification);
-  return getColorByType(type);
+  return getColorByType(getNotificationType(notification));
 }
 
 /**
@@ -271,30 +297,26 @@ function getColorByType(type: string): NotificationColorKey {
   switch (type) {
     case 'ModelCommented':
     case 'CommentPostedNotification':
-      return 'blue';
+      return 'cat-2';
     case 'MemberRegistered':
     case 'MemberRegistrationNotification':
     case 'StudentRepRegistrationNotification':
-      return 'green';
+      return 'cat-1';
     case 'UserAttachedToModel':
     case 'AssignedToResourceNotification':
-      return 'purple';
+    case 'ReservationStatusChangedNotification':
+      return 'cat-4';
     case 'TaskAssignedNotification':
     case 'TaskCompletedNotification':
     case 'TaskCreatedNotification':
-      return 'orange';
     case 'TaskOverdueNotification':
-      return 'red';
-    case 'ReservationStatusChangedNotification':
-      return 'purple';
+      return 'cat-6';
     case 'MeetingReminderNotification':
-      return 'green';
+      return 'cat-8';
     case 'DutyExpiringNotification':
-      return 'amber';
-    case 'WelcomeNotification':
-      return 'cyan';
+      return 'cat-7';
     default:
-      return 'gray';
+      return 'neutral';
   }
 }
 

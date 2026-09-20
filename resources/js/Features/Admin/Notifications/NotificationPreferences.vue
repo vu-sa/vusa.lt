@@ -219,6 +219,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Loader2, Mail as MailIcon } from 'lucide-vue-next';
 
 import { useApiMutation } from '@/Composables/useApi';
+import { notificationColors, type NotificationColorKey } from '@/Composables/useNotificationFormatting';
 import FormElement from '@/Components/AdminForms/FormElement.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import DigestEmailSelector from '@/Features/Admin/Notifications/DigestEmailSelector.vue';
@@ -369,19 +370,8 @@ const updateCalendarReminderHours = (values: string[]) => {
 };
 
 const getCategoryColorClass = (color: string): string => {
-  const colorMap: Record<string, string> = {
-    blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-    orange: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
-    purple: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-    green: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-    cyan: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400',
-    gray: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-900/30 dark:text-zinc-400',
-    amber: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-    red: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-    indigo: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
-    teal: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400',
-  };
-  return colorMap[color] || colorMap.gray;
+  const colorKey = (color in notificationColors ? color : 'neutral') as NotificationColorKey;
+  return notificationColors[colorKey].combined;
 };
 
 const getCategoryIcon = (modelEnumKey: string) => {

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\Meeting;
 
 /**
@@ -18,6 +19,11 @@ class MeetingReminderNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Meeting;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Act;
     }
 
     public function title(object $notifiable): string
@@ -85,20 +91,17 @@ class MeetingReminderNotification extends BaseNotification
     }
 
     #[\Override]
+    public function mailSignature(object $notifiable): ?array
+    {
+        return $this->coordinatorSignature($notifiable, $this->meeting->institutions->first());
+    }
+
+    #[\Override]
     public function primaryAction(): ?array
     {
         return [
             'label' => __('notifications.action_view_meeting'),
             'url' => $this->url(),
         ];
-    }
-
-    /**
-     * Meeting reminders are time-sensitive and should not be digested.
-     */
-    #[\Override]
-    public function supportsEmailDigest(): bool
-    {
-        return false;
     }
 }

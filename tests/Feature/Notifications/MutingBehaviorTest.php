@@ -2,6 +2,7 @@
 
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
+use App\Enums\NotificationUrgency;
 use App\Events\CommentPosted;
 use App\Events\TaskCreated;
 use App\Models\Comment;
@@ -285,6 +286,11 @@ describe('muting edge cases', function (): void {
             public function category(): NotificationCategory
             {
                 return NotificationCategory::System;
+            }
+
+            public function urgency(): NotificationUrgency
+            {
+                return NotificationUrgency::Know;
             }
 
             public function title(object $notifiable): string

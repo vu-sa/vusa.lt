@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
+use App\Enums\NotificationUrgency;
 use App\Models\Calendar;
 use NotificationChannels\WebPush\WebPushChannel;
 
@@ -21,6 +22,20 @@ class CalendarReminderNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Calendar;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Know;
+    }
+
+    /**
+     * Do not support email digest for now.
+     */
+    #[\Override]
+    public function supportsEmailDigest(): bool
+    {
+        return false;
     }
 
     public function title(object $notifiable): string
@@ -83,15 +98,6 @@ class CalendarReminderNotification extends BaseNotification
             'url' => $this->url(),
             'id' => $this->calendarEvent->id,
         ];
-    }
-
-    /**
-     * Do not support email digest for now.
-     */
-    #[\Override]
-    public function supportsEmailDigest(): bool
-    {
-        return false;
     }
 
     /**

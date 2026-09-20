@@ -25,13 +25,14 @@ describe('via method', function (): void {
         expect($channels)->toBeEmpty();
     });
 
-    test('via includes database, broadcast, and webpush by default', function (): void {
+    test('via includes database, broadcast, and webpush for an act-tier notification', function (): void {
         $user = $this->createUserWithPreferences();
 
         $notification = new CommentPostedNotification(
             'Test comment',
             ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
-            ['modelClass' => 'User', 'name' => 'Commenter']
+            ['modelClass' => 'User', 'name' => 'Commenter'],
+            isMention: true
         );
 
         $channels = $notification->via($user);

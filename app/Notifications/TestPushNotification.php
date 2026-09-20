@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 
 /**
  * Test notification for verifying push notification functionality.
@@ -12,6 +13,17 @@ class TestPushNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::System;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Know;
+    }
+
+    #[\Override]
+    public function sendsPush(): bool
+    {
+        return true;
     }
 
     public function title(object $notifiable): string

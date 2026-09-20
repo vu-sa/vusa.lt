@@ -61,7 +61,7 @@ const hasValidNotification = computed(() => {
 // Use computed to handle potentially undefined notification
 const colors = computed(() => {
   if (!hasValidNotification.value) {
-    return notificationColors.gray;
+    return notificationColors.neutral;
   }
   return getNotificationColorClasses(props.notification!);
 });

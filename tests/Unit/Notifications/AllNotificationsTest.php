@@ -112,22 +112,28 @@ describe('TaskAssignedNotification', function (): void {
         expect($actions)->toBeArray()->not->toBeEmpty();
     });
 
-    test('supports email digest by default', function (): void {
-        $task = Task::factory()->create();
+    test('a deadline further than a week away goes to the digest', function (): void {
+        $task = Task::factory()->create(['due_date' => now()->addDays(30)]);
         $notification = new TaskAssignedNotification($task);
 
         expect($notification->supportsEmailDigest())->toBeTrue();
     });
 
-    test('uses default via channels without mail', function (): void {
-        $task = Task::factory()->create();
+    test('a deadline within a week is mailed and pushed at once, not digested', function (): void {
+        $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
         $user = User::factory()->create();
         $notification = new TaskAssignedNotification($task);
 
-        $channels = $notification->via($user);
-        expect($channels)->toContain('database')
-            ->toContain('broadcast')
-            ->toContain(WebPushChannel::class)->not->toContain('mail');
+        expect($notification->supportsEmailDigest())->toBeFalse()
+            ->and($notification->via($user))->toBe(['database', 'broadcast', WebPushChannel::class, 'mail']);
+    });
+
+    test('a distant deadline stays in the app', function (): void {
+        $task = Task::factory()->create(['due_date' => now()->addDays(30)]);
+        $user = User::factory()->create();
+        $notification = new TaskAssignedNotification($task);
+
+        expect($notification->via($user))->toBe(['database', 'broadcast']);
     });
 });
 
@@ -835,22 +841,21 @@ describe('AssignedToResourceNotification', function (): void {
         expect($notification3->modelClass())->toBe('MEETING');
     });
 
-    test('supports email digest', function (): void {
+    test('is mailed at once, so it is not digested', function (): void {
         $assigner = ['modelClass' => 'User', 'name' => 'Test'];
         $resource = ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test'];
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
-        expect($notification->supportsEmailDigest())->toBeTrue();
+        expect($notification->supportsEmailDigest())->toBeFalse();
     });
 
-    test('does not include mail in via channels', function (): void {
+    test('includes mail but does not push', function (): void {
         $assigner = ['modelClass' => 'User', 'name' => 'Test'];
         $resource = ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test'];
         $user = User::factory()->create();
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
-        $channels = $notification->via($user);
-        expect($channels)->not->toContain('mail');
+        expect($notification->via($user))->toBe(['database', 'broadcast', 'mail']);
     });
 
     test('renders its email with assignment details', function (): void {

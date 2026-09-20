@@ -2,7 +2,15 @@
 
 namespace App\Notifications;
 
+use App\Actions\GetInstitutionManagers;
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationChannel;
+use App\Enums\NotificationUrgency;
+use App\Models\Institution;
+use App\Models\User;
+use App\Services\NotificationRouter;
+use App\Support\QuietHours;
+use Carbon\CarbonInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Mail\Mailable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,6 +29,7 @@ use NotificationChannels\WebPush\WebPushMessage;
  * - title(): string - The notification title (for display and WebPush)
  * - body(): string - The notification body/description
  * - url(): string - The URL to navigate to when clicked
+ * - urgency(): NotificationUrgency - How much it asks of the reader; decides email, push and digest
  *
  * Optionally override:
  * - icon(): string - Emoji or icon indicator (default: from category)
@@ -29,6 +38,7 @@ use NotificationChannels\WebPush\WebPushMessage;
  * - context(): array - Label/value rows [{label: string, value: string}]
  * - subject(): ?array - The actor/subject who triggered the notification
  * - object(): ?array - The object the notification is about
+ * - mailSignature(): ?array - The person an email is signed by
  */
 abstract class BaseNotification extends Notification implements ShouldQueue
 {
@@ -53,6 +63,11 @@ abstract class BaseNotification extends Notification implements ShouldQueue
      * Get the URL to navigate to.
      */
     abstract public function url(): string;
+
+    /**
+     * How much this notification asks of its reader.
+     */
+    abstract public function urgency(): NotificationUrgency;
 
     /**
      * Get the emoji/icon for the notification.
@@ -166,12 +181,67 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Determine if this notification supports email digest.
-     * Override to return false for time-sensitive notifications.
+     * Determine if this notification is batched into the email digest (derived from urgency).
      */
     public function supportsEmailDigest(): bool
     {
-        return true;
+        return $this->urgency()->usesDigest();
+    }
+
+    /**
+     * Determine if this notification sends a web push (derived from urgency); override where the
+     * channel policy in .ai/redesign/admin/messages.md disagrees with the tier.
+     */
+    public function sendsPush(): bool
+    {
+        return $this->urgency()->sendsPush();
+    }
+
+    /**
+     * The person the email is signed by, or null to sign as Mano VU SA.
+     *
+     * @return array{name: string, duty: string|null, email: string}|null
+     */
+    public function mailSignature(object $notifiable): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Sign as the coordinator of an institution, using the duty address so a reply reaches the role.
+     *
+     * @return array{name: string, duty: string|null, email: string}|null
+     */
+    protected function coordinatorSignature(object $notifiable, ?Institution $institution): ?array
+    {
+        if ($institution === null) {
+            return null;
+        }
+
+        $manager = GetInstitutionManagers::execute($institution)
+            ->first(fn (User $candidate): bool => $candidate->id !== ($notifiable->id ?? null));
+
+        if ($manager === null) {
+            return null;
+        }
+
+        return [
+            'name' => $manager->name,
+            'duty' => $manager->current_duties->first()?->name,
+            'email' => app(NotificationRouter::class)->preferredEmail($manager),
+        ];
+    }
+
+    /**
+     * Push is held until 07:00 during quiet hours; in-app and email are never delayed.
+     */
+    public function withDelay(object $notifiable, string $channel): ?CarbonInterface
+    {
+        if ($channel === WebPushChannel::class && QuietHours::isQuiet(now())) {
+            return QuietHours::nextEnd(now());
+        }
+
+        return null;
     }
 
     /**
@@ -186,8 +256,27 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             return [];
         }
 
-        // Default: database for persistence, broadcast for real-time, webpush for offline
-        return ['database', 'broadcast', WebPushChannel::class];
+        // In-app is the record of what happened, so it is never gated; push and email follow the policy.
+        $channels = ['database', 'broadcast'];
+
+        if ($this->sendsPush() && $this->userWants($notifiable, NotificationChannel::Push)) {
+            $channels[] = WebPushChannel::class;
+        }
+
+        if ($this->urgency()->sendsImmediateMail() && $this->userWants($notifiable, NotificationChannel::EmailDigest)) {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
+    }
+
+    /**
+     * Whether the notifiable allows this category on the channel; non-users (duties) always do.
+     */
+    protected function userWants(object $notifiable, NotificationChannel $channel): bool
+    {
+        return ! method_exists($notifiable, 'shouldReceiveNotification')
+            || $notifiable->shouldReceiveNotification($this->category(), $channel);
     }
 
     /**
@@ -223,33 +312,40 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the mail representation of the notification.
-     * This is used for immediate emails (non-digest) if needed.
+     * Get the mail representation of the notification: the same contract the in-app list renders.
      */
     public function toMail(object $notifiable): MailMessage|Mailable
     {
         $action = $this->primaryAction() ?? ['label' => __('Peržiūrėti'), 'url' => $this->url()];
 
         return (new MailMessage)
-            ->subject($this->icon().' '.$this->title($notifiable))
-            ->line($this->body($notifiable))
-            ->action($action['label'], $action['url']);
+            ->subject(Str::limit($this->title($notifiable), 59, '…'))
+            ->action($action['label'], $action['url'])
+            ->markdown('emails.notification', [
+                'title' => $this->title($notifiable),
+                'body' => $this->body($notifiable),
+                'context' => $this->context($notifiable),
+                'secondaryAction' => $this->secondaryAction(),
+                'signature' => $this->mailSignature($notifiable),
+                'category' => __($this->category()->labelKey()),
+                'settingsUrl' => route('profile'),
+            ]);
     }
 
     /**
-     * Get the Web Push representation of the notification.
+     * Get the Web Push representation of the notification: one line, one action, one deep link.
      */
     public function toWebPush(object $notifiable, $notification): WebPushMessage
     {
-        $message = (new WebPushMessage)
-            ->title($this->icon().' '.$this->title($notifiable))
-            ->icon('/images/icons/favicons/favicon-196x196.png')
-            ->body(Str::limit(strip_tags($this->body($notifiable)), 100))
-            ->action(__('Peržiūrėti'), 'view')
-            ->options(['TTL' => 1000])
-            ->data(['url' => $this->url()]);
+        $action = $this->primaryAction() ?? ['label' => __('Peržiūrėti'), 'url' => $this->url()];
 
-        return $message;
+        return (new WebPushMessage)
+            ->title($this->title($notifiable))
+            ->icon('/images/icons/favicons/favicon-196x196.png')
+            ->body(Str::limit(strip_tags($this->body($notifiable)), 120))
+            ->action($action['label'], 'view')
+            ->options(['TTL' => $this->urgency() === NotificationUrgency::Act ? 86400 : 3600])
+            ->data(['url' => $action['url']]);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Enums\SupportRequestStatus;
 use App\Models\SupportRequest;
 use App\Models\User;
@@ -19,6 +20,11 @@ class SupportRequestStatusChangedNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::System;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Know;
     }
 
     public function title(object $notifiable): string

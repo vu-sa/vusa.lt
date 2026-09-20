@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\Institution;
 use App\Models\Task;
 use App\Models\User;
@@ -22,6 +23,16 @@ class TaskAssignedNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Task;
+    }
+
+    /**
+     * Due within a week it asks for action now; further out it is worth knowing, not mailing.
+     */
+    public function urgency(): NotificationUrgency
+    {
+        $due = $this->task->due_date;
+
+        return $due !== null && $due->lte(now()->addDays(7)) ? NotificationUrgency::Act : NotificationUrgency::Know;
     }
 
     public function title(object $notifiable): string
@@ -85,6 +96,12 @@ class TaskAssignedNotification extends BaseNotification
             'institution' => $taskable instanceof Institution ? $taskable->name : null,
             'deadline' => $this->task->due_date?->format('Y-m-d'),
         ]);
+    }
+
+    #[\Override]
+    public function mailSignature(object $notifiable): ?array
+    {
+        return $this->coordinatorSignature($notifiable, $this->task->taskable instanceof Institution ? $this->task->taskable : null);
     }
 
     #[\Override]

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use Illuminate\Support\Carbon;
@@ -26,6 +27,17 @@ class DutyExpiringNotification extends BaseNotification
     public function category(): NotificationCategory
     {
         return NotificationCategory::Duty;
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return NotificationUrgency::Act;
+    }
+
+    #[\Override]
+    public function sendsPush(): bool
+    {
+        return false;
     }
 
     public function title(object $notifiable): string
@@ -80,20 +92,17 @@ class DutyExpiringNotification extends BaseNotification
     }
 
     #[\Override]
+    public function mailSignature(object $notifiable): ?array
+    {
+        return $this->coordinatorSignature($notifiable, $this->duty->institution);
+    }
+
+    #[\Override]
     public function primaryAction(): ?array
     {
         return [
             'label' => __('notifications.action_view_duty'),
             'url' => $this->url(),
         ];
-    }
-
-    /**
-     * Duty expiry notifications are important reminders and should not be digested.
-     */
-    #[\Override]
-    public function supportsEmailDigest(): bool
-    {
-        return false;
     }
 }

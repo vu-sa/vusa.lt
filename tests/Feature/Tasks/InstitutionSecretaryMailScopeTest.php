@@ -110,6 +110,17 @@ function scheduledMailFor(User $user): array
         ->all();
 }
 
+/**
+ * The notification classes stored for one person. A task due within a week is act-tier: it is
+ * mailed at once and never enters the digest queue, so this is where it shows up.
+ *
+ * @return array<int, string>
+ */
+function receivedBy(User $user): array
+{
+    return $user->notifications()->pluck('type')->all();
+}
+
 test('the secretary carries the task alone and is the only one mailed about it', function (): void {
     nominateSecretary($this->institution, $this->cadence, $this->secretary);
 
@@ -117,9 +128,9 @@ test('the secretary carries the task alone and is the only one mailed about it',
 
     expect(agendaCompletionTaskFor($meeting)->users()->pluck('users.id')->all())
         ->toBe([$this->secretary->id])
-        ->and(scheduledMailFor($this->secretary))->toContain(TaskAssignedNotification::class);
+        ->and(receivedBy($this->secretary))->toContain(TaskAssignedNotification::class);
 
-    $this->members->each(fn (User $member) => expect(scheduledMailFor($member))
+    $this->members->each(fn (User $member) => expect(receivedBy($member))
         ->not->toContain(TaskAssignedNotification::class));
 });
 
