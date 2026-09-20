@@ -5,6 +5,12 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.10 — New duty management and member assignment (2026-09-20) {#v2-10}
+
+- ⭐ **Streamlined duty record page** — the duty page provides a clear overview of key facts, occupancy status, current and historical members, sibling duties in the same institution, and activity logs
+- ✨ **Quick member assignment sheet** — assign members to duties directly from the record page using the new slide-out sheet featuring instant user search, tenure dates, and access-change protection
+- ✨ **Decoupled duty editing and membership** — duty creation and editing forms no longer use complex transfer lists; member occupancy is managed on the record page, keeping duty details and settings focused
+
 ## v2.9 — A simpler window for recording meetings (2026-09-19) {#v2-9}
 
 - ✨ **Today and yesterday in one tap** — when recording a meeting you choose from "Today", "Yesterday" or the institution's usual day; the calendar is only needed for other dates

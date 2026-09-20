@@ -29,6 +29,39 @@ class DutiableController extends AdminController
     }
 
     /**
+     * Store a newly created resource in storage (Decision O21).
+     */
+    public function store(\App\Http\Requests\StoreDutiableRequest $request)
+    {
+        $data = $request->validated();
+
+        $dutiable = Dutiable::create([
+            'duty_id' => $data['duty_id'],
+            'dutiable_id' => $data['user_id'],
+            'dutiable_type' => MorphMap::alias(User::class),
+            'start_date' => $data['start_date'] ?? now()->toDateString(),
+            'end_date' => $data['end_date'] ?? null,
+            'study_program_id' => $data['study_program_id'] ?? null,
+            'study_program_note' => $data['study_program_note'] ?? null,
+            'additional_email' => $data['additional_email'] ?? null,
+            'additional_photo' => $data['additional_photo'] ?? null,
+            'additional_photo_focal_point' => $data['additional_photo_focal_point'] ?? null,
+            'description' => $data['description'] ?? null,
+            'use_original_duty_name' => $data['use_original_duty_name'] ?? false,
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $dutiable->load('duty', 'user')->toFullArray(),
+                'message' => $this->entityMessage('created', 'dutiable'),
+            ]);
+        }
+
+        return back()->with('success', $this->entityMessage('created', 'dutiable'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Dutiable $dutiable)

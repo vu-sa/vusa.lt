@@ -68,7 +68,7 @@ export function useDiscussionThread(commentableType: string, commentableId: stri
     const state = parentId ? mutating : posting;
     state.value = true;
     try {
-      const comment = await api.postComment(html, parentId);
+      const comment = await (parentId ? api.postComment(html, parentId) : api.postComment(html));
       upsertComment(comment);
       return comment;
     }

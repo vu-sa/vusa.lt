@@ -344,11 +344,13 @@ class DutyController extends AdminController
                         ->orWhere('end_date', '>=', now());
                 })
                 ->pluck('dutiable_id');
-            $this->handleUsersUpdate(
-                new Collection($owningTenantCurrentIds),
-                new Collection($request->current_users),
-                $duty
-            );
+            if ($request->exists('current_users') && ! is_null($request->current_users)) {
+                $this->handleUsersUpdate(
+                    new Collection($owningTenantCurrentIds),
+                    new Collection($request->current_users),
+                    $duty
+                );
+            }
 
             $duty->institution()->disassociate();
             $duty->institution()->associate($request->institution_id);

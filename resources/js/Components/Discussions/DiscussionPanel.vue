@@ -157,7 +157,7 @@ const visibleComments = computed(() =>
 async function onPost(html: string) {
   const comment = await discussion.post(html);
   if (comment) {
-    rootComposer.value?.reset();
+    rootComposer.value?.reset?.();
   }
 }
 

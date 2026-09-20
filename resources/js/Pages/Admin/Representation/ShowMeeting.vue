@@ -6,8 +6,8 @@
     :status="meetingStatus"
     :facts="recordFacts"
     :sections="tabs"
-    :primary-action="primaryAction"
-    :overflow-actions="overflowActions"
+    :primary-action
+    :overflow-actions
     :navigation="recordNavigation"
     @action="handleRecordAction"
   >
@@ -211,10 +211,10 @@
           </DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
-          <p class="text-sm text-zinc-600 dark:text-zinc-400">
+          <p class="text-sm text-muted-foreground">
             {{ $t("Ar tikrai norite ištrinti šį darbotvarkės punktą? Šis veiksmas negrįžtamas.") }}
           </p>
-          <p v-if="agendaItemPendingDelete" class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <p v-if="agendaItemPendingDelete" class="border border-border bg-secondary/60 px-3 py-2 text-sm font-medium text-foreground">
             {{ agendaItemPendingDelete.title }}
           </p>
           <div class="flex justify-end gap-3">
@@ -241,15 +241,15 @@
         </DialogHeader>
 
         <div class="space-y-4">
-          <p class="text-sm text-zinc-600 dark:text-zinc-400">
+          <p class="text-sm text-muted-foreground">
             {{ $t("Ar tikrai norite ištrinti šį posėdį? Šis veiksmas negrįžtamas ir bus pašalinti visi su posėdžiu susiję duomenys, įskaitant darbotvarkės punktus.") }}
           </p>
 
-          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg p-3">
-            <p class="text-sm text-red-800 dark:text-red-300 font-medium">
+          <div class="border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-3 text-[var(--status-danger)]">
+            <p class="text-sm font-medium">
               {{ $t("Bus ištrinta:") }}
             </p>
-            <ul class="text-xs text-red-700 dark:text-red-400 mt-1 space-y-1">
+            <ul class="mt-1 space-y-1 text-xs">
               <li>• {{ meeting.agenda_items?.length ?? 0 }} {{ $t("darbotvarkės punktai") }}</li>
               <li v-if="tasks?.length">
                 • {{ tasks.length }} {{ $t("užduotys") }}
@@ -317,17 +317,11 @@ import { genitivizeEveryWord } from '@/Utils/String';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
-
-// Layout
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
-
-// UI Components
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-
-// Custom Components
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';

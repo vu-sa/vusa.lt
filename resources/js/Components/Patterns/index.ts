@@ -23,6 +23,8 @@ export { default as RecordSkeleton } from './Skeletons/RecordSkeleton.vue';
 export { default as FormSkeleton } from './Skeletons/FormSkeleton.vue';
 export { default as SectionCardSkeleton } from './Skeletons/SectionCardSkeleton.vue';
 export { default as TopProgressBar } from './TopProgressBar.vue';
+export { default as SheetForm } from './SheetForm.vue';
+export { default as FormSection } from './FormSection.vue';
 
 /**
  * Re-exported so callers have one import path for the whole pattern tier and

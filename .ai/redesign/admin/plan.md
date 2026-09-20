@@ -47,7 +47,7 @@ One PR = one row. Rules:
 | **4.10** | Device split counter (U26) | — | ✅ |
 | **5.1** | **P1** Pradžia: attention queue, empty state, create shortcuts, Neseniai redaguota, koordinatorius | 4.x | ✅ |
 | **5.2** | **P2** Posėdžiai + extract `CollectionPage` (three views, filter bar, Rodyti daugiau, URL state) | 5.1 | ✅ |
-| **5.3** | **P3** Meeting record + agenda editor + extract `RecordPage` (Veikla, ‹ 3/24 ›, edit-mode canvas) | 5.2 |
+| **5.3** | **P3** Meeting record + agenda editor + extract `RecordPage` (Veikla, ‹ 3/24 ›, edit-mode canvas) | 5.2 | ✅ |
 | **5.4** | **P4** ActionWindow restyle (guided flow, bottom sheet, date presets) | 5.1 | ✅ |
 | — | *Feel review with reps — no PR; findings land as plan edits* | 5.4 |
 | **5.5** | **P5** Duty record + form + Priskirti sheet (O21) + extract `FormPage` and `SheetForm` | 5.3 |
@@ -541,7 +541,7 @@ once; a page type is extracted into a shared layout only after a pilot page prov
 | P2 | **Posėdžiai** | Collection (Typesense) | `ShowDocuments` anatomy, three views, quick filters, unit as a filter, Rodyti daugiau + restore, URL state, mobile rows |
 | P3 | **Meeting record + agenda-item editor** | Record + focused editor | canonical record, key facts, Veikla, ⋯ actions, sequential editing, local side panel, autosave, Papildyk list (R-c), votes as taps (R-e), edit-mode canvas (O24) |
 | P4 | **ActionWindow: naujas posėdis** | Guided flow | flow restyle, bottom sheet, date presets |
-| P5 | **Duty record + duty form + Priskirti sheet** | Record + Form + Sheet | occupancy sheet (O21), associations out of the form, reorder mode, text placement, LT/EN switch, Papildomi nustatymai, pickers, save bar, delete in ⋯ |
+| P5 | **Duty record + duty form + Priskirti sheet** ✅ | Record + Form + Sheet | occupancy sheet (O21), associations out of the form, reorder mode, text placement, LT/EN switch, Papildomi nustatymai, pickers, save bar, delete in ⋯ |
 | P6 | **Rezervacijos** | Collection (database) | table default, preview on a queue, ‹ 3 / 24 ›, bulk selection bar, optimistic approve, status roles |
 | P7 | **Žymos** | Collection + sheet form | sheet form, trash filter + undo toast, merge as action |
 | P8 | **ViSAK overview** | Overview | section tabs, numbers-as-links, one chart with a text summary, categorical colours |
@@ -558,7 +558,7 @@ once; a page type is extracted into a shared layout only after a pilot page prov
 
 ### PR 5.1 + 5.2 notes (2026-09-19)
 
-Built together on `dev` from one plan; not yet committed. Verification is split honestly at the end: what a real browser did and did not confirm.
+Built together on `dev` from one plan. Verification is split honestly at the end: what a real browser did and did not confirm.
 
 **5.1 · Pradžia**
 
@@ -632,8 +632,25 @@ Built together on `dev` from one plan; not yet committed. Verification is split 
 - Fence: only the files built here joined `MIGRATED_ADMIN_PATHS` (not `Components/Meetings/**` or `Dashboard/Components/**`).
 - The `docs/` page for Pradžia/Posėdžiai (playbook step 11) and retiring the `HomeSearchBar` test.
 
-**Next:** 5.3 (meeting record, agenda editor, `RecordPage`) — it already has work in progress in the same tree. The collection
-passes no filtered-list context yet, so ‹ 3 / 24 › needs the current filter set handed over (the URL already carries it).
+### PR 5.3 notes (2026-09-19)
+
+**5.3 · Meeting record + agenda editor + extract `RecordPage`**
+
+- **`Layouts/RecordPage.vue`:** The canonical record page layout. Composes title band (identity slot, `EntityTypeMark`,
+  title, `StatusBadge`, subtitle slot), record facts strip (`dl` with 3–6 key facts), alert slot (`#alert`), desktop section
+  tabs (for ≥ 3 sections) / mobile vertical stack, primary action control, and `⋯` overflow action menu (dropdown on desktop,
+  bottom sheet on mobile).
+- **`ShowMeeting.vue`:** Rebuilt on `RecordPage`. Features `MeetingDatePlate`, key facts (date, institution, participants,
+  public visibility), `MeetingCompletionChecklist` (actions for incomplete agenda/votes), deferred documents (`MeetingDocumentsPanel`),
+  SharePoint files (`FileManager`), deferred tasks (`TaskManager`), and `RecordActivity` (activity log and discussion).
+- **`EditAgendaItem.vue`:** Dedicated agenda item editor with sequential navigation (`AgendaItemNavigator`), edit mode switch
+  tinting the canvas (`bg-secondary`), auto-resizing title textarea, `AgendaItemBody`, `DiscussionPanel`, notes sidebar
+  (`AgendaItemNotesSidebar`) on desktop and bottom sheet on mobile, autosave (`useAgendaItemAutosave`), and sticky bottom save bar.
+- **`RecordActivity.vue`:** Unified activity and discussion feed for record pages, rendering timeline events and comments.
+- **`MeetingCompletionService`:** Evaluates completeness of meetings and agenda items (missing dates, lack of agenda items,
+  missing votes, missing student perspective).
+- **Fence:** `RecordPage*.vue`, `RecordActivity.vue`, `ShowMeeting.vue`, `EditAgendaItem.vue`, `MeetingDatePlate.vue`, and
+  `MeetingCompletionChecklist.vue` enrolled into `MIGRATED_ADMIN_PATHS`.
 
 ### PR 5.4 notes (2026-09-19)
 
@@ -680,6 +697,40 @@ passes no filtered-list context yet, so ‹ 3 / 24 › needs the current filter 
   opens the same window, which was not screenshotted.
 
 **Next:** the feel review with reps (no PR) — the flow to try is "užfiksuok vakarykštį posėdį"; findings land here as plan edits.
+
+### PR 5.5 notes (2026-09-20)
+
+**5.5 · Duty record + form + Priskirti sheet (O21) + extract `FormPage` and `SheetForm`**
+
+- **`Layouts/FormPage.vue`:** The canonical form page layout. Standardized single-column form shell (~40rem / `max-w-2xl` measure) with:
+  - Form header with title, subtitle, back/cancel navigation (`backHref`), audience marker (public vs internal), and language switcher slot (`#lang-switch`).
+  - Form content flow (`#default` slot) and progressive disclosure for advanced settings (`#advanced` slot).
+  - Sticky bottom save bar with primary submit button (supporting loading state), dirty state indicators, cancel action, and optional danger zone (`#danger-zone`) for destructive actions.
+  - Full keyboard shortcuts (`⌘/Ctrl + Enter` to submit, `Esc` to cancel).
+- **`Patterns/SheetForm.vue`:** The canonical slide-out sheet form layout component wrapping Shadcn `Sheet` with:
+  - Accessible sheet header, title, description, scrollable form body, and sticky footer with save button, cancel action, and access change guard integration.
+- **`Patterns/FormSection.vue`:** Standardized section card with title, optional description, badge, public indicator, and slot for form inputs.
+- **`Features/Admin/Occupancy/AssignDutyUserSheet.vue` (Decision O21):**
+  - Canonical occupancy sheet for assigning users to duties or updating existing tenure terms.
+  - Integrated fast user search (`Input` + debounce + `/api/v1/admin/users/search`) with `UserAvatar`, tenant badges, and fully accessible keyboard-navigable search results.
+  - Start and end date inputs, study program picker, additional email, and role description.
+  - Ex-officio indication and access-change guard integration (`useAccessChangeGuard` / `AccessChangeWarningDialog`).
+- **`ShowDuty.vue`:**
+  - Fully rebuilt on `RecordPage.vue` layout.
+  - Key facts strip: institution link, email, places occupied vs total (with warning when vacant), public visibility badge, and contacts grouping.
+  - Members management: current holders vs historical holders split, quick actions to end tenure today or edit term in `AssignDutyUserSheet`, and "Priskirti narį" primary action.
+  - Other duties in same institution, SharePoint files panel, and `RecordActivity` tab (timeline events & discussions).
+- **`DutyForm.vue`, `CreateDuty.vue`, `EditDuty.vue`:**
+  - Rebuilt on canonical `FormPage.vue`.
+  - Completely retired `TransferList` for duty assignments per Decision O21 and Forms Rules 1 & 15. Members are now managed strictly on the record page (`ShowDuty.vue`), freeing the form from complex membership sync and accidental tenure terminations.
+  - Clean LT/EN language toggle for multilingual fields (name, description via `TiptapEditor`).
+  - Single/multilingual form inputs, institution picker, places to occupy, types, and collapsible advanced settings (`Papildomi nustatymai` for ex-officio target duties and tenant quotas).
+- **Backend enhancements:**
+  - Added `StoreDutiableRequest` with proper authorization via `DutyPolicy::managePeople`.
+  - Added `store()` action to `DutiableController` and registered `dutiables.store` route in `routes/admin.php`.
+  - Updated `DutyController::update()` to preserve existing users when `current_users` is omitted from the request payload.
+- **Fence:** Enrolled all Phase 5.5 paths in `MIGRATED_ADMIN_PATHS` with zero ESLint errors or legacy utility violations.
+- **Verified:** Vitest full suite (420 files, 3,183 tests), Storybook a11y (22 files, 115 tests), Sail backend tests (3,903 tests, 0 failures), and production `npm run build` in 4.17s.
 
 ## Phase 6 — Messages (email, push, in-app)
 

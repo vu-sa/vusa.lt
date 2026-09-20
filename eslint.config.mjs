@@ -18,6 +18,8 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Features/Admin/ActivityLogViewer/RecordActivity.vue',
   'resources/js/Pages/Admin/ShowAdminHome.vue',
   'resources/js/Pages/Admin/Representation/IndexMeeting.vue',
+  'resources/js/Pages/Admin/Representation/ShowMeeting.vue',
+  'resources/js/Pages/Admin/Representation/EditAgendaItem.vue',
   'resources/js/Components/Home/**',
   'resources/js/Components/Collection/**',
   'resources/js/Components/Layouts/CollectionPage.vue',
@@ -26,6 +28,14 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/ActionWindow/{ActionWindow,ActionWindowBody,ActionWindowScreen,ActionWindowPrimaryButton,ActionChoiceButton,ActionChoiceList,ReviewRow,ScreenLoading,AgendaItemsEditor}.vue',
   'resources/js/Components/ActionWindow/screens/**',
   'resources/js/Components/ActionWindow/screenRegistry.ts',
+  'resources/js/Components/Layouts/FormPage.vue',
+  'resources/js/Components/Patterns/SheetForm.vue',
+  'resources/js/Components/Patterns/FormSection.vue',
+  'resources/js/Features/Admin/Occupancy/**',
+  'resources/js/Pages/Admin/People/ShowDuty.vue',
+  'resources/js/Pages/Admin/People/CreateDuty.vue',
+  'resources/js/Pages/Admin/People/EditDuty.vue',
+  'resources/js/Components/AdminForms/DutyForm.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

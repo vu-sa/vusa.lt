@@ -73,6 +73,11 @@ const jsdomProject = (name: string, include: string[], exclude?: string[]) => ({
 
 export default defineConfig({
   resolve: { alias },
+  server: {
+    watch: {
+      ignored: ['**/vendor/**', '**/storage/**', '**/public/build/**'],
+    },
+  },
   test: {
     globals: true,
     // Beyond the defaults (vitest config, package.json): files every spec depends on implicitly

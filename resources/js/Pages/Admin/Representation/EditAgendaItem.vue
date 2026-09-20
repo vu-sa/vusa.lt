@@ -19,7 +19,7 @@
     >
       <div class="min-w-0 space-y-8">
         <!-- Header: the status the item ended up in reads before its title. -->
-        <header class="space-y-3 border-b pb-6 dark:border-zinc-800">
+        <header class="space-y-3 border-b border-border pb-6">
           <div class="flex items-start justify-between gap-4">
             <div class="flex flex-wrap items-center gap-2">
               <span v-if="editing" class="text-xs font-semibold uppercase tracking-wide text-primary">
@@ -27,7 +27,7 @@
               </span>
               <span
                 :class="[
-                  'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
+                  'inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs font-medium',
                   statusMeta.bgClass,
                   statusMeta.colorClass,
                 ]"
@@ -72,7 +72,7 @@
           <div class="min-w-0">
             <p
               v-if="editLocale === 'en'"
-              class="mb-2 flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400"
+              class="mb-2 flex items-center gap-1.5 text-xs font-medium text-[var(--status-attention)]"
             >
               <Languages class="h-3.5 w-3.5 shrink-0" />
               {{ $t('meetings.agenda.editing_english') }}
@@ -151,7 +151,13 @@
     </Sheet>
 
     <!-- Sticky bottom action bar (mirrors AdminForm), edit mode only -->
-    <div v-if="editing" class="fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-50 border-t bg-white/95 px-4 py-3 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/95 md:left-(--sidebar-width,16rem)">
+    <div
+      v-if="editing"
+      :class="[
+        'fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-50',
+        'border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm md:left-(--sidebar-width,16rem)',
+      ]"
+    >
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-4">
         <!-- Status -->
         <div class="flex items-center gap-2 text-sm">
@@ -160,11 +166,11 @@
               <Loader2 class="h-4 w-4 animate-spin" />
               <span class="hidden sm:inline">{{ $t('Saugoma…') }}</span>
             </div>
-            <div v-else-if="saveStatus === 'dirty'" key="dirty" class="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-              <span class="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+            <div v-else-if="saveStatus === 'dirty'" key="dirty" class="flex items-center gap-2 text-[var(--status-attention)]">
+              <span class="h-2 w-2 animate-pulse bg-[var(--status-attention)]" />
               <span class="hidden sm:inline">{{ $t('Neišsaugota') }}</span>
             </div>
-            <div v-else-if="saveStatus === 'saved'" key="saved" class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+            <div v-else-if="saveStatus === 'saved'" key="saved" class="flex items-center gap-2 text-[var(--status-success)]">
               <Check class="h-4 w-4" />
               <span class="hidden sm:inline">{{ $t('Įrašyta') }}</span>
             </div>

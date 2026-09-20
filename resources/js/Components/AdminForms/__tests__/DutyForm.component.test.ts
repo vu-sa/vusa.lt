@@ -10,9 +10,10 @@ import { commonStubs } from '@/tests/stubs';
 // the genderization preview must react to typing, which only a reactive form gives us.
 // Same pattern as NewsForm.component.test.ts.
 vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual('@inertiajs/vue3');
+  const actual = await vi.importActual<any>('@inertiajs/vue3');
   return {
     ...actual,
+    Head: { name: 'Head', template: '<div style="display:none"><slot /></div>' },
     usePage: () => ({
       props: {
         app: { locale: 'lt', url: 'https://vusa.test' },
@@ -40,6 +41,8 @@ vi.mock('@/Composables/useDuplicateDutyCheck', () => ({
 
 const stubs = {
   ...commonStubs,
+  Head: true,
+  AdminContentPage: { template: '<div><slot /></div>' },
   AdminForm: { template: '<form @submit.prevent><slot name="status-header" /><slot /></form>' },
   FormElement: { template: '<section><slot name="title" /><slot name="description" /><slot /></section>' },
   FormFieldWrapper: { template: '<div><slot /></div>' },
@@ -297,9 +300,7 @@ describe('DutyForm.vue — ex-officio seats in the assignable-tenants section', 
     expect(wrapper.find(`[data-testid="tenant-occupancy-${tenant.id}"]`).text()).toBe('2 / ∞');
   });
 
-  it('keeps ex-officio holders out of the owning-tenant member selection', () => {
-    // They already hold the seat through their source duty, so offering them
-    // in the picker would let an admin "add" a row that already exists.
+  it('does not render TransferList for member associations (Decision O21 / Forms rule 1 & 15)', () => {
     wrapper = mountForm(emptyDuty({ id: 'duty-1' }), {
       assignableUsers: [
         { id: 'user-ex', name: 'Jonas Jonaitis', is_recent: true },
@@ -308,12 +309,7 @@ describe('DutyForm.vue — ex-officio seats in the assignable-tenants section', 
       exOfficioMembers: [{ ...exOfficioMember, tenant_id: null }],
     });
 
-    const transferList = wrapper.findComponent({ name: 'TransferList' });
-    const options = transferList.props('options') as Array<{ value: string }>;
-    const locked = transferList.props('lockedOptions') as Array<{ value: string }>;
-
-    expect(options.map(o => o.value)).toEqual(['user-a']);
-    expect(locked.map(o => o.value)).toEqual(['user-ex']);
+    expect(wrapper.findComponent({ name: 'TransferList' }).exists()).toBe(false);
   });
 });
 

@@ -217,13 +217,12 @@ Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('dutie
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
-// DutiableController has no create/store — dutiables are created through the duty and
-// user flows, not directly.
+// Dutiables (occupancies) created and managed through the unified Priskirti flow (Decision O21).
 // Declared before the resource so /dutiables/timeline can never be read as /dutiables/{dutiable}.
 Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->name('dutiables.timeline');
 Route::post('dutiables/timeline/apply', [DutiableTimelineController::class, 'apply'])->name('dutiables.timeline.apply');
 Route::post('dutiables/timeline/merge', [DutiableTimelineController::class, 'merge'])->name('dutiables.timeline.merge');
-Route::resource('dutiables', DutiableController::class)->only(['edit', 'update', 'destroy']);
+Route::resource('dutiables', DutiableController::class)->only(['store', 'edit', 'update', 'destroy']);
 /** @deprecated Merge records from the study-program list instead. */
 Route::get('studyPrograms/merge', fn () => to_route('studyPrograms.index')->with('info', __('shell.merge.redirect')))->name('studyPrograms.merge');
 Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');

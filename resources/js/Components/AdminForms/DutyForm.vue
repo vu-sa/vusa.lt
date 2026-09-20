@@ -1,868 +1,641 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <Alert v-if="!canEditDuty" class="mb-4">
-      <AlertDescription>
-        {{ $t('forms.fields.cross_tenant_duty_notice') }}
-      </AlertDescription>
-    </Alert>
+  <FormPage
+    :title="isEditing ? dutyTitle : $t('Nauja pareigybė')"
+    :head-title="isEditing ? dutyTitle : $t('Nauja pareigybė')"
+    :lead="isEditing ? (duty?.institution?.short_name ?? duty?.institution?.name) : $t('Sukurkite naują pareigybę institucijoje')"
+    :entity-type="ModelEnum.DUTY"
+    :back-href="backHref ?? route('duties.index')"
+    :back-label="$t('Pareigybės')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :locale="activeLocale"
+    :available-locales="['lt', 'en']"
+    :missing-locale-counts
+    @update:locale="activeLocale = $event"
+    @submit="emit('submit:form', form)"
+  >
+    <!-- Cross tenant duty alert -->
+    <div
+      v-if="!canEditDuty"
+      class="border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-4 text-xs text-[var(--status-attention)]"
+    >
+      {{ $t('forms.fields.cross_tenant_duty_notice') }}
+    </div>
+
     <template v-if="canEditDuty">
-      <FormElement>
-        <template #title>
-          {{ $t("forms.context.main_info") }}
-        </template>
-        <template #description>
-          <p>
+      <!-- Section 1: Kas tai? -->
+      <FormSection
+        :title="$t('Kas tai?')"
+        :description="$t('Pagrindinė pareigybės informacija: pavadinimas, kontaktai ir vietų skaičius.')"
+      >
+        <!-- Title input -->
+        <div class="space-y-1.5">
+          <Label for="duty-name" class="text-sm font-medium">
+            {{ $t('Pavadinimas') }} ({{ activeLocale.toUpperCase() }}) *
+          </Label>
+          <Input
+            id="duty-name"
+            v-model="form.name[activeLocale]"
+            :placeholder="activeLocale === 'lt' ? $t('Pirmininkas, Koordinatorius…') : 'Chair, Coordinator…'"
+          />
+          <p v-if="form.errors[`name.${activeLocale}`]" class="text-xs text-destructive">
+            {{ form.errors[`name.${activeLocale}`] }}
+          </p>
+          <p class="text-xs text-muted-foreground">
             {{ $t('forms.helpers.duty_name_inflected_hint') }}
           </p>
-          <template v-if="form.name.lt">
-            <p class="mt-2">
-              <InflectedDutyName :name="form.name.lt" locale="lt" class="text-base font-medium text-foreground" />
-            </p>
-            <!-- <p class="mt-1 text-xs"> -->
-            <!--   jie (they) - <strong>{{ changeDutyNameEndings(null, form.name.lt, 'lt', "jie/jų", false) }}</strong> -->
-            <!-- </p> -->
-          </template>
-        </template>
-        <FormFieldWrapper id="name" :label="$t('forms.fields.title')" :error="form.errors.name">
-          <MultiLocaleInput v-model:input="form.name" />
-          <!-- <Alert v-if="showMissingNameAlert" variant="default" class="mt-3"> -->
-          <!--   <TriangleAlert class="size-4" /> -->
-          <!-- </Alert> -->
-        </FormFieldWrapper>
 
-        <DuplicateDutyWarning :matches="duplicateMatches" :current-duty-id="duty.id ?? null" class="mb-4" />
-
-        <FormFieldWrapper id="email" :label="$t('forms.fields.email')" :error="form.errors.email">
-          <Input id="email" v-model="form.email" placeholder="vusa@vusa.lt" />
-        </FormFieldWrapper>
-
-        <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="institution_id" :label="$t('forms.fields.institution')"
-            :error="form.errors.institution_id">
-            <InstitutionSelectDialog v-model:open="institutionDialogOpen"
-              :institutions="assignableInstitutions as unknown as InstitutionOption[]"
-              :initial-hits="institutionInitialHits" @confirm="onInstitutionConfirm">
-              <template #trigger>
-                <Button type="button" variant="outline" class="w-full justify-between font-normal">
-                  <span class="truncate" :class="{ 'text-muted-foreground': !selectedInstitution }">
-                    {{ selectedInstitution?.name ?? $t('Pasirink instituciją pagal pavadinimą...') }}
-                  </span>
-                  <span class="flex shrink-0 items-center gap-2">
-                    <Badge v-if="selectedInstitution?.tenant?.shortname" variant="secondary" class="text-xs">
-                      {{ selectedInstitution.tenant.shortname }}
-                    </Badge>
-                    <ChevronsUpDown class="size-4 opacity-50" />
-                  </span>
-                </Button>
-              </template>
-            </InstitutionSelectDialog>
-          </FormFieldWrapper>
-
-          <FormFieldWrapper id="places_to_occupy" :label="$t('forms.fields.duty_people_count')"
-            :error="form.errors.places_to_occupy">
-            <NumberField id="places_to_occupy" v-model="form.places_to_occupy" :min="0" />
-          </FormFieldWrapper>
-        </div>
-
-        <FormFieldWrapper id="contacts_grouping" :label="$t('forms.fields.contacts_grouping')"
-          :error="form.errors.contacts_grouping">
-          <Select v-model="form.contacts_grouping">
-            <SelectTrigger>
-              <SelectValue :placeholder="$t('forms.placeholders.select_grouping')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">
-                Be grupavimo
-              </SelectItem>
-              <SelectItem value="study_program">
-                Pagal studijų programą
-              </SelectItem>
-              <SelectItem value="tenant">
-                Pagal padalinį
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
-      </FormElement>
-      <FormElement>
-        <template #title>
-          {{ $t("forms.fields.description") }}
-        </template>
-        <template #description>
-          Aprašymas yra rodomas vusa.lt puslapyje prie pareigybės
-        </template>
-        <div class="space-y-2">
-          <div class="inline-flex items-center gap-2">
-            <Label for="description">Aprašymas</Label>
-            <SimpleLocaleButton v-model:locale="locale" />
+          <!-- Inflected preview for Lithuanian -->
+          <div v-if="form.name.lt" class="mt-2 text-sm">
+            <InflectedDutyName :name="form.name.lt" locale="lt" class="font-medium text-foreground" />
           </div>
-          <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
-          <TiptapEditor v-else v-model="form.description.en" preset="full" html />
-          <p v-if="form.errors.description" class="text-xs text-red-600 dark:text-red-400">
-            {{ form.errors.description }}
-          </p>
         </div>
-      </FormElement>
-    </template>
 
-    <!-- Owning-tenant members — only when canEditDuty -->
-    <FormElement v-if="canEditDuty">
-      <template #title>
-        Asmenys
-      </template>
-      <template #description>
-        <p class="mb-4">
-          Pareigybę gali užimti daug naudotojų.
-        </p>
-        <p>
-          Jeigu sąraše nėra asmens, kuris užima pareigybę, šį asmenį reikia
-          sukurti.
-        </p>
-      </template>
-      <div class="space-y-2">
-        <div class="inline-flex items-center gap-2">
-          <Label><strong>{{ $t("Nariai") }}</strong></Label>
-          <Button as="a" variant="link" size="xs" target="_blank" :href="route('users.create')">
-            <IFluentAdd24Filled />
-            Sukurti naują asmenį
-          </Button>
-        </div>
-        <div class="inline-flex items-center gap-2 text-sm">
-          <Switch id="show-all-users" v-model="showAllUsers" />
-          <Label for="show-all-users" class="cursor-pointer font-normal">{{ $t('forms.fields.show_all_users') }}</Label>
-        </div>
-        <p v-if="!showAllUsers" class="text-xs text-muted-foreground">
-          {{ $t('forms.fields.recent_users_only_hint', { shown: recentUsersCount, total: assignableUsersTotal }) }}
-        </p>
-        <TransferList v-model="form.current_users" :options="owningTenantUserOptions"
-          :locked-options="owningExOfficioOptions">
-          <template #source-label="{ option }">
-            <span class="inline-flex items-center gap-2">
-              {{ option.label }}
-              <a target="_blank" :href="route('users.edit', option.value)"
-                class="inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
-                @click.stop>
-                <IconEdit class="size-3.5" />
-              </a>
+        <!-- Duplicate Duty Warning -->
+        <DuplicateDutyWarning
+          :matches="duplicateMatches"
+          :current-duty-id="duty?.id ?? null"
+          class="mt-2"
+        />
+
+        <!-- Email -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <Label for="duty-email" class="text-sm font-medium">
+              {{ $t('Pareigybės el. paštas') }}
+            </Label>
+            <span class="text-xs text-muted-foreground">
+              {{ $t('(neprivaloma)') }}
             </span>
-          </template>
-          <template #target-label="{ option }">
-            <div class="flex items-center gap-2">
-              <UserAvatar :size="24" :user="option.user" />
-              <span class="inline-flex items-center gap-2">
-                {{ option.label }}
-                <a target="_blank" :href="route('users.edit', option.value)"
-                  class="inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground">
-                  <IconEye class="size-3.5" />
-                </a>
-              </span>
-            </div>
-          </template>
-          <template #locked-label="{ option }">
-            <ExOfficioMemberLabel :option />
-          </template>
-        </TransferList>
-        <p v-if="owningExOfficioOptions.length > 0" class="text-xs text-muted-foreground">
-          {{ $t('forms.fields.ex_officio_not_removable') }}
-        </p>
-      </div>
-
-      <!-- Current members list with cross-tenant badges -->
-      <div v-if="duty.current_users && duty.current_users.length > 0" class="mt-4">
-        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {{ $t('forms.fields.current_members') }} ({{ duty.current_users.length }})
-          </span>
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- Sits beside the per-row "Redaguoti pareigybės laikotarpį" links it replaces,
-                 which is why the spotlight lives here rather than on the standalone page. -->
-            <SpotlightPopover
-              v-if="duty.id"
-              :title="$t('dutiables.timeline.spotlight.title')"
-              :description="$t('dutiables.timeline.spotlight.description')"
-              :is-dismissed="timelineSpotlight.isDismissed.value"
-              @dismiss="timelineSpotlight.dismiss"
-            >
-              <Button type="button" size="xs" variant="outline" @click="openTimeline">
-                <CalendarRange class="size-3.5" />
-                {{ $t('dutiables.timeline.open') }}
-              </Button>
-            </SpotlightPopover>
-            <Input v-if="duty.current_users.length > memberPreviewCount" v-model="memberSearch"
-              :placeholder="$t('forms.placeholders.search_members')" class="h-8 w-full sm:w-64" />
           </div>
-        </div>
-        <div class="space-y-2">
-          <div v-for="user in visibleCurrentUsers" :key="user.id"
-            class="flex items-center justify-between gap-3 rounded-lg border border-gray-200 p-3 dark:border-gray-700">
-            <div class="flex min-w-0 items-center gap-3">
-              <UserAvatar :user :size="32" />
-              <div class="min-w-0">
-                <div class="inline-flex flex-wrap items-center gap-2 font-medium">
-                  <a :href="route('users.edit', user.id)" target="_blank" class="hover:underline">{{ user.name }}</a>
-                  <Badge v-if="isExOfficioUser(user)" variant="outline" class="text-xs"
-                    :title="exOfficioSourceFor(user) ?? undefined">
-                    {{ $t('forms.fields.ex_officio_badge') }}
-                  </Badge>
-                  <Badge v-if="getCrossTenantLabel(user)" variant="secondary" class="text-xs">
-                    {{ getCrossTenantLabel(user) }}
-                  </Badge>
-                </div>
-                <p v-if="exOfficioSourceFor(user)" class="truncate text-xs text-muted-foreground">
-                  {{ $t('forms.fields.ex_officio_source', { duty: exOfficioSourceFor(user) }) }}
-                </p>
-              </div>
-            </div>
-            <Button v-if="getUserDutiableId(user)" as="a" variant="link" size="xs" class="shrink-0"
-              :class="{ 'text-amber-600 dark:text-amber-400': missingStudyProgram(user) }" target="_blank"
-              :href="route('dutiables.edit', { dutiable: getUserDutiableId(user) })"
-              :title="missingStudyProgram(user) ? $t('forms.helpers.study_program_required_hint') : undefined">
-              <TriangleAlert v-if="missingStudyProgram(user)" class="size-3.5 shrink-0" />
-              <IconEdit v-else />
-              Redaguoti pareigybės laikotarpį
-            </Button>
-          </div>
-          <p v-if="filteredCurrentUsers.length === 0" class="py-4 text-center text-sm text-muted-foreground">
-            {{ $t('forms.fields.no_members_found') }}
+          <Input
+            id="duty-email"
+            v-model="form.email"
+            type="email"
+            placeholder="vusa@vusa.lt"
+          />
+          <p v-if="form.errors.email" class="text-xs text-destructive">
+            {{ form.errors.email }}
           </p>
         </div>
-        <Button v-if="filteredCurrentUsers.length > memberPreviewCount" type="button" variant="link" size="xs"
-          class="mt-1" @click="showAllMembers = !showAllMembers">
-          {{ showAllMembers
-            ? $t('forms.fields.show_fewer')
-            : $t('forms.fields.show_all_members', { count: filteredCurrentUsers.length }) }}
-        </Button>
-      </div>
-    </FormElement>
 
-    <template v-if="canEditDuty">
-      <FormElement>
-        <template #title>
-          Papildoma informacija
-        </template>
-        <template #description>
-          <div class="flex flex-col gap-2">
-            <p>
-              <strong>Pareigybės tipas</strong> reikalingas tam, kad tam tikrais
-              atvejais, nariai būtų rodomi viešame studentų atstovybės
-              puslapyje. Pavyzdžiui, studentų atstovo tipui priklausantys
-              asmenys rodomi prie institucijos kontaktų.
-            </p>
-            <p>
-              <strong>Administracinė vusa.lt rolė </strong> leidžia
-              registruotiems naudotojams atlikti jiems priskirtus veiksmus
-              vidiniame mano.vusa.lt tinklalapyje
+        <!-- Places to occupy & Contacts grouping -->
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="space-y-1.5">
+            <Label for="places_to_occupy" class="text-sm font-medium">
+              {{ $t('Kiek vietų') }}
+            </Label>
+            <NumberField
+              id="places_to_occupy"
+              v-model="form.places_to_occupy"
+              :min="1"
+            />
+            <p v-if="form.errors.places_to_occupy" class="text-xs text-destructive">
+              {{ form.errors.places_to_occupy }}
             </p>
           </div>
-        </template>
-        <FormFieldWrapper id="types" :label="$t('forms.fields.duty_type')" :error="form.errors.types">
-          <MultiSelect v-model="selectedTypes" :options="dutyTypes" label-field="title" value-field="id"
-            :placeholder="$t('forms.placeholders.select_category')" />
-        </FormFieldWrapper>
 
-        <FormFieldWrapper id="roles" :label="$t('forms.fields.admin_role')" :error="form.errors.roles">
-          <MultiSelect v-model="selectedRoles" :options="rolesOptions" label-field="label" value-field="value"
-            :disabled="!$page.props.auth?.user.isSuperAdmin" :placeholder="$t('forms.placeholders.no_role')" />
-        </FormFieldWrapper>
+          <div class="space-y-1.5">
+            <Label for="contacts_grouping" class="text-sm font-medium">
+              {{ $t('Kontaktų grupavimas') }}
+            </Label>
+            <Select v-model="form.contacts_grouping">
+              <SelectTrigger id="contacts_grouping">
+                <SelectValue :placeholder="$t('forms.placeholders.select_grouping')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  {{ $t('Be grupavimo') }}
+                </SelectItem>
+                <SelectItem value="study_program">
+                  {{ $t('Pagal studijų programą') }}
+                </SelectItem>
+                <SelectItem value="tenant">
+                  {{ $t('Pagal padalinį') }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p v-if="form.errors.contacts_grouping" class="text-xs text-destructive">
+              {{ form.errors.contacts_grouping }}
+            </p>
+          </div>
+        </div>
+      </FormSection>
 
-        <FormFieldWrapper id="ex_officio_target_duty_ids" :label="$t('forms.fields.ex_officio_duties')"
-          :error="form.errors.ex_officio_target_duty_ids">
-          <CollectionSelectDialog v-model:open="exOfficioDialogOpen" collection="duties" multiple allow-empty
-            :base-filter-by="exOfficioBaseFilterBy" :disabled-ids="exOfficioDisabledIds"
-            :initial-hits="exOfficioInitialHits" :title="$t('forms.fields.ex_officio_duties')"
-            :confirm-label="$t('Pasirinkti')" :search-placeholder="$t('Ieškoti pareigų pagal pavadinimą...')"
-            :empty-message="$t('Pareigų nerasta')" @confirm="onExOfficioConfirm">
+      <!-- Section 2: Kur tai rodoma? -->
+      <FormSection
+        :title="$t('Kur tai rodoma?')"
+        :description="$t('Institucija ir viešosios svetainės kategorijos, kuriose atvaizduojama ši pareigybė.')"
+        badge="Matoma vusa.lt"
+        public-marker
+      >
+        <!-- Institution -->
+        <div class="space-y-1.5">
+          <Label for="institution_id" class="text-sm font-medium">
+            {{ $t('Institucija') }} *
+          </Label>
+          <InstitutionSelectDialog
+            v-model:open="institutionDialogOpen"
+            :institutions="assignableInstitutions"
+            :initial-hits="institutionInitialHits"
+            @confirm="onInstitutionConfirm"
+          >
             <template #trigger>
-              <Button type="button" variant="outline" class="w-full justify-between font-normal">
-                <span class="truncate" :class="{ 'text-muted-foreground': selectedExOfficioDuties.length === 0 }">
-                  {{ selectedExOfficioDuties.length > 0
-                    ? selectedExOfficioDuties.map(d => d.name).join(', ')
-                    : $t('forms.fields.ex_officio_duties') }}
+              <Button
+                type="button"
+                variant="outline"
+                class="u-touch w-full justify-between font-normal"
+              >
+                <span class="truncate" :class="{ 'text-muted-foreground': !selectedInstitution }">
+                  {{ selectedInstitution?.name ?? $t('Pasirinkti instituciją…') }}
                 </span>
                 <span class="flex shrink-0 items-center gap-2">
-                  <Badge v-if="selectedExOfficioDuties.length > 0" variant="secondary" class="text-xs">
-                    {{ selectedExOfficioDuties.length }}
-                  </Badge>
+                  <span
+                    v-if="selectedInstitution?.tenant?.shortname"
+                    class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground"
+                  >
+                    {{ selectedInstitution.tenant.shortname }}
+                  </span>
                   <ChevronsUpDown class="size-4 opacity-50" />
                 </span>
               </Button>
             </template>
-          </CollectionSelectDialog>
-        </FormFieldWrapper>
-      </FormElement>
-    </template>
-
-    <!-- Assignable tenants section — owning admin edits config + reps; cross-tenant admin only sees their row -->
-    <FormElement>
-      <template #title>
-        {{ $t("forms.fields.assignable_tenants") }}
-      </template>
-      <template #description>
-        <p>
-          Pareigybė priklauso vienam padaliniui, bet kiti padaliniai gali skirti
-          į ją savo narius (su kvota).
-        </p>
-      </template>
-
-      <!-- Toggle only shown to owning admin -->
-      <FormFieldWrapper v-if="canEditDuty" id="allow_external_dutiables"
-        :label="$t('forms.fields.allow_external_dutiables')">
-        <Switch :model-value="allowExternal" @update:model-value="toggleAllowExternal" />
-      </FormFieldWrapper>
-
-      <div v-if="allowExternal || !canEditDuty" class="space-y-4">
-        <!-- Owning admin picks the tenants in one control; each one's quota and reps
-             live inside its own accordion section, so the section stays short with 15 of them. -->
-        <div v-if="canEditDuty" class="space-y-2">
-          <MultiSelect v-model="selectedAssignableTenants" :options="assignableTenants" label-field="shortname"
-            value-field="id" :placeholder="$t('forms.placeholders.select_tenants')" />
-          <Button v-if="unaddedPadalinysTenants.length > 0" type="button" variant="outline" size="xs"
-            @click="addAllPadalinysTenants">
-            <IFluentAdd24Filled />
-            {{ $t('forms.fields.add_all_tenants', { count: unaddedPadalinysTenants.length }) }}
-          </Button>
+          </InstitutionSelectDialog>
+          <p v-if="form.errors.institution_id" class="text-xs text-destructive">
+            {{ form.errors.institution_id }}
+          </p>
         </div>
 
-        <!-- User filter toggle — only shown to cross-tenant admins (owning admins have it in the members section above) -->
-        <template v-if="!canEditDuty">
-          <div class="inline-flex items-center gap-2 text-sm">
-            <Switch id="show-all-users-tenant" v-model="showAllUsers" />
-            <Label for="show-all-users-tenant" class="cursor-pointer font-normal">{{ $t('forms.fields.show_all_users')
-            }}</Label>
+        <!-- Categories / Types -->
+        <div v-if="dutyTypes && dutyTypes.length > 0" class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <Label for="duty-types" class="text-sm font-medium">
+              {{ $t('forms.fields.duty_type') }}
+            </Label>
+            <span class="text-xs text-muted-foreground">
+              {{ $t('(neprivaloma)') }}
+            </span>
           </div>
-          <p v-if="!showAllUsers" class="text-xs text-muted-foreground">
-            {{ $t('forms.fields.recent_users_only_hint', { shown: recentUsersCount, total: assignableUsersTotal }) }}
+          <MultiSelect
+            id="duty-types"
+            v-model="selectedTypes"
+            :options="dutyTypes"
+            label-field="title"
+            value-field="id"
+            :placeholder="$t('forms.placeholders.select_category')"
+          />
+          <p v-if="form.errors.types" class="text-xs text-destructive">
+            {{ form.errors.types }}
           </p>
-        </template>
+        </div>
+      </FormSection>
 
-        <!-- Per-tenant quota + rep picker in collapsible accordion sections -->
-        <Accordion v-if="visibleAssignableTenantRows.length > 0" type="multiple"
-          :default-value="defaultOpenTenantValues">
-          <AccordionItem v-for="row in visibleAssignableTenantRows" :key="row.tenant_id ?? formIndexFor(row)"
-            :value="String(row.tenant_id ?? `new-${formIndexFor(row)}`)">
-            <AccordionTrigger>
-              <span class="flex w-full items-center justify-between gap-3 pr-2">
-                <span class="inline-flex items-center gap-2">
-                  {{ tenantShortname(row) }}
-                  <Badge v-if="tenantExOfficioMembers(row).length > 0" variant="outline" class="text-xs font-normal">
-                    {{ $t('forms.fields.ex_officio_badge') }} · {{ tenantExOfficioMembers(row).length }}
-                  </Badge>
-                </span>
-                <Badge :variant="tenantQuotaReached(row) ? 'secondary' : 'outline'"
-                  :data-testid="`tenant-occupancy-${row.tenant_id}`">
-                  {{ tenantOccupancy(row) }} / {{ row.quota ?? '∞' }}
-                </Badge>
+      <!-- Section 3: Aprašymas -->
+      <FormSection
+        :title="$t('Aprašymas')"
+        :description="$t('Aprašymas rodomas viešame puslapyje prie pareigybės.')"
+        badge="Matoma vusa.lt"
+        public-marker
+      >
+        <div class="space-y-2">
+          <TiptapEditor
+            v-if="activeLocale === 'lt'"
+            v-model="form.description.lt"
+            preset="full"
+            html
+          />
+          <TiptapEditor
+            v-else
+            v-model="form.description.en"
+            preset="full"
+            html
+          />
+          <p v-if="form.errors[`description.${activeLocale}`]" class="text-xs text-destructive">
+            {{ form.errors[`description.${activeLocale}`] }}
+          </p>
+        </div>
+      </FormSection>
+    </template>
+
+    <!-- Advanced Settings Slot -->
+    <template #advanced>
+      <!-- Ex-officio Target Duties -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <Label class="text-sm font-medium">
+            {{ $t('forms.fields.ex_officio_duties') }}
+          </Label>
+          <span class="text-xs text-muted-foreground">
+            {{ $t('(neprivaloma)') }}
+          </span>
+        </div>
+        <CollectionSelectDialog
+          v-model:open="exOfficioDialogOpen"
+          collection="duties"
+          multiple
+          allow-empty
+          :base-filter-by="exOfficioBaseFilterBy"
+          :disabled-ids="exOfficioDisabledIds"
+          :initial-hits="exOfficioInitialHits"
+          :title="$t('forms.fields.ex_officio_duties')"
+          :confirm-label="$t('Pasirinkti')"
+          :search-placeholder="$t('Ieškoti pareigų pagal pavadinimą…')"
+          @confirm="onExOfficioConfirm"
+        >
+          <template #trigger>
+            <Button type="button" variant="outline" class="u-touch w-full justify-between font-normal">
+              <span class="truncate" :class="{ 'text-muted-foreground': selectedExOfficioDuties.length === 0 }">
+                {{ selectedExOfficioDuties.length > 0
+                  ? selectedExOfficioDuties.map(d => d.name).join(', ')
+                  : $t('forms.fields.ex_officio_duties') }}
               </span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <div class="space-y-3">
-                <div v-if="canEditDuty" class="flex items-end justify-between gap-3">
-                  <FormFieldWrapper :id="`assignable_tenant_quota_${formIndexFor(row)}`"
-                    :label="$t('forms.fields.tenant_quota')" :hint="$t('forms.fields.tenant_quota_hint')" class="w-32">
-                    <NumberField v-model="row.quota" :min="1" />
-                  </FormFieldWrapper>
-                  <Button type="button" variant="ghost" size="sm"
-                    class="text-destructive hover:text-destructive" @click="removeTenantRow(row.tenant_id)">
-                    <IFluentDelete24Regular />
-                    {{ $t('forms.fields.remove_assignable_tenant') }}
-                  </Button>
-                </div>
-                <div v-else class="text-sm text-gray-500">
-                  {{ $t('forms.fields.tenant_quota') }}: {{ row.quota ?? '∞' }}
-                </div>
-                <TransferList :model-value="selectedTenantUserIds[formIndexFor(row)] ?? []"
-                  :options="tenantTransferListOptions(formIndexFor(row))" :locked-options="tenantLockedOptions(row)"
-                  @update:model-value="(next: string[]) => applyTenantSelection(row, next)">
-                  <template #target-label="{ option }">
-                    <span class="flex items-center gap-2">
-                      <UserAvatar :size="24" :user="(option as any).user" />
-                      <span>{{ option.label }}</span>
-                    </span>
-                  </template>
-                  <template #locked-label="{ option }">
-                    <ExOfficioMemberLabel :option />
-                  </template>
-                </TransferList>
-                <p v-if="tenantExOfficioMembers(row).length > 0" class="text-xs text-muted-foreground">
-                  {{ $t('forms.fields.ex_officio_not_removable') }}
-                </p>
-                <p v-if="tenantQuotaReached(row)" class="text-xs text-amber-600 dark:text-amber-400">
-                  {{ $t('forms.fields.quota_reached') }}
-                </p>
-                <p v-if="(form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`]"
-                  class="text-xs text-red-600 dark:text-red-400">
-                  {{ (form.errors as any)[`assignable_tenants.${formIndexFor(row)}.user_ids`] }}
-                </p>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-
-        <p v-if="form.errors.assignable_tenants" class="text-xs text-red-600 dark:text-red-400">
-          {{ form.errors.assignable_tenants }}
-        </p>
+              <span class="flex shrink-0 items-center gap-2">
+                <span
+                  v-if="selectedExOfficioDuties.length > 0"
+                  class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-semibold text-muted-foreground"
+                >
+                  {{ selectedExOfficioDuties.length }}
+                </span>
+                <ChevronsUpDown class="size-4 opacity-50" />
+              </span>
+            </Button>
+          </template>
+        </CollectionSelectDialog>
       </div>
-    </FormElement>
-  </AdminForm>
 
-  <DutiableTimelineDialog v-if="duty.id" v-model:open="timelineOpen" scope-type="duty" :scope-id="duty.id" />
+      <!-- Administrative Roles (Superadmin only) -->
+      <div v-if="$page.props.auth?.user?.isSuperAdmin" class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <Label class="text-sm font-medium">
+            {{ $t('forms.fields.admin_role') }}
+          </Label>
+          <span class="text-xs text-muted-foreground">
+            {{ $t('(superadmin)') }}
+          </span>
+        </div>
+        <MultiSelect
+          v-model="selectedRoles"
+          :options="rolesOptions"
+          label-field="label"
+          value-field="value"
+          :placeholder="$t('forms.placeholders.no_role')"
+        />
+      </div>
+
+      <!-- Assignable Tenants (Delegated Seats) -->
+      <div v-if="assignableTenants && assignableTenants.length > 0" class="space-y-4 border-t border-border pt-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-semibold text-foreground">
+              {{ $t('forms.fields.assignable_tenants') }}
+            </h4>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Leisti kitiems padaliniams skirti atstovus į šią pareigybę.') }}
+            </p>
+          </div>
+          <Switch
+            :model-value="allowExternal"
+            @update:model-value="toggleAllowExternal"
+          />
+        </div>
+
+        <div v-if="allowExternal || !canEditDuty" class="space-y-3">
+          <MultiSelect
+            v-if="canEditDuty"
+            v-model="selectedAssignableTenants"
+            :options="assignableTenants"
+            label-field="shortname"
+            value-field="id"
+            :placeholder="$t('forms.placeholders.select_tenants')"
+          />
+
+          <div v-if="visibleAssignableTenantRows.length > 0" class="divide-y divide-border border border-border">
+            <div
+              v-for="row in visibleAssignableTenantRows"
+              :key="row.tenant_id"
+              class="flex items-center justify-between p-3"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-foreground">{{ tenantShortname(row) }}</span>
+                <span
+                  class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-semibold text-muted-foreground"
+                  :data-testid="`tenant-occupancy-${row.tenant_id}`"
+                >
+                  {{ tenantOccupancy(row) }} / {{ row.quota ?? '∞' }}
+                </span>
+              </div>
+              <div v-if="canEditDuty" class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5">
+                  <Label :for="`quota-${row.tenant_id}`" class="text-xs text-muted-foreground">{{ $t('Kvota') }}:</Label>
+                  <Input
+                    :id="`quota-${row.tenant_id}`"
+                    v-model.number="row.quota"
+                    type="number"
+                    min="1"
+                    class="h-7 w-16 text-center text-xs"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  class="u-touch text-destructive"
+                  @click="removeTenantRow(row.tenant_id)"
+                >
+                  <Trash2 class="size-3.5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Danger Zone Slot -->
+    <template v-if="isEditing && canEditDuty" #danger-zone>
+      <div class="flex items-center justify-between">
+        <div>
+          <h4 class="text-sm font-semibold text-destructive">
+            {{ $t('Ištrinti pareigybę') }}
+          </h4>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Pareigybė bus visiškai pašalinta iš sistemos.') }}
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="destructive"
+          size="sm"
+          class="u-touch"
+          @click="emit('delete')"
+        >
+          <Trash2 class="mr-1.5 size-4" />
+          {{ $t('Ištrinti') }}
+        </Button>
+      </div>
+    </template>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useForm, usePage } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarRange, ChevronsUpDown, TriangleAlert } from 'lucide-vue-next';
+import { ChevronsUpDown, Trash2 } from 'lucide-vue-next';
 
-import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
-import UserAvatar from '../Avatars/UserAvatar.vue';
-import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
-
-import FormElement from './FormElement.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import AdminForm from './AdminForm.vue';
-import DuplicateDutyWarning from './DuplicateDutyWarning.vue';
-
-import { TenantType } from '@/Types/enums';
-import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
-import IconEdit from '~icons/fluent/edit16-filled';
-import IconEye from '~icons/fluent/eye16-regular';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { MultiSelect } from '@/Components/ui/multi-select';
+import { Button } from '@/Components/ui/button';
+import { Switch } from '@/Components/ui/switch';
 import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { CollectionSelectDialog, InstitutionSelectDialog, type InstitutionOption } from '@/Features/Admin/AdminSearch/Components/Select';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
-import { Switch } from '@/Components/ui/switch';
-import { TransferList } from '@/Components/ui/transfer-list';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/Components/ui/accordion';
-import { changeDutyNameEndings } from '@/Utils/String';
+import { MultiSelect } from '@/Components/ui/multi-select';
+import InstitutionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/InstitutionSelectDialog.vue';
+import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import ExOfficioMemberLabel from '@/Components/Duties/ExOfficioMemberLabel.vue';
+import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.vue';
+import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
+import { ModelEnum } from '@/Types/enums';
+import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 
-interface AssignableTenantOption { id: number; shortname: string; type?: string }
-interface AssignableDutyOption {
-  id: string;
-  name: string;
-  institution?: { id: string; name: string; short_name?: string | null; tenant?: { id: number; shortname: string } | null } | null;
+interface AssignableTenantRow {
+  tenant_id: number;
+  quota: number | null;
 }
-interface AssignableTenantRow { tenant_id: number | null; quota: number | null; user_ids: string[] }
-interface UserWithPivot extends App.Entities.User {
-  pivot?: { id?: string | null; tenant_id?: number | null; via_dutiable_id?: string | null; study_program_id?: string | null };
-}
-/** An active seat granted by another duty — displayed, counted, but never editable here. */
-interface ExOfficioMember {
-  dutiable_id: string;
-  user_id: string;
-  name: string;
-  profile_photo_path?: string | null;
-  tenant_id: number | null;
-  source_duty_name?: string | null;
-}
-interface AssignableUserOption {
-  id: string;
-  name: string;
-  profile_photo_path?: string | null;
-  is_recent: boolean;
+
+interface DutyPropType {
+  id?: string;
+  name?: { lt?: string; en?: string } | string;
+  description?: { lt?: string; en?: string } | string;
+  email?: string | null;
+  institution_id?: string | null;
+  places_to_occupy?: number;
+  contacts_grouping?: string;
+  types?: Array<{ id: number; title?: string }>;
+  roles?: Array<{ id: number; name?: string }>;
+  ex_officio_target_duties?: Array<{ id: string; name?: string }>;
+  assignable_tenants?: Array<{ id: number; shortname?: string; pivot?: { quota?: number | null } }>;
 }
 
 const props = withDefaults(defineProps<{
-  duty: App.Entities.Duty;
-  dutyTypes: App.Entities.Type[];
-  assignableUsers: AssignableUserOption[];
-  roles: App.Entities.Role[];
-  assignableInstitutions: App.Entities.Institution[];
-  assignableTenants: AssignableTenantOption[];
-  assignableDuties: AssignableDutyOption[];
-  /** Map of tenantId → array of currently-active user ids for that tenant. */
+  duty?: DutyPropType;
+  dutyTypes?: App.Entities.Type[];
+  assignableInstitutions?: App.Entities.Institution[];
+  roles?: App.Entities.Role[];
+  assignableTenants?: { id: number; shortname: string; type?: string }[];
+  assignableDuties?: Array<{ id: string; name: string; institution?: App.Entities.Institution | Record<string, unknown> }>;
   assignableTenantUsers?: Record<number, string[]>;
-  /** Active ex-officio seats on this duty (tenant_id null = owning tenant). */
-  exOfficioMembers?: ExOfficioMember[];
-  /** Tenant ids the acting admin is managing (empty = owning admin). */
+  exOfficioMembers?: Array<{
+    dutiable_id: string;
+    user_id: string;
+    name: string;
+    profile_photo_path?: string | null;
+    tenant_id: number | null;
+    source_duty_name?: string | null;
+  }>;
   actingAssignableTenantIds?: number[];
-  /** False when opened by a cross-tenant admin — only the assignable-tenants section is editable. */
   canEditDuty?: boolean;
   rememberKey?: string;
+  backHref?: string;
 }>(), {
-  canEditDuty: true,
+  duty: () => ({
+    name: { lt: '', en: '' },
+    description: { lt: '', en: '' },
+    email: null,
+    institution_id: null,
+    places_to_occupy: 1,
+    contacts_grouping: 'none',
+    types: [],
+    roles: [],
+    ex_officio_target_duties: [],
+    assignable_tenants: [],
+  }),
+  dutyTypes: () => [],
+  assignableInstitutions: () => [],
+  roles: () => [],
+  assignableTenants: () => [],
+  assignableDuties: () => [],
   assignableTenantUsers: () => ({}),
-  actingAssignableTenantIds: () => [],
   exOfficioMembers: () => [],
+  actingAssignableTenantIds: () => [],
+  // eslint-disable-next-line vue/no-boolean-default
+  canEditDuty: true,
+  rememberKey: undefined,
+  backHref: undefined,
 });
 
-defineEmits<{
-  (event: 'submit:form', form: unknown): void;
-  (event: 'delete'): void;
+const emit = defineEmits<{
+  (e: 'submit:form', form: ReturnType<typeof useForm>): void;
+  (e: 'delete'): void;
 }>();
 
-const locale = ref('lt');
-const showAllUsers = ref(false);
+const isEditing = computed(() => !!props.duty?.id);
 
-const initialAssignableTenantRows = (props.duty.assignable_tenants ?? []).map((t): AssignableTenantRow => ({
-  tenant_id: t.id,
-  quota: (t as App.Entities.Tenant & { pivot?: { quota?: number | null } }).pivot?.quota ?? null,
-  user_ids: props.assignableTenantUsers[t.id] ?? [],
+const dutyTitle = computed(() => {
+  if (typeof props.duty?.name === 'string') return props.duty.name;
+  return props.duty?.name?.lt || props.duty?.name?.en || '';
+});
+
+const activeLocale = ref<'lt' | 'en'>('lt');
+
+// Form Initialization
+const form = useForm({
+  name: {
+    lt: (typeof props.duty?.name === 'object' ? props.duty?.name?.lt : props.duty?.name) ?? '',
+    en: (typeof props.duty?.name === 'object' ? props.duty?.name?.en : '') ?? '',
+  },
+  email: props.duty?.email ?? '',
+  institution_id: props.duty?.institution_id ?? null,
+  places_to_occupy: props.duty?.places_to_occupy ?? 1,
+  contacts_grouping: props.duty?.contacts_grouping ?? 'none',
+  description: {
+    lt: (typeof props.duty?.description === 'object' ? props.duty?.description?.lt : props.duty?.description) ?? '',
+    en: (typeof props.duty?.description === 'object' ? props.duty?.description?.en : '') ?? '',
+  },
+  types: (props.duty?.types?.map((t: { id: number }) => t.id) ?? []) as number[],
+  roles: (props.duty?.roles?.map((r: { id: number }) => r.id) ?? []) as number[],
+  ex_officio_target_duty_ids: (props.duty?.ex_officio_target_duties?.map((d: { id: string }) => d.id) ?? []) as string[],
+  assignable_tenants: (props.duty?.assignable_tenants?.map((t: { id: number; pivot?: { quota?: number | null } }) => ({
+    tenant_id: t.id,
+    quota: t.pivot?.quota ?? null,
+  })) ?? []) as AssignableTenantRow[],
+});
+
+// Missing translation counts
+const missingLocaleCounts = computed(() => ({
+  lt: !form.name.lt ? 1 : 0,
+  en: !form.name.en ? 1 : 0,
 }));
 
-const initialFormData = {
-  ...(props.duty as any),
-  roles: props.duty.roles?.map(role => role.id) ?? [],
-  types: props.duty.types?.map(type => type.id) ?? [],
-  current_users: (props.duty.current_users as UserWithPivot[] | undefined ?? [])
-    .filter(u => u.pivot?.tenant_id == null && !u.pivot?.via_dutiable_id)
-    .map(u => u.id),
-  ex_officio_target_duty_ids: props.duty.ex_officio_target_duties?.map(d => d.id) ?? [],
-  assignable_tenants: initialAssignableTenantRows,
-};
-
-const form = props.rememberKey
-  ? useForm(props.rememberKey, initialFormData)
-  : useForm(initialFormData);
-
-// Reactive selected user ids per assignable-tenant row (string[] per row, mirrors form.assignable_tenants[i].user_ids)
-const selectedTenantUserIds = ref<string[][]>(
-  initialAssignableTenantRows.map(row => row.user_ids.slice()),
+// Duplicate duty check composable
+const { matches: duplicateMatches } = useDuplicateDutyCheck(
+  () => form.name.lt,
+  () => form.institution_id,
+  () => props.duty?.id ?? null,
 );
 
-// Keep form.assignable_tenants[i].user_ids in sync with selectedTenantUserIds
-watch(selectedTenantUserIds, (val) => {
-  (form.assignable_tenants as AssignableTenantRow[]).forEach((row, i) => {
-    row.user_ids = (val[i] ?? []).slice();
-  });
-}, { deep: true });
+// Institution selection
+const institutionDialogOpen = ref(false);
+const selectedInstitution = computed(() => {
+  if (!form.institution_id) return null;
+  return props.assignableInstitutions?.find(i => String(i.id) === String(form.institution_id)) ?? null;
+});
 
-const allowExternal = ref<boolean>((form.assignable_tenants as AssignableTenantRow[]).length > 0);
+const institutionInitialHits = computed<NormalizedSearchHit[]>(() => {
+  if (!selectedInstitution.value) return [];
+  const inst = selectedInstitution.value;
+  return [{
+    id: String(inst.id),
+    title: inst.name,
+    subtitle: inst.tenant?.shortname ?? '',
+    avatar: null,
+    badge: inst.tenant?.shortname ?? null,
+    entityType: 'institution',
+    raw: inst,
+  }];
+});
 
-function toggleAllowExternal(val: boolean) {
+const onInstitutionConfirm = (hits: NormalizedSearchHit[]) => {
+  if (hits.length > 0) {
+    form.institution_id = hits[0].id;
+  }
+};
+
+// Categories / Types
+const selectedTypes = computed({
+  get: () => form.types,
+  set: (val: number[]) => {
+    form.types = val;
+  },
+});
+
+// Roles (Superadmin only)
+const rolesOptions = computed(() =>
+  (props.roles ?? []).map(r => ({ label: r.name, value: r.id })),
+);
+const selectedRoles = computed({
+  get: () => form.roles,
+  set: (val: number[]) => {
+    form.roles = val;
+  },
+});
+
+// Ex-officio Target Duties
+const exOfficioDialogOpen = ref(false);
+const exOfficioBaseFilterBy = computed(() => {
+  if (!props.duty?.id) return '';
+  return `id:!=${props.duty.id}`;
+});
+const exOfficioDisabledIds = computed(() => new Set(props.duty?.id ? [props.duty.id] : []));
+
+const selectedExOfficioDuties = computed(() => {
+  const ids = new Set(form.ex_officio_target_duty_ids.map(String));
+  return (props.assignableDuties ?? []).filter(d => ids.has(String(d.id)));
+});
+
+const exOfficioInitialHits = computed<NormalizedSearchHit[]>(() =>
+  selectedExOfficioDuties.value.map(d => ({
+    id: String(d.id),
+    title: d.name,
+    subtitle: d.institution?.name ?? '',
+    avatar: null,
+    badge: d.institution?.short_name ?? null,
+    entityType: 'duty',
+    raw: d,
+  })),
+);
+
+const onExOfficioConfirm = (hits: NormalizedSearchHit[]) => {
+  form.ex_officio_target_duty_ids = hits.map(h => h.id);
+};
+
+// Assignable Tenants (Delegated Seats)
+const allowExternal = ref((form.assignable_tenants?.length ?? 0) > 0);
+
+const toggleAllowExternal = (val: boolean) => {
   allowExternal.value = val;
   if (!val) {
     form.assignable_tenants = [];
-    selectedTenantUserIds.value = [];
   }
-}
+};
 
-function addTenantRow(tenantId: number) {
-  if ((form.assignable_tenants as AssignableTenantRow[]).some(r => r.tenant_id === tenantId)) {
-    return;
-  }
-  (form.assignable_tenants as AssignableTenantRow[]).push({ tenant_id: tenantId, quota: null, user_ids: [] });
-  selectedTenantUserIds.value.push([]);
-}
-
-// `selectedTenantUserIds` is index-parallel to `form.assignable_tenants`, so both
-// arrays must be spliced at the same position or every row below shifts onto the
-// wrong tenant's picker.
-function removeTenantRow(tenantId: number | null) {
-  const index = (form.assignable_tenants as AssignableTenantRow[]).findIndex(r => r.tenant_id === tenantId);
-  if (index === -1) {
-    return;
-  }
-  (form.assignable_tenants as AssignableTenantRow[]).splice(index, 1);
-  selectedTenantUserIds.value.splice(index, 1);
-}
-
-/** The tenant picker's selection, projected onto the assignable-tenant rows. */
-const selectedAssignableTenants = computed<AssignableTenantOption[]>({
-  get: () => (form.assignable_tenants as AssignableTenantRow[])
-    .map(row => props.assignableTenants.find(t => t.id === row.tenant_id))
-    .filter((t): t is AssignableTenantOption => t !== undefined),
-  set: (items: AssignableTenantOption[]) => {
-    const nextIds = new Set(items.map(t => t.id));
-    const removedIds = (form.assignable_tenants as AssignableTenantRow[])
-      .map(r => r.tenant_id)
-      .filter((id): id is number => id !== null && !nextIds.has(id));
-
-    removedIds.forEach(removeTenantRow);
-    items.forEach(t => addTenantRow(t.id));
+const selectedAssignableTenants = computed({
+  get: () => {
+    const ids = new Set(form.assignable_tenants.map(r => r.tenant_id));
+    return (props.assignableTenants ?? []).filter(t => ids.has(t.id));
+  },
+  set: (tenants: Array<{ id: number; shortname: string }>) => {
+    const existingMap = new Map(form.assignable_tenants.map(r => [r.tenant_id, r.quota]));
+    form.assignable_tenants = tenants.map(t => ({
+      tenant_id: t.id,
+      quota: existingMap.get(t.id) ?? null,
+    }));
   },
 });
 
-/** Padalinys-type tenants not yet given a row — the bulk-add shortcut's payload. */
-const unaddedPadalinysTenants = computed(() => {
-  const usedIds = new Set((form.assignable_tenants as AssignableTenantRow[]).map(r => r.tenant_id));
-  return props.assignableTenants.filter(t => t.type === TenantType.Padalinys && !usedIds.has(t.id));
-});
-
-function addAllPadalinysTenants() {
-  unaddedPadalinysTenants.value.forEach(t => addTenantRow(t.id));
-}
-
-// For cross-tenant admins: only show their rows; for owning admin: all rows.
-const visibleAssignableTenantRows = computed<AssignableTenantRow[]>(() => {
-  const rows = form.assignable_tenants as AssignableTenantRow[];
-  if (props.canEditDuty || props.actingAssignableTenantIds.length === 0) {
-    return rows;
+const visibleAssignableTenantRows = computed(() => {
+  if (!props.canEditDuty) {
+    const actingIds = new Set(props.actingAssignableTenantIds ?? []);
+    return form.assignable_tenants.filter(r => actingIds.has(r.tenant_id));
   }
-  return rows.filter(r => r.tenant_id !== null && props.actingAssignableTenantIds.includes(r.tenant_id));
+  return form.assignable_tenants;
 });
 
-// Map visible row back to the form index (for error key lookup).
-function formIndexFor(row: AssignableTenantRow): number {
-  return (form.assignable_tenants as AssignableTenantRow[]).indexOf(row);
-}
+const tenantShortname = (row: AssignableTenantRow) => {
+  return props.assignableTenants?.find(t => t.id === row.tenant_id)?.shortname ?? String(row.tenant_id);
+};
 
-/** Ex-officio seats this tenant holds — granted elsewhere, but they fill its places. */
-function tenantExOfficioMembers(row: AssignableTenantRow): ExOfficioMember[] {
-  if (row.tenant_id === null) {
-    return [];
-  }
-  return props.exOfficioMembers.filter(m => m.tenant_id === row.tenant_id);
-}
+const tenantOccupancy = (row: AssignableTenantRow) => {
+  const pickedCount = (props.assignableTenantUsers?.[row.tenant_id] ?? []).length;
+  const exOfficioCount = (props.exOfficioMembers ?? []).filter(m => m.tenant_id === row.tenant_id).length;
+  return pickedCount + exOfficioCount;
+};
 
-/**
- * Seats a tenant actually occupies: the ones its admin picked plus the ones it
- * holds ex officio. Counting only the picker's selection reported 2/3 for a
- * tenant whose third seat was an ex-officio member, so a full duty looked open.
- */
-function tenantOccupancy(row: AssignableTenantRow): number {
-  const idx = (form.assignable_tenants as AssignableTenantRow[]).indexOf(row);
-  return (selectedTenantUserIds.value[idx]?.length ?? 0) + tenantExOfficioMembers(row).length;
-}
-
-function tenantQuotaReached(row: AssignableTenantRow): boolean {
-  if (row.quota === null) {
-    return false;
-  }
-
-  return tenantOccupancy(row) >= row.quota;
-}
-
-function tenantLockedOptions(row: AssignableTenantRow) {
-  return exOfficioTransferListOptions(tenantExOfficioMembers(row));
-}
-
-const selectedExOfficioDuties = ref<AssignableDutyOption[]>(
-  props.assignableDuties.filter(d =>
-    (form.ex_officio_target_duty_ids as string[]).includes(d.id),
-  ),
-);
-
-watch(selectedExOfficioDuties, (val) => {
-  form.ex_officio_target_duty_ids = val.map(d => d.id);
-}, { deep: true });
-
-const exOfficioDialogOpen = ref(false);
-
-/** Build a normalized duty hit from an assignable-duty option (for pre-selection). */
-function dutyOptionToHit(option: AssignableDutyOption): NormalizedSearchHit {
-  return normalizeHit('duties', {
-    id: option.id,
-    name_lt: option.name,
-    name_en: option.name,
-    institution_name_lt: option.institution?.name,
-    institution_name_en: option.institution?.name,
-    tenant_shortname: option.institution?.tenant?.shortname,
-  });
-}
-
-// Scope the duties search to the assignable set's tenants (reproduces the
-// server-side assignable scope); the current duty can't target itself.
-const exOfficioBaseFilterBy = computed(() => {
-  const tenantIds = [
-    ...new Set(props.assignableDuties.map(d => d.institution?.tenant?.id).filter((id): id is number => id != null)),
-  ];
-  return tenantIds.length > 0 ? `tenant_ids:[${tenantIds.join(',')}]` : undefined;
-});
-
-const exOfficioDisabledIds = computed(() => new Set([`duties-${props.duty.id}`]));
-
-const exOfficioInitialHits = computed(() => selectedExOfficioDuties.value.map(dutyOptionToHit));
-
-function onExOfficioConfirm(hits: NormalizedSearchHit[]) {
-  selectedExOfficioDuties.value = hits.map(hit =>
-    props.assignableDuties.find(d => d.id === hit.recordId) ?? { id: hit.recordId, name: hit.title },
-  );
-}
-
-// TransferList options for owning-tenant reps (exclude users already in a cross-tenant slot)
-const crossTenantUserIds = computed(() => selectedTenantUserIds.value.flat());
-
-const recentUsersCount = computed(() => props.assignableUsers.filter(u => u.is_recent).length);
-const assignableUsersTotal = computed(() => props.assignableUsers.length);
-
-/** Users holding a seat ex officio — never offered in a picker, they already hold it. */
-const exOfficioUserIds = computed(() => new Set(props.exOfficioMembers.map(m => m.user_id)));
-
-function exOfficioTransferListOptions(members: ExOfficioMember[]) {
-  return members.map(member => ({
-    value: member.user_id,
-    label: member.name,
-    user: { id: member.user_id, name: member.name, profile_photo_path: member.profile_photo_path },
-    sourceDutyName: member.source_duty_name ?? null,
-  }));
-}
-
-/** Ex-officio seats that belong to the duty's own tenant rather than to an assignable one. */
-const owningExOfficioOptions = computed(() =>
-  exOfficioTransferListOptions(props.exOfficioMembers.filter(m => m.tenant_id === null)),
-);
-
-const owningTenantUserOptions = computed(() => {
-  const selected = new Set((form.current_users as string[] | undefined) ?? []);
-  return props.assignableUsers
-    .filter(u => !crossTenantUserIds.value.includes(u.id))
-    .filter(u => !exOfficioUserIds.value.has(u.id))
-    .filter(u => showAllUsers.value || u.is_recent || selected.has(u.id))
-    .map(user => ({ label: user.name, value: user.id, user }));
-});
-
-function tenantShortname(row: AssignableTenantRow): string {
-  if (row.tenant_id === null) { return '...'; }
-  return props.assignableTenants.find(t => t.id === row.tenant_id)?.shortname ?? String(row.tenant_id);
-}
-
-function tenantTransferListOptions(rowIndex: number) {
-  const otherRowIds = new Set<string>();
-  selectedTenantUserIds.value.forEach((ids, i) => {
-    if (i !== rowIndex) { ids.forEach(id => otherRowIds.add(id)); }
-  });
-  const owningIds = new Set<string>((form.current_users as string[] | undefined) ?? []);
-  const selectedHere = new Set<string>(selectedTenantUserIds.value[rowIndex] ?? []);
-  return props.assignableUsers
-    .filter(u => !otherRowIds.has(u.id) && !owningIds.has(u.id))
-    .filter(u => !exOfficioUserIds.value.has(u.id))
-    .filter(u => showAllUsers.value || u.is_recent || selectedHere.has(u.id))
-    .map(u => ({ value: u.id, label: u.name, user: u }));
-}
-
-/** Ex-officio seats count against the quota, so they cap what the picker may still add. */
-function applyTenantSelection(row: AssignableTenantRow, next: string[]) {
-  const index = (form.assignable_tenants as AssignableTenantRow[]).indexOf(row);
-  if (index === -1) {
-    return;
-  }
-
-  const current = selectedTenantUserIds.value[index] ?? [];
-  const occupiedElsewhere = tenantExOfficioMembers(row).length;
-
-  if (row.quota !== null && next.length + occupiedElsewhere > row.quota && next.length > current.length) {
-    return;
-  }
-
-  selectedTenantUserIds.value[index] = next;
-}
-
-const defaultOpenTenantValues = computed<string[]>(() => {
-  const rows = visibleAssignableTenantRows.value;
-  if (!props.canEditDuty && rows.length === 1) {
-    const row = rows[0];
-    return [String(row.tenant_id ?? `new-${formIndexFor(row)}`)];
-  }
-  return [];
-});
-
-const rolesOptions = props.roles.map(role => ({
-  label: role.name,
-  value: role.id,
-}));
-
-const selectedTypes = computed({
-  get: () => props.dutyTypes.filter(dt => form.types?.includes(dt.id)),
-  set: (items: App.Entities.Type[]) => {
-    form.types = items.map(item => item.id);
-  },
-});
-
-const selectedRoles = computed({
-  get: () => rolesOptions.filter(opt => form.roles?.includes(opt.value)),
-  set: (items: { label: string; value: number }[]) => {
-    form.roles = items.map(item => item.value);
-  },
-});
-
-const selectedInstitution = computed({
-  get: () => props.assignableInstitutions.find(i => i.id === form.institution_id) ?? null,
-  set: (val: App.Entities.Institution | null) => {
-    form.institution_id = val?.id ?? null;
-  },
-});
-
-const institutionDialogOpen = ref(false);
-
-const institutionInitialHits = computed<NormalizedSearchHit[]>(() => {
-  const current = selectedInstitution.value as (App.Entities.Institution & { tenant?: { shortname?: string } }) | null;
-  if (!current) {
-    return [];
-  }
-  return [normalizeHit('institutions', {
-    id: current.id,
-    name_lt: current.name,
-    name_en: current.name,
-    tenant_shortname: current.tenant?.shortname,
-  })];
-});
-
-// Advisory warning: this name (or its gendered/plural twin) may already exist,
-// most often in the same institution — see DuplicateDutyWarning.vue.
-const { matches: duplicateMatches } = useDuplicateDutyCheck(
-  () => String((form.name as { lt?: string })?.lt ?? ''),
-  () => form.institution_id as string | null,
-  () => props.duty.id ?? null,
-);
-
-const missingLtName = computed(() => !((form.name as { lt?: string })?.lt ?? '').trim());
-const missingEnName = computed(() => !((form.name as { en?: string })?.en ?? '').trim());
-const showMissingNameAlert = computed(() => !missingLtName.value !== !missingEnName.value);
-
-function onInstitutionConfirm(hits: NormalizedSearchHit[]) {
-  form.institution_id = hits[0]?.recordId ?? null;
-}
-
-const isExOfficioUser = (user: App.Entities.User) => !!(user as UserWithPivot).pivot?.via_dutiable_id;
-
-/** Name of the duty that granted this member's seat, when it was granted ex officio. */
-function exOfficioSourceFor(user: App.Entities.User): string | null {
-  return props.exOfficioMembers.find(m => m.user_id === user.id)?.source_duty_name ?? null;
-}
-
-// A duty can hold dozens of members (46 in the worst real case), which buries
-// everything below it — so the list is searchable and capped until asked to grow.
-const memberPreviewCount = 8;
-const memberSearch = ref('');
-const showAllMembers = ref(false);
-
-const timelineOpen = ref(false);
-const timelineSpotlight = useFeatureSpotlight('dutiable-timeline-v1');
-
-/** Dismissed on use, not only via the popover's own button. */
-function openTimeline(): void {
-  timelineOpen.value = true;
-  void timelineSpotlight.dismiss();
-}
-
-const filteredCurrentUsers = computed(() => {
-  const users = (props.duty.current_users ?? []) as UserWithPivot[];
-  const term = memberSearch.value.trim().toLowerCase();
-
-  return term ? users.filter(u => u.name?.toLowerCase().includes(term)) : users;
-});
-
-const visibleCurrentUsers = computed(() =>
-  showAllMembers.value ? filteredCurrentUsers.value : filteredCurrentUsers.value.slice(0, memberPreviewCount),
-);
-
-const getUserDutiableId = (user: UserWithPivot) => user.pivot?.id || null;
-
-/** True when this duty groups public contacts by study program but the member's assignment has none set. */
-function missingStudyProgram(user: UserWithPivot): boolean {
-  return form.contacts_grouping === 'study_program' && !user.pivot?.study_program_id;
-}
-
-/** Returns the tenant shortname badge for cross-tenant reps, or null for owning-tenant reps. */
-function getCrossTenantLabel(user: App.Entities.User): string | null {
-  const pivotTenantId = (user as UserWithPivot).pivot?.tenant_id;
-  if (!pivotTenantId) {
-    return null;
-  }
-  const tenant = props.assignableTenants.find(t => t.id === pivotTenantId);
-  return tenant?.shortname ?? String(pivotTenantId);
-}
+const removeTenantRow = (tenantId: number) => {
+  form.assignable_tenants = form.assignable_tenants.filter(r => r.tenant_id !== tenantId);
+};
 </script>

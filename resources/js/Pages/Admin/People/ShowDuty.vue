@@ -1,278 +1,604 @@
 <template>
-  <ShowPageLayout
-    :title="duty.name"
-    :subtitle="duty.institution?.name"
-    :model="duty"
-    audit-subject-type="duty"
-    :tabs
-    tab-storage-key="show-duty-tab"
+  <RecordPage
+    v-model:section="currentSection"
+    :title="dutyTitle"
+    :entity-type="ModelEnum.DUTY"
+    :status="dutyStatus"
+    :facts="recordFacts"
+    :sections="tabs"
+    :primary-action
+    :overflow-actions
+    @action="handleRecordAction"
   >
-    <template #title>
-      <InflectedDutyName :name="duty.name" />
+    <template #subtitle>
+      <div v-if="duty.institution" class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <Link
+          :href="route('institutions.show', duty.institution.id)"
+          class="hover:text-foreground hover:underline"
+        >
+          {{ duty.institution.name }}
+        </Link>
+        <span v-if="duty.institution.tenant?.shortname" class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+          {{ duty.institution.tenant.shortname }}
+        </span>
+      </div>
     </template>
-    <template #icon>
-      <DutyIconFilled class="h-6 w-6 sm:h-7 sm:w-7 text-zinc-600 dark:text-zinc-300" />
+
+    <template #fact-places>
+      <div class="flex items-center gap-2">
+        <span>{{ currentHolders.length }} / {{ duty.places_to_occupy || '—' }}</span>
+        <span
+          v-if="isVacant"
+          class="border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] px-1.5 py-0.5 text-[11px] font-medium text-[var(--status-attention)]"
+        >
+          {{ $t('Neužimta') }}
+        </span>
+      </div>
     </template>
-    <template #badge>
-      <Badge
-        v-if="isVacant"
-        variant="outline"
-        class="gap-1 text-xs text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700"
-      >
-        <UserX class="h-3 w-3" />
-        {{ $t('Neužimta') }}
-      </Badge>
-      <Badge v-if="duty.email" variant="outline" class="gap-1 text-xs">
-        <Mail class="h-3 w-3" />
+
+    <template #fact-email>
+      <a v-if="duty.email" :href="`mailto:${duty.email}`" class="underline underline-offset-4">
         {{ duty.email }}
-      </Badge>
-    </template>
-    <template #actions>
-      <Button v-if="canAssignMembers" variant="default" size="sm" class="gap-2" @click="showAssignMemberModal = true">
-        <UserPlus class="h-4 w-4" />
-        {{ $t('Priskirti narį') }}
-      </Button>
-      <Button v-if="canManageDuty" variant="outline" size="sm" class="gap-2" @click="timelineOpen = true">
-        <CalendarRange class="h-4 w-4" />
-        {{ $t('dutiables.timeline.open') }}
-      </Button>
-      <Button v-if="canManageDuty" variant="outline" size="sm" class="gap-2" @click="handleEdit">
-        <Settings class="h-4 w-4" />
-        {{ $t('Valdyti') }}
-      </Button>
-      <MoreOptionsButton edit delete @edit-click="handleEdit" @delete-click="handleDelete" />
+      </a>
+      <span v-else>—</span>
     </template>
 
     <template #alert>
-      <PriorityAlert
+      <div
         v-if="isVacant"
-        v-model="showVacancyAlert"
-        variant="warning"
-        class="mt-4"
-        :title="$t('Pareigos neužimtos')"
-        :description="$t('Šiuo metu niekas neeina šių pareigų. Priskirkite narį, kad atnaujintumėte sudėtį.')"
-        :action-label="canAssignMembers ? $t('Priskirti narį') : undefined"
-        @action="showAssignMemberModal = true"
-      />
+        class="flex flex-col gap-3 border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-4 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div class="flex items-start gap-3 text-[var(--status-attention)]">
+          <UserX class="mt-0.5 size-5 shrink-0" />
+          <div>
+            <p class="text-sm font-semibold">
+              {{ $t('Pareigos neužimtos') }}
+            </p>
+            <p class="mt-0.5 text-xs text-muted-foreground">
+              {{ $t('Šiuo metu niekas neeina šių pareigų. Priskirkite narį, kad atnaujintumėte sudėtį.') }}
+            </p>
+          </div>
+        </div>
+        <Button
+          v-if="canAssignMembers"
+          size="sm"
+          variant="outline"
+          class="u-touch shrink-0"
+          @click="openAssignSheet()"
+        >
+          <UserPlus class="mr-2 size-4" />
+          {{ $t('Priskirti narį') }}
+        </Button>
+      </div>
     </template>
 
-    <!-- Overview Tab: two-column dashboard -->
-    <template #overview>
-      <ShowPageGrid>
-        <template #main>
-          <DutyCurrentHoldersCard
-            :holders="currentHolders"
-            :places-to-occupy="duty.places_to_occupy ?? 0"
-            :can-assign="canAssignMembers"
-            @assign="showAssignMemberModal = true"
-          />
-
-          <DutyAboutCard
-            v-if="hasAbout"
-            :description
-          />
-
-          <DutyLineageCard v-if="allMembers.length > 0" :members="allMembers" />
-        </template>
-
-        <template #sidebar>
-          <!-- Context tiles cluster together with tighter spacing -->
-          <div v-if="duty.institution || duty.next_meeting || duty.last_meeting" class="space-y-2">
-            <DutyInstitutionCard v-if="duty.institution" :institution="duty.institution" />
-            <DutyMeetingMiniCard
-              v-if="duty.next_meeting"
-              :meeting="duty.next_meeting"
-              :label="$t('Kitas posėdis')"
-            />
-            <DutyMeetingMiniCard
-              v-if="duty.last_meeting"
-              :meeting="duty.last_meeting"
-              :label="$t('Paskutinis posėdis')"
-            />
+    <!-- Members Section -->
+    <template #members>
+      <div class="space-y-8">
+        <!-- Current Members -->
+        <div>
+          <div class="flex items-center justify-between border-b border-border pb-3">
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-semibold text-foreground">
+                {{ $t('Dabartiniai nariai') }}
+              </h3>
+              <span class="border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                {{ currentHolders.length }}
+              </span>
+            </div>
+            <Button
+              v-if="canAssignMembers"
+              size="sm"
+              variant="outline"
+              class="u-touch"
+              @click="openAssignSheet()"
+            >
+              <UserPlus class="mr-2 size-4" />
+              {{ $t('Priskirti narį') }}
+            </Button>
           </div>
 
-          <DutyOtherDutiesCard v-if="otherDuties.length > 0" :duties="otherDuties" />
+          <div v-if="currentHolders.length === 0" class="border-b border-border py-8 text-center text-sm text-muted-foreground">
+            <UserX class="mx-auto size-8 text-muted-foreground/60" />
+            <p class="mt-2 font-medium">
+              {{ $t('Šiuo metu nėra priskirtų narių.') }}
+            </p>
+          </div>
 
-          <FileablePreviewCard
-            v-if="hasTypeFiles"
-            :fileable="{ id: duty.id, type: 'Duty' }"
-          />
-        </template>
-      </ShowPageGrid>
+          <div v-else class="divide-y divide-border border-b border-border">
+            <div
+              v-for="user in currentHolders"
+              :key="user.id"
+              class="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div class="flex min-w-0 items-start gap-3">
+                <UserAvatar :user :size="40" class="shrink-0" />
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <Link
+                      :href="route('users.show', user.id)"
+                      class="truncate text-sm font-semibold text-foreground hover:underline"
+                    >
+                      {{ user.name }}
+                    </Link>
+                    <span
+                      v-if="user.pivot?.via_dutiable_id"
+                      class="border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                    >
+                      {{ $t('Ex-officio') }}
+                    </span>
+                    <span
+                      v-if="user.pivot?.tenant_id"
+                      class="border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                    >
+                      {{ $t('Deleguota') }}
+                    </span>
+                  </div>
+                  <p v-if="user.email" class="truncate text-xs text-muted-foreground">
+                    {{ user.pivot?.additional_email || user.email }}
+                  </p>
+                  <p class="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                    <Calendar class="size-3 shrink-0" />
+                    <span>{{ formatTenure(user) }}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div v-if="canAssignMembers" class="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="u-touch"
+                  @click="openAssignSheet(user.pivot, user)"
+                >
+                  <Edit3 class="mr-1.5 size-3.5" />
+                  {{ $t('Redaguoti') }}
+                </Button>
+                <Button
+                  v-if="!user.pivot?.via_dutiable_id"
+                  variant="ghost"
+                  size="sm"
+                  class="u-touch"
+                  @click="endTenure(user.pivot)"
+                >
+                  <CalendarCheck class="mr-1.5 size-3.5" />
+                  {{ $t('Baigti kadenciją') }}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Historical Members -->
+        <div v-if="historicalHolders.length > 0">
+          <div class="flex items-center justify-between border-b border-border pb-3">
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-semibold text-foreground">
+                {{ $t('Kadencijų istorija') }}
+              </h3>
+              <span class="border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                {{ historicalHolders.length }}
+              </span>
+            </div>
+          </div>
+
+          <div class="divide-y divide-border border-b border-border">
+            <div
+              v-for="user in historicalHolders"
+              :key="`${user.id}-${user.pivot?.id}`"
+              class="flex flex-col gap-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div class="flex min-w-0 items-start gap-3">
+                <UserAvatar :user :size="32" class="shrink-0" />
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <Link
+                      :href="route('users.show', user.id)"
+                      class="truncate text-sm font-medium text-foreground hover:underline"
+                    >
+                      {{ user.name }}
+                    </Link>
+                    <span
+                      v-if="user.pivot?.via_dutiable_id"
+                      class="border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                    >
+                      {{ $t('Ex-officio') }}
+                    </span>
+                  </div>
+                  <p class="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                    <Calendar class="size-3 shrink-0" />
+                    <span>{{ formatTenure(user) }}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div v-if="canAssignMembers" class="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="u-touch"
+                  @click="openAssignSheet(user.pivot, user)"
+                >
+                  <Edit3 class="mr-1.5 size-3.5" />
+                  {{ $t('Redaguoti') }}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </template>
 
-    <!-- Files Tab -->
+    <!-- About Section -->
+    <template #about>
+      <div class="space-y-8 max-w-2xl">
+        <div v-if="dutyDescriptionHtml">
+          <h3 class="mb-3 text-base font-semibold text-foreground">
+            {{ $t('Aprašymas') }}
+          </h3>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div class="prose prose-sm dark:prose-invert max-w-none" v-html="dutyDescriptionHtml" />
+        </div>
+        <div v-else class="text-sm text-muted-foreground">
+          {{ $t('Ši pareigybė neturi aprašymo.') }}
+        </div>
+
+        <div v-if="otherDuties.length > 0" class="border-t border-border pt-6">
+          <h3 class="mb-4 text-base font-semibold text-foreground">
+            {{ $t('Kitos pareigybės šioje institucijoje') }}
+          </h3>
+          <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <Link
+              v-for="sibling in otherDuties"
+              :key="sibling.id"
+              :href="route('duties.show', sibling.id)"
+              class="flex items-center justify-between border border-border bg-card p-3 transition-colors hover:bg-accent"
+            >
+              <div class="min-w-0">
+                <p class="truncate text-sm font-medium text-foreground">
+                  <InflectedDutyName :name="sibling.name" />
+                </p>
+                <p class="text-xs text-muted-foreground">
+                  {{ sibling.current_users?.length ?? 0 }} {{ $t('narių') }}
+                </p>
+              </div>
+              <ChevronRight class="size-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Files Section (if applicable) -->
     <template #files>
       <div class="space-y-6">
-        <!-- Direct Duty Files (with upload capability) -->
         <div v-if="duty.sharepointPath">
-          <h3 class="mb-4 text-lg font-medium">
+          <h3 class="mb-4 text-lg font-medium text-foreground">
             {{ $t('Pareigybės failai') }}
           </h3>
           <FileManager :starting-path="duty.sharepointPath" :fileable="{ id: duty.id, type: 'Duty' }" />
         </div>
 
-        <!-- Type-inherited Files (read-only) -->
         <div v-if="hasTypeFiles">
-          <h3 class="mb-4 text-lg font-medium">
+          <h3 class="mb-4 text-lg font-medium text-foreground">
             {{ $t('Susiję failai pagal tipą') }}
           </h3>
-          <p class="mb-4 text-sm text-zinc-500 dark:text-zinc-400">
+          <p class="mb-4 text-sm text-muted-foreground">
             {{ $t('Šie failai yra susiję su pareigybės tipais ir yra bendrinami tarp visų tos kategorijos pareigybių.') }}
           </p>
           <Suspense>
             <SimpleFileViewer :fileable="{ id: duty.id, type: 'Duty' }" />
             <template #fallback>
-              <div class="flex h-24 items-center justify-center">
+              <div class="flex h-24 items-center justify-center text-sm text-muted-foreground">
                 {{ $t('Kraunami susiję failai...') }}
               </div>
             </template>
           </Suspense>
         </div>
 
-        <!-- No files state -->
-        <EmptyState
-          v-if="!duty.sharepointPath && !hasTypeFiles"
-          :title="$t('Failų nėra')"
-          :description="$t('Pareigybė neturi failų ir nėra priskirta tipams su failais.')"
-        >
-          <template #icon>
-            <FolderOpen class="h-10 w-10 text-muted-foreground" />
-          </template>
-        </EmptyState>
+        <div v-if="!duty.sharepointPath && !hasTypeFiles" class="py-8 text-center text-sm text-muted-foreground">
+          <FolderOpen class="mx-auto size-8 text-muted-foreground/60" />
+          <p class="mt-2 font-medium">
+            {{ $t('Failų nėra') }}
+          </p>
+        </div>
       </div>
     </template>
 
-    <!-- Modals -->
-    <Dialog v-model:open="showAssignMemberModal">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{{ $t('Priskirti narį pareigoms') }}</DialogTitle>
-        </DialogHeader>
-        <div class="py-4">
-          <p class="text-sm text-zinc-600 dark:text-zinc-400">
-            {{ $t('Narių priskyrimo funkcionalumas bus implementuotas ateityje.') }}
-          </p>
-        </div>
-      </DialogContent>
-    </Dialog>
-    <DutiableTimelineDialog v-model:open="timelineOpen" scope-type="duty" :scope-id="duty.id" />
-  </ShowPageLayout>
+    <!-- Activity Slot -->
+    <template #activity>
+      <RecordActivity
+        subject-type="duty"
+        :subject-id="duty.id"
+        commentable-type="duty"
+        :commentable-id="duty.id"
+      />
+    </template>
+  </RecordPage>
+
+  <!-- Sheets & Dialogs -->
+  <AssignDutyUserSheet
+    v-model:open="assignSheetOpen"
+    :duty-id="duty.id"
+    :duty
+    :dutiable="selectedDutiable"
+    :user="selectedUserForSheet"
+    @success="handleAssignSuccess"
+  />
+
+  <DutiableTimelineDialog
+    v-model:open="timelineOpen"
+    scope-type="duty"
+    :scope-id="duty.id"
+  />
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { computed, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { UserPlus, Settings, Mail, UserX, FolderOpen, CalendarRange } from 'lucide-vue-next';
+import {
+  Calendar,
+  CalendarCheck,
+  CalendarRange,
+  ChevronRight,
+  CircleCheck,
+  Edit3,
+  FolderOpen,
+  Trash2,
+  UserPlus,
+  UserX,
+} from 'lucide-vue-next';
 
-// Layout and Components
-import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
-import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
-import PriorityAlert from '@/Components/Alerts/PriorityAlert.vue';
+import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
+import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import { AssignDutyUserSheet } from '@/Features/Admin/Occupancy';
+import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
-import { EmptyState, ShowPageGrid } from '@/Components/Patterns';
-import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
-import { FileablePreviewCard } from '@/Components/Files';
-import {
-  DutyCurrentHoldersCard,
-  DutyAboutCard,
-  DutyLineageCard,
-  DutyInstitutionCard,
-  DutyMeetingMiniCard,
-  DutyOtherDutiesCard,
-} from '@/Components/Duties';
-import type { OtherDuty } from '@/Components/Duties/DutyOtherDutiesCard.vue';
-import type { MiniMeeting } from '@/Components/Duties/DutyMeetingMiniCard.vue';
-import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-
-// UI Components
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-
-// Utils
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { DutyIconFilled, InstitutionIconFilled } from '@/Components/icons';
+import { ModelEnum } from '@/Types/enums';
+import type { StatusPresentation } from '@/Constants/statuses';
+import { formatStaticTime } from '@/Utils/IntlTime';
+
+interface TranslatableText {
+  lt?: string;
+  en?: string;
+}
 
 const props = defineProps<{
   duty: App.Entities.Duty & {
     sharepointPath?: string | null;
-    other_duties?: OtherDuty[];
-    next_meeting?: MiniMeeting | null;
-    last_meeting?: MiniMeeting | null;
+    other_duties?: App.Entities.Duty[];
+    next_meeting?: Record<string, unknown> | null;
+    last_meeting?: Record<string, unknown> | null;
   };
   can?: { update: boolean; managePeople: boolean };
 }>();
 
-const tabs = computed(() => [
-  { value: 'overview', label: $t('Apžvalga') },
-  { value: 'files', label: $t('Failai') },
-]);
-
-const showAssignMemberModal = ref(false);
+const currentSection = ref('members');
+const assignSheetOpen = ref(false);
 const timelineOpen = ref(false);
-const showVacancyAlert = ref(true);
+const selectedDutiable = ref<(App.Entities.Dutiable & Record<string, unknown>) | null>(null);
+const selectedUserForSheet = ref<App.Entities.User | null>(null);
 
-// Members split into current / historical via the dutiable pivot dates.
-const filteredUsers = computed(() => {
-  if (!props.duty.users) {
-    return { currentUsers: [] as App.Entities.User[], oldUsers: [] as App.Entities.User[] };
-  }
-
-  return props.duty.users.reduce(
-    (acc, user: App.Entities.User) => {
-      if (!user.pivot) {
-        return acc;
-      }
-      const end = user.pivot.end_date;
-      if (end === null || end === undefined || new Date(end) >= new Date()) {
-        acc.currentUsers.push(user);
-      }
-      else {
-        acc.oldUsers.push(user);
-      }
-      return acc;
-    },
-    { currentUsers: [] as App.Entities.User[], oldUsers: [] as App.Entities.User[] },
-  );
-});
-
-const currentHolders = computed(() => filteredUsers.value.currentUsers);
-const allMembers = computed(() => [...filteredUsers.value.currentUsers, ...filteredUsers.value.oldUsers]);
-const isVacant = computed(() => currentHolders.value.length === 0);
-
-const hasTypeFiles = computed(() => (props.duty.types?.length ?? 0) > 0);
-
-// Localized translatable strings (server returns them via toArray()).
-const description = computed(() => (typeof props.duty.description === 'string' ? props.duty.description : null));
-const hasAbout = computed(() => !!description.value);
-
-const otherDuties = computed<OtherDuty[]>(() => props.duty.other_duties ?? []);
-
-// Permissions
-// From the controller, not `auth.can`: that map holds index/create/forceDelete only, so
-// the old lookup was always undefined and these buttons rendered for nobody.
 const canAssignMembers = computed(() => props.can?.managePeople ?? false);
 const canManageDuty = computed(() => props.can?.update ?? false);
 
-// Event handlers
-const handleEdit = () => {
-  router.get(route('duties.edit', props.duty.id));
+// Members split
+const currentHolders = computed(() => {
+  if (!props.duty.users) return [];
+  return props.duty.users.filter((user: App.Entities.User) => {
+    if (!user.pivot) return false;
+    const end = user.pivot.end_date;
+    return end === null || end === undefined || new Date(end) >= new Date();
+  });
+});
+
+const historicalHolders = computed(() => {
+  if (!props.duty.users) return [];
+  return props.duty.users.filter((user: App.Entities.User) => {
+    if (!user.pivot) return false;
+    const end = user.pivot.end_date;
+    return end !== null && end !== undefined && new Date(end) < new Date();
+  });
+});
+
+const allMembers = computed(() => props.duty.users ?? []);
+const isVacant = computed(() => currentHolders.value.length === 0);
+
+const dutyTitle = computed(() => {
+  if (typeof props.duty.name === 'string') return props.duty.name;
+  const nameObj = props.duty.name as TranslatableText | undefined;
+  return nameObj?.lt || nameObj?.en || '';
+});
+
+const dutyStatus = computed<StatusPresentation>(() => {
+  if (isVacant.value) {
+    return {
+      label: $t('Neužimta'),
+      role: 'attention',
+      icon: UserX,
+    };
+  }
+  return {
+    label: $t('Užimta'),
+    role: 'success',
+    icon: CircleCheck,
+  };
+});
+
+const otherDuties = computed(() => props.duty.other_duties ?? []);
+const hasTypeFiles = computed(() => (props.duty.types?.length ?? 0) > 0);
+const hasFiles = computed(() => !!props.duty.sharepointPath || hasTypeFiles.value);
+
+const dutyDescriptionHtml = computed(() => {
+  if (typeof props.duty.description === 'string') return props.duty.description;
+  const descObj = props.duty.description as TranslatableText | undefined;
+  return descObj?.lt || descObj?.en || null;
+});
+
+// Facts Strip
+const recordFacts = computed<RecordFact[]>(() => {
+  const facts: RecordFact[] = [];
+
+  if (props.duty.institution) {
+    facts.push({
+      key: 'institution',
+      label: $t('Institucija'),
+      value: props.duty.institution.name,
+      href: route('institutions.show', props.duty.institution.id),
+    });
+  }
+
+  facts.push({
+    key: 'places',
+    label: $t('Vietų skaičius'),
+    value: `${currentHolders.value.length} / ${props.duty.places_to_occupy || '—'}`,
+  });
+
+  facts.push({
+    key: 'email',
+    label: $t('El. paštas'),
+    value: props.duty.email ?? '—',
+  });
+
+  if (props.duty.types && props.duty.types.length > 0) {
+    facts.push({
+      key: 'types',
+      label: $t('Kategorija / Tipai'),
+      value: props.duty.types.map(t => t.title).join(', '),
+    });
+  }
+
+  return facts;
+});
+
+// Tabs
+const tabs = computed<RecordPageSection[]>(() => {
+  const sections: RecordPageSection[] = [
+    { value: 'members', label: $t('Nariai'), count: allMembers.value.length },
+    { value: 'about', label: $t('Apie pareigybę') },
+  ];
+
+  if (hasFiles.value) {
+    sections.push({ value: 'files', label: $t('Failai') });
+  }
+
+  return sections;
+});
+
+// Primary & Overflow Actions
+const primaryAction = computed<ActionDescriptor | undefined>(() => {
+  if (canAssignMembers.value) {
+    return {
+      key: 'assign',
+      label: $t('Priskirti narį'),
+      icon: UserPlus,
+    };
+  }
+  if (canManageDuty.value) {
+    return {
+      key: 'edit',
+      label: $t('Redaguoti pareigybę'),
+      icon: Edit3,
+    };
+  }
+  return undefined;
+});
+
+const overflowActions = computed<ActionDescriptor[]>(() => {
+  const actions: ActionDescriptor[] = [
+    {
+      key: 'timeline',
+      label: $t('dutiables.timeline.open'),
+      icon: CalendarRange,
+    },
+  ];
+
+  if (canManageDuty.value) {
+    actions.push({
+      key: 'edit',
+      label: $t('Redaguoti pareigybę'),
+      icon: Edit3,
+    });
+    actions.push({
+      key: 'delete',
+      label: $t('Ištrinti pareigybę'),
+      icon: Trash2,
+      destructive: true,
+    });
+  }
+
+  return actions;
+});
+
+const handleRecordAction = (actionKey: string) => {
+  switch (actionKey) {
+    case 'assign':
+      openAssignSheet();
+      break;
+    case 'timeline':
+      timelineOpen.value = true;
+      break;
+    case 'edit':
+      router.get(route('duties.edit', props.duty.id));
+      break;
+    case 'delete':
+      if (confirm($t('Ar tikrai norite ištrinti šią pareigybę?'))) {
+        router.delete(route('duties.destroy', props.duty.id));
+      }
+      break;
+  }
 };
 
-const handleDelete = () => {
-  router.delete(route('duties.destroy', props.duty.id));
+const openAssignSheet = (dutiable?: (App.Entities.Dutiable & Record<string, unknown>) | null, user?: App.Entities.User | null) => {
+  selectedDutiable.value = dutiable ?? null;
+  selectedUserForSheet.value = user ?? null;
+  assignSheetOpen.value = true;
 };
 
-// Breadcrumbs
+const handleAssignSuccess = () => {
+  router.reload({ only: ['duty'] });
+};
+
+const endTenure = (dutiable: (App.Entities.Dutiable & { id: string | number }) | null) => {
+  if (!dutiable) return;
+  if (confirm($t('Ar tikrai norite baigti šio nario kadenciją šiandien?'))) {
+    const today = new Date().toISOString().split('T')[0];
+    router.patch(route('dutiables.update', dutiable.id), {
+      end_date: today,
+    }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        router.reload({ only: ['duty'] });
+      },
+    });
+  }
+};
+
+const formatTenure = (user: App.Entities.User) => {
+  const start = user.pivot?.start_date;
+  if (!start) return '';
+  const startLabel = formatStaticTime(new Date(start), { year: 'numeric', month: 'short' });
+  const end = user.pivot?.end_date;
+  if (!end || new Date(end) >= new Date()) {
+    return `${startLabel} – ${$t('dabar')}`;
+  }
+  return `${startLabel} – ${formatStaticTime(new Date(end), { year: 'numeric', month: 'short' })}`;
+};
+
 usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminShow(
     props.duty.institution?.name,
     'institutions.show',
     { institution: props.duty?.institution?.id },
-    props.duty.name,
+    dutyTitle.value,
     InstitutionIconFilled,
     DutyIconFilled,
   ),

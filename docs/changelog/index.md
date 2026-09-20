@@ -5,6 +5,12 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.10 — Naujas pareigybių valdymas ir narių priskyrimas (2026-09-20) {#v2-10}
+
+- ⭐ **Patogus pareigybių įrašo puslapis** — pareigybės puslapyje aiškiai pateikta svarbiausia informacija, užimtumo būsena, einantys pareigas nariai ir jų kadencijų istorija, susijusios kitos institucijos pareigybės bei veiklos įrašai
+- ✨ **Greitas narių priskyrimas šoniniame skydelyje** — narius pareigoms dabar galima priskirti tiesiai pareigybės puslapyje per greitąjį priskyrimo skydelį su naudotojų paieška, kadencijos datomis ir prieigos apsaugos įspėjimais
+- ✨ **Atskirtas pareigybės redagavimas ir narių valdymas** — pareigybės kūrimo ir redagavimo forma nebenaudoja sudėtingų sąrašų; narių priskyrimas valdomas pareigybės puslapyje, o forma skirta pareigybės duomenims, institucijai ir aprašymui
+
 ## v2.9 — Paprastesnis posėdžių fiksavimo langas (2026-09-19) {#v2-9}
 
 - ✨ **Šiandien ir vakar vienu paspaudimu** — fiksuodamas posėdį dieną renkiesi iš „Šiandien“, „Vakar“ arba įprastos institucijos dienos; kalendoriaus prireikia tik kitoms datoms
