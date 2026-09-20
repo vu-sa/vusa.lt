@@ -71,9 +71,11 @@ return [
     'task_overdue_body_multiple' => 'Turi :count vėluojančias užduotis: :tasks ir kt.',
     'overdue_tasks' => 'Vėluojančios užduotys',
     'periodicity_gap_title' => 'Laikas pranešti apie :institution veiklą',
-    'periodicity_gap_body' => 'Institucijai „:institution“ užregistruok naują posėdį arba pranešk apie veiklą.',
-    'action_register_meeting' => 'Registruoti posėdį',
-    'action_report_activity' => 'Pranešti apie veiklą',
+    'periodicity_gap_question_title' => 'Ar vyko „:institution“ posėdis?',
+    'periodicity_gap_body' => 'Jei posėdis vyko, užfiksuok jį. Jei ne – vienu paspaudimu pasakyk, kad nevyko.',
+    'periodicity_gap_body_days' => 'Jau :days d. „:institution“ veiklos neužfiksuota. Jei posėdis vyko, užfiksuok jį. Jei ne – vienu paspaudimu pasakyk, kad nevyko.',
+    'action_register_meeting' => 'Taip, fiksuoti',
+    'action_report_activity' => 'Ne, nevyko',
 
     // Registration notifications
     'member_registered_title' => 'Nauja nario registracija',
@@ -118,6 +120,8 @@ return [
 
     // Duty notifications
     'duty_expiring_title' => 'Pareigos baigiasi po :days d.',
+    'access_changed_title' => 'Tavo prieiga pasikeitė',
+    'access_changed_body' => 'Pasikeitė tavo pareigybės. Pažiūrėk, ką dabar gali daryti.',
     'duty_expiring_body' => 'Tavo pareigybė „:duty" baigiasi :date. Nepamiršk perduoti patirties!',
 
     // System notifications
@@ -144,6 +148,7 @@ return [
     'action_view_reservation' => 'Peržiūrėti rezervaciją',
     'action_view_meeting' => 'Peržiūrėti posėdį',
     'action_view_duty' => 'Peržiūrėti pareigas',
+    'action_view_access' => 'Peržiūrėti mano roles',
     'action_explore_dashboard' => 'Atidaryti Mano VU SA',
     'action_view' => 'Peržiūrėti',
     'action_review' => 'Peržiūrėti',
@@ -171,6 +176,8 @@ return [
         'assigned_by' => 'Priskyrė',
         'duty' => 'Pareigybė',
         'end_date' => 'Kadencija baigiasi',
+        'access_started' => 'Nuo :date turi',
+        'access_ended' => 'Nuo :date nebeturi',
         'author' => 'Autorius',
     ],
 

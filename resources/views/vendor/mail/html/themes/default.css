@@ -280,6 +280,16 @@ img {
     border-top: 12px solid #bd2835;
 }
 
+.button-secondary {
+    background-color: #ffffff;
+    border-bottom: 11px solid #ffffff;
+    border-left: 27px solid #ffffff;
+    border-right: 27px solid #ffffff;
+    border-top: 11px solid #ffffff;
+    box-shadow: 0 0 0 1px #18181b;
+    color: #18181b;
+}
+
 /* Panels */
 
 .panel {

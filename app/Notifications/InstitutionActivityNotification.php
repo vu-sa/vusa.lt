@@ -2,7 +2,6 @@
 
 namespace App\Notifications;
 
-use App\Enums\InstitutionActivityStatus;
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationUrgency;
 use App\Models\Institution;
@@ -33,20 +32,22 @@ class InstitutionActivityNotification extends BaseNotification
 
     public function title(object $notifiable): string
     {
-        $status = InstitutionActivityStatus::tryFrom(
-            (string) ($this->task->metadata['activity_status'] ?? '')
-        );
-
-        return __('visak.activity.activity_status.'.match ($status) {
-            InstitutionActivityStatus::Approaching => 'approaching',
-            default => 'overdue',
-        });
+        return __('notifications.periodicity_gap_question_title', [
+            'institution' => $this->institution->name,
+        ]);
     }
 
     public function body(object $notifiable): string
     {
-        return __('notifications.periodicity_gap_body', [
+        $days = $this->task->metadata['effective_days_since_activity'] ?? null;
+
+        if (! is_numeric($days)) {
+            return __('notifications.periodicity_gap_body');
+        }
+
+        return __('notifications.periodicity_gap_body_days', [
             'institution' => $this->institution->name,
+            'days' => (int) $days,
         ]);
     }
 
@@ -87,15 +88,16 @@ class InstitutionActivityNotification extends BaseNotification
         return $this->coordinatorSignature($notifiable, $this->institution);
     }
 
+    /**
+     * Both answers open Pradžia with the window already on the right flow (U21, R-a): "yes" records the
+     * meeting, "no" files a check-in, which is what closes the task.
+     */
     #[\Override]
     public function primaryAction(): ?array
     {
         return [
             'label' => __('notifications.action_register_meeting'),
-            'url' => route('institutions.show', [
-                'institution' => $this->institution,
-                'activityAction' => 'register-meeting',
-            ]),
+            'url' => $this->answerUrl('meeting.create'),
         ];
     }
 
@@ -104,10 +106,18 @@ class InstitutionActivityNotification extends BaseNotification
     {
         return [
             'label' => __('notifications.action_report_activity'),
-            'url' => route('institutions.show', [
-                'institution' => $this->institution,
-                'activityAction' => 'report-activity',
-            ]),
+            'url' => $this->answerUrl('check-in'),
         ];
+    }
+
+    #[\Override]
+    public function secondaryActionIsAnswer(): bool
+    {
+        return true;
+    }
+
+    private function answerUrl(string $window): string
+    {
+        return route('dashboard', ['window' => $window, 'institution' => $this->institution->id]);
     }
 }

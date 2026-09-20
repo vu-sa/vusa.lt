@@ -55,6 +55,7 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Pages/Admin/Dashboard/ShowOrganizacija.vue',
   'resources/js/Pages/Admin/Dashboard/ShowSistema.vue',
   'resources/js/Pages/Admin/ShowAdministration.vue',
+  'resources/js/Pages/Admin/ShowRepMetrics.vue',
   'resources/js/Components/Reservations/**',
 ];
 

@@ -57,6 +57,10 @@
       :href="route('meetings.index')"
     />
 
+    <Deferred v-if="scope === 'user'" data="coordinator">
+      <CoordinatorCard :coordinator="coordinator ?? null" compact />
+    </Deferred>
+
     <!-- The timeline is a workbench: it renders only once it is near the viewport, and never on a phone. -->
     <section
       v-if="isAtLeastMd"
@@ -167,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Deferred, Link } from '@inertiajs/vue3';
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -201,8 +205,9 @@ import OverviewScopeSwitch from '@/Components/Overview/OverviewScopeSwitch.vue';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
 import OverviewChart from '@/Components/Overview/OverviewChart.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
-import type { HomeMeeting, InstitutionActivityInsight } from '@/Components/Home/types';
+import type { HomeCoordinator, HomeMeeting, InstitutionActivityInsight } from '@/Components/Home/types';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
@@ -214,6 +219,7 @@ const props = defineProps<{
   mayHaveRelatedInstitutions?: boolean;
   availableTenants: AtstovavimasTenant[];
   openTasksCount: number;
+  coordinator?: HomeCoordinator | null;
 }>();
 
 type Scope = 'user' | 'tenant';

@@ -5,6 +5,14 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.15 — The rep loop: first steps, access changes and answerable reminders (2026-09-20) {#v2-15}
+
+- ⭐ **First steps on the home page** — a new representative gets four steps on Pradžia: a photo, followed institutions, notification settings and a first recorded meeting. Finished steps tick themselves, and the list disappears when everything is done or you press “Hide”. The long welcome tour no longer starts by itself
+- ⭐ **“Your access changed”** — when a duty term starts or ends you get a notification in the bell and the digest, a one-line band on the home page, and a dated history on the “My roles and duties” page
+- ✨ **Answerable reminders** — in the “Did it meet?” email you choose “Yes, record it” or “No, it did not” and land straight in the right window with the institution already filled in
+- ✨ **Your coordinator everywhere** — the ViSAK overview and the meeting page show the institution’s coordinator with a way to write to them. The home page also tells you how many meetings you recorded this year
+- ⭐ **Representative metrics** — the System section has a page with five metrics (how fast meetings are recorded, vote information, task completion, active representatives, who records) and how they changed month by month
+
 ## v2.14 — Every workspace starts with an overview (2026-09-20) {#v2-14}
 
 - ⭐ **Organisation and System overviews** — the Organisation section opens on a page showing terms that end soon, duties without members and the member count; the System section shows new support requests, the email queue and system health. The numbers are links to the matching lists

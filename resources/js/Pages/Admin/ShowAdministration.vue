@@ -50,7 +50,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, defineComponent, h, ref, type Component, type PropType } from 'vue';
-import { ChevronRight, LayoutDashboard, Mail, MessageSquare, SearchIcon } from 'lucide-vue-next';
+import { ChartLine, ChevronRight, LayoutDashboard, Mail, MessageSquare, SearchIcon } from 'lucide-vue-next';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { EmptyState, OverviewSection } from '@/Components/Patterns';
@@ -94,6 +94,7 @@ const SECTION_FALLBACK_ICONS: Record<string, Component> = {
   nustatymai: SettingIcon,
   sistemos_busena: NotificationIcon,
   laisku_eile: Mail,
+  rep_metrics: ChartLine,
   pagalbos_uzklausos: MessageSquare,
 };
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetUserCoordinator;
 use App\Http\Controllers\AdminController;
 use App\Models\Institution;
 use App\Models\Tenant;
@@ -161,6 +162,8 @@ class AtstovavimasDashboardController extends AdminController
             })->once(),
             'availableTenants' => $availableTenants,
             'openTasksCount' => $user->tasks()->whereNull('completed_at')->count(),
+            // R-g: the human answer to "I'm stuck" belongs on every rep screen, but never on the first paint.
+            'coordinator' => Inertia::defer(fn () => GetUserCoordinator::execute($user), 'secondary'),
             // Note: recentMeetings is fetched via API endpoint: api.v1.admin.meetings.recent
         ]);
     }

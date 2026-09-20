@@ -15,8 +15,13 @@ use Illuminate\Support\Collection;
  */
 class GetUserAccessSummary
 {
-    /** Ended terms are a memory aid, not an archive; the dated access-change history is PR 7.7. */
+    /** Ended terms are a memory aid, not an archive. */
     private const int ENDED_LIMIT = 10;
+
+    /** How far back the dated access-change history reaches (U14), and how many events it lists. */
+    private const int HISTORY_DAYS = 365;
+
+    private const int HISTORY_LIMIT = 20;
 
     /**
      * @return array{
@@ -24,7 +29,8 @@ class GetUserAccessSummary
      *     directRoles: list<string>,
      *     current: list<array<string, mixed>>,
      *     upcoming: list<array<string, mixed>>,
-     *     ended: list<array<string, mixed>>
+     *     ended: list<array<string, mixed>>,
+     *     history: list<array<string, mixed>>
      * }
      */
     public static function execute(User $user): array
@@ -47,6 +53,7 @@ class GetUserAccessSummary
             'current' => self::present($user, $terms->filter(fn (Dutiable $term): bool => $started($term) && $notEnded($term))),
             'upcoming' => self::present($user, $terms->reject($started)),
             'ended' => self::present($user, $terms->reject($notEnded)->take(self::ENDED_LIMIT)),
+            'history' => GetRecentAccessChanges::execute($user, self::HISTORY_DAYS, limit: self::HISTORY_LIMIT),
         ];
     }
 

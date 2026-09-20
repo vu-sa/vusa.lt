@@ -1,5 +1,5 @@
 <template>
-  <OverviewPage :title="$t('Mano VU SA')">
+  <OverviewPage :title="$t('Mano VU SA')" :lead="impactLine">
     <template #heading>
       <h1 class="text-2xl font-semibold tracking-tight" data-tour="greeting-section">
         {{ greeting }}, {{ userNameAddress }}!
@@ -9,6 +9,14 @@
     <template #attention>
       <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
     </template>
+
+    <AccessChangeBand v-if="accessChanges.length > 0" :changes="accessChanges" />
+
+    <FirstLoginChecklist
+      v-if="onboardingChecklist"
+      :checklist="onboardingChecklist"
+      @record-meeting="actionWindow.open({ flow: 'meeting.create' })"
+    />
 
     <CreateShortcuts />
 
@@ -45,18 +53,22 @@
 
 <script setup lang="ts">
 import { Deferred, usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, onMounted } from 'vue';
 import type { DriveStep } from 'driver.js';
 
+import AccessChangeBand from '@/Components/Home/AccessChangeBand.vue';
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
 import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
+import FirstLoginChecklist from '@/Components/Home/FirstLoginChecklist.vue';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';
 import SiteContentLists from '@/Components/Home/SiteContentLists.vue';
 import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
 import type {
+  HomeAccessChange,
+  HomeChecklist,
   HomeContentItem,
   HomeCoordinator,
   HomeMeeting,
@@ -70,7 +82,7 @@ import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
 import { useIsMobile } from '@/Composables/useIsMobile';
 import { provideTour } from '@/Composables/useTourProvider';
-import { useActionWindow } from '@/Composables/useActionWindow';
+import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
 
 interface TaskStats {
   total: number;
@@ -80,6 +92,10 @@ interface TaskStats {
 
 // The first response carries the queue and upcoming meetings; the rest arrives as one deferred group.
 const props = defineProps<{
+  onboardingChecklist: HomeChecklist | null;
+  accessChanges: HomeAccessChange[];
+  /** Set when the URL asked for the ActionWindow (a reminder's answer buttons, U21). */
+  actionWindowLaunch: { flow: 'meeting.create' | 'check-in'; institution: ActionWindowInstitutionRef } | null;
   unreadNotificationsCount: number;
   hasNotifications: boolean;
   taskStats: TaskStats;
@@ -90,9 +106,10 @@ const props = defineProps<{
   latestNews?: App.Entities.News[];
   recentlyEdited?: HomeRecentRecord[];
   coordinator?: HomeCoordinator | null;
+  recordedMeetingsThisYear?: number;
 }>();
 
-const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'coordinator'];
+const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'coordinator', 'recordedMeetingsThisYear'];
 
 // Check if user has atstovavimas permissions (meetings exist or can create/index meetings)
 const hasAtstovavimas = computed(() => Boolean(
@@ -179,8 +196,9 @@ const tourSteps = computed<DriveStep[]>(() => {
   ];
 });
 
-// Setup product tour
-const { startTour, startTourIfNew } = useProductTour({
+// The tour no longer starts by itself: the first-login checklist (U13) replaces it for new reps.
+// It stays one tap away behind the layout's help button.
+const { startTour } = useProductTour({
   tourId: 'admin-welcome-v1',
   steps: () => tourSteps.value,
 });
@@ -188,18 +206,21 @@ const { startTour, startTourIfNew } = useProductTour({
 // Register tour with the layout's help button
 provideTour(startTour);
 
-// Auto-start tour for first-time users after component mounts
+// A reminder's answer buttons open Pradžia with the window already on the right flow (U21).
 onMounted(() => {
-  // Wait 1.5 seconds to ensure DOM is ready
-  setTimeout(() => {
-    // A first-time user who reaches for the action window inside that window gets a
-    // tour popup over an open modal, and the two fight for the same click.
-    if (actionWindow.isOpen.value) {
-      return;
-    }
+  const launch = props.actionWindowLaunch;
 
-    startTourIfNew();
-  }, 1500);
+  if (!launch) {
+    return;
+  }
+
+  actionWindow.open({ flow: launch.flow, institution: launch.institution });
+
+  // Strip the query so a refresh does not reopen a window the rep has already answered.
+  const url = new URL(window.location.href);
+  url.searchParams.delete('window');
+  url.searchParams.delete('institution');
+  window.history.replaceState(window.history.state, '', url);
 });
 
 // User name with addressivization for Lithuanian
@@ -217,6 +238,13 @@ const greeting = computed(() => {
   if (hour < 12) return $t('Labas rytas');
   if (hour < 18) return $t('Laba diena');
   return $t('Labas vakaras');
+});
+
+// R-f: a quiet line about what the rep's work added up to, only once there is something to say.
+const impactLine = computed(() => {
+  const count = props.recordedMeetingsThisYear ?? 0;
+
+  return count > 0 ? $tChoice('home.impact', count, { count: String(count) }) : undefined;
 });
 
 const recordMeetingFor = (institution: InstitutionActivityInsight) => {

@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\CountUserRecordedMeetings;
+use App\Actions\GetOnboardingChecklist;
+use App\Actions\GetRecentAccessChanges;
 use App\Actions\GetRecentlyEditedRecords;
 use App\Actions\GetUserCoordinator;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
+use App\Http\Requests\ShowAdminHomeRequest;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -15,7 +19,6 @@ use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -24,12 +27,15 @@ class DashboardController extends AdminController
 {
     use ApiResponses;
 
+    /** How long a duty change stays a band on Pradžia; the history on *Mano rolės* keeps it longer. */
+    private const int ACCESS_BAND_DAYS = 14;
+
     public function __construct(
         public Authorizer $authorizer,
         private readonly InstitutionActivityStatusService $activityStatusService,
     ) {}
 
-    public function index(Request $request)
+    public function index(ShowAdminHomeRequest $request)
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
         $userTenantId = $user->current_duties->first()?->institution?->tenant_id;
@@ -127,7 +133,15 @@ class DashboardController extends AdminController
             $secondary,
         );
 
+        $recordedMeetingsThisYear = Inertia::defer(
+            fn () => CountUserRecordedMeetings::execute($user, now()->year),
+            $secondary,
+        );
+
         return $this->inertiaResponse('Admin/ShowAdminHome', [
+            'onboardingChecklist' => GetOnboardingChecklist::execute($user),
+            'accessChanges' => GetRecentAccessChanges::execute($user, self::ACCESS_BAND_DAYS),
+            'actionWindowLaunch' => $request->actionWindowLaunch($user),
             'unreadNotificationsCount' => $unreadNotificationsCount,
             'hasNotifications' => $unreadNotificationsCount > 0,
             'taskStats' => $taskStats,
@@ -138,6 +152,7 @@ class DashboardController extends AdminController
             'latestNews' => $latestNews,
             'recentlyEdited' => $recentlyEdited,
             'coordinator' => $coordinator,
+            'recordedMeetingsThisYear' => $recordedMeetingsThisYear,
         ]);
     }
 

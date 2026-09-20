@@ -118,6 +118,7 @@ return [
         'nustatymai' => 'Nustatymai',
         'sistemos_busena' => 'Sistemos būsena',
         'laisku_eile' => 'Laiškų eilė',
+        'rep_metrics' => 'Atstovų rodikliai',
         'pagalbos_uzklausos' => 'Pagalbos užklausos',
         'sharepoint_failai' => 'Sharepoint failai',
     ],

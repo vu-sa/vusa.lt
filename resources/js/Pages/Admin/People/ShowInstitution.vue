@@ -326,6 +326,11 @@ const { currentTab, navigateToTab } = useShowPageData({
   defaultTab: 'overview',
 });
 
+/**
+ * @deprecated Superseded by Pradžia's `?window=…&institution=…` launch (PR 7.10, ShowAdminHomeRequest).
+ * Kept only because reminder emails sent before then still link here; slated for removal with the
+ * institution record in Phase 9.
+ */
 const activityAction = new URLSearchParams(page.url.split('?')[1] ?? '').get('activityAction');
 const showCheckInModal = ref(activityAction === 'report-activity');
 

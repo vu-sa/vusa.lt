@@ -109,6 +109,10 @@
       <RecordActivity subject-type="meeting" :subject-id="meeting.id" commentable-type="meeting" :commentable-id="meeting.id" />
     </template>
 
+    <Deferred data="coordinator">
+      <CoordinatorCard :coordinator="coordinator ?? null" class="mt-10" compact />
+    </Deferred>
+
     <!-- Modals -->
     <Dialog v-model:open="showMeetingModal">
       <DialogContent>
@@ -323,6 +327,8 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
+import type { HomeCoordinator } from '@/Components/Home/types';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
 import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';
@@ -366,6 +372,7 @@ const props = withDefaults(defineProps<{
   recordNavigation?: RecordNavigationContext;
   tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
   documents?: NonNullable<App.Entities.Meeting['documents']>;
+  coordinator?: HomeCoordinator | null;
 }>(), {
   secretaries: () => [],
   administrators: () => [],
@@ -383,6 +390,7 @@ const props = withDefaults(defineProps<{
   recordNavigation: undefined,
   tasks: undefined,
   documents: undefined,
+  coordinator: null,
 });
 
 const resolvedSecretaries = computed(() => props.secretaries ?? props.administrators ?? []);

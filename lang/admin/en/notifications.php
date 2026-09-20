@@ -71,9 +71,11 @@ return [
     'task_overdue_body_multiple' => 'You have :count overdue tasks: :tasks and more',
     'overdue_tasks' => 'Overdue Tasks',
     'periodicity_gap_title' => 'Time to report activity for :institution',
-    'periodicity_gap_body' => 'Register a new meeting or report activity for “:institution”.',
-    'action_register_meeting' => 'Register meeting',
-    'action_report_activity' => 'Report activity',
+    'periodicity_gap_question_title' => 'Did “:institution” meet?',
+    'periodicity_gap_body' => 'If a meeting took place, record it. If not, tell us in one tap that it did not.',
+    'periodicity_gap_body_days' => 'No activity recorded for “:institution” in :days days. If a meeting took place, record it. If not, tell us in one tap that it did not.',
+    'action_register_meeting' => 'Yes, record it',
+    'action_report_activity' => 'No, it did not',
 
     // Registration notifications
     'member_registered_title' => 'New Member Registration',
@@ -118,6 +120,8 @@ return [
 
     // Duty notifications
     'duty_expiring_title' => 'Duty expires in :days days',
+    'access_changed_title' => 'Your access changed',
+    'access_changed_body' => 'Your duties changed. Check what you can do now.',
     'duty_expiring_body' => 'Your duty ":duty" ends on :date. Remember to transfer your experience!',
 
     // System notifications
@@ -144,6 +148,7 @@ return [
     'action_view_reservation' => 'View Reservation',
     'action_view_meeting' => 'View Meeting',
     'action_view_duty' => 'View Duty',
+    'action_view_access' => 'View my roles',
     'action_explore_dashboard' => 'Explore Dashboard',
     'action_view' => 'View',
     'action_review' => 'Review',
@@ -171,6 +176,8 @@ return [
         'assigned_by' => 'Assigned by',
         'duty' => 'Duty',
         'end_date' => 'Term ends',
+        'access_started' => 'From :date you have',
+        'access_ended' => 'From :date you no longer have',
         'author' => 'Author',
     ],
 

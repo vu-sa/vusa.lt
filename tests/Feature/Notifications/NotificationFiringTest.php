@@ -111,8 +111,8 @@ describe('task notifications', function (): void {
             function (InstitutionActivityNotification $notification) use ($user, $institution): bool {
                 $data = $notification->toArray($user);
 
-                return $data['title'] === __('visak.activity.activity_status.approaching')
-                    && str_contains($data['body'], $institution->name)
+                return $data['title'] === __('notifications.periodicity_gap_question_title', ['institution' => $institution->name])
+                    && $data['body'] === __('notifications.periodicity_gap_body')
                     && count($data['actions']) === 2;
             }
         );

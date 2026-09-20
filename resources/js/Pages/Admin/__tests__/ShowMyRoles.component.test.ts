@@ -22,7 +22,7 @@ const term = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const emptyAccess = { isSuperAdmin: false, directRoles: [], current: [], upcoming: [], ended: [] };
+const emptyAccess = { isSuperAdmin: false, directRoles: [], current: [], upcoming: [], ended: [], history: [] };
 
 function mountPage(access: Record<string, unknown>, workspaces: unknown[] = []) {
   vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: { workspaces } }) as ReturnType<typeof usePage>);
@@ -85,5 +85,22 @@ describe('ShowMyRoles', () => {
 
     expect(wrapper.find('[data-testid="super-admin"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="capabilities"]').exists()).toBe(false);
+  });
+
+  it('lists the dated changes, each in its own words, and collapses when there are none', () => {
+    const history = [
+      { kind: 'started', dutyName: 'Studentų atstovas', institutionName: 'VU MIF', date: '2026-09-01', effectiveOn: '2026-09-01', isExOfficio: false },
+      { kind: 'ended', dutyName: 'Kita pareigybė', institutionName: null, date: '2026-03-31', effectiveOn: '2026-04-01', isExOfficio: false },
+    ];
+
+    const rows = mountPage({ history }).findAll('[data-testid="access-history"] [data-slot="access-change"]');
+
+    expect(rows).toHaveLength(2);
+    expect(rows[0].text()).toContain('2026-09-01');
+    expect(rows[0].text()).toContain('access.history.started');
+    expect(rows[0].text()).toContain('VU MIF');
+    expect(rows[1].text()).toContain('access.history.ended');
+
+    expect(mountPage({}).find('[data-testid="access-history"]').exists()).toBe(false);
   });
 });

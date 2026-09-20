@@ -116,6 +116,15 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
+     * Whether the secondary action answers the same question as the primary one (R-a), so a mail
+     * draws it as a second button rather than a text link.
+     */
+    public function secondaryActionIsAnswer(): bool
+    {
+        return false;
+    }
+
+    /**
      * Label/value rows saying what this is about (institution, date, deadline); keep to four.
      *
      * @return array<int, array{label: string, value: string}>
@@ -324,6 +333,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
                 'body' => $this->body($notifiable),
                 'context' => $this->context($notifiable),
                 'secondaryAction' => $this->secondaryAction(),
+                'secondaryIsAnswer' => $this->secondaryActionIsAnswer(),
                 'signature' => $this->mailSignature($notifiable),
                 'category' => __($this->category()->labelKey()),
                 'settingsUrl' => route('profile'),

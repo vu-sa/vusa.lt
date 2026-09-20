@@ -24,19 +24,11 @@ class GetUserCoordinator
             ->unique('id');
 
         foreach ($institutions as $institution) {
-            $manager = GetInstitutionManagers::execute($institution)
-                ->first(fn (User $candidate): bool => $candidate->id !== $user->id);
+            $coordinator = GetInstitutionCoordinator::execute($institution, $user);
 
-            if ($manager === null) {
-                continue;
+            if ($coordinator !== null) {
+                return $coordinator;
             }
-
-            return [
-                'name' => $manager->name,
-                'email' => $manager->email,
-                'profile_photo_path' => $manager->profile_photo_path,
-                'duty' => $manager->current_duties->first()?->name,
-            ];
         }
 
         return null;

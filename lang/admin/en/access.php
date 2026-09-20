@@ -24,6 +24,19 @@ return [
     'ended' => [
         'title' => 'Term history',
     ],
+    'band' => [
+        'started' => 'Your access changed: from :date you have the duty “:duty”.',
+        'ended' => 'Your access changed: from :date you no longer have the duty “:duty”.',
+        'many' => 'Your access changed: :count duty changes.',
+        'view' => 'View',
+        'dismiss' => 'OK',
+    ],
+    'history' => [
+        'title' => 'Access changes',
+        'empty' => 'your duties have not changed in the past year',
+        'started' => 'Started the duty “:duty”',
+        'ended' => 'The duty “:duty” ended',
+    ],
     'term' => [
         'until_now' => 'now',
         'ex_officio' => 'Ex officio',

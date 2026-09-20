@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\NotificationCategory;
+use App\Enums\NotificationUrgency;
 use App\Mail\NotificationDigest;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -97,14 +99,53 @@ describe('notification email', function (): void {
         expect(mb_strlen(renderNotificationMail($notification, $this->recipient)['subject']))->toBeLessThanOrEqual(60);
     });
 
-    test('a two-action notification shows the second action as a link', function (): void {
+    test('a notification whose second action is an answer draws it as a second button', function (): void {
         $task = Task::factory()->create(['metadata' => ['activity_status' => 'overdue']]);
         $notification = new InstitutionActivityNotification($task, Institution::factory()->create());
 
         $rendered = renderNotificationMail($notification, $this->recipient);
 
-        expect($rendered['html'])->toContain($notification->secondaryAction()['url'])
-            ->and($rendered['text'])->toContain($notification->secondaryAction()['url']);
+        expect($rendered['html'])->toContain(e($notification->secondaryAction()['url']), 'button-secondary')
+            ->and($rendered['text'])->toContain($notification->secondaryAction()['url'], $notification->secondaryAction()['label']);
+    });
+
+    test('any other second action stays a plain link, so no other mail changes', function (): void {
+        $notification = new class extends BaseNotification
+        {
+            public function category(): NotificationCategory
+            {
+                return NotificationCategory::System;
+            }
+
+            public function urgency(): NotificationUrgency
+            {
+                return NotificationUrgency::Act;
+            }
+
+            public function title(object $notifiable): string
+            {
+                return 'Pavadinimas';
+            }
+
+            public function body(object $notifiable): string
+            {
+                return 'Turinys';
+            }
+
+            public function url(): string
+            {
+                return 'https://example.test/one';
+            }
+
+            public function secondaryAction(): ?array
+            {
+                return ['label' => 'Antras', 'url' => 'https://example.test/two'];
+            }
+        };
+
+        $rendered = renderNotificationMail($notification, $this->recipient);
+
+        expect($rendered['html'])->toContain('https://example.test/two')->not->toContain('button-secondary');
     });
 
     test('an institution email is signed by the coordinator, on the duty address', function (): void {

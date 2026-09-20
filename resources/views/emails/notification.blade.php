@@ -9,7 +9,11 @@
 {{ $actionText }}
 </x-mail::button>
 
-@if ($secondaryAction)
+@if ($secondaryAction && $secondaryIsAnswer)
+<x-mail::button :url="$secondaryAction['url']" color="secondary">
+{{ $secondaryAction['label'] }}
+</x-mail::button>
+@elseif ($secondaryAction)
 [{{ $secondaryAction['label'] }}]({{ $secondaryAction['url'] }})
 @endif
 

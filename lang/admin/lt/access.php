@@ -24,6 +24,19 @@ return [
     'ended' => [
         'title' => 'Kadencijų istorija',
     ],
+    'band' => [
+        'started' => 'Tavo prieiga pasikeitė: nuo :date turi pareigybę „:duty“.',
+        'ended' => 'Tavo prieiga pasikeitė: nuo :date nebeturi pareigybės „:duty“.',
+        'many' => 'Tavo prieiga pasikeitė: :count pareigybių pakeitimai.',
+        'view' => 'Peržiūrėti',
+        'dismiss' => 'Gerai',
+    ],
+    'history' => [
+        'title' => 'Prieigos pasikeitimai',
+        'empty' => 'per pastaruosius metus tavo pareigybės nesikeitė',
+        'started' => 'Pradėta pareigybė „:duty“',
+        'ended' => 'Pareigybė „:duty“ baigėsi',
+    ],
     'term' => [
         'until_now' => 'dabar',
         'ex_officio' => 'Ex officio',

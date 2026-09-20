@@ -73,6 +73,11 @@ Schedule::command('notifications:duty-expiry-reminders')
     ->dailyAt('09:00')
     ->name('duty-expiry-reminders');
 
+// Access changes - the day a duty term begins or ends (U14)
+Schedule::command('notifications:access-changes')
+    ->dailyAt('09:05')
+    ->name('access-change-notices');
+
 // Task overdue reminders - runs weekly on Monday at 9 AM
 Schedule::command('notifications:task-overdue-reminders')
     ->weeklyOn(1, '09:00')

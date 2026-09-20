@@ -66,11 +66,11 @@ One PR = one row. Rules:
 | **7.3** | Organizacija overview (new) | 5.8 | ✅ |
 | **7.4** | Sistema overview (new) | 5.8 | ✅ |
 | **7.5** | Visi skyriai at `/mano/administration` | 3.1 | ✅ |
-| **7.6** | First-login checklist (U13) | 5.1 |
-| **7.7** | Access-change notice + history (U14) | 5.9 |
-| **7.8** | Visible impact + koordinatorius on rep screens (U24, O22) | 5.1 |
-| **7.9** | Outcome metrics report (U25) | — |
-| **7.10** | Answerable reminder experiment on the periodicity gap (U21) | 6.3 |
+| **7.6** | First-login checklist (U13) | 5.1 | ✅ |
+| **7.7** | Access-change notice + history (U14) | 5.9 | ✅ |
+| **7.8** | Visible impact + koordinatorius on rep screens (U24, O22) | 5.1 | ✅ |
+| **7.9** | Outcome metrics report (U25) | — | ✅ |
+| **7.10** | Answerable reminder experiment on the periodicity gap (U21) | 6.3 | ✅ |
 | **8.1** | New shell becomes the default; opt-in + old shell + sidebar components removed | 7.x |
 | **8.2** | Announcement, changelog LT + EN, user docs that describe navigation | 8.1 |
 | **9.1** | Institution record + form (+ Prižiūri) | 8.1 |
@@ -949,10 +949,11 @@ Shipped as one commit.
 - [x] Svetainė ← `ShowSvetaine` (analytics compact, O17) (PR 7.2)
 - [x] Organizacija (new) · Sistema (new) (PR 7.3, 7.4)
 - [x] Visi skyriai at `/mano/administration` (PR 7.5)
-- [ ] First-login checklist (U13); access-change notice (U14)
-- [ ] Visible impact (U24); outcome metrics report (U25); device split (U26)
-- [ ] **Experiment:** answerable reminders on the periodicity-gap reminder; compare that task type's
-      completion rate with the Phase 0 baseline (U21)
+- [x] First-login checklist (U13); access-change notice (U14) (PR 7.6, 7.7)
+- [x] Visible impact (U24); outcome metrics report (U25); device split (U26, shipped earlier) (PR 7.8, 7.9)
+- [x] **Experiment shipped:** answerable reminders on the periodicity-gap reminder (PR 7.10)
+- [ ] **Experiment readout:** after ≥ 2 months compare that task type's completion rate with the Phase 0
+      baseline (44.9%, target > 65%) in `metrics:reps` / Sistema → Atstovų rodikliai (U21)
 - [ ] **Open beta** (2–4 weeks, end date announced)
 
 ### PR 7.1 – 7.5 notes (2026-09-20)
@@ -1026,6 +1027,61 @@ screenshots of the reservation list (1440 and 390), the overview (1440) and Visi
   `ReservationController::index`; a test pins it and it is not part of this work.
 - Svetainė's *Suplanuotos naujienos* count: the list filter cannot express "publish time in the future", so a number that led to a
   list showing something else was not added.
+
+### PR 7.6 – 7.10 notes (2026-09-20)
+
+Built together on `dev`, one commit. Decisions taken with the user before building: the reminder's answer buttons land on
+**Pradžia through a URL-launched ActionWindow**; the checklist is for **new reps by term age**; the metrics are a **Sistema page
+plus a command**; the access notice is a **daily command**.
+
+**7.6 · Pirmi žingsniai** — `GetOnboardingChecklist` returns null unless the user holds a current duty *and* their first-ever
+`dutiables.start_date` is within `NEW_REP_DAYS` (60), and null again once all four steps are done. Steps: photo, followed institutions,
+notification settings (read from the *raw* `notification_preferences` — the accessor merges defaults in, so it is always non-empty),
+first recorded meeting (activity log). `FirstLoginChecklist` is dismissed through `useFeatureSpotlight('checklist-first-login-v1')`
+(stored as `spotlight-checklist-first-login-v1`). The welcome tour **no longer auto-starts**; it stays on the layout's help button.
+`markComplete` fires `WelcomeNotification` on a user's first-ever progress key, so dismissing the checklist can be that key.
+
+**7.7 · Tavo prieiga pasikeitė** — `GetRecentAccessChanges` is the one source (command, band, history). A term *ends the day after*
+its `end_date`, so each change carries `date` (what to show) and `effectiveOn`. `notifications:access-changes` (daily 09:05)
+sends **one** `AccessChangedNotification` per person per day (≤ 4 context rows, `Duty` / `Know` → bell + digest, no email of its
+own), deduped on `object.id = access-change-{date}`. The Pradžia band is computed live for the last 14 days and dismissed per
+newest change (`access-change-band-{date}`). `GetUserAccessSummary` gained `history` (365 days, cap 20) and `ShowMyRoles` a
+sixth section (`#history`). End-dating is not activity-logged, so the history reads the raw dates.
+
+**7.8 · Impact + koordinatorius** — `CountUserRecordedMeetings` (activity log; a calendar year is always inside the 365-day
+retention) feeds a lead line on Pradžia, shown only above zero. `GetInstitutionCoordinator` was extracted from
+`GetUserCoordinator` (which also lost its per-manager duty N+1). `CoordinatorCard` gained `compact` and now sits on the ViSAK
+overview and at the foot of the meeting record, both deferred. Nothing was added for "Matoma vusa.lt" after recording:
+`ShowMeeting` already carries the fact and the meeting is where recording lands.
+
+**7.9 · Atstovų rodikliai** — `GetRepOutcomeMetrics` (PHP-side, so MySQL and SQLite agree) backs `metrics:reps` and the page
+`repMetrics` (`/mano/rep-metrics`, gate `viewAny(Role)` like system status; catalog cache prefix → `admin-navigation-v4-`).
+Page: table (now · baseline · target · a status *word*) → one `OverviewChart` with a generated sentence and a metric switch →
+per-task-type table. **Deviations from `reps.md`:** *reps active in 30 days* has **no trend** — `users.last_action` keeps no
+history; *who recorded* is bounded by the 365-day activity log. **The baseline's exact "vote information" definition is not in
+the repo** — this counts an agenda item with a vote row carrying a `decision` or a `student_vote`, over all items of past
+meetings; compare its first run with 35.1% (1,582 / 4,510) and record any gap here.
+
+**7.10 · Answerable reminder** — the periodicity-gap mail asks *Ar vyko „X“ posėdis?* with **Taip, fiksuoti** and **Ne, nevyko**
+(`secondaryActionIsAnswer()`, default false, draws the second as an outline button — no other mail changes). Both go to
+`route('dashboard', ['window' => 'meeting.create'|'check-in', 'institution' => $id])`; `ShowAdminHomeRequest::actionWindowLaunch()`
+honours only an allowlisted window and an institution the user may `view`, ignoring anything else, and Pradžia opens the window
+on that flow, then strips the query. "Ne, nevyko" files a check-in, which `InstitutionCheckInTaskSubscriber` already turns into a
+completed task. **No `from=` marker** — no clickstream (U16); the readout is the completion rate. `ShowInstitution`'s
+`?activityAction=` stays for mail already sent and is `@deprecated` (Phase 9).
+
+**Fence added:** `ShowRepMetrics` (`Components/Overview/**` and `Components/Home/**` were already fenced).
+
+**Verified:** Pest (full parallel), Vitest, phpstan on the changed files (only errors that predate this work),
+`lint:file` (0 errors; 40 style warnings from single-line `<th>`/`<td>`/`<Link>` in the new files, left per the "don't chase lint" note).
+
+**Not done**
+
+- 390 / 820 / 1180 / 1440 screenshots, dark mode, touch, keyboard-only, the four-persona pass, and Mailpit screenshots of the two-button
+  reminder at 360px; Storybook a11y and stories for the new components.
+- The experiment **readout** itself: it needs two months of data.
+- Metric 4 trend (needs a monthly snapshot table for `last_action`); the audience rule for the checklist (60 days, any current duty) is an assumption to confirm.
+- Rule 8 (mail locale follows the recipient) is still open, so the new copy renders in the app default.
 
 ## Phase 8 — Switch
 

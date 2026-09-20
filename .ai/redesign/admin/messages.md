@@ -55,7 +55,8 @@ interface, not a follow-up project.
 | `TaskAssigned` (due ≤ 7 d) | task | act | ✓ | ✓ | — | ✓ |
 | `TaskOverdue`, `TaskReminder` | task | act | ✓ answerable | ✓ | — | ✓ |
 | `MeetingReminder` | meeting | act | ✓ | ✓ | — | ✓ |
-| `InstitutionActivity` (periodicity gap) | meeting | act | ✓ answerable (U21) | — | — | ✓ |
+| `InstitutionActivity` (periodicity gap) | meeting | act | ✓ answerable (U21, PR 7.10) | — | — | ✓ |
+| `AccessChanged` (duty term began or ended, PR 7.7) | duty | know | — | — | ✓ | ✓ |
 | `ApprovalRequested` | reservation | act | ✓ | ✓ | — | ✓ |
 | `AssignedToResource` | reservation | act | ✓ | — | — | ✓ |
 | `CommentPosted` — mention | comment | act | ✓ | ✓ | — | ✓ |

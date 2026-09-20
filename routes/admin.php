@@ -46,6 +46,9 @@ Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])
 // System Status
 Route::get('system-status', [SystemStatusController::class, 'index'])->name('systemStatus');
 
+// Rep outcome metrics (U25)
+Route::get('rep-metrics', [RepMetricsController::class, 'index'])->name('repMetrics');
+
 // Mail queue — the pending notification digests behind the system status card
 Route::get('mail-queue', [MailQueueController::class, 'index'])->name('mailQueue');
 Route::delete('mail-queue', [MailQueueController::class, 'destroyAll'])->name('mailQueue.destroyAll');

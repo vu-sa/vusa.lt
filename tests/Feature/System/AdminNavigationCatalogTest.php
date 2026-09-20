@@ -32,7 +32,7 @@ const SECTION_LANDING_ROUTES = [
     'dashboard', 'dashboard.atstovavimas', 'dashboard.reservations', 'dashboard.svetaine',
     'dashboard.organizacija', 'dashboard.sistema',
     'userTasks', 'institutionGraph', 'dutiables.timeline', 'tasks.summary', 'systemStatus',
-    'mailQueue', 'administration', 'duties.updateUsersWizard', 'profile',
+    'mailQueue', 'repMetrics', 'administration', 'duties.updateUsersWizard', 'profile',
 ];
 
 /**
@@ -227,7 +227,7 @@ describe('per-persona visibility', function (): void {
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'formos'],
-            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'rysiai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'pagalbos_uzklausos', 'sharepoint_failai'],
+            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'rysiai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'rep_metrics', 'pagalbos_uzklausos', 'sharepoint_failai'],
         ]);
     });
 

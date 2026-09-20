@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\AnnounceMeetingInCalendar;
+use App\Actions\GetInstitutionCoordinator;
 use App\Actions\GetRecentlyChangedMeetings;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
@@ -348,6 +349,11 @@ class MeetingController extends AdminController
                 ->get()
                 ->each->append('language_code')
                 ->toArray(), 'meetingPanels'),
+            // R-g: a rep stuck on a record asks their institution's koordinatorius.
+            'coordinator' => Inertia::defer(
+                fn () => $primaryInstitution === null ? null : GetInstitutionCoordinator::execute($primaryInstitution, request()->user()),
+                'meetingPanels',
+            ),
         ]);
     }
 

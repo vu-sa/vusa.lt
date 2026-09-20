@@ -118,6 +118,7 @@ return [
         'nustatymai' => 'Settings',
         'sistemos_busena' => 'System status',
         'laisku_eile' => 'Mail queue',
+        'rep_metrics' => 'Representative metrics',
         'pagalbos_uzklausos' => 'Support requests',
         'sharepoint_failai' => 'SharePoint files',
     ],

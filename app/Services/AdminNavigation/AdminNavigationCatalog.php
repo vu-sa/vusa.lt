@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape changes, so a deploy never serves the old shape from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v3-';
+    public const string CACHE_PREFIX = 'admin-navigation-v4-';
 
     private const int CACHE_TTL = 1800;
 
@@ -361,6 +361,7 @@ class AdminNavigationCatalog
                 // inventory's shorthand suggested.
                 new Section('sistemos_busena', 'shell.sections.sistemos_busena', 'systemStatus', [], null, Visibility::can('viewAny', Role::class)),
                 new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class)),
+                new Section('rep_metrics', 'shell.sections.rep_metrics', 'repMetrics', [], null, Visibility::can('viewAny', Role::class)),
                 new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class)),
                 new Section('sharepoint_failai', 'shell.sections.sharepoint_failai', 'sharepointFiles.index', [], 'sharepoint_file', Visibility::can('viewAny', SharepointFile::class), matches: ['sharepointFiles.*', 'sharepoint.*']),
             ],

@@ -5,6 +5,14 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.15 — Atstovo ciklas: pirmi žingsniai, prieigos pokyčiai ir atsakomi priminimai (2026-09-20) {#v2-15}
+
+- ⭐ **Pirmi žingsniai Pradžioje** — naujam atstovui Pradžia pasiūlo keturis žingsnius: nuotrauką, sekamas institucijas, pranešimų nustatymus ir pirmą užfiksuotą posėdį. Padarytas žingsnis pasižymi pats, o kai viskas padaryta arba paspaudi „Slėpti“, sąrašas dingsta. Ilgoji supažindinimo ekskursija nebepasileidžia savaime
+- ⭐ **„Tavo prieiga pasikeitė“** — kai pareigybė prasideda ar baigiasi, gauni pranešimą varpelyje ir santraukoje, Pradžioje matai vienos eilutės juostą, o „Mano rolės ir pareigybės“ puslapyje randi datuotą pokyčių istoriją
+- ✨ **Atsakomi priminimai** — laiške „Ar vyko posėdis?“ pasirenki „Taip, fiksuoti“ arba „Ne, nevyko“ ir iškart patenki į reikiamą langą, su jau parinkta institucija
+- ✨ **Tavo koordinatorius visur** — ViSAK apžvalgoje ir posėdžio puslapyje matai institucijos koordinatorių ir gali jam parašyti. Pradžioje po pasisveikinimu pamatysi, kiek posėdžių šiemet užfiksavai
+- ⭐ **Atstovų rodikliai** — Sistemos skiltyje atsirado puslapis su penkiais rodikliais (kaip greitai užfiksuojami posėdžiai, balsavimų informacija, užduočių vykdymas, aktyvūs atstovai, kas fiksuoja) ir jų kitimu per mėnesius
+
 ## v2.14 — Visos darbo sritys prasideda apžvalga (2026-09-20) {#v2-14}
 
 - ⭐ **Organizacijos ir Sistemos apžvalgos** — Organizacijos skiltis atsidaro puslapiu, kuriame matai besibaigiančias kadencijas, pareigybes be narių ir narių skaičių; Sistemos skiltis rodo naujas pagalbos užklausas, laiškų eilę ir sistemos būklę. Skaičiai yra nuorodos į atitinkamus sąrašus

@@ -68,6 +68,28 @@
         <MyDutyTermRow v-for="term in access.ended" :key="term.id" :term />
       </ul>
     </OverviewSection>
+
+    <OverviewSection
+      id="history"
+      :title="$t('access.history.title')"
+      :empty="access.history.length === 0"
+      :empty-text="$t('access.history.empty')"
+    >
+      <ul class="divide-y divide-border border-y border-border" data-testid="access-history">
+        <li
+          v-for="change in access.history"
+          :key="`${change.kind}-${change.dutyName}-${change.date}`"
+          class="flex flex-col gap-1 px-1 py-3 sm:flex-row sm:items-baseline sm:gap-6"
+          data-slot="access-change"
+        >
+          <span class="w-28 shrink-0 text-sm tabular-nums text-muted-foreground">{{ change.date }}</span>
+          <span class="min-w-0 flex-1 text-sm">
+            <span class="font-medium">{{ $t(`access.history.${change.kind}`, { duty: change.dutyName }) }}</span>
+            <span v-if="change.institutionName" class="text-muted-foreground"> · {{ change.institutionName }}</span>
+          </span>
+        </li>
+      </ul>
+    </OverviewSection>
   </OverviewPage>
 </template>
 
@@ -77,6 +99,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
 import { MyDutyTermRow } from '@/Components/Duties';
+import type { HomeAccessChange } from '@/Components/Home/types';
 import type { MyDutyTerm } from '@/Components/Duties/MyDutyTermRow.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { OverviewSection } from '@/Components/Patterns';
@@ -89,6 +112,8 @@ defineProps<{
     current: MyDutyTerm[];
     upcoming: MyDutyTerm[];
     ended: MyDutyTerm[];
+    /** Dated starts and ends of terms, newest first (U14). */
+    history: HomeAccessChange[];
   };
 }>();
 
