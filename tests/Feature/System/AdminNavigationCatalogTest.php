@@ -140,7 +140,7 @@ beforeEach(function (): void {
     $this->catalog = app(AdminNavigationCatalog::class);
 });
 
-describe('per-persona visibility', function () {
+describe('per-persona visibility', function (): void {
     test('a plain member sees only Pradžia and the always-visible reservation entries', function (): void {
         $user = makeUser($this->tenant);
 
@@ -165,10 +165,10 @@ describe('per-persona visibility', function () {
                 ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'collectionActions' => [], 'matches' => ['notifications.*']],
             ],
             'createActions' => [],
-        ]);
-        expect($payload['workspaces'][1]['createActions'])->toEqual([
-            ['key' => 'new_reservation', 'label' => 'shell.actions.new_reservation.title', 'description' => 'shell.actions.new_reservation.description', 'entityType' => 'reservation', 'target' => ['kind' => 'route', 'routeName' => 'reservations.create']],
-        ]);
+        ])
+            ->and($payload['workspaces'][1]['createActions'])->toEqual([
+                ['key' => 'new_reservation', 'label' => 'shell.actions.new_reservation.title', 'description' => 'shell.actions.new_reservation.description', 'entityType' => 'reservation', 'target' => ['kind' => 'route', 'routeName' => 'reservations.create']],
+            ]);
     });
 
     test('a plain Student Representative sees no Sistema or Organizacija workspace', function (): void {
@@ -241,7 +241,7 @@ describe('per-persona visibility', function () {
     });
 });
 
-describe('route-coverage guard', function () {
+describe('route-coverage guard', function (): void {
     test('every admin index or landing route is in the catalog or excluded', function (): void {
         $indexRouteNames = collect(Route::getRoutes()->getRoutes())
             ->filter(fn ($route) => in_array('GET', $route->methods(), true))
@@ -281,7 +281,7 @@ describe('route-coverage guard', function () {
     });
 });
 
-describe('route resolution', function () {
+describe('route resolution', function (): void {
     test('every admin route belongs to a workspace or is deliberately workspace-less', function (): void {
         $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
 
@@ -324,12 +324,12 @@ describe('route resolution', function () {
     ]);
 });
 
-describe('access parity', function () {
+describe('access parity', function (): void {
     /**
      * "Hidden, never disabled" only holds if a catalog gate never disagrees with the route's
      * own authorization — otherwise a section shows up and then 403s the moment it is opened.
      */
-    test('every section a persona sees actually opens for them', function (string $factory) {
+    test('every section a persona sees actually opens for them', function (string $factory): void {
         /** @var User $user */
         $user = match ($factory) {
             'plain' => makeUser($this->tenant),
@@ -347,7 +347,7 @@ describe('access parity', function () {
     })->with(['plain', 'rep', 'resources', 'superAdmin']);
 });
 
-describe('caching', function () {
+describe('caching', function (): void {
     test('the resolved catalog is served from cache on a second call', function (): void {
         $user = makeUser($this->tenant);
 

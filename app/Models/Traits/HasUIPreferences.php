@@ -194,7 +194,6 @@ trait HasUIPreferences
         $this->update(['ui_preferences' => $preferences]);
     }
 
-
     /**
      * Get whether the admin redesign's new shell (.ai/redesign/admin) is opted in.
      */

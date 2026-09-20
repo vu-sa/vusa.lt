@@ -39,7 +39,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string $title
  * @property string $description
  * @property string|null $context_url
- * @property array{viewport?: string, browser?: string}|null $context
+ * @property array<array-key, mixed>|null $context
  * @property string|null $selected_text
  * @property string $locale
  * @property Carbon|null $resolved_at

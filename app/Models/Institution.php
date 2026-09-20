@@ -58,9 +58,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
+ * @property-read Collection<int, InstitutionSecretary> $administratorAssignments
  * @property-read Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
- * @property-read Collection<int, User> $secretaries
+ * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
@@ -82,6 +82,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Problem> $problems
  * @property-read mixed $related_institutions
  * @property-read Collection<int, Comment> $rootComments
+ * @property-read Collection<int, User> $secretaries
+ * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
@@ -254,13 +256,13 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
      *
      * @return BelongsToMany<User, $this, InstitutionSecretary, 'pivot'>
      */
-     public function secretaries(): BelongsToMany
-     {
-         return $this->belongsToMany(User::class, 'institution_secretaries')
-             ->using(InstitutionSecretary::class)
-             ->withPivot('cadence_id')
-             ->withTimestamps();
-     }
+    public function secretaries(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'institution_secretaries')
+            ->using(InstitutionSecretary::class)
+            ->withPivot('cadence_id')
+            ->withTimestamps();
+    }
 
     /**
      * The nomination rows themselves, for the roster editor.

@@ -161,4 +161,3 @@ test('synchronizer unsearches an institution from public index when it is inacti
     expect(fn () => $client->collections[(new PublicInstitution)->searchableAs()]->documents[(string) $institution->id]->retrieve())
         ->toThrow(ObjectNotFound::class);
 });
-

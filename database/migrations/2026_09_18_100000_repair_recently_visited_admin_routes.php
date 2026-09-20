@@ -43,7 +43,7 @@ return new class extends Migration
                                     $entry['route'] = $matched->getName();
                                     $modified = true;
                                 }
-                            } catch (\Throwable) {
+                            } catch (Throwable) {
                                 // Keep original if route cannot be matched
                             }
                         }

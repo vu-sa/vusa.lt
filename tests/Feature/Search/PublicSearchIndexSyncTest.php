@@ -106,4 +106,3 @@ test('search:sync-public updates public institution when an assignment starts or
     expect($updatedDoc['current_user_names'])->not->toContain('Expiring Member')
         ->and($updatedDoc['contacts'])->toBeEmpty();
 });
-

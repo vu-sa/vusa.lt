@@ -114,6 +114,7 @@ declare global {
       activities_as_subject_count: number
       // exists
       user_exists: boolean
+      reverted_by_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -353,6 +354,18 @@ declare global {
       content_exists: boolean
       text_box_submissions_exists: boolean
       activities_as_subject_exists: boolean
+    }
+
+    export interface DailyDeviceMetric {
+      // columns
+      id: number
+      date: string
+      phone_logins: number
+      tablet_logins: number
+      desktop_logins: number
+      pwa_launches: number
+      created_at?: string | null
+      updated_at?: string | null
     }
 
     export interface Document {
@@ -695,10 +708,10 @@ declare global {
       tasks_from_meetings?: Task
       users?: User
       followers?: User[]
-      administrators?: User[]
-      administrator_assignments?: InstitutionSecretary[]
       secretaries?: User[]
       secretary_assignments?: InstitutionSecretary[]
+      administrators?: User[]
+      administrator_assignments?: InstitutionSecretary[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -716,10 +729,10 @@ declare global {
       meetings_count: number
       problems_count: number
       followers_count: number
-      administrators_count: number
-      administrator_assignments_count: number
       secretaries_count: number
       secretary_assignments_count: number
+      administrators_count: number
+      administrator_assignments_count: number
       comments_count: number
       root_comments_count: number
       outgoing_relationships_count: number
@@ -739,10 +752,10 @@ declare global {
       meetings_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
-      administrators_exists: boolean
-      administrator_assignments_exists: boolean
       secretaries_exists: boolean
       secretary_assignments_exists: boolean
+      administrators_exists: boolean
+      administrator_assignments_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       outgoing_relationships_exists: boolean
@@ -752,30 +765,6 @@ declare global {
       tasks_exists: boolean
       activities_as_subject_exists: boolean
     }
-
-    export interface InstitutionSecretary {
-      // columns
-      id: string
-      institution_id: string
-      cadence_id: string
-      user_id: string
-      created_at?: string | null
-      updated_at?: string | null
-      // relations
-      institution?: Institution
-      cadence?: Cadence
-      user?: User
-      // counts
-      // exists
-      institution_exists: boolean
-      cadence_exists: boolean
-      user_exists: boolean
-    }
-
-    /**
-     * @deprecated Renamed to InstitutionSecretary in PR 0.5 (O22). Use InstitutionSecretary instead.
-     */
-    export type InstitutionAdministrator = InstitutionSecretary;
 
     export interface InstitutionCheckIn {
       // columns
@@ -830,6 +819,25 @@ declare global {
       // exists
       user_exists: boolean
       institution_exists: boolean
+    }
+
+    export interface InstitutionSecretary {
+      // columns
+      id: string
+      institution_id: string
+      cadence_id: string
+      user_id: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      institution?: Institution
+      cadence?: Cadence
+      user?: User
+      // counts
+      // exists
+      institution_exists: boolean
+      cadence_exists: boolean
+      user_exists: boolean
     }
 
     export interface LecturerReview {
@@ -1027,7 +1035,6 @@ declare global {
       other_language_page?: Page
       parent?: Page
       children?: Page[]
-      ancestors?: Array<{ id: number; title: string; permalink: string; url?: string }>
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
@@ -1176,10 +1183,10 @@ declare global {
       tasks_from_meetings?: Task
       users?: User
       followers?: User[]
-      administrators?: User[]
-      administrator_assignments?: InstitutionSecretary[]
       secretaries?: User[]
       secretary_assignments?: InstitutionSecretary[]
+      administrators?: User[]
+      administrator_assignments?: InstitutionSecretary[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -1197,10 +1204,10 @@ declare global {
       check_ins_count: number
       problems_count: number
       followers_count: number
-      administrators_count: number
-      administrator_assignments_count: number
       secretaries_count: number
       secretary_assignments_count: number
+      administrators_count: number
+      administrator_assignments_count: number
       comments_count: number
       root_comments_count: number
       outgoing_relationships_count: number
@@ -1220,10 +1227,10 @@ declare global {
       check_ins_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
-      administrators_exists: boolean
-      administrator_assignments_exists: boolean
       secretaries_exists: boolean
       secretary_assignments_exists: boolean
+      administrators_exists: boolean
+      administrator_assignments_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       outgoing_relationships_exists: boolean
@@ -1795,6 +1802,7 @@ declare global {
       title: string
       description: string
       context_url?: string | null
+      context?: Array<unknown> | null
       selected_text?: string | null
       locale: string
       resolved_at?: string | null
@@ -2154,6 +2162,7 @@ declare global {
       tenants?: Tenant
       tasks?: Task[]
       institutions?: Institution
+      secretaried_institutions?: Institution[]
       administered_institutions?: Institution[]
       followed_institutions?: Institution[]
       muted_institutions?: Institution[]
@@ -2170,6 +2179,7 @@ declare global {
       current_duties_count: number
       dutiables_count: number
       tasks_count: number
+      secretaried_institutions_count: number
       administered_institutions_count: number
       followed_institutions_count: number
       muted_institutions_count: number
@@ -2186,6 +2196,7 @@ declare global {
       current_duties_exists: boolean
       dutiables_exists: boolean
       tasks_exists: boolean
+      secretaried_institutions_exists: boolean
       administered_institutions_exists: boolean
       followed_institutions_exists: boolean
       muted_institutions_exists: boolean
@@ -2319,3 +2330,4 @@ declare global {
 
   }
 }
+

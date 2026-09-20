@@ -8,8 +8,8 @@ use App\Models\InstitutionCheckIn;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Support\MorphMap;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Merges one user account into another, repointing every relationship from the

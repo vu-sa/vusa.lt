@@ -6,7 +6,6 @@ use App\Actions\GetInstitutionMembers;
 use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Admin\InstitutionSecretaryController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;

@@ -12,6 +12,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -73,7 +74,7 @@ test('page route is registered as fallback and does not match admin routes', fun
     expect($route)->not->toBeNull()
         ->and($route->isFallback)->toBeTrue();
 
-    $match = app('router')->getRoutes()->match(Illuminate\Http\Request::create('https://www.vusa.test/mano/users'));
+    $match = app('router')->getRoutes()->match(Request::create('https://www.vusa.test/mano/users'));
     expect($match->getName())->toBe('users.index');
 });
 

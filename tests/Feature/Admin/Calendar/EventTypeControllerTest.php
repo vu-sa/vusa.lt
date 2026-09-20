@@ -204,4 +204,3 @@ describe('authorized access', function (): void {
         $this->assertDatabaseMissing('event_types', ['id' => $this->eventType->id]);
     });
 });
-

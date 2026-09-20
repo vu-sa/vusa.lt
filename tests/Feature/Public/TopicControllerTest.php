@@ -5,6 +5,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tag;
 use App\Models\Tenant;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -89,14 +90,13 @@ test('a topic page shares the other language URL with the tag alias', function (
         ->assertOk()
         ->assertInertia(fn (Assert $inertia) => $inertia
             ->component('Public/TopicPage')
-            ->where('otherLangURL', \App\Support\LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'en'))
+            ->where('otherLangURL', LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'en'))
         );
 
-    $this->get(\App\Support\LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'en'))
+    $this->get(LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'en'))
         ->assertOk()
         ->assertInertia(fn (Assert $inertia) => $inertia
             ->component('Public/TopicPage')
-            ->where('otherLangURL', \App\Support\LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'lt'))
+            ->where('otherLangURL', LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'lt'))
         );
 });
-

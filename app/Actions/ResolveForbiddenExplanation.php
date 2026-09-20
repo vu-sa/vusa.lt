@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 class ResolveForbiddenExplanation
 {
     /** Policy ability → the CRUD action of the permission that gates it. */
-    private const ACTION_BY_ABILITY = [
+    private const array ACTION_BY_ABILITY = [
         'viewAny' => 'read',
         'view' => 'read',
         'create' => 'create',

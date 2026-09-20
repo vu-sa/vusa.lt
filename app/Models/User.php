@@ -64,7 +64,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
  * @property-read Collection<int, Institution> $administeredInstitutions
- * @property-read Collection<int, Institution> $secretariedInstitutions
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -80,6 +79,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, PushSubscription> $pushSubscriptions
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Institution> $secretariedInstitutions
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants

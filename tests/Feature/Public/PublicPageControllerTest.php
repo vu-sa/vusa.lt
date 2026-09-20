@@ -471,4 +471,3 @@ test('contentPage includes hierarchical ancestors in page prop', function (): vo
         ->where('page.ancestors.0.permalink', 'tevinis-puslapis')
     );
 });
-
