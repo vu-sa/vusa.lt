@@ -50,7 +50,7 @@ One PR = one row. Rules:
 | **5.3** | **P3** Meeting record + agenda editor + extract `RecordPage` (Veikla, ‹ 3/24 ›, edit-mode canvas) | 5.2 | ✅ |
 | **5.4** | **P4** ActionWindow restyle (guided flow, bottom sheet, date presets) | 5.1 | ✅ |
 | — | *Feel review with reps — no PR; findings land as plan edits* | 5.4 |
-| **5.5** | **P5** Duty record + form + Priskirti sheet (O21) + extract `FormPage` and `SheetForm` | 5.3 |
+| **5.5** | **P5** Duty record + form + Priskirti sheet (O21) + extract `FormPage` and `SheetForm` | 5.3 | ✅ |
 | **5.6** | **P6** Rezervacijos: table view, preview pane, bulk bar, optimistic approve (U4–U6) | 5.2 | ✅ |
 | **5.7** | **P7** Žymos: sheet form, trash filter + undo (O11), merge action | 5.5 | ✅ |
 | **5.8** | **P8** ViSAK overview + extract `OverviewPage` (numbers-as-links, one chart) | 5.1 | ✅ |
@@ -547,14 +547,14 @@ once; a page type is extracted into a shared layout only after a pilot page prov
 | P8 | **ViSAK overview** | Overview | section tabs, numbers-as-links, one chart with a text summary, categorical colours |
 | P9 | **Paskyra → Mano rolės ir pareigybės** | Account | O14, the target of every 403 explanation, access-change history (U14) |
 
-- [ ] **Wave A — the feel** (a rep's day on a phone): P1 → P2 → P3 → P4
-- [ ] Each pilot page adds its paths to `MIGRATED_ADMIN_PATHS` when it lands
+- [x] **Wave A — the feel** (a rep's day on a phone): P1 → P2 → P3 → P4
+- [x] Each pilot page adds its paths to `MIGRATED_ADMIN_PATHS` when it lands
 - [ ] **Feel review** — live sessions with 3–5 reps on their own phones ("užfiksuok vakarykštį
       posėdį") and one coordinator; update *The feel* and *Rules*
-- [ ] **Wave B — the admin concepts:** P5 → P6 → P7 → P8 → P9
-- [ ] **Concept review;** extract the proven layouts: Overview, Collection, Record, Form, Sheet form,
+- [x] **Wave B — the admin concepts:** P5 → P6 → P7 → P8 → P9
+- [x] **Concept review;** extract the proven layouts: Overview, Collection, Record, Form, Sheet form,
       Workbench shell; `/mano/search` reduced to cross-entity results (O1)
-- [ ] Update the [Migration playbook](playbook.md#migration-playbook) with what the pilot taught
+- [x] Update the [Migration playbook](playbook.md#migration-playbook) with what the pilot taught
 
 ### PR 5.1 + 5.2 notes (2026-09-19)
 
@@ -835,6 +835,22 @@ expects every route in a filtered area to start with `reservations`, which `api.
 - Per-duty section resolution and the dated *access-change history* (PR 7.7).
 - The `docs/` user pages: there is no ViSAK or roles page to update; only the changelog.
 - Orphaned copy keys (`tutorials.php`, `visak.php`) and the dead `FacetCheckboxList`, `FacetYearPills`, `useRecentSearchHits` were left alone.
+
+### Phase 5 review & robustness polish (2026-09-20)
+
+Follow-up review of all Phase 5 pilot surfaces (P1–P10) to verify robustness, completeness, and adherence to redesign rules.
+
+- **Backend test & route resolution fixes:**
+  - `AdminEntityTranslationsTest`: Declared `const entityName = 'reservation';` in `IndexReservation.vue` and `const entityName = 'tag';` in `IndexTag.vue`, restoring full 22/22 index coverage and translation tests.
+  - `DocsCoverageCommandTest`: Updated route filter in `tests/Feature/Docs/DocsCoverageCommandTest.php` to accept `api.v1.admin.*` routes mapped to feature areas (e.g. `api.v1.admin.reservations.*`).
+- **Visual budget & token discipline:**
+  - `RecordPage.vue`: Replaced `.u-display` on `<h1>` with regular-case `min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl lg:text-4xl`, preventing uppercase heading bleed and adhering to the visual budget (uppercase reserved only for eyebrows, workspace tabs, and primary buttons).
+  - `ShowMeeting.vue`: Replaced raw `text-zinc-500` with semantic token `text-muted-foreground`.
+  - `eslint.config.mjs`: Upgraded custom `no-legacy-utility` lint rule to inspect Vue template static attributes (`VAttribute`) via parser services template body visitor, ensuring template class strings obey token rules.
+- **Collection lifecycle & trash workflows:**
+  - `useCollectionSource.ts`: Added reactive watcher on `options.initial.items` in `useDatabaseCollectionSource` so that Inertia page navigations and partial prop reloads update local state and pagination.
+  - `IndexReservation.vue` and `IndexTag.vue`: Completed soft-deletion workflows (`showDeleted` prop, back buttons "‹ Visos...", trash preview actions with `ConfirmDialog` for force deletion, single/batch restoration), and added row selection checkboxes in `#row` for mobile viewports (< md).
+  - `ShowAdminHome.vue`: Broadened `hasAtstovavimas` check (`props.upcomingMeetings?.length || auth?.can?.create?.meeting || auth?.can?.index?.meeting`) so reps with upcoming meetings never have their meetings panel hidden.
 
 ## Phase 6 — Messages (email, push, in-app)
 

@@ -12,13 +12,18 @@
     :search-placeholder="$t('Ieškoti rezervacijų')"
   >
     <template #actions>
-      <Button v-if="deletedCount > 0" as-child variant="ghost">
+      <Button v-if="isDeleted" as-child variant="ghost">
+        <Link :href="route('reservations.index')">
+          ‹ {{ $t('Visos rezervacijos') }}
+        </Link>
+      </Button>
+      <Button v-else-if="deletedCount > 0" as-child variant="ghost">
         <Link :href="route('reservations.index', { showDeleted: 'true' })">
           <Trash2 aria-hidden="true" />
           {{ $t('Ištrinti') }} ({{ deletedCount }})
         </Link>
       </Button>
-      <Button v-if="canCreate" as-child variant="brand">
+      <Button v-if="canCreate && !isDeleted" as-child variant="brand">
         <Link :href="route('reservations.create')">
           <Plus aria-hidden="true" />
           {{ $t('Nauja rezervacija') }}
@@ -28,6 +33,12 @@
 
     <template #row="{ item }">
       <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
+        <Checkbox
+          v-if="!isDeleted"
+          :model-value="selectedIds.includes(reservationKey(item))"
+          :aria-label="$t('Pasirinkti :name', { name: item.name })"
+          @update:model-value="toggleReservation(item)"
+        />
         <StatusBadge v-if="primaryStatus(item)" :status="primaryStatus(item)!" class="shrink-0" />
         <div class="min-w-0 flex-1">
           <Link :href="route('reservations.show', item.id)" data-collection-open class="font-medium hover:text-brand">
@@ -83,7 +94,19 @@
             <dd class="mt-1">{{ resourceNames(item) }}</dd>
           </div>
         </dl>
-        <Button v-if="approvableResourceIds(item).length" variant="brand" :disabled="approving" @click="approve(item)">
+        <template v-if="isDeleted">
+          <div class="flex flex-col gap-2 pt-2">
+            <Button variant="outline" @click="restoreReservation(item)">
+              <RotateCcw aria-hidden="true" class="mr-2 size-4" />
+              {{ $t('Atkurti') }}
+            </Button>
+            <Button variant="ghost" class="text-destructive hover:text-destructive" @click="targetReservationToForceDelete = item">
+              <Trash2 aria-hidden="true" class="mr-2 size-4" />
+              {{ $t('Ištrinti visam laikui') }}
+            </Button>
+          </div>
+        </template>
+        <Button v-else-if="approvableResourceIds(item).length" variant="brand" :disabled="approving" @click="approve(item)">
           <Check aria-hidden="true" />
           {{ $t('Patvirtinti') }}
         </Button>
@@ -94,16 +117,16 @@
       <EmptyState
         mode="empty"
         :icon="ReservationIcon"
-        :title="$t('Rezervacijų dar nėra')"
-        :description="$t('Čia matysi patalpų ir įrangos prašymus bei jų eigą.')"
-        :action-label="canCreate ? $t('Nauja rezervacija') : undefined"
+        :title="isDeleted ? $t('Ištrintų rezervacijų nėra') : $t('Rezervacijų dar nėra')"
+        :description="isDeleted ? $t('Šiukšliadėžėje nėra pašalintų rezervacijų.') : $t('Čia matysi patalpų ir įrangos prašymus bei jų eigą.')"
+        :action-label="canCreate && !isDeleted ? $t('Nauja rezervacija') : undefined"
         @action="router.visit(route('reservations.create'))"
       />
     </template>
   </CollectionPage>
 
   <CollectionSelectionBar
-    v-if="selectedResourceIds.length"
+    v-if="selectedResourceIds.length && !isDeleted"
     :count="selectedResourceIds.length"
     :count-label="$t('Pasirinkta')"
     @clear="selectedIds = []"
@@ -113,25 +136,37 @@
       {{ $t('Patvirtinti') }}
     </Button>
   </CollectionSelectionBar>
+
+  <ConfirmDialog
+    :open="targetReservationToForceDelete !== null"
+    :title="$t('Ištrinti rezervaciją visam laikui?')"
+    :description="$t('Šis veiksmas negrįžtamas. Rezervacija bus visiškai pašalinta.')"
+    :confirm-label="$t('Ištrinti visam laikui')"
+    destructive
+    @update:open="!$event && (targetReservationToForceDelete = null)"
+    @confirm="forceDeleteReservation"
+  />
 </template>
 
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, Plus, Trash2 } from 'lucide-vue-next';
+import { Check, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { ReservationIcon } from '@/Components/icons';
 import { reservationResourceStatuses, type ReservationResourceStatus, type StatusPresentation } from '@/Constants/statuses';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { formatDate } from '@/Utils/dateTime';
+
+const entityName = 'reservation';
 
 type ReservationResource = App.Entities.Resource & {
   pivot?: App.Entities.ReservationResource & { approvable?: boolean };
@@ -141,11 +176,14 @@ type Reservation = App.Entities.Reservation & { resources?: ReservationResource[
 const props = defineProps<{
   reservations: { data: Reservation[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
   deletedCount: number;
+  showDeleted?: boolean;
 }>();
 
+const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.reservation));
 const selectedIds = ref<string[]>([]);
 const approving = ref(false);
+const targetReservationToForceDelete = ref<Reservation | null>(null);
 
 const source = useDatabaseCollectionSource<Reservation>({
   endpoint: route('api.v1.admin.reservations.index'),
@@ -162,10 +200,11 @@ const source = useDatabaseCollectionSource<Reservation>({
     { value: 'start_time:asc', label: $t('Anksčiausios pirmiausia') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
   ],
+  preserveUrlKeys: ['showDeleted'],
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'select', label: $t('Pasirinkti'), class: 'w-12' },
+  ...(!isDeleted.value ? [{ key: 'select', label: $t('Pasirinkti'), class: 'w-12' }] : []),
   { key: 'name', label: $t('Rezervacija') },
   { key: 'resources', label: $t('Ištekliai') },
   { key: 'period', label: $t('Laikas'), class: 'w-48' },
@@ -240,6 +279,36 @@ function approveIds(ids: string[]): void {
       toast.error($t('Nepavyko patvirtinti rezervacijos.'));
     },
     onFinish: () => { approving.value = false; },
+  });
+}
+
+function restoreReservation(reservation: Reservation): void {
+  router.patch(route('reservations.restore', reservation.id), {}, {
+    preserveScroll: true,
+    onSuccess: () => {
+      source.refresh();
+      toast.success($t('Rezervacija atkurta.'));
+    },
+    onError: () => {
+      toast.error($t('Nepavyko atkurti rezervacijos.'));
+    },
+  });
+}
+
+function forceDeleteReservation(): void {
+  if (!targetReservationToForceDelete.value) return;
+  const { id } = targetReservationToForceDelete.value;
+  targetReservationToForceDelete.value = null;
+
+  router.delete(route('reservations.forceDelete', id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      source.refresh();
+      toast.success($t('Rezervacija ištrinta visam laikui.'));
+    },
+    onError: () => {
+      toast.error($t('Nepavyko ištrinti rezervacijos.'));
+    },
   });
 }
 </script>

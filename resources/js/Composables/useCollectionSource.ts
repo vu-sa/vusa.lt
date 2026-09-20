@@ -238,6 +238,15 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
   const lastPage = ref(options.initial.lastPage);
   const sortBy = ref(initialParams.get('sort') ?? options.defaultSort);
 
+  watch(() => options.initial.items, (newItems) => {
+    if (newItems) {
+      items.value = [...newItems];
+      total.value = options.initial.total;
+      currentPage.value = options.initial.currentPage;
+      lastPage.value = options.initial.lastPage;
+    }
+  });
+
   const facets = computed<CollectionFacet[]>(() => []);
   const chips = computed<CollectionChip[]>(() => []);
   const activeFilterCount = computed(() => 0);

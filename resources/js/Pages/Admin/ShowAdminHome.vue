@@ -94,8 +94,12 @@ const props = defineProps<{
 
 const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'coordinator'];
 
-// Check if user has atstovavimas permissions (can create meetings)
-const hasAtstovavimas = computed(() => usePage().props.auth?.can?.create?.meeting);
+// Check if user has atstovavimas permissions (meetings exist or can create/index meetings)
+const hasAtstovavimas = computed(() => Boolean(
+  props.upcomingMeetings?.length
+  || usePage().props.auth?.can?.create?.meeting
+  || usePage().props.auth?.can?.index?.meeting,
+));
 
 const actionWindow = useActionWindow();
 

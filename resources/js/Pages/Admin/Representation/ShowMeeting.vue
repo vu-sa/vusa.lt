@@ -166,7 +166,7 @@
             <Link2 class="h-4 w-4" />
             {{ $t('Pridėti instituciją') }}
           </DialogTitle>
-          <DialogDescription class="text-sm text-zinc-500 mt-2">
+          <DialogDescription class="text-sm text-muted-foreground mt-2">
             Retais atvejais, atstovavimo organai gali turėti bendrų posėdžių. Jei šis posėdis yra bendras su kitomis institucijomis, pasirinkite jas.
             Galite pasirinkti tik iš susijusių institucijų.
           </DialogDescription>
@@ -186,7 +186,7 @@
               </SelectItem>
             </SelectContent>
           </Select>
-          <p v-if="availableInstitutionsToAdd.length === 0" class="text-sm text-zinc-500">
+          <p v-if="availableInstitutionsToAdd.length === 0" class="text-sm text-muted-foreground">
             {{ $t('Nėra galimų institucijų pridėti.') }}
           </p>
           <div class="flex justify-end gap-2">

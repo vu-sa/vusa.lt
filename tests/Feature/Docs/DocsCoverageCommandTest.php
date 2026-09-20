@@ -68,7 +68,7 @@ describe('docs:coverage report', function (): void {
         preg_match_all('/^\s+([a-zA-Z][\w.-]+)\s+(?:tested|untested)$/m', $output, $matches);
 
         expect($matches[1])->not->toBeEmpty()
-            ->and(collect($matches[1])->every(fn ($r) => str_starts_with($r, 'reservations')))->toBeTrue();
+            ->and(collect($matches[1])->every(fn ($r) => str_starts_with($r, 'reservations') || str_starts_with($r, 'api.v1.admin.reservations')))->toBeTrue();
     });
 
     test('credits an area to the page that declares it', function (): void {

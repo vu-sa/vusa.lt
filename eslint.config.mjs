@@ -94,7 +94,7 @@ const adminRedesignPlugin = {
           }
         }
 
-        return {
+        const scriptVisitor = {
           Literal(node) {
             if (typeof node.value === 'string') {
               inspect(node.value, node);
@@ -106,6 +106,18 @@ const adminRedesignPlugin = {
             }
           },
         };
+
+        const templateVisitor = {
+          VAttribute(node) {
+            if (node.key && (node.key.name === 'class' || node.key.rawName === 'class') && node.value) {
+              inspect(node.value.value ?? '', node);
+            }
+          },
+        };
+
+        return context.sourceCode?.parserServices?.defineTemplateBodyVisitor
+          ? context.sourceCode.parserServices.defineTemplateBodyVisitor(templateVisitor, scriptVisitor)
+          : scriptVisitor;
       },
     },
   },

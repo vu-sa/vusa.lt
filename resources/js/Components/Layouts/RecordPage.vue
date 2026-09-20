@@ -15,7 +15,7 @@
             <div class="min-w-0 space-y-2">
               <EntityTypeMark :type="entityType" size="md" />
               <div class="flex flex-wrap items-center gap-3">
-                <h1 class="u-display min-w-0 text-3xl leading-tight text-foreground lg:text-4xl">
+                <h1 class="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
                   {{ title }}
                 </h1>
                 <StatusBadge v-if="status" :status />
