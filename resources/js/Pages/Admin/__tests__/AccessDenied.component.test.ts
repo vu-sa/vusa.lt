@@ -34,6 +34,13 @@ describe('AccessDenied', () => {
     expect(wrapper.text()).toContain('Form field does not belong to this form.');
   });
 
+  it('points the primary action at the roles page, where the missing permission can be understood', () => {
+    const wrapper = createWrapper();
+
+    expect(wrapper.find('a[href$="/mocked-route/profile.roles"]').exists()).toBe(true);
+    expect(wrapper.find('a[href$="/mocked-route/profile"]').exists()).toBe(false);
+  });
+
   it('links to the help pages in the current language', () => {
     const wrapper = createWrapper();
 

@@ -60,7 +60,7 @@
 
     <div class="flex flex-wrap items-center gap-3">
       <Button as-child>
-        <Link :href="route('profile')">
+        <Link :href="route('profile.roles')">
           {{ $t('forbidden.roles_action') }}
         </Link>
       </Button>

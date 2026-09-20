@@ -7,6 +7,8 @@
 
 import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
+import { meetingCompletionStatuses } from '@/Constants/statuses';
+
 /**
  * Meeting collection facet configuration
  */
@@ -601,11 +603,12 @@ export function getCollectionSortOptions(collection: string): SortOption[] {
  * Human-readable labels for facet values
  */
 export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
+  // One name per state everywhere (U10): the meeting map in Constants/statuses.ts is the source.
   completion_status: {
-    complete: 'Užbaigtas',
-    incomplete: 'Neužbaigtas',
-    partial: 'Dalinai užbaigtas',
-    no_items: 'Be punktų',
+    complete: meetingCompletionStatuses.complete.label,
+    incomplete: meetingCompletionStatuses.incomplete.label,
+    no_items: meetingCompletionStatuses.no_items.label,
+    partial: 'Iš dalies užpildyta',
   },
   // Meeting values: all_match, mixed, all_mismatch, neutral.
   // Agenda item values: match, mismatch, mixed, incomplete, neutral.

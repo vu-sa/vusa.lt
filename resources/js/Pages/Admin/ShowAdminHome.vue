@@ -1,12 +1,14 @@
 <template>
-  <div class="flex flex-col gap-8">
-    <Head :title="$t('Mano VU SA')" />
+  <OverviewPage :title="$t('Mano VU SA')">
+    <template #heading>
+      <h1 class="text-2xl font-semibold tracking-tight" data-tour="greeting-section">
+        {{ greeting }}, {{ userNameAddress }}!
+      </h1>
+    </template>
 
-    <h1 class="text-2xl font-semibold tracking-tight" data-tour="greeting-section">
-      {{ greeting }}, {{ userNameAddress }}!
-    </h1>
-
-    <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
+    <template #attention>
+      <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
+    </template>
 
     <CreateShortcuts />
 
@@ -38,11 +40,11 @@
         :news="newsItems"
       />
     </Deferred>
-  </div>
+  </OverviewPage>
 </template>
 
 <script setup lang="ts">
-import { Deferred, Head, usePage } from '@inertiajs/vue3';
+import { Deferred, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted } from 'vue';
 import type { DriveStep } from 'driver.js';
@@ -62,6 +64,7 @@ import type {
   HomeTask,
   InstitutionActivityInsight,
 } from '@/Components/Home/types';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { CollectionSkeleton } from '@/Components/Patterns';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';

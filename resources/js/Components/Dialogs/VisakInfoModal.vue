@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+/** @deprecated The ViSAK overview states what ViSAK is in its lead line (PR 5.8); slated for removal in Phase 10. */
 import { trans as $t } from 'laravel-vue-i18n';
 import { PlayCircle } from 'lucide-vue-next';
 

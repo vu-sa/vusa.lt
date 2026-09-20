@@ -160,6 +160,7 @@ class AtstovavimasDashboardController extends AdminController
                 return $relatedInstitutions->values();
             })->once(),
             'availableTenants' => $availableTenants,
+            'openTasksCount' => $user->tasks()->whereNull('completed_at')->count(),
             // Note: recentMeetings is fetched via API endpoint: api.v1.admin.meetings.recent
         ]);
     }

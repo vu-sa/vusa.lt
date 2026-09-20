@@ -74,6 +74,7 @@ export interface InstitutionCheckIn {
 
 export interface AtstovavimasMeeting {
   id: string;
+  title?: string;
   start_time: string;
   institution_id?: string;
   completion_status?: 'complete' | 'incomplete' | 'no_items';

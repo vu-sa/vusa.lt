@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexSearchRequest;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Support\AdminSearchDestinations;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -14,67 +15,66 @@ class SearchController extends AdminController
     public function __construct(public Authorizer $authorizer) {}
 
     /**
-     * Display the unified admin search page.
-     * Authorization is handled via scoped Typesense API keys at the search layer.
+     * The cross-entity search page. Authorization is handled via scoped Typesense API keys at the
+     * search layer. A `?tab=` for an entity with its own page is sent there; only the tabs without
+     * one (agenda items, resources) still render here.
      */
-    public function index(): InertiaResponse
+    public function index(IndexSearchRequest $request): InertiaResponse|RedirectResponse
     {
-        $user = auth()->user();
+        $tab = $request->validated('tab');
+        $target = $tab !== null ? AdminSearchDestinations::pageUrl($tab, $request->validated('q')) : null;
+
+        if ($target !== null) {
+            return redirect($target);
+        }
 
         return Inertia::render('Admin/Search/SearchIndex', [
-            'can' => [
-                'create' => [
-                    'meetings' => $this->authorizer->allows($user, 'meetings.create.padalinys'),
-                    'institutions' => $this->authorizer->allows($user, 'institutions.create.padalinys'),
-                    'resources' => $this->authorizer->allows($user, 'resources.create.padalinys'),
-                    'duties' => $this->authorizer->allows($user, 'duties.create.padalinys'),
-                    'documents' => $this->authorizer->allows($user, 'documents.create.padalinys'),
-                    'news' => $this->authorizer->allows($user, 'news.create.padalinys'),
-                    'pages' => $this->authorizer->allows($user, 'pages.create.padalinys'),
-                    'calendar' => $this->authorizer->allows($user, 'calendars.create.padalinys'),
-                    'users' => $this->authorizer->allows($user, 'users.create.padalinys'),
-                ],
-            ],
+            'destinations' => AdminSearchDestinations::forUser($request->user()),
         ]);
     }
 
     /**
-     * Redirect the legacy meetings search page to the unified search page.
+     * Legacy entry point: kept so old links and bookmarks keep working.
      */
-    public function meetings(Request $request): RedirectResponse
+    public function meetings(IndexSearchRequest $request): RedirectResponse
     {
-        return $this->redirectToUnifiedSearch($request, 'meetings');
+        return $this->redirectToTab($request, 'meetings');
     }
 
     /**
-     * Redirect the legacy agenda items search page to the unified search page.
+     * Legacy entry point: kept so old links and bookmarks keep working.
      */
-    public function agendaItems(Request $request): RedirectResponse
+    public function agendaItems(IndexSearchRequest $request): RedirectResponse
     {
-        return $this->redirectToUnifiedSearch($request, 'agenda-items');
+        return $this->redirectToTab($request, 'agenda-items');
     }
 
     /**
-     * Redirect the legacy institutions search page to the unified search page.
+     * Legacy entry point: kept so old links and bookmarks keep working.
      */
-    public function institutions(Request $request): RedirectResponse
+    public function institutions(IndexSearchRequest $request): RedirectResponse
     {
-        return $this->redirectToUnifiedSearch($request, 'institutions');
+        return $this->redirectToTab($request, 'institutions');
     }
 
     /**
-     * Redirect the legacy resources search page to the unified search page.
+     * Legacy entry point: kept so old links and bookmarks keep working.
      */
-    public function resources(Request $request): RedirectResponse
+    public function resources(IndexSearchRequest $request): RedirectResponse
     {
-        return $this->redirectToUnifiedSearch($request, 'resources');
+        return $this->redirectToTab($request, 'resources');
     }
 
     /**
-     * Redirect to the unified search page with the given tab, preserving query parameters.
+     * Straight to the page that now serves the tab, without a second hop through `search.index`.
      */
-    private function redirectToUnifiedSearch(Request $request, string $tab): RedirectResponse
+    private function redirectToTab(IndexSearchRequest $request, string $tab): RedirectResponse
     {
-        return redirect()->route('search.index', array_merge($request->query(), ['tab' => $tab]));
+        $query = $request->validated('q');
+
+        return redirect(
+            AdminSearchDestinations::pageUrl($tab, $query)
+                ?? route('search.index', array_filter(['q' => $query, 'tab' => $tab])),
+        );
     }
 }

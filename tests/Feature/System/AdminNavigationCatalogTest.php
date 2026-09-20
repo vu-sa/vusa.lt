@@ -40,6 +40,7 @@ const SECTION_LANDING_ROUTES = [
 const EXCLUDED_FROM_CATALOG = [
     'administration' => 'the workspace picker panel doubles as Visi skyriai (O25); PR 7.5 re-homes this page itself',
     'profile' => 'reached from the account menu, not a workspace section (PR 4.4)',
+    'profile.roles' => 'Mano rolės ir pareigybės, reached from the account menu and every 403 page (PR 5.9)',
     'mySupportRequests.index' => 'Pagalba entry point, not a workspace section (PR 4.4)',
     'push-subscription.index' => 'device push-subscription settings, no navigational destination',
     'settings.cadences.index' => 'reached from within Nustatymai, not a top-level section',
@@ -50,7 +51,7 @@ const EXCLUDED_FROM_CATALOG = [
  * menu or Pagalba, or are legacy redirects that never render (`SearchController`'s own docblocks).
  */
 const WORKSPACELESS_ROUTES = [
-    'administration', 'profile', 'approvals.history', 'mySupportRequests.index', 'mySupportRequests.create',
+    'administration', 'profile', 'profile.roles', 'approvals.history', 'mySupportRequests.index', 'mySupportRequests.create',
     'push-subscription.index', 'search.index', 'search.agendaItems', 'search.institutions',
     'search.meetings', 'search.resources',
 ];

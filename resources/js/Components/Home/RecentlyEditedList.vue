@@ -1,5 +1,5 @@
 <template>
-  <HomeSection :title="$t('Neseniai redaguota')" :empty="records.length === 0">
+  <OverviewSection :title="$t('Neseniai redaguota')" :empty="records.length === 0">
     <ul class="divide-y divide-border border-y border-border" data-slot="recently-edited">
       <li v-for="record in records" :key="`${record.type}:${record.id}`">
         <Link
@@ -13,16 +13,16 @@
         </Link>
       </li>
     </ul>
-  </HomeSection>
+  </OverviewSection>
 </template>
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import HomeSection from './HomeSection.vue';
 import type { HomeRecentRecord } from './types';
 
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { formatNearDate } from '@/Utils/dateTime';
 

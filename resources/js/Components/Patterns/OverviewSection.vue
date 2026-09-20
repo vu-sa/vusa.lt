@@ -1,5 +1,5 @@
 <template>
-  <section class="flex flex-col gap-3" data-slot="home-section">
+  <section class="flex flex-col gap-3" data-slot="overview-section">
     <!-- Empty sections collapse to one line (visual budget 7). -->
     <p v-if="empty" class="border-t border-border pt-3 text-sm text-muted-foreground">
       <span class="font-medium text-foreground">{{ title }}</span>

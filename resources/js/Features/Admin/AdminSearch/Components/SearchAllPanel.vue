@@ -16,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+/** @deprecated Superseded by SearchResultGroup on the cross-entity search page in PR 5.10; slated for removal in Phase 10. */
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

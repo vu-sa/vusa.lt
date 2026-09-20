@@ -20,13 +20,13 @@
           <div class="space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <component :is="MeetingIconFilled" class="h-4 w-4" />
-              {{ $t('Susitikimai') }}
+              {{ $t('Posėdžiai') }}
             </h4>
             <div class="grid gap-2 pl-6">
               <div class="flex items-center gap-3">
                 <IFluentPeopleTeam20Filled class="w-4 h-4 shrink-0 text-foreground dark:text-white" />
                 <div>
-                  <span class="text-sm font-medium">{{ $t('Užbaigtas susitikimas') }}</span>
+                  <span class="text-sm font-medium">{{ $t('Užpildytas posėdis') }}</span>
                   <p class="text-xs text-muted-foreground">
                     {{ $t('Su darbotvarkės punktais') }}
                   </p>
@@ -35,7 +35,7 @@
               <div class="flex items-center gap-3">
                 <IFluentPeopleTeam20Filled class="w-4 h-4 shrink-0 text-red-500" />
                 <div>
-                  <span class="text-sm font-medium">{{ $t('Neužbaigtas susitikimas') }}</span>
+                  <span class="text-sm font-medium">{{ $t('Neužpildytas posėdis') }}</span>
                   <p class="text-xs text-muted-foreground">
                     {{ $t('Trūksta informacijos') }}
                   </p>

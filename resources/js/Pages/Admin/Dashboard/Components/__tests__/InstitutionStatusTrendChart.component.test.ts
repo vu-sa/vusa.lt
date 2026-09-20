@@ -113,7 +113,7 @@ describe('InstitutionStatusTrendChart', () => {
       },
     });
 
-    expect(wrapper.get('[data-testid="trend-range-180"]').classes()).toContain('bg-primary');
-    expect(wrapper.get('[data-testid="trend-range-30"]').classes()).not.toContain('bg-primary');
+    expect(wrapper.get('[data-testid="trend-range-180"]').attributes('aria-pressed')).toBe('true');
+    expect(wrapper.get('[data-testid="trend-range-30"]').attributes('aria-pressed')).toBe('false');
   });
 });

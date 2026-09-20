@@ -82,6 +82,18 @@
                 {{ $t('shell.chrome.account') }}
               </Link>
             </li>
+            <li>
+              <Link
+                :href="route('profile.roles')"
+                prefetch
+                :cache-for="SHELL_PREFETCH_CACHE_FOR"
+                class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground"
+                @click="close"
+              >
+                <ShieldCheck class="size-5 text-muted-foreground" />
+                {{ $t('shell.account.roles') }}
+              </Link>
+            </li>
             <li v-if="showAllSections">
               <Link
                 :href="route('administration')"
@@ -211,6 +223,7 @@ import {
   Moon,
   Plus,
   Radio,
+  ShieldCheck,
   Sparkles,
   Sun,
   UserRound,

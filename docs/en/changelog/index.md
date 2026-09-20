@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.11 — New ViSAK overview, My roles and simpler search (2026-09-20) {#v2-11}
+
+- ⭐ **New ViSAK overview** — the top of the page shows which institutions are overdue or due soon, and the numbers below it link to the matching lists; coordinators switch between “My institutions” and “Unit” in one click and see how the number of overdue institutions has changed over time, and the meetings timeline loads only when you scroll to it
+- ⭐ **My roles and duties** — the account menu has a new page showing your duties, their terms, your roles and the sections you can open; the “This page is not available to you” screen leads there too
+- ✨ **Simpler search** — “Search” shows results grouped by type, with a “Show all” link to that type’s list; old links to individual search tabs now lead to the matching list
+- ✨ **Consistent names** — meeting states in search filters, the preview panel and the timeline legend are called “Completed” and “Incomplete”, as in the meetings list
+
 ## v2.10 — New duty management and member assignment (2026-09-20) {#v2-10}
 
 - ⭐ **Streamlined duty record page** — the duty page provides a clear overview of key facts, occupancy status, current and historical members, sibling duties in the same institution, and activity logs

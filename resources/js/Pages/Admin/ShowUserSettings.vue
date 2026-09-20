@@ -144,19 +144,9 @@
             :available-digest-emails
           />
 
-          <h2>{{ $t("Tavo rolės") }}</h2>
-          <ul class="list-inside">
-            <li v-for="(role, index) in user.roles" :key="role.id">
-              <strong>{{ $t(role.name) }}</strong>
-            </li>
-            <template v-for="duty in user.current_duties">
-              <li v-for="role in duty.roles" :key="role.id">
-                <strong>{{ $t(role.name) }}</strong> ({{
-                  `iš pareigybės „${duty.name}", kuri yra iš ${duty.institution?.tenant?.shortname ?? "nežinomo\
-                padalinio"}` }})
-              </li>
-            </template>
-          </ul>
+          <Link :href="route('profile.roles')" class="text-sm underline underline-offset-4">
+            {{ $t('access.link') }}
+          </Link>
         </div>
       </CardContent>
     </Card>
@@ -166,7 +156,7 @@
 <script setup lang="tsx">
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
-import { useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { Lock, RefreshCw, Save, Settings } from 'lucide-vue-next';
 
 import { useApiMutation } from '@/Composables/useApi';

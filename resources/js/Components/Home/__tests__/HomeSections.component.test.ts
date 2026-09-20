@@ -2,14 +2,15 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import CoordinatorCard from '../CoordinatorCard.vue';
-import HomeSection from '../HomeSection.vue';
 import InstitutionsNeedingAttention from '../InstitutionsNeedingAttention.vue';
 import RecentlyEditedList from '../RecentlyEditedList.vue';
 import UpcomingMeetingsList from '../UpcomingMeetingsList.vue';
 
-describe('HomeSection', () => {
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+
+describe('OverviewSection', () => {
   it('collapses an empty section to one line instead of an empty box', () => {
-    const wrapper = mount(HomeSection, {
+    const wrapper = mount(OverviewSection, {
       props: { title: 'Artimiausi posėdžiai', empty: true, emptyText: 'nieko nesuplanuota' },
       slots: { default: '<ul class="body" />' },
     });
@@ -20,7 +21,7 @@ describe('HomeSection', () => {
   });
 
   it('shows the heading, the body and the way to the full list when there is content', () => {
-    const wrapper = mount(HomeSection, {
+    const wrapper = mount(OverviewSection, {
       props: { title: 'Artimiausi posėdžiai', href: '/mano/meetings', hrefLabel: 'Visi posėdžiai' },
       slots: { default: '<ul class="body" />' },
     });

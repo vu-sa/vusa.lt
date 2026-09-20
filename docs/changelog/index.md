@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.11 — Nauja ViSAK apžvalga, Mano rolės ir paprastesnė paieška (2026-09-20) {#v2-11}
+
+- ⭐ **Nauja ViSAK apžvalga** — viršuje matai, kurios institucijos vėluoja ar artėja jų terminas, o skaičiai po jomis yra nuorodos į atitinkamus sąrašus; koordinatoriai vienu paspaudimu perjungia „Mano institucijos“ ir „Padalinys“ ir mato, kaip vėluojančių institucijų skaičius keitėsi laikui bėgant, o posėdžių laiko juosta įkraunama tik tada, kai iki jos nuriti
+- ⭐ **Mano rolės ir pareigybės** — paskyros meniu atsirado puslapis, kuriame matai savo pareigybes, jų kadencijas, roles ir skyrius, kuriuos gali atverti; į jį veda ir ekranas „Šis puslapis tau neprieinamas“
+- ✨ **Paprastesnė paieška** — „Paieška“ rodo rezultatus, sugrupuotus pagal tipą, su nuoroda „Rodyti visus“ į to tipo sąrašą; senos nuorodos į atskirus paieškos skirtukus nukreipia į atitinkamą sąrašą
+- ✨ **Vienodi pavadinimai** — posėdžių būsenos paieškos filtruose, peržiūros skydelyje ir laiko juostos legendoje vadinamos „Užpildyta“ ir „Neužpildyta“, kaip ir posėdžių sąraše
+
 ## v2.10 — Naujas pareigybių valdymas ir narių priskyrimas (2026-09-20) {#v2-10}
 
 - ⭐ **Patogus pareigybių įrašo puslapis** — pareigybės puslapyje aiškiai pateikta svarbiausia informacija, užimtumo būsena, einantys pareigas nariai ir jų kadencijų istorija, susijusios kitos institucijos pareigybės bei veiklos įrašai

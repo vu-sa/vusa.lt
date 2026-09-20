@@ -53,9 +53,9 @@ One PR = one row. Rules:
 | **5.5** | **P5** Duty record + form + Priskirti sheet (O21) + extract `FormPage` and `SheetForm` | 5.3 |
 | **5.6** | **P6** Rezervacijos: table view, preview pane, bulk bar, optimistic approve (U4–U6) | 5.2 | ✅ |
 | **5.7** | **P7** Žymos: sheet form, trash filter + undo (O11), merge action | 5.5 | ✅ |
-| **5.8** | **P8** ViSAK overview + extract `OverviewPage` (numbers-as-links, one chart) | 5.1 |
-| **5.9** | **P9** Paskyra → Mano rolės ir pareigybės (O14) | 4.7 |
-| **5.10** | `/mano/search` reduced to cross-entity results | 5.2 |
+| **5.8** | **P8** ViSAK overview + extract `OverviewPage` (numbers-as-links, one chart) | 5.1 | ✅ |
+| **5.9** | **P9** Paskyra → Mano rolės ir pareigybės (O14) | 4.7 | ✅ |
+| **5.10** | `/mano/search` reduced to cross-entity results | 5.2 | ✅ |
 | **6.1** | `BaseNotification`: `primaryAction()` + `context()`; in-app list renders the contract | — |
 | **6.2** | Branded mail layout + digest template; retire the bespoke blades | 6.1 |
 | **6.3** | Per-type pass 1: tasks + meetings (subjects, actions, context, channels) | 6.2 |
@@ -525,8 +525,8 @@ Built together on `dev`, as one change set.
 - **Not covered:** policies that don't extend `ModelPolicy` and closure gates (`can:access-administration`,
   `manage-settings`) have no resource name, so those show only the help link. Route-level `can:` middleware
   ditto. They show the help link only.
-- **Next for P9 (5.9):** point the primary action at *Mano rolės ir pareigybės* instead of `profile`
-  (`AccessDenied.vue`). The help link goes to the docs root; retarget it at a roles page if one is written.
+- **P9 (5.9) done:** the primary action now points at `profile.roles` (*Mano rolės ir pareigybės*). The help link
+  still goes to the docs root; retarget it at a roles page if one is written.
 - **Verified:** `tests/Feature/Admin/ForbiddenPageTest.php`, `AccessDenied.component.test.ts`, full
   parallel backend suite. **Not done:** screenshots at the four widths, dark mode, a real browser pass.
 
@@ -753,6 +753,88 @@ Built together on `dev` from one plan. Verification is split honestly at the end
 - The `docs/` user page for duties (`_parts/duties`) is one sentence and was not extended; retiring tours/spotlights that point at
   the old duty form was not needed (none exist).
 - `MemberSearchField` has no mobile "replace the sheet's content" step (Pickers rule 6) — the in-flow list avoids stacking instead.
+
+### PR 5.8 + 5.9 + 5.10 notes (2026-09-20)
+
+Built together on `dev`, one commit. Decisions taken with the user before building: the ViSAK Gantt stays as a lazily
+rendered section (page tabs, both tours and the spotlights go); *Mano rolės* is an aggregate view, not per-duty
+resolution; search keeps single-collection views only for the tabs with no page of their own.
+
+**5.8 · `OverviewPage` + ViSAK overview**
+
+- **`Layouts/OverviewPage.vue`:** bare root (no `AdminContentPage`, like Pradžia, so it works in both shells); eyebrow,
+  title, lead, `#heading` (Pradžia's greeting), `#actions`, `#attention`, default. **Its h1 is `text-2xl`/`text-3xl` in regular
+  case, not `u-display`:** `u-display` renders heavy uppercase in the admin surface, spent the uppercase budget on a title
+  and overlapped the eyebrow (found in a screenshot). `CollectionTitleBand` and Pradžia already read this way. Sibling
+  pieces: `Components/Overview/OverviewNumbers.vue` (one component, not the planned Numbers + Number pair),
+  `OverviewChart.vue` (a `<figure>` whose caption is required), `OverviewScopeSwitch.vue`. **`Home/HomeSection` was promoted
+  to `Patterns/OverviewSection`** (its `data-slot` is now `overview-section`, which the Pradžia browser test waits for).
+- **Consumers:** ViSAK, Pradžia (light retrofit, behaviour unchanged), *Mano rolės* and Paieška — four pages on the layout.
+- **ViSAK page** (`ShowAtstovavimas.vue`, 752 → 563 lines; most of what is left is the Gantt's lookup maps): title band with a **visible scope
+  switch** *Mano institucijos · Padalinys* (URL `?scope=`, `?tab=tenant` still honoured) replacing the two `ui/tabs`; the
+  attention list (`InstitutionsNeedingAttention`, not an ink band — it is not an alert); four numbers, each a link
+  (*Vėluoja*, *Artėja terminas*, *Neužpildyti posėdžiai* → `meetings.index?completion_status=incomplete`, *Atviros užduotys*;
+  tenant scope swaps the third for *Nėra duomenų*); one chart with a generated sentence (`summarizeStatusTrend`); upcoming
+  meetings; the Gantt behind an intersection observer with a skeleton. Only backend change: `openTasksCount`.
+- **The chart's series are statuses**, so they use `--status-*` roles rather than `--cat-*` (visual.md keeps categories out of
+  status meaning). It appears **in the tenant scope only**: the history API is tenant-wide, so showing it beside a rep's own
+  institutions would mislead. A rep with no visible tenants therefore sees numbers but no chart.
+- **Below `md`** the timeline is replaced by one line and a link to Posėdžiai. The fullscreen modal and gap → ActionWindow /
+  check-in actions stay — they serve the Gantt.
+- **Retired:** the two product tours, three spotlights, breadcrumbs (below section level now), the gradient wordmark and its
+  glow timer. `@deprecated` (Phase 10): `PersonalOverviewSection`, `InstitutionStatusSummary`, `InstitutionDataTable`,
+  `MeetingDataTable`, `InstitutionsOverviewCard`, `UpcomingMeetingsCard`, `VisakInfoModal`. Orphaned `tutorials.php` /
+  `visak.php` keys were left in place.
+
+**5.9 · Mano rolės ir pareigybės**
+
+- `GET /mano/profile/roles` (`profile.roles`), `ProfileController::roles()`, `App\Actions\GetUserAccessSummary`. It reads the
+  dutiable rows, not `User::duties()`, because the pivot there omits `tenant_id` and `via_dutiable_id` — the two facts that mark
+  a cross-tenant representative and an ex-officio seat. Terms are split current / upcoming / ended (last 10). A link to a duty or
+  institution is emitted only when the user may `view` it, so the page never leads to a 403.
+- **Role names are translation keys** (`$t(role.name)`, as the old profile list did), so the page translates them.
+- **"Ką gali daryti" is the catalog** (`adminNavigation`), aggregated — not per duty. The catalog gates on a whole `User`;
+  making it duty-aware would be a tier-A change to the contract every menu reads, which one page does not justify.
+- Wired into the account menu, the mobile Meniu, the palette (`nav-roles`) and `AccessDenied` (button and hint copy). The
+  hard-coded, untranslated "Tavo rolės" list on the profile page became a link. **No spotlight**, per the playbook (a returning
+  user would look in the old place, which now links here) over AGENTS.md's blanket rule.
+- New route allowlisted in `AdminNavigationCatalogTest` (workspace-less, excluded from the catalog).
+
+**5.10 · `/mano/search` cross-entity only**
+
+- `Paieška` is one field over one group per entity (≤ 5 rows, static order, empty groups hidden) with **Rodyti visus (N)**.
+  Each group's destination and **query key** come from `App\Support\AdminSearchDestinations`: Typesense collection pages read `q`,
+  database table pages read `search`. A link is `null` when the user may not open that list.
+- `SearchController::index` redirects a `?tab=` for an entity with its own page; **`agenda-items` and `resources` keep their
+  single-collection view** (`SearchCollectionPanel`) until Phase 9. An unknown tab falls back to the search page instead of a 422.
+  The four legacy `search.*` routes go straight to the final page. `can.create` is gone: creating lives in **+ Sukurti**.
+- **U10 drift:** the facet labels now read `meetingCompletionStatuses`; the duplicate in `AdminFacetMerger` (no caller) is gone;
+  the Gantt legend says *Užpildytas / Neužpildytas posėdis*; `MeetingDetailPreview` uses `StatusBadge` and the U10 maps and
+  is fenced. Its vote-alignment badge is a neutral `StatusBadge` — no U10 map for alignment exists yet, and inventing colours
+  for it was not this PR's call.
+- `SearchTabs` and `SearchAllPanel` are `@deprecated` (they keep their tests).
+
+**Fence added:** `OverviewPage`, `Components/Overview/**`, `OverviewSection`, `ShowAtstovavimas`, `InstitutionStatusTrendChart`,
+`ShowMyRoles`, `MyDutyTermRow`, `SearchIndex`, `SearchResultGroup`, `MeetingDetailPreview`.
+
+**Verified:** Vitest (full), Storybook a11y (light + dark, incl. `Overview.stories.ts`), backend suite, and
+`tests/Browser/AdminCollectionPagesTest.php` against a fresh build (seven new tests: mounts, no JS errors, no sideways scroll at 390).
+I also looked at screenshots of ViSAK, *Mano rolės* and Paieška at 1440 and 390, light mode.
+
+**Failing tests that predate this work** (both from `7a69414c`, not touched here): `AdminEntityTranslationsTest` expects 22 index
+pages declaring `entityName` but finds 20 (`IndexReservation` and `IndexTag` no longer declare it), and `DocsCoverageCommandTest`
+expects every route in a filtered area to start with `reservations`, which `api.v1.admin.reservations.index` does not.
+
+**Not done**
+
+- 820 and 1180 widths, dark mode and touch in a real browser, a keyboard-only pass, the four-persona pass, and a run against live
+  Typesense (the browser cannot reach it here: the search page showed its error line, so grouped results, see-all links and the
+  retained tabs were exercised only through component tests with a fake `multiSearch`).
+- **O15's "Stebimos institucijos" list** on the ViSAK overview — followed institutions are not in the page's props.
+- The Gantt on a phone is a link, not a simplified read-only view.
+- Per-duty section resolution and the dated *access-change history* (PR 7.7).
+- The `docs/` user pages: there is no ViSAK or roles page to update; only the changelog.
+- Orphaned copy keys (`tutorials.php`, `visak.php`) and the dead `FacetCheckboxList`, `FacetYearPills`, `useRecentSearchHits` were left alone.
 
 ## Phase 6 — Messages (email, push, in-app)
 

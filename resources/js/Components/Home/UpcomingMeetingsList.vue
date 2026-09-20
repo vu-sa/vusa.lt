@@ -1,5 +1,5 @@
 <template>
-  <HomeSection
+  <OverviewSection
     data-tour="meetings-card"
     :title="$t('Artimiausi posėdžiai')"
     :empty="meetings.length === 0"
@@ -31,16 +31,16 @@
         </Link>
       </li>
     </ul>
-  </HomeSection>
+  </OverviewSection>
 </template>
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import HomeSection from './HomeSection.vue';
 import type { HomeMeeting } from './types';
 
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { formatDate, formatNearDate } from '@/Utils/dateTime';
 import { formatMonthShort } from '@/Utils/IntlTime';
 

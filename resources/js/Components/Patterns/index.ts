@@ -12,6 +12,7 @@
 
 export { default as DateBadge } from './DateBadge.vue';
 export { default as EntityLinkCard } from './EntityLinkCard.vue';
+export { default as OverviewSection } from './OverviewSection.vue';
 export { default as SectionHeading } from './SectionHeading.vue';
 export { default as ShowPageGrid } from './ShowPageGrid.vue';
 export { default as StatCard } from './StatCard.vue';

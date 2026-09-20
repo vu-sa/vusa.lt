@@ -40,6 +40,16 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Pages/Admin/Reservations/IndexReservation.vue',
   'resources/js/Pages/Admin/Content/IndexTag.vue',
   'resources/js/Features/Admin/Tags/**',
+  'resources/js/Components/Layouts/OverviewPage.vue',
+  'resources/js/Pages/Admin/ShowMyRoles.vue',
+  'resources/js/Components/Duties/MyDutyTermRow.vue',
+  'resources/js/Pages/Admin/Search/SearchIndex.vue',
+  'resources/js/Features/Admin/AdminSearch/Components/SearchResultGroup.vue',
+  'resources/js/Features/Admin/AdminSearch/Components/Detail/MeetingDetailPreview.vue',
+  'resources/js/Components/Overview/**',
+  'resources/js/Components/Patterns/OverviewSection.vue',
+  'resources/js/Pages/Admin/Dashboard/ShowAtstovavimas.vue',
+  'resources/js/Pages/Admin/Dashboard/Components/InstitutionStatusTrendChart.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="tsx">
+/** @deprecated The overview numbers now link to Posėdžiai (PR 5.8); slated for removal in Phase 10. */
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';

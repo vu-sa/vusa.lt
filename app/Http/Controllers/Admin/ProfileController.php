@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetUserAccessSummary;
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
 use App\Http\Controllers\AdminController;
@@ -25,11 +26,8 @@ class ProfileController extends AdminController
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
 
-        $user->load('roles:id,name',
-            'current_duties:id,name,institution_id',
-            'current_duties.roles:id,name', 'current_duties.roles.permissions:id,name',
-            'current_duties.institution:id,tenant_id',
-            'current_duties.institution.tenant:id,shortname')->makeVisible(['name_was_changed', 'show_pronouns']);
+        // The roles list moved to `profile.roles` (PR 5.9); only the shallow relations stay in the payload.
+        $user->load('roles:id,name', 'current_duties:id,name,institution_id')->makeVisible(['name_was_changed', 'show_pronouns']);
 
         return $this->inertiaResponse('Admin/ShowUserSettings', [
             'user' => $user->append('has_password')->toFullArray(),
@@ -37,6 +35,18 @@ class ProfileController extends AdminController
             'notificationCategories' => NotificationCategory::toOptions(),
             'notificationChannels' => NotificationChannel::toOptions(),
             'availableDigestEmails' => $user->getAvailableDigestEmails(),
+        ]);
+    }
+
+    /**
+     * Read-only and self-scoped: the subject is always the acting user, so there is nothing to authorize against.
+     */
+    public function roles()
+    {
+        $user = User::query()->find(Auth::id()) ?? abort(404);
+
+        return $this->inertiaResponse('Admin/ShowMyRoles', [
+            'access' => GetUserAccessSummary::execute($user),
         ]);
     }
 

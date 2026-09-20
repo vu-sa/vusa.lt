@@ -122,6 +122,7 @@
 </template>
 
 <script setup lang="tsx">
+/** @deprecated The overview numbers now link to Institucijos (PR 5.8); slated for removal in Phase 10. */
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { router } from '@inertiajs/vue3';

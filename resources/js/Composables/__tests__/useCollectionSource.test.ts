@@ -66,7 +66,7 @@ describe('useTypesenseCollectionSource', () => {
 
     expect(source.chips.value).toEqual([
       { id: 'year:2026', label: 'Metai: 2026' },
-      { id: 'completion_status:incomplete', label: 'Būsena: Neužbaigtas' },
+      { id: 'completion_status:incomplete', label: 'Būsena: Neužpildyta' },
     ]);
     expect(source.activeFilterCount.value).toBe(2);
   });
@@ -100,7 +100,7 @@ describe('useTypesenseCollectionSource', () => {
     const { source } = build();
 
     expect(source.facets.value).toEqual([
-      { field: 'completion_status', label: 'Būsena', type: 'checkbox', values: [{ value: 'incomplete', label: 'Neužbaigtas', count: 3, isSelected: true }] },
+      { field: 'completion_status', label: 'Būsena', type: 'checkbox', values: [{ value: 'incomplete', label: 'Neužpildyta', count: 3, isSelected: true }] },
     ]);
   });
 
@@ -109,11 +109,11 @@ describe('useTypesenseCollectionSource', () => {
     controller.current = fake;
     const source = useTypesenseCollectionSource({
       collection: 'meetings',
-      valueLabel: (field, value) => (field === 'completion_status' && value === 'incomplete' ? 'Neužpildyta' : undefined),
+      valueLabel: (field, value) => (field === 'completion_status' && value === 'incomplete' ? 'Laukia užpildymo' : undefined),
     });
 
-    expect(source.chips.value[0].label).toBe('Būsena: Neužpildyta');
-    expect(source.facets.value[0].values[0].label).toBe('Neužpildyta');
+    expect(source.chips.value[0].label).toBe('Būsena: Laukia užpildymo');
+    expect(source.facets.value[0].values[0].label).toBe('Laukia užpildymo');
   });
 
   it('exposes the institutions the person has duties in, for the "Mano institucijos" quick filter', () => {

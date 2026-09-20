@@ -133,6 +133,35 @@ return [
         ],
     ],
 
+    // The overview page (PR 5.8): numbers are links, one chart carries a text summary.
+    'overview' => [
+        'title' => 'Apžvalga',
+        'lead' => 'Stebėk savo institucijų atstovavimo veiklą: kas vėluoja, kas artėja ir kada kitas posėdis.',
+        'scope' => [
+            'label' => 'Rodyti',
+            'mine' => 'Mano institucijos',
+            'tenant' => 'Padalinys',
+        ],
+        'numbers' => [
+            'overdue' => 'Vėluoja',
+            'approaching' => 'Artėja terminas',
+            'incomplete_meetings' => 'Neužpildyti posėdžiai',
+            'open_tasks' => 'Atviros užduotys',
+        ],
+        'trend' => [
+            'title' => 'Būklės pokyčiai',
+            'down' => 'Per :days d. vėluojančių institucijų sumažėjo nuo :from iki :to.',
+            'up' => 'Per :days d. vėluojančių institucijų padaugėjo nuo :from iki :to.',
+            'flat' => 'Per :days d. vėluojančių institucijų skaičius nesikeitė: :to.',
+            'none' => 'Šiam laikotarpiui duomenų nėra.',
+        ],
+        'timeline' => [
+            'title' => 'Posėdžių laiko juosta',
+            'phone_note' => 'Laiko juostą geriausia žiūrėti didesniame ekrane.',
+            'phone_link' => 'Atverti posėdžių sąrašą',
+        ],
+    ],
+
     // Gantt chart loading state
     'gantt' => [
         'loading_meetings' => 'Kraunami posėdžiai…',

@@ -1,6 +1,6 @@
 <template>
-  <HomeSection
-    :title="$t('Tavo institucijos')"
+  <OverviewSection
+    :title="title ?? $t('Tavo institucijos')"
     :empty="institutions.length === 0"
     :empty-text="$t('visos institucijos posėdžius fiksuoja laiku')"
   >
@@ -24,16 +24,16 @@
         </Button>
       </li>
     </ul>
-  </HomeSection>
+  </OverviewSection>
 </template>
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import HomeSection from './HomeSection.vue';
 import type { InstitutionActivityInsight } from './types';
 
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { institutionActivityStatuses } from '@/Constants/statuses';
@@ -41,6 +41,7 @@ import type { InstitutionActivityStatus } from '@/Types/enums';
 
 defineProps<{
   institutions: InstitutionActivityInsight[];
+  title?: string;
 }>();
 
 const emit = defineEmits<{

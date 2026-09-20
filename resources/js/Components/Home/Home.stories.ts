@@ -2,8 +2,9 @@ import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import AttentionQueue from './AttentionQueue.vue';
 import CoordinatorCard from './CoordinatorCard.vue';
-import HomeSection from './HomeSection.vue';
 import RecentlyEditedList from './RecentlyEditedList.vue';
+
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 const meta: Meta = {
   title: 'Home/Pradžia',
@@ -41,7 +42,7 @@ export const AttentionQueueEmpty: Story = {
 
 export const CoordinatorAndRecent: Story = {
   render: () => ({
-    components: { CoordinatorCard, RecentlyEditedList, HomeSection },
+    components: { CoordinatorCard, RecentlyEditedList, OverviewSection },
     setup: () => ({
       coordinator: { name: 'Jonas Jonaitis', email: 'jonas@vusa.lt', profile_photo_path: null, duty: 'Padalinio koordinatorius' },
       records: [
@@ -53,7 +54,7 @@ export const CoordinatorAndRecent: Story = {
       <div class="grid max-w-4xl gap-8 bg-background p-6 text-foreground lg:grid-cols-2">
         <CoordinatorCard :coordinator="coordinator" />
         <RecentlyEditedList :records="records" />
-        <HomeSection title="Artimiausi posėdžiai" empty empty-text="artimiausiu metu nieko nesuplanuota" />
+        <OverviewSection title="Artimiausi posėdžiai" empty empty-text="artimiausiu metu nieko nesuplanuota" />
       </div>`,
   }),
 };

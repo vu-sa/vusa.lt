@@ -28,6 +28,7 @@
 </template>
 
 <script setup lang="ts">
+/** @deprecated Superseded by the ViSAK overview (OverviewPage + OverviewNumbers) in PR 5.8; slated for removal in Phase 10. */
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { AtstovavimasInstitution, AtstovavimasMeeting, InstitutionInsights } from '../types';

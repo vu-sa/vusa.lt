@@ -23,6 +23,12 @@
           {{ $t('shell.chrome.account') }}
         </Link>
       </DropdownMenuItem>
+      <DropdownMenuItem as-child>
+        <Link :href="route('profile.roles')" prefetch>
+          <ShieldCheck class="size-4" />
+          {{ $t('shell.account.roles') }}
+        </Link>
+      </DropdownMenuItem>
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>
           <Palette class="size-4" />
@@ -127,7 +133,7 @@
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useDark } from '@vueuse/core';
-import { BookOpen, Bug, CircleHelp, Info, Languages, LogOut, Map, MessagesSquare, Moon, Palette, Radio, Sparkles, Sun, UserRound } from 'lucide-vue-next';
+import { BookOpen, Bug, CircleHelp, Info, Languages, LogOut, Map, MessagesSquare, Moon, Palette, Radio, ShieldCheck, Sparkles, Sun, UserRound } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';

@@ -1,7 +1,7 @@
 import { computed, type Component } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus, Radio, Search, Settings } from 'lucide-vue-next';
+import { Plus, Radio, Search, Settings, ShieldCheck } from 'lucide-vue-next';
 
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
@@ -94,6 +94,14 @@ export function useCommandActions() {
         icon: Settings,
         category: 'navigation',
         action: () => router.visit(route('profile')),
+      },
+      {
+        id: 'nav-roles',
+        label: $t('shell.account.roles'),
+        keywords: ['roles', 'duties', 'permissions', 'roles ir pareigybes', 'teises'],
+        icon: ShieldCheck,
+        category: 'navigation',
+        action: () => router.visit(route('profile.roles')),
       },
       {
         id: 'action-start-fm',

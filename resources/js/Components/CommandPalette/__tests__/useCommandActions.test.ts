@@ -68,7 +68,7 @@ describe('useCommandActions', () => {
   it('keeps only global exclusions when the catalog is empty', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: { workspaces: [] } }));
 
-    expect(resolve().actions.value.map(action => action.id)).toEqual(['nav-search', 'nav-profile', 'action-start-fm']);
+    expect(resolve().actions.value.map(action => action.id)).toEqual(['nav-search', 'nav-profile', 'nav-roles', 'action-start-fm']);
   });
 
   it('opens the docked START FM player from the palette', () => {

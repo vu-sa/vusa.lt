@@ -14,7 +14,7 @@ return [
     'who_can_help' => 'Need help?',
     'help_text' => 'Not sure why the permission is missing? The help pages explain which roles and permissions each duty carries. If you still need it, ask your coordinator.',
     'help_action' => 'Open help',
-    'roles_hint' => 'You can see your duties and permissions in your profile.',
+    'roles_hint' => 'You can see your duties and roles on the “My roles and duties” page.',
     'roles_action' => 'My roles and duties',
     'home_action' => 'Back to Pradžia',
 ];

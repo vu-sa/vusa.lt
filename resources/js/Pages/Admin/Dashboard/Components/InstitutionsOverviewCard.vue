@@ -52,6 +52,7 @@
 </template>
 
 <script setup lang="ts">
+/** @deprecated Superseded by InstitutionsNeedingAttention on the ViSAK overview in PR 5.8; slated for removal in Phase 10. */
 import { computed, ref, reactive } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';

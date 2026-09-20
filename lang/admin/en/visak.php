@@ -133,6 +133,35 @@ return [
         ],
     ],
 
+    // The overview page (PR 5.8): numbers are links, one chart carries a text summary.
+    'overview' => [
+        'title' => 'Overview',
+        'lead' => 'Keep an eye on how your institutions are represented: what is overdue, what is coming up and when the next meeting is.',
+        'scope' => [
+            'label' => 'Show',
+            'mine' => 'My institutions',
+            'tenant' => 'Unit',
+        ],
+        'numbers' => [
+            'overdue' => 'Overdue',
+            'approaching' => 'Due soon',
+            'incomplete_meetings' => 'Incomplete meetings',
+            'open_tasks' => 'Open tasks',
+        ],
+        'trend' => [
+            'title' => 'Status over time',
+            'down' => 'Over :days days the number of overdue institutions fell from :from to :to.',
+            'up' => 'Over :days days the number of overdue institutions rose from :from to :to.',
+            'flat' => 'Over :days days the number of overdue institutions stayed at :to.',
+            'none' => 'No data for this period.',
+        ],
+        'timeline' => [
+            'title' => 'Meetings timeline',
+            'phone_note' => 'The timeline is best viewed on a larger screen.',
+            'phone_link' => 'Open the meetings list',
+        ],
+    ],
+
     // Gantt chart loading state
     'gantt' => [
         'loading_meetings' => 'Loading meetings…',

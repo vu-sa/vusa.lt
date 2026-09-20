@@ -37,7 +37,7 @@ describe('Pradžia', function (): void {
         expect($page->script("document.querySelector('[data-slot=attention-queue] .bg-foreground')"))->toBeNull();
 
         // The deferred group (Neseniai redaguota, koordinatorius…) arrives after the first paint.
-        waitForInertiaRender($page, '[data-slot=home-section]');
+        waitForInertiaRender($page, '[data-slot=overview-section]');
 
         $page->assertNoJavaScriptErrors();
     });
@@ -121,6 +121,72 @@ describe('Rezervacijos ir žymos', function (): void {
             ->assertSee('Nauja žyma')
             ->assertNoJavaScriptErrors();
 
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+    });
+});
+
+/**
+ * PR 5.8 – 5.10: the Overview layout on its second and third pages, and the search reduced to
+ * cross-entity results. Same bar as above: mounts against the real bundle, fits a phone, throws nothing.
+ */
+describe('ViSAK overview', function (): void {
+    it('states where it is and shows its numbers as links', function (): void {
+        $page = openAdminPage('/mano/dashboard/atstovavimas', 1440);
+        waitForInertiaRender($page, '[data-slot=overview-numbers]');
+
+        $page->assertPresent('[data-slot=overview-page]')->assertPresent('[data-slot=overview-scope-switch]');
+        expect($page->script("document.querySelector('[data-slot=overview-title-band]').textContent"))->toContain('ViSAK')
+            ->and($page->script("document.querySelectorAll('[data-slot=overview-numbers] a').length"))->toBe(4)
+            ->and($page->script("document.querySelectorAll('[role=tab]').length"))->toBe(0);
+
+        $page->assertNoJavaScriptErrors();
+    });
+
+    it('fits a phone without scrolling sideways', function (): void {
+        $page = openAdminPage('/mano/dashboard/atstovavimas', 390, 844);
+        waitForInertiaRender($page, '[data-slot=overview-numbers]');
+
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+    });
+});
+
+describe('Mano rolės ir pareigybės', function (): void {
+    it('lists what the user holds and is reachable from the account menu target', function (): void {
+        $page = openAdminPage('/mano/profile/roles', 1440);
+
+        $page->assertPresent('[data-slot=overview-page]');
+        expect($page->script("document.querySelector('[data-slot=overview-page] h1').textContent.trim()"))->toBe('Mano rolės ir pareigybės');
+
+        $page->assertNoJavaScriptErrors();
+    });
+
+    it('fits a phone without scrolling sideways', function (): void {
+        $page = openAdminPage('/mano/profile/roles', 390, 844);
+
+        $page->assertPresent('[data-slot=overview-page]');
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+    });
+});
+
+describe('Paieška', function (): void {
+    it('is one search field over grouped results, with no entity tabs', function (): void {
+        $page = openAdminPage('/mano/search?q=senatas', 1440);
+
+        $page->assertPresent('[data-slot=overview-page]')->assertPresent('input[data-admin-collection-search]');
+        expect($page->script("document.querySelectorAll('[role=tab]').length"))->toBe(0);
+    });
+
+    it('sends an entity tab to that entity\'s own page', function (): void {
+        $page = openAdminPage('/mano/search?tab=institutions&q=senatas', 1440);
+
+        expect($page->script('window.location.pathname'))->toBe('/mano/institutions')
+            ->and($page->script('window.location.search'))->toContain('search=senatas');
+    });
+
+    it('fits a phone without scrolling sideways', function (): void {
+        $page = openAdminPage('/mano/search', 390, 844);
+
+        $page->assertPresent('[data-slot=overview-page]');
         expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
     });
 });

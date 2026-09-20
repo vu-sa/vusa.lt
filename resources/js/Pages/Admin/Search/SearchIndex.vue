@@ -1,248 +1,139 @@
 <template>
-  <AdminContentPage :title="$t('Paieška')">
-    <template #create-button>
-      <!-- Reserved-height wrapper: keeps the action area stable across tabs
-           (empty on "all"/"agenda-items", widest on "duties") so it never jumps. -->
-      <div class="flex min-h-9 items-center justify-end gap-2">
-        <Button v-if="activeTab === 'meetings' && can.create.meetings" @click="actionWindow.open({ flow: 'meeting.create' })">
-          <Plus class="mr-2 size-4" />
-          {{ $t('Naujas posėdis') }}
-        </Button>
-        <Link v-else-if="activeTab === 'institutions' && can.create.institutions" :href="route('institutions.create')">
-          <Button>
-            <Plus class="mr-2 size-4" />
-            {{ $t('Nauja institucija') }}
-          </Button>
-        </Link>
-        <Link v-else-if="activeTab === 'resources' && can.create.resources" :href="route('resources.create')">
-          <Button>
-            <Plus class="mr-2 size-4" />
-            {{ $t('Sukurti išteklių') }}
-          </Button>
-        </Link>
-        <Link v-else-if="activeTab === 'documents' && can.create.documents" :href="route('documents.index')">
-          <Button>
-            <Plus class="mr-2 size-4" />
-            {{ $t('Dokumentai') }}
-          </Button>
-        </Link>
-        <Link v-else-if="activeTab === 'news' && can.create.news" :href="route('news.create')">
-          <Button>
-            <Plus class="mr-2 size-4" />
-            {{ $t('Nauja naujiena') }}
-          </Button>
-        </Link>
-        <Link v-else-if="activeTab === 'pages' && can.create.pages" :href="route('pages.create')">
-          <Button>
-            <Plus class="mr-2 size-4" />
-            {{ $t('Naujas puslapis') }}
-          </Button>
-        </Link>
-        <Link v-else-if="activeTab === 'calendar' && can.create.calendar" :href="route('calendar.create')">
-          <Button>
-            <Plus class="mr-2 size-4" />
-            {{ $t('Naujas įvykis') }}
-          </Button>
-        </Link>
-        <Link v-else-if="activeTab === 'users' && can.create.users" :href="route('users.create')">
-          <Button>
-            <Plus class="mr-2 size-4" />
-            {{ $t('Naujas narys') }}
-          </Button>
-        </Link>
-        <div v-else-if="activeTab === 'duties'" class="flex items-center gap-2">
-          <Link :href="route('duties.updateUsersWizard')">
-            <Button variant="outline">
-              <Users class="mr-2 size-4" />
-              {{ $t('forms.fields.duty_user_wizard') }}
-            </Button>
-          </Link>
-          <Link v-if="can.create.duties" :href="route('duties.create')">
-            <Button>
-              <Plus class="mr-2 size-4" />
-              {{ $t('Nauja pareigybė') }}
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </template>
-
+  <OverviewPage :eyebrow="$t('Paieška')" :title="$t('Ieškoti visur')" :head-title="$t('Paieška')">
     <div class="flex flex-col gap-3">
-      <!-- Search bar -->
       <div class="relative">
-        <Search class="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
+        <Search
+          class="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
         <input
           ref="searchInputRef"
           v-model="q"
-          type="text"
+          type="search"
+          data-admin-collection-search
           :placeholder="$t('Ieškoti visur...')"
-          class="h-12 w-full rounded-xl border bg-background pl-12 pr-12 text-base shadow-sm outline-none transition-shadow placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-primary/20"
+          :aria-label="$t('Ieškoti visur')"
+          autocomplete="off"
+          :class="[
+            'h-12 w-full border border-input bg-background pr-11 pl-11 text-base pointer-coarse:h-14',
+            'placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden',
+            'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring',
+          ]"
         >
         <button
           v-if="q"
           type="button"
-          class="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          :aria-label="$t('Išvalyti')"
-          @click="q = ''; searchInputRef?.focus()"
+          class="absolute top-1/2 right-1 flex size-10 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:size-12"
+          :aria-label="$t('Išvalyti paiešką')"
+          @click="clearQuery"
         >
-          <X class="size-4" />
+          <X class="size-4" aria-hidden="true" />
         </button>
       </div>
 
-      <!-- Tabs -->
-      <div v-if="isConfigLoading" class="flex gap-2 border-b pb-2">
-        <div v-for="i in 4" :key="i" class="h-8 w-24 animate-pulse rounded-md bg-muted/50" />
-      </div>
-      <SearchTabs v-else v-model="activeTab" :tabs class="border-b" />
-
-      <!-- Panel area (bounded height for internal scroll) -->
-      <div class="flex h-[calc(100dvh-19rem)] min-h-[360px] flex-col">
-        <SearchAllPanel
-          v-if="activeTab === 'all'"
-          :results="multiResults"
-          :query="q"
-          :is-searching
-          :has-searched
-          :error
-          :duty-ctx="dutyMapperCtx"
-        />
-        <SearchCollectionPanel
-          v-else-if="activeCollectionTab"
-          :key="activeCollectionTab.value"
-          :collection="activeCollectionTab.collection"
-          :query="q"
-          :empty-message="activeCollectionTab.emptyMessage"
-        />
-      </div>
+      <Link
+        v-if="retainedTab"
+        :href="route('search.index', q.trim() ? { q: q.trim() } : {})"
+        class="w-fit text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline pointer-coarse:py-2"
+      >
+        ‹ {{ $t('Visi rezultatai') }}
+      </Link>
     </div>
-  </AdminContentPage>
+
+    <!-- Agenda items and resources have no collection page of their own yet, so their tab still lives here. -->
+    <div v-if="retainedTab" class="flex h-[calc(100dvh-22rem)] min-h-[360px] flex-col">
+      <SearchCollectionPanel
+        :key="retainedTab.collection"
+        :collection="retainedTab.collection"
+        :query="q"
+        :empty-message="retainedTab.emptyMessage"
+      />
+    </div>
+
+    <template v-else>
+      <CollectionSkeleton v-if="isSearching && !hasSearched" :rows="4" />
+
+      <p v-else-if="error" class="border-t border-border pt-3 text-sm text-status-danger" role="alert">
+        {{ error }}
+      </p>
+
+      <EmptyState
+        v-else-if="hasSearched && groups.length === 0"
+        mode="no-results"
+        :title="$t('Rezultatų nerasta')"
+        :description="$t('Pabandyk kitą žodį ar trumpesnę frazę.')"
+        :clear-label="q ? $t('Išvalyti paiešką') : undefined"
+        @clear="clearQuery"
+      />
+
+      <template v-else>
+        <SearchResultGroup
+          v-for="group in groups"
+          :key="group.key"
+          :collection="group.key"
+          :hits="group.hits"
+          :total="group.total"
+          :href="seeAllHref(destinations[group.key], q)"
+        />
+      </template>
+    </template>
+  </OverviewPage>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
-import { Search, X, Plus, Users } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Search, X } from 'lucide-vue-next';
+import { computed, onMounted, ref, watch } from 'vue';
 
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import { Button } from '@/Components/ui/button';
-import SearchTabs, { type SearchTab } from '@/Features/Admin/AdminSearch/Components/SearchTabs.vue';
-import SearchAllPanel from '@/Features/Admin/AdminSearch/Components/SearchAllPanel.vue';
 import SearchCollectionPanel from '@/Features/Admin/AdminSearch/Components/SearchCollectionPanel.vue';
+import SearchResultGroup from '@/Features/Admin/AdminSearch/Components/SearchResultGroup.vue';
 import type { AdminCollection } from '@/Features/Admin/AdminSearch/Types/AdminSearchTypes';
-import type { MapperContext } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { seeAllHref, type SearchDestination } from '@/Features/Admin/AdminSearch/Utils/seeAllHref';
+import {
+  ALL_TAB_COLLECTION_ORDER,
+  normalizeHit,
+  type MapperContext,
+  type NormalizedSearchHit,
+  type SearchCollectionKey,
+} from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import { CollectionSkeleton, EmptyState } from '@/Components/Patterns';
 import { useAdminSearch } from '@/Composables/useAdminSearch';
-import { useActionWindow } from '@/Composables/useActionWindow';
-import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type { MultiSearchResults } from '@/Shared/Search/types';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 
 defineProps<{
-  can: {
-    create: {
-      meetings: boolean;
-      institutions: boolean;
-      resources: boolean;
-      duties: boolean;
-      documents: boolean;
-      news: boolean;
-      pages: boolean;
-      calendar: boolean;
-      users: boolean;
-    };
-  };
+  /** Where each group's full list lives (and the query key it reads); built by AdminSearchDestinations. */
+  destinations: Record<SearchCollectionKey, SearchDestination>;
 }>();
 
-usePageBreadcrumbs([{ label: $t('Paieška'), icon: Search }]);
+const PER_GROUP = 5;
 
-interface CollectionTabDef {
-  value: string;
-  label: string;
-  collection: AdminCollection;
-  /** Key into MultiSearchResults.counts for the tab badge. */
-  countKey: keyof MultiSearchResults['counts'];
-  emptyMessage: string;
-}
-
-const collectionTabs = computed<CollectionTabDef[]>(() => [
-  {
-    value: 'meetings',
-    label: $t('Posėdžiai'),
-    collection: 'meetings',
-    countKey: 'meetings',
-    emptyMessage: $t('Nerasta posėdžių pagal jūsų paiešką'),
-  },
-  {
-    value: 'agenda-items',
-    label: $t('Punktai'),
-    collection: 'agenda_items',
-    countKey: 'agendaItems',
-    emptyMessage: $t('Nerasta darbotvarkės punktų pagal jūsų paiešką'),
-  },
-  {
-    value: 'institutions',
-    label: $t('Institucijos'),
-    collection: 'institutions',
-    countKey: 'institutions',
-    emptyMessage: $t('Nerasta institucijų pagal jūsų paiešką'),
-  },
-  {
-    value: 'resources',
-    label: $t('Ištekliai'),
-    collection: 'resources',
-    countKey: 'resources',
-    emptyMessage: $t('Nerasta išteklių pagal jūsų paiešką'),
-  },
-  {
-    value: 'duties',
-    label: $t('Pareigybės'),
-    collection: 'duties',
-    countKey: 'duties',
-    emptyMessage: $t('Nerasta pareigybių pagal jūsų paiešką'),
-  },
-  {
-    value: 'documents',
-    label: $t('Dokumentai'),
-    collection: 'documents',
-    countKey: 'documents',
-    emptyMessage: $t('Nerasta dokumentų pagal jūsų paiešką'),
-  },
-  {
-    value: 'news',
-    label: $t('Naujienos'),
-    collection: 'news',
-    countKey: 'news',
-    emptyMessage: $t('Nerasta naujienų pagal jūsų paiešką'),
-  },
-  {
-    value: 'pages',
-    label: $t('Puslapiai'),
-    collection: 'pages',
-    countKey: 'pages',
-    emptyMessage: $t('Nerasta puslapių pagal jūsų paiešką'),
-  },
-  {
-    value: 'calendar',
-    label: $t('Kalendorius'),
-    collection: 'calendar',
-    countKey: 'calendar',
-    emptyMessage: $t('Nerasta kalendoriaus įvykių pagal jūsų paiešką'),
-  },
-  {
-    value: 'users',
-    label: $t('Nariai'),
-    collection: 'users',
-    countKey: 'users',
-    emptyMessage: $t('Nerasta narių pagal jūsų paiešką'),
-  },
-]);
+// The two collections without a page of their own keep their single-collection view (Phase 9 replaces it).
+const RETAINED_TABS: Record<string, { collection: AdminCollection; emptyMessage: string }> = {
+  'agenda-items': { collection: 'agenda_items', emptyMessage: $t('Nerasta darbotvarkės punktų pagal jūsų paiešką') },
+  'resources': { collection: 'resources', emptyMessage: $t('Nerasta išteklių pagal jūsų paiešką') },
+};
 
 const adminSearch = useAdminSearch();
-const isConfigLoading = computed(() => adminSearch.config.value === null && !adminSearch.configError.value);
 
-// Context for mappers that need user-relative state (cross-tenant duties + related-institution badges).
-const dutyMapperCtx = computed<MapperContext>(() => ({
+// URL-backed state: `?q=` while grouped, `?tab=` only for a retained view.
+const initialParams = new URLSearchParams(window.location.search);
+const q = ref(initialParams.get('q') ?? '');
+const tab = ref(initialParams.get('tab'));
+const searchInputRef = ref<HTMLInputElement | null>(null);
+
+const retainedTab = computed(() => (tab.value ? RETAINED_TABS[tab.value] ?? null : null));
+
+const results = ref<MultiSearchResults>(createEmptyMultiSearchResults());
+const isSearching = ref(false);
+const hasSearched = ref(false);
+const error = ref<string | null>(null);
+
+// Mappers flag related-institution and cross-tenant rows relative to the user.
+const mapperContext = computed<MapperContext>(() => ({
   ownTenantIds: adminSearch.getCollectionTenantIds('duties'),
   isSuperAdmin: adminSearch.isSuperAdmin.value,
   directInstitutionIds: [
@@ -251,29 +142,22 @@ const dutyMapperCtx = computed<MapperContext>(() => ({
   ],
 }));
 
-const visibleCollectionTabs = computed(() =>
-  collectionTabs.value.filter(tab => adminSearch.hasCollectionAccess(tab.collection)),
+interface Group {
+  key: SearchCollectionKey;
+  hits: NormalizedSearchHit[];
+  total: number;
+}
+
+// Static order, so a group never jumps under the cursor while the user types.
+const groups = computed<Group[]>(() =>
+  ALL_TAB_COLLECTION_ORDER
+    .map(key => ({
+      key,
+      hits: (results.value[key] as unknown[]).map(doc => normalizeHit(key, doc, mapperContext.value)),
+      total: results.value.counts[key] ?? 0,
+    }))
+    .filter(group => group.hits.length > 0),
 );
-
-const actionWindow = useActionWindow();
-
-// URL-backed state (?q= and ?tab=)
-const initialParams = typeof window === 'undefined'
-  ? new URLSearchParams()
-  : new URLSearchParams(window.location.search);
-
-const q = ref(initialParams.get('q') || '');
-const activeTab = ref(initialParams.get('tab') || 'all');
-const searchInputRef = ref<HTMLInputElement | null>(null);
-
-const activeCollectionTab = computed(() =>
-  collectionTabs.value.find(tab => tab.value === activeTab.value),
-);
-
-const multiResults = ref<MultiSearchResults>(createEmptyMultiSearchResults());
-const isSearching = ref(false);
-const hasSearched = ref(false);
-const error = ref<string | null>(null);
 
 const runMultiSearch = useDebounceFn(async (query: string) => {
   if (adminSearch.isRateLimited.value) {
@@ -281,20 +165,21 @@ const runMultiSearch = useDebounceFn(async (query: string) => {
     isSearching.value = false;
     return;
   }
+
   isSearching.value = true;
   error.value = null;
   try {
-    multiResults.value = await adminSearch.multiSearch(query, {
-      meetingsLimit: 12,
-      agendaItemsLimit: 12,
-      institutionsLimit: 12,
-      resourcesLimit: 12,
-      dutiesLimit: 12,
-      newsLimit: 6,
-      pagesLimit: 6,
-      calendarLimit: 6,
-      documentsLimit: 6,
-      usersLimit: 12,
+    results.value = await adminSearch.multiSearch(query, {
+      meetingsLimit: PER_GROUP,
+      agendaItemsLimit: PER_GROUP,
+      institutionsLimit: PER_GROUP,
+      resourcesLimit: PER_GROUP,
+      dutiesLimit: PER_GROUP,
+      documentsLimit: PER_GROUP,
+      newsLimit: PER_GROUP,
+      pagesLimit: PER_GROUP,
+      calendarLimit: PER_GROUP,
+      usersLimit: PER_GROUP,
     });
     hasSearched.value = true;
   }
@@ -309,68 +194,45 @@ const runMultiSearch = useDebounceFn(async (query: string) => {
   }
 }, 300);
 
-const tabs = computed<SearchTab[]>(() => {
-  const allCount = Object.values(multiResults.value.counts).reduce((a, b) => a + b, 0);
-  const collectionTabsWithCounts = visibleCollectionTabs.value.map(tab => ({
-    value: tab.value,
-    label: tab.label,
-    count: hasSearched.value ? multiResults.value.counts[tab.countKey] : undefined,
-  }));
-  // Dynamic reorder: sort collection tabs by hit count descending after each search.
-  // The "All" tab stays pinned at position 0.
-  if (hasSearched.value) {
-    collectionTabsWithCounts.sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
-  }
-  return [
-    { value: 'all', label: $t('Viskas'), count: hasSearched.value ? allCount : undefined },
-    ...collectionTabsWithCounts,
-  ];
-});
-
-const writeUrl = () => {
-  if (typeof window === 'undefined') {
-    return;
-  }
+function writeUrl(): void {
   const params = new URLSearchParams();
   if (q.value.trim()) {
     params.set('q', q.value.trim());
   }
-  if (activeTab.value !== 'all') {
-    params.set('tab', activeTab.value);
+  if (retainedTab.value && tab.value) {
+    params.set('tab', tab.value);
   }
   const queryString = params.toString();
   window.history.replaceState({}, '', `${window.location.pathname}${queryString ? `?${queryString}` : ''}`);
-};
+}
 
-watch(activeTab, writeUrl);
+function clearQuery(): void {
+  q.value = '';
+  searchInputRef.value?.focus();
+}
 
 watch(q, () => {
-  // Collection tabs sync the URL through their own controller after searching.
-  if (activeTab.value === 'all') {
+  // A retained view syncs the URL through its own controller after searching.
+  if (!retainedTab.value) {
     writeUrl();
+    isSearching.value = true;
+    runMultiSearch(q.value);
   }
-  isSearching.value = true;
-  runMultiSearch(q.value);
 });
-
-// Fall back to the All tab when the requested tab is inaccessible.
-watch(
-  () => adminSearch.config.value,
-  (config) => {
-    if (!config) {
-      return;
-    }
-    const current = activeCollectionTab.value;
-    if (current && !adminSearch.hasCollectionAccess(current.collection)) {
-      activeTab.value = 'all';
-    }
-  },
-);
 
 onMounted(async () => {
   searchInputRef.value?.focus();
   await adminSearch.initialize();
-  isSearching.value = true;
-  runMultiSearch(q.value);
+
+  // A tab this user cannot search (no scoped key) falls back to the grouped view.
+  const current = retainedTab.value;
+  if (current && !adminSearch.hasCollectionAccess(current.collection)) {
+    tab.value = null;
+  }
+
+  if (!retainedTab.value) {
+    isSearching.value = true;
+    runMultiSearch(q.value);
+  }
 });
 </script>
