@@ -195,4 +195,9 @@ return [
             'description' => 'Vietoj to, kad kiekvieno nario laikotarpį redaguotumėte atskirai, atidarykite laiko juostą ir sutvarkykite visus iš karto.',
         ],
     ],
+
+    'assign' => [
+        'already_assigned' => 'Šis narys tuo laikotarpiu jau eina šias pareigas.',
+        'quota_exceeded' => 'Padalinio kvota (:quota) viršyta.',
+    ],
 ];

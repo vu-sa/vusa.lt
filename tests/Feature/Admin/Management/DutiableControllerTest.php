@@ -235,3 +235,149 @@ describe('other assignment fields', function (): void {
         ])->assertSessionHasErrors('end_date');
     });
 });
+
+describe('store (Priskirti sheet)', function (): void {
+    beforeEach(function (): void {
+        $this->newMember = makeUser($this->tenant);
+    });
+
+    test('duty manager assigns a member with a translatable description', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->newMember->id,
+            'start_date' => '2026-09-01',
+            'additional_email' => 'seat@example.com',
+            'description' => ['lt' => '<p>Pastaba</p>', 'en' => '<p>Note</p>'],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $created = Dutiable::query()
+            ->where('duty_id', $this->dutyManagerDuty->id)
+            ->where('dutiable_id', $this->newMember->id)
+            ->sole();
+
+        expect($created->start_date->toDateString())->toBe('2026-09-01')
+            ->and($created->end_date)->toBeNull()
+            ->and($created->tenant_id)->toBeNull()
+            ->and($created->additional_email)->toBe('seat@example.com')
+            ->and($created->getTranslation('description', 'en'))->toBe('<p>Note</p>');
+    });
+
+    test('defaults the start date to today', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->newMember->id,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $created = Dutiable::query()->where('dutiable_id', $this->newMember->id)
+            ->where('duty_id', $this->dutyManagerDuty->id)->sole();
+
+        expect($created->start_date->toDateString())->toBe(now()->toDateString());
+    });
+
+    test('rejects a plain-string description', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->newMember->id,
+            'description' => 'Pastaba',
+        ])->assertSessionHasErrors('description');
+    });
+
+    test('sanitizes the public description on write', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->newMember->id,
+            'description' => ['lt' => '<p>Sveiki</p><script>alert(1)</script>'],
+        ])->assertSessionHasNoErrors();
+
+        $created = Dutiable::query()->where('dutiable_id', $this->newMember->id)
+            ->where('duty_id', $this->dutyManagerDuty->id)->sole();
+
+        expect($created->getTranslation('description', 'lt'))->not->toContain('<script');
+    });
+
+    test('rejects a member who already holds the duty during that period', function (): void {
+        $this->dutiable->update(['end_date' => null]);
+
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->regularUser->id,
+        ])->assertSessionHasErrors('user_id');
+
+        expect(Dutiable::query()->where('dutiable_id', $this->regularUser->id)
+            ->where('duty_id', $this->dutyManagerDuty->id)->count())->toBe(1);
+    });
+
+    test('allows a new term that starts after the previous one ended', function (): void {
+        $this->dutiable->update(['start_date' => '2025-01-01', 'end_date' => '2025-06-30']);
+
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->regularUser->id,
+            'start_date' => '2025-07-01',
+        ])->assertSessionHasNoErrors();
+
+        expect(Dutiable::query()->where('dutiable_id', $this->regularUser->id)
+            ->where('duty_id', $this->dutyManagerDuty->id)->count())->toBe(2);
+    });
+
+    test('rejects an end date before the start date but accepts the same day', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->newMember->id,
+            'start_date' => '2026-09-10',
+            'end_date' => '2026-09-01',
+        ])->assertSessionHasErrors('end_date');
+
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->newMember->id,
+            'start_date' => '2026-09-10',
+            'end_date' => '2026-09-10',
+        ])->assertSessionHasNoErrors();
+    });
+
+    test('a user without duty permissions cannot assign anyone', function (): void {
+        $outsider = User::factory()->create();
+
+        asUser($outsider)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->newMember->id,
+        ])->assertForbidden();
+
+        expect(Dutiable::query()->where('dutiable_id', $this->newMember->id)
+            ->where('duty_id', $this->dutyManagerDuty->id)->exists())->toBeFalse();
+    });
+
+    test('an unknown duty is forbidden rather than reported as a validation error', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => (string) Str::ulid(),
+            'user_id' => $this->newMember->id,
+        ])->assertForbidden();
+    });
+
+    test('records the assignment in the duty activity log', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'user_id' => $this->newMember->id,
+        ]);
+
+        $this->assertDatabaseHas('activity_log', [
+            'subject_id' => $this->dutyManagerDuty->id,
+            'event' => 'relation_updated',
+        ]);
+    });
+});
+
+describe('ending a term', function (): void {
+    test('a term that started today can end today', function (): void {
+        $today = now()->toDateString();
+        $this->dutiable->update(['start_date' => $today, 'end_date' => null]);
+
+        asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
+            'start_date' => $today,
+            'end_date' => $today,
+        ])->assertSessionHasNoErrors();
+
+        expect($this->dutiable->refresh()->end_date->toDateString())->toBe($today);
+    });
+});

@@ -8,8 +8,9 @@ lastUpdated: true
 ## v2.10 — New duty management and member assignment (2026-09-20) {#v2-10}
 
 - ⭐ **Streamlined duty record page** — the duty page provides a clear overview of key facts, occupancy status, current and historical members, sibling duties in the same institution, and activity logs
-- ✨ **Quick member assignment sheet** — assign members to duties directly from the record page using the new slide-out sheet featuring instant user search, tenure dates, and access-change protection
+- ✨ **Quick member assignment sheet** — assign members to duties directly from the record page using the new slide-out sheet featuring member search, tenure dates, a public description, and access-change protection; the same member cannot be assigned twice for the same period
 - ✨ **Decoupled duty editing and membership** — duty creation and editing forms no longer use complex transfer lists; member occupancy is managed on the record page, keeping duty details and settings focused
+- ✨ **Safer actions** — ending a term and deleting a duty now ask for confirmation, and unsaved changes in the sheet no longer vanish without a warning
 
 ## v2.9 — A simpler window for recording meetings (2026-09-19) {#v2-9}
 

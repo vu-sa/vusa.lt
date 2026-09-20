@@ -195,4 +195,9 @@ return [
             'description' => 'Instead of editing each member’s period on its own page, open the timeline and fix them all at once.',
         ],
     ],
+
+    'assign' => [
+        'already_assigned' => 'This member already holds this duty during that period.',
+        'quota_exceeded' => 'The tenant quota (:quota) has been exceeded.',
+    ],
 ];

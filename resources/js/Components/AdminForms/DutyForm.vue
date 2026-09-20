@@ -2,13 +2,15 @@
   <FormPage
     :title="isEditing ? dutyTitle : $t('Nauja pareigybė')"
     :head-title="isEditing ? dutyTitle : $t('Nauja pareigybė')"
-    :lead="isEditing ? (duty?.institution?.short_name ?? duty?.institution?.name) : $t('Sukurkite naują pareigybę institucijoje')"
+    :lead="isEditing ? (duty?.institution?.short_name ?? duty?.institution?.name) : $t('Sukurk naują pareigybę institucijoje')"
     :entity-type="ModelEnum.DUTY"
     :back-href="backHref ?? route('duties.index')"
     :back-label="$t('Pareigybės')"
     :processing="form.processing"
     :dirty="form.isDirty"
     :errors="form.errors"
+    :field-ids
+    :mode="isEditing ? 'edit' : 'create'"
     :locale="activeLocale"
     :available-locales="['lt', 'en']"
     :missing-locale-counts
@@ -127,7 +129,7 @@
       <FormSection
         :title="$t('Kur tai rodoma?')"
         :description="$t('Institucija ir viešosios svetainės kategorijos, kuriose atvaizduojama ši pareigybė.')"
-        badge="Matoma vusa.lt"
+        :badge="$t('Matoma vusa.lt')"
         public-marker
       >
         <!-- Institution -->
@@ -143,6 +145,7 @@
           >
             <template #trigger>
               <Button
+                id="institution_id"
                 type="button"
                 variant="outline"
                 class="u-touch w-full justify-between font-normal"
@@ -195,7 +198,7 @@
       <FormSection
         :title="$t('Aprašymas')"
         :description="$t('Aprašymas rodomas viešame puslapyje prie pareigybės.')"
-        badge="Matoma vusa.lt"
+        :badge="$t('Matoma vusa.lt')"
         public-marker
       >
         <div class="space-y-2">
@@ -368,12 +371,21 @@
           variant="destructive"
           size="sm"
           class="u-touch"
-          @click="emit('delete')"
+          @click="deleteConfirmOpen = true"
         >
           <Trash2 class="mr-1.5 size-4" />
           {{ $t('Ištrinti') }}
         </Button>
       </div>
+
+      <ConfirmDialog
+        v-model:open="deleteConfirmOpen"
+        :title="$t('Ištrinti pareigybę?')"
+        :description="$t('Pareigybė bus visiškai pašalinta iš sistemos.')"
+        :confirm-label="$t('Ištrinti')"
+        destructive
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
 </template>
@@ -385,6 +397,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronsUpDown, Trash2 } from 'lucide-vue-next';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -481,6 +494,15 @@ const dutyTitle = computed(() => {
 });
 
 const activeLocale = ref<'lt' | 'en'>('lt');
+const deleteConfirmOpen = ref(false);
+
+// Error keys that are not the id of the field they belong to.
+const fieldIds = {
+  'name.lt': 'duty-name',
+  'name.en': 'duty-name',
+  'email': 'duty-email',
+  'institution_id': 'institution_id',
+};
 
 // Form Initialization
 const form = useForm({

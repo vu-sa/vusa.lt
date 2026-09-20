@@ -4,7 +4,8 @@
       <title>{{ headTitle }}</title>
     </Head>
 
-    <div class="mx-auto w-full max-w-2xl pb-24">
+    <!-- Editing is unmistakable (rules/visual.md → Wayfinding 5): tinted paper canvas + eyebrow. -->
+    <div class="mx-auto w-full max-w-2xl bg-secondary px-4 pb-24 pt-6 sm:px-6" data-slot="form-page">
       <!-- Form Header -->
       <header class="space-y-4 border-b border-border pb-6">
         <div class="flex items-center justify-between gap-4">
@@ -43,10 +44,10 @@
                   {{ loc.toUpperCase() }}
                   <span
                     v-if="missingLocaleCounts && missingLocaleCounts[loc]"
-                    class="ml-1 text-[10px] text-destructive"
+                    class="ml-1.5 inline-block size-1.5 rounded-full bg-destructive align-middle"
                     :title="$t('Trūksta vertimų')"
                   >
-                    •
+                    <span class="sr-only">{{ $t('Trūksta vertimų') }}</span>
                   </span>
                 </button>
               </div>
@@ -57,6 +58,9 @@
         </div>
 
         <div class="space-y-1">
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-primary" data-testid="form-page-eyebrow">
+            {{ mode === 'create' ? $t('Kuri naują') : $t('Redaguoji') }}
+          </p>
           <h1 class="u-display text-3xl leading-tight text-foreground lg:text-4xl">
             {{ title }}
           </h1>
@@ -81,21 +85,35 @@
       <!-- Validation Error Summary (Rules/pages.md -> Forms, 10) -->
       <div
         v-if="hasErrors"
+        ref="summary"
         role="alert"
-        class="mt-6 border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-4 text-[var(--status-danger)]"
+        tabindex="-1"
+        class="mt-6 border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-4 text-[var(--status-danger)] outline-none"
+        data-testid="form-page-errors"
       >
         <p class="text-sm font-semibold">
           {{ $t('Formoje yra klaidų:') }}
         </p>
-        <ul class="mt-2 list-inside list-disc space-y-1 text-xs">
+        <ul class="mt-2 space-y-1 text-xs">
           <li v-for="(error, key) in errors" :key>
-            {{ error }}
+            <button
+              type="button"
+              class="u-touch text-left underline underline-offset-2"
+              @click="focusField(String(key))"
+            >
+              {{ error }}
+            </button>
           </li>
         </ul>
       </div>
 
       <!-- Main Form Body -->
-      <form class="mt-8 space-y-8" @submit.prevent="emit('submit')">
+      <form
+        :id="formId"
+        ref="formEl"
+        class="mt-8 space-y-8"
+        @submit.prevent="emit('submit')"
+      >
         <slot />
 
         <!-- Optional Collapsible Advanced Settings -->
@@ -135,10 +153,11 @@
               <span class="hidden sm:inline">{{ $t('Saugoma…') }}</span>
             </div>
             <div v-else-if="dirty" key="dirty" class="flex items-center gap-2 text-[var(--status-attention)]">
-              <span class="size-2 animate-pulse bg-[var(--status-attention)]" />
+              <span class="size-2 bg-[var(--status-attention)] motion-safe:animate-pulse" />
               <span class="hidden sm:inline">{{ $t('Neišsaugota') }}</span>
             </div>
-            <div v-else key="saved" class="flex items-center gap-2 text-muted-foreground">
+            <!-- A create form has nothing saved yet, so "all saved" would be a lie. -->
+            <div v-else-if="mode === 'edit'" key="saved" class="flex items-center gap-2 text-muted-foreground">
               <span class="hidden sm:inline">{{ $t('Visi pakeitimai išsaugoti') }}</span>
             </div>
           </Transition>
@@ -161,11 +180,11 @@
           <Button
             variant="brand"
             type="submit"
+            :form="formId"
             class="u-touch uppercase"
             :disabled="processing || disabled"
-            @click="emit('submit')"
           >
-            <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" />
+            <Loader2 v-if="processing" class="size-4 animate-spin" />
             {{ saveLabel ?? $t('Išsaugoti') }}
           </Button>
         </div>
@@ -178,7 +197,8 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, ChevronDown, Languages, Loader2 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { useEventListener } from '@vueuse/core';
+import { computed, nextTick, ref, useId, watch } from 'vue';
 
 import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
@@ -197,6 +217,10 @@ const props = withDefaults(defineProps<{
   dirty?: boolean;
   disabled?: boolean;
   errors?: Record<string, string>;
+  /** Maps an error key (`name.lt`) to the id of the field it belongs to, when they differ. */
+  fieldIds?: Record<string, string>;
+  /** `create` says "Kuri naują" and never claims anything is already saved. */
+  mode?: 'create' | 'edit';
   locale?: 'lt' | 'en';
   availableLocales?: Array<'lt' | 'en'>;
   missingLocaleCounts?: Record<string, number>;
@@ -208,6 +232,8 @@ const props = withDefaults(defineProps<{
   backLabel: undefined,
   saveLabel: undefined,
   errors: () => ({}),
+  fieldIds: () => ({}),
+  mode: 'edit',
   locale: 'lt',
   availableLocales: () => ['lt', 'en'],
   missingLocaleCounts: () => ({}),
@@ -233,6 +259,46 @@ const missingInCurrentLocale = computed(() => {
 
 const hasErrors = computed(() => {
   return props.errors && Object.keys(props.errors).length > 0;
+});
+
+const formId = `form-page-${useId()}`;
+const summary = ref<HTMLElement | null>(null);
+
+const focusField = (key: string) => {
+  const id = props.fieldIds[key] ?? key;
+  const field = document.getElementById(id) ?? document.querySelector<HTMLElement>(`[name="${CSS.escape(key)}"]`);
+
+  if (field) {
+    field.scrollIntoView({ block: 'center' });
+    field.focus({ preventScroll: true });
+  }
+};
+
+// On a failed submit the user is looking at the sticky bar; bring the problem to them.
+watch(() => Object.keys(props.errors).join('|'), async (keys, previous) => {
+  if (!keys || keys === previous) {
+    return;
+  }
+
+  await nextTick();
+  summary.value?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  summary.value?.focus({ preventScroll: true });
+});
+
+const formEl = ref<HTMLFormElement | null>(null);
+
+// On the form, not `document`, so Esc inside a portaled Select or Popover never cancels it.
+useEventListener(formEl, 'keydown', (event: KeyboardEvent) => {
+  if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+    event.preventDefault();
+
+    if (!props.processing && !props.disabled) {
+      emit('submit');
+    }
+  }
+  else if (event.key === 'Escape' && !event.defaultPrevented) {
+    handleCancel();
+  }
 });
 
 const handleCancel = () => {

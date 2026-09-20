@@ -51,6 +51,26 @@ describe('index activeReservations', function (): void {
     });
 });
 
+describe('database collection API', function (): void {
+    test('returns the paginated reservation rows for a resource manager', function (): void {
+        $response = $this->actingAs($this->admin)->getJson(route('api.v1.admin.reservations.index'));
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $this->reservation->id)
+            ->assertJsonStructure([
+                'data' => ['items', 'total', 'per_page', 'current_page', 'last_page'],
+            ]);
+    });
+
+    test('returns 403 JSON to a member without reservation access', function (): void {
+        $this->actingAs($this->user)
+            ->getJson(route('api.v1.admin.reservations.index'))
+            ->assertForbidden();
+    });
+});
+
 describe('auth: simple user', function (): void {
     beforeEach(function (): void {
         asUser($this->user)->get(route('dashboard'));

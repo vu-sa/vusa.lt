@@ -1,40 +1,43 @@
 <template>
-  <Sheet :open @update:open="emit('update:open', $event)">
-    <SheetContent
-      :side="isMobile ? 'bottom' : 'right'"
-      :class="[
-        'flex flex-col p-0',
-        isMobile ? 'h-[92vh] max-h-[92vh]' : 'sm:max-w-xl w-full',
-      ]"
-    >
-      <form class="flex h-full flex-col" @submit.prevent="emit('submit')">
-        <!-- Header -->
-        <SheetHeader class="border-b border-border px-6 py-4">
-          <SheetTitle class="text-xl font-semibold tracking-tight text-foreground">
-            {{ title }}
-          </SheetTitle>
-          <SheetDescription v-if="description" class="text-sm text-muted-foreground">
-            {{ description }}
-          </SheetDescription>
-        </SheetHeader>
+  <div>
+    <Sheet :open @update:open="requestOpenChange">
+      <SheetContent
+        data-slot="sheet-form"
+        :side="isMobile ? 'bottom' : 'right'"
+        :class="[
+          'flex flex-col p-0',
+          isMobile ? 'h-[92dvh] max-h-[92dvh]' : 'w-full sm:max-w-xl',
+        ]"
+      >
+        <form class="flex h-full min-h-0 flex-col" @submit.prevent="emit('submit')">
+          <SheetHeader class="border-b border-border px-6 py-4">
+            <SheetTitle class="text-xl font-semibold tracking-tight text-foreground">
+              {{ title }}
+            </SheetTitle>
+            <SheetDescription v-if="description" class="text-sm text-muted-foreground">
+              {{ description }}
+            </SheetDescription>
+          </SheetHeader>
 
-        <!-- Body -->
-        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-          <slot />
-        </div>
+          <div class="flex-1 space-y-6 overflow-y-auto px-6 py-5">
+            <slot />
 
-        <!-- Footer -->
-        <div class="border-t border-border bg-card px-6 py-4 flex items-center justify-between gap-3">
-          <div>
-            <slot name="footer-extra" />
+            <div v-if="$slots['danger-zone']" class="border-t border-border pt-5">
+              <slot name="danger-zone" />
+            </div>
           </div>
 
-          <div class="flex items-center gap-3">
+          <div
+            :class="[
+              'flex items-center justify-end gap-3 border-t border-border bg-card px-6 py-4',
+              'pb-[max(1rem,env(safe-area-inset-bottom))]',
+            ]"
+          >
             <Button
               variant="ghost"
               type="button"
               class="u-touch"
-              @click="handleCancel"
+              @click="requestOpenChange(false)"
             >
               {{ $t('Atšaukti') }}
             </Button>
@@ -45,20 +48,31 @@
               class="u-touch uppercase"
               :disabled="processing || disabled"
             >
-              <Loader2 v-if="processing" class="mr-2 size-4 animate-spin" />
+              <Loader2 v-if="processing" class="size-4 animate-spin" />
               {{ saveLabel ?? $t('Išsaugoti') }}
             </Button>
           </div>
-        </div>
-      </form>
-    </SheetContent>
-  </Sheet>
+        </form>
+      </SheetContent>
+    </Sheet>
+
+    <ConfirmDialog
+      v-model:open="discardOpen"
+      :title="$t('Atmesti pakeitimus?')"
+      :description="$t('Neišsaugoti pakeitimai bus prarasti.')"
+      :confirm-label="$t('Atmesti')"
+      destructive
+      @confirm="close"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { Loader2 } from 'lucide-vue-next';
+import { ref } from 'vue';
 
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import { Button } from '@/Components/ui/button';
 import {
   Sheet,
@@ -69,13 +83,15 @@ import {
 } from '@/Components/ui/sheet';
 import { useIsMobile } from '@/Composables/useIsMobile';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   open: boolean;
   title: string;
   description?: string;
   saveLabel?: string;
   processing?: boolean;
   disabled?: boolean;
+  /** Closing by the overlay, Esc or Atšaukti then asks before throwing edits away. */
+  dirty?: boolean;
 }>(), {
   description: undefined,
   saveLabel: undefined,
@@ -88,9 +104,24 @@ const emit = defineEmits<{
 }>();
 
 const isMobile = useIsMobile();
+const discardOpen = ref(false);
 
-const handleCancel = () => {
+const close = () => {
   emit('cancel');
   emit('update:open', false);
+};
+
+const requestOpenChange = (next: boolean) => {
+  if (next) {
+    emit('update:open', true);
+    return;
+  }
+
+  if (props.dirty && !props.processing) {
+    discardOpen.value = true;
+    return;
+  }
+
+  close();
 };
 </script>

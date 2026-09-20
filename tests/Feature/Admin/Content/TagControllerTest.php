@@ -99,6 +99,17 @@ describe('auth: admin user with permissions', function (): void {
             );
     });
 
+    test('returns tags through the database collection API', function (): void {
+        $this->actingAs($this->admin)
+            ->getJson(route('api.v1.admin.tags.index'))
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonFragment(['alias' => 'test-alias'])
+            ->assertJsonStructure([
+                'data' => ['items', 'total', 'per_page', 'current_page', 'last_page'],
+            ]);
+    });
+
     test('can access tag create page', function (): void {
         asUser($this->admin)
             ->get(route('tags.create'))

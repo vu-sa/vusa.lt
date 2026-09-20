@@ -30,12 +30,16 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/ActionWindow/screenRegistry.ts',
   'resources/js/Components/Layouts/FormPage.vue',
   'resources/js/Components/Patterns/SheetForm.vue',
+  'resources/js/Components/Patterns/ConfirmDialog.vue',
   'resources/js/Components/Patterns/FormSection.vue',
   'resources/js/Features/Admin/Occupancy/**',
   'resources/js/Pages/Admin/People/ShowDuty.vue',
   'resources/js/Pages/Admin/People/CreateDuty.vue',
   'resources/js/Pages/Admin/People/EditDuty.vue',
   'resources/js/Components/AdminForms/DutyForm.vue',
+  'resources/js/Pages/Admin/Reservations/IndexReservation.vue',
+  'resources/js/Pages/Admin/Content/IndexTag.vue',
+  'resources/js/Features/Admin/Tags/**',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

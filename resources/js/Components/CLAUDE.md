@@ -16,7 +16,7 @@ Patterns/      Generic, domain-free building blocks.
   ↑            SectionCard, EmptyState, EntityLinkCard, DateBadge, ShowPageGrid
 <Entity>/      Duties/, Institutions/, Meetings/, Members/, Files/ …
   ↑            Compose Patterns + domain knowledge. One barrel index.ts per folder.
-Layouts/       Page shells: AdminContentPage, RecordPage, IndexTablePage, FormUpsertLayout
+Layouts/       Page shells: AdminContentPage, RecordPage, FormPage, IndexTablePage
   ↑
 Pages/Admin/   Compose only. No raw <Card>, no hand-rolled hero or grid markup.
 ```
@@ -78,7 +78,10 @@ Rules for anything added there:
 |---|---|---|
 | An admin **record** page | `RecordPage` | `@/Components/Layouts/RecordPage.vue` |
 | An admin **index** page (table) | `IndexTablePage` | `@/Components/Layouts/IndexTablePage.vue` |
-| A **create/edit** form page | `FormUpsertLayout` | `@/Components/Layouts/FormUpsertLayout.vue` |
+| A **create/edit** form page | `FormPage` | `@/Components/Layouts/FormPage.vue` |
+| A titled group of fields inside a form | `FormSection` | `@/Components/Patterns` |
+| A small create/edit over its collection or record | `SheetForm` | `@/Components/Patterns` |
+| "Are you sure?" before ending, discarding or deleting | `ConfirmDialog` | `@/Components/Patterns` |
 | Any other admin page shell | `AdminContentPage` | `@/Components/Layouts/AdminContentPage.vue` |
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
@@ -129,6 +132,25 @@ things that truly cannot be reused. `Dashboard/` is the only folder doing this t
 State belongs in the page; components communicate upward via typed emits or
 `defineModel`. `Pages/Admin/Dashboard/Partials/ReservationKpiStrip.vue` is a good
 example of a component that is a control rather than a container.
+
+## FormPage, SheetForm, FormSection
+
+`FormPage` is the shell for a form that edits one record's own attributes (rules/pages.md → Forms): a
+narrow column on the tinted edit canvas with a "Redaguoji" / "Kuri naują" eyebrow, an optional LT | EN
+switch, a `#advanced` disclosure ("Papildomi nustatymai"), a `#danger-zone`, and a sticky save bar. It
+owns three behaviours callers should not re-implement: **⌘/Ctrl + Enter** submits and **Esc** cancels
+(listeners on the `<form>`, so a portaled Select never cancels it), and on a failed submit the error
+summary is scrolled into view and focused, each message focusing its field. Pass `mode="create"` for a new
+record (the save bar never claims "all saved"), and `field-ids` when an error key is not the field's id
+(`name.lt` → `duty-name`). Relations with their own lifecycle do **not** belong in it (Forms 1, 15).
+
+`SheetForm` is the same idea over a collection or record: a right sheet, a bottom sheet below `md`, a
+`#danger-zone` in the body (never the footer), and a `dirty` prop that makes Esc, the overlay and
+Atšaukti ask before discarding. `FormSection` groups fields under a question heading with an optional
+"Matoma vusa.lt" marker. `ConfirmDialog` is the one confirmation: name the result on the button
+("Baigti kadenciją", "Ištrinti"), never a native `confirm()`.
+
+`Layouts/FormUpsertLayout` is `@deprecated`; new forms use `FormPage`.
 
 ## RecordPage
 

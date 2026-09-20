@@ -1,28 +1,94 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
-    @update:row-selection="handleRowSelectionChange"
+  <CollectionPage
+    :source
+    collection="tags"
+    entity-type="tag"
+    :eyebrow="$t('shell.workspaces.website.title') + ' · ' + $t('shell.sections.tags')"
+    :title="$t('Žymos')"
+    :lead="$t('Tvarkyk žymas, kurios susieja svetainės turinį.')"
+    default-view="table"
+    :item-key="tagKey"
+    :columns
+    :search-placeholder="$t('Ieškoti žymų')"
   >
-    <template #headerActions>
-      <Button v-if="canMerge" variant="outline" class="gap-1.5" @click="enterMergeMode">
-        <MergeIcon class="h-4 w-4" />
-        {{ $t('Sujungti įrašus') }}
-      </Button>
-    </template>
     <template #actions>
-      <Button v-if="isMergeMode && selectedRows.length > 1" variant="secondary" @click="mergeRecords = selectedRows">
-        {{ $t('Sujungti pasirinktus') }}
+      <Button v-if="deletedCount > 0" as-child variant="ghost">
+        <Link :href="route('tags.index', { showDeleted: 'true' })">
+          <Trash2 aria-hidden="true" />
+          {{ $t('Ištrinti') }} ({{ deletedCount }})
+        </Link>
       </Button>
-      <Button v-if="isMergeMode" variant="ghost" @click="leaveMergeMode">
-        {{ $t('Cancel') }}
+      <Button v-if="canMerge" variant="ghost" @click="mergeMode = true">
+        <Merge aria-hidden="true" />
+        {{ $t('Sujungti') }}
+      </Button>
+      <Button v-if="canCreate" variant="brand" @click="openSheet()">
+        <Plus aria-hidden="true" />
+        {{ $t('Nauja žyma') }}
       </Button>
     </template>
-  </IndexTablePage>
+
+    <template #row="{ item }">
+      <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
+        <Checkbox v-if="mergeMode" :model-value="selectedIds.includes(tagKey(item))" @update:model-value="toggle(item)" />
+        <div class="min-w-0 flex-1">
+          <button type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
+            {{ title(item) }}
+          </button>
+          <p v-if="item.alias" class="mt-0.5 truncate text-sm text-muted-foreground">{{ item.alias }}</p>
+        </div>
+        <span v-if="item.is_topic" class="text-xs text-muted-foreground">{{ $t('Teminė') }}</span>
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <Checkbox v-if="column.key === 'select'" :model-value="selectedIds.includes(tagKey(item))" @update:model-value="toggle(item)" />
+      <button v-else-if="column.key === 'name'" type="button" class="font-medium hover:text-brand" @click="openSheet(item)">
+        {{ title(item) }}
+      </button>
+      <span v-else-if="column.key === 'alias'">{{ item.alias || '—' }}</span>
+      <span v-else-if="column.key === 'topic'">{{ item.is_topic ? $t('Taip') : '—' }}</span>
+      <span v-else-if="column.key === 'created'" class="tabular-nums">{{ formatDate(new Date(item.created_at)) }}</span>
+    </template>
+
+    <template #preview="{ item }">
+      <section class="flex flex-col gap-4 p-5">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{{ $t('Žyma') }}</p>
+          <h2 class="mt-1 text-lg font-semibold">{{ title(item) }}</h2>
+          <p v-if="item.alias" class="mt-1 text-sm text-muted-foreground">{{ item.alias }}</p>
+        </div>
+        <p v-if="description(item)" class="border-y border-border py-4 text-sm text-muted-foreground">{{ description(item) }}</p>
+        <Button variant="brand" @click="openSheet(item)">{{ $t('Redaguoti') }}</Button>
+        <Button v-if="canDelete" variant="ghost" @click="remove(item)">{{ $t('Ištrinti') }}</Button>
+      </section>
+    </template>
+
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="TagIcon"
+        :title="$t('Žymų dar nėra')"
+        :description="$t('Sukurk žymą, kad panašų svetainės turinį būtų lengviau rasti.')"
+        :action-label="canCreate ? $t('Nauja žyma') : undefined"
+        @action="openSheet()"
+      />
+    </template>
+  </CollectionPage>
+
+  <CollectionSelectionBar
+    v-if="mergeMode"
+    :count="selectedIds.length"
+    :count-label="$t('Pasirinkta')"
+    @clear="leaveMerge"
+  >
+    <Button variant="brand" size="sm" :disabled="selectedIds.length < 2" @click="mergeRecords = selectedTags">
+      <Merge aria-hidden="true" />
+      {{ $t('Sujungti') }}
+    </Button>
+  </CollectionSelectionBar>
+
+  <TagSheetForm v-model:open="sheetOpen" :tag="editingTag" @saved="refresh" />
   <MergeRecordsDialog
     :open="mergeRecords.length > 0"
     type="tags"
@@ -36,196 +102,121 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, watch, capitalize } from 'vue';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { router, usePage } from '@inertiajs/vue3';
-import {
-  MergeIcon,
-} from 'lucide-vue-next';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Merge, Plus, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
-import type { IndexTablePageInstance,
-  IndexTablePageProps } from '@/Types/TableConfigTypes';
+import type { CollectionColumn } from '@/Components/Collection/types';
+import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { TruncatedBadge, TruncatedText } from '@/Components/ui/data-table/cells';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import { TagIcon } from '@/Components/icons';
-import {
-  createTitleColumn, resolveTranslatable,
-} from '@/Composables/useDataTableColumns';
+import { Checkbox } from '@/Components/ui/checkbox';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
+import TagSheetForm from '@/Features/Admin/Tags/TagSheetForm.vue';
+import { TagIcon } from '@/Components/icons';
+import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { formatDate } from '@/Utils/dateTime';
+
+type Translation = { lt?: string; en?: string };
+type Tag = App.Entities.Tag & { name: Translation; description?: Translation | null };
 
 const props = defineProps<{
-  tags: {
-    data: App.Entities.Tag[];
-    meta: {
-      total: number;
-      current_page: number;
-      per_page: number;
-      last_page: number;
-      from: number;
-      to: number;
-    };
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  showDeleted?: boolean;
-  deletedCount?: number;
+  tags: { data: Tag[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
+  deletedCount: number;
 }>();
 
-// Component constants
-const modelName = 'tags';
-const entityName = 'tag';
-
-// Component refs
-const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
-
-// Permission checks
-const canCreate = computed(() => usePage().props.auth?.can?.create?.tag || false);
-const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.tag ?? false);
-const canExport = computed(() => false); // Export functionality disabled for tags
-
-// Row selection
-const selectedRows = ref<MergeRecord[]>([]);
-const mergeRecords = ref<MergeRecord[]>([]);
 const { hasCollectionAction } = useAdminNavigation();
+const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.tag));
+const canDelete = computed(() => Boolean(usePage().props.auth?.can?.delete?.tag));
 const canMerge = computed(() => hasCollectionAction('tags.index', 'merge'));
-const isMergeMode = computed(() => new URLSearchParams(usePage().url.split('?')[1] ?? '').get('merge') === '1');
+const sheetOpen = ref(false);
+const editingTag = ref<Tag | null>(null);
+const mergeMode = ref(false);
+const selectedIds = ref<string[]>([]);
+const mergeRecords = ref<MergeRecord[]>([]);
 
-// Custom row ID function to ensure stable IDs across pagination/sorting
-const getRowId = (row: App.Entities.Tag) => {
-  return `tag-${row.id}`;
-};
-
-// Table columns
-const columns = computed<Array<ColumnDef<App.Entities.Tag, any>>>(() => [
-  createTitleColumn<App.Entities.Tag>({
-    accessorKey: 'name',
-    routeName: 'tags.edit',
-    width: 300,
-  }),
-  {
-    accessorKey: 'alias',
-    header: () => $t('Alias'),
-    cell: ({ row }) => {
-      const { alias } = row.original;
-      if (!alias) return null;
-
-      return h(TruncatedBadge, { text: alias, variant: 'outline' });
-    },
-    size: 150,
+const source = useDatabaseCollectionSource<Tag>({
+  endpoint: route('api.v1.admin.tags.index'),
+  initial: {
+    items: props.tags.data,
+    total: props.tags.meta.total,
+    perPage: props.tags.meta.per_page,
+    currentPage: props.tags.meta.current_page,
+    lastPage: props.tags.meta.last_page,
   },
-  {
-    accessorKey: 'is_topic',
-    header: () => $t('forms.fields.is_topic'),
-    cell: ({ row }) => {
-      if (!row.original.is_topic) return null;
-
-      return h(TruncatedBadge, { text: $t('forms.fields.is_topic'), variant: 'secondary' });
-    },
-    size: 120,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'created_at',
-    header: () => $t('forms.fields.created_at'),
-    cell: ({ row }) => {
-      return h(TruncatedText, { text: new Date(row.original.created_at).toLocaleDateString('lt-LT') });
-    },
-    size: 150,
-    enableSorting: true,
-  },
-  createStandardActionsColumn<App.Entities.Tag>('tags', {
-    canView: false,
-    canEdit: true,
-    canDelete: true,
-    canRestore: true,
-    canForceDelete: canForceDelete.value,
-    customActions: canMerge.value
-      ? [{
-          key: 'merge',
-          label: $t('Sujungti su…'),
-          icon: MergeIcon,
-          onSelect: (row) => { mergeRecords.value = [{ id: row.id, label: resolveTranslatable(row.name), context: row.alias }]; },
-        }]
-      : [],
-  }),
-]);
-
-// Simplified table configuration using the new interfaces
-const tableConfig = computed<IndexTablePageProps<App.Entities.Tag>>(() => {
-  return {
-    // Essential table configuration
-    modelName,
-    entityName,
-    data: props.tags.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.tags.meta.total,
-    initialPage: props.tags.meta.current_page,
-    pageSize: props.tags.meta.per_page,
-
-    // Advanced features
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: true,
-    enableRowSelection: isMergeMode.value,
-    enableRowSelectionColumn: isMergeMode.value,
-    allowToggleDeleted: true,
-    showDeleted: props.showDeleted,
-    deletedCount: props.deletedCount,
-
-    // Page layout
-    headerTitle: 'Žymos',
-    icon: TagIcon,
-    createRoute: canCreate.value ? route('tags.create') : undefined,
-    canCreate: canCreate.value,
-  };
+  defaultSort: 'created_at:desc',
+  sortOptions: [
+    { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
+    { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
+    { value: 'alias:asc', label: $t('Pagal alias') },
+  ],
+  preserveUrlKeys: ['showDeleted'],
 });
 
-// Row selection handler
-const handleRowSelectionChange = (selection: any) => {
-  selectedRows.value = (indexTablePageRef.value?.getSelectedRows() ?? []).map(row => ({
-    id: row.id,
-    label: resolveTranslatable(row.name),
-    context: row.alias,
-  }));
-};
+const columns = computed<CollectionColumn[]>(() => [
+  ...(mergeMode.value ? [{ key: 'select', label: $t('Pasirinkti'), class: 'w-12' }] : []),
+  { key: 'name', label: $t('Žyma') },
+  { key: 'alias', label: $t('Alias'), class: 'w-48' },
+  { key: 'topic', label: $t('Tema'), class: 'w-28' },
+  { key: 'created', label: $t('Sukurta'), class: 'w-32' },
+]);
 
-const enterMergeMode = () => router.get(route('tags.index'), { merge: 1 }, { preserveState: true, preserveScroll: true });
-const leaveMergeMode = () => router.get(route('tags.index'), {}, { preserveState: true, preserveScroll: true });
-const merged = () => {
+const tagKey = (tag: Tag) => String(tag.id);
+const title = (tag: Tag) => tag.name.lt || tag.name.en || '—';
+const description = (tag: Tag) => tag.description?.lt || tag.description?.en || '';
+const selectedTags = computed<MergeRecord[]>(() => source.items.value
+  .filter(tag => selectedIds.value.includes(tagKey(tag)))
+  .map(tag => ({ id: tag.id, label: title(tag), context: tag.alias ?? undefined })));
+
+function openSheet(tag: Tag | null = null): void {
+  editingTag.value = tag;
+  sheetOpen.value = true;
+}
+
+function refresh(): void {
+  editingTag.value = null;
+  source.refresh();
+}
+
+function toggle(tag: Tag): void {
+  const id = tagKey(tag);
+  selectedIds.value = selectedIds.value.includes(id)
+    ? selectedIds.value.filter(selected => selected !== id)
+    : [...selectedIds.value, id];
+}
+
+function leaveMerge(): void {
+  mergeMode.value = false;
+  selectedIds.value = [];
+}
+
+function merged(): void {
   mergeRecords.value = [];
-  indexTablePageRef.value?.clearRowSelection();
-  router.reload({ only: ['tags'] });
-};
+  leaveMerge();
+  source.refresh();
+}
 
-// Event handler for data loaded
-const onDataLoaded = (data: any) => {
-  // Additional handling after data is loaded if needed
-};
-
-// Event handler for sorting changes from IndexTablePage
-const handleSortingChange = (sorting: any) => {
-  // Additional handling for sorting changes if needed
-};
-
-// Event handler for page changes from IndexTablePage
-const handlePageChange = (page: any) => {
-  // Additional handling for page changes if needed
-};
-
-// Event handler for filter changes from IndexTablePage
-const handleFilterChange = (filterKey: any, value: any) => {
-  // Additional handling for filter changes if needed
-};
-
-// Sync filter values when changed externally
-watch(() => props.filters, (newFilters) => {
-  // Handle any external filter changes if needed
-}, { deep: true });
+function remove(tag: Tag): void {
+  const before = [...source.items.value];
+  source.replaceItems(source.items.value.filter(item => item.id !== tag.id));
+  router.delete(route('tags.destroy', tag.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      toast.success($t('Žyma ištrinta.'), {
+        action: {
+          label: $t('Atšaukti'),
+          onClick: () => router.patch(route('tags.restore', tag.id), {}, { preserveScroll: true, onSuccess: () => source.refresh() }),
+        },
+      });
+    },
+    onError: () => {
+      source.replaceItems(before);
+      toast.error($t('Nepavyko ištrinti žymos.'));
+    },
+  });
+}
 </script>

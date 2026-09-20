@@ -210,36 +210,11 @@ class DutyController extends AdminController
 
         $duty->load('institution.tenant', 'users', 'types');
 
-        // Sibling duties for the sidebar (queried separately to keep the payload lean).
-        $otherDuties = $duty->institution
-            ? $duty->institution->duties()
-                ->where('id', '!=', $duty->id)
-                ->orderBy('order')
-                ->with('current_users:id,name,profile_photo_path')
-                ->get(['id', 'name', 'institution_id', 'places_to_occupy', 'order'])
-                ->map(fn (Duty $sibling) => $sibling->toArray())
-                ->values()
-            : collect();
-
-        // Next / last meeting (HasManyDeep through the institution).
-        $nextMeeting = $duty->meetings()
-            ->where('start_time', '>=', now())
-            ->orderBy('start_time')
-            ->first(['meetings.id', 'meetings.title', 'meetings.start_time']);
-
-        $lastMeeting = $duty->meetings()
-            ->where('start_time', '<', now())
-            ->orderByDesc('start_time')
-            ->first(['meetings.id', 'meetings.title', 'meetings.start_time']);
-
         $user = request()->user();
 
         return $this->inertiaResponse('Admin/People/ShowDuty', [
             'duty' => array_merge($duty->toArray(), [
                 'sharepointPath' => $duty->institution?->tenant ? $duty->sharepoint_path() : null,
-                'other_duties' => $otherDuties,
-                'next_meeting' => $nextMeeting?->toArray(),
-                'last_meeting' => $lastMeeting?->toArray(),
             ]),
             // Per-record, not from `auth.can`: `duties.update.padalinys` is tenant-scoped,
             // so a single global boolean would be wrong for every cross-tenant case.
@@ -247,7 +222,38 @@ class DutyController extends AdminController
                 'update' => $user->can('update', $duty),
                 'managePeople' => $user->can('managePeople', $duty),
             ],
+            // Only the "Apie pareigybę" tab and the Priskirti sheet need these.
+            'otherDuties' => Inertia::defer(fn () => $duty->institution
+                ? $duty->institution->duties()
+                    ->where('id', '!=', $duty->id)
+                    ->orderBy('order')
+                    ->with('current_users:id,name,profile_photo_path')
+                    ->get(['id', 'name', 'institution_id', 'places_to_occupy', 'order'])
+                    ->map(fn (Duty $sibling) => $sibling->toArray())
+                    ->values()
+                    ->all()
+                : [], 'dutyPanels'),
+            'studyPrograms' => Inertia::defer(fn () => $this->studyProgramsFor($duty), 'dutyPanels'),
         ]);
+    }
+
+    /**
+     * Study programs of the duty's own tenant, for the assignment sheet's picker.
+     * Falls back to every programme when the tenant cannot be resolved.
+     *
+     * @return Collection<int, StudyProgram>
+     */
+    private function studyProgramsFor(Duty $duty): Collection
+    {
+        $tenantId = $duty->institution?->tenant_id;
+        // A programme already on an assignment stays selectable even from another tenant.
+        $inUse = $duty->users->map(fn (User $user) => $user->pivot?->study_program_id)->filter()->all();
+
+        return StudyProgram::query()
+            ->when($tenantId, fn ($query) => $query->where(
+                fn ($query) => $query->where('tenant_id', $tenantId)->orWhereIn('id', $inUse)
+            ))
+            ->get();
     }
 
     /**

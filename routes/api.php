@@ -22,9 +22,11 @@ use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
+use App\Http\Controllers\Api\Admin\ReservationApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
+use App\Http\Controllers\Api\Admin\TagApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
 use App\Http\Controllers\Api\Admin\UserAttributionApiController;
@@ -108,6 +110,10 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
     |
     */
     Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(function (): void {
+        // Database-backed collection pages refresh these records without an Inertia visit.
+        Route::get('reservations', [ReservationApiController::class, 'index'])->name('reservations.index');
+        Route::get('tags', [TagApiController::class, 'index'])->name('tags.index');
+
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
 

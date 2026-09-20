@@ -56,6 +56,7 @@ vi.mock('@inertiajs/vue3', async () => {
   return {
     Link: inertiaMock.Link,
     Head: inertiaMock.Head,
+    Deferred: inertiaMock.Deferred,
     usePage: inertiaMock.usePage,
     router: inertiaMock.router,
     useForm: inertiaMock.useForm,

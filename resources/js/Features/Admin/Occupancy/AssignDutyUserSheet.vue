@@ -6,11 +6,10 @@
       :description="sheetDescription"
       :save-label
       :processing="form.processing"
+      :dirty="form.isDirty"
       @update:open="emit('update:open', $event)"
       @submit="submit"
-      @cancel="emit('update:open', false)"
     >
-      <!-- Fixed Context Banner: Duty if known -->
       <div v-if="dutyContext" class="flex items-start gap-3 border border-border bg-secondary/50 p-3">
         <div class="flex size-10 shrink-0 items-center justify-center border border-border bg-card text-muted-foreground">
           <Briefcase class="size-5" />
@@ -28,116 +27,43 @@
         </div>
       </div>
 
-      <!-- Fixed Context Banner: User if known -->
-      <div v-if="userContext" class="flex items-start gap-3 border border-border bg-secondary/50 p-3">
-        <UserAvatar :user="userContext" :size="40" class="shrink-0" />
-        <div class="min-w-0 flex-1">
-          <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            {{ $t('Asmuo') }}
-          </p>
-          <p class="truncate text-sm font-semibold text-foreground">
-            {{ userContext.name }}
-          </p>
-          <p v-if="userContext.email" class="truncate text-xs text-muted-foreground">
-            {{ userContext.email }}
-          </p>
-        </div>
-      </div>
-
-      <!-- User Selector (when user is not pre-fixed) -->
-      <div v-if="!userContext" class="space-y-2">
-        <Label for="user-search" class="text-sm font-medium">
-          {{ $t('Asmuo') }} *
-        </Label>
-
-        <div v-if="selectedUser" class="flex items-center justify-between border border-border bg-card p-2.5">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <UserAvatar :user="selectedUser" :size="32" class="shrink-0" />
-            <div class="min-w-0">
-              <p class="truncate text-sm font-medium text-foreground">
-                {{ selectedUser.name }}
-              </p>
-              <p class="truncate text-xs text-muted-foreground">
-                {{ selectedUser.email }}
-              </p>
-            </div>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            class="u-touch shrink-0"
-            @click="clearSelectedUser"
-          >
-            <X class="size-4" />
-            <span class="sr-only">{{ $t('Keisti') }}</span>
-          </Button>
-        </div>
-
-        <div v-else class="relative">
-          <div class="relative">
-            <Search class="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="user-search"
-              v-model="userSearchQuery"
-              class="pl-9 pr-9"
-              :placeholder="$t('Ieškoti asmens pagal vardą ar el. paštą…')"
-              autocomplete="off"
-            />
-            <Loader2
-              v-if="isSearchingUsers"
-              class="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground"
-            />
-          </div>
-
-          <!-- User Search Results Dropdown -->
-          <div
-            v-if="userSearchQuery.trim().length >= 2"
-            class="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto border border-border bg-popover shadow-md"
-          >
-            <div v-if="userSearchResults.length === 0 && !isSearchingUsers" class="p-4 text-center text-sm text-muted-foreground">
-              {{ $t('Naudotojų nerasta') }}
-            </div>
-            <ul v-else class="divide-y divide-border">
-              <li
-                v-for="u in userSearchResults"
-                :key="u.id"
-              >
-                <button
-                  type="button"
-                  :class="[
-                    'flex w-full cursor-pointer items-center justify-between gap-3 p-3 text-left',
-                    'transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none',
-                  ]"
-                  @click="selectUser(u)"
-                >
-                  <div class="flex min-w-0 items-center gap-3">
-                    <UserAvatar :user="u" :size="32" class="shrink-0" />
-                    <div class="min-w-0">
-                      <p class="truncate text-sm font-medium text-foreground">
-                        {{ u.name }}
-                      </p>
-                      <p class="truncate text-xs text-muted-foreground">
-                        {{ u.email }}
-                      </p>
-                    </div>
-                  </div>
-                  <div v-if="u.tenants && u.tenants.length" class="shrink-0">
-                    <span class="border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {{ u.tenants.join(', ') }}
-                    </span>
-                  </div>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <p v-if="form.errors.user_id" class="text-xs text-destructive">
-          {{ form.errors.user_id }}
+      <div
+        v-if="isFull && !isEditing"
+        class="border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-3 text-xs text-[var(--status-attention)]"
+        data-testid="assign-sheet-full-notice"
+      >
+        <p class="font-semibold">
+          {{ $t('Visos vietos užimtos (:taken / :total)', { taken: String(occupiedPlaces), total: String(dutyContext?.places_to_occupy ?? '') }) }}
+        </p>
+        <p class="mt-0.5">
+          {{ $t('Narį vis tiek gali priskirti; vietų skaičių pakeisi pareigybės nustatymuose.') }}
         </p>
       </div>
 
-      <!-- Ex-officio Notice -->
+      <MemberSearchField
+        v-if="!isEditing"
+        v-model="member"
+        :taken-ids
+        :error="form.errors.user_id"
+      />
+      <div
+        v-else-if="member"
+        class="flex items-center gap-3 border border-border bg-secondary/50 p-3"
+      >
+        <UserAvatar :user="member" :size="40" class="shrink-0" />
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {{ $t('Narys') }}
+          </p>
+          <p class="truncate text-sm font-semibold text-foreground">
+            {{ member.name }}
+          </p>
+          <p v-if="member.email" class="truncate text-xs text-muted-foreground">
+            {{ member.email }}
+          </p>
+        </div>
+      </div>
+
       <div
         v-if="isExOfficio"
         class="flex items-start gap-3 border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-3 text-[var(--status-attention)]"
@@ -148,58 +74,43 @@
             {{ $t('Pareigos pagal pareigas (ex-officio)') }}
           </p>
           <p class="mt-0.5">
-            {{ $t('Šio priskyrimo laikotarpis yra valdomas per pagrindines pareigas.') }}
+            {{ $t('Šios kadencijos laikotarpį valdo pagrindinės pareigos.') }}
           </p>
         </div>
       </div>
 
-      <!-- Period: Start & End Dates -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="space-y-1.5">
-          <Label for="start_date" class="text-sm font-medium">
-            {{ $t('Pradžios data') }} *
+        <div class="space-y-1.5" role="group" aria-labelledby="assign-start-label">
+          <Label id="assign-start-label" class="text-sm font-medium">
+            {{ $t('Pradžios data') }}
           </Label>
-          <DatePicker
-            id="start_date"
-            v-model="form.start_date"
-            :disabled="isExOfficio"
-          />
+          <DatePicker v-model="startDate" :disabled="isExOfficio" />
           <p v-if="form.errors.start_date" class="text-xs text-destructive">
             {{ form.errors.start_date }}
           </p>
         </div>
 
-        <div class="space-y-1.5">
+        <div class="space-y-1.5" role="group" aria-labelledby="assign-end-label">
           <div class="flex items-center justify-between">
-            <Label for="end_date" class="text-sm font-medium">
+            <Label id="assign-end-label" class="text-sm font-medium">
               {{ $t('Pabaigos data') }}
             </Label>
-            <span class="text-xs text-muted-foreground">
-              {{ $t('(neprivaloma)') }}
-            </span>
+            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
           </div>
-          <DatePicker
-            id="end_date"
-            v-model="form.end_date"
-            :disabled="isExOfficio"
-            clearable
-          />
+          <DatePicker v-model="endDate" :disabled="isExOfficio" clearable />
           <p v-if="form.errors.end_date" class="text-xs text-destructive">
             {{ form.errors.end_date }}
           </p>
         </div>
       </div>
 
-      <!-- Details Section: Collapsible or Direct -->
       <div class="space-y-4 border-t border-border pt-4">
         <div class="space-y-1.5">
           <div class="flex items-center justify-between">
             <Label for="additional_email" class="text-sm font-medium">
-              {{ $t('Pareigybės el. paštas') }}
+              {{ $t('Papildomas el. paštas') }}
             </Label>
-            <span class="text-xs text-muted-foreground">
-              {{ $t('(neprivaloma)') }}
-            </span>
+            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
           </div>
           <Input
             id="additional_email"
@@ -208,97 +119,149 @@
             placeholder="vardas.pavarde@vusa.lt"
           />
           <p class="text-xs text-muted-foreground">
-            {{ $t('El. pašto adresas, rodomas prie šio naudotojo kontaktų.') }}
+            {{ $t('Rodomas prie šio nario kontaktų.') }}
           </p>
           <p v-if="form.errors.additional_email" class="text-xs text-destructive">
             {{ form.errors.additional_email }}
           </p>
         </div>
 
-        <!-- Study Program (optional) -->
-        <div v-if="studyPrograms && studyPrograms.length > 0" class="space-y-1.5">
+        <div v-if="studyPrograms.length > 0" class="space-y-1.5">
           <div class="flex items-center justify-between">
             <Label for="study_program_id" class="text-sm font-medium">
               {{ $t('Studijų programa') }}
             </Label>
-            <span class="text-xs text-muted-foreground">
-              {{ $t('(neprivaloma)') }}
-            </span>
+            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
           </div>
-          <SingleSelect
-            v-model="form.study_program_id"
-            :options="studyPrograms"
-            label-field="name"
-            value-field="id"
-            :placeholder="$t('Pasirinkite studijų programą…')"
-          />
+          <Select v-model="studyProgramValue">
+            <SelectTrigger id="study_program_id">
+              <SelectValue :placeholder="$t('Pasirink studijų programą…')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem :value="NO_STUDY_PROGRAM">
+                {{ $t('Nenurodyta') }}
+              </SelectItem>
+              <SelectItem v-for="program in studyPrograms" :key="program.id" :value="String(program.id)">
+                {{ program.name }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
           <p v-if="form.errors.study_program_id" class="text-xs text-destructive">
             {{ form.errors.study_program_id }}
           </p>
         </div>
 
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <Label for="description" class="text-sm font-medium">
-              {{ $t('Pastabos / Aprašymas') }}
-            </Label>
-            <span class="text-xs text-muted-foreground">
-              {{ $t('(neprivaloma)') }}
-            </span>
-          </div>
-          <Input
-            id="description"
-            v-model="form.description"
-            :placeholder="$t('Papildoma informacija apie šį priskyrimą…')"
+        <div class="flex items-start gap-2.5">
+          <Checkbox
+            id="use_original_duty_name"
+            class="mt-0.5"
+            :model-value="form.use_original_duty_name"
+            @update:model-value="form.use_original_duty_name = $event === true"
           />
-          <p v-if="form.errors.description" class="text-xs text-destructive">
-            {{ form.errors.description }}
-          </p>
+          <div class="space-y-0.5">
+            <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
+              {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
+            </Label>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Matoma vusa.lt') }}
+            </p>
+          </div>
         </div>
 
-        <div class="flex items-center gap-2 pt-1">
-          <input
-            id="use_original_duty_name"
-            v-model="form.use_original_duty_name"
-            type="checkbox"
-            class="size-4 border-border text-primary focus:ring-primary"
-          >
-          <Label for="use_original_duty_name" class="cursor-pointer text-xs font-normal text-muted-foreground">
-            {{ $t('Naudoti originalų pareigybės pavadinimą viešame puslapyje') }}
-          </Label>
-        </div>
+        <details :open="descriptionOpen" class="group border-t border-border pt-4" @toggle="onDescriptionToggle">
+          <summary class="u-touch flex cursor-pointer select-none items-center justify-between text-sm font-semibold text-foreground">
+            <span>{{ $t('Viešas aprašymas') }}</span>
+            <ChevronDown class="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div v-if="descriptionOpen" class="mt-4 space-y-3">
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Matoma vusa.lt') }} · {{ $t('Rodomas viešame kontaktų sąraše vietoj pareigybės aprašymo.') }}
+            </p>
+            <div class="inline-flex border border-border bg-secondary p-0.5" role="group" :aria-label="$t('Kalba')">
+              <button
+                v-for="loc in LOCALES"
+                :key="loc"
+                type="button"
+                :class="[
+                  'u-touch px-2.5 py-1 text-xs font-semibold uppercase tracking-wider transition-colors',
+                  descriptionLocale === loc ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground',
+                ]"
+                :aria-pressed="descriptionLocale === loc"
+                @click="descriptionLocale = loc"
+              >
+                {{ loc }}
+              </button>
+            </div>
+            <TiptapEditor
+              :key="descriptionLocale"
+              v-model="form.description[descriptionLocale]"
+              preset="full"
+              html
+            />
+            <p v-if="form.errors.description" class="text-xs text-destructive">
+              {{ form.errors.description }}
+            </p>
+          </div>
+        </details>
       </div>
 
-      <!-- Footer extra: Actions for existing occupancy -->
-      <template #footer-extra>
-        <div v-if="isEditing" class="flex items-center gap-2">
-          <Button
-            v-if="isActiveTerm"
-            type="button"
-            variant="outline"
-            size="sm"
-            class="u-touch"
-            :disabled="form.processing || isExOfficio"
-            @click="endTerm"
-          >
-            <CalendarCheck class="size-4 mr-1.5" />
-            {{ $t('Baigti kadenciją') }}
-          </Button>
+      <template v-if="isEditing && !isExOfficio" #danger-zone>
+        <div class="space-y-4">
+          <div v-if="canEndTerm" class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-foreground">
+                {{ $t('Baigti kadenciją šiandien') }}
+              </p>
+              <p class="text-xs text-muted-foreground">
+                {{ $t('Narys nebebus laikomas šių pareigų nariu, bet įrašas liks istorijoje.') }}
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" class="u-touch shrink-0" :disabled="form.processing" @click="endTermOpen = true">
+              <CalendarCheck class="size-4" />
+              {{ $t('Baigti kadenciją') }}
+            </Button>
+          </div>
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            class="u-touch text-destructive hover:bg-destructive/10 hover:text-destructive"
-            :disabled="form.processing"
-            @click="deleteOccupancy"
-          >
-            <Trash2 class="size-4 mr-1.5" />
-            {{ $t('Ištrinti') }}
-          </Button>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-destructive">
+                {{ $t('Ištrinti priskyrimą') }}
+              </p>
+              <p class="text-xs text-muted-foreground">
+                {{ $t('Kadencijos įrašas bus pašalintas. Jei tik baigėsi kadencija, verčiau ją pabaik.') }}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="u-touch shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/10"
+              :disabled="form.processing"
+              @click="deleteOpen = true"
+            >
+              <Trash2 class="size-4" />
+              {{ $t('Ištrinti') }}
+            </Button>
+          </div>
         </div>
       </template>
     </SheetForm>
+
+    <ConfirmDialog
+      v-model:open="endTermOpen"
+      :title="$t('Baigti kadenciją šiandien?')"
+      :description="$t('Narys nebebus laikomas šių pareigų nariu, bet įrašas liks istorijoje.')"
+      :confirm-label="$t('Baigti kadenciją')"
+      @confirm="endTerm"
+    />
+    <ConfirmDialog
+      v-model:open="deleteOpen"
+      :title="$t('Ištrinti priskyrimą?')"
+      :description="$t('Kadencijos įrašas bus pašalintas.')"
+      :confirm-label="$t('Ištrinti')"
+      destructive
+      @confirm="deleteOccupancy"
+    />
 
     <AccessChangeWarningDialog
       :open="accessWarningOpen"
@@ -311,53 +274,56 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { useForm, router } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import {
-  Briefcase,
-  CalendarCheck,
-  Loader2,
-  Search,
-  Sparkles,
-  Trash2,
-  X,
-} from 'lucide-vue-next';
+import { Briefcase, CalendarCheck, ChevronDown, Sparkles, Trash2 } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
-import SheetForm from '@/Components/Patterns/SheetForm.vue';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { DatePicker } from '@/Components/ui/date-picker';
-import { SingleSelect } from '@/Components/ui/single-select';
+import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
+import { termStatus } from './occupancy';
+
+import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import SheetForm from '@/Components/Patterns/SheetForm.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { DatePicker } from '@/Components/ui/date-picker';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
+import { formatDate, todayIso } from '@/Utils/dateTime';
 
-export interface UserHit {
-  id: string;
-  name: string;
-  email?: string;
-  profile_photo_path?: string | null;
-  tenants?: string[];
+type Dutiable = App.Entities.Dutiable & Record<string, unknown>;
+interface DescriptionText {
+  lt: string;
+  en: string;
 }
+
+const LOCALES = ['lt', 'en'] as const;
+const NO_STUDY_PROGRAM = '__none__';
 
 const props = withDefaults(defineProps<{
   open: boolean;
-  dutyId?: string | number;
-  userId?: string | number;
   duty?: (App.Entities.Duty & Record<string, unknown>) | null;
-  user?: (App.Entities.User & Record<string, unknown>) | UserHit | null;
-  dutiable?: (App.Entities.Dutiable & Record<string, unknown>) | null;
+  /** The term being edited; omit to assign a new member. */
+  dutiable?: Dutiable | null;
+  /** Pre-selected member, e.g. when opened from that member's row. */
+  user?: (App.Entities.User & Record<string, unknown>) | MemberHit | null;
   studyPrograms?: App.Entities.StudyProgram[];
+  /** Members who already hold the duty right now; they cannot be assigned again. */
+  takenIds?: string[];
+  occupiedPlaces?: number;
 }>(), {
-  dutyId: undefined,
-  userId: undefined,
   duty: null,
-  user: null,
   dutiable: null,
+  user: null,
   studyPrograms: () => [],
+  takenIds: () => [],
+  occupiedPlaces: 0,
 });
 
 const emit = defineEmits<{
@@ -369,170 +335,151 @@ const { report: accessWarningReport, open: accessWarningOpen, guardedSubmit, con
 
 const isEditing = computed(() => !!props.dutiable);
 const isExOfficio = computed(() => !!props.dutiable?.via_dutiable_id);
-
 const dutyContext = computed(() => props.duty ?? props.dutiable?.duty ?? null);
-const userContext = computed(() => props.user ?? props.dutiable?.user ?? props.dutiable?.dutiable ?? null);
+const isFull = computed(() => {
+  const places = Number(dutyContext.value?.places_to_occupy ?? 0);
 
-const sheetTitle = computed(() => {
-  if (isEditing.value) {
-    return $t('Redaguoti priskyrimą');
-  }
-  return $t('Priskirti pareigoms');
+  return places > 0 && props.occupiedPlaces >= places;
 });
+const canEndTerm = computed(() => !!props.dutiable && termStatus(props.dutiable as { start_date?: string; end_date?: string | null }) === 'current');
 
-const sheetDescription = computed(() => {
-  if (isEditing.value) {
-    return $t('Nustatykite pareigų ėjimo laikotarpį ir papildomą kontaktų informaciją.');
-  }
-  return $t('Priskirkite asmenį pareigoms nustatytam laikotarpiui.');
-});
+const sheetTitle = computed(() => (isEditing.value ? $t('Redaguoti kadenciją') : $t('Priskirti narį')));
+const sheetDescription = computed(() => (isEditing.value
+  ? $t('Pakeisk laikotarpį ar papildomą informaciją apie šį priskyrimą.')
+  : $t('Pasirink narį ir nurodyk, nuo kada jis eina šias pareigas.')));
+const saveLabel = computed(() => (isEditing.value ? $t('Išsaugoti') : $t('Priskirti')));
 
-const saveLabel = computed(() => {
-  if (isEditing.value) {
-    return $t('Atnaujinti');
-  }
-  return $t('Priskirti');
-});
+const asDescription = (value: unknown): DescriptionText => {
+  const text = (value && typeof value === 'object' ? value : {}) as Partial<DescriptionText>;
 
-const isActiveTerm = computed(() => {
-  if (!props.dutiable) return false;
-  const end = props.dutiable.end_date;
-  if (!end) return true;
-  return new Date(end) >= new Date();
-});
+  return { lt: text.lt ?? '', en: text.en ?? '' };
+};
 
-const form = useForm({
-  duty_id: (props.dutyId ?? props.dutiable?.duty_id ?? '') as string,
-  user_id: (props.userId ?? props.dutiable?.dutiable_id ?? '') as string,
-  start_date: (props.dutiable?.start_date ?? new Date().toISOString().split('T')[0]) as string,
-  end_date: (props.dutiable?.end_date ?? null) as string | null,
-  study_program_id: (props.dutiable?.study_program_id ?? null) as number | null,
-  additional_email: (props.dutiable?.additional_email ?? '') as string,
-  description: (props.dutiable?.description ?? '') as string,
+const initialValues = () => ({
+  duty_id: String(dutyContext.value?.id ?? props.dutiable?.duty_id ?? ''),
+  user_id: String(props.user?.id ?? props.dutiable?.dutiable_id ?? ''),
+  start_date: props.dutiable?.start_date ? String(props.dutiable.start_date).slice(0, 10) : todayIso(),
+  end_date: props.dutiable?.end_date ? String(props.dutiable.end_date).slice(0, 10) : null as string | null,
+  study_program_id: (props.dutiable?.study_program_id ?? null) as string | null,
+  additional_email: props.dutiable?.additional_email ?? '',
+  description: asDescription(props.dutiable?.description),
   use_original_duty_name: Boolean(props.dutiable?.use_original_duty_name),
   acknowledge_access_change: false,
 });
 
-// User Search logic
-const selectedUser = ref<UserHit | (App.Entities.User & Record<string, unknown>) | null>(userContext.value ?? null);
-const userSearchQuery = ref('');
-const userSearchResults = ref<UserHit[]>([]);
-const isSearchingUsers = ref(false);
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+const form = useForm(initialValues());
 
-// Watch when dutiable / duty / user props change to reset form
+const hasText = (text: DescriptionText) => text.lt.trim() !== '' || text.en.trim() !== '';
+const hasDescription = computed(() => hasText(form.description));
+
+const descriptionOpen = ref(false);
+const descriptionLocale = ref<(typeof LOCALES)[number]>('lt');
+
+const member = ref<MemberHit | null>(null);
+
+const initialMember = (): MemberHit | null => {
+  const known = props.user ?? props.dutiable?.user ?? props.dutiable?.dutiable ?? null;
+
+  return known ? (known as MemberHit) : null;
+};
+
+watch(member, (hit) => {
+  form.user_id = hit ? String(hit.id) : '';
+});
+
 watch(
   () => props.open,
   (isOpen) => {
-    if (isOpen) {
-      form.duty_id = (props.dutyId ?? props.dutiable?.duty_id ?? '') as string;
-      form.user_id = (props.userId ?? props.dutiable?.dutiable_id ?? '') as string;
-      form.start_date = (props.dutiable?.start_date ?? new Date().toISOString().split('T')[0]) as string;
-      form.end_date = (props.dutiable?.end_date ?? null) as string | null;
-      form.study_program_id = (props.dutiable?.study_program_id ?? null) as number | null;
-      form.additional_email = (props.dutiable?.additional_email ?? '') as string;
-      form.description = (props.dutiable?.description ?? '') as string;
-      form.use_original_duty_name = Boolean(props.dutiable?.use_original_duty_name);
-      form.clearErrors();
-
-      if (userContext.value) {
-        selectedUser.value = userContext.value;
-      }
-      else {
-        selectedUser.value = null;
-      }
+    if (!isOpen) {
+      return;
     }
+
+    form.defaults(initialValues());
+    form.reset();
+    form.clearErrors();
+    member.value = initialMember();
+    descriptionOpen.value = hasDescription.value;
+    descriptionLocale.value = 'lt';
   },
   { immediate: true },
 );
 
-const runUserSearch = () => {
-  if (searchTimeout) clearTimeout(searchTimeout);
-  const q = userSearchQuery.value.trim();
-  if (q.length < 2) {
-    userSearchResults.value = [];
-    isSearchingUsers.value = false;
+// The picker speaks UTC-noon Dates; the API and the form speak YYYY-MM-DD.
+const startDate = computed({
+  get: () => form.start_date,
+  set: (value: Date | undefined) => {
+    form.start_date = value ? formatDate(value) : '';
+  },
+});
+const endDate = computed({
+  get: () => form.end_date,
+  set: (value: Date | undefined) => {
+    form.end_date = value ? formatDate(value) : null;
+  },
+});
+
+const studyProgramValue = computed({
+  get: () => form.study_program_id ?? NO_STUDY_PROGRAM,
+  set: (value: string) => {
+    form.study_program_id = value === NO_STUDY_PROGRAM ? null : value;
+  },
+});
+
+const onDescriptionToggle = (event: Event) => {
+  descriptionOpen.value = (event.target as HTMLDetailsElement).open;
+};
+
+const endTermOpen = ref(false);
+const deleteOpen = ref(false);
+
+/** A self-lockout warning comes back as a flash on a *successful* visit; nothing was saved. */
+const wasBlockedByAccessWarning = () =>
+  !!(usePage().props.flash as { access_change_warning?: unknown } | undefined)?.access_change_warning;
+
+const finish = () => {
+  if (wasBlockedByAccessWarning()) {
     return;
   }
 
-  isSearchingUsers.value = true;
-  searchTimeout = setTimeout(async () => {
-    try {
-      const url = `${route('api.v1.admin.users.search')}?search=${encodeURIComponent(q)}`;
-      const res = await fetch(url, { headers: { Accept: 'application/json' } });
-      if (res.ok) {
-        const data = await res.json();
-        userSearchResults.value = Array.isArray(data) ? data : (data.data ?? []);
-      }
-    }
-    catch {
-      userSearchResults.value = [];
-    }
-    finally {
-      isSearchingUsers.value = false;
-    }
-  }, 250);
-};
-
-watch(userSearchQuery, runUserSearch);
-
-const selectUser = (u: UserHit) => {
-  selectedUser.value = u;
-  form.user_id = u.id;
-  userSearchQuery.value = '';
-  userSearchResults.value = [];
-};
-
-const clearSelectedUser = () => {
-  selectedUser.value = null;
-  form.user_id = '';
+  emit('update:open', false);
+  emit('success');
 };
 
 const submit = () => {
   guardedSubmit((acknowledge) => {
     form.acknowledge_access_change = acknowledge;
 
+    const options = { preserveScroll: true, onSuccess: finish };
+    const payload = form.transform(data => ({
+      ...data,
+      description: hasText(data.description) ? data.description : null,
+    }));
+
     if (isEditing.value) {
-      form.patch(route('dutiables.update', props.dutiable.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-          emit('update:open', false);
-          emit('success');
-        },
-      });
+      payload.patch(route('dutiables.update', props.dutiable!.id), options);
     }
     else {
-      form.post(route('dutiables.store'), {
-        preserveScroll: true,
-        onSuccess: () => {
-          emit('update:open', false);
-          emit('success');
-        },
-      });
+      payload.post(route('dutiables.store'), options);
     }
   });
 };
 
 const endTerm = () => {
-  if (!props.dutiable) return;
-  const today = new Date().toISOString().split('T')[0];
-  form.end_date = today;
+  form.end_date = todayIso();
   submit();
 };
 
 const deleteOccupancy = () => {
-  if (!props.dutiable) return;
-  if (confirm($t('Ar tikrai norite pašalinti šį priskyrimą?'))) {
-    guardedSubmit((acknowledge) => {
-      router.delete(route('dutiables.destroy', props.dutiable.id), {
-        data: { acknowledge_access_change: acknowledge, stay: true },
-        preserveScroll: true,
-        onSuccess: () => {
-          emit('update:open', false);
-          emit('success');
-        },
-      });
-    });
+  if (!props.dutiable) {
+    return;
   }
+
+  guardedSubmit((acknowledge) => {
+    router.delete(route('dutiables.destroy', props.dutiable!.id), {
+      data: { acknowledge_access_change: acknowledge, stay: true },
+      preserveScroll: true,
+      onSuccess: finish,
+    });
+  });
 };
 </script>

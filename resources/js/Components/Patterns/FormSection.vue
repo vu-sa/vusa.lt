@@ -1,8 +1,8 @@
 <template>
-  <fieldset class="space-y-4 border-0 p-0 m-0">
-    <legend class="p-0 mb-1 block w-full">
+  <section :aria-labelledby="headingId" class="space-y-4" data-slot="form-section">
+    <header>
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="text-base font-semibold text-foreground">
+        <h2 :id="headingId" class="text-base font-semibold text-foreground">
           {{ title }}
         </h2>
         <div class="flex items-center gap-2">
@@ -14,7 +14,7 @@
           </span>
           <span
             v-if="badge"
-            class="inline-flex items-center gap-1 border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+            class="inline-flex items-center gap-1 border border-border bg-card px-2 py-0.5 text-xs font-medium text-muted-foreground"
           >
             <Globe v-if="publicMarker" class="size-3" />
             {{ badge }}
@@ -24,17 +24,18 @@
       <p v-if="description" class="mt-1 text-sm text-muted-foreground">
         {{ description }}
       </p>
-    </legend>
+    </header>
 
-    <div class="space-y-4 pt-1">
+    <div class="space-y-4">
       <slot />
     </div>
-  </fieldset>
+  </section>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { Globe } from 'lucide-vue-next';
+import { useId } from 'vue';
 
 withDefaults(defineProps<{
   title: string;
@@ -47,4 +48,6 @@ withDefaults(defineProps<{
   badge: undefined,
   missingCount: undefined,
 });
+
+const headingId = `form-section-${useId()}`;
 </script>

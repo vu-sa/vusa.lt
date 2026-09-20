@@ -97,7 +97,9 @@ class TagController extends AdminController
 
         $tag = Tag::create($request->validated());
 
-        return to_route('tags.edit', $tag)
+        return ($request->header('X-Tag-Sheet') === 'true'
+            ? to_route('tags.index')
+            : to_route('tags.edit', $tag))
             ->with('success', __('Tag created successfully'));
     }
 

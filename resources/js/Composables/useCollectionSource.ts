@@ -1,4 +1,5 @@
 import { computed, ref, watch, type ComputedRef, type Ref } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 
 import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
 import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
@@ -56,6 +57,8 @@ export interface CollectionSource<T> {
   setFilter: (field: string, value: unknown) => void;
   clearFilters: () => void;
   clearChip: (id: string) => void;
+  /** Local-only replacement for optimistic mutations. Search adapters may safely ignore it. */
+  replaceItems: (items: T[]) => void;
   setSortBy: (value: string) => void;
   loadMore: () => void;
   refresh: () => void;
@@ -64,6 +67,28 @@ export interface CollectionSource<T> {
 export interface TypesenseCollectionSource<T> extends CollectionSource<T> {
   /** Institutions where the user has a duty of their own, per the scoped search key. */
   directInstitutionIds: ComputedRef<string[]>;
+}
+
+interface DatabaseCollectionSourceOptions<T> {
+  endpoint: string;
+  initial: {
+    items: T[];
+    total: number;
+    perPage: number;
+    currentPage: number;
+    lastPage: number;
+  };
+  sortOptions: CollectionSortOption[];
+  defaultSort: string;
+  preserveUrlKeys?: string[];
+}
+
+interface DatabaseCollectionResponse<T> {
+  items: T[];
+  total: number;
+  per_page: number;
+  current_page: number;
+  last_page: number;
 }
 
 interface TypesenseSourceOptions {
@@ -186,8 +211,149 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
     setFilter: controller.setFilter,
     clearFilters: controller.clearFilters,
     clearChip,
+    replaceItems: () => undefined,
     setSortBy: controller.setSortBy,
     loadMore: () => void controller.loadMore(),
     refresh: () => void controller.refresh(),
+  };
+}
+
+/**
+ * Database-backed collection source. Its first consumer is Reservations; unlike the Typesense
+ * adapter it starts with the Inertia payload, then refreshes through the admin API for search,
+ * sorting and "Rodyti daugiau" without replacing the page's history state.
+ */
+export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSourceOptions<T>): CollectionSource<T> {
+  const initialParams = new URLSearchParams(window.location.search);
+  const items = ref<T[]>([...options.initial.items]);
+  const total = ref(options.initial.total);
+  const isLoading = ref(false);
+  const isLoadingMore = ref(false);
+  const hasMore = computed(() => currentPage.value < lastPage.value);
+  const hasSearched = ref(true);
+  const error = ref<string | null>(null);
+  const query = ref(initialParams.get('search') ?? '');
+  const filters = ref<Record<string, unknown>>({});
+  const currentPage = ref(options.initial.currentPage);
+  const lastPage = ref(options.initial.lastPage);
+  const sortBy = ref(initialParams.get('sort') ?? options.defaultSort);
+
+  const facets = computed<CollectionFacet[]>(() => []);
+  const chips = computed<CollectionChip[]>(() => []);
+  const activeFilterCount = computed(() => 0);
+
+  function syncUrl(): void {
+    const url = new URL(window.location.href);
+    const ownedKeys = ['search', 'sort', 'pages'];
+
+    for (const key of ownedKeys) {
+      url.searchParams.delete(key);
+    }
+
+    if (query.value.trim()) {
+      url.searchParams.set('search', query.value.trim());
+    }
+    if (sortBy.value !== options.defaultSort) {
+      url.searchParams.set('sort', sortBy.value);
+    }
+    if (currentPage.value > 1) {
+      url.searchParams.set('pages', String(currentPage.value));
+    }
+
+    window.history.replaceState(window.history.state, '', url.toString());
+  }
+
+  async function fetchPage(page: number, append: boolean): Promise<void> {
+    if (append) {
+      isLoadingMore.value = true;
+    }
+    else {
+      isLoading.value = true;
+    }
+    error.value = null;
+
+    const [column, direction = 'asc'] = sortBy.value.split(':');
+    const requestUrl = new URL(options.endpoint, window.location.origin);
+    requestUrl.searchParams.set('page', String(page));
+    requestUrl.searchParams.set('per_page', String(options.initial.perPage));
+    requestUrl.searchParams.set('sorting', JSON.stringify([{ id: column, desc: direction === 'desc' }]));
+    if (query.value.trim()) {
+      requestUrl.searchParams.set('search', query.value.trim());
+    }
+    for (const key of options.preserveUrlKeys ?? []) {
+      const value = initialParams.get(key);
+      if (value) {
+        requestUrl.searchParams.set(key, value);
+      }
+    }
+
+    try {
+      const response = await fetch(requestUrl, {
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      const payload = await response.json() as { success: boolean; data?: DatabaseCollectionResponse<T>; message?: string };
+
+      if (!response.ok || !payload.success || !payload.data) {
+        throw new Error(payload.message ?? 'Nepavyko įkelti sąrašo.');
+      }
+
+      items.value = append ? [...items.value, ...payload.data.items] : payload.data.items;
+      total.value = payload.data.total;
+      currentPage.value = payload.data.current_page;
+      lastPage.value = payload.data.last_page;
+      syncUrl();
+    }
+    catch (cause) {
+      error.value = cause instanceof Error ? cause.message : 'Nepavyko įkelti sąrašo.';
+    }
+    finally {
+      isLoading.value = false;
+      isLoadingMore.value = false;
+      hasSearched.value = true;
+    }
+  }
+
+  const debouncedRefresh = useDebounceFn(() => fetchPage(1, false), 250);
+
+  return {
+    items,
+    total,
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    hasSearched,
+    error,
+    query,
+    filters,
+    facets,
+    chips,
+    activeFilterCount,
+    sortBy,
+    sortOptions: computed(() => options.sortOptions),
+    search: (next, immediate = false) => {
+      query.value = next;
+      if (immediate) {
+        void fetchPage(1, false);
+      }
+      else {
+        void debouncedRefresh();
+      }
+    },
+    toggleFilter: () => undefined,
+    setFilter: () => undefined,
+    clearFilters: () => undefined,
+    clearChip: () => undefined,
+    replaceItems: (next) => { items.value = next; },
+    setSortBy: (next) => {
+      sortBy.value = next;
+      void fetchPage(1, false);
+    },
+    loadMore: () => {
+      if (hasMore.value && !isLoadingMore.value) {
+        void fetchPage(currentPage.value + 1, true);
+      }
+    },
+    refresh: () => void fetchPage(1, false),
   };
 }

@@ -121,6 +121,14 @@ export function formatDate(input: DateInput, options: FormatDateOptions = {}): s
 }
 
 /**
+ * Today as YYYY-MM-DD in Europe/Vilnius. `toISOString().split('T')[0]` is the UTC date and
+ * reads as yesterday between 00:00 and 03:00 in Lithuania.
+ */
+export function todayIso(now: Date = new Date()): string {
+  return formatDate(now, { format: 'iso' });
+}
+
+/**
  * Format a 24-hour time in Europe/Vilnius (e.g. "14:30").
  */
 export function formatTime(input: DateInput, options: FormatTimeOptions = {}): string {

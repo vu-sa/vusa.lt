@@ -145,28 +145,35 @@ export const router = {
 };
 
 // Mock useForm for Inertia forms
-export const useForm = mockFn((data: any = {}) => ({
-  ...data,
-  data: () => data,
-  errors: {},
-  hasErrors: false,
-  processing: false,
-  progress: null,
-  wasSuccessful: false,
-  recentlySuccessful: false,
-  transform: mockFn(),
-  defaults: mockFn(),
-  reset: mockFn(),
-  clearErrors: mockFn(),
-  setError: mockFn(),
-  submit: mockFn(),
-  get: mockFn(),
-  post: mockFn(),
-  put: mockFn(),
-  patch: mockFn(),
-  delete: mockFn(),
-  cancel: mockFn(),
-}));
+export const useForm = mockFn((data: any = {}) => {
+  const form: Record<string, any> = {
+    ...data,
+    data: () => data,
+    errors: {},
+    hasErrors: false,
+    isDirty: false,
+    processing: false,
+    progress: null,
+    wasSuccessful: false,
+    recentlySuccessful: false,
+    defaults: mockFn(),
+    reset: mockFn(),
+    clearErrors: mockFn(),
+    setError: mockFn(),
+    submit: mockFn(),
+    get: mockFn(),
+    post: mockFn(),
+    put: mockFn(),
+    patch: mockFn(),
+    delete: mockFn(),
+    cancel: mockFn(),
+  };
+
+  // Inertia's transform() is chainable: form.transform(fn).post(...).
+  form.transform = mockFn(() => form);
+
+  return form;
+});
 
 // Mock useHttp, Inertia v3's standalone XHR hook. Reactive so components that read
 // `http.processing` in a computed re-render; callers drive the callbacks themselves via

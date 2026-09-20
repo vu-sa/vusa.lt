@@ -101,3 +101,26 @@ describe('Posėdžiai', function (): void {
         $page->assertNoJavaScriptErrors();
     });
 });
+
+describe('Rezervacijos ir žymos', function (): void {
+    it('renders the reservation queue as a database-backed collection without JavaScript errors', function (): void {
+        $page = openAdminPage('/mano/reservations', 1440);
+
+        $page->assertPresent('[data-slot=collection-page]')
+            ->assertPresent('input[data-admin-collection-search]')
+            ->assertNoJavaScriptErrors();
+
+        expect($page->script("document.querySelector('[data-slot=collection-title-band] h1').textContent.trim()"))
+            ->toBe('Rezervacijos');
+    });
+
+    it('opens the tag editor as a phone-sized sheet without JavaScript errors', function (): void {
+        $page = openAdminPage('/mano/tags', 390, 844);
+
+        $page->click('button:has-text("Nauja žyma")')
+            ->assertSee('Nauja žyma')
+            ->assertNoJavaScriptErrors();
+
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+    });
+});

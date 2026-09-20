@@ -1,4 +1,5 @@
 <template>
+  <!-- @deprecated Superseded by TagSheetForm in Phase 5.7; remove with legacy tag URLs in Phase 8. -->
   <PageContent title="Nauja žyma" :heading-icon="TagIcon">
     <UpsertModelLayout>
       <TagForm remember-key="CreateTag" :post-tag="tag" @submit:form="(form: any) => form.post(route('tags.store'))" />

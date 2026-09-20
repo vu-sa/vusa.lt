@@ -1,3 +1,7 @@
+<!--
+  @deprecated Superseded by `Layouts/FormPage` (single column, sticky save bar, error summary, shortcuts).
+  Existing forms move over in their own phase; remove this wrapper in Phase 10.
+-->
 <template>
   <div class="space-y-4">
     <Alert v-if="$page.props.errors && Object.keys($page.props.errors).length > 0 && open" variant="destructive"

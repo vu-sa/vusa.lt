@@ -8,8 +8,9 @@ lastUpdated: true
 ## v2.10 — Naujas pareigybių valdymas ir narių priskyrimas (2026-09-20) {#v2-10}
 
 - ⭐ **Patogus pareigybių įrašo puslapis** — pareigybės puslapyje aiškiai pateikta svarbiausia informacija, užimtumo būsena, einantys pareigas nariai ir jų kadencijų istorija, susijusios kitos institucijos pareigybės bei veiklos įrašai
-- ✨ **Greitas narių priskyrimas šoniniame skydelyje** — narius pareigoms dabar galima priskirti tiesiai pareigybės puslapyje per greitąjį priskyrimo skydelį su naudotojų paieška, kadencijos datomis ir prieigos apsaugos įspėjimais
+- ✨ **Greitas narių priskyrimas šoniniame skydelyje** — narius pareigoms dabar galima priskirti tiesiai pareigybės puslapyje per greitąjį priskyrimo skydelį su narių paieška, kadencijos datomis, viešu aprašymu ir prieigos apsaugos įspėjimais; to paties nario tam pačiam laikotarpiui du kartus priskirti nepavyks
 - ✨ **Atskirtas pareigybės redagavimas ir narių valdymas** — pareigybės kūrimo ir redagavimo forma nebenaudoja sudėtingų sąrašų; narių priskyrimas valdomas pareigybės puslapyje, o forma skirta pareigybės duomenims, institucijai ir aprašymui
+- ✨ **Saugesni veiksmai** — kadencijos baigimas ir pareigybės trynimas dabar prašo patvirtinimo, o skydelyje neišsaugoti pakeitimai nedingsta be įspėjimo
 
 ## v2.9 — Paprastesnis posėdžių fiksavimo langas (2026-09-19) {#v2-9}
 

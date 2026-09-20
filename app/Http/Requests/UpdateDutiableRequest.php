@@ -44,8 +44,10 @@ class UpdateDutiableRequest extends FormRequest
     {
         return [
             'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after:start_date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'description' => 'nullable|array',
+            'description.lt' => 'nullable|string',
+            'description.en' => 'nullable|string',
             'study_program_id' => ['nullable', 'ulid', SoftDeleteRules::existsLive('study_programs')],
             'study_program_note' => 'nullable|array',
             'study_program_note.lt' => 'nullable|string|max:100',

@@ -1,209 +1,245 @@
 <template>
-  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
-    <!-- After-table: Reservations with unit resources -->
-    <Card v-if="activeReservations?.length" class="mt-4">
-      <CardHeader>
-        <CardTitle>{{ $t("Reservations with unit resources") }}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ReservationsWithUnitResources :active-reservations />
-      </CardContent>
-    </Card>
-  </IndexTablePage>
+  <CollectionPage
+    :source
+    collection="reservations"
+    entity-type="reservation"
+    :eyebrow="$t('shell.workspaces.reservations.title') + ' · ' + $t('shell.sections.rezervacijos')"
+    :title="$t('Rezervacijos')"
+    :lead="$t('Stebėk prašymus, patvirtink išdavimą ir pažymėk grąžinimą.')"
+    default-view="table"
+    :item-key="reservationKey"
+    :columns
+    :search-placeholder="$t('Ieškoti rezervacijų')"
+  >
+    <template #actions>
+      <Button v-if="deletedCount > 0" as-child variant="ghost">
+        <Link :href="route('reservations.index', { showDeleted: 'true' })">
+          <Trash2 aria-hidden="true" />
+          {{ $t('Ištrinti') }} ({{ deletedCount }})
+        </Link>
+      </Button>
+      <Button v-if="canCreate" as-child variant="brand">
+        <Link :href="route('reservations.create')">
+          <Plus aria-hidden="true" />
+          {{ $t('Nauja rezervacija') }}
+        </Link>
+      </Button>
+    </template>
+
+    <template #row="{ item }">
+      <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
+        <StatusBadge v-if="primaryStatus(item)" :status="primaryStatus(item)!" class="shrink-0" />
+        <div class="min-w-0 flex-1">
+          <Link :href="route('reservations.show', item.id)" data-collection-open class="font-medium hover:text-brand">
+            {{ item.name }}
+          </Link>
+          <p class="mt-0.5 truncate text-sm text-muted-foreground">
+            {{ resourceNames(item) }} · {{ reservationPeriod(item) }}
+          </p>
+        </div>
+        <span class="text-xs tabular-nums text-muted-foreground">{{ item.users?.length ?? 0 }}</span>
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <Checkbox
+        v-if="column.key === 'select'"
+        :model-value="selectedIds.includes(reservationKey(item))"
+        :aria-label="$t('Pasirinkti :name', { name: item.name })"
+        @update:model-value="toggleReservation(item)"
+      />
+      <Link
+        v-else-if="column.key === 'name'"
+        :href="route('reservations.show', item.id)"
+        data-collection-open
+        prefetch
+        class="font-medium hover:text-brand"
+      >
+        {{ item.name }}
+      </Link>
+      <span v-else-if="column.key === 'resources'">{{ resourceNames(item) }}</span>
+      <span v-else-if="column.key === 'period'" class="tabular-nums">{{ reservationPeriod(item) }}</span>
+      <StatusBadge v-else-if="column.key === 'status' && primaryStatus(item)" :status="primaryStatus(item)!" />
+      <span v-else-if="column.key === 'status'">—</span>
+      <span v-else-if="column.key === 'managers'" class="tabular-nums">{{ item.users?.length ?? 0 }}</span>
+    </template>
+
+    <template #preview="{ item }">
+      <section class="flex flex-col gap-5 p-5">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{{ $t('Rezervacija') }}</p>
+          <Link :href="route('reservations.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
+            {{ item.name }}
+          </Link>
+          <p v-if="item.description" class="mt-2 text-sm text-muted-foreground">{{ item.description }}</p>
+        </div>
+        <dl class="grid gap-3 border-y border-border py-4 text-sm">
+          <div>
+            <dt class="text-xs text-muted-foreground">{{ $t('Laikas') }}</dt>
+            <dd class="mt-1 tabular-nums">{{ reservationPeriod(item) }}</dd>
+          </div>
+          <div>
+            <dt class="text-xs text-muted-foreground">{{ $t('Ištekliai') }}</dt>
+            <dd class="mt-1">{{ resourceNames(item) }}</dd>
+          </div>
+        </dl>
+        <Button v-if="approvableResourceIds(item).length" variant="brand" :disabled="approving" @click="approve(item)">
+          <Check aria-hidden="true" />
+          {{ $t('Patvirtinti') }}
+        </Button>
+      </section>
+    </template>
+
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="ReservationIcon"
+        :title="$t('Rezervacijų dar nėra')"
+        :description="$t('Čia matysi patalpų ir įrangos prašymus bei jų eigą.')"
+        :action-label="canCreate ? $t('Nauja rezervacija') : undefined"
+        @action="router.visit(route('reservations.create'))"
+      />
+    </template>
+  </CollectionPage>
+
+  <CollectionSelectionBar
+    v-if="selectedResourceIds.length"
+    :count="selectedResourceIds.length"
+    :count-label="$t('Pasirinkta')"
+    @clear="selectedIds = []"
+  >
+    <Button variant="brand" size="sm" :disabled="approving" @click="approveSelected">
+      <Check aria-hidden="true" />
+      {{ $t('Patvirtinti') }}
+    </Button>
+  </CollectionSelectionBar>
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { Link, usePage } from '@inertiajs/vue3';
-import { Info } from 'lucide-vue-next';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Check, Plus, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
-import { Badge } from '@/Components/ui/badge';
+import type { CollectionColumn } from '@/Components/Collection/types';
+import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/Components/ui/popover';
-import { DateCell, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
-import { RESERVATION_DATE_TIME_FORMAT } from '@/Constants/DateTimeFormats';
-import { capitalize } from '@/Utils/String';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import ReservationsWithUnitResources from '@/Components/Tables/ReservationsWithUnitResources.vue';
-import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import type { IndexTablePageProps, IndexTablePageInstance } from '@/Types/TableConfigTypes';
-import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { ReservationIcon } from '@/Components/icons';
+import { reservationResourceStatuses, type ReservationResourceStatus, type StatusPresentation } from '@/Constants/statuses';
+import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
+import { formatDate } from '@/Utils/dateTime';
+
+type ReservationResource = App.Entities.Resource & {
+  pivot?: App.Entities.ReservationResource & { approvable?: boolean };
+};
+type Reservation = App.Entities.Reservation & { resources?: ReservationResource[] };
 
 const props = defineProps<{
-  reservations: {
-    data: App.Entities.Reservation[];
-    meta: {
-      total: number;
-      current_page: number;
-      per_page: number;
-      last_page: number;
-      from: number;
-      to: number;
-    };
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  activeReservations: Array<App.Entities.Reservation>;
-  showDeleted?: boolean;
-  deletedCount?: number;
+  reservations: { data: Reservation[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
+  deletedCount: number;
 }>();
 
-const modelName = 'reservations';
-const entityName = 'reservation';
+const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.reservation));
+const selectedIds = ref<string[]>([]);
+const approving = ref(false);
 
-const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+const source = useDatabaseCollectionSource<Reservation>({
+  endpoint: route('api.v1.admin.reservations.index'),
+  initial: {
+    items: props.reservations.data,
+    total: props.reservations.meta.total,
+    perPage: props.reservations.meta.per_page,
+    currentPage: props.reservations.meta.current_page,
+    lastPage: props.reservations.meta.last_page,
+  },
+  defaultSort: 'start_time:desc',
+  sortOptions: [
+    { value: 'start_time:desc', label: $t('Naujausios pirmiausia') },
+    { value: 'start_time:asc', label: $t('Anksčiausios pirmiausia') },
+    { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
+  ],
+});
 
-const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.reservation ?? false);
-
-const getRowId = (row: App.Entities.Reservation) => {
-  return `reservation-${row.id}`;
-};
-
-const columns = computed<Array<ColumnDef<App.Entities.Reservation, any>>>(() => [
-  {
-    accessorKey: 'name',
-    header: () => $t('forms.fields.title'),
-    cell: ({ row }) => {
-      const reservation = row.original;
-      return h('div', { class: 'flex items-center gap-1.5' }, [
-        h(TruncatedLink, {
-          href: route('reservations.show', reservation.id),
-          text: reservation.name,
-          class: 'transition hover:text-vusa-red',
-        }),
-        (reservation.description || reservation.resources?.length)
-          ? h(Popover, {}, () => [
-              h(PopoverTrigger, { asChild: true }, () => h(Button, {
-                variant: 'ghost',
-                size: 'icon-sm',
-                class: 'size-6 shrink-0',
-              }, () => h(Info, { class: 'size-3.5 text-muted-foreground' }))),
-              h(PopoverContent, { class: 'w-80' }, () => h('div', { class: 'flex flex-col gap-3' }, [
-                reservation.description
-                  ? h('div', {}, [
-                      h('p', { class: 'text-sm font-medium' }, $t('forms.fields.description')),
-                      h('p', { class: 'text-sm text-muted-foreground' }, reservation.description),
-                    ])
-                  : null,
-                reservation.resources?.length
-                  ? h('div', {}, [
-                      h('p', { class: 'text-sm font-medium' }, capitalize($t('entities.reservation.resources'))),
-                      h('ul', { class: 'list-inside list-disc text-sm' }, reservation.resources.map(resource => h('li', { key: resource.id }, h('div', { class: 'inline-flex items-center gap-1.5' }, [
-                        h(Link, { href: route('resources.edit', resource.id) }, () => resource.name),
-                        resource.tenant?.shortname
-                          ? h(Badge, { variant: 'secondary', class: 'text-xs' }, () => $t(resource.tenant.shortname))
-                          : null,
-                      ])))),
-                    ])
-                  : null,
-              ])),
-            ])
-          : null,
-      ]);
-    },
-    size: 300,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'managers',
-    header: () => capitalize($tChoice('entities.reservation.managers', 2)),
-    cell: ({ row }) => {
-      const { users } = row.original;
-      return users && users.length > 0
-        ? h(UsersAvatarGroup, { class: 'align-middle', size: 30, users })
-        : h(TruncatedText, { text: '-' });
-    },
-    size: 150,
-  },
-  {
-    accessorKey: 'start_time',
-    header: () => capitalize($tChoice('entities.reservation.start_time', 2)),
-    cell: ({ row }) => h(DateCell, {
-      date: row.original.start_time,
-      mode: 'absolute',
-      format: RESERVATION_DATE_TIME_FORMAT,
-    }),
-    size: 180,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'end_time',
-    header: () => capitalize($tChoice('entities.reservation.end_time', 2)),
-    cell: ({ row }) => h(DateCell, {
-      date: row.original.end_time,
-      mode: 'absolute',
-      format: RESERVATION_DATE_TIME_FORMAT,
-    }),
-    size: 180,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'created_at',
-    header: () => $t('forms.fields.created_at'),
-    cell: ({ row }) => h(DateCell, {
-      date: row.original.created_at,
-      mode: 'relative',
-    }),
-    size: 150,
-  },
-  createStandardActionsColumn<App.Entities.Reservation>('reservations', {
-    canView: true,
-    canRestore: true,
-    canForceDelete: canForceDelete.value,
-  }),
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'select', label: $t('Pasirinkti'), class: 'w-12' },
+  { key: 'name', label: $t('Rezervacija') },
+  { key: 'resources', label: $t('Ištekliai') },
+  { key: 'period', label: $t('Laikas'), class: 'w-48' },
+  { key: 'status', label: $t('Būsena'), class: 'w-36' },
+  { key: 'managers', label: $t('Valdytojai'), class: 'w-24' },
 ]);
 
-const tableConfig = computed<IndexTablePageProps<App.Entities.Reservation>>(
-  () => ({
-    modelName,
-    entityName,
-    data: props.reservations.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.reservations.meta.total,
-    initialPage: props.reservations.meta.current_page,
-    pageSize: props.reservations.meta.per_page,
+const reservationKey = (reservation: Reservation) => String(reservation.id);
+const resourceNames = (reservation: Reservation) => reservation.resources?.map(resource => resource.name).join(', ') || '—';
+const reservationPeriod = (reservation: Reservation) => `${formatDate(new Date(reservation.start_time))} – ${formatDate(new Date(reservation.end_time))}`;
 
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'start_time', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: false,
-    enableRowSelection: false,
-    allowToggleDeleted: true,
-    showDeleted: props.showDeleted,
-    deletedCount: props.deletedCount,
+function primaryStatus(reservation: Reservation): StatusPresentation | null {
+  const state = reservation.resources?.find(resource => resource.pivot?.state && resource.pivot.state !== 'returned')?.pivot?.state as ReservationResourceStatus | undefined;
+  return state ? reservationResourceStatuses[state] : null;
+}
 
-    headerTitle: capitalize($tChoice('entities.reservation.model', 2)),
-    icon: ReservationIcon,
-    breadcrumbs: [
-      BreadcrumbHelpers.homeItem(),
-      BreadcrumbHelpers.createBreadcrumbItem(
-        $t('administration.title'),
-        route('administration'),
-      ),
-      BreadcrumbHelpers.createBreadcrumbItem(
-        capitalize($tChoice('entities.reservation.model', 2)),
-        undefined,
-        ReservationIcon,
-      ),
-    ],
-    createRoute: route('reservations.create'),
-    canCreate: true,
-  }),
-);
+function approvableResourceIds(reservation: Reservation): string[] {
+  return reservation.resources
+    ?.filter(resource => resource.pivot?.approvable && ['created', 'reserved', 'lent'].includes(resource.pivot.state))
+    .map(resource => String(resource.pivot?.id)) ?? [];
+}
 
-const onDataLoaded = (data: any) => { };
-const handleSortingChange = (sorting: any) => { };
-const handlePageChange = (page: any) => { };
-const handleFilterChange = (filterKey: any, value: any) => { };
+const selectedResourceIds = computed(() => source.items.value
+  .filter(reservation => selectedIds.value.includes(reservationKey(reservation)))
+  .flatMap(approvableResourceIds));
+
+function toggleReservation(reservation: Reservation): void {
+  const id = reservationKey(reservation);
+  selectedIds.value = selectedIds.value.includes(id)
+    ? selectedIds.value.filter(selected => selected !== id)
+    : [...selectedIds.value, id];
+}
+
+function advance(state: ReservationResourceStatus): ReservationResourceStatus {
+  return ({ created: 'reserved', reserved: 'lent', lent: 'returned' } as Partial<Record<ReservationResourceStatus, ReservationResourceStatus>>)[state] ?? state;
+}
+
+function approve(reservation: Reservation): void {
+  approveIds(approvableResourceIds(reservation));
+}
+
+function approveSelected(): void {
+  approveIds(selectedResourceIds.value);
+}
+
+function approveIds(ids: string[]): void {
+  if (!ids.length) return;
+
+  const before = structuredClone(source.items.value) as Reservation[];
+  approving.value = true;
+  source.items.value.forEach((reservation) => {
+    reservation.resources?.forEach((resource) => {
+      if (resource.pivot && ids.includes(String(resource.pivot.id))) {
+        resource.pivot.state = advance(resource.pivot.state as ReservationResourceStatus);
+      }
+    });
+  });
+
+  router.post(route('approvals.bulkStore'), {
+    approvable_type: 'reservation_resource',
+    approvable_ids: ids,
+    decision: 'approved',
+    step: 1,
+  }, {
+    preserveScroll: true,
+    onSuccess: () => {
+      selectedIds.value = [];
+      toast.success($t('Rezervacija patvirtinta.'));
+    },
+    onError: () => {
+      source.replaceItems(before);
+      toast.error($t('Nepavyko patvirtinti rezervacijos.'));
+    },
+    onFinish: () => { approving.value = false; },
+  });
+}
 </script>

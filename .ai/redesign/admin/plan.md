@@ -15,7 +15,7 @@ One PR = one row. Rules:
 - Aim for a PR a session. If one grows past that, split it at the nearest row boundary.
 - `→` = depends on.
 
-| PR | Scope | → |
+| PR | Scope | → | Status |
 |---|---|---|
 | **0.1** | This plan + the `AGENTS.md` pointer | — | ✅ |
 | **0.2** | Fix recently-visited tracking (`route: "page"` for every entry) | — | ✅ |
@@ -51,8 +51,8 @@ One PR = one row. Rules:
 | **5.4** | **P4** ActionWindow restyle (guided flow, bottom sheet, date presets) | 5.1 | ✅ |
 | — | *Feel review with reps — no PR; findings land as plan edits* | 5.4 |
 | **5.5** | **P5** Duty record + form + Priskirti sheet (O21) + extract `FormPage` and `SheetForm` | 5.3 |
-| **5.6** | **P6** Rezervacijos: table view, preview pane, bulk bar, optimistic approve (U4–U6) | 5.2 |
-| **5.7** | **P7** Žymos: sheet form, trash filter + undo (O11), merge action | 5.5 |
+| **5.6** | **P6** Rezervacijos: table view, preview pane, bulk bar, optimistic approve (U4–U6) | 5.2 | ✅ |
+| **5.7** | **P7** Žymos: sheet form, trash filter + undo (O11), merge action | 5.5 | ✅ |
 | **5.8** | **P8** ViSAK overview + extract `OverviewPage` (numbers-as-links, one chart) | 5.1 |
 | **5.9** | **P9** Paskyra → Mano rolės ir pareigybės (O14) | 4.7 |
 | **5.10** | `/mano/search` reduced to cross-entity results | 5.2 |
@@ -702,35 +702,57 @@ Built together on `dev` from one plan. Verification is split honestly at the end
 
 **5.5 · Duty record + form + Priskirti sheet (O21) + extract `FormPage` and `SheetForm`**
 
-- **`Layouts/FormPage.vue`:** The canonical form page layout. Standardized single-column form shell (~40rem / `max-w-2xl` measure) with:
-  - Form header with title, subtitle, back/cancel navigation (`backHref`), audience marker (public vs internal), and language switcher slot (`#lang-switch`).
-  - Form content flow (`#default` slot) and progressive disclosure for advanced settings (`#advanced` slot).
-  - Sticky bottom save bar with primary submit button (supporting loading state), dirty state indicators, cancel action, and optional danger zone (`#danger-zone`) for destructive actions.
-  - Full keyboard shortcuts (`⌘/Ctrl + Enter` to submit, `Esc` to cancel).
-- **`Patterns/SheetForm.vue`:** The canonical slide-out sheet form layout component wrapping Shadcn `Sheet` with:
-  - Accessible sheet header, title, description, scrollable form body, and sticky footer with save button, cancel action, and access change guard integration.
-- **`Patterns/FormSection.vue`:** Standardized section card with title, optional description, badge, public indicator, and slot for form inputs.
-- **`Features/Admin/Occupancy/AssignDutyUserSheet.vue` (Decision O21):**
-  - Canonical occupancy sheet for assigning users to duties or updating existing tenure terms.
-  - Integrated fast user search (`Input` + debounce + `/api/v1/admin/users/search`) with `UserAvatar`, tenant badges, and fully accessible keyboard-navigable search results.
-  - Start and end date inputs, study program picker, additional email, and role description.
-  - Ex-officio indication and access-change guard integration (`useAccessChangeGuard` / `AccessChangeWarningDialog`).
-- **`ShowDuty.vue`:**
-  - Fully rebuilt on `RecordPage.vue` layout.
-  - Key facts strip: institution link, email, places occupied vs total (with warning when vacant), public visibility badge, and contacts grouping.
-  - Members management: current holders vs historical holders split, quick actions to end tenure today or edit term in `AssignDutyUserSheet`, and "Priskirti narį" primary action.
-  - Other duties in same institution, SharePoint files panel, and `RecordActivity` tab (timeline events & discussions).
-- **`DutyForm.vue`, `CreateDuty.vue`, `EditDuty.vue`:**
-  - Rebuilt on canonical `FormPage.vue`.
-  - Completely retired `TransferList` for duty assignments per Decision O21 and Forms Rules 1 & 15. Members are now managed strictly on the record page (`ShowDuty.vue`), freeing the form from complex membership sync and accidental tenure terminations.
-  - Clean LT/EN language toggle for multilingual fields (name, description via `TiptapEditor`).
-  - Single/multilingual form inputs, institution picker, places to occupy, types, and collapsible advanced settings (`Papildomi nustatymai` for ex-officio target duties and tenant quotas).
-- **Backend enhancements:**
-  - Added `StoreDutiableRequest` with proper authorization via `DutyPolicy::managePeople`.
-  - Added `store()` action to `DutiableController` and registered `dutiables.store` route in `routes/admin.php`.
-  - Updated `DutyController::update()` to preserve existing users when `current_users` is omitted from the request payload.
-- **Fence:** Enrolled all Phase 5.5 paths in `MIGRATED_ADMIN_PATHS` with zero ESLint errors or legacy utility violations.
-- **Verified:** Vitest full suite (420 files, 3,183 tests), Storybook a11y (22 files, 115 tests), Sail backend tests (3,903 tests, 0 failures), and production `npm run build` in 4.17s.
+- **`Layouts/FormPage.vue`:** single column (~40rem) on the tinted edit canvas (`bg-secondary`) with a *Redaguoji* / *Kuri naują*
+  eyebrow, back link, optional LT | EN switch, `#advanced` disclosure (*Papildomi nustatymai*), `#danger-zone`, sticky save bar.
+  **⌘/Ctrl + Enter** submits and **Esc** cancels (listeners on the `<form>`, so a portaled Select never cancels it). On a failed
+  submit the error summary is scrolled into view and focused; each message focuses its field (`field-ids` maps `name.lt` →
+  `duty-name`). `mode="create"` never claims "all saved". The save button is tied to the form with `form=`, not a click handler.
+- **`Patterns/SheetForm.vue`:** right sheet, bottom sheet below `md` (`92dvh`, safe-area padding), `#danger-zone` in the body (never
+  the footer), and a `dirty` prop: Esc, the overlay and *Atšaukti* ask before discarding. `Patterns/FormSection.vue` is a
+  `<section aria-labelledby>` (no `<fieldset>`/`<legend>`). `Patterns/ConfirmDialog.vue` is the one confirmation (verb on the
+  button, destructive variant with its `dark:` twin) — no native `confirm()` remains on these pages.
+- **`Features/Admin/Occupancy`:** `AssignDutyUserSheet` (create + edit a term), `MemberSearchField` (real combobox: arrow keys,
+  Enter selects and never submits the sheet, in-flow list so the scrolling body cannot clip it, already-assigned members offered
+  but not selectable), `MemberTermRow`, and `termStatus()` (current / upcoming / ended, mirroring `Duty::current_users()`).
+  The sheet holds ISO `YYYY-MM-DD` strings in Vilnius time (`todayIso()`), edits the public description as LT/EN Tiptap, warns
+  without blocking when every place is taken, and keeps ending a term / deleting it in a danger zone behind confirmations.
+  Ex-officio terms lock their dates and offer neither.
+- **`ShowDuty.vue`:** on `RecordPage`. The healthy state (occupied) has **no badge**; a vacant duty gets one status and one alert.
+  Members are split *Dabartiniai / Būsimi / Kadencijų istorija* by term (a future-dated member no longer counts as a holder); the
+  Nariai count and the *Vietos* fact count who serves today. Sibling duties and study programs are deferred (`dutyPanels`) behind a
+  skeleton; the two unused next/last-meeting queries are gone. Ending a tenure goes through the access-change guard.
+- **`DutyForm` / `CreateDuty` / `EditDuty`:** on `FormPage`; the members `TransferList` is gone (O21, Forms 1 and 15), delete asks
+  for confirmation. `TransferList` and `FormUpsertLayout` carry `@deprecated` (Phase 9.3 / Phase 10).
+- **Backend:**
+  - `dutiables.store` (`StoreDutiableRequest`, authorised through `DutyPolicy::managePeople`) rejects a member who already holds
+    the duty in an overlapping period, stamps `tenant_id` for a cross-tenant admin's **delegated seat** (otherwise the owning
+    tenant's next save read it as its own), enforces that tenant's **quota**, goes through the model's sanitising setter for the
+    public description, and is written to the duty's activity log like the wizard's attach.
+  - `end_date` is `after_or_equal` `start_date` on store **and** update (a term can end the day it starts).
+  - `DutyController::update` keeps members when `current_users` is absent; `show()` defers `otherDuties` + `studyPrograms`.
+- **Found while reviewing 5.5's first cut** (all fixed, all covered by tests): the sheet's member search never worked (the endpoint
+  requires `permission`, the sheet did not send it); a written note failed validation (`description` is a translatable array) and
+  an existing one rendered as `[object Object]`; the study-program picker never rendered; Enter in the search box submitted the
+  sheet; dates used the UTC day; *Baigti kadenciją* skipped the access-change guard; six copy keys were missing in English and
+  much of the copy was not *tu* / used retired glossary words (*asmuo*, *naudotojas*).
+- **Fence:** `FormPage`, `SheetForm`, `FormSection`, `ConfirmDialog`, `Features/Admin/Occupancy/**`, `ShowDuty`, `CreateDuty`,
+  `EditDuty`, `DutyForm` are in `MIGRATED_ADMIN_PATHS`.
+
+**Not done**
+
+- **No browser verification.** Vitest (component), Storybook a11y (`Patterns/Form surfaces`) and the backend suite cover it; nobody has
+  yet looked at the duty page, the form or the sheet at 390 · 820 · 1180 · 1440, in dark mode in a real browser, on a touch device,
+  keyboard-only, or run the persona pass (Rep / Rep + comms / Resources / Super admin).
+- **Laravel Precognition for `DutyForm`:** `StoreDutyRequest`/`UpdateDutyRequest` have no server-only rules (uniqueness, date
+  conflicts); the duplicate-name check is `DuplicateDutyWarning`. Add `withPrecognition()` when such a rule appears.
+- **Per-field translation peek (O9)** and per-section "EN: trūksta N laukų" beyond the name are not built; `FormPage` shows a dot on
+  the locale tab and `FormSection` accepts `missing-count`, but `DutyForm` only reports the name.
+- **Rule 5 of Pickers** (offer *Sukurti naują* inside the institution picker) is untouched.
+- The user search still uses `scope=all` like the duty wizard (a member from another unit is how they join a new one); their e-mail
+  is masked by the endpoint.
+- The `docs/` user page for duties (`_parts/duties`) is one sentence and was not extended; retiring tours/spotlights that point at
+  the old duty form was not needed (none exist).
+- `MemberSearchField` has no mobile "replace the sheet's content" step (Pickers rule 6) — the in-flow list avoids stacking instead.
 
 ## Phase 6 — Messages (email, push, in-app)
 
