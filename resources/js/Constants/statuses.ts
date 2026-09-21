@@ -6,6 +6,7 @@ import {
   Circle,
   CircleCheck,
   CircleDashed,
+  CircleDot,
   CircleMinus,
   CircleSlash,
   CircleX,
@@ -36,6 +37,7 @@ export type ReservationResourceStatus = 'created' | 'reserved' | 'lent' | 'retur
 export type MeetingCompletionStatus = 'complete' | 'incomplete' | 'no_items';
 export type TaskStatus = 'completed' | 'open' | 'due_soon' | 'overdue';
 export type ContentStatus = 'published' | 'scheduled' | 'draft';
+export type ProblemStatus = 'open' | 'in_progress' | 'resolved';
 export type MissingVoteStatus = 'not_recorded';
 export type UnknownBenefitStatus = 'unknown';
 
@@ -80,6 +82,12 @@ export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
   published: status('Paskelbta', 'success', Eye),
   scheduled: status('Suplanuota', 'info', CalendarClock),
   draft: status('Juodraštis', 'neutral', FilePenLine),
+};
+
+export const problemStatuses: Record<ProblemStatus, StatusPresentation> = {
+  open: status('Atvira', 'attention', CircleDot),
+  in_progress: status('Vykdoma', 'progress', LoaderCircle),
+  resolved: status('Išspręsta', 'success', CircleCheck),
 };
 
 export const supportRequestStatuses: Record<SupportRequestStatus, StatusPresentation> = {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildProblemIndexQuery;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexProblemRequest;
@@ -33,14 +34,7 @@ class ProblemController extends AdminController
     {
         $this->handleAuthorization('viewAny', Problem::class);
 
-        $query = Problem::query()->with(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions']);
-
-        $query = $this->tableService->applyPermissionFiltering(
-            $query,
-            'tenant',
-            'problems.read.padalinys',
-            $this->authorizer
-        );
+        $query = BuildProblemIndexQuery::execute($request, $this->authorizer, $this->tableService);
 
         $query = $this->applyTanstackFilters(
             $query,
@@ -49,22 +43,6 @@ class ProblemController extends AdminController
             ['title', 'description'],
             ['applySortBeforePagination' => true]
         );
-
-        $filters = $request->getFilters();
-
-        if (isset($filters['status']) && ! empty($filters['status'])) {
-            $query->whereIn('status', (array) $filters['status']);
-        }
-
-        if (isset($filters['category']) && ! empty($filters['category'])) {
-            $categoryValues = (array) $filters['category'];
-            $query->whereHas('categories', fn ($q) => $q->whereIn('problem_categories.id', $categoryValues));
-        }
-
-        if (isset($filters['institution']) && ! empty($filters['institution'])) {
-            $institutionValues = (array) $filters['institution'];
-            $query->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $institutionValues));
-        }
 
         $deletedCount = $this->getTrashedCount($query);
 

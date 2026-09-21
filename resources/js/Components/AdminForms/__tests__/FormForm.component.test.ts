@@ -293,23 +293,24 @@ describe('FormForm.vue', () => {
   });
 
   describe('emits', () => {
-    it('forwards submit:form event from AdminForm', async () => {
+    it('hands the form to the page on submit', async () => {
       wrapper = createWrapper();
       const vm = wrapper.vm as any;
 
-      const adminForm = wrapper.findComponent({ name: 'AdminForm' });
-      expect(adminForm.exists()).toBe(true);
-      await adminForm.vm.$emit('submit:form');
+      const formPage = wrapper.findComponent({ name: 'FormPage' });
+      expect(formPage.exists()).toBe(true);
+      await formPage.vm.$emit('submit');
 
       expect(wrapper.emitted('submit:form')).toBeTruthy();
       expect(wrapper.emitted('submit:form')?.[0]?.[0]).toBe(vm.form);
     });
 
-    it('forwards delete event from AdminForm', async () => {
-      wrapper = createWrapper();
+    it('forwards delete event from ConfirmDialog', async () => {
+      wrapper = createWrapper({ enableDelete: true });
 
-      const adminForm = wrapper.findComponent({ name: 'AdminForm' });
-      await adminForm.vm.$emit('delete');
+      const confirmDialog = wrapper.findComponent({ name: 'ConfirmDialog' });
+      expect(confirmDialog.exists()).toBe(true);
+      await confirmDialog.vm.$emit('confirm');
 
       expect(wrapper.emitted('delete')).toBeTruthy();
     });

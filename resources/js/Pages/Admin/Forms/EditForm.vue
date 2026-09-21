@@ -1,28 +1,28 @@
 <template>
-  <PageContent :title="form.name.lt" :back-url="route('forms.index')">
-    <UpsertModelLayout>
-      <FormForm :form :assignable-tenants :field-model-fields :field-model-options enable-delete
-        @submit:form="handleFormSubmitted"
-        @delete="() => router.delete(route('forms.destroy', form.id))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <FormForm
+    :form
+    :assignable-tenants
+    :field-model-fields
+    :field-model-options
+    enable-delete
+    @submit:form="handleFormSubmitted"
+    @delete="() => router.delete(route('forms.destroy', form.id))"
+  />
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import FormForm from '@/Components/AdminForms/FormForm.vue';
 
-defineProps<{
+const props = defineProps<{
   form: App.Entities.Form;
   assignableTenants: App.Entities.Tenant[];
-  fieldModelOptions: Record<string, any>[];
-  fieldModelFields: Record<string, any>[];
+  fieldModelOptions: Record<string, unknown>[];
+  fieldModelFields: Record<string, unknown>[];
 }>();
 
-function handleFormSubmitted(form: any) {
-  form.patch(route('forms.update', form.id));
+function handleFormSubmitted(form: unknown) {
+  (form as InertiaForm<Record<string, unknown>>).patch(route('forms.update', props.form.id));
 }
 </script>

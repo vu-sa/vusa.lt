@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildFormIndexQuery;
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\SerializeFormsForTable;
 use App\Enums\FormOptionSource;
 use App\Exports\FormRegistrationsExport;
 use App\Http\Controllers\AdminController;
@@ -70,7 +72,9 @@ class FormController extends AdminController
     {
         $this->handleAuthorization('viewAny', Form::class);
 
-        $query = Form::query()->with('tenant:id,shortname')->withCount('registrations');
+        $user = $request->user();
+
+        $query = BuildFormIndexQuery::execute($request, $user, $this->formAccess, $this->tableService);
 
         $searchableColumns = ['name', 'path'];
 
@@ -80,8 +84,6 @@ class FormController extends AdminController
             $this->tableService,
             $searchableColumns,
         );
-
-        $query = $this->formAccess->applyIndexVisibility($query, $request->user());
 
         $deletedCount = $this->getTrashedCount($query);
 
@@ -94,31 +96,10 @@ class FormController extends AdminController
         $this->appendForceDeleteBlockedReason($forms->getCollection(), $request);
 
         $sorting = $request->getSorting();
-        $user = $request->user();
 
         return $this->inertiaResponse('Admin/Forms/IndexForm', [
             'forms' => [
-                'data' => $forms->getCollection()
-                    ->map(function ($form) use ($user) {
-                        /** @var Form $form */
-                        $registrationsCount = $this->registrationVisibility->isSharedRegistrationForm($form)
-                            ? $this->registrationVisibility->count($form, $user)
-                            : $form->registrations_count;
-
-                        return [
-                            ...$form->toFullArray(),
-                            'registrations_count' => $registrationsCount,
-                            'tenant' => [
-                                'id' => $form->tenant->id,
-                                'shortname' => $form->tenant->shortname,
-                            ],
-                            'can' => [
-                                'view' => $user->can('view', $form),
-                                'update' => $user->can('update', $form),
-                                'delete' => $user->can('delete', $form),
-                            ],
-                        ];
-                    }),
+                'data' => SerializeFormsForTable::execute($forms->getCollection(), $user, $this->registrationVisibility),
                 'meta' => [
                     'total' => $forms->total(),
                     'per_page' => $forms->perPage(),

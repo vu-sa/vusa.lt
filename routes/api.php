@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\DutiableTimelineApiController;
 use App\Http\Controllers\Api\Admin\DutyApiController;
 use App\Http\Controllers\Api\Admin\DutySearchApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
+use App\Http\Controllers\Api\Admin\FormApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\MergeCandidateApiController;
 use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
+use App\Http\Controllers\Api\Admin\ProblemApiController;
 use App\Http\Controllers\Api\Admin\ReservationApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
@@ -118,6 +120,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('tags', [TagApiController::class, 'index'])->name('tags.index');
         Route::get('resourceCategories', [ResourceCategoryApiController::class, 'index'])->name('resourceCategories.index');
         Route::get('duties', [DutyApiController::class, 'index'])->name('duties.index');
+        Route::get('problems', [ProblemApiController::class, 'index'])->name('problems.index');
+        Route::get('forms', [FormApiController::class, 'index'])->name('forms.index');
 
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');

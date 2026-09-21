@@ -63,6 +63,10 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Features/Admin/ResourceCategories/**',
   'resources/js/Pages/Admin/People/{CreateInstitution,EditInstitution,ShowInstitution,IndexInstitution,CreateUser,EditUser,ShowUser,IndexUser,IndexDuty,DutyUserUpdateWizard,DutiableTimeline}.vue',
   'resources/js/Pages/Admin/Reservations/{CreateReservation,ShowReservation,CreateResource,EditResource,IndexResource,IndexResourceCategory}.vue',
+  'resources/js/Pages/Admin/Problems/**',
+  'resources/js/Components/AdminForms/ProblemForm.vue',
+  'resources/js/Pages/Admin/Forms/**',
+  'resources/js/Components/AdminForms/{FormForm,FormFieldForm}.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

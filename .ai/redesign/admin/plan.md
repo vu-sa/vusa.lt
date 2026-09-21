@@ -1103,13 +1103,28 @@ Each page follows the playbook and lands with its lint-fence paths; tick here.
 - [x] Reservations: create, record; resources; categories
 - [x] Users (record + form), duties collection, the occupancy sheet everywhere (O21), *Kadencijos
       keitimas* wizard, duty timeline (workbench)
-- [ ] Problems
-- [ ] Forms and registrations
+- [x] Problems
+- [x] Forms and registrations
 - [ ] Website content: pages, news, calendar (editors), banners, navigation (workbench), quick links,
       event types
 - [ ] Files, documents, Sharepoint
 - [ ] Sistema: roles, permissions, types, relationships, settings, system status, mail queue, support
 - [ ] Paskyra: profile, notification settings; Užduotys; Pranešimai
+
+### PR 9.4 notes (2026-09-21)
+
+- **Problems (`/mano/problems`):**
+  - **IndexProblem:** Rebuilt on `CollectionPage` with `useDatabaseCollectionSource` (default view `preview`, view mode toggle). Supports quick filter chips (`active`, `mine_tenant`, `created_by_me`), faceted filters (status, padalinys), soft-delete trash toggle, restore and force delete.
+  - **ShowProblem:** Rebuilt on `RecordPage`. Features record facts strip (status, tenant, manager/responsible duty, submission date), segmented status transition control with semantic tokens (`--status-*`), multi-tab layout (`aprasymas`, `veiksmai`, `sprendimas`, `institucijos`), associated institutions list, activity log and discussion feed, and overflow actions (edit, delete).
+  - **ProblemForm / CreateProblem / EditProblem:** Migrated to `FormPage` + `FormSection`. Clean multi-locale (LT/EN) title and description inputs with Tiptap editor, institution multi-select combobox, status picker, and danger zone with delete confirmation dialog.
+  - **Backend actions & API:** Created `BuildProblemIndexQuery` shared between `ProblemController::index` and `ProblemApiController` (`/api/v1/admin/problems`).
+- **Forms and registrations (`/mano/forms`):**
+  - **IndexForm:** Rebuilt on `CollectionPage` with `useDatabaseCollectionSource` (default view `table`). Quick filters (`active`, `mine_tenant`), padalinys facets, copy shareable public link action, soft-delete trash recovery and force delete.
+  - **ShowForm:** Rebuilt on `RecordPage`. Features facts strip (status, unit, registrations count, public link), submissions table with field-level filter popovers and export, registration submission detail modal (`Dialog`), form fields overview tab, activity log, and overflow actions.
+  - **FormForm / CreateForm / EditForm / FormFieldForm:** Migrated to `FormPage` + `FormSection`. All legacy Fluent icons replaced with `lucide-vue-next`. Implemented discrete field reordering mode per Rule 16 ("Keisti tvarką" toggle showing `ArrowUp` / `ArrowDown` per row) avoiding continuous drag-and-drop. Added field options builder (options list for select/radio/checkbox), validation rules toggles, and multi-locale preview labels.
+  - **Backend actions & API:** Created `BuildFormIndexQuery` and `SerializeFormsForTable` shared between `FormController::index` and `FormApiController` (`/api/v1/admin/forms`).
+- **Lint fence:** Enrolled all 11 modified/created admin problem and form files in `MIGRATED_ADMIN_PATHS` in `eslint.config.mjs` with 0 ESLint errors.
+- **Verification:** Vitest (full suite passing: 437 files, 3,337 tests), Vite build clean (`npm run build`), backend test suite (`artisan test --parallel --compact --filter="Problem|Form"` passing: 251 tests, 983 assertions).
 
 ### PR 9.2 + 9.3 notes (2026-09-20)
 
