@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Admin\ActivityLogApiController;
 use App\Http\Controllers\Api\Admin\AgendaItemNoteApiController;
 use App\Http\Controllers\Api\Admin\AnalyticsApiController;
 use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
+use App\Http\Controllers\Api\Admin\BannerApiController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
 use App\Http\Controllers\Api\Admin\DutiableTimelineApiController;
 use App\Http\Controllers\Api\Admin\DutyApiController;
 use App\Http\Controllers\Api\Admin\DutySearchApiController;
+use App\Http\Controllers\Api\Admin\EventTypeApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\FormApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
@@ -122,6 +124,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('duties', [DutyApiController::class, 'index'])->name('duties.index');
         Route::get('problems', [ProblemApiController::class, 'index'])->name('problems.index');
         Route::get('forms', [FormApiController::class, 'index'])->name('forms.index');
+        Route::get('banners', [BannerApiController::class, 'index'])->name('banners.index');
+        Route::get('eventTypes', [EventTypeApiController::class, 'index'])->name('eventTypes.index');
 
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');

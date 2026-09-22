@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.16 — Svetainės turinio valdymas: skydeliai, greitosios nuorodos, renginių tipai ir navigacija (2026-09-22) {#v2-16}
+
+- ✨ **Atnaujintas skydelių valdymas** — skydelių sąrašas perkeltas į standartinį kolekcijos formatą su būsenos peržiūra, greitaisiais filtrais ir atnaujinta kūrimo bei redagavimo forma
+- ✨ **Greitųjų nuorodų rikiavimas** — greitosios nuorodos turi klaviatūrai ir lietimui pritaikytą rikiavimo rėžimą su aiškiais mygtukais tvarkai keisti
+- ✨ **Renginių tipų valdymas šoniniame skydelyje** — renginių tipų kūrimas ir redagavimas dabar atliekamas tiesiai sąrašo lange per iššokantį šoninį skydelį, palaikomi šiukšliadėžės filtrai ir trynimo blokavimo tikrinimas
+- ✨ **Modernizuotas navigacijos konstruktorius** — antraštės ir poraštės meniu valdymas pritaikytas naujajai dizaino sistemai, su aiškesne stulpelių ir nuorodų kortelių hierarchija bei atnaujintomis nuorodų formomis
+
 ## v2.15 — Atstovo ciklas: pirmi žingsniai, prieigos pokyčiai ir atsakomi priminimai (2026-09-20) {#v2-15}
 
 - ⭐ **Pirmi žingsniai Pradžioje** — naujam atstovui Pradžia pasiūlo keturis žingsnius: nuotrauką, sekamas institucijas, pranešimų nustatymus ir pirmą užfiksuotą posėdį. Padarytas žingsnis pasižymi pats, o kai viskas padaryta arba paspaudi „Slėpti“, sąrašas dingsta. Ilgoji supažindinimo ekskursija nebepasileidžia savaime

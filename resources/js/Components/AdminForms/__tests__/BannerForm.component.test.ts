@@ -35,11 +35,11 @@ describe('BannerForm.vue', () => {
       global: {
         stubs: {
           ...commonStubs,
-          AdminForm: {
-            template: '<form @submit.prevent><slot /></form>',
-            props: ['model'],
+          FormPage: {
+            template: '<div data-testid="form-page"><form @submit.prevent><slot name="header-actions" /><slot /><slot name="advanced" /><slot name="danger-zone" /></form></div>',
+            props: ['title', 'headTitle', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode', 'maxWidth'],
           },
-          FormElement: {
+          FormSection: {
             template: '<section><slot /></section>',
           },
           FormFieldWrapper: {

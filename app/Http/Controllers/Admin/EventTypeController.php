@@ -74,13 +74,15 @@ class EventTypeController extends AdminController
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Event types are created in a sheet over the collection (Phase 9.6).
+     *
+     * @deprecated Kept for bookmarks; remove in Phase 10.
      */
-    public function create(): Response
+    public function create(): RedirectResponse
     {
         $this->handleAuthorization('create', EventType::class);
 
-        return $this->inertiaResponse('Admin/Calendar/CreateEventType');
+        return redirect()->route('eventTypes.index');
     }
 
     /**
@@ -94,15 +96,15 @@ class EventTypeController extends AdminController
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Event types are edited in a sheet over the collection (Phase 9.6).
+     *
+     * @deprecated Kept for bookmarks; remove in Phase 10.
      */
-    public function edit(EventType $eventType): Response
+    public function edit(EventType $eventType): RedirectResponse
     {
         $this->handleAuthorization('update', $eventType);
 
-        return $this->inertiaResponse('Admin/Calendar/EditEventType', [
-            'eventType' => $eventType->toFullArray(),
-        ]);
+        return redirect()->route('eventTypes.index');
     }
 
     /**

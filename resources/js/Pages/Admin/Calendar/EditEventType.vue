@@ -1,7 +1,8 @@
 <template>
+  <!-- @deprecated Superseded by EventTypeSheetForm in Phase 9.6; remove with legacy eventType URLs in Phase 10. -->
   <PageContent :title="pageTitle" :back-url="route('eventTypes.index')" :heading-icon="CalendarIcon">
     <UpsertModelLayout>
-      <EventTypeForm :event-type="eventType" @submit:form="(form: any) => form.patch(route('eventTypes.update', eventType.id))"
+      <EventTypeForm :event-type="eventType" @submit:form="(form: unknown) => (form as { patch: (url: string) => void }).patch(route('eventTypes.update', eventType.id))"
         @delete="() => router.delete(route('eventTypes.destroy', eventType.id))" />
     </UpsertModelLayout>
   </PageContent>
@@ -25,7 +26,8 @@ const pageTitle = computed(() => {
   const { name } = props.eventType;
 
   if (typeof name === 'object' && name !== null) {
-    return (name as any).lt || (name as any).en || $t('Redaguoti renginio tipą');
+    const localized = name as Record<string, string>;
+    return localized.lt || localized.en || $t('Redaguoti renginio tipą');
   }
 
   return String(name ?? $t('Redaguoti renginio tipą'));

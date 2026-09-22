@@ -1,7 +1,8 @@
 <template>
+  <!-- @deprecated Superseded by EventTypeSheetForm in Phase 9.6; remove with legacy eventType URLs in Phase 10. -->
   <PageContent title="Naujas renginio tipas" :heading-icon="CalendarIcon">
     <UpsertModelLayout>
-      <EventTypeForm remember-key="CreateEventType" :event-type="eventType" @submit:form="(form: any) => form.post(route('eventTypes.store'))" />
+      <EventTypeForm remember-key="CreateEventType" :event-type="eventType" @submit:form="(form: unknown) => (form as { post: (url: string) => void }).post(route('eventTypes.store'))" />
     </UpsertModelLayout>
   </PageContent>
 </template>

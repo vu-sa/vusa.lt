@@ -1,26 +1,34 @@
 <template>
-  <PageContent :title="banner.title" :back-url="route('banners.index')" :heading-icon="BannerIcon">
-    <template #aside-header>
-      <ActivityLogSheet subject-type="banner" :subject-id="banner.id" />
-    </template>
-    <UpsertModelLayout>
-      <BannerForm :banner enable-delete
-        @submit:form="(form) => form.patch(route('banners.update', banner.id), { preserveScroll: true })"
-        @delete="() => router.delete(route('banners.destroy', banner.id))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <BannerForm
+    :banner
+    enable-delete
+    @submit:form="submitForm"
+    @delete="deleteBanner"
+  />
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import BannerForm from '@/Components/AdminForms/BannerForm.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { BannerIcon } from '@/Components/icons';
 
-defineProps<{
+const props = defineProps<{
   banner: App.Entities.Banner;
 }>();
+
+usePageBreadcrumbs(() =>
+  BreadcrumbHelpers.adminForm('Baneriai', 'banners.index', props.banner.title, BannerIcon),
+);
+
+function submitForm(form: unknown): void {
+  const inertiaForm = form as InertiaForm<App.Entities.Banner>;
+  inertiaForm.defaults();
+  inertiaForm.patch(route('banners.update', props.banner.id), { preserveScroll: true });
+}
+
+function deleteBanner(): void {
+  router.delete(route('banners.destroy', props.banner.id));
+}
 </script>

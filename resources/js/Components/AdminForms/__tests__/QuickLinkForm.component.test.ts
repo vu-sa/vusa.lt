@@ -27,8 +27,8 @@ vi.mock('@/Composables/useApi', () => ({
 }));
 
 const formStubs = {
-  AdminForm: { props: ['model'], template: '<form @submit.prevent><slot /></form>' },
-  FormElement: { template: '<section><slot name="title" /><slot name="subtitle" /><slot /></section>' },
+  FormPage: { props: ['title'], template: '<div data-testid="form-page"><form @submit.prevent><slot /></form></div>' },
+  FormSection: { template: '<section><slot /></section>' },
   FormFieldWrapper: {
     props: ['id', 'label', 'required', 'error', 'helperText'],
     template: '<div><slot /><span v-if="error" class="field-error">{{ error }}</span></div>',

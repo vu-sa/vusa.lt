@@ -5,6 +5,13 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.16 — Website content: banners, quick links, event types, and navigation (2026-09-22) {#v2-16}
+
+- ✨ **Refreshed banner management** — the banners list has been migrated to the modern collection layout with quick filters, status overview, and streamlined creation and editing forms
+- ✨ **Quick links reordering** — quick links feature an accessible keyboard- and touch-friendly reordering mode to easily organize items
+- ✨ **Event types in a side sheet** — creating and editing event types now happens directly in a slide-out sheet over the list, complete with trash management and delete blockers
+- ✨ **Modernized navigation builder** — the header and footer navigation manager now matches the design tokens, providing clearer column and link cards with updated navigation forms
+
 ## v2.15 — The rep loop: first steps, access changes and answerable reminders (2026-09-20) {#v2-15}
 
 - ⭐ **First steps on the home page** — a new representative gets four steps on Pradžia: a photo, followed institutions, notification settings and a first recorded meeting. Finished steps tick themselves, and the list disappears when everything is done or you press “Hide”. The long welcome tour no longer starts by itself

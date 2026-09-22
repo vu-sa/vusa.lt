@@ -67,9 +67,12 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/AdminForms/ProblemForm.vue',
   'resources/js/Pages/Admin/Forms/**',
   'resources/js/Components/AdminForms/{FormForm,FormFieldForm}.vue',
-  'resources/js/Pages/Admin/Content/{CreatePage,EditPage,CreateNews,EditNews,EditHomePage}.vue',
-  'resources/js/Pages/Admin/Calendar/{CreateCalendarEvent,EditCalendarEvent}.vue',
-  'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormStatusHeader,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,FormLinkButton}.vue',
+  'resources/js/Pages/Admin/Content/{CreatePage,EditPage,CreateNews,EditNews,EditHomePage,IndexBanner,CreateBanner,EditBanner,IndexQuickLink,CreateQuickLink,EditQuickLink}.vue',
+  'resources/js/Pages/Admin/Calendar/{CreateCalendarEvent,EditCalendarEvent,IndexEventType}.vue',
+  'resources/js/Features/Admin/EventTypes/**',
+  'resources/js/Pages/Admin/Navigation/**',
+  'resources/js/Features/Admin/NavigationBuilder/**',
+  'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormStatusHeader,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,FormLinkButton,BannerForm,QuickLinkForm,NavigationForm,NavigationParentForm}.vue',
   'resources/js/Components/Analytics/ContentAnalyticsCard.vue',
 ];
 

@@ -76,13 +76,10 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('can access create page', function (): void {
+    test('the old create URL redirects authorized users to the collection', function (): void {
         asUser($this->globalCoordinator)
             ->get(route('eventTypes.create'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Calendar/CreateEventType')
-            );
+            ->assertRedirect(route('eventTypes.index'));
     });
 
     test('can store event type with valid data', function (): void {
@@ -123,15 +120,10 @@ describe('authorized access', function (): void {
             ->assertSessionHasErrors('slug');
     });
 
-    test('can access edit page', function (): void {
+    test('the old edit URL redirects authorized users to the collection', function (): void {
         asUser($this->globalCoordinator)
             ->get(route('eventTypes.edit', $this->eventType))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Calendar/EditEventType')
-                ->has('eventType')
-                ->where('eventType.id', $this->eventType->id)
-            );
+            ->assertRedirect(route('eventTypes.index'));
     });
 
     test('can update event type with valid data', function (): void {

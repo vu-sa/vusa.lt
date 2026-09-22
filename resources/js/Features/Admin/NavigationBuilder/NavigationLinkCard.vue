@@ -3,8 +3,8 @@
   <div
     class="nav-link-card group text-sm transition-colors"
     :class="isFullHeight
-      ? ['relative isolate block min-h-24 grow overflow-hidden rounded-md border', !link.is_active && 'opacity-60']
-      : ['flex items-center gap-2 rounded-md border bg-background p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50']"
+      ? ['relative isolate block min-h-24 grow overflow-hidden border', !link.is_active && 'opacity-60']
+      : ['flex items-center gap-2 border bg-background p-2 hover:bg-muted/50']"
     :data-link-id="link.id"
     :data-link-type="linkType"
   >
@@ -17,16 +17,19 @@
         :src="imageUrl"
         alt=""
       >
-      <div v-else class="absolute inset-0 flex items-center justify-center bg-zinc-200 dark:bg-zinc-700">
-        <ImageIcon class="size-6 text-zinc-400" />
+      <div v-else class="absolute inset-0 flex items-center justify-center bg-muted">
+        <ImageIcon class="size-6 text-muted-foreground" />
       </div>
       <div class="absolute inset-0" :class="imageGradientClass" />
 
-      <button type="button" class="nav-link-handle absolute left-1.5 top-1.5 z-20 cursor-grab touch-none rounded bg-black/30 p-1 text-white/80 hover:text-white active:cursor-grabbing">
+      <button
+        type="button"
+        class="nav-link-handle absolute left-1.5 top-1.5 z-20 cursor-grab touch-none bg-background/80 p-1 text-foreground hover:text-foreground active:cursor-grabbing"
+      >
         <GripVertical class="size-3.5" />
       </button>
 
-      <div class="absolute right-1.5 top-1.5 z-20 flex items-center gap-1 rounded-md bg-white/90 p-1 dark:bg-zinc-900/90">
+      <div class="absolute right-1.5 top-1.5 z-20 flex items-center gap-1 border border-border bg-background/90 p-1">
         <Tooltip>
           <TooltipTrigger as-child>
             <span class="inline-flex">
@@ -68,17 +71,17 @@
         </AlertDialog>
       </div>
 
-      <span class="absolute inset-x-0 bottom-0 z-10 truncate p-2 font-medium text-white drop-shadow">
+      <span class="absolute inset-x-0 bottom-0 z-10 truncate p-2 font-medium text-primary-foreground">
         {{ displayName }}
       </span>
     </template>
 
     <template v-else>
-      <button type="button" class="nav-link-handle cursor-grab touch-none text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:hover:text-zinc-300">
+      <button type="button" class="nav-link-handle cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing">
         <GripVertical class="size-4" />
       </button>
 
-      <component :is="typeIcon" class="size-3.5 shrink-0 text-zinc-400" :class="[!link.is_active && 'opacity-50']" />
+      <component :is="typeIcon" class="size-3.5 shrink-0 text-muted-foreground" :class="[!link.is_active && 'opacity-50']" />
 
       <!-- Only the descriptive content dims when inactive — the switch and action
            buttons must stay at full contrast so they're still usable and legible. -->
@@ -90,8 +93,8 @@
           <Badge v-if="link.extra_attributes?.small_text" :variant="link.extra_attributes.badge_variant ?? 'rose'" size="tiny">
             {{ link.extra_attributes.small_text }}
           </Badge>
-          <ImageIcon v-if="link.extra_attributes?.image" class="size-3 shrink-0 text-zinc-400" />
-          <Star v-if="link.extra_attributes?.featured" class="size-3 shrink-0 fill-amber-400 text-amber-400" />
+          <ImageIcon v-if="link.extra_attributes?.image" class="size-3 shrink-0 text-muted-foreground" />
+          <Star v-if="link.extra_attributes?.featured" class="size-3 shrink-0 fill-status-warning text-status-warning" />
         </div>
         <p v-if="link.url && link.url !== '#'" class="truncate text-xs text-muted-foreground">
           {{ link.url }}

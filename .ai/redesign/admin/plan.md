@@ -78,7 +78,7 @@ One PR = one row. Rules:
 | **9.3** | Users record + form; duties collection; occupancy sheet everywhere; Kadencijos keitimas; timeline | 8.1 |
 | **9.4** | Problems; forms and registrations | 8.1 | ✅ |
 | **9.5** | Website content: pages, news, calendar editors | 8.1 | ✅ |
-| **9.6** | Website content: banners, navigation builder, quick links, event types | 8.1 |
+| **9.6** | Website content: banners, navigation builder, quick links, event types | 8.1 | ✅ |
 | **9.7** | Files, documents, Sharepoint | 8.1 |
 | **9.8** | Sistema: roles, permissions, types, relationships, settings, status, mail queue, support | 8.1 |
 | **9.9** | Paskyra: profile, notification settings; Užduotys; Pranešimai | 8.1 |
@@ -1105,10 +1105,34 @@ Each page follows the playbook and lands with its lint-fence paths; tick here.
       keitimas* wizard, duty timeline (workbench)
 - [x] Problems
 - [x] Forms and registrations
-- [x] Website content: pages, news, calendar (editors) [Phase 9.5 complete; banners, navigation builder, quick links, event types in 9.6]
+- [x] Website content: pages, news, calendar (editors), banners, navigation builder, quick links, event types (Phase 9.5 & Phase 9.6 complete)
 - [ ] Files, documents, Sharepoint
 - [ ] Sistema: roles, permissions, types, relationships, settings, system status, mail queue, support
 - [ ] Paskyra: profile, notification settings; Užduotys; Pranešimai
+
+### PR 9.6 notes (2026-09-22)
+
+- **Banners Domain (`/mano/banners`):**
+  - Modernized `IndexBanner.vue` onto `CollectionPage` with `useDatabaseCollectionSource` (default view `'table'`, view mode switch). Included fast filter chips, search input, banner status display, and responsive row actions.
+  - Built `BannerApiController` (`/api/v1/admin/banners`) with tenant scope filtering and TanStack pagination contract; fully tested in `BannerApiControllerTest`.
+  - Modernized `BannerForm.vue`, `CreateBanner.vue`, `EditBanner.vue` onto `FormPage` + `FormSection`. All legacy Fluent icons replaced with `lucide-vue-next` (`Image`, `Calendar`, `Sparkles`, `ExternalLink`). Configured date/time picker, link input, banner target, and danger zone with `ConfirmDialog`.
+- **Quick Links Domain (`/mano/quick-links`):**
+  - Modernized `IndexQuickLink.vue` with discrete keyboard/touch reordering mode (Rule 16: "Keisti tvarką" toggle with `ArrowUp` / `ArrowDown` per row and accessible keyboard navigation).
+  - Modernized `QuickLinkForm.vue`, `CreateQuickLink.vue`, `EditQuickLink.vue` onto `FormPage` + `FormSection`. Replaced Fluent icons with Lucide icons (`Link2`, `ExternalLink`).
+- **Event Types Domain (`/mano/event-types`):**
+  - Modernized `IndexEventType.vue` onto `CollectionPage` with `useDatabaseCollectionSource`. Built lightweight `EventTypeSheetForm.vue` (`SheetForm`) for creating and editing event types directly from the index page.
+  - Built `EventTypeApiController` (`/api/v1/admin/eventTypes`) with soft delete filtering and blockers checking (`withForceDeleteBlockers`, `appendForceDeleteBlockedReason`); tested in `EventTypeApiControllerTest`.
+  - Redirected legacy `create()` and `edit()` in `EventTypeController` to `eventTypes.index`, and marked `CreateEventType.vue` / `EditEventType.vue` as `@deprecated`.
+- **Navigation Builder Domain (`/mano/navigation`):**
+  - Modernized `IndexNavigation.vue`: replaced `PageContent` with standard admin header (eyebrow, title, lead), `Tabs` for header vs footer navigation, semantic warning banner for unassigned elements, and `EmptyState`.
+  - Modernized navigation builder components (`NavigationBuilder.vue`, `NavigationRootItem.vue`, `NavigationColumn.vue`, `NavigationLinkCard.vue`, `NavigationPreview.vue`, `FooterNavigationManager.vue`): removed all raw color tokens and legacy border radiuses, replaced all Fluent icons with Lucide (`GripVertical`, `Plus`, `Trash2`, `ExternalLink`, etc.), and applied hairline borders and semantic tokens.
+  - Modernized `NavigationForm.vue`, `NavigationParentForm.vue`, `CreateNavigation.vue`, and `EditNavigation.vue` onto `FormPage` + `FormSection` with Lucide icons and page breadcrumbs.
+- **Lint Fence & Quality:**
+  - Enrolled all 21 Phase 9.6 files in `MIGRATED_ADMIN_PATHS` in `eslint.config.mjs` with 0 errors and 0 warnings.
+  - Updated `AdminEntityTranslationsTest` entity regex to support both `const entityName` and `entity-type="..."`, passing all 70 translation and grammar tests.
+  - All 248 Phase 9.6 backend tests pass (`BannerControllerTest`, `BannerApiControllerTest`, `QuickLinkControllerTest`, `EventTypeControllerTest`, `EventTypeApiControllerTest`, `NavigationControllerTest`).
+  - Full Vitest suite passes (438 test files, 3,339 tests).
+  - Clean production build via Vite (`npm run build` in 4.16s).
 
 ### PR 9.5 notes (2026-09-22)
 

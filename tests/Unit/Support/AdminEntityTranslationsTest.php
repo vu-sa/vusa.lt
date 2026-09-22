@@ -17,10 +17,9 @@ $entityNames = collect(glob($projectRoot.'/resources/js/Pages/Admin/*/Index*.vue
     ->map(function (string $path): ?string {
         $source = (string) file_get_contents($path);
 
-        // Pages declare the key they will look up as a top-level constant; those that
-        // declare none do not render a ServerDataTable empty state.
-        if (preg_match('/^const entityName\s*=\s*\'([^\']+)\'/m', $source, $matches) === 1) {
-            return $matches[1];
+        // Pages declare the key they will look up as a top-level constant or CollectionPage entity-type.
+        if (preg_match('/(?:^const entityName\s*=\s*\'([^\']+)\'|entity-type="([^"]+)")/m', $source, $matches) === 1) {
+            return ! empty($matches[1]) ? $matches[1] : $matches[2];
         }
 
         return null;

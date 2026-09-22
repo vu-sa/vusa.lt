@@ -34,7 +34,7 @@ describe('EditHomePage', () => {
     });
 
     expect(wrapper.get('[data-tenant-id]').attributes('data-tenant-id')).toBe('42');
-    expect(wrapper.text()).toContain('🇱🇹 Lietuvių');
-    expect(wrapper.text()).toContain('🇬🇧 English');
+    expect(wrapper.text()).toContain('LT');
+    expect(wrapper.text()).toContain('EN');
   });
 });

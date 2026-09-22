@@ -1,112 +1,131 @@
 <template>
-  <div>
-    <PageContent :title="$t('navigation.title')">
-      <div v-if="shouldShowDeletedToggle" class="mb-4 flex justify-end">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {{ $t('shell.workspaces.website.title') }} · {{ $t('navigation.title') }}
+        </p>
+        <h1 class="text-2xl font-bold tracking-tight text-foreground font-heading">
+          {{ showDeleted ? $t('trash.showing_deleted_only') : $t('navigation.title') }}
+        </h1>
+        <p class="text-sm text-muted-foreground">
+          {{ showDeleted ? $t('trash.showing_deleted_only_description') : $t('navigation.builder.footer_description') }}
+        </p>
+      </div>
+
+      <div v-if="shouldShowDeletedToggle" class="flex items-center gap-2">
         <TrashViewToggle
           :show-deleted
           :deleted-count
           @update:show-deleted="handleShowDeletedChange"
         />
       </div>
+    </div>
 
-      <Alert
-        v-if="showDeleted"
-        class="mb-4 flex flex-col gap-3 border-amber-200 bg-amber-50 text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+    <!-- Trash Notice -->
+    <Alert
+      v-if="showDeleted"
+      class="flex flex-col gap-3 border-status-warning/20 bg-status-warning/10 text-foreground sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div class="flex items-start gap-2.5">
+        <Trash2 class="mt-0.5 size-4 shrink-0 text-status-warning" />
+        <div class="space-y-0.5">
+          <AlertTitle class="font-medium">
+            {{ $t('trash.showing_deleted_only') }}
+          </AlertTitle>
+          <AlertDescription class="text-sm text-muted-foreground">
+            {{ $t('trash.showing_deleted_only_description') }}
+          </AlertDescription>
+        </div>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        class="shrink-0 bg-background hover:bg-muted"
+        @click="handleShowDeletedChange(false)"
       >
-        <div class="flex items-start gap-2.5">
-          <Trash2 class="mt-0.5 size-4 shrink-0" />
-          <div class="space-y-0.5">
-            <AlertTitle class="font-medium">
-              {{ $t('trash.showing_deleted_only') }}
-            </AlertTitle>
-            <AlertDescription class="text-sm text-amber-900 dark:text-amber-100">
-              {{ $t('trash.showing_deleted_only_description') }}
-            </AlertDescription>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          class="shrink-0 border-amber-300 bg-white text-amber-950 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/40"
-          @click="handleShowDeletedChange(false)"
+        {{ $t('trash.exit_trash_view') }}
+      </Button>
+    </Alert>
+
+    <!-- Trash View Content -->
+    <template v-if="showDeleted">
+      <div v-if="contents.length === 0" class="flex flex-col items-center justify-center border border-dashed py-12">
+        <EmptyState
+          mode="empty"
+          :icon="NavigationIcon"
+          :title="$t('trash.no_deleted_records')"
+          :description="$t('trash.showing_deleted_only_description')"
+        />
+      </div>
+
+      <div v-else class="flex flex-col gap-2">
+        <div
+          v-for="item in contents"
+          :key="item.id"
+          class="flex flex-col gap-3 border border-border bg-background p-3 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
         >
-          {{ $t('trash.exit_trash_view') }}
-        </Button>
-      </Alert>
-
-      <template v-if="showDeleted">
-        <div v-if="contents.length === 0" class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-          <p class="text-muted-foreground">
-            {{ $t('trash.no_deleted_records') }}
-          </p>
-        </div>
-
-        <div v-else class="flex flex-col gap-2">
-          <div
-            v-for="item in contents"
-            :key="item.id"
-            class="flex flex-col gap-3 rounded-lg border bg-background p-3 transition-colors hover:bg-zinc-50 sm:flex-row sm:items-center sm:justify-between dark:hover:bg-zinc-800/50"
-          >
-            <div class="min-w-0">
-              <div class="font-medium">
-                {{ item.name || item.url || `#${item.id}` }}
-              </div>
-              <div v-if="item.url" class="truncate text-xs text-muted-foreground">
-                {{ item.url }}
-              </div>
+          <div class="min-w-0">
+            <div class="font-medium">
+              {{ item.name || item.url || `#${item.id}` }}
             </div>
-            <div class="flex flex-wrap items-center gap-1">
-              <Button variant="ghost" size="sm" class="gap-1.5" data-testid="restore-button" @click="handleRestore(item.id)">
-                <RotateCcw class="size-4" />
-                {{ $t('trash.restore') }}
-              </Button>
-              <Button
-                v-if="canForceDelete"
-                variant="ghost"
-                size="sm"
-                class="gap-1.5 text-destructive hover:text-destructive"
-                data-testid="force-delete-button"
-                @click="openForceDeleteDialog(item)"
-              >
-                <Trash2 class="size-4" />
-                {{ $t('trash.permanently_delete') }}
-              </Button>
+            <div v-if="item.url" class="truncate text-xs text-muted-foreground">
+              {{ item.url }}
             </div>
           </div>
+          <div class="flex flex-wrap items-center gap-1">
+            <Button variant="ghost" size="sm" class="gap-1.5 pointer-coarse:size-11" data-testid="restore-button" @click="handleRestore(item.id)">
+              <RotateCcw class="size-4" />
+              {{ $t('trash.restore') }}
+            </Button>
+            <Button
+              v-if="canForceDelete"
+              variant="ghost"
+              size="sm"
+              class="gap-1.5 text-destructive hover:text-destructive pointer-coarse:size-11"
+              data-testid="force-delete-button"
+              @click="openForceDeleteDialog(item)"
+            >
+              <Trash2 class="size-4" />
+              {{ $t('trash.permanently_delete') }}
+            </Button>
+          </div>
         </div>
-      </template>
+      </div>
+    </template>
 
-      <Tabs v-else default-value="header">
-        <TabsList>
-          <TabsTrigger value="header">
-            {{ $t('navigation.builder.tab_header') }}
-          </TabsTrigger>
-          <TabsTrigger value="footer">
-            {{ $t('navigation.builder.tab_footer') }}
-          </TabsTrigger>
-        </TabsList>
+    <!-- Main Navigation Tabs -->
+    <Tabs v-else default-value="header">
+      <TabsList>
+        <TabsTrigger value="header">
+          {{ $t('navigation.builder.tab_header') }}
+        </TabsTrigger>
+        <TabsTrigger value="footer">
+          {{ $t('navigation.builder.tab_footer') }}
+        </TabsTrigger>
+      </TabsList>
 
-        <TabsContent value="header">
-          <NavigationBuilder
-            :roots="(contents as AdminNavigationRoot[])"
-            :lang="lang ?? 'lt'"
-            :translation-summary
-            @update:lang="handleLangChange"
-          />
-        </TabsContent>
+      <TabsContent value="header" class="pt-4">
+        <NavigationBuilder
+          :roots="(contents as AdminNavigationRoot[])"
+          :lang="lang ?? 'lt'"
+          :translation-summary
+          @update:lang="handleLangChange"
+        />
+      </TabsContent>
 
-        <TabsContent value="footer">
-          <FooterNavigationManager
-            :columns="footerColumns"
-            :lang="lang ?? 'lt'"
-            :max-columns="FOOTER_MAX_COLUMNS"
-            @toggle-link-active="handleToggleFooterLinkActive"
-            @delete-link="handleDeleteFooterLink"
-            @delete-column="handleDeleteFooterColumn"
-          />
-        </TabsContent>
-      </Tabs>
-    </PageContent>
+      <TabsContent value="footer" class="pt-4">
+        <FooterNavigationManager
+          :columns="footerColumns"
+          :lang="lang ?? 'lt'"
+          :max-columns="FOOTER_MAX_COLUMNS"
+          @toggle-link-active="handleToggleFooterLinkActive"
+          @delete-link="handleDeleteFooterLink"
+          @delete-column="handleDeleteFooterColumn"
+        />
+      </TabsContent>
+    </Tabs>
 
     <ConfirmDangerousActionDialog
       v-model:open="isForceDeleteDialogOpen"
@@ -121,18 +140,21 @@
 
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
 import { RotateCcw, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
-import NavigationBuilder from '@/Features/Admin/NavigationBuilder/NavigationBuilder.vue';
-import FooterNavigationManager from '@/Features/Admin/NavigationBuilder/FooterNavigationManager.vue';
-import type { AdminFooterColumn, AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from '@/Features/Admin/NavigationBuilder/types';
+import { NavigationIcon } from '@/Components/icons';
+import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import TrashViewToggle from '@/Components/Tables/TrashViewToggle.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ConfirmDangerousActionDialog from '@/Components/ui/data-table/ConfirmDangerousActionDialog.vue';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import TrashViewToggle from '@/Components/Tables/TrashViewToggle.vue';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import FooterNavigationManager from '@/Features/Admin/NavigationBuilder/FooterNavigationManager.vue';
+import NavigationBuilder from '@/Features/Admin/NavigationBuilder/NavigationBuilder.vue';
+import type { AdminFooterColumn, AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from '@/Features/Admin/NavigationBuilder/types';
 
 // Kept in sync with NavigationService::FOOTER_MAX_COLUMNS — purely a UI cap (hides the
 // "add column" button once reached); the server is the actual enforcement.
@@ -156,6 +178,10 @@ const props = defineProps<{
   deletedCount?: number;
   translationSummary?: TranslationSummary;
 }>();
+
+usePageBreadcrumbs(
+  BreadcrumbHelpers.adminIndex('Navigacija', NavigationIcon),
+);
 
 const itemPendingForceDelete = ref<TrashedNavigationItem | null>(null);
 const isForceDeleteDialogOpen = ref(false);

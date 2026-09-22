@@ -1,17 +1,34 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
+  <FormPage
+    :title="isCreate ? $t('Nauja greitoji nuoroda') : (form.text || $t('Greitoji nuoroda'))"
+    :head-title="isCreate ? $t('Nauja greitoji nuoroda') : (form.text || $t('Greitoji nuoroda'))"
+    :back-href="route('quickLinks.index')"
+    :back-label="$t('Greitosios nuorodos')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :mode="isCreate ? 'create' : 'edit'"
+    max-width="2xl"
+    @submit="$emit('submit:form', form)"
+  >
     <!-- Section 1: Basic Information -->
-    <FormElement :section-number="1" :is-complete="basicInfoComplete" required>
-      <template #title>
-        {{ $t('Pagrindinė informacija') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Mygtuko tekstas, ikona ir kalba') }}
-      </template>
-
+    <FormSection
+      :title="$t('Pagrindinė informacija')"
+      :description="$t('Mygtuko tekstas, ikona ir kalba')"
+    >
       <div class="space-y-4">
-        <FormFieldWrapper id="text" :label="$t('Mygtuko tekstas')" required :error="form.errors.text">
-          <Input id="text" v-model="form.text" type="text" :placeholder="$t('Įrašyti tekstą...')" />
+        <FormFieldWrapper
+          id="text"
+          :label="$t('Mygtuko tekstas')"
+          required
+          :error="form.errors.text"
+        >
+          <Input
+            id="text"
+            v-model="form.text"
+            type="text"
+            :placeholder="$t('Įrašyti tekstą...')"
+          />
         </FormFieldWrapper>
 
         <div class="grid gap-4 sm:grid-cols-2">
@@ -21,51 +38,59 @@
             </Suspense>
           </FormFieldWrapper>
 
-          <FormFieldWrapper id="lang" :label="$t('Kalba')" required>
+          <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang">
             <ToggleGroup v-model="form.lang" type="single" class="justify-start">
-              <ToggleGroupItem value="lt" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
-                Lietuvių
+              <ToggleGroupItem value="lt" class="px-3 text-xs font-medium">
+                Lietuvių (LT)
               </ToggleGroupItem>
-              <ToggleGroupItem value="en" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
-                English
+              <ToggleGroupItem value="en" class="px-3 text-xs font-medium">
+                English (EN)
               </ToggleGroupItem>
             </ToggleGroup>
           </FormFieldWrapper>
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2">
-          <div class="space-y-2">
-            <FormFieldWrapper id="tenant_id" :label="$t('Padalinys')"
-              :hint="$t('Padalinys, kuriam priklauso nuoroda')">
-              <SingleSelect v-model="selectedTenant" :options="tenantOptions" value-field="value" label-field="label"
-                :placeholder="$t('Pasirinkti padalinį...')" />
-            </FormFieldWrapper>
-            <Button v-if="form.tenant_id" variant="secondary" size="sm" as="a"
-              :href="route('quickLinks.index', { tenant: form.tenant_id, lang: form.lang ?? 'lt' })">
-              <component :is="QuickLinkIcon" class="h-4 w-4" />
-              {{ $t('Tvarkyti eiliškumą') }}
-            </Button>
-          </div>
+          <FormFieldWrapper
+            id="tenant_id"
+            :label="$t('Padalinys')"
+            :hint="$t('Padalinys, kuriam priklauso nuoroda')"
+            :error="form.errors.tenant_id"
+          >
+            <SingleSelect
+              v-model="selectedTenant"
+              :options="tenantOptions"
+              value-field="value"
+              label-field="label"
+              :placeholder="$t('Pasirinkti padalinį...')"
+            />
+          </FormFieldWrapper>
 
-          <FormFieldWrapper id="is_important" :label="$t('Ar svarbus?')"
-            :hint="$t('Ar rodyti mygtuką kaip svarbų?')">
-            <Switch v-model="form.is_important" />
+          <FormFieldWrapper
+            id="is_important"
+            :label="$t('Ar svarbus?')"
+            :hint="$t('Ar rodyti mygtuką kaip svarbų?')"
+          >
+            <div class="flex items-center gap-3 pt-2">
+              <Switch
+                id="is_important"
+                :model-value="!!form.is_important"
+                @update:model-value="val => form.is_important = val"
+              />
+              <span class="text-sm font-medium">
+                {{ form.is_important ? $t('Taip') : $t('Ne') }}
+              </span>
+            </div>
           </FormFieldWrapper>
         </div>
       </div>
-    </FormElement>
+    </FormSection>
 
     <!-- Section 2: Link Target -->
-    <FormElement :section-number="2" :is-complete="linkTargetComplete" required>
-      <template #title>
-        {{ $t('Nuorodos tikslas') }}
-      </template>
-      <template #description>
-        <p>{{ $t('Pasirinkite, į kur puslapį ar turinį veda ši nuoroda. Pasirinkus tipą ir objektą, nuoroda sugeneruojama automatiškai.') }}</p>
-      </template>
-
+    <FormSection
+      :title="$t('Nuorodos tikslas')"
+      :description="$t('Pasirinkite, į kurį puslapį ar turinį veda ši nuoroda. Pasirinkus tipą ir objektą, nuoroda sugeneruojama automatiškai.')"
+    >
       <div class="space-y-4">
         <FormFieldWrapper id="link_target" :label="$t('navigation.form.link_target')">
           <div class="flex flex-wrap items-center gap-2">
@@ -82,7 +107,7 @@
                   <span class="truncate" :class="{ 'text-muted-foreground': !lastPickedLabel }">
                     {{ lastPickedLabel ?? $t('navigation.form.link_target_placeholder') }}
                   </span>
-                  <IFluentChevronDown24Regular class="ml-2 size-4 opacity-50" />
+                  <ChevronDown class="ml-2 size-4 opacity-50" />
                 </Button>
               </template>
             </MultiCollectionSelectDialog>
@@ -104,40 +129,80 @@
           </div>
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="link" :label="$t('Nuoroda')" required :error="form.errors.link"
-          :helper-text="$t('navigation.form.link_target_manual')">
-          <div class="flex gap-1">
-            <Input id="link" v-model="form.link" type="text" :placeholder="$t('Nuoroda...')" />
-            <Button variant="outline" size="icon" as="a" :href="form.link" target="_blank">
-              <IFluentOpen24Regular />
+        <FormFieldWrapper
+          id="link"
+          :label="$t('Nuoroda')"
+          required
+          :error="form.errors.link"
+          :hint="$t('navigation.form.link_target_manual')"
+        >
+          <div class="flex gap-1.5">
+            <Input
+              id="link"
+              v-model="form.link"
+              type="text"
+              :placeholder="$t('Nuoroda...')"
+            />
+            <Button
+              v-if="form.link"
+              variant="outline"
+              size="icon"
+              as-child
+            >
+              <a :href="form.link" target="_blank" rel="noopener noreferrer" :aria-label="$t('Atidaryti nuorodą')">
+                <ExternalLink class="size-4" />
+              </a>
             </Button>
           </div>
         </FormFieldWrapper>
       </div>
-    </FormElement>
-  </AdminForm>
+    </FormSection>
+
+    <template v-if="enableDelete && !isCreate" #danger-zone>
+      <div class="flex items-center justify-between border border-destructive/20 bg-destructive/5 p-4">
+        <div>
+          <h3 class="text-sm font-semibold text-destructive">
+            {{ $t('Ištrinti greitąją nuorodą') }}
+          </h3>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Nuoroda bus perkelta į šiukšliadėžę.') }}
+          </p>
+        </div>
+        <Button variant="destructive" size="sm" type="button" @click="isDeleteDialogOpen = true">
+          {{ $t('Ištrinti') }}
+        </Button>
+      </div>
+    </template>
+  </FormPage>
+
+  <ConfirmDialog
+    :open="isDeleteDialogOpen"
+    :title="$t('Ištrinti greitąją nuorodą?')"
+    :description="$t('Ar tikrai norite perkelti šią greitąją nuorodą į šiukšliadėžę?')"
+    :confirm-label="$t('Ištrinti')"
+    destructive
+    @update:open="isDeleteDialogOpen = $event"
+    @confirm="emit('delete')"
+  />
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2 } from 'lucide-vue-next';
+import { ChevronDown, ExternalLink, Loader2 } from 'lucide-vue-next';
 
-import FluentIconSelect from '../FormItems/FluentIconSelect.vue';
-
-import AdminForm from './AdminForm.vue';
-import FormElement from './FormElement.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
-import { useApiMutation } from '@/Composables/useApi';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { ConfirmDialog } from '@/Components/Patterns';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { Switch } from '@/Components/ui/switch';
-import { SingleSelect } from '@/Components/ui/single-select';
-import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { QuickLinkIcon } from '@/Components/icons';
+import { SingleSelect } from '@/Components/ui/single-select';
+import { Switch } from '@/Components/ui/switch';
+import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+import { useApiMutation } from '@/Composables/useApi';
 import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 
@@ -147,19 +212,24 @@ interface TopicOption {
   alias: string | null;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   quickLink: App.Entities.QuickLink;
-  tenantOptions: Record<string, any>[];
+  tenantOptions: Record<string, unknown>[];
   topicOptions?: TopicOption[];
-  rememberKey?: 'CreateQuickLink';
-}>();
+  rememberKey?: string;
+  enableDelete?: boolean;
+}>(), {
+  topicOptions: () => [],
+  rememberKey: undefined,
+});
 
-defineEmits<{
+const emit = defineEmits<{
   (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
 
-const isCreate = computed(() => props.rememberKey === 'CreateQuickLink');
+const isCreate = computed(() => !props.quickLink?.id || props.rememberKey === 'CreateQuickLink');
+const isDeleteDialogOpen = ref(false);
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, props.quickLink)
@@ -179,19 +249,7 @@ const selectedTenant = computed({
   },
 });
 
-// Section completion states
-const basicInfoComplete = computed(() =>
-  (form.text?.length || 0) >= 1 && Boolean(form.lang),
-);
-
-const linkTargetComplete = computed(() => (form.link?.length || 0) > 0);
-
 // --- Link target picker -----------------------------------------------------
-// The picker (and topic select) are convenience fillers for `link` — the field
-// itself always stays editable as a manual override. `type` is a legacy column the
-// backend no longer persists (see QuickLinkController::store()/update()), so nothing
-// here needs to track or submit it.
-
 const pickerOpen = ref(false);
 const lastPickedLabel = ref<string | null>(null);
 
@@ -229,4 +287,8 @@ const onTopicSelected = (val: unknown) => {
     resolveAndFillUrl('topics', topic.id, topic.name);
   }
 };
+
+defineExpose({
+  form,
+});
 </script>

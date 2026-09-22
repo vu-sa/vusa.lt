@@ -1,11 +1,24 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <!-- §1 Basics -->
-    <FormElement :section-number="1">
-      <template #title>
-        {{ $t('navigation.form.section_basics') }}
-      </template>
+  <FormPage
+    :title="isCreate ? $t('navigation.form.new_link') : (form.name || form.url || $t('navigation.form.edit_link'))"
+    :head-title="isCreate ? $t('navigation.form.new_link') : (form.name || form.url || $t('navigation.form.edit_link'))"
+    :back-href="route('navigation.index')"
+    :back-label="$t('navigation.title')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :mode="isCreate ? 'create' : 'edit'"
+    max-width="4xl"
+    @submit="$emit('submit:form', form)"
+  >
+    <template v-if="!isCreate" #header-actions>
+      <slot name="aside-header" />
+    </template>
 
+    <!-- §1 Basics -->
+    <FormSection
+      :title="$t('navigation.form.section_basics')"
+    >
       <FormFieldWrapper id="name" :label="$t('navigation.form.name')" :required="!isNameless" :error="form.errors.name">
         <Input id="name" v-model="form.name" type="text" :disabled="isNameless" />
       </FormFieldWrapper>
@@ -26,7 +39,7 @@
                   <span class="truncate" :class="{ 'text-muted-foreground': !lastPickedLabel }">
                     {{ lastPickedLabel ?? $t('navigation.form.link_target_placeholder') }}
                   </span>
-                  <IFluentChevronDown24Regular class="ml-2 size-4 opacity-50" />
+                  <ChevronDown class="ml-2 size-4 opacity-50" />
                 </Button>
               </template>
             </MultiCollectionSelectDialog>
@@ -52,20 +65,16 @@
           :helper-text="isFooterRoot ? $t('navigation.form.footer_category_url_hint') : $t('navigation.form.link_target_manual')">
           <div class="flex gap-1">
             <Input id="url" v-model="form.url" type="text" />
-            <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank">
-              <IFluentOpen24Regular />
+            <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank" rel="noopener noreferrer">
+              <ExternalLink class="size-4" />
             </Button>
           </div>
         </FormFieldWrapper>
       </template>
-    </FormElement>
+    </FormSection>
 
     <!-- §2 Appearance — footer links have exactly one look, so there is nothing to pick -->
-    <FormElement v-if="!isDivider && !isFooter" :section-number="2">
-      <template #title>
-        {{ $t('navigation.form.section_appearance') }}
-      </template>
-
+    <FormSection v-if="!isDivider && !isFooter" :title="$t('navigation.form.section_appearance')">
       <FormFieldWrapper id="type" :label="$t('navigation.form.type')" required>
         <VisualOptionSelect v-model="linkType" :options="linkStyleOptions" :columns="3" icon-class="h-8 w-14" />
       </FormFieldWrapper>
@@ -95,28 +104,24 @@
           </FormFieldWrapper>
         </div>
       </template>
-    </FormElement>
+    </FormSection>
 
     <!-- §3 Image (collapsible, auto-open when an image is already set) — not supported on
          footer links, which are text-only by design (see AGENTS.md) -->
-    <FormElement v-if="!isNameless && !isFooter" :section-number="3">
-      <template #title>
-        {{ $t('navigation.form.section_image') }}
-      </template>
-
+    <FormSection v-if="!isNameless && !isFooter" :title="$t('navigation.form.section_image')">
       <Collapsible v-model:open="imageSectionOpen" class="w-full">
         <CollapsibleTrigger as-child>
           <Button variant="ghost" class="h-auto w-full justify-between p-0 hover:bg-transparent">
             <span class="text-sm text-muted-foreground">
               {{ imageSectionOpen ? $t('navigation.form.hide_image') : $t('navigation.form.show_image') }}
             </span>
-            <IFluentChevronDown24Regular class="size-4 shrink-0 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': imageSectionOpen }" />
+            <ChevronDown class="size-4 shrink-0 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': imageSectionOpen }" />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent class="space-y-4 pt-4">
           <FormFieldWrapper id="image" :label="$t('navigation.form.image')">
             <div class="flex items-start gap-4">
-              <img v-if="form.extra_attributes.image" class="size-24 shrink-0 rounded-md object-cover" :src="form.extra_attributes.image" alt="">
+              <img v-if="form.extra_attributes.image" class="size-24 shrink-0 object-cover" :src="form.extra_attributes.image" alt="">
               <div class="flex flex-col gap-2">
                 <ButtonGroup>
                   <TiptapImageButton as-child @submit="form.extra_attributes.image = $event">
@@ -212,36 +217,32 @@
           </template>
         </CollapsibleContent>
       </Collapsible>
-    </FormElement>
+    </FormSection>
 
     <!-- §4 Advanced (collapsible, closed by default) -->
-    <FormElement :section-number="4" no-divider>
-      <template #title>
-        {{ $t('navigation.form.section_advanced') }}
-      </template>
-
+    <FormSection :title="$t('navigation.form.section_advanced')">
       <Collapsible v-model:open="advancedOpen" class="w-full">
         <CollapsibleTrigger as-child>
           <Button variant="ghost" class="h-auto w-full justify-between p-0 hover:bg-transparent">
             <span class="text-sm text-muted-foreground">
               {{ advancedOpen ? $t('navigation.form.hide_advanced') : $t('navigation.form.show_advanced') }}
             </span>
-            <IFluentChevronDown24Regular class="size-4 shrink-0 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': advancedOpen }" />
+            <ChevronDown class="size-4 shrink-0 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': advancedOpen }" />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent class="space-y-4 pt-4">
-          <div class="flex items-center justify-between rounded-md border p-3">
+          <div class="flex items-center justify-between border border-border p-3">
             <Label for="is_active" class="cursor-pointer">{{ $t('navigation.form.is_active') }}</Label>
             <Switch id="is_active" :model-value="form.is_active" @update:model-value="val => form.is_active = val" />
           </div>
 
-          <div v-if="!isNameless && !isFooter" class="flex items-center justify-between rounded-md border p-3">
+          <div v-if="!isNameless && !isFooter" class="flex items-center justify-between border border-border p-3">
             <Label for="featured" class="cursor-pointer">{{ $t('navigation.form.featured') }}</Label>
             <Switch id="featured" :model-value="!!form.extra_attributes.featured"
               @update:model-value="val => form.extra_attributes.featured = val" />
           </div>
 
-          <div v-if="!isNameless && !isFooterRoot" class="flex items-center justify-between rounded-md border p-3">
+          <div v-if="!isNameless && !isFooterRoot" class="flex items-center justify-between border border-border p-3">
             <Label for="new_tab" class="cursor-pointer">{{ $t('navigation.form.new_tab') }}</Label>
             <Switch id="new_tab" :model-value="!!form.extra_attributes.new_tab"
               @update:model-value="val => form.extra_attributes.new_tab = val" />
@@ -294,39 +295,64 @@
           </FormFieldWrapper>
         </CollapsibleContent>
       </Collapsible>
-    </FormElement>
-  </AdminForm>
+    </FormSection>
+
+    <template v-if="enableDelete && !isCreate" #danger-zone>
+      <div class="flex items-center justify-between border border-destructive/20 bg-destructive/5 p-4">
+        <div>
+          <h3 class="text-sm font-semibold text-destructive">
+            {{ $t('navigation.form.delete_link') }}
+          </h3>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('navigation.form.delete_link_desc') }}
+          </p>
+        </div>
+        <Button variant="destructive" size="sm" type="button" @click="isDeleteDialogOpen = true">
+          {{ $t('Ištrinti') }}
+        </Button>
+      </div>
+    </template>
+  </FormPage>
+
+  <ConfirmDialog
+    :open="isDeleteDialogOpen"
+    :title="$t('Ištrinti navigacijos elementą?')"
+    :description="$t('Ar tikrai norite perkelti šį elementą į šiukšliadėžę?')"
+    :confirm-label="$t('Ištrinti')"
+    destructive
+    @update:open="isDeleteDialogOpen = $event"
+    @confirm="$emit('delete')"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, h, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2 } from 'lucide-vue-next';
+import { ChevronDown, ExternalLink, Loader2 } from 'lucide-vue-next';
 
-import FluentIconSelect from '../FormItems/FluentIconSelect.vue';
-import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
-
-import FormElement from './FormElement.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import AdminForm from './AdminForm.vue';
-
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
+import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { ConfirmDialog } from '@/Components/Patterns';
+import FormSection from '@/Components/Patterns/FormSection.vue';
+import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { ButtonGroup } from '@/Components/ui/button-group';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { SingleSelect } from '@/Components/ui/single-select';
+import { Switch } from '@/Components/ui/switch';
+import { Textarea } from '@/Components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import { useApiMutation } from '@/Composables/useApi';
 import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
-import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
-import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
-import { Button } from '@/Components/ui/button';
-import { ButtonGroup } from '@/Components/ui/button-group';
-import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
-import { Label } from '@/Components/ui/label';
-import { Switch } from '@/Components/ui/switch';
-import { Badge } from '@/Components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
-import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
-import { SingleSelect } from '@/Components/ui/single-select';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 interface TopicOption {
   id: number;
@@ -334,12 +360,16 @@ interface TopicOption {
   alias: string | null;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   navigation: App.Entities.Navigation;
   parentElements: App.Entities.Navigation[];
   topicOptions?: TopicOption[];
   rememberKey?: 'CreateNavigation';
-}>();
+  enableDelete?: boolean;
+}>(), {
+  topicOptions: () => [],
+  rememberKey: undefined,
+});
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
@@ -353,6 +383,9 @@ const form = props.rememberKey
 if (!form.extra_attributes) {
   form.extra_attributes = {};
 }
+
+const isCreate = computed(() => !form.id);
+const isDeleteDialogOpen = ref(false);
 
 // Footer links only ever take two fixed shapes — see NavigationRequest, which is the
 // authoritative source for this. Forced here too so the rest of the form (icons, type
@@ -429,58 +462,6 @@ const isDivider = computed(() => linkType.value === 'divider');
 const isHeading = computed(() => linkType.value === 'heading');
 const isNameless = computed(() => isDivider.value || isHeading.value);
 
-const badgeVariantOptions = ['rose', 'emerald', 'amber', 'sky', 'zinc'] as const;
-const badgeVariant = computed({
-  get: () => form.extra_attributes.badge_variant ?? 'rose',
-  set: (val: string) => { form.extra_attributes.badge_variant = val; },
-});
-
-const imageSectionOpen = ref(!!form.extra_attributes.image);
-const imageRender = computed({
-  get: () => form.extra_attributes.image_render ?? 'card',
-  set: (val: string) => { form.extra_attributes.image_render = val; },
-});
-const imageOverlay = computed({
-  get: () => form.extra_attributes.image_overlay ?? 'medium',
-  set: (val: string) => { form.extra_attributes.image_overlay = val; },
-});
-const imageBlur = computed({
-  get: () => String(form.extra_attributes.image_blur ?? 0),
-  set: (val: string) => { form.extra_attributes.image_blur = Number(val); },
-});
-const imageHeight = computed({
-  get: () => form.extra_attributes.image_height ?? 'short',
-  set: (val: string) => { form.extra_attributes.image_height = val; },
-});
-
-const imageGradient = computed({
-  get: () => form.extra_attributes.image_gradient ?? 'bottom',
-  set: (val: string) => { form.extra_attributes.image_gradient = val; },
-});
-const focalPoint = computed({
-  get: () => form.extra_attributes.image_focal ?? '50% 50%',
-  set: (val: string) => { form.extra_attributes.image_focal = val; },
-});
-
-const advancedOpen = ref(false);
-
-const parentOptions = computed(() => [
-  { value: '__none__', label: '-- Nėra --' },
-  ...props.parentElements.map(e => ({ value: String(e.id), label: e.name })),
-]);
-
-const selectedParent = computed({
-  get: () => parentOptions.value.find(p => p.value === String(form.parent_id ?? '__none__')) ?? parentOptions.value[0],
-  set: (val: { value: string; label: string } | null) => {
-    form.parent_id = val?.value === '__none__' ? null : val?.value ?? null;
-  },
-});
-
-// --- Link target picker -----------------------------------------------------
-// The picker (and topic select) are convenience fillers for `url` — the field
-// itself always stays editable as a manual override. Neither the collection nor the
-// record id is persisted, so on edit there is nothing to pre-select the picker with.
-
 const pickerOpen = ref(false);
 const lastPickedLabel = ref<string | null>(null);
 
@@ -518,4 +499,67 @@ const onTopicSelected = (val: unknown) => {
     resolveAndFillUrl('topics', topic.id, topic.name);
   }
 };
+
+const badgeVariantOptions = ['default', 'secondary', 'outline', 'destructive'];
+
+const badgeVariant = computed({
+  get: () => form.extra_attributes.badge_variant ?? 'default',
+  set: (val: string) => { form.extra_attributes.badge_variant = val; },
+});
+
+const imageSectionOpen = ref(Boolean(form.extra_attributes?.image));
+const advancedOpen = ref(false);
+
+const focalPoint = computed({
+  get: () => {
+    const raw = form.extra_attributes.image_focal;
+    if (!raw) return { x: 50, y: 50 };
+    const [x, y] = String(raw).split(' ').map(s => parseFloat(s));
+    return { x: Number.isFinite(x) ? x : 50, y: Number.isFinite(y) ? y : 50 };
+  },
+  set: (pt: { x: number; y: number }) => {
+    form.extra_attributes.image_focal = `${Math.round(pt.x)}% ${Math.round(pt.y)}%`;
+  },
+});
+
+const imageRender = computed({
+  get: () => form.extra_attributes.image_render ?? 'card',
+  set: (val: string) => { form.extra_attributes.image_render = val; },
+});
+
+const imageHeight = computed({
+  get: () => form.extra_attributes.image_height ?? 'short',
+  set: (val: string) => { form.extra_attributes.image_height = val; },
+});
+
+const imageOverlay = computed({
+  get: () => form.extra_attributes.image_overlay ?? 'medium',
+  set: (val: string) => { form.extra_attributes.image_overlay = val; },
+});
+
+const imageBlur = computed({
+  get: () => String(form.extra_attributes.image_blur ?? '0'),
+  set: (val: string) => { form.extra_attributes.image_blur = Number(val); },
+});
+
+const imageGradient = computed({
+  get: () => form.extra_attributes.image_gradient ?? 'bottom',
+  set: (val: string) => { form.extra_attributes.image_gradient = val; },
+});
+
+const parentOptions = computed(() => {
+  return props.parentElements
+    .filter(p => p.id !== form.id)
+    .map(p => ({ label: p.name || `#${p.id}`, value: p.id }));
+});
+
+const selectedParent = computed({
+  get: () => {
+    const parent = props.parentElements.find(p => p.id === form.parent_id);
+    return parent ? { label: parent.name || `#${parent.id}`, value: parent.id } : null;
+  },
+  set: (val: { label: string; value: number } | null) => {
+    form.parent_id = val?.value ?? 0;
+  },
+});
 </script>
