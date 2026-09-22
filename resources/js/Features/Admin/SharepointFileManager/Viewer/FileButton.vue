@@ -1,18 +1,35 @@
 <template>
-  <button v-bind="$attrs" role="button" :class="[small ? 'size-28' : 'size-48']"
-    class="grid cursor-pointer grid-rows-[7fr_4fr] items-center rounded-lg border p-0 shadow-xs transition hover:shadow-md focus:outline-hidden focus:ring-3 focus:ring-vusa-yellow dark:border-zinc-900 dark:bg-zinc-900 dark:focus:ring-vusa-red">
-    <div class="align-center flex h-full justify-center overflow-hidden rounded-t-md">
+  <button
+    v-bind="$attrs"
+    type="button"
+    :class="[
+      small ? 'size-28' : 'size-48',
+      'grid cursor-pointer grid-rows-[7fr_4fr] items-center',
+      'border border-border bg-card p-0 transition',
+      'hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+    ]"
+  >
+    <div class="flex h-full items-center justify-center overflow-hidden">
       <FadeTransition mode="out-in">
-        <img v-if="thumbnail && showThumbnail" class="size-full rounded-t-md object-cover object-top" :src="thumbnail">
-        <component :is="icon" v-else :class="small ? 'size-[30px]' : 'size-14'" class="my-auto text-zinc-700 dark:text-zinc-200" />
+        <img
+          v-if="thumbnail && showThumbnail"
+          class="size-full object-cover object-top"
+          :src="thumbnail"
+          :alt="name"
+        >
+        <component
+          :is="icon"
+          v-else
+          :class="small ? 'size-[30px]' : 'size-14'"
+          class="my-auto text-muted-foreground"
+        />
       </FadeTransition>
     </div>
-    <div
-      class="flex size-full flex-col justify-center overflow-auto rounded-b-md bg-white text-zinc-700 dark:bg-zinc-900 dark:text-white">
+    <div class="flex size-full flex-col justify-center overflow-auto bg-card text-foreground">
       <span :class="[small ? 'text-xs' : 'text-sm']" class="line-clamp-2 break-words px-3">{{ name }}</span>
     </div>
   </button>
-  <span v-if="$slots.belowButton" class="m-2 mx-auto line-clamp-1 w-4/5 text-center text-xs text-zinc-400">
+  <span v-if="$slots.belowButton" class="m-2 mx-auto line-clamp-1 w-4/5 text-center text-xs text-muted-foreground">
     <slot name="below-button" />
   </span>
 </template>
@@ -36,12 +53,11 @@ const icon = computed(() => {
     return Folder;
   }
 
-  // if word file
   if (props.iconString === 'file') {
     return File;
   }
 
-  if (props.iconString === 'file-word') {
+  if (props.iconString === 'file-word' || props.iconString === 'file-pdf') {
     return FileText;
   }
 
@@ -49,11 +65,6 @@ const icon = computed(() => {
     return FileSpreadsheet;
   }
 
-  if (props.iconString === 'file-pdf') {
-    return FileText;
-  }
-
   return File;
 });
-
 </script>

@@ -4,7 +4,7 @@
       <StepperItem :step="1">
         <StepperTrigger>
           <StepperIndicator>
-            <IFluentDocumentTableSearch24Regular class="h-4 w-4" />
+            <FileSearch class="h-4 w-4" />
           </StepperIndicator>
         </StepperTrigger>
         <StepperTitle>{{ $t('Į ką kelsi failą?') }}</StepperTitle>
@@ -34,18 +34,18 @@
 import { computed, inject, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
+import { FileSearch } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import FileForm from './FileForm.vue';
+import FileForm, { type SharepointFileSubmitPayload } from './FileForm.vue';
 
-import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from '@/Components/ui/stepper';
-import CardModal from '@/Components/Dialogs/CardModal.vue';
-import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import FileableForm from '@/Components/AdminForms/Special/FileableForm.vue';
 import ModalHelperButton from '@/Components/Buttons/ModalHelperButton.vue';
-import IFluentDocumentTableSearch24Regular from '~icons/fluent/document-table-search-24-regular';
+import CardModal from '@/Components/Dialogs/CardModal.vue';
+import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from '@/Components/ui/stepper';
 
-const emit = defineEmits(['close']);
+const emit = defineEmits<(e: 'close') => void>();
 
 const props = defineProps<{
   fileable?: FileableFormData;
@@ -67,7 +67,8 @@ const modalTitle = computed(() => {
   }
 
   const typeName = typeDisplayNames[props.fileable.type] || props.fileable.type;
-  const fileableName = (props.fileable as any).fileable_name;
+  const fileableObj = props.fileable as { fileable_name?: string } | undefined;
+  const fileableName = fileableObj?.fileable_name;
 
   if (fileableName) {
     return `${$t('Įkelti failą')}: ${fileableName}`;
@@ -95,7 +96,7 @@ const stepperStep = computed({
 
 const keepFileable = inject<boolean>('keepFileable', false);
 
-const fileForm = useForm<{ fileable: FileableFormData | null; file: any }>({
+const fileForm = useForm<{ fileable: FileableFormData | null; file: SharepointFileSubmitPayload | null }>({
   fileable: sanitizedFileable.value,
   file: null,
 });
@@ -116,7 +117,7 @@ const handleFileableSubmit = (model: { id: string; fileable_name: string; type: 
   current.value = 2;
 };
 
-const handleFileSubmit = (file: any) => {
+const handleFileSubmit = (file: SharepointFileSubmitPayload) => {
   fileForm.file = file;
   submitFullForm();
 };

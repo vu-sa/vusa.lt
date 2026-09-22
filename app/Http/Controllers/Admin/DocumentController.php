@@ -6,153 +6,27 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
-use App\Http\Traits\HasTanstackTables;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\SharepointGraphService;
+use App\Settings\DocumentSettings;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Context;
+use Inertia\Inertia;
 
 class DocumentController extends AdminController
 {
-    use HasTanstackTables;
-
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexDocumentRequest $request)
+    public function index(IndexDocumentRequest $request, DocumentSettings $documentSettings)
     {
         $this->handleAuthorization('viewAny', Document::class);
 
-        // Set admin context for indexing all documents
-        Context::add('search_context', 'admin');
-
-        // Build Typesense options array
-        $options = [];
-
-        // Handle search text - use wildcard for "show all"
-        $searchText = $request->input('search', '');
-        if (empty($searchText)) {
-            // Use q: "*" (wildcard) with filter_by as per Typesense docs
-            $searchText = '*';
-        }
-        // Always set query_by - it's mandatory for Typesense
-        $options['query_by'] = 'title,name,summary,content_type,institution_name_lt,institution_name_en';
-
-        // Apply all filters in filter_by (this is the key for wildcard searches)
-        $filters = $request->getFilters();
-        $filterConditions = [];
-
-        if (! empty($filters['content_type'])) {
-            $contentTypeFilters = array_map(fn ($type) => "content_type:=\"{$type}\"", (array) $filters['content_type']);
-            $filterConditions[] = '('.implode(' || ', $contentTypeFilters).')';
-        }
-
-        if (! empty($filters['language'])) {
-            $filterConditions[] = "language:=\"{$filters['language']}\"";
-        }
-
-        if (! empty($filters['institution.id'])) {
-            $institutionIds = array_map(fn ($id) => "institution_id:={$id}", (array) $filters['institution.id']);
-            $filterConditions[] = '('.implode(' || ', $institutionIds).')';
-        }
-
-        // Add permission filtering to Typesense options
-        $documentScope = $this->authorizer->scope(auth()->user(), 'documents.read.padalinys');
-
-        if (! $documentScope->isAllScope && ! auth()->user()?->isSuperAdmin()) {
-            $allowedTenants = $documentScope->tenants;
-            if ($allowedTenants->isNotEmpty()) {
-                $allowedShortnames = $allowedTenants->pluck('shortname')->toArray();
-                $tenantFilter = implode(' || ', array_map(fn ($shortname) => "tenant_shortname:=\"{$shortname}\"", $allowedShortnames));
-                $filterConditions[] = "({$tenantFilter})";
-            }
-        }
-
-        // Always set filter_by, even if empty (important for wildcard searches)
-        if (! empty($filterConditions)) {
-            $options['filter_by'] = implode(' && ', $filterConditions);
-        }
-
-        // Sorting
-        $sorting = $request->getSorting();
-        if (! empty($sorting)) {
-            $sortFields = [];
-            foreach ($sorting as $sort) {
-                $field = $sort['id'];
-                $direction = $sort['desc'] ? 'desc' : 'asc';
-
-                // Map frontend field names to Typesense fields
-                $fieldMap = [
-                    'document_date' => 'document_date',
-                    'created_at' => 'created_at',
-                    'checked_at' => 'checked_at',
-                    'title' => 'title',
-                    'content_type' => 'content_type',
-                    'sync_status' => 'sync_status',
-                ];
-
-                $typesenseField = $fieldMap[$field] ?? $field;
-                $sortFields[] = "{$typesenseField}:{$direction}";
-            }
-            $options['sort_by'] = implode(',', $sortFields);
-        } else {
-            $options['sort_by'] = 'created_at:desc';
-        }
-
-        $perPage = $request->getPerPage();
-        $results = Document::search($searchText)->options($options)->paginate($perPage);
-
-        // Get complete filter options (all distinct values across all documents)
-        // Apply same permission filtering as the main query
-        $baseQuery = Document::query();
-
-        // Apply tenant permission filtering if needed
-        $documentScope = $this->authorizer->scope(auth()->user(), 'documents.read.padalinys');
-
-        if (! $documentScope->isAllScope && ! auth()->user()?->isSuperAdmin()) {
-            $allowedTenants = $documentScope->tenants;
-            if ($allowedTenants->isNotEmpty()) {
-                $allowedTenantIds = $allowedTenants->pluck('id')->toArray();
-                $baseQuery->whereHas('institution.tenant', function ($query) use ($allowedTenantIds): void {
-                    $query->whereIn('id', $allowedTenantIds);
-                });
-            }
-        }
-
-        $allContentTypes = (clone $baseQuery)
-            ->distinct('content_type')
-            ->whereNotNull('content_type')
-            ->pluck('content_type')
-            ->sort()
-            ->values();
-
-        $allLanguages = (clone $baseQuery)
-            ->distinct('language')
-            ->whereNotNull('language')
-            ->pluck('language')
-            ->sort()
-            ->values();
-
         return $this->inertiaResponse('Admin/Files/IndexDocument', [
-            'data' => new Collection($results->items())->load('institution.tenant'),
-            'meta' => [
-                'total' => $results->total(),
-                'per_page' => $results->perPage(),
-                'current_page' => $results->currentPage(),
-                'last_page' => $results->lastPage(),
-                'from' => $results->firstItem(),
-                'to' => $results->lastItem(),
-            ],
-            'filters' => $filters,
-            'sorting' => $sorting,
-            'filterOptions' => [
-                'contentTypes' => $allContentTypes,
-                'languages' => $allLanguages,
-            ],
+            'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
         ]);
     }
 
@@ -174,8 +48,6 @@ class DocumentController extends AdminController
             $model->sharepoint_list_id = $document['list_id'];
 
             $documentCollection->push($model);
-
-            /* $model->save(); */
         }
 
         // Check if documents array is not empty
@@ -227,7 +99,13 @@ class DocumentController extends AdminController
      */
     public function show(Document $document)
     {
-        //
+        $this->handleAuthorization('view', $document);
+
+        if ($document->anonymous_url) {
+            return Inertia::location($document->anonymous_url);
+        }
+
+        return redirect()->route('documents.index')->with('info', __('Dokumentas neturi viešosios nuorodos.'));
     }
 
     /**

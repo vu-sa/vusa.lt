@@ -4,13 +4,13 @@
       small
       selection-mode
       class="w-full"
-      :files
-      :directories
-      :path
+      :files="filesRaw"
+      :directories="directoriesRaw"
+      :path="currentPath"
       :list-loading="loading"
       :search-results
       :searching
-      :allow-upload-in-selection="true"
+      allow-upload-in-selection
       :upload-accept="props.uploadAccept"
       :upload-extensions="props.uploadExtensions"
       @update="handleUpdate"
@@ -25,8 +25,8 @@
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core';
 
-import { useFileListing } from './useFileListing';
 import FileManager from './FileManager.vue';
+import { useFileListing } from './useFileListing';
 
 defineEmits<(e: 'submit', path: string, source: 'browse' | 'upload') => void>();
 
@@ -47,10 +47,6 @@ const {
   clearSearch,
   back,
 } = useFileListing('public/files', props.uploadExtensions);
-
-const files = filesRaw as any;
-const directories = directoriesRaw as any;
-const path = currentPath as any;
 
 // The overlay spinner is gone: FileGrid already renders a skeleton from `list-loading`, and
 // two competing spinners over the same region only ever disagreed.

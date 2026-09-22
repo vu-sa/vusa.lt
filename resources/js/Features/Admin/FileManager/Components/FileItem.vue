@@ -11,11 +11,11 @@
       @keydown.space.prevent="selectionMode ? handleClick() : undefined"
     >
       <!-- File/Folder thumbnail or icon -->
-      <div class="flex-1 w-full flex items-center justify-center overflow-hidden rounded-sm">
+      <div class="flex-1 w-full flex items-center justify-center overflow-hidden">
         <!-- Folder icon -->
-        <IFluentFolder24Filled
+        <Folder
           v-if="isFolder"
-          class="w-3/4 h-3/4 text-muted-foreground group-hover:text-vusa-red transition-colors"
+          class="w-3/4 h-3/4 text-muted-foreground group-hover:text-brand transition-colors"
         />
         <!-- Image thumbnail. The hover card is the only way to actually see what a
              photo is at this tile size. -->
@@ -30,12 +30,12 @@
               @error="handleThumbnailError"
             >
           </HoverCardTrigger>
-          <HoverCardContent side="right" class="w-auto max-w-sm p-2">
+          <HoverCardContent side="right" class="w-auto max-w-sm p-2 rounded-none">
             <img
               :src="previewSrc"
               :alt="item.name"
               loading="lazy"
-              class="max-h-72 max-w-full rounded object-contain"
+              class="max-h-72 max-w-full object-contain"
               @error="handlePreviewError"
             >
             <p class="mt-1 max-w-72 truncate text-xs text-muted-foreground">
@@ -47,7 +47,7 @@
         <component
           :is="typeIcon"
           v-else
-          class="h-12 w-12 text-muted-foreground group-hover:text-vusa-red transition-colors"
+          class="h-12 w-12 text-muted-foreground group-hover:text-brand transition-colors"
         />
       </div>
       <div
@@ -60,8 +60,10 @@
 
     <!-- Selection indicators -->
     <Transition name="selection-badge">
-      <div v-if="showSelectionBadge"
-        :class="selectionBadgeClasses">
+      <div
+        v-if="showSelectionBadge"
+        :class="selectionBadgeClasses"
+      >
         {{ selectionBadgeText }}
       </div>
     </Transition>
@@ -70,13 +72,15 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { Folder } from 'lucide-vue-next';
+
+import type { FileEntry } from '../types';
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
 import { getFileIcon } from '@/Utils/fileIcons';
-import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
 
 const props = defineProps<{
-  item: any;
+  item: FileEntry;
   isSelected: boolean;
   isMultiSelected: boolean;
   selectionMode?: boolean;
@@ -85,8 +89,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  click: [item: any, event?: MouseEvent];
-  doubleClick: [item: any];
+  click: [item: FileEntry, event?: MouseEvent];
+  doubleClick: [item: FileEntry];
 }>();
 
 const isFolder = computed(() => props.isFolder || false);
@@ -125,14 +129,13 @@ function handlePreviewError() {
 }
 
 const buttonClasses = computed(() => {
-  // Removed aspect-square to allow natural height: icon area (square) + text
-  const baseClasses = 'w-full overflow-hidden flex flex-col items-center justify-start rounded-md border border-border bg-background transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-vusa-red focus:ring-offset-2';
+  const baseClasses = 'w-full overflow-hidden flex flex-col items-center justify-start border border-border bg-background transition-colors focus:ring-2 focus:ring-brand focus:ring-offset-2';
 
   if (props.selectionMode && props.isSelected) {
-    return `${baseClasses} ring-2 ring-vusa-red ring-offset-2 bg-vusa-red/5`;
+    return `${baseClasses} ring-2 ring-brand ring-offset-2 bg-brand/5`;
   }
   else if (props.isMultiSelectMode && props.isMultiSelected) {
-    return `${baseClasses} ring-2 ring-vusa-red ring-offset-2 bg-vusa-red/5`;
+    return `${baseClasses} ring-2 ring-brand ring-offset-2 bg-brand/5`;
   }
   else if (props.isSelected) {
     return `${baseClasses} ring-2 ring-muted-foreground ring-offset-2 bg-muted`;
@@ -149,13 +152,13 @@ const showSelectionBadge = computed(() => {
 });
 
 const selectionBadgeClasses = computed(() => {
-  const baseClasses = 'absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold z-20 shadow-lg';
+  const baseClasses = 'absolute top-1 right-1 w-5 h-5 flex items-center justify-center text-xs font-bold z-20';
 
   if ((props.selectionMode && props.isSelected) || (props.isMultiSelectMode && props.isMultiSelected)) {
-    return `${baseClasses} bg-vusa-red text-white`;
+    return `${baseClasses} bg-brand text-brand-foreground`;
   }
   else {
-    return `${baseClasses} bg-muted-foreground text-white`;
+    return `${baseClasses} bg-muted-foreground text-background`;
   }
 });
 

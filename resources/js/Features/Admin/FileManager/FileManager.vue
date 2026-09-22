@@ -18,7 +18,7 @@
     />
 
     <!-- Inline create-folder form in selection mode (moved near top for visibility) -->
-    <div v-if="props.selectionMode && showFolderUploadModal" class="mt-4 border rounded-md p-4 bg-muted/30">
+    <div v-if="props.selectionMode && showFolderUploadModal" class="mt-4 border border-border p-4 bg-muted/30">
       <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
         <Label for="folderNameInline">{{ $t('files.ui.new_folder_name') }}</Label>
         <Input id="folderNameInline" v-model="newFolderName" :placeholder="$t('files.ui.name_placeholder')" />
@@ -154,26 +154,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useFuse } from '@vueuse/integrations/useFuse';
 import { useStorage } from '@vueuse/core';
 
-import FileManagerHeader from './Components/FileManagerHeader.vue';
-import FolderStrip from './Components/FolderStrip.vue';
 import FileGrid from './Components/FileGrid.vue';
+import FileManagerHeader from './Components/FileManagerHeader.vue';
 import FilePropertiesDrawer from './Components/FilePropertiesDrawer.vue';
+import FolderStrip from './Components/FolderStrip.vue';
+import type { DirectoryEntry, FileEntry } from './types';
 
-import { useToasts } from '@/Composables/useToasts';
-import { uploadFiles, type UploadedFileResult } from '@/Composables/useFileUpload';
-
-// Components
 import DeleteConfirmationDialog from '@/Components/Dialogs/DeleteConfirmationDialog.vue';
 import FileUploadArea from '@/Components/FileUpload/FileUploadArea.vue';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -182,14 +177,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/Components/ui/dialog';
-
-// Custom components
-
-// Types
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { uploadFiles, type UploadedFileResult } from '@/Composables/useFileUpload';
+import { useToasts } from '@/Composables/useToasts';
 
 const props = defineProps<{
-  directories: any;
-  files: any;
+  directories: DirectoryEntry[];
+  files: FileEntry[];
   path: string;
   small?: boolean;
   /** Enable file selection mode */
@@ -203,7 +198,7 @@ const props = defineProps<{
   /** Whether the parent is still fetching the listing */
   listLoading?: boolean;
   /** Recursive search results, when the caller is searching every folder */
-  searchResults?: any[] | null;
+  searchResults?: FileEntry[] | null;
   /** Whether a recursive search is in flight */
   searching?: boolean;
 }>();
@@ -484,7 +479,7 @@ const deleteFileConfirmed = () => {
 
 // Single click opens a folder. Requiring a double click was undiscoverable, and the single
 // click had no other job — it was bound to an empty handler.
-function handleFolderClick(folder: any) {
+function handleFolderClick(folder: DirectoryEntry) {
   selectedFile.value = null;
   clearSelection();
   currentPage.value = 1;
@@ -510,7 +505,7 @@ function isSelectable(name: string): boolean {
   return !!ext && allowed.includes(ext);
 }
 
-function handleFileClick(file: any, event?: MouseEvent) {
+function handleFileClick(file: FileEntry, event?: MouseEvent) {
   if (props.selectionMode) {
     if (!isSelectable(file?.name || file?.path || '')) {
       toasts.error($t('files.ui.cannot_select_file_type'));
@@ -537,7 +532,7 @@ function handleFileClick(file: any, event?: MouseEvent) {
   }
 }
 
-function handleFileDoubleClick(file: any) {
+function handleFileDoubleClick(file: FileEntry) {
   if (props.selectionMode) {
     if (!isSelectable(file?.name || file?.path || '')) {
       toasts.error($t('files.ui.cannot_select_file_type'));
@@ -546,6 +541,42 @@ function handleFileDoubleClick(file: any) {
     selectedFile.value = file.path;
     emit('fileSelected', file.path, 'browse');
   }
+}
+
+// Global keyboard handlers for multi-select
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    if (isMultiSelectMode.value) {
+      isMultiSelectMode.value = false;
+      clearSelection();
+    }
+    selectedFile.value = null;
+  }
+  else if ((event.ctrlKey || event.metaKey) && event.key === 'a' && isMultiSelectMode.value) {
+    event.preventDefault();
+    selectAllFiles();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+});
+
+function toggleMultiSelectMode() {
+  isMultiSelectMode.value = !isMultiSelectMode.value;
+  if (!isMultiSelectMode.value) {
+    clearSelection();
+  }
+  selectedFile.value = null;
+}
+
+function selectAllFiles() {
+  const allFilePaths = [...displayedFiles.value.map((file: FileEntry) => file.path)];
+  selectedFiles.value = new Set(allFilePaths);
 }
 
 function getFileName(filePath: string): string {
@@ -586,19 +617,6 @@ function navigateToPath(targetPath: string) {
   clearSelection();
   currentPage.value = 1;
   emit('changeDirectory', targetPath);
-}
-
-function toggleMultiSelectMode() {
-  isMultiSelectMode.value = !isMultiSelectMode.value;
-  if (!isMultiSelectMode.value) {
-    clearSelection();
-  }
-  selectedFile.value = null;
-}
-
-function selectAllFiles() {
-  const allFilePaths = [...displayedFiles.value.map((file: any) => file.path)];
-  selectedFiles.value = new Set(allFilePaths);
 }
 
 function clearSelection() {

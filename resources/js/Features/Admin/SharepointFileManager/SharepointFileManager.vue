@@ -1,16 +1,22 @@
 <template>
-  <div class="mt-4 rounded-md border border-zinc-200 p-8 shadow-xs dark:border-zinc-50/10">
+  <div class="border border-border bg-card p-6">
     <template v-if="startingPath">
       <!-- Header with toolbar -->
       <div class="space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
           <div class="flex gap-2">
-            <Button class="rounded-full" @click="showFileUploader = true">
-              <IFluentDocumentAdd24Regular class="mr-2 h-4 w-4" />
+            <Button type="button" @click="showFileUploader = true">
+              <FilePlus class="mr-2 h-4 w-4" />
               {{ $t('forms.add') }}
             </Button>
-            <Button :disabled="loading" variant="ghost" size="icon" class="rounded-full" @click="refreshFiles">
-              <IFluentArrowClockwise24Filled class="h-4 w-4" />
+            <Button
+              type="button"
+              :disabled="loading"
+              variant="ghost"
+              size="icon"
+              @click="refreshFiles"
+            >
+              <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': loading }" />
             </Button>
           </div>
           <div class="flex-1" />
@@ -19,32 +25,34 @@
             <div class="relative w-full">
               <Input
                 v-model="search"
-                placeholder="Ieškoti..."
+                :placeholder="$t('Ieškoti...')"
                 class="w-full pr-10"
               />
-              <IFluentSearch20Filled class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             </div>
           </div>
         </div>
 
         <!-- Breadcrumb -->
-        <div class="flex items-center gap-2 text-sm bg-muted/30 rounded-md px-3 py-2">
-          <IFluentFolder24Filled class="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <div class="flex items-center gap-2 text-sm bg-muted/40 border border-border px-3 py-2">
+          <Folder class="h-4 w-4 text-muted-foreground shrink-0" />
           <nav class="flex items-center gap-1 text-foreground min-w-0 flex-1">
             <button
-              class="font-medium transition-colors truncate hover:text-vusa-red"
-              :class="{ 'text-vusa-red': currentPath === startingPath }"
+              type="button"
+              class="font-medium transition-colors truncate hover:text-brand"
+              :class="{ 'text-brand font-semibold': currentPath === startingPath }"
               @click="navigateToPath(startingPath!)"
             >
               {{ rootFolderName }}
             </button>
             <template v-if="breadcrumbParts.length > 0">
               <template v-for="(part, index) in breadcrumbParts" :key="index">
-                <span class="text-muted-foreground flex-shrink-0">/</span>
+                <span class="text-muted-foreground shrink-0">/</span>
                 <button
-                  class="transition-colors truncate hover:text-vusa-red"
+                  type="button"
+                  class="transition-colors truncate hover:text-brand"
                   :class="{
-                    'text-vusa-red font-medium': index === breadcrumbParts.length - 1,
+                    'text-brand font-semibold': index === breadcrumbParts.length - 1,
                     'text-muted-foreground': index < breadcrumbParts.length - 1
                   }"
                   @click="navigateToPath(part.path)"
@@ -58,9 +66,9 @@
       </div>
 
       <!-- Upload Context Indicator -->
-      <Alert v-if="fileable" variant="default" class="mt-4 border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950">
-        <IFluentInfo16Regular class="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        <AlertDescription class="text-blue-700 dark:text-blue-300">
+      <Alert v-if="fileable" variant="default" class="mt-4 border-status-info/30 bg-status-info/10 text-status-info">
+        <Info class="h-4 w-4 text-status-info" />
+        <AlertDescription class="text-foreground">
           {{ $t('Nauji failai bus priskirti') }}: <strong>{{ fileableDisplayName }}</strong>
         </AlertDescription>
       </Alert>
@@ -83,7 +91,7 @@
         :visible-pages
         :view-mode
         :loading
-        :hide-multi-select="true"
+        hide-multi-select
         @update:items-per-page="itemsPerPage = $event"
         @update:current-page="currentPage = $event"
         @update:view-mode="viewMode = $event"
@@ -119,32 +127,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, provide } from 'vue';
+import { computed, provide, ref, watch } from 'vue';
 import { router, useHttp } from '@inertiajs/vue3';
 import { useFetch, useStorage } from '@vueuse/core';
 import { useFuse } from '@vueuse/integrations/useFuse';
-import { toast } from 'vue-sonner';
 import { trans as $t } from 'laravel-vue-i18n';
+import {
+  FilePlus,
+  Folder,
+  Info,
+  RefreshCw,
+  Search,
+} from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
-// UI Components
 import FileUploader from './Uploader/FileUploader.vue';
 
+import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
-
-// Unified FileManager Components
 import FileGrid from '@/Features/Admin/FileManager/Components/FileGrid.vue';
 import FilePropertiesDrawer from '@/Features/Admin/FileManager/Components/FilePropertiesDrawer.vue';
-
-// SharePoint-specific Components
-
-// Icons
-import IFluentDocumentAdd24Regular from '~icons/fluent/document-add-24-regular';
-import IFluentArrowClockwise24Filled from '~icons/fluent/arrow-clockwise-24-filled';
-import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
-import IFluentSearch20Filled from '~icons/fluent/search-20-filled';
-import IFluentInfo16Regular from '~icons/fluent/info-16-regular';
+import type { DirectoryEntry, FileEntry } from '@/Features/Admin/FileManager/types';
 
 const props = defineProps<{
   fileable?: FileableFormData;
@@ -186,9 +190,9 @@ const fileableDisplayName = computed(() => {
 
   const typeName = typeMap[props.fileable.type] || props.fileable.type;
 
-  // If we have a fileable_name from the form data, use it
-  if ((props.fileable as any).fileable_name) {
-    return `${typeName}: ${(props.fileable as any).fileable_name}`;
+  const fileableObj = props.fileable as { fileable_name?: string } | undefined;
+  if (fileableObj?.fileable_name) {
+    return `${typeName}: ${fileableObj.fileable_name}`;
   }
 
   return typeName;
@@ -361,17 +365,17 @@ if (props.startingPath) {
 }
 
 // Event handlers
-function handleFolderClick(_folder: any) {
+function handleFolderClick(_folder: DirectoryEntry) {
   // Single click does nothing for folders
 }
 
-function handleFolderDoubleClick(folder: any) {
+function handleFolderDoubleClick(folder: DirectoryEntry) {
   currentPath.value = folder.path;
 }
 
-function handleFileClick(file: any) {
+function handleFileClick(file: FileEntry) {
   // Find the raw SharePoint item
-  const rawItem = file._raw as MyDriveItem | undefined;
+  const rawItem = (file as { _raw?: MyDriveItem })._raw;
   if (rawItem && rawItem.file) {
     selectedFile.value = rawItem;
   }
@@ -380,8 +384,8 @@ function handleFileClick(file: any) {
   }
 }
 
-function handleFileDoubleClick(file: any) {
-  const rawItem = file._raw as MyDriveItem | undefined;
+function handleFileDoubleClick(file: FileEntry) {
+  const rawItem = (file as { _raw?: MyDriveItem })._raw;
   if (rawItem?.webUrl) {
     window.open(rawItem.webUrl, '_blank');
   }

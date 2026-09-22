@@ -1,7 +1,7 @@
 import { genitivize } from '@/Utils/String';
 
 interface Form {
-  dateValue: string | null;
+  dateValue: string | number | null;
   nameValue: string;
   typeValue: string;
 }

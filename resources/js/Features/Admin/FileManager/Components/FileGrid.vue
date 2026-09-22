@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-md border border-border shadow-xs">
+  <div class="border border-border">
     <!-- Files count and view controls -->
     <div v-if="hasContent && !loading" class="border-b border-border px-4 py-3 bg-muted/50">
       <div class="flex flex-col gap-3 sm:gap-4">
@@ -13,14 +13,14 @@
 
           <div class="flex items-center gap-4">
             <!-- View mode toggle -->
-            <div v-if="!hideViewToggle" class="flex items-center gap-1 border border-border rounded-md p-0.5">
+            <div v-if="!hideViewToggle" class="flex items-center gap-1 border border-border p-0.5">
               <Button
                 :variant="viewMode === 'grid' ? 'default' : 'ghost'"
                 size="sm"
                 class="h-7 w-7 p-0"
                 @click="$emit('update:viewMode', 'grid')"
               >
-                <IFluentGrid24Filled class="h-4 w-4" />
+                <LayoutGrid class="h-4 w-4" />
               </Button>
               <Button
                 :variant="viewMode === 'list' ? 'default' : 'ghost'"
@@ -28,14 +28,14 @@
                 class="h-7 w-7 p-0"
                 @click="$emit('update:viewMode', 'list')"
               >
-                <IFluentAppsList20Filled class="h-4 w-4" />
+                <List class="h-4 w-4" />
               </Button>
             </div>
 
             <div class="flex items-center gap-2" aria-labelledby="items-per-page-label">
               <span id="items-per-page-label" class="text-sm text-muted-foreground">{{ $t('files.ui.show') }}</span>
               <select
-                class="text-sm border border-border rounded px-2 py-1 bg-background text-foreground"
+                class="text-sm border border-border px-2 py-1 bg-background text-foreground"
                 :value="itemsPerPage"
                 @change="$emit('update:itemsPerPage', Number(($event.target as HTMLSelectElement).value))"
               >
@@ -63,26 +63,26 @@
             <Button
               variant="outline"
               size="sm"
-              :class="{ 'bg-vusa-red text-white': isMultiSelectMode }"
+              :class="{ 'bg-brand text-brand-foreground': isMultiSelectMode }"
               @click="$emit('toggleMultiSelect')"
             >
-              <IFluentCheckmarkCircle24Regular v-if="isMultiSelectMode" class="h-4 w-4 mr-1" />
-              <IFluentCircle24Regular v-else class="h-4 w-4 mr-1" />
+              <CheckCircle2 v-if="isMultiSelectMode" class="h-4 w-4 mr-1" />
+              <Circle v-else class="h-4 w-4 mr-1" />
               {{ isMultiSelectMode ? $t('files.ui.finish_selection') : $t('files.ui.select_multiple') }}
             </Button>
 
             <!-- Bulk actions - separate row on mobile -->
             <div v-if="isMultiSelectMode && selectedFiles.size > 0" class="flex flex-wrap items-center gap-1 sm:gap-2">
               <Button variant="outline" size="sm" @click="$emit('selectAll')">
-                <IFluentCheckmarkCircle24Regular class="h-4 w-4 sm:mr-1" />
+                <CheckCircle2 class="h-4 w-4 sm:mr-1" />
                 <span class="hidden sm:inline">{{ $t('files.ui.select_all') }}</span>
               </Button>
               <Button variant="outline" size="sm" @click="$emit('clearSelection')">
-                <IFluentCircle24Regular class="h-4 w-4 sm:mr-1" />
+                <Circle class="h-4 w-4 sm:mr-1" />
                 <span class="hidden sm:inline">{{ $t('files.ui.clear') }}</span>
               </Button>
               <Button variant="destructive" size="sm" @click="$emit('deleteSelected')">
-                <IFluentDelete24Filled class="h-4 w-4 sm:mr-1" />
+                <Trash2 class="h-4 w-4 sm:mr-1" />
                 <span class="hidden sm:inline">{{ $t('files.ui.delete') }}</span>
                 <span class="sm:hidden">({{ selectedFiles.size }})</span>
                 <span class="hidden sm:inline">({{ selectedFiles.size }})</span>
@@ -100,7 +100,7 @@
                grid-cols-2 @sm:grid-cols-3 @md:grid-cols-4
                @lg:grid-cols-5 @xl:grid-cols-6 @2xl:grid-cols-7"
       >
-        <Skeleton v-for="i in 8" :key="i" class="aspect-square rounded-md" />
+        <Skeleton v-for="i in 8" :key="i" class="aspect-square" />
       </div>
     </div>
 
@@ -151,7 +151,7 @@
               :class="[
                 'border-b border-border/50 cursor-pointer transition-colors',
                 selectedFile === file.path ? 'bg-muted' : 'hover:bg-muted/50',
-                selectedFiles.has(file.path) ? 'bg-vusa-red/5' : ''
+                selectedFiles.has(file.path) ? 'bg-brand/5' : '',
               ]"
               @click="$emit('fileClick', file, $event)"
               @dblclick="$emit('fileDoubleClick', file)"
@@ -215,14 +215,14 @@
 
     <!-- Empty state -->
     <div v-else class="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <IFluentDocumentError24Regular class="h-12 w-12 text-zinc-300 dark:text-zinc-600 mb-4" />
-      <h3 class="text-lg font-medium text-zinc-900 dark:text-zinc-100 mb-2">
+      <FolderX class="h-12 w-12 text-muted-foreground/60 mb-4" />
+      <h3 class="text-lg font-medium text-foreground mb-2">
         {{ search
           ? $t('files.ui.no_files_found')
           : hasFolders ? $t('files.ui.no_files_here') : $t('files.ui.empty_folder')
         }}
       </h3>
-      <p class="text-zinc-500 dark:text-zinc-400 mb-6 max-w-sm">
+      <p class="text-muted-foreground mb-6 max-w-sm">
         {{ search
           ? $t('files.ui.no_files_for_search', { search })
           : hasFolders
@@ -234,15 +234,15 @@
       </p>
       <div v-if="!selectionMode && !search" class="flex flex-wrap gap-2 justify-center">
         <Button size="sm" @click="$emit('showUploadMode')">
-          <IFluentCloudArrowUp24Regular class="mr-2 h-4 w-4" />
+          <Upload class="mr-2 h-4 w-4" />
           {{ $t('files.ui.upload_file') }}
         </Button>
         <Button variant="outline" size="sm" @click="$emit('showCreateFolder')">
-          <IFluentFolderAdd24Regular class="mr-2 h-4 w-4" />
+          <FolderPlus class="mr-2 h-4 w-4" />
           {{ $t('files.ui.create_folder') }}
         </Button>
         <Button v-if="path !== 'public/files'" variant="outline" size="sm" @click="$emit('goBack')">
-          <IFluentArrowLeft24Regular class="mr-2 h-4 w-4" />
+          <ArrowLeft class="mr-2 h-4 w-4" />
           {{ $t('files.ui.go_back') }}
         </Button>
         <Button
@@ -253,14 +253,16 @@
           :title="hasFolders ? $t('files.ui.delete_folder_blocked', { count: String(folderCount) }) : undefined"
           @click="$emit('deleteFolder')"
         >
-          <IFluentDelete24Filled class="mr-2 h-4 w-4" />
+          <Trash2 class="mr-2 h-4 w-4" />
           {{ $t('files.ui.delete_folder') }}
         </Button>
       </div>
       <!-- The server refuses to delete a non-empty folder, and with the folder strip collapsed
            there was nothing on screen explaining why the button did nothing. -->
-      <p v-if="hasFolders && path !== 'public/files' && !selectionMode && !search"
-        class="mt-3 text-xs text-muted-foreground">
+      <p
+        v-if="hasFolders && path !== 'public/files' && !selectionMode && !search"
+        class="mt-3 text-xs text-muted-foreground"
+      >
         {{ $t('files.ui.delete_folder_blocked', { count: String(folderCount) }) }}
       </p>
       <div v-else class="flex flex-wrap gap-2 justify-center">
@@ -268,7 +270,7 @@
           {{ $t('files.ui.clear_search') }}
         </Button>
         <Button v-if="path !== 'public/files'" variant="outline" size="sm" @click="$emit('goBack')">
-          <IFluentArrowLeft24Regular class="mr-2 h-4 w-4" />
+          <ArrowLeft class="mr-2 h-4 w-4" />
           {{ $t('files.ui.go_back') }}
         </Button>
       </div>
@@ -278,6 +280,19 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Circle,
+  FolderPlus,
+  FolderX,
+  LayoutGrid,
+  List,
+  Trash2,
+  Upload,
+} from 'lucide-vue-next';
+
+import type { FileEntry } from '../types';
 
 import FileItem from './FileItem.vue';
 
@@ -285,19 +300,8 @@ import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { formatFileSize, getFileIcon } from '@/Utils/fileIcons';
 
-// Import icons
-import IFluentCheckmarkCircle24Regular from '~icons/fluent/checkmark-circle-24-regular';
-import IFluentCircle24Regular from '~icons/fluent/circle-24-regular';
-import IFluentDelete24Filled from '~icons/fluent/delete-24-filled';
-import IFluentDocumentError24Regular from '~icons/fluent/document-error-24-regular';
-import IFluentCloudArrowUp24Regular from '~icons/fluent/cloud-arrow-up-24-regular';
-import IFluentFolderAdd24Regular from '~icons/fluent/folder-add-24-regular';
-import IFluentArrowLeft24Regular from '~icons/fluent/arrow-left-24-regular';
-import IFluentGrid24Filled from '~icons/fluent/grid-24-filled';
-import IFluentAppsList20Filled from '~icons/fluent/apps-list-20-filled';
-
 const props = defineProps<{
-  paginatedFiles: any[];
+  paginatedFiles: FileEntry[];
   selectedFile: string | null;
   selectedFiles: Set<string>;
   isMultiSelectMode: boolean;
@@ -320,7 +324,7 @@ const props = defineProps<{
   folderCount?: number;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   'update:itemsPerPage': [value: number];
   'update:currentPage': [value: number];
   'update:viewMode': [value: 'grid' | 'list'];
@@ -328,8 +332,8 @@ const emit = defineEmits<{
   'selectAll': [];
   'clearSelection': [];
   'deleteSelected': [];
-  'fileClick': [file: any, event?: MouseEvent];
-  'fileDoubleClick': [file: any];
+  'fileClick': [file: FileEntry, event?: MouseEvent];
+  'fileDoubleClick': [file: FileEntry];
   'showUploadMode': [];
   'showCreateFolder': [];
   'goBack': [];

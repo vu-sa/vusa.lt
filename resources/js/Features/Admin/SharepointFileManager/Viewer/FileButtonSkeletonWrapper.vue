@@ -4,8 +4,16 @@
       <Skeleton :class="small ? 'h-24 w-24' : 'h-36 w-48'" />
       <Skeleton v-for="i in 2" :key="i" class="h-2 w-36" />
     </div>
-    <FileButton v-else :icon-string :name="file.name" :small :show-thumbnail
-      :thumbnail="file.thumbnails?.[0]?.large.url" @click="handleFileSelect(file)" @dblclick="handleFileDblClick(file)">
+    <FileButton
+      v-else
+      :icon-string
+      :name="file.name"
+      :small
+      :show-thumbnail
+      :thumbnail="file.thumbnails?.[0]?.large.url"
+      @click="handleFileSelect(file)"
+      @dblclick="handleFileDblClick(file)"
+    >
       <template #below-button>
         {{ file.listItem?.fields?.properties?.Type }}
       </template>

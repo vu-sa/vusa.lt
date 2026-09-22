@@ -1,5 +1,22 @@
 <template>
-  <PageContent :title="$t('files.ui.root')">
+  <div class="space-y-6">
+    <Head :title="$t('shell.sections.failai')" />
+
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {{ $t('shell.workspaces.svetaine.title') }} · {{ $t('shell.sections.failai') }}
+        </p>
+        <h1 class="text-2xl font-bold tracking-tight text-foreground font-heading">
+          {{ $t('shell.sections.failai') }}
+        </h1>
+        <p class="text-sm text-muted-foreground">
+          {{ $t('Viešų ir vidinių svetainės failų naršymas, įkėlimas ir valdymas.') }}
+        </p>
+      </div>
+    </div>
+
     <FileManager
       :files="props.files"
       :directories="props.directories"
@@ -13,17 +30,17 @@
       @update="handleUpdate"
       @search="handleSearch"
     />
-  </PageContent>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ref } from 'vue';
 
 import FileManager from '@/Features/Admin/FileManager/FileManager.vue';
 import { useFileSearch } from '@/Features/Admin/FileManager/useFileSearch';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 
 const props = defineProps<{
   directories: Array<{ path: string; name: string; type: string }>;

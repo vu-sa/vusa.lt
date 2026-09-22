@@ -9,7 +9,7 @@
           size="sm"
           @click="$emit('update:isUploadMode', false)"
         >
-          <IFluentFolder24Regular class="mr-2 h-4 w-4" />
+          <Folder class="mr-2 h-4 w-4" />
           {{ $t('files.ui.browse') }}
         </Button>
         <Button
@@ -17,11 +17,11 @@
           size="sm"
           @click="$emit('update:isUploadMode', true)"
         >
-          <IFluentCloudArrowUp24Regular class="mr-2 h-4 w-4" />
+          <Upload class="mr-2 h-4 w-4" />
           {{ $t('files.ui.upload') }}
         </Button>
         <Button variant="outline" size="sm" @click="$emit('showCreateFolder')">
-          <IFluentFolderAdd24Regular class="mr-2 h-4 w-4" />
+          <FolderPlus class="mr-2 h-4 w-4" />
           {{ $t('files.ui.add_folder') }}
         </Button>
       </div>
@@ -51,19 +51,20 @@
     </div>
 
     <!-- Interactive breadcrumb navigation -->
-    <div class="flex items-center gap-2 text-sm bg-muted/30 rounded-md px-3 py-2">
-      <IFluentFolder24Filled class="h-4 w-4 text-muted-foreground flex-shrink-0" />
+    <div class="flex items-center gap-2 text-sm bg-muted/30 border border-border px-3 py-2">
+      <Folder class="h-4 w-4 text-muted-foreground flex-shrink-0" />
       <nav class="flex items-center gap-1 text-foreground min-w-0 flex-1">
         <!-- Upload mode indicator -->
         <span v-if="isUploadMode && (!selectionMode || allowUploadInSelection)" class="text-xs text-muted-foreground mr-2">
           {{ $t('files.ui.uploading_into') }}
         </span>
         <button
+          type="button"
           class="font-medium transition-colors truncate"
           :class="{
-            'text-vusa-red hover:text-vusa-red': path === 'public/files',
-            'hover:text-vusa-red': !isUploadMode,
-            'cursor-default': isUploadMode
+            'text-brand hover:text-brand': path === 'public/files',
+            'hover:text-brand': !isUploadMode,
+            'cursor-default': isUploadMode,
           }"
           @click="!isUploadMode ? $emit('navigateToPath', 'public/files') : undefined"
         >
@@ -73,12 +74,13 @@
           <template v-for="(part, index) in breadcrumbParts" :key="index">
             <span class="text-muted-foreground flex-shrink-0">/</span>
             <button
+              type="button"
               class="transition-colors truncate"
               :class="{
-                'text-vusa-red font-medium': index === breadcrumbParts.length - 1,
+                'text-brand font-medium': index === breadcrumbParts.length - 1,
                 'text-muted-foreground': index < breadcrumbParts.length - 1,
-                'hover:text-vusa-red': !isUploadMode,
-                'cursor-default': isUploadMode
+                'hover:text-brand': !isUploadMode,
+                'cursor-default': isUploadMode,
               }"
               @click="!isUploadMode ? $emit('navigateToPath', part.path) : undefined"
             >
@@ -93,17 +95,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Folder, FolderPlus, Upload } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
 import { Checkbox } from '@/Components/ui/checkbox';
+import { Input } from '@/Components/ui/input';
 import { Spinner } from '@/Components/ui/spinner';
-
-// Import icons
-import IFluentFolder24Regular from '~icons/fluent/folder-24-regular';
-import IFluentCloudArrowUp24Regular from '~icons/fluent/cloud-arrow-up-24-regular';
-import IFluentFolderAdd24Regular from '~icons/fluent/folder-add-24-regular';
-import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
 
 const props = defineProps<{
   path: string;
@@ -117,7 +114,7 @@ const props = defineProps<{
   allowUploadInSelection?: boolean;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   'update:search': [value: string];
   'update:searchEverywhere': [value: boolean];
   'update:isUploadMode': [value: boolean];

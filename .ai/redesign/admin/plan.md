@@ -79,7 +79,7 @@ One PR = one row. Rules:
 | **9.4** | Problems; forms and registrations | 8.1 | ✅ |
 | **9.5** | Website content: pages, news, calendar editors | 8.1 | ✅ |
 | **9.6** | Website content: banners, navigation builder, quick links, event types | 8.1 | ✅ |
-| **9.7** | Files, documents, Sharepoint | 8.1 |
+| **9.7** | Files, documents, Sharepoint | 8.1 | ✅ |
 | **9.8** | Sistema: roles, permissions, types, relationships, settings, status, mail queue, support | 8.1 |
 | **9.9** | Paskyra: profile, notification settings; Užduotys; Pranešimai | 8.1 |
 | **10.1** | Lint fence covers all of `Pages/Admin/**`; `ui/card` → error | 9.x |
@@ -1106,9 +1106,47 @@ Each page follows the playbook and lands with its lint-fence paths; tick here.
 - [x] Problems
 - [x] Forms and registrations
 - [x] Website content: pages, news, calendar (editors), banners, navigation builder, quick links, event types (Phase 9.5 & Phase 9.6 complete)
-- [ ] Files, documents, Sharepoint
+- [x] Files, documents, Sharepoint
 - [ ] Sistema: roles, permissions, types, relationships, settings, system status, mail queue, support
 - [ ] Paskyra: profile, notification settings; Užduotys; Pranešimai
+
+### PR 9.7 notes (2026-09-22)
+
+- **Documents Domain (`/mano/documents`):**
+  - Modernized `IndexDocument.vue` to `CollectionPage` backed by `useTypesenseCollectionSource<DocumentSearchResult>({ collection: 'documents' })`.
+  - Configured table, rows, and preview modes (`DocumentDetailPreview` with metadata card, SharePoint link preview, and permissions).
+  - Quick filter chips for important content types (`Visi`, `Protokolas`, `Nuostatai`, `Taisyklės`, `Įsakymai`, etc.).
+  - Status badges for SharePoint sync state (`StatusBadge`: success/warning/destructive/info).
+  - Quick action toolbar: SharePoint picker upload modal, refresh index, bulk-sync, and delete confirmation dialog (`ConfirmDialog`).
+  - Streamlined `DocumentController.php`: clean index (injects `DocumentSettings`, passes `importantContentTypes`), `show` redirects to `anonymous_url` or index with flash notice.
+  - Updated backend tests in `DocumentControllerTest.php` (22 tests passing).
+- **Files Domain (`/mano/files`):**
+  - Modernized `Pages/Admin/Files/Index.vue`: replaced deprecated `AdminContentPage` with standard workbench header (`Head`, eyebrow `Svetainė · Failai`, `h1`, subtitle lead).
+  - Modernized `Features/Admin/FileManager/`:
+    - `FileManager.vue`: cleaned up redundant methods, removed legacy styles, updated toolbar and search styling.
+    - `FileManagerHeader.vue`: replaced all Fluent icons with `lucide-vue-next` (`Folder`, `Upload`, `FolderPlus`), removed rounded classes, added explicit `type="button"`.
+    - `FolderStrip.vue`: replaced Fluent icons with `lucide-vue-next` (`Folder`, `ChevronRight`), removed rounded corners and shadows, replaced `hover:border-vusa-red` with `hover:border-brand`.
+    - `FileGrid.vue`: replaced Fluent icons with `lucide-vue-next` (`CheckCircle2`, `Circle`, `Trash2`, `FolderX`, `Upload`, `FolderPlus`, `ArrowLeft`, `LayoutGrid`, `List`), typed `FileEntry`, removed all `rounded-*` and `shadow-*`, replaced raw colors with semantic tokens.
+    - `FileItem.vue`: replaced Fluent icons with `lucide-vue-next` (`Folder`), typed `FileEntry`, removed `rounded-*` and `shadow-*`, replaced `vusa-red` with `brand`.
+    - `FilePropertiesDrawer.vue`: replaced Fluent icons with `lucide-vue-next` (`FileText`, `HardDrive`, `Calendar`, `Folder`, `ExternalLink`, `Link2`, `Search`, `Image`, `Trash2`, `Info`, `ShieldCheck`, `ShieldAlert`, `Edit`, `AlertCircle`), removed all `rounded-*`, used semantic tokens (`text-status-*`, `bg-status-*`, `border-status-*`).
+    - `FileSelector.vue`: cleaned up prop types and boolean shorthand.
+  - All 75 backend tests in `FilesControllerTest` passing.
+- **SharePoint Files Domain (`/mano/sharepointFiles`):**
+  - Modernized `Pages/Admin/Files/IndexSharepoint.vue`: replaced deprecated `AdminContentPage` with standard workbench header (`Head`, eyebrow `Sistema · Sharepoint failai`, `h1`, subtitle lead).
+  - Modernized `Features/Admin/SharepointFileManager/`:
+    - `SharepointFileManager.vue`: replaced Fluent icons with `lucide-vue-next` (`FilePlus`, `Folder`, `Info`, `RefreshCw`, `Search`), converted container to zero-radius hairline card (`border border-border bg-card p-6`), removed `rounded-full` buttons/pills, replaced raw colors with semantic tokens, typed event handlers and fileable objects.
+    - `Uploader/FileUploader.vue`: replaced Fluent icon with `FileSearch`, typed `defineEmits` as function type, strictly typed `SharepointFileSubmitPayload` payload, removed `any` casts.
+    - `Uploader/FileForm.vue`: replaced Fluent icons with `lucide-vue-next` (`Archive`, `FilePlus`), modernized dropzone with accessible `role="button"` and `tabindex="0"`, zero radius, semantic success tokens, and typed emits.
+    - `Uploader/generateNameForFile.ts`: updated dateValue type signature.
+    - `Viewer/FileButton.vue`: replaced raw hues, shadows, and rounded corners with zero radius hairline borders (`border border-border bg-card`), `lucide-vue-next` icons, and accessible button semantics.
+    - `Viewer/FileButtonSkeletonWrapper.vue` and `Viewer/SimpleFileViewer.vue`: modernized markup, replaced `lang="tsx"` with `lang="ts"`.
+  - All 6 backend tests in `SharepointFileControllerTest` passing.
+- **Lint Fence & Quality:**
+  - Enrolled `resources/js/Pages/Admin/Files/**`, `resources/js/Features/Admin/FileManager/**`, and `resources/js/Features/Admin/SharepointFileManager/**` in `MIGRATED_ADMIN_PATHS` in `eslint.config.mjs`.
+  - Zero ESLint errors or warnings across all Phase 9.7 files.
+  - All 103 backend tests passing across the 3 controllers (`DocumentControllerTest`, `FilesControllerTest`, `SharepointFileControllerTest`).
+  - Full Vitest suite passes (438 test files, 3,342 tests).
+  - Clean production build via Vite (`npm run build` in 4.44s).
 
 ### PR 9.6 notes (2026-09-22)
 

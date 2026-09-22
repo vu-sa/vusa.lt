@@ -14,8 +14,8 @@
         <div class="flex flex-col lg:flex-row gap-4">
           <!-- File Icon -->
           <div class="flex-shrink-0 flex justify-center lg:justify-start">
-            <div class="p-3 rounded-lg bg-muted/50 inline-flex">
-              <span class="text-vusa-red">
+            <div class="p-3 border border-border bg-muted/50 inline-flex">
+              <span class="text-brand">
                 <component :is="typeIcon" class="h-12 w-12" />
               </span>
             </div>
@@ -24,8 +24,8 @@
           <div class="flex-1 min-w-0">
             <!-- File info grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div class="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                <IFluentDocument24Regular class="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              <div class="flex items-center gap-3 p-3 border border-border bg-muted/30">
+                <FileText class="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <div class="min-w-0">
                   <p class="text-xs text-muted-foreground mb-1">
                     {{ $t('files.ui.type') }}
@@ -36,8 +36,8 @@
                 </div>
               </div>
 
-              <div class="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                <IFluentStorage24Regular class="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              <div class="flex items-center gap-3 p-3 border border-border bg-muted/30">
+                <HardDrive class="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <div class="min-w-0">
                   <p class="text-xs text-muted-foreground mb-1">
                     {{ $t('files.ui.size') }}
@@ -48,8 +48,8 @@
                 </div>
               </div>
 
-              <div class="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                <IFluentCalendar24Regular class="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              <div class="flex items-center gap-3 p-3 border border-border bg-muted/30">
+                <Calendar class="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <div class="min-w-0">
                   <p class="text-xs text-muted-foreground mb-1">
                     Modified
@@ -60,8 +60,8 @@
                 </div>
               </div>
 
-              <div class="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                <IFluentFolder24Regular class="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              <div class="flex items-center gap-3 p-3 border border-border bg-muted/30">
+                <Folder class="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <div class="min-w-0">
                   <p class="text-xs text-muted-foreground mb-1">
                     Location
@@ -78,8 +78,8 @@
               <!-- SharePoint: Public link section -->
               <template v-if="source === 'sharepoint'">
                 <div v-if="publicWebUrl" class="flex gap-2">
-                  <Button size="sm" as="a" target="_blank" :href="publicWebUrl">
-                    <IFluentOpen24Regular class="h-4 w-4 mr-2" />
+                  <Button size="sm" as="a" target="_blank" rel="noopener noreferrer" :href="publicWebUrl">
+                    <ExternalLink class="h-4 w-4 mr-2" />
                     Atidaryti
                   </Button>
                   <CopyToClipboardButton show-icon :text-to-copy="publicWebUrl">
@@ -87,7 +87,7 @@
                   </CopyToClipboardButton>
                 </div>
                 <Button v-else-if="!loadingPublicPermission" size="sm" variant="outline" :disabled="loadingPublicPermission" @click="createPublicPermission">
-                  <IFluentLink24Regular class="h-4 w-4 mr-2" />
+                  <Link2 class="h-4 w-4 mr-2" />
                   Sukurti viešą nuorodą
                 </Button>
                 <Spinner v-if="loadingPublicPermission" size="sm" />
@@ -95,21 +95,21 @@
 
               <!-- Local: Preview -->
               <Button v-if="source === 'local'" size="sm" class="flex-1 sm:flex-none" @click="$emit('preview')">
-                <IFluentOpen24Regular class="h-4 w-4 mr-2" />
+                <ExternalLink class="h-4 w-4 mr-2" />
                 Preview
               </Button>
 
               <!-- Local: Scan Usage -->
               <Button v-if="source === 'local'" :loading="scanningUsage" size="sm" class="flex-1 sm:flex-none" variant="outline"
                 @click="scanFileUsage">
-                <IFluentSearch24Regular class="h-4 w-4 mr-2" />
+                <Search class="h-4 w-4 mr-2" />
                 {{ scanningUsage ? 'Scanning...' : 'Scan Usage' }}
               </Button>
 
               <!-- Local: Optimize (large images) -->
               <Button v-if="source === 'local' && showCompress" :loading="compressing" size="sm" variant="secondary"
                 class="flex-1 sm:flex-none" :title="compressTitle" @click="confirmAndCompress">
-                <IFluentImage24Regular class="h-4 w-4 mr-2" />
+                <Image class="h-4 w-4 mr-2" />
                 {{ compressing ? 'Optimizing...' : 'Optimize' }}
               </Button>
 
@@ -122,7 +122,7 @@
                 class="flex-1 sm:flex-none"
                 @click="handleDelete"
               >
-                <IFluentDelete24Filled class="h-4 w-4 mr-2" />
+                <Trash2 class="h-4 w-4 mr-2" />
                 Delete
               </Button>
               <Button
@@ -138,13 +138,13 @@
                     : 'Delete file')"
                 @click="handleDelete"
               >
-                <IFluentDelete24Filled class="h-4 w-4 mr-2" />
+                <Trash2 class="h-4 w-4 mr-2" />
                 {{ !usageData ? 'Delete (Scan First)' : 'Delete' }}
               </Button>
             </div>
             <div v-if="source === 'local' && showCompress"
-              class="mb-6 text-xs bg-amber-50 border border-amber-200 rounded p-3 text-amber-800 flex items-start gap-2">
-              <IFluentInformation16Regular class="h-4 w-4 mt-0.5 shrink-0" />
+              class="mb-6 text-xs bg-status-warning-surface border border-status-warning-border p-3 text-status-warning flex items-start gap-2">
+              <Info class="h-4 w-4 mt-0.5 shrink-0" />
               <p>
                 This image is large ({{ fileSize }}). You can optimize it to reduce size. The file will be
                 <strong>overwritten</strong>.
@@ -152,7 +152,7 @@
             </div>
 
             <!-- SharePoint Metadata -->
-            <div v-if="source === 'sharepoint' && sharepointFile?.listItem?.fields" class="border rounded-lg p-4 bg-muted/20 mb-6">
+            <div v-if="source === 'sharepoint' && sharepointFile?.listItem?.fields" class="border border-border p-4 bg-muted/20 mb-6">
               <h4 class="text-sm font-medium mb-3">
                 Dokumento informacija
               </h4>
@@ -175,11 +175,14 @@
             </div>
 
             <!-- Usage scan results (local only) -->
-            <div v-if="source === 'local' && usageData" class="border rounded-lg p-4 bg-muted/20">
+            <div v-if="source === 'local' && usageData" class="border border-border p-4 bg-muted/20">
               <div class="flex items-center gap-3 mb-4">
                 <div class="flex items-center gap-2">
-                  <IFluentShieldTask24Regular class="h-5 w-5"
-                    :class="usageData.is_safe_to_delete ? 'text-green-600' : 'text-amber-600'" />
+                  <component
+                    :is="usageData.is_safe_to_delete ? ShieldCheck : ShieldAlert"
+                    class="h-5 w-5"
+                    :class="usageData.is_safe_to_delete ? 'text-status-success' : 'text-status-warning'"
+                  />
                   <h3 class="font-medium text-sm">
                     Usage Analysis
                   </h3>
@@ -207,7 +210,7 @@
                   </h4>
                   <div class="space-y-2 max-h-40 overflow-y-auto">
                     <div v-for="usage in usageData.usage_details" :key="`${usage.model_type}-${usage.id}`"
-                      class="group flex items-center justify-between p-2 bg-muted/50 rounded text-xs transition hover:bg-muted cursor-pointer">
+                      class="group flex items-center justify-between p-2 border border-border bg-muted/50 text-xs transition hover:bg-muted cursor-pointer">
                       <div class="flex-1 min-w-0">
                         <component :is="usage.edit_url ? 'a' : 'div'" :href="usage.edit_url || undefined"
                           target="_blank" rel="noopener noreferrer" class="block">
@@ -228,13 +231,13 @@
                         >
                           <Button v-if="usage.edit_url" size="sm" variant="ghost" as-child class="h-6 w-6 p-0"
                             :title="'Edit ' + usage.title">
-                            <IFluentEdit16Regular class="h-3 w-3" />
+                            <Edit class="h-3 w-3" />
                           </Button>
                         </a>
                         <Button v-if="usage.url && !usage.edit_url" size="sm" variant="ghost" as-child
                           class="h-6 w-6 p-0" :title="'View ' + usage.title">
                           <a :href="usage.url" target="_blank" rel="noopener noreferrer" aria-label="Open item">
-                            <IFluentOpen16Regular class="h-3 w-3" />
+                            <ExternalLink class="h-3 w-3" />
                           </a>
                         </Button>
                       </div>
@@ -244,7 +247,7 @@
 
                 <!-- Warning message for files in use -->
                 <div v-if="!usageData.is_safe_to_delete"
-                  class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+                  class="mt-4 p-3 bg-status-warning-surface border border-status-warning-border text-xs text-status-warning">
                   <p class="font-medium">
                     ⚠️ Warning
                   </p>
@@ -256,14 +259,14 @@
             </div>
 
             <!-- Usage scan error (local only) -->
-            <div v-if="source === 'local' && usageError" class="border border-red-200 rounded-lg p-4 bg-red-50">
+            <div v-if="source === 'local' && usageError" class="border border-status-danger-border p-4 bg-status-danger-surface text-status-danger">
               <div class="flex items-center gap-2 mb-2">
-                <IFluentErrorCircle24Regular class="h-5 w-5 text-red-600" />
-                <h3 class="font-medium text-sm text-red-800">
+                <AlertCircle class="h-5 w-5 text-status-danger" />
+                <h3 class="font-medium text-sm text-status-danger">
                   Scan Error
                 </h3>
               </div>
-              <p class="text-xs text-red-700">
+              <p class="text-xs text-status-danger">
                 {{ usageError }}
               </p>
             </div>
@@ -280,6 +283,22 @@ import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useFetch } from '@vueuse/core';
 import { toast } from 'vue-sonner';
+import {
+  AlertCircle,
+  Calendar,
+  Edit,
+  ExternalLink,
+  FileText,
+  Folder,
+  HardDrive,
+  Image,
+  Info,
+  Link2,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  Trash2,
+} from 'lucide-vue-next';
 
 import { formatStaticTime } from '@/Utils/IntlTime';
 import CopyToClipboardButton from '@/Components/Buttons/CopyToClipboardButton.vue';
@@ -296,11 +315,6 @@ import {
 } from '@/Components/ui/sheet';
 import { useToasts } from '@/Composables/useToasts';
 import { getFileIcon } from '@/Utils/fileIcons';
-
-// Icons used inside script-added template changes
-import IFluentEdit16Regular from '~icons/fluent/edit-16-regular';
-import IFluentInformation16Regular from '~icons/fluent/info-16-regular';
-import IFluentLink24Regular from '~icons/fluent/link-24-regular';
 
 type FileSource = 'local' | 'sharepoint';
 

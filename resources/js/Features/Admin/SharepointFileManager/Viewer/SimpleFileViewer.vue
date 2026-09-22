@@ -17,7 +17,7 @@
   </div>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { provide, ref } from 'vue';
 import { useFetch } from '@vueuse/core';
 

@@ -74,6 +74,9 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Features/Admin/NavigationBuilder/**',
   'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormStatusHeader,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,FormLinkButton,BannerForm,QuickLinkForm,NavigationForm,NavigationParentForm}.vue',
   'resources/js/Components/Analytics/ContentAnalyticsCard.vue',
+  'resources/js/Pages/Admin/Files/**',
+  'resources/js/Features/Admin/FileManager/**',
+  'resources/js/Features/Admin/SharepointFileManager/**',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the
@@ -389,9 +392,12 @@ export default tseslint.config(
     },
   },
 
-  // Shadcn UI primitives use single-word filenames by design (Button, Input, Calendar, Table, etc.).
+  // Shadcn UI primitives and Inertia page routes use single-word filenames by design (Button, Index, etc.).
   {
-    files: ['resources/js/Components/ui/**/*.{vue,ts}'],
+    files: [
+      'resources/js/Components/ui/**/*.{vue,ts}',
+      'resources/js/Pages/**/*.{vue,ts}',
+    ],
     rules: {
       'vue/multi-word-component-names': 'off',
     },

@@ -23,29 +23,34 @@
       </FormFieldWrapper>
 
       <FormFieldWrapper v-if="model.typeValue" id="uploadValue" label="Įkelti failą" required :error="errors.uploadValue">
-        <label
-          class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-zinc-200 bg-zinc-50/50 p-6 transition-colors hover:bg-zinc-100/50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:bg-zinc-800/50"
+        <div
+          class="relative flex flex-col items-center gap-2 border-2 border-dashed border-border bg-muted/30 p-6 text-center transition-colors hover:bg-muted/50"
+          role="button"
+          tabindex="0"
+          @click="fileInputRef?.click()"
+          @keydown.enter="fileInputRef?.click()"
           @dragover.prevent
           @drop.prevent="handleDrop"
         >
-          <IFluentArchive24Regular width="48" height="48" class="opacity-90" />
-          <p class="font-bold">
-            Paspausk arba nutempk failą čia
-          </p>
-          <p class="text-xs opacity-50">
-            Pateikite tik galutinį dokumentą, kuris bus patvirtintas
-          </p>
-          <p v-if="model.uploadValue" class="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
-            {{ model.uploadValue.name }}
-          </p>
           <input
+            id="sharepoint-file-input"
             ref="fileInputRef"
             type="file"
-            class="hidden"
+            class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             accept=".pdf,.docx,.pptx"
             @change="handleFileSelect"
           >
-        </label>
+          <Archive class="size-10 text-muted-foreground" />
+          <p class="font-bold text-foreground">
+            Paspausk arba nutempk failą čia
+          </p>
+          <p class="text-xs text-muted-foreground">
+            Pateikite tik galutinį dokumentą, kuris bus patvirtintas
+          </p>
+          <p v-if="model.uploadValue" class="mt-2 text-sm font-medium text-status-success">
+            {{ model.uploadValue.name }}
+          </p>
+        </div>
       </FormFieldWrapper>
 
       <FormFieldWrapper v-if="model.typeValue" id="tempNameValue" label="Sugeneruotas failo pavadinimas">
@@ -66,7 +71,7 @@
       </FormFieldWrapper>
 
       <Button :disabled="!model.uploadValue || loading" type="submit">
-        <IFluentDocumentAdd24Regular />
+        <FilePlus class="mr-2 size-4" />
         {{ $t('Įkelti failą') }}
       </Button>
     </div>
@@ -75,22 +80,32 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
+import { Archive, FilePlus } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { generateNameForFile } from './generateNameForFile';
 
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { Button } from '@/Components/ui/button';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
-import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import { useToasts } from '@/Composables/useToasts';
 import { modelTypes } from '@/Types/formOptions';
 import { splitFileNameAndExtension } from '@/Utils/String';
-import { useToasts } from '@/Composables/useToasts';
+
+export interface SharepointFileSubmitPayload {
+  datetimeValue: number | null;
+  description0Value: string;
+  nameValue: string | null;
+  tempNameValue: string | null;
+  typeValue: string | null;
+  uploadValue: File | null;
+}
 
 const emit = defineEmits<{
-  (e: 'submit', form: any): void;
+  (e: 'submit', form: SharepointFileSubmitPayload): void;
   (e: 'close'): void;
 }>();
 
