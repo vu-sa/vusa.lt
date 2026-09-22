@@ -45,14 +45,14 @@
     </p>
 
     <EmptyState
-      v-if="recipients.length === 0"
+      v-if="recipientData.length === 0"
       :title="$t('Laiškų eilė tuščia')"
       :description="$t('mail_queue.empty_description')"
     />
 
     <div v-else class="space-y-3">
       <SectionCard
-        v-for="recipient in recipients"
+        v-for="recipient in recipientData"
         :key="recipient.user_id"
         :title="recipient.user?.name ?? $t('Ištrintas naudotojas')"
         :icon="MailIcon"
@@ -116,6 +116,12 @@
           </li>
         </ul>
       </SectionCard>
+
+      <nav v-if="recipients.last_page > 1" class="flex items-center justify-between border-t border-border pt-4" :aria-label="$t('Puslapiai')">
+        <Button variant="outline" :disabled="recipients.current_page === 1" @click="visitPage(recipients.current_page - 1)">{{ $t('Ankstesnis') }}</Button>
+        <span class="text-sm text-muted-foreground">{{ recipients.current_page }} / {{ recipients.last_page }}</span>
+        <Button variant="outline" :disabled="recipients.current_page === recipients.last_page" @click="visitPage(recipients.current_page + 1)">{{ $t('Kitas') }}</Button>
+      </nav>
     </div>
   </AdminContentPage>
 </template>
@@ -123,7 +129,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from 'lucide-vue-next';
 
@@ -168,12 +174,17 @@ interface Recipient {
 // because the click chain into this page consistently timed out at 15s, likely something
 // elsewhere on the page polling and starving the click — not a bug in this component.
 defineProps<{
-  recipients: Recipient[];
+  recipients: {
+    data: Recipient[];
+    current_page: number;
+    last_page: number;
+  };
   canManage: boolean;
   totals: { items: number; recipients: number };
 }>();
 
 const dateLocale = useDateLocale();
+const recipientData = computed(() => props.recipients.data);
 
 // One request at a time, keyed by whatever row triggered it.
 const busyKey = ref<string | number | null>(null);
@@ -201,6 +212,8 @@ const clearRecipient = (recipient: Recipient) =>
   submit(route('mailQueue.destroyForUser', recipient.user_id), recipient.user_id);
 
 const clearAll = () => submit(route('mailQueue.destroyAll'), 'all');
+
+const visitPage = (page: number) => router.get(route('mailQueue'), { page }, { preserveScroll: true });
 
 usePageBreadcrumbs(
   BreadcrumbHelpers.adminForm($t('Sistemos būsena'), 'systemStatus', $t('Laiškų eilė')),

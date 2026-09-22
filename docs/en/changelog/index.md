@@ -5,6 +5,10 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.17 — System administration (2026-09-22) {#v2-17}
+
+- ✨ **Clearer system administration** — roles, types, relationships, support requests, the mail queue, and system status now present their important information and actions in a consistent record view
+
 ## v2.16 — Website content: banners, quick links, event types, and navigation (2026-09-22) {#v2-16}
 
 - ✨ **Refreshed banner management** — the banners list has been migrated to the modern collection layout with quick filters, status overview, and streamlined creation and editing forms

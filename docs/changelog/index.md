@@ -5,6 +5,10 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.17 — Sistemos valdymas (2026-09-22) {#v2-17}
+
+- ✨ **Aiškesnis sistemos administravimas** — rolių, tipų, ryšių, pagalbos užklausų, laiškų eilės ir sistemos būsenos puslapiai pateikia svarbiausią informaciją bei veiksmus vienodu įrašo vaizdu
+
 ## v2.16 — Svetainės turinio valdymas: skydeliai, greitosios nuorodos, renginių tipai ir navigacija (2026-09-22) {#v2-16}
 
 - ✨ **Atnaujintas skydelių valdymas** — skydelių sąrašas perkeltas į standartinį kolekcijos formatą su būsenos peržiūra, greitaisiais filtrais ir atnaujinta kūrimo bei redagavimo forma

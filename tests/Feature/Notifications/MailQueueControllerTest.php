@@ -40,9 +40,9 @@ describe('mail queue page', function (): void {
                 ->component('Admin/MailQueue')
                 ->where('totals.items', 2)
                 ->where('totals.recipients', 1)
-                ->has('recipients', 1)
-                ->where('recipients.0.items_count', 2)
-                ->where('recipients.0.user.id', $recipient->id)
+                ->has('recipients.data', 1)
+                ->where('recipients.data.0.items_count', 2)
+                ->where('recipients.data.0.user.id', $recipient->id)
             );
     });
 

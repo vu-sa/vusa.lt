@@ -24,21 +24,34 @@ class MailQueueController extends AdminController
     {
         $this->handleAuthorization('viewAny', Role::class);
 
-        $recipients = NotificationDigestQueue::query()
+        $recipientPage = NotificationDigestQueue::query()
+            ->select('user_id')
+            ->selectRaw('count(*) as items_count')
+            ->selectRaw('min(created_at) as oldest_at')
+            ->selectRaw('max(created_at) as newest_at')
+            ->groupBy('user_id')
+            ->orderByDesc('items_count')
+            ->paginate(25)
+            ->withQueryString();
+
+        $itemsByUser = NotificationDigestQueue::query()
             ->with('user:id,name,email,profile_photo_path')
+            ->whereIn('user_id', $recipientPage->getCollection()->pluck('user_id'))
             ->orderByDesc('created_at')
             ->get()
-            ->groupBy('user_id')
-            ->map(fn (Collection $items): array => $this->describeRecipient($items))
-            ->sortByDesc('items_count')
-            ->values();
+            ->groupBy('user_id');
+
+        $recipients = $recipientPage->through(fn (NotificationDigestQueue $recipient): array => $this->describeRecipient(
+            $itemsByUser->get($recipient->user_id, new Collection),
+            (int) $recipient->items_count,
+        ));
 
         return $this->inertiaResponse('Admin/MailQueue', [
             'recipients' => $recipients,
             'canManage' => Auth::user()->isSuperAdmin(),
             'totals' => [
-                'items' => $recipients->sum('items_count'),
-                'recipients' => $recipients->count(),
+                'items' => NotificationDigestQueue::query()->count(),
+                'recipients' => NotificationDigestQueue::query()->distinct('user_id')->count('user_id'),
             ],
         ]);
     }
@@ -49,14 +62,14 @@ class MailQueueController extends AdminController
      * @param  Collection<int, NotificationDigestQueue>  $items
      * @return array<string, mixed>
      */
-    private function describeRecipient(Collection $items): array
+    private function describeRecipient(Collection $items, int $itemsCount): array
     {
         $first = $items->first();
 
         return [
             'user_id' => $first->user_id,
             'user' => $first->user?->only(['id', 'name', 'email', 'profile_photo_path']),
-            'items_count' => $items->count(),
+            'items_count' => $itemsCount,
             'oldest_at' => $items->min('created_at')?->toISOString(),
             'newest_at' => $items->max('created_at')?->toISOString(),
             'items' => $items->map(fn (NotificationDigestQueue $item): array => [

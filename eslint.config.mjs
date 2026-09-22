@@ -77,6 +77,10 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Pages/Admin/Files/**',
   'resources/js/Features/Admin/FileManager/**',
   'resources/js/Features/Admin/SharepointFileManager/**',
+  'resources/js/Pages/Admin/Permissions/ShowRole.vue',
+  'resources/js/Pages/Admin/ModelMeta/{ShowType,ShowRelationship}.vue',
+  'resources/js/Pages/Admin/{SystemStatus,MailQueue}.vue',
+  'resources/js/Pages/Admin/SupportRequests/ShowSupportRequest.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

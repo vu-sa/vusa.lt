@@ -102,7 +102,7 @@ class TypeController extends AdminController
         );
 
         if ($validated['model_type'] === MorphMap::alias(Duty::class)) {
-            $type->roles()->sync($request->input('roles', []));
+            $type->roles()->sync($validated['roles'] ?? []);
         }
 
         return redirect()->route('types.index')
@@ -116,8 +116,23 @@ class TypeController extends AdminController
     {
         $this->handleAuthorization('view', $type);
 
+        $relation = $type->typeableRelation();
+        $type->load([
+            'parent:id,title',
+            'roles:id,name',
+            ...($relation === null ? [] : [$relation => fn ($query) => $query->select('id', 'name')]),
+        ]);
+
         return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
-            'contentType' => $type->toArray(),
+            'contentType' => $type->toFullArray(),
+            'attachedModels' => $relation === null ? [] : $type->{$relation}->map(fn ($model): array => [
+                'id' => $model->id,
+                'name' => $model->name,
+            ])->values(),
+            'can' => [
+                'update' => auth()->user()?->can('update', $type) ?? false,
+                'delete' => auth()->user()?->can('delete', $type) ?? false,
+            ],
         ]);
     }
 
@@ -158,10 +173,10 @@ class TypeController extends AdminController
         // only `institutions` and `duties` are ever reachable.
         $relation = Type::TYPEABLE_RELATIONS[$validated['model_type']];
 
-        $type->{$relation}()->sync($request->input($relation, []));
+        $type->{$relation}()->sync($validated[$relation] ?? []);
 
         if ($validated['model_type'] === MorphMap::alias(Duty::class)) {
-            $type->roles()->sync($request->input('roles', []));
+            $type->roles()->sync($validated['roles'] ?? []);
         }
 
         return back()->with('success', $this->entityMessage('updated', 'type'));

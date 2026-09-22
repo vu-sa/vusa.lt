@@ -3,9 +3,12 @@
 namespace App\Http\Requests\Relationships;
 
 use App\Services\RelationshipService;
+use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreModelRelationshipRequest extends FormRequest
 {
@@ -28,5 +31,30 @@ class StoreModelRelationshipRequest extends FormRequest
             'scope' => 'nullable|in:within-tenant,cross-tenant',
             'bidirectional' => 'nullable|boolean',
         ];
+    }
+
+    public function after(): array
+    {
+        return [function (Validator $validator): void {
+            $modelType = $this->string('model_type')->toString();
+            $modelClass = MorphMap::classFor($modelType);
+
+            if ($modelClass === null || ! in_array($modelClass, RelationshipService::allowedModelClasses(), true)) {
+                return;
+            }
+
+            foreach (['model_id', 'related_model_id'] as $attribute) {
+                $id = $this->input($attribute);
+
+                if ($id === null || $id === '') {
+                    continue;
+                }
+
+                /** @var class-string<Model> $modelClass */
+                if (! $modelClass::query()->whereKey($id)->exists()) {
+                    $validator->errors()->add($attribute, __('validation.exists', ['attribute' => $attribute]));
+                }
+            }
+        }];
     }
 }

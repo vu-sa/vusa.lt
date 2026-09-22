@@ -100,11 +100,12 @@ class RoleController extends AdminController
     {
         $this->handleAuthorization('view', $role);
 
-        $role->load('permissions:id,name');
-
-        // show role
         return $this->inertiaResponse('Admin/Permissions/ShowRole', [
-            'role' => $role,
+            ...$this->roleRecordPayload($role),
+            'can' => [
+                'update' => auth()->user()?->can('update', $role) ?? false,
+                'delete' => auth()->user()?->can('delete', $role) ?? false,
+            ],
         ]);
     }
 
@@ -120,7 +121,15 @@ class RoleController extends AdminController
             return back()->with('info', __('messages.role.not_editable'));
         }
 
-        $role->load('permissions:id,name', 'duties:id,name');
+        return $this->inertiaResponse('Admin/Permissions/EditRole', $this->roleRecordPayload($role));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function roleRecordPayload(Role $role): array
+    {
+        $role->load('permissions:id,name', 'duties:id,name', 'attachable_types:id,title');
 
         $tenantsWithDuties = Tenant::orderBy('shortname')->with('institutions:id,name,tenant_id', 'institutions.duties:id,name,institution_id')
             ->when(! auth()->user()?->isSuperAdmin(), function ($query): void {
@@ -134,8 +143,7 @@ class RoleController extends AdminController
             return $parts[0]; // Model type (e.g., 'tags', 'news')
         });
 
-        // edit role
-        return $this->inertiaResponse('Admin/Permissions/EditRole', [
+        return [
             'role' => [
                 ...$role->toArray(),
                 'attachable_types' => $role->attachable_types->pluck('id')->toArray(),
@@ -143,7 +151,7 @@ class RoleController extends AdminController
             'tenantsWithDuties' => $tenantsWithDuties,
             'allTypes' => Type::all(),
             'allAvailablePermissions' => $allAvailablePermissions->map(fn ($permissions) => $permissions->pluck('name')),
-        ]);
+        ];
     }
 
     /**

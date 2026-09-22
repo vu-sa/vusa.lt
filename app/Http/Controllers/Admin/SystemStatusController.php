@@ -6,7 +6,6 @@ use App\Http\Controllers\AdminController;
 use App\Models\Role;
 use App\Services\DeviceMetricService;
 use App\Services\SystemMonitorService;
-use Illuminate\Http\Request;
 
 class SystemStatusController extends AdminController
 {
@@ -15,13 +14,13 @@ class SystemStatusController extends AdminController
         private readonly DeviceMetricService $deviceMetrics,
     ) {}
 
-    public function index(Request $request)
+    public function index()
     {
         $this->handleAuthorization('viewAny', Role::class);
 
         return $this->inertiaResponse('Admin/SystemStatus', [
-            'status' => $this->monitor->getAllStatus(),
             'lastUpdated' => now()->toISOString(),
+            'status' => $this->monitor->getAllStatus(),
             'deviceMetrics' => $this->deviceMetrics->getRecentMetrics(30),
         ]);
     }

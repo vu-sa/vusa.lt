@@ -102,8 +102,24 @@ class RelationshipController extends AdminController
     {
         $this->handleAuthorization('view', $relationship);
 
+        $relationship->load('relationshipables.relationshipable', 'relationshipables.related_model');
+
         return $this->inertiaResponse('Admin/ModelMeta/ShowRelationship', [
-            'relationship' => $relationship,
+            'relationship' => [
+                ...$relationship->toArray(),
+                'relationshipables' => $relationship->relationshipables->map(fn (Relationshipable $relationshipable): array => [
+                    'id' => $relationshipable->id,
+                    'source' => $relationshipable->relationshipable?->only(['id', 'name', 'title']),
+                    'target' => $relationshipable->related_model?->only(['id', 'name', 'title']),
+                    'type' => $relationshipable->relationshipable_type,
+                    'scope' => $relationshipable->scope,
+                    'bidirectional' => $relationshipable->bidirectional,
+                ])->values(),
+            ],
+            'can' => [
+                'update' => auth()->user()?->can('update', $relationship) ?? false,
+                'delete' => auth()->user()?->can('delete', $relationship) ?? false,
+            ],
         ]);
     }
 
@@ -153,8 +169,7 @@ class RelationshipController extends AdminController
         $this->handleAuthorization('delete', $relationship);
 
         DB::transaction(function () use ($relationship): void {
-            // remove all relationshipables
-            DB::table('relationshipables')->where('relationship_id', $relationship->id);
+            $relationship->relationshipables()->delete();
             $relationship->delete();
         });
 
@@ -166,17 +181,19 @@ class RelationshipController extends AdminController
     {
         $this->handleAuthorization('create', $relationship);
 
+        $validated = $request->validated();
+
         $pivotData = [
-            'related_model_id' => $request->related_model_id,
-            'bidirectional' => $request->boolean('bidirectional', false),
+            'related_model_id' => $validated['related_model_id'],
+            'bidirectional' => $request->boolean('bidirectional'),
         ];
 
         // Only add scope for Type-based relationships
-        if ($request->model_type === MorphMap::alias(Type::class)) {
-            $pivotData['scope'] = $request->scope ?? 'within-tenant';
+        if ($validated['model_type'] === MorphMap::alias(Type::class)) {
+            $pivotData['scope'] = $validated['scope'] ?? 'within-tenant';
         }
 
-        $relationship->models($request->model_type)->attach($request->model_id, $pivotData);
+        $relationship->models($validated['model_type'])->attach($validated['model_id'], $pivotData);
 
         return redirect()->route('relationships.edit', $relationship)
             ->with('success', $this->entityMessage('created', 'relationship'));

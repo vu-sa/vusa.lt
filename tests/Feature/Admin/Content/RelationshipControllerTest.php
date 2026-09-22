@@ -219,23 +219,19 @@ describe('relationship CRUD operations', function (): void {
         ]);
     });
 
-    test('deletion attempts to cascade to relationshipables', function (): void {
-        // Note: Controller has a bug where relationshipables deletion isn't executed properly
-        // This test demonstrates the current behavior rather than the expected behavior
-
-        // Create a relationship without relationshipables to avoid FK constraint error
-        $relationship = new Relationship([
-            'name' => 'Deletable Relationship',
-            'slug' => 'deletable-relationship',
-            'description' => 'Test deletion',
+    test('deleting a relationship deletes its relationshipables', function (): void {
+        $this->relationship->models(MorphMap::alias(Institution::class))->attach($this->institution->id, [
+            'related_model_id' => $this->relatedInstitution->id,
         ]);
-        $relationship->save();
 
-        asUser($this->admin)->delete(route('relationships.destroy', $relationship))
+        asUser($this->admin)->delete(route('relationships.destroy', $this->relationship))
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertDatabaseMissing('relationships', ['id' => $relationship->id]);
+        $this->assertDatabaseMissing('relationships', ['id' => $this->relationship->id]);
+        $this->assertDatabaseMissing('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+        ]);
     });
 });
 
@@ -256,6 +252,30 @@ describe('model relationship operations', function (): void {
             'relationshipable_type' => MorphMap::alias(Institution::class),
             'relationshipable_id' => $this->institution->id,
             'related_model_id' => $this->relatedInstitution->id,
+        ]);
+    });
+
+    test('rejects model IDs that do not belong to the submitted relationship model type', function (): void {
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), [
+            'model_id' => $this->institution->id,
+            'model_type' => MorphMap::alias(Type::class),
+            'related_model_id' => $this->relatedInstitution->id,
+        ])->assertSessionHasErrors(['model_id', 'related_model_id']);
+
+        $this->assertDatabaseMissing('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+        ]);
+    });
+
+    test('rejects relationship model IDs that do not exist', function (): void {
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), [
+            'model_id' => 'missing-source',
+            'model_type' => MorphMap::alias(Institution::class),
+            'related_model_id' => 'missing-target',
+        ])->assertSessionHasErrors(['model_id', 'related_model_id']);
+
+        $this->assertDatabaseMissing('relationshipables', [
+            'relationship_id' => $this->relationship->id,
         ]);
     });
 
