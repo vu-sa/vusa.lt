@@ -1,35 +1,26 @@
 <template>
-  <PageContent :title="calendar.title.lt" :back-url="route('calendar.index')" :heading-icon="CalendarIcon">
-    <template #aside-header>
-      <ActivityLogSheet subject-type="calendar" :subject-id="String(calendar.id)" />
-    </template>
-    <UpsertModelLayout>
-      <CalendarForm
-        enable-delete
-        :calendar
-        :event-types="eventTypes"
-        :available-tags
-        :assignable-tenants
-        :meeting
-        :submit-url="route('calendar.update', calendar.id)"
-        submit-method="patch"
-        @submit:form="handleUpdateCalendar"
-        @delete="() => router.delete(route('calendar.destroy', calendar.id))"
-      />
-    </UpsertModelLayout>
-  </PageContent>
+  <CalendarForm
+    enable-delete
+    :calendar
+    :event-types
+    :available-tags
+    :assignable-tenants
+    :meeting
+    :submit-url="route('calendar.update', calendar.id)"
+    submit-method="patch"
+    @submit:form="handleUpdateCalendar"
+    @delete="() => router.delete(route('calendar.destroy', calendar.id))"
+  />
 </template>
 
 <script setup lang="ts">
-import { router, type InertiaForm } from '@inertiajs/vue3';
+import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import CalendarForm from '@/Components/AdminForms/CalendarForm.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { CalendarIcon } from '@/Components/icons';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
-const { calendar } = defineProps<{
+const { calendar } = withDefaults(defineProps<{
   calendar: App.Entities.Calendar;
   eventTypes: App.Entities.EventType[];
   availableTags?: App.Entities.Tag[];
@@ -43,10 +34,23 @@ const { calendar } = defineProps<{
     agenda_items_count: number;
     institution_name: string | null;
   } | null;
-}>();
+}>(), {
+  availableTags: () => [],
+  meeting: null,
+});
 
-function handleUpdateCalendar(form: InertiaForm<CalendarEventForm>) {
-  form.transform(data => ({
+usePageBreadcrumbs(() => {
+  const currentLocale = usePage().props.app.locale as 'lt' | 'en';
+  const title = (calendar.title as Record<string, string>)?.[currentLocale]
+    || (calendar.title as Record<string, string>)?.lt
+    || 'Renginys';
+
+  return BreadcrumbHelpers.adminForm('Kalendorius', 'calendar.index', title, CalendarIcon);
+});
+
+function handleUpdateCalendar(form: unknown) {
+  const inertiaForm = form as InertiaForm<CalendarEventForm>;
+  inertiaForm.transform(data => ({
     ...data,
     _method: 'patch',
   })).post(route('calendar.update', calendar.id), {

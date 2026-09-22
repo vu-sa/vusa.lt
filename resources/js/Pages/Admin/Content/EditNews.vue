@@ -1,44 +1,21 @@
 <template>
-  <PageContent :title="news.title" :back-url="route('news.index')" :heading-icon="NewsIcon">
-    <template #header>
-      {{ news.title }}
-    </template>
-    <template #aside-header>
-      <ActivityLogSheet subject-type="news" :subject-id="news.id" />
-    </template>
-    <ContentAnalyticsCard
-      :id="news.id"
-      type="news"
-      :content-date="news.publish_time ?? news.created_at"
-      class="mb-4" />
-    <UpsertModelLayout>
-      <template #card-header>
-        Puslapio informacija
-      </template>
-      <NewsForm
-        :news
-        :other-lang-news
-        :available-tags
-        :submit-url="route('news.update', news.id)"
-        submit-method="patch"
-        enable-delete
-        @submit:form="submitForm"
-        @delete="() => router.delete(route('news.destroy', news.id))"
-      />
-    </UpsertModelLayout>
-  </PageContent>
+  <NewsForm
+    :news
+    :other-lang-news
+    :available-tags
+    :submit-url="route('news.update', news.id)"
+    submit-method="patch"
+    enable-delete
+    @submit:form="submitForm"
+    @delete="() => router.delete(route('news.destroy', news.id))"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import NewsForm from '@/Components/AdminForms/NewsForm.vue';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { NewsIcon } from '@/Components/icons';
 
 const props = defineProps<{
@@ -52,8 +29,9 @@ usePageBreadcrumbs(() =>
   BreadcrumbHelpers.adminForm('Naujienos', 'news.index', props.news.title, NewsIcon),
 );
 
-function submitForm(form: InertiaForm<App.Entities.News>): void {
-  form.defaults();
-  form.patch(route('news.update', props.news.id), { preserveScroll: true });
+function submitForm(form: unknown): void {
+  const inertiaForm = form as InertiaForm<App.Entities.News>;
+  inertiaForm.defaults();
+  inertiaForm.patch(route('news.update', props.news.id), { preserveScroll: true });
 }
 </script>

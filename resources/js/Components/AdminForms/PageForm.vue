@@ -1,35 +1,91 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <!-- Status Header -->
-    <template #status-header>
-      <FormStatusHeader :is-published="form.is_active" :server-is-published="props.page.is_active" :links="statusLinks"
-        :is-create show-publish-time :publish-time="publishTimeDate" @update:is-published="form.is_active = $event"
-        @update:publish-time="publishTimeDate = $event" />
+  <FormPage
+    :title="isCreate ? $t('Naujas puslapis') : (form.title || $t('Puslapis'))"
+    :head-title="isCreate ? $t('Naujas puslapis') : (form.title || $t('Puslapis'))"
+    :back-href="route('pages.index')"
+    :back-label="$t('Puslapiai')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :field-ids
+    :mode="isCreate ? 'create' : 'edit'"
+    max-width="4xl"
+    @submit="emit('submit:form', form)"
+  >
+    <template v-if="!isCreate" #header-actions>
+      <Button v-if="fullPageUrl" as-child variant="outline" size="sm">
+        <a :href="fullPageUrl" target="_blank" rel="noopener noreferrer">
+          <ExternalLink class="mr-1.5 size-4" />
+          {{ $t('Peržiūrėti viešai') }}
+        </a>
+      </Button>
+      <ActivityLogSheet v-if="page.id" subject-type="page" :subject-id="String(page.id)" />
     </template>
 
-    <!-- Section 1: Title & Essential Info -->
-    <FormElement :section-number="1" :is-complete="mainInfoComplete" required>
-      <template #title>
-        {{ $t('forms.fields.title') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Puslapio antraštė ir pagrindiniai nustatymai') }}
-      </template>
+    <!-- Status Header -->
+    <FormStatusHeader
+      :is-published="Boolean(form.is_active)"
+      :server-is-published="props.page.is_active"
+      :links="statusLinks"
+      :is-create
+      show-publish-time
+      :publish-time="publishTimeDate"
+      @update:is-published="form.is_active = $event"
+      @update:publish-time="publishTimeDate = $event"
+    />
 
+    <ContentAnalyticsCard
+      v-if="!isCreate && page.id"
+      :id="page.id"
+      type="page"
+      :content-date="page.publish_time ?? page.created_at"
+      class="mb-6"
+    />
+
+    <!-- Section 1: Title & Essential Info -->
+    <FormSection
+      :title="$t('forms.fields.title')"
+      :description="$t('Puslapio antraštė ir pagrindiniai nustatymai')"
+    >
       <div class="space-y-4">
         <!-- Title with character counter -->
-        <FormFieldWrapper id="title" :label="$t('forms.fields.title')" required
+        <FormFieldWrapper
+          id="title"
+          :label="$t('forms.fields.title')"
+          required
           :hint="$t('Pavadinimas bus rodomas naršyklės skirtuke ir paieškos rezultatuose')"
-          :char-count="form.title?.length || 0" :max-length="60" :error="form.errors.title"
-          :validating="form.validating" :valid="form.valid('title')" :invalid="form.invalid('title')">
-          <Input id="title" v-model="form.title" type="text" :placeholder="$t('Įrašyti pavadinimą...')" class="text-lg"
-            @change="form.validate('title')" />
+          :char-count="form.title?.length || 0"
+          :max-length="60"
+          :error="form.errors.title"
+          :validating="form.validating"
+          :valid="form.valid('title')"
+          :invalid="form.invalid('title')"
+        >
+          <Input
+            id="title"
+            v-model="form.title"
+            type="text"
+            :placeholder="$t('Įrašyti pavadinimą...')"
+            class="text-lg"
+            @change="form.validate('title')"
+          />
         </FormFieldWrapper>
 
-        <PermalinkPreviewHint v-if="isCreate" :preview="permalinkPreview.preview.value" :is-checking="permalinkPreview.isChecking.value" />
+        <PermalinkPreviewHint
+          v-if="isCreate"
+          :preview="permalinkPreview.preview.value"
+          :is-checking="permalinkPreview.isChecking.value"
+        />
 
-        <FormFieldWrapper v-if="isCreate" id="tenant" :label="$t('forms.fields.tenant')" required
-          :error="form.errors.tenant_id" :valid="form.valid('tenant_id')" :invalid="form.invalid('tenant_id')">
+        <FormFieldWrapper
+          v-if="isCreate"
+          id="tenant"
+          :label="$t('forms.fields.tenant')"
+          required
+          :error="form.errors.tenant_id"
+          :valid="form.valid('tenant_id')"
+          :invalid="form.invalid('tenant_id')"
+        >
           <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
             <SelectTrigger id="tenant">
               <SelectValue :placeholder="$t('forms.placeholders.select_tenant')" />
@@ -42,26 +98,40 @@
           </Select>
         </FormFieldWrapper>
 
-        <FormFieldWrapper id="lang" :label="$t('Kalba')" required :error="form.errors.lang"
-          :valid="form.valid('lang')" :invalid="form.invalid('lang')">
-          <ToggleGroup v-model="form.lang" type="single" class="justify-start"
-            @update:model-value="form.validate('lang')">
+        <FormFieldWrapper
+          id="lang"
+          :label="$t('Kalba')"
+          required
+          :error="form.errors.lang"
+          :valid="form.valid('lang')"
+          :invalid="form.invalid('lang')"
+        >
+          <ToggleGroup
+            v-model="form.lang"
+            type="single"
+            class="justify-start"
+            @update:model-value="form.validate('lang')"
+          >
             <ToggleGroupItem value="lt" class="gap-2">
-              <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
+              <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4" alt="">
               Lietuvių
             </ToggleGroupItem>
             <ToggleGroupItem value="en" class="gap-2">
-              <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
+              <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4" alt="">
               English
             </ToggleGroupItem>
           </ToggleGroup>
         </FormFieldWrapper>
 
-        <!-- Parent page — drives breadcrumbs, section navigation and child listings; the
-             permalink itself stays flat. -->
-        <FormFieldWrapper id="parent_page" :label="$t('Tėvinis puslapis')" :error="form.errors.parent_id"
+        <!-- Parent page -->
+        <FormFieldWrapper
+          id="parent_page"
+          :label="$t('Tėvinis puslapis')"
+          :error="form.errors.parent_id"
           :hint="$t('Puslapio vieta struktūroje — neturi įtakos nuorodai')"
-          :valid="form.valid('parent_id')" :invalid="form.invalid('parent_id')">
+          :valid="form.valid('parent_id')"
+          :invalid="form.invalid('parent_id')"
+        >
           <CollectionSelectDialog
             v-model:open="parentDialogOpen"
             collection="pages"
@@ -80,7 +150,7 @@
                 <span class="truncate" :class="{ 'text-muted-foreground': !form.parent_id }">
                   {{ selectedParentLabel }}
                 </span>
-                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+                <ChevronDown class="size-4 opacity-50" />
               </Button>
             </template>
           </CollectionSelectDialog>
@@ -89,8 +159,11 @@
         <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
 
         <!-- Other Language Page -->
-        <FormFieldWrapper id="other_lang" :label="$t('Kitos kalbos puslapis')"
-          :hint="$t('Susieti su to paties turinio puslapiu kita kalba')">
+        <FormFieldWrapper
+          id="other_lang"
+          :label="$t('Kitos kalbos puslapis')"
+          :hint="$t('Susieti su to paties turinio puslapiu kita kalba')"
+        >
           <CollectionSelectDialog
             v-if="!isCreate"
             v-model:open="otherLangDialogOpen"
@@ -109,169 +182,214 @@
                 <span class="truncate" :class="{ 'text-muted-foreground': !form.other_lang_id }">
                   {{ selectedOtherLangPage.label }}
                 </span>
-                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+                <ChevronDown class="size-4 opacity-50" />
               </Button>
             </template>
           </CollectionSelectDialog>
           <Button v-else type="button" variant="outline" class="w-full justify-between font-normal" disabled>
             <span class="text-muted-foreground">{{ $t('Pasirinkti kitos kalbos puslapį...') }}</span>
-            <IFluentChevronDown24Regular class="size-4 opacity-50" />
+            <ChevronDown class="size-4 opacity-50" />
           </Button>
         </FormFieldWrapper>
       </div>
-    </FormElement>
+    </FormSection>
 
     <!-- Section 2: Content (Main editing area) -->
-    <FormElement :section-number="2" :is-complete="(form.content?.parts?.length ?? 0) > 0">
-      <template #title>
-        {{ $t('Turinys') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Pagrindinė puslapio informacija') }}
-      </template>
-
-      <RichContentFormElement v-model="form.content.parts" :tenant-id="page.tenant_id" @save="$emit('submit:form', form)" />
-    </FormElement>
+    <FormSection
+      :title="$t('Turinys')"
+      :description="$t('Pagrindinė puslapio informacija')"
+    >
+      <RichContentFormElement
+        v-model="form.content.parts"
+        :tenant-id="page.tenant_id"
+        @save="$emit('submit:form', form)"
+      />
+    </FormSection>
 
     <!-- Section 3: Highlights -->
-    <FormElement :section-number="3" :is-complete="form.highlights.length > 0">
-      <template #title>
-        {{ $t('Svarbiausi punktai') }}
-      </template>
-      <template #description>
-        <p>{{ $t('Iki 3 pagrindinių minčių, kurios bus išskirtos puslapyje.') }}</p>
-      </template>
+    <FormSection
+      :title="$t('Svarbiausi punktai')"
+      :description="$t('Iki 3 pagrindinių minčių, kurios bus išskirtos puslapyje.')"
+    >
+      <OrderedListInput
+        v-model="form.highlights"
+        :max="3"
+        input-type="textarea"
+        :placeholder="$t('Įveskite svarbų punktą...')"
+        :empty-text="$t('Dar nepridėta jokių punktų')"
+        :add-first-text="$t('Pridėti pirmą punktą')"
+        :add-text="$t('Pridėti punktą')"
+      />
+    </FormSection>
 
-      <OrderedListInput v-model="form.highlights" :max="3" input-type="textarea"
-        :placeholder="$t('Įveskite svarbų punktą...')" :empty-text="$t('Dar nepridėta jokių punktų')"
-        :add-first-text="$t('Pridėti pirmą punktą')" :add-text="$t('Pridėti punktą')" />
-    </FormElement>
+    <!-- Advanced Settings Slot -->
+    <template #advanced>
+      <!-- Layout Selection -->
+      <div class="space-y-2">
+        <Label class="block text-sm font-medium">{{ $t('Išdėstymas') }}</Label>
+        <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="3" icon-class="h-12 w-20" />
+      </div>
 
-    <!-- Section 4: Advanced Settings (Collapsible) -->
-    <FormElement :section-number="4">
-      <template #title>
-        {{ $t('Papildomi nustatymai') }}
-      </template>
+      <!-- Table of contents toggle -->
+      <div v-if="form.layout === 'default'" class="flex items-center gap-3">
+        <Switch v-model="form.show_table_of_contents" />
+        <span class="text-sm text-foreground">
+          {{ $t('Rodyti turinio lentelę šoninėje juostoje') }}
+        </span>
+      </div>
 
-      <Collapsible v-model:open="advancedSettingsOpen" class="w-full">
-        <CollapsibleTrigger as-child>
-          <Button variant="ghost" class="w-full justify-between p-0 h-auto hover:bg-transparent">
-            <span class="text-sm text-muted-foreground">
-              {{ advancedSettingsOpen ? $t('Slėpti papildomus nustatymus') : $t('Rodyti papildomus nustatymus') }}
-            </span>
-            <IFluentChevronDown24Regular class="h-4 w-4 text-muted-foreground transition-transform duration-200"
-              :class="{ 'rotate-180': advancedSettingsOpen }" />
+      <!-- Page header toggle -->
+      <div class="flex items-center gap-3">
+        <Switch v-model="form.show_title" />
+        <span class="text-sm text-foreground">
+          {{ $t('Rodyti puslapio pavadinimą ir atnaujinimo laiką') }}
+        </span>
+      </div>
+
+      <!-- Breadcrumbs toggle -->
+      <div class="flex items-center gap-3">
+        <Switch v-model="form.show_breadcrumbs" />
+        <span class="text-sm text-foreground">
+          {{ $t('Rodyti puslapio kelią (breadcrumbs)') }}
+        </span>
+      </div>
+
+      <!-- ToC overlap warning -->
+      <Alert
+        v-if="showTocOverlapWarning"
+        class="border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]"
+      >
+        <AlertTriangle class="size-4" />
+        <AlertTitle>{{ $t('Turinio lentelė gali persidengti su turiniu') }}</AlertTitle>
+        <AlertDescription>
+          <p>{{ $t('Šiame puslapyje yra platus arba per visą pločio blokas, kuris bus suspaustas iki turinio stulpelio pločio, kol rodoma turinio lentelė.') }}</p>
+          <Button
+            type="button"
+            variant="link"
+            size="sm"
+            class="h-auto p-0 text-inherit underline"
+            @click="form.show_table_of_contents = false"
+          >
+            {{ $t('Išjungti turinio lentelę') }}
           </Button>
-        </CollapsibleTrigger>
+        </AlertDescription>
+      </Alert>
 
-        <CollapsibleContent class="pt-4">
-          <div class="space-y-6">
-            <!-- Layout Selection -->
-            <div>
-              <Label class="mb-3 block text-sm font-medium">{{ $t('Išdėstymas') }}</Label>
-              <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="3" icon-class="h-12 w-20" />
-            </div>
+      <!-- Permalink -->
+      <PermalinkField
+        v-if="!isCreate"
+        :permalink="form.permalink"
+        :base-url="pageBaseUrl"
+        :disabled="false"
+        :view-url="fullPageUrl"
+        :warning="$t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.')"
+        :validating="form.validating"
+        :valid="form.valid('permalink')"
+        :invalid="form.invalid('permalink')"
+        @update:permalink="form.permalink = $event"
+        @change="form.validate('permalink')"
+      />
 
-            <!-- Table of contents toggle — only meaningful for the `default` layout, which
-                 is the only one with a sidebar. -->
-            <div v-if="form.layout === 'default'" class="flex items-center gap-3">
-              <Switch v-model="form.show_table_of_contents" />
-              <span class="text-sm text-zinc-700 dark:text-zinc-300">
-                {{ $t('Rodyti turinio lentelę šoninėje juostoje') }}
-              </span>
-            </div>
+      <!-- SEO Section -->
+      <div class="space-y-4 border-t border-border pt-4">
+        <h4 class="text-sm font-semibold">
+          {{ $t('SEO ir metaduomenys') }}
+        </h4>
 
-            <!-- Page header toggle — hides the plain <h1>/last-updated line, e.g. when
-                 the page opens directly on a hero block that already has its own title. -->
-            <div class="flex items-center gap-3">
-              <Switch v-model="form.show_title" />
-              <span class="text-sm text-zinc-700 dark:text-zinc-300">
-                {{ $t('Rodyti puslapio pavadinimą ir atnaujinimo laiką') }}
-              </span>
-            </div>
+        <!-- SEO Preview -->
+        <SEOPreview
+          :title="form.title"
+          :description="form.meta_description"
+          :url="form.permalink"
+          :base-url="seoBaseUrl"
+        />
 
-            <!-- Breadcrumbs toggle — hide the breadcrumb trail, e.g. for landing pages
-                 that open on a hero/section block and don't need the nav path above. -->
-            <div class="flex items-center gap-3">
-              <Switch v-model="form.show_breadcrumbs" />
-              <span class="text-sm text-zinc-700 dark:text-zinc-300">
-                {{ $t('Rodyti puslapio kelią (breadcrumbs)') }}
-              </span>
-            </div>
+        <!-- Meta description -->
+        <FormFieldWrapper
+          id="meta_description"
+          :label="$t('Meta aprašymas')"
+          :hint="$t('Trumpas puslapio aprašymas, rodomas paieškos rezultatuose')"
+          :char-count="form.meta_description?.length || 0"
+          :max-length="160"
+        >
+          <Textarea
+            id="meta_description"
+            v-model="form.meta_description"
+            :placeholder="$t('Trumpas puslapio aprašymas paieškos rezultatams...')"
+            rows="3"
+            :class="metaDescriptionClass"
+          />
+        </FormFieldWrapper>
 
-            <!-- A full/wide block can't reach its full width while the ToC sidebar is
-                 present — it gets clipped to the content column instead. Surface this
-                 rather than let an author discover it on the public page. -->
-            <Alert v-if="showTocOverlapWarning" class="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-              <IFluentWarning24Regular />
-              <AlertTitle>{{ $t('Turinio lentelė gali persidengti su turiniu') }}</AlertTitle>
-              <AlertDescription>
-                <p>{{ $t('Šiame puslapyje yra platus arba per visą pločio blokas, kuris bus suspaustas iki turinio stulpelio pločio, kol rodoma turinio lentelė.') }}</p>
-                <Button type="button" variant="link" size="sm" class="h-auto p-0 text-amber-900 underline dark:text-amber-200"
-                  @click="form.show_table_of_contents = false">
-                  {{ $t('Išjungti turinio lentelę') }}
-                </Button>
-              </AlertDescription>
-            </Alert>
+        <!-- Featured image -->
+        <FormFieldWrapper
+          id="featured_image"
+          :label="$t('Pagrindinė nuotrauka')"
+          :hint="$t('Nuotrauka naudojama dalinantis socialiniuose tinkluose')"
+        >
+          <ImageUpload
+            v-model:url="form.featured_image"
+            mode="immediate"
+            folder="pages"
+            cropper
+            :existing-url="page.featured_image"
+          />
+        </FormFieldWrapper>
+      </div>
+    </template>
 
-            <!-- Permalink (editable only once the page exists — see PermalinkPreviewHint above for create) -->
-            <PermalinkField v-if="!isCreate" :permalink="form.permalink" :base-url="pageBaseUrl" :disabled="false"
-              :view-url="fullPageUrl"
-              :warning="$t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.')"
-              :validating="form.validating" :valid="form.valid('permalink')" :invalid="form.invalid('permalink')"
-              @update:permalink="form.permalink = $event"
-              @change="form.validate('permalink')" />
+    <!-- Danger Zone Slot -->
+    <template v-if="!isCreate" #danger-zone>
+      <div class="space-y-6">
+        <PublicUrlHistoryCard
+          :urls="page.public_urls ?? []"
+          :destroy-route="(id) => route('pages.publicUrls.destroy', [page.id, id])"
+        />
 
-            <!-- SEO Section -->
-            <div class="space-y-4 pt-2 border-t">
-              <h4 class="text-sm font-medium">
-                {{ $t('SEO ir metaduomenys') }}
-              </h4>
-
-              <!-- SEO Preview -->
-              <SEOPreview :title="form.title" :description="form.meta_description" :url="form.permalink"
-                :base-url="seoBaseUrl" />
-
-              <!-- Meta description -->
-              <FormFieldWrapper id="meta_description" :label="$t('Meta aprašymas')"
-                :hint="$t('Trumpas puslapio aprašymas, rodomas paieškos rezultatuose')"
-                :char-count="form.meta_description?.length || 0" :max-length="160">
-                <Textarea id="meta_description" v-model="form.meta_description"
-                  :placeholder="$t('Trumpas puslapio aprašymas paieškos rezultatams...')" rows="3"
-                  :class="metaDescriptionClass" />
-              </FormFieldWrapper>
-
-              <!-- Featured image -->
-              <FormFieldWrapper id="featured_image" :label="$t('Pagrindinė nuotrauka')"
-                :hint="$t('Nuotrauka naudojama dalinantis socialiniuose tinkluose')">
-                <ImageUpload v-model:url="form.featured_image" mode="immediate" folder="pages" cropper
-                  :existing-url="page.featured_image" />
-              </FormFieldWrapper>
-            </div>
+        <div v-if="enableDelete" class="flex items-center justify-between gap-4">
+          <div>
+            <h4 class="text-sm font-semibold text-destructive">
+              {{ $t('Ištrinti puslapį') }}
+            </h4>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Puslapis bus perkeltas į šiukšlinę.') }}
+            </p>
           </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </FormElement>
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            class="u-touch shrink-0"
+            @click="deleteConfirmOpen = true"
+          >
+            <Trash2 class="mr-1.5 size-4" />
+            {{ $t('Ištrinti') }}
+          </Button>
+        </div>
 
-    <PublicUrlHistoryCard
-      v-if="!isCreate"
-      :urls="page.public_urls ?? []"
-      :destroy-route="(id) => route('pages.publicUrls.destroy', [page.id, id])"
-    />
-  </AdminForm>
+        <ConfirmDialog
+          v-model:open="deleteConfirmOpen"
+          :title="$t('Ištrinti puslapį?')"
+          :description="$t('Puslapis bus perkeltas į šiukšlinę.')"
+          :confirm-label="$t('Ištrinti')"
+          destructive
+          @confirm="emit('delete')"
+        />
+      </div>
+    </template>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, h } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { AlertTriangle, ChevronDown, ExternalLink, Trash2 } from 'lucide-vue-next';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 import { getContentType, type BlockWidth } from '../RichContent/Types';
 import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
 
-import AdminForm from './AdminForm.vue';
-import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormStatusHeader from './FormStatusHeader.vue';
 import PermalinkField from './PermalinkField.vue';
@@ -280,9 +398,13 @@ import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 import SEOPreview from './SEOPreview.vue';
 import TagMultiSelect from './TagMultiSelect.vue';
 
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
@@ -294,11 +416,9 @@ import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Textarea } from '@/Components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
-import { DateTimePicker } from '@/Components/ui/date-picker';
 import { ImageUpload } from '@/Components/ui/upload';
-import IFluentWarning24Regular from '~icons/fluent/warning24-regular';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   // `descendant_ids` is server-computed (Page::descendantIds()), not a real relation —
   // it disables invalid parent-picker options and has no model-typer equivalent.
   page: App.Entities.Page & { descendant_ids?: number[] };
@@ -309,17 +429,29 @@ const props = defineProps<{
   rememberKey?: 'CreatePage';
   submitUrl: string;
   submitMethod: 'post' | 'patch';
-}>();
+  enableDelete?: boolean;
+}>(), {
+  otherLangPages: () => [],
+  availableTags: () => [],
+  assignableTenants: () => [],
+  rememberKey: undefined,
+});
 
-defineEmits<{
+const emit = defineEmits<{
   (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
 
 const isCreate = computed(() => props.rememberKey === 'CreatePage');
+const deleteConfirmOpen = ref(false);
 
-// Advanced settings collapsed by default
-const advancedSettingsOpen = ref(false);
+const fieldIds: Record<string, string> = {
+  title: 'title',
+  tenant_id: 'tenant',
+  lang: 'lang',
+  parent_id: 'parent_page',
+  permalink: 'permalink',
+};
 
 // Initialize form with page data
 const formData = {
@@ -332,7 +464,7 @@ const formData = {
   meta_description: props.page.meta_description || '',
   featured_image: props.page.featured_image || '',
   publish_time: props.page.publish_time || null,
-} as any;
+} as unknown as Record<string, unknown>;
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)
@@ -391,11 +523,6 @@ const fullPageUrl = computed(() => {
   });
 });
 
-// Section completion states
-const mainInfoComplete = computed(() =>
-  (form.title?.length || 0) >= 3 && form.lang,
-);
-
 // Status header links
 const statusLinks = computed(() => {
   if (!fullPageUrl.value) return [];
@@ -421,8 +548,8 @@ const showTocOverlapWarning = computed(() =>
 // Meta description styling based on length
 const metaDescriptionClass = computed(() => {
   const len = form.meta_description?.length || 0;
-  if (len > 160) return 'border-red-300 dark:border-red-700 focus:border-red-500';
-  if (len >= 120 && len <= 160) return 'border-green-300 dark:border-green-700 focus:border-green-500';
+  if (len > 160) return 'border-destructive focus:border-destructive';
+  if (len >= 120 && len <= 160) return 'border-[var(--status-success)] focus:border-[var(--status-success)]';
   return '';
 });
 

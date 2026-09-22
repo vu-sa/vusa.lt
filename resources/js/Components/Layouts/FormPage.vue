@@ -5,7 +5,7 @@
     </Head>
 
     <!-- Editing is unmistakable (rules/visual.md → Wayfinding 5): tinted paper canvas + eyebrow. -->
-    <div class="mx-auto w-full max-w-2xl bg-secondary px-4 pb-24 pt-6 sm:px-6" data-slot="form-page">
+    <div :class="['mx-auto w-full bg-secondary px-4 pb-24 pt-6 sm:px-6', maxWidthClass]" data-slot="form-page">
       <!-- Form Header -->
       <header class="space-y-4 border-b border-border pb-6">
         <div class="flex items-center justify-between gap-4">
@@ -44,7 +44,7 @@
                   {{ loc.toUpperCase() }}
                   <span
                     v-if="missingLocaleCounts && missingLocaleCounts[loc]"
-                    class="ml-1.5 inline-block size-1.5 rounded-full bg-destructive align-middle"
+                    class="ml-1.5 inline-block size-1.5 bg-destructive align-middle"
                     :title="$t('Trūksta vertimų')"
                   >
                     <span class="sr-only">{{ $t('Trūksta vertimų') }}</span>
@@ -144,7 +144,7 @@
         'border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm',
       ]"
     >
-      <div class="mx-auto flex max-w-2xl items-center justify-between gap-4">
+      <div :class="['mx-auto flex items-center justify-between gap-4', maxWidthClass]">
         <!-- Status Indicator -->
         <div class="flex items-center gap-2 text-sm">
           <Transition name="fade" mode="out-in">
@@ -224,6 +224,7 @@ const props = withDefaults(defineProps<{
   locale?: 'lt' | 'en';
   availableLocales?: Array<'lt' | 'en'>;
   missingLocaleCounts?: Record<string, number>;
+  maxWidth?: '2xl' | '4xl' | '5xl' | 'full';
 }>(), {
   headTitle: undefined,
   lead: undefined,
@@ -237,6 +238,7 @@ const props = withDefaults(defineProps<{
   locale: 'lt',
   availableLocales: () => ['lt', 'en'],
   missingLocaleCounts: () => ({}),
+  maxWidth: '2xl',
 });
 
 const emit = defineEmits<{
@@ -246,6 +248,20 @@ const emit = defineEmits<{
 }>();
 
 const headTitle = computed(() => props.headTitle ?? props.title);
+
+const maxWidthClass = computed(() => {
+  switch (props.maxWidth) {
+    case '4xl':
+      return 'max-w-4xl';
+    case '5xl':
+      return 'max-w-5xl';
+    case 'full':
+      return 'max-w-full';
+    case '2xl':
+    default:
+      return 'max-w-2xl';
+  }
+});
 
 const currentLocale = computed(() => props.locale);
 

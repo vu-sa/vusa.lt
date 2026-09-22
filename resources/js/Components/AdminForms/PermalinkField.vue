@@ -1,19 +1,19 @@
 <template>
   <div class="space-y-2">
     <Label class="flex items-center gap-1.5">
-      <IFluentLink24Regular class="h-4 w-4" />
+      <Link2 class="h-4 w-4" />
       {{ label ?? $t('Nuoroda') }}
     </Label>
 
     <div class="flex items-stretch gap-2">
-      <div class="flex flex-1 items-center gap-0 overflow-hidden rounded-md border bg-muted/50">
-        <span class="shrink-0 rounded-l-md border-r bg-muted px-3 py-2 text-sm text-muted-foreground">
+      <div class="flex flex-1 items-center gap-0 overflow-hidden border border-border bg-muted/50">
+        <span class="shrink-0 border-r border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
           {{ baseUrl }}/
         </span>
         <Input
           :model-value="permalink"
           :disabled
-          class="rounded-l-none border-0 bg-transparent focus-visible:ring-0"
+          class="border-0 bg-transparent focus-visible:ring-0"
           :class="inputValidationClass"
           :placeholder="$t('nuorodos-fragmentas')"
           @update:model-value="$emit('update:permalink', $event)"
@@ -25,8 +25,8 @@
         <Tooltip>
           <TooltipTrigger as-child>
             <Button variant="outline" size="icon" @click="copyUrl">
-              <IFluentCopy24Regular v-if="!copied" class="h-4 w-4" />
-              <IFluentCheckmark24Regular v-else class="h-4 w-4 text-green-600" />
+              <Copy v-if="!copied" class="h-4 w-4" />
+              <Check v-else class="h-4 w-4 text-[var(--status-success)]" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>{{ $t('Kopijuoti nuorodą') }}</TooltipContent>
@@ -36,8 +36,8 @@
       <TooltipProvider v-if="viewUrl">
         <Tooltip>
           <TooltipTrigger as-child>
-            <Button variant="outline" size="icon" as="a" :href="viewUrl" target="_blank">
-              <IFluentOpen24Regular class="h-4 w-4" />
+            <Button variant="outline" size="icon" as="a" :href="viewUrl" target="_blank" rel="noopener noreferrer">
+              <ExternalLink class="h-4 w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>{{ $t('Atidaryti puslapį') }}</TooltipContent>
@@ -46,12 +46,12 @@
     </div>
 
     <p v-if="disabled && explanation" class="flex items-center gap-1 text-xs text-muted-foreground">
-      <IFluentInfo16Regular class="h-3.5 w-3.5 shrink-0" />
+      <Info class="h-3.5 w-3.5 shrink-0" />
       {{ explanation }}
     </p>
 
-    <Alert v-if="warning" class="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-      <IFluentWarning24Regular />
+    <Alert v-if="warning" class="border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]">
+      <AlertTriangle class="h-4 w-4" />
       <AlertTitle>{{ $t('Dėmesio') }}</AlertTitle>
       <AlertDescription>
         {{ warning }}
@@ -64,13 +64,13 @@
 import { computed, ref } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
+import { AlertTriangle, Check, Copy, ExternalLink, Info, Link2 } from 'lucide-vue-next';
 
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import IFluentWarning24Regular from '~icons/fluent/warning24-regular';
 
 const props = defineProps<{
   permalink?: string;
@@ -101,10 +101,10 @@ const inputValidationClass = computed(() => {
     return '';
   }
   if (props.valid) {
-    return 'border-green-300 focus:border-green-500 dark:border-green-700';
+    return 'border-[var(--status-success-border)] focus:border-[var(--status-success)]';
   }
   if (props.invalid) {
-    return 'border-red-300 focus:border-red-500 dark:border-red-700';
+    return 'border-destructive focus:border-destructive';
   }
   return '';
 });

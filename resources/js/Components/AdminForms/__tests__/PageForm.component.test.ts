@@ -52,13 +52,13 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
       },
       global: {
         stubs: {
-          ...commonStubs,
-          AdminForm: {
-            template: '<form @submit.prevent><slot name="status-header" /><slot /></form>',
-            props: ['model'],
+          FormPage: {
+            template: '<div data-testid="form-page"><slot name="header-actions" /><slot /><slot name="advanced" /><slot name="danger-zone" /></div>',
+            props: ['title', 'headTitle', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode', 'maxWidth'],
           },
-          FormElement: {
-            template: '<section><slot name="title" /><slot name="description" /><slot /></section>',
+          FormSection: {
+            template: '<section><slot /></section>',
+            props: ['title', 'description'],
           },
           FormStatusHeader: { template: '<div />' },
           RichContentFormElement: { template: '<div />' },

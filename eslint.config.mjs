@@ -67,6 +67,10 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/AdminForms/ProblemForm.vue',
   'resources/js/Pages/Admin/Forms/**',
   'resources/js/Components/AdminForms/{FormForm,FormFieldForm}.vue',
+  'resources/js/Pages/Admin/Content/{CreatePage,EditPage,CreateNews,EditNews,EditHomePage}.vue',
+  'resources/js/Pages/Admin/Calendar/{CreateCalendarEvent,EditCalendarEvent}.vue',
+  'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormStatusHeader,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,FormLinkButton}.vue',
+  'resources/js/Components/Analytics/ContentAnalyticsCard.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

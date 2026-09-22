@@ -49,20 +49,19 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
       },
       global: {
         stubs: {
-          ...commonStubs,
-          AdminForm: {
-            template: '<form @submit.prevent><slot name="status-header" /><slot /></form>',
-            props: ['model'],
+          FormPage: {
+            template: '<div data-testid="form-page"><slot name="header-actions" /><slot /><slot name="advanced" /><slot name="danger-zone" /></div>',
+            props: ['title', 'headTitle', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode', 'maxWidth'],
+          },
+          FormSection: {
+            props: ['title', 'description'],
+            template: '<section :data-section="$attrs[\'data-section\']"><h2>{{ title }}</h2><p>{{ description }}</p><slot /></section>',
           },
           Alert: {
             template: '<div data-testid="alert"><slot /></div>',
           },
           AlertTitle: { template: '<strong><slot /></strong>' },
           AlertDescription: { template: '<div data-testid="alert-description"><slot /></div>' },
-          FormElement: {
-            props: ['sectionNumber'],
-            template: '<section :data-section="sectionNumber"><slot name="title" /><slot name="description" /><slot /></section>',
-          },
           FormStatusHeader: { template: '<div />' },
           RichContentFormElement: { template: '<div data-testid="rich-content-form-element" />' },
           FormFieldWrapper: {

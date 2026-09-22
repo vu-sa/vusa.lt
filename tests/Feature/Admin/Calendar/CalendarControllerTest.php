@@ -198,6 +198,13 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('accessing show redirects to edit page per decision o4', function (): void {
+        $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $response = asUser($this->calendarManager)->get(route('calendar.view', $calendar));
+        $response->assertRedirect(route('calendar.edit', $calendar));
+    });
+
     test('calendar manager can update calendar event', function (): void {
         $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
 

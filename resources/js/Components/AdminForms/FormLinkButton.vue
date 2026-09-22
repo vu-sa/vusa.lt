@@ -10,14 +10,14 @@
     <Tooltip>
       <TooltipTrigger as-child>
         <a :href="url" target="_blank" rel="noopener noreferrer"
-          class="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-all duration-150" :class="[
+          class="inline-flex items-center gap-1.5 px-2 py-1 text-sm transition-all duration-150" :class="[
             'text-muted-foreground hover:text-foreground',
-            'hover:bg-zinc-100 dark:hover:bg-zinc-800',
+            'hover:bg-secondary',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
           ]">
           <!-- Custom icon or default globe -->
           <component :is="icon" v-if="icon" class="h-3.5 w-3.5 shrink-0" />
-          <IFluentGlobe24Regular v-else class="h-3.5 w-3.5 shrink-0" />
+          <Globe v-else class="h-3.5 w-3.5 shrink-0" />
 
           <!-- URL text - hidden on compact mobile -->
           <span class="max-w-[120px] truncate font-mono text-xs lg:max-w-[200px]"
@@ -26,7 +26,7 @@
           </span>
 
           <!-- External link indicator -->
-          <IFluentArrowUpRight24Regular
+          <ArrowUpRight
             class="h-3 w-3 shrink-0 opacity-0 transition-opacity duration-150 group-hover/link:opacity-100" />
         </a>
       </TooltipTrigger>
@@ -38,13 +38,13 @@
     </Tooltip>
 
     <!-- Copy button -->
-    <Tooltip v-if="showCopy">
+    <Tooltip v-if="showCopy !== false">
       <TooltipTrigger as-child>
         <Button variant="ghost" size="icon"
           class="h-6 w-6 shrink-0 opacity-0 transition-opacity duration-150 group-hover/link:opacity-100 focus-visible:opacity-100"
           :class="copied ? 'opacity-100' : ''" @click.stop="copyUrl">
-          <IFluentCheckmark24Regular v-if="copied" class="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-          <IFluentCopy24Regular v-else class="h-3.5 w-3.5" />
+          <Check v-if="copied" class="h-3.5 w-3.5 text-[var(--status-success)]" />
+          <Copy v-else class="h-3.5 w-3.5" />
         </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom">
@@ -58,6 +58,7 @@
 import { computed, ref, type Component } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ArrowUpRight, Check, Copy, Globe } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
@@ -74,8 +75,8 @@ const props = withDefaults(defineProps<{
   /** Compact mode - icon only on mobile */
   compact?: boolean;
 }>(), {
-  showCopy: true,
-  compact: false,
+  label: undefined,
+  icon: undefined,
 });
 
 const copied = ref(false);

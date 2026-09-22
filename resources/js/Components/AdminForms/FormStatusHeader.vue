@@ -1,6 +1,6 @@
 <template>
   <div
-    class="sticky top-0 z-40 -mx-4 -mt-4 mb-6 border-b bg-white/95 px-4 py-3 backdrop-blur-sm dark:bg-zinc-900/95 dark:border-zinc-800 sm:-mx-6 sm:px-6">
+    class="sticky top-0 z-40 -mx-4 -mt-4 mb-6 border-b border-border bg-card/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
     <div class="flex flex-wrap items-center gap-3">
       <!-- Left side: Status toggle and publish time -->
       <div class="flex items-center gap-3">
@@ -9,7 +9,7 @@
           <Switch id="status-toggle" :model-value="isPublished"
             @update:model-value="$emit('update:isPublished', $event)" />
           <Label for="status-toggle" class="cursor-pointer text-sm font-medium"
-            :class="isPublished ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground'">
+            :class="isPublished ? 'text-[var(--status-success)]' : 'text-muted-foreground'">
             {{ isPublished ? $t('Paskelbta') : $t('Juodraštis') }}
           </Label>
         </div>
@@ -18,8 +18,8 @@
         <Popover v-if="showPublishTime">
           <PopoverTrigger as-child>
             <Button variant="ghost" size="sm" class="h-8 gap-2 text-sm font-normal"
-              :class="publishTimeStatus === 'scheduled' ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'">
-              <IFluentClock24Regular class="h-4 w-4" />
+              :class="publishTimeStatus === 'scheduled' ? 'text-[var(--status-attention)]' : 'text-muted-foreground'">
+              <Clock class="h-4 w-4" />
               <span v-if="publishTime" class="hidden sm:inline">
                 {{ formattedPublishTime }}
               </span>
@@ -29,7 +29,7 @@
             </Button>
           </PopoverTrigger>
           <PopoverContent class="w-auto p-0" align="start">
-            <div class="p-3 border-b">
+            <div class="p-3 border-b border-border">
               <p class="text-sm font-medium">
                 {{ $t('Paskelbimo laikas') }}
               </p>
@@ -40,7 +40,7 @@
             <div class="p-3">
               <DateTimePicker :model-value="publishTime" @update:model-value="$emit('update:publishTime', $event)" />
             </div>
-            <div v-if="publishTime" class="border-t p-3">
+            <div v-if="publishTime" class="border-t border-border p-3">
               <Button variant="ghost" size="sm" class="w-full text-muted-foreground"
                 @click="$emit('update:publishTime', null)">
                 {{ $t('Išvalyti laiką') }}
@@ -66,7 +66,7 @@
           <DropdownMenu v-if="links.length > 0">
             <DropdownMenuTrigger as-child class="sm:hidden">
               <Button variant="outline" size="sm" class="h-8 gap-1.5">
-                <IFluentLink24Regular class="h-4 w-4" />
+                <Link2 class="h-4 w-4" />
                 <span class="sr-only">{{ $t('Nuorodos') }}</span>
               </Button>
             </DropdownMenuTrigger>
@@ -78,14 +78,14 @@
               <DropdownMenuItem v-for="(link, idx) in links" :key="idx" as-child>
                 <a :href="link.url" target="_blank" rel="noopener noreferrer" class="flex w-full items-center gap-2">
                   <component :is="link.icon" v-if="link.icon" class="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <IFluentGlobe24Regular v-else class="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <Globe v-else class="h-4 w-4 shrink-0 text-muted-foreground" />
                   <div class="flex flex-col gap-0.5 overflow-hidden">
                     <span v-if="link.label" class="text-xs font-medium">{{ link.label }}</span>
                     <span class="truncate font-mono text-xs text-muted-foreground">
                       {{ stripProtocol(link.url) }}
                     </span>
                   </div>
-                  <IFluentArrowUpRight24Regular class="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <ArrowUpRight class="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 </a>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -95,11 +95,11 @@
         </template>
 
         <!-- Status badge with dot indicator -->
-        <div class="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium" :class="statusBadgeClass">
+        <div class="flex items-center gap-1.5 border px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass">
           <span class="relative flex h-2 w-2">
             <span v-if="isPublished && publishTimeStatus !== 'scheduled'"
-              class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" :class="statusDotClass" />
-            <span class="relative inline-flex h-2 w-2 rounded-full" :class="statusDotClass" />
+              class="absolute inline-flex h-full w-full animate-ping opacity-75" :class="statusDotClass" />
+            <span class="relative inline-flex h-2 w-2" :class="statusDotClass" />
           </span>
           <span>{{ statusText }}</span>
         </div>
@@ -111,6 +111,7 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ArrowUpRight, Clock, Globe, Link2 } from 'lucide-vue-next';
 
 import FormLinkButton from './FormLinkButton.vue';
 
@@ -154,9 +155,8 @@ const props = withDefaults(defineProps<{
   /** Whether this is a create form (hides links) */
   isCreate?: boolean;
 }>(), {
-  showPublishTime: false,
+  publishTime: null,
   links: () => [],
-  isCreate: false,
 });
 
 defineEmits<{
@@ -205,29 +205,29 @@ const badgeIsPublished = computed(() => props.serverIsPublished ?? props.isPubli
 // Status badge styling and text
 const statusBadgeClass = computed(() => {
   if (props.isCreate) {
-    return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';
+    return 'border-border bg-secondary text-muted-foreground';
   }
   if (!badgeIsPublished.value) {
-    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400';
+    return 'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]';
   }
   if (publishTimeStatus.value === 'scheduled') {
-    return 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400';
+    return 'border-[var(--status-info-border)] bg-[var(--status-info-surface)] text-[var(--status-info)]';
   }
-  return 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400';
+  return 'border-[var(--status-success-border)] bg-[var(--status-success-surface)] text-[var(--status-success)]';
 });
 
 // Status dot color
 const statusDotClass = computed(() => {
   if (props.isCreate) {
-    return 'bg-zinc-400 dark:bg-zinc-500';
+    return 'bg-muted-foreground';
   }
   if (!badgeIsPublished.value) {
-    return 'bg-amber-500';
+    return 'bg-[var(--status-attention)]';
   }
   if (publishTimeStatus.value === 'scheduled') {
-    return 'bg-blue-500';
+    return 'bg-[var(--status-info)]';
   }
-  return 'bg-green-500';
+  return 'bg-[var(--status-success)]';
 });
 
 const statusText = computed(() => {

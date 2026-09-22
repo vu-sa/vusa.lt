@@ -129,15 +129,13 @@ class CalendarController extends AdminController
 
     /**
      * Display the specified resource.
+     * Content objects (Decision O4) have no separate record page; the editor is canonical.
      */
     public function show(Calendar $calendar)
     {
         $this->handleAuthorization('view', $calendar);
 
-        return $this->inertiaResponse('Admin/Calendar/ShowCalendarEvent', [
-            'calendar' => $calendar,
-            'images' => $calendar->getMedia('images'),
-        ]);
+        return redirect()->route('calendar.edit', $calendar);
     }
 
     /**

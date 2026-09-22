@@ -76,8 +76,8 @@ One PR = one row. Rules:
 | **9.1** | Institution record + form (+ Prižiūri) | 8.1 |
 | **9.2** | Reservations: create, record, resources, categories | 8.1 |
 | **9.3** | Users record + form; duties collection; occupancy sheet everywhere; Kadencijos keitimas; timeline | 8.1 |
-| **9.4** | Problems; forms and registrations | 8.1 |
-| **9.5** | Website content: pages, news, calendar editors | 8.1 |
+| **9.4** | Problems; forms and registrations | 8.1 | ✅ |
+| **9.5** | Website content: pages, news, calendar editors | 8.1 | ✅ |
 | **9.6** | Website content: banners, navigation builder, quick links, event types | 8.1 |
 | **9.7** | Files, documents, Sharepoint | 8.1 |
 | **9.8** | Sistema: roles, permissions, types, relationships, settings, status, mail queue, support | 8.1 |
@@ -1105,11 +1105,46 @@ Each page follows the playbook and lands with its lint-fence paths; tick here.
       keitimas* wizard, duty timeline (workbench)
 - [x] Problems
 - [x] Forms and registrations
-- [ ] Website content: pages, news, calendar (editors), banners, navigation (workbench), quick links,
-      event types
+- [x] Website content: pages, news, calendar (editors) [Phase 9.5 complete; banners, navigation builder, quick links, event types in 9.6]
 - [ ] Files, documents, Sharepoint
 - [ ] Sistema: roles, permissions, types, relationships, settings, system status, mail queue, support
 - [ ] Paskyra: profile, notification settings; Užduotys; Pranešimai
+
+### PR 9.5 notes (2026-09-22)
+
+- **Decision O4 (Calendar record redirect):** Redirected `calendar.view` resource show route in `CalendarController::show` to `calendar.edit` (`route('calendar.edit', $calendar)`), establishing that content objects (News, Pages, Calendar) have no separate record page and their editor is the canonical page. Covered by `CalendarControllerTest`.
+- **FormPage layout (`maxWidth="4xl"`):** Added `maxWidth?: '2xl' | '4xl' | '5xl' | 'full'` prop to `FormPage.vue` (defaulting to `'2xl'`) to cleanly accommodate richer multi-column content and editor layouts, and replaced the legacy `rounded-full` dirty indicator dot with a square hairline mark.
+- **Pages Domain (`/mano/pages`):**
+  - `PageForm.vue`, `CreatePage.vue`, `EditPage.vue`, `EditHomePage.vue`: Migrated to `FormPage` (`maxWidth="4xl"`) + `FormSection`.
+  - Multilingual Tiptap editor with discrete language tab switcher (`lt` / `en`).
+  - Slug generator with automatic permalink synchronization from title.
+  - Page settings section (tenant, parent page hierarchy picker, order, AST/rich content switch).
+  - Activity log sheet trigger in `#header-actions` and delete confirmation dialog via `ConfirmDialog` in danger zone.
+  - Attached `ContentAnalyticsCard` displaying page view metrics in the sidebar.
+- **News Domain (`/mano/news`):**
+  - `NewsForm.vue`, `CreateNews.vue`, `EditNews.vue`: Migrated to `FormPage` (`maxWidth="4xl"`) + `FormSection`.
+  - Multilingual Tiptap editor with discrete language tab switcher (`lt` / `en`) and short summary input.
+  - Featured image uploader with inline preview.
+  - Publish date & time picker, tenant picker, draft toggle, and tag combobox.
+  - Activity log sheet trigger in `#header-actions` and delete confirmation dialog via `ConfirmDialog` in danger zone.
+  - Attached `ContentAnalyticsCard` for article view analytics.
+- **Calendar Domain (`/mano/calendar`):**
+  - `CalendarForm.vue`, `CreateCalendarEvent.vue`, `EditCalendarEvent.vue`: Migrated to `FormPage` (`maxWidth="4xl"`) + `FormSection`.
+  - Date & time pickers for event start and end with validation.
+  - Location and category selectors.
+  - Facebook event URL input with `ISimpleIconsFacebook`.
+  - Meeting announcement banner integration with alert style matching design tokens.
+  - Delete confirmation dialog via `ConfirmDialog`.
+  - Glossary alignment: unified on *renginys* / *renginiai* (retired *įvykis* in UI text).
+- **Supporting components modernized:**
+  - `FormStatusHeader.vue`: Migrated to semantic tokens (`--status-*`), square status indicator badges, and Lucide icons.
+  - `FormFieldWrapper.vue`: Replaced Fluent icons with Lucide (`Info`, `CheckCircle2`, `AlertCircle`) and raw colors with semantic token classes.
+  - `PermalinkField.vue` & `PermalinkPreviewHint.vue`: Replaced Fluent icons with Lucide icons (`ExternalLink`, `Copy`, `Check`), zero border radius, semantic styling.
+  - `SEOPreview.vue`: Replaced `ui/card` with zero-radius border container, Lucide icons (`Globe`, `Share2`), and semantic dot tokens.
+  - `FormLinkButton.vue`: Modernized with Lucide icons (`ExternalLink`, `FileText`), zero border radius, and semantic hover states.
+  - `ContentAnalyticsCard.vue`: Replaced `ui/card` with zero-radius border container and semantic typography.
+- **Lint fence:** Enrolled all 18 migrated files in `MIGRATED_ADMIN_PATHS` in `eslint.config.mjs` with 0 ESLint errors and 0 warnings.
+- **Verification:** Vitest component tests (33 tests across `PageForm`, `NewsForm`, `CalendarForm`, `ContentAnalyticsCard` passing), backend tests (115 tests passing across `CalendarControllerTest`, `NewsControllerTest`, `PageControllerTest`), and Vite build clean (`npm run build`).
 
 ### PR 9.4 notes (2026-09-21)
 
