@@ -12,6 +12,11 @@ class MergeCandidatesRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['type' => $this->route('type')]);
+    }
+
     /** @return array<string, array<int, mixed>> */
     public function rules(): array
     {

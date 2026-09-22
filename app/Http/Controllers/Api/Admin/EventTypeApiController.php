@@ -40,7 +40,7 @@ class EventTypeApiController extends ApiController
         }
 
         return $this->jsonSuccess([
-            'items' => $eventTypes->getCollection()->map(fn (EventType $eventType): array => $eventType->append('force_delete_blocked_reason')->toFullArray())->values(),
+            'items' => $eventTypes->getCollection()->map(fn (EventType $eventType): array => $eventType->toFullArray())->values(),
             'total' => $eventTypes->total(),
             'per_page' => $eventTypes->perPage(),
             'current_page' => $eventTypes->currentPage(),

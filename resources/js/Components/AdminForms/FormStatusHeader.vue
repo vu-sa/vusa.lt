@@ -6,7 +6,7 @@
       <div class="flex items-center gap-3">
         <!-- Visibility toggle -->
         <div class="flex items-center gap-2">
-          <Switch id="status-toggle" :model-value="isPublished"
+          <Switch id="status-toggle" :model-value="isPublished" :disabled
             @update:model-value="$emit('update:isPublished', $event)" />
           <Label for="status-toggle" class="cursor-pointer text-sm font-medium"
             :class="isPublished ? 'text-[var(--status-success)]' : 'text-muted-foreground'">
@@ -154,6 +154,7 @@ const props = withDefaults(defineProps<{
   links?: FormLink[];
   /** Whether this is a create form (hides links) */
   isCreate?: boolean;
+  disabled?: boolean;
 }>(), {
   publishTime: null,
   links: () => [],

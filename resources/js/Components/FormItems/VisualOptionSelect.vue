@@ -4,15 +4,15 @@
       v-for="option in options"
       :key="option.value"
       type="button"
-      :disabled="option.disabled"
+      :disabled="disabled || option.disabled"
       class="group relative overflow-visible rounded-lg border-2 p-3 text-left transition-all duration-200"
       :class="[
         option.value === modelValue
           ? 'border-vusa-red bg-red-50/50 ring-2 ring-vusa-red/20 dark:bg-red-950/20'
           : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600',
-        option.disabled && 'cursor-not-allowed opacity-40 hover:border-border',
+        (disabled || option.disabled) && 'cursor-not-allowed opacity-40 hover:border-border',
       ]"
-      @click="!option.disabled && $emit('update:modelValue', option.value)"
+      @click="!disabled && !option.disabled && $emit('update:modelValue', option.value)"
     >
       <div
         class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-vusa-red text-white shadow-md transition-all"
@@ -55,6 +55,7 @@ const props = withDefaults(defineProps<{
   /** Grid columns from `md:` breakpoint up. Below that it's always 2 columns. */
   columns?: number;
   iconClass?: string;
+  disabled?: boolean;
 }>(), {
   columns: 3,
   iconClass: 'h-10 w-16',

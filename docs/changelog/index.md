@@ -11,6 +11,9 @@ lastUpdated: true
 - ✨ **Greitųjų nuorodų rikiavimas** — greitosios nuorodos turi klaviatūrai ir lietimui pritaikytą rikiavimo rėžimą su aiškiais mygtukais tvarkai keisti
 - ✨ **Renginių tipų valdymas šoniniame skydelyje** — renginių tipų kūrimas ir redagavimas dabar atliekamas tiesiai sąrašo lange per iššokantį šoninį skydelį, palaikomi šiukšliadėžės filtrai ir trynimo blokavimo tikrinimas
 - ✨ **Modernizuotas navigacijos konstruktorius** — antraštės ir poraštės meniu valdymas pritaikytas naujajai dizaino sistemai, su aiškesne stulpelių ir nuorodų kortelių hierarchija bei atnaujintomis nuorodų formomis
+- 🔧 **Patikimesnis įrašų sujungimas** — pasikartojantys šaltinių pasirinkimai atmetami, todėl narių, pareigybių, studijų programų ir žymų sujungimas visada laikosi nustatytų prieigos teisių
+- 🔧 **Veikia sujungimo kandidato paieška** — pasirinkus vieną įrašą vėl galima surasti kitą įrašą, į kurį jis bus sujungtas
+- 🔧 **Renginius galima peržiūrėti be redagavimo teisės** — kalendoriaus skaitymo prieigą turintys nariai renginio puslapį mato saugiu peržiūros režimu
 
 ## v2.15 — Atstovo ciklas: pirmi žingsniai, prieigos pokyčiai ir atsakomi priminimai (2026-09-20) {#v2-15}
 

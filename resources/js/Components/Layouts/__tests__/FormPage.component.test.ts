@@ -99,6 +99,14 @@ describe('FormPage.vue', () => {
       expect(wrapper.text()).toContain('Neišsaugota');
     });
 
+    it('renders view mode without save actions', () => {
+      const wrapper = mount(FormPage, { props: { title: 'Renginys', mode: 'view' }, global: { stubs } });
+
+      expect(wrapper.find('[data-testid="form-page-eyebrow"]').text()).toBe('Peržiūri');
+      expect(wrapper.text()).not.toContain('Išsaugoti');
+      expect(wrapper.text()).not.toContain('Visi pakeitimai išsaugoti');
+    });
+
     it('ties the save button to the form so it submits without a click handler', () => {
       const wrapper = mount(FormPage, { props: { title: 'Forma' }, global: { stubs } });
 
@@ -137,6 +145,16 @@ describe('FormPage.vue', () => {
       expect(disabled.emitted('submit')).toBeUndefined();
       saving.unmount();
       disabled.unmount();
+    });
+
+    it('does not submit by keyboard in view mode', async () => {
+      const wrapper = mount(FormPage, { props: { title: 'Renginys', mode: 'view' }, global: { stubs }, attachTo: document.body });
+      await nextTick();
+
+      await wrapper.find('form').trigger('keydown', { key: 'Enter', ctrlKey: true });
+
+      expect(wrapper.emitted('submit')).toBeUndefined();
+      wrapper.unmount();
     });
 
     it('cancels with Escape and goes back', async () => {

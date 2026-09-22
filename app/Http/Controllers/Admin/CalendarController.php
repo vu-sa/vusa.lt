@@ -19,6 +19,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -141,9 +142,12 @@ class CalendarController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Calendar $calendar)
+    public function edit(Request $request, Calendar $calendar)
     {
-        $this->handleAuthorization('update', $calendar);
+        $this->handleAuthorization('view', $calendar);
+
+        $canUpdate = $request->user()->can('update', $calendar);
+        $calendar->loadMissing('tenant:id,type,shortname');
 
         return $this->inertiaResponse('Admin/Calendar/EditCalendarEvent', [
             'calendar' => [
@@ -164,7 +168,10 @@ class CalendarController extends AdminController
             ],
             'eventTypes' => EventType::query()->orderBy('sort_order')->get(),
             'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
-            'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
+            'assignableTenants' => $canUpdate
+                ? GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer)
+                : collect([$calendar->tenant]),
+            'canUpdate' => $canUpdate,
             // An event standing for a meeting is not an ordinary event: publishing it is what
             // opens that meeting's agenda to the public, so the form has to say so.
             'meeting' => $this->announcedMeeting($calendar),

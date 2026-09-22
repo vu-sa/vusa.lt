@@ -5,7 +5,14 @@
     </Head>
 
     <!-- Editing is unmistakable (rules/visual.md → Wayfinding 5): tinted paper canvas + eyebrow. -->
-    <div :class="['mx-auto w-full bg-secondary px-4 pb-24 pt-6 sm:px-6', maxWidthClass]" data-slot="form-page">
+    <div
+      :class="[
+        'mx-auto w-full bg-secondary px-4 pt-6 sm:px-6',
+        mode === 'view' ? 'pb-8' : 'pb-24',
+        maxWidthClass,
+      ]"
+      data-slot="form-page"
+    >
       <!-- Form Header -->
       <header class="space-y-4 border-b border-border pb-6">
         <div class="flex items-center justify-between gap-4">
@@ -59,7 +66,7 @@
 
         <div class="space-y-1">
           <p class="text-[11px] font-semibold uppercase tracking-wider text-primary" data-testid="form-page-eyebrow">
-            {{ mode === 'create' ? $t('Kuri naują') : $t('Redaguoji') }}
+            {{ mode === 'create' ? $t('Kuri naują') : mode === 'view' ? $t('Peržiūri') : $t('Redaguoji') }}
           </p>
           <h1 class="u-display text-3xl leading-tight text-foreground lg:text-4xl">
             {{ title }}
@@ -112,7 +119,7 @@
         :id="formId"
         ref="formEl"
         class="mt-8 space-y-8"
-        @submit.prevent="emit('submit')"
+        @submit.prevent="mode !== 'view' && emit('submit')"
       >
         <slot />
 
@@ -139,6 +146,7 @@
 
     <!-- Sticky Bottom Save Bar (Rules/pages.md -> Forms, 13) -->
     <div
+      v-if="mode !== 'view'"
       :class="[
         'fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-40',
         'border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm',
@@ -220,7 +228,7 @@ const props = withDefaults(defineProps<{
   /** Maps an error key (`name.lt`) to the id of the field it belongs to, when they differ. */
   fieldIds?: Record<string, string>;
   /** `create` says "Kuri naują" and never claims anything is already saved. */
-  mode?: 'create' | 'edit';
+  mode?: 'create' | 'edit' | 'view';
   locale?: 'lt' | 'en';
   availableLocales?: Array<'lt' | 'en'>;
   missingLocaleCounts?: Record<string, number>;
@@ -308,7 +316,7 @@ useEventListener(formEl, 'keydown', (event: KeyboardEvent) => {
   if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
 
-    if (!props.processing && !props.disabled) {
+    if (props.mode !== 'view' && !props.processing && !props.disabled) {
       emit('submit');
     }
   }

@@ -49,7 +49,7 @@ class MergeUsersRequest extends FormRequest
             'kept_user_id' => ['required', 'ulid', SoftDeleteRules::existsLive('users')],
             'merged_user_id' => ['nullable', 'ulid', 'different:kept_user_id'],
             'source_user_ids' => ['required', 'array', 'min:1'],
-            'source_user_ids.*' => ['required', 'ulid', SoftDeleteRules::existsLive('users'), 'different:kept_user_id'],
+            'source_user_ids.*' => ['required', 'ulid', 'distinct', SoftDeleteRules::existsLive('users'), 'different:kept_user_id'],
         ];
     }
 }

@@ -41,7 +41,7 @@ class MergeStudyProgramsRequest extends FormRequest
         return [
             'target_study_program_id' => ['required', SoftDeleteRules::existsLive('study_programs')],
             'source_study_program_ids' => 'required|array|min:1',
-            'source_study_program_ids.*' => ['required', SoftDeleteRules::existsLive('study_programs'), 'different:target_study_program_id'],
+            'source_study_program_ids.*' => ['required', 'distinct', SoftDeleteRules::existsLive('study_programs'), 'different:target_study_program_id'],
         ];
     }
 

@@ -38,7 +38,7 @@ class MergeTagsRequest extends FormRequest
         return [
             'target_tag_id' => ['required', 'integer', SoftDeleteRules::existsLive('tags')],
             'source_tag_ids' => 'required|array|min:1',
-            'source_tag_ids.*' => ['required', 'integer', SoftDeleteRules::existsLive('tags')],
+            'source_tag_ids.*' => ['required', 'integer', 'distinct', SoftDeleteRules::existsLive('tags')],
         ];
     }
 

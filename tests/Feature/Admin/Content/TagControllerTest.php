@@ -336,6 +336,20 @@ describe('tag merging', function (): void {
             ->and($targetTag->news->pluck('id')->toArray())->toContain($news1->id, $news2->id);
     });
 
+    test('rejects duplicate source tag ids without deleting the source', function (): void {
+        $targetTag = Tag::factory()->create(['alias' => 'target-distinct']);
+        $sourceTag = Tag::factory()->create(['alias' => 'source-distinct']);
+
+        asUser($this->admin)
+            ->post(route('tags.processMerge'), [
+                'target_tag_id' => $targetTag->id,
+                'source_tag_ids' => [$sourceTag->id, $sourceTag->id],
+            ])
+            ->assertSessionHasErrors('source_tag_ids.1');
+
+        expect($sourceTag->fresh()->trashed())->toBeFalse();
+    });
+
     test('merging a news already on the target does not create a duplicate', function (): void {
         $targetTag = Tag::factory()->create(['alias' => 'target-dedup']);
         $sourceTag = Tag::factory()->create(['alias' => 'source-dedup']);

@@ -5,12 +5,13 @@
     :back-href="route('calendar.index')"
     :back-label="$t('Kalendorius')"
     :processing="form.processing"
+    :disabled="readOnly"
     :dirty="form.isDirty"
     :errors="form.errors"
     :field-ids
-    :mode="isCreate ? 'create' : 'edit'"
+    :mode="readOnly ? 'view' : isCreate ? 'create' : 'edit'"
     max-width="4xl"
-    @submit="emit('submit:form', form)"
+    @submit="!readOnly && emit('submit:form', form)"
   >
     <template v-if="!isCreate" #header-actions>
       <Button v-if="statusLinks.length > 0" as-child variant="outline" size="sm">
@@ -28,6 +29,7 @@
       :server-is-published="!props.calendar.is_draft"
       :links="statusLinks"
       :is-create
+      :disabled="readOnly"
       @update:is-published="form.is_draft = !$event"
     />
 
@@ -74,7 +76,7 @@
           :valid="form.valid('title.lt')"
           :invalid="form.invalid('title.lt')"
         >
-          <MultiLocaleInput v-model:input="form.title" @blur="form.validate('title.lt')" />
+          <MultiLocaleInput v-model:input="form.title" :disabled="readOnly" @blur="form.validate('title.lt')" />
         </FormFieldWrapper>
 
         <!-- Organizer & Location -->
@@ -84,7 +86,7 @@
             :label="$t('Organizatorius')"
             :hint="`${$t('Kas organizuoja renginį')}. ${$t('Organizatorius')}, ${$t('jeigu neįrašytas, bus')} ${defaultOrganizer}`"
           >
-            <MultiLocaleInput v-model:input="form.organizer" />
+            <MultiLocaleInput v-model:input="form.organizer" :disabled="readOnly" />
           </FormFieldWrapper>
 
           <FormFieldWrapper
@@ -92,9 +94,9 @@
             :label="$t('Renginio vieta')"
             :hint="form.is_remote ? $t('Nuotolinis renginys — nurodyta vieta nerodoma') : $t('Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis')"
           >
-            <MultiLocaleInput v-model:input="form.location" :disabled="form.is_remote" />
+            <MultiLocaleInput v-model:input="form.location" :disabled="readOnly || form.is_remote" />
             <label class="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Switch id="is_remote" v-model="form.is_remote" />
+              <Switch id="is_remote" v-model="form.is_remote" :disabled="readOnly" />
               {{ $t('Nuotolinis renginys') }}
             </label>
           </FormFieldWrapper>
@@ -110,7 +112,7 @@
             :invalid="form.invalid('event_type_id')"
           >
             <Select v-model="eventTypeIdString" @update:model-value="form.validate('event_type_id')">
-              <SelectTrigger id="event_type">
+              <SelectTrigger id="event_type" :disabled="readOnly">
                 <SelectValue :placeholder="$t('Pasirinkti renginio tipą...')" />
               </SelectTrigger>
               <SelectContent>
@@ -133,7 +135,7 @@
             :invalid="form.invalid('tenant_id')"
           >
             <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
-              <SelectTrigger id="tenant">
+              <SelectTrigger id="tenant" :disabled="readOnly">
                 <SelectValue :placeholder="$t('VU SA ...')" />
               </SelectTrigger>
               <SelectContent>
@@ -154,6 +156,7 @@
           <div class="flex gap-2">
             <Button
               type="button"
+              :disabled="readOnly"
               :variant="form.is_international ? 'default' : 'outline'"
               class="flex-1 gap-2"
               @click="form.is_international = true"
@@ -163,6 +166,7 @@
             </Button>
             <Button
               type="button"
+              :disabled="readOnly"
               :variant="form.is_international ? 'outline' : 'default'"
               class="flex-1"
               @click="form.is_international = false"
@@ -172,7 +176,7 @@
           </div>
         </FormFieldWrapper>
 
-        <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
+        <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" :disabled="readOnly" />
 
         <!-- Hero style picker -->
         <FormFieldWrapper
@@ -180,7 +184,7 @@
           :label="$t('Renginio vaizdas')"
           :hint="$t('Kaip renginio puslapio viršus atrodys lankytojams')"
         >
-          <VisualOptionSelect v-model="heroStyle" :options="heroStyleOptions" :columns="3" icon-class="h-12 w-20" />
+          <VisualOptionSelect v-model="heroStyle" :options="heroStyleOptions" :columns="3" icon-class="h-12 w-20" :disabled="readOnly" />
         </FormFieldWrapper>
       </div>
     </FormSection>
@@ -202,11 +206,11 @@
             :valid="form.valid('date')"
             :invalid="form.invalid('date')"
           >
-            <DateTimePicker v-model="startDate" :disabled="Boolean(meeting)" @update:model-value="form.validate('date')" />
+            <DateTimePicker v-model="startDate" :disabled="readOnly || Boolean(meeting)" @update:model-value="form.validate('date')" />
           </FormFieldWrapper>
 
           <FormFieldWrapper id="end_date" :label="$t('Renginio pabaiga')" :error="form.errors.end_date">
-            <DateTimePicker v-model="endDate" :disabled="Boolean(meeting)" />
+            <DateTimePicker v-model="endDate" :disabled="readOnly || Boolean(meeting)" />
           </FormFieldWrapper>
         </div>
       </div>
@@ -224,7 +228,7 @@
           :label="$t('Renginio nuoroda')"
           :hint="$t('Nuoroda į pagrindinį renginio puslapį arba registracijos formą')"
         >
-          <MultiLocaleInput v-model:input="form.cto_url" />
+          <MultiLocaleInput v-model:input="form.cto_url" :disabled="readOnly" />
         </FormFieldWrapper>
 
         <div class="grid gap-4 lg:grid-cols-2">
@@ -241,6 +245,7 @@
                 id="facebook_url"
                 v-model="form.facebook_url"
                 type="url"
+                :disabled="readOnly"
                 placeholder="https://www.facebook.com/events/..."
                 @change="form.validate('facebook_url')"
               />
@@ -254,7 +259,7 @@
           >
             <div class="flex items-center gap-2">
               <span class="shrink-0 text-sm text-muted-foreground">youtube.com/embed/</span>
-              <Input id="video_url" v-model="form.video_url" type="text" placeholder="dQw4w9WgXcQ" class="flex-1" />
+              <Input id="video_url" v-model="form.video_url" type="text" placeholder="dQw4w9WgXcQ" class="flex-1" :disabled="readOnly" />
             </div>
           </FormFieldWrapper>
         </div>
@@ -269,6 +274,7 @@
     >
       <FormFieldWrapper id="main_image" :label="$t('Pagrindinė nuotrauka')" required :error="form.errors.main_image">
         <ImageUpload
+          v-if="!readOnly"
           v-model:focal-point-value="form.main_image_focal_point"
           :max="1"
           :existing-url="existingMainImageUrl"
@@ -278,6 +284,12 @@
           folder="calendar"
           @update:file="handleMainImageUpdate"
         />
+        <img
+          v-else-if="existingMainImageUrl"
+          :src="existingMainImageUrl"
+          :alt="$t('Pagrindinė nuotrauka')"
+          class="aspect-video w-full border border-border object-cover"
+        >
       </FormFieldWrapper>
     </FormSection>
 
@@ -288,6 +300,7 @@
       :description="`${$t('Papildomos nuotraukos, rodomos galerijoje')}. ${$t('Nuotraukos optimizuojamos automatiškai prieš įkėlimą.')}`"
     >
       <ImageUpload
+        v-if="!readOnly"
         v-model:files="newGalleryImages"
         :max="20"
         :existing-urls="existingGalleryImages"
@@ -296,6 +309,15 @@
         folder="calendar"
         @remove:existing="removeExistingImage"
       />
+      <div v-else-if="existingGalleryImages.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <img
+          v-for="image in existingGalleryImages"
+          :key="image.id"
+          :src="image.url"
+          :alt="image.name"
+          class="aspect-video w-full border border-border object-cover"
+        >
+      </div>
     </FormSection>
 
     <!-- Section 6: Description -->
@@ -310,7 +332,11 @@
           <SimpleLocaleButton v-model:locale="locale" />
         </div>
 
-        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" html />
+        <template v-if="readOnly">
+          <!-- eslint-disable-next-line vue/no-v-html -- calendar rich text is sanitized when written -->
+          <div class="rc-prose tracking-normal" v-html="locale === 'lt' ? form.description.lt : form.description.en" />
+        </template>
+        <TiptapEditor v-else-if="locale === 'lt'" v-model="form.description.lt" preset="full" html />
         <TiptapEditor v-else v-model="form.description.en" preset="full" html />
       </div>
     </FormSection>
@@ -318,7 +344,7 @@
     <!-- Advanced Settings Slot -->
     <template #advanced>
       <div class="flex w-full items-center gap-3 border border-border p-3">
-        <Switch id="is_all_day" v-model="form.is_all_day" @update:model-value="isAllDayTouched = true" />
+        <Switch id="is_all_day" v-model="form.is_all_day" :disabled="readOnly" @update:model-value="isAllDayTouched = true" />
         <div class="flex-1 min-w-0 flex items-center gap-2">
           <Label for="is_all_day" class="font-medium">
             {{ $t('Visos dienos renginys') }}
@@ -334,7 +360,7 @@
         <PermalinkField
           :permalink="form.permalink?.lt ?? ''"
           :base-url="`www.vusa.test/kalendorius/${eventYear}`"
-          :disabled="false"
+          :disabled="readOnly"
           :label="$t('Nuoroda (LT)')"
           :validating="form.validating"
           :valid="form.valid('permalink.lt')"
@@ -345,7 +371,7 @@
         <PermalinkField
           :permalink="form.permalink?.en ?? ''"
           :base-url="`www.vusa.test/calendar/${eventYear}`"
-          :disabled="false"
+          :disabled="readOnly"
           :label="$t('Nuoroda (EN)')"
           :validating="form.validating"
           :valid="form.valid('permalink.en')"
@@ -373,7 +399,7 @@
     </template>
 
     <!-- Danger Zone Slot -->
-    <template v-if="!isCreate" #danger-zone>
+    <template v-if="!isCreate && !readOnly" #danger-zone>
       <div class="space-y-6">
         <PublicUrlHistoryCard
           :urls="props.calendar.public_urls ?? []"
@@ -467,6 +493,7 @@ const props = withDefaults(defineProps<{
   submitUrl: string;
   submitMethod: 'post' | 'patch';
   enableDelete?: boolean;
+  readOnly?: boolean;
 }>(), {
   availableTags: () => [],
   meeting: null,
@@ -702,7 +729,7 @@ watch(newGalleryImages, (files) => {
 
 // Remove existing gallery image
 function removeExistingImage(img: { id: string | number; url: string }) {
-  if (props.calendar.id) {
+  if (!props.readOnly && props.calendar.id) {
     router.post(
       route('calendar.destroyMedia', {
         calendar: props.calendar.id,

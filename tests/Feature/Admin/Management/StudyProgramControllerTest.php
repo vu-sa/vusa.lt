@@ -301,6 +301,20 @@ describe('validation', function (): void {
 });
 
 describe('merge functionality', function (): void {
+    test('rejects duplicate source study program ids without deleting the source', function (): void {
+        $this->actingAs($this->admin);
+
+        $targetProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
+        $sourceProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $this->post(route('studyPrograms.merge'), [
+            'target_study_program_id' => $targetProgram->id,
+            'source_study_program_ids' => [$sourceProgram->id, $sourceProgram->id],
+        ])->assertSessionHasErrors('source_study_program_ids.1');
+
+        expect($sourceProgram->fresh()->trashed())->toBeFalse();
+    });
+
     test('can merge study programs successfully', function (): void {
         $this->actingAs($this->admin);
 

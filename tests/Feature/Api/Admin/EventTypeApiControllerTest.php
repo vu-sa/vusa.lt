@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Calendar;
 use App\Models\EventType;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -45,4 +47,40 @@ test('filters event types by search query', function (): void {
         ->assertOk()
         ->assertJsonCount(1, 'data.items')
         ->assertJsonPath('data.items.0.name.lt', $searchKey);
+});
+
+test('does not count calendar events while listing live event types', function (): void {
+    EventType::factory()->count(3)->create();
+
+    DB::enableQueryLog();
+    DB::flushQueryLog();
+
+    $response = asUser($this->admin)
+        ->getJson(route('api.v1.admin.eventTypes.index', ['per_page' => 20]));
+
+    $calendarQueries = collect(DB::getQueryLog())
+        ->pluck('query')
+        ->filter(function (string $query): bool {
+            $normalizedQuery = str_replace(['`', '"'], '', strtolower($query));
+
+            return str_contains($normalizedQuery, 'from calendar');
+        });
+
+    DB::disableQueryLog();
+
+    $response->assertOk()
+        ->assertJsonMissingPath('data.items.0.force_delete_blocked_reason');
+    expect($calendarQueries)->toBeEmpty();
+});
+
+test('includes a preloaded force-delete blocker in the trash view', function (): void {
+    Calendar::factory()->for($this->tenant)->create(['event_type_id' => $this->eventType->id]);
+    $this->eventType->delete();
+
+    $response = asUser($this->admin)
+        ->getJson(route('api.v1.admin.eventTypes.index', ['showDeleted' => 'true']));
+
+    $response->assertOk()
+        ->assertJsonPath('data.items.0.id', $this->eventType->id);
+    expect($response->json('data.items.0.force_delete_blocked_reason'))->toBeString()->not->toBeEmpty();
 });

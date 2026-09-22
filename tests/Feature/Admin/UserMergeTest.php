@@ -34,6 +34,18 @@ describe('unauthorized access', function (): void {
 });
 
 describe('merging dutiables', function (): void {
+    test('rejects duplicate source user ids without deleting the source', function (): void {
+        $kept = makeUser($this->tenant);
+        $source = makeUser($this->tenant);
+
+        asUser($this->admin)->post(route('users.mergeUsers'), [
+            'kept_user_id' => $kept->id,
+            'source_user_ids' => [$source->id, $source->id],
+        ])->assertSessionHasErrors('source_user_ids.1');
+
+        expect($source->fresh()->trashed())->toBeFalse();
+    });
+
     test('merges multiple source users into one kept user', function (): void {
         $kept = makeUser($this->tenant);
         $firstSource = makeUser($this->tenant);

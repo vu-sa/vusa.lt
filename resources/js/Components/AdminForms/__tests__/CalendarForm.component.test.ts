@@ -101,18 +101,46 @@ describe('CalendarForm.vue — public URL status link', () => {
     wrapper?.unmount();
   });
 
-  function createEditWrapper(calendar: Partial<CalendarEventForm> & { id: number }) {
+  function createEditWrapper(calendar: Partial<CalendarEventForm> & { id: number }, readOnly = false) {
     return mount(CalendarForm, {
       shallow: true,
+      global: {
+        stubs: {
+          FormPage: {
+            name: 'FormPage',
+            props: ['mode', 'disabled'],
+            template: '<div><slot /><slot name="advanced" /><slot name="danger-zone" /></div>',
+          },
+        },
+      },
       props: {
         calendar: calendar as CalendarEventForm,
         eventTypes: [],
         assignableTenants: [],
         submitUrl: '/mano/calendar/1',
         submitMethod: 'patch',
+        readOnly,
       },
     });
   }
+
+  it('uses non-mutating form controls in read-only mode', () => {
+    wrapper = createEditWrapper({
+      id: 5,
+      title: { lt: 'Renginys', en: 'Event' },
+      permalink: { lt: 'renginys', en: 'event' },
+      description: { lt: '<p>Aprašymas</p>', en: '<p>Description</p>' },
+      date: '2026-05-01T10:00:00',
+      images: [{ id: 1, name: 'gallery.jpg', url: '/gallery.jpg' }],
+      main_image_url: '/main.jpg',
+    }, true);
+
+    expect(wrapper.findComponent({ name: 'FormPage' }).props()).toMatchObject({ mode: 'view', disabled: true });
+    expect(wrapper.findComponent({ name: 'FormStatusHeader' }).props('disabled')).toBe(true);
+    expect(wrapper.findComponent({ name: 'ImageUpload' }).exists()).toBe(false);
+    expect(wrapper.findComponent({ name: 'TiptapEditor' }).exists()).toBe(false);
+    expect(wrapper.findComponent({ name: 'PublicUrlHistoryCard' }).exists()).toBe(false);
+  });
 
   it('links to the URL built from permalink and year once both exist', () => {
     wrapper = createEditWrapper({
@@ -165,7 +193,10 @@ describe('CalendarForm.vue — all-day default', () => {
     hero_style: 'card',
   };
 
-  type FormVm = { form: { date: string | null; end_date: string | null; is_all_day: boolean }; isAllDayTouched: boolean };
+  interface FormVm {
+    form: { date: string | null; end_date: string | null; is_all_day: boolean };
+    isAllDayTouched: boolean;
+  }
 
   function createWrapper(rememberKey: string) {
     return mount(CalendarForm, {

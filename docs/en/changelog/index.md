@@ -11,6 +11,9 @@ lastUpdated: true
 - ✨ **Quick links reordering** — quick links feature an accessible keyboard- and touch-friendly reordering mode to easily organize items
 - ✨ **Event types in a side sheet** — creating and editing event types now happens directly in a slide-out sheet over the list, complete with trash management and delete blockers
 - ✨ **Modernized navigation builder** — the header and footer navigation manager now matches the design tokens, providing clearer column and link cards with updated navigation forms
+- 🔧 **More reliable record merging** — duplicate source selections are rejected so member, duty, study programme, and tag merges always respect the configured permissions
+- 🔧 **Merge candidate search works again** — after selecting one record, you can once again find the record it should be merged into
+- 🔧 **Calendar events can be viewed without edit access** — members with calendar read access see the event in a safe, read-only mode
 
 ## v2.15 — The rep loop: first steps, access changes and answerable reminders (2026-09-20) {#v2-15}
 

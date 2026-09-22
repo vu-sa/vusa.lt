@@ -18,8 +18,9 @@ class MergeCandidateApiController extends ApiController
 {
     public function index(MergeCandidatesRequest $request): JsonResponse
     {
-        $type = $request->string('type')->toString();
-        $sourceIds = $request->collect('source_ids')->map(fn (mixed $id): string => (string) $id)->values();
+        $type = (string) $request->validated('type');
+        $sourceIds = collect($request->validated('source_ids'))->map(fn (mixed $id): string => (string) $id)->values();
+        $searchQuery = (string) $request->validated('query');
         $actor = $this->requireAuth($request);
         $modelClass = $this->modelClass($type);
 
@@ -34,7 +35,7 @@ class MergeCandidateApiController extends ApiController
             return $this->jsonForbidden();
         }
 
-        $candidates = $this->candidateQuery($type, $request->string('query')->toString())
+        $candidates = $this->candidateQuery($type, $searchQuery)
             ->whereNotIn('id', $sourceIds)
             ->limit(100)
             ->get()

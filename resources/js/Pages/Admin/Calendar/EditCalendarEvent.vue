@@ -1,6 +1,7 @@
 <template>
   <CalendarForm
-    enable-delete
+    :enable-delete="canUpdate"
+    :read-only="!canUpdate"
     :calendar
     :event-types
     :available-tags
@@ -8,8 +9,8 @@
     :meeting
     :submit-url="route('calendar.update', calendar.id)"
     submit-method="patch"
-    @submit:form="handleUpdateCalendar"
-    @delete="() => router.delete(route('calendar.destroy', calendar.id))"
+    @submit:form="canUpdate && handleUpdateCalendar($event)"
+    @delete="canUpdate && router.delete(route('calendar.destroy', calendar.id))"
   />
 </template>
 
@@ -20,8 +21,9 @@ import CalendarForm from '@/Components/AdminForms/CalendarForm.vue';
 import { CalendarIcon } from '@/Components/icons';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
-const { calendar } = withDefaults(defineProps<{
+const { calendar, canUpdate } = withDefaults(defineProps<{
   calendar: App.Entities.Calendar;
+  canUpdate: boolean;
   eventTypes: App.Entities.EventType[];
   availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];

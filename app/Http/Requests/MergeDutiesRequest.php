@@ -52,7 +52,7 @@ class MergeDutiesRequest extends FormRequest
         return [
             'target_duty_id' => ['required', 'ulid', SoftDeleteRules::existsLive('duties')],
             'source_duty_ids' => ['required', 'array', 'min:1'],
-            'source_duty_ids.*' => ['required', 'ulid', SoftDeleteRules::existsLive('duties'), 'different:target_duty_id'],
+            'source_duty_ids.*' => ['required', 'ulid', 'distinct', SoftDeleteRules::existsLive('duties'), 'different:target_duty_id'],
         ];
     }
 
