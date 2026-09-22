@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'group relative overflow-hidden rounded-xl bg-white ring-1 ring-zinc-200/80 transition-all duration-200 hover:ring-zinc-300 hover:shadow-sm dark:bg-zinc-900 dark:ring-zinc-700/60 dark:hover:ring-zinc-600',
+      'group relative border border-border bg-card transition-colors hover:border-foreground/40',
       task.completed_at && 'opacity-50'
     ]"
   >
@@ -20,7 +20,7 @@
               fill="none"
               stroke="currentColor"
               stroke-width="2.5"
-              class="text-zinc-200 dark:text-zinc-700"
+              class="text-muted"
             />
             <circle
               cx="16" cy="16" r="13"
@@ -32,7 +32,7 @@
               :class="progressStrokeClass"
             />
           </svg>
-          <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
+          <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-muted-foreground">
             {{ task.progress.percentage }}%
           </span>
         </div>
@@ -40,7 +40,7 @@
         <!-- Icon for auto-completing tasks without progress -->
         <div
           v-else-if="!canManuallyComplete"
-          :class="['flex size-8 items-center justify-center rounded-lg', actionBackgroundClass]"
+          :class="['flex size-8 items-center justify-center border border-border', actionBackgroundClass]"
         >
           <component :is="actionIcon" class="size-4" :class="actionTextClass" />
         </div>
@@ -61,7 +61,7 @@
         <p
           :class="[
             'text-sm font-semibold leading-snug',
-            task.completed_at ? 'line-through text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'
+            task.completed_at ? 'line-through text-muted-foreground' : 'text-foreground'
           ]"
           :title="task.name"
         >
@@ -79,13 +79,13 @@
           <Link
             v-if="taskableUrl"
             :href="taskableUrl"
-            class="text-zinc-500 hover:text-zinc-700 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+            class="text-muted-foreground hover:text-foreground hover:underline"
           >
             {{ task.taskable?.name }}
           </Link>
           <span
             v-else-if="isOrphaned"
-            class="text-zinc-400 dark:text-zinc-500"
+            class="text-muted-foreground"
             :title="$t('tasks.orphaned_description')"
           >
             {{ $t('tasks.orphaned') }}
@@ -95,10 +95,10 @@
           <span
             v-if="task.due_date"
             :class="[
-              'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5',
+              'inline-flex items-center gap-1 px-1.5 py-0.5',
               task.is_overdue
-                ? 'bg-rose-100/80 font-medium text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
-                : 'text-zinc-500 dark:text-zinc-400'
+                ? 'border border-status-danger-border bg-status-danger-surface font-medium text-status-danger'
+                : 'text-muted-foreground'
             ]"
           >
             {{ formattedDueDate }}
@@ -140,7 +140,7 @@
             <Button
               size="sm"
               variant="outline"
-              class="h-7 gap-1.5 text-xs text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:hover:bg-amber-950/50"
+              class="h-7 gap-1.5 text-xs text-status-attention hover:bg-status-attention-surface hover:text-status-attention"
               @click="emit('openCheckInDialog', task)"
             >
               <CalendarOffIcon class="size-3" />
@@ -162,7 +162,7 @@
             v-if="task.description"
             size="sm"
             variant="ghost"
-            class="size-7 p-0 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+            class="size-7 p-0 text-muted-foreground hover:text-foreground"
             @click="emit('openTaskDetail', task)"
           >
             <InfoIcon class="size-4" />
@@ -174,7 +174,7 @@
             v-if="canDelete"
             size="sm"
             variant="ghost"
-            class="size-7 p-0 text-zinc-400 hover:text-destructive dark:text-zinc-500"
+            class="size-7 p-0 text-muted-foreground hover:text-destructive"
             :disabled="isLoading"
             @click="emit('delete', task)"
           >

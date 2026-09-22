@@ -29,12 +29,8 @@ class ProfileController extends AdminController
         // The roles list moved to `profile.roles` (PR 5.9); only the shallow relations stay in the payload.
         $user->load('roles:id,name', 'current_duties:id,name,institution_id')->makeVisible(['name_was_changed', 'show_pronouns']);
 
-        return $this->inertiaResponse('Admin/ShowUserSettings', [
+        return $this->inertiaResponse('Admin/ShowProfile', [
             'user' => $user->append('has_password')->toFullArray(),
-            'notificationPreferences' => $user->notification_preferences,
-            'notificationCategories' => NotificationCategory::toOptions(),
-            'notificationChannels' => NotificationChannel::toOptions(),
-            'availableDigestEmails' => $user->getAvailableDigestEmails(),
         ]);
     }
 
@@ -47,6 +43,21 @@ class ProfileController extends AdminController
 
         return $this->inertiaResponse('Admin/ShowMyRoles', [
             'access' => GetUserAccessSummary::execute($user),
+        ]);
+    }
+
+    /**
+     * Read-only and self-scoped, like `roles()`: the subject is always the acting user.
+     */
+    public function notificationSettings()
+    {
+        $user = User::query()->find(Auth::id()) ?? abort(404);
+
+        return $this->inertiaResponse('Admin/ShowNotificationSettings', [
+            'notificationPreferences' => $user->notification_preferences,
+            'notificationCategories' => NotificationCategory::toOptions(),
+            'notificationChannels' => NotificationChannel::toOptions(),
+            'availableDigestEmails' => $user->getAvailableDigestEmails(),
         ]);
     }
 

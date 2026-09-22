@@ -3,7 +3,7 @@
     <DialogContent class="max-h-[85vh] overflow-y-auto sm:max-w-lg">
       <DialogHeader>
         <DialogTitle class="flex items-center gap-2">
-          <component :is="taskIcon" class="h-5 w-5 text-zinc-500" />
+          <component :is="taskIcon" class="h-5 w-5 text-muted-foreground" />
           {{ task.name }}
         </DialogTitle>
         <DialogDescription v-if="task.taskable?.name">
@@ -22,25 +22,25 @@
             <RotateCwIcon class="h-3 w-3" />
             {{ $t('tasks.auto_completing') }}
           </Badge>
-          <span v-if="task.due_date" class="text-zinc-500">
+          <span v-if="task.due_date" class="text-muted-foreground">
             {{ $t('tasks.due') }}: {{ formatDate(task.due_date) }}
           </span>
         </div>
 
         <!-- Task description / instructions -->
-        <div v-if="task.description" class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
-          <h4 class="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        <div v-if="task.description" class="border border-border bg-muted p-4">
+          <h4 class="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
             <InfoIcon class="h-4 w-4" />
             {{ $t('tasks.instructions') }}
           </h4>
-          <p class="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-line">
+          <p class="text-sm text-muted-foreground whitespace-pre-line">
             {{ task.description }}
           </p>
         </div>
 
         <!-- Action buttons for PeriodicityGap tasks -->
         <div v-if="isPeriodicityGapTask" class="space-y-3">
-          <h4 class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <h4 class="text-sm font-medium text-foreground">
             {{ $t('tasks.available_actions') }}
           </h4>
 
@@ -70,9 +70,9 @@
         <!-- Assigned users. A meeting task can carry the whole institution, so these are
              avatars with the names behind a hover card rather than a pill per person — a
              20-name list used to push the dialog past the height of the screen. -->
-        <div v-if="task.users?.length" class="border-t border-zinc-200 pt-4 dark:border-zinc-700">
+        <div v-if="task.users?.length" class="border-t border-border pt-4">
           <div class="mb-2 flex items-center gap-2">
-            <h4 class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <h4 class="text-sm font-medium text-foreground">
               {{ $t('tasks.assigned_to') }}
             </h4>
             <Badge variant="secondary" class="tabular-nums">

@@ -61,14 +61,14 @@
     <!-- Task cards (mobile) -->
     <div v-else class="space-y-3">
       <div v-if="filteredTasks.length === 0" class="flex flex-col items-center justify-center gap-3 py-8 text-center">
-        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-          <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
+        <div class="flex h-12 w-12 items-center justify-center border border-border bg-muted">
+          <CheckCircleIcon class="h-6 w-6 text-muted-foreground" />
         </div>
         <div>
-          <p class="font-medium text-zinc-900 dark:text-zinc-100">
+          <p class="font-medium text-foreground">
             {{ $t('Viskas atlikta!') }}
           </p>
-          <p class="text-sm text-zinc-500 dark:text-zinc-400">
+          <p class="text-sm text-muted-foreground">
             {{ $t('No tasks found.') }}
           </p>
         </div>

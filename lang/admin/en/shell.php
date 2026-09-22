@@ -59,7 +59,7 @@ return [
     'account' => [
         'appearance' => 'Appearance', 'light' => 'Light theme', 'dark' => 'Dark theme', 'language' => 'Language: :language',
         'help' => 'Help', 'docs' => 'Documentation', 'tour' => 'Show me how it works', 'report_problem' => 'Report a problem',
-        'roles' => 'My roles and duties', 'my_requests' => 'My requests', 'whats_new' => "What's new", 'start_fm' => 'Listen to START FM', 'about' => 'About',
+        'roles' => 'My roles and duties', 'notifications' => 'Notification settings', 'my_requests' => 'My requests', 'whats_new' => "What's new", 'start_fm' => 'Listen to START FM', 'about' => 'About',
         'listen' => 'Listen', 'pause' => 'Pause', 'close' => 'Close',
     ],
 

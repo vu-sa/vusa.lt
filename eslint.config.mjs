@@ -81,6 +81,13 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Pages/Admin/ModelMeta/{ShowType,ShowRelationship}.vue',
   'resources/js/Pages/Admin/{SystemStatus,MailQueue}.vue',
   'resources/js/Pages/Admin/SupportRequests/ShowSupportRequest.vue',
+  'resources/js/Pages/Admin/{ShowProfile,ShowNotificationSettings}.vue',
+  'resources/js/Features/Admin/Notifications/{PushDeviceManagement,NotificationPreferences,DigestEmailSelector}.vue',
+  'resources/js/Pages/Admin/{ShowTasks,ShowTasksSummary}.vue',
+  'resources/js/Features/Admin/TaskManager/**',
+  'resources/js/Components/Tasks/{TaskFilter,TaskItem}.vue',
+  'resources/js/Pages/Admin/ShowNotifications.vue',
+  'resources/js/Features/Admin/Notifications/NotificationCard.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

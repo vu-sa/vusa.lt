@@ -10,15 +10,15 @@
     :empty-icon="CheckIcon"
   >
     <template #empty>
-      <div class="flex flex-col items-center justify-center gap-3 py-8 text-zinc-400">
-        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-          <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
+      <div class="flex flex-col items-center justify-center gap-3 py-8 text-muted-foreground">
+        <div class="flex h-12 w-12 items-center justify-center border border-border bg-muted">
+          <CheckCircleIcon class="h-6 w-6 text-muted-foreground" />
         </div>
         <div class="text-center">
-          <p class="font-medium text-zinc-900 dark:text-zinc-100">
+          <p class="font-medium text-foreground">
             {{ $t('Viskas atlikta!') }}
           </p>
-          <p class="text-sm text-zinc-500 dark:text-zinc-400">
+          <p class="text-sm text-muted-foreground">
             {{ $t('No tasks found.') }}
           </p>
         </div>
@@ -121,10 +121,10 @@ const canDeleteTask = (task: TaskDisplayData): boolean => {
  */
 const rowClassName = (row: TaskDisplayData) => {
   if (row.completed_at) {
-    return 'group opacity-60 bg-zinc-50/30 dark:bg-zinc-900/20';
+    return 'group opacity-60 bg-muted/30';
   }
   if (row.is_overdue) {
-    return 'group bg-rose-50/20 dark:bg-rose-950/5';
+    return 'group bg-status-danger/5';
   }
 
   return 'group';
@@ -153,7 +153,7 @@ const columns = [
       if (isLoading) {
         return (
           <div class="flex justify-center">
-            <RotateCwIcon class="h-4 w-4 animate-spin text-zinc-400" />
+            <RotateCwIcon class="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
         );
       }
@@ -173,7 +173,7 @@ const columns = [
                       fill="none"
                       stroke="currentColor"
                       stroke-width="2"
-                      class="text-zinc-200 dark:text-zinc-700"
+                      class="text-muted"
                     />
                     <circle
                       cx="12"
@@ -187,7 +187,7 @@ const columns = [
                       class={getTaskProgressStrokeClass(task.action_type)}
                     />
                   </svg>
-                  <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-zinc-600 dark:text-zinc-400">
+                  <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-muted-foreground">
                     {task.progress.percentage}
                   </span>
                 </div>
@@ -213,7 +213,7 @@ const columns = [
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div class={`flex h-6 w-6 items-center justify-center rounded-md ${getTaskActionBadgeClasses(task.action_type)}`}>
+                <div class={`flex h-6 w-6 items-center justify-center border border-border ${getTaskActionBadgeClasses(task.action_type)}`}>
                   <ActionIcon class="h-3.5 w-3.5" />
                 </div>
               </TooltipTrigger>
@@ -245,7 +245,7 @@ const columns = [
     cell: ({ row }) => {
       const task: TaskDisplayData = row.original;
       const nameClasses = `group/name flex max-w-full items-center gap-1.5 text-left ${
-        task.completed_at ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'
+        task.completed_at ? 'line-through text-muted-foreground' : 'text-foreground'
       }`;
 
       const trigger = (
@@ -267,8 +267,8 @@ const columns = [
               <HoverCardTrigger asChild>{trigger}</HoverCardTrigger>
               <HoverCardContent class="w-80" side="top" align="start">
                 <div class="space-y-2">
-                  <p class="text-sm font-medium text-zinc-900 dark:text-zinc-100">{task.name}</p>
-                  <p class="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">{task.description}</p>
+                  <p class="text-sm font-medium text-foreground">{task.name}</p>
+                  <p class="text-sm text-muted-foreground whitespace-pre-wrap">{task.description}</p>
                 </div>
               </HoverCardContent>
             </HoverCard>
@@ -305,7 +305,7 @@ const columns = [
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="outline" class="inline-flex max-w-[160px] items-center gap-1.5 font-normal text-zinc-500 dark:text-zinc-400">
+                <Badge variant="outline" class="inline-flex max-w-[160px] items-center gap-1.5 font-normal text-muted-foreground">
                   <LinkIcon class="h-3 w-3 shrink-0" />
                   <span class="truncate">{$t('tasks.orphaned')}</span>
                 </Badge>
@@ -323,7 +323,7 @@ const columns = [
       const url = getTaskableUrl(task);
 
       const badge = (
-        <Badge variant="outline" class="inline-flex max-w-[160px] items-center gap-1.5 font-normal hover:bg-zinc-100 dark:hover:bg-zinc-800">
+        <Badge variant="outline" class="inline-flex max-w-[160px] items-center gap-1.5 font-normal hover:bg-accent">
           <Icon class="h-3 w-3 shrink-0" />
           <span class="truncate">{displayName}</span>
         </Badge>
@@ -347,12 +347,12 @@ const columns = [
     cell: ({ row }) => {
       const task: TaskDisplayData = row.original;
       if (!task.due_date) {
-        return <span class="text-zinc-400">—</span>;
+        return <span class="text-muted-foreground">—</span>;
       }
 
       return (
         <div class="flex items-center gap-2">
-          {task.is_overdue && <AlertCircleIcon class="h-3.5 w-3.5 shrink-0 text-rose-500" />}
+          {task.is_overdue && <AlertCircleIcon class="h-3.5 w-3.5 shrink-0 text-status-danger" />}
           <Badge
             variant={task.is_overdue ? 'rose' : 'secondary'}
             class={`text-xs font-medium ${getDueDateUrgencyClasses(task)}`}
@@ -383,7 +383,7 @@ const columns = [
                   <Button
                     variant="ghost"
                     size="icon"
-                    class="h-7 w-7 text-zinc-600 hover:text-emerald-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-emerald-400 dark:hover:bg-zinc-800"
+                    class="h-7 w-7 text-muted-foreground hover:text-status-success hover:bg-accent"
                     onClick={() => emit('openMeetingModal', task)}
                   >
                     <CalendarPlusIcon class="h-4 w-4" />
@@ -400,7 +400,7 @@ const columns = [
                   <Button
                     variant="ghost"
                     size="icon"
-                    class="h-7 w-7 text-zinc-600 hover:text-amber-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-amber-400 dark:hover:bg-zinc-800"
+                    class="h-7 w-7 text-muted-foreground hover:text-status-attention hover:bg-accent"
                     onClick={() => emit('openCheckInDialog', task)}
                   >
                     <CalendarOffIcon class="h-4 w-4" />
@@ -429,10 +429,10 @@ const columns = [
                     <Button
                       variant="ghost"
                       size="icon"
-                      class={`h-7 w-7 text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800 ${
+                      class={`h-7 w-7 text-muted-foreground hover:bg-accent ${
                         isCreation
-                          ? 'hover:text-violet-700 dark:hover:text-violet-400'
-                          : 'hover:text-green-700 dark:hover:text-green-400'
+                          ? 'hover:text-status-info'
+                          : 'hover:text-status-success'
                       }`}
                     >
                       {isCreation

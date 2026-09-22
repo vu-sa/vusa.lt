@@ -44,7 +44,7 @@
     <TaskStatsCards v-if="taskStats" :task-stats />
 
     <!-- Task manager with table -->
-    <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+    <div class="border border-border bg-card">
       <div class="p-4 sm:p-6">
         <TaskManager
           :tasks="tasks.data"

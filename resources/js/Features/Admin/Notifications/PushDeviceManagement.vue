@@ -1,17 +1,14 @@
 <template>
-  <FormElement>
-    <template #title>
-      {{ $t('notifications.push_devices.title') }}
-    </template>
-    <template #description>
+  <SectionCard :title="$t('notifications.push_devices.title')">
+    <p class="mb-4 text-sm text-muted-foreground">
       {{ $t('notifications.push_devices.description') }}
-    </template>
+    </p>
 
     <div class="space-y-4">
       <!-- Current device status -->
-      <div class="flex items-center justify-between p-4 border rounded-lg dark:border-zinc-700">
+      <div class="flex items-center justify-between border border-border p-4">
         <div class="flex items-center gap-3">
-          <component :is="currentDeviceIcon" class="size-5 text-zinc-500" />
+          <component :is="currentDeviceIcon" class="size-5 text-muted-foreground" />
           <div>
             <p class="font-medium">
               {{ $t('notifications.push_devices.this_device') }}
@@ -86,11 +83,11 @@
           <div
             v-for="device in devices"
             :key="device.id"
-            class="flex items-center justify-between p-3 border rounded-lg dark:border-zinc-700 group"
-            :class="{ 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800': device.isCurrentDevice }"
+            class="flex items-center justify-between border p-3 group"
+            :class="device.isCurrentDevice ? 'border-brand bg-brand/5' : 'border-border'"
           >
             <div class="flex items-center gap-3">
-              <component :is="getDeviceIcon(device.device_name)" class="size-5 text-zinc-500" />
+              <component :is="getDeviceIcon(device.device_name)" class="size-5 text-muted-foreground" />
               <div>
                 <div class="flex items-center gap-2">
                   <p class="font-medium text-sm">
@@ -98,7 +95,7 @@
                   </p>
                   <span
                     v-if="device.isCurrentDevice"
-                    class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                    class="text-[10px] font-medium px-1.5 py-0.5 border border-brand text-brand"
                   >
                     {{ $t('notifications.push_devices.current_badge') }}
                   </span>
@@ -124,7 +121,7 @@
       </div>
 
       <!-- Test notification button -->
-      <div v-if="hasAnyPushSubscription" class="pt-4 border-t dark:border-zinc-700">
+      <div v-if="hasAnyPushSubscription" class="pt-4 border-t border-border">
         <Button
           :disabled="testHttp.processing"
           variant="secondary"
@@ -135,12 +132,12 @@
           <Loader2 v-else class="size-4 animate-spin" />
           {{ $t('notifications.push_devices.send_test') }}
         </Button>
-        <p v-if="testHttp.recentlySuccessful" class="text-sm text-green-600 dark:text-green-400 mt-2">
+        <p v-if="testHttp.recentlySuccessful" class="text-sm text-status-success mt-2">
           {{ $t('notifications.push_devices.test_sent') }}
         </p>
       </div>
     </div>
-  </FormElement>
+  </SectionCard>
 </template>
 
 <script setup lang="ts">
@@ -150,7 +147,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { BellPlus, BellOff, BellRing, Globe, Laptop, Loader2, Monitor, PhoneOff, RefreshCw, Smartphone, Tablet, Trash2 } from 'lucide-vue-next';
 
 import { usePWA, type PushSubscriptionDevice } from '@/Composables/usePWA';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
+import { SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import ISimpleIconsApple from '~icons/simple-icons/apple';
 import ISimpleIconsLinux from '~icons/simple-icons/linux';

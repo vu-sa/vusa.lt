@@ -94,6 +94,18 @@
                 {{ $t('shell.account.roles') }}
               </Link>
             </li>
+            <li>
+              <Link
+                :href="route('profile.notifications')"
+                prefetch
+                :cache-for="SHELL_PREFETCH_CACHE_FOR"
+                class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground"
+                @click="close"
+              >
+                <Bell class="size-5 text-muted-foreground" />
+                {{ $t('shell.account.notifications') }}
+              </Link>
+            </li>
             <li v-if="showAllSections">
               <Link
                 :href="route('administration')"
@@ -204,6 +216,7 @@ import { Link, router, usePage } from '@inertiajs/vue3';
 import { onKeyStroke, useDark, useScrollLock } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
+  Bell,
   BookOpen,
   Bug,
   Languages,

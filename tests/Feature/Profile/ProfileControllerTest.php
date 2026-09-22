@@ -28,7 +28,7 @@ describe('user settings', function (): void {
             ->get(route('profile'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowUserSettings')
+                ->component('Admin/ShowProfile')
                 ->has('user')
                 ->where('user.id', $this->admin->id)
             );
@@ -39,7 +39,7 @@ describe('user settings', function (): void {
             ->get(route('profile'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowUserSettings')
+                ->component('Admin/ShowProfile')
                 ->has('user.roles')
                 ->has('user.current_duties')
             );
@@ -129,5 +129,25 @@ describe('user settings', function (): void {
             ->patch(route('profile.updatePassword'), $passwordData)
             ->assertStatus(302)
             ->assertSessionHas('success');
+    });
+});
+
+describe('notification settings', function (): void {
+    test('authenticated user can access notification settings', function (): void {
+        asUser($this->admin)
+            ->get(route('profile.notifications'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowNotificationSettings')
+                ->has('notificationPreferences')
+                ->has('notificationCategories')
+                ->has('notificationChannels')
+                ->has('availableDigestEmails')
+            );
+    });
+
+    test('unauthenticated user cannot access notification settings', function (): void {
+        $this->get(route('profile.notifications'))
+            ->assertRedirect(route('login'));
     });
 });

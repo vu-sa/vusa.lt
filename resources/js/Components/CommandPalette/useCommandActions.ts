@@ -1,7 +1,7 @@
 import { computed, type Component } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus, Radio, Search, Settings, ShieldCheck } from 'lucide-vue-next';
+import { Bell, Plus, Radio, Search, Settings, ShieldCheck } from 'lucide-vue-next';
 
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
@@ -102,6 +102,14 @@ export function useCommandActions() {
         icon: ShieldCheck,
         category: 'navigation',
         action: () => router.visit(route('profile.roles')),
+      },
+      {
+        id: 'nav-profile-notifications',
+        label: $t('shell.account.notifications'),
+        keywords: ['notifications', 'pranesimai', 'nustatymai'],
+        icon: Bell,
+        category: 'navigation',
+        action: () => router.visit(route('profile.notifications')),
       },
       {
         id: 'action-start-fm',

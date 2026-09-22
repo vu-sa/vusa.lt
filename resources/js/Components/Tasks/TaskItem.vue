@@ -3,10 +3,10 @@
     :is="taskableLink ? Link : 'div'"
     :href="taskableLink || undefined"
     :class="[
-      'group relative flex items-start gap-3 rounded-lg p-3 transition-all duration-200',
+      'group relative flex items-start gap-3 border border-transparent p-3 transition-colors',
       taskableLink ? 'cursor-pointer' : '',
-      'hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50',
-      isOverdue && 'bg-rose-50/20 dark:bg-rose-950/5',
+      'hover:bg-accent',
+      isOverdue && 'bg-status-danger-surface',
       actionTypeStyles.bgHover
     ]"
   >
@@ -17,7 +17,7 @@
         v-if="canBeManuallyCompleted"
         :model-value="false"
         :disabled="isUpdating"
-        class="h-5 w-5 rounded-md border-2 transition-all duration-200 hover:scale-110 data-[state=checked]:bg-primary"
+        class="h-5 w-5 border-2 transition-colors data-[state=checked]:bg-primary"
         @update:model-value="$emit('complete')"
       />
 
@@ -54,7 +54,7 @@
       <div
         v-else
         :class="[
-          'flex h-6 w-6 items-center justify-center rounded-md',
+          'flex h-6 w-6 items-center justify-center border border-border',
           actionTypeStyles.iconBg
         ]"
       >
@@ -72,7 +72,7 @@
         <div class="min-w-0 flex-1">
           <!-- Task name -->
           <p
-            class="truncate text-sm font-medium text-zinc-900 group-hover:text-primary dark:text-zinc-100 dark:group-hover:text-primary"
+            class="truncate text-sm font-medium text-foreground group-hover:text-primary"
             :title="name"
           >
             {{ name }}
@@ -83,7 +83,7 @@
             <span :class="['text-xs', actionTypeStyles.labelColor]">
               {{ actionTypeLabel }}
             </span>
-            <span v-if="progress" class="text-xs text-zinc-400 dark:text-zinc-500">
+            <span v-if="progress" class="text-xs text-muted-foreground">
               · {{ progress.current }}/{{ progress.total }}
             </span>
           </div>
@@ -96,7 +96,7 @@
             :class="[
               'text-xs font-medium',
               isDueSoon && !isOverdue
-                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                ? 'bg-status-attention-surface text-status-attention'
                 : ''
             ]"
           >
@@ -236,43 +236,43 @@ const actionTypeStyles = computed(() => {
 
   const styles = {
     [TaskActionType.Approval]: {
-      bgHover: 'hover:bg-blue-50/50 dark:hover:bg-blue-950/20',
-      iconBg: 'bg-blue-100 dark:bg-blue-900/30',
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      labelColor: 'text-blue-600 dark:text-blue-400',
-      progressTrack: 'text-blue-200 dark:text-blue-900',
-      progressFill: 'text-blue-500 dark:text-blue-400',
-      progressText: 'text-blue-600 dark:text-blue-400',
+      bgHover: 'hover:bg-status-progress-surface',
+      iconBg: 'bg-status-progress-surface',
+      iconColor: 'text-status-progress',
+      labelColor: 'text-status-progress',
+      progressTrack: 'text-status-progress-surface',
+      progressFill: 'text-status-progress',
+      progressText: 'text-status-progress',
     },
     [TaskActionType.Pickup]: {
-      bgHover: 'hover:bg-amber-50/50 dark:hover:bg-amber-950/20',
-      iconBg: 'bg-amber-100 dark:bg-amber-900/30',
-      iconColor: 'text-amber-600 dark:text-amber-400',
-      labelColor: 'text-amber-600 dark:text-amber-400',
-      progressTrack: 'text-amber-200 dark:text-amber-900',
-      progressFill: 'text-amber-500 dark:text-amber-400',
-      progressText: 'text-amber-600 dark:text-amber-400',
+      bgHover: 'hover:bg-status-attention-surface',
+      iconBg: 'bg-status-attention-surface',
+      iconColor: 'text-status-attention',
+      labelColor: 'text-status-attention',
+      progressTrack: 'text-status-attention-surface',
+      progressFill: 'text-status-attention',
+      progressText: 'text-status-attention',
     },
     [TaskActionType.Return]: {
-      bgHover: 'hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20',
-      iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
-      labelColor: 'text-emerald-600 dark:text-emerald-400',
-      progressTrack: 'text-emerald-200 dark:text-emerald-900',
-      progressFill: 'text-emerald-500 dark:text-emerald-400',
-      progressText: 'text-emerald-600 dark:text-emerald-400',
+      bgHover: 'hover:bg-status-success-surface',
+      iconBg: 'bg-status-success-surface',
+      iconColor: 'text-status-success',
+      labelColor: 'text-status-success',
+      progressTrack: 'text-status-success-surface',
+      progressFill: 'text-status-success',
+      progressText: 'text-status-success',
     },
   };
 
   // Default/Manual task styles
   const defaultStyles = {
     bgHover: '',
-    iconBg: 'bg-zinc-100 dark:bg-zinc-800',
-    iconColor: 'text-zinc-600 dark:text-zinc-400',
-    labelColor: 'text-zinc-500 dark:text-zinc-400',
-    progressTrack: 'text-zinc-200 dark:text-zinc-700',
-    progressFill: 'text-zinc-500 dark:text-zinc-400',
-    progressText: 'text-zinc-600 dark:text-zinc-400',
+    iconBg: 'bg-muted',
+    iconColor: 'text-muted-foreground',
+    labelColor: 'text-muted-foreground',
+    progressTrack: 'text-muted',
+    progressFill: 'text-muted-foreground',
+    progressText: 'text-muted-foreground',
   };
 
   return type && styles[type] ? styles[type] : defaultStyles;

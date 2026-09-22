@@ -81,7 +81,7 @@ One PR = one row. Rules:
 | **9.6** | Website content: banners, navigation builder, quick links, event types | 8.1 | ✅ |
 | **9.7** | Files, documents, Sharepoint | 8.1 | ✅ |
 | **9.8** | Sistema: roles, permissions, types, relationships, settings, status, mail queue, support | 8.1 |
-| **9.9** | Paskyra: profile, notification settings; Užduotys; Pranešimai | 8.1 |
+| **9.9** | Paskyra: profile, notification settings; Užduotys; Pranešimai | 8.1 | ✅ |
 | **10.1** | Lint fence covers all of `Pages/Admin/**`; `ui/card` → error | 9.x |
 | **10.2** | `record-rule` for the durable rules; `AGENTS.md` + component docs; fix the doc drift | 10.1 |
 | **10.3** | Remove the redesign pointer, delete this file, re-run the evidence queries and rep metrics | 10.2 |
@@ -1108,7 +1108,69 @@ Each page follows the playbook and lands with its lint-fence paths; tick here.
 - [x] Website content: pages, news, calendar (editors), banners, navigation builder, quick links, event types (Phase 9.5 & Phase 9.6 complete)
 - [x] Files, documents, Sharepoint
 - [ ] Sistema: roles, permissions, types, relationships, settings, system status, mail queue, support
-- [ ] Paskyra: profile, notification settings; Užduotys; Pranešimai
+- [x] Paskyra: profile, notification settings; Užduotys; Pranešimai
+
+### PR 9.9 notes (2026-09-22)
+
+- **Paskyra split (O14):** "Pranešimų nustatymai" got its own route (`profile.notifications` →
+  `ProfileController::notificationSettings()`), mirroring how "Mano rolės ir pareigybės" was split
+  out in PR 5.9 — Paskyra now has four separately-reachable destinations instead of three plus one
+  buried section. `ShowUserSettings.vue` was renamed to `ShowProfile.vue` (Profilis fields,
+  password change, tutorial reset, Prieinamumas) and its notification-preferences payload moved to
+  the new `ShowNotificationSettings.vue`, which hosts the unchanged `PushDeviceManagement` and
+  `NotificationPreferences` feature components. Wired into `ShellAccountMenu`, `MobileMenuPanel`,
+  and the command palette (`nav-profile-notifications`).
+- **No page type fits a multi-save-action settings screen.** `FormPage` assumes one `<form>` and
+  one submit; Profilis has three independent saves (profile fields, password, notification prefs)
+  on view even after the split. Fallback per `Components/CLAUDE.md`: `AdminContentPage` +
+  `SectionCard` per titled block, replacing the old `Card`/`FormElement` pairing. This is the same
+  fallback Sistema's settings pages (Phase 9.8) will need — no precedent existed before this PR.
+- **Užduotys: light restyle, not a `CollectionPage` rebuild.** `TaskManager.vue` is not only used
+  by the two standalone Tasks pages — it's embedded directly inside three already-migrated Record
+  pages (`ShowUser.vue`, `ShowInstitution.vue`, `ShowMeeting.vue`) as their tasks section, sharing
+  `TaskDetailDialog.vue` via `useTaskActionDialogs`. `CollectionPage` is a full top-level page shell
+  and cannot be embedded inside a Record page's section, so rebuilding Tasks on it would have either
+  broken those three Record pages or forced a second, parallel task-list renderer. Fixed every raw
+  `zinc-*`/`rounded-*`/`shadow-*` site across `TaskManager`, `TaskTable`, `TaskCard`,
+  `TaskStatsCards`, `TaskPagination`, `TaskDetailDialog`, and `Components/Tasks/TaskItem.vue`
+  in place instead, mapping the three colored action-type variants (Approval/Pickup/Return) onto
+  the six status roles (progress/attention/success) rather than raw hues. Left as a Phase 10 item:
+  reconciling embedded vs. standalone task lists so a real `CollectionPage` migration becomes
+  possible.
+- **Dead code found and removed:** `Components/Tasks/TaskDetailDialog.vue` had zero live imports
+  anywhere — fully superseded by `Features/Admin/TaskManager/TaskDetailDialog.vue`, which is the
+  one `useTaskActionDialogs` actually wires up. Deleted rather than deprecated, since nothing
+  consumes it.
+- **Pranešimai (in-app notification center) is a restyled list, not a `Collection`.**
+  `UserNotificationsController::index()` loads every notification unpaginated and the page
+  filters/groups entirely client-side — it doesn't fit `useDatabaseCollectionSource`'s
+  server-paginated contract. Restyled `ShowNotifications.vue` (segmented `ToggleGroup` filter,
+  `Patterns/EmptyState`, token-based period headers) and `NotificationCard.vue` (hairline
+  `border-b` row instead of a card-per-row, matching `NotificationsIndicator`'s existing flat-row
+  language, square icon tile, left brand accent for unread instead of a `rounded-full` dot) while
+  keeping the `BaseNotification` contract consumption (`context()`, `primaryAction`/
+  `secondaryAction`) untouched. **Known gap, not fixed here:** nothing prunes the `notifications`
+  table (only the separate digest queue is pruned), so an active user's list only grows — pagination
+  is a bigger, separately-reviewed change for a fast-follow.
+- **Fixed in passing:** `NotificationCard.vue`'s root row had pre-existing a11y lint errors
+  (`click-events-have-key-events`, `no-static-element-interactions`) predating this PR, surfaced
+  only once the file joined the lint fence — added `role="button"`, `tabindex="0"`, and
+  `Enter`/`Space` handlers.
+- **Lint fence:** enrolled `ShowProfile.vue`, `ShowNotificationSettings.vue`,
+  `Features/Admin/Notifications/{PushDeviceManagement,NotificationPreferences,DigestEmailSelector}.vue`,
+  `ShowTasks.vue`, `ShowTasksSummary.vue`, `Features/Admin/TaskManager/**`,
+  `Components/Tasks/{TaskFilter,TaskItem}.vue`, `ShowNotifications.vue`, and
+  `Features/Admin/Notifications/NotificationCard.vue` in `MIGRATED_ADMIN_PATHS`. Zero ESLint
+  errors across all touched files.
+- **Verification:** full Vitest suite green (438 files, 3,342 tests, one test updated for the new
+  `nav-profile-notifications` palette entry); full backend suite green modulo 5 pre-existing,
+  unrelated failures verified via `git stash` against `dev` before this branch
+  (`DigestEmailPreferencesTest`'s `ProcessNotificationDigests` mail assertions, `ContactManagementTest`,
+  `DutiableTimelineControllerTest`); `AdminNavigationCatalogTest`'s route-coverage guard updated to
+  exclude the new `profile.notifications` route the same way `profile.roles` already was; clean
+  production build.
+- **Not done:** browser pass at 390/820/1180/1440, dark mode, touch and keyboard-only remains a
+  manual gate, per the playbook.
 
 ### PR 9.7 notes (2026-09-22)
 

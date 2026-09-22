@@ -326,13 +326,13 @@ describe('updateNotificationPreferences endpoint', function (): void {
     });
 });
 
-describe('userSettings page', function (): void {
+describe('notificationSettings page', function (): void {
     test('includes availableDigestEmails in props', function (): void {
         asUser($this->user)
-            ->get(route('profile'))
+            ->get(route('profile.notifications'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowUserSettings')
+                ->component('Admin/ShowNotificationSettings')
                 ->has('availableDigestEmails')
                 ->where('availableDigestEmails.0.email', 'user@example.com')
                 ->where('availableDigestEmails.0.type', 'user')
@@ -343,10 +343,10 @@ describe('userSettings page', function (): void {
         $this->user->setDigestEmails(['user@example.com']);
 
         asUser($this->user)
-            ->get(route('profile'))
+            ->get(route('profile.notifications'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowUserSettings')
+                ->component('Admin/ShowNotificationSettings')
                 ->has('notificationPreferences.digest_emails')
                 ->where('notificationPreferences.digest_emails', ['user@example.com'])
             );

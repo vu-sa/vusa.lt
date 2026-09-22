@@ -1,9 +1,9 @@
 <template>
   <div
     v-if="lastPage > 1"
-    class="flex items-center justify-between border-t border-zinc-200 px-4 py-3 dark:border-zinc-800 sm:px-6"
+    class="flex items-center justify-between border-t border-border px-4 py-3 sm:px-6"
   >
-    <div class="text-sm text-zinc-500 dark:text-zinc-400">
+    <div class="text-sm text-muted-foreground">
       {{ from }} - {{ to }} / {{ total }}
     </div>
     <div class="flex items-center gap-2">
@@ -16,7 +16,7 @@
       >
         <ChevronLeftIcon class="h-4 w-4" />
       </Button>
-      <span class="text-sm tabular-nums text-zinc-600 dark:text-zinc-400">
+      <span class="text-sm tabular-nums text-muted-foreground">
         {{ currentPage }} / {{ lastPage }}
       </span>
       <Button

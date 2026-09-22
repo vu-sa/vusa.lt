@@ -8,7 +8,7 @@
         <div
           v-for="emailOption in availableEmails"
           :key="emailOption.email"
-          class="flex items-center gap-3 p-3 border rounded-lg dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+          class="flex items-center gap-3 border border-border p-3 hover:bg-accent transition-colors"
         >
           <Checkbox
             :id="`digest-email-${emailOption.email}`"
@@ -20,8 +20,8 @@
             class="flex-1 flex items-center gap-2 cursor-pointer"
           >
             <component
-              :is="emailOption.type === 'duty' ? IFluentBriefcase24Regular : IFluentPerson24Regular"
-              class="size-4 text-zinc-500"
+              :is="emailOption.type === 'duty' ? Briefcase : User"
+              class="size-4 text-muted-foreground"
             />
             <span class="font-mono text-sm">{{ emailOption.email }}</span>
             <span class="text-xs text-muted-foreground">
@@ -30,8 +30,8 @@
           </label>
         </div>
       </div>
-      <p v-if="selectedEmails.length === 0" class="text-sm text-amber-600 dark:text-amber-400 flex items-center gap-2 mt-2">
-        <IFluentInfo24Regular class="size-4" />
+      <p v-if="selectedEmails.length === 0" class="text-sm text-status-attention flex items-center gap-2 mt-2">
+        <Info class="size-4" />
         {{ $t('notifications.preferences.digest_emails_default_info') }}
       </p>
     </div>
@@ -41,12 +41,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Briefcase, Info, User } from 'lucide-vue-next';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import IFluentBriefcase24Regular from '~icons/fluent/briefcase-24-regular';
-import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
-import IFluentInfo24Regular from '~icons/fluent/info-24-regular';
 
 interface EmailOption {
   email: string;

@@ -59,7 +59,7 @@ return [
     'account' => [
         'appearance' => 'Išvaizda', 'light' => 'Šviesi tema', 'dark' => 'Tamsi tema', 'language' => 'Kalba: :language',
         'help' => 'Pagalba', 'docs' => 'Dokumentacija', 'tour' => 'Parodyk, kaip veikia', 'report_problem' => 'Pranešti apie problemą',
-        'my_requests' => 'Mano užklausos', 'roles' => 'Mano rolės ir pareigybės', 'whats_new' => 'Kas naujo', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
+        'my_requests' => 'Mano užklausos', 'roles' => 'Mano rolės ir pareigybės', 'notifications' => 'Pranešimų nustatymai', 'whats_new' => 'Kas naujo', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
         'listen' => 'Klausyti', 'pause' => 'Pristabdyti', 'close' => 'Uždaryti',
     ],
 

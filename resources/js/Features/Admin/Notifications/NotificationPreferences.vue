@@ -1,17 +1,14 @@
 <template>
-  <FormElement>
-    <template #title>
-      {{ $t('notifications.preferences.title') }}
-    </template>
-    <template #description>
+  <SectionCard :title="$t('notifications.preferences.title')">
+    <p class="mb-4 text-sm text-muted-foreground">
       {{ $t('notifications.preferences.description') }}
-    </template>
+    </p>
 
     <!-- Global Mute -->
     <div class="space-y-4">
-      <div class="flex items-center justify-between p-4 border rounded-lg dark:border-zinc-700">
+      <div class="flex items-center justify-between border border-border p-4">
         <div class="flex items-center gap-3">
-          <IFluentAlertOff24Regular class="size-5 text-zinc-500" />
+          <BellOff class="size-5 text-muted-foreground" />
           <div>
             <p class="font-medium">
               {{ $t('notifications.preferences.mute_all') }}
@@ -85,7 +82,7 @@
       />
 
       <!-- Test email -->
-      <div class="border-t pt-4 dark:border-zinc-700">
+      <div class="border-t border-border pt-4">
         <Button
           :disabled="testEmailLoading"
           variant="secondary"
@@ -113,7 +110,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-b dark:border-zinc-700">
+              <tr class="border-b border-border">
                 <th class="text-left py-2 pr-4 font-medium">
                   {{ $t('notifications.category') }}
                 </th>
@@ -126,11 +123,11 @@
               <tr
                 v-for="category in notificationCategories"
                 :key="category.value"
-                class="border-b dark:border-zinc-700 last:border-0"
+                class="border-b border-border last:border-0"
               >
                 <td class="py-3 pr-4">
                   <div class="flex items-center gap-2">
-                    <div :class="['size-6 rounded-full flex items-center justify-center', getCategoryColorClass(category.color)]">
+                    <div :class="['size-6 flex items-center justify-center border border-border', getCategoryColorClass(category.color)]">
                       <component :is="getCategoryIcon(category.modelEnumKey)" class="size-3.5" />
                     </div>
                     {{ $t(`notifications.categories.${category.value}`) }}
@@ -149,7 +146,7 @@
       </div>
 
       <!-- Reminder Settings -->
-      <div class="space-y-4 pt-4 border-t dark:border-zinc-700">
+      <div class="space-y-4 border-t border-border pt-4">
         <h4 class="font-medium">
           {{ $t('notifications.preferences.reminder_settings') }}
         </h4>
@@ -188,24 +185,38 @@
       </div>
 
       <Button :disabled="loading" @click="handleSubmit">
-        <IFluentSave24Regular v-if="!loading" class="mr-2" />
+        <Save v-if="!loading" class="mr-2" />
         <Loader2 v-else class="mr-2 animate-spin" />
         {{ $t('Išsaugoti') }}
       </Button>
     </div>
-  </FormElement>
+  </SectionCard>
 </template>
 
 <script setup lang="ts">
+import type { Component } from 'vue';
 import { computed, ref, reactive, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2, Mail as MailIcon } from 'lucide-vue-next';
+import {
+  BellOff,
+  Bookmark,
+  Building2,
+  CalendarClock,
+  ClipboardList,
+  FileText,
+  Loader2,
+  Mail as MailIcon,
+  MessageSquare,
+  Puzzle,
+  Save,
+  User,
+} from 'lucide-vue-next';
 
 import { useApiMutation } from '@/Composables/useApi';
 import { notificationColors, type NotificationColorKey } from '@/Composables/useNotificationFormatting';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import { SectionCard } from '@/Components/Patterns';
 import DigestEmailSelector from '@/Features/Admin/Notifications/DigestEmailSelector.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -217,18 +228,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/Components/ui/select';
-import IFluentAlertOff24Regular from '~icons/fluent/alert-off-24-regular';
-import IFluentSave24Regular from '~icons/fluent/save-24-regular';
-
-// Category icons
-import IFluentComment24Regular from '~icons/fluent/comment-24-regular';
-import IFluentTaskListSquareLtr24Regular from '~icons/fluent/task-list-square-ltr24-regular';
-import IFluentBookmark24Regular from '~icons/fluent/bookmark24-regular';
-import IFluentDeviceMeetingRoomRemote24Regular from '~icons/fluent/device-meeting-room-remote24-regular';
-import IFluentDocumentBulletList24Regular from '~icons/fluent/document-bullet-list24-regular';
-import IFluentPerson24Regular from '~icons/fluent/person24-regular';
-import IFluentPuzzlePiece24Regular from '~icons/fluent/puzzle-piece24-regular';
-import IFluentBuilding24Regular from '~icons/fluent/building24-regular';
 
 interface NotificationPreferences {
   channels: Record<string, Record<string, boolean>>;
@@ -350,17 +349,17 @@ const getCategoryColorClass = (color: string): string => {
 };
 
 const getCategoryIcon = (modelEnumKey: string) => {
-  const iconMap: Record<string, any> = {
-    COMMENT: IFluentComment24Regular,
-    TASK: IFluentTaskListSquareLtr24Regular,
-    RESERVATION: IFluentBookmark24Regular,
-    MEETING: IFluentDeviceMeetingRoomRemote24Regular,
-    FORM: IFluentDocumentBulletList24Regular,
-    USER: IFluentPerson24Regular,
-    DUTY: IFluentPuzzlePiece24Regular,
-    TENANT: IFluentBuilding24Regular,
+  const iconMap: Record<string, Component> = {
+    COMMENT: MessageSquare,
+    TASK: ClipboardList,
+    RESERVATION: Bookmark,
+    MEETING: CalendarClock,
+    FORM: FileText,
+    USER: User,
+    DUTY: Puzzle,
+    TENANT: Building2,
   };
-  return iconMap[modelEnumKey] || IFluentComment24Regular;
+  return iconMap[modelEnumKey] || MessageSquare;
 };
 
 const formatDate = (dateStr: string): string => {

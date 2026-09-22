@@ -39,7 +39,7 @@ const cards = computed(() => [
     value: props.taskStats.total,
     caption: $t('tasks.stats.pending_caption'),
     icon: ClipboardListIcon,
-    iconClass: 'text-zinc-500 dark:text-zinc-400',
+    iconClass: 'text-muted-foreground',
   },
   {
     label: capitalize($t('overdue')),
@@ -48,21 +48,21 @@ const cards = computed(() => [
     icon: AlertCircleIcon,
     // The icon carries the alarm; the number stays in the default foreground so the four
     // counts remain comparable at a glance.
-    iconClass: props.taskStats.overdue > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-zinc-400',
+    iconClass: props.taskStats.overdue > 0 ? 'text-status-danger' : 'text-muted-foreground',
   },
   {
     label: capitalize($t('tasks.stats.auto_completing')),
     value: props.taskStats.autoCompleting,
     caption: $t('tasks.stats.auto_completing_caption'),
     icon: RotateCwIcon,
-    iconClass: 'text-blue-500 dark:text-blue-400',
+    iconClass: 'text-status-info',
   },
   {
     label: capitalize($t('completed')),
     value: props.taskStats.completed,
     caption: $t('tasks.stats.completed_caption'),
     icon: CheckCircleIcon,
-    iconClass: 'text-emerald-500 dark:text-emerald-400',
+    iconClass: 'text-status-success',
   },
 ]);
 </script>
