@@ -26,6 +26,7 @@ vi.mock('@/Composables/useApi', () => ({
 const stubs = {
   AttentionQueue: true,
   CreateShortcuts: true,
+  QuickAccess: true,
   UpcomingMeetingsList: true,
   InstitutionsNeedingAttention: true,
   CoordinatorCard: true,
@@ -59,14 +60,17 @@ beforeEach(() => {
 });
 
 describe('ShowAdminHome', () => {
-  it('places create actions before the task preview', () => {
+  it('places create actions and quick access before the task preview', () => {
     const wrapper = mountPage();
     const shortcuts = wrapper.find('create-shortcuts-stub');
+    const quickAccess = wrapper.find('quick-access-stub');
     const tasks = wrapper.find('attention-queue-stub');
 
     expect(shortcuts.exists()).toBe(true);
+    expect(quickAccess.exists()).toBe(true);
     expect(tasks.exists()).toBe(true);
-    expect(shortcuts.element.compareDocumentPosition(tasks.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(shortcuts.element.compareDocumentPosition(quickAccess.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(quickAccess.element.compareDocumentPosition(tasks.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it('shows the checklist and the access band only when the server sends them', () => {

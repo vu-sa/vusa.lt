@@ -1,8 +1,9 @@
 <template>
   <OverviewPage :title="$t('Mano VU SA')" :lead="impactLine">
     <template #heading>
-      <h1 class="text-2xl font-semibold tracking-tight" data-tour="greeting-section">
-        {{ greeting }}, {{ userNameAddress }}!
+      <h1 class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand" data-tour="greeting-section">
+        <span class="size-1.5 shrink-0 bg-brand-fill" aria-hidden="true" />
+        {{ greeting }}, {{ userNameAddress }}
       </h1>
     </template>
 
@@ -15,6 +16,7 @@
     />
 
     <CreateShortcuts />
+    <QuickAccess />
 
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
       <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
@@ -60,6 +62,7 @@ import AccessChangeBand from '@/Components/Home/AccessChangeBand.vue';
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
 import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
+import QuickAccess from '@/Components/Home/QuickAccess.vue';
 import FirstLoginChecklist from '@/Components/Home/FirstLoginChecklist.vue';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';

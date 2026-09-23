@@ -7,9 +7,8 @@ export { default as Button } from './Button.vue';
  * One button for both surfaces. Colour comes only from tokens, so the same variant is VU SA red
  * on the light canvas and amber on near-black, admin and public alike.
  *
- * `voice` carries the type: bold uppercase is how a button reads across the design system.
- * `plain` exists for primitives that borrow the button box but are not buttons in the UI sense
- * (calendar day cells, pagination numbers).
+ * `voice` carries the type: bold uppercase is the default across the design system.
+ * `sentence` is for home quick actions; `plain` is for controls such as calendar day cells.
  */
 export const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
@@ -30,6 +29,7 @@ export const buttonVariants = cva(
       },
       voice: {
         brand: 'font-bold uppercase tracking-wide',
+        sentence: 'font-bold normal-case tracking-normal',
         plain: 'font-medium normal-case',
       },
       size: {

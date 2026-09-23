@@ -5,7 +5,7 @@
     </Head>
 
     <div class="mx-auto w-full max-w-[90rem]">
-      <header class="border-b border-border pt-4 pb-6 sm:pt-8 sm:pb-8">
+      <header class="border-b border-border pt-6 pb-6 sm:pt-10 sm:pb-8">
         <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div class="flex min-w-0 items-start gap-4">
             <div v-if="$slots.identity" class="shrink-0">

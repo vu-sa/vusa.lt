@@ -2,7 +2,7 @@
   <div class="mx-auto flex w-full max-w-7xl flex-col gap-10 lg:gap-14" data-slot="overview-page">
     <Head :title="headTitle ?? title" />
 
-    <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">
+    <header class="flex flex-col gap-4 pt-6 sm:pt-10 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">
       <div class="min-w-0">
         <p v-if="eyebrow" class="text-xs font-bold uppercase tracking-[0.2em] text-brand">
           {{ eyebrow }}

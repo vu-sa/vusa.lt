@@ -1,8 +1,17 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { usePage } from '@inertiajs/vue3';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AttentionQueue from '../AttentionQueue.vue';
 import type { HomeTask } from '../types';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+
+beforeEach(() => {
+  vi.mocked(usePage).mockReturnValue(createMockPage() as ReturnType<typeof usePage>);
+});
 
 const day = 24 * 60 * 60 * 1000;
 
@@ -52,17 +61,30 @@ describe('AttentionQueue', () => {
     expect(wrapper.text()).toContain('Senato posėdis');
   });
 
-  it('marks an overdue task as danger and a task due within a week as attention', () => {
+  it('shows relative due dates without status badges, colouring only overdue dates', () => {
     const wrapper = mountQueue([
-      task({ id: '1', is_overdue: true, due_date: new Date(Date.now() - 2 * day).toISOString() }),
+      task({ id: '1', is_overdue: true, due_date: new Date(Date.now() - 10 * day).toISOString() }),
       task({ id: '2', due_date: new Date(Date.now() + 3 * day).toISOString() }),
     ], { total: 2, overdue: 1 });
 
-    const roles = wrapper.findAll('[data-slot="status-badge"]').map(badge => badge.attributes('data-status-role'));
-    expect(roles).toEqual(['danger', 'attention']);
+    const dates = wrapper.findAll('time');
+    expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
+    expect(dates[0].text()).toContain('prieš 10 d.');
+    expect(dates[0].classes()).toContain('text-brand');
+    expect(dates[0].attributes('aria-label')).toBe('home.overdue_due_date');
+    expect(dates[1].text()).toContain('po 3 d.');
+    expect(dates[1].classes()).toContain('text-muted-foreground');
   });
 
-  it('gives an on-time task no badge — only what needs attention is painted', () => {
+  it('uses the current language for relative dates', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'en' } }) as ReturnType<typeof usePage>);
+
+    const wrapper = mountQueue([task({ due_date: new Date(Date.now() + 3 * day).toISOString() })]);
+
+    expect(wrapper.find('time').text()).toContain('in 3d');
+  });
+
+  it('gives an on-time task no badge', () => {
     const wrapper = mountQueue([task()]);
 
     expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);

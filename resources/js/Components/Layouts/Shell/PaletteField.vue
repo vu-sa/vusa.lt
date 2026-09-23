@@ -3,7 +3,7 @@
     <button
       type="button"
       :class="[
-        'hidden h-9 w-full max-w-md items-center gap-2 md:flex',
+        'hidden h-9 w-full max-w-md items-center gap-2 lg:flex',
         'border border-border bg-secondary/40 px-3 text-left text-sm text-muted-foreground',
         'transition-colors hover:border-brand hover:text-foreground',
       ]"
@@ -17,7 +17,7 @@
     <Button
       variant="ghost"
       size="icon"
-      class="u-touch md:hidden"
+      class="u-touch lg:hidden"
       :aria-label="$t('shell.chrome.search')"
       @click="toggle"
     >

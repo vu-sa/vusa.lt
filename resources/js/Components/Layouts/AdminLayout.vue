@@ -2,26 +2,29 @@
   <div class="bg-background">
     <Head :title />
 
-    <AdminShell>
-      <slot />
-    </AdminShell>
+    <!-- One provider for every tooltip in the admin; the old sidebar supplied it. -->
+    <TooltipProvider>
+      <AdminShell>
+        <slot />
+      </AdminShell>
 
-    <!-- Guided action window: outside the shell so any page can open it. -->
-    <ActionWindow />
-    <StartFmDock />
+      <!-- Guided action window: outside the shell so any page can open it. -->
+      <ActionWindow />
+      <StartFmDock />
 
-    <!-- Toast notifications -->
-    <Toaster rich-colors />
+      <!-- Toast notifications -->
+      <Toaster rich-colors />
 
-    <!-- PWA Install Banner (smart trigger) -->
-    <InstallBanner />
+      <!-- PWA Install Banner (smart trigger) -->
+      <InstallBanner />
 
-    <!-- PWA Update Available Banner (only shown in PWA mode) -->
-    <UpdateBanner />
+      <!-- PWA Update Available Banner (only shown in PWA mode) -->
+      <UpdateBanner />
 
-    <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
-    <AdminCommandPalette />
-    <KeyboardShortcutsDialog v-model:open="keyboardShortcutsOpen" />
+      <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
+      <AdminCommandPalette />
+      <KeyboardShortcutsDialog v-model:open="keyboardShortcutsOpen" />
+    </TooltipProvider>
   </div>
 </template>
 
@@ -38,6 +41,7 @@ import 'vue-sonner/style.css';
 import InstallBanner from '@/Components/PWA/InstallBanner.vue';
 import UpdateBanner from '@/Components/PWA/UpdateBanner.vue';
 import { Toaster } from '@/Components/ui/sonner';
+import { TooltipProvider } from '@/Components/ui/tooltip';
 import AdminShell from '@/Components/Layouts/Shell/AdminShell.vue';
 import StartFmDock from '@/Components/Layouts/Shell/StartFmDock.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';

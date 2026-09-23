@@ -1,6 +1,8 @@
 <template>
   <OverviewSection
     :title="title ?? $t('Tavo institucijos')"
+    :icon="Landmark"
+    variant="home"
     :empty="institutions.length === 0"
     :empty-text="$t('visos institucijos posėdžius fiksuoja laiku')"
   >
@@ -10,11 +12,11 @@
           <Link
             :href="route('institutions.show', institution.id)"
             prefetch
-            class="block truncate font-medium hover:text-brand"
+            class="block truncate font-bold hover:text-brand"
           >
             {{ institution.name }}
           </Link>
-          <span v-if="institution.effective_days_since_activity !== null" class="block text-sm text-muted-foreground">
+          <span v-if="institution.effective_days_since_activity !== null" class="block text-xs text-muted-foreground">
             {{ $t('Paskutinė veikla prieš :days d.', { days: String(institution.effective_days_since_activity) }) }}
           </span>
         </span>
@@ -30,6 +32,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Landmark } from 'lucide-vue-next';
 
 import type { InstitutionActivityInsight } from './types';
 

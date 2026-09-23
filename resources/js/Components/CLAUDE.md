@@ -79,8 +79,9 @@ Rules for anything added there:
 ## Buttons and controls (both surfaces)
 
 - `ui/button` is the one button. Variants are token-only (`brand`, `outline`, `default` ink,
-  `ghost`, `secondary`, `destructive`, `link`); the `voice` is bold uppercase unless you pass
-  `voice="plain"` (calendar cells, pagination numbers). Sizes: `lg` 48px for a page's primary,
+  `ghost`, `secondary`, `destructive`, `link`); the `voice` is bold uppercase by default.
+  Pradžia quick actions use `voice="sentence"` for bold sentence case; `voice="plain"` is for
+  calendar cells and pagination numbers. Sizes: `lg` 48px for a page's primary,
   `default` 44px, `sm` 36px in toolbars and row actions, `icon*` for squares.
 - `ui/control` holds the bordered uppercase control both sites build filters from:
   `controlVariants({ size, active })` for chips and Filtrai/Rikiuoti/popover triggers,

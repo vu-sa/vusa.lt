@@ -1,20 +1,23 @@
 <template>
   <section
     v-if="!spotlight.isDismissed.value"
-    class="flex flex-col gap-2 border-t border-border pt-3"
+    class="flex flex-col gap-2"
     data-slot="first-login-checklist"
     :aria-labelledby="headingId"
   >
-    <div class="flex items-baseline justify-between gap-4">
-      <h2 :id="headingId" class="text-base font-semibold text-foreground">
+    <div class="flex items-center justify-between gap-4 border-b border-border pb-3">
+      <h2 :id="headingId" class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+        <ListChecks class="size-4 shrink-0 text-brand" aria-hidden="true" />
         {{ $t('onboarding.title') }}
-        <span class="ml-2 text-sm font-normal text-muted-foreground" data-testid="checklist-progress">
+      </h2>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-muted-foreground" data-testid="checklist-progress">
           {{ $t('onboarding.progress', { done: String(checklist.doneCount), total: String(checklist.items.length) }) }}
         </span>
-      </h2>
-      <Button variant="ghost" size="sm" class="pointer-coarse:h-11" data-testid="checklist-dismiss" @click="spotlight.dismiss()">
-        {{ $t('onboarding.dismiss') }}
-      </Button>
+        <Button variant="ghost" size="sm" class="pointer-coarse:h-11" data-testid="checklist-dismiss" @click="spotlight.dismiss()">
+          {{ $t('onboarding.dismiss') }}
+        </Button>
+      </div>
     </div>
 
     <ul class="divide-y divide-border border-y border-border">
@@ -42,7 +45,9 @@
           {{ $t(`onboarding.items.${item.key}.action`) }}
         </Button>
         <Button v-else as-child variant="outline" size="sm" class="shrink-0 pointer-coarse:h-11">
-          <Link :href="item.href">{{ $t(`onboarding.items.${item.key}.action`) }}</Link>
+          <Link :href="item.href">
+            {{ $t(`onboarding.items.${item.key}.action`) }}
+          </Link>
         </Button>
       </li>
     </ul>
@@ -52,7 +57,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Circle, CircleCheck } from 'lucide-vue-next';
+import { Circle, CircleCheck, ListChecks } from 'lucide-vue-next';
 import { useId } from 'vue';
 
 import type { HomeChecklist } from './types';

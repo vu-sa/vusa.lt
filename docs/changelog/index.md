@@ -7,6 +7,8 @@ lastUpdated: true
 
 ## v2.18 — Vienodi sąrašai visoje Mano VU SA (2026-09-23) {#v2-18}
 
+- ✨ **Aiškesnė Pradžia** — greitieji veiksmai rodomi su vienu ryškiu mygtuku, po jais atsirado pagal prieigą parinktos nuorodos į administravimą ir rezervacijas, o užduočių terminai skaitomi santykinai be papildomų būsenos ženklelių
+- ✨ **Patogesnė paieška planšetėje** — siauresnėje viršutinėje juostoje paieškos lauką pakeičia mygtukas, atveriantis tą pačią komandų paletę
 - ✨ **Ramesnė Mano VU SA pradžia** — siauresniame puslapyje užduotys rodomos paprastomis eilutėmis po greitųjų veiksmų, o naujienos ir renginiai turi vaizdines peržiūras su nuorodomis į viešus puslapius
 - ✨ **Aiškesnė viršutinė juosta** — didesnis logotipas ir lengvai permatomas fonas dera su vieša svetaine, „Mano“ įvardija tavo darbo erdvę, o kompaktiškesnis kūrimo mygtukas, skyriai su piktogramomis bei atnaujinti meniu palengvina orientaciją
 - ✨ **Vienas sąrašų dizainas** — puslapiai, naujienos, renginiai, institucijos, posėdžiai, nariai, rolės, leidimai, tipai, ryšiai, padaliniai, studijų programos ir komplektai atrodo ir veikia vienodai: didelė antraštė, paieška su filtrais, rikiavimas, eilučių, lentelės ir peržiūros rodiniai bei „Rodyti daugiau“

@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'mx-auto w-full px-4 sm:px-6 lg:px-8',
+      'mx-auto w-full',
       mode === 'view' ? 'pb-8' : 'pb-28 md:pb-12',
       containerWidthClass,
     ]"
@@ -59,7 +59,7 @@
     </Teleport>
 
     <!-- Heading band: editing is unmistakable (.ai/rules/js-pages-admin.md) — tinted canvas + eyebrow. -->
-    <header class="space-y-3 border-b border-border py-8 sm:py-12">
+    <header class="space-y-3 border-b border-border pt-6 pb-8 sm:pt-10 sm:pb-12">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
         <EntityTypeMark v-if="entityType" :type="entityType" size="sm" class="text-xs font-bold uppercase tracking-[0.2em]" />
         <span v-if="entityType" class="h-3 border-l border-border" aria-hidden="true" />

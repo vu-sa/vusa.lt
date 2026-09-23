@@ -1,5 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
+import { ClipboardList } from 'lucide-vue-next';
 
 import CoordinatorCard from '../CoordinatorCard.vue';
 import InstitutionsNeedingAttention from '../InstitutionsNeedingAttention.vue';
@@ -29,6 +30,17 @@ describe('OverviewSection', () => {
     expect(wrapper.find('h2').text()).toBe('Artimiausi posėdžiai');
     expect(wrapper.find('.body').exists()).toBe(true);
     expect(wrapper.find('a').attributes('href')).toBe('/mano/meetings');
+  });
+
+  it('adds the home heading treatment only when requested', () => {
+    const wrapper = mount(OverviewSection, {
+      props: { title: 'Mano užduotys', icon: ClipboardList, variant: 'home' },
+      slots: { default: '<p>Turinys</p>' },
+    });
+
+    expect(wrapper.find('h2').classes()).toContain('uppercase');
+    expect(wrapper.find('h2 svg').exists()).toBe(true);
+    expect(wrapper.find('header').classes()).toContain('border-b');
   });
 });
 

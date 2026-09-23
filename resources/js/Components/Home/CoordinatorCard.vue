@@ -1,6 +1,7 @@
 <template>
   <section v-if="coordinator" class="flex flex-col gap-3" data-slot="coordinator-card">
-    <h2 :class="['border-t border-border pt-3 font-semibold text-foreground', compact ? 'text-sm' : 'text-base']">
+    <h2 class="flex items-center gap-2 border-b border-border pb-3 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+      <UserRound class="size-4 shrink-0 text-brand" aria-hidden="true" />
       {{ $t('Tavo koordinatorius') }}
     </h2>
     <div class="flex items-center gap-4">
@@ -25,7 +26,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Mail } from 'lucide-vue-next';
+import { Mail, UserRound } from 'lucide-vue-next';
 
 import type { HomeCoordinator } from './types';
 

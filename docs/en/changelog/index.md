@@ -7,6 +7,8 @@ lastUpdated: true
 
 ## v2.18 — Consistent lists across Mano VU SA (2026-09-23) {#v2-18}
 
+- ✨ **A clearer Home** — quick actions have one prominent button, permission-based links to administration and reservations sit below them, and task due dates read relatively without extra status badges
+- ✨ **Easier search on tablets** — a search button opens the same command palette when the top bar is too narrow for the field
 - ✨ **A calmer Mano VU SA home** — tasks appear as simple rows after quick actions in a narrower layout, while news and events have visual previews linking to their public pages
 - ✨ **A clearer top bar** — the larger logo and translucent surface match the public site, “Mano” names your workspace, and the smaller create button, section icons, and refreshed menus make navigation easier
 - ✨ **One list design** — pages, news, events, institutions, meetings, members, roles, permissions, types, relationships, units, study programmes and study sets now look and behave the same: a large heading, search with filters, sorting, rows, table and preview views, and "Show more"

@@ -1,12 +1,13 @@
 <template>
   <section data-slot="attention-queue" data-tour="tasks-card" :aria-labelledby="headingId">
     <header class="flex items-center justify-between gap-4 border-b border-border pb-3">
-      <h2 :id="headingId" class="text-base font-semibold text-foreground">
+      <h2 :id="headingId" class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+        <ClipboardList class="size-4 shrink-0 text-brand" aria-hidden="true" />
         {{ $t('Mano užduotys') }}
       </h2>
       <Link
         :href="moreHref"
-        class="shrink-0 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        class="shrink-0 text-xs font-bold uppercase tracking-wide text-brand hover:text-foreground"
       >
         {{ $t('Visos užduotys') }}
       </Link>
@@ -20,19 +21,20 @@
           :prefetch="task.href ? true : undefined"
           class="flex items-start gap-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11"
         >
-          <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center border border-border text-muted-foreground" aria-hidden="true">
-            <component :is="task.icon" class="size-4" />
-          </span>
+          <span class="mt-1.5 size-2.5 shrink-0 bg-border" aria-hidden="true" />
 
           <span class="min-w-0 flex-1">
-            <span class="block font-semibold text-foreground">{{ task.name }}</span>
-            <span v-if="task.context" class="mt-0.5 block text-sm text-muted-foreground">{{ task.context }}</span>
+            <span class="block text-pretty font-bold text-foreground">{{ task.name }}</span>
+            <span v-if="task.context" class="mt-0.5 block text-xs text-muted-foreground">{{ task.context }}</span>
           </span>
 
-          <span class="flex shrink-0 flex-col items-end gap-1.5 text-sm">
-            <StatusBadge v-if="task.badge" :status="task.badge" />
-            <span v-if="task.due" class="text-muted-foreground">{{ task.due }}</span>
-          </span>
+          <time
+            v-if="task.due"
+            :datetime="task.dueAt"
+            :title="formatDateTime(task.dueAt)"
+            :aria-label="task.isOverdue ? $t('home.overdue_due_date', { date: task.due }) : undefined"
+            :class="['shrink-0 text-right text-xs font-bold', task.isOverdue ? 'text-brand' : 'text-muted-foreground']"
+          >{{ task.due }}</time>
         </component>
       </li>
     </ul>
@@ -45,16 +47,13 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ClipboardCheck } from 'lucide-vue-next';
+import { ClipboardList } from 'lucide-vue-next';
 import { computed, useId } from 'vue';
 
 import type { HomeTask } from './types';
 
-import { StatusBadge } from '@/Components/Patterns';
-import { getEntityTypeDefinition } from '@/Constants/entityTypes';
-import { taskStatuses } from '@/Constants/statuses';
 import { getMeetingAgendaUrl, getTaskableUrl } from '@/Composables/useTaskPresentation';
-import { formatNearDate } from '@/Utils/dateTime';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 
 const props = defineProps<{
   tasks: HomeTask[];
@@ -64,23 +63,18 @@ const props = defineProps<{
 
 const headingId = useId();
 
-const DUE_SOON_DAYS = 7;
+const { formatNearDate, formatDateTime } = useDateFormatter();
 
 const rows = computed(() => props.tasks.map((task) => {
-  const dueAt = task.due_date ? new Date(task.due_date) : null;
-  const isDueSoon = dueAt !== null && !task.is_overdue
-    && dueAt.getTime() - Date.now() <= DUE_SOON_DAYS * 24 * 60 * 60 * 1000;
-
   return {
     id: task.id,
     name: task.name,
     context: task.taskable?.name ?? null,
     // A meeting task lands on the agenda tab, ready to fill: one tap to the exact screen (R-a).
     href: getMeetingAgendaUrl(task) ?? getTaskableUrl(task),
-    icon: getEntityTypeDefinition(task.taskable_type)?.icon ?? ClipboardCheck,
-    // An on-time task is the healthy state and carries no badge.
-    badge: task.is_overdue ? taskStatuses.overdue : isDueSoon ? taskStatuses.due_soon : null,
-    due: dueAt ? formatNearDate(dueAt) : null,
+    isOverdue: task.is_overdue,
+    dueAt: task.due_date,
+    due: task.due_date ? formatNearDate(task.due_date, { thresholdDays: 9999 }) : null,
   };
 }));
 </script>

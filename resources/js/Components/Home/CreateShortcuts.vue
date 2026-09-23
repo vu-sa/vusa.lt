@@ -1,18 +1,23 @@
 <template>
-  <div v-if="shortcuts.length > 0" class="flex flex-wrap items-center gap-2" data-slot="create-shortcuts">
-    <span class="mr-1 text-sm text-muted-foreground">{{ $t('Sukurti') }}:</span>
-    <Button
-      v-for="shortcut in shortcuts"
-      :key="shortcut.id"
-      variant="outline"
-      size="sm"
-      class="pointer-coarse:h-11"
-      @click="shortcut.action"
-    >
-      <component :is="shortcut.icon" aria-hidden="true" />
-      {{ shortcut.label }}
-    </Button>
-  </div>
+  <section v-if="shortcuts.length > 0" class="flex flex-col gap-3" data-slot="create-shortcuts">
+    <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+      {{ $t('Greiti veiksmai') }}
+    </h2>
+    <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+      <Button
+        v-for="(shortcut, index) in shortcuts"
+        :key="shortcut.id"
+        :variant="index === 0 ? 'brand' : 'outline'"
+        voice="sentence"
+        size="lg"
+        class="h-auto min-h-12 whitespace-normal px-4 text-center sm:text-left"
+        @click="shortcut.action"
+      >
+        <component :is="shortcut.icon" class="size-4" aria-hidden="true" />
+        {{ shortcut.label }}
+      </Button>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -25,12 +30,17 @@ import { Button } from '@/Components/ui/button';
 const props = withDefaults(defineProps<{
   limit?: number;
 }>(), {
-  limit: 3,
+  limit: 4,
 });
 
-// The catalog already knows what this person may create, in the order of their workspaces —
-// a rep's first shortcut is recording a meeting. No second list to keep in step.
 const { actions } = useCommandActions();
 
-const shortcuts = computed(() => actions.value.filter(action => action.category === 'create').slice(0, props.limit));
+const shortcuts = computed(() => {
+  const permitted = actions.value.filter(action => action.category === 'create');
+  const selected = permitted.filter((action, index) =>
+    action.workspaceKey && permitted.findIndex(candidate => candidate.workspaceKey === action.workspaceKey) === index);
+  const selectedIds = new Set(selected.map(action => action.id));
+
+  return [...selected, ...permitted.filter(action => !selectedIds.has(action.id))].slice(0, props.limit);
+});
 </script>
