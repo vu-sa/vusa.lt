@@ -15,6 +15,7 @@ lastUpdated: true
 - ✨ **Ryškesni mygtukai ir antraštės** — administravimo mygtukai, filtrai ir puslapių antraštės dabar atrodo taip pat, kaip viešoje svetainėje, o jų paspaudimo plotas didesnis telefone ir planšetėje
 - ✨ **Naujas puslapio redaktorius** — kuriant ar redaguojant puslapį viršutinė juosta virsta redaktoriaus juosta su „Grįžti“, išsaugojimo būsena ir „Išsaugoti“; laukai sudėti į turinio stulpelį ir šoninius skydelius (Paskelbimas, Struktūra, Kalba, Rodymo nustatymai), o telefone „Išsaugoti“ visada po nykščiu apačioje
 - ✨ **Paaiškinimai po laukais** — formų laukų paaiškinimai rodomi po lauku, o ne tik užvedus pelę, todėl juos matai ir telefone
+- ✨ **Naujas prisijungimo puslapis** — prisijungimo langas atnaujintas pagal naująją dizaino sistemą su skaidytu vaizdu kompiuterio ekrane, nuotraukų karusele, patogesniais mygtukais ir prisitaikančiu dizainu telefonams bei planšetėms
 
 ## v2.17 — Sistemos valdymas (2026-09-22) {#v2-17}
 

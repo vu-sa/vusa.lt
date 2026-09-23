@@ -12,6 +12,7 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Layouts/Shell/**',
   'resources/js/Components/CommandPalette/**',
   'resources/js/Pages/Admin/AccessDenied.vue',
+  'resources/js/Pages/Admin/LoginForm.vue',
   'resources/js/Components/Layouts/RecordPage*.vue',
   'resources/js/Components/Meetings/MeetingDatePlate.vue',
   'resources/js/Components/Meetings/MeetingCompletionChecklist.vue',

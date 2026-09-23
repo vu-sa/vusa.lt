@@ -1,317 +1,334 @@
 <template>
-  <Head title="Log in" />
+  <Head :title="$t('Prisijungimas')" />
 
-  <!-- Background Carousel -->
-  <Carousel class="bg-black-800 h-full fixed -z-50 blur-1 brightness-15 saturate-50 contrast-100" :plugins="[Autoplay({
-    delay: 5000,
-  }), Fade()]">
-    <CarouselContent class="h-full">
-      <CarouselItem>
-        <img src="/images/become-a-member/20250510_VUSA-156.webp" class="size-full object-cover"
-          alt="VU SA members group photo 2025">
-      </CarouselItem>
-      <CarouselItem>
-        <img src="/images/become-a-member/mokymai2025-2.webp" class="size-full object-cover" alt="Student Trainings">
-      </CarouselItem>
-      <CarouselItem>
-        <img src="/images/become-a-member/mokymai2025-1.webp" class="size-full object-cover" alt="Student Trainings">
-      </CarouselItem>
-    </CarouselContent>
-  </Carousel>
-
-  <!-- Main Content -->
-  <div class="min-h-screen">
-    <FadeTransition appear>
-      <div class="grid min-h-screen items-center justify-center px-1.5 py-4 sm:p-4 md:grid-cols-2">
-        <!-- Logo Section -->
-        <div class="hidden md:flex items-center justify-center">
-          <AppLogo class="w-96 invert" />
-        </div>
-
-        <!-- Login Form Section -->
-        <div class="m-auto flex flex-col rounded-2xl bg-gradient-to-br from-white/95 via-white/90 to-zinc-50/85 backdrop-blur-md text-zinc-700 shadow-2xl ring-1 ring-zinc-200/50 dark:from-zinc-900/95 dark:via-zinc-900/90 dark:to-zinc-800/85 dark:text-zinc-300 dark:ring-zinc-700/50 max-w-md w-full overflow-hidden">
-          <!-- Main content area -->
-          <div class="flex flex-col items-center gap-5 p-6 sm:p-10">
-            <!-- Mobile Logo -->
-            <div class="flex justify-center sm:hidden">
-              <AppLogo class="w-20" />
-            </div>
-            <!-- Welcome Header -->
-            <div class="text-center space-y-2">
-              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-800 dark:text-zinc-100">
-                {{ $t('Sveiki sugrįžę') }}
-              </h1>
-              <p class="text-base sm:text-lg font-medium text-vusa-red/80 dark:text-vusa-red/70">
-                {{ $t('į Mano VU SA') }}
-              </p>
-            </div>
-
-            <!-- Login Options -->
-            <FadeTransition mode="out-in">
-              <!-- Microsoft Login -->
-              <div v-if="!useSimpleRegistration" class="w-full space-y-4">
-                <!-- Error Message -->
-                <Alert v-if="Object.keys(errors).length > 0 && !errorDismissed" variant="destructive" class="relative">
-                  <IFluentErrorCircle16Regular class="size-4" />
-                  <AlertTitle>
-                    {{ $t('Prisijungimas nepavyko') }}
-                  </AlertTitle>
-                  <AlertDescription>
-                    <ul class="space-y-1">
-                      <li v-for="(error, key) in errors" :key>
-                        {{ error }}
-                      </li>
-                    </ul>
-                  </AlertDescription>
-                  <button
-                    type="button"
-                    class="absolute top-3 right-3 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                    @click="errorDismissed = true"
-                  >
-                    <IFluentDismiss16Regular class="size-4" />
-                  </button>
-                </Alert>
-
-                <MicrosoftButton class="w-full" />
-                <p class="text-center text-xs text-zinc-500 dark:text-zinc-400">
-                  {{ $t('Greitas priėjimas su universiteto paskyra') }}
-                </p>
-
-                <!-- Simple Divider -->
-                <div class="relative flex items-center justify-center py-2">
-                  <div class="flex-1 border-t border-zinc-300/60 dark:border-zinc-600/60" />
-                  <div class="mx-4 text-sm text-zinc-500 dark:text-zinc-400 bg-transparent px-2">
-                    {{ $t('Arba') }}
-                  </div>
-                  <div class="flex-1 border-t border-zinc-300/60 dark:border-zinc-600/60" />
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="w-full text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
-                  @click="useSimpleRegistration = true"
-                >
-                  <IFluentKey24Filled class="w-4 h-4 mr-2" />
-                  {{ $t('Prisijungti el. paštu') }}
-                </Button>
-              </div>
-
-              <!-- Email/Password Form -->
-              <div v-else class="w-full space-y-6">
-                <!-- Admin Login Explanation -->
-                <div class="p-3 rounded-md bg-zinc-50/50 border border-zinc-200/30 dark:bg-zinc-800/30 dark:border-zinc-700/30">
-                  <div class="text-xs text-zinc-600 dark:text-zinc-400">
-                    <p class="font-medium mb-1 text-zinc-700 dark:text-zinc-300">
-                      {{ $t('Administratoriaus prieiga') }}
-                    </p>
-                    <p>
-                      {{ $t('Šiuos prisijungimo duomenis turėjo suteikti VU SA administratorius. Jei jų neturite, prisijunkite su Microsoft paskyra.') }}
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Status Messages -->
-                <Alert v-if="Object.keys(errors).length > 0 && !errorDismissed" variant="destructive" class="relative">
-                  <IFluentErrorCircle16Regular class="size-4" />
-                  <AlertTitle>
-                    {{ $t('Kažkas ne taip') }}...
-                  </AlertTitle>
-                  <AlertDescription>
-                    <ul class="space-y-1">
-                      <li v-for="(error, key) in errors" :key>
-                        {{ error }}
-                      </li>
-                    </ul>
-                  </AlertDescription>
-                  <button
-                    type="button"
-                    class="absolute top-3 right-3 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                    @click="errorDismissed = true"
-                  >
-                    <IFluentDismiss16Regular class="size-4" />
-                  </button>
-                </Alert>
-
-                <Alert v-if="status" class="bg-green-50 border-green-200 text-green-800 dark:bg-green-950/20 dark:border-green-900/30 dark:text-green-200">
-                  <IFluentCheckmarkCircle16Regular class="size-4" />
-                  <AlertDescription>
-                    {{ status }}
-                  </AlertDescription>
-                </Alert>
-
-                <!-- Login Form -->
-                <Form v-slot="{ errors: validationErrors }" :validation-schema @submit="handleSubmit">
-                  <div class="space-y-4">
-                    <!-- Email Field -->
-                    <FormField v-slot="{ componentField }" name="email">
-                      <FormItem>
-                        <FormLabel class="text-zinc-800 dark:text-zinc-200">
-                          {{ $t("forms.fields.email") }}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            id="email"
-                            v-bind="componentField"
-                            type="email"
-                            :placeholder="$t('Įveskite el. pašto adresą')"
-                            autocomplete="email"
-                            autofocus
-                            class="transition-colors focus:ring-2 focus:ring-vusa-red/20 focus:border-vusa-red"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    </FormField>
-
-                    <!-- Password Field -->
-                    <FormField v-slot="{ componentField }" name="password">
-                      <FormItem>
-                        <FormLabel class="text-zinc-800 dark:text-zinc-200">
-                          {{ $t("forms.fields.password") }}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            id="password"
-                            v-bind="componentField"
-                            type="password"
-                            :placeholder="$t('Įveskite slaptažodį')"
-                            autocomplete="current-password"
-                            class="transition-colors focus:ring-2 focus:ring-vusa-red/20 focus:border-vusa-red"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    </FormField>
-
-                    <!-- Form Actions -->
-                    <div class="flex items-center justify-between gap-4 pt-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        type="button"
-                        class="text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200"
-                        @click="useSimpleRegistration = false"
-                      >
-                        <IFluentArrowHookUpLeft24Regular class="w-4 h-4 mr-2" />
-                        {{ $t("Grįžti") }}
-                      </Button>
-
-                      <Button
-                        type="submit"
-                        size="sm"
-                        class="bg-vusa-red hover:bg-vusa-red/90 text-white transition-colors duration-200 focus:ring-2 focus:ring-vusa-red/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                        :disabled="form.processing"
-                      >
-                        <span v-if="form.processing" class="flex items-center">
-                          <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                          {{ $t('Prisijungiama...') }}
-                        </span>
-                        <span v-else>
-                          {{ $t('Prisijungti') }}
-                        </span>
-                      </Button>
-                    </div>
-                  </div>
-                </Form>
-              </div>
-            </FadeTransition>
-          </div>
-
-          <!-- Card Footer - Back to main site (hidden in PWA) -->
-          <a
-            v-if="!isPWA"
-            :href="route('home', { lang: $page.props.app.locale, subdomain: 'www' })"
-            class="flex items-center justify-center gap-2 py-3.5 text-xs text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors border-t border-zinc-200/50 dark:border-zinc-700/50 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30"
+  <main class="grid min-h-svh grid-cols-1 bg-background lg:grid-cols-[1.15fr_1fr]">
+    <!-- Hero photo carousel (desktop) -->
+    <section class="relative hidden lg:block h-full overflow-hidden bg-ink">
+      <Carousel
+        class="h-full w-full"
+        :plugins="[Autoplay({ delay: 5000 }), Fade()]"
+      >
+        <CarouselContent class="h-full -ml-0">
+          <CarouselItem
+            v-for="(photo, index) in heroPhotos"
+            :key="index"
+            class="h-full pl-0 basis-full"
           >
-            <IFluentArrowLeft16Regular class="size-3.5" />
-            {{ $t('Grįžti į vusa.lt') }}
-          </a>
+            <img
+              :src="photo.src"
+              :alt="photo.alt"
+              class="size-full object-cover"
+              loading="lazy"
+            >
+          </CarouselItem>
+        </CarouselContent>
+      </Carousel>
+
+      <!-- Gradient scrim overlay to guarantee text contrast -->
+      <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/60" />
+
+      <!-- Hero overlay content -->
+      <div class="pointer-events-none absolute inset-0 flex flex-col justify-between p-10 text-brand-fixed-foreground z-10">
+        <div class="flex items-center">
+          <img
+            :src="logoSrc"
+            alt="VU SA"
+            class="h-9 w-auto brightness-0 invert"
+          >
+        </div>
+        <div class="max-w-md">
+          <h2 class="text-pretty text-3xl font-bold leading-tight text-brand-fixed-foreground">
+            {{ $t('auth.sistema_subtitle') }}
+          </h2>
         </div>
       </div>
-    </FadeTransition>
-  </div>
+    </section>
+
+    <!-- Auth panel -->
+    <section class="flex flex-col justify-center px-6 py-12 sm:px-10 lg:px-14">
+      <div class="mx-auto w-full max-w-sm">
+        <!-- Mobile brand mark -->
+        <div class="mb-10 flex items-center lg:hidden">
+          <img
+            :src="logoSrc"
+            alt="VU SA"
+            class="h-9 w-auto dark:invert"
+          >
+        </div>
+
+        <p class="text-xs font-bold uppercase tracking-[0.28em] text-brand">
+          {{ $t('Prisijungimas') }}
+        </p>
+        <h1 class="mt-3 text-pretty text-3xl font-bold leading-tight text-foreground">
+          {{ $t('auth.welcome_back') }}
+        </h1>
+        <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+          {{ $t('auth.login_description') }}
+        </p>
+
+        <!-- Error Alert -->
+        <div
+          v-if="Object.keys(errors).length > 0 && !errorDismissed"
+          class="mt-6 flex items-start gap-3 border border-status-danger/40 bg-status-danger-surface p-4 text-xs text-status-danger relative"
+          role="alert"
+        >
+          <AlertCircle class="size-4 shrink-0 mt-0.5" />
+          <div class="flex-1 space-y-1">
+            <p class="font-bold">
+              {{ $t('Prisijungimas nepavyko') }}
+            </p>
+            <ul class="list-disc pl-4 space-y-0.5 text-muted-foreground">
+              <li v-for="(error, key) in errors" :key>
+                {{ error }}
+              </li>
+            </ul>
+          </div>
+          <button
+            type="button"
+            class="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            aria-label="Dismiss error"
+            @click="errorDismissed = true"
+          >
+            <X class="size-4" />
+          </button>
+        </div>
+
+        <!-- Success Status Alert -->
+        <div
+          v-if="status"
+          class="mt-6 flex items-center gap-3 border border-status-success/40 bg-status-success-surface p-4 text-xs text-status-success"
+          role="status"
+        >
+          <CheckCircle2 class="size-4 shrink-0" />
+          <p>{{ status }}</p>
+        </div>
+
+        <!-- Main login options (visible when not viewing email form) -->
+        <template v-if="!showEmailForm">
+          <!-- Primary: Microsoft OAuth Login -->
+          <div class="mt-8">
+            <MicrosoftButton />
+          </div>
+
+          <!-- Divider -->
+          <div class="my-7 flex items-center gap-4">
+            <span class="h-px flex-1 bg-border" />
+            <span class="text-xs font-medium uppercase tracking-widest text-muted-foreground">{{ $t('Arba') }}</span>
+            <span class="h-px flex-1 bg-border" />
+          </div>
+
+          <!-- Secondary: Reveal Email & Password Form (Muted button) -->
+          <button
+            type="button"
+            :class="[
+              'flex w-full items-center justify-center gap-2',
+              'border border-border/70 bg-transparent px-4 py-2.5 text-xs font-medium uppercase tracking-wider',
+              'text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground',
+              'rounded-none min-h-[44px] cursor-pointer',
+            ]"
+            @click="showEmailForm = true"
+          >
+            <Mail class="size-3.5" />
+            <span>{{ $t('auth.login_with_email') }}</span>
+          </button>
+        </template>
+
+        <!-- Email & Password Form (Microsoft button hidden while viewing) -->
+        <form
+          v-else
+          class="mt-8 space-y-4"
+          @submit.prevent="handleSubmit"
+        >
+          <div class="space-y-1.5">
+            <label for="email" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {{ $t('forms.fields.email') }}
+            </label>
+            <div class="relative">
+              <Mail class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                id="email"
+                v-model="form.email"
+                type="email"
+                required
+                placeholder="vardas@vu.lt"
+                autocomplete="email"
+                :class="[
+                  'w-full border border-input bg-card py-2.5 pl-9 pr-3 text-sm text-foreground',
+                  'outline-none transition-colors placeholder:text-muted-foreground',
+                  'focus:border-ring focus:ring-2 focus:ring-ring/30 rounded-none min-h-[44px]',
+                ]"
+              >
+            </div>
+            <p v-if="form.errors.email" class="text-xs font-medium text-destructive">
+              {{ form.errors.email }}
+            </p>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="password" class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {{ $t('forms.fields.password') }}
+              </label>
+            </div>
+            <div class="relative">
+              <Lock class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                id="password"
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                placeholder="••••••••"
+                autocomplete="current-password"
+                :class="[
+                  'w-full border border-input bg-card py-2.5 pl-9 pr-11 text-sm text-foreground',
+                  'outline-none transition-colors placeholder:text-muted-foreground',
+                  'focus:border-ring focus:ring-2 focus:ring-ring/30 rounded-none min-h-[44px]',
+                ]"
+              >
+              <button
+                type="button"
+                :class="[
+                  'absolute right-1 top-1/2 flex size-9 -translate-y-1/2',
+                  'items-center justify-center text-muted-foreground transition-colors',
+                  'hover:text-foreground cursor-pointer',
+                ]"
+                :aria-label="showPassword ? $t('Slėpti slaptažodį') : $t('Rodyti slaptažodį')"
+                @click="showPassword = !showPassword"
+              >
+                <EyeOff v-if="showPassword" class="size-4" />
+                <Eye v-else class="size-4" />
+              </button>
+            </div>
+            <p v-if="form.errors.password" class="text-xs font-medium text-destructive">
+              {{ form.errors.password }}
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            :disabled="form.processing"
+            :class="[
+              'flex w-full items-center justify-center gap-2',
+              'border border-brand-fill bg-brand-fill px-4 py-3 text-sm font-bold text-brand-foreground',
+              'transition-opacity hover:opacity-90 disabled:opacity-70 rounded-none min-h-[44px]',
+              'cursor-pointer disabled:cursor-not-allowed',
+            ]"
+          >
+            <Loader2 v-if="form.processing" class="size-4 animate-spin" />
+            <ArrowRight v-else class="size-4" />
+            <span>{{ form.processing ? $t('Prisijungiama...') : $t('auth.login') }}</span>
+          </button>
+
+          <button
+            type="button"
+            class="flex w-full items-center justify-center gap-2 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground min-h-[44px] cursor-pointer"
+            @click="showEmailForm = false"
+          >
+            <ArrowLeft class="size-3.5" />
+            <span>{{ $t('auth.back_to_login_methods') }}</span>
+          </button>
+        </form>
+
+        <!-- Terms and Privacy -->
+        <p class="mt-10 text-center text-xs leading-relaxed text-muted-foreground">
+          {{ $t('auth.privacy_agreement') }}
+          <a
+            :href="privacyUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-foreground underline underline-offset-2 hover:text-brand"
+          >
+            {{ $t('auth.privacy_policy') }}
+          </a>.
+        </p>
+
+        <!-- Return to Public Site (hidden in PWA) -->
+        <a
+          v-if="!isPWA"
+          :href="homeUrl"
+          class="mt-4 flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft class="size-3.5" />
+          <span>{{ $t('auth.back_to_vusa') }}</span>
+        </a>
+      </div>
+    </section>
+  </main>
 </template>
 
 <script setup lang="ts">
-import { z } from 'zod';
-import { toTypedSchema } from '@vee-validate/zod';
-import { trans as $t } from 'laravel-vue-i18n';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import Autoplay from 'embla-carousel-autoplay';
 import Fade from 'embla-carousel-fade';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Mail,
+  X,
+} from 'lucide-vue-next';
 
-import { usePWA } from '@/Composables/usePWA';
-
-// Components
-import AppLogo from '@/Components/AppLogo.vue';
-import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import MicrosoftButton from '@/Components/Buttons/MicrosoftLoginButton.vue';
 import { Carousel, CarouselContent, CarouselItem } from '@/Components/ui/carousel';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/Components/ui/form';
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
-
-// Icons
-import IFluentKey24Filled from '~icons/fluent/key-24-filled';
-import IFluentArrowHookUpLeft24Regular from '~icons/fluent/arrow-hook-up-left-24-regular';
-import IFluentArrowLeft16Regular from '~icons/fluent/arrow-left-16-regular';
-import IFluentErrorCircle16Regular from '~icons/fluent/error-circle-16-regular';
-import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
-import IFluentCheckmarkCircle16Regular from '~icons/fluent/checkmark-circle-16-regular';
+import { usePWA } from '@/Composables/usePWA';
+import { getAppLogoSrc } from '@/Utils/AppLogo';
 
 defineProps<{
   status?: string;
 }>();
 
 const { isPWA } = usePWA();
-const useSimpleRegistration = ref(false);
+const page = usePage();
+
+const showEmailForm = ref(false);
+const showPassword = ref(false);
 const errorDismissed = ref(false);
 
-// Get errors from Inertia page props - reset dismissed state when errors change
-const errors = computed(() => {
-  const pageErrors = usePage().props.errors || {};
-  // Reset dismissed state when new errors come in
-  if (Object.keys(pageErrors).length > 0) {
-    errorDismissed.value = false;
+const logoSrc = computed(() => getAppLogoSrc('vusa', page.props.app?.locale));
+
+const heroPhotos = [
+  { src: '/images/become-a-member/20250510_VUSA-156.webp', alt: 'VU SA nariai 2025' },
+  { src: '/images/become-a-member/mokymai2025-2.webp', alt: 'VU SA mokymai' },
+  { src: '/images/become-a-member/mokymai2025-1.webp', alt: 'VU SA mokymai' },
+  { src: '/images/become-a-member/VU SA 24-25-06.webp', alt: 'VU SA bendruomenė' },
+];
+
+const homeUrl = computed(() => {
+  try {
+    return route('home', { lang: page.props.app?.locale, subdomain: 'www' });
   }
-  return pageErrors;
+  catch {
+    return '/';
+  }
 });
 
-// Inertia form for submission
+const privacyUrl = computed(() => {
+  return (page.props.organization as { privacyPageUrl?: string } | undefined)?.privacyPageUrl || '#';
+});
+
+// Retrieve errors from Inertia page props
+const errors = computed(() => page.props.errors || {});
+
+watch(errors, (newErrors) => {
+  if (Object.keys(newErrors).length > 0) {
+    errorDismissed.value = false;
+  }
+});
+
+// Inertia form submission
 const form = useForm({
   email: '',
   password: '',
   remember: false,
 });
 
-// Validation schema using Zod
-const validationSchema = toTypedSchema(
-  z.object({
-    email: z
-      .string({ required_error: $t('El. paštas yra privalomas.') })
-      .min(1, $t('El. paštas yra privalomas.'))
-      .email($t('Įveskite tinkamą el. pašto adresą.')),
-    password: z
-      .string({ required_error: $t('Slaptažodis yra privalomas.') })
-      .min(1, $t('Slaptažodis yra privalomas.')),
-  }),
-);
-
-// Handle form submission
-const handleSubmit = (values: { email: string; password: string }) => {
-  form.email = values.email;
-  form.password = values.password;
-
+const handleSubmit = () => {
   form.post(route('login'), {
     onFinish: () => {
       form.reset('password');
@@ -321,11 +338,7 @@ const handleSubmit = (values: { email: string; password: string }) => {
 </script>
 
 <style scoped>
-/*
-The carousel content is not that easily accessed,
-but i'll keep it that way.
-*/
 div[data-slot="carousel-content"] {
-  height: 100vh;
+  height: 100%;
 }
 </style>

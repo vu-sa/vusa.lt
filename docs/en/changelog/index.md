@@ -15,6 +15,7 @@ lastUpdated: true
 - ✨ **Bolder buttons and headings** — admin buttons, filters and page headings now match the public website, with larger touch targets on phones and tablets
 - ✨ **New page editor** — while creating or editing a page, the top bar becomes an editor bar with Back, the save state and Save; fields sit in a content column and side panels (Publishing, Structure, Language, Display settings), and on phones Save always stays within thumb reach at the bottom
 - ✨ **Hints under fields** — form field hints now show under the field instead of only on hover, so you can see them on a phone too
+- ✨ **New login page** — the login screen is updated to the new design system with a desktop split view, community photo carousel, refined button hierarchy, and responsive layout for phones and tablets
 
 ## v2.17 — System administration (2026-09-22) {#v2-17}
 
