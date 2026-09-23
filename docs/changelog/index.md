@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.18 — Vienodi sąrašai visoje Mano VU SA (2026-09-23) {#v2-18}
 
+- 🔧 **Administratorių paskyrų peržiūra** — vietinėje ir testinėje aplinkoje superadministratoriai vėl gali prisijungti kaip kiti superadministratoriai; naują pasirinkimo juostą galima uždaryti iki puslapio atnaujinimo, o nepavykus matomas klaidos pranešimas
 - ✨ **Aiškesnė Pradžia** — greitieji veiksmai rodomi su vienu ryškiu mygtuku, po jais atsirado pagal prieigą parinktos nuorodos į administravimą ir rezervacijas, o užduočių terminai skaitomi santykinai be papildomų būsenos ženklelių
 - ✨ **Patogesnė paieška planšetėje** — siauresnėje viršutinėje juostoje paieškos lauką pakeičia mygtukas, atveriantis tą pačią komandų paletę
 - ✨ **Ramesnė Mano VU SA pradžia** — užduotys rodomos pirmiausia, o po pasisveikinimu parašyta, kiek jų laukia ir kiek vėluoja; vėluojantis terminas rašomas „vėluoja 2 d.“, po jomis – skiltis „Eiti į“, greitieji veiksmai perkelti į šoninį stulpelį, o kai užduočių nėra, jos rodomos sąraše „Viskas tvarkoje“, o naujienos ir renginiai turi vaizdines peržiūras su nuorodomis į viešus puslapius

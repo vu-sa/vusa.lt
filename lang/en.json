@@ -1738,5 +1738,12 @@
     "Juodraštis matomas tik sistemoje — svetainės lankytojai jo nemato.": "A draft is visible only in Mano VU SA — website visitors can't see it.",
     "Puslapis pasiekiamas pagal nuorodą, o paieškoje pasirodys nuo :date.": "The page is reachable by its link and appears in search from :date.",
     "Paskelbtas puslapis iškart matomas visiems svetainės lankytojams.": "A published page is visible to all website visitors straight away.",
-    "Atidaryti puslapį": "Open page"
+    "Atidaryti puslapį": "Open page",
+    "Apsimesti nariu": "Impersonate a member",
+    "Įvesk bent 2 simbolius": "Enter at least 2 characters",
+    "Nepavyko prisijungti kaip šis narys.": "Could not impersonate this member.",
+    "Nepavyko grįžti į savo paskyrą.": "Could not return to your account.",
+    "Prisijungei kaip": "Signed in as",
+    "Pradinė paskyra": "Original account",
+    "Grįžti į savo paskyrą": "Return to your account"
 }
