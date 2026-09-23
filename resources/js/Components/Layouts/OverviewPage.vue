@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-8" data-slot="overview-page">
+  <div class="mx-auto flex w-full max-w-7xl flex-col gap-10 lg:gap-14" data-slot="overview-page">
     <Head :title="headTitle ?? title" />
 
     <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">

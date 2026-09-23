@@ -4,7 +4,7 @@
       type="button"
       :class="[
         'hidden h-9 w-full max-w-md items-center gap-2 md:flex',
-        'border border-border bg-background px-3 text-left text-sm text-muted-foreground',
+        'border border-border bg-secondary/40 px-3 text-left text-sm text-muted-foreground',
         'transition-colors hover:border-brand hover:text-foreground',
       ]"
       @click="toggle"

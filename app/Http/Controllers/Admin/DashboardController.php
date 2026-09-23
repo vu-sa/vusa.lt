@@ -261,6 +261,7 @@ class DashboardController extends AdminController
                 'lang' => $news->lang,
                 'publish_time' => $news->publish_time,
                 'image' => $news->getImageUrl(),
+                'public_url' => $news->publicUrl(),
                 'tenant' => $news->tenant,
             ])
             ->all();

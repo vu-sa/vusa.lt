@@ -6,10 +6,6 @@
       </h1>
     </template>
 
-    <template #attention>
-      <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
-    </template>
-
     <AccessChangeBand v-if="accessChanges.length > 0" :changes="accessChanges" />
 
     <FirstLoginChecklist
@@ -20,13 +16,16 @@
 
     <CreateShortcuts />
 
-    <UpcomingMeetingsList
-      v-if="hasAtstovavimas"
-      :meetings="upcomingMeetings"
-      :href="route('dashboard.atstovavimas')"
-    />
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
+      <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
+      <UpcomingMeetingsList
+        v-if="hasAtstovavimas"
+        :meetings="upcomingMeetings"
+        :href="route('dashboard.atstovavimas')"
+      />
+    </div>
 
-    <!-- Everything below is deferred: the queue above is what a rep came for (U19). -->
+    <!-- Secondary overview data arrives after the immediately useful actions and tasks. -->
     <Deferred :data="deferredProps">
       <template #fallback>
         <CollectionSkeleton :rows="3" />
@@ -38,15 +37,15 @@
         @record="recordMeetingFor"
       />
 
-      <div class="grid gap-8 lg:grid-cols-2">
+      <SiteContentLists
+        :events="upcomingCalendarEvents ?? []"
+        :news="latestNews ?? []"
+      />
+
+      <div class="grid gap-10 lg:grid-cols-2 lg:gap-16">
         <CoordinatorCard :coordinator="coordinator ?? null" />
         <RecentlyEditedList :records="recentlyEdited ?? []" />
       </div>
-
-      <SiteContentLists
-        :events="calendarEvents"
-        :news="newsItems"
-      />
     </Deferred>
   </OverviewPage>
 </template>
@@ -69,9 +68,9 @@ import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
 import type {
   HomeAccessChange,
   HomeChecklist,
-  HomeContentItem,
   HomeCoordinator,
   HomeMeeting,
+  HomeNewsPreview,
   HomeRecentRecord,
   HomeTask,
   InstitutionActivityInsight,
@@ -103,7 +102,7 @@ const props = defineProps<{
   upcomingMeetings: HomeMeeting[];
   institutionsNeedingAttention?: InstitutionActivityInsight[];
   upcomingCalendarEvents?: App.Entities.Calendar[];
-  latestNews?: App.Entities.News[];
+  latestNews?: HomeNewsPreview[];
   recentlyEdited?: HomeRecentRecord[];
   coordinator?: HomeCoordinator | null;
   recordedMeetingsThisYear?: number;
@@ -251,20 +250,4 @@ const recordMeetingFor = (institution: InstitutionActivityInsight) => {
   actionWindow.open({ flow: 'meeting.create', institution: { id: institution.id, name: institution.name } });
 };
 
-// The calendar and news payloads are full models; the home page only needs a title and a date.
-const calendarEvents = computed<HomeContentItem[]>(() =>
-  (props.upcomingCalendarEvents ?? []).map(event => ({
-    id: String(event.id),
-    title: String(event.title),
-    date: event.date ? String(event.date) : null,
-  })),
-);
-
-const newsItems = computed<HomeContentItem[]>(() =>
-  (props.latestNews ?? []).map(item => ({
-    id: String(item.id),
-    title: String(item.title),
-    date: item.publish_time ? String(item.publish_time) : null,
-  })),
-);
 </script>

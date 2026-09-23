@@ -37,10 +37,37 @@ it('shows the workspace and section a page belongs to', function (): void {
     $page->assertNoJavaScriptErrors();
 });
 
-it('keeps the tab lit on a record page, not only on the index', function (): void {
+it('aligns collection and form shells with the top bar measure', function (): void {
+    $page = openShell(1180, 900);
+
+    foreach (['/mano/institutions', '/mano/institutions/create'] as $path) {
+        if ($path !== '/mano/institutions') {
+            $page->navigate($path);
+            waitForInertiaRender($page, '[data-slot=form-page]');
+        }
+
+        $alignment = $page->script('(() => {
+            const inset = element => {
+                const rect = element.getBoundingClientRect();
+                const style = getComputedStyle(element);
+                return [rect.left + parseFloat(style.paddingLeft), rect.right - parseFloat(style.paddingRight)];
+            };
+            return {
+                bar: inset(document.querySelector("[data-slot=shell-top-bar] > div")),
+                page: inset(document.querySelector("[data-slot=admin-page-measure]")),
+            };
+        })()');
+
+        expect(abs($alignment['bar'][0] - $alignment['page'][0]))->toBeLessThanOrEqual(1)
+            ->and(abs($alignment['bar'][1] - $alignment['page'][1]))->toBeLessThanOrEqual(1);
+    }
+});
+
+it('replaces section tabs with form navigation on a create page', function (): void {
     $page = openShell(1440, 900, '/mano/institutions/create');
 
-    expect($page->script("document.querySelector('[data-slot=section-tabs] [aria-current=page]').textContent"))->toContain('Institucijos');
+    expect($page->script("document.querySelector('[data-slot=section-tabs]')"))->toBeNull()
+        ->and($page->script("document.querySelector('[data-testid=form-page-bar] a').textContent"))->toContain('Institucijos');
 });
 
 it('uses the bottom bar and hides the create button in the top bar on a phone', function (): void {
@@ -72,11 +99,12 @@ it('draws no breadcrumbs on a section index — the tabs already say where you a
     expect($page->script("document.querySelector('[data-slot=shell-breadcrumbs]')"))->toBeNull();
 });
 
-it('draws breadcrumbs below section level, starting with the section as the way back', function (): void {
+it('shows the way back and title in the focused form bar', function (): void {
     $page = openShell(1440, 900, '/mano/news/create');
 
-    expect($page->script("document.querySelector('[data-slot=shell-breadcrumbs] ol a').textContent.trim()"))->toBe('Naujienos')
-        ->and($page->script("document.querySelector('[data-slot=shell-breadcrumbs] [aria-current=page]').textContent.trim()"))->toBe('Nauja naujiena');
+    expect($page->script("document.querySelector('[data-slot=shell-breadcrumbs]')"))->toBeNull()
+        ->and($page->script("document.querySelector('[data-testid=form-page-bar] a').textContent.trim()"))->toBe('Naujienos')
+        ->and($page->script("document.querySelector('[data-testid=form-page-bar] p').textContent.trim()"))->toBe('Nauja naujiena');
     $page->assertNoJavaScriptErrors();
 });
 

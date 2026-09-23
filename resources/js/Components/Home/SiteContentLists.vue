@@ -1,40 +1,29 @@
 <template>
-  <div v-if="events.length > 0 || news.length > 0" class="grid gap-6 lg:grid-cols-2" data-slot="site-content">
-    <OverviewSection :title="$t('Artimiausi renginiai')" :empty="events.length === 0">
-      <ul class="divide-y divide-border border-y border-border">
-        <li v-for="event in events" :key="event.id">
-          <Link :href="route('calendar.edit', event.id)" prefetch class="flex items-center gap-3 px-1 py-3 hover:bg-secondary pointer-coarse:py-4">
-            <span class="min-w-0 flex-1 truncate font-medium">{{ event.title }}</span>
-            <span v-if="event.date" class="shrink-0 text-sm text-muted-foreground">{{ formatNearDate(event.date) }}</span>
-          </Link>
-        </li>
-      </ul>
+  <div v-if="events.length > 0 || news.length > 0" class="grid gap-10 lg:grid-cols-2 lg:gap-16" data-slot="site-content">
+    <OverviewSection v-if="events.length > 0" :title="$t('Artimiausi renginiai')">
+      <div class="divide-y divide-border">
+        <EventCard v-for="event in events" :key="event.id" :event variant="compact" />
+      </div>
     </OverviewSection>
 
-    <OverviewSection :title="$t('Naujausios naujienos')" :empty="news.length === 0">
-      <ul class="divide-y divide-border border-y border-border">
-        <li v-for="item in news" :key="item.id">
-          <Link :href="route('news.edit', item.id)" prefetch class="flex items-center gap-3 px-1 py-3 hover:bg-secondary pointer-coarse:py-4">
-            <span class="min-w-0 flex-1 truncate font-medium">{{ item.title }}</span>
-            <span v-if="item.date" class="shrink-0 text-sm text-muted-foreground">{{ formatNearDate(item.date) }}</span>
-          </Link>
-        </li>
-      </ul>
+    <OverviewSection v-if="news.length > 0" :title="$t('Naujausios naujienos')">
+      <div class="divide-y divide-border">
+        <NewsCard v-for="item in news" :key="item.id" :news="item" size="compact" />
+      </div>
     </OverviewSection>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import type { HomeContentItem } from './types';
-
+import EventCard from '@/Components/Calendar/EventCard.vue';
+import NewsCard from '@/Components/News/NewsCard.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
-import { formatNearDate } from '@/Utils/dateTime';
+import type { HomeNewsPreview } from './types';
 
 defineProps<{
-  events: HomeContentItem[];
-  news: HomeContentItem[];
+  events: App.Entities.Calendar[];
+  news: HomeNewsPreview[];
 }>();
 </script>

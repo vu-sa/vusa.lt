@@ -2,24 +2,18 @@
   <Popover v-model:open="isOpen">
     <PopoverTrigger as-child>
       <Button
-        variant="outline"
+        variant="ghost"
         size="icon"
-        class="relative rounded-full md:w-auto md:px-3 md:gap-2"
+        class="relative size-10 shrink-0 border border-border text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
         data-tour="notifications-indicator"
       >
         <BellIcon class="h-4 w-4" :class="{ 'animate-bell-swing': hasNewNotification }" />
         <Transition name="count" mode="out-in">
-          <span
-            :key="`count-${unreadNotificationsCount}`"
-            class="hidden text-sm md:inline"
-            aria-live="polite"
-          >
-            {{ unreadNotificationsCount }}
-          </span>
+          <span :key="`count-${unreadNotificationsCount}`" class="sr-only" aria-live="polite">{{ unreadNotificationsCount }}</span>
         </Transition>
         <span
           v-if="unreadNotificationsCount > 0"
-          class="md:hidden absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground"
+          class="absolute -right-1 -top-1 flex min-h-4 min-w-4 items-center justify-center bg-brand-fill px-0.5 text-[10px] font-bold text-brand-foreground"
           aria-live="polite"
         >
           {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
@@ -27,17 +21,17 @@
         <span class="sr-only">{{ $t('Notifications') }}</span>
       </Button>
     </PopoverTrigger>
-    <PopoverContent class="w-96 p-0" align="end">
+    <PopoverContent class="w-96 max-w-[calc(100vw-2rem)] border-border p-0 shadow-none" align="end">
       <!-- Header -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-        <h4 class="font-semibold text-zinc-900 dark:text-zinc-100">
+      <div class="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <h4 class="font-semibold text-foreground">
           {{ $t('Notifications') }}
         </h4>
         <Button
           v-if="unreadNotificationsCount > 0"
           variant="ghost"
           size="sm"
-          class="h-7 text-xs gap-1.5 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          class="gap-1.5 text-xs text-muted-foreground hover:text-foreground pointer-coarse:h-11"
           @click="markAllAsRead"
         >
           <CheckCheckIcon class="h-3.5 w-3.5" />
@@ -47,22 +41,21 @@
 
       <!-- Notifications List -->
       <ScrollArea class="h-[340px]">
-        <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div class="divide-y divide-border">
           <div
             v-for="notification in notifications"
             :key="notification.id"
             class="group relative"
-            :class="{ 'bg-blue-50/50 dark:bg-blue-950/20': !notification.read_at }"
+            :class="{ 'bg-secondary/40': !notification.read_at }"
           >
             <button
-              class="flex items-start gap-3 w-full p-4 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+              class="flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-secondary"
               @click="navigateToNotification(notification)"
             >
               <!-- Icon -->
               <div
                 :class="[
-                  'flex items-center justify-center size-9 rounded-full shrink-0 mt-0.5',
-                  getNotificationColorClasses(notification).combined
+                  'mt-0.5 flex size-9 shrink-0 items-center justify-center border border-border text-muted-foreground',
                 ]"
               >
                 <component :is="getNotificationIconComponent(notification)" class="size-4" />
@@ -76,13 +69,13 @@
                     v-if="notification.data.subject?.image"
                     :src="notification.data.subject.image"
                     :alt="notification.data.subject.name"
-                    class="size-4 rounded-full object-cover"
+                    class="size-4 object-cover"
                   >
                   <p
                     class="text-sm truncate"
                     :class="notification.read_at
-                      ? 'font-medium text-zinc-700 dark:text-zinc-300'
-                      : 'font-semibold text-zinc-900 dark:text-zinc-100'"
+                      ? 'font-medium text-muted-foreground'
+                      : 'font-semibold text-foreground'"
                   >
                     {{ getNotificationTitleText(notification) }}
                   </p>
@@ -90,12 +83,12 @@
 
                 <!-- Body -->
                 <p
-                  class="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2"
+                  class="line-clamp-2 text-xs text-muted-foreground"
                   v-html="getNotificationMessageText(notification)"
                 />
 
                 <!-- Timestamp -->
-                <p class="text-[11px] text-zinc-500 dark:text-zinc-500">
+                <p class="text-xs text-muted-foreground">
                   {{ getFormattedTime(notification) }}
                 </p>
               </div>
@@ -105,12 +98,11 @@
                 <Transition name="fade">
                   <button
                     v-if="!notification.read_at"
-                    class="flex items-center justify-center size-7 rounded-full transition-all opacity-0 group-hover:opacity-100 hover:bg-green-100 dark:hover:bg-green-900/30"
-                    :class="{ 'opacity-100': !notification.read_at }"
+                    class="flex size-9 items-center justify-center border border-border text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground pointer-coarse:size-11"
                     :title="$t('Mark as read')"
                     @click.stop="markAsRead(notification.id)"
                   >
-                    <CheckIcon class="size-4 text-green-600 dark:text-green-400" />
+                    <CheckIcon class="size-4" />
                   </button>
                 </Transition>
               </div>
@@ -138,32 +130,32 @@
           v-if="notifications.length === 0"
           class="flex flex-col items-center justify-center h-full p-8 text-center"
         >
-          <div class="flex items-center justify-center size-12 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-3">
-            <BellIcon class="size-6 text-zinc-400 dark:text-zinc-500" />
+          <div class="mb-3 flex size-12 items-center justify-center border border-border bg-secondary">
+            <BellIcon class="size-6 text-muted-foreground" />
           </div>
-          <h3 class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <h3 class="text-sm font-medium text-foreground">
             {{ $t('No notifications') }}
           </h3>
-          <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400 max-w-[200px]">
+          <p class="mt-1 max-w-[200px] text-xs text-muted-foreground">
             {{ $t("You're all caught up! New notifications will appear here.") }}
           </p>
         </div>
       </ScrollArea>
 
       <!-- Footer -->
-      <div class="border-t border-zinc-200 dark:border-zinc-800 p-2 space-y-1.5">
+      <div class="space-y-1.5 border-t border-border p-2">
         <!-- Push notification toggle (compact) -->
         <div
           v-if="pushSupported"
-          class="flex items-center justify-between px-2 py-1.5 rounded-md hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+          class="flex items-center justify-between px-2 py-1.5 hover:bg-secondary"
         >
           <div class="flex items-center gap-2">
-            <SmartphoneIcon class="h-4 w-4 text-zinc-500" aria-hidden="true" />
-            <span class="text-xs text-zinc-600 dark:text-zinc-400">{{ $t('notifications.channels.push') }}</span>
+            <SmartphoneIcon class="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <span class="text-xs text-muted-foreground">{{ $t('notifications.channels.push') }}</span>
           </div>
           <button
             v-if="!hasPushSubscription && canSubscribeToPush"
-            class="text-xs font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 disabled:opacity-50"
+            class="text-xs font-medium text-foreground hover:underline disabled:opacity-50"
             :disabled="isSubscribingToPush"
             @click="handleSubscribeToPush"
           >
@@ -172,7 +164,7 @@
           </button>
           <button
             v-else-if="hasPushSubscription"
-            class="text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+            class="text-xs font-medium text-foreground hover:underline disabled:opacity-50"
             :disabled="isUnsubscribingFromPush"
             @click="handleUnsubscribeFromPush"
           >
@@ -181,7 +173,7 @@
           </button>
           <span
             v-else-if="pushPermission === 'denied'"
-            class="text-xs text-red-500"
+            class="text-xs text-muted-foreground"
           >
             {{ $t('notifications.channels.push_blocked') }}
           </span>
@@ -190,7 +182,7 @@
         <!-- View all link -->
         <Link
           :href="route('notifications.index')"
-          class="flex items-center justify-center gap-1.5 w-full py-2 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          class="flex w-full items-center justify-center gap-1.5 py-2 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground pointer-coarse:min-h-11"
           @click="isOpen = false"
         >
           {{ $t('notifications.view_all') }}
@@ -218,7 +210,6 @@ import { usePWA } from '@/Composables/usePWA';
 import { useRealtimeNotifications } from '@/Composables/useRealtimeNotifications';
 import {
   getNotificationIcon as getNotificationIconFn,
-  getNotificationColorClasses as getNotificationColorClassesFn,
   getNotificationTitle as getNotificationTitleFn,
   getNotificationMessage as getNotificationMessageFn,
   getNotificationUrl,
@@ -278,10 +269,6 @@ const unreadNotificationsCount = computed(() => {
 // Wrapper functions for formatting utilities
 const getNotificationIconComponent = (notification: Notification) => {
   return getNotificationIconFn(notification);
-};
-
-const getNotificationColorClasses = (notification: Notification) => {
-  return getNotificationColorClassesFn(notification);
 };
 
 const getNotificationTitleText = (notification: Notification) => {

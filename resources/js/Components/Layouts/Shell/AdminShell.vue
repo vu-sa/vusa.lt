@@ -27,7 +27,7 @@
     <SystemAnnouncement :message="systemMessage" />
 
     <main class="min-h-0 flex-1 overflow-auto">
-      <div class="mx-auto min-h-full w-full max-w-[100rem] p-4 md:p-6">
+      <div class="mx-auto min-h-full w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8 md:py-6" data-slot="admin-page-measure">
         <slot />
       </div>
     </main>

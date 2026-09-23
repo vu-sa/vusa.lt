@@ -16,6 +16,8 @@ describe('SectionTabs', () => {
       'shell.sections.uzduotys',
       'shell.sections.pranesimai',
     ]);
+    expect(wrapper.findAll('a svg')).toHaveLength(3);
+    expect(wrapper.findAll('a').every(link => link.classes().includes('font-bold'))).toBe(true);
   });
 
   it('marks the active section with aria-current and a brand rule', () => {
@@ -26,6 +28,8 @@ describe('SectionTabs', () => {
     expect(meetings.classes()).toContain('border-brand-fill');
     expect(overview.attributes('aria-current')).toBeUndefined();
     expect(overview.classes()).toContain('border-transparent');
+    expect(overview.classes()).toContain('hover:border-brand-fill');
+    expect(overview.classes()).toContain('focus-visible:border-brand-fill');
   });
 
   it('prefetches tabs with a short fresh and stale cache window', () => {

@@ -11,7 +11,7 @@ return [
     ],
     'workspaces' => [
         'pradzia' => [
-            'title' => 'Pradžia',
+            'title' => 'Mano',
             'description' => 'Tavo darbai, užduotys ir pranešimai',
         ],
         'atstovavimas' => [

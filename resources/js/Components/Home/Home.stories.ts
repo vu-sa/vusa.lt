@@ -59,7 +59,7 @@ export const CoordinatorAndRecent: Story = {
   }),
 };
 
-/** The ink band inverts in dark mode; axe checks the contrast of that inversion here. */
+/** The task rows use the same hairlines and text hierarchy in dark mode. */
 export const AttentionQueueDark: Story = {
   ...AttentionQueueWithTasks,
   globals: { surface: 'admin', theme: 'dark' },

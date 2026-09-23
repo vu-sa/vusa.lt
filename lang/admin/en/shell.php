@@ -11,7 +11,7 @@ return [
     ],
     'workspaces' => [
         'pradzia' => [
-            'title' => 'Home',
+            'title' => 'Mano',
             'description' => 'Your work, tasks and notifications',
         ],
         'atstovavimas' => [

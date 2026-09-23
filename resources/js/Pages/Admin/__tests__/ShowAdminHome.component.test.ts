@@ -59,6 +59,16 @@ beforeEach(() => {
 });
 
 describe('ShowAdminHome', () => {
+  it('places create actions before the task preview', () => {
+    const wrapper = mountPage();
+    const shortcuts = wrapper.find('create-shortcuts-stub');
+    const tasks = wrapper.find('attention-queue-stub');
+
+    expect(shortcuts.exists()).toBe(true);
+    expect(tasks.exists()).toBe(true);
+    expect(shortcuts.element.compareDocumentPosition(tasks.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('shows the checklist and the access band only when the server sends them', () => {
     expect(mountPage().find('[data-stub="checklist"]').exists()).toBe(false);
     expect(mountPage().find('[data-stub="band"]').exists()).toBe(false);

@@ -1,13 +1,15 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="ghost" size="icon" class="u-touch" :aria-label="$t('shell.chrome.account')">
+      <Button variant="ghost" class="u-touch h-10 gap-2 border-l border-border pl-3 pr-1 hover:bg-secondary" :aria-label="$t('shell.chrome.account')">
         <Avatar class="size-8 rounded-none">
           <AvatarImage v-if="user?.profile_photo_path" :src="user.profile_photo_path" :alt="user.name" />
-          <AvatarFallback class="rounded-none text-xs font-semibold">
+          <AvatarFallback class="rounded-none bg-brand-fill text-xs font-bold text-brand-foreground dark:bg-brand-fill dark:text-brand-foreground">
             {{ initials }}
           </AvatarFallback>
         </Avatar>
+        <span class="hidden max-w-28 truncate text-xs font-bold text-foreground lg:inline">{{ user?.name }}</span>
+        <ChevronDown class="hidden size-3.5 text-muted-foreground lg:inline" aria-hidden="true" />
       </Button>
     </DropdownMenuTrigger>
 
@@ -136,7 +138,7 @@
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useDark } from '@vueuse/core';
-import { Bell, BookOpen, Bug, CircleHelp, Info, Languages, LogOut, Map, MessagesSquare, Moon, Palette, Radio, ShieldCheck, Sparkles, Sun, UserRound } from 'lucide-vue-next';
+import { Bell, BookOpen, Bug, ChevronDown, CircleHelp, Info, Languages, LogOut, Map, MessagesSquare, Moon, Palette, Radio, ShieldCheck, Sparkles, Sun, UserRound } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';

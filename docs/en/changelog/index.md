@@ -7,6 +7,8 @@ lastUpdated: true
 
 ## v2.18 — Consistent lists across Mano VU SA (2026-09-23) {#v2-18}
 
+- ✨ **A calmer Mano VU SA home** — tasks appear as simple rows after quick actions in a narrower layout, while news and events have visual previews linking to their public pages
+- ✨ **A clearer top bar** — the larger logo and translucent surface match the public site, “Mano” names your workspace, and the smaller create button, section icons, and refreshed menus make navigation easier
 - ✨ **One list design** — pages, news, events, institutions, meetings, members, roles, permissions, types, relationships, units, study programmes and study sets now look and behave the same: a large heading, search with filters, sorting, rows, table and preview views, and "Show more"
 - ✨ **Deleted records in the same list** — the "Deleted (N)" control in the filter bar shows deleted records in the same view, where you can restore them or delete them permanently
 - ⭐ **Select several records** — when merging members, duties, tags or study programmes and when deciding on reservations, select everything shown in one click; in the table you can sort by clicking a column heading and hide columns under "Columns"

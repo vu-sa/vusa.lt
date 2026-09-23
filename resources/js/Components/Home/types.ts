@@ -36,10 +36,14 @@ export interface HomeCoordinator {
   duty: string | null;
 }
 
-export interface HomeContentItem {
-  id: string;
+export interface HomeNewsPreview {
+  id: number;
   title: string;
-  date: string | null;
+  lang: string;
+  permalink: string | null;
+  image: string | null;
+  publish_time: string;
+  public_url: string | null;
 }
 
 export interface HomeChecklistItem {

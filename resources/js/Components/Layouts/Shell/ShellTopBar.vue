@@ -1,17 +1,22 @@
 <template>
-  <header data-slot="shell-top-bar" class="shrink-0 border-b border-border bg-background">
-    <div class="flex h-14 items-center gap-2 px-4 md:gap-3 md:px-6">
+  <header
+    data-slot="shell-top-bar"
+    :class="[
+      'shrink-0 border-b border-(--border-opaque) bg-background/90 backdrop-blur-sm',
+      '[.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none',
+    ]"
+  >
+    <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:gap-3 lg:px-8">
       <Link
         :href="route('dashboard')"
         prefetch
         :cache-for="SHELL_PREFETCH_CACHE_FOR"
         :class="[
-          'mr-1 shrink-0 items-baseline gap-1 text-sm font-bold uppercase tracking-wide md:mr-3',
+          'mr-1 shrink-0 items-center gap-2 text-foreground transition-colors hover:text-foreground md:mr-3',
           focused ? 'hidden lg:flex' : 'flex',
         ]"
       >
-        <span>Mano</span>
-        <span class="text-brand">VU SA</span>
+        <img :src="logoSrc" alt="VU SA" width="1200" height="428" class="h-10 w-auto dark:invert">
       </Link>
 
       <!-- A form teleports its editor bar (back, save state, actions, save) in here. Always
@@ -36,7 +41,8 @@
           v-if="canCreate"
           data-tour="action-create"
           variant="brand"
-          class="hidden text-xs font-bold uppercase tracking-wide md:inline-flex"
+          size="sm"
+          class="hidden md:inline-flex pointer-coarse:h-11"
           @click="emit('create')"
         >
           <Plus class="size-4" />
@@ -53,9 +59,10 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Plus } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import PaletteField from './PaletteField.vue';
 import ShellAccountMenu from './ShellAccountMenu.vue';
@@ -65,6 +72,7 @@ import NotificationsIndicator from '@/Components/NotificationsIndicator.vue';
 import { Button } from '@/Components/ui/button';
 import { SHELL_PREFETCH_CACHE_FOR, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 import { SHELL_FORM_BAR_ID } from '@/Composables/useShellFocus';
+import { getAppLogoSrc } from '@/Utils/AppLogo';
 
 defineProps<{
   workspaces: AdminWorkspace[];
@@ -78,4 +86,6 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{ create: [] }>();
+const page = usePage<PageProps>();
+const logoSrc = computed(() => getAppLogoSrc('vusa', page.props.app.locale));
 </script>

@@ -367,7 +367,7 @@ describe('dashboard calendar and news', function (): void {
         News::query()->delete();
 
         // Create news without an image
-        News::factory()->for($this->tenant)->create([
+        $news = News::factory()->for($this->tenant)->create([
             'title' => 'News Without Image',
             'lang' => 'lt',
             'image' => null,
@@ -383,6 +383,7 @@ describe('dashboard calendar and news', function (): void {
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
                     ->has('latestNews', 1)
                     ->where('latestNews.0.image', null)
+                    ->where('latestNews.0.public_url', $news->publicUrl())
                 )
             );
     });

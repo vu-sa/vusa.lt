@@ -9,3 +9,4 @@
 export { default as DisplayHeading } from './DisplayHeading.vue';
 export { default as EyebrowLabel } from './EyebrowLabel.vue';
 export { default as TagChip } from './TagChip.vue';
+export { default as MediaFrame } from './MediaFrame.vue';

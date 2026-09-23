@@ -9,7 +9,7 @@
     <ul
       ref="listRef"
       :class="[
-        'flex overflow-x-auto px-2 md:px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        'mx-auto flex max-w-7xl overflow-x-auto px-2 sm:px-4 lg:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
         !arrived.left && !arrived.right && '[mask-image:linear-gradient(to_right,transparent,black_1.5rem,black_calc(100%-1.5rem),transparent)]',
         !arrived.left && arrived.right && '[mask-image:linear-gradient(to_right,transparent,black_1.5rem)]',
         arrived.left && !arrived.right && '[mask-image:linear-gradient(to_right,black_calc(100%-1.5rem),transparent)]',
@@ -24,12 +24,13 @@
           :cache-for="SHELL_PREFETCH_CACHE_FOR"
           v-bind="ariaCurrent(section.key === activeSection?.key)"
           :class="[
-            'flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-xs font-semibold uppercase tracking-wide transition-colors',
+            'flex h-10 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-xs font-bold uppercase tracking-wide transition-colors pointer-coarse:h-11',
             section.key === activeSection?.key
               ? 'border-brand-fill text-foreground'
-              : 'border-transparent text-muted-foreground hover:text-foreground',
+              : 'border-transparent text-muted-foreground hover:border-brand-fill hover:text-foreground focus-visible:border-brand-fill',
           ]"
         >
+          <component :is="sectionIcon(section)" class="size-4 shrink-0" aria-hidden="true" />
           {{ $t(section.label) }}
           <TaskCountBadge v-if="workspace.key === 'pradzia' && section.key === 'uzduotys'" />
         </Link>
@@ -52,6 +53,7 @@ import {
   type AdminSection,
   type AdminWorkspace,
 } from '@/Composables/useAdminNavigation';
+import { sectionIcon } from '@/Constants/adminSections';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
 
 const props = defineProps<{

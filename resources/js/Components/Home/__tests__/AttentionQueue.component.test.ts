@@ -34,11 +34,12 @@ vi.mock('@/Composables/useTaskPresentation', async (importOriginal) => {
 });
 
 describe('AttentionQueue', () => {
-  it('is the ink band while there is something to do, headed by how many things', () => {
+  it('shows simple task rows beneath a quiet heading', () => {
     const wrapper = mountQueue([task()]);
 
-    expect(wrapper.find('.bg-foreground').exists()).toBe(true);
-    expect(wrapper.find('h2').text()).toContain('Užduočių: :count');
+    expect(wrapper.find('.bg-foreground').exists()).toBe(false);
+    expect(wrapper.find('h2').text()).toBe('Mano užduotys');
+    expect(wrapper.findAll('ul li')).toHaveLength(1);
     expect(wrapper.text()).toContain('Visos užduotys');
   });
 
@@ -67,12 +68,11 @@ describe('AttentionQueue', () => {
     expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
   });
 
-  it('replaces the band with a teaching empty state when nothing is waiting', () => {
+  it('distinguishes no open tasks from no tasks due soon', () => {
     const wrapper = mountQueue([], { total: 0 });
 
-    expect(wrapper.find('.bg-foreground').exists()).toBe(false);
-    expect(wrapper.find('[data-slot="empty-state"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('Šiuo metu nieko nelaukia');
+    expect(mountQueue([], { total: 2 }).text()).toContain('Artimiausiu metu užduočių nėra');
   });
 
   it('renders a task with nothing left to link to as plain text, not a dead link', () => {
