@@ -2,7 +2,7 @@
   <!-- From md the facets sit in a row of popovers, toggled by Filtrai; below md the same
        facets stack in a bottom sheet (.ai/rules/js-pages-admin.md). -->
   <div
-    v-if="isAtLeastMd && open && facets.length > 0"
+    v-if="isAtLeastMd && open && (facets.length > 0 || trash)"
     class="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3"
     data-slot="collection-filter-bar"
   >
@@ -23,6 +23,17 @@
         <CollectionFacetOptions :facet @toggle="(field, value) => emit('toggle', field, value)" />
       </PopoverContent>
     </Popover>
+    <button
+      v-if="trash"
+      type="button"
+      :aria-pressed="trash.active"
+      :class="controlVariants({ size: 'sm', active: trash.active })"
+      @click="emit('toggleTrash')"
+    >
+      <Trash2 class="size-4" aria-hidden="true" />
+      {{ $t('Ištrinti') }}
+      <span v-if="trash.count > 0" :class="controlCountClass">{{ trash.count }}</span>
+    </button>
   </div>
 
   <Sheet v-if="!isAtLeastMd" :open="sheetOpen" @update:open="value => emit('update:sheetOpen', value)">
@@ -41,6 +52,17 @@
           </h3>
           <CollectionFacetOptions :facet @toggle="(field, value) => emit('toggle', field, value)" />
         </section>
+        <button
+          v-if="trash"
+          type="button"
+          :aria-pressed="trash.active"
+          :class="controlVariants({ active: trash.active })"
+          @click="emit('toggleTrash')"
+        >
+          <Trash2 class="size-4" aria-hidden="true" />
+          {{ $t('Ištrinti') }}
+          <span v-if="trash.count > 0" :class="controlCountClass">{{ trash.count }}</span>
+        </button>
       </div>
 
       <SheetFooter class="flex-row justify-between gap-2 border-t border-border p-4">
@@ -57,9 +79,10 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown, Trash2 } from 'lucide-vue-next';
 
 import CollectionFacetOptions from './CollectionFacetOptions.vue';
+import type { CollectionTrash } from './types';
 
 import { Button } from '@/Components/ui/button';
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
@@ -82,11 +105,13 @@ defineProps<{
   sheetOpen: boolean;
   isAtLeastMd: boolean;
   activeCount: number;
+  trash?: CollectionTrash;
 }>();
 
 const emit = defineEmits<{
   'toggle': [field: string, value: string];
   'clear': [];
+  'toggleTrash': [];
   'update:sheetOpen': [open: boolean];
 }>();
 

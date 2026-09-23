@@ -16,10 +16,10 @@ const columns: CollectionColumn[] = [
   { key: 'actions', label: 'Veiksmai', pinned: true },
 ];
 
-function makeTable(options: { selectable?: boolean; sortBy?: string } = {}) {
+function makeTable(options: { selectable?: boolean; sortBy?: string; rows?: Row[] } = {}) {
   const selection = ref<string[]>([]);
   const setSortBy = vi.fn();
-  const items = ref<Row[]>([{ id: 'a', title: 'A' }, { id: 'b', title: 'B', locked: true }]);
+  const items = ref<Row[]>(options.rows ?? [{ id: 'a', title: 'A' }, { id: 'b', title: 'B', locked: true }]);
 
   const result = useCollectionTable<Row>({
     collection: 'test-rows',
@@ -82,5 +82,36 @@ describe('useCollectionTable', () => {
     await nextTick();
 
     expect(JSON.parse(localStorage.getItem('admin-collection-columns:test-rows') ?? '{}')).toEqual({ date: false });
+  });
+
+  describe('shift-click range selection', () => {
+    const rows: Row[] = ['a', 'b', 'c', 'd', 'e'].map(id => ({ id, title: id.toUpperCase(), locked: id === 'c' }));
+
+    it('selects every selectable row between the anchor and the clicked row, in either direction', () => {
+      const { toggleRow, selection } = makeTable({ selectable: true, rows });
+
+      toggleRow('e', true);
+      toggleRow('b', true, { range: true });
+
+      expect([...selection.value].sort()).toEqual(['b', 'd', 'e']);
+    });
+
+    it('clears the range when the clicked row is being unticked', () => {
+      const { table, toggleRow, selection } = makeTable({ selectable: true, rows });
+      table.toggleAllRowsSelected(true);
+
+      toggleRow('a', false);
+      toggleRow('d', false, { range: true });
+
+      expect(selection.value).toEqual(['e']);
+    });
+
+    it('toggles only the clicked row when there is no anchor yet', () => {
+      const { toggleRow, selection } = makeTable({ selectable: true, rows });
+
+      toggleRow('d', true, { range: true });
+
+      expect(selection.value).toEqual(['d']);
+    });
   });
 });

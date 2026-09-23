@@ -1,15 +1,9 @@
 <template>
-  <!-- Edge-to-edge band, no inset panel and no rounding: the hero is the one element that
-       breaks every measure on the page, so the photograph runs to the viewport edges and only
-       the copy inside it keeps the content measure. `rc-viewport` is what escapes PublicLayout's
-       `.container` column (see app.css); `-mt-*` cancels the content wrapper's top padding so
-       the band sits flush under the fixed header. -->
+  <!-- Edge-to-edge band: the photograph runs to the viewport edges and only the copy inside it
+       keeps the content measure. `rc-viewport` escapes the rich-content canvas (see canvas.css). -->
   <section
     :id="anchorId ? `rc-${anchorId}` : undefined"
-    :class="[
-      'rc-viewport relative isolate scroll-mt-32 overflow-hidden border-b border-border bg-ink',
-      isFirstElement && '-mt-4 md:-mt-6 lg:-mt-8',
-    ]"
+    class="rc-viewport relative isolate scroll-mt-32 overflow-hidden border-b border-border bg-ink"
   >
     <!-- Single slide: rendered as a pure static full-bleed hero -->
     <HeroCarouselSlideView
@@ -172,7 +166,6 @@ defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
   element: HeroCarousel;
-  isFirstElement?: boolean;
   anchorId?: number | null;
   editable?: boolean;
   blockKey?: string;

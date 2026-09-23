@@ -1,8 +1,18 @@
 <template>
-  <div class="tiptap-editor" :class="[`tiptap-editor--${preset}`]">
+  <div
+    class="tiptap-editor"
+    :class="[
+      `tiptap-editor--${preset}`,
+      framed && [
+        'tiptap-editor--framed border border-border bg-background transition-colors',
+        'focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
+      ],
+    ]"
+  >
     <!-- Bubble Menu (for compact and full presets) -->
-    <BubbleMenu v-if="editor && preset !== 'minimal'"
-      class="flex items-center gap-0.5 rounded-lg border bg-white p-1 shadow-md dark:bg-zinc-900 dark:border-zinc-700"
+    <!-- A framed field already shows the same controls in its toolbar row. -->
+    <BubbleMenu v-if="editor && preset !== 'minimal' && !framed"
+      class="flex items-center gap-0.5 border border-border bg-background p-1 text-foreground shadow-md"
       :editor plugin-key="textBubbleMenu" :should-show="shouldShowTextBubbleMenu" :options="{ placement: 'top', offset: 8 }"
       @mousedown.prevent>
       <TiptapFormattingButtons v-model:editor="editor" :show-bold bubble />
@@ -11,7 +21,7 @@
       <template v-if="!disableLinks && editor.schema.marks.link">
         <Separator orientation="vertical" class="h-5 mx-0.5" />
         <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-          <Button size="icon-sm" :variant="editor.isActive('link') ? 'secondary' : 'ghost'">
+          <Button size="icon-sm" :variant="editor.isActive('link') ? 'brand' : 'ghost'">
             <IFluentLink24Regular class="h-4 w-4" />
           </Button>
         </TiptapLinkButton>
@@ -24,9 +34,14 @@
 
     <!-- Toolbar (configurable visibility) -->
     <div v-if="editor && showToolbar"
-      class="tiptap-toolbar flex flex-wrap items-center gap-2 rounded-lg border bg-white p-2 dark:bg-zinc-900 dark:border-zinc-700 mb-2">
+      :class="[
+        'tiptap-toolbar flex flex-wrap items-center',
+        framed
+          ? 'gap-0.5 border-b border-border bg-secondary/50 p-1.5'
+          : 'mb-2 gap-2 rounded-lg border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900',
+      ]">
       <!-- Formatting buttons -->
-      <TiptapFormattingButtons v-model:editor="editor" :show-bold />
+      <TiptapFormattingButtons v-model:editor="editor" :show-bold :bubble="framed" />
 
       <!-- Mobile-only toggle for the rest of the toolbar — on small screens the full
            control set doesn't fit above the keyboard, so only bold/italic/underline
@@ -43,18 +58,18 @@
         <!-- Link buttons -->
         <ButtonGroup v-if="!disableLinks && editor.schema.marks.link">
           <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-            <Button size="sm" :variant="editor.isActive('link') ? 'default' : 'outline'">
+            <Button :size="toolSize" :variant="toolVariant(editor.isActive('link'))">
               <IFluentLink24Regular />
             </Button>
           </TiptapLinkButton>
-          <Button size="sm" variant="outline" :disabled="!editor.isActive('link')"
+          <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.isActive('link')"
             @click="editor?.chain().focus().unsetLink().run()">
             <IFluentLinkDismiss20Filled />
           </Button>
         </ButtonGroup>
 
         <!-- Clear formatting -->
-        <Button v-if="preset !== 'marks'" size="sm" variant="outline" @click="editor?.chain().focus().unsetAllMarks().run()">
+        <Button v-if="preset !== 'marks'" :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().unsetAllMarks().run()">
           <IFluentClearFormatting20Filled />
         </Button>
 
@@ -64,11 +79,11 @@
              of the plain paragraph/h2 toggle pair, since it also needs room for size/
              accent below — a level Select scales to more options than a ButtonGroup. -->
         <ButtonGroup v-if="preset === 'compact'">
-          <Button size="sm" :variant="editor.isActive('paragraph') ? 'default' : 'outline'"
+          <Button :size="toolSize" :variant="toolVariant(editor.isActive('paragraph'))"
             @click="editor?.chain().focus().setParagraph().run()">
             <IFluentTextT24Regular />
           </Button>
-          <Button size="sm" :variant="editor.isActive('heading', { level: 2 }) ? 'default' : 'outline'"
+          <Button :size="toolSize" :variant="toolVariant(editor.isActive('heading', { level: 2 }))"
             @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
             <TextHeader220Filled />
           </Button>
@@ -101,7 +116,7 @@
                visually once a heading is actually active. -->
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <Button size="sm" variant="outline" :title="$t('rich-content.heading_style')">
+              <Button :size="toolSize" :variant="toolVariant(false)" :title="$t('rich-content.heading_style')">
                 <IFluentTextEffects20Regular />
               </Button>
             </DropdownMenuTrigger>
@@ -143,13 +158,13 @@
                focus. Hidden while an image node is selected: it would sit next to the
                image's own alignment control doing something else entirely. -->
           <ButtonGroup v-if="!editor.isActive('image')">
-            <Button size="sm" :variant="currentAlign === 'start' ? 'default' : 'outline'" @click="setAlign('start')">
+            <Button :size="toolSize" :variant="toolVariant(currentAlign === 'start')" @click="setAlign('start')">
               <IFluentTextAlignLeft24Regular />
             </Button>
-            <Button size="sm" :variant="currentAlign === 'center' ? 'default' : 'outline'" @click="setAlign('center')">
+            <Button :size="toolSize" :variant="toolVariant(currentAlign === 'center')" @click="setAlign('center')">
               <IFluentTextAlignCenter24Regular />
             </Button>
-            <Button size="sm" :variant="currentAlign === 'end' ? 'default' : 'outline'" @click="setAlign('end')">
+            <Button :size="toolSize" :variant="toolVariant(currentAlign === 'end')" @click="setAlign('end')">
               <IFluentTextAlignRight24Regular />
             </Button>
           </ButtonGroup>
@@ -157,7 +172,7 @@
           <!-- Dot-tag mark (see App/Tiptap/RCTag.php, RCTag.ts) — the MembershipPage-style pill. -->
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <Button size="sm" :variant="editor.isActive('rcTag') ? 'default' : 'outline'" :title="$t('rich-content.tag')">
+              <Button :size="toolSize" :variant="toolVariant(editor.isActive('rcTag'))" :title="$t('rich-content.tag')">
                 <IFluentTag24Regular />
               </Button>
             </DropdownMenuTrigger>
@@ -188,11 +203,11 @@
 
         <!-- Lists -->
         <ButtonGroup v-if="preset !== 'marks'">
-          <Button size="sm" :variant="editor.isActive('bulletList') ? 'default' : 'outline'"
+          <Button :size="toolSize" :variant="toolVariant(editor.isActive('bulletList'))"
             @click="editor?.chain().focus().toggleBulletList().run()">
             <IFluentTextBulletListLtr24Filled />
           </Button>
-          <Button size="sm" :variant="editor.isActive('orderedList') ? 'default' : 'outline'"
+          <Button :size="toolSize" :variant="toolVariant(editor.isActive('orderedList'))"
             @click="editor?.chain().focus().toggleOrderedList().run()">
             <IFluentTextNumberListLtr24Filled />
           </Button>
@@ -200,11 +215,11 @@
 
         <!-- Quote and horizontal rule (full preset) -->
         <template v-if="preset === 'full'">
-          <Button size="sm" :variant="editor.isActive('blockquote') ? 'default' : 'outline'"
+          <Button :size="toolSize" :variant="toolVariant(editor.isActive('blockquote'))"
             @click="editor?.chain().focus().toggleBlockquote().run()">
             <IFluentTextQuote24Filled />
           </Button>
-          <Button size="sm" variant="outline" @click="editor?.chain().focus().setHorizontalRule().run()">
+          <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().setHorizontalRule().run()">
             <LineHorizontal120Regular />
           </Button>
         </template>
@@ -213,13 +228,13 @@
         <template v-if="preset === 'compact' || preset === 'full'">
           <Suspense>
             <TiptapImageButton as-child @submit:object="attachImage">
-              <Button size="sm" variant="outline">
+              <Button :size="toolSize" :variant="toolVariant(false)">
                 <IFluentImage24Regular />
               </Button>
             </TiptapImageButton>
           </Suspense>
           <TiptapYoutubeButton @submit="(url) => editor?.commands.setYoutubeVideo({ src: url })">
-            <Button size="sm" variant="outline">
+            <Button :size="toolSize" :variant="toolVariant(false)">
               <IFluentVideoClip24Regular />
             </Button>
           </TiptapYoutubeButton>
@@ -229,7 +244,7 @@
         <template v-if="preset === 'full'">
           <TiptapVideoButton :show-modal="showVideoModal" @update:show-modal="showVideoModal = $event"
             @submit="attachVideo">
-            <Button size="sm" variant="outline">
+            <Button :size="toolSize" :variant="toolVariant(false)">
               <IFluentVideo24Regular />
             </Button>
           </TiptapVideoButton>
@@ -239,52 +254,52 @@
         <template v-if="preset === 'full' && !disableTables && editor.isActive('table')">
           <Separator orientation="vertical" class="h-5" />
           <ButtonGroup>
-            <Button size="sm" variant="outline" @click="editor?.chain().focus().toggleHeaderRow().run()">
+            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().toggleHeaderRow().run()">
               <IFluentTableFreezeRow24Regular />
             </Button>
-            <Button size="sm" variant="outline" @click="editor?.chain().focus().addColumnAfter().run()">
+            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().addColumnAfter().run()">
               <IFluentTableInsertColumn24Regular />
             </Button>
-            <Button size="sm" variant="outline" @click="editor?.chain().focus().addRowAfter().run()">
+            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().addRowAfter().run()">
               <IFluentTableInsertRow24Regular />
             </Button>
           </ButtonGroup>
           <ButtonGroup>
-            <Button size="sm" variant="outline" :disabled="!editor.can().mergeCells()"
+            <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.can().mergeCells()"
               @click="editor?.chain().focus().mergeCells().run()">
               <IFluentTableCellsMerge24Regular />
             </Button>
-            <Button size="sm" variant="outline" :disabled="!editor.can().splitCell()"
+            <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.can().splitCell()"
               @click="editor?.chain().focus().splitCell().run()">
               <IFluentTableCellsSplit24Regular />
             </Button>
           </ButtonGroup>
           <ButtonGroup>
-            <Button size="sm" variant="outline" @click="editor?.chain().focus().deleteColumn().run()">
+            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().deleteColumn().run()">
               <IFluentTableDeleteColumn24Regular />
             </Button>
-            <Button size="sm" variant="outline" @click="editor?.chain().focus().deleteRow().run()">
+            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().deleteRow().run()">
               <IFluentTableDeleteRow24Regular />
             </Button>
           </ButtonGroup>
-          <Button size="sm" variant="outline" @click="editor?.chain().focus().fixTables().run()">
+          <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().fixTables().run()">
             <IFluentTableSettings24Regular />
           </Button>
         </template>
 
         <!-- Insert table button (full preset, when not in table) -->
-        <Button v-if="preset === 'full' && !disableTables && !editor.isActive('table')" size="sm" variant="outline"
+        <Button v-if="preset === 'full' && !disableTables && !editor.isActive('table')" :size="toolSize" :variant="toolVariant(false)"
           @click="editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
           <IFluentTableAdd24Regular />
         </Button>
 
         <!-- Undo/Redo -->
         <ButtonGroup class="ml-auto">
-          <Button size="sm" variant="outline" :disabled="!editor.can().chain().focus().undo().run()"
+          <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.can().chain().focus().undo().run()"
             @click="editor?.chain().focus().undo().run()">
             <IFluentArrowUndo20Regular />
           </Button>
-          <Button size="sm" variant="outline" :disabled="!editor.can().chain().focus().redo().run()"
+          <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.can().chain().focus().redo().run()"
             @click="editor?.chain().focus().redo().run()">
             <IFluentArrowRedo20Regular />
           </Button>
@@ -303,8 +318,11 @@
 
     <!-- Editor Content -->
     <div
-      class="tiptap-content rounded-md border dark:border-zinc-700 dark:bg-zinc-800 overflow-hidden"
-      :class="{ 'tiptap-content--prose': proseStyle }"
+      :class="[
+        'tiptap-content overflow-hidden',
+        framed ? '' : 'rounded-md border dark:border-zinc-700 dark:bg-zinc-800',
+        { 'tiptap-content--prose': proseStyle },
+      ]"
     >
       <EditorContent :editor />
     </div>
@@ -423,6 +441,8 @@ const props = withDefaults(defineProps<{
    * `tiptap-base.css`'s more compact styling unless they opt in.
    */
   proseStyle?: boolean;
+  /** One hairline field box on a form canvas: tinted toolbar row, flat buttons, brand focus ring. */
+  framed?: boolean;
 }>(), {
   preset: 'full',
   html: false,
@@ -432,6 +452,7 @@ const props = withDefaults(defineProps<{
   toolbar: 'inline',
   showBold: true,
   proseStyle: false,
+  framed: false,
 });
 
 const emit = defineEmits<{
@@ -444,6 +465,15 @@ const showVideoModal = ref(false);
 const mobileToolbarExpanded = ref(false);
 
 // Computed toolbar visibility
+const toolSize = computed(() => (props.framed ? 'icon-sm' : 'sm'));
+
+function toolVariant(active: boolean) {
+  if (props.framed) {
+    return active ? 'brand' : 'ghost';
+  }
+  return active ? 'default' : 'outline';
+}
+
 const showToolbar = computed(() => {
   if (props.toolbar === 'bubble') {
     return false;
@@ -472,7 +502,7 @@ const extensions = getExtensionsForPreset(props.preset, {
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: ['focus:outline-none px-3 py-2 w-full min-h-[80px]', props.proseStyle ? 'rc-prose-editing tracking-normal' : ''].filter(Boolean).join(' '),
+      class: ['focus:outline-none w-full min-h-[80px]', props.framed ? 'px-4 py-3 text-sm leading-relaxed' : 'px-3 py-2', props.proseStyle ? 'rc-prose-editing tracking-normal' : ''].filter(Boolean).join(' '),
     },
   },
   extensions,
@@ -687,6 +717,10 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.tiptap-editor--framed {
+  gap: 0;
 }
 
 .tiptap-content {

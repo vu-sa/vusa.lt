@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="flex min-h-9 flex-wrap items-center justify-between gap-x-4 gap-y-2"
-    data-slot="collection-active-chips"
-  >
+  <div class="flex min-h-9 flex-wrap items-center gap-2" data-slot="collection-active-chips">
     <div class="flex min-w-0 flex-wrap items-center gap-2">
       <template v-if="chips.length > 0">
         <span
@@ -30,12 +27,6 @@
         </button>
       </template>
     </div>
-
-    <p class="text-xs text-muted-foreground" aria-live="polite">
-      <template v-if="total !== null">
-        {{ $t('Rasta') }} <span class="font-bold tabular-nums text-foreground">{{ total }}</span>
-      </template>
-    </p>
   </div>
 </template>
 
@@ -47,8 +38,6 @@ import type { CollectionChip } from '@/Composables/useCollectionSource';
 
 defineProps<{
   chips: CollectionChip[];
-  /** null before the first result, so the row keeps its height without a stale number. */
-  total: number | null;
 }>();
 
 const emit = defineEmits<{

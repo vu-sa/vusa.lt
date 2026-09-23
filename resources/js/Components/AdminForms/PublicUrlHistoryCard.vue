@@ -15,7 +15,7 @@
         <ul class="divide-y divide-border">
           <li
             v-for="row in props.urls"
-            :key="row.id"
+            :key="row.id ?? row.url"
             class="flex items-center justify-between gap-3 px-3 py-2 text-xs"
           >
             <div class="flex items-center gap-2 min-w-0">
@@ -32,6 +32,7 @@
               </a>
             </div>
             <Button
+              v-if="row.id"
               variant="ghost"
               size="icon-xs"
               class="shrink-0 text-muted-foreground hover:text-destructive"
@@ -41,6 +42,9 @@
             >
               <Trash2 class="size-3.5" />
             </Button>
+            <span v-else class="shrink-0 text-[10px] italic text-muted-foreground">
+              {{ $t('Pasenusi nuoroda') }}
+            </span>
           </li>
         </ul>
       </div>
@@ -66,10 +70,10 @@ import { Button } from '@/Components/ui/button';
 import { useDeleteConfirmation } from '@/Composables/useDeleteConfirmation';
 
 export interface PublicUrlRow {
-  id: number;
+  id?: number;
   url: string;
   locale: string;
-  created_at: string;
+  created_at?: string;
 }
 
 const props = defineProps<{

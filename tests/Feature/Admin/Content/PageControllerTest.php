@@ -729,3 +729,73 @@ describe('tenant isolation', function (): void {
             ->assertStatus(403); // Authorization failure - cannot update other tenant's page
     });
 });
+
+describe('bulk actions', function (): void {
+    beforeEach(function (): void {
+        $this->otherPage = Page::factory()->for($this->tenant)->create(['is_active' => true]);
+        $this->page->update(['is_active' => true]);
+    });
+
+    test('bulk status unpublishes every selected page', function (): void {
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [$this->page->id, $this->otherPage->id], 'published' => false])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        expect($this->page->fresh()->is_active)->toBeFalse()
+            ->and($this->otherPage->fresh()->is_active)->toBeFalse();
+    });
+
+    test('bulk status refuses the whole batch when one page is outside the actor\'s tenant', function (): void {
+        $foreignTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $foreignPage = Page::factory()->for($foreignTenant)->create(['is_active' => true]);
+
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [$this->page->id, $foreignPage->id], 'published' => false])
+            ->assertStatus(403);
+
+        expect($this->page->fresh()->is_active)->toBeTrue()
+            ->and($foreignPage->fresh()->is_active)->toBeTrue();
+    });
+
+    test('bulk status is forbidden without page permissions', function (): void {
+        asUser($this->user)
+            ->patch(route('pages.bulkStatus'), ['ids' => [$this->page->id], 'published' => false])
+            ->assertStatus(403);
+    });
+
+    test('bulk status validates its payload', function (): void {
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [], 'published' => true])
+            ->assertSessionHasErrors('ids');
+
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [999_999], 'published' => true])
+            ->assertSessionHasErrors('ids.0');
+
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [$this->page->id]])
+            ->assertSessionHasErrors('published');
+    });
+
+    test('bulk delete soft-deletes every selected page', function (): void {
+        asUser($this->admin)
+            ->delete(route('pages.bulkDestroy'), ['ids' => [$this->page->id, $this->otherPage->id]])
+            ->assertRedirect()
+            ->assertSessionHas('info');
+
+        $this->assertSoftDeleted('pages', ['id' => $this->page->id]);
+        $this->assertSoftDeleted('pages', ['id' => $this->otherPage->id]);
+    });
+
+    test('bulk delete refuses the whole batch when one page is outside the actor\'s tenant', function (): void {
+        $foreignTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $foreignPage = Page::factory()->for($foreignTenant)->create();
+
+        asUser($this->admin)
+            ->delete(route('pages.bulkDestroy'), ['ids' => [$this->page->id, $foreignPage->id]])
+            ->assertStatus(403);
+
+        $this->assertNotSoftDeleted('pages', ['id' => $this->page->id]);
+    });
+});

@@ -229,19 +229,20 @@ return [
                 ],
             ],
 
-            // Static Pages - Admin index: everything non-trashed, inactive and
-            // scheduled pages included. See PublicPage below for the public index.
+            // Static Pages - Admin index: everything non-trashed, inactive pages
+            // included. See PublicPage below for the public index.
             Page::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
-                        ['name' => 'title', 'type' => 'string', 'infix' => true],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
                         ['name' => 'permalink', 'type' => 'string', 'optional' => true],
                         ['name' => 'meta_description', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
                         ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
                         ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
                         ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tag_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
@@ -293,8 +294,7 @@ return [
                 ],
             ],
 
-            // Public Pages - Only active, published pages. Field shape mirrors
-            // Page::class above minus the admin-only `is_active` facet.
+            // Public Pages - Only active, published pages. Admin-only fields are omitted.
             PublicPage::class => [
                 'collection-schema' => [
                     'fields' => [

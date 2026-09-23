@@ -33,7 +33,17 @@ both directions; `pinned` keeps a column out of the "Stulpeliai" menu) and rende
 `#cell` slot. For bulk work pass `selectable` (and `can-select` for per-row rules) and fill
 `#bulk-actions`; bind `v-model:selection` only when the page must clear it itself.
 
-**Shared cells**: `CollectionPrimaryCell` (bold title + one quiet sub-line), `CollectionRowActions`
+Shift-click on a row checkbox selects the range since the last toggled row (`toggleRow` in
+`useCollectionTable`).
+
+**Optimistic changes**: Scout syncs through the queue, so Typesense lags a save. Change rows with
+`source.patchItems(ids, patch)` / `source.hideItems(ids)` before the request and call the
+returned undo in `onError`; the overlay outlives later searches. Draft ⇄ published content
+(`IndexPages`, `IndexNews`) goes through `useCollectionPublishing` + `CollectionPublishActions`,
+backed by `<prefix>.bulkStatus` / `<prefix>.bulkDestroy` and `Requests/Content/BulkContentRequest`.
+
+**Shared cells**: `CollectionPrimaryCell` (bold title + one quiet sub-line), `CollectionStatusMenu`
+(a `StatusBadge` that opens a status picker when `editable`), `CollectionRowActions`
 (square bordered icon actions, one labelled), `StatusBadge`. Row actions for edit / delete /
 duplicate / restore / permanent delete come from `useCollectionRecordActions` with
 `CollectionConfirmAction` for the dialog.

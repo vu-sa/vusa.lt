@@ -11,6 +11,7 @@
     default-view="table"
     :item-key="newsKey"
     :columns
+    :selectable="canBulkEdit"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti naujienų')"
   >
@@ -28,7 +29,14 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
             <CollectionPrimaryCell :title="item.title" :href="isTrash ? undefined : route('news.edit', item.id)" :sub="item.short" />
-            <StatusBadge v-if="item.draft" :status="contentStatuses.draft" class="shrink-0" />
+            <CollectionStatusMenu
+              v-if="!isTrash"
+              :status="newsStatus(item)"
+              :model-value="publishing.statusValue(item)"
+              :options="publishing.statusOptions"
+              :editable="canBulkEdit"
+              @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
+            />
           </div>
           <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span class="tabular-nums">{{ dateOf(item) }}</span>
@@ -52,12 +60,35 @@
       />
       <span v-else-if="column.key === 'tenant'" class="text-muted-foreground">{{ item.tenant_shortname ?? '—' }}</span>
       <span v-else-if="column.key === 'lang'" class="text-muted-foreground">{{ languageLabel(item.lang) }}</span>
-      <StatusBadge v-else-if="column.key === 'status' && item.draft" :status="contentStatuses.draft" />
+      <component
+        :is="item.id === publishing.spotlightId.value ? SpotlightPopover : 'div'"
+        v-else-if="column.key === 'status'"
+        v-bind="item.id === publishing.spotlightId.value ? publishing.spotlightProps.value : {}"
+      >
+        <CollectionStatusMenu
+          :status="newsStatus(item)"
+          :model-value="publishing.statusValue(item)"
+          :options="publishing.statusOptions"
+          :editable="canBulkEdit"
+          @open="publishing.dismissSpotlight"
+          @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
+        />
+      </component>
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
       <CollectionRowActions
         v-else-if="column.key === 'actions'"
         :actions="actionsFor(item)"
         @select="key => actions.select(key, item.force_delete_blocked_reason)"
+      />
+    </template>
+
+    <template #bulk-actions="{ selected, clear }">
+      <CollectionPublishActions
+        :can-publish="publishing.bulkChoices(selected).publish"
+        :can-draft="publishing.bulkChoices(selected).draft"
+        @publish="publishing.setPublished(publishing.idsOf(selected), true, clear)"
+        @draft="publishing.setPublished(publishing.idsOf(selected), false, clear)"
+        @delete="publishing.pendingDelete.value = { ids: publishing.idsOf(selected), clear }"
       />
     </template>
 
@@ -74,6 +105,7 @@
   </CollectionPage>
 
   <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
+  <CollectionConfirmAction :dialog="publishing.deleteDialog.value" @confirm="publishing.confirmDelete" @cancel="publishing.pendingDelete.value = null" />
 </template>
 
 <script setup lang="ts">
@@ -82,15 +114,20 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Plus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import { newsStatus } from './newsStatus';
+
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionPublishActions from '@/Components/Collection/CollectionPublishActions.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { NewsIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { contentStatuses } from '@/Constants/statuses';
+import { useCollectionPublishing } from '@/Composables/useCollectionPublishing';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import {
   isTrashView,
@@ -130,6 +167,17 @@ const actions = useCollectionRecordActions({
   canDelete: () => canCreate.value,
   canRestore: () => canCreate.value,
   canForceDelete: () => canForceDelete.value,
+});
+
+// Bulk actions and the status menu share one gate with delete; the server re-checks every record.
+const canBulkEdit = computed(() => canCreate.value && !isTrash);
+
+const publishing = useCollectionPublishing<NewsRow>({
+  routePrefix: 'news',
+  source,
+  isPublished: item => !item.draft,
+  patchFor: published => ({ draft: !published }),
+  enabled: () => canBulkEdit.value,
 });
 
 const newsKey = (item: NewsRow) => String(item.id);

@@ -45,21 +45,21 @@ describe('StudySetForm.vue', () => {
       global: {
         stubs: {
           ...commonStubs,
-          AdminForm: {
-            template: '<form @submit.prevent><slot /></form>',
-            props: ['model'],
+          FormPage: {
+            template: '<form @submit.prevent><slot /><slot name="danger-zone" /></form>',
+            props: ['title', 'locale'],
           },
-          FormElement: {
+          FormSection: {
             template: '<section><slot /></section>',
-            props: ['sectionNumber'],
+            props: ['title'],
           },
           FormFieldWrapper: {
             template: '<div><label>{{ label }}</label><slot /></div>',
-            props: ['id', 'label', 'required'],
+            props: ['id', 'label', 'required', 'error'],
           },
-          MultiLocaleInput: {
-            template: '<input data-testid="multi-locale" />',
-            props: ['modelValue', 'inputType'],
+          Textarea: {
+            template: '<textarea data-testid="textarea" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+            props: ['modelValue'],
           },
           Select: {
             template: '<select data-testid="select" :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
@@ -73,8 +73,8 @@ describe('StudySetForm.vue', () => {
             props: ['value'],
           },
           Input: {
-            template: '<input data-testid="input" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-            props: ['modelValue', 'type', 'min', 'step'],
+            template: '<input data-testid="input" :id="id" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+            props: ['modelValue', 'type', 'min', 'step', 'id'],
           },
           Switch: {
             template: '<button type="button" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)"><slot /></button>',
@@ -217,6 +217,26 @@ describe('StudySetForm.vue', () => {
       await nextTick();
 
       expect(vm.form.reviews).toHaveLength(0);
+    });
+  });
+
+  describe('locale', () => {
+    it('binds translatable fields to the form-level locale', async () => {
+      wrapper = createWrapper();
+      const vm = wrapper.vm as any;
+
+      vm.activeLocale = 'en';
+      await nextTick();
+      await wrapper.find('#name').setValue('Renamed set');
+
+      expect(vm.form.name).toEqual({ lt: 'Testinis komplektas', en: 'Renamed set' });
+    });
+
+    it('fills null translatable columns so both locales can be edited', () => {
+      wrapper = createWrapper({ studySet: { ...defaultStudySet, description: null } });
+      const vm = wrapper.vm as any;
+
+      expect(vm.form.description).toEqual({ lt: '', en: '' });
     });
   });
 

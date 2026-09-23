@@ -159,12 +159,10 @@ describe('Public/CalendarEvent.vue', () => {
     expect(main.classes()).toContain('lg:order-none');
   });
 
-  it('wraps the main content area in rc-viewport and max-w-7xl to match hero and related events width', () => {
+  it('holds the main content area to the max-w-7xl measure shared with the hero and related events', () => {
     const wrapper = mountPage();
 
-    const mainViewport = wrapper.find('.calendar-event-page > div.rc-viewport');
-    expect(mainViewport.exists()).toBe(true);
-    expect(mainViewport.find('.mx-auto.max-w-7xl').exists()).toBe(true);
+    expect(wrapper.find('.calendar-event-page > div.mx-auto.max-w-7xl').exists()).toBe(true);
   });
 
   it('renders other events as an editorial 3-column card grid, excluding the current one', () => {
@@ -185,7 +183,7 @@ describe('Public/CalendarEvent.vue', () => {
     expect(wrapper.text()).toContain('Future 3');
     expect(wrapper.text()).not.toContain('Future 4');
 
-    const related = wrapper.find('section.rc-viewport');
+    const related = wrapper.find('section.border-t');
     expect(related.exists()).toBe(true);
     expect(related.find('.mx-auto.max-w-7xl').exists()).toBe(true);
   });

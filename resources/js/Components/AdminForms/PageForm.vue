@@ -1,7 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Naujas puslapis') : (form.title || $t('Puslapis'))"
-    :head-title="isCreate ? $t('Naujas puslapis') : (form.title || $t('Puslapis'))"
+    :bar-title="barTitle"
     entity-type="page"
     :back-href="route('pages.index')"
     :back-label="$t('Puslapiai')"
@@ -11,21 +11,14 @@
     :field-ids
     :mode="isCreate ? 'create' : 'edit'"
     :available-locales="[]"
-    class="[&_[data-slot=form-field]_label]:text-foreground"
+    :public-url="fullPageUrl"
+    :activity-subject="page.id ? { type: 'page', id: page.id } : undefined"
+    :created-at="isCreate ? undefined : page.created_at"
+    :updated-at="isCreate ? undefined : lastEditedAt"
     @submit="emit('submit:form', form)"
   >
-    <template #title-status>
+    <template v-if="!isCreate" #title-status>
       <StatusBadge :status="currentStatusPresentation" />
-    </template>
-
-    <template v-if="!isCreate" #header-actions>
-      <ActivityLogSheet v-if="page.id" subject-type="page" :subject-id="String(page.id)" />
-      <Button v-if="fullPageUrl" as-child variant="outline" size="sm" class="hidden sm:inline-flex">
-        <a :href="fullPageUrl" target="_blank" rel="noopener noreferrer">
-          <Eye class="size-4" />
-          {{ $t('Peržiūrėti viešai') }}
-        </a>
-      </Button>
     </template>
 
     <FormFieldWrapper
@@ -44,7 +37,7 @@
         v-model="form.title"
         type="text"
         :placeholder="$t('pvz. Socialinės stipendijos')"
-        class="h-11 border-border bg-secondary/50 transition-colors focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20"
+        :class="['h-11', fieldSurfaceClass]"
         @change="form.validate('title')"
       />
     </FormFieldWrapper>
@@ -55,7 +48,6 @@
         :base-url="pageBaseUrl"
         :disabled="false"
         :view-url="fullPageUrl"
-        :hint="$t('Adresas, kuriuo puslapį pasieks studentai.')"
         :warning="permalinkChanged
           ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.')
           : undefined"
@@ -88,7 +80,7 @@
         v-model="form.meta_description"
         :placeholder="$t('Vienas ar du sakiniai apie puslapio turinį…')"
         rows="2"
-        class="border-border bg-secondary/50 transition-colors focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20"
+        :class="fieldSurfaceClass"
       />
       <details class="group">
         <summary
@@ -152,81 +144,25 @@
     </FormFieldWrapper>
 
     <template #aside>
-      <FormPanel :title="$t('Paskelbimas')" :icon="Send" title-class="text-foreground">
-        <FormFieldWrapper id="is_active" :label="$t('Būsena')">
-          <div
-            :class="[
-              'grid h-11 w-full grid-cols-2 border border-border bg-secondary/50 p-0.5 transition-colors',
-              'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
-            ]"
-            role="group"
-            :aria-label="$t('Būsena')"
-          >
-            <button
-              v-for="option in visibilityOptions"
-              :key="String(option.value)"
-              type="button"
-              :class="[
-                segmentVariants({ active: Boolean(form.is_active) === option.value }),
-                'w-full',
-              ]"
-              :aria-pressed="Boolean(form.is_active) === option.value"
-              :data-testid="`page-status-${option.value ? 'published' : 'draft'}`"
-              @click="form.is_active = option.value"
-            >
-              <component :is="option.icon" class="size-4 shrink-0" aria-hidden="true" />
-              <span>{{ option.label }}</span>
-            </button>
-          </div>
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
-          id="publish_time"
-          :label="$t('Paskelbimo laikas')"
-          :hint="$t('Nuo šio laiko puslapis rodomas paieškoje ir RSS sraute.')"
-        >
-          <DateTimePicker
-            v-model="publishTimeDate"
-            variant="popover"
-            clearable
-            :placeholder="$t('Pasirinkti paskelbimo laiką...')"
-          />
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
+      <ContentPublishPanel
+        :published="Boolean(form.is_active)"
+        hide-publish-time
+        :callout="statusCallout"
+        test-id-prefix="page"
+        @update:published="form.is_active = $event"
+      >
+        <TenantSelectField
           v-if="isCreate"
-          id="tenant"
-          :label="$t('forms.fields.tenant')"
-          required
+          v-model="form.tenant_id"
+          :tenants="assignableTenants"
           :error="form.errors.tenant_id"
           :valid="form.valid('tenant_id')"
           :invalid="form.invalid('tenant_id')"
-        >
-          <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
-            <SelectTrigger
-              id="tenant"
-              class="h-11 w-full border-border bg-secondary/50 transition-colors focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20"
-            >
-              <SelectValue :placeholder="$t('forms.placeholders.select_tenant')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
-                {{ tenant.shortname }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
+          @update:model-value="form.validate('tenant_id')"
+        />
+      </ContentPublishPanel>
 
-        <div
-          class="flex items-start gap-2 border border-border bg-secondary/40 p-3 text-xs leading-relaxed text-muted-foreground"
-          data-testid="page-status-callout"
-        >
-          <Info class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-          <span>{{ statusCallout }}</span>
-        </div>
-      </FormPanel>
-
-      <FormPanel :title="$t('Struktūra')" :icon="ListTree" title-class="text-foreground">
+      <FormPanel :title="$t('Struktūra')" :icon="ListTree" title-class="text-brand">
         <FormFieldWrapper
           id="parent_page"
           :label="$t('Tėvinis puslapis')"
@@ -254,10 +190,7 @@
                 type="button"
                 variant="outline"
                 voice="plain"
-                :class="[
-                  'h-11 w-full justify-between border-border bg-secondary/50 font-normal transition-colors',
-                  'hover:bg-secondary/80 focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20',
-                ]"
+                :class="['h-11 w-full justify-between font-normal hover:bg-secondary/80', fieldSurfaceClass]"
               >
                 <span class="truncate" :class="{ 'text-muted-foreground': !form.parent_id }">
                   {{ selectedParentLabel }}
@@ -271,87 +204,21 @@
         <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" :hint="$t('Temos, pagal kurias puslapį galima rasti.')" />
       </FormPanel>
 
-      <FormPanel :title="$t('Kalba')" :icon="Languages" title-class="text-foreground">
-        <FormFieldWrapper
-          id="lang"
-          :label="$t('Puslapio kalba')"
-          required
-          :error="form.errors.lang"
-          :valid="form.valid('lang')"
-          :invalid="form.invalid('lang')"
-        >
-          <div
-            :class="[
-              'grid h-11 w-full grid-cols-2 border border-border bg-secondary/50 p-0.5 transition-colors',
-              'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
-            ]"
-            role="group"
-            :aria-label="$t('Puslapio kalba')"
-          >
-            <button
-              v-for="option in langOptions"
-              :key="option.value"
-              type="button"
-              :class="[
-                segmentVariants({ active: form.lang === option.value }),
-                'w-full',
-              ]"
-              :aria-pressed="form.lang === option.value"
-              :data-testid="`page-lang-${option.value}`"
-              @click="setLang(option.value)"
-            >
-              <LocaleFlag :locale="option.value" />
-              <span>{{ option.label }}</span>
-            </button>
-          </div>
-        </FormFieldWrapper>
+      <ContentLanguagePanel
+        v-model:lang="form.lang"
+        v-model:other-lang-id="form.other_lang_id"
+        collection="pages"
+        :candidates="otherLangPages"
+        :is-create
+        :labels="languageLabels"
+        :lang-error="form.errors.lang"
+        :lang-valid="form.valid('lang')"
+        :lang-invalid="form.invalid('lang')"
+        test-id-prefix="page"
+        @update:lang="form.validate('lang')"
+      />
 
-        <FormFieldWrapper
-          id="other_lang"
-          :label="form.lang === 'lt' ? $t('Puslapis anglų kalba') : $t('Puslapis lietuvių kalba')"
-          :hint="isCreate
-            ? $t('Susiesi išsaugojęs puslapį.')
-            : $t('Susieja tą patį turinį kita kalba.')"
-        >
-          <CollectionSelectDialog
-            v-if="!isCreate"
-            v-model:open="otherLangDialogOpen"
-            collection="pages"
-            allow-empty
-            :base-filter-by="otherLangBaseFilterBy"
-            :initial-hits="otherLangInitialHits"
-            :title="$t('Kitos kalbos puslapis')"
-            :confirm-label="$t('Pasirinkti')"
-            :search-placeholder="$t('Ieškoti puslapio pagal pavadinimą...')"
-            :empty-message="$t('Puslapių nerasta')"
-            @confirm="onOtherLangPageConfirm"
-          >
-            <template #trigger>
-              <Button
-                id="other_lang"
-                type="button"
-                variant="outline"
-                voice="plain"
-                :class="[
-                  'h-11 w-full justify-between border-border bg-secondary/50 font-normal transition-colors',
-                  'hover:bg-secondary/80 focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20',
-                ]"
-              >
-                <span class="truncate" :class="{ 'text-muted-foreground': !form.other_lang_id }">
-                  {{ selectedOtherLangPage.label }}
-                </span>
-                <ChevronDown class="size-4 opacity-50" />
-              </Button>
-            </template>
-          </CollectionSelectDialog>
-          <Button v-else id="other_lang" type="button" variant="outline" voice="plain" class="h-11 w-full justify-between font-normal border-border bg-secondary/30" disabled>
-            <span class="text-muted-foreground">{{ $t('Pasirinkti kitos kalbos puslapį...') }}</span>
-            <ChevronDown class="size-4 opacity-50" />
-          </Button>
-        </FormFieldWrapper>
-      </FormPanel>
-
-      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-foreground" flush>
+      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-brand" flush>
         <div class="flex flex-col gap-2 border-b border-border p-4" data-slot="form-field">
           <Label class="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">{{ $t('Išdėstymas') }}</Label>
           <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="3" />
@@ -397,96 +264,73 @@
         </div>
       </FormPanel>
 
-      <template v-if="!isCreate">
-        <ContentAnalyticsCard
-          v-if="page.id"
-          :id="page.id"
-          type="page"
-          :content-date="page.publish_time ?? page.created_at"
-        />
+      <ContentAnalyticsCard
+        v-if="!isCreate && page.id"
+        :id="page.id"
+        type="page"
+        :content-date="page.created_at"
+      />
+    </template>
 
-        <dl class="border border-border bg-background text-sm" data-testid="page-meta">
-          <div v-if="page.created_at" class="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
-            <dt class="text-muted-foreground">
-              {{ $t('Sukurta') }}
-            </dt>
-            <dd class="font-bold text-foreground">
-              {{ formatDate(page.created_at) }}
-            </dd>
-          </div>
-          <div v-if="lastEditedAt" class="flex items-center justify-between gap-4 px-4 py-3">
-            <dt class="text-muted-foreground">
-              {{ $t('Atnaujinta') }}
-            </dt>
-            <dd class="font-bold text-foreground">
-              {{ formatDate(lastEditedAt) }}
-            </dd>
-          </div>
-        </dl>
+    <template v-if="!isCreate && enableDelete" #danger-zone>
+      <Button
+        type="button"
+        variant="outline"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
+        @click="deleteConfirmOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('Ištrinti puslapį') }}
+      </Button>
 
-        <template v-if="enableDelete">
-          <Button
-            type="button"
-            variant="outline"
-            class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-            @click="deleteConfirmOpen = true"
-          >
-            <Trash2 class="size-4" />
-            {{ $t('Ištrinti puslapį') }}
-          </Button>
-
-          <ConfirmDialog
-            v-model:open="deleteConfirmOpen"
-            :title="$t('Ištrinti puslapį?')"
-            :description="$t('Puslapis bus perkeltas į šiukšlinę.')"
-            :confirm-label="$t('Ištrinti')"
-            destructive
-            @confirm="emit('delete')"
-          />
-        </template>
-      </template>
+      <ConfirmDialog
+        v-model:open="deleteConfirmOpen"
+        :title="$t('Ištrinti puslapį?')"
+        :description="$t('Puslapis bus perkeltas į šiukšlinę.')"
+        :confirm-label="$t('Ištrinti')"
+        destructive
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, h } from 'vue';
-import { useForm, usePage } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, ChevronDown, Eye, FilePenLine, Info, Languages, LayoutTemplate, ListTree, Send, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree, Trash2 } from 'lucide-vue-next';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 import { getContentType, type BlockWidth } from '../RichContent/Types';
 import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
 
+import ContentLanguagePanel from './ContentLanguagePanel.vue';
+import ContentPublishPanel from './ContentPublishPanel.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import PermalinkField from './PermalinkField.vue';
 import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
 import SEOPreview from './SEOPreview.vue';
 import TagMultiSelect from './TagMultiSelect.vue';
+import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
-import { segmentVariants } from '@/Components/ui/control';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { contentStatuses, type StatusPresentation } from '@/Constants/statuses';
-import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { resolveTenantPublicHost, resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
-import { formatDate, formatDateTime } from '@/Utils/dateTime';
 
 const props = withDefaults(defineProps<{
   // `descendant_ids` is server-computed (Page::descendantIds()), not a real relation —
@@ -533,7 +377,6 @@ const formData = {
   highlights: props.page.highlights || [],
   meta_description: props.page.meta_description || '',
   featured_image: props.page.featured_image || '',
-  publish_time: props.page.publish_time || null,
 } as unknown as Record<string, unknown>;
 
 const form = props.rememberKey
@@ -542,21 +385,11 @@ const form = props.rememberKey
 
 // Default to the sole assignable tenant; a multi-tenant actor (e.g. super admin) picks explicitly.
 if (isCreate.value && form.tenant_id == null) {
-  form.tenant_id = props.assignableTenants?.find(tenant => tenant.type === 'pagrindinis')?.id
-    ?? props.assignableTenants?.[0]?.id
-    ?? null;
+  form.tenant_id = pickDefaultTenantId(props.assignableTenants);
 }
 
 // Set validation timeout to 500ms for faster feedback
 form.setValidationTimeout(500);
-
-// Handle tenant_id as string for the Select component
-const tenantIdString = computed({
-  get: () => form.tenant_id ? String(form.tenant_id) : '',
-  set: (val: string) => {
-    form.tenant_id = val ? Number(val) : null;
-  },
-});
 
 // Preview-only: the actual permalink is generated server-side on create (GenerateUniqueSlug).
 // Title getter returns '' outside create mode so the composable's own length guard no-ops it —
@@ -568,20 +401,19 @@ if (!Array.isArray(form.highlights)) {
   form.highlights = [];
 }
 
-// URL helpers - use the page's tenant and app URL from config
-const pageBaseUrl = computed(() => {
-  const appUrl = usePage().props.app?.url ?? 'https://vusa.lt';
-  // app.url is itself the main tenant's own URL (e.g. "https://www.vusa.test"), so strip a
-  // leading "www." before prefixing the resolved subdomain — otherwise the main tenant doubles
-  // up into "vusa.www.vusa.test".
-  const rootDomain = appUrl.replace(/^https?:\/\//, '').replace(/^www\./, '');
+const pageBaseUrl = computed(() => resolveTenantPublicHost(props.page.tenant?.id));
 
-  return `${resolveTenantSubdomain(props.page.tenant?.id)}.${rootDomain}`;
-});
+// The bar states what is saved; the heading and fields follow the edit. Props refresh after each save.
+const barTitle = computed(() => (isCreate.value ? $t('Naujas puslapis') : (props.page.title || $t('Puslapis'))));
+
+const currentStatusPresentation = computed<StatusPresentation>(() =>
+  props.page.is_active ? contentStatuses.published : contentStatuses.draft,
+);
 
 // Construct full page URL using route helper
 const fullPageUrl = computed(() => {
-  if (!props.page.id || !form.permalink || !props.page.tenant) return undefined;
+  // A saved inactive page 404s publicly, so there is nothing to open yet.
+  if (!props.page.id || !props.page.is_active || !form.permalink || !props.page.tenant) return undefined;
 
   const pageLang = form.lang ?? 'lt';
   return route('page', {
@@ -598,42 +430,9 @@ const lastEditedAt = computed(() => props.page.last_edited_at ?? props.page.upda
 
 const filledHighlightCount = computed(() => (form.highlights as string[]).filter(item => item?.trim()).length);
 
-const visibilityOptions = computed(() => [
-  { value: false, label: $t('Juodraštis'), icon: FilePenLine },
-  { value: true, label: $t('Paskelbta'), icon: Eye },
-]);
-
-const currentStatusPresentation = computed<StatusPresentation>(() =>
-  form.is_active ? contentStatuses.published : contentStatuses.draft,
-);
-
-const langOptions = [
-  { value: 'lt', label: 'Lietuvių' },
-  { value: 'en', label: 'English' },
-] as const;
-
-function setLang(lang: 'lt' | 'en') {
-  form.lang = lang;
-  form.validate('lang');
-}
-
-// PublicPageController gates on is_active alone; a future publish_time only keeps the page out
-// of search and RSS until then, so the callout must not promise more than that.
-const statusCallout = computed(() => {
-  if (!form.is_active) {
-    return $t('Juodraštis matomas tik sistemoje — svetainės lankytojai jo nemato.');
-  }
-
-  const publishTime = form.publish_time ? new Date(form.publish_time as string) : null;
-
-  if (publishTime && publishTime.getTime() > Date.now()) {
-    return $t('Puslapis pasiekiamas pagal nuorodą, o paieškoje pasirodys nuo :date.', {
-      date: formatDateTime(publishTime),
-    });
-  }
-
-  return $t('Paskelbtas puslapis iškart matomas visiems svetainės lankytojams.');
-});
+const statusCallout = computed(() => (form.is_active
+  ? $t('Paskelbtas puslapis iškart matomas visiems svetainės lankytojams.')
+  : $t('Juodraštis matomas tik sistemoje — svetainės lankytojai jo nemato.')));
 
 // A full/wide content block can't reach its intended width while the `default`
 // layout's ToC sidebar is present — it gets clipped to the content column instead
@@ -689,77 +488,23 @@ const layoutOptions = [
   },
 ];
 
-const otherPageOptions = computed(() => {
-  if (isCreate.value) {
-    return [];
-  }
-
-  if (props.otherLangPages === undefined) {
-    return [];
-  }
-
-  return props.otherLangPages
-    .map(page => ({
-      value: page.id,
-      label: `${page.title} (${page.tenant?.shortname})`,
-    }))
-    .reverse();
-});
-
-const otherLangPageOptions = computed(() => [
-  { value: '__none__', label: `-- ${$t('Nepasirinkta')} --` },
-  ...otherPageOptions.value,
-]);
-
-// Bridge: the dialog stores other_lang_id; this computed drives the trigger label.
-const selectedOtherLangPage = computed(
-  () => otherLangPageOptions.value.find(p => String(p.value) === String(form.other_lang_id ?? '__none__')) ?? otherLangPageOptions.value[0],
-);
-
-const otherLangDialogOpen = ref(false);
-
-// Opposite language of the page being edited (only two locales exist).
-const otherLang = computed(() => (form.lang === 'lt' ? 'en' : 'lt'));
-
-// Scope the pages search to the opposite-language pages of the candidate tenants
-// — exactly reproducing the `otherLangPages` prop.
-const otherLangBaseFilterBy = computed(() => {
-  const tenantIds = [
-    ...new Set((props.otherLangPages ?? []).map(p => p.tenant?.id).filter((id): id is number => id != null)),
-  ];
-  const parts: string[] = [];
-  if (tenantIds.length > 0) {
-    parts.push(`tenant_ids:[${tenantIds.join(',')}]`);
-  }
-  parts.push(`lang:=${otherLang.value}`);
-  return parts.join(' && ');
-});
-
-const otherLangInitialHits = computed<NormalizedSearchHit[]>(() => {
-  if (!form.other_lang_id) {
-    return [];
-  }
-  const page = (props.otherLangPages ?? []).find(p => String(p.id) === String(form.other_lang_id));
-  if (!page) {
-    return [];
-  }
-  return [normalizeHit('pages', {
-    id: page.id,
-    title: page.title,
-    tenant_name: page.tenant?.shortname,
-    lang: otherLang.value,
-  })];
-});
-
-function onOtherLangPageConfirm(hits: NormalizedSearchHit[]) {
-  form.other_lang_id = hits[0] ? Number(hits[0].recordId) : null;
-}
+const languageLabels = computed(() => ({
+  lang: $t('Puslapio kalba'),
+  otherLangLt: $t('Puslapis lietuvių kalba'),
+  otherLangEn: $t('Puslapis anglų kalba'),
+  createHint: $t('Susiesi išsaugojęs puslapį.'),
+  editHint: $t('Susieja tą patį turinį kita kalba.'),
+  createPlaceholder: $t('Pasirinkti kitos kalbos puslapį...'),
+  dialogTitle: $t('Kitos kalbos puslapis'),
+  searchPlaceholder: $t('Ieškoti puslapio pagal pavadinimą...'),
+  emptyMessage: $t('Puslapių nerasta'),
+}));
 
 const parentDialogOpen = ref(false);
 
 // Bridge: the dialog stores parent_id; this local label tracks the current selection
-// without needing a full candidate-page list from the server (unlike other_lang_id
-// above — a picker scoped by the form's own reactive lang/tenant needs no such list).
+// without needing a full candidate-page list from the server (unlike ContentLanguagePanel
+// — a picker scoped by the form's own reactive lang/tenant needs no such list).
 const parentLabel = ref<string | null>(props.page.parent?.title ?? null);
 
 const selectedParentLabel = computed(() => parentLabel.value ?? `-- ${$t('Nepasirinkta')} --`);
@@ -797,12 +542,4 @@ function onParentConfirm(hits: NormalizedSearchHit[]) {
   form.parent_id = hits[0] ? Number(hits[0].recordId) : null;
   parentLabel.value = hits[0]?.title ?? null;
 }
-
-// Date/time picker compatibility
-const publishTimeDate = computed({
-  get: () => form.publish_time ? new Date(form.publish_time) : undefined,
-  set: (val: Date | null | undefined) => {
-    form.publish_time = val ? val.toISOString() : null;
-  },
-});
 </script>

@@ -33,6 +33,16 @@ export interface StatusPresentation {
   icon: LucideIcon;
 }
 
+/** Border, surface and ink per role — StatusBadge and any control that shows a chosen status. */
+export const statusRoleClasses: Record<StatusRole, string> = {
+  neutral: 'border-status-neutral-border bg-status-neutral-surface text-status-neutral',
+  info: 'border-status-info-border bg-status-info-surface text-status-info',
+  progress: 'border-status-progress-border bg-status-progress-surface text-status-progress',
+  attention: 'border-status-attention-border bg-status-attention-surface text-status-attention',
+  success: 'border-status-success-border bg-status-success-surface text-status-success',
+  danger: 'border-status-danger-border bg-status-danger-surface text-status-danger',
+};
+
 export type ReservationResourceStatus = 'created' | 'reserved' | 'lent' | 'returned' | 'rejected' | 'cancelled';
 export type MeetingCompletionStatus = 'complete' | 'incomplete' | 'no_items';
 export type TaskStatus = 'completed' | 'open' | 'due_soon' | 'overdue';

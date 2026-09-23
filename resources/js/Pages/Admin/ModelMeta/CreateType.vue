@@ -1,19 +1,19 @@
 <template>
-  <PageContent title="Naujas turinio tipas" :back-url="route('types.index')">
-    <UpsertModelLayout>
-      <TypeForm remember-key="CreateType" :content-types :roles :type @submit:form="(form) => form.post(route('types.store'))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <TypeForm remember-key="CreateType" :content-types :roles :type @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).post(route('types.store'))" />
 </template>
 
 <script setup lang="ts">
-import { typeTemplate as type } from '@/Types/formTemplates';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+
 import TypeForm from '@/Components/AdminForms/TypeForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { typeTemplate as type } from '@/Types/formTemplates';
 
 defineProps<{
-  contentTypes: Record<string, any>[];
+  contentTypes: App.Entities.Type[];
   roles?: App.Entities.Role[];
 }>();
+
+usePageBreadcrumbs(BreadcrumbHelpers.adminForm($t('Tipai'), 'types.index', $t('Naujas turinio tipas')));
 </script>

@@ -27,6 +27,8 @@ return [
         'f' => ':Model sėkmingai atkurta.',
         'm' => ':Model sėkmingai atkurtas.',
     ],
+    'bulk_updated' => 'Atnaujinta įrašų: :count.',
+    'bulk_deleted' => 'Ištrinta įrašų: :count.',
     'users_attached_to_reservation' => 'Rezervacijos valdytojai pridėti!',
 
     'auth' => [

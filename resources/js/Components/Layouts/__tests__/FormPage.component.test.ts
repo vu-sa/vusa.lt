@@ -244,6 +244,55 @@ describe('FormPage.vue', () => {
       expect(wrapper.find('form').classes()).not.toContain('lg:grid-cols-[1.6fr_1fr]');
     });
 
+    it('closes a two-column form\'s aside with the record facts and the danger zone', () => {
+      const wrapper = mount(FormPage, {
+        props: { title: 'Puslapis', createdAt: '2026-01-02T10:00:00Z', updatedAt: '2026-02-03T10:00:00Z' },
+        slots: {
+          'aside': '<div data-testid="side">Paskelbimas</div>',
+          'danger-zone': '<button data-testid="delete">Ištrinti</button>',
+        },
+        global: { stubs },
+      });
+
+      const aside = wrapper.find('[data-testid="form-page-aside"]');
+      expect(aside.find('[data-testid="form-page-meta"]').text()).toContain('Sukurta');
+      expect(aside.find('[data-testid="form-page-meta"]').text()).toContain('Atnaujinta');
+      expect(aside.find('[data-testid="form-page-danger-zone"] [data-testid="delete"]').exists()).toBe(true);
+      expect(wrapper.findAll('[data-testid="delete"]')).toHaveLength(1);
+    });
+
+    it('keeps the danger zone under the fields in a single-column form', () => {
+      const wrapper = mount(FormPage, {
+        props: { title: 'Forma' },
+        slots: { 'danger-zone': '<button data-testid="delete">Ištrinti</button>' },
+        global: { stubs },
+      });
+
+      expect(wrapper.find('form [data-testid="delete"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="form-page-meta"]').exists()).toBe(false);
+    });
+
+    it('titles the bar with the saved record and the heading with the edit', () => {
+      const wrapper = mount(FormPage, {
+        props: { title: 'Naujas pavadinimas', barTitle: 'Išsaugotas pavadinimas' },
+        global: { stubs },
+      });
+
+      expect(wrapper.find('[data-testid="form-page-bar-title"]').text()).toBe('Išsaugotas pavadinimas');
+      expect(wrapper.find('h1').text()).toBe('Naujas pavadinimas');
+    });
+
+    it('offers the public view and change history from props', () => {
+      const wrapper = mount(FormPage, {
+        props: { title: 'Puslapis', publicUrl: 'https://www.vusa.test/lt/puslapis', activitySubject: { type: 'page', id: 7 } },
+        global: { stubs: { ...stubs, ActivityLogSheet: { props: ['subjectType', 'subjectId'], template: '<div data-testid="activity" :data-subject="`${subjectType}:${subjectId}`" />' } } },
+      });
+
+      const bar = wrapper.find('[data-testid="form-page-bar"]');
+      expect(bar.find('a[href="https://www.vusa.test/lt/puslapis"]').text()).toContain('Peržiūrėti viešai');
+      expect(bar.find('[data-testid="activity"]').attributes('data-subject')).toBe('page:7');
+    });
+
     it('gives phones their own save bar tied to the form', () => {
       const wrapper = mount(FormPage, { props: { title: 'Forma' }, global: { stubs } });
 

@@ -43,43 +43,6 @@
         </span>
       </button>
 
-      <label
-        v-if="sortOptions.length > 1"
-        :class="[
-          'relative flex h-11 min-w-0 items-center border border-border bg-background pr-9 pl-3',
-          'focus-within:border-brand pointer-coarse:min-h-11',
-        ]"
-      >
-        <span class="mr-2 shrink-0 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
-          {{ $t('Rikiuoti') }}
-        </span>
-        <select
-          :value="sortBy"
-          :aria-label="$t('Rikiuoti')"
-          class="w-full max-w-48 min-w-0 appearance-none truncate bg-transparent text-sm font-bold text-foreground outline-none"
-          @change="emit('update:sortBy', ($event.target as HTMLSelectElement).value)"
-        >
-          <option v-for="option in sortOptions" :key="option.value" :value="option.value">
-            {{ option.label }}
-          </option>
-        </select>
-        <ChevronDown class="pointer-events-none absolute right-3 size-4 text-muted-foreground" aria-hidden="true" />
-      </label>
-
-      <button
-        v-if="trash && (trash.active || trash.count > 0)"
-        type="button"
-        :aria-pressed="trash.active"
-        :class="controlVariants({ active: trash.active })"
-        @click="emit('toggleTrash')"
-      >
-        <Trash2 class="size-4" aria-hidden="true" />
-        <span>{{ $t('Ištrinti') }}</span>
-        <span v-if="trash.count > 0" :class="trash.active ? controlCountClass : 'tabular-nums text-muted-foreground'">
-          {{ trash.count }}
-        </span>
-      </button>
-
       <slot name="view-toggle" />
     </div>
   </div>
@@ -87,13 +50,10 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, Search, SlidersHorizontal, Trash2, X } from 'lucide-vue-next';
+import { Search, SlidersHorizontal, X } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
-import type { CollectionTrash } from './types';
-
 import { controlCountClass, controlVariants, searchFieldClass } from '@/Components/ui/control';
-import type { CollectionSortOption } from '@/Composables/useCollectionSource';
 
 const props = defineProps<{
   /** The committed query; the input follows it when it changes from outside (URL, "Išvalyti visus"). */
@@ -102,16 +62,11 @@ const props = defineProps<{
   hasFilters: boolean;
   filtersOpen: boolean;
   activeFilterCount: number;
-  sortBy: string;
-  sortOptions: CollectionSortOption[];
-  trash?: CollectionTrash;
 }>();
 
 const emit = defineEmits<{
-  'search': [query: string, immediate?: boolean];
-  'toggleFilters': [];
-  'toggleTrash': [];
-  'update:sortBy': [value: string];
+  search: [query: string, immediate?: boolean];
+  toggleFilters: [];
 }>();
 
 const text = ref(props.query);

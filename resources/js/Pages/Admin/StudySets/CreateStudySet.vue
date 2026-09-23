@@ -1,26 +1,25 @@
 <template>
-  <PageContent title="Naujas individualių studijų komplektas" :heading-icon="StudySetIcon">
-    <UpsertModelLayout>
-      <StudySetForm remember-key="CreateStudySet" :study-set :tenants
-        @submit:form="(form: any) => form.post(route('studySets.store'))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <StudySetForm
+    remember-key="CreateStudySet"
+    :study-set
+    :tenants="assignableTenants"
+    @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).post(route('studySets.store'))"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import StudySetForm from '@/Components/AdminForms/StudySetForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import { StudySetIcon } from '@/Components/icons';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 defineProps<{
   assignableTenants: Array<{ id: number; shortname: string }>;
 }>();
 
-const studySet = ref({
+const studySet = {
   name: { lt: '', en: '' },
   description: { lt: '', en: '' },
   order: 0,
@@ -28,7 +27,7 @@ const studySet = ref({
   tenant_id: null,
   courses: [],
   reviews: [],
-});
+};
 
-const tenants = computed(() => usePage().props.assignableTenants || []);
+usePageBreadcrumbs(BreadcrumbHelpers.adminForm($t('Individualių studijų komplektai'), 'studySets.index', $t('Naujas komplektas'), StudySetIcon));
 </script>

@@ -6,6 +6,8 @@ use App\Actions\GenerateUniqueSlug;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\Content\BulkDestroyPagesRequest;
+use App\Http\Requests\Content\BulkUpdatePageStatusRequest;
 use App\Http\Requests\IndexPageRequest;
 use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
@@ -18,6 +20,7 @@ use App\Models\Tag;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class PageController extends AdminController
 {
@@ -165,6 +168,29 @@ class PageController extends AdminController
         $page->delete();
 
         return redirect()->route('pages.index')->with('info', $this->entityMessage('deleted', 'page'));
+    }
+
+    /**
+     * Publish or unpublish the pages picked in the collection (one id for the inline status menu).
+     * Saved one by one so Scout, the public index and the activity log see every change.
+     */
+    public function bulkUpdateStatus(BulkUpdatePageStatusRequest $request): RedirectResponse
+    {
+        $pages = $request->records();
+        $isActive = $request->boolean('published');
+
+        DB::transaction(fn () => $pages->each(fn (Page $page) => $page->update(['is_active' => $isActive])));
+
+        return back()->with('success', __('messages.bulk_updated', ['count' => $pages->count()]));
+    }
+
+    public function bulkDestroy(BulkDestroyPagesRequest $request): RedirectResponse
+    {
+        $pages = $request->records();
+
+        DB::transaction(fn () => $pages->each(fn (Page $page) => $page->delete()));
+
+        return back()->with('info', __('messages.bulk_deleted', ['count' => $pages->count()]));
     }
 
     public function restore(Page $page): RedirectResponse

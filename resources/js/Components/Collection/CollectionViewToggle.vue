@@ -13,11 +13,11 @@
       role="radio"
       :aria-checked="modelValue === option.value"
       :aria-label="$t(option.label)"
+      :title="$t(option.label)"
       :class="segmentVariants({ active: modelValue === option.value })"
       @click="emit('update:modelValue', option.value)"
     >
       <component :is="option.icon" aria-hidden="true" />
-      <span class="hidden lg:inline">{{ $t(option.label) }}</span>
     </button>
   </div>
 </template>

@@ -1,87 +1,73 @@
 <template>
-  <PageContent :title="$t('settings.pages.atstovavimas.title')" :back-url="route('settings.index')">
-    <UpsertModelLayout>
-      <AdminForm :model="form" @submit:form="handleFormSubmit">
-        <FormElement>
-          <template #title>
-            {{ $t('settings.atstovavimas_settings.manager_role_title') }}
-          </template>
-          <template #description>
-            {{ $t('settings.atstovavimas_settings.manager_role_description') }}
-          </template>
+  <FormPage
+    :title="$t('settings.pages.atstovavimas.title')"
+    :back-href="route('settings.index')"
+    :back-label="$t('settings.title')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :available-locales="[]"
+    @submit="handleFormSubmit"
+  >
+    <FormSection
+      :title="$t('settings.atstovavimas_settings.manager_role_title')"
+      :description="$t('settings.atstovavimas_settings.manager_role_description')"
+    >
+      <FormFieldWrapper
+        id="institution_manager_role_id"
+        :label="$t('settings.atstovavimas_settings.manager_role_label')"
+        :hint="$t('settings.atstovavimas_settings.manager_role_note')"
+        :error="form.errors.institution_manager_role_id"
+      >
+        <Select v-model="form.institution_manager_role_id">
+          <SelectTrigger id="institution_manager_role_id">
+            <SelectValue :placeholder="$t('settings.atstovavimas_settings.manager_role_placeholder')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="option in roleOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
+    </FormSection>
 
-          <div class="space-y-2">
-            <Label class="inline-flex items-center gap-1">
-              <component :is="RoleIcon" class="h-4 w-4" />
-              {{ $t('settings.atstovavimas_settings.manager_role_label') }}
-            </Label>
-
-            <Select v-model="form.institution_manager_role_id">
-              <SelectTrigger>
-                <SelectValue :placeholder="$t('settings.atstovavimas_settings.manager_role_placeholder')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="option in roleOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <p class="text-sm text-muted-foreground">
-              {{ $t('settings.atstovavimas_settings.manager_role_note') }}
-            </p>
-          </div>
-        </FormElement>
-
-        <FormElement>
-          <template #title>
-            {{ $t('settings.atstovavimas_settings.student_rep_type_title') }}
-          </template>
-          <template #description>
-            {{ $t('settings.atstovavimas_settings.student_rep_type_description') }}
-          </template>
-
-          <div class="space-y-2">
-            <Label class="inline-flex items-center gap-1">
-              <component :is="TypeIcon" class="h-4 w-4" />
-              {{ $t('settings.atstovavimas_settings.student_rep_type_label') }}
-            </Label>
-
-            <Select v-model="form.student_rep_root_type_id">
-              <SelectTrigger>
-                <SelectValue :placeholder="$t('settings.atstovavimas_settings.student_rep_type_placeholder')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem :value="null">
-                  {{ $t('settings.atstovavimas_settings.student_rep_type_default') }}
-                </SelectItem>
-                <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <p class="text-sm text-muted-foreground">
-              {{ $t('settings.atstovavimas_settings.student_rep_type_note') }}
-            </p>
-          </div>
-        </FormElement>
-      </AdminForm>
-    </UpsertModelLayout>
-  </PageContent>
+    <FormSection
+      :title="$t('settings.atstovavimas_settings.student_rep_type_title')"
+      :description="$t('settings.atstovavimas_settings.student_rep_type_description')"
+    >
+      <FormFieldWrapper
+        id="student_rep_root_type_id"
+        :label="$t('settings.atstovavimas_settings.student_rep_type_label')"
+        :hint="$t('settings.atstovavimas_settings.student_rep_type_note')"
+        :error="form.errors.student_rep_root_type_id"
+      >
+        <Select v-model="form.student_rep_root_type_id">
+          <SelectTrigger id="student_rep_root_type_id">
+            <SelectValue :placeholder="$t('settings.atstovavimas_settings.student_rep_type_placeholder')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem :value="null">
+              {{ $t('settings.atstovavimas_settings.student_rep_type_default') }}
+            </SelectItem>
+            <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
+    </FormSection>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import AdminForm from '@/Components/AdminForms/AdminForm.vue';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
-import { Label } from '@/Components/ui/label';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { RoleIcon, TypeIcon } from '@/Components/icons';
 
 interface Role {
   id: string;

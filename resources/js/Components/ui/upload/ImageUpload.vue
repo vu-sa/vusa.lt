@@ -53,7 +53,11 @@
 
           <!-- Actions overlay -->
           <div
-            class="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-all group-hover:opacity-100"
+            :class="[
+              'absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-ink/70 p-2',
+              'opacity-100 transition-opacity sm:inset-0 sm:bg-ink/40 sm:opacity-0',
+              'sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 pointer-coarse:opacity-100',
+            ]"
           >
             <!-- Crop button -->
             <Button
@@ -223,7 +227,7 @@
 
   <!-- Cropper Modal -->
   <Dialog v-model:open="showCropperModal">
-    <DialogContent class="max-w-5xl p-0 gap-0">
+    <DialogContent class="max-h-[calc(100dvh-2rem)] max-w-5xl gap-0 overflow-y-auto p-0">
       <ImageCropper
         v-if="cropperImageUrl"
         :src="cropperImageUrl"
@@ -375,10 +379,10 @@ const compressionOptions = computed<CompressionOptions>(() => {
     return props.compress;
   }
   return {
-    maxSizeMB: 2,
-    maxWidthOrHeight: 1600,
+    maxSizeMB: props.cropper ? 3 : 2,
+    maxWidthOrHeight: props.cropper ? 2048 : 1600,
     fileType: 'image/webp',
-    quality: 0.8,
+    quality: props.cropper ? 0.9 : 0.8,
   };
 });
 
@@ -614,16 +618,27 @@ async function handleCropFinish(data: { dataUrl: string; blob: Blob }) {
   if (!uploadFile) return;
 
   // Create File from blob
-  const fileName = uploadFile.name.replace(/\.[^.]+$/, '.webp');
-  const croppedFile = new File([data.blob], fileName, { type: 'image/webp' });
+  const fileType = data.blob.type || 'image/webp';
+  const extension = fileType === 'image/png' ? '.png' : fileType === 'image/jpeg' ? '.jpg' : '.webp';
+  const fileName = uploadFile.name.replace(/\.[^.]+$/, extension);
+  const croppedFile = new File([data.blob], fileName, { type: fileType });
 
-  // Process with compression
-  const processedFile = await processFile(croppedFile);
+  // Default crop output has already been encoded at the target quality.
+  const processedFile = typeof props.compress === 'object'
+    ? await processFile(croppedFile)
+    : croppedFile;
 
   // Update the file
   uploadFile.file = processedFile;
-  uploadFile.url = data.dataUrl;
-  uploadFile.name = fileName;
+  uploadFile.url = processedFile === croppedFile
+    ? data.dataUrl
+    : await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(processedFile);
+      });
+  uploadFile.name = processedFile.name;
 
   // Re-upload in immediate mode
   if (isImmediate.value) {

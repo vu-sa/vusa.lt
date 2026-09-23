@@ -146,4 +146,31 @@ describe('useTypesenseCollectionSource', () => {
     expect(fake.toggleFilter).toHaveBeenNthCalledWith(1, 'year', 2026);
     expect(fake.toggleFilter).toHaveBeenNthCalledWith(2, 'completion_status', 'incomplete');
   });
+
+  it('overlays an optimistic patch on the loaded rows until undone', () => {
+    const { fake, source } = build();
+    fake.results.value = [{ id: 'a', is_active: true }, { id: 'b', is_active: true }] as never;
+
+    const undo = source.patchItems(['a'], { is_active: false } as never);
+    expect(source.items.value).toEqual([{ id: 'a', is_active: false }, { id: 'b', is_active: true }]);
+
+    // A lagging index returning the old value must not win over the change the user made.
+    fake.results.value = [{ id: 'a', is_active: true }, { id: 'b', is_active: true }] as never;
+    expect(source.items.value[0]).toEqual({ id: 'a', is_active: false });
+
+    undo();
+    expect(source.items.value[0]).toEqual({ id: 'a', is_active: true });
+  });
+
+  it('leaves hidden rows out of the list until undone', () => {
+    const { fake, source } = build();
+    fake.results.value = [{ id: 'a' }, { id: 'b' }] as never;
+
+    const undo = source.hideItems(['a']);
+    expect(source.items.value).toEqual([{ id: 'b' }]);
+
+    undo();
+    expect(source.items.value).toEqual([{ id: 'a' }, { id: 'b' }]);
+  });
 });
+

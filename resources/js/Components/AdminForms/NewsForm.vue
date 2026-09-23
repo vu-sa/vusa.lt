@@ -1,7 +1,8 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Nauja naujiena') : (form.title || $t('Naujiena'))"
-    :head-title="isCreate ? $t('Nauja naujiena') : (form.title || $t('Naujiena'))"
+    :bar-title="barTitle"
+    entity-type="news"
     :back-href="route('news.index')"
     :back-label="$t('Naujienos')"
     :processing="form.processing"
@@ -9,317 +10,228 @@
     :errors="form.errors"
     :field-ids
     :mode="isCreate ? 'create' : 'edit'"
-    max-width="4xl"
+    :available-locales="[]"
+    :public-url="publicNewsUrl"
+    :activity-subject="news?.id ? { type: 'news', id: news.id } : undefined"
+    :created-at="isCreate ? undefined : news?.created_at"
+    :updated-at="isCreate ? undefined : news?.updated_at"
     @submit="emit('submit:form', form)"
   >
-    <template v-if="!isCreate" #header-actions>
-      <Button v-if="statusLinks.length > 0" as-child variant="outline" size="sm">
-        <a :href="statusLinks[0].url" target="_blank" rel="noopener noreferrer">
-          <ExternalLink class="mr-1.5 size-4" />
-          {{ $t('Peržiūrėti viešai') }}
-        </a>
-      </Button>
-      <ActivityLogSheet v-if="props.news?.id" subject-type="news" :subject-id="String(props.news.id)" />
+    <template v-if="!isCreate && news" #title-status>
+      <StatusBadge :status="news.draft ? contentStatuses.draft : contentStatuses.published" />
     </template>
 
-    <!-- Status Header -->
-    <FormStatusHeader
-      :is-published="!form.draft"
-      :server-is-published="props.news ? !props.news.draft : undefined"
-      :publish-time="publishTimeDate"
-      :links="statusLinks"
-      :is-create
-      show-publish-time
-      @update:is-published="form.draft = !$event"
-      @update:publish-time="handlePublishTimeUpdate"
-    />
-
-    <ContentAnalyticsCard
-      v-if="!isCreate && props.news?.id"
-      :id="props.news.id"
-      type="news"
-      :content-date="props.news.publish_time ?? props.news.created_at"
-      class="mb-6"
-    />
-
-    <!-- Section 1: Title (Essential - the identity of the news) -->
-    <FormSection
-      data-section="1"
-      :title="$t('forms.fields.title')"
-      :description="$t('Naujienos antraštė')"
+    <FormFieldWrapper
+      id="title"
+      :label="$t('forms.fields.title')"
+      required
+      :char-count="form.title?.length || 0"
+      :max-length="60"
+      :error="form.errors.title"
+      :validating="form.validating"
+      :valid="form.valid('title')"
+      :invalid="form.invalid('title')"
     >
-      <div class="space-y-4">
-        <FormFieldWrapper
-          id="title"
-          :label="$t('forms.fields.title')"
-          required
-          :hint="$t('Pavadinimas bus rodomas naršyklės skirtuke ir paieškos rezultatuose')"
-          :char-count="form.title?.length || 0"
-          :max-length="60"
-          :error="form.errors.title"
-          :validating="form.validating"
-          :valid="form.valid('title')"
-          :invalid="form.invalid('title')"
-        >
-          <Input
-            id="title"
-            v-model="form.title"
-            type="text"
-            :placeholder="$t('Įrašyti pavadinimą...')"
-            class="text-lg"
-            @change="form.validate('title')"
-          />
-        </FormFieldWrapper>
+      <Input
+        id="title"
+        v-model="form.title"
+        type="text"
+        :placeholder="$t('Įrašyti pavadinimą...')"
+        :class="['h-11', fieldSurfaceClass]"
+        @change="form.validate('title')"
+      />
+    </FormFieldWrapper>
 
-        <PermalinkPreviewHint
-          v-if="isCreate"
-          :preview="permalinkPreview.preview.value"
-          :is-checking="permalinkPreview.isChecking.value"
+    <div v-if="!isCreate && news" class="flex flex-col gap-2">
+      <PermalinkField
+        :permalink="form.permalink"
+        :base-url="newsBaseUrl"
+        :view-url="publicNewsUrl"
+        :warning="permalinkChanged
+          ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.')
+          : undefined"
+        :validating="form.validating"
+        :valid="form.valid('permalink')"
+        :invalid="form.invalid('permalink')"
+        @update:permalink="form.permalink = $event"
+        @change="form.validate('permalink')"
+      />
+      <PublicUrlHistoryCard
+        :urls="news.public_urls ?? []"
+        :destroy-route="(id) => route('news.publicUrls.destroy', [news!.id, id])"
+      />
+    </div>
+    <PermalinkPreviewHint
+      v-else
+      :preview="permalinkPreview.preview.value"
+      :is-checking="permalinkPreview.isChecking.value"
+    />
+
+    <FormFieldWrapper
+      id="short"
+      :label="$t('Įvadinis tekstas')"
+      :required="isCreate"
+      :hint="$t('Rodomas naujienos pradžioje, naujienų sąraše ir paieškos rezultatuose.')"
+      :char-count="shortPlainText.length"
+      :max-length="200"
+      :error="form.errors.short"
+    >
+      <TiptapEditor v-model="form.short" preset="marks" disable-links :max-characters="200" html framed />
+      <details class="group">
+        <summary
+          :class="[
+            'u-touch inline-flex cursor-pointer items-center gap-1.5',
+            'text-xs font-bold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
+          ]"
+        >
+          <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
+          {{ $t('Kaip atrodys paieškoje') }}
+        </summary>
+        <SEOPreview
+          class="mt-3"
+          :title="form.title"
+          :description="shortPlainText"
+          :url="form.permalink"
+          :base-url="newsBaseUrl"
         />
+      </details>
+    </FormFieldWrapper>
 
-        <FormFieldWrapper
-          v-if="isCreate"
-          id="tenant"
-          :label="$t('forms.fields.tenant')"
-          required
-          :error="form.errors.tenant_id"
-          :valid="form.valid('tenant_id')"
-          :invalid="form.invalid('tenant_id')"
-        >
-          <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
-            <SelectTrigger id="tenant">
-              <SelectValue :placeholder="$t('forms.placeholders.select_tenant')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
-                {{ tenant.shortname }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
-
-        <!-- Language selector inline with title -->
-        <div class="grid gap-4 sm:grid-cols-2">
-          <FormFieldWrapper
-            id="lang"
-            :label="$t('Kalba')"
-            required
-            :error="form.errors.lang"
-            :valid="form.valid('lang')"
-            :invalid="form.invalid('lang')"
-          >
-            <ToggleGroup
-              v-model="form.lang"
-              type="single"
-              class="justify-start"
-              @update:model-value="form.validate('lang')"
-            >
-              <ToggleGroupItem value="lt" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" alt="" class="h-4 w-4">
-                Lietuvių
-              </ToggleGroupItem>
-              <ToggleGroupItem value="en" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" alt="" class="h-4 w-4">
-                English
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </FormFieldWrapper>
-
-          <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
-        </div>
-
-        <!-- Other Language News -->
-        <FormFieldWrapper
-          id="other_lang"
-          :label="$t('Kitos kalbos naujiena')"
-          :hint="$t('Susieti su ta pačia naujiena kita kalba')"
-        >
-          <CollectionSelectDialog
-            v-if="!isCreate"
-            v-model:open="otherLangDialogOpen"
-            collection="news"
-            allow-empty
-            :base-filter-by="otherLangBaseFilterBy"
-            :initial-hits="otherLangInitialHits"
-            :title="$t('Kitos kalbos naujiena')"
-            :confirm-label="$t('Pasirinkti')"
-            :search-placeholder="$t('Ieškoti naujienos pagal pavadinimą...')"
-            :empty-message="$t('Naujienų nerasta')"
-            @confirm="onOtherLangNewsConfirm"
-          >
-            <template #trigger>
-              <Button type="button" variant="outline" class="w-full justify-between font-normal">
-                <span class="truncate" :class="{ 'text-muted-foreground': !form.other_lang_id }">
-                  {{ selectedOtherLangNewsLabel }}
-                </span>
-                <ChevronDown class="size-4 opacity-50" />
-              </Button>
-            </template>
-          </CollectionSelectDialog>
-          <Button v-else type="button" variant="outline" class="w-full justify-between font-normal" disabled>
-            <span class="text-muted-foreground">{{ $t('Pasirinkti kitos kalbos naujieną...') }}</span>
-            <ChevronDown class="size-4 opacity-50" />
-          </Button>
-        </FormFieldWrapper>
-      </div>
-    </FormSection>
-
-    <!-- Section 2: Image (Visual identity) -->
-    <FormSection
-      data-section="2"
-      :title="$t('Nuotrauka')"
-      :description="$t('Pagrindinė naujienos nuotrauka')"
-    >
-      <div class="space-y-4">
-        <FormFieldWrapper
-          id="image"
-          :label="$t('Nuotrauka')"
-          :error="form.errors.image"
-          :valid="form.valid('image')"
-          :invalid="form.invalid('image')"
-        >
-          <ImageUpload
-            v-model:url="form.image"
-            mode="immediate"
-            folder="news"
-            cropper
-            :existing-url="news?.image"
-            @update:url="form.validate('image')"
-          />
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
-          id="image_author"
-          :label="$t('Nuotraukos autorius')"
-          :hint="$t('Žmogus arba organizacija, kurie sukūrė nuotrauką')"
-        >
-          <Input
-            id="image_author"
-            v-model="form.image_author"
-            type="text"
-            :placeholder="$t('Žmogus arba organizacija...')"
-          />
-        </FormFieldWrapper>
-      </div>
-    </FormSection>
-
-    <!-- Section 3: Short description / Intro text -->
-    <FormSection
-      data-section="3"
-      :title="$t('Įvadinis tekstas')"
-      :description="`${$t('Naudojamas naujienos įvade ir paieškos rezultatuose (SEO).')} ${$t('Maksimalus ženklų skaičius')}: 200.`"
-    >
-      <TiptapEditor v-model="form.short" preset="marks" disable-links :max-characters="200" html />
-    </FormSection>
-
-    <!-- Section 4: Content (Main editing area) -->
-    <FormSection
-      data-section="4"
-      :title="$t('Turinys')"
-      :description="$t('Pagrindinė naujienos informacija')"
-    >
+    <FormFieldWrapper id="content" :label="$t('Turinys')">
       <RichContentFormElement
         v-model="form.content.parts"
         :tenant-id="news?.tenant_id"
         @save="$emit('submit:form', form)"
       />
-    </FormSection>
+    </FormFieldWrapper>
 
-    <!-- Section 5: Highlights (Optional but prominent) -->
-    <FormSection
-      data-section="5"
-      :title="$t('Akcentai')"
-      :description="$t('Iki 3 pagrindinių minčių, kurios bus išskirtos naujienos puslapyje.')"
+    <FormFieldWrapper
+      id="highlights"
+      :label="$t('Svarbiausi punktai')"
+      :hint="$t('Iki trijų svarbiausių minčių, išskiriamų naujienos puslapyje.')"
+      :char-count="filledHighlightCount"
+      :max-length="3"
     >
       <OrderedListInput
         v-model="form.highlights"
         :max="3"
-        :placeholder="`${$t('Akcentas')} {n}...`"
-        :empty-text="$t('Dar nepridėta jokių akcentų')"
-        :add-first-text="$t('Pridėti pirmą akcentą')"
-        :add-text="$t('Pridėti akcentą')"
+        input-type="textarea"
+        :placeholder="$t('Įveskite svarbų punktą...')"
+        :empty-text="$t('Dar nepridėta jokių punktų')"
+        :add-first-text="$t('Pridėti pirmą punktą')"
+        :add-text="$t('Pridėti punktą')"
       />
-    </FormSection>
+    </FormFieldWrapper>
 
-    <!-- Advanced Settings Slot -->
-    <template #advanced>
-      <!-- Breadcrumbs toggle -->
-      <div class="flex items-center gap-3">
-        <Switch v-model="form.show_breadcrumbs" />
-        <span class="text-sm text-foreground">
-          {{ $t('Rodyti naujienos kelią (breadcrumbs)') }}
-        </span>
-      </div>
+    <FormFieldWrapper
+      id="image"
+      :label="$t('Nuotrauka')"
+      :hint="$t('Rodoma naujienos viršuje, naujienų sąraše ir dalinantis nuoroda.')"
+      :error="form.errors.image"
+      :valid="form.valid('image')"
+      :invalid="form.invalid('image')"
+    >
+      <ImageUpload
+        v-model:url="form.image"
+        mode="immediate"
+        folder="news"
+        cropper
+        full-width
+        :existing-url="news?.image"
+        @update:url="form.validate('image')"
+      />
+    </FormFieldWrapper>
 
-      <!-- Permalink -->
-      <template v-if="!isCreate">
-        <FormFieldWrapper
-          id="permalink"
-          :label="$t('Nuoroda')"
-          :error="form.errors.permalink"
-          :valid="form.valid('permalink')"
-          :invalid="form.invalid('permalink')"
-        >
-          <div class="flex items-center gap-2">
-            <Link2 class="h-4 w-4 shrink-0 text-muted-foreground" />
-            <Input
-              id="permalink"
-              v-model="form.permalink"
-              type="text"
-              :placeholder="$t('Sugeneruojama nuoroda')"
-              @change="form.validate('permalink')"
-            />
-          </div>
-        </FormFieldWrapper>
+    <FormFieldWrapper
+      id="image_author"
+      :label="`${$t('Nuotraukos autorius')} (${$t('neprivaloma')})`"
+      :hint="$t('Žmogus arba organizacija, kurie sukūrė nuotrauką')"
+    >
+      <Input
+        id="image_author"
+        v-model="form.image_author"
+        type="text"
+        :placeholder="$t('Žmogus arba organizacija...')"
+        :class="['h-11', fieldSurfaceClass]"
+      />
+    </FormFieldWrapper>
 
-        <Alert class="border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]">
-          <AlertTriangle class="size-4" />
-          <AlertTitle>{{ $t('Dėmesio') }}</AlertTitle>
-          <AlertDescription>
-            {{ $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.') }}
-          </AlertDescription>
-        </Alert>
-      </template>
+    <template #aside>
+      <ContentPublishPanel
+        :published="!form.draft"
+        :publish-time="form.publish_time"
+        :time-hint="$t('Nuo šio laiko naujiena rodoma paieškoje ir naujienų sąrašuose.')"
+        :publish-time-error="form.errors.publish_time"
+        :callout="statusCallout"
+        test-id-prefix="news"
+        @update:published="form.draft = !$event"
+        @update:publish-time="updatePublishTime"
+      >
+        <TenantSelectField
+          v-if="isCreate"
+          v-model="form.tenant_id"
+          :tenants="assignableTenants"
+          :error="form.errors.tenant_id"
+          :valid="form.valid('tenant_id')"
+          :invalid="form.invalid('tenant_id')"
+          @update:model-value="form.validate('tenant_id')"
+        />
+      </ContentPublishPanel>
+
+      <FormPanel :title="$t('Temos')" :icon="Tags" title-class="text-brand">
+        <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" :hint="$t('Temos, pagal kurias naujieną galima rasti.')" />
+      </FormPanel>
+
+      <ContentLanguagePanel
+        v-model:lang="form.lang"
+        v-model:other-lang-id="form.other_lang_id"
+        collection="news"
+        :candidates="otherLangNews"
+        :is-create
+        :labels="languageLabels"
+        :lang-error="form.errors.lang"
+        :lang-valid="form.valid('lang')"
+        :lang-invalid="form.invalid('lang')"
+        test-id-prefix="news"
+        @update:lang="form.validate('lang')"
+      />
+
+      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-brand" flush>
+        <FormToggleRow
+          v-model="form.show_breadcrumbs"
+          :label="$t('Rodyti naujienos kelią')"
+          :hint="$t('„Pradžia / Naujienos / …“ navigacija viršuje.')"
+          data-testid="toggle-breadcrumbs"
+        />
+      </FormPanel>
+
+      <ContentAnalyticsCard
+        v-if="!isCreate && news?.id"
+        :id="news.id"
+        type="news"
+        :content-date="news.publish_time ?? news.created_at"
+      />
     </template>
 
-    <!-- Danger Zone Slot -->
-    <template v-if="!isCreate && props.news" #danger-zone>
-      <div class="space-y-6">
-        <PublicUrlHistoryCard
-          :urls="props.news.public_urls ?? []"
-          :destroy-route="(id) => route('news.publicUrls.destroy', [props.news!.id, id])"
-        />
+    <template v-if="!isCreate && enableDelete" #danger-zone>
+      <Button
+        type="button"
+        variant="outline"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
+        @click="deleteConfirmOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('Ištrinti naujieną') }}
+      </Button>
 
-        <div v-if="enableDelete" class="flex items-center justify-between gap-4">
-          <div>
-            <h4 class="text-sm font-semibold text-destructive">
-              {{ $t('Ištrinti naujieną') }}
-            </h4>
-            <p class="text-xs text-muted-foreground">
-              {{ $t('Naujiena bus perkelta į šiukšlinę.') }}
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            class="u-touch shrink-0"
-            @click="deleteConfirmOpen = true"
-          >
-            <Trash2 class="mr-1.5 size-4" />
-            {{ $t('Ištrinti') }}
-          </Button>
-        </div>
-
-        <ConfirmDialog
-          v-model:open="deleteConfirmOpen"
-          :title="$t('Ištrinti naujieną?')"
-          :description="$t('Naujiena bus perkelta į šiukšlinę.')"
-          :confirm-label="$t('Ištrinti')"
-          destructive
-          @confirm="emit('delete')"
-        />
-      </div>
+      <ConfirmDialog
+        v-model:open="deleteConfirmOpen"
+        :title="$t('Ištrinti naujieną?')"
+        :description="$t('Naujiena bus perkelta į šiukšlinę.')"
+        :confirm-label="$t('Ištrinti')"
+        destructive
+        @confirm="emit('delete')"
+      />
     </template>
   </FormPage>
 </template>
@@ -328,36 +240,35 @@
 import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, ChevronDown, ExternalLink, Link2, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, LayoutTemplate, Tags, Trash2 } from 'lucide-vue-next';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 
+import ContentLanguagePanel from './ContentLanguagePanel.vue';
+import ContentPublishPanel from './ContentPublishPanel.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
-import FormStatusHeader from './FormStatusHeader.vue';
+import PermalinkField from './PermalinkField.vue';
 import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
 import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
+import SEOPreview from './SEOPreview.vue';
 import TagMultiSelect from './TagMultiSelect.vue';
+import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import { ConfirmDialog, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import { localizedRoute } from '@/Utils/LocalizedRoutes';
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Switch } from '@/Components/ui/switch';
-import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
-import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
-import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
-import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { ImageUpload } from '@/Components/ui/upload';
-import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
+import { contentStatuses } from '@/Constants/statuses';
+import { resolveTenantPublicHost, resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { newsTemplate } from '@/Types/formTemplates';
+import { formatDateTime } from '@/Utils/dateTime';
+import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
 
 const props = withDefaults(defineProps<{
   news?: App.Entities.News;
@@ -405,100 +316,78 @@ const form = props.rememberKey
 
 // Default to the sole assignable tenant; a multi-tenant actor (e.g. super admin) picks explicitly.
 if (isCreate.value && form.tenant_id == null) {
-  form.tenant_id = props.assignableTenants?.find(tenant => tenant.type === 'pagrindinis')?.id
-    ?? props.assignableTenants?.[0]?.id
-    ?? null;
+  form.tenant_id = pickDefaultTenantId(props.assignableTenants);
 }
 
-// Set validation timeout to 500ms for faster feedback
 form.setValidationTimeout(500);
 
-// Handle tenant_id as string for the Select component
-const tenantIdString = computed({
-  get: () => form.tenant_id ? String(form.tenant_id) : '',
-  set: (val: string) => {
-    form.tenant_id = val ? Number(val) : null;
-  },
-});
-
 // Preview-only: the actual permalink is generated server-side on create (GenerateUniqueSlug).
-// Title getter returns '' outside create mode so the composable's own length guard no-ops it —
-// there is nothing to preview once the record exists and the real permalink is editable.
+// Title getter returns '' outside create mode so the composable's own length guard no-ops it.
 const permalinkPreview = usePermalinkPreview('news', () => (isCreate.value ? form.title ?? '' : ''), () => form.lang ?? 'lt');
 
-// Ensure highlights is always an array
 if (!Array.isArray(form.highlights)) {
   form.highlights = [];
 }
 
-// Status header links
-const statusLinks = computed(() => {
-  // Need permalink and tenant to construct a valid public URL
-  if (!form.permalink || !props.news?.tenant) return [];
+const newsBaseUrl = computed(() => {
+  const lang = form.lang ?? 'lt';
 
-  const newsLang = form.lang ?? 'lt';
-  const url = localizedRoute('news', {
+  return `${resolveTenantPublicHost(props.news?.tenant?.id)}/${lang}/${localizedSlug('newsString', lang)}`;
+});
+
+const publicNewsUrl = computed(() => {
+  // A saved draft 404s publicly, so there is nothing to open yet.
+  if (!props.news?.id || props.news.draft || !form.permalink || !props.news.tenant) return undefined;
+
+  return localizedRoute('news', {
     subdomain: resolveTenantSubdomain(props.news.tenant.id),
     news: form.permalink,
-  }, newsLang);
-
-  return [{ url, label: 'Public' }];
+  }, form.lang ?? 'lt');
 });
 
-// Date picker compatibility - convert string to Date
-const publishTimeDate = computed({
-  get: () => form.publish_time ? new Date(form.publish_time) : undefined,
-  set: (val: Date | undefined) => {
-    form.publish_time = val ? val.toISOString() : null;
-  },
-});
+// The bar states what is saved; the heading and fields follow the edit. Props refresh after each save.
+const barTitle = computed(() => (isCreate.value ? $t('Nauja naujiena') : (props.news?.title || $t('Naujiena'))));
 
-// Handle publish time update from status header
-function handlePublishTimeUpdate(val: Date | null) {
-  form.publish_time = val ? val.toISOString() : null;
-  if (val) {
+// The redirect note is a consequence of an edit, so it appears only once there is one.
+const permalinkChanged = computed(() => form.permalink !== props.news?.permalink);
+
+const shortPlainText = computed(() => (form.short ?? '').replace(/<[^>]*>/g, '').trim());
+
+const filledHighlightCount = computed(() => (form.highlights as string[]).filter(item => item?.trim()).length);
+
+function updatePublishTime(value: string | null | undefined) {
+  form.publish_time = value ?? null;
+  if (value) {
     form.validate('publish_time');
   }
 }
 
-const otherLangDialogOpen = ref(false);
-
-// Opposite language of the news being edited (only two locales exist).
-const otherLang = computed(() => (form.lang === 'lt' ? 'en' : 'lt'));
-
-// Scope the news search to the opposite-language news of the candidate tenants
-// — exactly reproducing the `otherLangNews` prop.
-const otherLangBaseFilterBy = computed(() => {
-  const tenantIds = [
-    ...new Set((props.otherLangNews ?? []).map(n => n.tenant?.id).filter((id): id is number => id != null)),
-  ];
-  const parts: string[] = [];
-  if (tenantIds.length > 0) {
-    parts.push(`tenant_ids:[${tenantIds.join(',')}]`);
+// A future publish_time only keeps the article out of search and listings; its link already works.
+const statusCallout = computed(() => {
+  if (form.draft) {
+    return $t('Juodraštis matomas tik sistemoje — svetainės lankytojai jo nemato.');
   }
-  parts.push(`lang:=${otherLang.value}`);
-  return parts.join(' && ');
-});
 
-const selectedOtherLangNewsLabel = computed(() => {
-  const current = (props.otherLangNews ?? []).find(n => String(n.id) === String(form.other_lang_id));
-  return current ? `${current.title} (${current.tenant?.shortname})` : `-- ${$t('Nepasirinkta')} --`;
-});
+  const publishTime = form.publish_time ? new Date(form.publish_time as string) : null;
 
-const otherLangInitialHits = computed<NormalizedSearchHit[]>(() => {
-  const current = (props.otherLangNews ?? []).find(n => String(n.id) === String(form.other_lang_id));
-  if (!current) {
-    return [];
+  if (publishTime && publishTime.getTime() > Date.now()) {
+    return $t('Naujiena jau pasiekiama pagal nuorodą, o paieškoje ir naujienų sąrašuose pasirodys nuo :date.', {
+      date: formatDateTime(publishTime),
+    });
   }
-  return [normalizeHit('news', {
-    id: current.id,
-    title: current.title,
-    tenant_name: current.tenant?.shortname,
-    lang: otherLang.value,
-  })];
+
+  return $t('Paskelbta naujiena matoma visiems svetainės lankytojams.');
 });
 
-function onOtherLangNewsConfirm(hits: NormalizedSearchHit[]) {
-  form.other_lang_id = hits[0] ? Number(hits[0].recordId) : null;
-}
+const languageLabels = computed(() => ({
+  lang: $t('Naujienos kalba'),
+  otherLangLt: $t('Naujiena lietuvių kalba'),
+  otherLangEn: $t('Naujiena anglų kalba'),
+  createHint: $t('Susiesi išsaugojęs naujieną.'),
+  editHint: $t('Susieja tą patį turinį kita kalba.'),
+  createPlaceholder: $t('Pasirinkti kitos kalbos naujieną...'),
+  dialogTitle: $t('Kitos kalbos naujiena'),
+  searchPlaceholder: $t('Ieškoti naujienos pagal pavadinimą...'),
+  emptyMessage: $t('Naujienų nerasta'),
+}));
 </script>

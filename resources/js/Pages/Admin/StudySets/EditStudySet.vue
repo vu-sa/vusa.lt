@@ -1,29 +1,26 @@
 <template>
-  <PageContent :title :heading-icon="StudySetIcon">
-    <UpsertModelLayout>
-      <StudySetForm :study-set :tenants
-        @submit:form="(form: any) => form.patch(route('studySets.update', studySet.id))"
-        @delete="() => router.delete(route('studySets.destroy', studySet.id))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <StudySetForm
+    :study-set
+    :tenants="assignableTenants"
+    enable-delete
+    @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).patch(route('studySets.update', studySet.id))"
+    @delete="() => router.delete(route('studySets.destroy', studySet.id))"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import StudySetForm from '@/Components/AdminForms/StudySetForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import { useTranslatedTitle } from '@/Composables/useTranslatedTitle';
 import { StudySetIcon } from '@/Components/icons';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
 const props = defineProps<{
   studySet: any;
   assignableTenants: Array<{ id: number; shortname: string }>;
 }>();
 
-const title = useTranslatedTitle('Redaguoti komplektą', props.studySet.name);
-
-const tenants = computed(() => props.assignableTenants || []);
+usePageBreadcrumbs(() => BreadcrumbHelpers.adminForm($t('Individualių studijų komplektai'), 'studySets.index', getTranslatedValue(props.studySet.name), StudySetIcon));
 </script>

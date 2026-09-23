@@ -27,8 +27,8 @@
 
         <div class="min-w-0 flex-1 border-l border-border pl-3">
           <div class="flex items-center gap-2 min-w-0">
-            <p class="truncate text-sm font-bold text-foreground">
-              {{ title }}
+            <p class="truncate text-sm font-bold text-foreground" data-testid="form-page-bar-title">
+              {{ barTitle ?? title }}
             </p>
             <slot name="title-status" />
           </div>
@@ -39,6 +39,17 @@
           <div v-if="$slots['footer-extra']" class="hidden xl:block">
             <slot name="footer-extra" />
           </div>
+          <ActivityLogSheet
+            v-if="activitySubject"
+            :subject-type="activitySubject.type"
+            :subject-id="String(activitySubject.id)"
+          />
+          <Button v-if="publicUrl" as-child variant="outline" size="sm" class="hidden sm:inline-flex">
+            <a :href="publicUrl" target="_blank" rel="noopener noreferrer">
+              <Eye class="size-4" />
+              {{ $t('Peržiūrėti viešai') }}
+            </a>
+          </Button>
           <slot name="header-actions" />
 
           <Button
@@ -75,8 +86,8 @@
         {{ lead }}
       </p>
 
-      <div v-if="availableLocales.length > 1" class="pt-2">
-        <div :class="segmentGroupClass" role="group" :aria-label="$t('Kalba')">
+      <div v-if="availableLocales.length > 1 || $slots['locale-addon']" class="flex flex-wrap items-center gap-3 pt-2">
+        <div v-if="availableLocales.length > 1" :class="segmentGroupClass" role="group" :aria-label="$t('Kalba')">
           <button
             v-for="loc in availableLocales"
             :key="loc"
@@ -85,7 +96,8 @@
             :aria-pressed="currentLocale === loc"
             @click="setLocale(loc)"
           >
-            {{ loc.toUpperCase() }}
+            <LocaleFlag :locale="loc" />
+            <span>{{ loc.toUpperCase() }}</span>
             <span
               v-if="missingLocaleCounts && missingLocaleCounts[loc]"
               class="inline-block size-1.5 bg-destructive"
@@ -95,6 +107,8 @@
             </span>
           </button>
         </div>
+
+        <slot name="locale-addon" />
       </div>
 
       <div
@@ -138,7 +152,8 @@
       ref="formEl"
       :class="[
         'mt-8',
-        $slots.aside ? 'grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:gap-12' : 'space-y-8',
+        // Two-column editors are dense; full-contrast labels keep the field names scannable.
+        $slots.aside ? 'grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:gap-12 [&_[data-slot=form-field]_label]:text-foreground' : 'space-y-8',
       ]"
       @submit.prevent="mode !== 'view' && emit('submit')"
     >
@@ -158,13 +173,36 @@
           </div>
         </details>
 
-        <div v-if="$slots['danger-zone']" class="border-t border-destructive/20 pt-8">
+        <div v-if="$slots['danger-zone'] && !$slots.aside" class="border-t border-destructive/20 pt-8">
           <slot name="danger-zone" />
         </div>
       </div>
 
       <aside v-if="$slots.aside" class="flex min-w-0 flex-col gap-6" data-testid="form-page-aside">
         <slot name="aside" />
+
+        <dl v-if="createdAt || updatedAt" class="border border-border bg-background text-sm" data-testid="form-page-meta">
+          <div v-if="createdAt" class="flex items-center justify-between gap-4 border-b border-border px-4 py-3 last:border-b-0">
+            <dt class="text-muted-foreground">
+              {{ $t('Sukurta') }}
+            </dt>
+            <dd class="font-bold text-foreground">
+              {{ formatDate(createdAt) }}
+            </dd>
+          </div>
+          <div v-if="updatedAt" class="flex items-center justify-between gap-4 px-4 py-3">
+            <dt class="text-muted-foreground">
+              {{ $t('Atnaujinta') }}
+            </dt>
+            <dd class="font-bold text-foreground">
+              {{ formatDate(updatedAt) }}
+            </dd>
+          </div>
+        </dl>
+
+        <div v-if="$slots['danger-zone']" class="flex flex-col gap-3" data-testid="form-page-danger-zone">
+          <slot name="danger-zone" />
+        </div>
       </aside>
     </form>
 
@@ -198,18 +236,23 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeft, ChevronDown, Languages, Loader2, Save } from 'lucide-vue-next';
+import { ArrowLeft, ChevronDown, Eye, Languages, Loader2, Save } from 'lucide-vue-next';
 import { useEventListener } from '@vueuse/core';
 import { computed, h, nextTick, onUnmounted, ref, useId, watch, type FunctionalComponent } from 'vue';
 
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { SHELL_FORM_BAR_ID, useShellFocus } from '@/Composables/useShellFocus';
+import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
+import { formatDate } from '@/Utils/dateTime';
 import type { ModelEnum } from '@/Types/enums';
 
 const props = withDefaults(defineProps<{
   title: string;
+  /** The bar's (and tab's) title when it should state the saved record while `title` follows the fields. */
+  barTitle?: string;
   headTitle?: string;
   lead?: string;
   entityType?: ModelEnum | string;
@@ -229,7 +272,15 @@ const props = withDefaults(defineProps<{
   missingLocaleCounts?: Record<string, number>;
   /** Width of a single-column form; a form with an `#aside` is always `6xl`. */
   maxWidth?: '2xl' | '4xl' | '5xl' | 'full';
+  /** Where visitors see this record; adds "Peržiūrėti viešai" to the bar. */
+  publicUrl?: string;
+  /** Adds the change-history sheet to the bar. */
+  activitySubject?: { type: string; id: number | string };
+  /** Record facts listed at the end of the `#aside`. */
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }>(), {
+  barTitle: undefined,
   headTitle: undefined,
   lead: undefined,
   entityType: undefined,
@@ -243,6 +294,10 @@ const props = withDefaults(defineProps<{
   availableLocales: () => ['lt', 'en'],
   missingLocaleCounts: () => ({}),
   maxWidth: '2xl',
+  publicUrl: undefined,
+  activitySubject: undefined,
+  createdAt: undefined,
+  updatedAt: undefined,
 });
 
 const emit = defineEmits<{
@@ -255,6 +310,7 @@ const slots = defineSlots<{
   'default'?: () => unknown;
   'aside'?: () => unknown;
   'advanced'?: () => unknown;
+  /** Below the fields; in a two-column form, at the end of the `#aside`. */
   'danger-zone'?: () => unknown;
   'header-actions'?: () => unknown;
   /** Quiet context beside the actions (e.g. last sign-in); wide screens only. */
@@ -267,7 +323,7 @@ if (shellFocus) {
   onUnmounted(shellFocus.enter());
 }
 
-const headTitle = computed(() => props.headTitle ?? props.title);
+const headTitle = computed(() => props.headTitle ?? props.barTitle ?? props.title);
 
 const containerWidthClass = computed(() => {
   if (slots.aside) {

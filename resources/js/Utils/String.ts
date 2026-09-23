@@ -138,49 +138,6 @@ export const splitFileNameAndExtension = (fileName: string) => {
   return { name, extension };
 };
 
-/**
- * Get faculty name from padalinys.fullname
- * @param padalinys
- * @returns facultyName
- * @example getFacultyName({fullname: "Vilniaus universiteto Studentų atstovybė Matematikos ir informatikos fakultete"}) => "Matematikos ir informatikos fakultetas"
- */
-
-export const getFacultyName = ({ fullname }: { fullname: string }) => {
-  // split string into two parts, separated by string "Vilniaus universiteto Studentų atstovybė"
-  let facultyName = fullname.split(
-    'Vilniaus universiteto Studentų atstovybė',
-  )[1];
-
-  if (facultyName === undefined) {
-    return '';
-  }
-
-  // change faculty name only at the string ending from "ete" to "etas"
-  if (facultyName.endsWith('ete')) {
-    facultyName = facultyName.replace('ete', 'etas');
-  }
-  // also apply this to "tre" to "tas"
-  if (facultyName.endsWith('tre')) {
-    facultyName = facultyName.replace('tre', 'tras');
-  }
-
-  // also if ends with "ykloje", change to "ykla"
-  if (facultyName.endsWith('ykloje')) {
-    facultyName = facultyName.replace('ykloje', 'ykla');
-  }
-
-  // change "ute" to "utas"
-  if (facultyName.endsWith('ute')) {
-    facultyName = facultyName.replace('ute', 'utas');
-  }
-
-  if (facultyName.endsWith('joje')) {
-    facultyName = facultyName.replace('joje', 'ja');
-  }
-
-  return facultyName;
-};
-
 export const capitalize = (word: string) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
 };
@@ -602,4 +559,14 @@ export function stripHtmlTags(html: string): string {
  */
 export function hasHtmlText(html: string | null | undefined): boolean {
   return Boolean(html && stripHtmlTags(html).trim());
+}
+
+/** For user-authored text interpolated into markup that reaches `v-html`. */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

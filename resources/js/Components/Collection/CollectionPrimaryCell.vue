@@ -5,19 +5,28 @@
       :href
       prefetch
       data-collection-open
-      class="block truncate font-bold text-foreground hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      :class="[
+        'block font-bold text-foreground hover:text-brand',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+        titleLines === 2 ? 'line-clamp-2' : 'truncate',
+      ]"
     >
       <slot>{{ title }}</slot>
     </Link>
     <button
       v-else-if="clickable"
       type="button"
-      class="block max-w-full truncate text-left font-bold text-foreground hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      data-collection-open
+      :class="[
+        'block max-w-full text-left font-bold text-foreground hover:text-brand',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+        titleLines === 2 ? 'line-clamp-2' : 'truncate',
+      ]"
       @click="emit('open')"
     >
       <slot>{{ title }}</slot>
     </button>
-    <p v-else class="truncate font-bold text-foreground">
+    <p v-else :class="['font-bold text-foreground', titleLines === 2 ? 'line-clamp-2' : 'truncate']">
       <slot>{{ title }}</slot>
     </p>
 
@@ -40,6 +49,7 @@ import { Link } from '@inertiajs/vue3';
  */
 withDefaults(defineProps<{
   title?: string;
+  titleLines?: 1 | 2;
   /** Resolved URL of the record; the link doubles as the preview opener (`data-collection-open`). */
   href?: string;
   /** Renders a button emitting `open` instead of a link — for records edited in a sheet. */
@@ -49,6 +59,7 @@ withDefaults(defineProps<{
   mono?: boolean;
 }>(), {
   title: undefined,
+  titleLines: 1,
   href: undefined,
   clickable: false,
   sub: undefined,

@@ -7,6 +7,17 @@ lastUpdated: true
 
 ## v2.18 — Consistent lists across Mano VU SA (2026-09-23) {#v2-18}
 
+- 🔧 **Better photo cropping** — aspect ratio buttons work again, the editor is easier to use on a phone, and saved crops retain more detail
+- ✨ **Status right in the list, and several records at once** — in the Pages and News lists, click the status tag and choose "Published" or "Draft"; select several records (Shift selects every row between two) to publish, move to drafts or delete them in one go — only the actions that would change something are offered
+- ✨ **Pages without a publish time** — a page is either a draft or published, so the publish time field, which was never saved, is gone from the page form
+- 🔧 **Tables no longer jump when sorting** — the loading line no longer pushes the table down while sorting or searching
+- ✨ **A new news editor** — news is created and edited the same way as pages: fields in the content column, with publishing, topics, language and display settings in side panels; you edit the link right under the title, see how the article will look in search, and the status explains where a draft or published article is visible; the intro text field matches the other form fields, and "Draft" and "Published" use the same colours as the list statuses
+- 🔧 **News drafts are no longer reachable by link** — while an article is a draft, visitors can't open it even with a direct link, and the language switch no longer leads to a draft translation
+- ✨ **Refreshed settings, types, relationships, study sets and quick links** — settings pages and the type, relationship and study set forms now look like the other edit forms (language switch, save bar, delete at the bottom of the form); quick links are a regular list with search and language and unit filters, and you reorder them in a separate panel with arrows or by dragging
+- ✨ **Consistent public page width** — public site content now lines up with the top bar, and the meeting page matches the new design
+- ✨ **A page for each year's freshmen camps** — the 2022–2025 camp pages are regular, editable content pages, and old links redirect to them
+- ✨ **Easier list controls** — sorting and result counts now sit above results, view buttons take less space, and deleted records are available under filters
+- 🔧 **Clearer Pages list** — pages show their status and unit short name, titles wrap to two lines, the whole preview row is selectable with page details and actions on the side, and title sorting works again
 - ✨ **Roomier Home** — tasks and “Go to” links sit beside quick actions, with other information below; the coordinator card no longer appears on Home
 - ✨ **Shorter task list on Home** — see the three tasks with the latest due dates and how many remain; select the remaining count to open all tasks
 - ✨ **Home photo** — the greeting band uses your unit's primary institution image instead of a news story, with a community photo when no image is set

@@ -16,159 +16,155 @@
       </template>
     </EventHero>
 
-    <!-- Main Content Area: rc-viewport escapes .wrapper's 1200px column so the
-         grid aligns with the 1280px (max-w-7xl) hero and related-events sections. -->
-    <div class="rc-viewport">
-      <div class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-        <!-- Two Column Layout: 20rem sidebar matches v0 reference (.design-reference/v0/app/renginiai/[slug]/page.tsx) -->
-        <div class="grid gap-10 lg:grid-cols-[1fr_20rem] lg:gap-14">
-          <!-- Main Content -->
-          <main class="order-last min-w-0 space-y-10 lg:order-none">
-            <!-- Description / Rich Content -->
-            <article
-              v-if="event.description"
-              class="rc-prose max-w-none"
-              v-html="event.description"
+    <div class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+      <!-- Two Column Layout: 20rem sidebar matches v0 reference (.design-reference/v0/app/renginiai/[slug]/page.tsx) -->
+      <div class="grid gap-10 lg:grid-cols-[1fr_20rem] lg:gap-14">
+        <!-- Main Content -->
+        <main class="order-last min-w-0 space-y-10 lg:order-none">
+          <!-- Description / Rich Content -->
+          <article
+            v-if="event.description"
+            class="rc-prose max-w-none"
+            v-html="event.description"
+          />
+
+          <!-- Agenda: present only when this event stands for a meeting. -->
+          <section v-if="meeting">
+            <div class="mb-4 flex items-baseline gap-3 border-l-2 border-brand pl-3">
+              <h2 class="u-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                {{ $t("Darbotvarkė") }}
+              </h2>
+            </div>
+            <PublicAgendaList
+              :items="meeting.agenda_items"
+              :requires-student-perspective="meeting.requires_student_perspective"
+              :is-upcoming="!isPast"
+              :show-heading="false"
             />
+            <Link
+              v-if="meeting.is_publicly_visible"
+              :href="meetingUrl"
+              class="mt-4 inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:text-brand"
+            >
+              {{ $t("Posėdžio puslapis") }}
+              <IFluentArrowRight20Regular class="size-4" />
+            </Link>
 
-            <!-- Agenda: present only when this event stands for a meeting. -->
-            <section v-if="meeting">
-              <div class="mb-4 flex items-baseline gap-3 border-l-2 border-brand pl-3">
-                <h2 class="u-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                  {{ $t("Darbotvarkė") }}
-                </h2>
-              </div>
-              <PublicAgendaList
-                :items="meeting.agenda_items"
-                :requires-student-perspective="meeting.requires_student_perspective"
-                :is-upcoming="!isPast"
-                :show-heading="false"
-              />
+            <!-- Sibling announcements for the same institution -->
+            <nav
+              v-if="previousMeetingEvent || nextMeetingEvent"
+              class="mt-6 flex items-center justify-between gap-4 border-t border-border pt-4"
+            >
               <Link
-                v-if="meeting.is_publicly_visible"
-                :href="meetingUrl"
-                class="mt-4 inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:text-brand"
+                v-if="previousMeetingEvent"
+                :href="getCalendarEvent2Route(previousMeetingEvent, locale)"
+                class="group flex items-center gap-3"
               >
-                {{ $t("Posėdžio puslapis") }}
-                <IFluentArrowRight20Regular class="size-4" />
+                <IFluentArrowLeft20Regular class="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand" />
+                <div class="text-left">
+                  <span class="block font-mono text-xs uppercase tracking-wider text-muted-foreground">{{ $t('Ankstesnis posėdis') }}</span>
+                  <span class="block text-sm font-medium text-foreground transition-colors group-hover:text-brand">
+                    {{ siblingEventDate(previousMeetingEvent) }}
+                  </span>
+                </div>
               </Link>
+              <div v-else />
 
-              <!-- Sibling announcements for the same institution -->
-              <nav
-                v-if="previousMeetingEvent || nextMeetingEvent"
-                class="mt-6 flex items-center justify-between gap-4 border-t border-border pt-4"
-              >
-                <Link
-                  v-if="previousMeetingEvent"
-                  :href="getCalendarEvent2Route(previousMeetingEvent, locale)"
-                  class="group flex items-center gap-3"
-                >
-                  <IFluentArrowLeft20Regular class="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand" />
-                  <div class="text-left">
-                    <span class="block font-mono text-xs uppercase tracking-wider text-muted-foreground">{{ $t('Ankstesnis posėdis') }}</span>
-                    <span class="block text-sm font-medium text-foreground transition-colors group-hover:text-brand">
-                      {{ siblingEventDate(previousMeetingEvent) }}
-                    </span>
-                  </div>
-                </Link>
-                <div v-else />
-
-                <Link
-                  v-if="nextMeetingEvent"
-                  :href="getCalendarEvent2Route(nextMeetingEvent, locale)"
-                  class="group ml-auto flex items-center gap-3"
-                >
-                  <div class="text-right">
-                    <span class="block font-mono text-xs uppercase tracking-wider text-muted-foreground">{{ $t('Kitas posėdis') }}</span>
-                    <span class="block text-sm font-medium text-foreground transition-colors group-hover:text-brand">
-                      {{ siblingEventDate(nextMeetingEvent) }}
-                    </span>
-                  </div>
-                  <IFluentArrowRight20Regular class="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand" />
-                </Link>
-              </nav>
-            </section>
-
-            <!-- Meeting documents -->
-            <section v-if="meeting?.documents?.length">
-              <div class="mb-4 flex items-baseline gap-3 border-l-2 border-brand pl-3">
-                <h2 class="u-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                  {{ $t("Dokumentai") }}
-                </h2>
-              </div>
-              <PublicMeetingDocuments :documents="meeting.documents" />
-            </section>
-
-            <!-- Video Section -->
-            <section v-if="event.video_url">
-              <div class="mb-4 flex items-baseline gap-3 border-l-2 border-brand pl-3">
-                <h2 class="u-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                  {{ $t("Video") }}
-                </h2>
-              </div>
-              <div class="overflow-hidden border border-border bg-secondary">
-                <iframe
-                  class="aspect-video w-full"
-                  :src="`https://www.youtube-nocookie.com/embed/${event.video_url}`"
-                  title="YouTube video player"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                />
-              </div>
-            </section>
-
-            <!-- Image Gallery Section -->
-            <section v-if="normalizedImages.length > 1">
-              <div class="mb-6 flex items-baseline gap-3 border-l-2 border-brand pl-3">
-                <h2 class="u-display text-xl font-bold tracking-tight text-foreground lg:text-2xl">
-                  {{ $t("Nuotraukos") }}
-                </h2>
-                <span class="font-mono text-sm text-muted-foreground">
-                  ({{ normalizedImages.length }})
-                </span>
-              </div>
-              <PhotoGalleryGridDisplay :element="photoGalleryElement" />
-            </section>
-
-            <!-- Article Bottom Action Bar -->
-            <div class="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
               <Link
-                :href="route('calendar.list', { lang: locale })"
-                class="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-foreground transition-colors hover:text-brand"
+                v-if="nextMeetingEvent"
+                :href="getCalendarEvent2Route(nextMeetingEvent, locale)"
+                class="group ml-auto flex items-center gap-3"
               >
-                <IFluentArrowLeft20Regular class="size-4" />
-                {{ $t('Visi renginiai') }}
+                <div class="text-right">
+                  <span class="block font-mono text-xs uppercase tracking-wider text-muted-foreground">{{ $t('Kitas posėdis') }}</span>
+                  <span class="block text-sm font-medium text-foreground transition-colors group-hover:text-brand">
+                    {{ siblingEventDate(nextMeetingEvent) }}
+                  </span>
+                </div>
+                <IFluentArrowRight20Regular class="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand" />
               </Link>
-              <Button
-                variant="outline"
-                size="lg"
-                @click="handleShare"
-              >
-                <IFluentShare20Regular class="size-4" />
-                <span>{{ $t('Dalintis') }}</span>
-              </Button>
+            </nav>
+          </section>
+
+          <!-- Meeting documents -->
+          <section v-if="meeting?.documents?.length">
+            <div class="mb-4 flex items-baseline gap-3 border-l-2 border-brand pl-3">
+              <h2 class="u-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                {{ $t("Dokumentai") }}
+              </h2>
             </div>
-          </main>
+            <PublicMeetingDocuments :documents="meeting.documents" />
+          </section>
 
-          <!-- Sidebar. Ordered first on a phone: when the event is (and where) is what a
-             visitor came for, and below a long description it was never seen. -->
-          <aside class="order-first lg:order-none">
-            <!-- top-28 clears the fixed main navigation (see MainNavigation.vue) -->
-            <div class="lg:sticky lg:top-28">
-              <EventDetailsCard
-                :event
-                :google-link
-                :coordinates="eventLocation"
+          <!-- Video Section -->
+          <section v-if="event.video_url">
+            <div class="mb-4 flex items-baseline gap-3 border-l-2 border-brand pl-3">
+              <h2 class="u-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                {{ $t("Video") }}
+              </h2>
+            </div>
+            <div class="overflow-hidden border border-border bg-secondary">
+              <iframe
+                class="aspect-video w-full"
+                :src="`https://www.youtube-nocookie.com/embed/${event.video_url}`"
+                title="YouTube video player"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
               />
             </div>
-          </aside>
-        </div>
+          </section>
+
+          <!-- Image Gallery Section -->
+          <section v-if="normalizedImages.length > 1">
+            <div class="mb-6 flex items-baseline gap-3 border-l-2 border-brand pl-3">
+              <h2 class="u-display text-xl font-bold tracking-tight text-foreground lg:text-2xl">
+                {{ $t("Nuotraukos") }}
+              </h2>
+              <span class="font-mono text-sm text-muted-foreground">
+                ({{ normalizedImages.length }})
+              </span>
+            </div>
+            <PhotoGalleryGridDisplay :element="photoGalleryElement" />
+          </section>
+
+          <!-- Article Bottom Action Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+            <Link
+              :href="route('calendar.list', { lang: locale })"
+              class="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider text-foreground transition-colors hover:text-brand"
+            >
+              <IFluentArrowLeft20Regular class="size-4" />
+              {{ $t('Visi renginiai') }}
+            </Link>
+            <Button
+              variant="outline"
+              size="lg"
+              @click="handleShare"
+            >
+              <IFluentShare20Regular class="size-4" />
+              <span>{{ $t('Dalintis') }}</span>
+            </Button>
+          </div>
+        </main>
+
+        <!-- Sidebar. Ordered first on a phone: when the event is (and where) is what a
+           visitor came for, and below a long description it was never seen. -->
+        <aside class="order-first lg:order-none">
+          <!-- top-28 clears the fixed main navigation (see MainNavigation.vue) -->
+          <div class="lg:sticky lg:top-28">
+            <EventDetailsCard
+              :event
+              :google-link
+              :coordinates="eventLocation"
+            />
+          </div>
+        </aside>
       </div>
     </div>
 
-    <!-- Related events: full-bleed 3-column card grid -->
-    <section v-if="otherEvents.length" class="rc-viewport border-t border-border bg-secondary/40">
+    <!-- Related events: 3-column card grid -->
+    <section v-if="otherEvents.length" class="border-t border-border bg-secondary/40">
       <div class="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div class="flex items-end justify-between border-b border-border pb-5">
           <div>

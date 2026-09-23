@@ -22,6 +22,7 @@ class NewsController extends PublicController
         $news = News::query()->where([
             ['permalink', '=', $news],
             ['tenant_id', '=', $this->tenant->id],
+            ['draft', '=', false],
         ])->first();
 
         if ($news === null) {
@@ -35,7 +36,7 @@ class NewsController extends PublicController
             abort(404);
         }
 
-        $other_lang_page = $news->other_language_news;
+        $other_lang_page = $news->other_language_news?->draft ? null : $news->other_language_news;
 
         $this->sharePublicEditLink($news);
 

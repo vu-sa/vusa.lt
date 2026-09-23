@@ -1,23 +1,19 @@
 <template>
-  <PageContent title="Naujas ryšys" :back-url="route('relationships.index')">
-    <UpsertModelLayout>
-      <RelationshipForm remember-key="CreateRelationship" :relationship :content-types @submit:form="(form) => form.post(route('relationships.store'))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <RelationshipForm remember-key="CreateRelationship" :relationship @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).post(route('relationships.store'))" />
 </template>
 
 <script setup lang="ts">
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import RelationshipForm from '@/Components/AdminForms/RelationshipForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-defineProps<{
-  contentTypes: Record<string, any>[];
-}>();
+import RelationshipForm from '@/Components/AdminForms/RelationshipForm.vue';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const relationship = {
   name: '',
   slug: '',
   description: '',
-};
+} as App.Entities.Relationship;
+
+usePageBreadcrumbs(BreadcrumbHelpers.adminForm($t('Ryšiai'), 'relationships.index', $t('Naujas ryšys')));
 </script>

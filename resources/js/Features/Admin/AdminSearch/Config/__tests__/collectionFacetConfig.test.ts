@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  getCollectionFacetConfig,
   getCollectionSortOptions,
   RELEVANCE_SORT_VALUE,
   resolveSortValue,
@@ -19,6 +20,15 @@ describe('getCollectionSortOptions', () => {
 
     expect(options[0].value).toBe(RELEVANCE_SORT_VALUE);
     expect(options.some(o => o.value === 'created_at:desc')).toBe(true);
+  });
+});
+
+describe('page facets', () => {
+  it('filters pages by tenant short name', () => {
+    const config = getCollectionFacetConfig('pages');
+
+    expect(config?.facetBy).toContain('tenant_shortname');
+    expect(config?.fields.find(field => field.label === 'Padalinys')?.field).toBe('tenant_shortname');
   });
 });
 

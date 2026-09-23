@@ -39,7 +39,7 @@
 
       <!-- Link button -->
       <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-        <Button size="icon-sm" :variant="editor.isActive('link') ? 'secondary' : 'ghost'" :title="$t('rich-content.link')">
+        <Button size="icon-sm" :variant="editor.isActive('link') ? 'brand' : 'ghost'" :title="$t('rich-content.link')">
           <IFluentLink24Regular class="size-4" />
         </Button>
       </TiptapLinkButton>
@@ -49,7 +49,7 @@
       <!-- Lists: Bullet & Ordered -->
       <Button
         size="icon-sm"
-        :variant="editor.isActive('bulletList') ? 'secondary' : 'ghost'"
+        :variant="editor.isActive('bulletList') ? 'brand' : 'ghost'"
         :title="$t('rich-content.bullet_list')"
         @click="editor.chain().focus().toggleBulletList().run()"
       >
@@ -57,7 +57,7 @@
       </Button>
       <Button
         size="icon-sm"
-        :variant="editor.isActive('orderedList') ? 'secondary' : 'ghost'"
+        :variant="editor.isActive('orderedList') ? 'brand' : 'ghost'"
         :title="$t('rich-content.ordered_list')"
         @click="editor.chain().focus().toggleOrderedList().run()"
       >
@@ -65,7 +65,7 @@
       </Button>
       <Button
         size="icon-sm"
-        :variant="editor.isActive('blockquote') ? 'secondary' : 'ghost'"
+        :variant="editor.isActive('blockquote') ? 'brand' : 'ghost'"
         :title="$t('rich-content.blockquote')"
         @click="editor.chain().focus().toggleBlockquote().run()"
       >

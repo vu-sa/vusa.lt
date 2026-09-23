@@ -210,8 +210,10 @@ describe('relationship CRUD operations', function (): void {
     });
 
     test('can delete relationship', function (): void {
-        asUser($this->admin)->delete(route('relationships.destroy', $this->relationship))
-            ->assertRedirect()
+        asUser($this->admin)
+            ->from(route('relationships.edit', $this->relationship))
+            ->delete(route('relationships.destroy', $this->relationship))
+            ->assertRedirect(route('relationships.index'))
             ->assertSessionHas('success', 'Ryšio tipas tarp modelių ištrintas.');
 
         $this->assertDatabaseMissing('relationships', [

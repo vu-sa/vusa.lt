@@ -43,7 +43,6 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     highlights: [],
     meta_description: '',
     featured_image: '',
-    publish_time: null,
     tenant: { id: 1, alias: 'www', shortname: 'VU SA' },
   };
 
@@ -58,7 +57,7 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
       global: {
         stubs: {
           FormPage: {
-            template: '<div data-testid="form-page"><slot name="header-actions" /><slot /><slot name="aside" /></div>',
+            template: '<div data-testid="form-page"><slot name="title-status" /><slot name="header-actions" /><slot /><slot name="aside" /></div>',
             props: ['title', 'headTitle', 'lead', 'entityType', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode', 'maxWidth', 'availableLocales'],
           },
           FormSection: {
@@ -181,6 +180,8 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
 
     await wrapper.find('[data-testid="page-status-draft"]').trigger('click');
     expect(vm.form.is_active).toBe(false);
+    // The bar keeps stating what is saved until the next save.
+    expect(wrapper.find('[data-slot="status-badge"]').text()).toBe('Paskelbta');
     expect(wrapper.find('[data-testid="page-status-callout"]').text()).toContain('Juodraštis matomas tik sistemoje');
 
     await wrapper.find('[data-testid="page-status-published"]').trigger('click');
@@ -188,12 +189,10 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     expect(wrapper.find('[data-testid="page-status-published"]').attributes('aria-pressed')).toBe('true');
   });
 
-  it('does not promise a future publish time hides the page from its link', () => {
-    wrapper = createWrapper({
-      page: { ...defaultPage, publish_time: '2999-01-01T10:00:00Z' },
-    });
+  it('offers no publish time, since a page is only a draft or published', () => {
+    wrapper = createWrapper();
 
-    expect(wrapper.find('[data-testid="page-status-callout"]').text()).toContain('pasiekiamas pagal nuorodą');
+    expect(wrapper.find('#publish_time').exists()).toBe(false);
   });
 
   it('sets the page language with the language segment', async () => {

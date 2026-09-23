@@ -7,6 +7,17 @@ lastUpdated: true
 
 ## v2.18 — Vienodi sąrašai visoje Mano VU SA (2026-09-23) {#v2-18}
 
+- 🔧 **Patogesnis nuotraukų apkirpimas** — proporcijų mygtukai vėl veikia, redagavimo langas aiškesnis telefone, o išsaugoti kadrai išlieka ryškesni
+- ✨ **Būsena tiesiai sąraše ir keli įrašai iš karto** — puslapių ir naujienų sąrašuose paspausk būsenos žymą ir pasirink „Paskelbta“ arba „Juodraštis“; pažymėjęs kelis įrašus (su Shift pažymėsi visus tarp dviejų), juos paskelbsi, perkelsi į juodraščius ar ištrinsi vienu veiksmu – siūlomi tik tie veiksmai, kurie ką nors pakeis
+- ✨ **Puslapiai be paskelbimo laiko** — puslapis yra arba juodraštis, arba paskelbtas, todėl niekada neišsaugomas paskelbimo laiko laukas iš puslapio formos pašalintas
+- 🔧 **Lentelė nebešokinėja rikiuojant** — keičiant rikiavimą ar ieškant, įkėlimo juostelė nebestumia lentelės žemyn
+- ✨ **Naujas naujienų redaktorius** — naujienos kuriamos ir redaguojamos taip pat, kaip puslapiai: laukai turinio stulpelyje, o paskelbimas, temos, kalba ir rodymo nustatymai – šoniniuose skydeliuose; nuorodą keisi iš karto po pavadinimu, matai, kaip naujiena atrodys paieškoje, o prie būsenos parašyta, kur juodraštis ar paskelbta naujiena bus matoma; įvadinio teksto laukas atrodo kaip kiti formos laukai, o „Juodraštis“ ir „Paskelbta“ pažymimi tomis pačiomis spalvomis kaip sąrašų būsenos
+- 🔧 **Naujienų juodraščiai nebepasiekiami pagal nuorodą** — kol naujiena pažymėta kaip juodraštis, svetainės lankytojai jos neatvers net turėdami tiesioginę nuorodą, o kalbos jungiklis neveda į juodraštinį vertimą
+- ✨ **Atnaujinti nustatymai, tipai, ryšiai, komplektai ir greitosios nuorodos** — nustatymų puslapiai, tipų, ryšių ir studijų komplektų formos atrodo kaip kitos redagavimo formos (kalbos jungiklis, išsaugojimo juosta, ištrynimas formos apačioje); greitosios nuorodos tapo įprastu sąrašu su paieška, kalbos ir padalinio filtrais, o tvarką keisi atskirame lange rodyklėmis arba vilkdamas
+- ✨ **Vienodas viešų puslapių plotis** — viešos svetainės turinys dabar lygiuojasi su viršutine juosta, o posėdžio puslapis atnaujintas pagal naująjį dizainą
+- ✨ **Kiekvienų metų pirmakursių stovyklos – atskiras puslapis** — 2022–2025 m. stovyklų puslapius galima redaguoti kaip įprastus turinio puslapius, o senos nuorodos nukreipia į juos
+- ✨ **Patogesni sąrašų valdikliai** — rikiavimas ir rastų įrašų skaičius rodomi virš rezultatų, rodinių mygtukai užima mažiau vietos, o ištrintus įrašus rasi filtruose
+- 🔧 **Aiškesnis puslapių sąrašas** — matomos būsenos ir trumpi padalinių pavadinimai, pavadinimai telpa į dvi eilutes, peržiūroje visą eilutę galima pasirinkti ir matyti puslapio santrauką bei veiksmus, o rikiavimas pagal pavadinimą vėl veikia
 - ✨ **Erdvesnė Pradžia** — užduotys ir „Eiti į“ nuorodos rodomos greta greitųjų veiksmų, kita informacija perkelta žemiau; koordinatoriaus kortelė Pradžioje neberodoma
 - ✨ **Trumpesnis užduočių sąrašas Pradžioje** — rodomos trys vėliausio termino užduotys ir kiek dar jų laukia; visas atversi paspaudęs likusių užduočių skaičių
 - ✨ **Pradžios nuotrauka** — pasisveikinimo juostoje rodoma tavo padalinio pagrindinės institucijos nuotrauka vietoje naujienos; kai jos nėra, rodoma bendruomenės nuotrauka

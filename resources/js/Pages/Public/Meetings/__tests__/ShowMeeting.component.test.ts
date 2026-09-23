@@ -62,4 +62,23 @@ describe('Public/Meetings/ShowMeeting.vue', () => {
 
     expect(wrapper.text()).not.toContain('Tvarkaraštis');
   });
+
+  it('counts main-vote decisions into the outcome summary', () => {
+    const wrapper = mountPage({
+      meeting: makeMeeting({
+        agenda_items: [
+          { id: 'a1', title: 'Pirmas', order: 1, main_vote: { decision: 'positive' } },
+          { id: 'a2', title: 'Antras', order: 2, main_vote: { decision: 'positive' } },
+          { id: 'a3', title: 'Trečias', order: 3, main_vote: { decision: 'negative' } },
+          { id: 'a4', title: 'Ketvirtas', order: 4 },
+        ],
+      }),
+    });
+
+    const values = wrapper.find('[data-testid="outcome-summary"]')
+      .findAll('[data-slot="stat-cell"]')
+      .map(cell => cell.find('.u-display').text());
+
+    expect(values).toEqual(['2', '0', '1']);
+  });
 });

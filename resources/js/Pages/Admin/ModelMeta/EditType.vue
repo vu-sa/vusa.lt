@@ -1,31 +1,33 @@
 <template>
-  <PageContent :title="contentType.title.lt" :back-url="route('types.index')">
-    <template #aside-header>
-      <ActivityLogSheet subject-type="type" :subject-id="contentType.id" />
-    </template>
-    <UpsertModelLayout>
-      <TypeForm :content-types :all-models-from-model-type :type="contentType" :roles :model-type :sharepoint-path
-        enable-delete
-        @submit:form="(form) => form.patch(route('types.update', contentType.id), { preserveScroll: true })"
-        @delete="() => router.delete(route('types.destroy', contentType.id))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <TypeForm
+    :content-types
+    :all-models-from-model-type
+    :type="contentType"
+    :roles
+    :model-type
+    :sharepoint-path
+    enable-delete
+    @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).patch(route('types.update', contentType.id), { preserveScroll: true })"
+    @delete="() => router.delete(route('types.destroy', contentType.id))"
+  />
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import TypeForm from '@/Components/AdminForms/TypeForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
-defineProps<{
+const props = defineProps<{
   contentType: App.Entities.Type;
   contentTypes: App.Entities.Type[];
   sharepointPath: string;
-  allModelsFromModelType?: Record<string, any>[];
+  allModelsFromModelType?: Record<string, unknown>[];
   modelType?: string;
   roles?: App.Entities.Role[];
 }>();
+
+usePageBreadcrumbs(() => BreadcrumbHelpers.adminForm($t('Tipai'), 'types.index', getTranslatedValue(props.contentType.title)));
 </script>

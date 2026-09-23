@@ -14,16 +14,11 @@
       <CollectionControlRow
         :query="source.query.value"
         :placeholder="searchPlaceholder ?? $t('Ieškoti')"
-        :has-filters="source.facets.value.length > 0"
+        :has-filters="source.facets.value.length > 0 || Boolean(trash && (trash.active || trash.count > 0))"
         :filters-open="isAtLeastMd ? filtersOpen : sheetOpen"
-        :active-filter-count="source.activeFilterCount.value"
-        :sort-by="source.sortBy.value"
-        :sort-options="source.sortOptions.value"
-        :trash
+        :active-filter-count="source.activeFilterCount.value + (trash?.active ? 1 : 0)"
         @search="(query, immediate) => source.search(query, immediate)"
         @toggle-filters="toggleFilters"
-        @toggle-trash="toggleTrash"
-        @update:sort-by="source.setSortBy"
       >
         <template #view-toggle>
           <CollectionViewToggle :model-value="view" :views="availableViews" @update:model-value="setView" />
@@ -33,18 +28,20 @@
       <CollectionFilterBar
         v-model:sheet-open="sheetOpen"
         :facets="source.facets.value"
+        :trash="trash && (trash.active || trash.count > 0) ? trash : undefined"
         :open="filtersOpen"
         :is-at-least-md
-        :active-count="source.activeFilterCount.value"
+        :active-count="source.activeFilterCount.value + (trash?.active ? 1 : 0)"
         @toggle="source.toggleFilter"
-        @clear="source.clearFilters"
+        @toggle-trash="toggleTrash"
+        @clear="clearFilters"
       />
 
       <CollectionActiveChips
-        :chips="source.chips.value"
-        :total="source.hasSearched.value && !source.error.value ? source.total.value : null"
-        @remove="source.clearChip"
-        @clear="source.clearFilters"
+        v-if="activeChips.length > 0"
+        :chips="activeChips"
+        @remove="removeChip"
+        @clear="clearFilters"
       />
     </section>
 
@@ -76,6 +73,8 @@
       :can-select
       :sort-by="source.sortBy.value"
       :sort-options="source.sortOptions.value"
+      :total="source.total.value"
+      :table-fixed
       @clear="clearAll"
       @retry="source.refresh"
       @load-more="source.loadMore"
@@ -123,7 +122,7 @@ import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionB
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import CollectionViewToggle from '@/Components/Collection/CollectionViewToggle.vue';
 import type { CollectionColumn, CollectionQuickFilter, CollectionTrash } from '@/Components/Collection/types';
-import type { CollectionSource } from '@/Composables/useCollectionSource';
+import type { CollectionChip, CollectionSource } from '@/Composables/useCollectionSource';
 import { useCollectionView, type CollectionViewMode } from '@/Composables/useCollectionView';
 
 const props = withDefaults(defineProps<{
@@ -149,6 +148,10 @@ const props = withDefaults(defineProps<{
   canSelect?: (item: T) => boolean;
   /** Soft-deleted records as a filter over this same page (`?showDeleted=true`). */
   trash?: CollectionTrash;
+  /** URL params that scope the server response (e.g. `tenant`, `lang`) and so survive the trash toggle. */
+  keepParams?: string[];
+  /** Keep table columns within assigned widths when cells contain long text. */
+  tableFixed?: boolean;
 }>(), {
   lead: undefined,
   quickFilters: undefined,
@@ -158,6 +161,7 @@ const props = withDefaults(defineProps<{
   availableViews: undefined,
   canSelect: undefined,
   trash: undefined,
+  keepParams: undefined,
 });
 
 const emit = defineEmits<{
@@ -166,7 +170,7 @@ const emit = defineEmits<{
 
 defineSlots<{
   'actions': () => unknown;
-  'row': (props: { item: T; selected: boolean; pinned: boolean }) => unknown;
+  'row': (props: { item: T; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
   'cell': (props: { item: T; column: CollectionColumn; pinned: boolean }) => unknown;
   'preview': (props: { item: T }) => unknown;
   'empty': () => unknown;
@@ -205,6 +209,13 @@ function toggleTrash(): void {
   const url = new URL(window.location.href);
   const next = new URL(url.pathname, url.origin);
 
+  for (const param of props.keepParams ?? []) {
+    const value = url.searchParams.get(param);
+    if (value !== null) {
+      next.searchParams.set(param, value);
+    }
+  }
+
   if (!props.trash?.active) {
     next.searchParams.set('showDeleted', 'true');
   }
@@ -226,7 +237,35 @@ function toggleFilters(): void {
 
 const isFiltered = computed(() => props.source.query.value.trim() !== '' || props.source.activeFilterCount.value > 0);
 
+const activeChips = computed<CollectionChip[]>(() => [
+  ...(props.trash?.active ? [{ id: '__trash', label: $t('Ištrinti') }] : []),
+  ...props.source.chips.value,
+]);
+
+function removeChip(id: string): void {
+  if (id === '__trash') {
+    toggleTrash();
+  }
+  else {
+    props.source.clearChip(id);
+  }
+}
+
+function clearFilters(): void {
+  if (props.trash?.active) {
+    toggleTrash();
+  }
+  else {
+    props.source.clearFilters();
+  }
+}
+
 function clearAll(): void {
+  if (props.trash?.active) {
+    toggleTrash();
+    return;
+  }
+
   props.source.clearFilters();
   props.source.search('', true);
 }

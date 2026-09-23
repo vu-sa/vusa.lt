@@ -71,10 +71,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarLegacy'])->name('calendar.event.legacy')->whereNumber('year')->whereNumber('month')->whereNumber('day');
 
-        Route::get('{summerCampsString}/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')
-            ->whereIn('summerCampsString', LocalizedRouteSlugs::accepted('summerCampsString'))
-            ->whereNumber('year');
-
         Route::get('{pkpString}', [Public\PublicPageController::class, 'pkp'])->name('pkp')
             ->whereIn('pkpString', LocalizedRouteSlugs::accepted('pkpString'));
 

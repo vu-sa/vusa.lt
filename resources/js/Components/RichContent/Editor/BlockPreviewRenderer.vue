@@ -10,7 +10,7 @@
 
     <Suspense v-else>
       <template #default>
-        <component :is="displayComponent" :element :html="false" :is-first-element="true"
+        <component :is="displayComponent" :element :html="false"
           :resolved="resolvedForElement" :band="bandForElement"
           :editable="editableForElement" :active-inline-field="activeInlineFieldForElement"
           :block-key="blockKeyForElement"

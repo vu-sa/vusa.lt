@@ -1,8 +1,5 @@
 <template>
-  <!-- No wrapping `.wrapper` here — PublicLayout already wraps page content in one;
-       nesting a second grid doubled the gutters/padding for everything below.
-
-       The title band, the share row and the related grid all belong to the article, so the page
+  <!-- The title band, the share row and the related grid all belong to the article, so the page
        itself is only the composition. -->
   <NewsArticleLayout
     :article

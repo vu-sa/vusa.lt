@@ -7,6 +7,8 @@ use App\Actions\GenerateUniqueSlug;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\Content\BulkDestroyNewsRequest;
+use App\Http\Requests\Content\BulkUpdateNewsStatusRequest;
 use App\Http\Requests\IndexNewsRequest;
 use App\Http\Requests\StoreNewsRequest;
 use App\Http\Requests\UpdateNewsRequest;
@@ -19,6 +21,7 @@ use App\Models\Tag;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class NewsController extends AdminController
 {
@@ -194,6 +197,29 @@ class NewsController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    /**
+     * Publish or unpublish the articles picked in the collection (one id for the inline status menu).
+     * Saved one by one so Scout, the public index and the activity log see every change.
+     */
+    public function bulkUpdateStatus(BulkUpdateNewsStatusRequest $request): RedirectResponse
+    {
+        $news = $request->records();
+        $isDraft = ! $request->boolean('published');
+
+        DB::transaction(fn () => $news->each(fn (News $article) => $article->update(['draft' => $isDraft])));
+
+        return back()->with('success', __('messages.bulk_updated', ['count' => $news->count()]));
+    }
+
+    public function bulkDestroy(BulkDestroyNewsRequest $request): RedirectResponse
+    {
+        $news = $request->records();
+
+        DB::transaction(fn () => $news->each(fn (News $article) => $article->delete()));
+
+        return back()->with('info', __('messages.bulk_deleted', ['count' => $news->count()]));
+    }
+
     public function restore(News $news): RedirectResponse
     {
         return $this->restoreModel($news, $this->entityMessage('restored', 'news'));

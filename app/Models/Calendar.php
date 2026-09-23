@@ -141,8 +141,7 @@ class Calendar extends Model implements HasMedia
      * Restricts to one event type, by slug. A no-op when `$slug` is null/empty — callers
      * don't need to guard the call themselves. The event type is a grouping key, not a
      * publication gate — a trashed event type (e.g. a retired campaign) must still work
-     * as a filter for the events that already carry it. See the identical rationale in
-     * PublicPageController::summerCamps().
+     * as a filter for the events that already carry it.
      */
     #[Scope]
     protected function ofEventType($query, ?string $slug)

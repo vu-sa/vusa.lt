@@ -163,8 +163,13 @@ the shell is in **focus mode** (`useShellFocus`): the workspace picker, palette,
 bottom nav give way to the form's own bar (back, save state, `#header-actions`, Išsaugoti), teleported into
 `ShellTopBar`; below `md` Išsaugoti sits in a bottom save bar instead. Pass an `#aside` slot for the two-column
 v0 shape: fields in the main column, settings in `FormPanel`s (`Patterns/`, with `FormToggleRow` for switch
-rows) — `PageForm.vue` is the reference. Without it the form stays one column (`#advanced` "Papildomi
-nustatymai", `#danger-zone`). It owns three behaviours callers should not re-implement: **⌘/Ctrl + Enter**
+rows) — `PageForm.vue` and `NewsForm.vue` are the reference. The layout supplies the editor chrome from props:
+`public-url` (Peržiūrėti viešai), `activity-subject` (change history), `created-at` / `updated-at` (facts at the
+end of the aside); in the two-column shape `#danger-zone` closes the aside. Content editors share
+`AdminForms/ContentPublishPanel` (status, publish time, visibility callout), `ContentLanguagePanel` (language +
+other-language link) and `TenantSelectField`; choices of 2–5 options use `Patterns/FormSegmentedControl`, and
+fields on the tinted canvas take `fieldSurfaceClass` from `ui/control`. Without an aside the form stays one
+column (`#advanced` "Papildomi nustatymai", `#danger-zone`). It owns three behaviours callers should not re-implement: **⌘/Ctrl + Enter**
 submits and **Esc** cancels (listeners on the `<form>`, so a portaled Select never cancels it), and on a failed
 submit the error summary is scrolled into view and focused, each message focusing its field. Pass
 `mode="create"` for a new record (the bar never claims "all saved"), `field-ids` when an error key is not the

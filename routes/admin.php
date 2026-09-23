@@ -73,10 +73,14 @@ Route::patch('meetings/{meeting}/restore', [MeetingController::class, 'restore']
 Route::delete('meetings/{meeting}/force-delete', [MeetingController::class, 'forceDelete'])->name('meetings.forceDelete')->withTrashed();
 Route::patch('navigation/{navigation}/restore', [NavigationController::class, 'restore'])->name('navigation.restore')->withTrashed();
 Route::delete('navigation/{navigation}/force-delete', [NavigationController::class, 'forceDelete'])->name('navigation.forceDelete')->withTrashed();
+Route::patch('news/bulk-status', [NewsController::class, 'bulkUpdateStatus'])->name('news.bulkStatus');
+Route::delete('news/bulk-delete', [NewsController::class, 'bulkDestroy'])->name('news.bulkDestroy');
 Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
 Route::delete('news/{news}/force-delete', [NewsController::class, 'forceDelete'])->name('news.forceDelete')->withTrashed();
 Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
 Route::delete('news/{news}/public-urls/{publicUrl}', [NewsController::class, 'destroyPublicUrl'])->name('news.publicUrls.destroy');
+Route::patch('pages/bulk-status', [PageController::class, 'bulkUpdateStatus'])->name('pages.bulkStatus');
+Route::delete('pages/bulk-delete', [PageController::class, 'bulkDestroy'])->name('pages.bulkDestroy');
 Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();
 Route::delete('pages/{page}/force-delete', [PageController::class, 'forceDelete'])->name('pages.forceDelete')->withTrashed();
 Route::delete('pages/{page}/public-urls/{publicUrl}', [PageController::class, 'destroyPublicUrl'])->name('pages.publicUrls.destroy');

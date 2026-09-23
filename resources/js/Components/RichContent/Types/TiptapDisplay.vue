@@ -11,7 +11,7 @@
       <!-- Context Bubble Menu on text selection -->
       <BubbleMenu
         v-if="editor"
-        class="flex items-center gap-0.5 rounded-lg border border-border bg-card p-1 shadow-md text-foreground"
+        class="flex items-center gap-0.5 border border-border bg-background p-1 text-foreground shadow-md"
         :editor
         plugin-key="tiptapDisplayBubbleMenu"
         :should-show="shouldShowTextBubbleMenu"
@@ -21,7 +21,7 @@
         <TiptapFormattingButtons :editor bubble />
         <Separator orientation="vertical" class="mx-0.5 h-5" />
         <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-          <Button size="icon-sm" :variant="editor.isActive('link') ? 'secondary' : 'ghost'">
+          <Button size="icon-sm" :variant="editor.isActive('link') ? 'brand' : 'ghost'">
             <IFluentLink24Regular class="size-4" />
           </Button>
         </TiptapLinkButton>

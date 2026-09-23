@@ -304,7 +304,7 @@ class PublicPageController extends PublicController
         // destination resolves against `www` regardless of which subdomain was requested.
         $destination = match ($alias) {
             'red', 'yellow', 'grey' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => 'www'], $locale),
-            'freshmen-camps' => LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], $locale),
+            'freshmen-camps' => LocalizedRouteSlugs::route('page', ['subdomain' => 'www', 'permalink' => $locale === 'en' ? 'freshmen-camps' : 'pirmakursiu-stovyklos'], $locale),
             'vu-sa-conferences' => LocalizedRouteSlugs::route('calendar.list', ['type' => 'konferencija'], $locale),
             'stipendijos' => LocalizedRouteSlugs::route('topic', ['tag' => 'finansine-parama-stipendijos'], $locale),
             'vu-sa-dokumentai' => LocalizedRouteSlugs::route('documents', [], $locale),
@@ -314,85 +314,6 @@ class PublicPageController extends PublicController
         abort_if($destination === null, 404);
 
         return redirect()->away($destination, 301);
-    }
-
-    public function summerCamps(string $lang, string $summerCampsString, ?string $year = null)
-    {
-        $this->getBanners();
-        $this->getTenantLinks();
-        $this->shareOtherLangURL('pirmakursiuStovyklos');
-
-        if ($year == null) {
-            $year = intval(date('Y'));
-        } else {
-            $year = intval($year);
-        }
-
-        // TODO: add slug in global settings instead
-        // The event type is a grouping key here, not a publication gate: trashing the
-        // "stovykla" event type must not silently empty this public archive.
-        $events = Calendar::query()->whereHas('eventType', function (Builder $query): void {
-            /** @var Builder<EventType> $query */
-            $query->withTrashed()->where('slug', '=', 'stovykla');
-        })->with('tenant:id,alias,fullname')->whereYear('date', $year)
-            ->with(['media']);
-
-        // Filter by locale - only show international events for English users
-        if (app()->getLocale() === 'en') {
-            $events->where('is_international', true);
-        }
-
-        // Grouped by faculty on the page, chronological within each faculty — a faculty
-        // may run more than one camp.
-        $events = $events->get()->sortBy([
-            ['tenant.alias', 'asc'],
-            ['date', 'asc'],
-        ])->values();
-
-        if ($events->isEmpty() && $year != intval(date('Y'))) {
-            return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
-        }
-
-        $yearsWhenEventsExist = Calendar::query()->whereHas('eventType', function (Builder $query): void {
-            /** @var Builder<EventType> $query */
-            $query->withTrashed()->where('slug', '=', 'stovykla');
-        });
-
-        // Filter by locale for years when events exist
-        if (app()->getLocale() === 'en') {
-            $yearsWhenEventsExist->where('is_international', true);
-        }
-
-        // Grouped in PHP rather than with a `YEAR()` expression, which is MySQL-specific.
-        $yearsWhenEventsExist = $yearsWhenEventsExist
-            ->orderByDesc('date')
-            ->pluck('date')
-            ->map(fn ($date) => Carbon::parse($date)->year)
-            ->unique()
-            ->values();
-
-        // Global content - use main vusa tenant (null defaults to current tenant).
-        // This route only exists on the www domain group, so the derived " - VU SA"
-        // suffix matches what was previously hardcoded here.
-        $this->applyPageHead(
-            contentTenant: null,
-            title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos' : $year.' m. pirmakursių stovyklos',
-            description: 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
-            image: config('app.url').'/images/photos/stovykla.jpg',
-        );
-
-        return Inertia::render('Public/SummerCamps',
-            [
-                // `location` is shown on the camp cards; `description` stays hidden because
-                // the cards never render it and it is heavy rich text.
-                'events' => $events->makeHidden(['description', 'user_id'])
-                    ->map(fn (Calendar $event) => [
-                        ...$event->toArray(),
-                        'public_url' => $event->publicUrl(app()->getLocale()),
-                    ])->values()->all(),
-                'year' => $year,
-                'yearsWhenEventsExist' => $yearsWhenEventsExist,
-            ]);
     }
 
     public function individualStudies()

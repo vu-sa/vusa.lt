@@ -137,7 +137,8 @@ class RelationshipController extends AdminController
             $relationship->delete();
         });
 
-        return back()->with('success', __('messages.relationship.type_model_relation_deleted'));
+        // The record is gone, so its show/edit page (the usual referrer) would 404.
+        return redirect()->route('relationships.index')->with('success', __('messages.relationship.type_model_relation_deleted'));
     }
 
     // Store relationship between models

@@ -11,8 +11,16 @@
     <StagingBanner />
     <ImpersonateBanner />
 
-    <div data-slot="admin-scroll-area" class="min-h-0 flex flex-1 flex-col overflow-auto">
-      <div class="sticky top-0 z-40 shrink-0">
+    <div
+      ref="scrollArea"
+      data-slot="admin-scroll-area"
+      class="min-h-0 flex flex-1 flex-col overflow-auto"
+      :style="scrollAreaHeight ? {
+        '--shell-chrome-height': `${shellChromeHeight}px`,
+        '--shell-scroll-height': `${scrollAreaHeight}px`,
+      } : undefined"
+    >
+      <div ref="shellChrome" class="sticky top-0 z-40 shrink-0">
         <ShellTopBar
           :workspaces
           :active-workspace
@@ -61,6 +69,7 @@
 
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
+import { useElementSize } from '@vueuse/core';
 import { computed, ref } from 'vue';
 
 import MobileBottomBar from './MobileBottomBar.vue';
@@ -77,6 +86,10 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useShellFocus } from '@/Composables/useShellFocus';
 
 const page = usePage<PageProps>();
+const scrollArea = ref<HTMLElement | null>(null);
+const shellChrome = ref<HTMLElement | null>(null);
+const { height: scrollAreaHeight } = useElementSize(scrollArea);
+const { height: shellChromeHeight } = useElementSize(shellChrome);
 const { workspaces, activeWorkspace, activeSection } = useAdminNavigation();
 const actionWindow = useActionWindow();
 

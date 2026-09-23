@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Page;
 use App\Models\Task;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -100,6 +101,57 @@ describe('Posėdžiai', function (): void {
             ->assertPresent('[data-slot=collection-rows], [data-slot=collection-table], [data-slot=empty-state]')
             ->assertSee('Rodomi ištrinti įrašai');
         $page->assertNoJavaScriptErrors();
+    });
+});
+
+describe('Puslapiai', function (): void {
+    it('keeps sorting and results together while deleted pages live in filters', function (): void {
+        $page = openAdminPage('/mano/pages', 1180, 900, function (): void {
+            Page::factory()->count(2)->create()->each(fn (Page $item) => $item->delete());
+        });
+
+        $page->assertPresent('[data-slot=collection-results-toolbar] select[aria-label="Rikiuoti"]')
+            ->assertPresent('[data-slot=collection-results-toolbar] button:has-text("Stulpeliai")');
+
+        expect($page->script('document.querySelector("[data-slot=collection-control-row]").textContent.includes("Ištrinti")'))->toBeFalse()
+            ->and($page->script('(function () { const select = document.querySelector("[data-slot=collection-results-toolbar] select"); const rect = select.getBoundingClientRect(); return document.elementFromPoint(rect.right - 16, (rect.top + rect.bottom) / 2) === select; })()'))->toBeTrue();
+
+        $page->click('[data-slot=collection-control-row] button:has-text("Filtrai")')
+            ->assertPresent('[data-slot=collection-filter-bar] button[aria-pressed="false"]')
+            ->assertNoJavaScriptErrors();
+
+        expect($page->script('(function () { const badge = document.querySelector("[data-slot=collection-filter-bar] button span"); badge.textContent = "123"; return badge.scrollWidth <= badge.clientWidth; })()'))->toBeTrue();
+
+        $page->navigate('/mano/pages?showDeleted=true');
+        waitForInertiaRender($page, '[data-slot=collection-table]');
+        $page->assertNoJavaScriptErrors();
+
+        $page->resize(820, 900);
+        expect($page->script('document.querySelector("[data-slot=collection-table] td:last-child").getBoundingClientRect().right <= document.querySelector("[data-slot=collection-table]").getBoundingClientRect().right'))->toBeTrue()
+            ->and($page->script('getComputedStyle(document.querySelector("[data-slot=table-header]")).backgroundColor === getComputedStyle(document.querySelector("[data-slot=table-header] th:last-child")).backgroundColor'))->toBeTrue()
+            ->and($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+
+        $page->resize(390, 844);
+        $page->assertPresent('[data-slot=collection-rows]');
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue()
+            ->and($page->script('document.querySelector("[data-slot=collection-rows]").textContent.includes("page-")'))->toBeFalse()
+            ->and($page->script('(function () { const row = document.querySelector("[data-slot=collection-rows] li"); const actions = row.querySelector("[data-slot=collection-row-actions]").getBoundingClientRect(); const status = row.querySelector("[data-slot=status-badge]").getBoundingClientRect(); return Math.abs((actions.top + actions.bottom) / 2 - (status.top + status.bottom) / 2) < 2; })()'))->toBeTrue();
+
+        $page->resize(1440, 900);
+        $page->assertPresent('[data-slot=collection-table]');
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue()
+            ->and($page->script('getComputedStyle(document.querySelector("[data-slot=collection-table] [data-slot=collection-primary-cell] p")).webkitLineClamp'))->toBe('2');
+
+        $page->navigate('/mano/pages?showDeleted=true&view=preview');
+        waitForInertiaRender($page, '[data-slot=collection-rows]');
+        $page->assertPresent('[data-slot=collection-preview] [data-slot=collection-row-actions]');
+        expect($page->script('document.querySelector("[data-slot=collection-rows] [data-slot=collection-row-actions]")'))->toBeNull()
+            ->and($page->script('document.querySelector("[data-slot=collection-rows] [data-slot=status-badge]") !== null'))->toBeTrue()
+            ->and($page->script('document.querySelector("[data-slot=collection-preview] dl").textContent.includes("Padalinys")'))->toBeTrue();
+
+        $page->click('[data-slot=collection-rows] li:nth-child(2) article p');
+        expect($page->script('document.querySelector("[data-slot=collection-preview] h2").textContent.trim() === document.querySelector("[data-slot=collection-rows] li:nth-child(2) [data-collection-open]").textContent.trim()'))->toBeTrue()
+            ->and($page->script('(function () { const area = document.querySelector("[data-slot=admin-scroll-area]"); const rows = document.querySelector("[data-slot=collection-rows]"); rows.style.minHeight = "1800px"; area.scrollTop = 600; const pane = document.querySelector("[data-slot=collection-preview]").getBoundingClientRect(); const chrome = area.firstElementChild.getBoundingClientRect(); return pane.top >= chrome.bottom + 8 && pane.bottom <= area.getBoundingClientRect().bottom - 8; })()'))->toBeTrue();
     });
 });
 

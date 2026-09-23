@@ -1,41 +1,16 @@
 <template>
-  <div :class="cn('flex flex-col', props.class)">
-    <!-- Dialog Header -->
-    <DialogHeader class="px-6 pt-6">
-      <DialogTitle>{{ $t("Redaguoti paveikslėlį") }}</DialogTitle>
-      <DialogDescription>
-        {{ $t("Naudokite pelės ratukę priartinimui, vilkite paveikslėlį arba pasirinkimo rėmelį.") }}
-      </DialogDescription>
+  <div :class="cn('flex flex-col', props.class)" data-slot="image-cropper">
+    <DialogHeader class="gap-1 px-4 pt-5 text-left sm:px-6 sm:pt-6">
+      <DialogTitle>{{ $t('Redaguoti nuotrauką') }}</DialogTitle>
+      <DialogDescription>{{ $t('Vilk nuotrauką arba kadro rėmelį. Mastelį keisk ratuku arba valdikliais.') }}</DialogDescription>
     </DialogHeader>
 
-    <Separator class="my-4" />
-
-    <!-- Cropper Canvas Area -->
-    <div class="relative mx-6 overflow-hidden rounded-lg bg-zinc-950">
-      <cropper-canvas
-        ref="canvas"
-        class="h-[350px] w-full md:h-[450px]"
-        background
-        scale-step="0.1"
-      >
-        <cropper-image
-          ref="image"
-          :src
-          alt="Image to be cropped"
-          rotatable
-          scalable
-          translatable
-        />
-        <cropper-shade hidden />
+    <div class="relative mx-4 mt-4 overflow-hidden bg-ink sm:mx-6">
+      <cropper-canvas ref="canvas" class="h-[clamp(220px,40dvh,480px)] w-full" background scale-step="0.1">
+        <cropper-image ref="image" :src :alt="$t('Apkerpama nuotrauka')" rotatable scalable translatable />
+        <cropper-shade theme-color="rgba(0, 0, 0, 0.6)" />
         <cropper-handle action="select" plain hidden />
-        <cropper-selection
-          ref="selection"
-          initial-coverage="0.8"
-          movable
-          resizable
-          zoomable
-          :aspect-ratio="currentAspectRatio"
-        >
+        <cropper-selection ref="selection" initial-coverage="0.8" movable resizable zoomable>
           <cropper-grid role="grid" covered />
           <cropper-crosshair centered />
           <cropper-handle action="move" theme-color="rgba(255, 255, 255, 0.35)" />
@@ -49,414 +24,307 @@
           <cropper-handle action="sw-resize" />
         </cropper-selection>
       </cropper-canvas>
-
-      <!-- Processing Overlay -->
-      <div
-        v-if="isProcessing"
-        class="absolute inset-0 flex items-center justify-center bg-black/60"
-      >
-        <div class="flex flex-col items-center gap-2 text-white">
-          <IFluentSpinnerIos20Filled class="h-8 w-8 animate-spin" />
-          <span class="text-sm font-medium">{{ $t("Apdorojama...") }}</span>
+      <div v-if="isProcessing" class="absolute inset-0 flex items-center justify-center bg-ink/70" role="status">
+        <div class="flex items-center gap-2 text-white">
+          <LoaderCircle class="size-5 animate-spin" aria-hidden="true" />
+          <span class="text-sm font-medium">{{ $t('Apdorojama...') }}</span>
         </div>
       </div>
     </div>
 
-    <!-- Controls -->
-    <div class="flex flex-col gap-4 px-6 py-4">
-      <!-- Aspect Ratio Selection with Toggles -->
-      <div class="flex flex-wrap items-center gap-3">
-        <span class="text-sm font-medium text-muted-foreground">{{ $t("Proporcijos") }}:</span>
-        <div class="flex gap-1">
-          <TooltipProvider>
-            <Tooltip v-for="preset in aspectRatioPresets" :key="preset.value">
-              <TooltipTrigger as-child>
-                <Toggle
-                  :pressed="selectedAspectRatio === preset.value"
-                  variant="outline"
-                  size="sm"
-                  @update:pressed="(pressed: boolean) => pressed && (selectedAspectRatio = preset.value)"
-                >
-                  {{ preset.label }}
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{{ preset.label === "Laisvas" ? $t("Laisvos proporcijos") : $t("Proporcijos") + " " + preset.label }}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+    <div class="flex flex-col gap-5 px-4 py-5 sm:px-6">
+      <div class="flex flex-col gap-2">
+        <span class="text-xs font-bold uppercase tracking-wide text-muted-foreground">{{ $t('Proporcijos') }}</span>
+        <div role="group" :aria-label="$t('Proporcijos')" class="flex flex-wrap gap-1.5">
+          <button
+            v-for="preset in aspectRatioPresets"
+            :key="preset.value"
+            type="button"
+            :aria-pressed="selectedAspectRatio === preset.value"
+            :class="controlVariants({ active: selectedAspectRatio === preset.value })"
+            class="pointer-coarse:min-h-11"
+            @click="selectedAspectRatio = preset.value"
+          >
+            {{ $t(preset.label) }}
+          </button>
         </div>
       </div>
 
-      <!-- Zoom & Transform Controls -->
-      <div class="flex flex-wrap items-center gap-4">
-        <!-- Zoom Slider -->
-        <div class="flex flex-1 items-center gap-3">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon-sm"
-                  @click="zoomOut"
-                >
-                  <IFluentZoomOut20Regular class="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{{ $t("Nutolinti") }}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <Slider
-            :model-value="zoomLevel"
-            :min="0.5"
-            :max="3"
-            :step="0.1"
-            class="w-32 md:w-48"
-            @update:model-value="handleZoom"
-          />
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon-sm"
-                  @click="zoomIn"
-                >
-                  <IFluentZoomIn20Regular class="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{{ $t("Priartinti") }}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+      <div class="flex flex-wrap items-end justify-between gap-4 border-t border-border pt-4">
+        <div class="flex min-w-44 flex-1 flex-col gap-2">
+          <label for="cropper-zoom" class="text-xs font-bold uppercase tracking-wide text-muted-foreground">{{ $t('Mastelis') }}</label>
+          <div class="flex items-center gap-2">
+            <Button type="button" variant="outline" size="icon-sm" :aria-label="$t('Atitolinti')" @click="zoomOut">
+              <ZoomOut aria-hidden="true" />
+            </Button>
+            <Slider
+              id="cropper-zoom"
+              :model-value="zoomLevel"
+              :min="0.5"
+              :max="3"
+              :step="0.1"
+              :aria-label="$t('Mastelis')"
+              class="min-w-24 flex-1"
+              @update:model-value="handleZoom"
+            />
+            <Button type="button" variant="outline" size="icon-sm" :aria-label="$t('Priartinti')" @click="zoomIn">
+              <ZoomIn aria-hidden="true" />
+            </Button>
+          </div>
         </div>
-
-        <!-- Rotation Controls -->
-        <div class="flex items-center gap-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon-sm"
-                  @click="rotate(-90)"
-                >
-                  <IFluentArrowRotateCounterclockwise20Regular class="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{{ $t("Pasukti kairėn") }}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon-sm"
-                  @click="rotate(90)"
-                >
-                  <IFluentArrowRotateClockwise20Regular class="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{{ $t("Pasukti dešinėn") }}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div class="flex items-center gap-1.5">
+          <Button type="button" variant="outline" size="icon-sm" :aria-label="$t('Pasukti į kairę')" @click="rotate(-90)">
+            <RotateCcw aria-hidden="true" />
+          </Button>
+          <Button type="button" variant="outline" size="icon-sm" :aria-label="$t('Pasukti į dešinę')" @click="rotate(90)">
+            <RotateCw aria-hidden="true" />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" @click="resetEditor">
+            <Undo2 aria-hidden="true" />{{ $t('Atstatyti') }}
+          </Button>
         </div>
-
-        <!-- Reset Button -->
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                @click="resetTransforms"
-              >
-                <IFluentArrowReset20Regular class="mr-1.5 h-4 w-4" />
-                {{ $t("Atstatyti") }}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{{ $t("Atstatyti visus pakeitimus") }}</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
+      <p v-if="cropError" role="alert" class="text-sm text-destructive">
+        {{ cropError }}
+      </p>
     </div>
 
-    <!-- Dialog Footer with Actions -->
-    <Separator />
-    <DialogFooter class="px-6 py-4">
-      <Button type="button" variant="outline" @click="handleCancel">
-        {{ $t("Atšaukti") }}
+    <DialogFooter class="sticky bottom-0 gap-2 border-t border-border bg-popover px-4 py-4 sm:px-6">
+      <Button type="button" variant="outline" @click="emit('cancel')">
+        {{ $t('Atšaukti') }}
       </Button>
-      <Button
-        type="button"
-        :disabled="isProcessing"
-        @click="handleCrop"
-      >
-        <IFluentCrop20Regular v-if="!isProcessing" class="mr-1.5 h-4 w-4" />
-        <IFluentSpinnerIos20Filled v-else class="mr-1.5 h-4 w-4 animate-spin" />
-        {{ isProcessing ? $t("Apdorojama...") : $t("Apkirpti ir išsaugoti") }}
+      <Button type="button" variant="brand" :disabled="isProcessing || !isReady" @click="handleCrop">
+        <LoaderCircle v-if="isProcessing" class="animate-spin" aria-hidden="true" />
+        <Crop v-else aria-hidden="true" />
+        {{ isProcessing ? $t('Apdorojama...') : $t('Išsaugoti kadrą') }}
       </Button>
     </DialogFooter>
   </div>
 </template>
 
 <script setup lang="ts">
-/**
- * ImageCropper - A modern, user-friendly image cropping component.
- *
- * Features:
- * - Clean, modern UI with intuitive controls
- * - Reactive zoom that syncs with mouse wheel events
- * - High-quality output from original image resolution
- * - Rotation support
- * - Aspect ratio presets with Toggle components
- * - Loading states during processing
- * - Responsive design
- */
 import 'cropperjs';
-import { computed, ref, useTemplateRef, watch, onMounted, onUnmounted } from 'vue';
 import type { CropperCanvas, CropperImage, CropperSelection } from 'cropperjs';
+import { Crop, LoaderCircle, RotateCcw, RotateCw, Undo2, ZoomIn, ZoomOut } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 
 import { Button } from '@/Components/ui/button';
-import { DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/Components/ui/dialog';
-import { Separator } from '@/Components/ui/separator';
+import { controlVariants } from '@/Components/ui/control';
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Slider } from '@/Components/ui/slider';
-import { Toggle } from '@/Components/ui/toggle';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { cn } from '@/Utils/Shadcn/utils';
 
 interface Props {
-  /** Aspect ratio constraint (e.g., 16/9, 4/3, 1). Set to 0 or undefined for free crop */
   aspectRatio?: number;
-  /** Maximum output width (will preserve aspect ratio) */
   maxOutputWidth?: number;
-  /** Maximum output height (will preserve aspect ratio) */
   maxOutputHeight?: number;
-  /** Output image quality (0-1) */
   quality?: number;
-  /** Output format */
   outputFormat?: 'image/jpeg' | 'image/png' | 'image/webp';
-  /** Custom class for the container */
   class?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   aspectRatio: 0,
-  maxOutputWidth: 1920,
-  maxOutputHeight: 1080,
+  maxOutputWidth: 2048,
+  maxOutputHeight: 2048,
   quality: 0.9,
   outputFormat: 'image/webp',
+  class: undefined,
 });
 
 const emit = defineEmits<{
-  (e: 'crop', data: { dataUrl: string; blob: Blob }): void;
-  (e: 'cancel'): void;
+  crop: [data: { dataUrl: string; blob: Blob }];
+  cancel: [];
 }>();
 
 const src = defineModel<string>('src', { required: true });
-
-// Refs
 const canvas = useTemplateRef<CropperCanvas>('canvas');
 const image = useTemplateRef<CropperImage>('image');
 const selection = useTemplateRef<CropperSelection>('selection');
 
-// State
-const isProcessing = ref(false);
-const zoomLevel = ref([1]);
-const rotation = ref(0);
-const selectedAspectRatio = ref<string>(props.aspectRatio ? String(props.aspectRatio) : 'free');
-const originalImageSize = ref({ width: 0, height: 0 });
-
-// Aspect ratio presets
 const aspectRatioPresets = [
-  { label: 'Laisvas', value: 'free' },
+  { label: 'Laisvai', value: 'free', ratio: NaN },
   { label: '1:1', value: '1', ratio: 1 },
   { label: '16:9', value: '16/9', ratio: 16 / 9 },
   { label: '4:3', value: '4/3', ratio: 4 / 3 },
   { label: '3:2', value: '3/2', ratio: 3 / 2 },
-];
+] as const;
 
-// Computed aspect ratio value
+function ratioChoice(ratio: number): string {
+  if (!Number.isFinite(ratio) || ratio <= 0) return 'free';
+  return aspectRatioPresets.find(preset => Math.abs(preset.ratio - ratio) < 0.0001)?.value ?? String(ratio);
+}
+
+const selectedAspectRatio = ref(ratioChoice(props.aspectRatio));
 const currentAspectRatio = computed(() => {
-  if (selectedAspectRatio.value === 'free') return undefined;
-  const preset = aspectRatioPresets.find(p => p.value === selectedAspectRatio.value);
-  return preset?.ratio;
+  if (selectedAspectRatio.value === 'free') return 0;
+  return aspectRatioPresets.find(preset => preset.value === selectedAspectRatio.value)?.ratio
+    ?? Number(selectedAspectRatio.value);
 });
+const isProcessing = ref(false);
+const isReady = ref(false);
+const cropError = ref('');
+const zoomLevel = ref([1]);
+const baseScale = ref(1);
+let naturalImageSize = { width: 0, height: 0 };
 
-// Load original image to get its dimensions
-function loadOriginalImageSize() {
-  const img = new Image();
-  img.onload = () => {
-    originalImageSize.value = { width: img.naturalWidth, height: img.naturalHeight };
-  };
-  img.src = src.value;
+function imageScale(): number {
+  if (!image.value) return 1;
+  const [a, b] = image.value.$getTransform();
+  return Math.hypot(a, b);
 }
 
-// Handle zoom events from cropper canvas (mouse wheel)
-function handleCanvasTransform() {
-  if (!image.value) return;
-
-  // Get current transform and calculate zoom level
-  const transform = image.value.$getTransform();
-  if (transform) {
-    // The scale is in the a (scaleX) component of the matrix
-    const scale = Math.sqrt(transform.a * transform.a + transform.b * transform.b);
-    // Clamp to our range
-    const clampedScale = Math.max(0.5, Math.min(3, scale));
-    zoomLevel.value = [clampedScale];
-  }
+function syncZoom() {
+  const scale = imageScale() / baseScale.value;
+  zoomLevel.value = [Math.max(0.5, Math.min(3, scale))];
 }
 
-// Initialize cropper on mount
-onMounted(() => {
-  loadOriginalImageSize();
-
-  setTimeout(() => {
-    centerImage();
-
-    // Listen for transform changes on the canvas
-    if (canvas.value) {
-      canvas.value.addEventListener('transform', handleCanvasTransform);
-    }
-  }, 100);
-});
-
-onUnmounted(() => {
-  if (canvas.value) {
-    canvas.value.removeEventListener('transform', handleCanvasTransform);
-  }
-});
-
-// Watch for aspect ratio changes
-watch(selectedAspectRatio, () => {
-  updateSelectionAspectRatio();
-});
-
-function updateSelectionAspectRatio() {
-  if (!selection.value) return;
-
-  const ratio = currentAspectRatio.value;
-  if (ratio) {
-    selection.value.setAttribute('aspect-ratio', String(ratio));
-  }
-  else {
-    selection.value.removeAttribute('aspect-ratio');
-  }
+function applyAspectRatio() {
+  if (selection.value) selection.value.aspectRatio = currentAspectRatio.value;
 }
 
-function centerImage() {
-  if (!canvas.value || !image.value) return;
-  image.value.$center('contain');
+watch(selectedAspectRatio, applyAspectRatio);
+watch(() => props.aspectRatio, (ratio) => {
+  selectedAspectRatio.value = ratioChoice(ratio);
+});
+
+function fitImage() {
+  if (!image.value || !canvas.value || !naturalImageSize.width || !naturalImageSize.height) return;
+  const canvasWidth = canvas.value.clientWidth;
+  const canvasHeight = canvas.value.clientHeight;
+  if (!canvasWidth || !canvasHeight) return;
+
+  const scale = Math.min(canvasWidth / naturalImageSize.width, canvasHeight / naturalImageSize.height);
+  image.value.$setTransform(
+    scale, 0, 0, scale,
+    (canvasWidth - naturalImageSize.width) / 2,
+    (canvasHeight - naturalImageSize.height) / 2,
+  );
+  baseScale.value = scale;
   zoomLevel.value = [1];
-  rotation.value = 0;
 }
+
+function placeSelectionWithinImage() {
+  if (!canvas.value || !selection.value || !naturalImageSize.width || !naturalImageSize.height) return;
+  const canvasWidth = canvas.value.clientWidth;
+  const canvasHeight = canvas.value.clientHeight;
+
+  let width = naturalImageSize.width * baseScale.value * 0.9;
+  let height = naturalImageSize.height * baseScale.value * 0.9;
+  const ratio = currentAspectRatio.value;
+  if (ratio > 0) {
+    if (width / height > ratio) width = height * ratio;
+    else height = width / ratio;
+  }
+  selection.value.$change(
+    (canvasWidth - width) / 2,
+    (canvasHeight - height) / 2,
+    width,
+    height,
+    ratio,
+  );
+}
+
+function handleCanvasTransform() {
+  if (isReady.value) syncZoom();
+}
+
+onMounted(async () => {
+  if (!image.value) return;
+  try {
+    const loadedImage = await image.value.$ready();
+    naturalImageSize = { width: loadedImage.naturalWidth, height: loadedImage.naturalHeight };
+    fitImage();
+    applyAspectRatio();
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    placeSelectionWithinImage();
+    canvas.value?.addEventListener('transform', handleCanvasTransform);
+    isReady.value = true;
+  }
+  catch {
+    cropError.value = $t('Nepavyko atverti nuotraukos. Bandyk dar kartą.');
+  }
+});
+
+onUnmounted(() => canvas.value?.removeEventListener('transform', handleCanvasTransform));
 
 function handleZoom(value: number[]) {
-  if (!image.value) return;
-
-  const currentZoom = zoomLevel.value[0];
-  const newZoom = value[0];
-  const scaleFactor = newZoom / currentZoom;
-
-  // Apply zoom centered on image
-  image.value.$zoom(scaleFactor - 1);
-  zoomLevel.value = value;
+  if (!image.value || !isReady.value || !value[0]) return;
+  const relativeScale = value[0] / (imageScale() / baseScale.value);
+  image.value.$zoom(relativeScale >= 1 ? relativeScale - 1 : 1 - 1 / relativeScale);
+  syncZoom();
 }
 
 function zoomIn() {
-  const newZoom = Math.min(zoomLevel.value[0] + 0.2, 3);
-  handleZoom([newZoom]);
+  handleZoom([Math.min(zoomLevel.value[0] + 0.2, 3)]);
 }
 
 function zoomOut() {
-  const newZoom = Math.max(zoomLevel.value[0] - 0.2, 0.5);
-  handleZoom([newZoom]);
+  handleZoom([Math.max(zoomLevel.value[0] - 0.2, 0.5)]);
 }
 
 function rotate(degrees: number) {
-  if (!image.value) return;
-  image.value.$rotate(`${degrees}deg`);
-  rotation.value = (rotation.value + degrees) % 360;
+  image.value?.$rotate(`${degrees}deg`);
 }
 
-function resetTransforms() {
-  if (!image.value) return;
-  image.value.$setTransform(1, 0, 0, 1, 0, 0);
-  centerImage();
+function resetEditor() {
+  selectedAspectRatio.value = ratioChoice(props.aspectRatio);
+  fitImage();
+  selection.value?.$reset();
+  applyAspectRatio();
+  requestAnimationFrame(placeSelectionWithinImage);
+  cropError.value = '';
 }
 
 async function handleCrop() {
-  if (!selection.value || isProcessing.value) return;
-
+  if (!selection.value || !isReady.value || isProcessing.value) return;
   isProcessing.value = true;
-
+  cropError.value = '';
   try {
-    // Calculate output dimensions based on original image and selection
-    // We want to output at the highest resolution possible up to max limits
-    let outputWidth = props.maxOutputWidth;
-    let outputHeight = props.maxOutputHeight;
-
-    // If we have a fixed aspect ratio, calculate proper dimensions
-    if (currentAspectRatio.value) {
-      const aspectRatio = currentAspectRatio.value;
-      if (outputWidth / outputHeight > aspectRatio) {
-        outputWidth = Math.round(outputHeight * aspectRatio);
-      }
-      else {
-        outputHeight = Math.round(outputWidth / aspectRatio);
-      }
+    const scale = imageScale();
+    const sourceWidth = selection.value.width / scale;
+    const sourceHeight = selection.value.height / scale;
+    if (!Number.isFinite(sourceWidth) || !Number.isFinite(sourceHeight) || sourceWidth <= 0 || sourceHeight <= 0) {
+      throw new Error('Invalid crop area');
     }
 
-    // Create canvas at high resolution from the selection
-    const resultCanvas = await selection.value.$toCanvas({
-      width: outputWidth,
-      height: outputHeight,
+    const outputScale = Math.min(1, props.maxOutputWidth / sourceWidth, props.maxOutputHeight / sourceHeight);
+    const outputWidth = Math.max(1, Math.round(sourceWidth * outputScale));
+    const resultCanvas = await selection.value.$toCanvas({ width: outputWidth });
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      resultCanvas.toBlob(value => value ? resolve(value) : reject(new Error('Image encoding failed')), props.outputFormat, props.quality);
     });
-
-    const dataUrl = resultCanvas.toDataURL(props.outputFormat, props.quality);
-
-    // Convert to blob
-    const response = await fetch(dataUrl);
-    const blob = await response.blob();
-
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
     emit('crop', { dataUrl, blob });
   }
-  catch (error) {
-    console.error('Crop failed:', error);
+  catch {
+    cropError.value = $t('Nepavyko apkirpti nuotraukos. Bandyk dar kartą.');
   }
   finally {
     isProcessing.value = false;
   }
 }
-
-function handleCancel() {
-  emit('cancel');
-}
 </script>
 
 <style>
-/* Cropper.js custom styling */
 cropper-canvas {
-  --cropper-backdrop-color: rgb(24 24 27 / 0.9);
+  --cropper-backdrop-color: rgb(0 0 0 / 0.9);
   --cropper-overlay-color: rgb(0 0 0 / 0.5);
 }
 
 cropper-selection {
-  --cropper-selection-outline-color: rgb(255 255 255);
+  --cropper-selection-outline-color: white;
   --cropper-selection-outline-width: 2px;
 }
 
 cropper-grid {
   --cropper-grid-border-color: rgb(255 255 255 / 0.3);
-  --cropper-grid-border-width: 1px;
 }
 
 cropper-crosshair {
@@ -464,11 +332,7 @@ cropper-crosshair {
 }
 
 cropper-handle {
-  --cropper-handle-background-color: rgb(255 255 255);
-  --cropper-handle-border-color: rgb(59 130 246);
-}
-
-cropper-handle[action="move"] {
-  --cropper-handle-background-color: transparent;
+  --cropper-handle-background-color: white;
+  --cropper-handle-border-color: white;
 }
 </style>

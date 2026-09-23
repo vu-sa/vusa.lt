@@ -106,3 +106,37 @@ describe('TiptapEditor bubble menu link support', () => {
     expect(linkButton.exists()).toBe(false);
   });
 });
+
+describe('TiptapEditor framed field', () => {
+  it('draws one field box with a tinted toolbar row and flat formatting buttons', async () => {
+    const wrapper = mount(TiptapEditor, {
+      props: { modelValue: null, preset: 'marks', disableLinks: true, framed: true },
+    });
+    await nextTick();
+
+    expect(wrapper.classes()).toContain('tiptap-editor--framed');
+    expect(wrapper.find('.tiptap-toolbar').classes()).toContain('border-b');
+    expect(wrapper.find('.tiptap-content').classes()).not.toContain('rounded-md');
+    expect(wrapper.find('[data-testid="tiptap-format-underline"]').classes()).toContain('size-8');
+  });
+
+  it('drops the selection bubble, whose controls the toolbar row already shows', async () => {
+    const wrapper = mount(TiptapEditor, {
+      props: { modelValue: null, preset: 'marks', disableLinks: true, framed: true },
+    });
+    await nextTick();
+
+    expect(wrapper.findComponent({ name: 'BubbleMenu' }).exists()).toBe(false);
+  });
+
+    it('keeps the standalone toolbar card by default', async () => {
+    const wrapper = mount(TiptapEditor, {
+      props: { modelValue: null, preset: 'marks', disableLinks: true },
+    });
+    await nextTick();
+
+    expect(wrapper.classes()).not.toContain('tiptap-editor--framed');
+    expect(wrapper.find('.tiptap-toolbar').classes()).toContain('rounded-lg');
+    expect(wrapper.findComponent({ name: 'BubbleMenu' }).exists()).toBe(true);
+  });
+});

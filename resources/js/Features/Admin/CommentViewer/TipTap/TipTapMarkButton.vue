@@ -13,13 +13,13 @@ import { Button } from '@/Components/ui/button';
 const props = defineProps<{
   editor: Editor;
   type: string;
-  /** Flat ghost/secondary look for a floating bubble menu instead of the fixed toolbar's
+  /** Flat ghost/brand look for a bubble menu or framed toolbar instead of the fixed toolbar's
    *  bordered outline/default pair — see TiptapFormattingButtons.vue. */
   bubble?: boolean;
 }>();
 
 const active = computed(() => props.editor.isActive(props.type));
-const activeVariant = computed(() => (props.bubble ? 'secondary' : 'default'));
+const activeVariant = computed(() => (props.bubble ? 'brand' : 'default'));
 const inactiveVariant = computed(() => (props.bubble ? 'ghost' : 'outline'));
 
 const toggleMark = () => {

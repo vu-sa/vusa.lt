@@ -31,10 +31,10 @@ export const controlVariants = cva(
 );
 
 /** The small count square that rides inside an active control ("Filtrai 3"). */
-export const controlCountClass = 'flex size-4 items-center justify-center bg-brand-fill font-mono text-[0.625rem] leading-none text-brand-foreground';
+export const controlCountClass = 'flex h-4 min-w-4 items-center justify-center bg-brand-fill px-1 font-mono text-[0.625rem] leading-none text-brand-foreground';
 
 /** A segmented toggle (view modes): one hairline frame, the chosen segment is brand-filled. */
-export const segmentGroupClass = 'inline-flex h-11 shrink-0 border border-border bg-background p-0.5';
+export const segmentGroupClass = 'inline-flex h-11 shrink-0 border border-border bg-background p-0.5 pointer-coarse:h-12';
 
 export const segmentVariants = cva(
   [
@@ -59,6 +59,12 @@ export const segmentVariants = cva(
 export const searchFieldClass = [
   'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
   'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
+].join(' ');
+
+/** A text field, select or picker trigger on a form's tinted canvas; add `h-11` for single-line controls. */
+export const fieldSurfaceClass = [
+  'border-border bg-secondary/50 transition-colors',
+  'focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20',
 ].join(' ');
 
 export type ControlVariants = VariantProps<typeof controlVariants>;

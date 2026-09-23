@@ -1,4 +1,4 @@
-import { computed, isRef, ref, watch, type ComputedRef, type Ref } from 'vue';
+import { computed, isRef, ref, shallowReactive, watch, type ComputedRef, type Ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -60,6 +60,13 @@ export interface CollectionSource<T> {
   clearChip: (id: string) => void;
   /** Local-only replacement for optimistic mutations. Search adapters may safely ignore it. */
   replaceItems: (items: T[]) => void;
+  /**
+   * Overlay a change on loaded rows (matched by `id`) until the source catches up — a queued
+   * Scout sync can lag a save by seconds. Returns an undo for a request that fails.
+   */
+  patchItems: (ids: string[], patch: Partial<T>) => () => void;
+  /** Leave rows out of the list (just deleted); returns an undo. */
+  hideItems: (ids: string[]) => () => void;
   setSortBy: (value: string) => void;
   loadMore: () => void;
   refresh: () => void;
@@ -121,6 +128,46 @@ interface TypesenseSourceOptions {
   valueLabel?: (field: string, value: string) => string | undefined;
 }
 
+/**
+ * Optimistic changes on top of whatever the source loaded. Kept for the page's lifetime: once
+ * the request succeeds the patch is the server's truth, and a lagging index must not undo it.
+ */
+function useOptimisticOverlay<T>() {
+  const patches = shallowReactive(new Map<string, Partial<T>>());
+  const hidden = shallowReactive(new Set<string>());
+  const keyOf = (item: T) => String((item as { id?: unknown }).id);
+
+  function apply(items: readonly T[]): T[] {
+    if (patches.size === 0 && hidden.size === 0) {
+      return items as T[];
+    }
+
+    return items
+      .filter(item => !hidden.has(keyOf(item)))
+      .map((item) => {
+        const patch = patches.get(keyOf(item));
+
+        return patch ? { ...item, ...patch } : item;
+      });
+  }
+
+  function patchItems(ids: string[], patch: Partial<T>): () => void {
+    const previous = ids.map(id => [id, patches.get(id)] as const);
+    ids.forEach(id => patches.set(id, { ...patches.get(id), ...patch }));
+
+    return () => previous.forEach(([id, before]) => (before ? patches.set(id, before) : patches.delete(id)));
+  }
+
+  function hideItems(ids: string[]): () => void {
+    const added = ids.filter(id => !hidden.has(id));
+    added.forEach(id => hidden.add(id));
+
+    return () => added.forEach(id => hidden.delete(id));
+  }
+
+  return { apply, patchItems, hideItems };
+}
+
 /** "Rodyti daugiau" loads this many at a time (.ai/rules/js-pages-admin.md). */
 const PAGE_SIZE = 50;
 
@@ -135,6 +182,7 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
   });
 
   const labelOf = (field: string, value: string) => options.valueLabel?.(field, value) ?? getFacetValueLabel(field, value);
+  const overlay = useOptimisticOverlay<T>();
 
   const hasSearched = ref(false);
   watch(controller.status, (status, previous) => {
@@ -208,7 +256,7 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
 
   return {
     directInstitutionIds: computed(() => controller.adminSearch.getDirectInstitutionIds(options.collection)),
-    items: computed(() => controller.results.value as T[]),
+    items: computed(() => overlay.apply(controller.results.value as T[])),
     total: controller.totalHits,
     isLoading: controller.isSearching,
     isLoadingMore: controller.isLoadingMore,
@@ -228,6 +276,8 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
     clearFilters: controller.clearFilters,
     clearChip,
     replaceItems: () => undefined,
+    patchItems: overlay.patchItems,
+    hideItems: overlay.hideItems,
     setSortBy: controller.setSortBy,
     loadMore: () => void controller.loadMore(),
     refresh: () => void controller.refresh(),
@@ -445,8 +495,10 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     void fetchPage(1, false);
   }
 
+  const overlay = useOptimisticOverlay<T>();
+
   return {
-    items,
+    items: computed(() => overlay.apply(items.value as T[])),
     total,
     isLoading,
     isLoadingMore,
@@ -480,6 +532,8 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
       toggleFilter(field, rest.join(':'));
     },
     replaceItems: (next) => { items.value = next; },
+    patchItems: overlay.patchItems,
+    hideItems: overlay.hideItems,
     setSortBy: (next) => {
       sortBy.value = next;
       void fetchPage(1, false);
@@ -677,7 +731,8 @@ export function useLocalCollectionSource<T>(options: LocalCollectionSourceOption
     setFilter(field, current.includes(value) ? current.filter(selected => selected !== value) : [...current, value]);
   }
 
-  const items = computed(() => filtered.value.slice(0, visible.value));
+  const overlay = useOptimisticOverlay<T>();
+  const items = computed(() => overlay.apply(filtered.value.slice(0, visible.value)));
 
   return {
     items,
@@ -711,6 +766,8 @@ export function useLocalCollectionSource<T>(options: LocalCollectionSourceOption
     },
     // Local rows are the prop itself; an optimistic change arrives with the next Inertia reload.
     replaceItems: () => undefined,
+    patchItems: overlay.patchItems,
+    hideItems: overlay.hideItems,
     setSortBy: (next) => {
       sortBy.value = next;
       syncUrl();

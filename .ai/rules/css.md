@@ -18,7 +18,7 @@ paths:
 - `theme/surface-palette.css` — shared admin/public palette, typography and square radius under `[data-surface]`
 - `public/surface.css` — public reader preferences, toasts and progress bar
 - `public/typography.css` — .typography, .rc-prose(-editing), .rc-lead, .rc-h-*, .rc-tag-*
-- `public/canvas.css` — .rc-canvas grid, .rc-shell/.rc-aside, .wrapper*, .full-bleed, .rc-viewport
+- `public/canvas.css` — .band-masthead, .rc-canvas grid, .rc-shell/.rc-aside, .rc-viewport
 - `base/reset.css` — Tailwind v3 border-color compat, base h1-h4, .icon-inline, base layer
 - `base/view-transitions.css` — View Transitions API rules
 - `components/misc.css`, `vendor/vue-flow.css` — small standalone/vendor overrides

@@ -30,7 +30,7 @@
         <IFluentTextItalic20Regular />
       </template>
     </TipTapMarkButton>
-    <Button size="icon-sm" data-testid="tiptap-format-underline" :variant="editor.isActive('underline') ? 'secondary' : 'ghost'"
+    <Button size="icon-sm" data-testid="tiptap-format-underline" :variant="editor.isActive('underline') ? 'brand' : 'ghost'"
       @click="editor.chain().focus().toggleUnderline().run()">
       <IFluentTextUnderline20Regular />
     </Button>
@@ -46,7 +46,7 @@ import { ButtonGroup } from '@/Components/ui/button-group';
 
 withDefaults(defineProps<{
   showBold?: boolean;
-  /** Flat ghost/secondary icon buttons for a floating bubble menu, instead of the bordered
+  /** Flat ghost/brand icon buttons for a bubble menu or framed toolbar, instead of the bordered
    *  outline/default `ButtonGroup` pill used in the fixed toolbar. */
   bubble?: boolean;
 }>(), {

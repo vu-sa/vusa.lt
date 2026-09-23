@@ -3,7 +3,7 @@
   <header
     v-if="variant === 'minimal'"
     data-slot="event-hero"
-    class="band-masthead rc-viewport -mt-4 border-b border-border md:-mt-6 lg:-mt-8"
+    class="band-masthead border-b border-border"
   >
     <div class="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
       <!-- Inline breadcrumbs -->
@@ -68,7 +68,7 @@
   <header
     v-else-if="variant === 'split'"
     data-slot="event-hero"
-    class="band-masthead rc-viewport -mt-4 border-b border-border md:-mt-6 lg:-mt-8"
+    class="band-masthead border-b border-border"
   >
     <div class="mx-auto max-w-7xl px-5 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
       <!-- Inline breadcrumbs -->
@@ -149,7 +149,7 @@
   <header
     v-else
     data-slot="event-hero"
-    class="rc-viewport relative isolate -mt-4 overflow-hidden border-b border-border bg-secondary md:-mt-6 lg:-mt-8"
+    class="relative isolate overflow-hidden border-b border-border bg-secondary"
   >
     <div class="relative flex min-h-[22rem] w-full flex-col justify-end overflow-hidden sm:min-h-[24rem] lg:min-h-[28rem]">
       <!-- Background photo -->

@@ -357,6 +357,17 @@ describe('CollectionPage', () => {
     expect(vi.mocked(router.visit)).toHaveBeenLastCalledWith(`${window.location.origin}/mano/meetings?showDeleted=true`);
   });
 
+  it('keeps server-scope params, and only those, across the trash toggle', async () => {
+    window.history.replaceState({}, '', '/mano/quickLinks?tenant=3&lang=en&search=stip');
+    const { source } = makeSource();
+    const wrapper = mountPage(source, { trash: { count: 1, active: false }, keepParams: ['tenant', 'lang'] });
+
+    wrapper.findComponent({ name: 'CollectionFilterBar' }).vm.$emit('toggleTrash');
+    await flushPromises();
+
+    expect(vi.mocked(router.visit)).toHaveBeenLastCalledWith(`${window.location.origin}/mano/quickLinks?tenant=3&lang=en&showDeleted=true`);
+  });
+
   it('hides the trash control when there is nothing to restore', () => {
     const { source } = makeSource();
     const wrapper = mountPage(source, { trash: { count: 0, active: false } });

@@ -425,7 +425,7 @@ test('categoryRedirect permanently redirects legacy category URLs on www', funct
 
     $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'freshmen-camps'], 'lt'))
         ->assertStatus(301)
-        ->assertRedirect(LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], 'lt'));
+        ->assertRedirect(LocalizedRouteSlugs::route('page', ['subdomain' => 'www', 'permalink' => 'pirmakursiu-stovyklos'], 'lt'));
 
     $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'non-existent-category'], 'lt'))
         ->assertNotFound();
@@ -436,7 +436,7 @@ test('categoryRedirect permanently redirects legacy category URLs on tenant subd
 
     $this->get(LocalizedRouteSlugs::route('tenant.category', ['subdomain' => 'mif', 'alias' => 'freshmen-camps'], 'lt'))
         ->assertStatus(301)
-        ->assertRedirect(LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], 'lt'));
+        ->assertRedirect(LocalizedRouteSlugs::route('page', ['subdomain' => 'www', 'permalink' => 'pirmakursiu-stovyklos'], 'lt'));
 });
 
 test('contentPage includes hierarchical ancestors in page prop', function (): void {

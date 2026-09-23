@@ -255,7 +255,7 @@ describe('EventListResolver', function (): void {
         expect($resolved[$part->id]['items'])->toBeEmpty();
     });
 
-    test('a trashed event type still works as a grouping key (matches summerCamps() precedent)', function (): void {
+    test('a trashed event type still works as a grouping key', function (): void {
         // 'stovykla' is a globally seeded slug (seed_event_types) — reuse it rather
         // than colliding on the unique constraint.
         $eventType = EventType::query()->where('slug', 'stovykla')->firstOrFail();

@@ -9,7 +9,7 @@ import {
   type VisibilityState,
 } from '@tanstack/vue-table';
 import { useStorage } from '@vueuse/core';
-import { computed, type Ref } from 'vue';
+import { computed, watch, type Ref } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
 import type { CollectionSortOption } from '@/Composables/useCollectionSource';
@@ -47,6 +47,7 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
   hideableColumns: Ref<CollectionColumn[]>;
   columnVisibility: Ref<VisibilityState>;
   isSortable: (column: CollectionColumn) => boolean;
+  toggleRow: (rowId: string, value: boolean, options?: { range?: boolean }) => void;
 } {
   const columnVisibility = useStorage<VisibilityState>(`admin-collection-columns:${options.collection}`, {});
 
@@ -131,8 +132,42 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
     },
   });
 
+  // Shift-click selects every row between the last toggled one and this one.
+  let anchorId: string | null = null;
+  watch(options.items, () => {
+    anchorId = null;
+  });
+
+  function toggleRow(rowId: string, value: boolean, { range = false } = {}): void {
+    const rows = table.getRowModel().rows;
+    const from = range && anchorId !== null ? rows.findIndex(row => row.id === anchorId) : -1;
+    const to = rows.findIndex(row => row.id === rowId);
+    anchorId = rowId;
+
+    if (from === -1 || to === -1) {
+      table.getRow(rowId)?.toggleSelected(value);
+      return;
+    }
+
+    const between = rows.slice(Math.min(from, to), Math.max(from, to) + 1).filter(row => row.getCanSelect());
+    table.setRowSelection((current) => {
+      const next = { ...current };
+      between.forEach((row) => {
+        if (value) {
+          next[row.id] = true;
+        }
+        else {
+          delete next[row.id];
+        }
+      });
+
+      return next;
+    });
+  }
+
   return {
     table,
+    toggleRow,
     hideableColumns: computed(() => options.columns.value.filter((column, index) => index > 0 && !column.pinned)),
     columnVisibility,
     isSortable,

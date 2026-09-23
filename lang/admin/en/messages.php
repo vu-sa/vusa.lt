@@ -25,6 +25,8 @@ return [
         'f' => ':Model restored successfully.',
         'm' => ':Model restored successfully.',
     ],
+    'bulk_updated' => 'Records updated: :count.',
+    'bulk_deleted' => 'Records deleted: :count.',
     'users_attached_to_reservation' => 'Users attached to reservation!',
 
     'auth' => [
