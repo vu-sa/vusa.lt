@@ -6,7 +6,7 @@
       '[.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none',
     ]"
   >
-    <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:gap-3 lg:px-8">
+    <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 md:gap-3 lg:px-8">
       <Link
         :href="route('dashboard')"
         prefetch
@@ -42,7 +42,7 @@
           data-tour="action-create"
           variant="brand"
           size="sm"
-          class="hidden md:inline-flex pointer-coarse:h-11"
+          class="hidden h-8 md:inline-flex pointer-coarse:h-11"
           @click="emit('create')"
         >
           <Plus class="size-4" />
@@ -50,7 +50,10 @@
         </Button>
       </template>
 
-      <NotificationsIndicator />
+      <!-- Phones get notifications from the bottom bar. -->
+      <div class="hidden md:block">
+        <NotificationsIndicator />
+      </div>
       <div data-tour="account-menu" class="hidden md:block">
         <ShellAccountMenu />
       </div>

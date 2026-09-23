@@ -37,6 +37,48 @@ it('shows the workspace and section a page belongs to', function (): void {
     $page->assertNoJavaScriptErrors();
 });
 
+it('keeps the translucent navigation rows over page content while scrolling', function (): void {
+    $page = openShell(1440, 900);
+
+    foreach ([1440, 390] as $width) {
+        $page->resize($width, 900);
+
+        $geometry = $page->script('(() => {
+            const scrollArea = document.querySelector("[data-slot=admin-scroll-area]");
+            const bar = document.querySelector("[data-slot=shell-top-bar]");
+            const tabs = document.querySelector("[data-slot=section-tabs]");
+            const page = document.querySelector("[data-slot=admin-page-measure]");
+            const filler = document.createElement("div");
+            filler.style.height = "1800px";
+            page.append(filler);
+            scrollArea.scrollTop = 0;
+            const barTop = bar.getBoundingClientRect().top;
+            const tabsTop = tabs.getBoundingClientRect().top;
+            scrollArea.scrollTop = 350;
+            return {
+                barTop,
+                barTopAfterScroll: bar.getBoundingClientRect().top,
+                barBottom: bar.getBoundingClientRect().bottom,
+                tabsTop,
+                tabsTopAfterScroll: tabs.getBoundingClientRect().top,
+                tabsBottom: tabs.getBoundingClientRect().bottom,
+                pageTop: page.getBoundingClientRect().top,
+                scrollTop: scrollArea.scrollTop,
+                barBackdropFilter: getComputedStyle(bar).backdropFilter,
+                tabsBackdropFilter: getComputedStyle(tabs).backdropFilter,
+            };
+        })()');
+
+        expect($geometry['scrollTop'])->toBe(350)
+            ->and($geometry['barTopAfterScroll'])->toBe($geometry['barTop'])
+            ->and($geometry['tabsTopAfterScroll'])->toBe($geometry['tabsTop'])
+            ->and($geometry['pageTop'])->toBeLessThan($geometry['barBottom'])
+            ->and($geometry['pageTop'])->toBeLessThan($geometry['tabsBottom'])
+            ->and($geometry['barBackdropFilter'])->toContain('blur')
+            ->and($geometry['tabsBackdropFilter'])->toContain('blur');
+    }
+});
+
 it('aligns collection and form shells with the top bar measure', function (): void {
     $page = openShell(1180, 900);
 
@@ -70,11 +112,12 @@ it('replaces section tabs with form navigation on a create page', function (): v
         ->and($page->script("document.querySelector('[data-testid=form-page-bar] a').textContent"))->toContain('Institucijos');
 });
 
-it('uses the bottom bar and hides the create button in the top bar on a phone', function (): void {
+it('uses the bottom bar and hides the create button and bell in the top bar on a phone', function (): void {
     $page = openShell(390, 844);
 
     expect($page->script("getComputedStyle(document.querySelector('[data-slot=mobile-bottom-bar]')).display"))->toBe('flex')
-        ->and($page->script("document.querySelector('[data-slot=shell-top-bar] button.bg-brand-fill').offsetParent"))->toBeNull();
+        ->and($page->script("document.querySelector('[data-slot=shell-top-bar] button.bg-brand-fill').offsetParent"))->toBeNull()
+        ->and($page->script("document.querySelector('[data-slot=shell-top-bar] [data-tour=notifications-indicator]').offsetParent"))->toBeNull();
 });
 
 it('has no bottom bar and shows the create button in the top bar on a desktop', function (): void {

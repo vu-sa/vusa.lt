@@ -40,11 +40,11 @@ const baseProps = {
   onboardingChecklist: null,
   accessChanges: [],
   actionWindowLaunch: null,
-  unreadNotificationsCount: 0,
-  hasNotifications: false,
   taskStats: { total: 0, overdue: 0, dueSoon: 0 },
   upcomingTasks: [],
   upcomingMeetings: [],
+  heroNews: null,
+  registrationForms: [],
 };
 
 const mountPage = (props: Record<string, unknown> = {}) => mount(ShowAdminHome, {
@@ -60,17 +60,23 @@ beforeEach(() => {
 });
 
 describe('ShowAdminHome', () => {
-  it('places create actions and quick access before the task preview', () => {
+  it('puts destinations right under the task preview, and create actions after them', () => {
     const wrapper = mountPage();
-    const shortcuts = wrapper.find('create-shortcuts-stub');
-    const quickAccess = wrapper.find('quick-access-stub');
     const tasks = wrapper.find('attention-queue-stub');
+    const quickAccess = wrapper.find('quick-access-stub');
+    const shortcuts = wrapper.find('create-shortcuts-stub');
 
-    expect(shortcuts.exists()).toBe(true);
-    expect(quickAccess.exists()).toBe(true);
-    expect(tasks.exists()).toBe(true);
-    expect(shortcuts.element.compareDocumentPosition(quickAccess.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(quickAccess.element.compareDocumentPosition(tasks.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(tasks.element.nextElementSibling).toBe(quickAccess.element);
+    expect(quickAccess.element.compareDocumentPosition(shortcuts.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('sums up waiting and overdue tasks under the greeting, and says nothing when none wait', () => {
+    expect(mountPage().find('[data-testid="hero-summary"]').exists()).toBe(false);
+
+    const summary = mountPage({ taskStats: { total: 3, overdue: 1, dueSoon: 0 } }).find('[data-testid="hero-summary"]');
+    expect(summary.text()).toBe('home.summary.waiting · home.summary.overdue');
+    expect(mountPage({ taskStats: { total: 3, overdue: 0, dueSoon: 0 } }).find('[data-testid="hero-summary"]').text())
+      .toBe('home.summary.waiting');
   });
 
   it('shows the checklist and the access band only when the server sends them', () => {
@@ -108,9 +114,17 @@ describe('ShowAdminHome', () => {
     expect(open).not.toHaveBeenCalled();
   });
 
-  it('adds the year\'s recorded meetings as the lead once the count arrives, and only when there is one', () => {
-    expect(mountPage().text()).not.toContain('home.impact');
-    expect(mountPage({ recordedMeetingsThisYear: 0 }).text()).not.toContain('home.impact');
-    expect(mountPage({ recordedMeetingsThisYear: 6 }).text()).toContain('home.impact');
+  it('greets the rep with "Labas" in the hero and hands it the newest news', () => {
+    const heroNews = { id: 1, title: 'Naujiena', image: '/uploads/n.jpg', publish_time: '2026-09-21T10:00:00Z', public_url: null, archive_url: '/lt/naujienos' };
+    const hero = mountPage({ heroNews }).findComponent({ name: 'HomeHero' });
+
+    expect(hero.props('greeting')).toMatch(/^Labas(, .+)?$/);
+    expect(hero.props('news')).toEqual(heroNews);
+  });
+
+  it('passes the registration forms the server allows on to quick access', () => {
+    const registrationForms = [{ key: 'member', href: '/mano/forms/1' }];
+
+    expect(mountPage({ registrationForms }).findComponent({ name: 'QuickAccess' }).props('registrationForms')).toEqual(registrationForms);
   });
 });

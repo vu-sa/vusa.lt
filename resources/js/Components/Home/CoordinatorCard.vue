@@ -1,27 +1,25 @@
 <template>
-  <section v-if="coordinator" class="flex flex-col gap-3" data-slot="coordinator-card">
-    <h2 class="flex items-center gap-2 border-b border-border pb-3 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
-      <UserRound class="size-4 shrink-0 text-brand" aria-hidden="true" />
-      {{ $t('Tavo koordinatorius') }}
-    </h2>
-    <div class="flex items-center gap-4">
-      <UserAvatar :user="{ name: coordinator.name, profile_photo_path: coordinator.profile_photo_path }" :size="compact ? 32 : 48" />
-      <div class="min-w-0 flex-1">
-        <p class="truncate font-medium">
-          {{ coordinator.name }}
-        </p>
-        <p v-if="coordinator.duty" class="truncate text-sm text-muted-foreground">
-          {{ coordinator.duty }}
-        </p>
+  <OverviewSection v-if="coordinator" :title="$t('Tavo koordinatorius')" :icon="UserRound" variant="home" data-slot="coordinator-card">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+      <div class="flex min-w-0 flex-1 basis-56 items-center gap-3">
+        <UserAvatar :user="{ name: coordinator.name, profile_photo_path: coordinator.profile_photo_path }" :size="compact ? 32 : 40" />
+        <div class="min-w-0">
+          <p class="truncate font-bold text-foreground">
+            {{ coordinator.name }}
+          </p>
+          <p v-if="coordinator.duty" class="line-clamp-2 text-xs text-muted-foreground">
+            {{ coordinator.duty }}
+          </p>
+        </div>
       </div>
-      <Button v-if="coordinator.email" as-child variant="outline" size="sm" class="pointer-coarse:h-11">
+      <Button v-if="coordinator.email" as-child variant="outline" size="sm" class="w-full sm:w-auto pointer-coarse:h-11">
         <a :href="`mailto:${coordinator.email}`">
           <Mail aria-hidden="true" />
           {{ $t('Parašyti') }}
         </a>
       </Button>
     </div>
-  </section>
+  </OverviewSection>
 </template>
 
 <script setup lang="ts">
@@ -31,6 +29,7 @@ import { Mail, UserRound } from 'lucide-vue-next';
 import type { HomeCoordinator } from './types';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { Button } from '@/Components/ui/button';
 
 defineProps<{

@@ -34,6 +34,8 @@
       @record="recordMeetingFor"
     />
 
+    <WorkspaceSectionTiles workspace-key="atstovavimas" />
+
     <OverviewNumbers v-if="numbersReady" :numbers />
     <Skeleton v-else class="h-20 w-full" />
 
@@ -206,6 +208,7 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { OverviewSection } from '@/Components/Patterns';
 import OverviewScopeSwitch from '@/Components/Overview/OverviewScopeSwitch.vue';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
+import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
 import OverviewChart from '@/Components/Overview/OverviewChart.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';

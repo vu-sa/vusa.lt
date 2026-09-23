@@ -19,9 +19,6 @@ const mountPanel = (props: Record<string, unknown> = {}) => mount(MobileMenuPane
   global: { stubs: { Teleport: true } },
 });
 
-const button = (wrapper: ReturnType<typeof mount>, title: string) =>
-  wrapper.findAll('button').find(candidate => candidate.text().includes(title));
-
 afterEach(() => {
   document.body.innerHTML = '';
 });
@@ -38,22 +35,13 @@ describe('MobileMenuPanel', () => {
     expect(dialog.attributes('aria-label')).toBe('shell.chrome.menu');
   });
 
-  it('opens with the current workspace expanded and the rest collapsed', () => {
+  it('lists every workspace with all its sections, nothing folded away', () => {
     const wrapper = mountPanel();
 
-    expect(button(wrapper, 'shell.workspaces.atstovavimas.title')?.attributes('aria-expanded')).toBe('true');
-    expect(button(wrapper, 'shell.workspaces.pradzia.title')?.attributes('aria-expanded')).toBe('false');
-    expect(wrapper.text()).toContain('shell.sections.posedziai');
-    expect(wrapper.text()).not.toContain('shell.sections.uzduotys');
-  });
-
-  it('expands one workspace at a time', async () => {
-    const wrapper = mountPanel();
-
-    await button(wrapper, 'shell.workspaces.pradzia.title')?.trigger('click');
-
+    expect(wrapper.findAll('[data-slot="mobile-menu-workspace"]')).toHaveLength(3);
     expect(wrapper.text()).toContain('shell.sections.uzduotys');
-    expect(wrapper.text()).not.toContain('shell.sections.posedziai');
+    expect(wrapper.text()).toContain('shell.sections.posedziai');
+    expect(wrapper.text()).toContain('shell.sections.rezervacijos');
   });
 
   it('marks the current section', () => {
@@ -86,11 +74,6 @@ describe('MobileMenuPanel', () => {
     await flushPromises();
 
     expect(wrapper.emitted('update:open')).toBeUndefined();
-  });
-
-  it('offers Visi skyriai only when allowed', () => {
-    expect(mountPanel().text()).not.toContain('shell.chrome.all_sections');
-    expect(mountPanel({ showAllSections: true }).text()).toContain('shell.chrome.all_sections');
   });
 
   it('renders account, appearance, and help controls', () => {

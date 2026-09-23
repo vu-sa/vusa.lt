@@ -10,7 +10,7 @@
       >
         <CarouselContent class="h-full -ml-0">
           <CarouselItem
-            v-for="(photo, index) in heroPhotos"
+            v-for="(photo, index) in communityPhotos"
             :key="index"
             class="h-full pl-0 basis-full"
           >
@@ -277,6 +277,7 @@ import {
 import MicrosoftButton from '@/Components/Buttons/MicrosoftLoginButton.vue';
 import { Carousel, CarouselContent, CarouselItem } from '@/Components/ui/carousel';
 import { usePWA } from '@/Composables/usePWA';
+import { communityPhotos } from '@/Constants/communityPhotos';
 import { getAppLogoSrc } from '@/Utils/AppLogo';
 
 defineProps<{
@@ -291,13 +292,6 @@ const showPassword = ref(false);
 const errorDismissed = ref(false);
 
 const logoSrc = computed(() => getAppLogoSrc('vusa', page.props.app?.locale));
-
-const heroPhotos = [
-  { src: '/images/become-a-member/20250510_VUSA-156.webp', alt: 'VU SA nariai 2025' },
-  { src: '/images/become-a-member/mokymai2025-2.webp', alt: 'VU SA mokymai' },
-  { src: '/images/become-a-member/mokymai2025-1.webp', alt: 'VU SA mokymai' },
-  { src: '/images/become-a-member/VU SA 24-25-06.webp', alt: 'VU SA bendruomenė' },
-];
 
 const homeUrl = computed(() => {
   try {

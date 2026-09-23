@@ -31,6 +31,8 @@
       </OverviewSection>
     </template>
 
+    <WorkspaceSectionTiles workspace-key="sistema" />
+
     <OverviewNumbers v-if="numbers.length > 0" :numbers />
 
     <Deferred v-if="counts.roles !== null" data="problems">
@@ -69,6 +71,7 @@ import { computed } from 'vue';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
+import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
 import { OverviewSection } from '@/Components/Patterns';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { formatNearDate } from '@/Utils/dateTime';

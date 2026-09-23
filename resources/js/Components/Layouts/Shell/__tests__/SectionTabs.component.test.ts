@@ -1,13 +1,25 @@
-import { describe, expect, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { flushPromises, mount } from '@vue/test-utils';
 
 import SectionTabs from '../SectionTabs.vue';
 
-import { atstovavimas, pradzia, rezervacijos, workspace } from './fixtures';
+import { atstovavimas, pradzia, rezervacijos, section, workspace } from './fixtures';
+
+import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 describe('SectionTabs', () => {
+  it('uses a translucent surface with an opaque high-contrast override', () => {
+    const wrapper = mount(SectionTabs, { props: { workspace: atstovavimas } });
+    const nav = wrapper.find('nav');
+
+    expect(nav.classes()).toContain('bg-secondary/50');
+    expect(nav.classes()).toContain('backdrop-blur-sm');
+    expect(nav.classes()).toContain('[.a11y-contrast_&]:bg-background');
+    expect(nav.classes()).toContain('[.a11y-contrast_&]:backdrop-blur-none');
+  });
+
   it('renders one tab per section of the workspace', () => {
     const wrapper = mount(SectionTabs, { props: { workspace: pradzia, activeSection: pradzia.sections[0] } });
 
@@ -50,5 +62,62 @@ describe('SectionTabs', () => {
   it('renders nothing without a workspace', () => {
     expect(mount(SectionTabs).find('nav').exists()).toBe(false);
     expect(mount(SectionTabs, { props: { workspace: workspace('empty', []) } }).find('nav').exists()).toBe(false);
+  });
+
+  describe('when the tabs do not fit', () => {
+    const organizacija = workspace('organizacija', [
+      section('apzvalga', 'dashboard.organizacija'),
+      section('nariai', 'users.index'),
+      section('pareigybes', 'duties.index'),
+      section('institucijos', 'institutions.index'),
+    ]);
+
+    // jsdom has no layout: a 250px row of 100px tabs, so the last two overflow.
+    const fakeLayout = () => {
+      vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (this: HTMLElement) {
+        return this.tagName === 'UL' ? 250 : 100;
+      });
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+        if (this.tagName !== 'LI') {
+          return { left: 0, right: 250 } as DOMRect;
+        }
+
+        const index = [...(this.parentElement?.children ?? [])].indexOf(this);
+
+        return { left: index * 100, right: (index + 1) * 100 } as DOMRect;
+      });
+    };
+
+    const mountTabs = async (activeSection = organizacija.sections[0]) => {
+      fakeLayout();
+      const wrapper = mount(SectionTabs, { props: { workspace: organizacija, activeSection }, global: { stubs: commonStubs } });
+      await flushPromises();
+
+      return wrapper;
+    };
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('hides the overflowing tabs and lists exactly those under Daugiau', async () => {
+      const wrapper = await mountTabs();
+      const tabs = wrapper.findAll('li');
+
+      expect(tabs.map(tab => tab.classes().includes('invisible'))).toEqual([false, false, true, true]);
+      expect(tabs[2].attributes('aria-hidden')).toBe('true');
+      expect(tabs[2].find('a').attributes('tabindex')).toBe('-1');
+      expect(wrapper.find('[data-testid="dropdown-menu-content"]').findAll('a').map(link => link.text()))
+        .toEqual(['shell.sections.pareigybes', 'shell.sections.institucijos']);
+      expect(wrapper.find('[data-slot="section-tabs-more"]').text()).toContain('shell.chrome.more_sections');
+      expect(wrapper.find('[data-slot="section-tabs-more"]').attributes('aria-current')).toBeUndefined();
+    });
+
+    it('names the active section on the trigger when it has overflowed', async () => {
+      const wrapper = await mountTabs(organizacija.sections[3]);
+      const trigger = wrapper.find('[data-slot="section-tabs-more"]');
+
+      expect(trigger.attributes('aria-current')).toBe('page');
+      expect(trigger.classes()).toContain('border-brand-fill');
+      expect(trigger.text()).toContain('shell.sections.institucijos');
+    });
   });
 });

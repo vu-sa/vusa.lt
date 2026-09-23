@@ -1,10 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { usePage } from '@inertiajs/vue3';
 import { defineComponent, h } from 'vue';
 
 import AdminShell from '../AdminShell.vue';
 
+import { atstovavimas, pradzia } from './fixtures';
+
 import { createShellFocusProvider, type ShellFocusContext } from '@/Composables/useShellFocus';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // `virtual:pwa-register` only exists inside a Vite build.
@@ -23,7 +27,7 @@ const stubs = {
   ImpersonateBanner: true,
   SystemAnnouncement: true,
   MobileMenuPanel: true,
-  SectionTabs: { template: '<nav data-testid="section-tabs" />' },
+  SectionTabs: { template: '<nav data-testid="section-tabs" v-bind="$attrs" />' },
   ShellBreadcrumbs: { template: '<nav data-testid="breadcrumbs" />' },
   MobileBottomBar: { template: '<nav data-testid="bottom-bar" />' },
   ShellTopBar: { props: ['focused'], template: '<header data-testid="top-bar" :data-focused="focused" />' },
@@ -45,6 +49,16 @@ function mountShell() {
 }
 
 describe('AdminShell focus mode', () => {
+  it('keeps the navigation over the scrolling page while the mobile bar stays outside', () => {
+    const { wrapper } = mountShell();
+    const scrollArea = wrapper.find('[data-slot="admin-scroll-area"]');
+
+    expect(scrollArea.classes()).toContain('overflow-auto');
+    expect(scrollArea.find('.sticky').find('[data-testid="top-bar"]').exists()).toBe(true);
+    expect(scrollArea.find('[data-slot="admin-page-measure"]').text()).toBe('Puslapis');
+    expect(scrollArea.find('[data-testid="bottom-bar"]').exists()).toBe(false);
+  });
+
   it('shows the navigation chrome when no form is open', () => {
     const { wrapper } = mountShell();
 
@@ -84,5 +98,26 @@ describe('AdminShell focus mode', () => {
 
     releaseSecond();
     expect(focus().isFocused.value).toBe(false);
+  });
+});
+
+describe('AdminShell section tabs on phones', () => {
+  const onRoute = (routeName: string) => {
+    vi.stubGlobal('route', () => ({ current: () => routeName, params: {} }));
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      adminNavigation: { workspaces: [pradzia, atstovavimas] },
+    }) as ReturnType<typeof usePage>);
+  };
+
+  it('hides Pradžia\'s tab row below md, where the bottom bar already holds its sections', () => {
+    onRoute('dashboard');
+
+    expect(mountShell().wrapper.find('[data-testid="section-tabs"]').classes()).toContain('max-md:hidden');
+  });
+
+  it('keeps other workspaces\' tabs, their only section switcher on phones', () => {
+    onRoute('meetings.index');
+
+    expect(mountShell().wrapper.find('[data-testid="section-tabs"]').classes()).not.toContain('max-md:hidden');
   });
 });

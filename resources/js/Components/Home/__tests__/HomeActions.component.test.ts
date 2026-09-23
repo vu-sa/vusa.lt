@@ -51,7 +51,7 @@ describe('home actions', () => {
     const wrapper = mount(CreateShortcuts);
     const buttons = wrapper.findAll('button');
 
-    expect(wrapper.find('h2').text()).toBe('Greiti veiksmai');
+    expect(wrapper.find('h2').text()).toBe('home.create_title');
     expect(buttons.map(button => button.text())).toEqual([
       'Fiksuoti posėdį', 'Nauja rezervacija', 'Rašyti naujieną', 'Nauja užduotis',
     ]);
@@ -80,7 +80,7 @@ describe('home actions', () => {
     expect(links).toHaveLength(2);
     expect(links[0].attributes('href')).toBe('/mocked-route/administration');
     expect(links[1].attributes('href')).toBe('/mocked-route/dashboard.reservations');
-    expect(links.every(link => link.classes().includes('normal-case'))).toBe(true);
+    expect(links[1].text()).toContain('home.quick_access.manage_reservations_description');
   });
 
   it('shows each quick access link independently when only that area is available', () => {
@@ -99,5 +99,23 @@ describe('home actions', () => {
     }) as ReturnType<typeof usePage>);
     expect(mount(QuickAccess, { global: { stubs } }).findAll('a').map(link => link.attributes('href')))
       .toEqual(['/mocked-route/dashboard.reservations']);
+  });
+
+  it('adds a link per registration form the server allows, even without other areas', () => {
+    const stubs = { SpotlightPopover: { template: '<div><slot /></div>' } };
+    const wrapper = mount(QuickAccess, {
+      props: {
+        registrationForms: [
+          { key: 'member', href: '/mano/forms/member' },
+          { key: 'student_rep', href: '/mano/forms/reps' },
+        ],
+      },
+      global: { stubs },
+    });
+
+    expect(wrapper.findAll('a').map(link => [link.attributes('href'), link.find('[data-tile-label]').text()])).toEqual([
+      ['/mano/forms/member', 'home.quick_access.member_registrations'],
+      ['/mano/forms/reps', 'home.quick_access.rep_registrations'],
+    ]);
   });
 });

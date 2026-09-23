@@ -20,6 +20,8 @@ final readonly class Section
      * @param  list<string>  $matches  Route-name patterns (`Route::is()` style) that live inside this
      *                                 section, so a record page resolves to its workspace. Empty means
      *                                 the default: `x.index` claims `x.*`, any other name only itself.
+     * @param  string|null  $descriptionKey  i18n key for the one-line description on section tiles
+     *                                       (Visi skyriai, workspace overviews).
      */
     public function __construct(
         public string $key,
@@ -30,10 +32,11 @@ final readonly class Section
         public Visibility $visibility,
         public array $collectionActions = [],
         public array $matches = [],
+        public ?string $descriptionKey = null,
     ) {}
 
     /**
-     * @return array{key: string, label: string, routeName: string, routeParams: array<string, mixed>, entityType: string|null, collectionActions: list<array{key: string, label: string, target: string}>, matches: list<string>}
+     * @return array{key: string, label: string, routeName: string, routeParams: array<string, mixed>, entityType: string|null, description: string|null, collectionActions: list<array{key: string, label: string, target: string}>, matches: list<string>}
      */
     public function toArray(): array
     {
@@ -43,6 +46,7 @@ final readonly class Section
             'routeName' => $this->routeName,
             'routeParams' => $this->routeParams,
             'entityType' => $this->entityType,
+            'description' => $this->descriptionKey,
             'collectionActions' => array_map(fn (CollectionAction $action) => $action->toArray(), $this->collectionActions),
             'matches' => $this->routePatterns(),
         ];

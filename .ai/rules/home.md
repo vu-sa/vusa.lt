@@ -10,6 +10,6 @@ Student reps (~300, mostly on phones) arrive from an email and must finish the j
 - Reminders are answerable (buttons deep-link into the right ActionWindow screen, pre-filled).
 - A meeting can be saved with institution + date only; what's missing shows as a one-tap "Papildyk" list, never a blocker.
 - Agenda items can be pasted from invitation text; votes are big taps (už / prieš / susilaikė / nebalsuota), one item per screen with ‹ ›.
-- Show impact ("Matoma vusa.lt", meetings recorded this year) and the named koordinatorius with a contact action.
+- Show impact ("Matoma vusa.lt") and the named koordinatorius with a contact action.
 - Rep home stays small: attention (tasks) → upcoming meetings → my institutions.
 Judge changes by the outcome metrics (`metrics:reps`), not looks.

@@ -9,12 +9,12 @@
     :href
     :href-label="$t('Visi posėdžiai')"
   >
-    <ul class="divide-y divide-border border-y border-border" data-slot="upcoming-meetings">
+    <ul class="divide-y divide-border/60" data-slot="upcoming-meetings">
       <li v-for="meeting in meetings" :key="meeting.id">
         <Link
           :href="route('meetings.show', meeting.id)"
           prefetch
-          class="flex items-center gap-4 px-1 py-3 hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:py-4"
+          class="flex items-center gap-4 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
           <time
             :datetime="meeting.start_time"

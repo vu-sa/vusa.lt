@@ -9,8 +9,9 @@ lastUpdated: true
 
 - ✨ **A clearer Home** — quick actions have one prominent button, permission-based links to administration and reservations sit below them, and task due dates read relatively without extra status badges
 - ✨ **Easier search on tablets** — a search button opens the same command palette when the top bar is too narrow for the field
-- ✨ **A calmer Mano VU SA home** — tasks appear as simple rows after quick actions in a narrower layout, while news and events have visual previews linking to their public pages
-- ✨ **A clearer top bar** — the larger logo and translucent surface match the public site, “Mano” names your workspace, and the smaller create button, section icons, and refreshed menus make navigation easier
+- ✨ **A calmer Mano VU SA home** — tasks come first, with a line under the greeting saying how many wait and how many are overdue; an overdue date reads "2d late", "Go to" follows right below, quick actions move to the side column, and with no tasks the section joins the "All clear" list, and news and events have visual previews linking to their public pages
+- ✨ **A new bottom bar on phones** — Home · Tasks · + · Notifications · Menu: notifications open from the bottom (the bell is no longer in the phone top bar), and Menu lists every workspace and section you can open at once; Home's tab row no longer repeats the bottom bar on phones
+- ✨ **A clearer top bar** — the larger logo and translucent top bar and section menu, with page content scrolling behind them, match the public site, “Mano” names your workspace, and the smaller create button, section icons, and refreshed menus make navigation easier
 - ✨ **One list design** — pages, news, events, institutions, meetings, members, roles, permissions, types, relationships, units, study programmes and study sets now look and behave the same: a large heading, search with filters, sorting, rows, table and preview views, and "Show more"
 - ✨ **Deleted records in the same list** — the "Deleted (N)" control in the filter bar shows deleted records in the same view, where you can restore them or delete them permanently
 - ⭐ **Select several records** — when merging members, duties, tags or study programmes and when deciding on reservations, select everything shown in one click; in the table you can sort by clicking a column heading and hide columns under "Columns"
@@ -18,6 +19,10 @@ lastUpdated: true
 - ✨ **New page editor** — while creating or editing a page, the top bar becomes an editor bar with Back, the save state and Save; fields sit in a content column and side panels (Publishing, Structure, Language, Display settings), and on phones Save always stays within thumb reach at the bottom
 - ✨ **Hints under fields** — form field hints now show under the field instead of only on hover, so you can see them on a phone too
 - ✨ **New login page** — the login screen is updated to the new design system with a desktop split view, community photo carousel, refined button hierarchy, and responsive layout for phones and tablets
+- ✨ **Taller top bar and a section menu that fits the screen** — the bar has more room and more compact buttons, your name is no longer shown in capitals, and section tabs that don't fit are collected under "More"
+- ✨ **Empty overview sections in one list** — sections with nothing waiting (e.g. "Your institutions", "My reservations") are gathered in a compact "All clear" list at the bottom of the page
+- ⭐ **Registration forms under "Go to"** — if you can view member or student representative registrations, open them straight from Home
+- ✨ **Sections as tiles** — All sections, every workspace overview and Home's "Go to" block show the sections you can open as tiles with a short description, so the right list is quicker to find
 
 ## v2.17 — System administration (2026-09-22) {#v2-17}
 

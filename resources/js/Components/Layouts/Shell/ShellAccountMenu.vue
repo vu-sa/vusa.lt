@@ -3,11 +3,12 @@
     <DropdownMenuTrigger as-child>
       <Button
         variant="ghost"
-        class="u-touch h-10 gap-2 border-l border-border pl-3 pr-2.5 transition-colors hover:bg-secondary focus-visible:bg-secondary"
+        voice="plain"
+        class="u-touch h-8 gap-2 border-l border-border pl-3 pr-2.5 transition-colors hover:bg-secondary focus-visible:bg-secondary"
         :class="{ 'bg-secondary': isOpen }"
         :aria-label="$t('shell.chrome.account')"
       >
-        <Avatar class="size-8 rounded-none">
+        <Avatar class="size-6 rounded-none">
           <AvatarImage v-if="user?.profile_photo_path" :src="user.profile_photo_path" :alt="user.name" />
           <AvatarFallback class="rounded-none bg-brand-fill text-xs font-bold text-brand-foreground dark:bg-brand-fill dark:text-brand-foreground">
             {{ initials }}

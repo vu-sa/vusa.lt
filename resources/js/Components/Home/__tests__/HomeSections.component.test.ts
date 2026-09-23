@@ -71,11 +71,10 @@ describe('CoordinatorCard', () => {
 });
 
 describe('RecentlyEditedList', () => {
-  it('hides itself down to one line when the person has changed nothing', () => {
+  it('leaves no trace, not even an all-clear line, when the person has changed nothing', () => {
     const wrapper = mount(RecentlyEditedList, { props: { records: [] } });
 
-    expect(wrapper.find('ul').exists()).toBe(false);
-    expect(wrapper.text()).toContain('Neseniai redaguota');
+    expect(wrapper.text()).toBe('');
   });
 
   it('lists records with their entity mark, linking to where they open', () => {

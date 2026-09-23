@@ -33,6 +33,8 @@
       </OverviewSection>
     </template>
 
+    <WorkspaceSectionTiles workspace-key="organizacija" />
+
     <OverviewNumbers v-if="numbers.length > 0" :numbers />
 
     <Deferred data="recentlyEdited">
@@ -53,6 +55,7 @@ import type { HomeRecentRecord } from '@/Components/Home/types';
 import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
+import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
 import { CollectionSkeleton, OverviewSection } from '@/Components/Patterns';
 import { formatNearDate } from '@/Utils/dateTime';
 

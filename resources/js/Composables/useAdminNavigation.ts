@@ -20,8 +20,6 @@ export const sectionHref = (section: AdminSection): string => route(section.rout
 export const workspaceHref = (workspace: AdminWorkspace): string | undefined =>
   workspace.sections[0] ? sectionHref(workspace.sections[0]) : undefined;
 
-const PRIMARY_TIE_BREAKER = 'atstovavimas';
-
 const escapeRegExp = (value: string): string => value.replace(/[.+?^$()|{}[\]\\]/g, '\\$&');
 
 const patternMatches = (pattern: string, routeName: string): boolean =>
@@ -106,22 +104,6 @@ export function belowSectionTrail(
   return trail.length > 1 ? trail : [];
 }
 
-/**
- * The workspace a phone's bottom bar puts beside Pradžia: the one holding the most sections
- * (navigation.md), Pradžia itself excluded, ties going to ViSAK and then catalog order.
- */
-export function primaryWorkspace(workspaces: AdminWorkspace[]): AdminWorkspace | undefined {
-  return workspaces
-    .filter(workspace => workspace.key !== 'pradzia')
-    .reduce<AdminWorkspace | undefined>((winner, workspace) => {
-      if (!winner || workspace.sections.length > winner.sections.length) {
-        return workspace;
-      }
-
-      return workspace.sections.length === winner.sections.length && workspace.key === PRIMARY_TIE_BREAKER ? workspace : winner;
-    }, undefined);
-}
-
 // Pages outside every section (profile, Visi skyriai) keep the last workspace instead of
 // snapping back to Pradžia mid-task.
 const lastWorkspaceKey = ref<string>();
@@ -164,7 +146,6 @@ export function useAdminNavigation() {
     ?? workspaces.value.find(workspace => workspace.key === lastWorkspaceKey.value)
     ?? workspaces.value[0]);
   const activeSection = computed(() => resolved.value.section);
-  const primary = computed(() => primaryWorkspace(workspaces.value));
 
-  return { workspaces, sections, sectionForRoute, hasCollectionAction, activeWorkspace, activeSection, primaryWorkspace: primary };
+  return { workspaces, sections, sectionForRoute, hasCollectionAction, activeWorkspace, activeSection };
 }

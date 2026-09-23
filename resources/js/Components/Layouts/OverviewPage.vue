@@ -2,7 +2,11 @@
   <div class="mx-auto flex w-full max-w-7xl flex-col gap-10 lg:gap-14" data-slot="overview-page">
     <Head :title="headTitle ?? title" />
 
-    <header class="flex flex-col gap-4 pt-6 sm:pt-10 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">
+    <div v-if="$slots.hero" class="pt-6 sm:pt-10">
+      <slot name="hero" />
+    </div>
+
+    <header v-else class="flex flex-col gap-4 pt-6 sm:pt-10 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">
       <div class="min-w-0">
         <p v-if="eyebrow" class="text-xs font-bold uppercase tracking-[0.2em] text-brand">
           {{ eyebrow }}
@@ -25,11 +29,17 @@
     <slot name="attention" />
 
     <slot />
+
+    <OverviewStatusList v-if="statusRegistry.placed.value === 0" :entries="statusEntries" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import { computed, provide } from 'vue';
+
+import OverviewStatusList from '@/Components/Patterns/OverviewStatusList.vue';
+import { createOverviewStatusRegistry, OVERVIEW_STATUS_KEY } from '@/Components/Patterns/overviewStatus';
 
 defineProps<{
   eyebrow?: string;
@@ -42,9 +52,16 @@ defineProps<{
 defineSlots<{
   /** Replaces the h1, e.g. Pradžia's greeting. `title` still feeds the browser tab. */
   heading: () => unknown;
+  /** Replaces the whole title band and must carry the page's h1, e.g. Pradžia's photo greeting. */
+  hero: () => unknown;
   actions: () => unknown;
   /** The page's one ink band; the caller renders nothing while there is nothing to attend to. */
   attention: () => unknown;
   default: () => unknown;
 }>();
+
+const statusRegistry = createOverviewStatusRegistry();
+provide(OVERVIEW_STATUS_KEY, statusRegistry);
+
+const statusEntries = computed(() => [...statusRegistry.entries].map(([id, entry]) => ({ id, ...entry })));
 </script>

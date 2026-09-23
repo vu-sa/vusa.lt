@@ -56,10 +56,10 @@ export const MobileBottomBarStory: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   render: () => ({
     components: { MobileBottomBar },
-    setup: () => ({ primary: atstovavimas, activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] }),
+    setup: () => ({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] }),
     template: `
       <div class="w-[390px] bg-background text-foreground [--shell-bottom-bar:3.5rem]">
-        <MobileBottomBar :primary :active-workspace :active-section can-create />
+        <MobileBottomBar :active-workspace :active-section can-create />
       </div>
     `,
   }),

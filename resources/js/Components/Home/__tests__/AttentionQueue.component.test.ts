@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AttentionQueue from '../AttentionQueue.vue';
 import type { HomeTask } from '../types';
 
+import { OVERVIEW_STATUS_KEY } from '@/Components/Patterns/overviewStatus';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -47,7 +48,8 @@ describe('AttentionQueue', () => {
     const wrapper = mountQueue([task()]);
 
     expect(wrapper.find('.bg-foreground').exists()).toBe(false);
-    expect(wrapper.find('h2').text()).toBe('Mano užduotys');
+    expect(wrapper.find('h2').text()).toBe('home.tasks_title');
+    expect(wrapper.find('.bg-border').exists()).toBe(false);
     expect(wrapper.findAll('ul li')).toHaveLength(1);
     expect(wrapper.text()).toContain('Visos užduotys');
   });
@@ -61,7 +63,7 @@ describe('AttentionQueue', () => {
     expect(wrapper.text()).toContain('Senato posėdis');
   });
 
-  it('shows relative due dates without status badges, colouring only overdue dates', () => {
+  it('says how late an overdue task is and shows upcoming dates as relative, colouring only overdue dates', () => {
     const wrapper = mountQueue([
       task({ id: '1', is_overdue: true, due_date: new Date(Date.now() - 10 * day).toISOString() }),
       task({ id: '2', due_date: new Date(Date.now() + 3 * day).toISOString() }),
@@ -69,7 +71,8 @@ describe('AttentionQueue', () => {
 
     const dates = wrapper.findAll('time');
     expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
-    expect(dates[0].text()).toContain('prieš 10 d.');
+    expect(dates[0].text()).toBe('home.overdue_by');
+    expect(dates[0].text()).not.toContain('prieš');
     expect(dates[0].classes()).toContain('text-brand');
     expect(dates[0].attributes('aria-label')).toBe('home.overdue_due_date');
     expect(dates[1].text()).toContain('po 3 d.');
@@ -95,6 +98,20 @@ describe('AttentionQueue', () => {
 
     expect(wrapper.text()).toContain('Šiuo metu nieko nelaukia');
     expect(mountQueue([], { total: 2 }).text()).toContain('Artimiausiu metu užduočių nėra');
+  });
+
+  it('hands an empty queue to the page\'s all-clear list instead of showing its own section', () => {
+    const registry = { set: vi.fn(), remove: vi.fn() };
+    const wrapper = mount(AttentionQueue, {
+      props: { tasks: [], stats: { ...stats, total: 0 }, moreHref: '/mano/tasks' },
+      global: { provide: { [OVERVIEW_STATUS_KEY as symbol]: registry } },
+    });
+
+    expect(wrapper.find('[data-slot="attention-queue"]').exists()).toBe(false);
+    expect(registry.set).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+      title: 'home.tasks_title',
+      emptyText: 'Šiuo metu nieko nelaukia',
+    }));
   });
 
   it('renders a task with nothing left to link to as plain text, not a dead link', () => {

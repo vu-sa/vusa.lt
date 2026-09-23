@@ -6,7 +6,7 @@ import MobileBottomBar from '../MobileBottomBar.vue';
 import SectionTabs from '../SectionTabs.vue';
 import TaskCountBadge from '../TaskCountBadge.vue';
 
-import { atstovavimas, pradzia } from './fixtures';
+import { pradzia } from './fixtures';
 
 const page = reactive({ props: { auth: { user: { tasks_count: 0, overdue_tasks_count: 0 } } } });
 
@@ -35,12 +35,11 @@ describe('TaskCountBadge', () => {
     expect(badge.text()).toContain('shell.badges.tasks_pending');
   });
 
-  it('turns danger, with an icon besides the colour, once any of them is overdue', () => {
+  it('turns danger once any of them is overdue, and says so to assistive tech', () => {
     setTasks(3, 1);
     const badge = mount(TaskCountBadge).find('[data-slot="task-count-badge"]');
 
     expect(badge.attributes('data-status-role')).toBe('danger');
-    expect(badge.find('svg').exists()).toBe(true);
     expect(badge.text()).toContain('shell.badges.tasks_overdue');
   });
 
@@ -61,8 +60,8 @@ describe('where the badge sits', () => {
   });
 
   it('is on the mobile Užduotys tab', () => {
-    const links = mount(MobileBottomBar, { props: { primary: atstovavimas, activeWorkspace: pradzia } }).findAll('a');
+    const links = mount(MobileBottomBar, { props: { activeWorkspace: pradzia } }).findAll('a');
 
-    expect(links.map(link => link.find('[data-slot="task-count-badge"]').exists())).toEqual([false, false, true]);
+    expect(links.map(link => link.find('[data-slot="task-count-badge"]').exists())).toEqual([false, true, false]);
   });
 });

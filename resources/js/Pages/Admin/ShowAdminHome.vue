@@ -1,10 +1,7 @@
 <template>
-  <OverviewPage :title="$t('Mano VU SA')" :lead="impactLine">
-    <template #heading>
-      <h1 class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand" data-tour="greeting-section">
-        <span class="size-1.5 shrink-0 bg-brand-fill" aria-hidden="true" />
-        {{ greeting }}, {{ userNameAddress }}
-      </h1>
+  <OverviewPage :title="$t('Mano VU SA')">
+    <template #hero>
+      <HomeHero :greeting :news="heroNews" :summary="taskSummary" />
     </template>
 
     <AccessChangeBand v-if="accessChanges.length > 0" :changes="accessChanges" />
@@ -15,46 +12,51 @@
       @record-meeting="actionWindow.open({ flow: 'meeting.create' })"
     />
 
-    <CreateShortcuts />
-    <QuickAccess />
-
+    <!-- Tasks lead, destinations follow; on phones the rep order continues: meetings →
+         institutions (home.md). Create shortcuts sit in the aside. -->
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
-      <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
-      <UpcomingMeetingsList
-        v-if="hasAtstovavimas"
-        :meetings="upcomingMeetings"
-        :href="route('dashboard.atstovavimas')"
-      />
-    </div>
-
-    <!-- Secondary overview data arrives after the immediately useful actions and tasks. -->
-    <Deferred :data="deferredProps">
-      <template #fallback>
-        <CollectionSkeleton :rows="3" />
-      </template>
-
-      <InstitutionsNeedingAttention
-        v-if="hasAtstovavimas"
-        :institutions="institutionsNeedingAttention ?? []"
-        @record="recordMeetingFor"
-      />
-
-      <SiteContentLists
-        :events="upcomingCalendarEvents ?? []"
-        :news="latestNews ?? []"
-      />
-
-      <div class="grid gap-10 lg:grid-cols-2 lg:gap-16">
-        <CoordinatorCard :coordinator="coordinator ?? null" />
-        <RecentlyEditedList :records="recentlyEdited ?? []" />
+      <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
+        <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
+        <QuickAccess :registration-forms />
+        <UpcomingMeetingsList
+          v-if="hasAtstovavimas"
+          :meetings="upcomingMeetings"
+          :href="route('dashboard.atstovavimas')"
+        />
+        <Deferred :data="deferredProps">
+          <template #fallback>
+            <CollectionSkeleton :rows="3" />
+          </template>
+          <InstitutionsNeedingAttention
+            v-if="hasAtstovavimas"
+            :institutions="institutionsNeedingAttention ?? []"
+            @record="recordMeetingFor"
+          />
+        </Deferred>
+        <OverviewStatusList />
       </div>
-    </Deferred>
+
+      <aside class="flex min-w-0 flex-col gap-10 lg:gap-14">
+        <CreateShortcuts />
+        <Deferred :data="deferredProps">
+          <template #fallback>
+            <CollectionSkeleton :rows="3" />
+          </template>
+          <CoordinatorCard :coordinator="coordinator ?? null" />
+          <RecentlyEditedList :records="recentlyEdited ?? []" />
+          <SiteContentLists
+            :events="upcomingCalendarEvents ?? []"
+            :news="latestNews ?? []"
+          />
+        </Deferred>
+      </aside>
+    </div>
   </OverviewPage>
 </template>
 
 <script setup lang="ts">
 import { Deferred, usePage } from '@inertiajs/vue3';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted } from 'vue';
 import type { DriveStep } from 'driver.js';
 
@@ -64,6 +66,7 @@ import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
 import QuickAccess from '@/Components/Home/QuickAccess.vue';
 import FirstLoginChecklist from '@/Components/Home/FirstLoginChecklist.vue';
+import HomeHero from '@/Components/Home/HomeHero.vue';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';
 import SiteContentLists from '@/Components/Home/SiteContentLists.vue';
@@ -72,14 +75,16 @@ import type {
   HomeAccessChange,
   HomeChecklist,
   HomeCoordinator,
+  HomeHeroNews,
   HomeMeeting,
   HomeNewsPreview,
   HomeRecentRecord,
+  HomeRegistrationForm,
   HomeTask,
   InstitutionActivityInsight,
 } from '@/Components/Home/types';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import { CollectionSkeleton } from '@/Components/Patterns';
+import { CollectionSkeleton, OverviewStatusList } from '@/Components/Patterns';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
 import { useIsMobile } from '@/Composables/useIsMobile';
@@ -98,33 +103,32 @@ const props = defineProps<{
   accessChanges: HomeAccessChange[];
   /** Set when the URL asked for the ActionWindow (a reminder's answer buttons, U21). */
   actionWindowLaunch: { flow: 'meeting.create' | 'check-in'; institution: ActionWindowInstitutionRef } | null;
-  unreadNotificationsCount: number;
-  hasNotifications: boolean;
   taskStats: TaskStats;
   upcomingTasks: HomeTask[];
   upcomingMeetings: HomeMeeting[];
+  heroNews: HomeHeroNews | null;
   institutionsNeedingAttention?: InstitutionActivityInsight[];
   upcomingCalendarEvents?: App.Entities.Calendar[];
   latestNews?: HomeNewsPreview[];
   recentlyEdited?: HomeRecentRecord[];
   coordinator?: HomeCoordinator | null;
-  recordedMeetingsThisYear?: number;
+  registrationForms: HomeRegistrationForm[];
 }>();
 
-const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'coordinator', 'recordedMeetingsThisYear'];
+const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'coordinator'];
 
-// Check if user has atstovavimas permissions (meetings exist or can create/index meetings)
+const page = usePage<PageProps>();
+
 const hasAtstovavimas = computed(() => Boolean(
   props.upcomingMeetings?.length
-  || usePage().props.auth?.can?.create?.meeting
-  || usePage().props.auth?.can?.index?.meeting,
+  || page.props.auth?.can?.create?.meeting
+  || page.props.auth?.can?.index?.meeting,
 ));
 
 const actionWindow = useActionWindow();
 
 const isMobile = useIsMobile();
 
-// Build welcome tour for the admin shell, responsive to viewport
 const tourSteps = computed<DriveStep[]>(() => {
   if (isMobile.value) {
     return [
@@ -205,7 +209,6 @@ const { startTour } = useProductTour({
   steps: () => tourSteps.value,
 });
 
-// Register tour with the layout's help button
 provideTour(startTour);
 
 // A reminder's answer buttons open Pradžia with the window already on the right flow (U21).
@@ -225,28 +228,23 @@ onMounted(() => {
   window.history.replaceState(window.history.state, '', url);
 });
 
-// User name with addressivization for Lithuanian
-const userNameAddress = computed(() => {
-  const name = usePage().props.auth?.user?.name;
-  const split = name?.split(' ');
-  if (!split) return '';
-  const firstName = split[0];
-  return usePage().props.app.locale === 'lt' ? addressivize(firstName) : firstName;
-});
-
-// Time-based greeting (simplified - no "Geros nakties")
+// Lithuanian addresses the rep in the vocative: "Labas, Justinai".
 const greeting = computed(() => {
-  const hour = new Date().getHours();
-  if (hour < 12) return $t('Labas rytas');
-  if (hour < 18) return $t('Laba diena');
-  return $t('Labas vakaras');
+  const firstName = page.props.auth?.user?.name?.split(' ')[0];
+  if (!firstName) return $t('Labas');
+  return `${$t('Labas')}, ${page.props.app.locale === 'lt' ? addressivize(firstName) : firstName}`;
 });
 
-// R-f: a quiet line about what the rep's work added up to, only once there is something to say.
-const impactLine = computed(() => {
-  const count = props.recordedMeetingsThisYear ?? 0;
+const taskSummary = computed(() => {
+  if (props.taskStats.total === 0) {
+    return null;
+  }
 
-  return count > 0 ? $tChoice('home.impact', count, { count: String(count) }) : undefined;
+  const waiting = $t('home.summary.waiting', { count: String(props.taskStats.total) });
+
+  return props.taskStats.overdue > 0
+    ? `${waiting} · ${$t('home.summary.overdue', { count: String(props.taskStats.overdue) })}`
+    : waiting;
 });
 
 const recordMeetingFor = (institution: InstitutionActivityInsight) => {

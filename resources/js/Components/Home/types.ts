@@ -46,6 +46,16 @@ export interface HomeNewsPreview {
   public_url: string | null;
 }
 
+/** Pradžia's hero: the main tenant's newest published news with a photo that still exists. */
+export interface HomeHeroNews {
+  id: number;
+  title: string;
+  image: string;
+  publish_time: string;
+  public_url: string | null;
+  archive_url: string;
+}
+
 export interface HomeChecklistItem {
   key: 'photo' | 'follow' | 'notifications' | 'meeting';
   done: boolean;
@@ -67,4 +77,9 @@ export interface HomeAccessChange {
   date: string;
   effectiveOn: string;
   isExOfficio: boolean;
+}
+
+export interface HomeRegistrationForm {
+  key: 'member' | 'student_rep';
+  href: string;
 }

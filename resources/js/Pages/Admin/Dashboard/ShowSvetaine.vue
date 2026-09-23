@@ -20,6 +20,8 @@
 
     <OverviewNumbers v-if="numbers.length > 0" :numbers />
 
+    <WorkspaceSectionTiles workspace-key="svetaine" />
+
     <OverviewSection v-if="tenants.length > 0" :title="$t('svetaine.overview.traffic.title')">
       <div class="flex flex-col gap-3">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -78,6 +80,7 @@ import { summarizeTrafficTrend } from './Composables/trafficTrend';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import OverviewChart from '@/Components/Overview/OverviewChart.vue';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
+import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
 import OverviewScopeSwitch from '@/Components/Overview/OverviewScopeSwitch.vue';
 import { EmptyState, OverviewSection } from '@/Components/Patterns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';

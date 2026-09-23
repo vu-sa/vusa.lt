@@ -4,7 +4,7 @@
       <Button
         variant="ghost"
         size="icon"
-        class="relative size-10 shrink-0 border border-border text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
+        class="relative size-8 shrink-0 border border-border text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
         data-tour="notifications-indicator"
       >
         <BellIcon class="h-4 w-4" :class="{ 'animate-bell-swing': hasNewNotification }" />
@@ -208,6 +208,7 @@ import {
 
 import { usePWA } from '@/Composables/usePWA';
 import { useRealtimeNotifications } from '@/Composables/useRealtimeNotifications';
+import { useUnreadNotificationCount } from '@/Composables/useUnreadNotificationCount';
 import {
   getNotificationIcon as getNotificationIconFn,
   getNotificationTitle as getNotificationTitleFn,
@@ -262,9 +263,7 @@ const notifications = computed(() => {
   return (authUser.value?.unreadNotifications || []) as Notification[];
 });
 
-const unreadNotificationsCount = computed(() => {
-  return notifications.value.filter(notification => !notification.read_at).length;
-});
+const unreadNotificationsCount = useUnreadNotificationCount();
 
 // Wrapper functions for formatting utilities
 const getNotificationIconComponent = (notification: Notification) => {

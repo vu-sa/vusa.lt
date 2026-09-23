@@ -162,9 +162,9 @@ describe('per-persona visibility', function (): void {
             'label' => 'shell.workspaces.pradzia.title',
             'description' => 'shell.workspaces.pradzia.description',
             'sections' => [
-                ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'collectionActions' => [], 'matches' => ['dashboard']],
-                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'userTasks', 'routeParams' => [], 'entityType' => 'task', 'collectionActions' => [], 'matches' => ['userTasks']],
-                ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'collectionActions' => [], 'matches' => ['notifications.*']],
+                ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard']],
+                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'userTasks', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['userTasks']],
+                ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.pranesimai', 'collectionActions' => [], 'matches' => ['notifications.*']],
             ],
             'createActions' => [],
         ])
@@ -230,6 +230,19 @@ describe('per-persona visibility', function (): void {
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'formos'],
             'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'rysiai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'rep_metrics', 'pagalbos_uzklausos', 'sharepoint_failai'],
         ]);
+    });
+
+    test('every section but an overview carries a tile description', function (): void {
+        $sections = collect($this->catalog->for(makeAdminUser($this->tenant))['workspaces'])->flatMap(fn (array $workspace) => $workspace['sections']);
+
+        expect($sections->where('key', 'apzvalga')->pluck('description')->unique()->all())->toBe([null])
+            ->and($sections->where('key', '!=', 'apzvalga')->reject(fn (array $section) => $section['description'] === "shell.section_descriptions.{$section['key']}")->pluck('key')->all())->toBeEmpty();
+
+        foreach (['lt', 'en'] as $locale) {
+            $unresolved = $sections->pluck('description')->filter()->reject(fn (string $key) => trans($key, [], $locale) !== $key)->values()->all();
+
+            expect($unresolved)->toBeEmpty();
+        }
     });
 
     test('a workspace overview never appears on its own', function (): void {

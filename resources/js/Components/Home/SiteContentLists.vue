@@ -1,5 +1,5 @@
 <template>
-  <div v-if="events.length > 0 || news.length > 0" class="grid gap-10 lg:grid-cols-2 lg:gap-16" data-slot="site-content">
+  <div v-if="events.length > 0 || news.length > 0" class="flex flex-col gap-10 lg:gap-14" data-slot="site-content">
     <OverviewSection v-if="events.length > 0" :title="$t('Artimiausi renginiai')" :icon="CalendarDays" variant="home">
       <div class="divide-y divide-border">
         <EventCard v-for="event in events" :key="event.id" :event variant="compact" />

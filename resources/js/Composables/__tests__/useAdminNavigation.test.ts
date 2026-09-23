@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { belowSectionTrail, primaryWorkspace, resolveActive, sectionHref, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
+import { belowSectionTrail, resolveActive, sectionHref, type AdminSection, type AdminWorkspace } from '@/Composables/useAdminNavigation';
 
 const section = (key: string, routeName: string, extra: Partial<AdminSection> = {}): AdminSection => ({
   key,
@@ -62,22 +62,6 @@ describe('resolveActive', () => {
   it('resolves nothing for an unknown or missing route', () => {
     expect(resolveActive(catalog, 'profile')).toEqual({ workspace: undefined, section: undefined });
     expect(resolveActive(catalog, undefined)).toEqual({ workspace: undefined, section: undefined });
-  });
-});
-
-describe('primaryWorkspace', () => {
-  const many = (key: string, count: number) => workspace(key, Array.from({ length: count }, (_, index) => section(`s${index}`, `${key}${index}.index`)));
-
-  it('is the workspace holding the most sections, never Pradžia', () => {
-    expect(primaryWorkspace([many('pradzia', 9), many('atstovavimas', 3), many('svetaine', 7)])?.key).toBe('svetaine');
-  });
-
-  it('breaks a tie in favour of ViSAK', () => {
-    expect(primaryWorkspace([many('pradzia', 3), many('svetaine', 4), many('atstovavimas', 4)])?.key).toBe('atstovavimas');
-  });
-
-  it('is undefined when the user has only Pradžia', () => {
-    expect(primaryWorkspace([many('pradzia', 3)])).toBeUndefined();
   });
 });
 

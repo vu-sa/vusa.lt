@@ -80,8 +80,8 @@ Rules for anything added there:
 
 - `ui/button` is the one button. Variants are token-only (`brand`, `outline`, `default` ink,
   `ghost`, `secondary`, `destructive`, `link`); the `voice` is bold uppercase by default.
-  Pradžia quick actions use `voice="sentence"` for bold sentence case; `voice="plain"` is for
-  calendar cells and pagination numbers. Sizes: `lg` 48px for a page's primary,
+  `voice="sentence"` is the admin's sentence-case action button (Pradžia quick actions): at the default size it is 40px (44px on touch) — don't pass `size="lg"` or a height
+  class. `voice="plain"` is for calendar cells and pagination numbers. Sizes: `lg` 48px for a page's primary,
   `default` 44px, `sm` 36px in toolbars and row actions, `icon*` for squares.
 - `ui/control` holds the bordered uppercase control both sites build filters from:
   `controlVariants({ size, active })` for chips and Filtrai/Rikiuoti/popover triggers,
@@ -107,6 +107,7 @@ Rules for anything added there:
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
+| A ruled grid of destinations (icon, label, description) — Visi skyriai, overview sections, quick access | `NavigationTiles` (`WorkspaceSectionTiles` for a workspace's catalog sections) | `@/Components/Patterns`, `@/Components/Overview` |
 | A month/day date tile | `DateBadge` | `@/Components/Patterns` |
 | "Nothing here yet" / Filter empty | `EmptyState` | `@/Components/Patterns` |
 | Loading placeholder shaped like content | `CollectionSkeleton`, `RecordSkeleton`, `FormSkeleton`, `SectionCardSkeleton` | `@/Components/Patterns` |

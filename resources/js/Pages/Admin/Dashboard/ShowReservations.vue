@@ -31,6 +31,8 @@
       </Deferred>
     </template>
 
+    <WorkspaceSectionTiles workspace-key="rezervacijos" />
+
     <OverviewNumbers :numbers />
 
     <Deferred data="myUpcoming">
@@ -92,6 +94,7 @@ import { Info, Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
+import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { CollectionSkeleton, OverviewSection } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';

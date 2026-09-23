@@ -158,8 +158,8 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.pradzia.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard', [], null, Visibility::always()),
-                new Section('uzduotys', 'shell.sections.uzduotys', 'userTasks', [], 'task', Visibility::always()),
-                new Section('pranesimai', 'shell.sections.pranesimai', 'notifications.index', [], null, Visibility::always()),
+                new Section('uzduotys', 'shell.sections.uzduotys', 'userTasks', [], 'task', Visibility::always(), descriptionKey: 'shell.section_descriptions.uzduotys'),
+                new Section('pranesimai', 'shell.sections.pranesimai', 'notifications.index', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.pranesimai'),
             ],
         );
     }
@@ -172,15 +172,15 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.atstovavimas.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.atstovavimas', [], null, Visibility::can('viewAny', Meeting::class)),
-                new Section('institucijos', 'shell.sections.institucijos', 'institutions.index', [], 'institution', Visibility::can('viewAny', Institution::class)),
-                new Section('posedziai', 'shell.sections.posedziai', 'meetings.index', [], 'meeting', Visibility::can('viewAny', Meeting::class), matches: ['meetings.*', 'agendaItems.*']),
+                new Section('institucijos', 'shell.sections.institucijos', 'institutions.index', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos'),
+                new Section('posedziai', 'shell.sections.posedziai', 'meetings.index', [], 'meeting', Visibility::can('viewAny', Meeting::class), matches: ['meetings.*', 'agendaItems.*'], descriptionKey: 'shell.section_descriptions.posedziai'),
                 // `search.agendaItems` is a legacy redirect to this same destination — link
                 // straight to it instead (SearchController::agendaItems() docblock).
-                new Section('darbotvarkes_klausimai', 'shell.sections.darbotvarkes_klausimai', 'search.index', ['tab' => 'agenda-items'], 'agenda_item', Visibility::can('viewAny', Meeting::class)),
-                new Section('problemos', 'shell.sections.problemos', 'problems.index', [], 'problem', Visibility::can('viewAny', Problem::class)),
-                new Section('pareigybiu_laikotarpiai', 'shell.sections.pareigybiu_laikotarpiai', 'dutiables.timeline', [], 'dutiable', Visibility::can('viewAny', Duty::class)),
-                new Section('uzduociu_suvestine', 'shell.sections.uzduociu_suvestine', 'tasks.summary', [], 'task', Visibility::can('viewAny', Task::class)),
-                new Section('institucijos_grafas', 'shell.sections.institucijos_grafas', 'institutionGraph', [], 'institution', Visibility::can('viewAny', Institution::class)),
+                new Section('darbotvarkes_klausimai', 'shell.sections.darbotvarkes_klausimai', 'search.index', ['tab' => 'agenda-items'], 'agenda_item', Visibility::can('viewAny', Meeting::class), descriptionKey: 'shell.section_descriptions.darbotvarkes_klausimai'),
+                new Section('problemos', 'shell.sections.problemos', 'problems.index', [], 'problem', Visibility::can('viewAny', Problem::class), descriptionKey: 'shell.section_descriptions.problemos'),
+                new Section('pareigybiu_laikotarpiai', 'shell.sections.pareigybiu_laikotarpiai', 'dutiables.timeline', [], 'dutiable', Visibility::can('viewAny', Duty::class), descriptionKey: 'shell.section_descriptions.pareigybiu_laikotarpiai'),
+                new Section('uzduociu_suvestine', 'shell.sections.uzduociu_suvestine', 'tasks.summary', [], 'task', Visibility::can('viewAny', Task::class), descriptionKey: 'shell.section_descriptions.uzduociu_suvestine'),
+                new Section('institucijos_grafas', 'shell.sections.institucijos_grafas', 'institutionGraph', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos_grafas'),
             ],
             createActions: [
                 CreateAction::screen('new_meeting', 'shell.actions.new_meeting.title', 'shell.actions.new_meeting.description', 'meeting', 'meeting.institution', Visibility::can('create', Meeting::class)),
@@ -199,12 +199,12 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.rezervacijos.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.reservations', [], null, Visibility::always()),
-                new Section('rezervacijos', 'shell.sections.rezervacijos', 'reservations.index', [], 'reservation', Visibility::can('viewAny', Reservation::class), matches: ['reservations.*', 'reservationResources.*']),
-                new Section('istekliai', 'shell.sections.istekliai', 'resources.index', [], 'resource', Visibility::can('viewAny', Resource::class)),
+                new Section('rezervacijos', 'shell.sections.rezervacijos', 'reservations.index', [], 'reservation', Visibility::can('viewAny', Reservation::class), matches: ['reservations.*', 'reservationResources.*'], descriptionKey: 'shell.section_descriptions.rezervacijos'),
+                new Section('istekliai', 'shell.sections.istekliai', 'resources.index', [], 'resource', Visibility::can('viewAny', Resource::class), descriptionKey: 'shell.section_descriptions.istekliai'),
                 // ResourceCategory carries no permissions of its own — its policy delegates to
                 // the `resources.*` ability (ResourceCategoryPolicy docblock), so there is no
                 // `resource_category` ModelEnum case and no icon-registry entry for it.
-                new Section('kategorijos', 'shell.sections.kategorijos', 'resourceCategories.index', [], null, Visibility::can('viewAny', ResourceCategory::class)),
+                new Section('kategorijos', 'shell.sections.kategorijos', 'resourceCategories.index', [], null, Visibility::can('viewAny', ResourceCategory::class), descriptionKey: 'shell.section_descriptions.kategorijos'),
             ],
             createActions: [
                 CreateAction::route('new_reservation', 'shell.actions.new_reservation.title', 'shell.actions.new_reservation.description', 'reservation', 'reservations.create', Visibility::can('create', Reservation::class)),
@@ -220,20 +220,20 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.svetaine.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.svetaine', [], null, Visibility::can('viewAny', Page::class)),
-                new Section('puslapiai', 'shell.sections.puslapiai', 'pages.index', [], 'page', Visibility::can('viewAny', Page::class)),
-                new Section('naujienos', 'shell.sections.naujienos', 'news.index', [], 'news', Visibility::can('viewAny', News::class)),
-                new Section('kalendorius', 'shell.sections.kalendorius', 'calendar.index', [], 'calendar', Visibility::can('viewAny', Calendar::class)),
-                new Section('baneriai', 'shell.sections.baneriai', 'banners.index', [], 'banner', Visibility::can('viewAny', Banner::class)),
-                new Section('navigacija', 'shell.sections.navigacija', 'navigation.index', [], 'navigation', Visibility::can('viewAny', Navigation::class)),
-                new Section('greitosios_nuorodos', 'shell.sections.greitosios_nuorodos', 'quickLinks.index', [], 'quick_link', Visibility::can('viewAny', QuickLink::class)),
-                new Section('renginiu_tipai', 'shell.sections.renginiu_tipai', 'eventTypes.index', [], 'event_type', Visibility::can('viewAny', EventType::class)),
-                new Section('zymos', 'shell.sections.zymos', 'tags.index', [], 'tag', Visibility::can('viewAny', Tag::class), [CollectionAction::merge(Visibility::can('viewAny', Tag::class))]),
+                new Section('puslapiai', 'shell.sections.puslapiai', 'pages.index', [], 'page', Visibility::can('viewAny', Page::class), descriptionKey: 'shell.section_descriptions.puslapiai'),
+                new Section('naujienos', 'shell.sections.naujienos', 'news.index', [], 'news', Visibility::can('viewAny', News::class), descriptionKey: 'shell.section_descriptions.naujienos'),
+                new Section('kalendorius', 'shell.sections.kalendorius', 'calendar.index', [], 'calendar', Visibility::can('viewAny', Calendar::class), descriptionKey: 'shell.section_descriptions.kalendorius'),
+                new Section('baneriai', 'shell.sections.baneriai', 'banners.index', [], 'banner', Visibility::can('viewAny', Banner::class), descriptionKey: 'shell.section_descriptions.baneriai'),
+                new Section('navigacija', 'shell.sections.navigacija', 'navigation.index', [], 'navigation', Visibility::can('viewAny', Navigation::class), descriptionKey: 'shell.section_descriptions.navigacija'),
+                new Section('greitosios_nuorodos', 'shell.sections.greitosios_nuorodos', 'quickLinks.index', [], 'quick_link', Visibility::can('viewAny', QuickLink::class), descriptionKey: 'shell.section_descriptions.greitosios_nuorodos'),
+                new Section('renginiu_tipai', 'shell.sections.renginiu_tipai', 'eventTypes.index', [], 'event_type', Visibility::can('viewAny', EventType::class), descriptionKey: 'shell.section_descriptions.renginiu_tipai'),
+                new Section('zymos', 'shell.sections.zymos', 'tags.index', [], 'tag', Visibility::can('viewAny', Tag::class), [CollectionAction::merge(Visibility::can('viewAny', Tag::class))], descriptionKey: 'shell.section_descriptions.zymos'),
                 // `File` is not in `ModelEnum` (its own docblock: "is not a model, but is used
                 // for generating file permissions") and has no `viewAny` policy method — gate on
                 // the raw permission the controller itself checks (`FilesController::index()`).
-                new Section('failai', 'shell.sections.failai', 'files.index', [], null, Visibility::permission('files.read.padalinys')),
-                new Section('dokumentai', 'shell.sections.dokumentai', 'documents.index', [], 'document', Visibility::can('viewAny', Document::class)),
-                new Section('studiju_rinkiniai', 'shell.sections.studiju_rinkiniai', 'studySets.index', [], 'study_set', Visibility::can('viewAny', StudySet::class)),
+                new Section('failai', 'shell.sections.failai', 'files.index', [], null, Visibility::permission('files.read.padalinys'), descriptionKey: 'shell.section_descriptions.failai'),
+                new Section('dokumentai', 'shell.sections.dokumentai', 'documents.index', [], 'document', Visibility::can('viewAny', Document::class), descriptionKey: 'shell.section_descriptions.dokumentai'),
+                new Section('studiju_rinkiniai', 'shell.sections.studiju_rinkiniai', 'studySets.index', [], 'study_set', Visibility::can('viewAny', StudySet::class), descriptionKey: 'shell.section_descriptions.studiju_rinkiniai'),
             ],
             createActions: [
                 CreateAction::route('new_news', 'shell.actions.new_news.title', 'shell.actions.new_news.description', 'news', 'news.create', Visibility::can('create', News::class)),
@@ -248,11 +248,11 @@ class AdminNavigationCatalog
             labelKey: 'shell.workspaces.organizacija.title',
             descriptionKey: 'shell.workspaces.organizacija.description',
             sections: [
-                new Section('nariai', 'shell.sections.nariai', 'users.index', [], 'user', Visibility::can('viewAny', User::class), [CollectionAction::merge(Visibility::can('viewAny', User::class))]),
-                new Section('pareigybes', 'shell.sections.pareigybes', 'duties.index', [], 'duty', Visibility::can('viewAny', Duty::class), [CollectionAction::merge(Visibility::can('viewAny', Duty::class))], ['duties.*', 'dutiables.edit']),
-                new Section('pareigybiu_atnaujinimas', 'shell.sections.pareigybiu_atnaujinimas', 'duties.updateUsersWizard', [], 'duty', Visibility::can('create', Duty::class)),
-                new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class)),
-                new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))]),
+                new Section('nariai', 'shell.sections.nariai', 'users.index', [], 'user', Visibility::can('viewAny', User::class), [CollectionAction::merge(Visibility::can('viewAny', User::class))], descriptionKey: 'shell.section_descriptions.nariai'),
+                new Section('pareigybes', 'shell.sections.pareigybes', 'duties.index', [], 'duty', Visibility::can('viewAny', Duty::class), [CollectionAction::merge(Visibility::can('viewAny', Duty::class))], ['duties.*', 'dutiables.edit'], descriptionKey: 'shell.section_descriptions.pareigybes'),
+                new Section('pareigybiu_atnaujinimas', 'shell.sections.pareigybiu_atnaujinimas', 'duties.updateUsersWizard', [], 'duty', Visibility::can('create', Duty::class), descriptionKey: 'shell.section_descriptions.pareigybiu_atnaujinimas'),
+                new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class), descriptionKey: 'shell.section_descriptions.padaliniai'),
+                new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))], descriptionKey: 'shell.section_descriptions.studiju_programos'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.organizacija', [], null, Visibility::always()),
             createActions: [
@@ -277,11 +277,11 @@ class AdminNavigationCatalog
         $sections = [];
 
         if ($id = $this->viewableFormId($user, $settings->member_registration_form_id)) {
-            $sections[] = new Section('registracija_nariai', 'shell.sections.registracija_nariai', 'forms.show', ['form' => $id], 'form', Visibility::always());
+            $sections[] = new Section('registracija_nariai', 'shell.sections.registracija_nariai', 'forms.show', ['form' => $id], 'form', Visibility::always(), descriptionKey: 'shell.section_descriptions.registracija_nariai');
         }
 
         if ($id = $this->viewableFormId($user, $settings->student_rep_registration_form_id)) {
-            $sections[] = new Section('registracija_atstovai', 'shell.sections.registracija_atstovai', 'forms.show', ['form' => $id], 'form', Visibility::always());
+            $sections[] = new Section('registracija_atstovai', 'shell.sections.registracija_atstovai', 'forms.show', ['form' => $id], 'form', Visibility::always(), descriptionKey: 'shell.section_descriptions.registracija_atstovai');
         }
 
         return $sections;
@@ -315,7 +315,7 @@ class AdminNavigationCatalog
             $sections[] = $section->toArray();
         }
 
-        $formos = new Section('formos', 'shell.sections.formos', 'forms.index', [], 'form', Visibility::can('viewAny', Form::class));
+        $formos = new Section('formos', 'shell.sections.formos', 'forms.index', [], 'form', Visibility::can('viewAny', Form::class), descriptionKey: 'shell.section_descriptions.formos');
 
         if ($formos->visibility->allows($user)) {
             $sections[] = $formos->toArray();
@@ -341,19 +341,19 @@ class AdminNavigationCatalog
             labelKey: 'shell.workspaces.sistema.title',
             descriptionKey: 'shell.workspaces.sistema.description',
             sections: [
-                new Section('roles', 'shell.sections.roles', 'roles.index', [], 'role', Visibility::can('viewAny', Role::class)),
-                new Section('leidimai', 'shell.sections.leidimai', 'permissions.index', [], 'permission', Visibility::can('viewAny', Permission::class)),
-                new Section('tipai', 'shell.sections.tipai', 'types.index', [], 'type', Visibility::can('viewAny', Type::class)),
-                new Section('rysiai', 'shell.sections.rysiai', 'relationships.index', [], 'relationship', Visibility::can('viewAny', Relationship::class)),
-                new Section('nustatymai', 'shell.sections.nustatymai', 'settings.index', [], null, Visibility::gate('manage-settings')),
+                new Section('roles', 'shell.sections.roles', 'roles.index', [], 'role', Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.roles'),
+                new Section('leidimai', 'shell.sections.leidimai', 'permissions.index', [], 'permission', Visibility::can('viewAny', Permission::class), descriptionKey: 'shell.section_descriptions.leidimai'),
+                new Section('tipai', 'shell.sections.tipai', 'types.index', [], 'type', Visibility::can('viewAny', Type::class), descriptionKey: 'shell.section_descriptions.tipai'),
+                new Section('rysiai', 'shell.sections.rysiai', 'relationships.index', [], 'relationship', Visibility::can('viewAny', Relationship::class), descriptionKey: 'shell.section_descriptions.rysiai'),
+                new Section('nustatymai', 'shell.sections.nustatymai', 'settings.index', [], null, Visibility::gate('manage-settings'), descriptionKey: 'shell.section_descriptions.nustatymai'),
                 // Both gate on `viewAny(Role)` in the controller (SystemStatusController,
                 // MailQueueController) — not a distinct "super-admin" gate as the phase-0
                 // inventory's shorthand suggested.
-                new Section('sistemos_busena', 'shell.sections.sistemos_busena', 'systemStatus', [], null, Visibility::can('viewAny', Role::class)),
-                new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class)),
-                new Section('rep_metrics', 'shell.sections.rep_metrics', 'repMetrics', [], null, Visibility::can('viewAny', Role::class)),
-                new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class)),
-                new Section('sharepoint_failai', 'shell.sections.sharepoint_failai', 'sharepointFiles.index', [], 'sharepoint_file', Visibility::can('viewAny', SharepointFile::class), matches: ['sharepointFiles.*', 'sharepoint.*']),
+                new Section('sistemos_busena', 'shell.sections.sistemos_busena', 'systemStatus', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.sistemos_busena'),
+                new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.laisku_eile'),
+                new Section('rep_metrics', 'shell.sections.rep_metrics', 'repMetrics', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.rep_metrics'),
+                new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class), descriptionKey: 'shell.section_descriptions.pagalbos_uzklausos'),
+                new Section('sharepoint_failai', 'shell.sections.sharepoint_failai', 'sharepointFiles.index', [], 'sharepoint_file', Visibility::can('viewAny', SharepointFile::class), matches: ['sharepointFiles.*', 'sharepoint.*'], descriptionKey: 'shell.section_descriptions.sharepoint_failai'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.sistema', [], null, Visibility::always()),
         );

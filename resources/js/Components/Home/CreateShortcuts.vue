@@ -1,30 +1,36 @@
 <template>
-  <section v-if="shortcuts.length > 0" class="flex flex-col gap-3" data-slot="create-shortcuts">
-    <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
-      {{ $t('Greiti veiksmai') }}
-    </h2>
-    <div class="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+  <!-- Phones reach the same actions through the bottom bar's +, so tasks come first there. -->
+  <OverviewSection
+    v-if="shortcuts.length > 0"
+    :title="$t('home.create_title')"
+    :icon="Plus"
+    variant="home"
+    class="max-md:hidden"
+    data-slot="create-shortcuts"
+  >
+    <div class="flex flex-wrap gap-3">
       <Button
         v-for="(shortcut, index) in shortcuts"
         :key="shortcut.id"
         :variant="index === 0 ? 'brand' : 'outline'"
         voice="sentence"
-        size="lg"
-        class="h-auto min-h-12 whitespace-normal px-4 text-center sm:text-left"
+        class="whitespace-normal text-left"
         @click="shortcut.action"
       >
         <component :is="shortcut.icon" class="size-4" aria-hidden="true" />
         {{ shortcut.label }}
       </Button>
     </div>
-  </section>
+  </OverviewSection>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
+import { Plus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import { useCommandActions } from '@/Components/CommandPalette/useCommandActions';
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { Button } from '@/Components/ui/button';
 
 const props = withDefaults(defineProps<{

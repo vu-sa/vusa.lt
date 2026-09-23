@@ -21,39 +21,29 @@
       </div>
 
       <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <!-- The phone's Visi skyriai: every workspace and section the user may open, nothing folded away. -->
         <ul>
-          <li v-for="workspace in workspaces" :key="workspace.key" class="border-b border-border">
-            <button
-              type="button"
-              class="u-touch flex w-full items-center gap-3 px-4 py-3 text-left"
-              :aria-expanded="openKey === workspace.key"
-              @click="openKey = openKey === workspace.key ? undefined : workspace.key"
-            >
-              <component :is="workspaceIcon(workspace.key)" class="size-5 shrink-0 text-muted-foreground" />
-              <span class="min-w-0 flex-1">
-                <span class="block text-sm font-bold uppercase tracking-wide">{{ $t(workspace.label) }}</span>
-                <span class="block text-sm text-muted-foreground">{{ $t(workspace.description) }}</span>
-              </span>
-              <TaskCountBadge v-if="workspace.key === 'pradzia' && openKey !== workspace.key" />
-              <Plus class="size-4 shrink-0 transition-transform" :class="{ 'rotate-45': openKey === workspace.key }" />
-            </button>
-
-            <ul v-if="openKey === workspace.key" class="pb-2">
+          <li v-for="workspace in workspaces" :key="workspace.key" class="border-b border-border py-2" data-slot="mobile-menu-workspace">
+            <p class="flex items-center gap-3 px-4 py-1.5">
+              <component :is="workspaceIcon(workspace.key)" class="size-4 shrink-0 text-brand" aria-hidden="true" />
+              <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">{{ $t(workspace.label) }}</span>
+            </p>
+            <ul>
               <li v-for="section in workspace.sections" :key="section.key">
                 <Link
                   :href="sectionHref(section)"
                   prefetch
                   :cache-for="SHELL_PREFETCH_CACHE_FOR"
-                  v-bind="ariaCurrent(section.key === activeSection?.key && workspace.key === activeWorkspace?.key)"
+                  v-bind="ariaCurrent(isCurrent(workspace, section))"
                   :class="[
-                    'u-touch flex items-center gap-2 border-l-2 py-3 pl-12 pr-4 text-sm',
-                    section.key === activeSection?.key && workspace.key === activeWorkspace?.key
+                    'u-touch flex items-center gap-2 border-l-2 py-3 pl-11 pr-4 text-sm',
+                    isCurrent(workspace, section)
                       ? 'border-brand-fill font-semibold text-foreground'
-                      : 'border-transparent text-muted-foreground',
+                      : 'border-transparent text-foreground',
                   ]"
                   @click="close"
                 >
-                  {{ $t(section.label) }}
+                  <span class="flex-1">{{ $t(section.label) }}</span>
                   <TaskCountBadge v-if="workspace.key === 'pradzia' && section.key === 'uzduotys'" />
                 </Link>
               </li>
@@ -104,18 +94,6 @@
               >
                 <Bell class="size-5 text-muted-foreground" />
                 {{ $t('shell.account.notifications') }}
-              </Link>
-            </li>
-            <li v-if="showAllSections">
-              <Link
-                :href="route('administration')"
-                prefetch
-                :cache-for="SHELL_PREFETCH_CACHE_FOR"
-                class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground"
-                @click="close"
-              >
-                <LayoutGrid class="size-5 text-muted-foreground" />
-                {{ $t('shell.chrome.all_sections') }}
               </Link>
             </li>
           </ul>
@@ -220,11 +198,9 @@ import {
   BookOpen,
   Bug,
   Languages,
-  LayoutGrid,
   LogOut,
   MessagesSquare,
   Moon,
-  Plus,
   Radio,
   ShieldCheck,
   Sparkles,
@@ -253,7 +229,6 @@ const props = defineProps<{
   workspaces: AdminWorkspace[];
   activeWorkspace?: AdminWorkspace;
   activeSection?: AdminSection;
-  showAllSections?: boolean;
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
@@ -262,7 +237,6 @@ const page = usePage<PageProps>();
 const user = computed(() => page.props.auth?.user);
 
 const closeRef = ref<{ $el: HTMLElement } | null>(null);
-const openKey = ref<string | undefined>(props.activeWorkspace?.key);
 const scrollLock = useScrollLock(typeof document === 'undefined' ? null : document.body);
 
 const { logout, logoutMicrosoft } = useLogout();
@@ -291,6 +265,9 @@ function changeLocale(): void {
   router.reload({ data: { lang: locale } });
 }
 
+const isCurrent = (workspace: AdminWorkspace, section: AdminSection) =>
+  section.key === props.activeSection?.key && workspace.key === props.activeWorkspace?.key;
+
 const close = () => {
   open.value = false;
 };
@@ -299,7 +276,6 @@ watch(open, (isOpen) => {
   scrollLock.value = isOpen;
 
   if (isOpen) {
-    openKey.value = props.activeWorkspace?.key;
     nextTick(() => closeRef.value?.$el?.focus());
   }
 });

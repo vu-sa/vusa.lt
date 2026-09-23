@@ -6,6 +6,7 @@ export const section = (key: string, routeName: string): AdminSection => ({
   routeName,
   routeParams: {},
   entityType: null,
+  description: key === 'apzvalga' ? null : `shell.section_descriptions.${key}`,
   collectionActions: [],
   matches: [routeName],
 });

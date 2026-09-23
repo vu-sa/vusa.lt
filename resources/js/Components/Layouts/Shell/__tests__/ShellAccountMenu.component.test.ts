@@ -27,6 +27,9 @@ describe('ShellAccountMenu', () => {
 
     expect(trigger.text()).toContain('TU'); // Test User initials
     expect(trigger.text()).toContain('Test User');
+    // The name keeps its own casing: the trigger does not take the uppercase button voice.
+    expect(trigger.classes()).toContain('normal-case');
+    expect(trigger.classes()).not.toContain('uppercase');
   });
 
   it('renders user name and email in the identity header', () => {

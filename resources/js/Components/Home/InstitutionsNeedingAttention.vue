@@ -6,13 +6,13 @@
     :empty="institutions.length === 0"
     :empty-text="$t('visos institucijos posėdžius fiksuoja laiku')"
   >
-    <ul class="divide-y divide-border border-y border-border" data-slot="institutions-needing-attention">
-      <li v-for="institution in institutions" :key="institution.id" class="flex items-center gap-4 px-1 py-3">
-        <span class="min-w-0 flex-1">
+    <ul class="divide-y divide-border/60" data-slot="institutions-needing-attention">
+      <li v-for="institution in institutions" :key="institution.id" class="flex flex-wrap items-center gap-x-4 gap-y-2 py-4">
+        <span class="min-w-0 flex-1 basis-48">
           <Link
             :href="route('institutions.show', institution.id)"
             prefetch
-            class="block truncate font-bold hover:text-brand"
+            class="block text-pretty font-bold hover:text-brand"
           >
             {{ institution.name }}
           </Link>
@@ -20,10 +20,12 @@
             {{ $t('Paskutinė veikla prieš :days d.', { days: String(institution.effective_days_since_activity) }) }}
           </span>
         </span>
-        <StatusBadge :status="institutionActivityStatuses[institution.status as InstitutionActivityStatus]" />
-        <Button variant="outline" size="sm" class="pointer-coarse:h-11" @click="emit('record', institution)">
-          {{ $t('Fiksuoti posėdį') }}
-        </Button>
+        <span class="flex items-center gap-3">
+          <StatusBadge :status="institutionActivityStatuses[institution.status as InstitutionActivityStatus]" />
+          <Button variant="outline" size="sm" class="pointer-coarse:h-11" @click="emit('record', institution)">
+            {{ $t('Fiksuoti posėdį') }}
+          </Button>
+        </span>
       </li>
     </ul>
   </OverviewSection>

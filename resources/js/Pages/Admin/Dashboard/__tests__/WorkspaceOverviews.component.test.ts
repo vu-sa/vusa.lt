@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 
 import ShowOrganizacija from '@/Pages/Admin/Dashboard/ShowOrganizacija.vue';
 import ShowSistema from '@/Pages/Admin/Dashboard/ShowSistema.vue';
@@ -40,11 +41,12 @@ describe('ShowOrganizacija overview', () => {
     expect(wrapper.text()).toContain('Jonas');
   });
 
-  it('collapses the attention band to one line when no term ends', () => {
+  it('moves the attention band to the status list when no term ends', async () => {
     const wrapper = mountPage(ShowOrganizacija, { counts, endingTerms: [], recentlyEdited: [] });
+    await nextTick();
 
     expect(wrapper.find('[data-slot="ending-terms"]').exists()).toBe(false);
-    expect(wrapper.text()).toContain('organizacija.overview.ending_empty');
+    expect(wrapper.get('[data-slot="overview-status-list"]').text()).toContain('organizacija.overview.ending_empty');
   });
 
   it('draws no number, and no attention band, for what the user may not open', () => {

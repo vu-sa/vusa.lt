@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import ShowMyRoles from '@/Pages/Admin/ShowMyRoles.vue';
@@ -59,13 +60,14 @@ describe('ShowMyRoles', () => {
     expect(plain.find('[data-testid="current-duties"] a').exists()).toBe(false);
   });
 
-  it('collapses empty sections to one line instead of drawing empty lists', () => {
+  it('gathers empty sections in the status list instead of drawing empty lists', async () => {
     const wrapper = mountPage({});
+    await nextTick();
 
     expect(wrapper.find('[data-testid="current-duties"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="upcoming-duties"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="ended-duties"]').exists()).toBe(false);
-    expect(wrapper.text()).toContain('access.current.empty');
+    expect(wrapper.get('[data-slot="overview-status-list"]').text()).toContain('access.current.empty');
   });
 
   it('shows what the user can open, straight from the navigation catalog', () => {

@@ -141,17 +141,3 @@ describe('launching the action window from the URL (U21)', function (): void {
             ->assertInertia(fn (Assert $page) => $page->where('actionWindowLaunch', null));
     });
 });
-
-describe('visible impact (R-f)', function (): void {
-    test('it counts the meetings the user recorded this year, and nobody else\'s', function (): void {
-        $user = userWithFirstTermStarting($this->tenant, now()->subYear()->toDateString());
-        recordedMeetingBy($user);
-        recordedMeetingBy($user);
-        recordedMeetingBy(User::factory()->create());
-
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
-            ->missing('recordedMeetingsThisYear')
-            ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('recordedMeetingsThisYear', 2))
-        );
-    });
-});

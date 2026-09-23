@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 
 import ShowReservations from '@/Pages/Admin/Dashboard/ShowReservations.vue';
 import { commonStubs } from '@/tests/stubs';
@@ -65,11 +66,12 @@ describe('ShowReservations overview', () => {
     expect(Object.keys(hrefs(mountPage({ managesResources: false })))).toEqual(['mine', 'my_overdue']);
   });
 
-  it('collapses the attention band to one line when nothing waits', () => {
+  it('moves the attention band to the status list when nothing waits', async () => {
     const wrapper = mountPage({});
+    await nextTick();
 
     expect(wrapper.find('[data-slot="reservations-needing-decision"]').exists()).toBe(false);
-    expect(wrapper.text()).toContain('reservations.overview.attention_empty');
+    expect(wrapper.get('[data-slot="overview-status-list"]').text()).toContain('reservations.overview.attention_empty');
   });
 
   it('lists what waits for a decision, each row with its action', () => {

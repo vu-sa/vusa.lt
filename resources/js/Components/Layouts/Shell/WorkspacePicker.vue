@@ -12,7 +12,7 @@
       >
         <Button
           variant="ghost"
-          class="h-9 gap-2 border border-border px-3 text-xs font-bold uppercase tracking-wide hover:border-brand hover:bg-transparent hover:text-brand"
+          class="h-8 gap-2 border border-border px-3 text-xs font-bold uppercase tracking-wide pointer-coarse:h-11 hover:border-brand hover:bg-transparent hover:text-brand"
           :aria-label="triggerLabel"
         >
           <component :is="workspaceIcon(activeWorkspace?.key ?? 'pradzia')" class="size-4 text-brand" />

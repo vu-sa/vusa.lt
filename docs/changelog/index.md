@@ -9,8 +9,9 @@ lastUpdated: true
 
 - ✨ **Aiškesnė Pradžia** — greitieji veiksmai rodomi su vienu ryškiu mygtuku, po jais atsirado pagal prieigą parinktos nuorodos į administravimą ir rezervacijas, o užduočių terminai skaitomi santykinai be papildomų būsenos ženklelių
 - ✨ **Patogesnė paieška planšetėje** — siauresnėje viršutinėje juostoje paieškos lauką pakeičia mygtukas, atveriantis tą pačią komandų paletę
-- ✨ **Ramesnė Mano VU SA pradžia** — siauresniame puslapyje užduotys rodomos paprastomis eilutėmis po greitųjų veiksmų, o naujienos ir renginiai turi vaizdines peržiūras su nuorodomis į viešus puslapius
-- ✨ **Aiškesnė viršutinė juosta** — didesnis logotipas ir lengvai permatomas fonas dera su vieša svetaine, „Mano“ įvardija tavo darbo erdvę, o kompaktiškesnis kūrimo mygtukas, skyriai su piktogramomis bei atnaujinti meniu palengvina orientaciją
+- ✨ **Ramesnė Mano VU SA pradžia** — užduotys rodomos pirmiausia, o po pasisveikinimu parašyta, kiek jų laukia ir kiek vėluoja; vėluojantis terminas rašomas „vėluoja 2 d.“, po jomis – skiltis „Eiti į“, greitieji veiksmai perkelti į šoninį stulpelį, o kai užduočių nėra, jos rodomos sąraše „Viskas tvarkoje“, o naujienos ir renginiai turi vaizdines peržiūras su nuorodomis į viešus puslapius
+- ✨ **Nauja apatinė juosta telefone** — Mano · Užduotys · + · Pranešimai · Meniu: pranešimus atversi apačioje (varpelis viršuje telefone nebenaudojamas), o „Meniu“ iš karto rodo visas tau prieinamas darbo erdves ir skyrius; Pradžios skirtukų eilutė telefone nebekartoja apatinės juostos
+- ✨ **Aiškesnė viršutinė juosta** — didesnis logotipas ir lengvai permatomi viršutinės juostos bei skyrių meniu fonai, pro kuriuos slenka puslapio turinys, dera su vieša svetaine, „Mano“ įvardija tavo darbo erdvę, o kompaktiškesnis kūrimo mygtukas, skyriai su piktogramomis bei atnaujinti meniu palengvina orientaciją
 - ✨ **Vienas sąrašų dizainas** — puslapiai, naujienos, renginiai, institucijos, posėdžiai, nariai, rolės, leidimai, tipai, ryšiai, padaliniai, studijų programos ir komplektai atrodo ir veikia vienodai: didelė antraštė, paieška su filtrais, rikiavimas, eilučių, lentelės ir peržiūros rodiniai bei „Rodyti daugiau“
 - ✨ **Ištrinti įrašai tame pačiame sąraše** — mygtukas „Ištrinti (N)“ filtrų juostoje parodo ištrintus įrašus tame pačiame lange, iš kurio juos gali atkurti arba ištrinti visam laikui
 - ⭐ **Pažymėk kelis įrašus** — sujungiant narius, pareigybes, žymas ar studijų programas ir tvirtinant rezervacijas pažymėk visus rodomus vienu paspaudimu; lentelėje stulpelius gali rikiuoti paspaudęs antraštę ir paslėpti per „Stulpeliai“
@@ -18,6 +19,10 @@ lastUpdated: true
 - ✨ **Naujas puslapio redaktorius** — kuriant ar redaguojant puslapį viršutinė juosta virsta redaktoriaus juosta su „Grįžti“, išsaugojimo būsena ir „Išsaugoti“; laukai sudėti į turinio stulpelį ir šoninius skydelius (Paskelbimas, Struktūra, Kalba, Rodymo nustatymai), o telefone „Išsaugoti“ visada po nykščiu apačioje
 - ✨ **Paaiškinimai po laukais** — formų laukų paaiškinimai rodomi po lauku, o ne tik užvedus pelę, todėl juos matai ir telefone
 - ✨ **Naujas prisijungimo puslapis** — prisijungimo langas atnaujintas pagal naująją dizaino sistemą su skaidytu vaizdu kompiuterio ekrane, nuotraukų karusele, patogesniais mygtukais ir prisitaikančiu dizainu telefonams bei planšetėms
+- ✨ **Aukštesnė viršutinė juosta ir skyrių meniu, kuris telpa ekrane** — juosta erdvesnė, jos mygtukai kompaktiškesni, vardas rodomas įprastomis raidėmis, o netelpantys skyrių skirtukai surenkami į meniu „Daugiau“
+- ✨ **Tušti apžvalgų skyriai viename sąraše** — skyriai, kuriuose nieko nelaukia (pvz., „Tavo institucijos“, „Mano rezervacijos“), rodomi kompaktiškame sąraše „Viskas tvarkoje“ puslapio apačioje
+- ⭐ **Registracijų formos skiltyje „Eiti į“** — jei gali peržiūrėti narių ar studentų atstovų registracijas, jas atversi tiesiai iš Pradžios
+- ✨ **Skyriai kortelėmis** — „Visi skyriai“, kiekvienos darbo erdvės apžvalga ir Pradžios skiltis „Eiti į“ rodo tau prieinamus skyrius kortelėmis su trumpu aprašymu, todėl greičiau rasi reikiamą sąrašą
 
 ## v2.17 — Sistemos valdymas (2026-09-22) {#v2-17}
 

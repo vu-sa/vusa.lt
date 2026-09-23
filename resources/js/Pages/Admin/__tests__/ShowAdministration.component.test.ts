@@ -39,7 +39,7 @@ describe('ShowAdministration', () => {
     expect(wrapper.text()).toContain('shell.chrome.no_sections');
   });
 
-  it('renders the Organizacija tools (duty_update, duty_periods) as hairline rows', () => {
+  it('renders the Organizacija tools (duty_update, duty_periods) as tiles', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       adminNavigation: {
         workspaces: [
@@ -59,7 +59,7 @@ describe('ShowAdministration', () => {
     const periodsLink = wrapper.find('a[href="/mocked-route/dutiables.timeline"]');
     expect(wizardLink.exists()).toBe(true);
     expect(periodsLink.exists()).toBe(true);
-    expect(wizardLink.classes()).toContain('border-b');
+    expect(wrapper.find('[data-workspace="tools"] [data-tile="duty_update"]').exists()).toBe(true);
     expect(wrapper.html()).not.toContain('gradient');
     expect(wrapper.text()).toContain('shell.actions.duty_update.title');
   });
@@ -113,6 +113,30 @@ describe('ShowAdministration', () => {
 
     expect(wrapper.find('a[href="/mocked-route/news.index"]').exists()).toBe(true);
     expect(wrapper.find('a[href="/mocked-route/pages.index"]').exists()).toBe(false);
+  });
+
+  it('matches the search query against section descriptions too', async () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      adminNavigation: {
+        workspaces: [
+          workspace({
+            key: 'svetaine',
+            label: 'shell.workspaces.svetaine.title',
+            sections: [
+              { key: 'naujienos', label: 'shell.sections.naujienos', description: 'shell.section_descriptions.naujienos', routeName: 'news.index', routeParams: {}, entityType: 'news' },
+              { key: 'puslapiai', label: 'shell.sections.puslapiai', description: 'shell.section_descriptions.puslapiai', routeName: 'pages.index', routeParams: {}, entityType: 'page' },
+            ],
+          }),
+        ],
+      },
+    }));
+
+    wrapper = createWrapper();
+
+    await wrapper.find('input').setValue('section_descriptions.puslapiai');
+
+    expect(wrapper.find('a[href="/mocked-route/pages.index"]').text()).toContain('shell.section_descriptions.puslapiai');
+    expect(wrapper.find('a[href="/mocked-route/news.index"]').exists()).toBe(false);
   });
 
   it('shows the empty state when the query matches nothing', async () => {

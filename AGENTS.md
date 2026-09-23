@@ -33,6 +33,15 @@ a decision ID (D1–D13, O1–O26, U1–U26, R-a…R-h) or a redesign PR number 
 that folder's `decisions.md`, `reps.md` and `plan.md` — read them with
 `git show $(git log -1 --format=%H -- .ai/redesign/admin/decisions.md)^:.ai/redesign/admin/decisions.md`.
 
+## Public UI
+
+Public pages use the shared paper, ink, and brand palette under `data-surface="public"`.
+`--accent` remains the shadcn hover surface; `--brand` and `--brand-fill` carry VU SA red or amber.
+Build from `ui/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
+Use `Public/Base/` for domain-free primitives and `ui/button` for actions. Keep corners square and
+use tokens instead of raw colour utilities. Check both themes and phone layouts. Detailed rules
+live in `.ai/rules/public.md`, `.ai/rules/css.md`, and `resources/js/Components/CLAUDE.md`.
+
 ## Documentation Hub
 
 Specialized guidance lives in sub-directory `CLAUDE.md` files:

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\CountUserRecordedMeetings;
 use App\Actions\GetOnboardingChecklist;
 use App\Actions\GetRecentAccessChanges;
 use App\Actions\GetRecentlyEditedRecords;
@@ -11,14 +10,18 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Requests\ShowAdminHomeRequest;
 use App\Models\Calendar;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
+use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -39,9 +42,6 @@ class DashboardController extends AdminController
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
         $userTenantId = $user->current_duties->first()?->institution?->tenant_id;
-
-        // Get notification count
-        $unreadNotificationsCount = $user->unreadNotifications()->count();
 
         // Get task statistics for the dashboard
         $taskStats = [
@@ -133,26 +133,20 @@ class DashboardController extends AdminController
             $secondary,
         );
 
-        $recordedMeetingsThisYear = Inertia::defer(
-            fn () => CountUserRecordedMeetings::execute($user, now()->year),
-            $secondary,
-        );
-
         return $this->inertiaResponse('Admin/ShowAdminHome', [
             'onboardingChecklist' => GetOnboardingChecklist::execute($user),
             'accessChanges' => GetRecentAccessChanges::execute($user, self::ACCESS_BAND_DAYS),
             'actionWindowLaunch' => $request->actionWindowLaunch($user),
-            'unreadNotificationsCount' => $unreadNotificationsCount,
-            'hasNotifications' => $unreadNotificationsCount > 0,
             'taskStats' => $taskStats,
             'upcomingTasks' => $upcomingTasks,
             'upcomingMeetings' => $upcomingMeetings,
+            'heroNews' => $this->heroNews(),
             'institutionsNeedingAttention' => $institutionsNeedingAttention,
             'upcomingCalendarEvents' => $upcomingCalendarEvents,
             'latestNews' => $latestNews,
             'recentlyEdited' => $recentlyEdited,
             'coordinator' => $coordinator,
-            'recordedMeetingsThisYear' => $recordedMeetingsThisYear,
+            'registrationForms' => $this->registrationForms($user),
         ]);
     }
 
@@ -220,6 +214,34 @@ class DashboardController extends AdminController
     }
 
     /**
+     * The shared registration forms (members, student reps) this user may open, for Sparčioji prieiga.
+     *
+     * @return array<int, array{key: string, href: string}>
+     */
+    private function registrationForms(User $user): array
+    {
+        $formSettings = app(FormSettings::class);
+        $configured = array_filter([
+            'member' => $formSettings->member_registration_form_id,
+            'student_rep' => $formSettings->student_rep_registration_form_id,
+        ]);
+
+        if ($configured === []) {
+            return [];
+        }
+
+        $forms = Form::query()->whereIn('id', $configured)->get()->keyBy('id');
+
+        return collect($configured)
+            ->map(fn (string $formId, string $key): ?array => ($form = $forms->get($formId)) !== null && $user->can('view', $form)
+                ? ['key' => $key, 'href' => route('forms.show', $form)]
+                : null)
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /**
      * Upcoming published calendar events, as full models for the EventCard component.
      *
      * @return array<int, array<string, mixed>>
@@ -243,6 +265,47 @@ class DashboardController extends AdminController
     /**
      * @return array<int, array<string, mixed>>
      */
+    /**
+     * The main tenant's newest published news with a photo for Pradžia's hero; eager, since it is the first paint.
+     *
+     * @return array{id: int, title: string, image: string, publish_time: string, public_url: string|null, archive_url: string}|null
+     */
+    private function heroNews(): ?array
+    {
+        $mainTenant = Tenant::main();
+
+        if ($mainTenant === null) {
+            return null;
+        }
+
+        $news = News::query()
+            ->whereBelongsTo($mainTenant)
+            ->where('draft', false)
+            ->whereNotNull('publish_time')
+            ->where('publish_time', '<=', now())
+            ->where('lang', app()->getLocale())
+            ->whereNotNull('image')
+            ->with(['tenant:id,shortname,alias'])
+            ->orderByDesc('publish_time')
+            ->take(5)
+            ->get()
+            // The stored path can outlive its file; skip to the next one rather than paint a broken hero.
+            ->first(fn (News $news) => $news->getImageUrl() !== null);
+
+        if ($news === null) {
+            return null;
+        }
+
+        return [
+            'id' => $news->id,
+            'title' => $news->title,
+            'image' => $news->getImageUrl(),
+            'publish_time' => $news->publish_time->toISOString(),
+            'public_url' => $news->publicUrl(),
+            'archive_url' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => 'www'], $news->lang),
+        ];
+    }
+
     private function latestNews(): array
     {
         return News::query()

@@ -2,6 +2,7 @@
 
 use App\Models\Calendar;
 use App\Models\Duty;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
@@ -15,6 +16,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Settings\AtstovavimasSettings;
+use App\Settings\FormSettings;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -41,8 +43,6 @@ describe('dashboard access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
                 ->has('taskStats')
-                ->has('unreadNotificationsCount')
-                ->has('hasNotifications')
                 ->has('upcomingTasks')
                 ->has('upcomingMeetings')
                 ->missing('institutionsNeedingAttention')
@@ -68,8 +68,6 @@ describe('dashboard access', function (): void {
                 ->has('taskStats.total')
                 ->has('taskStats.overdue')
                 ->has('taskStats.dueSoon')
-                ->has('unreadNotificationsCount')
-                ->has('hasNotifications')
                 ->has('upcomingTasks')
                 ->has('upcomingMeetings')
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
@@ -97,19 +95,6 @@ describe('dashboard data structure', function (): void {
                 ->where('taskStats', fn ($taskStats) => isset($taskStats['total'])
                     && isset($taskStats['overdue'])
                     && isset($taskStats['dueSoon']))
-            );
-    });
-
-    test('notification data is correctly structured', function (): void {
-        asUser($this->admin)
-            ->get(route('dashboard'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowAdminHome')
-                ->has('unreadNotificationsCount')
-                ->has('hasNotifications')
-                ->where('unreadNotificationsCount', fn ($count) => is_numeric($count) && $count >= 0)
-                ->where('hasNotifications', fn ($hasNotifications) => is_bool($hasNotifications))
             );
     });
 
@@ -414,6 +399,64 @@ describe('dashboard calendar and news', function (): void {
     });
 });
 
+describe('hero news', function (): void {
+    beforeEach(function (): void {
+        News::query()->delete();
+        $this->mainTenant = Tenant::main();
+    });
+
+    function publishedNews(Tenant $tenant, array $attributes = []): News
+    {
+        return News::factory()->for($tenant)->create([
+            'lang' => 'lt',
+            'image' => 'https://example.com/photo.jpg',
+            'publish_time' => now()->subHour(),
+            'draft' => false,
+            ...$attributes,
+        ]);
+    }
+
+    test('sends the main tenant\'s newest published news with a photo on the first response', function (): void {
+        $otherTenant = Tenant::query()->whereKeyNot($this->mainTenant->id)->first();
+
+        publishedNews($this->mainTenant, ['title' => 'Older', 'publish_time' => now()->subDays(2)]);
+        $newest = publishedNews($this->mainTenant, ['title' => 'Newest', 'image' => 'https://example.com/newest.jpg']);
+        publishedNews($otherTenant, ['title' => 'Other tenant', 'publish_time' => now()->subMinute()]);
+        publishedNews($this->mainTenant, ['title' => 'No photo', 'image' => null, 'publish_time' => now()->subMinute()]);
+        publishedNews($this->mainTenant, ['title' => 'Draft', 'draft' => true, 'publish_time' => now()->subMinute()]);
+        publishedNews($this->mainTenant, ['title' => 'Scheduled', 'publish_time' => now()->addDay()]);
+        publishedNews($this->mainTenant, ['title' => 'English', 'lang' => 'en', 'publish_time' => now()->subMinute()]);
+
+        // A plain user without news permissions still gets the hero: it links to public content.
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('heroNews.id', $newest->id)
+                ->where('heroNews.title', 'Newest')
+                ->where('heroNews.image', 'https://example.com/newest.jpg')
+                ->where('heroNews.public_url', $newest->publicUrl())
+                ->where('heroNews.archive_url', fn (string $url) => str_contains($url, '/naujienos'))
+            );
+    });
+
+    test('skips news whose local photo file is missing', function (): void {
+        publishedNews($this->mainTenant, ['title' => 'Has photo', 'publish_time' => now()->subDay()]);
+        publishedNews($this->mainTenant, ['title' => 'Broken photo', 'image' => '/uploads/missing/nowhere.jpg']);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page->where('heroNews.title', 'Has photo'));
+    });
+
+    test('is null when the main tenant has no news with a photo', function (): void {
+        publishedNews($this->mainTenant, ['image' => null]);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page->where('heroNews', null));
+    });
+});
+
 describe('institutions needing attention', function (): void {
     /**
      * Create an institution with a 30-day periodicity, a representative and one past meeting.
@@ -623,6 +666,33 @@ describe('Pradžia secondary panels', function (): void {
                     ->has('upcomingCalendarEvents', 0)
                 )
             );
+    });
+});
+
+describe('Sparčioji prieiga registration forms', function (): void {
+    beforeEach(function (): void {
+        $this->memberForm = Form::factory()->for($this->tenant)->create();
+        $this->recipientRole = Role::factory()->create(['name' => 'Member Registration Recipient']);
+
+        $formSettings = app(FormSettings::class);
+        $formSettings->member_registration_form_id = $this->memberForm->id;
+        $formSettings->member_registration_notification_recipient_role_id = $this->recipientRole->id;
+        $formSettings->save();
+    });
+
+    test('a registration recipient gets a link to the member registration form', function (): void {
+        $recipient = makeUser($this->tenant);
+        $recipient->assignRole($this->recipientRole->name);
+
+        asUser($recipient)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+            ->where('registrationForms', [['key' => 'member', 'href' => route('forms.show', $this->memberForm)]])
+        );
+    });
+
+    test('a user who cannot view the form gets no link', function (): void {
+        asUser($this->user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+            ->where('registrationForms', [])
+        );
     });
 });
 

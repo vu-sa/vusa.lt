@@ -1,6 +1,7 @@
 <template>
-  <section class="flex flex-col gap-3" data-slot="overview-section">
-    <!-- Empty sections collapse to one line (visual budget 7). -->
+  <!-- Inside an OverviewPage an empty section moves to the page's status list; elsewhere it
+       collapses to one line (visual budget 7). -->
+  <section v-if="!(empty && statusRegistry)" class="flex flex-col gap-3" data-slot="overview-section">
     <p v-if="empty" :class="['flex items-center gap-2 text-sm text-muted-foreground', variant === 'home' ? 'border-b border-border pb-3' : 'border-t border-border pt-3']">
       <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
       <span>
@@ -19,7 +20,7 @@
           v-if="href"
           :href
           :class="variant === 'home'
-            ? 'shrink-0 text-xs font-bold uppercase tracking-wide text-brand hover:text-foreground'
+            ? 'shrink-0 text-sm font-semibold text-brand hover:text-foreground'
             : 'text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline'"
         >
           {{ hrefLabel }}
@@ -32,9 +33,11 @@
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import type { Component } from 'vue';
+import { inject, onBeforeUnmount, useId, watchEffect, type Component } from 'vue';
 
-defineProps<{
+import { OVERVIEW_STATUS_KEY } from './overviewStatus';
+
+const props = defineProps<{
   title: string;
   icon?: Component;
   variant?: 'default' | 'home';
@@ -43,4 +46,22 @@ defineProps<{
   href?: string;
   hrefLabel?: string;
 }>();
+
+const statusRegistry = inject(OVERVIEW_STATUS_KEY, null);
+const statusId = useId();
+
+watchEffect(() => {
+  if (!statusRegistry) {
+    return;
+  }
+
+  if (!props.empty) {
+    statusRegistry.remove(statusId);
+    return;
+  }
+
+  statusRegistry.set(statusId, { title: props.title, emptyText: props.emptyText, icon: props.icon });
+});
+
+onBeforeUnmount(() => statusRegistry?.remove(statusId));
 </script>

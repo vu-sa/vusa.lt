@@ -1,27 +1,36 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { usePage } from '@inertiajs/vue3';
 
 import MobileBottomBar from '../MobileBottomBar.vue';
 
 import { atstovavimas, pradzia } from './fixtures';
 
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
+const withUnread = (count: number) => vi.mocked(usePage).mockReturnValue(createMockPage({
+  auth: { user: { unreadNotifications: Array.from({ length: count }, (_, index) => ({ id: String(index), read_at: null, data: {} })) } },
+}) as ReturnType<typeof usePage>);
+
+beforeEach(() => withUnread(0));
+
 const mountBar = (props: Record<string, unknown> = {}) => mount(MobileBottomBar, {
-  props: { primary: atstovavimas, activeWorkspace: pradzia, activeSection: pradzia.sections[0], canCreate: true, ...props },
+  props: { activeWorkspace: pradzia, activeSection: pradzia.sections[0], canCreate: true, ...props },
 });
 
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('a, button').map(node => node.text());
 
 describe('MobileBottomBar', () => {
-  it('shows Pradžia, the primary workspace, Užduotys and Meniu around the create button', () => {
+  it('shows Pradžia, Užduotys, create, Pranešimai and Meniu', () => {
     const wrapper = mountBar();
 
     expect(tabs(wrapper)).toEqual([
       'shell.workspaces.pradzia.title',
-      'shell.workspaces.atstovavimas.title',
-      '', // the icon-only create button
       'shell.sections.uzduotys',
+      '', // the icon-only create button
+      'shell.sections.pranesimai',
       'shell.chrome.menu',
     ]);
     expect(wrapper.find('[aria-label="shell.chrome.create"]').exists()).toBe(true);
@@ -31,24 +40,27 @@ describe('MobileBottomBar', () => {
     expect(mountBar({ canCreate: false }).find('[aria-label="shell.chrome.create"]').exists()).toBe(false);
   });
 
-  it('omits the primary slot when the user only has Pradžia', () => {
-    expect(tabs(mountBar({ primary: undefined }))).not.toContain('shell.workspaces.atstovavimas.title');
+  it('lights exactly the Pradžia tab the user is on', () => {
+    const lit = (activeSection: unknown) => mountBar({ activeSection }).findAll('a')
+      .map(link => link.classes().includes('border-brand-fill'));
+
+    expect(lit(pradzia.sections[0])).toEqual([true, false, false]);
+    expect(lit(pradzia.sections[1])).toEqual([false, true, false]);
+    expect(lit(pradzia.sections[2])).toEqual([false, false, true]);
   });
 
-  it('lights Pradžia on the overview and Užduotys on the task list, never both', () => {
-    const onOverview = mountBar().findAll('a');
-    expect(onOverview[0].classes()).toContain('border-brand-fill');
-    expect(onOverview.at(-1)?.classes()).toContain('border-transparent');
-
-    const onTasks = mountBar({ activeSection: pradzia.sections[1] }).findAll('a');
-    expect(onTasks[0].classes()).toContain('border-transparent');
-    expect(onTasks.at(-1)?.classes()).toContain('border-brand-fill');
-  });
-
-  it('lights the primary workspace while the user is anywhere inside it', () => {
+  it('lights Meniu while the user is in another workspace', () => {
     const wrapper = mountBar({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] });
 
-    expect(wrapper.findAll('a')[1].classes()).toContain('border-brand-fill');
+    expect(wrapper.findAll('a').every(link => link.classes().includes('border-transparent'))).toBe(true);
+    expect(wrapper.findAll('button').at(-1)?.classes()).toContain('border-brand-fill');
+  });
+
+  it('counts unread notifications on the Pranešimai tab', () => {
+    expect(mountBar().find('[data-slot="notification-count"]').exists()).toBe(false);
+
+    withUnread(12);
+    expect(mountBar().find('[data-slot="notification-count"]').text()).toContain('9+');
   });
 
   it('prefetches each navigation destination with a short fresh and stale cache window', () => {

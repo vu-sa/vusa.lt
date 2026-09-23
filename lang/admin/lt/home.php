@@ -1,12 +1,30 @@
 <?php
 
 return [
-    'impact' => '{1} Šiais metais užfiksavai :count posėdį.|[2,9] Šiais metais užfiksavai :count posėdžius.|[10,*] Šiais metais užfiksavai :count posėdžių.',
     'quick_access' => [
-        'title' => 'Sparčioji prieiga',
+        'title' => 'Eiti į',
         'manage_reservations' => 'Valdyti rezervacijas',
+        'member_registrations' => 'Narių registracijos',
+        'rep_registrations' => 'Atstovų registracijos',
+        'administration_description' => 'Visi tau prieinami skyriai',
+        'manage_reservations_description' => 'Tvirtink ir sek išteklių rezervacijas',
+        'member_registrations_description' => 'Naujų narių prašymai',
+        'rep_registrations_description' => 'Naujų studentų atstovų prašymai',
         'spotlight_title' => 'Skyriai po ranka',
-        'spotlight_description' => 'Čia rasi administravimą ir rezervacijas, jei turi prieigą.',
+        'spotlight_description' => 'Čia rasi administravimą, rezervacijas ir registracijų formas, jei turi prieigą.',
+    ],
+    'hero' => [
+        'news_eyebrow' => 'Naujiena',
+        'read_news' => 'Skaityti naujieną',
+        'all_news' => 'Visos naujienos',
     ],
     'overdue_due_date' => 'Terminas praėjo :date',
+    'tasks_title' => 'Tavo užduotys',
+    'create_title' => 'Greiti veiksmai',
+    'overdue_by' => 'vėluoja :days d.',
+    'overdue' => 'vėluoja',
+    'summary' => [
+        'waiting' => 'Laukia užduočių: :count',
+        'overdue' => 'vėluoja: :count',
+    ],
 ];

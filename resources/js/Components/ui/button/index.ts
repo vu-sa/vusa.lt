@@ -8,7 +8,8 @@ export { default as Button } from './Button.vue';
  * on the light canvas and amber on near-black, admin and public alike.
  *
  * `voice` carries the type: bold uppercase is the default across the design system.
- * `sentence` is for home quick actions; `plain` is for controls such as calendar day cells.
+ * `sentence` is for admin action buttons that read as phrases (quick actions, quick access) and
+ * brings its own 40px height at the default size; `plain` is for controls such as calendar cells.
  */
 export const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
@@ -45,6 +46,8 @@ export const buttonVariants = cva(
     },
     compoundVariants: [
       { variant: 'link', class: 'h-auto px-0 font-medium normal-case tracking-normal' },
+      // Grows past 40px only when a label wraps (e.g. two-column grids on phones).
+      { voice: 'sentence', size: 'default', class: 'h-auto min-h-10 py-2 text-sm pointer-coarse:min-h-11' },
     ],
     defaultVariants: {
       variant: 'default',

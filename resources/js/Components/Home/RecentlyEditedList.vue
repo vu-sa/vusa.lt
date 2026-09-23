@@ -1,15 +1,19 @@
 <template>
-  <OverviewSection :title="$t('Neseniai redaguota')" :icon="History" variant="home" :empty="records.length === 0">
-    <ul class="divide-y divide-border border-y border-border" data-slot="recently-edited">
+  <!-- Nothing edited is not a status worth reporting, so an empty list leaves no trace. -->
+  <OverviewSection v-if="records.length > 0" :title="$t('Neseniai redaguota')" :icon="History" variant="home">
+    <ul class="divide-y divide-border/60" data-slot="recently-edited">
       <li v-for="record in records" :key="`${record.type}:${record.id}`">
         <Link
           :href="record.href"
           prefetch
-          class="flex items-center gap-3 px-1 py-3 hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:py-4"
+          class="flex flex-col gap-1 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
-          <EntityTypeMark :type="record.type" />
-          <span class="min-w-0 flex-1 truncate font-bold">{{ record.title }}</span>
-          <span class="shrink-0 text-xs text-muted-foreground">{{ formatNearDate(record.changed_at, { thresholdDays: 365 }) }}</span>
+          <span class="line-clamp-2 text-pretty font-bold text-foreground">{{ record.title }}</span>
+          <span class="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+            <EntityTypeMark :type="record.type" class="text-xs" />
+            <span aria-hidden="true">·</span>
+            <span>{{ formatNearDate(record.changed_at, { thresholdDays: 365 }) }}</span>
+          </span>
         </Link>
       </li>
     </ul>

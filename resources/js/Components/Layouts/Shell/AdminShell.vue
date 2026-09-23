@@ -11,30 +11,38 @@
     <StagingBanner />
     <ImpersonateBanner />
 
-    <ShellTopBar
-      :workspaces
-      :active-workspace
-      :active-section
-      :show-all-sections
-      :can-create
-      :focused
-      @create="actionWindow.open()"
-    />
-    <template v-if="!focused">
-      <SectionTabs :workspace="activeWorkspace" :active-section />
-      <ShellBreadcrumbs :active-section />
-    </template>
-    <SystemAnnouncement :message="systemMessage" />
-
-    <main class="min-h-0 flex-1 overflow-auto">
-      <div class="mx-auto min-h-full w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8 md:py-6" data-slot="admin-page-measure">
-        <slot />
+    <div data-slot="admin-scroll-area" class="min-h-0 flex flex-1 flex-col overflow-auto">
+      <div class="sticky top-0 z-40 shrink-0">
+        <ShellTopBar
+          :workspaces
+          :active-workspace
+          :active-section
+          :show-all-sections
+          :can-create
+          :focused
+          @create="actionWindow.open()"
+        />
+        <template v-if="!focused">
+          <!-- Pradžia's sections are all in the phone bottom bar, so its tab row would only repeat it. -->
+          <SectionTabs
+            :workspace="activeWorkspace"
+            :active-section
+            :class="activeWorkspace?.key === 'pradzia' && 'max-md:hidden'"
+          />
+          <ShellBreadcrumbs :active-section />
+        </template>
+        <SystemAnnouncement :message="systemMessage" />
       </div>
-    </main>
+
+      <main class="flex-1">
+        <div class="mx-auto min-h-full w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8 md:py-6" data-slot="admin-page-measure">
+          <slot />
+        </div>
+      </main>
+    </div>
 
     <MobileBottomBar
       v-if="!focused"
-      :primary
       :active-workspace
       :active-section
       :can-create
@@ -47,7 +55,6 @@
       :workspaces
       :active-workspace
       :active-section
-      :show-all-sections
     />
   </div>
 </template>
@@ -70,7 +77,7 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useShellFocus } from '@/Composables/useShellFocus';
 
 const page = usePage<PageProps>();
-const { workspaces, activeWorkspace, activeSection, primaryWorkspace: primary } = useAdminNavigation();
+const { workspaces, activeWorkspace, activeSection } = useAdminNavigation();
 const actionWindow = useActionWindow();
 
 const shellFocus = useShellFocus();

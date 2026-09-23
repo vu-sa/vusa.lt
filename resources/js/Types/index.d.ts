@@ -86,6 +86,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         routeName: string;
         routeParams: Record<string, unknown>;
         entityType: ModelEnum | null;
+        /** One-line description on section tiles; null for overviews. */
+        description: string | null;
         collectionActions: Array<{
           key: string;
           label: string;
