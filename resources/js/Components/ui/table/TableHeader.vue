@@ -1,7 +1,7 @@
 <template>
   <thead
     data-slot="table-header"
-    :class="cn('[&_tr]:border-b', props.class)"
+    :class="cn('bg-secondary/50 [&_tr]:border-b [&_tr]:border-border [&_tr:hover]:bg-transparent', props.class)"
   >
     <slot />
   </thead>

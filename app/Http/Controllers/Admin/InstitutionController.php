@@ -24,7 +24,6 @@ use App\Models\Type;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
-use App\Services\TanstackTableService;
 use App\Settings\CadenceSettings;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +36,6 @@ class InstitutionController extends AdminController
 
     public function __construct(
         public Authorizer $authorizer,
-        private TanstackTableService $tableService,
         private readonly InstitutionActivityStatusService $activityStatusService,
     ) {}
 
@@ -48,85 +46,11 @@ class InstitutionController extends AdminController
     {
         $this->handleAuthorization('viewAny', Institution::class);
 
-        // The collection reads from Typesense (its scoped key carries the authorization), so the
-        // page needs no rows from us. Only the trash view is a database table.
-        if (! $request->getShowDeleted()) {
-            return $this->inertiaResponse('Admin/People/IndexInstitution', [
-                'deletedCount' => $this->trashedCount(),
-            ]);
-        }
-
-        // Build base query with eager loading
-        // Newest meetings first — the index cell shows only the first few, and
-        // the recent ones are what an administrator is looking for.
-        $query = Institution::query()->with(['meetings' => fn ($query) => $query->orderByDesc('start_time'), 'tenant', 'types']);
-
-        // Define searchable columns
-        $searchableColumns = ['name', 'alias', 'email', 'tenant.name'];
-
-        // Apply Tanstack Table filters
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'tenantRelation' => 'tenant',
-                'permission' => 'institutions.read.padalinys',
-                'applySortBeforePagination' => true, // Ensure sorting is applied before pagination
-            ]
-        );
-
-        // Paginate results
-        $deletedCount = $this->getTrashedCount($query);
-
-        // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request, ['meetings', 'duties', 'checkIns']);
-
-        $institutions = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        $this->appendForceDeleteBlockedReason($institutions->getCollection(), $request);
-
-        // Get institution types for filtering
-        $types = Type::where('model_type', MorphMap::alias(Institution::class))->get();
-
-        // Get the sorting state using the custom method to ensure consistent parsing
-        $sorting = $request->getSorting();
-
-        // Return response with all necessary data
-        return $this->inertiaResponse('Admin/People/IndexInstitutionTrash', [
-            'data' => $institutions->items(),
-            'meta' => [
-                'total' => $institutions->total(),
-                'per_page' => $institutions->perPage(),
-                'current_page' => $institutions->currentPage(),
-                'last_page' => $institutions->lastPage(),
-                'from' => $institutions->firstItem(),
-                'to' => $institutions->lastItem(),
-            ],
-            'types' => $types,
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting, // Pass properly parsed sorting state to frontend
-            'initialSorting' => $sorting, // Add initial sorting to persist state on first load
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
+        // Live rows come from Typesense (the scoped key carries the authorization) and the trash
+        // from api.v1.admin.trash.index, so the page itself needs no rows.
+        return $this->inertiaResponse('Admin/People/IndexInstitution', [
+            'deletedCount' => $this->scopedTrashedCount(Institution::query(), 'tenant', 'institutions.read.padalinys'),
         ]);
-    }
-
-    /**
-     * Soft-deleted institutions this user could see in the trash view.
-     */
-    private function trashedCount(): int
-    {
-        $query = $this->tableService->applyPermissionFiltering(
-            Institution::query(),
-            'tenant',
-            'institutions.read.padalinys',
-            $this->authorizer
-        );
-
-        return $this->getTrashedCount($query, $this->tableService);
     }
 
     /**

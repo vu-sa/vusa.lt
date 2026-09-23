@@ -111,3 +111,27 @@ describe('useDatabaseCollectionSource filters', () => {
     expect(source.filters.value).toEqual({});
   });
 });
+
+describe('useDatabaseCollectionSource without a first page', () => {
+  beforeEach(() => window.history.replaceState({}, '', '/mano/pages?showDeleted=true'));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('shows the skeleton and fetches the first page itself', async () => {
+    const fetchMock = respond([{ id: 'a' }]);
+    vi.stubGlobal('fetch', fetchMock);
+
+    const source = useDatabaseCollectionSource({
+      endpoint: '/api/v1/admin/trash/pages',
+      initial: { items: [], total: 0, perPage: 50, currentPage: 0, lastPage: 1 },
+      sortOptions: [],
+      defaultSort: 'deleted_at:desc',
+      preserveUrlKeys: ['showDeleted'],
+      fetchOnMount: true,
+    });
+
+    expect(source.hasSearched.value).toBe(false);
+    await vi.waitFor(() => expect(source.hasSearched.value).toBe(true));
+    expect(source.items.value).toEqual([{ id: 'a' }]);
+    expect(lastUrl(fetchMock).searchParams.get('showDeleted')).toBe('true');
+  });
+});

@@ -5,31 +5,33 @@
     </Head>
 
     <div class="mx-auto w-full max-w-[90rem]">
-      <header class="border-b border-border pb-6">
+      <header class="border-b border-border pt-4 pb-6 sm:pt-8 sm:pb-8">
         <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div class="flex min-w-0 items-start gap-4">
             <div v-if="$slots.identity" class="shrink-0">
               <slot name="identity" />
             </div>
 
-            <div class="min-w-0 space-y-2">
-              <EntityTypeMark :type="entityType" size="md" />
-              <div class="flex flex-wrap items-center gap-3">
-                <h1 class="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-                  {{ title }}
-                </h1>
+            <div class="min-w-0">
+              <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand" data-slot="record-eyebrow">
+                <component :is="entityDefinition.icon" v-if="entityDefinition" class="size-4 shrink-0" aria-hidden="true" />
+                {{ $t(entityLabel) }}
+              </p>
+              <h1 class="u-display mt-3 min-w-0 text-balance text-3xl leading-[0.95] text-foreground sm:text-4xl lg:text-5xl">
+                {{ title }}
+              </h1>
+              <div v-if="status || $slots.subtitle" class="mt-3 flex flex-wrap items-center gap-3">
                 <StatusBadge v-if="status" :status />
+                <slot name="subtitle" />
               </div>
-              <slot name="subtitle" />
             </div>
           </div>
 
           <div class="flex shrink-0 flex-wrap items-center gap-2">
-            <div v-if="navigation" class="flex items-center border border-border bg-card">
+            <div v-if="navigation" class="flex items-center border border-border">
               <Button
                 variant="ghost"
-                size="icon"
-                class="u-touch"
+                size="icon-lg"
                 :disabled="!navigation.previousHref"
                 :aria-label="$t('Ankstesnis įrašas')"
                 @click="visit(navigation.previousHref)"
@@ -41,8 +43,7 @@
               </span>
               <Button
                 variant="ghost"
-                size="icon"
-                class="u-touch"
+                size="icon-lg"
                 :disabled="!navigation.nextHref"
                 :aria-label="$t('Kitas įrašas')"
                 @click="visit(navigation.nextHref)"
@@ -60,7 +61,7 @@
 
             <DropdownMenu v-if="overflowActions.length" class="hidden md:block">
               <DropdownMenuTrigger as-child>
-                <Button variant="outline" size="icon" class="u-touch" :aria-label="$t('Daugiau veiksmų')">
+                <Button variant="outline" size="icon-lg" :aria-label="$t('Daugiau veiksmų')">
                   <MoreHorizontal class="size-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -79,7 +80,7 @@
 
             <Sheet v-if="overflowActions.length">
               <SheetTrigger as-child>
-                <Button variant="outline" size="icon" class="u-touch md:hidden" :aria-label="$t('Daugiau veiksmų')">
+                <Button variant="outline" size="icon-lg" class="md:hidden" :aria-label="$t('Daugiau veiksmų')">
                   <MoreHorizontal class="size-4" />
                 </Button>
               </SheetTrigger>
@@ -112,7 +113,7 @@
           :key="fact.key"
           class="min-w-0 border-b border-border px-4 py-4 last:border-b-0 sm:even:border-l lg:border-b-0 lg:border-l lg:first:border-l-0"
         >
-          <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <dt class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {{ fact.label }}
           </dt>
           <dd class="mt-1 min-w-0 text-sm font-medium text-foreground">
@@ -137,9 +138,9 @@
           type="button"
           role="tab"
           :aria-selected="section.value === currentSection"
-          class="u-touch -mb-px inline-flex items-center gap-2 border-b-2 px-4 text-sm font-semibold uppercase tracking-wide"
+          class="-mb-px inline-flex h-12 items-center gap-2 border-b-2 px-4 text-xs font-bold uppercase tracking-wide"
           :class="section.value === currentSection
-            ? 'border-primary text-foreground'
+            ? 'border-brand text-foreground'
             : 'border-transparent text-muted-foreground hover:text-foreground'"
           @click="currentSection = section.value"
         >
@@ -181,7 +182,6 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-vue-next';
 import ActionControl from './RecordPageAction.vue';
 import AdminContentPage from './AdminContentPage.vue';
 
-import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -246,7 +246,8 @@ if (!currentSection.value && props.sections.length) {
   currentSection.value = props.sections[0]!.value;
 }
 
-const entityLabel = computed(() => getEntityTypeDefinition(props.entityType)?.label ?? $t('Įrašas'));
+const entityDefinition = computed(() => getEntityTypeDefinition(props.entityType));
+const entityLabel = computed(() => entityDefinition.value?.label ?? 'Įrašas');
 const headTitle = computed(() => `${props.title} · ${$t(entityLabel.value)} · VU SA`);
 
 const visit = (href?: string | null) => {

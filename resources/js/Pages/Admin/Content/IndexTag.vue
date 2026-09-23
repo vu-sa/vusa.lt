@@ -3,54 +3,36 @@
     :source
     collection="tags"
     entity-type="tag"
-    :eyebrow="isDeleted ? $t('Ištrintos žymos') : ($t('shell.workspaces.website.title') + ' · ' + $t('shell.sections.tags'))"
-    :title="isDeleted ? $t('Ištrintos žymos') : $t('Žymos')"
+    :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.zymos')}`"
+    :title="$t('Žymos')"
     :lead="isDeleted ? $t('Peržiūrėk ištrintas žymas arba atkurk jas.') : $t('Tvarkyk žymas, kurios susieja svetainės turinį.')"
     default-view="table"
     :item-key="tagKey"
+    :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
+    :selectable="mergeMode"
     :search-placeholder="$t('Ieškoti žymų')"
   >
     <template #actions>
-      <Button v-if="isDeleted" as-child variant="ghost">
-        <Link :href="route('tags.index')">
-          ‹ {{ $t('Visos žymos') }}
-        </Link>
-      </Button>
-      <Button v-else-if="deletedCount > 0" as-child variant="ghost">
-        <Link :href="route('tags.index', { showDeleted: 'true' })">
-          <Trash2 aria-hidden="true" />
-          {{ $t('Ištrinti') }} ({{ deletedCount }})
-        </Link>
-      </Button>
-      <Button v-if="canMerge && !isDeleted" variant="ghost" @click="mergeMode = true">
+      <Button v-if="canMerge && !isDeleted" variant="outline" size="lg" :aria-pressed="mergeMode" @click="mergeMode = !mergeMode">
         <Merge aria-hidden="true" />
-        {{ $t('Sujungti') }}
+        {{ mergeMode ? $t('Atšaukti sujungimą') : $t('Sujungti žymas') }}
       </Button>
-      <Button v-if="canCreate && !isDeleted" variant="brand" @click="openSheet()">
+      <Button v-if="canCreate && !isDeleted" variant="brand" size="lg" @click="openSheet()">
         <Plus aria-hidden="true" />
         {{ $t('Nauja žyma') }}
       </Button>
     </template>
 
     <template #row="{ item }">
-      <article class="flex min-h-16 items-center gap-3 px-3 py-3 sm:px-4">
-        <Checkbox v-if="mergeMode" :model-value="selectedIds.includes(tagKey(item))" @update:model-value="toggle(item)" />
-        <div class="min-w-0 flex-1">
-          <button type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
-            {{ title(item) }}
-          </button>
-          <p v-if="item.alias" class="mt-0.5 truncate text-sm text-muted-foreground">{{ item.alias }}</p>
-        </div>
+      <article class="flex min-h-16 items-center gap-3 px-4 py-4">
+        <CollectionPrimaryCell class="flex-1" :title="title(item)" :clickable="!isDeleted" :sub="item.alias" mono @open="openSheet(item)" />
         <span v-if="item.is_topic" class="text-xs text-muted-foreground">{{ $t('Teminė') }}</span>
       </article>
     </template>
 
     <template #cell="{ item, column }">
-      <Checkbox v-if="column.key === 'select'" :model-value="selectedIds.includes(tagKey(item))" @update:model-value="toggle(item)" />
-      <button v-else-if="column.key === 'name'" type="button" class="font-medium hover:text-brand" @click="openSheet(item)">
-        {{ title(item) }}
-      </button>
+      <CollectionPrimaryCell v-if="column.key === 'name'" :title="title(item)" :clickable="!isDeleted" @open="openSheet(item)" />
       <span v-else-if="column.key === 'alias'">{{ item.alias || '—' }}</span>
       <span v-else-if="column.key === 'topic'">{{ item.is_topic ? $t('Taip') : '—' }}</span>
       <span v-else-if="column.key === 'created'" class="tabular-nums">{{ formatDate(new Date(item.created_at)) }}</span>
@@ -67,11 +49,11 @@
         <template v-if="isDeleted">
           <div class="flex flex-col gap-2 pt-2">
             <Button variant="outline" @click="restoreTag(item)">
-              <RotateCcw aria-hidden="true" class="mr-2 size-4" />
+              <RotateCcw aria-hidden="true" class="size-4" />
               {{ $t('Atkurti') }}
             </Button>
             <Button variant="ghost" class="text-destructive hover:text-destructive" @click="targetTagToForceDelete = item">
-              <Trash2 aria-hidden="true" class="mr-2 size-4" />
+              <Trash2 aria-hidden="true" class="size-4" />
               {{ $t('Ištrinti visam laikui') }}
             </Button>
           </div>
@@ -81,6 +63,13 @@
           <Button v-if="canDelete" variant="ghost" @click="remove(item)">{{ $t('Ištrinti') }}</Button>
         </template>
       </section>
+    </template>
+
+    <template #bulk-actions="{ selected }">
+      <Button variant="brand" size="sm" :disabled="selected.length < 2" @click="mergeRecords = toMergeRecords(selected)">
+        <Merge aria-hidden="true" />
+        {{ $t('Sujungti') }}
+      </Button>
     </template>
 
     <template #empty>
@@ -94,18 +83,6 @@
       />
     </template>
   </CollectionPage>
-
-  <CollectionSelectionBar
-    v-if="mergeMode"
-    :count="selectedIds.length"
-    :count-label="$t('Pasirinkta')"
-    @clear="leaveMerge"
-  >
-    <Button variant="brand" size="sm" :disabled="selectedIds.length < 2" @click="mergeRecords = selectedTags">
-      <Merge aria-hidden="true" />
-      {{ $t('Sujungti') }}
-    </Button>
-  </CollectionSelectionBar>
 
   <TagSheetForm v-model:open="sheetOpen" :tag="editingTag" @saved="refresh" />
   <MergeRecordsDialog
@@ -130,18 +107,17 @@
 </template>
 
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Merge, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
-import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
+import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { Checkbox } from '@/Components/ui/checkbox';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
 import TagSheetForm from '@/Features/Admin/Tags/TagSheetForm.vue';
 import { TagIcon } from '@/Components/icons';
@@ -168,7 +144,6 @@ const canMerge = computed(() => hasCollectionAction('tags.index', 'merge'));
 const sheetOpen = ref(false);
 const editingTag = ref<Tag | null>(null);
 const mergeMode = ref(false);
-const selectedIds = ref<string[]>([]);
 const mergeRecords = ref<MergeRecord[]>([]);
 const targetTagToForceDelete = ref<Tag | null>(null);
 
@@ -191,7 +166,6 @@ const source = useDatabaseCollectionSource<Tag>({
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  ...(mergeMode.value ? [{ key: 'select', label: $t('Pasirinkti'), class: 'w-12' }] : []),
   { key: 'name', label: $t('Žyma') },
   { key: 'alias', label: $t('Alias'), class: 'w-48' },
   { key: 'topic', label: $t('Tema'), class: 'w-28' },
@@ -201,9 +175,8 @@ const columns = computed<CollectionColumn[]>(() => [
 const tagKey = (tag: Tag) => String(tag.id);
 const title = (tag: Tag) => tag.name.lt || tag.name.en || '—';
 const description = (tag: Tag) => tag.description?.lt || tag.description?.en || '';
-const selectedTags = computed<MergeRecord[]>(() => source.items.value
-  .filter(tag => selectedIds.value.includes(tagKey(tag)))
-  .map(tag => ({ id: tag.id, label: title(tag), context: tag.alias ?? undefined })));
+const toMergeRecords = (tags: Tag[]): MergeRecord[] =>
+  tags.map(tag => ({ id: tag.id, label: title(tag), context: tag.alias ?? undefined }));
 
 function openSheet(tag: Tag | null = null): void {
   editingTag.value = tag;
@@ -215,21 +188,9 @@ function refresh(): void {
   source.refresh();
 }
 
-function toggle(tag: Tag): void {
-  const id = tagKey(tag);
-  selectedIds.value = selectedIds.value.includes(id)
-    ? selectedIds.value.filter(selected => selected !== id)
-    : [...selectedIds.value, id];
-}
-
-function leaveMerge(): void {
-  mergeMode.value = false;
-  selectedIds.value = [];
-}
-
 function merged(): void {
   mergeRecords.value = [];
-  leaveMerge();
+  mergeMode.value = false;
   source.refresh();
 }
 

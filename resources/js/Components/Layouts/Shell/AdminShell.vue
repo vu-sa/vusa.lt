@@ -2,7 +2,11 @@
   <!-- `--shell-bottom-bar` lifts the fixed save bars above the bottom bar on phones. -->
   <div
     data-slot="admin-shell"
-    class="flex h-svh flex-col bg-background text-foreground max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]"
+    :data-focused="focused || undefined"
+    :class="[
+      'flex h-svh flex-col bg-background text-foreground',
+      !focused && 'max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]',
+    ]"
   >
     <StagingBanner />
     <ImpersonateBanner />
@@ -13,10 +17,13 @@
       :active-section
       :show-all-sections
       :can-create
+      :focused
       @create="actionWindow.open()"
     />
-    <SectionTabs :workspace="activeWorkspace" :active-section />
-    <ShellBreadcrumbs :active-section />
+    <template v-if="!focused">
+      <SectionTabs :workspace="activeWorkspace" :active-section />
+      <ShellBreadcrumbs :active-section />
+    </template>
     <SystemAnnouncement :message="systemMessage" />
 
     <main class="min-h-0 flex-1 overflow-auto">
@@ -26,6 +33,7 @@
     </main>
 
     <MobileBottomBar
+      v-if="!focused"
       :primary
       :active-workspace
       :active-section
@@ -59,10 +67,14 @@ import ImpersonateBanner from '@/Components/ImpersonateBanner.vue';
 import StagingBanner from '@/Components/StagingBanner.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { useShellFocus } from '@/Composables/useShellFocus';
 
 const page = usePage<PageProps>();
 const { workspaces, activeWorkspace, activeSection, primaryWorkspace: primary } = useAdminNavigation();
 const actionWindow = useActionWindow();
+
+const shellFocus = useShellFocus();
+const focused = computed(() => shellFocus?.isFocused.value ?? false);
 
 const menuOpen = ref(false);
 const canCreate = computed(() => workspaces.value.some(workspace => workspace.createActions.length > 0));

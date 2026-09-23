@@ -4,7 +4,7 @@
     <Button
       v-for="shortcut in shortcuts"
       :key="shortcut.id"
-      variant="brand-outline"
+      variant="outline"
       size="sm"
       class="pointer-coarse:h-11"
       @click="shortcut.action"

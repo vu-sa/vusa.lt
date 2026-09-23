@@ -3,23 +3,20 @@
        facets stack in a bottom sheet (.ai/rules/js-pages-admin.md). -->
   <div
     v-if="isAtLeastMd && open && facets.length > 0"
-    class="flex flex-wrap items-center gap-2 border-t border-border pt-3"
+    class="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3"
     data-slot="collection-filter-bar"
   >
     <Popover v-for="facet in facets" :key="facet.field">
       <PopoverTrigger as-child>
         <button
           type="button"
-          class="inline-flex h-9 items-center gap-2 border border-border bg-background px-3 text-sm hover:border-foreground/40"
+          :class="controlVariants({ size: 'sm', active: selectedCount(facet) > 0 })"
         >
           <span>{{ facet.label }}</span>
-          <span
-            v-if="selectedCount(facet) > 0"
-            class="min-w-5 bg-brand-fill px-1 text-center text-xs tabular-nums text-brand-foreground"
-          >
+          <span v-if="selectedCount(facet) > 0" :class="controlCountClass">
             {{ selectedCount(facet) }}
           </span>
-          <ChevronDown class="size-4 text-muted-foreground" aria-hidden="true" />
+          <ChevronDown class="size-3.5" aria-hidden="true" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" class="max-h-80 w-64 overflow-y-auto p-1">
@@ -39,7 +36,7 @@
 
       <div class="flex flex-col gap-5 px-4 pb-4">
         <section v-for="facet in facets" :key="facet.field">
-          <h3 class="mb-1 text-sm font-semibold">
+          <h3 class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {{ facet.label }}
           </h3>
           <CollectionFacetOptions :facet @toggle="(field, value) => emit('toggle', field, value)" />
@@ -65,6 +62,7 @@ import { ChevronDown } from 'lucide-vue-next';
 import CollectionFacetOptions from './CollectionFacetOptions.vue';
 
 import { Button } from '@/Components/ui/button';
+import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import {
   Sheet,

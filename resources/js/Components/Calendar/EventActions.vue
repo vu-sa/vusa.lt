@@ -4,7 +4,7 @@
     <Button
       v-if="registrationUrl && !isPast"
       variant="brand"
-      size="public"
+      size="lg"
       as="a"
       :href="registrationUrl"
       target="_blank"
@@ -17,8 +17,8 @@
 
     <Button
       v-if="facebookUrl"
-      variant="brand-outline"
-      size="public"
+      variant="outline"
+      size="lg"
       as="a"
       :href="facebookUrl"
       target="_blank"
@@ -29,8 +29,8 @@
     </Button>
 
     <Button
-      variant="brand-outline"
-      size="public"
+      variant="outline"
+      size="lg"
       @click="handleShare"
     >
       <IFluentShare20Regular class="size-4" />

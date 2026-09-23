@@ -27,6 +27,8 @@ export { default as TopProgressBar } from './TopProgressBar.vue';
 export { default as ConfirmDialog } from './ConfirmDialog.vue';
 export { default as SheetForm } from './SheetForm.vue';
 export { default as FormSection } from './FormSection.vue';
+export { default as FormPanel } from './FormPanel.vue';
+export { default as FormToggleRow } from './FormToggleRow.vue';
 
 /**
  * Re-exported so callers have one import path for the whole pattern tier and

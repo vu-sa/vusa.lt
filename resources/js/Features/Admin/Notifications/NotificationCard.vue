@@ -72,7 +72,7 @@
         class="flex flex-wrap items-center gap-2 pt-1"
       >
         <Button
-          variant="brand-outline"
+          variant="outline"
           size="sm"
           class="max-sm:h-11"
           @click.stop="visit(primaryAction.url)"

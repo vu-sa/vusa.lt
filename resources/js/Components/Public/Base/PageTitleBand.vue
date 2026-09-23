@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 
-import DisplayHeading from './DisplayHeading.vue';
+import { DisplayHeading } from '@/Components/Brand';
 import SectionBand from './SectionBand.vue';
 
 /**

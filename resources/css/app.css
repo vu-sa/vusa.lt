@@ -2,6 +2,7 @@
 @import 'tw-animate-css';
 @import './theme/base-tokens.css';
 @import './theme/design-tokens.css';
+@import './theme/surface-palette.css';
 @import './base/reset.css';
 @import './base/view-transitions.css';
 /* admin before public: the rich-content editor renders a [data-surface="public"] preview

@@ -9,22 +9,12 @@
     default-view="table"
     :available-views="['table', 'rows']"
     :item-key="formKey"
+    :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
     :search-placeholder="$t('Ieškoti formų…')"
   >
     <template #actions>
-      <Button v-if="isDeleted" as-child variant="ghost">
-        <Link :href="route('forms.index')">
-          ‹ {{ $t('Visos formos') }}
-        </Link>
-      </Button>
-      <Button v-else-if="deletedCount > 0" as-child variant="ghost">
-        <Link :href="route('forms.index', { showDeleted: 'true' })">
-          <Trash2 aria-hidden="true" />
-          {{ $t('Ištrinti') }} ({{ deletedCount }})
-        </Link>
-      </Button>
-      <Button v-if="can.create && !isDeleted" as-child variant="brand">
+      <Button v-if="can.create && !isDeleted" as-child variant="brand" size="lg">
         <Link :href="route('forms.create')">
           <Plus aria-hidden="true" />
           {{ $t('Nauja forma') }}
@@ -56,7 +46,7 @@
           </div>
         </div>
         <div class="flex shrink-0 items-center gap-1">
-          <Button as-child variant="ghost" size="icon-sm">
+          <Button as-child variant="outline" size="icon">
             <Link :href="route('forms.show', item.id)">
               <ChevronRight class="size-4" />
             </Link>
@@ -97,13 +87,13 @@
 
       <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
         <template v-if="isDeleted">
-          <Button variant="ghost" size="icon-sm" :title="$t('Atkurti')" @click="restoreForm(item)">
+          <Button variant="outline" size="icon" :title="$t('Atkurti')" @click="restoreForm(item)">
             <RotateCcw class="size-4" />
           </Button>
           <Button
             v-if="canForceDelete"
-            variant="ghost"
-            size="icon-sm"
+            variant="outline"
+            size="icon"
             class="text-destructive hover:text-destructive"
             :title="$t('Ištrinti visam laikui')"
             @click="targetFormToForceDelete = item"
@@ -112,12 +102,12 @@
           </Button>
         </template>
         <template v-else>
-          <Button v-if="item.can?.update" as-child variant="ghost" size="icon-sm" :title="$t('Redaguoti')">
+          <Button v-if="item.can?.update" as-child variant="outline" size="icon" :title="$t('Redaguoti')">
             <Link :href="route('forms.edit', item.id)">
               <Edit class="size-4" />
             </Link>
           </Button>
-          <Button as-child variant="ghost" size="icon-sm" :title="$t('Atidaryti')">
+          <Button as-child variant="outline" size="icon" :title="$t('Atidaryti')">
             <Link :href="route('forms.show', item.id)">
               <ChevronRight class="size-4" />
             </Link>

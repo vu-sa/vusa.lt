@@ -133,7 +133,10 @@ export function getEntityTypeDefinition(type: ModelEnum | keyof typeof ModelEnum
     return entityTypeRegistry[ModelEnum[type as keyof typeof ModelEnum]];
   }
 
-  return entityTypeRegistry[type as ModelEnum] ?? null;
+  // Pages also name types by their translation key (`eventType`, `studyProgram`).
+  const snake = type.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+
+  return entityTypeRegistry[type as ModelEnum] ?? entityTypeRegistry[snake as ModelEnum] ?? null;
 }
 
 /**

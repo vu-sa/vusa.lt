@@ -1,6 +1,6 @@
 <template>
   <div v-if="hasMore" class="flex justify-center pt-6" data-slot="collection-load-more">
-    <Button variant="brand-outline" :disabled="loading" @click="emit('load')">
+    <Button variant="outline" size="lg" :disabled="loading" @click="emit('load')">
       <Spinner v-if="loading" class="size-4" />
       {{ $t('Rodyti daugiau') }}
     </Button>

@@ -100,6 +100,23 @@ trait HasTanstackTables
     }
 
     /**
+     * Soft-deleted records of a collection the user may see — the count on the trash control of
+     * a page whose live rows come from Typesense and so never pass through a query here.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     */
+    protected function scopedTrashedCount(Builder $query, string $tenantRelation, string $permission): int
+    {
+        $tableService = app(TanstackTableService::class);
+
+        return $tableService->getTrashedCount(
+            $tableService->applyPermissionFiltering($query, $tenantRelation, $permission, app(ModelAuthorizer::class))
+        );
+    }
+
+    /**
      * Prepare a trash view to explain why permanent deletion is refused for each row.
      *
      * Only applies while the trash view is open, because that is the only place the

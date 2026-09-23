@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildCalendarIndexQuery;
 use App\Actions\DuplicateCalendarAction;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\HandleModelMediaUploads;
@@ -37,53 +38,21 @@ class CalendarController extends AdminController
     {
         $this->handleAuthorization('viewAny', Calendar::class);
 
-        $query = Calendar::query()->with(['eventType', 'tenant:id,shortname']);
-
-        $searchableColumns = ['title'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'calendars.read.padalinys',
-            ]
-        );
-
-        if ($request->getUntyped()) {
-            $query->whereNull('event_type_id');
-        }
-
-        $deletedCount = $this->getTrashedCount($query);
-
-        $calendar = $query->paginate($request->getPerPage())
-            ->withQueryString();
+        $calendar = BuildCalendarIndexQuery::execute($request, $this->tableService)
+            ->paginate($request->getPerPage());
 
         return $this->inertiaResponse('Admin/Calendar/IndexCalendarEvents', [
             'calendar' => [
-                'data' => $calendar->getCollection()
-                    ->map(function ($event) {
-                        /** @var Calendar $event */
-                        return $event->toFullArray();
-                    }),
+                'data' => $calendar->getCollection()->map(fn (Calendar $event): array => $event->toFullArray())->values(),
                 'meta' => [
                     'total' => $calendar->total(),
                     'per_page' => $calendar->perPage(),
                     'current_page' => $calendar->currentPage(),
                     'last_page' => $calendar->lastPage(),
-                    'from' => $calendar->firstItem(),
-                    'to' => $calendar->lastItem(),
                 ],
             ],
             'eventTypes' => EventType::query()->orderBy('sort_order')->get(['id', 'slug', 'name']),
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
-            'untyped' => $request->getUntyped(),
+            'deletedCount' => $this->scopedTrashedCount(Calendar::query(), 'tenant', 'calendars.read.padalinys'),
         ]);
     }
 

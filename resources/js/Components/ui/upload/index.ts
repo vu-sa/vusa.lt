@@ -13,14 +13,14 @@ export { default as ImageUpload } from './ImageUpload.vue';
 export { default as FocalPointPicker } from './FocalPointPicker.vue';
 
 export const uploadVariants = cva(
-  'relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',
+  'relative flex flex-col items-center justify-center border border-dashed transition-colors',
   {
     variants: {
       variant: {
-        default: 'border-zinc-200 bg-zinc-50/50 hover:bg-zinc-100/50 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:bg-zinc-800/50',
-        active: 'border-vusa-red bg-vusa-red/5 dark:bg-vusa-red/10',
-        error: 'border-red-500 bg-red-50/50 dark:border-red-900 dark:bg-red-950/50',
-        success: 'border-green-500 bg-green-50/50 dark:border-green-900 dark:bg-green-950/50',
+        default: 'border-border bg-secondary/20 hover:border-foreground/40 hover:bg-secondary/40 text-muted-foreground',
+        active: 'border-brand bg-brand/5 text-brand',
+        error: 'border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] text-[var(--status-danger)]',
+        success: 'border-[var(--status-success-border)] bg-[var(--status-success-surface)] text-[var(--status-success)]',
       },
       size: {
         default: 'min-h-[200px] p-6',

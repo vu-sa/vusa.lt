@@ -56,8 +56,8 @@
         <MobileNavRootPanel @close="close" />
 
         <div class="flex items-center gap-3 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <LocaleButton :locale="page.props.app.locale" size="public-sm" class="h-9 flex-1 border border-border" />
-          <SearchButton size="public-sm" :class="cn(mobileNavButtonClass, 'h-9 flex-1')" @click="close">
+          <LocaleButton :locale="page.props.app.locale" size="sm" class="h-9 flex-1 border border-border" />
+          <SearchButton size="sm" :class="cn(mobileNavButtonClass, 'h-9 flex-1')" @click="close">
             {{ $t('Paieška') }}
           </SearchButton>
           <AccessibilityMenu :class="mobileNavButtonClass" />
@@ -65,7 +65,7 @@
         </div>
 
         <div class="border-t border-border p-4">
-          <Button as-child variant="brand-outline" size="public-sm" class="h-11 w-full text-foreground/70">
+          <Button as-child variant="outline" size="sm" class="h-11 w-full text-foreground/70">
             <a
               :href="page.props.auth?.user ? route('dashboard') : route('login')"
               :title="page.props.auth?.user ? page.props.auth.user?.name : $t('auth.login')"

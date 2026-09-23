@@ -5,12 +5,7 @@
       :key="value.value"
       type="button"
       :aria-pressed="value.isSelected"
-      :class="[
-        'h-8 border px-3 text-sm tabular-nums pointer-coarse:h-11',
-        value.isSelected
-          ? 'border-brand bg-brand/10 text-brand'
-          : 'border-border bg-background text-foreground hover:border-foreground/40',
-      ]"
+      :class="[controlVariants({ size: 'sm', active: value.isSelected }), 'tabular-nums']"
       @click="emit('toggle', facet.field, value.value)"
     >
       {{ value.label }}
@@ -45,6 +40,7 @@
 <script setup lang="ts">
 import { Check } from 'lucide-vue-next';
 
+import { controlVariants } from '@/Components/ui/control';
 import type { CollectionFacet } from '@/Composables/useCollectionSource';
 
 defineProps<{

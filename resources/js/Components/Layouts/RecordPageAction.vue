@@ -13,7 +13,7 @@
     <component :is="action.icon" v-if="action.icon" class="size-4" />
     {{ action.label }}
   </Link>
-  <Button v-else :variant="primary ? 'brand' : 'outline'" class="u-touch gap-2 uppercase" @click="$emit('select', action.key)">
+  <Button v-else :variant="primary ? 'brand' : 'outline'" :size="primary ? 'lg' : 'default'" @click="$emit('select', action.key)">
     <component :is="action.icon" v-if="action.icon" class="size-4" />
     {{ action.label }}
   </Button>
@@ -26,7 +26,6 @@ import { Link } from '@inertiajs/vue3';
 import type { RecordAction } from './RecordPage.vue';
 
 import { Button, buttonVariants } from '@/Components/ui/button';
-import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<{
   action: RecordAction;
@@ -39,8 +38,8 @@ defineEmits<{
   select: [key: string];
 }>();
 
-const buttonClass = computed(() => cn(
-  buttonVariants({ variant: props.primary ? 'brand' : 'outline' }),
-  'u-touch gap-2 uppercase',
-));
+const buttonClass = computed(() => buttonVariants({
+  variant: props.primary ? 'brand' : 'outline',
+  size: props.primary ? 'lg' : 'default',
+}));
 </script>

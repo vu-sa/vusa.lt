@@ -71,7 +71,7 @@ describe('authorized access', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/IndexTenant')
-                ->has('tenants.data')
+                ->has('tenants')
             );
     });
 

@@ -14,12 +14,12 @@
 
       <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div v-if="privacyPageUrl" class="flex items-center justify-center sm:justify-start">
-          <Button as="a" :href="privacyPageUrl" target="_blank" rel="noopener noreferrer" size="public-sm" variant="brand-outline">
+          <Button as="a" :href="privacyPageUrl" target="_blank" rel="noopener noreferrer" size="sm" variant="outline">
             {{ $t("Privatumo politika") }}
           </Button>
         </div>
 
-        <Button size="public-sm" variant="brand" class="w-full sm:w-auto" @click="acknowledge">
+        <Button size="sm" variant="brand" class="w-full sm:w-auto" @click="acknowledge">
           {{ $t("Supratau") }}
         </Button>
       </div>

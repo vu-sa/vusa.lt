@@ -18,14 +18,13 @@ use App\Models\PublicUrl;
 use App\Models\Tag;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 
 class NewsController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
@@ -34,46 +33,10 @@ class NewsController extends AdminController
     {
         $this->handleAuthorization('viewAny', News::class);
 
-        $query = News::query()->with([
-            'other_language_news:id,title,lang',
-            'tenant:id,shortname',
-        ]);
-
-        $searchableColumns = ['title', 'short'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'news.read.padalinys',
-            ]
-        );
-
-        $deletedCount = $this->getTrashedCount($query);
-
-        $news = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
+        // Live rows come from Typesense (the scoped key carries the authorization) and the trash
+        // from api.v1.admin.trash.index, so the page itself needs no rows.
         return $this->inertiaResponse('Admin/Content/IndexNews', [
-            'news' => [
-                'data' => $news->items(),
-                'meta' => [
-                    'total' => $news->total(),
-                    'per_page' => $news->perPage(),
-                    'current_page' => $news->currentPage(),
-                    'last_page' => $news->lastPage(),
-                    'from' => $news->firstItem(),
-                    'to' => $news->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
+            'deletedCount' => $this->scopedTrashedCount(News::query(), 'tenant', 'news.read.padalinys'),
         ]);
     }
 

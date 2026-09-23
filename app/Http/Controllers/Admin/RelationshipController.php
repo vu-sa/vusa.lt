@@ -9,12 +9,10 @@ use App\Http\Requests\Relationships\StoreModelRelationshipRequest;
 use App\Http\Requests\Relationships\StoreRelationshipRequest;
 use App\Http\Requests\Relationships\UpdateModelRelationshipRequest;
 use App\Http\Requests\Relationships\UpdateRelationshipRequest;
-use App\Http\Traits\HasTanstackTables;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Type;
 use App\Services\RelationshipService;
-use App\Services\TanstackTableService;
 use App\Support\MorphMap;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -25,10 +23,6 @@ use Inertia\Response;
 
 class RelationshipController extends AdminController
 {
-    use HasTanstackTables;
-
-    public function __construct(private TanstackTableService $tableService) {}
-
     /**
      * Display a listing of the resource.
      */
@@ -36,39 +30,9 @@ class RelationshipController extends AdminController
     {
         $this->handleAuthorization('viewAny', Relationship::class);
 
-        $query = Relationship::query();
-
-        $searchableColumns = ['name', 'slug', 'description'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
-        );
-
-        $relationships = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        $sorting = $request->getSorting();
-
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return $this->inertiaResponse('Admin/ModelMeta/IndexRelationships', [
-            'relationships' => [
-                'data' => $relationships->items(),
-                'meta' => [
-                    'total' => $relationships->total(),
-                    'per_page' => $relationships->perPage(),
-                    'current_page' => $relationships->currentPage(),
-                    'last_page' => $relationships->lastPage(),
-                    'from' => $relationships->firstItem(),
-                    'to' => $relationships->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting,
+            'relationships' => Relationship::query()->orderBy('name')->get(['id', 'name', 'slug', 'description']),
         ]);
     }
 

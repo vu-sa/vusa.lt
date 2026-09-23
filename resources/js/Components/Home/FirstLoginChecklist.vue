@@ -38,10 +38,10 @@
         </span>
 
         <span v-if="item.done" class="shrink-0 text-sm text-muted-foreground">{{ $t('onboarding.done') }}</span>
-        <Button v-else-if="item.href === null" variant="brand-outline" size="sm" class="shrink-0 pointer-coarse:h-11" @click="emit('record-meeting')">
+        <Button v-else-if="item.href === null" variant="outline" size="sm" class="shrink-0 pointer-coarse:h-11" @click="emit('record-meeting')">
           {{ $t(`onboarding.items.${item.key}.action`) }}
         </Button>
-        <Button v-else as-child variant="brand-outline" size="sm" class="shrink-0 pointer-coarse:h-11">
+        <Button v-else as-child variant="outline" size="sm" class="shrink-0 pointer-coarse:h-11">
           <Link :href="item.href">{{ $t(`onboarding.items.${item.key}.action`) }}</Link>
         </Button>
       </li>

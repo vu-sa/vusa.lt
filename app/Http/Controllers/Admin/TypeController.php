@@ -11,15 +11,12 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
-use App\Services\TanstackTableService;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 
 class TypeController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
-
-    public function __construct(private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
@@ -28,52 +25,15 @@ class TypeController extends AdminController
     {
         $this->handleAuthorization('viewAny', Type::class);
 
-        // Build base query with eager loading
-        $query = Type::query();
-
-        // Define searchable columns
-        $searchableColumns = ['title', 'model_type', 'slug'];
-
-        // Apply Tanstack Table filters
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
-        );
-
-        // Paginate results
-        $deletedCount = $this->getTrashedCount($query);
-
-        // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request, []);
-
-        $types = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        $this->appendForceDeleteBlockedReason($types->getCollection(), $request);
-
-        // Get the sorting state using the custom method to ensure consistent parsing
-        $sorting = $request->getSorting();
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
+        $types = Type::query()
+            ->when($request->getShowDeleted(), fn ($query) => $query->onlyTrashed())
+            ->orderBy('model_type')
+            ->get();
 
         return $this->inertiaResponse('Admin/ModelMeta/IndexTypes', [
-            'data' => $types->items(),
-            'meta' => [
-                'total' => $types->total(),
-                'per_page' => $types->perPage(),
-                'current_page' => $types->currentPage(),
-                'last_page' => $types->lastPage(),
-                'from' => $types->firstItem(),
-                'to' => $types->lastItem(),
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting,
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
-            'initialSorting' => $sorting,
+            'types' => $this->appendForceDeleteBlockedReason($types, $request)->values(),
+            'deletedCount' => Type::onlyTrashed()->count(),
         ]);
     }
 

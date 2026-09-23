@@ -1,9 +1,10 @@
 import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 import { describe, it, expect, vi } from 'vitest';
-import { nextTick } from 'vue';
+import { defineComponent, h, nextTick, ref } from 'vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
+import { SHELL_FORM_BAR_ID, createShellFocusProvider, type ShellFocusContext } from '@/Composables/useShellFocus';
 import { ModelEnum } from '@/Types/enums';
 
 describe('FormPage.vue', () => {
@@ -218,6 +219,73 @@ describe('FormPage.vue', () => {
       await wrapper.vm.$nextTick();
 
       expect(summary.focus).toHaveBeenCalled();
+      wrapper.unmount();
+    });
+  });
+
+  describe('layout', () => {
+    it('puts the aside next to the fields in a two-column form', () => {
+      const wrapper = mount(FormPage, {
+        props: { title: 'Puslapis' },
+        slots: { default: '<div data-testid="main">Laukai</div>', aside: '<div data-testid="side">Paskelbimas</div>' },
+        global: { stubs },
+      });
+
+      const form = wrapper.find('form');
+      expect(form.classes()).toContain('lg:grid-cols-[1.6fr_1fr]');
+      expect(form.find('[data-testid="form-page-aside"] [data-testid="side"]').exists()).toBe(true);
+      expect(wrapper.attributes('class')).toContain('max-w-6xl');
+    });
+
+    it('stays a single column without an aside', () => {
+      const wrapper = mount(FormPage, { props: { title: 'Forma' }, global: { stubs } });
+
+      expect(wrapper.find('[data-testid="form-page-aside"]').exists()).toBe(false);
+      expect(wrapper.find('form').classes()).not.toContain('lg:grid-cols-[1.6fr_1fr]');
+    });
+
+    it('gives phones their own save bar tied to the form', () => {
+      const wrapper = mount(FormPage, { props: { title: 'Forma' }, global: { stubs } });
+
+      const formId = wrapper.find('form').attributes('id');
+      const save = wrapper.find('[data-testid="form-page-mobile-save"] button');
+
+      expect(save.attributes('type')).toBe('submit');
+      expect(save.attributes('form')).toBe(formId);
+    });
+  });
+
+  describe('shell focus mode', () => {
+    function mountInShell() {
+      const showForm = ref(true);
+      let focus: ShellFocusContext | undefined;
+
+      const Shell = defineComponent({
+        setup() {
+          focus = createShellFocusProvider();
+          return () => h('div', [
+            h('div', { id: SHELL_FORM_BAR_ID }),
+            showForm.value ? h(FormPage, { title: 'Puslapis', backHref: '/mano/pages' }) : null,
+          ]);
+        },
+      });
+
+      const wrapper = mount(Shell, { global: { stubs }, attachTo: document.body });
+
+      return { wrapper, showForm, focus: () => focus! };
+    }
+
+    it('takes over the shell bar while open and hands it back on leave', async () => {
+      const { wrapper, showForm, focus } = mountInShell();
+      await nextTick();
+
+      expect(focus().isFocused.value).toBe(true);
+      expect(document.querySelector(`#${SHELL_FORM_BAR_ID} [data-testid="form-page-bar"]`)).not.toBeNull();
+
+      showForm.value = false;
+      await nextTick();
+
+      expect(focus().isFocused.value).toBe(false);
       wrapper.unmount();
     });
   });

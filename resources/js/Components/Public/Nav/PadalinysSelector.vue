@@ -57,7 +57,7 @@
           v-for="view in (['list', 'map'] as const)"
           :key="view"
           :variant="viewMode === view ? 'brand' : 'ghost'"
-          size="public-sm"
+          size="sm"
           class="flex-1"
           :class="viewMode !== view && 'text-muted-foreground hover:text-foreground'"
           @click="setViewMode(view)"

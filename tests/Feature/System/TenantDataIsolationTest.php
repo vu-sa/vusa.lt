@@ -32,19 +32,22 @@ describe('tenant data isolation', function (): void {
         $newsA = News::factory()->create(['tenant_id' => $this->tenantA->id]);
         $newsB = News::factory()->create(['tenant_id' => $this->tenantB->id]);
 
-        // User A should only see news from tenant A
-        $response = asUser($this->adminA)->get(route('news.index'));
+        // Live news are read through the scoped Typesense key (TypesenseScopedKeyServiceTest);
+        // the database path the page still uses is the trash, so isolate that.
+        $newsA->delete();
+        $newsB->delete();
 
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Content/IndexNews')
-            ->has('news.data')
-            ->where('news.data', function ($data) use ($newsB) {
-                $newsIds = collect($data)->pluck('id')->toArray();
+        $newsIds = collect(asUser($this->adminA)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'news']))
+            ->assertOk()
+            ->json('data.items'))->pluck('id');
 
-                // Most importantly, ensure newsB (from other tenant) is not present
-                return ! in_array($newsB->id, $newsIds);
-            })
-        );
+        expect($newsIds)->toContain((string) $newsA->id)
+            ->not->toContain((string) $newsB->id);
+
+        asUser($this->adminA)->get(route('news.index'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
     });
 
     test('users cannot access other tenant resources via direct URLs', function (): void {
@@ -191,21 +194,14 @@ describe('cross-tenant data prevention', function (): void {
             'title' => 'Tenant B News',
         ]);
 
-        $response = asUser($this->adminA)->get(route('news.index', ['search' => 'News']));
+        News::query()->each(fn (News $news) => $news->delete());
 
-        $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Content/IndexNews')
-            ->has('news.data')
-            ->where('news.data', function ($data) {
-                // All results should belong to tenant A
-                foreach ($data as $result) {
-                    if ($result['tenant_id'] !== $this->tenantA->id) {
-                        return false;
-                    }
-                }
+        $results = collect(asUser($this->adminA)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'news', 'search' => 'News']))
+            ->assertOk()
+            ->json('data.items'));
 
-                return true;
-            })
-        );
+        expect($results)->not->toBeEmpty()
+            ->and($results->every(fn (array $result): bool => $result['tenant_id'] === $this->tenantA->id))->toBeTrue();
     });
 });

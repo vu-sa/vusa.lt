@@ -12,8 +12,8 @@
 
       <template #actions>
         <Button
-          variant="brand-outline"
-          size="public"
+          variant="outline"
+          size="lg"
           @click="showModal = true"
         >
           <IFluentArrowSync20Regular class="size-4" />
@@ -347,8 +347,8 @@
           </p>
           <div v-if="hasActiveFilters" class="mt-6">
             <Button
-              variant="brand-outline"
-              size="public-sm"
+              variant="outline"
+              size="sm"
               @click="clearFilters"
             >
               {{ $t('Išvalyti filtrus') }}
@@ -375,8 +375,8 @@
           class="mt-12 flex justify-center"
         >
           <Button
-            variant="brand-outline"
-            size="public"
+            variant="outline"
+            size="lg"
             :disabled="isLoadingMore"
             @click="loadMore"
           >
@@ -410,7 +410,7 @@ import { useCalendarSearch, type CalendarSearchSort } from '@/Composables/useCal
 import { TenantType } from '@/Types/enums';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
-import TagChip from '@/Components/Public/Base/TagChip.vue';
+import TagChip from '@/Components/Brand/TagChip.vue';
 import EventCard from '@/Components/Calendar/EventCard.vue';
 import CalendarFilterPopover, { type FilterOption } from '@/Components/Calendar/CalendarFilterPopover.vue';
 import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';

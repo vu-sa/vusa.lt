@@ -1,8 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
+import { ListTree, Send } from 'lucide-vue-next';
+import { ref } from 'vue';
 
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -41,6 +46,33 @@ export const CreateFormWithErrors: StoryObj = {
   render: () => ({
     components: { FormPage, FormSection, Input, Label },
     template: `<FormPage title="Nauja pareigybė" mode="create" dirty :errors="{ name: 'Pavadinimas yra privalomas' }" :field-ids="{ name: 'story-name' }">${fields}</FormPage>`,
+  }),
+};
+
+/** The v0 page-form shape: fields on the left, panels of settings in the aside. */
+export const FormWithAside: StoryObj = {
+  render: () => ({
+    components: { FormPage, FormFieldWrapper, FormPanel, FormToggleRow, Input },
+    setup: () => ({ Send, ListTree, breadcrumbs: ref(true), toc: ref(false) }),
+    template: `
+      <FormPage title="Socialinės stipendijos" entity-type="page" :available-locales="[]" back-href="/mano/pages" back-label="Puslapiai"
+        lead="Atnaujink turinį, struktūrą ir paskelbimo būseną.">
+        <FormFieldWrapper id="story-title" label="Pavadinimas" hint="Rodomas naršyklės skirtuke ir paieškoje." :char-count="22" :max-length="60">
+          <Input id="story-title" model-value="Socialinės stipendijos" />
+        </FormFieldWrapper>
+        <template #aside>
+          <FormPanel title="Paskelbimas" :icon="Send">
+            <FormFieldWrapper id="story-parent" label="Tėvinis puslapis">
+              <Input id="story-parent" model-value="Pagalba studentui" />
+            </FormFieldWrapper>
+          </FormPanel>
+          <FormPanel title="Rodymo nustatymai" :icon="ListTree" flush>
+            <FormToggleRow v-model="breadcrumbs" label="Rodyti puslapio kelią" hint="„Pradžia / … / Puslapis“ navigacija viršuje." />
+            <FormToggleRow v-model="toc" label="Rodyti turinio lentelę" hint="Automatinis skyrių sąrašas šoninėje juostoje." />
+          </FormPanel>
+        </template>
+      </FormPage>
+    `,
   }),
 };
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\AnnounceMeetingInCalendar;
 use App\Actions\GetInstitutionCoordinator;
 use App\Actions\GetRecentlyChangedMeetings;
-use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
@@ -26,9 +25,7 @@ use App\Services\MeetingCompletionService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
-use App\Services\TanstackTableService;
 use App\Support\MeetingTitle;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -43,7 +40,6 @@ class MeetingController extends AdminController
     public function __construct(
         public Authorizer $authorizer,
         private CheckInService $checkInService,
-        private TanstackTableService $tableService,
         private MeetingCompletionService $meetingCompletionService,
     ) {}
 
@@ -54,112 +50,12 @@ class MeetingController extends AdminController
     {
         $this->handleAuthorization('viewAny', Meeting::class);
 
-        // The collection reads from Typesense (its scoped key carries the authorization), so the
-        // page needs no rows from us. Only the trash view is a database table.
-        if (! $request->getShowDeleted()) {
-            return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
-                'deletedCount' => $this->trashedCount(),
-                'recentlyChanged' => GetRecentlyChangedMeetings::execute($request->user())->all(),
-            ]);
-        }
-
-        // Build base query with eager loading
-        $query = Meeting::query()->with(['institutions.tenant', 'agendaItems', 'fileableFiles']);
-
-        // Apply permission filtering based on user's permissible tenants
-        $query = $this->tableService->applyPermissionFiltering(
-            $query,
-            'tenants',
-            'meetings.read.padalinys',
-            $this->authorizer
-        );
-
-        // Define searchable columns
-        $searchableColumns = ['title', 'description'];
-
-        // Apply Tanstack Table filters
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
-        );
-
-        // Apply manual completion status filter if provided
-        $filters = $request->getFilters();
-        if (isset($filters['completion_status']) && ! empty($filters['completion_status'])) {
-            $completionStatuses = is_array($filters['completion_status'])
-                ? $filters['completion_status']
-                : [$filters['completion_status']];
-
-            $externalTypeIds = app(InstitutionScopeResolver::class)->typeIdsResolvingExternal();
-            $incomplete = fn ($itemQuery) => $this->incompleteAgendaItem($itemQuery, $externalTypeIds);
-
-            $query->where(function ($q) use ($completionStatuses, $incomplete): void {
-                foreach ($completionStatuses as $status) {
-                    match ($status) {
-                        'complete' => $q->orWhere(fn ($inner) => $inner
-                            ->whereHas('agendaItems')
-                            ->whereDoesntHave('agendaItems', $incomplete)),
-                        'incomplete' => $q->orWhereHas('agendaItems', $incomplete),
-                        'no_items' => $q->orWhereDoesntHave('agendaItems'),
-                        default => null,
-                    };
-                }
-            });
-        }
-
-        // Apply default sorting if no sorting provided
-        if (empty($request->getSorting())) {
-            $query->orderBy('start_time', 'desc');
-        }
-
-        // Paginate results
-        $deletedCount = $this->getTrashedCount($query);
-
-        $meetings = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        // Append file status attributes for badge display
-        $meetings->getCollection()->each(fn ($meeting) => $meeting->append(['has_protocol', 'has_report']));
-
-        // Get the sorting state
-        $sorting = $request->getSorting();
-
-        // Return response with all necessary data
-        return $this->inertiaResponse('Admin/Representation/IndexMeetingTrash', [
-            'data' => $meetings->items(),
-            'meta' => [
-                'total' => $meetings->total(),
-                'per_page' => $meetings->perPage(),
-                'current_page' => $meetings->currentPage(),
-                'last_page' => $meetings->lastPage(),
-                'from' => $meetings->firstItem(),
-                'to' => $meetings->lastItem(),
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting,
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
+        // Live rows come from Typesense (the scoped key carries the authorization) and the trash
+        // from api.v1.admin.trash.index, so the page itself needs no rows.
+        return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
+            'deletedCount' => $this->scopedTrashedCount(Meeting::query(), 'tenants', 'meetings.read.padalinys'),
+            'recentlyChanged' => $request->getShowDeleted() ? [] : GetRecentlyChangedMeetings::execute($request->user())->all(),
         ]);
-    }
-
-    /**
-     * Soft-deleted meetings this user could see in the trash view.
-     */
-    private function trashedCount(): int
-    {
-        $query = $this->tableService->applyPermissionFiltering(
-            Meeting::query(),
-            'tenants',
-            'meetings.read.padalinys',
-            $this->authorizer
-        );
-
-        return $this->getTrashedCount($query, $this->tableService);
     }
 
     /**
@@ -355,44 +251,6 @@ class MeetingController extends AdminController
                 'meetingPanels',
             ),
         ]);
-    }
-
-    /**
-     * An agenda item that still needs data entered.
-     *
-     * The vote fields live on `votes`, not on `agenda_items` — they moved there in
-     * 2026_01_23_221740 and this filter went on querying the dropped columns, so any request
-     * using it threw. `student_vote` / `student_benefit` are only demanded of external bodies,
-     * matching MeetingCompletionService.
-     *
-     * @param  Builder<AgendaItem>  $query
-     * @param  array<int, int>  $externalTypeIds
-     */
-    private function incompleteAgendaItem($query, array $externalTypeIds): void
-    {
-        // `type` is nullable and a NULL type still needs filling in, but SQL's `!=` drops NULLs.
-        $query->where(fn ($typeQuery) => $typeQuery
-            ->whereNull('type')
-            ->orWhereNotIn('type', AgendaItemType::voteFreeValues()))
-            ->where(function ($itemQuery) use ($externalTypeIds): void {
-                $itemQuery
-                    // Covers both "no votes at all" and "no vote carrying an outcome".
-                    ->whereDoesntHave('votes', fn ($voteQuery) => $voteQuery
-                        ->whereNotNull('decision')->where('decision', '!=', ''))
-                    ->orWhere(function ($external) use ($externalTypeIds): void {
-                        $external
-                            // withTrashed: this filter serves the trash view, and a trashed meeting
-                            // would otherwise vanish from the relation and read as "no institution".
-                            ->whereHas('meeting', fn ($meetingQuery) => $meetingQuery->withTrashed()
-                                ->where(fn ($scopeQuery) => $scopeQuery
-                                    ->whereHas('institutions.types', fn ($typeQuery) => $typeQuery
-                                        ->whereIn('types.id', $externalTypeIds))
-                                    ->orWhereDoesntHave('institutions.types')))
-                            ->whereDoesntHave('votes', fn ($voteQuery) => $voteQuery
-                                ->whereNotNull('student_vote')->where('student_vote', '!=', '')
-                                ->whereNotNull('student_benefit')->where('student_benefit', '!=', ''));
-                    });
-            });
     }
 
     /**

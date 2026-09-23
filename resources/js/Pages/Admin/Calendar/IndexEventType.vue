@@ -8,22 +8,12 @@
     :lead="isDeleted ? $t('Peržiūrėk ištrintus renginių tipus arba atkurk juos.') : $t('Renginių tipai padeda grupuoti renginius pagal jų pobūdį.')"
     default-view="table"
     :item-key="eventTypeKey"
+    :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
     :search-placeholder="$t('Ieškoti renginių tipų…')"
   >
     <template #actions>
-      <Button v-if="isDeleted" as-child variant="ghost">
-        <Link :href="route('eventTypes.index')">
-          ‹ {{ $t('Visi renginių tipai') }}
-        </Link>
-      </Button>
-      <Button v-else-if="deletedCount > 0" as-child variant="ghost">
-        <Link :href="route('eventTypes.index', { showDeleted: 'true' })">
-          <Trash2 aria-hidden="true" />
-          {{ $t('Ištrinti') }} ({{ deletedCount }})
-        </Link>
-      </Button>
-      <Button v-if="canCreate && !isDeleted" variant="brand" @click="openSheet()">
+      <Button v-if="canCreate && !isDeleted" variant="brand" size="lg" @click="openSheet()">
         <Plus aria-hidden="true" />
         {{ $t('Naujas renginio tipas') }}
       </Button>
@@ -54,9 +44,9 @@
         <div class="flex shrink-0 items-center gap-1">
           <Button
             v-if="!isDeleted"
-            variant="ghost"
-            size="icon-sm"
-            class="pointer-coarse:size-11"
+            variant="outline"
+            size="icon"
+           
             :title="$t('Redaguoti')"
             :aria-label="$t('Redaguoti')"
             @click="openSheet(item)"
@@ -105,9 +95,9 @@
         <template v-if="isDeleted">
           <Button
             v-if="canRestore"
-            variant="ghost"
-            size="icon-sm"
-            class="pointer-coarse:size-11"
+            variant="outline"
+            size="icon"
+           
             :title="$t('Atkurti')"
             :aria-label="$t('Atkurti')"
             @click="restoreEventType(item)"
@@ -116,8 +106,8 @@
           </Button>
           <Button
             v-if="canForceDelete"
-            variant="ghost"
-            size="icon-sm"
+            variant="outline"
+            size="icon"
             class="text-destructive hover:text-destructive pointer-coarse:size-11"
             :title="$t('Ištrinti visam laikui')"
             :aria-label="$t('Ištrinti visam laikui')"
@@ -129,9 +119,9 @@
         <template v-else>
           <Button
             v-if="canUpdate"
-            variant="ghost"
-            size="icon-sm"
-            class="pointer-coarse:size-11"
+            variant="outline"
+            size="icon"
+           
             :title="$t('Redaguoti')"
             :aria-label="$t('Redaguoti')"
             @click="openSheet(item)"
@@ -140,8 +130,8 @@
           </Button>
           <Button
             v-if="canDelete"
-            variant="ghost"
-            size="icon-sm"
+            variant="outline"
+            size="icon"
             class="text-destructive hover:text-destructive pointer-coarse:size-11"
             :title="$t('Ištrinti')"
             :aria-label="$t('Ištrinti')"

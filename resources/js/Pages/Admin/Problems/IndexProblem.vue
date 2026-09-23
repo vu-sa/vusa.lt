@@ -9,24 +9,14 @@
     default-view="preview"
     :available-views="['preview', 'table', 'rows']"
     :item-key="problemKey"
+    :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
     :quick-filters
     :search-placeholder="$t('Ieškoti problemų…')"
     @quick-filter="toggleQuickFilter"
   >
     <template #actions>
-      <Button v-if="isDeleted" as-child variant="ghost">
-        <Link :href="route('problems.index')">
-          ‹ {{ $t('Visos problemos') }}
-        </Link>
-      </Button>
-      <Button v-else-if="deletedCount > 0" as-child variant="ghost">
-        <Link :href="route('problems.index', { showDeleted: 'true' })">
-          <Trash2 aria-hidden="true" />
-          {{ $t('Ištrinti') }} ({{ deletedCount }})
-        </Link>
-      </Button>
-      <Button v-if="canCreate && !isDeleted" as-child variant="brand">
+      <Button v-if="canCreate && !isDeleted" as-child variant="brand" size="lg">
         <Link :href="route('problems.create')">
           <Plus aria-hidden="true" />
           {{ $t('Nauja problema') }}
@@ -62,7 +52,7 @@
           </div>
         </div>
         <div class="flex shrink-0 items-center gap-1">
-          <Button as-child variant="ghost" size="icon-sm">
+          <Button as-child variant="outline" size="icon">
             <Link :href="route('problems.show', item.id)">
               <ChevronRight class="size-4" />
             </Link>
@@ -119,13 +109,13 @@
 
       <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
         <template v-if="isDeleted">
-          <Button variant="ghost" size="icon-sm" :title="$t('Atkurti')" @click="restoreProblem(item)">
+          <Button variant="outline" size="icon" :title="$t('Atkurti')" @click="restoreProblem(item)">
             <RotateCcw class="size-4" />
           </Button>
           <Button
             v-if="canForceDelete"
-            variant="ghost"
-            size="icon-sm"
+            variant="outline"
+            size="icon"
             class="text-destructive hover:text-destructive"
             :title="$t('Ištrinti visam laikui')"
             @click="targetProblemToForceDelete = item"
@@ -134,12 +124,12 @@
           </Button>
         </template>
         <template v-else>
-          <Button v-if="canUpdate" as-child variant="ghost" size="icon-sm" :title="$t('Redaguoti')">
+          <Button v-if="canUpdate" as-child variant="outline" size="icon" :title="$t('Redaguoti')">
             <Link :href="route('problems.edit', item.id)">
               <Edit class="size-4" />
             </Link>
           </Button>
-          <Button as-child variant="ghost" size="icon-sm" :title="$t('Atidaryti')">
+          <Button as-child variant="outline" size="icon" :title="$t('Atidaryti')">
             <Link :href="route('problems.show', item.id)">
               <ChevronRight class="size-4" />
             </Link>
@@ -229,7 +219,7 @@
         <div class="mt-auto flex flex-col gap-2 pt-4">
           <template v-if="isDeleted">
             <Button variant="outline" size="sm" @click="restoreProblem(item)">
-              <RotateCcw aria-hidden="true" class="mr-2 size-4" />
+              <RotateCcw aria-hidden="true" class="size-4" />
               {{ $t('Atkurti') }}
             </Button>
             <Button
@@ -238,7 +228,7 @@
               class="text-destructive hover:text-destructive"
               @click="targetProblemToForceDelete = item"
             >
-              <Trash2 aria-hidden="true" class="mr-2 size-4" />
+              <Trash2 aria-hidden="true" class="size-4" />
               {{ $t('Ištrinti visam laikui') }}
             </Button>
           </template>

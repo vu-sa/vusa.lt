@@ -19,7 +19,7 @@
           </span>
         </span>
         <StatusBadge :status="institutionActivityStatuses[institution.status as InstitutionActivityStatus]" />
-        <Button variant="brand-outline" size="sm" class="pointer-coarse:h-11" @click="emit('record', institution)">
+        <Button variant="outline" size="sm" class="pointer-coarse:h-11" @click="emit('record', institution)">
           {{ $t('Fiksuoti posėdį') }}
         </Button>
       </li>

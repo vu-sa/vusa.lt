@@ -3,7 +3,7 @@
     v-if="views.length > 1"
     role="radiogroup"
     :aria-label="$t('Rodinys')"
-    class="inline-flex h-9 border border-border bg-background p-0.5 pointer-coarse:h-11"
+    :class="segmentGroupClass"
     data-slot="collection-view-toggle"
   >
     <button
@@ -13,16 +13,10 @@
       role="radio"
       :aria-checked="modelValue === option.value"
       :aria-label="$t(option.label)"
-      :class="[
-        'inline-flex items-center gap-1.5 px-2.5 text-sm font-medium transition-colors',
-        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring',
-        modelValue === option.value
-          ? 'bg-brand-fill text-brand-foreground'
-          : 'text-muted-foreground hover:text-foreground',
-      ]"
+      :class="segmentVariants({ active: modelValue === option.value })"
       @click="emit('update:modelValue', option.value)"
     >
-      <component :is="option.icon" class="size-4" aria-hidden="true" />
+      <component :is="option.icon" aria-hidden="true" />
       <span class="hidden lg:inline">{{ $t(option.label) }}</span>
     </button>
   </div>
@@ -33,6 +27,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { List, PanelRight, Table } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 
+import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import type { CollectionViewMode } from '@/Composables/useCollectionView';
 
 const props = defineProps<{

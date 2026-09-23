@@ -2,8 +2,9 @@
   <CalendarPrev
     data-slot="calendar-prev-button"
     :class="cn(
-      buttonVariants({ variant: 'outline' }),
-      'size-7 bg-transparent p-0 opacity-50 hover:opacity-100',
+      'flex size-8 items-center justify-center border border-border bg-background',
+      'text-foreground transition-colors hover:border-foreground/30 hover:bg-secondary/60',
+      'disabled:pointer-events-none disabled:opacity-30',
       props.class,
     )"
     v-bind="forwardedProps"
@@ -19,7 +20,6 @@ import { ChevronLeft } from 'lucide-vue-next';
 import { CalendarPrev, type CalendarPrevProps, useForwardProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 
-import { buttonVariants } from '@/Components/ui/button';
 import { cn } from '@/Utils/Shadcn/utils';
 
 const props = defineProps<CalendarPrevProps & { class?: HTMLAttributes['class'] }>();

@@ -8,7 +8,7 @@
       class="flex flex-wrap items-center justify-between gap-3 border border-status-danger-border bg-status-danger-surface px-4 py-3 text-sm text-status-danger"
     >
       <span>{{ error }}</span>
-      <Button variant="brand-outline" size="sm" @click="emit('retry')">
+      <Button variant="outline" size="sm" @click="emit('retry')">
         {{ $t('Bandyti dar kartą') }}
       </Button>
     </div>
@@ -27,33 +27,124 @@
       :class="view === 'preview' ? 'grid gap-6 xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]' : ''"
     >
       <div class="min-w-0">
-        <div v-if="view === 'table'" class="overflow-x-auto border-y border-border">
+        <div v-if="(selectable && view !== 'table') || (view === 'table' && hideableColumns.length > 0)" class="mb-3 flex items-center justify-between gap-3">
+          <label v-if="selectable && view !== 'table'" class="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            <Checkbox
+              :model-value="allSelectedState"
+              :aria-label="$t('Pažymėti visus rodomus')"
+              @update:model-value="value => table.toggleAllRowsSelected(value === true)"
+            />
+            {{ $t('Pažymėti visus rodomus') }}
+          </label>
+          <span v-else />
+
+          <DropdownMenu v-if="view === 'table' && hideableColumns.length > 0">
+            <DropdownMenuTrigger as-child>
+              <button type="button" :class="controlVariants({ size: 'sm' })">
+                <Columns3 class="size-4" aria-hidden="true" />
+                {{ $t('Stulpeliai') }}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" class="w-56">
+              <DropdownMenuCheckboxItem
+                v-for="column in hideableColumns"
+                :key="column.key"
+                :model-value="table.getColumn(column.key)?.getIsVisible() ?? true"
+                @update:model-value="value => table.getColumn(column.key)?.toggleVisibility(value === true)"
+                @select.prevent
+              >
+                {{ column.label }}
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div v-if="view === 'table'" class="overflow-x-auto border border-border" data-slot="collection-table">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead v-for="column in columns" :key="column.key" :class="column.class">
-                  {{ column.label }}
+              <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                <TableHead
+                  v-for="header in headerGroup.headers"
+                  :key="header.id"
+                  :class="header.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(header.id)?.class"
+                  :aria-sort="ariaSort(header.column.getIsSorted())"
+                >
+                  <template v-if="header.id === SELECT_COLUMN_ID">
+                    <Checkbox
+                      :model-value="allSelectedState"
+                      :aria-label="$t('Pažymėti visus rodomus')"
+                      @update:model-value="value => table.toggleAllRowsSelected(value === true)"
+                    />
+                  </template>
+                  <button
+                    v-else-if="header.column.getCanSort()"
+                    type="button"
+                    class="-mx-1 inline-flex items-center gap-1.5 px-1 uppercase tracking-[inherit] hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                    @click="header.column.toggleSorting(header.column.getIsSorted() === 'asc')"
+                  >
+                    {{ header.column.columnDef.header }}
+                    <ArrowUp v-if="header.column.getIsSorted() === 'asc'" class="size-3.5 text-brand" aria-hidden="true" />
+                    <ArrowDown v-else-if="header.column.getIsSorted() === 'desc'" class="size-3.5 text-brand" aria-hidden="true" />
+                    <ArrowUpDown v-else class="size-3.5 opacity-50" aria-hidden="true" />
+                  </button>
+                  <template v-else>
+                    {{ header.column.columnDef.header }}
+                  </template>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="item in allItems" :key="itemKey(item)">
-                <TableCell v-for="column in columns" :key="column.key" :class="column.class">
-                  <slot name="cell" :item :column :pinned="isPinned(item)" />
+              <TableRow
+                v-for="row in table.getRowModel().rows"
+                :key="row.id"
+                :data-state="row.getIsSelected() ? 'selected' : undefined"
+                class="group"
+              >
+                <TableCell
+                  v-for="cell in row.getVisibleCells()"
+                  :key="cell.id"
+                  :class="cell.column.id === SELECT_COLUMN_ID ? 'w-12' : columnOf(cell.column.id)?.class"
+                >
+                  <Checkbox
+                    v-if="cell.column.id === SELECT_COLUMN_ID && row.getCanSelect()"
+                    :model-value="row.getIsSelected()"
+                    :aria-label="$t('Pažymėti')"
+                    @update:model-value="value => row.toggleSelected(value === true)"
+                  />
+                  <slot
+                    v-else-if="cell.column.id !== SELECT_COLUMN_ID"
+                    name="cell"
+                    :item="row.original"
+                    :column="columnOf(cell.column.id)!"
+                    :pinned="isPinned(row.original)"
+                  />
                 </TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </div>
 
-        <ul v-else ref="rowsEl" class="divide-y divide-border border-y border-border" data-slot="collection-rows">
+        <ul v-else ref="rowsEl" class="divide-y divide-border/60 border-y border-border" data-slot="collection-rows">
           <li
-            v-for="item in allItems"
-            :key="itemKey(item)"
-            :data-collection-key="itemKey(item)"
-            :class="view === 'preview' && selectedKey === itemKey(item) ? 'bg-secondary' : ''"
+            v-for="row in table.getRowModel().rows"
+            :key="row.id"
+            :data-collection-key="row.id"
+            :class="[
+              'flex items-stretch transition-colors hover:bg-secondary/40',
+              (view === 'preview' && selectedKey === row.id) || row.getIsSelected() ? 'bg-secondary' : '',
+            ]"
           >
-            <slot name="row" :item :selected="selectedKey === itemKey(item)" :pinned="isPinned(item)" />
+            <div v-if="selectable" class="flex w-10 shrink-0 items-center pl-3 sm:w-12 sm:pl-4">
+              <Checkbox
+                v-if="row.getCanSelect()"
+                :model-value="row.getIsSelected()"
+                :aria-label="$t('Pažymėti')"
+                @update:model-value="value => row.toggleSelected(value === true)"
+              />
+            </div>
+            <div class="min-w-0 flex-1">
+              <slot name="row" :item="row.original" :selected="selectedKey === row.id" :pinned="isPinned(row.original)" />
+            </div>
           </li>
         </ul>
 
@@ -77,17 +168,29 @@
 <script setup lang="ts" generic="T">
 import { trans as $t } from 'laravel-vue-i18n';
 import { useEventListener } from '@vueuse/core';
-import { computed, ref } from 'vue';
+import { ArrowDown, ArrowUp, ArrowUpDown, Columns3 } from 'lucide-vue-next';
+import { computed, ref, toRef } from 'vue';
 
 import CollectionLoadMore from './CollectionLoadMore.vue';
 import type { CollectionColumn } from './types';
 
 import { CollectionSkeleton, EmptyState, TopProgressBar } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { controlVariants } from '@/Components/ui/control';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/Components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
+import type { CollectionSortOption } from '@/Composables/useCollectionSource';
+import { SELECT_COLUMN_ID, useCollectionTable } from '@/Composables/useCollectionTable';
 import type { CollectionViewMode } from '@/Composables/useCollectionView';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+  collection: string;
   view: CollectionViewMode;
   items: readonly T[];
   /** Rows shown above the results while the index catches up with a change the user just made. */
@@ -102,13 +205,26 @@ const props = defineProps<{
   /** A query or filter is narrowing the list: an empty result is "no results", not "nothing yet". */
   isFiltered: boolean;
   selectedKey: string | null;
-}>();
+  selectable?: boolean;
+  canSelect?: (item: T) => boolean;
+  sortBy?: string;
+  sortOptions?: CollectionSortOption[];
+}>(), {
+  pinned: () => [],
+  columns: () => [],
+  canSelect: undefined,
+  sortBy: '',
+  sortOptions: () => [],
+});
+
+const selection = defineModel<string[]>('selection', { default: () => [] });
 
 const emit = defineEmits<{
   clear: [];
   retry: [];
   loadMore: [];
   select: [key: string];
+  sort: [value: string];
 }>();
 
 defineSlots<{
@@ -121,10 +237,41 @@ defineSlots<{
 const pinnedList = computed(() => {
   const present = new Set(props.items.map(props.itemKey));
 
-  return (props.pinned ?? []).filter(item => !present.has(props.itemKey(item)));
+  return props.pinned.filter(item => !present.has(props.itemKey(item)));
 });
 
-const allItems = computed(() => [...pinnedList.value, ...props.items]);
+const allItems = computed<readonly T[]>(() => [...pinnedList.value, ...props.items]);
+
+const { table, hideableColumns } = useCollectionTable<T>({
+  collection: props.collection,
+  items: allItems,
+  itemKey: props.itemKey,
+  columns: toRef(props, 'columns'),
+  selectable: toRef(props, 'selectable'),
+  canSelect: item => props.canSelect?.(item) ?? true,
+  selection,
+  sortBy: toRef(props, 'sortBy'),
+  sortOptions: toRef(props, 'sortOptions'),
+  setSortBy: value => emit('sort', value),
+});
+
+const columnOf = (id: string) => props.columns.find(column => column.key === id);
+
+const allSelectedState = computed<boolean | 'indeterminate'>(() => {
+  if (table.getIsAllRowsSelected()) {
+    return true;
+  }
+
+  return table.getIsSomeRowsSelected() ? 'indeterminate' : false;
+});
+
+function ariaSort(sorted: false | 'asc' | 'desc'): 'ascending' | 'descending' | undefined {
+  if (sorted === 'asc') {
+    return 'ascending';
+  }
+
+  return sorted === 'desc' ? 'descending' : undefined;
+}
 
 const isInitialLoad = computed(() => !props.hasSearched && props.items.length === 0);
 const refreshing = computed(() => props.isLoading && props.items.length > 0);

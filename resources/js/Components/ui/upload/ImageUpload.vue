@@ -10,15 +10,17 @@
     @update:files="handleFilesUpdate"
     @remove="handleRemove"
   >
-    <template #default="{ files: uploadFiles, canUpload: canAdd, openFileDialog, removeFile }">
+    <template #default="{ openFileDialog, removeFile }">
       <!-- Single Image Mode -->
       <template v-if="isSingle">
         <!-- Show existing/selected image -->
         <div
           v-if="hasContent"
           :class="[
-            'group relative w-full overflow-hidden rounded-lg border-2 border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800',
-            previewAspect === '4/3' ? 'aspect-[4/3] max-w-sm' : 'aspect-video max-w-xs',
+            'group relative w-full overflow-hidden border border-border bg-secondary/30',
+            previewAspect === '4/3'
+              ? (fullWidth ? 'aspect-[4/3] w-full' : 'aspect-[4/3] max-w-sm')
+              : (fullWidth ? 'aspect-video w-full' : 'aspect-video max-w-xs'),
           ]"
         >
           <img
@@ -35,7 +37,7 @@
             class="absolute inset-0 flex items-center justify-center bg-black/50"
           >
             <div class="flex flex-col items-center gap-2 text-white">
-              <IFluentSpinnerIos20Filled class="h-6 w-6 animate-spin" />
+              <Loader2 class="size-6 animate-spin" />
               <span class="text-sm">{{ $t("Optimizuojama...") }}</span>
             </div>
           </div>
@@ -43,15 +45,15 @@
           <!-- New file indicator -->
           <div
             v-if="isNewFile && !isCompressing"
-            class="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white shadow-md"
+            class="absolute bottom-2 left-2 flex items-center gap-1 border border-border bg-background px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-foreground shadow-xs"
           >
-            <IFluentArrowUpload16Regular class="h-3 w-3" />
+            <UploadIcon class="size-3" />
             {{ $t("Naujas") }}
           </div>
 
           <!-- Actions overlay -->
           <div
-            class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100"
+            class="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-all group-hover:opacity-100"
           >
             <!-- Crop button -->
             <Button
@@ -59,15 +61,22 @@
               type="button"
               variant="secondary"
               size="sm"
+              class="border border-border bg-background/90 text-foreground backdrop-blur"
               @click="openCropper(localFiles[0] as UploadFile)"
             >
-              <IFluentCrop24Regular class="mr-1.5 h-4 w-4" />
+              <Crop class="mr-1.5 size-4" />
               {{ $t("Apkirpti") }}
             </Button>
 
             <!-- Replace button -->
-            <Button type="button" variant="secondary" size="sm" @click="openFileDialog">
-              <IFluentArrowSync16Regular class="mr-1.5 h-4 w-4" />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              class="border border-border bg-background/90 text-foreground backdrop-blur"
+              @click="openFileDialog"
+            >
+              <RefreshCw class="mr-1.5 size-4" />
               {{ $t("Pakeisti") }}
             </Button>
 
@@ -79,16 +88,16 @@
               size="sm"
               @click="removeFile(localFiles[0] as UploadFile)"
             >
-              <IFluentDelete16Regular class="h-4 w-4" />
+              <Trash2 class="size-4" />
             </Button>
           </div>
 
           <!-- Success indicator -->
           <div
             v-if="isNewFile && !isCompressing"
-            class="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-white shadow-md"
+            class="absolute bottom-2 right-2 flex size-6 items-center justify-center border border-border bg-background text-[var(--status-success)] shadow-xs"
           >
-            <IFluentCheckmark12Regular class="h-3.5 w-3.5" />
+            <Check class="size-3.5" />
           </div>
         </div>
 
@@ -101,7 +110,7 @@
           class="mt-2"
           @click="showFocalPointModal = true"
         >
-          <IFluentTarget24Regular class="mr-1.5 h-4 w-4" />
+          <Crosshair class="mr-1.5 size-4" />
           {{ $t("Nustatyti fokuso tašką") }}
           <span v-if="focalPointValue" class="ml-1.5 font-mono text-[10px] text-muted-foreground">
             {{ focalPointValue }}
@@ -112,29 +121,31 @@
         <UploadDropzone
           v-if="!hasContent"
           size="default"
-          :class="previewAspect === '4/3' ? 'w-full max-w-sm' : 'w-full max-w-xs'"
+          :class="previewAspect === '4/3'
+            ? (fullWidth ? 'w-full aspect-[4/3]' : 'w-full max-w-sm')
+            : (fullWidth ? 'w-full aspect-video' : 'w-full max-w-xs')"
         >
           <template #default="{ isDragging }">
             <div class="flex flex-col items-center gap-3 text-center">
               <div
-                class="flex h-12 w-12 items-center justify-center rounded-full transition-colors"
+                class="flex size-12 items-center justify-center border border-border transition-colors"
                 :class="
                   isDragging
-                    ? 'bg-vusa-red/20 text-vusa-red'
-                    : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800'
+                    ? 'border-brand bg-brand/10 text-brand'
+                    : 'bg-background text-muted-foreground'
                 "
               >
-                <IFluentImage24Regular class="h-6 w-6" />
+                <ImagePlus class="size-6" />
               </div>
               <div>
-                <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <p class="text-sm font-bold text-foreground">
                   {{ isDragging ? $t("Paleiskite failą") : $t("Įkelti nuotrauką") }}
                 </p>
-                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <p class="mt-1 text-xs text-muted-foreground">
                   {{ $t("Vilkite arba spustelėkite") }}
                 </p>
               </div>
-              <p class="text-xs text-zinc-400">
+              <p class="text-[11px] text-muted-foreground">
                 JPG, PNG, WebP • Max {{ Math.round(maxSize / 1024 / 1024) }}MB
               </p>
             </div>
@@ -149,16 +160,16 @@
           <div
             v-for="f in localFiles"
             :key="f.id"
-            class="group relative aspect-square w-24 rounded-lg border-2 border-zinc-200 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 sm:w-28"
+            class="group relative aspect-square w-24 border border-border bg-secondary/30 sm:w-28"
           >
-            <img v-if="f.url" :src="f.url" :alt="f.name" class="h-full w-full rounded-md object-cover">
+            <img v-if="f.url" :src="f.url" :alt="f.name" class="h-full w-full object-cover">
 
             <!-- New file indicator -->
             <div
               v-if="f.file"
-              class="absolute bottom-1 left-1 flex items-center gap-0.5 rounded-full bg-blue-500 px-1.5 py-0.5 text-[10px] text-white shadow-md"
+              class="absolute bottom-1 left-1 flex items-center gap-0.5 bg-background border border-border px-1.5 py-0.5 text-[10px] font-bold text-foreground shadow-xs"
             >
-              <IFluentArrowUpload16Regular class="h-2.5 w-2.5" />
+              <UploadIcon class="size-2.5" />
             </div>
 
             <!-- Crop button (on hover) -->
@@ -167,10 +178,10 @@
               type="button"
               variant="secondary"
               size="icon-xs"
-              class="absolute left-1 top-1 opacity-0 shadow-md transition-opacity group-hover:opacity-100"
+              class="absolute left-1 top-1 opacity-0 shadow-xs transition-opacity group-hover:opacity-100"
               @click="openCropper(f)"
             >
-              <IFluentCrop24Regular class="h-3 w-3" />
+              <Crop class="size-3" />
             </Button>
 
             <!-- Remove button -->
@@ -178,10 +189,10 @@
               type="button"
               variant="destructive"
               size="icon-xs"
-              class="absolute right-1 top-1 opacity-0 shadow-md transition-opacity group-hover:opacity-100"
+              class="absolute right-1 top-1 opacity-0 shadow-xs transition-opacity group-hover:opacity-100"
               @click="handleRemove(f)"
             >
-              <IFluentDismiss12Regular class="h-3 w-3" />
+              <X class="size-3" />
             </Button>
           </div>
 
@@ -190,16 +201,16 @@
             <template #default="{ isDragging }">
               <div class="flex flex-col items-center justify-center gap-1">
                 <div
-                  class="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+                  class="flex size-8 items-center justify-center border border-border transition-colors"
                   :class="
                     isDragging
-                      ? 'bg-vusa-red/20 text-vusa-red'
-                      : 'bg-zinc-200 text-zinc-400 dark:bg-zinc-700'
+                      ? 'border-brand bg-brand/10 text-brand'
+                      : 'bg-background text-muted-foreground'
                   "
                 >
-                  <IFluentAdd20Regular class="h-5 w-5" />
+                  <Plus class="size-4" />
                 </div>
-                <span class="text-xs text-zinc-500 dark:text-zinc-400">
+                <span class="text-xs text-muted-foreground">
                   {{ isDragging ? $t("Paleisti") : $t("Pridėti") }}
                 </span>
               </div>
@@ -251,6 +262,8 @@
 import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 
+import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from 'lucide-vue-next';
+
 import FocalPointPicker from './FocalPointPicker.vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
@@ -288,6 +301,8 @@ export interface ImageUploadProps {
   focalPointValue?: string | null;
   /** Preview aspect ratio: 'video' (16:9) or '4/3' */
   previewAspect?: 'video' | '4/3';
+  /** Expand preview and dropzone to full width of container */
+  fullWidth?: boolean;
 }
 
 const props = withDefaults(defineProps<ImageUploadProps>(), {
@@ -301,6 +316,7 @@ const props = withDefaults(defineProps<ImageUploadProps>(), {
   maxSize: 10 * 1024 * 1024,
   accept: 'image/jpg,image/jpeg,image/png,image/webp',
   previewAspect: 'video',
+  fullWidth: false,
 });
 
 const emit = defineEmits<{

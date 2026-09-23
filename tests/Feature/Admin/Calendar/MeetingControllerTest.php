@@ -782,7 +782,7 @@ describe('Posėdžiai collection', function (): void {
             ->assertInertia(fn ($page) => $page->component('Admin/Representation/IndexMeeting'));
     });
 
-    test('the trash view is still a database table with the trashed meetings', function (): void {
+    test('the trash is the same collection, fed from the database', function (): void {
         $trashed = Meeting::factory()->hasAttached($this->institution)->create();
         $trashed->delete();
 
@@ -790,10 +790,14 @@ describe('Posėdžiai collection', function (): void {
             ->get(route('meetings.index', ['showDeleted' => 'true']))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('Admin/Representation/IndexMeetingTrash')
-                ->has('data')
-                ->where('showDeleted', true)
+                ->component('Admin/Representation/IndexMeeting')
+                ->where('recentlyChanged', [])
             );
+
+        asUser($this->admin)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'meetings']))
+            ->assertOk()
+            ->assertJsonPath('data.items.0.id', (string) $trashed->id);
     });
 
     test('counts the trash so the collection can offer it', function (): void {

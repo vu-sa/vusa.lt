@@ -9,22 +9,12 @@
     default-view="table"
     :available-views="['table', 'rows']"
     :item-key="bannerKey"
+    :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
     :search-placeholder="$t('Ieškoti banerių…')"
   >
     <template #actions>
-      <Button v-if="isDeleted" as-child variant="ghost">
-        <Link :href="route('banners.index')">
-          ‹ {{ $t('Visi baneriai') }}
-        </Link>
-      </Button>
-      <Button v-else-if="deletedCount > 0" as-child variant="ghost">
-        <Link :href="route('banners.index', { showDeleted: 'true' })">
-          <Trash2 aria-hidden="true" />
-          {{ $t('Ištrinti') }} ({{ deletedCount }})
-        </Link>
-      </Button>
-      <Button v-if="canCreate && !isDeleted" as-child variant="brand">
+      <Button v-if="canCreate && !isDeleted" as-child variant="brand" size="lg">
         <Link :href="route('banners.create')">
           <Plus aria-hidden="true" />
           {{ $t('Naujas baneris') }}
@@ -74,7 +64,7 @@
           </div>
         </div>
         <div class="flex shrink-0 items-center gap-1">
-          <Button as-child variant="ghost" size="icon-sm">
+          <Button as-child variant="outline" size="icon">
             <Link :href="route('banners.edit', item.id)">
               <ChevronRight class="size-4" />
             </Link>
@@ -135,13 +125,13 @@
 
       <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
         <template v-if="isDeleted">
-          <Button variant="ghost" size="icon-sm" :title="$t('Atkurti')" @click="restoreBanner(item)">
+          <Button variant="outline" size="icon" :title="$t('Atkurti')" @click="restoreBanner(item)">
             <RotateCcw class="size-4" />
           </Button>
           <Button
             v-if="canForceDelete"
-            variant="ghost"
-            size="icon-sm"
+            variant="outline"
+            size="icon"
             class="text-destructive hover:text-destructive"
             :title="$t('Ištrinti visam laikui')"
             @click="targetBannerToForceDelete = item"
@@ -150,7 +140,7 @@
           </Button>
         </template>
         <template v-else>
-          <Button as-child variant="ghost" size="icon-sm" :title="$t('Redaguoti')">
+          <Button as-child variant="outline" size="icon" :title="$t('Redaguoti')">
             <Link :href="route('banners.edit', item.id)">
               <Edit class="size-4" />
             </Link>

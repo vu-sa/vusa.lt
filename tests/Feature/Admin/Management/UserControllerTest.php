@@ -85,13 +85,15 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('the trash view is still a table of soft-deleted members', function (): void {
+    test('the trash is the same collection over soft-deleted members', function (): void {
         $gone = makeUser($this->tenant);
         $gone->delete();
 
         asUser($this->admin)->get(route('users.index', ['showDeleted' => 'true']))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Admin/People/IndexUserTrash'));
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexUser')
+                ->where('users.data', fn ($users) => collect($users)->pluck('id')->contains($gone->id)));
     });
 
     test('can access user create page', function (): void {

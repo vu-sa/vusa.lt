@@ -105,7 +105,7 @@
         target="_blank"
         rel="noopener noreferrer"
         variant="brand"
-        size="public"
+        size="lg"
         class="w-full justify-center"
       >
         <IFluentPlay20Filled v-if="isLive" class="size-4" />
@@ -119,8 +119,8 @@
         :href="googleLink"
         target="_blank"
         rel="noopener noreferrer"
-        variant="brand-outline"
-        size="public"
+        variant="outline"
+        size="lg"
         class="w-full justify-center"
       >
         <IFluentCalendarAdd20Regular class="size-4" />
@@ -133,8 +133,8 @@
         :href="event.facebook_url"
         target="_blank"
         rel="noopener noreferrer"
-        variant="brand-outline"
-        size="public"
+        variant="outline"
+        size="lg"
         class="w-full justify-center"
       >
         <ISimpleIconsFacebook class="size-4" />

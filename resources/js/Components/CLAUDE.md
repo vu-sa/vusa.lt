@@ -10,14 +10,16 @@ Related: [Tables](Tables/CLAUDE.md) · [Breadcrumbs](../Composables/useBreadcrum
 Dependencies run one way — upward only. A tier never imports from a tier above it.
 
 ```
-ui/            shadcn-vue primitives. Never edited by hand (regenerated).
+ui/            shadcn-vue wrappers over reka-ui — ours to edit, styled only through tokens.
   ↑            Never imported directly by Pages/** — ESLint blocks ui/card there.
+Brand/         DisplayHeading, EyebrowLabel, TagChip — shared by admin and public.
+  ↑
 Patterns/      Generic, domain-free building blocks.
   ↑            SectionCard, EmptyState, StatusBadge, SheetForm, FormSection, ConfirmDialog …
 <Entity>/      Duties/, Institutions/, Meetings/, Members/, Files/ …
   ↑            Compose Patterns + domain knowledge. One barrel index.ts per folder.
 Layouts/       Page shells: OverviewPage, CollectionPage, RecordPage, FormPage
-               (legacy: AdminContentPage, IndexTablePage, FormUpsertLayout)
+               (legacy: AdminContentPage, FormUpsertLayout)
   ↑
 Pages/Admin/   Compose only. No raw <Card>, no hand-rolled hero or grid markup.
 ```
@@ -37,8 +39,9 @@ ui/  →  Public/Base/  →  Public/<area>/  →  Public/Layouts/  →  Pages/Pu
 ui/  →  Patterns/     →  <Entity>/       →  Layouts/         →  Pages/Admin/
 ```
 
-The two never import each other. Where both have a component for the same idea, that is
-deliberate — `Patterns/DateBadge` is a muted `rounded-lg` inline badge, `Public/Base/DatePlate`
+The two never import each other; what both need lives one tier down, in `Brand/` (the ruled
+display headline, the eyebrow, the tag chip) and in `ui/` (buttons and controls). Where both have a
+component for the same idea, that is deliberate — `Patterns/DateBadge` is a muted `rounded-lg` inline badge, `Public/Base/DatePlate`
 is a square plate with a brand rule sized to sit on a photograph.
 
 ### `Components/Public/Base/`
@@ -56,7 +59,7 @@ is a square plate with a brand rule sized to sit on a photograph.
 | One figure in a stats strip | `StatCell` |
 | Reader preferences (text size, contrast, underlines) | `AccessibilityMenu` |
 | The site mark | `HeaderWordmark` |
-| A primary call to action | `ui/button` with `variant="brand"` |
+| A primary call to action | `ui/button` with `variant="brand" size="lg"` |
 
 Rules for anything added there:
 
@@ -73,15 +76,28 @@ Rules for anything added there:
   'error' } }`. Storybook is the only place the rendered result can be checked in both themes —
   jsdom cannot resolve Tailwind's `dark:` variant.
 
+## Buttons and controls (both surfaces)
+
+- `ui/button` is the one button. Variants are token-only (`brand`, `outline`, `default` ink,
+  `ghost`, `secondary`, `destructive`, `link`); the `voice` is bold uppercase unless you pass
+  `voice="plain"` (calendar cells, pagination numbers). Sizes: `lg` 48px for a page's primary,
+  `default` 44px, `sm` 36px in toolbars and row actions, `icon*` for squares.
+- `ui/control` holds the bordered uppercase control both sites build filters from:
+  `controlVariants({ size, active })` for chips and Filtrai/Rikiuoti/popover triggers,
+  `segmentGroupClass` + `segmentVariants({ active })` for view toggles, `searchFieldClass`,
+  `controlCountClass`. Don't hand-roll `border-brand bg-brand/5 …` again.
+- Tables style through `ui/table` (hairline box, shaded uppercase header, roomy rows).
+
 ## What do I reach for?
 
 | I need… | Use | From |
 |---|---|---|
 | A workspace **overview** | `OverviewPage` | `@/Components/Layouts/OverviewPage.vue` |
-| An admin **collection** (rows / table / preview) | `CollectionPage` + `useDatabaseCollectionSource` / `useTypesenseCollectionSource` | `@/Components/Layouts/CollectionPage.vue`, `@/Composables/useCollectionSource` |
+| An admin **collection** (rows / table / preview) | `CollectionPage` + a Typesense, database or local source | `@/Components/Layouts/CollectionPage.vue`, `@/Composables/useCollectionSource` ([Tables/CLAUDE.md](Tables/CLAUDE.md)) |
 | An admin **record** page | `RecordPage` | `@/Components/Layouts/RecordPage.vue` |
 | A **create/edit** form page | `FormPage` | `@/Components/Layouts/FormPage.vue` |
 | A titled group of fields inside a form | `FormSection` | `@/Components/Patterns` |
+| A settings box in a form's `#aside` (+ switch rows) | `FormPanel`, `FormToggleRow` | `@/Components/Patterns` |
 | A small create/edit over its collection or record | `SheetForm` | `@/Components/Patterns` |
 | "Are you sure?" before ending, discarding or deleting | `ConfirmDialog` | `@/Components/Patterns` |
 | A status (reservation, vote, task, content…) | `StatusBadge` + the enum's map in `Constants/statuses.ts` | `@/Components/Patterns` |
@@ -139,14 +155,20 @@ example of a component that is a control rather than a container.
 
 ## FormPage, SheetForm, FormSection
 
-`FormPage` is the shell for a form that edits one record's own attributes (`.ai/rules/admin-forms.md`): a
-narrow column on the tinted edit canvas with a "Redaguoji" / "Kuri naują" eyebrow, an optional LT | EN
-switch, a `#advanced` disclosure ("Papildomi nustatymai"), a `#danger-zone`, and a sticky save bar. It
-owns three behaviours callers should not re-implement: **⌘/Ctrl + Enter** submits and **Esc** cancels
-(listeners on the `<form>`, so a portaled Select never cancels it), and on a failed submit the error
-summary is scrolled into view and focused, each message focusing its field. Pass `mode="create"` for a new
-record (the save bar never claims "all saved"), and `field-ids` when an error key is not the field's id
-(`name.lt` → `duty-name`). Relations with their own lifecycle do **not** belong in it.
+`FormPage` is the shell for a form that edits one record's own attributes (`.ai/rules/admin-forms.md`), on the
+tinted edit canvas with a "Redaguoji" / "Kuri naują" eyebrow, a `u-display` title and lead. While it is mounted
+the shell is in **focus mode** (`useShellFocus`): the workspace picker, palette, section tabs, breadcrumbs and
+bottom nav give way to the form's own bar (back, save state, `#header-actions`, Išsaugoti), teleported into
+`ShellTopBar`; below `md` Išsaugoti sits in a bottom save bar instead. Pass an `#aside` slot for the two-column
+v0 shape: fields in the main column, settings in `FormPanel`s (`Patterns/`, with `FormToggleRow` for switch
+rows) — `PageForm.vue` is the reference. Without it the form stays one column (`#advanced` "Papildomi
+nustatymai", `#danger-zone`). It owns three behaviours callers should not re-implement: **⌘/Ctrl + Enter**
+submits and **Esc** cancels (listeners on the `<form>`, so a portaled Select never cancels it), and on a failed
+submit the error summary is scrolled into view and focused, each message focusing its field. Pass
+`mode="create"` for a new record (the bar never claims "all saved"), `field-ids` when an error key is not the
+field's id (`name.lt` → `duty-name`), and `:available-locales="[]"` for a single-language record. Field labels
+and hints come from `FormFieldWrapper` (uppercase micro-label, hint under the field — never a tooltip).
+Relations with their own lifecycle do **not** belong in it.
 
 `SheetForm` is the same idea over a collection or record: a right sheet, a bottom sheet below `md`, a
 `#danger-zone` in the body (never the footer), and a `dirty` prop that makes Esc, the overlay and
@@ -163,5 +185,5 @@ status and action placement, key facts, desktop tabs/mobile stacked sections, co
 navigation, and the final `activity` slot. Pass resolved URLs and permission-filtered actions;
 domain behavior stays in the page.
 
-`IndexTablePage` and `AdminContentPage` remain only for pages not yet migrated; don't add new
-consumers (see `.ai/rules/js-pages-admin.md` → migrate on touch).
+`AdminContentPage` remains only for pages not yet migrated; don't add new consumers (see
+`.ai/rules/js-pages-admin.md` → migrate on touch). Collections: see [Tables/CLAUDE.md](Tables/CLAUDE.md).

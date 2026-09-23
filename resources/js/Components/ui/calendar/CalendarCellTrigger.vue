@@ -2,7 +2,7 @@
   <CalendarCellTrigger
     data-slot="calendar-cell-trigger"
     :class="cn(
-      buttonVariants({ variant: 'ghost' }),
+      buttonVariants({ variant: 'ghost', voice: 'plain' }),
       'size-8 p-0 font-normal aria-selected:opacity-100 cursor-default',
       '[&[data-today]:not([data-selected])]:bg-secondary [&[data-today]:not([data-selected])]:text-foreground',
       // Selected

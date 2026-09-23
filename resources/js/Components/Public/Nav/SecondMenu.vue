@@ -72,8 +72,8 @@
           <span class="h-4 w-px bg-border" aria-hidden="true" />
           <Button
             as-child
-            variant="brand-outline"
-            size="public-sm"
+            variant="outline"
+            size="sm"
             class="w-31 shrink-0 gap-1 px-2 text-foreground/70"
           >
             <a

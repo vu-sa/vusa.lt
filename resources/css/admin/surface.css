@@ -5,84 +5,8 @@
    `data-surface="admin"` is stamped on <html> server-side by app.blade.php, via
    App\Support\DesignSurface — Public/* pages get `public`, Admin/* pages get `admin`.
 
-   D1's "one visual language" means this scope is deliberately the SAME palette as
-   [data-surface="public"] — warm paper / near-black ink, zero radius — kept as its own scope
-   (rather than folding admin into the public one) so the admin redesign can diverge from the
-   public site later without the two fighting over one set of tokens. `--accent` keeps its
-   shadcn meaning here too: the hover/muted surface, never the brand.
+   The palette itself is shared with the public site: theme/surface-palette.css.
    ================================================================================== */
-
-[data-surface="admin"] {
-  color-scheme: light;
-
-  /* D10 — the admin takes the public typeface. Set on the scope, not on a wrapper div, so
-     anything Reka teleports to <body> (dropdowns, dialogs, the command palette, sonner) keeps
-     it — the same reasoning as public/surface.css:20-24. */
-  font-family: var(--font-public);
-
-  --background: oklch(0.965 0.006 85);
-  --foreground: oklch(0.17 0.008 70);
-  --card: oklch(0.995 0.003 85);
-  --card-foreground: oklch(0.17 0.008 70);
-  --popover: oklch(0.995 0.003 85);
-  --popover-foreground: oklch(0.17 0.008 70);
-  --primary: oklch(0.19 0.008 70);
-  --primary-foreground: oklch(0.97 0.006 85);
-  /* The tinted edit-mode canvas (.ai/rules/js-pages-admin.md): forms
-     and focused editors sit on this so editing never looks like viewing. */
-  --secondary: oklch(0.925 0.006 85);
-  --secondary-foreground: oklch(0.2 0.008 70);
-  --muted: oklch(0.93 0.006 85);
-  --muted-foreground: oklch(0.46 0.01 75);
-  /* shadcn semantics: the hover/lifted surface, NOT the brand. Matches --secondary — see the
-     same note in public/surface.css. */
-  --accent: oklch(0.925 0.006 85);
-  --accent-foreground: oklch(0.2 0.008 70);
-  --destructive: oklch(0.55 0.19 27);
-  --border: oklch(0.855 0.008 80);
-  --input: oklch(0.76 0.01 78);
-  --ring: oklch(0.48 0.18 25);
-  --border-opaque: var(--border);
-
-  /* D9 — square everywhere, inputs and checkboxes included. `rounded-full` is a literal and
-     survives this regardless; per-component removal is PR 2.8 (primitive audit), not here. */
-  --radius: 0rem;
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
-}
-
-/* Two selectors, same reason as public/surface.css:71-76: the scope lands on <html> for a real
-   admin page (where .dark sits on the same element), and on a nested wrapper for any admin
-   surface embedded inside another dark scope. */
-.dark[data-surface="admin"],
-.dark [data-surface="admin"] {
-  color-scheme: dark;
-  --background: oklch(0.135 0.004 70);
-  --foreground: oklch(0.955 0.004 85);
-  --card: oklch(0.175 0.005 70);
-  --card-foreground: oklch(0.955 0.004 85);
-  --popover: oklch(0.165 0.005 70);
-  --popover-foreground: oklch(0.955 0.004 85);
-  --primary: oklch(0.955 0.004 85);
-  --primary-foreground: oklch(0.15 0.005 70);
-  --secondary: oklch(0.225 0.006 70);
-  --secondary-foreground: oklch(0.955 0.004 85);
-  --muted: oklch(0.225 0.006 70);
-  --muted-foreground: oklch(0.68 0.008 78);
-  --accent: oklch(0.225 0.006 70);
-  --accent-foreground: oklch(0.955 0.004 85);
-  --destructive: oklch(0.62 0.2 27);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.82 0.152 72);
-  --border-opaque: color-mix(in oklab, white 12%, var(--background));
-}
 
 /* Numbers line up in tables without every component remembering `tabular-nums` (D10). */
 [data-surface="admin"] :is(table, [data-slot="table"]) {
@@ -162,3 +86,19 @@ html[data-surface="admin"] #nprogress .peg {
   display: none;
 }
 
+
+/* Fields on the editing canvas (FormPage): paper on the tinted canvas, 44px, and a brand
+   hairline on focus instead of a ring. Unlayered on purpose — it must beat the ui/* utilities
+   (`bg-transparent`, `data-[size=default]:h-9`) — and scoped so dialogs and filters keep density. */
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"], [data-slot="textarea"]) {
+  background-color: var(--background);
+  box-shadow: none;
+}
+
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"][data-size="default"]) {
+  min-block-size: 2.75rem;
+}
+
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"], [data-slot="textarea"]):focus-visible:not([aria-invalid="true"]) {
+  border-color: var(--brand);
+}

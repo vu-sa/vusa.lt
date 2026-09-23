@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import { computed, ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { router } from '@inertiajs/vue3';
 
 import CollectionPage from '../CollectionPage.vue';
 
@@ -156,7 +157,7 @@ describe('CollectionPage', () => {
     const wrapper = mountPage(source);
 
     expect(wrapper.text()).toContain('Metai: 2026');
-    expect(wrapper.text()).toContain('Rasta :count');
+    expect(wrapper.find('[data-slot="collection-active-chips"]').text()).toContain('Rasta 2');
 
     await wrapper.findAll('[data-slot="collection-active-chips"] button')[0].trigger('click');
     expect(spies.clearChip).toHaveBeenCalledWith('year:2026');
@@ -343,5 +344,40 @@ describe('CollectionPage', () => {
 
     expect(scroller.scrollTo).toHaveBeenCalledWith({ top: 480 });
     wrapper.unmount();
+  });
+
+  it('offers the trash as a control over the same page and leaves it the same way', async () => {
+    const { source } = makeSource();
+    const wrapper = mountPage(source, { trash: { count: 3, active: false } });
+
+    const control = wrapper.findAll('[data-slot="collection-control-row"] button').find(button => button.text().includes('Ištrinti'));
+    expect(control?.text()).toContain('3');
+
+    await control?.trigger('click');
+    expect(vi.mocked(router.visit)).toHaveBeenLastCalledWith(`${window.location.origin}/mano/meetings?showDeleted=true`);
+  });
+
+  it('hides the trash control when there is nothing to restore', () => {
+    const { source } = makeSource();
+    const wrapper = mountPage(source, { trash: { count: 0, active: false } });
+
+    expect(wrapper.find('[data-slot="collection-control-row"]').text()).not.toContain('Ištrinti');
+  });
+
+  it('hands the selected rows to the bulk actions and clears them when the result set changes', async () => {
+    const { source } = makeSource();
+    const wrapper = mountPage(source, { selectable: true }, {
+      'bulk-actions': '<template #bulk-actions="{ selected }"><span class="bulk">{{ selected.map(item => item.name).join(",") }}</span></template>',
+    });
+
+    await wrapper.findAll('[data-slot="collection-rows"] button[role="checkbox"]')[1].trigger('click');
+    await flushPromises();
+
+    expect(wrapper.find('.bulk').text()).toBe('Antras');
+
+    (source.query as unknown as { value: string }).value = 'kita';
+    await flushPromises();
+
+    expect(wrapper.find('.bulk').exists()).toBe(false);
   });
 });

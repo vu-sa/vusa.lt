@@ -64,8 +64,8 @@ describe('TiptapImageMenu', () => {
   it('marks the image\'s current alignment as active', () => {
     const { wrapper } = mountMenu({ align: 'right' });
 
-    expect(buttonByTitle(wrapper, 'rich-content.align_right')!.classes().join(' ')).toContain('bg-zinc-900');
-    expect(buttonByTitle(wrapper, 'rich-content.align_left')!.classes().join(' ')).not.toContain('bg-zinc-900');
+    expect(buttonByTitle(wrapper, 'rich-content.align_right')!.classes().join(' ')).toContain('bg-primary');
+    expect(buttonByTitle(wrapper, 'rich-content.align_left')!.classes().join(' ')).not.toContain('bg-primary');
   });
 
   it('writes the alignment the author picks', async () => {

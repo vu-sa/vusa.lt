@@ -5,6 +5,15 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.18 — Consistent lists across Mano VU SA (2026-09-23) {#v2-18}
+
+- ✨ **One list design** — pages, news, events, institutions, meetings, members, roles, permissions, types, relationships, units, study programmes and study sets now look and behave the same: a large heading, search with filters, sorting, rows, table and preview views, and "Show more"
+- ✨ **Deleted records in the same list** — the "Deleted (N)" control in the filter bar shows deleted records in the same view, where you can restore them or delete them permanently
+- ⭐ **Select several records** — when merging members, duties, tags or study programmes and when deciding on reservations, select everything shown in one click; in the table you can sort by clicking a column heading and hide columns under "Columns"
+- ✨ **Bolder buttons and headings** — admin buttons, filters and page headings now match the public website, with larger touch targets on phones and tablets
+- ✨ **New page editor** — while creating or editing a page, the top bar becomes an editor bar with Back, the save state and Save; fields sit in a content column and side panels (Publishing, Structure, Language, Display settings), and on phones Save always stays within thumb reach at the bottom
+- ✨ **Hints under fields** — form field hints now show under the field instead of only on hover, so you can see them on a phone too
+
 ## v2.17 — System administration (2026-09-22) {#v2-17}
 
 - ✨ **Clearer system administration** — roles, types, relationships, support requests, the mail queue, and system status now present their important information and actions in a consistent record view

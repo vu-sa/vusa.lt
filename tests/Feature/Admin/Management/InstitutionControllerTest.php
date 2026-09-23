@@ -267,45 +267,19 @@ describe('authorized access', function (): void {
                 ->missing('data'));
     });
 
-    test('the trash view is still a table of soft-deleted institutions', function (): void {
+    test('the trash is the same collection, fed from the database', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $institution->delete();
 
         asUser($this->admin)->get(route('institutions.index', ['showDeleted' => 'true']))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('Admin/People/IndexInstitutionTrash')
-                ->has('data', 1)
-                ->where('data.0.id', $institution->id));
-    });
+                ->component('Admin/People/IndexInstitution')
+                ->where('deletedCount', 1));
 
-    // The trash table's cell shows only the first few meetings, so they must arrive
-    // newest first — an administrator is looking for what just happened.
-    test('indexes institution meetings newest first', function (): void {
-        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-
-        Meeting::factory()->create(['start_time' => '2024-01-01 10:00:00'])
-            ->institutions()->attach($institution);
-        Meeting::factory()->create(['start_time' => '2026-01-01 10:00:00'])
-            ->institutions()->attach($institution);
-        Meeting::factory()->create(['start_time' => '2025-01-01 10:00:00'])
-            ->institutions()->attach($institution);
-
-        $institution->delete();
-
-        asUser($this->admin)->get(route('institutions.index', ['showDeleted' => 'true']))
+        asUser($this->admin)->getJson(route('api.v1.admin.trash.index', ['collection' => 'institutions']))
             ->assertOk()
-            ->assertInertia(function ($page) use ($institution): void {
-                $meetings = collect($page->toArray()['props']['data'])
-                    ->firstWhere('id', $institution->id)['meetings'];
-
-                $years = array_map(
-                    fn (array $meeting): int => (int) substr((string) $meeting['start_time'], 0, 4),
-                    $meetings,
-                );
-
-                expect($years)->toBe([2026, 2025, 2024]);
-            });
+            ->assertJsonPath('data.items.0.id', (string) $institution->id);
     });
 
     test('can access institution create page', function (): void {

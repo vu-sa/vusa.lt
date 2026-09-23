@@ -10,41 +10,56 @@
 
     <CollectionQuickFilters :filters="quickFilters ?? []" @toggle="id => emit('quickFilter', id)" />
 
-    <CollectionControlRow
-      :query="source.query.value"
-      :placeholder="searchPlaceholder ?? $t('Ieškoti')"
-      :has-filters="source.facets.value.length > 0"
-      :filters-open="isAtLeastMd ? filtersOpen : sheetOpen"
-      :active-filter-count="source.activeFilterCount.value"
-      :sort-by="source.sortBy.value"
-      :sort-options="source.sortOptions.value"
-      @search="(query, immediate) => source.search(query, immediate)"
-      @toggle-filters="toggleFilters"
-      @update:sort-by="source.setSortBy"
+    <section class="flex flex-col gap-3 border-y border-border py-4" :aria-label="$t('Paieška ir filtrai')">
+      <CollectionControlRow
+        :query="source.query.value"
+        :placeholder="searchPlaceholder ?? $t('Ieškoti')"
+        :has-filters="source.facets.value.length > 0"
+        :filters-open="isAtLeastMd ? filtersOpen : sheetOpen"
+        :active-filter-count="source.activeFilterCount.value"
+        :sort-by="source.sortBy.value"
+        :sort-options="source.sortOptions.value"
+        :trash
+        @search="(query, immediate) => source.search(query, immediate)"
+        @toggle-filters="toggleFilters"
+        @toggle-trash="toggleTrash"
+        @update:sort-by="source.setSortBy"
+      >
+        <template #view-toggle>
+          <CollectionViewToggle :model-value="view" :views="availableViews" @update:model-value="setView" />
+        </template>
+      </CollectionControlRow>
+
+      <CollectionFilterBar
+        v-model:sheet-open="sheetOpen"
+        :facets="source.facets.value"
+        :open="filtersOpen"
+        :is-at-least-md
+        :active-count="source.activeFilterCount.value"
+        @toggle="source.toggleFilter"
+        @clear="source.clearFilters"
+      />
+
+      <CollectionActiveChips
+        :chips="source.chips.value"
+        :total="source.hasSearched.value && !source.error.value ? source.total.value : null"
+        @remove="source.clearChip"
+        @clear="source.clearFilters"
+      />
+    </section>
+
+    <p
+      v-if="trash?.active"
+      class="flex items-center gap-2 border-l-2 border-status-attention bg-status-attention-surface px-4 py-3 text-sm text-status-attention"
+      role="status"
     >
-      <template #view-toggle>
-        <CollectionViewToggle :model-value="view" :views="availableViews" @update:model-value="setView" />
-      </template>
-    </CollectionControlRow>
-
-    <CollectionFilterBar
-      v-model:sheet-open="sheetOpen"
-      :facets="source.facets.value"
-      :open="filtersOpen"
-      :is-at-least-md
-      :active-count="source.activeFilterCount.value"
-      @toggle="source.toggleFilter"
-      @clear="source.clearFilters"
-    />
-
-    <CollectionActiveChips
-      :chips="source.chips.value"
-      :total="source.hasSearched.value && !source.error.value ? source.total.value : null"
-      @remove="source.clearChip"
-      @clear="source.clearFilters"
-    />
+      <Trash2 class="size-4 shrink-0" aria-hidden="true" />
+      {{ $t('Rodomi ištrinti įrašai. Juos gali atkurti arba ištrinti visam laikui.') }}
+    </p>
 
     <CollectionResults
+      v-model:selection="selection"
+      :collection
       :view
       :items="source.items.value"
       :pinned="pinnedItems"
@@ -57,10 +72,15 @@
       :error="source.error.value"
       :is-filtered
       :selected-key
+      :selectable
+      :can-select
+      :sort-by="source.sortBy.value"
+      :sort-options="source.sortOptions.value"
       @clear="clearAll"
       @retry="source.refresh"
       @load-more="source.loadMore"
       @select="select"
+      @sort="source.setSortBy"
     >
       <template #row="slotProps">
         <slot name="row" v-bind="slotProps" />
@@ -75,6 +95,15 @@
         <slot name="empty" />
       </template>
     </CollectionResults>
+
+    <CollectionSelectionBar
+      v-if="selectable && selection.length > 0"
+      :count="selection.length"
+      :count-label="$t('Pažymėta')"
+      @clear="selection = []"
+    >
+      <slot name="bulk-actions" :selected="selectedItems" :clear="() => { selection = []; }" />
+    </CollectionSelectionBar>
   </div>
 </template>
 
@@ -82,6 +111,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useMediaQuery } from '@vueuse/core';
+import { Trash2 } from 'lucide-vue-next';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 import CollectionActiveChips from '@/Components/Collection/CollectionActiveChips.vue';
@@ -89,13 +119,14 @@ import CollectionControlRow from '@/Components/Collection/CollectionControlRow.v
 import CollectionFilterBar from '@/Components/Collection/CollectionFilterBar.vue';
 import CollectionQuickFilters from '@/Components/Collection/CollectionQuickFilters.vue';
 import CollectionResults from '@/Components/Collection/CollectionResults.vue';
+import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
 import CollectionViewToggle from '@/Components/Collection/CollectionViewToggle.vue';
-import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import type { CollectionColumn, CollectionQuickFilter, CollectionTrash } from '@/Components/Collection/types';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
 import { useCollectionView, type CollectionViewMode } from '@/Composables/useCollectionView';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   source: CollectionSource<T>;
   /** Stable name; scopes the remembered view and filter-bar state. */
   collection: string;
@@ -110,18 +141,36 @@ const props = defineProps<{
   /** Records the user just changed, shown until the search index reflects them (O1's Typesense trap). */
   pinnedItems?: readonly T[];
   searchPlaceholder?: string;
-}>();
+  /** Views this collection offers; the viewport narrows them further. */
+  availableViews?: CollectionViewMode[];
+  /** Shows checkboxes; selected rows reach the `bulk-actions` slot in a bottom-pinned bar. */
+  selectable?: boolean;
+  /** Rows that may not be selected get no checkbox. */
+  canSelect?: (item: T) => boolean;
+  /** Soft-deleted records as a filter over this same page (`?showDeleted=true`). */
+  trash?: CollectionTrash;
+}>(), {
+  lead: undefined,
+  quickFilters: undefined,
+  columns: undefined,
+  pinnedItems: undefined,
+  searchPlaceholder: undefined,
+  availableViews: undefined,
+  canSelect: undefined,
+  trash: undefined,
+});
 
 const emit = defineEmits<{
   quickFilter: [id: string];
 }>();
 
 defineSlots<{
-  actions: () => unknown;
-  row: (props: { item: T; selected: boolean; pinned: boolean }) => unknown;
-  cell: (props: { item: T; column: CollectionColumn; pinned: boolean }) => unknown;
-  preview: (props: { item: T }) => unknown;
-  empty: () => unknown;
+  'actions': () => unknown;
+  'row': (props: { item: T; selected: boolean; pinned: boolean }) => unknown;
+  'cell': (props: { item: T; column: CollectionColumn; pinned: boolean }) => unknown;
+  'preview': (props: { item: T }) => unknown;
+  'empty': () => unknown;
+  'bulk-actions': (props: { selected: T[]; clear: () => void }) => unknown;
 }>();
 
 const root = ref<HTMLElement | null>(null);
@@ -130,7 +179,38 @@ const isAtLeastMd = useMediaQuery('(min-width: 768px)');
 const { view, availableViews, setView, filtersOpen } = useCollectionView({
   collection: props.collection,
   defaultView: props.defaultView,
+  views: props.availableViews,
 });
+
+// --- Selection (TanStack row selection, keyed by itemKey) ------------------------------------
+
+/** Selected item keys; bind `v-model:selection` when the page must clear it itself (after a bulk decision). */
+const selection = defineModel<string[]>('selection', { default: () => [] });
+
+const selectedItems = computed<T[]>(() => {
+  const keys = new Set(selection.value);
+
+  return [...(props.pinnedItems ?? []), ...props.source.items.value].filter(item => keys.has(props.itemKey(item)));
+});
+
+// A selection made against one result set must not silently act on a different one.
+watch(
+  () => [props.source.query.value, props.source.filters.value, props.selectable] as const,
+  () => {
+    selection.value = [];
+  },
+);
+
+function toggleTrash(): void {
+  const url = new URL(window.location.href);
+  const next = new URL(url.pathname, url.origin);
+
+  if (!props.trash?.active) {
+    next.searchParams.set('showDeleted', 'true');
+  }
+
+  router.visit(next.toString());
+}
 
 /** Below md the Filtrai button opens the sheet instead of the inline row. */
 const sheetOpen = ref(false);

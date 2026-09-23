@@ -3,10 +3,10 @@
 use App\Http\Controllers\AdminController;
 
 /**
- * `ServerDataTable` resolves its empty-state heading through
- * `entities.{entityName}.model`, so a missing key leaks the raw key string into the
- * admin UI ("entities.news.model") instead of a model name. These keys also feed
- * breadcrumb and sidebar helpers, so a gap is never merely cosmetic.
+ * Admin index pages resolve model names through `entities.{entityName}.model`, so a
+ * missing key leaks the raw key string into the admin UI ("entities.news.model") instead
+ * of a model name. These keys also feed breadcrumb and sidebar helpers, so a gap is never
+ * merely cosmetic.
  *
  * The scan runs while Pest collects the file, before the application is booted, so it
  * uses plain filesystem calls rather than the `base_path()` / `File` helpers.

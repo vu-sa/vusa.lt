@@ -9,8 +9,8 @@
       @dismiss="spotlight.dismiss"
     >
       <SheetTrigger as-child>
-        <Button size="icon-sm" variant="ghost" class="rounded-full" :title="$t('activity.title')">
-          <History class="h-4 w-4" />
+        <Button size="icon" variant="outline" :title="$t('activity.title')" :aria-label="$t('activity.title')">
+          <History class="size-4" />
         </Button>
       </SheetTrigger>
     </SpotlightPopover>
@@ -19,7 +19,7 @@
         <SheetTitle>{{ $t('activity.title') }}</SheetTitle>
       </SheetHeader>
 
-      <div class="flex flex-wrap items-center gap-2 border-b border-zinc-200 px-4 pb-3 dark:border-zinc-700">
+      <div class="flex flex-wrap items-center gap-2 border-b border-border px-4 pb-3">
         <Button
           size="sm"
           :variant="scope === 'tree' ? 'secondary' : 'ghost'"

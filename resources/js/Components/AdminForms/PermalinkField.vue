@@ -1,49 +1,59 @@
 <template>
-  <div class="space-y-2">
-    <Label class="flex items-center gap-1.5">
-      <Link2 class="h-4 w-4" />
+  <div class="flex flex-col gap-2">
+    <Label :for="id" class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
       {{ label ?? $t('Nuoroda') }}
     </Label>
 
-    <div class="flex items-stretch gap-2">
-      <div class="flex flex-1 items-center gap-0 overflow-hidden border border-border bg-muted/50">
-        <span class="shrink-0 border-r border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
-          {{ baseUrl }}/
-        </span>
-        <Input
-          :model-value="permalink"
-          :disabled
-          class="border-0 bg-transparent focus-visible:ring-0"
-          :class="inputValidationClass"
-          :placeholder="$t('nuorodos-fragmentas')"
-          @update:model-value="$emit('update:permalink', $event)"
-          @change="$emit('change', $event)"
-        />
-      </div>
-
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <Button variant="outline" size="icon" @click="copyUrl">
-              <Copy v-if="!copied" class="h-4 w-4" />
-              <Check v-else class="h-4 w-4 text-[var(--status-success)]" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{{ $t('Kopijuoti nuorodą') }}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <TooltipProvider v-if="viewUrl">
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <Button variant="outline" size="icon" as="a" :href="viewUrl" target="_blank" rel="noopener noreferrer">
-              <ExternalLink class="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{{ $t('Atidaryti puslapį') }}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+    <div
+      :class="[
+        'flex min-h-11 items-stretch border bg-background text-sm transition-colors focus-within:border-brand',
+        inputValidationClass,
+      ]"
+    >
+      <span class="flex min-w-0 shrink items-center gap-2 pl-3 font-mono text-muted-foreground">
+        <Link2 class="size-4 shrink-0" aria-hidden="true" />
+        <span class="truncate">{{ baseUrl }}/</span>
+      </span>
+      <Input
+        :id
+        :model-value="permalink"
+        :disabled
+        class="min-w-24 flex-1 border-0 bg-transparent px-1 font-mono focus-visible:ring-0"
+        :placeholder="$t('nuorodos-fragmentas')"
+        @update:model-value="$emit('update:permalink', $event)"
+        @change="$emit('change', $event)"
+      />
+      <Button
+        variant="ghost"
+        size="icon"
+        type="button"
+        class="h-auto w-11 shrink-0 border-l border-border"
+        :aria-label="$t('Kopijuoti nuorodą')"
+        :title="$t('Kopijuoti nuorodą')"
+        @click="copyUrl"
+      >
+        <Copy v-if="!copied" class="size-4" />
+        <Check v-else class="size-4 text-[var(--status-success)]" />
+      </Button>
+      <Button
+        v-if="viewUrl"
+        variant="ghost"
+        size="icon"
+        as="a"
+        :href="viewUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="h-auto w-11 shrink-0 border-l border-border"
+        :aria-label="$t('Atidaryti puslapį')"
+        :title="$t('Atidaryti puslapį')"
+      >
+        <ExternalLink class="size-4" />
+      </Button>
     </div>
+
+    <p v-if="hint" class="text-xs leading-relaxed text-muted-foreground">
+      {{ hint }}
+    </p>
 
     <p v-if="disabled && explanation" class="flex items-center gap-1 text-xs text-muted-foreground">
       <Info class="h-3.5 w-3.5 shrink-0" />
@@ -70,9 +80,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+  id?: string;
   permalink?: string;
   baseUrl: string;
   disabled?: boolean;
@@ -86,7 +96,16 @@ const props = defineProps<{
   validating?: boolean;
   valid?: boolean;
   invalid?: boolean;
-}>();
+  hint?: string;
+}>(), {
+  id: 'permalink',
+  permalink: undefined,
+  viewUrl: undefined,
+  explanation: undefined,
+  label: undefined,
+  warning: undefined,
+  hint: undefined,
+});
 
 const emit = defineEmits<{
   (e: 'update:permalink', value: string): void;
@@ -97,16 +116,13 @@ const copied = ref(false);
 const { copy } = useClipboard();
 
 const inputValidationClass = computed(() => {
-  if (props.validating) {
-    return '';
+  if (!props.validating && props.invalid) {
+    return 'border-destructive focus-within:border-destructive';
   }
-  if (props.valid) {
-    return 'border-[var(--status-success-border)] focus:border-[var(--status-success)]';
+  if (!props.validating && props.valid) {
+    return 'border-[var(--status-success-border)]';
   }
-  if (props.invalid) {
-    return 'border-destructive focus:border-destructive';
-  }
-  return '';
+  return 'border-border';
 });
 
 const fullUrl = computed(() => {

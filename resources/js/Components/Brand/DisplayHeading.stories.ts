@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import DisplayHeading from './DisplayHeading.vue';
-import SectionBand from './SectionBand.vue';
+import SectionBand from '@/Components/Public/Base/SectionBand.vue';
 
 /**
  * The signature headline block. Switch the toolbar's Theme to see the brand rule move between
  * VU SA red (light) and amber (dark), and Surface to see it fall back to the admin palette.
  */
 const meta: Meta<typeof DisplayHeading> = {
-  title: 'Public/Base/DisplayHeading',
+  title: 'Brand/DisplayHeading',
   component: DisplayHeading,
   tags: ['autodocs'],
   // New code with no legacy debt, so an axe violation here is a defect, not a backlog item.

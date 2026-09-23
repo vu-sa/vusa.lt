@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Admin\AgendaItemNoteApiController;
 use App\Http\Controllers\Api\Admin\AnalyticsApiController;
 use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
 use App\Http\Controllers\Api\Admin\BannerApiController;
+use App\Http\Controllers\Api\Admin\CalendarApiController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TagApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
+use App\Http\Controllers\Api\Admin\TrashApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
 use App\Http\Controllers\Api\Admin\UserApiController;
 use App\Http\Controllers\Api\Admin\UserAttributionApiController;
@@ -126,6 +128,11 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('forms', [FormApiController::class, 'index'])->name('forms.index');
         Route::get('banners', [BannerApiController::class, 'index'])->name('banners.index');
         Route::get('eventTypes', [EventTypeApiController::class, 'index'])->name('eventTypes.index');
+        Route::get('calendar', [CalendarApiController::class, 'index'])->name('calendar.index');
+        // Trash of the Typesense-backed collections: the index holds no deleted rows.
+        Route::get('trash/{collection}', [TrashApiController::class, 'index'])
+            ->whereIn('collection', array_keys(TrashApiController::COLLECTIONS))
+            ->name('trash.index');
 
         // Tasks
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');

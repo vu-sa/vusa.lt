@@ -10,6 +10,8 @@ interface UseCollectionViewOptions {
   /** Stable name of the collection; scopes the remembered choice (O3: per user per collection). */
   collection: string;
   defaultView: CollectionViewMode;
+  /** Views this collection offers at all; the viewport narrows them further. Rows are always kept. */
+  views?: CollectionViewMode[];
 }
 
 function isViewMode(value: unknown): value is CollectionViewMode {
@@ -44,12 +46,18 @@ export function useCollectionView(options: UseCollectionViewOptions) {
       return ['rows'];
     }
 
-    return isAtLeastXl.value ? ['rows', 'table', 'preview'] : ['rows', 'table'];
+    const byViewport: CollectionViewMode[] = isAtLeastXl.value ? ['rows', 'table', 'preview'] : ['rows', 'table'];
+
+    return byViewport.filter(mode => mode === 'rows' || !options.views || options.views.includes(mode));
   });
 
-  const view = computed<CollectionViewMode>(() =>
-    availableViews.value.includes(chosen.value) ? chosen.value : 'rows',
-  );
+  const view = computed<CollectionViewMode>(() => {
+    if (availableViews.value.includes(chosen.value)) {
+      return chosen.value;
+    }
+
+    return availableViews.value.includes(options.defaultView) ? options.defaultView : 'rows';
+  });
 
   function setView(next: CollectionViewMode): void {
     chosen.value = next;

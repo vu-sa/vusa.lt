@@ -4,11 +4,11 @@
 
     <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-slot="overview-title-band">
       <div class="min-w-0">
-        <p v-if="eyebrow" class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <p v-if="eyebrow" class="text-xs font-bold uppercase tracking-[0.2em] text-brand">
           {{ eyebrow }}
         </p>
         <slot name="heading">
-          <h1 class="mt-1 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          <h1 class="u-display mt-3 text-balance text-4xl leading-[0.95] text-foreground sm:text-5xl">
             {{ title }}
           </h1>
         </slot>

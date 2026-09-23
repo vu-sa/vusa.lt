@@ -13,7 +13,7 @@
           {{ coordinator.duty }}
         </p>
       </div>
-      <Button v-if="coordinator.email" as-child variant="brand-outline" size="sm" class="pointer-coarse:h-11">
+      <Button v-if="coordinator.email" as-child variant="outline" size="sm" class="pointer-coarse:h-11">
         <a :href="`mailto:${coordinator.email}`">
           <Mail aria-hidden="true" />
           {{ $t('Parašyti') }}

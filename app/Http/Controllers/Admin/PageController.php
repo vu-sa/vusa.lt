@@ -17,14 +17,13 @@ use App\Models\PublicUrl;
 use App\Models\Tag;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 
 class PageController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
@@ -33,43 +32,10 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('viewAny', Page::class);
 
-        $query = Page::query()->with('tenant:id,shortname');
-
-        $searchableColumns = ['title', 'permalink'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'pages.read.padalinys',
-            ]
-        );
-
-        $deletedCount = $this->getTrashedCount($query);
-
-        $pages = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
+        // Live rows come from Typesense (the scoped key carries the authorization) and the trash
+        // from api.v1.admin.trash.index, so the page itself needs no rows.
         return $this->inertiaResponse('Admin/Content/IndexPages', [
-            'pages' => [
-                'data' => $pages->items(),
-                'meta' => [
-                    'total' => $pages->total(),
-                    'per_page' => $pages->perPage(),
-                    'current_page' => $pages->currentPage(),
-                    'last_page' => $pages->lastPage(),
-                    'from' => $pages->firstItem(),
-                    'to' => $pages->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
+            'deletedCount' => $this->scopedTrashedCount(Page::query(), 'tenant', 'pages.read.padalinys'),
         ]);
     }
 

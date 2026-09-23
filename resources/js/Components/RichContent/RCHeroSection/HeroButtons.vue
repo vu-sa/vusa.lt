@@ -12,8 +12,8 @@
         <!-- No `mr-2` on the icon: Button's base already applies `gap-2`, and adding a margin
              on top is what made the icon-to-label spacing differ between controls. -->
         <Button
-          :variant="button.variant === 'outline' ? (resolvedOnDark ? 'brand-outline-on-dark' : 'brand-outline') : 'brand'"
-          size="public"
+          :variant="button.variant === 'outline' ? (resolvedOnDark ? 'brand-outline-on-dark' : 'outline') : 'brand'"
+          size="lg"
           class="w-full sm:w-auto"
         >
           <RCIcon v-if="button.icon" :name="button.icon" class="size-4" />
@@ -31,7 +31,7 @@
  * A call to action is the brand fill — VU SA red on the light canvas, amber on near-black — and
  * that is not an authorable choice. `variant` carries the only distinction that means something
  * to a reader: is this the thing to do, or the alternative beside it. Both looks live in
- * `buttonVariants` (`brand` / `brand-outline`) so every public control shares them. On fixed-dark
+ * `buttonVariants` (`brand` / `outline`) so every public control shares them. On fixed-dark
  * grounds (like the full-width hero), `onDark` chooses `brand-outline-on-dark`.
  */
 import { computed } from 'vue';

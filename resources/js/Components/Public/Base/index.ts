@@ -22,8 +22,6 @@
 export { default as AccessibilityMenu } from './AccessibilityMenu.vue';
 export { default as CheckControl } from './CheckControl.vue';
 export { default as DatePlate } from './DatePlate.vue';
-export { default as DisplayHeading } from './DisplayHeading.vue';
-export { default as EyebrowLabel } from './EyebrowLabel.vue';
 export { default as HairlineList } from './HairlineList.vue';
 export { default as HairlineRow } from './HairlineRow.vue';
 export { default as HeaderWordmark } from './HeaderWordmark.vue';
@@ -33,5 +31,7 @@ export { default as ReadingSizeControl } from './ReadingSizeControl.vue';
 export { default as SectionBand } from './SectionBand.vue';
 export { default as ShareButton } from './ShareButton.vue';
 export { default as StatCell } from './StatCell.vue';
-export { default as TagChip } from './TagChip.vue';
 export { default as PublicFilterPopover, type FilterOption } from './PublicFilterPopover.vue';
+
+// Shared with the admin surface; re-exported so public callers keep one import path.
+export { DisplayHeading, EyebrowLabel, TagChip } from '@/Components/Brand';

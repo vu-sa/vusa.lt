@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import DisplayHeading from '../DisplayHeading.vue';
-import SectionBand from '../SectionBand.vue';
+import SectionBand from '@/Components/Public/Base/SectionBand.vue';
 import TagChip from '../TagChip.vue';
 
 /**

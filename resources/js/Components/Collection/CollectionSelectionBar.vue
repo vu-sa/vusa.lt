@@ -1,13 +1,17 @@
 <template>
   <div
-    class="fixed inset-x-4 bottom-4 z-40 flex items-center justify-between gap-3 rounded-lg border bg-background p-3 shadow-lg sm:left-auto sm:right-6"
+    class="fixed inset-x-4 bottom-4 z-40 flex flex-wrap items-center justify-between gap-3 border border-foreground/80 bg-popover p-3 text-popover-foreground sm:left-auto sm:right-6"
+    role="region"
+    :aria-label="countLabel"
     data-slot="collection-selection-bar"
   >
-    <span class="text-sm font-medium">{{ countLabel }}: {{ count }}</span>
+    <span class="text-xs font-bold uppercase tracking-wide">
+      {{ countLabel }}: <span class="tabular-nums text-brand">{{ count }}</span>
+    </span>
 
     <div class="flex items-center gap-2">
       <slot />
-      <Button variant="ghost" size="icon" :aria-label="$t('Close')" @click="emit('clear')">
+      <Button variant="ghost" size="icon" :aria-label="$t('Atšaukti žymėjimą')" @click="emit('clear')">
         <X class="size-4" />
       </Button>
     </div>

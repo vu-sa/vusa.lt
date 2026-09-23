@@ -93,10 +93,12 @@ describe('Posėdžiai', function (): void {
         $page->assertNoJavaScriptErrors();
     });
 
-    it('still opens the trash as a database table', function (): void {
+    it('opens the trash on the same collection page', function (): void {
         $page = openAdminPage('/mano/meetings?showDeleted=true', 1440);
 
-        $page->assertPresent('table, [data-slot=empty-state]');
+        $page->assertPresent('[data-slot=collection-page]')
+            ->assertPresent('[data-slot=collection-rows], [data-slot=collection-table], [data-slot=empty-state]')
+            ->assertSee('Rodomi ištrinti įrašai');
         $page->assertNoJavaScriptErrors();
     });
 });
@@ -239,4 +241,36 @@ describe('Visi skyriai', function (): void {
         expect($page->script("document.querySelectorAll('[data-workspace]').length"))->toBeGreaterThanOrEqual(5)
             ->and($page->script("document.querySelectorAll('[data-workspace=pradzia] a').length"))->toBe(3);
     });
+});
+
+/**
+ * Every admin list is one CollectionPage, whether its rows come from Typesense, the admin API or
+ * a prop. Only a browser proves each mounts against the real bundle and fits a phone.
+ */
+describe('every collection shares one page', function (): void {
+    it('mounts with its title band and no JavaScript errors', function (string $path, string $title): void {
+        $page = openAdminPage($path, 1440);
+
+        $page->assertPresent('[data-slot=collection-title-band]')->assertNoJavaScriptErrors();
+        expect($page->script("document.querySelector('[data-slot=collection-title-band] h1').textContent.trim()"))->toBe($title);
+    })->with([
+        'pages' => ['/mano/pages', 'Puslapiai'],
+        'news' => ['/mano/news', 'Naujienos'],
+        'calendar' => ['/mano/calendar', 'Renginiai'],
+        'tenants' => ['/mano/tenants', 'Padaliniai'],
+        'roles' => ['/mano/roles', 'Rolės'],
+        'permissions' => ['/mano/permissions', 'Leidimai'],
+        'types' => ['/mano/types', 'Tipai'],
+        'relationships' => ['/mano/relationships', 'Ryšiai'],
+        'study programmes' => ['/mano/studyPrograms', 'Studijų programos'],
+        'study sets' => ['/mano/studySets', 'Studijų komplektai'],
+        'users trash' => ['/mano/users?showDeleted=true', 'Nariai'],
+    ]);
+
+    it('fits a phone without scrolling sideways', function (string $path): void {
+        $page = openAdminPage($path, 390, 844);
+
+        $page->assertPresent('[data-slot=collection-title-band]');
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+    })->with(['/mano/pages', '/mano/calendar', '/mano/permissions']);
 });

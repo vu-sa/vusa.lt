@@ -1,204 +1,207 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
+  <CollectionPage
+    :source
+    collection="calendar"
+    entity-type="calendar"
+    :eyebrow
+    :title="$t('Renginiai')"
+    :lead="isTrash
+      ? $t('Ištrinti renginiai. Atkurk tai, ko dar reikia.')
+      : $t('Visi kalendoriaus renginiai. Juodraščiai matomi tik čia, kol jų nepaskelbsi.')"
+    default-view="table"
+    :item-key="eventKey"
+    :columns
+    :quick-filters
+    :trash="{ count: deletedCount, active: isTrash }"
+    :search-placeholder="$t('Ieškoti renginių')"
+    @quick-filter="id => source.toggleFilter(id, 'true')"
   >
-    <template #headerActions>
-      <Button variant="outline" :class="{ 'border-primary text-primary': isUntyped }" class="gap-1.5" @click="toggleUntyped">
-        <TagIcon class="h-4 w-4" />
-        {{ $t('Be tipo') }}
+    <template #actions>
+      <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg">
+        <Link :href="route('calendar.create')">
+          <Plus aria-hidden="true" />
+          {{ $t('Naujas renginys') }}
+        </Link>
       </Button>
     </template>
-  </IndexTablePage>
+
+    <template #row="{ item }">
+      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-start justify-between gap-3">
+            <CollectionPrimaryCell :title="titleOf(item)" :href="isTrash ? undefined : route('calendar.edit', item.id)" :sub="eventTypeOf(item)" />
+            <StatusBadge v-if="item.is_draft" :status="contentStatuses.draft" class="shrink-0" />
+          </div>
+          <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span class="tabular-nums">{{ dateOf(item) }}</span>
+            <span v-if="item.tenant" aria-hidden="true" class="text-border">·</span>
+            <span v-if="item.tenant">{{ item.tenant.shortname }}</span>
+          </p>
+        </div>
+        <CollectionRowActions :actions="actionsFor(item)" @select="key => select(key, item)" />
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <CollectionPrimaryCell
+        v-if="column.key === 'title'"
+        :title="titleOf(item)"
+        :href="isTrash ? undefined : route('calendar.edit', item.id)"
+        :sub="item.tenant?.shortname"
+      />
+      <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
+      <template v-else-if="column.key === 'type'">
+        <span v-if="item.event_type" class="text-muted-foreground">{{ eventTypeOf(item) }}</span>
+        <StatusBadge v-else :status="untypedStatus" />
+      </template>
+      <StatusBadge v-else-if="column.key === 'status' && item.is_draft" :status="contentStatuses.draft" />
+      <CollectionRowActions
+        v-else-if="column.key === 'actions'"
+        :actions="actionsFor(item)"
+        @select="key => select(key, item)"
+      />
+    </template>
+
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="CalendarIcon"
+        :title="isTrash ? $t('Ištrintų renginių nėra') : $t('Renginių dar nėra')"
+        :description="isTrash ? undefined : $t('Renginys atsiras viešame kalendoriuje, kai jį paskelbsi.')"
+        :action-label="canCreate && !isTrash ? $t('Naujas renginys') : undefined"
+        :action-href="canCreate && !isTrash ? route('calendar.create') : undefined"
+      />
+    </template>
+  </CollectionPage>
+
+  <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { CalendarPlus, Tag as TagIcon } from 'lucide-vue-next';
+import { CalendarPlus, Plus, Tag } from 'lucide-vue-next';
+import { computed } from 'vue';
 
-import type { IndexTablePageInstance,
-  IndexTablePageProps } from '@/Types/TableConfigTypes';
-import { Button } from '@/Components/ui/button';
-import { DateCell, TruncatedBadge, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import { createTenantColumn } from '@/Composables/useDataTableColumns';
-import { useActionWindow } from '@/Composables/useActionWindow';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { CalendarIcon } from '@/Components/icons';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
+import { contentStatuses, type StatusPresentation } from '@/Constants/statuses';
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { isTrashView, useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { formatDateTime } from '@/Utils/dateTime';
+
+type EventRow = App.Entities.Calendar & { force_delete_blocked_reason?: string | null };
 
 const props = defineProps<{
   calendar: {
-    data: App.Entities.Calendar[];
-    meta: {
-      total: number;
-      current_page: number;
-      per_page: number;
-      last_page: number;
-      from: number;
-      to: number;
-    };
+    data: EventRow[];
+    meta: { total: number; current_page: number; per_page: number; last_page: number };
   };
   eventTypes: App.Entities.EventType[];
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  showDeleted?: boolean;
-  deletedCount?: number;
-  untyped?: boolean;
+  deletedCount: number;
 }>();
 
-const isUntyped = computed(() => !!props.untyped);
+const page = usePage();
+const isTrash = isTrashView();
+const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.calendar));
+const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.calendar));
+const canCreateMeeting = computed(() => Boolean(page.props.auth?.can?.create?.meeting));
 
-/**
- * The backfill review queue: a dedicated query param rather than a Tanstack column
- * filter, since "no type" has no value to filter by (see IndexCalendarRequest::getUntyped()).
- */
-function toggleUntyped() {
-  router.get(route('calendar.index'), {
-    ...(props.filters ?? {}),
-    untyped: isUntyped.value ? undefined : 'true',
-  }, { preserveState: true, replace: true });
-}
+const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.kalendorius')}`);
 
-const modelName = 'calendar';
-const entityName = 'calendar';
+const untypedStatus: StatusPresentation = { label: 'Be tipo', role: 'attention', icon: Tag };
 
-const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+const facets: DatabaseFacetDefinition[] = [
+  {
+    field: 'event_type_id',
+    label: $t('Renginio tipas'),
+    values: props.eventTypes.map(type => ({ value: String(type.id), label: getTranslatedValue(type.name) })),
+  },
+  {
+    field: 'is_draft',
+    label: $t('Būsena'),
+    values: [
+      { value: '0', label: $t('Paskelbta') },
+      { value: '1', label: $t('Juodraštis') },
+    ],
+  },
+  { field: 'untyped', label: $t('Be tipo'), single: true, values: [{ value: 'true', label: $t('Taip') }] },
+];
 
-const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.calendar ?? false);
-const canCreateMeeting = computed(() => !!usePage().props.auth?.can?.create?.meeting);
+const source = useDatabaseCollectionSource<EventRow>({
+  endpoint: route('api.v1.admin.calendar.index'),
+  initial: {
+    items: props.calendar.data,
+    total: props.calendar.meta.total,
+    perPage: props.calendar.meta.per_page,
+    currentPage: props.calendar.meta.current_page,
+    lastPage: props.calendar.meta.last_page,
+  },
+  defaultSort: 'date:desc',
+  sortOptions: [
+    { value: 'date:desc', label: $t('Naujausi pirmi') },
+    { value: 'date:asc', label: $t('Seniausi pirmi') },
+    { value: 'created_at:desc', label: $t('Neseniai sukurti') },
+  ],
+  preserveUrlKeys: ['showDeleted'],
+  facets,
+});
+
+const quickFilters = computed<CollectionQuickFilter[]>(() => (isTrash
+  ? []
+  : [{ id: 'untyped', label: $t('Be tipo'), active: source.filters.value.untyped === 'true' }]));
+
+const actions = useCollectionRecordActions({
+  routePrefix: 'calendar',
+  canDuplicate: () => canCreate.value,
+  canDelete: () => canCreate.value,
+  canRestore: () => canCreate.value,
+  canForceDelete: () => canForceDelete.value,
+});
 
 const { open: openActionWindow } = useActionWindow();
 
-const eventTitle = (event: App.Entities.Calendar): string => {
-  const { title } = event;
-  return typeof title === 'object' && title !== null
-    ? ((title as any).lt || (title as any).en || '')
-    : String(title ?? '');
-};
+const eventKey = (item: EventRow) => String(item.id);
+const titleOf = (item: EventRow) => getTranslatedValue(item.title) || $t('Be pavadinimo');
+const eventTypeOf = (item: EventRow) => (item.event_type ? getTranslatedValue(item.event_type.name) : $t('Be tipo'));
+const dateOf = (item: EventRow) => (item.date ? formatDateTime(item.date) : '—');
 
-/**
- * An event that stands for a meeting but has none yet — the announcement already fixed
- * when it happens, so the window only has to ask which body and what is on the agenda.
- */
-const startMeetingFromEvent = (event: App.Entities.Calendar) => {
-  openActionWindow({
-    flow: 'meeting.create',
-    calendarEvent: { id: Number(event.id), title: eventTitle(event), date: String(event.date) },
-  });
-};
+function actionsFor(item: EventRow) {
+  const shared = actions.rowActions(item, titleOf(item), isTrash);
 
-const getRowId = (row: App.Entities.Calendar) => {
-  return `calendar-${row.id}`;
-};
+  if (isTrash || !canCreateMeeting.value || item.meeting_id) {
+    return shared;
+  }
 
-const columns = computed<Array<ColumnDef<App.Entities.Calendar, any>>>(() => [
-  {
-    accessorKey: 'title',
-    header: () => $t('Pavadinimas'),
-    cell: ({ row }) => {
-      const title = row.getValue('title');
-      const displayTitle = typeof title === 'object' && title !== null
-        ? ((title as any).lt || (title as any).en || '-')
-        : title;
-      return h(TruncatedText, { text: displayTitle as string, lines: 2 });
-    },
-    size: 200,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'date',
-    header: () => $t('Data'),
-    cell: ({ row }) => {
-      const { date } = row.original;
-      if (!date) return null;
-      return h(DateCell, {
-        date,
-        mode: 'absolute',
-        format: { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' },
-      });
-    },
-    size: 200,
-    enableSorting: true,
-  },
-  {
-    id: 'event_type',
-    header: () => $t('Renginio tipas'),
-    cell: ({ row }) => {
-      const eventType = row.original.event_type;
-      if (!eventType) {
-        return h(TruncatedBadge, { text: $t('Be tipo'), variant: 'destructive' });
-      }
-      const name = typeof eventType.name === 'object' && eventType.name !== null
-        ? ((eventType.name as any).lt || (eventType.name as any).en || '-')
-        : eventType.name;
-      return h(TruncatedText, { text: name });
-    },
-    size: 150,
-  },
-  {
-    accessorKey: 'is_draft',
-    header: () => $t('Ar rodomas?'),
-    cell: ({ row }) => {
-      return row.original.is_draft ? '❌ Ne' : '✅ Taip';
-    },
-    size: 100,
-  },
-  createTenantColumn<App.Entities.Calendar>(),
-  createStandardActionsColumn<App.Entities.Calendar>('calendar', {
-    canView: false,
-    canEdit: true,
-    canDelete: true,
-    canDuplicate: true,
-    canRestore: true,
-    canForceDelete: canForceDelete.value,
-    customActions: [
-      {
-        key: 'create-meeting',
-        label: $t('meetings.announce.create_from_event'),
-        icon: CalendarPlus,
-        isAvailable: event => canCreateMeeting.value && !event.meeting_id && !event.deleted_at,
-        onSelect: startMeetingFromEvent,
-      },
-    ],
-  }),
+  // An event that stands for a meeting but has none yet: the date is already fixed.
+  return [...shared, { key: `meeting:${item.id}`, label: $t('meetings.announce.create_from_event'), icon: CalendarPlus }];
+}
+
+function select(key: string, item: EventRow): void {
+  if (key.startsWith('meeting:')) {
+    openActionWindow({
+      flow: 'meeting.create',
+      calendarEvent: { id: Number(item.id), title: titleOf(item), date: String(item.date) },
+    });
+    return;
+  }
+
+  actions.select(key, item.force_delete_blocked_reason);
+}
+
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'title', label: $t('Renginys') },
+  { key: 'date', label: $t('Data'), class: 'w-48', sortField: 'date' },
+  { key: 'type', label: $t('Renginio tipas'), class: 'w-44' },
+  { key: 'status', label: $t('Būsena'), class: 'w-36' },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
-
-const tableConfig = computed<IndexTablePageProps<App.Entities.Calendar>>(() => {
-  return {
-    modelName,
-    entityName,
-    data: props.calendar.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.calendar.meta.total,
-    initialPage: props.calendar.meta.current_page,
-    pageSize: props.calendar.meta.per_page,
-
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'date', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: false,
-    enableRowSelection: false,
-    allowToggleDeleted: true,
-    showDeleted: props.showDeleted,
-    deletedCount: props.deletedCount,
-
-    headerTitle: 'Renginiai',
-    icon: CalendarIcon,
-    createRoute: route('calendar.create'),
-    canCreate: true,
-  };
-});
-
-const onDataLoaded = (data: any) => {};
-const handleSortingChange = (sorting: any) => {};
-const handlePageChange = (page: any) => {};
-const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

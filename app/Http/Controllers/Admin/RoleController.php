@@ -10,24 +10,18 @@ use App\Http\Requests\SyncRoleAttachableTypesRequest;
 use App\Http\Requests\SyncRoleDutiesRequest;
 use App\Http\Requests\SyncRolePermissionGroupRequest;
 use App\Http\Requests\UpdateRoleRequest;
-use App\Http\Traits\HasTanstackTables;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
-use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Response;
 
 class RoleController extends AdminController
 {
-    use HasTanstackTables;
-
-    public function __construct(private TanstackTableService $tableService) {}
-
     /**
      * Display a listing of the resource.
      */
@@ -35,39 +29,9 @@ class RoleController extends AdminController
     {
         $this->handleAuthorization('viewAny', Role::class);
 
-        $query = Role::query();
-
-        $searchableColumns = ['name'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
-        );
-
-        $roles = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        $sorting = $request->getSorting();
-
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return $this->inertiaResponse('Admin/Permissions/IndexRole', [
-            'roles' => [
-                'data' => $roles->items(),
-                'meta' => [
-                    'total' => $roles->total(),
-                    'per_page' => $roles->perPage(),
-                    'current_page' => $roles->currentPage(),
-                    'last_page' => $roles->lastPage(),
-                    'from' => $roles->firstItem(),
-                    'to' => $roles->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting,
+            'roles' => Role::query()->withCount('permissions')->orderBy('name')->get(['id', 'name', 'created_at', 'updated_at']),
         ]);
     }
 

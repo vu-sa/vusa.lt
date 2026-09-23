@@ -40,8 +40,8 @@ const props = withDefaults(defineProps<{
   class?: HTMLAttributes['class'];
 }>(), {
   url: undefined,
-  variant: 'brand-outline',
-  size: 'public-sm',
+  variant: 'outline',
+  size: 'sm',
   labelClass: undefined,
   class: undefined,
 });

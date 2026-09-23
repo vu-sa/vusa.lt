@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import PageForm from '@/Components/AdminForms/PageForm.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
 import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
 import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
 import { commonStubs } from '@/tests/stubs';
@@ -17,6 +18,10 @@ vi.mock('@inertiajs/vue3', async () => {
     }),
   };
 });
+
+interface PageFormVm {
+  form: Record<string, unknown> & { validate: (field: string) => unknown };
+}
 
 describe('PageForm.vue — show_breadcrumbs toggle', () => {
   let wrapper: ReturnType<typeof mount>;
@@ -53,20 +58,25 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
       global: {
         stubs: {
           FormPage: {
-            template: '<div data-testid="form-page"><slot name="header-actions" /><slot /><slot name="advanced" /><slot name="danger-zone" /></div>',
-            props: ['title', 'headTitle', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode', 'maxWidth'],
+            template: '<div data-testid="form-page"><slot name="header-actions" /><slot /><slot name="aside" /></div>',
+            props: ['title', 'headTitle', 'lead', 'entityType', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode', 'maxWidth', 'availableLocales'],
           },
           FormSection: {
             template: '<section><slot /></section>',
             props: ['title', 'description'],
           },
-          FormStatusHeader: { template: '<div />' },
+          DateTimePicker: { template: '<div />' },
+          ContentAnalyticsCard: { template: '<div />' },
+          PublicUrlHistoryCard: { template: '<div />' },
+          ActivityLogSheet: { template: '<div />' },
+          TagMultiSelect: { template: '<div />' },
           RichContentFormElement: { template: '<div />' },
           FormFieldWrapper: {
-            template: '<div><slot /></div>',
+            props: ['id', 'label'],
+            template: '<div :data-field="id"><slot /></div>',
           },
           PermalinkField: {
-            props: ['permalink', 'baseUrl', 'disabled', 'viewUrl', 'explanation', 'warning'],
+            props: ['permalink', 'baseUrl', 'disabled', 'viewUrl', 'explanation', 'warning', 'hint', 'validating', 'valid', 'invalid'],
             template: `
               <div data-testid="permalink-field">
                 <span data-testid="permalink-disabled">{{ disabled }}</span>
@@ -113,20 +123,15 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     wrapper?.unmount();
   });
 
-  // PageForm renders several switches (ToC, title, breadcrumbs) inside identical
-  // `.flex.items-center.gap-3` wrappers — pick the one whose sibling label matches.
-  function findSwitchForLabel(substr: string) {
-    const containers = wrapper.findAll('.flex.items-center.gap-3');
-    const target = containers.find(c => c.text().toLowerCase().includes(substr));
-    expect(target, `toggle row with label containing "${substr}"`).toBeTruthy();
-    return target!.find('[role="switch"]');
+  function findBreadcrumbsSwitch() {
+    return wrapper.find('[data-testid="toggle-breadcrumbs"] [role="switch"]');
   }
 
   it('defaults show_breadcrumbs to true when the page omits it', () => {
     wrapper = createWrapper({
       page: { ...defaultPage, show_breadcrumbs: undefined },
     });
-    const vm = wrapper.vm as any;
+    const vm = wrapper.vm as unknown as PageFormVm;
 
     expect(vm.form.show_breadcrumbs).toBe(true);
   });
@@ -136,17 +141,16 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
       page: { ...defaultPage, show_breadcrumbs: false },
     });
 
-    // The label text is `Rodyti puslapio kelią (breadcrumbs)`.
-    const toggle = findSwitchForLabel('breadcrumbs');
+    const toggle = findBreadcrumbsSwitch();
     expect(toggle.attributes('aria-checked')).toBe('false');
   });
 
   it('toggles form.show_breadcrumbs when the switch is clicked', async () => {
     wrapper = createWrapper();
-    const vm = wrapper.vm as any;
+    const vm = wrapper.vm as unknown as PageFormVm;
     expect(vm.form.show_breadcrumbs).toBe(true);
 
-    const toggle = findSwitchForLabel('breadcrumbs');
+    const toggle = findBreadcrumbsSwitch();
     await toggle.trigger('click');
     expect(vm.form.show_breadcrumbs).toBe(false);
 
@@ -154,7 +158,7 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     expect(vm.form.show_breadcrumbs).toBe(true);
   });
 
-  it('allows editing the permalink on an existing page with a warning', () => {
+  it('allows editing the permalink, warning about the redirect only once it changes', async () => {
     wrapper = createWrapper({
       page: defaultPage,
       submitMethod: 'patch',
@@ -163,7 +167,60 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     const field = wrapper.findComponent(PermalinkField);
     expect(field.exists()).toBe(true);
     expect(field.props('disabled')).toBe(false);
+    expect(field.props('warning')).toBeUndefined();
+
+    field.vm.$emit('update:permalink', 'naujas-adresas');
+    await wrapper.vm.$nextTick();
+
     expect(field.props('warning')).toBe('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.');
+  });
+
+  it('switches between draft and published with the status segment', async () => {
+    wrapper = createWrapper();
+    const vm = wrapper.vm as unknown as PageFormVm;
+
+    await wrapper.find('[data-testid="page-status-draft"]').trigger('click');
+    expect(vm.form.is_active).toBe(false);
+    expect(wrapper.find('[data-testid="page-status-callout"]').text()).toContain('Juodraštis matomas tik sistemoje');
+
+    await wrapper.find('[data-testid="page-status-published"]').trigger('click');
+    expect(vm.form.is_active).toBe(true);
+    expect(wrapper.find('[data-testid="page-status-published"]').attributes('aria-pressed')).toBe('true');
+  });
+
+  it('does not promise a future publish time hides the page from its link', () => {
+    wrapper = createWrapper({
+      page: { ...defaultPage, publish_time: '2999-01-01T10:00:00Z' },
+    });
+
+    expect(wrapper.find('[data-testid="page-status-callout"]').text()).toContain('pasiekiamas pagal nuorodą');
+  });
+
+  it('sets the page language with the language segment', async () => {
+    wrapper = createWrapper();
+    const vm = wrapper.vm as unknown as PageFormVm;
+    // Precognition would otherwise fire a real validation request.
+    vi.spyOn(vm.form, 'validate').mockImplementation(() => vm.form);
+
+    await wrapper.find('[data-testid="page-lang-en"]').trigger('click');
+
+    expect(vm.form.lang).toBe('en');
+    expect(wrapper.find('[data-testid="page-lang-en"]').attributes('aria-pressed')).toBe('true');
+  });
+
+  it('has no form-level LT | EN switch — a page is written in one language', () => {
+    wrapper = createWrapper();
+
+    expect(wrapper.findComponent(FormPage).props('availableLocales')).toEqual([]);
+  });
+
+  it('asks for the unit only on create', () => {
+    wrapper = createWrapper();
+    expect(wrapper.find('[data-field="tenant"]').exists()).toBe(false);
+    wrapper.unmount();
+
+    wrapper = createWrapper({ rememberKey: 'CreatePage', submitMethod: 'post' });
+    expect(wrapper.find('[data-field="tenant"]').exists()).toBe(true);
   });
 
   it('does not double up the main tenant into the displayed base url', () => {

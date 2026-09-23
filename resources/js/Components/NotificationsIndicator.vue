@@ -122,7 +122,7 @@
               class="-mt-2 pb-3 pl-16 pr-4"
             >
               <Button
-                variant="brand-outline"
+                variant="outline"
                 size="xs"
                 class="max-sm:h-11"
                 @click="openAction(notification, getPrimaryAction(notification)!.url)"

@@ -44,6 +44,7 @@ import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 import { createTourProvider } from '@/Composables/useTourProvider';
 import { createActionWindowProvider } from '@/Composables/useActionWindow';
+import { createShellFocusProvider } from '@/Composables/useShellFocus';
 import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
 import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
 import { createStartFmProvider } from '@/Composables/useStartFm';
@@ -82,6 +83,9 @@ const uiPreferences = createUIPreferencesProvider();
 // The action window is openable from any admin page, so its state is provided
 // here rather than owned by whichever page holds a trigger.
 createActionWindowProvider();
+
+// Lets a form page swap the shell's navigation chrome for its own editor bar.
+createShellFocusProvider();
 
 // Initialize command palette provider for global Cmd+K / Ctrl+K search.
 // Share the recently-visited source so the palette and the preferences stay in sync.

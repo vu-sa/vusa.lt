@@ -30,44 +30,17 @@ class StudySetController extends AdminController
     {
         $this->handleAuthorization('viewAny', StudySet::class);
 
-        $query = StudySet::query()->with('tenant:id,shortname')
-            ->withCount('courses');
-
-        $searchableColumns = ['name'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'studySets.read.padalinys',
-            ]
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
+        $query = $this->tableService->applyPermissionFiltering(
+            StudySet::query()->with('tenant:id,shortname')->withCount('courses')->orderBy('order'),
+            'tenant',
+            'studySets.read.padalinys',
+            $this->authorizer,
         );
 
-        $deletedCount = $this->getTrashedCount($query);
-
-        $studySets = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
         return $this->inertiaResponse('Admin/StudySets/IndexStudySet', [
-            'studySets' => [
-                'data' => $studySets->getCollection()->map(fn ($studySet) => $studySet->toFullArray()),
-                'meta' => [
-                    'total' => $studySets->total(),
-                    'per_page' => $studySets->perPage(),
-                    'current_page' => $studySets->currentPage(),
-                    'last_page' => $studySets->lastPage(),
-                    'from' => $studySets->firstItem(),
-                    'to' => $studySets->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
+            'studySets' => ($request->getShowDeleted() ? $query->onlyTrashed() : $query)->get()->map->toFullArray()->values(),
+            'deletedCount' => $this->scopedTrashedCount(StudySet::query(), 'tenant', 'studySets.read.padalinys'),
         ]);
     }
 

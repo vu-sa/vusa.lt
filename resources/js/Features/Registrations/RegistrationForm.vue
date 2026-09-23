@@ -12,7 +12,7 @@
         <AutoFormField v-bind="slotProps" />
       </div>
     </template>
-    <Button type="submit" variant="brand" size="public">
+    <Button type="submit" variant="brand" size="lg">
       {{ $t("Pateikti") }}
     </Button>
   </AutoForm>

@@ -1,181 +1,177 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
+  <CollectionPage
+    :source
+    collection="pages"
+    entity-type="page"
+    :eyebrow
+    :title="$t('Puslapiai')"
+    :lead="isTrash
+      ? $t('Ištrinti svetainės puslapiai. Atkurk tai, ko dar reikia.')
+      : $t('Visi svetainės puslapiai vienoje vietoje. Filtruok pagal padalinį ar kalbą ir redaguok turinį.')"
+    default-view="table"
+    :item-key="pageKey"
+    :columns
+    :trash="{ count: deletedCount, active: isTrash }"
+    :search-placeholder="$t('Ieškoti pagal pavadinimą ar adresą')"
   >
-    <template #headerActions>
-      <DropdownMenu>
+    <template #actions>
+      <DropdownMenu v-if="tenantOptions.length > 0 && !isTrash">
         <DropdownMenuTrigger as-child>
-          <Button size="sm" variant="outline">
-            Redaguoti padalinio pagr. puslapį
+          <Button variant="outline" size="lg">
+            <House aria-hidden="true" />
+            {{ $t('Pagrindinis puslapis') }}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem
-            v-for="tenant in tenantOptions"
-            :key="tenant.id"
-            @click="handleTenantSelect(tenant.id)"
-          >
-            {{ tenant.shortname }}
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem v-for="tenant in tenantOptions" :key="tenant.id" as-child>
+            <Link :href="route('tenants.editMainPage', { tenant: tenant.id })">
+              {{ tenant.shortname }}
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg">
+        <Link :href="route('pages.create')">
+          <Plus aria-hidden="true" />
+          {{ $t('Naujas puslapis') }}
+        </Link>
+      </Button>
     </template>
-  </IndexTablePage>
+
+    <template #row="{ item }">
+      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-start justify-between gap-3">
+            <CollectionPrimaryCell :title="item.title" :href="isTrash ? undefined : route('pages.edit', item.id)" :sub="item.permalink" mono />
+            <StatusBadge v-if="item.is_active === false" :status="contentStatuses.draft" class="shrink-0" />
+          </div>
+          <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span>{{ languageLabel(item.lang) }}</span>
+            <span v-if="item.tenant_name" aria-hidden="true" class="text-border">·</span>
+            <span v-if="item.tenant_name">{{ item.tenant_name }}</span>
+            <span aria-hidden="true" class="text-border">·</span>
+            <span class="tabular-nums">{{ dateOf(item) }}</span>
+          </p>
+        </div>
+        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <CollectionPrimaryCell
+        v-if="column.key === 'title'"
+        :title="item.title"
+        :href="isTrash ? undefined : route('pages.edit', item.id)"
+        :sub="item.permalink"
+        mono
+      />
+      <span v-else-if="column.key === 'tenant'" class="block max-w-40 truncate text-muted-foreground" :title="item.tenant_name">{{ item.tenant_name ?? '—' }}</span>
+      <span v-else-if="column.key === 'lang'" class="text-muted-foreground">{{ languageLabel(item.lang) }}</span>
+      <StatusBadge v-else-if="column.key === 'status' && item.is_active === false" :status="contentStatuses.draft" />
+      <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
+      <CollectionRowActions
+        v-else-if="column.key === 'actions'"
+        :actions="actionsFor(item)"
+        @select="key => actions.select(key, item.force_delete_blocked_reason)"
+      />
+    </template>
+
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="PageIcon"
+        :title="isTrash ? $t('Ištrintų puslapių nėra') : $t('Puslapių dar nėra')"
+        :description="isTrash ? undefined : $t('Puslapis – tai ilgesnis, rečiau keičiamas turinys: apie mus, kontaktai, taisyklės.')"
+        :action-label="canCreate && !isTrash ? $t('Naujas puslapis') : undefined"
+        :action-href="canCreate && !isTrash ? route('pages.create') : undefined"
+      />
+    </template>
+  </CollectionPage>
+
+  <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { router, usePage } from '@inertiajs/vue3';
+import { House, Plus } from 'lucide-vue-next';
+import { computed } from 'vue';
 
-import type { IndexTablePageInstance,
-  IndexTablePageProps } from '@/Types/TableConfigTypes';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionColumn } from '@/Components/Collection/types';
+import { PageIcon } from '@/Components/icons';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { TruncatedText } from '@/Components/ui/data-table/cells';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import { PageIcon } from '@/Components/icons';
+import { contentStatuses } from '@/Constants/statuses';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import {
-  createIdColumn,
-  createTenantColumn,
-  createTimestampColumn,
-} from '@/Composables/useDataTableColumns';
+  isTrashView,
+  useTrashAwareSource,
+  useTrashCollectionSource,
+  useTypesenseCollectionSource,
+} from '@/Composables/useCollectionSource';
+import type { PageSearchResult } from '@/Shared/Search/types';
+import { formatDate } from '@/Utils/dateTime';
 
-const props = defineProps<{
-  pages: {
-    data: App.Entities.Page[];
-    meta: {
-      total: number;
-      current_page: number;
-      per_page: number;
-      last_page: number;
-      from: number;
-      to: number;
-    };
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  showDeleted?: boolean;
-  deletedCount?: number;
-}>();
-
-const modelName = 'pages';
-const entityName = 'page';
-
-const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
-
-const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.page ?? false);
-
-const getRowId = (row: App.Entities.Page) => {
-  return `page-${row.id}`;
+type PageRow = PageSearchResult & {
+  created_at?: number;
+  deleted_at?: string | null;
+  force_delete_blocked_reason?: string | null;
 };
 
-const tenantOptions = computed(() => {
-  return usePage().props.auth?.user.tenants || [];
+defineProps<{
+  /** Soft-deleted pages the viewer could restore. */
+  deletedCount: number;
+}>();
+
+const page = usePage();
+const isTrash = isTrashView();
+const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.page));
+const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.page));
+const tenantOptions = computed(() => page.props.auth?.user?.tenants ?? []);
+
+const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.puslapiai')}`);
+
+const source = useTrashAwareSource<PageRow>(
+  () => useTypesenseCollectionSource<PageRow>({ collection: 'pages', preserveUrlKeys: ['view', 'item'] }),
+  () => useTrashCollectionSource<PageRow>('pages'),
+);
+
+const actions = useCollectionRecordActions({
+  routePrefix: 'pages',
+  canDelete: () => canCreate.value,
+  canRestore: () => canCreate.value,
+  canForceDelete: () => canForceDelete.value,
 });
 
-function handleTenantSelect(tenantId: number) {
-  router.visit(route('tenants.editMainPage', { tenant: tenantId }));
+const pageKey = (item: PageRow) => String(item.id);
+const actionsFor = (item: PageRow) => actions.rowActions(item, item.title, isTrash);
+
+const languageLabel = (lang?: string) => (lang === 'en' ? 'English' : 'Lietuvių');
+
+function dateOf(item: PageRow): string {
+  if (isTrash && item.deleted_at) {
+    return formatDate(item.deleted_at);
+  }
+
+  return item.created_at ? formatDate(new Date(item.created_at * 1000)) : '—';
 }
 
-const columns = computed<Array<ColumnDef<App.Entities.Page, any>>>(() => [
-  createIdColumn<App.Entities.Page>({ width: 50 }),
-  {
-    accessorKey: 'title',
-    header: () => $t('Pavadinimas'),
-    cell: ({ row }) => h(TruncatedText, {
-      text: row.getValue('title') as string,
-      lines: 2,
-    }),
-    size: 200,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'lang',
-    header: () => $t('Kalba'),
-    cell: ({ row }) => {
-      return row.original.lang === 'lt' ? '🇱🇹' : '🇬🇧';
-    },
-    size: 80,
-  },
-  {
-    id: 'other_lang_id',
-    header: () => $t('Kitos kalbos puslapis'),
-    cell: ({ row }) => {
-      const otherLangId = row.original.other_lang_id;
-      if (!otherLangId) return null;
-      return h('a', {
-        href: route('pages.edit', { id: otherLangId }),
-        class: 'hover:underline block truncate',
-        title: String(otherLangId),
-      }, otherLangId);
-    },
-    size: 150,
-  },
-  {
-    accessorKey: 'is_active',
-    header: () => $t('Aktyvus'),
-    cell: ({ row }) => {
-      return row.original.is_active ? '✅' : '❌';
-    },
-    size: 80,
-  },
-  createTenantColumn<App.Entities.Page>(),
-  createTimestampColumn<App.Entities.Page>('created_at', {
-    title: 'Sukurta',
-    format: 'yyyy-MM-dd',
-    sortDescFirst: true,
-  }),
-  createStandardActionsColumn<App.Entities.Page>('pages', {
-    canView: false,
-    canEdit: true,
-    canDelete: true,
-    canRestore: true,
-    canForceDelete: canForceDelete.value,
-  }),
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'title', label: $t('Puslapis'), sortField: 'title' },
+  { key: 'tenant', label: $t('Padalinys'), class: 'w-40' },
+  { key: 'lang', label: $t('Kalba'), class: 'w-28' },
+  { key: 'status', label: $t('Būsena'), class: 'w-36' },
+  { key: 'date', label: isTrash ? $t('Ištrinta') : $t('Sukurta'), class: 'w-32', sortField: isTrash ? 'deleted_at' : 'created_at' },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
-
-const tableConfig = computed<IndexTablePageProps<App.Entities.Page>>(() => {
-  return {
-    modelName,
-    entityName,
-    data: props.pages.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.pages.meta.total,
-    initialPage: props.pages.meta.current_page,
-    pageSize: props.pages.meta.per_page,
-
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: false,
-    enableRowSelection: false,
-    allowToggleDeleted: true,
-    showDeleted: props.showDeleted,
-    deletedCount: props.deletedCount,
-
-    headerTitle: 'Puslapiai',
-    icon: PageIcon,
-    createRoute: route('pages.create'),
-    canCreate: true,
-  };
-});
-
-const onDataLoaded = (data: any) => {};
-const handleSortingChange = (sorting: any) => {};
-const handlePageChange = (page: any) => {};
-const handleFilterChange = (filterKey: any, value: any) => {};
 </script>

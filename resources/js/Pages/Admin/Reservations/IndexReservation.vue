@@ -8,24 +8,17 @@
     :lead="$t('Stebėk prašymus, patvirtink išdavimą ir pažymėk grąžinimą.')"
     default-view="table"
     :item-key="reservationKey"
+    :trash="{ count: deletedCount ?? 0, active: isDeleted }"
+    v-model:selection="selectedIds"
     :columns
+    :selectable="!isDeleted && managesResources"
+    :can-select="isReservationSelectable"
     :quick-filters
     :search-placeholder="$t('Ieškoti rezervacijų')"
     @quick-filter="toggleQuickFilter"
   >
     <template #actions>
-      <Button v-if="isDeleted" as-child variant="ghost">
-        <Link :href="route('reservations.index')">
-          ‹ {{ $t('Visos rezervacijos') }}
-        </Link>
-      </Button>
-      <Button v-else-if="deletedCount > 0" as-child variant="ghost">
-        <Link :href="route('reservations.index', { showDeleted: 'true' })">
-          <Trash2 aria-hidden="true" />
-          {{ $t('Ištrinti') }} ({{ deletedCount }})
-        </Link>
-      </Button>
-      <Button v-if="canCreate && !isDeleted" as-child variant="brand">
+      <Button v-if="canCreate && !isDeleted" as-child variant="brand" size="lg">
         <Link :href="route('reservations.create')">
           <Plus aria-hidden="true" />
           {{ $t('Nauja rezervacija') }}
@@ -34,19 +27,10 @@
     </template>
 
     <template #row="{ item }">
-      <article class="flex min-h-16 items-start gap-3 px-3 py-3 sm:px-4">
-        <Checkbox
-          v-if="!isDeleted && isReservationSelectable(item)"
-          class="mt-1"
-          :model-value="selectedIds.includes(reservationKey(item))"
-          :aria-label="$t('Pasirinkti :name', { name: item.name })"
-          @update:model-value="toggleReservation(item)"
-        />
+      <article class="flex min-h-16 items-start gap-3 px-4 py-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
-            <Link :href="route('reservations.show', item.id)" data-collection-open class="font-medium hover:text-brand">
-              {{ item.name }}
-            </Link>
+            <CollectionPrimaryCell :title="item.name" :href="isDeleted ? undefined : route('reservations.show', item.id)" />
             <ReservationStateSummary :states="statesOf(item)" :unresolved="isUnresolved(item)" class="shrink-0" />
           </div>
           <ReservationResourceChips class="mt-1.5" :resources="item.resources" :muted-foreign="isAdministrator(item)" />
@@ -59,26 +43,12 @@
     </template>
 
     <template #cell="{ item, column }">
-      <Checkbox
-        v-if="column.key === 'select'"
-        :model-value="selectedIds.includes(reservationKey(item))"
-        :disabled="!isReservationSelectable(item)"
-        :aria-label="$t('Pasirinkti :name', { name: item.name })"
-        @update:model-value="toggleReservation(item)"
+      <CollectionPrimaryCell
+        v-if="column.key === 'name'"
+        :title="item.name"
+        :href="isDeleted ? undefined : route('reservations.show', item.id)"
+        :sub="item.users?.length ? $tChoice('reservations.dashboard.managers', item.users.length, { count: item.users.length }) : undefined"
       />
-      <div v-else-if="column.key === 'name'" class="min-w-0">
-        <Link
-          :href="route('reservations.show', item.id)"
-          data-collection-open
-          prefetch
-          class="block truncate font-medium hover:text-brand"
-        >
-          {{ item.name }}
-        </Link>
-        <span v-if="item.users?.length" class="text-xs text-muted-foreground">
-          {{ $tChoice('reservations.dashboard.managers', item.users.length, { count: item.users.length }) }}
-        </span>
-      </div>
       <div v-else-if="column.key === 'requester'" class="flex items-center gap-2">
         <template v-if="item.users?.length">
           <UsersAvatarGroup :users="item.users" :size="24" :max="2" />
@@ -147,11 +117,11 @@
         <template v-if="isDeleted">
           <div class="flex flex-col gap-2 pt-2">
             <Button variant="outline" @click="restoreReservation(item)">
-              <RotateCcw aria-hidden="true" class="mr-2 size-4" />
+              <RotateCcw aria-hidden="true" class="size-4" />
               {{ $t('Atkurti') }}
             </Button>
             <Button variant="ghost" class="text-destructive hover:text-destructive" @click="targetReservationToForceDelete = item">
-              <Trash2 aria-hidden="true" class="mr-2 size-4" />
+              <Trash2 aria-hidden="true" class="size-4" />
               {{ $t('Ištrinti visam laikui') }}
             </Button>
           </div>
@@ -170,32 +140,26 @@
         @action="router.visit(route('reservations.create'))"
       />
     </template>
+    <template #bulk-actions>
+      <Button variant="brand" size="sm" @click="openDecision('approved', selectedReservations)">
+        <Check aria-hidden="true" />
+        {{ $t('reservations.actions.approve') }}
+      </Button>
+      <Button
+        v-if="selectedReservations.some(reservation => getRejectablePivotIds(reservation).length > 0)"
+        variant="outline"
+        size="sm"
+        @click="openDecision('rejected', selectedReservations)"
+      >
+        <X aria-hidden="true" />
+        {{ $t('reservations.actions.reject') }}
+      </Button>
+      <Button variant="outline" size="sm" @click="openDecision('resolved', selectedReservations)">
+        <CheckCheck aria-hidden="true" />
+        {{ $t('reservations.actions.resolve') }}
+      </Button>
+    </template>
   </CollectionPage>
-
-  <CollectionSelectionBar
-    v-if="selectedReservations.length && !isDeleted"
-    :count="selectedReservations.length"
-    :count-label="$t('Pasirinkta')"
-    @clear="selectedIds = []"
-  >
-    <Button variant="brand" size="sm" @click="openDecision('approved', selectedReservations)">
-      <Check aria-hidden="true" />
-      {{ $t('reservations.actions.approve') }}
-    </Button>
-    <Button
-      v-if="selectedReservations.some(reservation => getRejectablePivotIds(reservation).length > 0)"
-      variant="outline"
-      size="sm"
-      @click="openDecision('rejected', selectedReservations)"
-    >
-      <X aria-hidden="true" />
-      {{ $t('reservations.actions.reject') }}
-    </Button>
-    <Button variant="outline" size="sm" @click="openDecision('resolved', selectedReservations)">
-      <CheckCheck aria-hidden="true" />
-      {{ $t('reservations.actions.resolve') }}
-    </Button>
-  </CollectionSelectionBar>
 
   <ReservationDecisionDialog
     v-model:open="decisionOpen"
@@ -223,7 +187,7 @@ import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
+import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -234,7 +198,6 @@ import type { ReservationDecision } from '@/Components/Reservations/types';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
 import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
-import { Checkbox } from '@/Components/ui/checkbox';
 import { ReservationIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { formatDate } from '@/Utils/dateTime';
@@ -302,7 +265,6 @@ const source = useDatabaseCollectionSource<DashboardReservation>({
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  ...(!isDeleted.value && props.managesResources ? [{ key: 'select', label: $t('Pasirinkti'), class: 'w-12' }] : []),
   { key: 'name', label: $t('Rezervacija') },
   { key: 'requester', label: $t('Prašytojas'), class: 'w-44' },
   { key: 'resources', label: $t('Ištekliai') },
@@ -372,13 +334,6 @@ const spotlightKey = computed(() => {
 const selectedReservations = computed(() =>
   source.items.value.filter(reservation => selectedIds.value.includes(reservationKey(reservation)) && isReservationSelectable(reservation)),
 );
-
-function toggleReservation(reservation: DashboardReservation): void {
-  const id = reservationKey(reservation);
-  selectedIds.value = selectedIds.value.includes(id)
-    ? selectedIds.value.filter(selected => selected !== id)
-    : [...selectedIds.value, id];
-}
 
 const decisionOpen = ref(false);
 const decision = ref<ReservationDecision>('approved');

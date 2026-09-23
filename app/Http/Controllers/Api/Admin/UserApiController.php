@@ -20,7 +20,7 @@ class UserApiController extends ApiController
     {
         $this->authorizeApi('viewAny', User::class);
 
-        $users = $this->applyTanstackFilters(
+        $query = $this->applyTanstackFilters(
             BuildUserIndexQuery::execute(),
             $request,
             $this->tableService,
@@ -30,7 +30,10 @@ class UserApiController extends ApiController
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
             ],
-        )->paginate($request->getPerPage());
+        );
+
+        $users = $this->withForceDeleteBlockers($query, $request)->paginate($request->getPerPage());
+        $this->appendForceDeleteBlockedReason($users->getCollection(), $request);
 
         return $this->jsonSuccess([
             'items' => $users->getCollection()

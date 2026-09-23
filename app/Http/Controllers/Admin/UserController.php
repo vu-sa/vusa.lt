@@ -73,8 +73,7 @@ class UserController extends AdminController
         $collection = $users->getCollection();
         $collection->makeVisible(['last_action']);
 
-        // The live list is a collection page over the API twin; only the trash stays a table.
-        return $this->inertiaResponse($request->getShowDeleted() ? 'Admin/People/IndexUserTrash' : 'Admin/People/IndexUser', [
+        return $this->inertiaResponse('Admin/People/IndexUser', [
             'users' => [
                 'data' => $collection->values(),
                 'meta' => [

@@ -141,8 +141,8 @@
                 {{ $t('Visi renginiai') }}
               </Link>
               <Button
-                variant="brand-outline"
-                size="public"
+                variant="outline"
+                size="lg"
                 @click="handleShare"
               >
                 <IFluentShare20Regular class="size-4" />

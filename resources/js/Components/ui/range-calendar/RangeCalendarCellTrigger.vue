@@ -1,7 +1,7 @@
 <template>
   <RangeCalendarCellTrigger
     :class="cn(
-      buttonVariants({ variant: 'ghost' }),
+      buttonVariants({ variant: 'ghost', voice: 'plain' }),
       'h-9 w-9 p-0 font-normal data-[selected]:opacity-100',
       '[&[data-today]:not([data-selected])]:bg-secondary [&[data-today]:not([data-selected])]:text-foreground',
       // Selection Start

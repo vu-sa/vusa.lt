@@ -5,6 +5,15 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.18 — Vienodi sąrašai visoje Mano VU SA (2026-09-23) {#v2-18}
+
+- ✨ **Vienas sąrašų dizainas** — puslapiai, naujienos, renginiai, institucijos, posėdžiai, nariai, rolės, leidimai, tipai, ryšiai, padaliniai, studijų programos ir komplektai atrodo ir veikia vienodai: didelė antraštė, paieška su filtrais, rikiavimas, eilučių, lentelės ir peržiūros rodiniai bei „Rodyti daugiau“
+- ✨ **Ištrinti įrašai tame pačiame sąraše** — mygtukas „Ištrinti (N)“ filtrų juostoje parodo ištrintus įrašus tame pačiame lange, iš kurio juos gali atkurti arba ištrinti visam laikui
+- ⭐ **Pažymėk kelis įrašus** — sujungiant narius, pareigybes, žymas ar studijų programas ir tvirtinant rezervacijas pažymėk visus rodomus vienu paspaudimu; lentelėje stulpelius gali rikiuoti paspaudęs antraštę ir paslėpti per „Stulpeliai“
+- ✨ **Ryškesni mygtukai ir antraštės** — administravimo mygtukai, filtrai ir puslapių antraštės dabar atrodo taip pat, kaip viešoje svetainėje, o jų paspaudimo plotas didesnis telefone ir planšetėje
+- ✨ **Naujas puslapio redaktorius** — kuriant ar redaguojant puslapį viršutinė juosta virsta redaktoriaus juosta su „Grįžti“, išsaugojimo būsena ir „Išsaugoti“; laukai sudėti į turinio stulpelį ir šoninius skydelius (Paskelbimas, Struktūra, Kalba, Rodymo nustatymai), o telefone „Išsaugoti“ visada po nykščiu apačioje
+- ✨ **Paaiškinimai po laukais** — formų laukų paaiškinimai rodomi po lauku, o ne tik užvedus pelę, todėl juos matai ir telefone
+
 ## v2.17 — Sistemos valdymas (2026-09-22) {#v2-17}
 
 - ✨ **Aiškesnis sistemos administravimas** — rolių, tipų, ryšių, pagalbos užklausų, laiškų eilės ir sistemos būsenos puslapiai pateikia svarbiausią informaciją bei veiksmus vienodu įrašo vaizdu

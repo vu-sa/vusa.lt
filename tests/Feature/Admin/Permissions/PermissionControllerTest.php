@@ -32,15 +32,14 @@ describe('permission index', function (): void {
             );
     });
 
-    test('permission index displays paginated permissions', function (): void {
+    test('permission index sends every permission for the browser to search', function (): void {
         Permission::factory()->count(25)->create();
 
         asUser($this->admin)
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('permissions.data', 20) // Default pagination size
-                ->has('permissions.meta')
+                ->has('permissions', Permission::query()->count())
             );
     });
 
@@ -53,7 +52,7 @@ describe('permission index', function (): void {
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('permissions.data', 5)
+                ->has('permissions', 5)
             );
     });
 });
@@ -90,9 +89,7 @@ describe('permission data integrity', function (): void {
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('permissions.data.0.name')
-                ->has('permissions.data.0.guard_name')
-                ->where('permissions.data.0.name', 'test.permission')
+                ->where('permissions.0.name', 'test.permission')
             );
     });
 
@@ -104,13 +101,13 @@ describe('permission data integrity', function (): void {
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('permissions.data', 0)
+                ->has('permissions', 0)
             );
     });
 });
 
 describe('permission filtering and search', function (): void {
-    test('permission index supports basic pagination', function (): void {
+    test('permission index ignores paging and sends the whole list', function (): void {
         Permission::query()->delete(); // Clear existing permissions
         Permission::factory()->count(25)->create();
 
@@ -118,12 +115,12 @@ describe('permission filtering and search', function (): void {
             ->get(route('permissions.index', ['page' => 2]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('permissions.data', 5) // Remaining permissions on page 2
-                ->has('permissions.meta')
+                ->has('permissions', 25)
             );
     });
 
     test('permission list is sorted consistently', function (): void {
+        Permission::query()->delete();
         Permission::factory()->create(['name' => 'zebra.permission']);
         Permission::factory()->create(['name' => 'alpha.permission']);
 
@@ -131,7 +128,7 @@ describe('permission filtering and search', function (): void {
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('permissions.data')
+                ->where('permissions.0.name', 'alpha.permission')
             );
     });
 });
@@ -148,9 +145,7 @@ describe('permission system integration', function (): void {
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('permissions.data.0')
-                ->where('permissions.data.0.name', 'manage.users')
-                ->where('permissions.data.0.guard_name', 'web')
+                ->where('permissions.0.name', 'manage.users')
             );
     });
 

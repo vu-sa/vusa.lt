@@ -1,101 +1,83 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
-  />
+  <CollectionPage
+    :source
+    collection="relationships"
+    entity-type="relationship"
+    :eyebrow="`${$t('shell.workspaces.sistema.title')} · ${$t('shell.sections.rysiai')}`"
+    :title="$t('Ryšiai')"
+    :lead="$t('Ryšių tipai, kuriais susiejami įrašai: pavyzdžiui, kuri institucija kuriai atsiskaito.')"
+    default-view="table"
+    :item-key="relationship => String(relationship.id)"
+    :columns
+    :search-placeholder="$t('Ieškoti ryšių')"
+  >
+    <template #actions>
+      <Button v-if="canCreate" as-child variant="brand" size="lg">
+        <Link :href="route('relationships.create')">
+          <Plus aria-hidden="true" />
+          {{ $t('Naujas ryšys') }}
+        </Link>
+      </Button>
+    </template>
+
+    <template #row="{ item }">
+      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+        <div class="min-w-0 flex-1">
+          <CollectionPrimaryCell :title="item.name" :href="route('relationships.edit', item.id)" :sub="item.slug" mono />
+          <p v-if="item.description" class="mt-2 line-clamp-2 text-xs text-muted-foreground">{{ item.description }}</p>
+        </div>
+        <CollectionRowActions :actions="actions.rowActions(item, item.name, false)" @select="key => actions.select(key)" />
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <CollectionPrimaryCell v-if="column.key === 'name'" :title="item.name" :href="route('relationships.edit', item.id)" :sub="item.slug" mono />
+      <span v-else-if="column.key === 'description'" class="line-clamp-2 text-muted-foreground">{{ item.description || '—' }}</span>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actions.rowActions(item, item.name, false)" @select="key => actions.select(key)" />
+    </template>
+  </CollectionPage>
+
+  <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
+import { Plus } from 'lucide-vue-next';
+import { computed, toRef } from 'vue';
 
-import type { IndexTablePageInstance,
-  IndexTablePageProps } from '@/Types/TableConfigTypes';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import { RelationshipIcon } from '@/Components/icons';
-import {
-  createTextColumn,
-  createIdColumn,
-} from '@/Composables/useDataTableColumns';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionColumn } from '@/Components/Collection/types';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { Button } from '@/Components/ui/button';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
+
+type RelationshipRow = Pick<App.Entities.Relationship, 'id' | 'name' | 'slug' | 'description'>;
 
 const props = defineProps<{
-  relationships: {
-    data: App.Entities.Relationship[];
-    meta: {
-      total: number;
-      current_page: number;
-      per_page: number;
-      last_page: number;
-      from: number;
-      to: number;
-    };
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
+  relationships: RelationshipRow[];
 }>();
 
-const modelName = 'relationships';
-const entityName = 'relationship';
+const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.relationship));
 
-const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
-
-const getRowId = (row: App.Entities.Relationship) => {
-  return `relationship-${row.id}`;
-};
-
-const columns = computed(() => [
-  createIdColumn<App.Entities.Relationship>(),
-  createTextColumn<App.Entities.Relationship>('name', {
-    title: $t('forms.fields.name'),
-    width: 250,
-  }),
-  createTextColumn<App.Entities.Relationship>('slug', {
-    title: $t('Techninė žymė'),
-    width: 200,
-  }),
-  createTextColumn<App.Entities.Relationship>('description', {
-    title: $t('forms.fields.description'),
-    width: 300,
-  }),
-  createStandardActionsColumn<App.Entities.Relationship>('relationships', {
-    canView: false,
-    canEdit: true,
-    canDelete: true,
-  }),
-]);
-
-const tableConfig = computed<IndexTablePageProps<App.Entities.Relationship>>(() => {
-  return {
-    modelName,
-    entityName,
-    data: props.relationships.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.relationships.meta.total,
-    initialPage: props.relationships.meta.current_page,
-    pageSize: props.relationships.meta.per_page,
-
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
-    enableFiltering: true,
-    enableColumnVisibility: false,
-    enableRowSelection: false,
-
-    headerTitle: 'Ryšiai',
-    icon: RelationshipIcon,
-    createRoute: route('relationships.create'),
-    canCreate: true,
-  };
+const source = useLocalCollectionSource<RelationshipRow>({
+  items: toRef(props, 'relationships'),
+  searchText: relationship => [relationship.name, relationship.slug, relationship.description],
+  defaultSort: 'name:asc',
+  sortOptions: [
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: relationship => relationship.name },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: relationship => relationship.name },
+  ],
 });
 
-const onDataLoaded = (data: any) => {};
-const handleSortingChange = (sorting: any) => {};
-const handlePageChange = (page: any) => {};
-const handleFilterChange = (filterKey: any, value: any) => {};
+const actions = useCollectionRecordActions({ routePrefix: 'relationships', canDelete: () => canCreate.value });
+
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'name', label: $t('Ryšys'), sortField: 'name' },
+  { key: 'description', label: $t('Aprašymas') },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
+]);
 </script>

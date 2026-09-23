@@ -1,5 +1,6 @@
-import { computed, ref, watch, type ComputedRef, type Ref } from 'vue';
+import { computed, isRef, ref, watch, type ComputedRef, type Ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
 import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
@@ -31,9 +32,9 @@ export interface CollectionChip {
 }
 
 /**
- * What `CollectionPage` needs from wherever the rows come from, so it never learns whether
- * they are a Typesense index or Inertia props. Typesense is the only implementation so far;
- * the database-backed one lands with Rezervacijos (PR 5.6), its first real consumer.
+ * What `CollectionPage` needs from wherever the rows come from, so it never learns where they
+ * live. Three implementations: Typesense (big, searchable collections), the admin API
+ * (workflow collections with server-side facets) and local (small lists sent as a prop).
  */
 export interface CollectionSource<T> {
   items: Readonly<Ref<readonly T[]>>;
@@ -86,6 +87,8 @@ interface DatabaseCollectionSourceOptions<T> {
    * carried in the page URL. Values have no counts: the database source does not facet.
    */
   facets?: DatabaseFacetDefinition[];
+  /** No first page came with the page (a trash view): show the skeleton and fetch it now. */
+  fetchOnMount?: boolean;
 }
 
 export interface DatabaseFacetDefinition {
@@ -259,7 +262,7 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
   const isLoading = ref(false);
   const isLoadingMore = ref(false);
   const hasMore = computed(() => currentPage.value < lastPage.value);
-  const hasSearched = ref(true);
+  const hasSearched = ref(!options.fetchOnMount);
   const error = ref<string | null>(null);
   const query = ref(initialParams.get('search') ?? '');
   const facetDefinitions = options.facets ?? [];
@@ -438,6 +441,10 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
 
   const debouncedRefresh = useDebounceFn(() => fetchPage(1, false), 250);
 
+  if (options.fetchOnMount) {
+    void fetchPage(1, false);
+  }
+
   return {
     items,
     total,
@@ -484,4 +491,267 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     },
     refresh: () => void fetchPage(1, false),
   };
+}
+
+interface LocalFacetDefinition<T> {
+  field: string;
+  label: string;
+  /** The value(s) an item carries for this facet. */
+  get: (item: T) => string | string[] | null | undefined;
+  /** Readable label per value; defaults to the value itself. */
+  valueLabel?: (value: string) => string;
+}
+
+interface LocalSortOption<T> extends CollectionSortOption {
+  /** Plain value to compare; strings compare with the Lithuanian collator. */
+  by: (item: T) => string | number | null | undefined;
+}
+
+interface LocalCollectionSourceOptions<T> {
+  items: Ref<readonly T[]> | readonly T[];
+  /** The text a query matches against, one or more strings per item. */
+  searchText: (item: T) => (string | null | undefined)[];
+  sortOptions: LocalSortOption<T>[];
+  defaultSort: string;
+  facets?: LocalFacetDefinition<T>[];
+}
+
+const collator = new Intl.Collator('lt', { sensitivity: 'base', numeric: true });
+
+function normalise(value: string): string {
+  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
+
+/**
+ * For small lists sent whole as an Inertia prop (roles, types, tenants): search, facets with
+ * counts, sort and "Rodyti daugiau" all run in the browser, so the list needs no API endpoint
+ * and still looks and behaves like every other collection.
+ */
+export function useLocalCollectionSource<T>(options: LocalCollectionSourceOptions<T>): CollectionSource<T> {
+  const initialParams = new URLSearchParams(window.location.search);
+  const source = computed<readonly T[]>(() => (isRef(options.items) ? options.items.value : options.items));
+  const facetDefinitions = options.facets ?? [];
+
+  const query = ref(initialParams.get('search') ?? '');
+  const sortBy = ref(options.sortOptions.some(option => option.value === initialParams.get('sort'))
+    ? initialParams.get('sort') as string
+    : options.defaultSort);
+  const visible = ref(PAGE_SIZE * Math.max(1, Number(initialParams.get('pages')) || 1));
+  const filters = ref<Record<string, unknown>>(
+    Object.fromEntries(facetDefinitions
+      .map(facet => [facet.field, initialParams.get(facet.field)?.split(',').filter(Boolean) ?? []] as const)
+      .filter(([, values]) => values.length > 0)),
+  );
+
+  const valuesOf = (facet: LocalFacetDefinition<T>, item: T): string[] => {
+    const raw = facet.get(item);
+
+    return (Array.isArray(raw) ? raw : raw === null || raw === undefined || raw === '' ? [] : [raw]).map(String);
+  };
+  const selectedValues = (field: string): string[] => (filters.value[field] as string[] | undefined) ?? [];
+
+  const matchesQuery = (item: T): boolean => {
+    const needle = normalise(query.value.trim());
+
+    return needle === '' || options.searchText(item).some(text => text && normalise(text).includes(needle));
+  };
+
+  const matchesFacets = (item: T, except?: string): boolean =>
+    facetDefinitions.every((facet) => {
+      const selected = selectedValues(facet.field);
+
+      return facet.field === except || selected.length === 0 || valuesOf(facet, item).some(value => selected.includes(value));
+    });
+
+  const filtered = computed(() => {
+    const sort = options.sortOptions.find(option => option.value === sortBy.value) ?? options.sortOptions[0];
+    const direction = sort?.value.endsWith(':desc') ? -1 : 1;
+    const rows = source.value.filter(item => matchesQuery(item) && matchesFacets(item));
+
+    if (!sort) {
+      return rows;
+    }
+
+    return [...rows].sort((left, right) => {
+      const a = sort.by(left);
+      const b = sort.by(right);
+
+      if (a === b) {
+        return 0;
+      }
+      if (a === null || a === undefined) {
+        return 1;
+      }
+      if (b === null || b === undefined) {
+        return -1;
+      }
+
+      return direction * (typeof a === 'number' && typeof b === 'number' ? a - b : collator.compare(String(a), String(b)));
+    });
+  });
+
+  // Counts answer "what would I get if I picked this too", so each facet ignores its own selection.
+  const facets = computed<CollectionFacet[]>(() =>
+    facetDefinitions.map((facet) => {
+      const counts = new Map<string, number>();
+
+      for (const item of source.value) {
+        if (!matchesQuery(item) || !matchesFacets(item, facet.field)) {
+          continue;
+        }
+        for (const value of valuesOf(facet, item)) {
+          counts.set(value, (counts.get(value) ?? 0) + 1);
+        }
+      }
+
+      const all = new Set([...counts.keys(), ...selectedValues(facet.field)]);
+
+      return {
+        field: facet.field,
+        label: facet.label,
+        type: 'checkbox' as const,
+        values: [...all]
+          .map(value => ({
+            value,
+            label: facet.valueLabel?.(value) ?? value,
+            count: counts.get(value) ?? 0,
+            isSelected: selectedValues(facet.field).includes(value),
+          }))
+          .sort((left, right) => collator.compare(left.label, right.label)),
+      };
+    }),
+  );
+
+  const chips = computed<CollectionChip[]>(() =>
+    facetDefinitions.flatMap(facet =>
+      selectedValues(facet.field).map(value => ({
+        id: `${facet.field}:${value}`,
+        label: `${facet.label}: ${facet.valueLabel?.(value) ?? value}`,
+      })),
+    ),
+  );
+
+  function syncUrl(): void {
+    const url = new URL(window.location.href);
+
+    for (const key of ['search', 'sort', 'pages', ...facetDefinitions.map(facet => facet.field)]) {
+      url.searchParams.delete(key);
+    }
+    if (query.value.trim()) {
+      url.searchParams.set('search', query.value.trim());
+    }
+    if (sortBy.value !== options.defaultSort) {
+      url.searchParams.set('sort', sortBy.value);
+    }
+    if (visible.value > PAGE_SIZE) {
+      url.searchParams.set('pages', String(Math.ceil(visible.value / PAGE_SIZE)));
+    }
+    for (const facet of facetDefinitions) {
+      if (selectedValues(facet.field).length > 0) {
+        url.searchParams.set(facet.field, selectedValues(facet.field).join(','));
+      }
+    }
+
+    window.history.replaceState(window.history.state, '', url.toString());
+  }
+
+  function setFilter(field: string, value: unknown): void {
+    const next = { ...filters.value };
+    const values = (Array.isArray(value) ? value : value === undefined || value === '' ? [] : [value]).map(String);
+
+    if (values.length === 0) {
+      delete next[field];
+    }
+    else {
+      next[field] = values;
+    }
+
+    filters.value = next;
+    visible.value = PAGE_SIZE;
+    syncUrl();
+  }
+
+  function toggleFilter(field: string, value: string): void {
+    const current = selectedValues(field);
+
+    setFilter(field, current.includes(value) ? current.filter(selected => selected !== value) : [...current, value]);
+  }
+
+  const items = computed(() => filtered.value.slice(0, visible.value));
+
+  return {
+    items,
+    total: computed(() => filtered.value.length),
+    isLoading: ref(false),
+    isLoadingMore: ref(false),
+    hasMore: computed(() => filtered.value.length > visible.value),
+    hasSearched: ref(true),
+    error: ref<string | null>(null),
+    query,
+    filters,
+    facets,
+    chips,
+    activeFilterCount: computed(() => chips.value.length),
+    sortBy,
+    sortOptions: computed(() => options.sortOptions.map(({ value, label }) => ({ value, label }))),
+    search: (next) => {
+      query.value = next;
+      visible.value = PAGE_SIZE;
+      syncUrl();
+    },
+    toggleFilter,
+    setFilter,
+    clearFilters: () => {
+      filters.value = {};
+      syncUrl();
+    },
+    clearChip: (id) => {
+      const [field, ...rest] = id.split(':');
+      toggleFilter(field, rest.join(':'));
+    },
+    // Local rows are the prop itself; an optimistic change arrives with the next Inertia reload.
+    replaceItems: () => undefined,
+    setSortBy: (next) => {
+      sortBy.value = next;
+      syncUrl();
+    },
+    loadMore: () => {
+      visible.value += PAGE_SIZE;
+      syncUrl();
+    },
+    refresh: () => undefined,
+  };
+}
+
+/** The trash of a Typesense-backed collection, read from `api.v1.admin.trash.index`. */
+export function useTrashCollectionSource<T>(collection: 'institutions' | 'meetings' | 'news' | 'pages'): CollectionSource<T> {
+  return useDatabaseCollectionSource<T>({
+    endpoint: route('api.v1.admin.trash.index', { collection }),
+    initial: { items: [], total: 0, perPage: PAGE_SIZE, currentPage: 0, lastPage: 1 },
+    sortOptions: [
+      { value: 'deleted_at:desc', label: $t('Neseniai ištrinti') },
+      { value: 'deleted_at:asc', label: $t('Seniausiai ištrinti') },
+    ],
+    defaultSort: 'deleted_at:desc',
+    preserveUrlKeys: ['showDeleted'],
+    fetchOnMount: true,
+  });
+}
+
+/** The page is showing soft-deleted records (`?showDeleted=true`). */
+export function isTrashView(): boolean {
+  return new URLSearchParams(window.location.search).get('showDeleted') === 'true';
+}
+
+/**
+ * Trash is a filter over the same collection, but the search index never holds deleted rows, so
+ * the trash view always reads the database. Factories keep the unused source from ever starting
+ * (a Typesense source searches as soon as it exists). Switching is an Inertia visit, which
+ * remounts the page, so the choice is made once.
+ */
+export function useTrashAwareSource<T>(
+  live: () => CollectionSource<T>,
+  trash: () => CollectionSource<T>,
+): CollectionSource<T> {
+  return isTrashView() ? trash() : live();
 }

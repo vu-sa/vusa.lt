@@ -1,7 +1,7 @@
 <template>
   <span
     :class="cn(
-      'inline-flex w-fit items-center gap-1.5 border px-2 py-1 text-xs font-medium leading-none',
+      'inline-flex w-fit items-center gap-1.5 border px-2 py-1 text-[11px] font-bold uppercase tracking-wide leading-none',
       roleClasses[status.role],
       props.class,
     )"

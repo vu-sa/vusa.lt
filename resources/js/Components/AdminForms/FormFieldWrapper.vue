@@ -1,21 +1,9 @@
 <template>
-  <div class="space-y-2">
-    <div class="flex items-center justify-between">
-      <Label :for="id" class="flex items-center gap-1.5">
+  <div class="flex flex-col gap-2" data-slot="form-field">
+    <div class="flex items-baseline justify-between gap-2">
+      <Label :for="id" class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
         {{ label }}
         <span v-if="required" class="text-destructive">*</span>
-        <TooltipProvider v-if="hint">
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <button type="button" class="inline-flex">
-                <Info class="size-3.5 cursor-help text-muted-foreground" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" class="max-w-xs">
-              {{ hint }}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
         <!-- Validation status indicators -->
         <span
           v-if="validating"
@@ -45,15 +33,15 @@
           <AlertCircle class="size-3.5" aria-hidden="true" />
         </span>
       </Label>
-      <span v-if="charCount !== undefined" class="text-xs" :class="charCountClass">
+      <span v-if="charCount !== undefined" class="text-[11px] font-bold tabular-nums" :class="charCountClass">
         {{ charCount }}<span v-if="maxLength">/{{ maxLength }}</span>
       </span>
     </div>
 
     <slot />
 
-    <p v-if="helperText" class="text-xs text-muted-foreground">
-      {{ helperText }}
+    <p v-if="hint || helperText" class="text-xs leading-relaxed text-muted-foreground">
+      {{ hint ?? helperText }}
     </p>
     <p v-if="error" class="text-xs text-destructive">
       {{ error }}
@@ -63,17 +51,17 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { AlertCircle, CheckCircle2, Info } from 'lucide-vue-next';
+import { AlertCircle, CheckCircle2 } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { Label } from '@/Components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import Spinner from '@/Components/ui/spinner/Spinner.vue';
 
 const props = defineProps<{
   id: string;
   label: string;
   required?: boolean;
+  /** One line under the field — never hover-only (.ai/rules/admin-forms.md). */
   hint?: string;
   helperText?: string;
   error?: string;

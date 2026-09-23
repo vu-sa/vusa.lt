@@ -7,33 +7,36 @@
     v-bind="forwarded"
     @update:placeholder="handlePlaceholderChange"
   >
-    <CalendarHeader class="w-full justify-between gap-2">
+    <CalendarHeader class="w-full justify-between gap-2 pb-2 border-b border-border/60">
       <CalendarHeading class="min-w-0 flex-1">
-        <div class="flex items-center gap-1">
-          <Select :model-value="String(currentPlaceholder.month)" @update:model-value="handleMonthSelect">
-            <SelectTrigger class="h-7 w-[4.5rem] gap-0.5 border-none px-1.5 text-sm font-medium hover:bg-accent focus:ring-0 focus:ring-offset-0">
-              <SelectValue>
-                {{ monthNames[currentPlaceholder.month - 1] }}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="(month, index) in monthNames" :key="index" :value="String(index + 1)">
+        <div class="flex items-center gap-1.5">
+          <div class="relative flex h-8 items-center border border-border bg-background pr-5 transition-colors hover:border-foreground/30 focus-within:border-brand">
+            <select
+              :value="String(currentPlaceholder.month)"
+              aria-label="Mėnuo"
+              class="h-full appearance-none bg-transparent pl-2 pr-0 text-xs font-bold uppercase tracking-wider text-foreground outline-none cursor-pointer"
+              @change="handleMonthSelect(($event.target as HTMLSelectElement).value)"
+            >
+              <option v-for="(month, index) in monthNames" :key="index" :value="String(index + 1)">
                 {{ month }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <Select :model-value="String(currentPlaceholder.year)" @update:model-value="handleYearSelect">
-            <SelectTrigger class="h-7 w-auto gap-0.5 border-none px-1.5 text-sm font-medium hover:bg-accent focus:ring-0 focus:ring-offset-0">
-              <SelectValue>
-                {{ currentPlaceholder.year }}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent class="max-h-60">
-              <SelectItem v-for="year in years" :key="year" :value="String(year)">
+              </option>
+            </select>
+            <ChevronDown class="pointer-events-none absolute right-1 size-3 text-muted-foreground" aria-hidden="true" />
+          </div>
+
+          <div class="relative flex h-8 items-center border border-border bg-background pr-5 transition-colors hover:border-foreground/30 focus-within:border-brand">
+            <select
+              :value="String(currentPlaceholder.year)"
+              aria-label="Metai"
+              class="h-full appearance-none bg-transparent pl-2 pr-0 text-xs font-bold text-foreground outline-none cursor-pointer"
+              @change="handleYearSelect(($event.target as HTMLSelectElement).value)"
+            >
+              <option v-for="year in years" :key="year" :value="String(year)">
                 {{ year }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+              </option>
+            </select>
+            <ChevronDown class="pointer-events-none absolute right-1 size-3 text-muted-foreground" aria-hidden="true" />
+          </div>
         </div>
       </CalendarHeading>
 
@@ -74,20 +77,14 @@
 </template>
 
 <script lang="ts" setup>
+import { computed, ref, type HTMLAttributes } from 'vue';
 import { CalendarRoot, type CalendarRootEmits, type CalendarRootProps, useForwardPropsEmits } from 'reka-ui';
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
-import { computed, ref, onMounted, type HTMLAttributes } from 'vue';
+import { ChevronDown } from 'lucide-vue-next';
 
 import { CalendarCell, CalendarCellTrigger, CalendarGrid, CalendarGridBody, CalendarGridHead, CalendarGridRow, CalendarHeadCell, CalendarHeader, CalendarHeading, CalendarNextButton, CalendarPrevButton } from '.';
 
 import { cn } from '@/Utils/Shadcn/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/Components/ui/select';
 
 interface CalendarPropsExtended extends CalendarRootProps {
   class?: HTMLAttributes['class'];
@@ -95,6 +92,7 @@ interface CalendarPropsExtended extends CalendarRootProps {
 }
 
 const props = withDefaults(defineProps<CalendarPropsExtended>(), {
+  class: undefined,
   yearRange: () => [1989, new Date().getFullYear() + 1],
 });
 const emits = defineEmits<CalendarRootEmits>();
@@ -122,15 +120,15 @@ const years = computed(() => {
 const getInitialPlaceholder = (): CalendarDate => {
   // Check if there's a modelValue or placeholder prop
   if (props.modelValue) {
-    const mv = props.modelValue as any;
-    if (mv.year && mv.month) {
-      return new CalendarDate(mv.year, mv.month, mv.day || 1);
+    const mv = props.modelValue as Record<string, unknown>;
+    if (typeof mv?.year === 'number' && typeof mv?.month === 'number') {
+      return new CalendarDate(mv.year, mv.month, (mv.day as number) || 1);
     }
   }
   if (props.placeholder) {
-    const ph = props.placeholder as any;
-    if (ph.year && ph.month) {
-      return new CalendarDate(ph.year, ph.month, ph.day || 1);
+    const ph = props.placeholder as Record<string, unknown>;
+    if (typeof ph?.year === 'number' && typeof ph?.month === 'number') {
+      return new CalendarDate(ph.year, ph.month, (ph.day as number) || 1);
     }
   }
   // Default to today

@@ -86,9 +86,7 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/StudySets/IndexStudySet')
                 ->has('studySets')
-                ->has('studySets.data')
-                ->has('filters')
-                ->has('sorting')
+                ->has('deletedCount')
             );
     });
 
@@ -272,8 +270,8 @@ describe('tenant isolation', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/StudySets/IndexStudySet')
-                ->has('studySets.data')
-                ->where('studySets.data', fn ($data) => collect($data)->every(fn ($item) => $item['tenant_id'] === $this->tenant->id))
+                ->has('studySets')
+                ->where('studySets', fn ($data) => collect($data)->every(fn ($item) => $item['tenant_id'] === $this->tenant->id))
             );
     });
 

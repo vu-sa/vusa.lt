@@ -1,8 +1,8 @@
 <template>
-  <div class="flex flex-col gap-2 lg:flex-row lg:items-center" data-slot="collection-control-row">
+  <div class="flex flex-col gap-3 lg:flex-row lg:items-center" data-slot="collection-control-row">
     <div class="relative min-w-0 flex-1">
       <Search
-        class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+        class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
         aria-hidden="true"
       />
       <!-- AdminLayout's `/` shortcut focuses the first field carrying this attribute (U3). -->
@@ -13,18 +13,14 @@
         :placeholder
         :aria-label="placeholder"
         autocomplete="off"
-        :class="[
-          'h-9 w-full border border-input bg-background pr-9 pl-9 text-base md:text-sm pointer-coarse:h-11',
-          'placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden',
-          'focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring',
-        ]"
+        :class="[searchFieldClass, 'bg-secondary/40 text-base md:text-sm [&::-webkit-search-cancel-button]:hidden']"
         @input="emit('search', text)"
         @keydown.enter="emit('search', text, true)"
       >
       <button
         v-if="text"
         type="button"
-        class="absolute top-1/2 right-1 flex size-8 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:size-10"
+        class="absolute top-1/2 right-1 flex size-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground pointer-coarse:size-11"
         :aria-label="$t('Išvalyti paiešką')"
         @click="clearText"
       >
@@ -32,36 +28,57 @@
       </button>
     </div>
 
-    <div class="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 lg:flex">
+    <div class="flex flex-wrap items-center gap-2 lg:flex-nowrap">
       <button
         v-if="hasFilters"
         type="button"
         :aria-expanded="filtersOpen"
-        class="inline-flex h-9 items-center justify-center gap-2 border border-border bg-background px-3 text-sm hover:border-foreground/40 pointer-coarse:h-11"
+        :class="controlVariants({ active: filtersOpen || activeFilterCount > 0 })"
         @click="emit('toggleFilters')"
       >
         <SlidersHorizontal class="size-4" aria-hidden="true" />
         <span>{{ $t('Filtrai') }}</span>
-        <span
-          v-if="activeFilterCount > 0"
-          class="min-w-5 bg-brand-fill px-1 text-center text-xs tabular-nums text-brand-foreground"
-        >
+        <span v-if="activeFilterCount > 0" :class="controlCountClass">
           {{ activeFilterCount }}
         </span>
       </button>
 
-      <label v-if="sortOptions.length > 0" class="inline-flex items-center gap-2">
-        <span class="sr-only">{{ $t('Rikiuoti') }}</span>
+      <label
+        v-if="sortOptions.length > 1"
+        :class="[
+          'relative flex h-11 min-w-0 items-center border border-border bg-background pr-9 pl-3',
+          'focus-within:border-brand pointer-coarse:min-h-11',
+        ]"
+      >
+        <span class="mr-2 shrink-0 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+          {{ $t('Rikiuoti') }}
+        </span>
         <select
           :value="sortBy"
-          class="h-9 max-w-44 border border-border bg-background px-2 text-sm pointer-coarse:h-11"
+          :aria-label="$t('Rikiuoti')"
+          class="w-full max-w-48 min-w-0 appearance-none truncate bg-transparent text-sm font-bold text-foreground outline-none"
           @change="emit('update:sortBy', ($event.target as HTMLSelectElement).value)"
         >
           <option v-for="option in sortOptions" :key="option.value" :value="option.value">
             {{ option.label }}
           </option>
         </select>
+        <ChevronDown class="pointer-events-none absolute right-3 size-4 text-muted-foreground" aria-hidden="true" />
       </label>
+
+      <button
+        v-if="trash && (trash.active || trash.count > 0)"
+        type="button"
+        :aria-pressed="trash.active"
+        :class="controlVariants({ active: trash.active })"
+        @click="emit('toggleTrash')"
+      >
+        <Trash2 class="size-4" aria-hidden="true" />
+        <span>{{ $t('Ištrinti') }}</span>
+        <span v-if="trash.count > 0" :class="trash.active ? controlCountClass : 'tabular-nums text-muted-foreground'">
+          {{ trash.count }}
+        </span>
+      </button>
 
       <slot name="view-toggle" />
     </div>
@@ -70,9 +87,12 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Search, SlidersHorizontal, X } from 'lucide-vue-next';
+import { ChevronDown, Search, SlidersHorizontal, Trash2, X } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
+import type { CollectionTrash } from './types';
+
+import { controlCountClass, controlVariants, searchFieldClass } from '@/Components/ui/control';
 import type { CollectionSortOption } from '@/Composables/useCollectionSource';
 
 const props = defineProps<{
@@ -84,11 +104,13 @@ const props = defineProps<{
   activeFilterCount: number;
   sortBy: string;
   sortOptions: CollectionSortOption[];
+  trash?: CollectionTrash;
 }>();
 
 const emit = defineEmits<{
   'search': [query: string, immediate?: boolean];
   'toggleFilters': [];
+  'toggleTrash': [];
   'update:sortBy': [value: string];
 }>();
 

@@ -40,8 +40,7 @@ describe('role index', function (): void {
             );
     });
 
-    test('role index displays paginated roles', function (): void {
-        // Clear existing roles and create fresh ones
+    test('role index sends every role with its permission count', function (): void {
         Role::where('name', '!=', 'Super Admin')->delete();
         Role::factory()->count(25)->create();
 
@@ -49,8 +48,8 @@ describe('role index', function (): void {
             ->get(route('roles.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('roles.data', 20) // Default pagination size
-                ->has('roles.meta')
+                ->has('roles', Role::query()->count())
+                ->has('roles.0.permissions_count')
             );
     });
 });

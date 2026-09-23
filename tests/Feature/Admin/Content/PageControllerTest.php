@@ -72,8 +72,9 @@ describe('authorized access', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexPages')
-                ->has('pages')
-                ->has('pages.data')
+                ->has('deletedCount')
+                // Live rows come from Typesense; the page never ships them.
+                ->missing('pages')
             );
     });
 
@@ -249,26 +250,27 @@ describe('filtering and search', function (): void {
         ]);
     });
 
-    test('can filter pages by search term', function (): void {
+    // The live list is searched in Typesense; the database only answers for the trash.
+    test('can search the trashed pages by title', function (): void {
+        Page::query()->each(fn (Page $page) => $page->delete());
+
         asUser($this->admin)
-            ->get(route('pages.index', ['search' => 'Test']))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPages')
-                ->has('pages.data')
-                ->where('pages.data', fn ($data) => collect($data)->contains(fn ($page) => str_contains($page['title'], 'Test')))
-            );
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'pages', 'search' => 'Another']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.title', 'Another page');
     });
 
-    test('can filter pages by language', function (): void {
-        asUser($this->admin)
-            ->get(route('pages.index', ['filters' => json_encode(['lang' => ['en']])]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPages')
-                ->has('pages.data')
-                ->where('pages.data', fn ($data) => collect($data)->every(fn ($page) => $page['lang'] === 'en'))
-            );
+    test('can filter the trashed pages by language', function (): void {
+        Page::query()->each(fn (Page $page) => $page->delete());
+
+        $items = collect(asUser($this->admin)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'pages', 'filters' => json_encode(['lang' => ['en']])]))
+            ->assertOk()
+            ->json('data.items'));
+
+        expect($items)->not->toBeEmpty()
+            ->and($items->every(fn (array $page): bool => $page['lang'] === 'en'))->toBeTrue();
     });
 });
 
@@ -694,15 +696,22 @@ describe('tenant isolation', function (): void {
         $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
     });
 
-    test('user only sees pages from their tenant', function (): void {
+    test('user only counts and sees trashed pages from their tenant', function (): void {
+        $this->otherPage->delete();
+        $this->page->delete();
+
         asUser($this->admin)
             ->get(route('pages.index'))
             ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPages')
-                ->has('pages.data')
-                ->where('pages.data', fn ($data) => collect($data)->every(fn ($page) => $page['tenant_id'] === $this->tenant->id))
-            );
+            ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
+
+        $ids = collect(asUser($this->admin)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'pages']))
+            ->assertOk()
+            ->json('data.items'))->pluck('id');
+
+        expect($ids)->toContain((string) $this->page->id)
+            ->not->toContain((string) $this->otherPage->id);
     });
 
     test('cannot access other tenant page', function (): void {

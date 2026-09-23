@@ -1,129 +1,150 @@
 <template>
-  <AdminContentPage>
+  <div
+    :class="[
+      'mx-auto w-full px-4 sm:px-6 lg:px-8',
+      mode === 'view' ? 'pb-8' : 'pb-28 md:pb-12',
+      containerWidthClass,
+    ]"
+    data-slot="form-page"
+  >
     <Head>
       <title>{{ headTitle }}</title>
     </Head>
 
-    <!-- Editing is unmistakable (.ai/rules/js-pages-admin.md): tinted paper canvas + eyebrow. -->
-    <div
-      :class="[
-        'mx-auto w-full bg-secondary px-4 pt-6 sm:px-6',
-        mode === 'view' ? 'pb-8' : 'pb-24',
-        maxWidthClass,
-      ]"
-      data-slot="form-page"
-    >
-      <!-- Form Header -->
-      <header class="space-y-4 border-b border-border pb-6">
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <Button
-              v-if="backHref"
-              as-child
-              variant="ghost"
-              size="sm"
-              class="u-touch -ml-2 text-muted-foreground hover:text-foreground"
-            >
-              <Link :href="backHref">
-                <ArrowLeft class="size-4" />
-                <span>{{ backLabel ?? $t('Grįžti') }}</span>
-              </Link>
-            </Button>
-            <EntityTypeMark v-if="entityType" :type="entityType" size="sm" />
-          </div>
-
-          <div class="flex items-center gap-3">
-            <!-- Language toggle if multi-lingual -->
-            <div v-if="availableLocales.length > 1" class="flex items-center gap-1.5">
-              <div class="inline-flex border border-border bg-secondary p-0.5">
-                <button
-                  v-for="loc in availableLocales"
-                  :key="loc"
-                  type="button"
-                  class="u-touch px-2.5 py-1 text-xs font-semibold uppercase tracking-wider transition-colors"
-                  :class="[
-                    currentLocale === loc
-                      ? 'bg-card text-foreground'
-                      : 'text-muted-foreground hover:text-foreground',
-                  ]"
-                  @click="setLocale(loc)"
-                >
-                  {{ loc.toUpperCase() }}
-                  <span
-                    v-if="missingLocaleCounts && missingLocaleCounts[loc]"
-                    class="ml-1.5 inline-block size-1.5 bg-destructive align-middle"
-                    :title="$t('Trūksta vertimų')"
-                  >
-                    <span class="sr-only">{{ $t('Trūksta vertimų') }}</span>
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <slot name="header-actions" />
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-primary" data-testid="form-page-eyebrow">
-            {{ mode === 'create' ? $t('Kuri naują') : mode === 'view' ? $t('Peržiūri') : $t('Redaguoji') }}
-          </p>
-          <h1 class="u-display text-3xl leading-tight text-foreground lg:text-4xl">
-            {{ title }}
-          </h1>
-          <p v-if="lead" class="text-sm text-muted-foreground">
-            {{ lead }}
-          </p>
-        </div>
-
-        <!-- Missing translation banner if applicable -->
-        <div
-          v-if="missingInCurrentLocale"
-          :class="[
-            'flex items-center gap-2 border px-3 py-2 text-xs font-medium',
-            'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
-          ]"
+    <!-- In the admin shell this replaces the navigation chrome (useShellFocus); elsewhere it renders inline. -->
+    <Teleport defer :to="`#${SHELL_FORM_BAR_ID}`" :disabled="!shellFocus">
+      <div class="flex min-w-0 flex-1 items-center gap-2 md:gap-3" data-testid="form-page-bar">
+        <Link
+          v-if="backHref"
+          :href="backHref"
+          class="group inline-flex shrink-0 items-center gap-2 text-sm font-bold text-foreground transition-colors hover:text-brand"
         >
-          <Languages class="size-3.5 shrink-0" />
-          <span>{{ $t('Šia kalba trūksta laukų (:count)', { count: String(missingInCurrentLocale) }) }}</span>
-        </div>
-      </header>
+          <span class="flex size-9 items-center justify-center border border-border transition-colors group-hover:border-brand pointer-coarse:size-11">
+            <ArrowLeft class="size-4" />
+          </span>
+          <span :class="shellFocus ? 'sr-only lg:not-sr-only' : ''">{{ backLabel ?? $t('Grįžti') }}</span>
+        </Link>
 
-      <!-- Validation Error Summary (Rules/pages.md -> Forms, 10) -->
-      <div
-        v-if="hasErrors"
-        ref="summary"
-        role="alert"
-        tabindex="-1"
-        class="mt-6 border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-4 text-[var(--status-danger)] outline-none"
-        data-testid="form-page-errors"
-      >
-        <p class="text-sm font-semibold">
-          {{ $t('Formoje yra klaidų:') }}
+        <div class="min-w-0 flex-1 border-l border-border pl-3">
+          <div class="flex items-center gap-2 min-w-0">
+            <p class="truncate text-sm font-bold text-foreground">
+              {{ title }}
+            </p>
+            <slot name="title-status" />
+          </div>
+          <SaveState v-if="saveState" :state="saveState" class="hidden md:flex" />
+        </div>
+
+        <div class="flex shrink-0 items-center gap-2">
+          <div v-if="$slots['footer-extra']" class="hidden xl:block">
+            <slot name="footer-extra" />
+          </div>
+          <slot name="header-actions" />
+
+          <Button
+            v-if="mode !== 'view'"
+            variant="brand"
+            size="sm"
+            type="submit"
+            :form="formId"
+            class="hidden md:inline-flex"
+            :disabled="processing || disabled"
+          >
+            <Loader2 v-if="processing" class="size-4 animate-spin" />
+            <Save v-else class="size-4" />
+            {{ saveLabel ?? $t('Išsaugoti') }}
+          </Button>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Heading band: editing is unmistakable (.ai/rules/js-pages-admin.md) — tinted canvas + eyebrow. -->
+    <header class="space-y-3 border-b border-border py-8 sm:py-12">
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <EntityTypeMark v-if="entityType" :type="entityType" size="sm" class="text-xs font-bold uppercase tracking-[0.2em]" />
+        <span v-if="entityType" class="h-3 border-l border-border" aria-hidden="true" />
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-brand" data-testid="form-page-eyebrow">
+          {{ mode === 'create' ? $t('Kuri naują') : mode === 'view' ? $t('Peržiūri') : $t('Redaguoji') }}
         </p>
-        <ul class="mt-2 space-y-1 text-xs">
-          <li v-for="(error, key) in errors" :key>
-            <button
-              type="button"
-              class="u-touch text-left underline underline-offset-2"
-              @click="focusField(String(key))"
-            >
-              {{ error }}
-            </button>
-          </li>
-        </ul>
       </div>
 
-      <!-- Main Form Body -->
-      <form
-        :id="formId"
-        ref="formEl"
-        class="mt-8 space-y-8"
-        @submit.prevent="mode !== 'view' && emit('submit')"
+      <h1 class="u-display text-balance text-4xl leading-[0.95] text-foreground sm:text-5xl">
+        {{ title }}
+      </h1>
+      <p v-if="lead" class="max-w-xl text-pretty leading-relaxed text-muted-foreground">
+        {{ lead }}
+      </p>
+
+      <div v-if="availableLocales.length > 1" class="pt-2">
+        <div :class="segmentGroupClass" role="group" :aria-label="$t('Kalba')">
+          <button
+            v-for="loc in availableLocales"
+            :key="loc"
+            type="button"
+            :class="segmentVariants({ active: currentLocale === loc })"
+            :aria-pressed="currentLocale === loc"
+            @click="setLocale(loc)"
+          >
+            {{ loc.toUpperCase() }}
+            <span
+              v-if="missingLocaleCounts && missingLocaleCounts[loc]"
+              class="inline-block size-1.5 bg-destructive"
+              :title="$t('Trūksta vertimų')"
+            >
+              <span class="sr-only">{{ $t('Trūksta vertimų') }}</span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="missingInCurrentLocale"
+        :class="[
+          'flex items-center gap-2 border px-3 py-2 text-xs font-medium',
+          'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
+        ]"
       >
+        <Languages class="size-3.5 shrink-0" />
+        <span>{{ $t('Šia kalba trūksta laukų (:count)', { count: String(missingInCurrentLocale) }) }}</span>
+      </div>
+    </header>
+
+    <div
+      v-if="hasErrors"
+      ref="summary"
+      role="alert"
+      tabindex="-1"
+      class="mt-8 border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-4 text-[var(--status-danger)] outline-none"
+      data-testid="form-page-errors"
+    >
+      <p class="text-sm font-semibold">
+        {{ $t('Formoje yra klaidų:') }}
+      </p>
+      <ul class="mt-2 space-y-1 text-xs">
+        <li v-for="(error, key) in errors" :key>
+          <button
+            type="button"
+            class="u-touch text-left underline underline-offset-2"
+            @click="focusField(String(key))"
+          >
+            {{ error }}
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <form
+      :id="formId"
+      ref="formEl"
+      :class="[
+        'mt-8',
+        $slots.aside ? 'grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:gap-12' : 'space-y-8',
+      ]"
+      @submit.prevent="mode !== 'view' && emit('submit')"
+    >
+      <div :class="$slots.aside ? 'flex min-w-0 flex-col gap-8' : 'contents'">
         <slot />
 
-        <!-- Optional Collapsible Advanced Settings -->
         <details
           v-if="$slots['advanced']"
           class="group border-t border-border pt-6"
@@ -137,80 +158,54 @@
           </div>
         </details>
 
-        <!-- Optional Danger Zone -->
         <div v-if="$slots['danger-zone']" class="border-t border-destructive/20 pt-8">
           <slot name="danger-zone" />
         </div>
-      </form>
-    </div>
+      </div>
 
-    <!-- Sticky Bottom Save Bar (Rules/pages.md -> Forms, 13) -->
+      <aside v-if="$slots.aside" class="flex min-w-0 flex-col gap-6" data-testid="form-page-aside">
+        <slot name="aside" />
+      </aside>
+    </form>
+
+    <!-- Phones: the save bar takes the bottom nav's place, in thumb reach. -->
     <div
       v-if="mode !== 'view'"
       :class="[
-        'fixed bottom-(--shell-bottom-bar,0px) left-0 right-0 z-40',
-        'border-t border-border bg-card/95 px-4 py-3 backdrop-blur-sm',
+        'fixed inset-x-0 bottom-(--shell-bottom-bar,0px) z-40 md:hidden',
+        'flex items-center justify-between gap-4 border-t border-border bg-background px-4 pt-3',
+        'pb-[calc(0.75rem_+_env(safe-area-inset-bottom,0px))]',
       ]"
+      data-testid="form-page-mobile-save"
     >
-      <div :class="['mx-auto flex items-center justify-between gap-4', maxWidthClass]">
-        <!-- Status Indicator -->
-        <div class="flex items-center gap-2 text-sm">
-          <Transition name="fade" mode="out-in">
-            <div v-if="processing" key="saving" class="flex items-center gap-2 text-muted-foreground">
-              <Loader2 class="size-4 animate-spin" />
-              <span class="hidden sm:inline">{{ $t('Saugoma…') }}</span>
-            </div>
-            <div v-else-if="dirty" key="dirty" class="flex items-center gap-2 text-[var(--status-attention)]">
-              <span class="size-2 bg-[var(--status-attention)] motion-safe:animate-pulse" />
-              <span class="hidden sm:inline">{{ $t('Neišsaugota') }}</span>
-            </div>
-            <!-- A create form has nothing saved yet, so "all saved" would be a lie. -->
-            <div v-else-if="mode === 'edit'" key="saved" class="flex items-center gap-2 text-muted-foreground">
-              <span class="hidden sm:inline">{{ $t('Visi pakeitimai išsaugoti') }}</span>
-            </div>
-          </Transition>
-        </div>
+      <SaveState v-if="saveState" :state="saveState" />
+      <span v-else />
 
-        <!-- Actions -->
-        <div class="flex items-center gap-3">
-          <slot name="footer-extra" />
-
-          <Button
-            v-if="backHref"
-            variant="ghost"
-            type="button"
-            class="u-touch"
-            @click="handleCancel"
-          >
-            {{ $t('Atšaukti') }}
-          </Button>
-
-          <Button
-            variant="brand"
-            type="submit"
-            :form="formId"
-            class="u-touch uppercase"
-            :disabled="processing || disabled"
-          >
-            <Loader2 v-if="processing" class="size-4 animate-spin" />
-            {{ saveLabel ?? $t('Išsaugoti') }}
-          </Button>
-        </div>
-      </div>
+      <Button
+        variant="brand"
+        type="submit"
+        :form="formId"
+        :disabled="processing || disabled"
+      >
+        <Loader2 v-if="processing" class="size-4 animate-spin" />
+        <Save v-else class="size-4" />
+        {{ saveLabel ?? $t('Išsaugoti') }}
+      </Button>
     </div>
-  </AdminContentPage>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeft, ChevronDown, Languages, Loader2 } from 'lucide-vue-next';
+import { ArrowLeft, ChevronDown, Languages, Loader2, Save } from 'lucide-vue-next';
 import { useEventListener } from '@vueuse/core';
-import { computed, nextTick, ref, useId, watch } from 'vue';
+import { computed, h, nextTick, onUnmounted, ref, useId, watch, type FunctionalComponent } from 'vue';
 
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { Button } from '@/Components/ui/button';
+import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
+import { SHELL_FORM_BAR_ID, useShellFocus } from '@/Composables/useShellFocus';
 import type { ModelEnum } from '@/Types/enums';
 
 const props = withDefaults(defineProps<{
@@ -232,6 +227,7 @@ const props = withDefaults(defineProps<{
   locale?: 'lt' | 'en';
   availableLocales?: Array<'lt' | 'en'>;
   missingLocaleCounts?: Record<string, number>;
+  /** Width of a single-column form; a form with an `#aside` is always `6xl`. */
   maxWidth?: '2xl' | '4xl' | '5xl' | 'full';
 }>(), {
   headTitle: undefined,
@@ -255,9 +251,29 @@ const emit = defineEmits<{
   (e: 'update:locale', locale: 'lt' | 'en'): void;
 }>();
 
+const slots = defineSlots<{
+  'default'?: () => unknown;
+  'aside'?: () => unknown;
+  'advanced'?: () => unknown;
+  'danger-zone'?: () => unknown;
+  'header-actions'?: () => unknown;
+  /** Quiet context beside the actions (e.g. last sign-in); wide screens only. */
+  'footer-extra'?: () => unknown;
+}>();
+
+const shellFocus = useShellFocus();
+
+if (shellFocus) {
+  onUnmounted(shellFocus.enter());
+}
+
 const headTitle = computed(() => props.headTitle ?? props.title);
 
-const maxWidthClass = computed(() => {
+const containerWidthClass = computed(() => {
+  if (slots.aside) {
+    return 'max-w-6xl';
+  }
+
   switch (props.maxWidth) {
     case '4xl':
       return 'max-w-4xl';
@@ -270,6 +286,43 @@ const maxWidthClass = computed(() => {
       return 'max-w-2xl';
   }
 });
+
+type SaveStateKind = 'saving' | 'dirty' | 'saved';
+
+const saveState = computed<SaveStateKind | null>(() => {
+  if (props.mode === 'view') {
+    return null;
+  }
+  if (props.processing) {
+    return 'saving';
+  }
+  if (props.dirty) {
+    return 'dirty';
+  }
+  // A create form has nothing saved yet, so "all saved" would be a lie.
+  return props.mode === 'edit' ? 'saved' : null;
+});
+
+const SaveState: FunctionalComponent<{ state: SaveStateKind }> = ({ state }) => {
+  const label = {
+    saving: $t('Saugoma…'),
+    dirty: $t('Neišsaugota'),
+    saved: $t('Visi pakeitimai išsaugoti'),
+  }[state];
+
+  return h('span', {
+    'class': [
+      'flex items-center gap-1.5 text-xs',
+      state === 'dirty' ? 'text-[var(--status-attention)]' : 'text-muted-foreground',
+    ],
+    'role': 'status',
+    'aria-live': 'polite',
+  }, [
+    state === 'saving' && h(Loader2, { class: 'size-3 animate-spin' }),
+    state === 'dirty' && h('span', { class: 'size-1.5 bg-[var(--status-attention)] motion-safe:animate-pulse' }),
+    label,
+  ]);
+};
 
 const currentLocale = computed(() => props.locale);
 
@@ -298,7 +351,7 @@ const focusField = (key: string) => {
   }
 };
 
-// On a failed submit the user is looking at the sticky bar; bring the problem to them.
+// On a failed submit the user is looking at the save button; bring the problem to them.
 watch(() => Object.keys(props.errors).join('|'), async (keys, previous) => {
   if (!keys || keys === previous) {
     return;
