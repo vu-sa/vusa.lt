@@ -111,8 +111,8 @@ describe('Public/ContentPage.vue', () => {
 
     const title = wrapper.find('h1');
     expect(title.classes()).toContain('text-3xl');
-    expect(title.classes()).toContain('sm:text-5xl');
-    expect(title.classes()).toContain('leading-[1.08]');
+    expect(title.classes()).toContain('sm:text-4xl');
+    expect(title.classes()).toContain('lg:text-5xl');
   });
 
   it('renders no footer when the page has no last-edited/updated date', () => {

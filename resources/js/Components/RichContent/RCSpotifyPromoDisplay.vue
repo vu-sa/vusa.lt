@@ -20,7 +20,7 @@
             </template>
           </EyebrowLabel>
 
-          <h2 v-if="content.title || editable" class="u-display mt-5 text-pretty text-3xl leading-[0.95] text-foreground sm:text-4xl">
+          <h2 v-if="content.title || editable" class="u-display mt-5 text-pretty text-3xl text-foreground sm:text-4xl">
             <RCInlineText
               v-if="editable"
               as="span"

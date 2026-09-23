@@ -414,8 +414,8 @@ const showFullDescription = ref(false);
 const institutionTitleClass = computed(() => [
   'u-display mt-3 font-bold uppercase tracking-tight text-foreground',
   String(props.institution.name).length > 52
-    ? 'text-3xl leading-[1.08] sm:text-4xl sm:leading-[1.05] lg:text-5xl'
-    : 'text-3xl leading-[1.08] sm:text-5xl sm:leading-tight lg:text-6xl',
+    ? 'text-3xl sm:text-4xl lg:text-5xl'
+    : 'text-3xl sm:text-5xl',
 ]);
 
 const hasLongDescription = computed(() =>

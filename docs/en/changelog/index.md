@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.2 — Editing unit homepages (2026-09-14) {#v2-2}
 
+- ✨ **More readable headlines** — public headlines (heroes, news, content pages) are slightly smaller with more space between lines, so longer titles and accented Lithuanian capitals no longer run together
 - ✨ **Reservation actions can be undone** — a resource manager can move a mistaken approval, hand-over, or return one step back; who undid it and why remain visible in the history
 - 🔧 **Correct homepage edit link** — on a unit's homepage it opens that unit's editor, even when the central VU SR content is shown as a fallback
 - 🔧 **More accurate contact search** — updating a representative's assignment, name, or duty refreshes the related institution contacts in search; upcoming representatives are hidden until their start date, and ended assignments are automatically pruned once their term expires
