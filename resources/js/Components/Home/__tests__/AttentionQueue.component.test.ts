@@ -54,6 +54,16 @@ describe('AttentionQueue', () => {
     expect(wrapper.text()).toContain('Visos užduotys');
   });
 
+  it('links to the remaining task count when the home page has more tasks', () => {
+    const wrapper = mount(AttentionQueue, {
+      props: { tasks: [task()], stats: { ...stats, total: 4 }, remainingCount: 3, moreHref: '/mano/tasks' },
+    });
+
+    const moreLink = wrapper.find('header a');
+    expect(moreLink.attributes('href')).toBe('/mano/tasks');
+    expect(moreLink.text()).toBe('ir dar :count');
+  });
+
   it('links a task straight to the screen that finishes it, with what it is about', () => {
     const wrapper = mountQueue([task()]);
     const row = wrapper.find('ul a');

@@ -134,6 +134,29 @@ describe('dashboard performance', function (): void {
 });
 
 describe('dashboard tasks with due dates', function (): void {
+    test('shows later due dates before older and overdue tasks', function (): void {
+        foreach ([
+            'Overdue' => now()->subDays(2),
+            'Soon' => now()->addDay(),
+            'Later' => now()->addDays(12),
+        ] as $name => $dueDate) {
+            $task = Task::factory()->create([
+                'name' => $name,
+                'due_date' => $dueDate,
+                'completed_at' => null,
+            ]);
+            $task->users()->attach($this->admin->id);
+        }
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingTasks.0.name', 'Later')
+                ->where('upcomingTasks.1.name', 'Soon')
+                ->where('upcomingTasks.2.name', 'Overdue')
+            );
+    });
+
     test('tasks with due dates are properly formatted', function (): void {
         // Create a task with a due date for the admin user
         $task = Task::factory()->create([
@@ -399,61 +422,29 @@ describe('dashboard calendar and news', function (): void {
     });
 });
 
-describe('hero news', function (): void {
-    beforeEach(function (): void {
-        News::query()->delete();
-        $this->mainTenant = Tenant::main();
-    });
-
-    function publishedNews(Tenant $tenant, array $attributes = []): News
-    {
-        return News::factory()->for($tenant)->create([
-            'lang' => 'lt',
-            'image' => 'https://example.com/photo.jpg',
-            'publish_time' => now()->subHour(),
-            'draft' => false,
-            ...$attributes,
+describe('hero image', function (): void {
+    test('uses the primary institution image of a tenant from the user\'s current duties', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create([
+            'image_url' => 'https://example.com/institution.jpg',
+            'image_focal_point' => '40% 30%',
         ]);
-    }
+        $this->tenant->update(['primary_institution_id' => $institution->id]);
 
-    test('sends the main tenant\'s newest published news with a photo on the first response', function (): void {
-        $otherTenant = Tenant::query()->whereKeyNot($this->mainTenant->id)->first();
-
-        publishedNews($this->mainTenant, ['title' => 'Older', 'publish_time' => now()->subDays(2)]);
-        $newest = publishedNews($this->mainTenant, ['title' => 'Newest', 'image' => 'https://example.com/newest.jpg']);
-        publishedNews($otherTenant, ['title' => 'Other tenant', 'publish_time' => now()->subMinute()]);
-        publishedNews($this->mainTenant, ['title' => 'No photo', 'image' => null, 'publish_time' => now()->subMinute()]);
-        publishedNews($this->mainTenant, ['title' => 'Draft', 'draft' => true, 'publish_time' => now()->subMinute()]);
-        publishedNews($this->mainTenant, ['title' => 'Scheduled', 'publish_time' => now()->addDay()]);
-        publishedNews($this->mainTenant, ['title' => 'English', 'lang' => 'en', 'publish_time' => now()->subMinute()]);
-
-        // A plain user without news permissions still gets the hero: it links to public content.
         asUser($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('heroNews.id', $newest->id)
-                ->where('heroNews.title', 'Newest')
-                ->where('heroNews.image', 'https://example.com/newest.jpg')
-                ->where('heroNews.public_url', $newest->publicUrl())
-                ->where('heroNews.archive_url', fn (string $url) => str_contains($url, '/naujienos'))
+                ->where('heroImage.url', 'https://example.com/institution.jpg')
+                ->where('heroImage.focalPoint', '40% 30%')
+                ->missing('heroNews')
             );
     });
 
-    test('skips news whose local photo file is missing', function (): void {
-        publishedNews($this->mainTenant, ['title' => 'Has photo', 'publish_time' => now()->subDay()]);
-        publishedNews($this->mainTenant, ['title' => 'Broken photo', 'image' => '/uploads/missing/nowhere.jpg']);
+    test('uses the community fallback when the duty tenant has no primary institution image', function (): void {
+        $this->tenant->update(['primary_institution_id' => null]);
 
         asUser($this->user)
             ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page->where('heroNews.title', 'Has photo'));
-    });
-
-    test('is null when the main tenant has no news with a photo', function (): void {
-        publishedNews($this->mainTenant, ['image' => null]);
-
-        asUser($this->user)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page->where('heroNews', null));
+            ->assertInertia(fn (Assert $page) => $page->where('heroImage', null));
     });
 });
 

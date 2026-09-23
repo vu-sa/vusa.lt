@@ -14,14 +14,12 @@ use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
-use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
-use App\Support\LocalizedRouteSlugs;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -41,7 +39,10 @@ class DashboardController extends AdminController
     public function index(ShowAdminHomeRequest $request)
     {
         $user = User::query()->find(Auth::id()) ?? abort(404);
-        $userTenantId = $user->current_duties->first()?->institution?->tenant_id;
+        $user->loadMissing('current_duties.institution.tenant.primary_institution');
+        $heroInstitution = $user->current_duties
+            ->map(fn ($duty) => $duty->institution?->tenant?->primary_institution)
+            ->first(fn ($institution) => filled($institution?->image_url));
 
         // Get task statistics for the dashboard
         $taskStats = [
@@ -60,8 +61,7 @@ class DashboardController extends AdminController
                 $query->where('due_date', '<=', now()->addDays(14))
                     ->orWhere('due_date', '<', now());
             })
-            ->orderByRaw('CASE WHEN due_date < ? THEN 0 ELSE 1 END', [now()]) // Overdue first
-            ->orderBy('due_date')
+            ->orderByDesc('due_date')
             ->with('taskable')
             ->take(10)
             ->get()
@@ -140,7 +140,10 @@ class DashboardController extends AdminController
             'taskStats' => $taskStats,
             'upcomingTasks' => $upcomingTasks,
             'upcomingMeetings' => $upcomingMeetings,
-            'heroNews' => $this->heroNews(),
+            'heroImage' => $heroInstitution === null ? null : [
+                'url' => $heroInstitution->image_url,
+                'focalPoint' => $heroInstitution->image_focal_point,
+            ],
             'institutionsNeedingAttention' => $institutionsNeedingAttention,
             'upcomingCalendarEvents' => $upcomingCalendarEvents,
             'latestNews' => $latestNews,
@@ -260,50 +263,6 @@ class DashboardController extends AdminController
                 'public_url' => $event->publicUrl(app()->getLocale()),
             ])
             ->all();
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    /**
-     * The main tenant's newest published news with a photo for Pradžia's hero; eager, since it is the first paint.
-     *
-     * @return array{id: int, title: string, image: string, publish_time: string, public_url: string|null, archive_url: string}|null
-     */
-    private function heroNews(): ?array
-    {
-        $mainTenant = Tenant::main();
-
-        if ($mainTenant === null) {
-            return null;
-        }
-
-        $news = News::query()
-            ->whereBelongsTo($mainTenant)
-            ->where('draft', false)
-            ->whereNotNull('publish_time')
-            ->where('publish_time', '<=', now())
-            ->where('lang', app()->getLocale())
-            ->whereNotNull('image')
-            ->with(['tenant:id,shortname,alias'])
-            ->orderByDesc('publish_time')
-            ->take(5)
-            ->get()
-            // The stored path can outlive its file; skip to the next one rather than paint a broken hero.
-            ->first(fn (News $news) => $news->getImageUrl() !== null);
-
-        if ($news === null) {
-            return null;
-        }
-
-        return [
-            'id' => $news->id,
-            'title' => $news->title,
-            'image' => $news->getImageUrl(),
-            'publish_time' => $news->publish_time->toISOString(),
-            'public_url' => $news->publicUrl(),
-            'archive_url' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => 'www'], $news->lang),
-        ];
     }
 
     private function latestNews(): array

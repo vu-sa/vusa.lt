@@ -43,7 +43,7 @@ const baseProps = {
   taskStats: { total: 0, overdue: 0, dueSoon: 0 },
   upcomingTasks: [],
   upcomingMeetings: [],
-  heroNews: null,
+  heroImage: null,
   registrationForms: [],
 };
 
@@ -68,6 +68,15 @@ describe('ShowAdminHome', () => {
 
     expect(tasks.element.nextElementSibling).toBe(quickAccess.element);
     expect(quickAccess.element.compareDocumentPosition(shortcuts.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows the first three upcoming tasks and counts all remaining open tasks', () => {
+    const upcomingTasks = Array.from({ length: 5 }, (_, index) => ({ id: String(index + 1) }));
+    const queue = mountPage({ upcomingTasks, taskStats: { total: 7, overdue: 0, dueSoon: 5 } })
+      .findComponent({ name: 'AttentionQueue' });
+
+    expect(queue.props('tasks')).toEqual(upcomingTasks.slice(0, 3));
+    expect(queue.props('remainingCount')).toBe(4);
   });
 
   it('sums up waiting and overdue tasks under the greeting, and says nothing when none wait', () => {
@@ -114,12 +123,12 @@ describe('ShowAdminHome', () => {
     expect(open).not.toHaveBeenCalled();
   });
 
-  it('greets the rep with "Labas" in the hero and hands it the newest news', () => {
-    const heroNews = { id: 1, title: 'Naujiena', image: '/uploads/n.jpg', publish_time: '2026-09-21T10:00:00Z', public_url: null, archive_url: '/lt/naujienos' };
-    const hero = mountPage({ heroNews }).findComponent({ name: 'HomeHero' });
+  it('greets the rep with "Labas" in the hero and hands it the institution image', () => {
+    const heroImage = { url: '/uploads/institution.jpg', focalPoint: '40% 30%' };
+    const hero = mountPage({ heroImage }).findComponent({ name: 'HomeHero' });
 
     expect(hero.props('greeting')).toMatch(/^Labas(, .+)?$/);
-    expect(hero.props('news')).toEqual(heroNews);
+    expect(hero.props('image')).toEqual(heroImage);
   });
 
   it('passes the registration forms the server allows on to quick access', () => {

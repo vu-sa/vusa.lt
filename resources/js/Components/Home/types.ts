@@ -46,14 +46,9 @@ export interface HomeNewsPreview {
   public_url: string | null;
 }
 
-/** Pradžia's hero: the main tenant's newest published news with a photo that still exists. */
-export interface HomeHeroNews {
-  id: number;
-  title: string;
-  image: string;
-  publish_time: string;
-  public_url: string | null;
-  archive_url: string;
+export interface HomeHeroImage {
+  url: string;
+  focalPoint: string | null;
 }
 
 export interface HomeChecklistItem {

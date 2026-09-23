@@ -6,7 +6,7 @@
     :icon="ClipboardList"
     variant="home"
     :href="moreHref"
-    :href-label="$t('Visos užduotys')"
+    :href-label="remainingCount > 0 ? $t('ir dar :count', { count: String(remainingCount) }) : $t('Visos užduotys')"
     :empty="tasks.length === 0"
     :empty-text="stats.total > 0 ? $t('Artimiausiu metu užduočių nėra') : $t('Šiuo metu nieko nelaukia')"
   >
@@ -51,6 +51,7 @@ import { useDateFormatter } from '@/Composables/useDateFormatter';
 const props = defineProps<{
   tasks: HomeTask[];
   stats: { total: number; overdue: number; dueSoon: number };
+  remainingCount?: number;
   moreHref: string;
 }>();
 

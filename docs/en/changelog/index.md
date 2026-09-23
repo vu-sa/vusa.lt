@@ -7,6 +7,8 @@ lastUpdated: true
 
 ## v2.18 — Consistent lists across Mano VU SA (2026-09-23) {#v2-18}
 
+- ✨ **Shorter task list on Home** — see the three tasks with the latest due dates and how many remain; select the remaining count to open all tasks
+- ✨ **Home photo** — the greeting band uses your unit's primary institution image instead of a news story, with a community photo when no image is set
 - 🔧 **Admin account preview** — in local and staging environments, super admins can impersonate other super admins again; the new selector bar can be closed until page refresh and shows request errors
 - ✨ **A clearer Home** — quick actions have one prominent button, permission-based links to administration and reservations sit below them, and task due dates read relatively without extra status badges
 - ✨ **Easier search on tablets** — a search button opens the same command palette when the top bar is too narrow for the field

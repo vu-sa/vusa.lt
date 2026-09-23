@@ -1,7 +1,7 @@
 <template>
   <OverviewPage :title="$t('Mano VU SA')">
     <template #hero>
-      <HomeHero :greeting :news="heroNews" :summary="taskSummary" />
+      <HomeHero :greeting :image="heroImage" :summary="taskSummary" />
     </template>
 
     <AccessChangeBand v-if="accessChanges.length > 0" :changes="accessChanges" />
@@ -16,7 +16,12 @@
          institutions (home.md). Create shortcuts sit in the aside. -->
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
-        <AttentionQueue :tasks="upcomingTasks" :stats="taskStats" :more-href="route('userTasks')" />
+        <AttentionQueue
+          :tasks="visibleTasks"
+          :stats="taskStats"
+          :remaining-count="Math.max(0, taskStats.total - visibleTasks.length)"
+          :more-href="route('userTasks')"
+        />
         <QuickAccess :registration-forms />
         <UpcomingMeetingsList
           v-if="hasAtstovavimas"
@@ -75,7 +80,7 @@ import type {
   HomeAccessChange,
   HomeChecklist,
   HomeCoordinator,
-  HomeHeroNews,
+  HomeHeroImage,
   HomeMeeting,
   HomeNewsPreview,
   HomeRecentRecord,
@@ -106,7 +111,7 @@ const props = defineProps<{
   taskStats: TaskStats;
   upcomingTasks: HomeTask[];
   upcomingMeetings: HomeMeeting[];
-  heroNews: HomeHeroNews | null;
+  heroImage: HomeHeroImage | null;
   institutionsNeedingAttention?: InstitutionActivityInsight[];
   upcomingCalendarEvents?: App.Entities.Calendar[];
   latestNews?: HomeNewsPreview[];
@@ -116,6 +121,7 @@ const props = defineProps<{
 }>();
 
 const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'coordinator'];
+const visibleTasks = computed(() => props.upcomingTasks.slice(0, 3));
 
 const page = usePage<PageProps>();
 

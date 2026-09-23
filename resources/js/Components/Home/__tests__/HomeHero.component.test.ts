@@ -7,39 +7,29 @@ import { communityPhotos } from '@/Constants/communityPhotos';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-const news = {
-  id: 7,
-  title: 'Pirmakursių stovykla',
-  image: '/uploads/news/stovykla.jpg',
-  publish_time: '2026-09-21T10:00:00Z',
-  public_url: 'https://www.vusa.test/lt/naujiena/stovykla',
-  archive_url: 'https://www.vusa.test/lt/naujienos',
-};
+const image = { url: '/uploads/institutions/mif.jpg', focalPoint: '40% 30%' };
 
 describe('HomeHero', () => {
-  it('shows the news photo with its headline and links to the article and the archive', () => {
-    const wrapper = mount(HomeHero, { props: { greeting: 'Labas, Justinai', news } });
+  it('shows the institution image at its focal point without news text or actions', () => {
+    const wrapper = mount(HomeHero, { props: { greeting: 'Labas, Justinai', image } });
 
     expect(wrapper.find('h1').text()).toBe('Labas, Justinai');
-    expect(wrapper.find('img').attributes('src')).toBe(news.image);
-    expect(wrapper.find('h2 a').attributes('href')).toBe(news.public_url);
-    expect(wrapper.find('[data-testid="hero-read"]').attributes('href')).toBe(news.public_url);
-    expect(wrapper.find('[data-testid="hero-archive"]').attributes('href')).toBe(news.archive_url);
+    expect(wrapper.find('img').attributes('src')).toBe(image.url);
+    expect(wrapper.find('img').attributes('style')).toContain('object-position: 40% 30%');
+    expect(wrapper.find('article').exists()).toBe(false);
+    expect(wrapper.find('a').exists()).toBe(false);
   });
 
-  it('keeps the headline as plain text when the article has no public address yet', () => {
-    const wrapper = mount(HomeHero, { props: { greeting: 'Labas', news: { ...news, public_url: null } } });
+  it('uses a centered focal point when the institution has not set one', () => {
+    const wrapper = mount(HomeHero, { props: { greeting: 'Labas', image: { ...image, focalPoint: null } } });
 
-    expect(wrapper.find('h2 a').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="hero-read"]').exists()).toBe(false);
-    expect(wrapper.find('h2').text()).toBe(news.title);
+    expect(wrapper.find('img').attributes('style')).toContain('object-position: 50% 30%');
   });
 
-  it('falls back to a community photo and drops the news block when there is no news', () => {
-    const wrapper = mount(HomeHero, { props: { greeting: 'Labas', news: null } });
+  it('falls back to a community photo when there is no institution image', () => {
+    const wrapper = mount(HomeHero, { props: { greeting: 'Labas', image: null } });
 
     expect(communityPhotos.map(photo => photo.src)).toContain(wrapper.find('img').attributes('src'));
-    expect(wrapper.find('[data-testid="hero-news"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="hero-date"]').text()).not.toBe('');
   });
 });
