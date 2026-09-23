@@ -137,7 +137,7 @@ describe('ShowMeeting.vue', () => {
 
   /**
    * The page owns tab state so it can honour `?tab=`; this asserts that the
-   * controlled binding into ShowPageLayout actually drives the rendered panel.
+   * controlled binding into RecordPage actually drives the rendered panel.
    */
   /**
    * The action window creates the meeting server-side and hands the page the

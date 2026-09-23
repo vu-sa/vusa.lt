@@ -19,14 +19,14 @@
   --color-vusa-yellow: oklch(0.82 0.17 75);
   --color-vusa-yellow-dark: oklch(0.55 0.14 65);
 
-  /* Colour system (.ai/redesign/admin/rules/visual.md#colour-system, PR 2.2) — six status roles
+  /* Colour system (.ai/rules/css.md) — six status roles
      + eight categories. var()-indirected (not literal, unlike the rest of this block being
      `inline`) so the underlying --status-… and --cat-… tokens in theme/base-tokens.css stay the
      single source of truth and a surface COULD re-scope them later if a surface ever needed to;
      today both [data-surface="public"] and [data-surface="admin"] read the same :root/.dark
      values, deliberately, since a status must mean the same thing everywhere (U10). Replaces the
      previous literal success/warning/danger/info/neutral block one-for-one — `warning` becomes
-     `attention` (the role rules/visual.md's picking table actually maps "needs action" to) and
+     `attention` (the role .ai/rules/css.md's picking list actually maps "needs action" to) and
      `progress` is new; the old `-muted`/`-foreground` suffixes had zero consumers and are
      dropped in favour of `-surface`/`-border`. */
   --color-status-neutral: var(--status-neutral);

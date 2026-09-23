@@ -9,7 +9,6 @@ use App\Http\Requests\UpdateResourceCategoryRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\ResourceCategory;
 use App\Services\TanstackTableService;
-use Illuminate\Http\RedirectResponse;
 
 class ResourceCategoryController extends AdminController
 {
@@ -59,18 +58,6 @@ class ResourceCategoryController extends AdminController
     }
 
     /**
-     * Categories are created in a sheet over the collection (Phase 9.2).
-     *
-     * @deprecated Kept for bookmarks; remove in Phase 10.
-     */
-    public function create(): RedirectResponse
-    {
-        $this->handleAuthorization('create', ResourceCategory::class);
-
-        return redirect()->route('resourceCategories.index');
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreResourceCategoryRequest $request)
@@ -82,18 +69,6 @@ class ResourceCategoryController extends AdminController
         $resourceCategory->save();
 
         return redirect()->route('resourceCategories.index')->with(['success' => $this->entityMessage('created', 'resourceCategory')]);
-    }
-
-    /**
-     * Categories are edited in a sheet over the collection (Phase 9.2).
-     *
-     * @deprecated Kept for bookmarks; remove in Phase 10.
-     */
-    public function edit(ResourceCategory $resourceCategory): RedirectResponse
-    {
-        $this->handleAuthorization('update', $resourceCategory);
-
-        return redirect()->route('resourceCategories.index');
     }
 
     /**

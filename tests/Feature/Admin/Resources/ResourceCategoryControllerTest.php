@@ -25,11 +25,6 @@ describe('the collection replaces the standalone pages', function (): void {
                 ->where('resourceCategories.data.0.id', $this->category->id)
                 ->has('resourceCategories.meta.total'));
     });
-
-    test('the old create and edit URLs send an authorized user to the collection', function (): void {
-        asUser($this->resourceManager)->get(route('resourceCategories.create'))->assertRedirect(route('resourceCategories.index'));
-        asUser($this->resourceManager)->get(route('resourceCategories.edit', $this->category))->assertRedirect(route('resourceCategories.index'));
-    });
 });
 
 /**
@@ -50,8 +45,6 @@ describe('authorization', function (): void {
 
     test('a user without resource permissions cannot reach any category action', function (): void {
         asUser($this->plainUser)->get(route('resourceCategories.index'))->assertStatus(403);
-        asUser($this->plainUser)->get(route('resourceCategories.create'))->assertStatus(403);
-        asUser($this->plainUser)->get(route('resourceCategories.edit', $this->category))->assertStatus(403);
         asUser($this->plainUser)->delete(route('resourceCategories.destroy', $this->category))->assertStatus(403);
 
         expect(ResourceCategory::query()->whereKey($this->category->id)->exists())->toBeTrue();

@@ -8,8 +8,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 /**
- * Print the rep outcome metrics (U25) with their Phase 0 baseline and target, then the monthly trend.
- * Phase 10.3 re-runs this to compare with the baseline in `.ai/redesign/admin/plan.md`.
+ * Print the rep outcome metrics with their 2026-09-17 baseline and target, then the monthly trend.
  */
 #[Description('Report the student representative outcome metrics with a monthly trend')]
 #[Signature('metrics:reps {--months=12 : How many months the trend covers}')]

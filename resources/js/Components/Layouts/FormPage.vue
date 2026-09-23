@@ -4,7 +4,7 @@
       <title>{{ headTitle }}</title>
     </Head>
 
-    <!-- Editing is unmistakable (rules/visual.md → Wayfinding 5): tinted paper canvas + eyebrow. -->
+    <!-- Editing is unmistakable (.ai/rules/js-pages-admin.md): tinted paper canvas + eyebrow. -->
     <div
       :class="[
         'mx-auto w-full bg-secondary px-4 pt-6 sm:px-6',

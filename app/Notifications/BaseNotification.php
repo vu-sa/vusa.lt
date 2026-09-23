@@ -157,8 +157,8 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * @deprecated Superseded by primaryAction()/secondaryAction() in PR 6.1 (.ai/redesign/admin);
-     *             slated for removal in Phase 10. Kept so stored notification rows keep their shape.
+     * @deprecated Superseded by primaryAction()/secondaryAction(); remove once stored notification
+     *             rows written before them have aged out. Kept so those rows keep their shape.
      *
      * @return array<int, array{label: string, url: string}>
      */
@@ -197,7 +197,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
 
     /**
      * Determine if this notification sends a web push (derived from urgency); override where the
-     * channel policy in .ai/redesign/admin/messages.md disagrees with the tier.
+     * channel policy (.ai/rules/notifications.md) disagrees with the tier.
      */
     public function sendsPush(): bool
     {

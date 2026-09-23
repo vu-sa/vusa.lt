@@ -1,5 +1,5 @@
 /* ==================================================================================
-   Admin tour popover tokens (.ai/redesign/admin, PR 4.8)
+   Admin tour popover tokens
    ==================================================================================
    Retires the legacy driver-tour.css (hardcoded hexes, border-radius).
    Popovers use the admin surface tokens (radius 0, hairline borders, brand buttons).

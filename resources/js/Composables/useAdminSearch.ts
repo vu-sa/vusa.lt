@@ -776,7 +776,7 @@ export const useAdminSearch = () => {
 
         const key = collectionKey as keyof Omit<MultiSearchResults, 'counts'>;
         // Attach the Typesense relevance score so the "All" tab can interleave
-        // results across collections by relevance (see SearchAllPanel.vue).
+        // results across collections by relevance.
         // Use the string `text_match_info.score`, not the numeric `text_match`:
         // the int64 score exceeds JS's safe-integer range, so the number form
         // loses precision and collapses distinct scores into ties. The string is

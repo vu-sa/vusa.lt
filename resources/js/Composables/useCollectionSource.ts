@@ -118,7 +118,7 @@ interface TypesenseSourceOptions {
   valueLabel?: (field: string, value: string) => string | undefined;
 }
 
-/** "Rodyti daugiau" loads this many at a time (rules/pages.md → Collections, 7). */
+/** "Rodyti daugiau" loads this many at a time (.ai/rules/js-pages-admin.md). */
 const PAGE_SIZE = 50;
 
 export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSourceOptions): TypesenseCollectionSource<T> {

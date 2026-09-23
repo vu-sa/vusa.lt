@@ -60,7 +60,7 @@ class DutiableController extends AdminController
      * The standalone edit page is gone (Decision O21): a term is edited in the Priskirti sheet
      * on its duty's record, which opens itself for `?dutiable=`.
      *
-     * @deprecated Kept for bookmarks, mail links and the timeline's `edit_url`; remove in Phase 10.
+     * @deprecated Kept for bookmarks, mail links and the timeline's `edit_url`; remove once they open the occupancy sheet instead.
      */
     public function edit(Dutiable $dutiable): RedirectResponse
     {

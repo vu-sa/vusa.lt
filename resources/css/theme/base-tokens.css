@@ -72,13 +72,13 @@
   --ink: oklch(0.11 0.004 70);
 
   /* ------------------------------------------------------------------------------------------
-     Colour system (.ai/redesign/admin/rules/visual.md#colour-system, PR 2.2) — six status roles
+     Colour system (.ai/rules/css.md) — six status roles
      + eight categories, shared by the admin and public surfaces (unlike --background etc., these
      are NOT re-scoped per [data-surface]). Meaning is carried by shape as well as hue: solid fill
      = brand, tinted badge + icon + label = status (these tokens), small mark = category.
      `-border` is the text/icon colour at ~35% alpha, per rule 1's "usually the text colour at
      30-40% alpha" — color-mix rather than a fourth hand-picked value, so it can never drift from
-     its own role's hue. Values are the first pass from rules/visual.md's Concrete tokens table;
+     its own role's hue. Values are the first pass from the colour-system design (2026-09-18);
      see designTokens.test.ts for the completeness guard and Storybook's ColourSystem story
      (a11y: 'error') for the contrast check. */
   --status-neutral: oklch(0.45 0.01 80);

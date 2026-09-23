@@ -1,5 +1,5 @@
 <template>
-  <!-- @deprecated Superseded by TagSheetForm in Phase 5.7; remove with the legacy tag URLs in Phase 10. -->
+  <!-- @deprecated Superseded by TagSheetForm; remove together with the tags.create/edit pages. -->
   <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
     <FormElement>
       <template #title>

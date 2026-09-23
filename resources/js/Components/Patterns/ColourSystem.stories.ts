@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 /**
- * The colour system (.ai/redesign/admin/rules/visual.md#colour-system, PR 2.2) — six status
+ * The colour system (.ai/rules/css.md) — six status
  * roles + eight categories. `a11y: { test: 'error' }` is the validation mechanism itself: every
  * role renders as real text on its real surface, so axe's `color-contrast` rule asserts the
  * 4.5:1 requirement in every Surface × Theme combination the toolbar offers, in a real browser —
@@ -24,7 +24,7 @@ export default meta;
 type Story = StoryObj;
 
 /**
- * One row per role: tinted badge + icon + word, per rules/visual.md's picking table. Success and
+ * One row per role: tinted badge + icon + word, per the picking list in .ai/rules/css.md. Success and
  * danger deliberately use different icons from each other (✓ / ✕), not colour alone (rule 3).
  */
 export const StatusRoles: Story = {

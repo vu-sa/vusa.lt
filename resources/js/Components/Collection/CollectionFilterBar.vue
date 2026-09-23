@@ -1,6 +1,6 @@
 <template>
   <!-- From md the facets sit in a row of popovers, toggled by Filtrai; below md the same
-       facets stack in a bottom sheet (rules/pages.md → Collections, 4). -->
+       facets stack in a bottom sheet (.ai/rules/js-pages-admin.md). -->
   <div
     v-if="isAtLeastMd && open && facets.length > 0"
     class="flex flex-wrap items-center gap-2 border-t border-border pt-3"

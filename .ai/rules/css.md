@@ -23,3 +23,12 @@ paths:
 - `components/misc.css`, `vendor/vue-flow.css` — small standalone/vendor overrides
 
 Admin-only plain CSS (not Tailwind-generated) still lives in `admin.css`/`driver-tour.css`, loaded separately via `admin.ts` — don't move Tailwind `@theme` tokens there, since only `app.css`'s import graph is a Tailwind entry point; a token declared outside it never compiles into a utility (e.g. `--font-admin` must stay in `theme/design-tokens.css` for `.font-admin` to exist at all, even though Inter is admin-only in practice).
+
+## Admin colour system: shape carries the meaning
+Tokens live in `resources/css/theme/design-tokens.css`. Shape tells the three kinds apart:
+- Solid fill is brand (`--brand`/`--brand-fill`): one primary action per region, plus the current-location marker.
+- A tinted badge with icon and word is a status (`--status-{neutral|info|progress|attention|success|danger}` + `-surface`/`-border`), rendered through `StatusBadge`.
+- A small mark is a category (`--cat-1…8` + `-surface`): entity types, event types, units, chart series. Never used for status.
+Picking a status role: healthy default → no badge; draft, cancelled or archived → neutral; submitted or upcoming → info; in progress → progress; needs action or missing info → attention; done or approved → success; overdue, rejected or failed → danger. Never colour alone. No large coloured surfaces except the neutral ink band.
+Gates: `designTokens.test.ts` guards the token list (both themes, cat hues ≥25° apart); `Patterns/ColourSystem.stories.ts` (a11y `error`) guards 4.5:1 contrast via `npm run test:storybook`.
+Traps: `--accent` is shadcn's hover surface, not brand; keep the radius scale in plain `@theme` (not `@theme inline`); a `dark:` class beats an unprefixed one, so overrides need their `dark:` twin; `rounded-full` survives the zeroed radius scale.

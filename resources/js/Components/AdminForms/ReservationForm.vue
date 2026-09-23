@@ -41,7 +41,7 @@
         </p>
       </div>
 
-      <!-- Date and time are two fields each, never a combined popover (rules/pages.md → Pickers). -->
+      <!-- Date and time are two fields each, never a combined popover (.ai/rules/single-select.md). -->
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div class="space-y-1.5" role="group" aria-labelledby="reservation-start-label">
           <Label id="reservation-start-label" class="text-sm font-medium">{{ $t('Pradžia') }} *</Label>

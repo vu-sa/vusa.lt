@@ -34,17 +34,10 @@ use App\Settings\FormSettings;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * The single, server-side definition of "which admin pages does this user get" (O19).
+ * The single, server-side definition of "which admin pages does this user get".
  *
- * Until this PR the answer was written five times in the frontend (`AppSidebar`,
- * `ShowAdministration`, `useCommandActions`, `useQuickActions`, `useActionWindowCatalog`) plus a
- * sixth, `adminPageCatalog.ts` — each with its own permission checks, and each drifted from the
- * others (see `.ai/redesign/admin/decisions.md` O19 and the PR 3.1 notes in `plan.md`). This class
- * is the one place a new admin destination is registered; every consumer (the sidebar today, the
- * new shell from PR 4.1) reads `for(User): array` instead of repeating the gate.
- *
- * Workspace and section keys mirror `.ai/redesign/admin/rules/navigation.md`'s workspace table,
- * itself validated against every `/mano` route in `.ai/redesign/admin/inventory.md`.
+ * The one place a new admin destination is registered; the shell, palette, + Sukurti and Visi
+ * skyriai read `for(User): array` instead of repeating the gate (.ai/rules/shell.md).
  */
 class AdminNavigationCatalog
 {
@@ -275,9 +268,6 @@ class AdminNavigationCatalog
      * unrelated). Their target and visibility are resolved per-user rather than declared
      * statically like every other section, because the id is data, not part of the definition,
      * and access is a per-record `FormPolicy::view()` check, not a class-level `viewAny`.
-     *
-     * AppSidebar reads these sections directly from the catalog, so its navigation cannot drift
-     * from the per-record FormPolicy check.
      *
      * @return list<Section>
      */

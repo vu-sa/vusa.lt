@@ -1,6 +1,6 @@
 <template>
-  <!-- @deprecated The trash view only: the live list is IndexInstitution on CollectionPage (Phase 9.1).
-       Moves onto CollectionPage with the rest of the trash flows in Phase 10. -->
+  <!-- @deprecated The trash view only: the live list is IndexInstitution on CollectionPage.
+       Move it onto CollectionPage's trash filter, as reservations and tags do. -->
   <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
     @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
     <template #filters>

@@ -410,7 +410,7 @@ const toggleMute = async () => {
   isMuted.value = await doToggleMute(String(props.institution.id), subscriptionState.value, ['subscription']);
 };
 
-// One primary action; everything else lives in ⋯ (rules/pages.md → Records, 1).
+// One primary action; everything else lives in ⋯ (.ai/rules/js-pages-admin.md).
 const primaryAction = computed<ActionDescriptor | undefined>(() =>
   canScheduleMeeting.value ? { key: 'meeting', label: $t('Fiksuoti posėdį'), icon: CalendarIcon } : undefined);
 

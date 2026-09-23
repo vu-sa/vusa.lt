@@ -125,7 +125,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'status', label: $t('Būsena'), class: 'w-48' },
 ]);
 
-// --- Quick filters (rules/pages.md → Collections, 2) ---------------------------------------------
+// --- Quick filters (.ai/rules/js-pages-admin.md) ---------------------------------------------
 
 const currentYear = new Date().getFullYear();
 

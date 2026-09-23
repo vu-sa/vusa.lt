@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * The new admin shell (.ai/redesign/admin, PR 4.1-4.5). What only a browser can settle: that the
+ * The admin shell. What only a browser can settle: that the
  * catalog's route matching lights the right workspace and tab on a real page, that the bottom bar
  * exists on a phone but not on a desktop, and that none of it throws.
  */

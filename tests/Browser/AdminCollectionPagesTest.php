@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * The first two pages built in the redesign's language (.ai/redesign/admin, PR 5.1 + 5.2): Pradžia
+ * The first two pages built on the admin page types: Pradžia
  * and the Posėdžiai collection. What only a browser can settle is that they mount against the real
  * bundle, draw their anatomy, fit a phone without scrolling sideways, and throw nothing.
  */

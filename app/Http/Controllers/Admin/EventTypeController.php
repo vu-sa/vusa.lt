@@ -74,18 +74,6 @@ class EventTypeController extends AdminController
     }
 
     /**
-     * Event types are created in a sheet over the collection (Phase 9.6).
-     *
-     * @deprecated Kept for bookmarks; remove in Phase 10.
-     */
-    public function create(): RedirectResponse
-    {
-        $this->handleAuthorization('create', EventType::class);
-
-        return redirect()->route('eventTypes.index');
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreEventTypeRequest $request): RedirectResponse
@@ -93,18 +81,6 @@ class EventTypeController extends AdminController
         EventType::create($request->validated());
 
         return $this->redirectToIndexWithSuccess('eventTypes', $this->entityMessage('created', 'eventType'));
-    }
-
-    /**
-     * Event types are edited in a sheet over the collection (Phase 9.6).
-     *
-     * @deprecated Kept for bookmarks; remove in Phase 10.
-     */
-    public function edit(EventType $eventType): RedirectResponse
-    {
-        $this->handleAuthorization('update', $eventType);
-
-        return redirect()->route('eventTypes.index');
     }
 
     /**

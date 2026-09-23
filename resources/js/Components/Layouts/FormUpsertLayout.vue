@@ -1,6 +1,6 @@
 <!--
   @deprecated Superseded by `Layouts/FormPage` (single column, sticky save bar, error summary, shortcuts).
-  Existing forms move over in their own phase; remove this wrapper in Phase 10.
+  Existing forms move over when migrated; remove this wrapper when it has no consumers.
 -->
 <template>
   <div class="space-y-4">

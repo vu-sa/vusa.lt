@@ -7,20 +7,21 @@ Quick reference for AI assistants working with TanStack tables in vusa.lt.
 ## Quick Decision Tree
 
 ```
-Full admin page with header/actions/breadcrumbs? → IndexTablePage.vue
+Full admin collection page? → Layouts/CollectionPage.vue (not a table component — see below)
 Server-side table without page wrapper? → ServerDataTable.vue
 Simple client-side table? → SimpleDataTable.vue
 ```
 
 ## Table System Architecture
 
-**Two systems exist**:
-1. **Legacy (Naive UI)**: `IndexModel/IndexDataTable.vue` - DON'T modify
-2. **TanStack (Current)**: Use for all new features
+**Admin collections** are `Layouts/CollectionPage.vue` fed by `useDatabaseCollectionSource` /
+`useTypesenseCollectionSource` (`@/Composables/useCollectionSource`): rows, table and preview views,
+filters and selection with URL state. Its table view is its own; the TanStack stack below is for
+tables embedded in other pages. `IndexTablePage.vue` is legacy — only unmigrated pages use it.
 
-**Component hierarchy** (4 layers):
+**Component hierarchy** (TanStack):
 ```
-IndexTablePage.vue          # Full page with header/breadcrumbs
+IndexTablePage.vue          # Legacy full page — no new consumers
 └── ServerDataTable.vue     # Server-side data + admin features
     └── DataTableProvider.vue   # State coordination
         └── DataTable.vue       # Core TanStack table
@@ -28,8 +29,8 @@ IndexTablePage.vue          # Full page with header/breadcrumbs
 
 ## Component Selection Guide
 
-### IndexTablePage.vue
-**Use when**: Need full admin page layout
+### IndexTablePage.vue (legacy)
+**Don't use for new pages** — use `CollectionPage`. Kept for unmigrated pages:
 - Includes: Header, breadcrumbs, filters, actions, create button
 - Handles: Page navigation, permission-based UI
 

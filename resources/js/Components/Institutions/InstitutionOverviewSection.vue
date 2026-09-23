@@ -2,7 +2,7 @@
   <div class="space-y-8" data-slot="institution-overview">
     <section :aria-label="$t('Veikla')" class="space-y-3" data-testid="institution-activity">
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <!-- The normal, healthy state paints no badge (rules/visual.md → Picking the role). -->
+        <!-- The normal, healthy state paints no badge (.ai/rules/css.md). -->
         <StatusBadge v-if="activityStatus.status !== 'healthy'" :status="activityPresentation" />
         <span v-else class="text-sm font-medium text-foreground">{{ $t('Veikla atnaujinta') }}</span>
         <span v-if="activityDetail" class="text-sm text-muted-foreground tabular-nums">{{ activityDetail }}</span>

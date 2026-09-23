@@ -4,8 +4,6 @@ import {
   entityTypeRegistry,
   getEntityTypeDefinition,
   getModelIcon,
-  modelIconMappingFilled,
-  modelIconMappingRegular,
 } from '@/Constants/entityTypes';
 import { ModelEnum } from '@/Types/enums';
 
@@ -31,10 +29,8 @@ describe('entity type registry', () => {
     expect(getEntityTypeDefinition('missing')).toBeNull();
   });
 
-  it('keeps the compatibility icon helpers backed by the registry', () => {
+  it('keeps the compatibility icon helper backed by the registry', () => {
     expect(getModelIcon('MEETING')).toBe(entityTypeRegistry[ModelEnum.MEETING].icon);
     expect(getModelIcon('MEETING', 'filled')).toBe(entityTypeRegistry[ModelEnum.MEETING].iconFilled);
-    expect(modelIconMappingRegular.MEETING).toBe(entityTypeRegistry[ModelEnum.MEETING].icon);
-    expect(modelIconMappingFilled.MEETING).toBe(entityTypeRegistry[ModelEnum.MEETING].iconFilled);
   });
 });

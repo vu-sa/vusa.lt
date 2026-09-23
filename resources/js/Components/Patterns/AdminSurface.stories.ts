@@ -4,7 +4,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 
 /**
- * The admin surface (.ai/redesign/admin, PR 2.1) — `[data-surface="admin"]` in
+ * The admin surface — `[data-surface="admin"]` in
  * resources/css/admin/surface.css, stamped on every admin page by app.blade.php. This is how a
  * reviewer sees the token scope without logging in: switch the toolbar's Surface to "Admin"
  * (pinned here via `globals`) and Theme to compare both modes.
@@ -63,7 +63,7 @@ export const Popover: Story = {
   }),
 };
 
-/** The tinted edit-mode canvas (rules/visual.md — Wayfinding and distinctness, rule 5). */
+/** The tinted edit-mode canvas (.ai/rules/js-pages-admin.md). */
 export const EditModeCanvas: Story = {
   render: () => ({
     template: `

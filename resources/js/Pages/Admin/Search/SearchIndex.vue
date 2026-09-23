@@ -111,7 +111,7 @@ defineProps<{
 
 const PER_GROUP = 5;
 
-// The two collections without a page of their own keep their single-collection view (Phase 9 replaces it).
+// The two collections without a page of their own keep their single-collection view.
 const RETAINED_TABS: Record<string, { collection: AdminCollection; emptyMessage: string }> = {
   'agenda-items': { collection: 'agenda_items', emptyMessage: $t('Nerasta darbotvarkės punktų pagal jūsų paiešką') },
   'resources': { collection: 'resources', emptyMessage: $t('Nerasta išteklių pagal jūsų paiešką') },

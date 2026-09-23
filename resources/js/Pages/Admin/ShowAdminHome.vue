@@ -122,7 +122,7 @@ const actionWindow = useActionWindow();
 
 const isMobile = useIsMobile();
 
-// Build welcome tour for the new admin shell (Phase 4.8), responsive to viewport
+// Build welcome tour for the admin shell, responsive to viewport
 const tourSteps = computed<DriveStep[]>(() => {
   if (isMobile.value) {
     return [

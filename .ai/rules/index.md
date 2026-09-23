@@ -6,6 +6,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | --- | --- |
 | resources/js/Components/ActionWindow/** | .ai/rules/action-window.md |
 | app/Tasks/**,app/Actions/ResyncTaskAssigneesForCadence.php,app/Models/Cadence.php | .ai/rules/actions-models.md |
+| resources/js/Components/AdminForms/** | .ai/rules/admin-forms.md |
 | app/Services/NavigationService.php,app/Http/Requests/NavigationRequest.php,app/Http/Controllers/Admin/NavigationController.php,app/Models/Navigation.php | .ai/rules/admin-models.md |
 | app/Models/Task.php,app/Models/Traits/HasTasks.php,app/Http/Controllers/Admin/TaskController.php | .ai/rules/admin.md |
 | app/** | .ai/rules/app.md |
@@ -17,6 +18,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/composables.md |
 | config/vusa.php | .ai/rules/config.md |
 | app/Actions/**,app/Models/InstitutionAdministrator.php,app/Services/CommentableMentionResolver.php,app/Console/Commands/SendMeetingReminders.php | .ai/rules/console-commands.md |
+| resources/js/Components/Patterns/**,resources/js/Constants/** | .ai/rules/constants.md |
 | app/Models/Meeting.php,app/Models/Vote.php,app/Models/Pivots/AgendaItem.php,app/Http/Requests/UpdateAgendaItemRequest.php,app/Http/Controllers/Admin/AgendaItemController.php | .ai/rules/controllers-admin.md |
 | app/Http/Controllers/SitemapController.php,app/Models/News.php | .ai/rules/controllers-models.md |
 | app/Http/Controllers/Public/**,app/Http/Controllers/PublicController.php,app/Providers/AppServiceProvider.php | .ai/rules/controllers-providers.md |
@@ -27,14 +29,17 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Enums/** | .ai/rules/enums.md |
 | tests/Feature/** | .ai/rules/feature.md |
 | CLAUDE.md | .ai/rules/general.md |
+| resources/js/Pages/Admin/Representation/**,resources/js/Pages/Admin/Dashboard/**,resources/js/Components/Home/** | .ai/rules/home.md |
 | app/Http/Controllers/Admin/** | .ai/rules/http-controllers-admin.md |
 | app/Actions/Cadences/**,app/Http/Requests/UpdateInstitutionAdministratorsRequest.php | .ai/rules/http-requests.md |
 | app/Enums/AgendaItemType.php,app/Services/MeetingCompletionService.php,app/Tasks/Handlers/AgendaCompletionTaskHandler.php,resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/js-composables.md |
 | resources/css/components/turtle-loader.css,resources/views/turtle-loader.blade.php,resources/js/admin.ts,resources/js/public.ts | .ai/rules/js-js.md |
+| resources/js/Pages/Admin/** | .ai/rules/js-pages-admin.md |
 | resources/js/**/*.test.ts | .ai/rules/js.md |
 | lang/** | .ai/rules/lang.md |
 | resources/js/Pages/Admin/People/Show*.vue,app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |
 | app/Models/**, app/Models/Tenant.php, app/Models/Calendar.php | .ai/rules/models.md |
+| app/Notifications/** | .ai/rules/notifications.md |
 | app/Http/Controllers/Admin/MailQueueController.php,app/Console/Commands/PruneNotificationDigests.php,resources/js/Pages/Admin/MailQueue.vue | .ai/rules/pages-admin.md |
 | app/Http/Controllers/Admin/UserController.php,app/Policies/UserPolicy.php,app/Http/Requests/UpdateUserRequest.php | .ai/rules/policies-http-requests.md |
 | app/Providers/** | .ai/rules/providers.md |
@@ -45,6 +50,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Actions/ResolveTaskAudience.php,app/Listeners/HandleTaskCreated.php,app/Actions/Schedulable/TaskNotifier.php,app/Console/Commands/SendTaskOverdueReminders.php | .ai/rules/schedulable-console-commands.md |
 | app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
+| app/Services/AdminNavigation/**,resources/js/Components/Layouts/Shell/** | .ai/rules/shell.md |
 | resources/js/Components/AdminForms/**,resources/js/Components/RichContent/**,resources/js/Features/Admin/AdminSearch/**,resources/js/Components/ui/single-select/** | .ai/rules/single-select.md |
 | app/Actions/Get*.php,app/Actions/Resolve*.php,app/Tasks/Subscribers/** | .ai/rules/subscribers.md |
 | app/Support/MorphMap.php, app/Support/LocalizedRouteSlugs.php | .ai/rules/support.md |

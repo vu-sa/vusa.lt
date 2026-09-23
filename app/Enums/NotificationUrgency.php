@@ -3,8 +3,8 @@
 namespace App\Enums;
 
 /**
- * How much a notification asks of its reader; the channel policy in
- * .ai/redesign/admin/messages.md derives from this tier alone.
+ * How much a notification asks of its reader; the channel policy (which channels send) derives
+ * from this tier alone — see .ai/rules/notifications.md.
  */
 enum NotificationUrgency: string
 {

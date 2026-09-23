@@ -16,14 +16,14 @@ use Illuminate\Support\Collection;
 /**
  * The rep outcome metrics (U25): did the loop get shorter? Computed from data the app already
  * stores — no tracking — as a monthly trend, so the same numbers back `metrics:reps` and the
- * Sistema page, and Phase 10.3 can re-run the baseline.
+ * Sistema page, and a later run can be compared with the baseline.
  *
  * Computed in PHP over small sets (a few hundred meetings a year) so it behaves the same on
  * MySQL and on SQLite. Months are by the meeting's date, or by the task's creation date.
  */
 class GetRepOutcomeMetrics
 {
-    /** The Phase 0 snapshot (2026-09-17) and the target for each metric, in percent. */
+    /** The pre-redesign snapshot (2026-09-17) and the target for each metric, in percent. */
     public const array TARGETS = [
         'recorded_within_week' => ['baseline' => 91.9, 'target' => 95.0],
         'vote_information' => ['baseline' => 35.1, 'target' => 50.0],

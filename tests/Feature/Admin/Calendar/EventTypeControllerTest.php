@@ -26,24 +26,12 @@ describe('unauthorized access', function (): void {
             ->assertStatus(403);
     });
 
-    test('cannot access create page', function (): void {
-        asUser($this->user)
-            ->get(route('eventTypes.create'))
-            ->assertStatus(403);
-    });
-
     test('cannot store event type', function (): void {
         asUser($this->user)
             ->post(route('eventTypes.store'), [
                 'name' => ['lt' => 'Naujas', 'en' => 'New'],
                 'slug' => 'naujas',
             ])
-            ->assertStatus(403);
-    });
-
-    test('cannot access edit page', function (): void {
-        asUser($this->user)
-            ->get(route('eventTypes.edit', $this->eventType))
             ->assertStatus(403);
     });
 
@@ -74,12 +62,6 @@ describe('authorized access', function (): void {
                 ->has('filters')
                 ->has('sorting')
             );
-    });
-
-    test('the old create URL redirects authorized users to the collection', function (): void {
-        asUser($this->globalCoordinator)
-            ->get(route('eventTypes.create'))
-            ->assertRedirect(route('eventTypes.index'));
     });
 
     test('can store event type with valid data', function (): void {
@@ -118,12 +100,6 @@ describe('authorized access', function (): void {
             ])
             ->assertStatus(302)
             ->assertSessionHasErrors('slug');
-    });
-
-    test('the old edit URL redirects authorized users to the collection', function (): void {
-        asUser($this->globalCoordinator)
-            ->get(route('eventTypes.edit', $this->eventType))
-            ->assertRedirect(route('eventTypes.index'));
     });
 
     test('can update event type with valid data', function (): void {

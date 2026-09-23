@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-/** @deprecated Superseded by SearchResultGroup on the cross-entity search page in PR 5.10; slated for removal in Phase 10. */
+/** @deprecated Superseded by SearchResultGroup on the cross-entity search page; remove once useAdminSearch no longer references it. */
 export interface SearchTab {
   value: string;
   label: string;

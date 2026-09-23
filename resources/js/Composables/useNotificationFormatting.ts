@@ -134,7 +134,7 @@ export type NotificationColorKey = keyof typeof notificationColors;
 
 /**
  * @deprecated Rows stored before PR 6.5 carry a hue name in `data.color`; drop this map (and the
- * fallback in getNotificationColorKey) once those rows have aged out — Phase 10.
+ * fallback in getNotificationColorKey) once those rows have aged out.
  */
 const legacyHueToToken: Record<string, NotificationColorKey> = {
   blue: 'cat-2',

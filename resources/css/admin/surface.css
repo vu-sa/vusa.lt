@@ -1,5 +1,5 @@
 /* ==================================================================================
-   Admin surface (.ai/redesign/admin, PR 2.1)
+   Admin surface
    ==================================================================================
 
    `data-surface="admin"` is stamped on <html> server-side by app.blade.php, via
@@ -28,7 +28,7 @@
   --popover-foreground: oklch(0.17 0.008 70);
   --primary: oklch(0.19 0.008 70);
   --primary-foreground: oklch(0.97 0.006 85);
-  /* The tinted edit-mode canvas (rules/visual.md — Wayfinding and distinctness, rule 5): forms
+  /* The tinted edit-mode canvas (.ai/rules/js-pages-admin.md): forms
      and focused editors sit on this so editing never looks like viewing. */
   --secondary: oklch(0.925 0.006 85);
   --secondary-foreground: oklch(0.2 0.008 70);
@@ -89,7 +89,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Touch targets (rules/visual.md — Responsive and touch, rule 2): 44px on coarse pointers,
+/* Touch targets (.ai/rules/js-pages-admin.md): 44px on coarse pointers,
    dense on desktop. Unused until PR 4.1 (the shell) becomes its first consumer. */
 @utility u-touch {
   @media (pointer: coarse) {
@@ -151,7 +151,7 @@
 }
 
 /* Navigation progress bar under admin surface: crisp, 2px hairline in brand colour
-   with zero shadows, glow or peg blur (rules/visual.md #5, O16, O3). */
+   with zero shadows, glow or peg blur (.ai/rules/js-pages-admin.md, O16, O3). */
 html[data-surface="admin"] #nprogress .bar {
   background: var(--brand-fill, var(--brand));
   height: 2px;

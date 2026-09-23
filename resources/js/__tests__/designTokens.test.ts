@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Guards the colour-system token list (.ai/redesign/admin/rules/visual.md#colour-system, PR 2.2)
+ * Guards the colour-system token list (.ai/rules/css.md)
  * so a rename can't silently drop a role or category — the "snapshot test" the rules doc asks
  * for. Contrast itself is checked in Storybook (ColourSystem.stories.ts, a11y: 'error'), not
  * here: jsdom has no CSS cascade, so this only asserts the tokens exist and are wired the way

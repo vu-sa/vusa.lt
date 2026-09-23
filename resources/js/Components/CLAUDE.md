@@ -3,7 +3,7 @@
 How shared Vue components are organised, and which one to reach for. Read this
 **before creating a new component** — most of what you need already exists.
 
-Related: [Tables](Tables/CLAUDE.md) · [Breadcrumbs](../Composables/BREADCRUMBS_GUIDE.md) · [Frontend testing](../CLAUDE.md) · [Storybook](../../../.storybook/CLAUDE.md)
+Related: [Tables](Tables/CLAUDE.md) · [Breadcrumbs](../Composables/useBreadcrumbsUnified.ts) · [Frontend testing](../CLAUDE.md) · [Storybook](../../../.storybook/CLAUDE.md)
 
 ## Tiers
 
@@ -13,10 +13,11 @@ Dependencies run one way — upward only. A tier never imports from a tier above
 ui/            shadcn-vue primitives. Never edited by hand (regenerated).
   ↑            Never imported directly by Pages/** — ESLint blocks ui/card there.
 Patterns/      Generic, domain-free building blocks.
-  ↑            SectionCard, EmptyState, EntityLinkCard, DateBadge, ShowPageGrid
+  ↑            SectionCard, EmptyState, StatusBadge, SheetForm, FormSection, ConfirmDialog …
 <Entity>/      Duties/, Institutions/, Meetings/, Members/, Files/ …
   ↑            Compose Patterns + domain knowledge. One barrel index.ts per folder.
-Layouts/       Page shells: AdminContentPage, RecordPage, FormPage, IndexTablePage
+Layouts/       Page shells: OverviewPage, CollectionPage, RecordPage, FormPage
+               (legacy: AdminContentPage, IndexTablePage, FormUpsertLayout)
   ↑
 Pages/Admin/   Compose only. No raw <Card>, no hand-rolled hero or grid markup.
 ```
@@ -76,13 +77,16 @@ Rules for anything added there:
 
 | I need… | Use | From |
 |---|---|---|
+| A workspace **overview** | `OverviewPage` | `@/Components/Layouts/OverviewPage.vue` |
+| An admin **collection** (rows / table / preview) | `CollectionPage` + `useDatabaseCollectionSource` / `useTypesenseCollectionSource` | `@/Components/Layouts/CollectionPage.vue`, `@/Composables/useCollectionSource` |
 | An admin **record** page | `RecordPage` | `@/Components/Layouts/RecordPage.vue` |
-| An admin **index** page (table) | `IndexTablePage` | `@/Components/Layouts/IndexTablePage.vue` |
 | A **create/edit** form page | `FormPage` | `@/Components/Layouts/FormPage.vue` |
 | A titled group of fields inside a form | `FormSection` | `@/Components/Patterns` |
 | A small create/edit over its collection or record | `SheetForm` | `@/Components/Patterns` |
 | "Are you sure?" before ending, discarding or deleting | `ConfirmDialog` | `@/Components/Patterns` |
-| Any other admin page shell | `AdminContentPage` | `@/Components/Layouts/AdminContentPage.vue` |
+| A status (reservation, vote, task, content…) | `StatusBadge` + the enum's map in `Constants/statuses.ts` | `@/Components/Patterns` |
+| An entity type's icon + category colour | `EntityTypeMark` / `getEntityTypeDefinition` | `@/Components/EntityTypeMark.vue`, `@/Constants/entityTypes` |
+| A settings screen with several independent saves | `AdminContentPage` + a `SectionCard` per block (no page type fits yet) | `@/Components/Layouts/AdminContentPage.vue` |
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
@@ -130,19 +134,19 @@ things that truly cannot be reused. `Dashboard/` is the only folder doing this t
 - Comment *why* a non-obvious class or branch exists, not what it does.
 
 State belongs in the page; components communicate upward via typed emits or
-`defineModel`. `Pages/Admin/Dashboard/Partials/ReservationKpiStrip.vue` is a good
+`defineModel`. `Components/Overview/OverviewScopeSwitch.vue` is a good
 example of a component that is a control rather than a container.
 
 ## FormPage, SheetForm, FormSection
 
-`FormPage` is the shell for a form that edits one record's own attributes (rules/pages.md → Forms): a
+`FormPage` is the shell for a form that edits one record's own attributes (`.ai/rules/admin-forms.md`): a
 narrow column on the tinted edit canvas with a "Redaguoji" / "Kuri naują" eyebrow, an optional LT | EN
 switch, a `#advanced` disclosure ("Papildomi nustatymai"), a `#danger-zone`, and a sticky save bar. It
 owns three behaviours callers should not re-implement: **⌘/Ctrl + Enter** submits and **Esc** cancels
 (listeners on the `<form>`, so a portaled Select never cancels it), and on a failed submit the error
 summary is scrolled into view and focused, each message focusing its field. Pass `mode="create"` for a new
 record (the save bar never claims "all saved"), and `field-ids` when an error key is not the field's id
-(`name.lt` → `duty-name`). Relations with their own lifecycle do **not** belong in it (Forms 1, 15).
+(`name.lt` → `duty-name`). Relations with their own lifecycle do **not** belong in it.
 
 `SheetForm` is the same idea over a collection or record: a right sheet, a bottom sheet below `md`, a
 `#danger-zone` in the body (never the footer), and a `dirty` prop that makes Esc, the overlay and
@@ -159,57 +163,5 @@ status and action placement, key facts, desktop tabs/mobile stacked sections, co
 navigation, and the final `activity` slot. Pass resolved URLs and permission-filtered actions;
 domain behavior stays in the page.
 
-## ShowPageLayout (legacy)
-
-`ShowPageLayout` remains for records that have not reached their redesign phase. Do not add new
-consumers; migrate existing consumers to `RecordPage` in their scheduled phase and remove the
-wrapper in Phase 10.
-
-Wraps `AdminContentPage` + `ShowPageHero` + `Tabs` + the activity log, and owns
-tab persistence. Each entry in `tabs` names the slot that fills it.
-
-```vue
-<ShowPageLayout
-  :title="duty.name"
-  :subtitle="duty.institution?.name"
-  :model="duty"
-  audit-subject-type="duty"
-  :tabs
-  tab-storage-key="show-duty-tab"
->
-  <template #icon>…</template>
-  <template #badge>…</template>
-  <template #actions>…</template>
-  <template #alert>…</template>
-
-  <template #overview>
-    <ShowPageGrid>
-      <template #main>…</template>
-      <template #sidebar>…</template>
-    </ShowPageGrid>
-  </template>
-</ShowPageLayout>
-```
-
-Reserved slot names a tab `value` must not collide with: `icon`, `title`,
-`subtitle`, `badge`, `info`, `actions`, `alert`. Omit `tabs` entirely for a
-single-body page and use the default slot.
-
-Each tab may carry an optional `icon` (Lucide, rendered before the label) and a
-`count` (rendered as a muted suffix; `0` is hidden rather than shown).
-
-By default the layout remembers the open tab under `tabStorageKey`. A page that
-needs to *drive* the tab — URL `?tab=` sync, per-entity resets, or another
-component navigating to a tab — binds `v-model:tab` instead:
-
-```vue
-<ShowPageLayout v-model:tab="currentTab" :tabs>
-```
-
-In that controlled mode the layout never touches localStorage, so the page owns
-persistence and `tabStorageKey` is ignored. Supply a defined initial value —
-that is what marks the layout as controlled. `ShowInstitution.vue` (cross-tab
-navigation) and `ShowMeeting.vue` (URL sync) are the reference consumers.
-
-`Pages/Admin/People/ShowDuty.vue` and `ShowUser.vue` are the reference pages.
-`Layouts/ShowModel/ShowPageLayout.vue` is the deprecated predecessor — don't use it.
+`IndexTablePage` and `AdminContentPage` remain only for pages not yet migrated; don't add new
+consumers (see `.ai/rules/js-pages-admin.md` → migrate on touch).

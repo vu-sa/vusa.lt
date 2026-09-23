@@ -1,5 +1,5 @@
 <template>
-  <!-- @deprecated Superseded by TagSheetForm in Phase 5.7; remove with the legacy tag URLs in Phase 10. -->
+  <!-- @deprecated Superseded by TagSheetForm; remove once TagController stops redirecting here. -->
   <PageContent :title="pageTitle">
     <div>
       <UpsertModelLayout>

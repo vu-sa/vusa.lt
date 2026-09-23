@@ -77,7 +77,7 @@ const month = computed(() => formatMonthShort(startsAt.value));
 
 const isEmail = computed(() => props.meeting.type === MeetingType.Email);
 
-// Not every meeting is a posėdis (rules/visual.md → Copy): an e-mail one is a decision.
+// Not every meeting is a posėdis (.ai/rules/lang.md): an e-mail one is a decision.
 const formatLabel = computed(() => {
   if (isEmail.value) {
     return $t('Sprendimas el. paštu');
@@ -94,7 +94,7 @@ const agendaCount = computed(() => props.meeting.agenda_items_count ?? null);
 
 const status = computed(() => props.meeting.completion_status as MeetingCompletionStatus | undefined);
 
-// The healthy state gets no badge: don't paint every row (rules/visual.md → Colour).
+// The healthy state gets no badge: don't paint every row (.ai/rules/css.md).
 const badge = computed(() => (status.value && status.value !== 'complete' ? meetingCompletionStatuses[status.value] ?? null : null));
 const needsFilling = computed(() => status.value === 'incomplete' || status.value === 'no_items');
 </script>

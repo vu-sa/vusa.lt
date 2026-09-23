@@ -145,7 +145,7 @@ Route::delete('push-subscription', [PushSubscriptionController::class, 'destroy'
 Route::delete('push-subscription/{id}', [PushSubscriptionController::class, 'destroyById'])->name('push-subscription.destroyById');
 Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
 
-Route::resource('eventTypes', EventTypeController::class)->except(['show']);
+Route::resource('eventTypes', EventTypeController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
@@ -175,7 +175,7 @@ Route::delete('institutions/{institution}/check-ins/active', [InstitutionCheckIn
 Route::put('institutions/{institution}/secretaries', [InstitutionSecretaryController::class, 'update'])->name('institutions.secretaries.update');
 
 Route::resource('resources', ResourceController::class);
-Route::resource('resourceCategories', ResourceCategoryController::class);
+Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
 // Reservations are never updated directly — every mutation goes through the

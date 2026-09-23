@@ -1,6 +1,6 @@
 <template>
-  <!-- @deprecated The trash view only: the live list is IndexUser on CollectionPage (Phase 9.3).
-       Moves onto CollectionPage with the rest of the trash flows in Phase 10. -->
+  <!-- @deprecated The trash view only: the live list is IndexUser on CollectionPage.
+       Move it onto CollectionPage's trash filter, as reservations and tags do. -->
   <IndexTablePage
     ref="indexTablePageRef"
     v-bind="tableConfig"

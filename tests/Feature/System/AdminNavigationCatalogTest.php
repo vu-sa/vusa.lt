@@ -146,7 +146,7 @@ describe('per-persona visibility', function (): void {
     test('a plain member sees only Pradžia and the always-visible reservation entries', function (): void {
         $user = makeUser($this->tenant);
 
-        // Rezervacijos' Apžvalga is deliberately "always" (rules/navigation.md), and both
+        // Rezervacijos' Apžvalga is deliberately "always" (.ai/rules/shell.md), and both
         // ResourcePolicy::viewAny() and ReservationPolicy::create() are unconditional `true` —
         // "anyone can view the resource listing" / request a reservation — so a member with no
         // role at all still gets a foothold in Rezervacijos. This is existing, real behaviour,

@@ -6,19 +6,32 @@ Shared instructions for any AI agent (Claude Code, Copilot, Cursor, etc.) workin
 
 **VU SR website (vusa.lt)** — a dual-purpose Laravel app: a **public website** for VU Students' Representation, and an **internal management platform** for student representation work.
 
-**Stack**: Laravel 13+, Vue 3, Inertia.js v3, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense (public search), Laravel Sail.
+**Stack**: Laravel 13+, Vue 3, Inertia.js v3, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense (public and admin search), Laravel Sail.
 
 **Local dev**: `http://www.vusa.test` (the `www.` subdomain is required). Test login: `test@test.com` / `password`.
 
 This is a **student-run project**. Prioritize maintainability and approachability over clever solutions.
 
-## ⚠ Admin redesign in progress
+## Admin UI (Mano VU SA)
 
-Before changing admin UI — `resources/js/Pages/Admin/**`, admin components, `AdminLayout`, admin emails
-or notifications — read [.ai/redesign/admin/README.md](.ai/redesign/admin/README.md) and
-[playbook.md](.ai/redesign/admin/playbook.md), then only the rules file your task needs (the README
-indexes them). Decisions marked ✅ are settled; if one blocks you, stop and add it to *Open questions*
-in [plan.md](.ai/redesign/admin/plan.md) rather than deciding differently.
+**Calm, direct, square** — the public site's paper, ink and VU SA red/amber, hairlines instead of
+boxes, at working density. Every screen answers *what needs me?* before *where can I go?*.
+
+1. **Permissions shape the product** — workspaces, sections and actions appear on `viewAny`/`create`; hidden, never disabled.
+2. **One catalog** (`AdminNavigationCatalog`) feeds every menu; the palette accelerates but never hides.
+3. **Seven page types** — Overview, Collection, Record, Form, Sheet form, Guided flow, Workbench; one canonical page per record.
+4. **Forms edit attributes; relations live on the record.** One create door: **+ Sukurti** → ActionWindow.
+5. **Budgets** — one brand fill per region; uppercase only for eyebrows, tabs and the primary button; status colours are never brand.
+6. **Phone and tablet are first-class** (390 · 820 · 1180 · 1440, 44px touch, nothing hover-only).
+7. **Speak like a colleague** — *tu*, verbs on buttons, one glossary. The benchmark is a rep finishing an emailed task on a phone in five minutes.
+
+The rules live in `.ai/rules`: `js-pages-admin.md` (page types, anatomy, visual, migrate-on-touch),
+`admin-forms.md`, `single-select.md` (pickers), `css.md` (colour system), `constants.md` (statuses,
+entity types), `shell.md` (navigation), `lang.md` (glossary), `notifications.md`, `home.md` (reps).
+The reasoning behind them is in git history: `git log -- .ai/redesign/admin`. Code comments that cite
+a decision ID (D1–D13, O1–O26, U1–U26, R-a…R-h) or a redesign PR number (e.g. "PR 5.5") refer to
+that folder's `decisions.md`, `reps.md` and `plan.md` — read them with
+`git show $(git log -1 --format=%H -- .ai/redesign/admin/decisions.md)^:.ai/redesign/admin/decisions.md`.
 
 ## Documentation Hub
 
@@ -186,8 +199,8 @@ Public controllers extending `PublicController` should call `shareOtherLangURL()
 
 ### Search
 
-- Default Scout driver: `database` (`SCOUT_DRIVER` env). Admin searches **must** use it (avoids circular dependencies).
-- Public search: Typesense (fast, typo-tolerant).
+- Default Scout driver: `database` (`SCOUT_DRIVER` env) — used by every model that does not override `searchableUsing()`.
+- Typesense: models that override `searchableUsing()` (users, institutions, duties, meetings, agenda items, documents, resources, pages, news, calendar). Public search and admin collections/search query it from the browser with scoped keys (`useTypesenseCollectionSource`, `Features/Admin/AdminSearch`). Trash views always read the database.
 - Redis: caching + sessions; target >80% hit ratio.
 
 ### Activity log (spatie/laravel-activitylog)
@@ -221,9 +234,9 @@ if ($request->filled('field')) {
 
 ### Component tiers
 
-`ui/` (shadcn primitives) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `EntityLinkCard`, `DateBadge`, `ShowPageGrid`) → entity folders (`Duties/`, `Institutions/`, …) → `Layouts/` → pages. Dependencies run one way only.
+`ui/` (shadcn primitives) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → pages. Dependencies run one way only.
 
-Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint warns on `ui/card` imports under `Pages/Admin/**`. Admin Show pages use `ShowPageLayout` (`ShowDuty.vue` / `ShowUser.vue` are the reference pages).
+Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint warns on `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (`ShowDuty.vue` / `ShowMeeting.vue` are reference pages); collections use `CollectionPage`.
 
 Before adding a card, check the ~40 that exist: `find resources/js -name '*Card*.vue' -not -path '*/ui/*'`.
 
@@ -253,7 +266,7 @@ import { NewsIcon, MeetingIconFilled } from '@/Components/icons';
 ### Data tables (TanStack)
 
 Decision tree:
-- Full admin page (header, breadcrumbs, actions) → `IndexTablePage.vue`
+- Full admin collection page → `Layouts/CollectionPage.vue` + `useDatabaseCollectionSource` / `useTypesenseCollectionSource` (`IndexTablePage.vue` is legacy — don't add new consumers)
 - Server-side table without page wrapper → `ServerDataTable.vue`
 - Client-side, < 100 items → `SimpleDataTable.vue`
 
@@ -261,11 +274,12 @@ Details: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tabl
 
 ### Breadcrumbs
 
-- Index pages → `IndexPageLayout` (automatic).
+The admin shell shows breadcrumbs only **below section level** — the workspace and section tabs already state the location (`ShellBreadcrumbs` trims the trail with `belowSectionTrail`).
+
 - Form pages → `usePageBreadcrumbs()` + `BreadcrumbHelpers.adminForm()`.
 - Show pages → `usePageBreadcrumbs()` + `BreadcrumbHelpers.adminShow()`.
 
-Details: [resources/js/Composables/BREADCRUMBS_GUIDE.md](resources/js/Composables/BREADCRUMBS_GUIDE.md).
+Source: `resources/js/Composables/useBreadcrumbsUnified.ts`.
 
 ### Inertia `useForm` — clearing dirty state
 

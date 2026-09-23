@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * Mirrors PublicDesignSurfaceTest.php for the admin surface (.ai/redesign/admin, PR 2.1).
+ * Mirrors PublicDesignSurfaceTest.php for the admin surface.
  * Reaching [data-surface="admin"] depends on:
  *
  * 1. App\Support\DesignSurface / app.blade.php stamping the attribute on <html> for every
