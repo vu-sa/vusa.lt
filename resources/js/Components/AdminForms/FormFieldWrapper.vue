@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-2" data-slot="form-field">
     <div class="flex items-baseline justify-between gap-2">
-      <Label :for="id" class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <Label :for="id" :class="cn('flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground', labelClass)">
         {{ label }}
         <span v-if="required" class="text-destructive">*</span>
         <!-- Validation status indicators -->
@@ -56,10 +56,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { Label } from '@/Components/ui/label';
 import Spinner from '@/Components/ui/spinner/Spinner.vue';
+import { cn } from '@/Utils/Shadcn/utils';
 
 const props = defineProps<{
   id: string;
   label: string;
+  labelClass?: string;
   required?: boolean;
   /** One line under the field — never hover-only (.ai/rules/admin-forms.md). */
   hint?: string;

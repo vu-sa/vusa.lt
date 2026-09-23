@@ -5,7 +5,10 @@
       <li
         v-for="(item, index) in modelValue"
         :key="index"
-        class="flex items-start gap-3 border border-border bg-secondary/40 p-3 text-sm text-foreground transition-colors focus-within:border-brand"
+        :class="[
+          'flex items-start gap-3 border border-border bg-secondary/50 p-3 text-sm text-foreground transition-colors',
+          'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
+        ]"
       >
         <span
           class="mt-0.5 flex size-5 shrink-0 items-center justify-center bg-brand text-[11px] font-bold text-brand-foreground select-none"
@@ -49,7 +52,10 @@
     <!-- Inline draft input bar when list is not full -->
     <div
       v-if="!max || modelValue.length < max"
-      class="flex min-h-12 items-center border border-border bg-background transition-colors focus-within:border-brand"
+      :class="[
+        'flex min-h-12 items-center border border-border bg-secondary/50 transition-colors',
+        'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
+      ]"
     >
       <input
         ref="draftInputRef"

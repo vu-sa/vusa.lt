@@ -7,7 +7,8 @@
           type="button"
           :disabled
           :class="[
-            'flex min-h-11 w-full items-center justify-between border border-border bg-background px-3 text-sm text-left transition-colors focus:border-brand focus:outline-none',
+            'flex min-h-11 w-full items-center justify-between border border-border bg-secondary/50 px-3 text-sm text-left transition-colors',
+            'focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none',
             disabled && 'cursor-not-allowed opacity-50',
             !modelDate && 'text-muted-foreground',
           ]"

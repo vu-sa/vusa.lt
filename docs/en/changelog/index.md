@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.18 — Consistent lists across Mano VU SA (2026-09-23) {#v2-18}
 
+- ✨ **Roomier Home** — tasks and “Go to” links sit beside quick actions, with other information below; the coordinator card no longer appears on Home
 - ✨ **Shorter task list on Home** — see the three tasks with the latest due dates and how many remain; select the remaining count to open all tasks
 - ✨ **Home photo** — the greeting band uses your unit's primary institution image instead of a news story, with a community photo when no image is set
 - 🔧 **Admin account preview** — in local and staging environments, super admins can impersonate other super admins again; the new selector bar can be closed until page refresh and shows request errors

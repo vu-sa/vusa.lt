@@ -1,12 +1,13 @@
 <template>
-  <div class="flex flex-col gap-2">
-    <Label :for="id" class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+  <div class="flex flex-col gap-2" data-slot="form-field">
+    <Label :for="id" :class="cn('text-[11px] font-bold uppercase tracking-[0.18em] text-foreground', labelClass)">
       {{ label ?? $t('Nuoroda') }}
     </Label>
 
     <div
       :class="[
-        'flex min-h-11 items-stretch border bg-background text-sm transition-colors focus-within:border-brand',
+        'flex min-h-11 items-stretch border border-border bg-secondary/50 text-sm transition-colors',
+        'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
         inputValidationClass,
       ]"
     >
@@ -80,6 +81,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
+import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<{
   id?: string;
@@ -90,6 +92,7 @@ const props = withDefaults(defineProps<{
   explanation?: string;
   /** Overrides the default "Nuoroda" label — useful when several fields sit side by side. */
   label?: string;
+  labelClass?: string;
   /** A serious warning shown below the field, e.g. when editing the permalink breaks the old URL. */
   warning?: string;
   /** Mirrors FormFieldWrapper validation wiring. */
@@ -103,6 +106,7 @@ const props = withDefaults(defineProps<{
   viewUrl: undefined,
   explanation: undefined,
   label: undefined,
+  labelClass: undefined,
   warning: undefined,
   hint: undefined,
 });

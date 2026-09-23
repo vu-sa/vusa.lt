@@ -12,9 +12,7 @@
       @record-meeting="actionWindow.open({ flow: 'meeting.create' })"
     />
 
-    <!-- Tasks lead, destinations follow; on phones the rep order continues: meetings →
-         institutions (home.md). Create shortcuts sit in the aside. -->
-    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-primary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <AttentionQueue
           :tasks="visibleTasks"
@@ -23,6 +21,15 @@
           :more-href="route('userTasks')"
         />
         <QuickAccess :registration-forms />
+      </div>
+
+      <aside class="min-w-0">
+        <CreateShortcuts />
+      </aside>
+    </div>
+
+    <div class="grid gap-10 border-t border-border pt-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:pt-14" data-slot="home-secondary-section">
+      <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <UpcomingMeetingsList
           v-if="hasAtstovavimas"
           :meetings="upcomingMeetings"
@@ -42,12 +49,10 @@
       </div>
 
       <aside class="flex min-w-0 flex-col gap-10 lg:gap-14">
-        <CreateShortcuts />
         <Deferred :data="deferredProps">
           <template #fallback>
             <CollectionSkeleton :rows="3" />
           </template>
-          <CoordinatorCard :coordinator="coordinator ?? null" />
           <RecentlyEditedList :records="recentlyEdited ?? []" />
           <SiteContentLists
             :events="upcomingCalendarEvents ?? []"
@@ -67,7 +72,6 @@ import type { DriveStep } from 'driver.js';
 
 import AccessChangeBand from '@/Components/Home/AccessChangeBand.vue';
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
-import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
 import QuickAccess from '@/Components/Home/QuickAccess.vue';
 import FirstLoginChecklist from '@/Components/Home/FirstLoginChecklist.vue';
@@ -79,7 +83,6 @@ import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
 import type {
   HomeAccessChange,
   HomeChecklist,
-  HomeCoordinator,
   HomeHeroImage,
   HomeMeeting,
   HomeNewsPreview,
@@ -116,11 +119,10 @@ const props = defineProps<{
   upcomingCalendarEvents?: App.Entities.Calendar[];
   latestNews?: HomeNewsPreview[];
   recentlyEdited?: HomeRecentRecord[];
-  coordinator?: HomeCoordinator | null;
   registrationForms: HomeRegistrationForm[];
 }>();
 
-const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'coordinator'];
+const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited'];
 const visibleTasks = computed(() => props.upcomingTasks.slice(0, 3));
 
 const page = usePage<PageProps>();

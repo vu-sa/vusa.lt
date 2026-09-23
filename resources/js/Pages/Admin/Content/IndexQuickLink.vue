@@ -259,13 +259,13 @@
     </div>
 
     <!-- Dialogs -->
-    <DeleteConfirmationDialog
-      v-model:is-open="isOpen"
+    <ConfirmDialog
+      v-model:open="isOpen"
       :title="deleteTitle"
-      :message="deleteMessage"
-      :is-deleting
+      :description="deleteMessage"
+      :confirm-label="$t('Delete')"
+      destructive
       @confirm="executeDelete"
-      @cancel="cancelDelete"
     />
 
     <ConfirmDangerousActionDialog
@@ -298,7 +298,7 @@ import {
   X,
 } from 'lucide-vue-next';
 
-import DeleteConfirmationDialog from '@/Components/Dialogs/DeleteConfirmationDialog.vue';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import ConfirmDangerousActionDialog from '@/Components/ui/data-table/ConfirmDangerousActionDialog.vue';
 import { Button } from '@/Components/ui/button';
 import { SingleSelect } from '@/Components/ui/single-select';
@@ -470,12 +470,10 @@ function handleForceDelete() {
 
 const {
   isOpen,
-  isDeleting,
   title: deleteTitle,
   message: deleteMessage,
   confirmDelete,
   executeDelete,
-  cancelDelete,
 } = useDeleteConfirmation({
   title: 'Ištrinti greitąją nuorodą?',
   message: 'Ar tikrai norite ištrinti šią greitąją nuorodą? Šis veiksmas neatšaukiamas.',

@@ -6,7 +6,7 @@
   >
     <header class="flex items-center gap-2 border-b border-border px-4 py-3">
       <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
-      <h2 :id="headingId" class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <h2 :id="headingId" :class="cn('text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground', titleClass)">
         {{ title }}
       </h2>
       <div v-if="$slots.action" class="ml-auto">
@@ -32,9 +32,11 @@ const props = withDefaults(defineProps<{
   /** No body padding: for rows that draw their own hairlines (toggle rows, a `dl`). */
   flush?: boolean;
   class?: HTMLAttributes['class'];
+  titleClass?: string;
 }>(), {
   icon: undefined,
   class: undefined,
+  titleClass: undefined,
 });
 
 const headingId = `form-panel-${useId()}`;

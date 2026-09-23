@@ -33,7 +33,7 @@ vi.stubGlobal('route', mockRoute);
 
 const pageStubs = {
   ...commonStubs,
-  DeleteConfirmationDialog: {
+  ConfirmDialog: {
     template: '<div data-testid="delete-dialog" />',
   },
   ConfirmDangerousActionDialog: {

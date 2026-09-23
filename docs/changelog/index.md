@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.18 — Vienodi sąrašai visoje Mano VU SA (2026-09-23) {#v2-18}
 
+- ✨ **Erdvesnė Pradžia** — užduotys ir „Eiti į“ nuorodos rodomos greta greitųjų veiksmų, kita informacija perkelta žemiau; koordinatoriaus kortelė Pradžioje neberodoma
 - ✨ **Trumpesnis užduočių sąrašas Pradžioje** — rodomos trys vėliausio termino užduotys ir kiek dar jų laukia; visas atversi paspaudęs likusių užduočių skaičių
 - ✨ **Pradžios nuotrauka** — pasisveikinimo juostoje rodoma tavo padalinio pagrindinės institucijos nuotrauka vietoje naujienos; kai jos nėra, rodoma bendruomenės nuotrauka
 - 🔧 **Administratorių paskyrų peržiūra** — vietinėje ir testinėje aplinkoje superadministratoriai vėl gali prisijungti kaip kiti superadministratoriai; naują pasirinkimo juostą galima uždaryti iki puslapio atnaujinimo, o nepavykus matomas klaidos pranešimas

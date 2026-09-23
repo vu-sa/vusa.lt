@@ -8,13 +8,11 @@
   >
     <div class="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6 md:h-16 md:gap-3 lg:px-8">
       <Link
+        v-if="!focused"
         :href="route('dashboard')"
         prefetch
         :cache-for="SHELL_PREFETCH_CACHE_FOR"
-        :class="[
-          'mr-1 shrink-0 items-center gap-2 text-foreground transition-colors hover:text-foreground md:mr-3',
-          focused ? 'hidden lg:flex' : 'flex',
-        ]"
+        class="mr-1 flex shrink-0 items-center gap-2 text-foreground transition-colors hover:text-foreground md:mr-3"
       >
         <img :src="logoSrc" alt="VU SA" width="1200" height="428" class="h-10 w-auto dark:invert">
       </Link>
@@ -48,15 +46,15 @@
           <Plus class="size-4" />
           {{ $t('shell.chrome.create') }}
         </Button>
-      </template>
 
-      <!-- Phones get notifications from the bottom bar. -->
-      <div class="hidden md:block">
-        <NotificationsIndicator />
-      </div>
-      <div data-tour="account-menu" class="hidden md:block">
-        <ShellAccountMenu />
-      </div>
+        <!-- Phones get notifications from the bottom bar. -->
+        <div class="hidden md:block">
+          <NotificationsIndicator />
+        </div>
+        <div data-tour="account-menu" class="hidden md:block">
+          <ShellAccountMenu />
+        </div>
+      </template>
     </div>
   </header>
 </template>

@@ -1,7 +1,12 @@
 <template>
   <div v-if="props.urls.length" class="mt-1">
     <details class="group">
-      <summary class="u-touch inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand select-none">
+      <summary
+        :class="[
+          'u-touch inline-flex cursor-pointer items-center gap-1.5',
+          'text-xs font-bold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
+        ]"
+      >
         <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
         <span>{{ $t('Ankstesni vieši adresai') }} ({{ props.urls.length }})</span>
       </summary>

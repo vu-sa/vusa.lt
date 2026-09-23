@@ -1,8 +1,12 @@
 <template>
   <Combobox v-model="selectedItems" multiple :filter-function :open="isOpen" @update:open="isOpen = $event">
     <ComboboxAnchor
-      class="relative flex min-h-10 w-full flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-      :class="{ 'opacity-50 cursor-not-allowed': disabled }"
+      :class="cn(
+        'relative flex min-h-11 w-full flex-wrap items-center gap-1.5 rounded-none border border-border bg-secondary/50 px-3 py-2 text-sm transition-colors',
+        'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20 focus-within:outline-none',
+        disabled && 'cursor-not-allowed opacity-50',
+        props.class,
+      )"
     >
       <!-- Selected tags -->
       <Badge
@@ -99,7 +103,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends Record<string, any>">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { XIcon, ChevronDownIcon, CheckIcon } from 'lucide-vue-next';
 import { ComboboxInput, ComboboxVirtualizer } from 'reka-ui';
@@ -115,6 +119,7 @@ import {
   ComboboxEmpty,
 } from '@/Components/ui/combobox';
 import { Badge } from '@/Components/ui/badge';
+import { cn } from '@/Utils/Shadcn/utils';
 
 const props = withDefaults(defineProps<{
   /** The v-model value - array of selected items */
@@ -131,6 +136,7 @@ const props = withDefaults(defineProps<{
   emptyText?: string;
   /** Whether the component is disabled */
   disabled?: boolean;
+  class?: HTMLAttributes['class'];
   /** Threshold for enabling virtualization (default: 50) */
   virtualizationThreshold?: number;
   /** Estimated size of each item for virtualization (default: 40) */
@@ -141,6 +147,7 @@ const props = withDefaults(defineProps<{
   placeholder: 'Select items...',
   emptyText: 'No items found.',
   disabled: false,
+  class: undefined,
   virtualizationThreshold: 50,
   estimateSize: 40,
 });

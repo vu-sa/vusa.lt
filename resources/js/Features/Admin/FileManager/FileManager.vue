@@ -141,14 +141,13 @@
     </Dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <DeleteConfirmationDialog
-      :is-open="showDeleteModal"
+    <ConfirmDialog
+      v-model:open="showDeleteModal"
       :title="getDeleteTitle()"
-      :message="getDeleteMessage()"
-      :is-deleting="loading"
-      @update:open="showDeleteModal = $event"
+      :description="getDeleteMessage()"
+      :confirm-label="$t('Delete')"
+      destructive
       @confirm="deleteFileConfirmed"
-      @cancel="showDeleteModal = false"
     />
   </div>
 </template>
@@ -166,8 +165,8 @@ import FilePropertiesDrawer from './Components/FilePropertiesDrawer.vue';
 import FolderStrip from './Components/FolderStrip.vue';
 import type { DirectoryEntry, FileEntry } from './types';
 
-import DeleteConfirmationDialog from '@/Components/Dialogs/DeleteConfirmationDialog.vue';
 import FileUploadArea from '@/Components/FileUpload/FileUploadArea.vue';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import { Button } from '@/Components/ui/button';
 import {
   Dialog,

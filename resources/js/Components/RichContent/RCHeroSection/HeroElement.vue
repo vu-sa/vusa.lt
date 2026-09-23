@@ -148,7 +148,7 @@ import { withCompactPadding, type BandResolution } from '../bandLayout';
 import HeroButtons from './HeroButtons.vue';
 import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTitleClass } from './heroLayout';
 
-import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { Hero } from '@/Types/contentParts';
 import { hasHtmlText } from '@/Utils/String';

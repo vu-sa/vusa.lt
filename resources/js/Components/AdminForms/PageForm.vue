@@ -2,9 +2,6 @@
   <FormPage
     :title="isCreate ? $t('Naujas puslapis') : (form.title || $t('Puslapis'))"
     :head-title="isCreate ? $t('Naujas puslapis') : (form.title || $t('Puslapis'))"
-    :lead="isCreate
-      ? $t('Sukurk naują VU SA svetainės puslapį. Užpildyk turinį, susiek kalbas ir pasirink, kada jį paskelbti.')
-      : $t('Atnaujink turinį, struktūrą ir paskelbimo būseną.')"
     entity-type="page"
     :back-href="route('pages.index')"
     :back-label="$t('Puslapiai')"
@@ -14,6 +11,7 @@
     :field-ids
     :mode="isCreate ? 'create' : 'edit'"
     :available-locales="[]"
+    class="[&_[data-slot=form-field]_label]:text-foreground"
     @submit="emit('submit:form', form)"
   >
     <template #title-status>
@@ -34,7 +32,6 @@
       id="title"
       :label="$t('forms.fields.title')"
       required
-      :hint="$t('Pavadinimas bus rodomas naršyklės skirtuke ir paieškos rezultatuose')"
       :char-count="form.title?.length || 0"
       :max-length="60"
       :error="form.errors.title"
@@ -47,6 +44,7 @@
         v-model="form.title"
         type="text"
         :placeholder="$t('pvz. Socialinės stipendijos')"
+        class="h-11 border-border bg-secondary/50 transition-colors focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20"
         @change="form.validate('title')"
       />
     </FormFieldWrapper>
@@ -90,9 +88,15 @@
         v-model="form.meta_description"
         :placeholder="$t('Vienas ar du sakiniai apie puslapio turinį…')"
         rows="2"
+        class="border-border bg-secondary/50 transition-colors focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20"
       />
       <details class="group">
-        <summary class="u-touch inline-flex cursor-pointer items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand select-none">
+        <summary
+          :class="[
+            'u-touch inline-flex cursor-pointer items-center gap-1.5',
+            'text-xs font-bold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
+          ]"
+        >
           <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
           {{ $t('Kaip atrodys paieškoje') }}
         </summary>
@@ -148,9 +152,16 @@
     </FormFieldWrapper>
 
     <template #aside>
-      <FormPanel :title="$t('Paskelbimas')" :icon="Send">
+      <FormPanel :title="$t('Paskelbimas')" :icon="Send" title-class="text-foreground">
         <FormFieldWrapper id="is_active" :label="$t('Būsena')">
-          <div class="grid h-11 w-full grid-cols-2 border border-border bg-background p-0.5" role="group" :aria-label="$t('Būsena')">
+          <div
+            :class="[
+              'grid h-11 w-full grid-cols-2 border border-border bg-secondary/50 p-0.5 transition-colors',
+              'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
+            ]"
+            role="group"
+            :aria-label="$t('Būsena')"
+          >
             <button
               v-for="option in visibilityOptions"
               :key="String(option.value)"
@@ -192,7 +203,10 @@
           :invalid="form.invalid('tenant_id')"
         >
           <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
-            <SelectTrigger id="tenant" class="h-11 w-full">
+            <SelectTrigger
+              id="tenant"
+              class="h-11 w-full border-border bg-secondary/50 transition-colors focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20"
+            >
               <SelectValue :placeholder="$t('forms.placeholders.select_tenant')" />
             </SelectTrigger>
             <SelectContent>
@@ -212,7 +226,7 @@
         </div>
       </FormPanel>
 
-      <FormPanel :title="$t('Struktūra')" :icon="ListTree">
+      <FormPanel :title="$t('Struktūra')" :icon="ListTree" title-class="text-foreground">
         <FormFieldWrapper
           id="parent_page"
           :label="$t('Tėvinis puslapis')"
@@ -235,7 +249,16 @@
             @confirm="onParentConfirm"
           >
             <template #trigger>
-              <Button id="parent_page" type="button" variant="outline" voice="plain" class="w-full justify-between bg-background font-normal">
+              <Button
+                id="parent_page"
+                type="button"
+                variant="outline"
+                voice="plain"
+                :class="[
+                  'h-11 w-full justify-between border-border bg-secondary/50 font-normal transition-colors',
+                  'hover:bg-secondary/80 focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20',
+                ]"
+              >
                 <span class="truncate" :class="{ 'text-muted-foreground': !form.parent_id }">
                   {{ selectedParentLabel }}
                 </span>
@@ -248,7 +271,7 @@
         <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" :hint="$t('Temos, pagal kurias puslapį galima rasti.')" />
       </FormPanel>
 
-      <FormPanel :title="$t('Kalba')" :icon="Languages">
+      <FormPanel :title="$t('Kalba')" :icon="Languages" title-class="text-foreground">
         <FormFieldWrapper
           id="lang"
           :label="$t('Puslapio kalba')"
@@ -257,7 +280,14 @@
           :valid="form.valid('lang')"
           :invalid="form.invalid('lang')"
         >
-          <div class="grid h-11 w-full grid-cols-2 border border-border bg-background p-0.5" role="group" :aria-label="$t('Puslapio kalba')">
+          <div
+            :class="[
+              'grid h-11 w-full grid-cols-2 border border-border bg-secondary/50 p-0.5 transition-colors',
+              'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
+            ]"
+            role="group"
+            :aria-label="$t('Puslapio kalba')"
+          >
             <button
               v-for="option in langOptions"
               :key="option.value"
@@ -297,7 +327,16 @@
             @confirm="onOtherLangPageConfirm"
           >
             <template #trigger>
-              <Button id="other_lang" type="button" variant="outline" voice="plain" class="w-full justify-between bg-background font-normal">
+              <Button
+                id="other_lang"
+                type="button"
+                variant="outline"
+                voice="plain"
+                :class="[
+                  'h-11 w-full justify-between border-border bg-secondary/50 font-normal transition-colors',
+                  'hover:bg-secondary/80 focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20',
+                ]"
+              >
                 <span class="truncate" :class="{ 'text-muted-foreground': !form.other_lang_id }">
                   {{ selectedOtherLangPage.label }}
                 </span>
@@ -305,16 +344,16 @@
               </Button>
             </template>
           </CollectionSelectDialog>
-          <Button v-else id="other_lang" type="button" variant="outline" voice="plain" class="w-full justify-between font-normal" disabled>
+          <Button v-else id="other_lang" type="button" variant="outline" voice="plain" class="h-11 w-full justify-between font-normal border-border bg-secondary/30" disabled>
             <span class="text-muted-foreground">{{ $t('Pasirinkti kitos kalbos puslapį...') }}</span>
             <ChevronDown class="size-4 opacity-50" />
           </Button>
         </FormFieldWrapper>
       </FormPanel>
 
-      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" flush>
-        <div class="flex flex-col gap-2 border-b border-border p-4">
-          <Label class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">{{ $t('Išdėstymas') }}</Label>
+      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-foreground" flush>
+        <div class="flex flex-col gap-2 border-b border-border p-4" data-slot="form-field">
+          <Label class="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">{{ $t('Išdėstymas') }}</Label>
           <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="3" />
         </div>
 

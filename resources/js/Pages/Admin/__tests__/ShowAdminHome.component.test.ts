@@ -29,7 +29,6 @@ const stubs = {
   QuickAccess: true,
   UpcomingMeetingsList: true,
   InstitutionsNeedingAttention: true,
-  CoordinatorCard: true,
   RecentlyEditedList: true,
   SiteContentLists: true,
   FirstLoginChecklist: { name: 'FirstLoginChecklist', template: '<div data-stub="checklist" />' },
@@ -60,14 +59,22 @@ beforeEach(() => {
 });
 
 describe('ShowAdminHome', () => {
-  it('puts destinations right under the task preview, and create actions after them', () => {
-    const wrapper = mountPage();
+  it('keeps tasks and destinations beside quick actions, then puts the other content below', () => {
+    const wrapper = mountPage({
+      upcomingMeetings: [{ id: '1', title: 'Meeting' }],
+      coordinator: { name: 'Jonas', email: 'jonas@vusa.lt', profile_photo_path: null, duty: null },
+    });
     const tasks = wrapper.find('attention-queue-stub');
     const quickAccess = wrapper.find('quick-access-stub');
-    const shortcuts = wrapper.find('create-shortcuts-stub');
+    const primary = wrapper.find('[data-slot="home-primary-section"]');
+    const secondary = wrapper.find('[data-slot="home-secondary-section"]');
 
     expect(tasks.element.nextElementSibling).toBe(quickAccess.element);
-    expect(quickAccess.element.compareDocumentPosition(shortcuts.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(primary.find('aside').find('create-shortcuts-stub').exists()).toBe(true);
+    expect(primary.element.nextElementSibling).toBe(secondary.element);
+    expect(secondary.find('upcoming-meetings-list-stub').exists()).toBe(true);
+    expect(secondary.find('recently-edited-list-stub').exists()).toBe(true);
+    expect(wrapper.find('coordinator-card-stub').exists()).toBe(false);
   });
 
   it('shows the first three upcoming tasks and counts all remaining open tasks', () => {

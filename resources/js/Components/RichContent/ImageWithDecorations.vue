@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 
-import DecorativeElement from '@/Components/ui/DecorativeElement.vue';
+import DecorativeElement from '@/Components/RichContent/DecorativeElement.vue';
 
 interface DecorationConfig {
   type: 'circle' | 'line' | 'square';
