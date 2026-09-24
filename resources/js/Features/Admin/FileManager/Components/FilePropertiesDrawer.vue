@@ -1,274 +1,218 @@
 <template>
   <Sheet :open="isOpen" @update:open="handleClose">
-    <SheetContent side="bottom" class="max-h-[80vh] overflow-y-auto p-0">
-      <div class="p-4 pb-6">
-        <SheetHeader class="pb-4">
-          <SheetTitle class="text-base font-medium">
-            {{ fileName }}
-          </SheetTitle>
-          <SheetDescription class="text-sm text-muted-foreground">
-            {{ source === 'sharepoint' ? $t('files.ui.sharepoint_properties') : $t('files.ui.file_properties') }}
-          </SheetDescription>
-        </SheetHeader>
+    <SheetContent side="right" class="w-full sm:max-w-sm overflow-y-auto p-0 border-l border-border bg-background flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-border px-4 py-3 shrink-0">
+        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+          {{ source === 'sharepoint' ? $t('files.ui.sharepoint_properties') : $t('Failo informacija') }}
+        </p>
+      </div>
 
-        <div class="flex flex-col lg:flex-row gap-4">
-          <!-- File Icon -->
-          <div class="flex-shrink-0 flex justify-center lg:justify-start">
-            <div class="p-3 border border-border bg-muted/50 inline-flex">
-              <span class="text-brand">
-                <component :is="typeIcon" class="h-12 w-12" />
-              </span>
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <!-- Media Frame (4:3) -->
+        <div class="flex aspect-[4/3] w-full items-center justify-center overflow-hidden border border-border bg-secondary/40">
+          <img
+            v-if="isImage && !thumbnailFailed"
+            :src="thumbnailSrc"
+            :alt="fileName"
+            class="size-full object-cover"
+            @error="thumbnailFailed = true"
+          />
+          <component :is="typeIcon" v-else class="size-12 text-muted-foreground" aria-hidden="true" />
+        </div>
+
+        <!-- File Title & Path -->
+        <div>
+          <h3 class="break-words text-sm font-bold text-foreground leading-snug">
+            {{ fileName }}
+          </h3>
+          <p class="mt-1 break-words text-xs text-muted-foreground">
+            {{ relativePath }}
+          </p>
+        </div>
+
+        <!-- Metadata Definition List -->
+        <dl class="flex flex-col gap-2 text-xs border-y border-border/60 py-3">
+          <div class="flex items-center justify-between gap-2">
+            <dt class="text-muted-foreground">{{ $t('files.ui.type') }}</dt>
+            <dd class="text-right font-medium text-foreground">{{ fileExtension }}</dd>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <dt class="text-muted-foreground">{{ $t('files.ui.size') }}</dt>
+            <dd class="text-right font-medium text-foreground">{{ fileSize }}</dd>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <dt class="text-muted-foreground">{{ $t('files.ui.modified') }}</dt>
+            <dd class="text-right font-medium text-foreground">{{ fileDate }}</dd>
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <dt class="text-muted-foreground">{{ $t('files.ui.location') }}</dt>
+            <dd class="text-right font-medium text-foreground truncate max-w-[180px]">{{ relativePath }}</dd>
+          </div>
+        </dl>
+
+        <!-- Selection Mode Primary Action -->
+        <div v-if="selectionMode" class="pt-1">
+          <button
+            type="button"
+            class="inline-flex min-h-10 w-full items-center justify-center gap-2 bg-brand-fill px-4 text-xs font-bold uppercase tracking-wide text-brand-foreground transition-colors hover:bg-brand-fill/90"
+            @click="$emit('insert')"
+          >
+            <Link2 class="size-4" aria-hidden="true" />
+            <span>{{ $t('Įterpti į puslapį') }}</span>
+          </button>
+        </div>
+
+        <!-- Action Buttons Grid -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <!-- Preview (Local) -->
+          <button
+            v-if="source === 'local'"
+            type="button"
+            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            @click="$emit('preview')"
+          >
+            <Eye class="size-3.5 text-muted-foreground" aria-hidden="true" />
+            <span>{{ $t('Peržiūra') }}</span>
+          </button>
+
+          <!-- Download (Local) -->
+          <a
+            v-if="source === 'local' && selectedFile"
+            :href="`/uploads/${selectedFile.replace(/^public\//, '')}`"
+            target="_blank"
+            download
+            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+          >
+            <Download class="size-3.5 text-muted-foreground" aria-hidden="true" />
+            <span>{{ $t('Siųsti') }}</span>
+          </a>
+
+          <!-- Star / Favorite Toggle (Local) -->
+          <button
+            v-if="source === 'local'"
+            type="button"
+            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            @click="$emit('toggleStar')"
+          >
+            <Star class="size-3.5" :class="{ 'fill-status-attention text-status-attention': isStarred }" aria-hidden="true" />
+            <span>{{ isStarred ? $t('Nuimti') : $t('Žymėti') }}</span>
+          </button>
+
+          <!-- Copy URL (Local) -->
+          <button
+            v-if="source === 'local'"
+            type="button"
+            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            @click="copyUrl"
+          >
+            <Copy class="size-3.5 text-muted-foreground" aria-hidden="true" />
+            <span>{{ $t('Kopijuoti') }}</span>
+          </button>
+
+          <!-- Scan Usage (Local) -->
+          <button
+            v-if="source === 'local'"
+            type="button"
+            :disabled="scanningUsage"
+            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
+            @click="scanFileUsage"
+          >
+            <Spinner v-if="scanningUsage" class="size-3.5" />
+            <Search v-else class="size-3.5 text-muted-foreground" aria-hidden="true" />
+            <span>{{ scanningUsage ? $t('files.ui.searching') : $t('Tikrinti') }}</span>
+          </button>
+
+          <!-- Optimize (Local, large images) -->
+          <button
+            v-if="source === 'local' && showCompress"
+            type="button"
+            :disabled="compressing"
+            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
+            :title="compressTitle"
+            @click="confirmAndCompress"
+          >
+            <Spinner v-if="compressing" class="size-3.5" />
+            <Image v-else class="size-3.5 text-muted-foreground" aria-hidden="true" />
+            <span>{{ compressing ? '...' : $t('Optimizuoti') }}</span>
+          </button>
+
+          <!-- SharePoint: Open / Copy / Create public permission -->
+          <template v-if="source === 'sharepoint'">
+            <a
+              v-if="publicWebUrl"
+              :href="publicWebUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              <ExternalLink class="size-3.5 text-muted-foreground" aria-hidden="true" />
+              <span>{{ $t('Atidaryti') }}</span>
+            </a>
+            <button
+              v-if="publicWebUrl"
+              type="button"
+              class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+              @click="copySharePointUrl"
+            >
+              <Copy class="size-3.5 text-muted-foreground" aria-hidden="true" />
+              <span>{{ $t('Kopijuoti') }}</span>
+            </button>
+            <button
+              v-else-if="!loadingPublicPermission"
+              type="button"
+              class="col-span-2 inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+              @click="createPublicPermission"
+            >
+              <Link2 class="size-3.5 text-muted-foreground" aria-hidden="true" />
+              <span>{{ $t('Sukurti viešą nuorodą') }}</span>
+            </button>
+            <div v-if="loadingPublicPermission" class="col-span-2 flex justify-center py-2">
+              <Spinner class="size-4" />
             </div>
+          </template>
+
+          <!-- Delete Action -->
+          <button
+            type="button"
+            :class="[
+              'col-span-2 inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-background px-2.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10',
+            ]"
+            @click="handleDelete"
+          >
+            <Trash2 class="size-3.5" aria-hidden="true" />
+            <span>{{ $t('files.ui.delete') }}</span>
+          </button>
+        </div>
+
+        <!-- Usage Results Card (Local) -->
+        <div v-if="usageData" class="border border-border p-3 text-xs space-y-2 bg-muted/20">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-foreground">{{ $t('Naudojimo patikra') }}</span>
+            <span
+              :class="[
+                'px-1.5 py-0.5 text-[10px] font-bold uppercase',
+                usageData.is_safe_to_delete
+                  ? 'bg-emerald-500/10 text-emerald-600'
+                  : 'bg-rose-500/10 text-rose-600',
+              ]"
+            >
+              {{ usageData.is_safe_to_delete ? $t('Saugu trinti') : $t('Naudojamas') }}
+            </span>
           </div>
 
-          <div class="flex-1 min-w-0">
-            <!-- File info grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div class="flex items-center gap-3 p-3 border border-border bg-muted/30">
-                <FileText class="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div class="min-w-0">
-                  <p class="text-xs text-muted-foreground mb-1">
-                    {{ $t('files.ui.type') }}
-                  </p>
-                  <p class="text-sm font-medium truncate">
-                    {{ fileExtension }}
-                  </p>
-                </div>
-              </div>
+          <p class="text-muted-foreground text-[11px]">
+            {{ usageData.is_safe_to_delete ? $t('files.messages.usage_safe', { count: usageData.total_usages }) : $t('files.messages.usage_found', { count: usageData.total_usages }) }}
+          </p>
 
-              <div class="flex items-center gap-3 p-3 border border-border bg-muted/30">
-                <HardDrive class="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div class="min-w-0">
-                  <p class="text-xs text-muted-foreground mb-1">
-                    {{ $t('files.ui.size') }}
-                  </p>
-                  <p class="text-sm font-medium">
-                    {{ fileSize }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-3 p-3 border border-border bg-muted/30">
-                <Calendar class="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div class="min-w-0">
-                  <p class="text-xs text-muted-foreground mb-1">
-                    Modified
-                  </p>
-                  <p class="text-sm font-medium">
-                    {{ fileDate }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex items-center gap-3 p-3 border border-border bg-muted/30">
-                <Folder class="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                <div class="min-w-0">
-                  <p class="text-xs text-muted-foreground mb-1">
-                    Location
-                  </p>
-                  <p class="text-sm font-medium truncate">
-                    {{ relativePath }}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action buttons -->
-            <div class="flex flex-wrap gap-2 mb-6">
-              <!-- SharePoint: Public link section -->
-              <template v-if="source === 'sharepoint'">
-                <div v-if="publicWebUrl" class="flex gap-2">
-                  <Button size="sm" as="a" target="_blank" rel="noopener noreferrer" :href="publicWebUrl">
-                    <ExternalLink class="h-4 w-4 mr-2" />
-                    Atidaryti
-                  </Button>
-                  <CopyToClipboardButton show-icon :text-to-copy="publicWebUrl">
-                    Kopijuoti
-                  </CopyToClipboardButton>
-                </div>
-                <Button v-else-if="!loadingPublicPermission" size="sm" variant="outline" :disabled="loadingPublicPermission" @click="createPublicPermission">
-                  <Link2 class="h-4 w-4 mr-2" />
-                  Sukurti viešą nuorodą
-                </Button>
-                <Spinner v-if="loadingPublicPermission" size="sm" />
-              </template>
-
-              <!-- Local: Preview -->
-              <Button v-if="source === 'local'" size="sm" class="flex-1 sm:flex-none" @click="$emit('preview')">
-                <ExternalLink class="h-4 w-4 mr-2" />
-                Preview
-              </Button>
-
-              <!-- Local: Scan Usage -->
-              <Button v-if="source === 'local'" :loading="scanningUsage" size="sm" class="flex-1 sm:flex-none" variant="outline"
-                @click="scanFileUsage">
-                <Search class="h-4 w-4 mr-2" />
-                {{ scanningUsage ? 'Scanning...' : 'Scan Usage' }}
-              </Button>
-
-              <!-- Local: Optimize (large images) -->
-              <Button v-if="source === 'local' && showCompress" :loading="compressing" size="sm" variant="secondary"
-                class="flex-1 sm:flex-none" :title="compressTitle" @click="confirmAndCompress">
-                <Image class="h-4 w-4 mr-2" />
-                {{ compressing ? 'Optimizing...' : 'Optimize' }}
-              </Button>
-
-              <!-- Delete button (both sources) -->
-              <Button
-                v-if="source === 'sharepoint'"
-                :loading="loadingDelete"
-                variant="destructive"
-                size="sm"
-                class="flex-1 sm:flex-none"
-                @click="handleDelete"
-              >
-                <Trash2 class="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-              <Button
-                v-else
-                :disabled="!usageData || (!usageData.is_safe_to_delete)"
-                variant="destructive"
-                size="sm"
-                class="flex-1 sm:flex-none"
-                :title="!usageData
-                  ? 'Scan usage first before deleting'
-                  : (!usageData.is_safe_to_delete
-                    ? 'File in use – cannot delete'
-                    : 'Delete file')"
-                @click="handleDelete"
-              >
-                <Trash2 class="h-4 w-4 mr-2" />
-                {{ !usageData ? 'Delete (Scan First)' : 'Delete' }}
-              </Button>
-            </div>
-            <div v-if="source === 'local' && showCompress"
-              class="mb-6 text-xs bg-status-warning-surface border border-status-warning-border p-3 text-status-warning flex items-start gap-2">
-              <Info class="h-4 w-4 mt-0.5 shrink-0" />
-              <p>
-                This image is large ({{ fileSize }}). You can optimize it to reduce size. The file will be
-                <strong>overwritten</strong>.
-              </p>
-            </div>
-
-            <!-- SharePoint Metadata -->
-            <div v-if="source === 'sharepoint' && sharepointFile?.listItem?.fields" class="border border-border p-4 bg-muted/20 mb-6">
-              <h4 class="text-sm font-medium mb-3">
-                Dokumento informacija
-              </h4>
-              <div class="space-y-2 text-sm">
-                <div v-if="sharepointFile.listItem.fields.Date" class="flex gap-2">
-                  <span class="text-muted-foreground shrink-0">Failo data:</span>
-                  <span class="font-medium">{{ formatStaticTime(sharepointFile.listItem.fields.Date) }}</span>
-                </div>
-                <div v-if="sharepointFile.listItem.fields.Type" class="flex gap-2">
-                  <span class="text-muted-foreground shrink-0">Tipas:</span>
-                  <Badge variant="secondary" class="text-xs">
-                    {{ sharepointFile.listItem.fields.Type }}
-                  </Badge>
-                </div>
-                <div v-if="sharepointFile.listItem.fields.Description0" class="flex gap-2">
-                  <span class="text-muted-foreground shrink-0">Aprašymas:</span>
-                  <span>{{ sharepointFile.listItem.fields.Description0 }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Usage scan results (local only) -->
-            <div v-if="source === 'local' && usageData" class="border border-border p-4 bg-muted/20">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="flex items-center gap-2">
-                  <component
-                    :is="usageData.is_safe_to_delete ? ShieldCheck : ShieldAlert"
-                    class="h-5 w-5"
-                    :class="usageData.is_safe_to_delete ? 'text-status-success' : 'text-status-warning'"
-                  />
-                  <h3 class="font-medium text-sm">
-                    Usage Analysis
-                  </h3>
-                </div>
-                <Badge :variant="usageData.is_safe_to_delete ? 'secondary' : 'destructive'">
-                  {{ usageData.is_safe_to_delete ? 'Safe to Delete' : 'In Use' }}
-                </Badge>
-              </div>
-
-              <div class="space-y-3">
-                <div class="flex items-center text-sm gap-2">
-                  <span class="text-muted-foreground shrink-0">Total usages found:</span>
-                  <span class="font-medium break-all">{{ usageData.total_usages }}</span>
-                </div>
-
-                <div class="flex items-center text-sm gap-2">
-                  <span class="text-muted-foreground shrink-0">Last scanned:</span>
-                  <span class="font-medium break-all">{{ formatScanTime(usageData.scanned_at) }}</span>
-                </div>
-
-                <!-- Usage details -->
-                <div v-if="usageData.usage_details.length > 0" class="mt-4">
-                  <h4 class="text-sm font-medium mb-2">
-                    Found in:
-                  </h4>
-                  <div class="space-y-2 max-h-40 overflow-y-auto">
-                    <div v-for="usage in usageData.usage_details" :key="`${usage.model_type}-${usage.id}`"
-                      class="group flex items-center justify-between p-2 border border-border bg-muted/50 text-xs transition hover:bg-muted cursor-pointer">
-                      <div class="flex-1 min-w-0">
-                        <component :is="usage.edit_url ? 'a' : 'div'" :href="usage.edit_url || undefined"
-                          target="_blank" rel="noopener noreferrer" class="block">
-                          <p class="font-medium truncate group-hover:underline">
-                            {{ usage.title }}
-                          </p>
-                        </component>
-                        <p class="text-muted-foreground">
-                          {{ getModelDisplayName(usage.model_type) }}
-                        </p>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <a
-                          :href="usage.edit_url || undefined"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label="Edit item"
-                        >
-                          <Button v-if="usage.edit_url" size="sm" variant="ghost" as-child class="h-6 w-6 p-0"
-                            :title="'Edit ' + usage.title">
-                            <Edit class="h-3 w-3" />
-                          </Button>
-                        </a>
-                        <Button v-if="usage.url && !usage.edit_url" size="sm" variant="ghost" as-child
-                          class="h-6 w-6 p-0" :title="'View ' + usage.title">
-                          <a :href="usage.url" target="_blank" rel="noopener noreferrer" aria-label="Open item">
-                            <ExternalLink class="h-3 w-3" />
-                          </a>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Warning message for files in use -->
-                <div v-if="!usageData.is_safe_to_delete"
-                  class="mt-4 p-3 bg-status-warning-surface border border-status-warning-border text-xs text-status-warning">
-                  <p class="font-medium">
-                    ⚠️ Warning
-                  </p>
-                  <p class="mt-1">
-                    This file is currently in use. Deleting it may break content in the listed locations above.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Usage scan error (local only) -->
-            <div v-if="source === 'local' && usageError" class="border border-status-danger-border p-4 bg-status-danger-surface text-status-danger">
-              <div class="flex items-center gap-2 mb-2">
-                <AlertCircle class="h-5 w-5 text-status-danger" />
-                <h3 class="font-medium text-sm text-status-danger">
-                  Scan Error
-                </h3>
-              </div>
-              <p class="text-xs text-status-danger">
-                {{ usageError }}
-              </p>
+          <div v-if="usageData.usages && usageData.usages.length > 0" class="space-y-1.5 max-h-40 overflow-y-auto pt-1">
+            <div
+              v-for="(usage, index) in usageData.usages"
+              :key="index"
+              class="p-1.5 bg-background border border-border/60 text-[11px]"
+            >
+              <p class="font-medium text-foreground truncate">{{ usage.title }}</p>
+              <p class="text-muted-foreground text-[10px]">{{ getModelDisplayName(usage.model_type) }}</p>
             </div>
           </div>
         </div>
@@ -280,81 +224,87 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
 import { useFetch } from '@vueuse/core';
-import { toast } from 'vue-sonner';
+import { trans as $t } from 'laravel-vue-i18n';
 import {
-  AlertCircle,
-  Calendar,
-  Edit,
+  Copy,
+  Download,
   ExternalLink,
-  FileText,
-  Folder,
-  HardDrive,
+  Eye,
   Image,
-  Info,
   Link2,
   Search,
-  ShieldAlert,
-  ShieldCheck,
+  Star,
   Trash2,
 } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
-import { formatStaticTime } from '@/Utils/IntlTime';
-import CopyToClipboardButton from '@/Components/Buttons/CopyToClipboardButton.vue';
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
+import type { FileEntry } from '../types';
+import { formatBytes } from '../utils';
+
+import { Sheet, SheetContent } from '@/Components/ui/sheet';
 import { Spinner } from '@/Components/ui/spinner';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/Components/ui/sheet';
 import { useToasts } from '@/Composables/useToasts';
 import { getFileIcon } from '@/Utils/fileIcons';
 
-type FileSource = 'local' | 'sharepoint';
-
-interface FileEntry { path: string; size?: number; modified?: number }
-interface UsageDetail {
-  id: number | string;
-  model_type: string;
-  title: string;
-  edit_url?: string;
-  url?: string;
+interface SharePointFileEntry {
+  id?: string;
+  name?: string;
+  size?: number;
+  folder?: unknown;
+  lastModifiedDateTime?: string;
+  parentReference?: { path?: string };
+  [key: string]: unknown;
 }
-interface UsageData {
+
+interface FileUsageItem {
+  title?: string;
+  model_type: string;
+  [key: string]: unknown;
+}
+
+interface FileUsageResult {
   is_safe_to_delete: boolean;
   total_usages: number;
-  usage_details: UsageDetail[];
-  scanned_at: string;
+  usages?: FileUsageItem[];
+  [key: string]: unknown;
 }
 
-const props = withDefaults(defineProps<{
-  // Source discriminator
-  source?: FileSource;
-  // Local file props
-  selectedFile?: string | null;
-  files?: FileEntry[];
-  // SharePoint file props
-  sharepointFile?: MyDriveItem | null;
-}>(), {
-  source: 'local',
-  selectedFile: null,
-  files: () => [],
-  sharepointFile: null,
-});
+const props = withDefaults(
+  defineProps<{
+    selectedFile: string | null;
+    files: Array<FileEntry | Record<string, unknown>>;
+    source?: 'local' | 'sharepoint';
+    sharepointFile?: SharePointFileEntry | null;
+    selectionMode?: boolean;
+    isStarred?: boolean;
+  }>(),
+  {
+    source: 'local',
+    sharepointFile: null,
+    selectionMode: false,
+    isStarred: false,
+  },
+);
 
 const emit = defineEmits<{
-  preview: [];
-  delete: [];
-  close: [];
+  (e: 'close'): void;
+  (e: 'delete'): void;
+  (e: 'preview'): void;
+  (e: 'toggleStar'): void;
+  (e: 'insert'): void;
 }>();
 
-// Unified open state
+const toasts = useToasts();
+
+const scanningUsage = ref(false);
+const usageData = ref<FileUsageResult | null>(null);
+const usageError = ref<string | null>(null);
+const compressing = ref(false);
+
+const loadingPublicPermission = ref(false);
+const publicWebUrl = ref<string | null>(null);
+
 const isOpen = computed(() => {
   if (props.source === 'sharepoint') {
     return !!props.sharepointFile;
@@ -362,19 +312,6 @@ const isOpen = computed(() => {
   return !!props.selectedFile;
 });
 
-// File usage scanning state (local only)
-const scanningUsage = ref(false);
-const usageData = ref<UsageData | null>(null);
-const usageError = ref<string | null>(null);
-const toasts = useToasts();
-const compressing = ref(false);
-
-// SharePoint-specific state
-const loadingPublicPermission = ref(false);
-const publicWebUrl = ref<string | null>(null);
-const loadingDelete = ref(false);
-
-// Unified computed: file name
 const fileName = computed(() => {
   if (props.source === 'sharepoint') {
     return props.sharepointFile?.name ?? 'Unknown file';
@@ -385,7 +322,17 @@ const fileName = computed(() => {
 
 const typeIcon = computed(() => getFileIcon(fileName.value));
 
-// Unified computed: file extension
+const isImage = computed(() => /\.(jpg|jpeg|png|webp|gif|svg|avif)$/i.test(fileName.value));
+
+const thumbnailFailed = ref(false);
+
+const thumbnailSrc = computed(() => {
+  if (thumbnailFailed.value) {
+    return `/uploads/${props.selectedFile?.replace(/^public\//, '') || ''}`;
+  }
+  return route('api.v1.admin.files.thumbnail', { path: props.selectedFile, w: 640 });
+});
+
 const fileExtension = computed(() => {
   const name = props.source === 'sharepoint'
     ? props.sharepointFile?.name
@@ -396,82 +343,65 @@ const fileExtension = computed(() => {
   return extension ? extension.toUpperCase() : 'File';
 });
 
-// Unified computed: file size
 const fileSize = computed(() => {
   if (props.source === 'sharepoint') {
     const size = props.sharepointFile?.size;
-    if (!size) return 'Unknown';
+    if (!size) return '—';
     return formatBytes(size);
   }
 
-  if (!props.selectedFile) return 'Unknown';
+  if (!props.selectedFile) return '—';
   const fileInfo = props.files?.find(file => file.path === props.selectedFile);
-  if (fileInfo?.size) {
-    return formatBytes(fileInfo.size);
-  }
-  return 'Unknown';
+  return formatBytes(fileInfo?.size);
 });
 
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes: string[] = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-}
-
-// Unified computed: file date
 const fileDate = computed(() => {
   if (props.source === 'sharepoint') {
     const dateStr = props.sharepointFile?.lastModifiedDateTime;
-    if (!dateStr) return 'Unknown';
+    if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('lt-LT');
   }
 
-  if (!props.selectedFile) return 'Unknown';
+  if (!props.selectedFile) return '—';
   const fileInfo = props.files?.find((file: FileEntry) => file.path === props.selectedFile);
   if (fileInfo?.modified) {
-    return new Date(fileInfo.modified * 1000).toLocaleDateString('lt-LT');
+    const ts = fileInfo.modified < 10000000000 ? fileInfo.modified * 1000 : fileInfo.modified;
+    return new Date(ts).toLocaleDateString('lt-LT');
   }
-  return 'Unknown';
+  return '—';
 });
 
-// Unified computed: relative path / location
 const relativePath = computed(() => {
   if (props.source === 'sharepoint') {
     const parentPath = props.sharepointFile?.parentReference?.path;
     if (!parentPath) return '/';
-    // Extract folder name from path like "root:/Sites/..."
     const parts = parentPath.split('/');
     return parts[parts.length - 1] || '/';
   }
 
   if (!props.selectedFile) return '/';
-  const pathWithoutPublicFiles = props.selectedFile.replace('public/files/', '');
+  const pathWithoutPublicFiles = props.selectedFile.replace(/^public\/files\/?/, '');
   const directory = pathWithoutPublicFiles.substring(0, pathWithoutPublicFiles.lastIndexOf('/'));
   return directory || '/';
 });
 
-// Handle close with proper emit
 function handleClose(open: boolean) {
   if (!open) {
     emit('close');
   }
 }
 
-// Clear usage data when file changes
 watch([() => props.selectedFile, () => props.sharepointFile], () => {
   usageData.value = null;
   usageError.value = null;
   publicWebUrl.value = null;
+  thumbnailFailed.value = false;
 
-  // Fetch public link for SharePoint files
   if (props.source === 'sharepoint' && props.sharepointFile?.id && !props.sharepointFile?.folder) {
     fetchPublicLink();
   }
 });
 
-// SharePoint: Fetch existing public link
 async function fetchPublicLink() {
   if (!props.sharepointFile?.id) return;
 
@@ -493,7 +423,6 @@ async function fetchPublicLink() {
   }
 }
 
-// SharePoint: Create public permission
 async function createPublicPermission() {
   if (!props.sharepointFile?.id) {
     toast.error('No file selected');
@@ -501,7 +430,7 @@ async function createPublicPermission() {
   }
 
   if (props.sharepointFile?.folder) {
-    toast.error('Cannot create public link for folders. Please select a file.');
+    toast.error('Cannot create public link for folders.');
     return;
   }
 
@@ -511,7 +440,7 @@ async function createPublicPermission() {
     route('sharepoint.createPublicPermission', props.sharepointFile.id),
     {
       headers: {
-        'X-CSRF-TOKEN': usePage().props.csrf_token,
+        'X-CSRF-TOKEN': usePage().props.csrf_token as string,
         'Content-Type': 'application/json',
       },
     },
@@ -528,20 +457,23 @@ async function createPublicPermission() {
   toast.success('Public link created successfully');
 }
 
-// Handle delete - unified, emits for parent to handle
-function handleDelete() {
-  if (props.source === 'sharepoint') {
-    if (!props.sharepointFile) return;
-    emit('delete');
-  }
-  else {
-    if (!props.selectedFile) return;
-    emit('delete');
-  }
-  emit('close');
+function copyUrl() {
+  if (!props.selectedFile) return;
+  const url = `${window.location.origin}/uploads/${props.selectedFile.replace(/^public\//, '')}`;
+  navigator.clipboard.writeText(url);
+  toast.success($t('Nuoroda nukopijuota į iškarpinę'));
 }
 
-// File usage scanning (local only)
+function copySharePointUrl() {
+  if (!publicWebUrl.value) return;
+  navigator.clipboard.writeText(publicWebUrl.value);
+  toast.success($t('Nuoroda nukopijuota į iškarpinę'));
+}
+
+function handleDelete() {
+  emit('delete');
+}
+
 function scanFileUsage() {
   if (props.source !== 'local') return;
   if (!props.selectedFile || scanningUsage.value) return;
@@ -555,29 +487,20 @@ function scanFileUsage() {
     preserveState: true,
     preserveScroll: true,
     onSuccess: (page) => {
-      // Check if usage data was returned in flash.data
       if (page.props.flash?.data) {
         usageData.value = page.props.flash.data;
       }
-
-      // Handle flash messages
       if (page.props.flash?.success) {
-        toasts.success('Scan completed', {
-          description: page.props.flash.success,
-        });
+        toasts.success('Scan completed', { description: page.props.flash.success });
       }
       else if (page.props.flash?.info) {
-        toasts.info('Scan completed', {
-          description: page.props.flash.info,
-        });
+        toasts.info('Scan completed', { description: page.props.flash.info });
       }
     },
     onError: (errors) => {
       console.error('File usage scan failed:', errors);
-      usageError.value = errors.error || 'Unknown error occurred';
-      toasts.error('Failed to scan file usage', {
-        description: errors.error || 'An unknown error occurred',
-      });
+      usageError.value = (errors.error as string) || 'Unknown error occurred';
+      toasts.error('Failed to scan file usage');
     },
     onFinish: () => {
       scanningUsage.value = false;
@@ -585,7 +508,6 @@ function scanFileUsage() {
   });
 }
 
-// Image compression state (local only)
 const eligibleExtensions = ['JPG', 'JPEG', 'PNG'];
 
 const showCompress = computed(() => {
@@ -613,13 +535,12 @@ function compressImage() {
   router.post(route('files.compress'), { path: props.selectedFile }, {
     preserveScroll: true,
     preserveState: true,
-    onSuccess: (page) => {
+    onSuccess: () => {
       toasts.success('Image optimized');
-      // Ask parent to refresh listing (parent likely triggers getFiles), otherwise simple location reload
       router.reload({ only: ['files'] });
     },
     onError: (errors) => {
-      toasts.error('Failed to optimize image', { description: errors.error || 'Unknown error' });
+      toasts.error('Failed to optimize image', { description: (errors.error as string) || 'Unknown error' });
     },
     onFinish: () => {
       compressing.value = false;
@@ -627,23 +548,6 @@ function compressImage() {
   });
 }
 
-// Format scan timestamp
-function formatScanTime(timestamp: string): string {
-  try {
-    return new Date(timestamp).toLocaleString('lt-LT', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-  catch {
-    return 'Unknown';
-  }
-}
-
-// Get display name for model types
 function getModelDisplayName(modelType: string): string {
   const modelNames: Record<string, string> = {
     calendar: 'Calendar Events',
@@ -657,7 +561,6 @@ function getModelDisplayName(modelType: string): string {
     page: 'Pages',
     tenant: 'Tenants',
   };
-
   return modelNames[modelType] || modelType;
 }
 </script>

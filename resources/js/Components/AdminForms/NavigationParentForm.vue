@@ -1,56 +1,56 @@
 <template>
   <FormPage
     :title="isCreate ? $t('navigation.builder.add_root') : (form.name || $t('navigation.title'))"
-    :head-title="isCreate ? $t('navigation.builder.add_root') : (form.name || $t('navigation.title'))"
+    :bar-title
+    entity-type="navigation"
     :back-href="route('navigation.index')"
     :back-label="$t('navigation.title')"
     :processing="form.processing"
     :dirty="form.isDirty"
     :errors="form.errors"
+    :field-ids="['name']"
     :mode="isCreate ? 'create' : 'edit'"
-    max-width="4xl"
-    @submit="$emit('submit:form', form)"
+    :activity-subject="navigation?.id ? { type: 'navigation', id: navigation.id } : undefined"
+    :created-at="isCreate ? undefined : (navigation?.created_at as string | undefined)"
+    :updated-at="isCreate ? undefined : (navigation?.updated_at as string | undefined)"
+    @submit="emit('submit:form', form)"
   >
     <template v-if="!isCreate" #header-actions>
       <slot name="aside-header" />
     </template>
 
-    <FormSection
-      :title="$t('forms.context.main_info')"
-      :description="$t('forms.helpers.navigation_parent_info')"
-    >
-      <div class="grid gap-3 lg:grid-cols-2">
-        <FormFieldWrapper id="name" :label="$t('forms.fields.name')" required :error="form.errors.name">
-          <Input id="name" v-model="form.name" type="text" :placeholder="$t('forms.placeholders.enter_title')" />
-        </FormFieldWrapper>
-      </div>
-    </FormSection>
+    <div class="space-y-6">
+      <FormFieldWrapper id="name" :label="$t('forms.fields.name')" required :error="form.errors.name">
+        <Input
+          id="name"
+          v-model="form.name"
+          type="text"
+          :placeholder="$t('forms.placeholders.enter_title')"
+          :class="['h-11', fieldSurfaceClass]"
+        />
+      </FormFieldWrapper>
+    </div>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <div class="flex items-center justify-between border border-destructive/20 bg-destructive/5 p-4">
-        <div>
-          <h3 class="text-sm font-semibold text-destructive">
-            {{ $t('navigation.form.delete_link') }}
-          </h3>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('navigation.form.delete_link_desc') }}
-          </p>
-        </div>
-        <Button variant="destructive" size="sm" type="button" @click="isDeleteDialogOpen = true">
-          {{ $t('Ištrinti') }}
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+        @click="isDeleteDialogOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('navigation.form.delete_link') }}
+      </Button>
     </template>
   </FormPage>
 
   <ConfirmDialog
-    :open="isDeleteDialogOpen"
+    v-model:open="isDeleteDialogOpen"
     :title="$t('Ištrinti navigacijos elementą?')"
     :description="$t('Ar tikrai norite perkelti šį elementą į šiukšliadėžę?')"
     :confirm-label="$t('Ištrinti')"
     destructive
-    @update:open="isDeleteDialogOpen = $event"
-    @confirm="$emit('delete')"
+    @confirm="emit('delete')"
   />
 </template>
 
@@ -58,12 +58,13 @@
 import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Trash2 } from 'lucide-vue-next';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
-import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Button } from '@/Components/ui/button';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 
 const props = withDefaults(defineProps<{
@@ -74,7 +75,7 @@ const props = withDefaults(defineProps<{
   rememberKey: undefined,
 });
 
-defineEmits<{
+const emit = defineEmits<{
   (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
@@ -87,4 +88,12 @@ if (!form.extra_attributes) {
 
 const isCreate = computed(() => !form.id);
 const isDeleteDialogOpen = ref(false);
+
+const barTitle = computed(() =>
+  form.name?.trim() || (isCreate.value ? $t('navigation.builder.add_root') : $t('navigation.title')),
+);
+
+defineExpose({
+  form,
+});
 </script>

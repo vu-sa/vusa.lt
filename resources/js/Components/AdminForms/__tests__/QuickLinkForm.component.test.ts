@@ -1,13 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
+import type * as Inertia from '@inertiajs/vue3';
 
 import QuickLinkForm from '@/Components/AdminForms/QuickLinkForm.vue';
 
 // Real useForm (reactive) — the global inertia mock's useForm returns a plain object,
 // which would silently break `form.link` reactivity in the template.
 vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual<typeof import('@inertiajs/vue3')>('@inertiajs/vue3');
+  const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
   return {
     ...actual,
     usePage: () => ({ props: { app: { locale: 'lt', url: 'https://vusa.test' } } }),
@@ -27,19 +28,33 @@ vi.mock('@/Composables/useApi', () => ({
 }));
 
 const formStubs = {
-  FormPage: { props: ['title'], template: '<div data-testid="form-page"><form @submit.prevent><slot /></form></div>' },
-  FormSection: { template: '<section><slot /></section>' },
+  FormPage: {
+    props: ['title', 'barTitle', 'entityType', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode'],
+    template: '<div data-testid="form-page"><form @submit.prevent><slot /><slot name="aside" /><slot name="danger-zone" /></form></div>',
+  },
+  FormPanel: { template: '<div data-testid="form-panel"><slot /></div>' },
+  FormToggleRow: {
+    props: ['modelValue', 'label', 'hint'],
+    template: '<button type="button" data-testid="toggle-important" @click="$emit(\'update:modelValue\', !modelValue)">{{ label }}</button>',
+  },
+  FormSegmentedControl: {
+    props: ['modelValue', 'options'],
+    template: '<div data-testid="segmented-control"><button v-for="opt in options" :key="opt.value" :data-testid="\'lang-\' + opt.value" @click="$emit(\'update:modelValue\', opt.value)">{{ opt.label }}</button></div>',
+  },
   FormFieldWrapper: {
-    props: ['id', 'label', 'required', 'error', 'helperText'],
+    props: ['id', 'label', 'required', 'error', 'hint'],
     template: '<div><slot /><span v-if="error" class="field-error">{{ error }}</span></div>',
   },
   Input: { props: ['modelValue'], template: '<input :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)">' },
-  Switch: { props: ['modelValue'], template: '<button role="switch" @click="$emit(\'update:modelValue\', !modelValue)" />' },
   SingleSelect: { template: '<div />' },
   Suspense: { template: '<div><slot /></div>' },
   FluentIconSelect: { template: '<div />' },
-  ToggleGroup: { template: '<div><slot /></div>' },
-  ToggleGroupItem: { template: '<button type="button"><slot /></button>' },
+  LocaleFlag: { template: '<span />' },
+  StatusBadge: { template: '<span />' },
+  ConfirmDialog: {
+    props: ['open'],
+    template: '<div v-if="open"><button data-testid="confirm-delete" @click="$emit(\'confirm\')">Confirm</button></div>',
+  },
   Select: {
     props: ['modelValue'],
     emits: ['update:modelValue'],
@@ -115,5 +130,34 @@ describe('QuickLinkForm.vue', () => {
     expect(executeResolveUrl).toHaveBeenCalled();
     const linkInput = wrapper.find('#link');
     expect((linkInput.element as HTMLInputElement).value).toBe('/lt/tema/parama');
+  });
+
+  it('updates lang and toggle important in aside', async () => {
+    wrapper = createWrapper();
+    const vm = wrapper.vm as unknown as { form: { lang: string; is_important: boolean } };
+
+    expect(vm.form.lang).toBe('lt');
+    await wrapper.find('[data-testid="lang-en"]').trigger('click');
+    expect(vm.form.lang).toBe('en');
+
+    expect(vm.form.is_important).toBe(false);
+    await wrapper.find('[data-testid="toggle-important"]').trigger('click');
+    expect(vm.form.is_important).toBe(true);
+  });
+
+  it('emits delete when confirm delete is clicked', async () => {
+    wrapper = createWrapper({ enableDelete: true, quickLink: { id: 5, text: 'Nuoroda', link: 'https://vu.lt' } });
+
+    // Click delete button to open confirm dialog
+    const deleteBtn = wrapper.find('button.border-destructive\\/40');
+    expect(deleteBtn.exists()).toBe(true);
+    await deleteBtn.trigger('click');
+
+    // Click confirm in dialog
+    const confirmBtn = wrapper.find('[data-testid="confirm-delete"]');
+    expect(confirmBtn.exists()).toBe(true);
+    await confirmBtn.trigger('click');
+
+    expect(wrapper.emitted('delete')).toBeTruthy();
   });
 });

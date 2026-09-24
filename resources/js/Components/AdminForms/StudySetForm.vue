@@ -1,6 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Naujas individualių studijų komplektas') : (getTranslatedValue(form.name) || $t('Komplektas'))"
+    :bar-title="isCreate ? $t('Naujas individualių studijų komplektas') : (getTranslatedValue(form.name) || undefined)"
     :entity-type="ModelEnum.STUDY_SET"
     :back-href="route('studySets.index')"
     :back-label="$t('Individualių studijų komplektai')"
@@ -11,6 +12,8 @@
     :locale="activeLocale"
     :available-locales="['lt', 'en']"
     :missing-locale-counts
+    :timestamps="!isCreate && studySetTimestamps ? studySetTimestamps : undefined"
+    :activity-subject="!isCreate && props.studySet.id ? { type: 'study_set', id: props.studySet.id } : undefined"
     max-width="4xl"
     @update:locale="activeLocale = $event"
     @submit="$emit('submit:form', form)"
@@ -205,7 +208,14 @@
             {{ $t('Komplektas bus perkeltas į šiukšliadėžę.') }}
           </p>
         </div>
-        <Button variant="destructive" size="sm" type="button" class="pointer-coarse:min-h-11" @click="isDeleteDialogOpen = true">
+        <Button
+          variant="outline"
+          size="sm"
+          type="button"
+          class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+          @click="isDeleteDialogOpen = true"
+        >
+          <Trash2Icon class="size-4" />
           {{ $t('Ištrinti') }}
         </Button>
       </div>
@@ -261,6 +271,7 @@ interface ReviewForm {
 }
 
 interface StudySetFormData {
+  id?: string | number;
   name: { lt: string; en: string };
   description: { lt: string; en: string };
   order: number;
@@ -268,6 +279,8 @@ interface StudySetFormData {
   tenant_id: number | null;
   courses: CourseForm[];
   reviews: ReviewForm[];
+  created_at?: string;
+  updated_at?: string;
 }
 
 const props = defineProps<{
@@ -282,9 +295,17 @@ defineEmits<{
   (event: 'delete'): void;
 }>();
 
-const isCreate = computed(() => props.rememberKey === 'CreateStudySet');
+const isCreate = computed(() => props.rememberKey === 'CreateStudySet' || !props.studySet.id);
 const isDeleteDialogOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
+
+const studySetTimestamps = computed(() => {
+  if (!props.studySet.created_at) return undefined;
+  return {
+    createdAt: props.studySet.created_at,
+    updatedAt: props.studySet.updated_at,
+  };
+});
 
 let keyCounter = 0;
 const generateKey = () => `item-${++keyCounter}`;

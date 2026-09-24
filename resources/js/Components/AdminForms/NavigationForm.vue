@@ -1,15 +1,19 @@
 <template>
   <FormPage
     :title="isCreate ? $t('navigation.form.new_link') : (form.name || form.url || $t('navigation.form.edit_link'))"
-    :head-title="isCreate ? $t('navigation.form.new_link') : (form.name || form.url || $t('navigation.form.edit_link'))"
+    :bar-title
+    entity-type="navigation"
     :back-href="route('navigation.index')"
     :back-label="$t('navigation.title')"
     :processing="form.processing"
     :dirty="form.isDirty"
     :errors="form.errors"
+    :field-ids
     :mode="isCreate ? 'create' : 'edit'"
-    max-width="4xl"
-    @submit="$emit('submit:form', form)"
+    :activity-subject="navigation?.id ? { type: 'navigation', id: navigation.id } : undefined"
+    :created-at="isCreate ? undefined : (navigation?.created_at as string | undefined)"
+    :updated-at="isCreate ? undefined : (navigation?.updated_at as string | undefined)"
+    @submit="emit('submit:form', form)"
   >
     <template v-if="!isCreate" #header-actions>
       <slot name="aside-header" />
@@ -20,7 +24,7 @@
       :title="$t('navigation.form.section_basics')"
     >
       <FormFieldWrapper id="name" :label="$t('navigation.form.name')" :required="!isNameless" :error="form.errors.name">
-        <Input id="name" v-model="form.name" type="text" :disabled="isNameless" />
+        <Input id="name" v-model="form.name" type="text" :disabled="isNameless" :class="['h-11', fieldSurfaceClass]" />
       </FormFieldWrapper>
 
       <template v-if="!isNameless">
@@ -63,9 +67,9 @@
 
         <FormFieldWrapper id="url" :label="$t('navigation.form.url')" :required="!isFooterRoot" :error="form.errors.url"
           :helper-text="isFooterRoot ? $t('navigation.form.footer_category_url_hint') : $t('navigation.form.link_target_manual')">
-          <div class="flex gap-1">
-            <Input id="url" v-model="form.url" type="text" />
-            <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank" rel="noopener noreferrer">
+          <div class="flex gap-1.5">
+            <Input id="url" v-model="form.url" type="text" :class="['h-11', fieldSurfaceClass]" />
+            <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank" rel="noopener noreferrer" class="size-11 shrink-0">
               <ExternalLink class="size-4" />
             </Button>
           </div>
@@ -86,12 +90,12 @@
         </FormFieldWrapper>
 
         <FormFieldWrapper id="description" :label="$t('navigation.form.description')">
-          <Textarea id="description" v-model="form.extra_attributes.description" />
+          <Textarea id="description" v-model="form.extra_attributes.description" :class="fieldSurfaceClass" />
         </FormFieldWrapper>
 
         <div class="grid gap-3 lg:grid-cols-2">
           <FormFieldWrapper id="small_text" :label="$t('navigation.form.small_text')">
-            <Input id="small_text" v-model="form.extra_attributes.small_text" type="text" />
+            <Input id="small_text" v-model="form.extra_attributes.small_text" type="text" :class="['h-11', fieldSurfaceClass]" />
           </FormFieldWrapper>
           <FormFieldWrapper id="badge_variant" :label="$t('navigation.form.badge_variant')">
             <ToggleGroup v-model="badgeVariant" type="single" class="justify-start">
@@ -146,11 +150,11 @@
                  eyebrow or a call to action, and a link with no image has no card at all. -->
             <template v-if="imageRender === 'card'">
               <FormFieldWrapper id="eyebrow" :label="$t('navigation.form.eyebrow')" :hint="$t('navigation.form.eyebrow_hint')">
-                <Input id="eyebrow" v-model="form.extra_attributes.eyebrow" type="text" />
+                <Input id="eyebrow" v-model="form.extra_attributes.eyebrow" type="text" :class="['h-11', fieldSurfaceClass]" />
               </FormFieldWrapper>
 
               <FormFieldWrapper id="cta" :label="$t('navigation.form.cta')" :hint="$t('navigation.form.cta_hint')">
-                <Input id="cta" v-model="form.extra_attributes.cta" type="text" />
+                <Input id="cta" v-model="form.extra_attributes.cta" type="text" :class="['h-11', fieldSurfaceClass]" />
               </FormFieldWrapper>
 
               <FormFieldWrapper id="image_height" :label="$t('navigation.form.image_height')" :hint="$t('navigation.form.image_height_hint')">
@@ -298,30 +302,25 @@
     </FormSection>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <div class="flex items-center justify-between border border-destructive/20 bg-destructive/5 p-4">
-        <div>
-          <h3 class="text-sm font-semibold text-destructive">
-            {{ $t('navigation.form.delete_link') }}
-          </h3>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('navigation.form.delete_link_desc') }}
-          </p>
-        </div>
-        <Button variant="destructive" size="sm" type="button" @click="isDeleteDialogOpen = true">
-          {{ $t('Ištrinti') }}
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+        @click="isDeleteDialogOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('navigation.form.delete_link') }}
+      </Button>
     </template>
   </FormPage>
 
   <ConfirmDialog
-    :open="isDeleteDialogOpen"
+    v-model:open="isDeleteDialogOpen"
     :title="$t('Ištrinti navigacijos elementą?')"
     :description="$t('Ar tikrai norite perkelti šį elementą į šiukšliadėžę?')"
     :confirm-label="$t('Ištrinti')"
     destructive
-    @update:open="isDeleteDialogOpen = $event"
-    @confirm="$emit('delete')"
+    @confirm="emit('delete')"
   />
 </template>
 
@@ -329,7 +328,7 @@
 import { computed, h, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, ExternalLink, Loader2 } from 'lucide-vue-next';
+import { ChevronDown, ExternalLink, Loader2, Trash2 } from 'lucide-vue-next';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
@@ -342,6 +341,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -371,7 +371,7 @@ const props = withDefaults(defineProps<{
   rememberKey: undefined,
 });
 
-defineEmits<{
+const emit = defineEmits<{
   (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
@@ -386,6 +386,12 @@ if (!form.extra_attributes) {
 
 const isCreate = computed(() => !form.id);
 const isDeleteDialogOpen = ref(false);
+
+const fieldIds = ['name', 'url', 'parent_id', 'is_active'];
+
+const barTitle = computed(() =>
+  form.name?.trim() || form.url?.trim() || (isCreate.value ? $t('navigation.form.new_link') : $t('navigation.form.edit_link')),
+);
 
 // Footer links only ever take two fixed shapes — see NavigationRequest, which is the
 // authoritative source for this. Forced here too so the rest of the form (icons, type
@@ -561,5 +567,9 @@ const selectedParent = computed({
   set: (val: { label: string; value: number } | null) => {
     form.parent_id = val?.value ?? 0;
   },
+});
+
+defineExpose({
+  form,
 });
 </script>

@@ -1,18 +1,26 @@
 <template>
-  <!-- @deprecated Superseded by TagSheetForm; remove once TagController stops redirecting here. -->
-  <PageContent title="Nauja žyma" :heading-icon="TagIcon">
-    <UpsertModelLayout>
-      <TagForm remember-key="CreateTag" :post-tag="tag" @submit:form="(form: any) => form.post(route('tags.store'))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <TagForm
+    remember-key="CreateTag"
+    :post-tag="tag"
+    @submit:form="submitForm"
+  />
 </template>
 
 <script setup lang="ts">
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+
 import TagForm from '@/Components/AdminForms/TagForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import { tagTemplate } from '@/Types/formTemplates';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { TagIcon } from '@/Components/icons';
+import { tagTemplate } from '@/Types/formTemplates';
+
+usePageBreadcrumbs(
+  BreadcrumbHelpers.adminForm('Žymos', 'tags.index', 'Nauja žyma', TagIcon),
+);
 
 const tag = tagTemplate as unknown as App.Entities.Tag;
+
+function submitForm(form: unknown): void {
+  (form as InertiaForm<Record<string, unknown>>).post(route('tags.store'));
+}
 </script>
