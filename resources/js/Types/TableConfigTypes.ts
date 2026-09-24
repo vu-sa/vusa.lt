@@ -9,7 +9,7 @@ export interface SimpleTableProps<TData> {
   data: TData[];
   /** The columns configuration for the table */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<any, TData, any>[];
   /** Whether to enable pagination (defaults to true) */
   enablePagination?: boolean;
   /** Number of items per page (defaults to 10) */

@@ -1,6 +1,9 @@
 import {
-  getCoreRowModel,
-  useVueTable,
+  columnVisibilityFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
   type ColumnDef,
   type RowSelectionState,
   type SortingState,
@@ -15,6 +18,14 @@ import type { CollectionColumn } from '@/Components/Collection/types';
 import type { CollectionSortOption } from '@/Composables/useCollectionSource';
 
 export const SELECT_COLUMN_ID = '__select';
+
+const features = tableFeatures({
+  rowSortingFeature,
+  rowSelectionFeature,
+  columnVisibilityFeature,
+});
+
+export type CollectionTableFeatures = typeof features;
 
 interface CollectionTableOptions<T> {
   /** Scopes the remembered column visibility. */
@@ -43,7 +54,7 @@ function resolve<V>(updater: Updater<V>, current: V): V {
  * what the rows are.
  */
 export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
-  table: Table<T>;
+  table: Table<typeof features, T>;
   hideableColumns: Ref<CollectionColumn[]>;
   columnVisibility: Ref<VisibilityState>;
   isSortable: (column: CollectionColumn) => boolean;
@@ -57,8 +68,8 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
     && sortValues.value.has(`${column.sortField}:asc`)
     && sortValues.value.has(`${column.sortField}:desc`);
 
-  const columnDefs = computed<ColumnDef<T>[]>(() => {
-    const defs: ColumnDef<T>[] = options.columns.value.map((column, index) => ({
+  const columnDefs = computed<ColumnDef<typeof features, T>[]>(() => {
+    const defs: ColumnDef<typeof features, T>[] = options.columns.value.map((column, index) => ({
       id: column.key,
       // TanStack only sorts a column that has an accessor; the value itself is never read,
       // since the source sorts and cells render through the page's slot.
@@ -87,7 +98,8 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
     Object.fromEntries(options.selection.value.map(key => [key, true])),
   );
 
-  const table = useVueTable<T>({
+  const table = useTable<typeof features, T>({
+    features,
     get data() {
       return options.items.value as T[];
     },
@@ -95,7 +107,6 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
       return columnDefs.value;
     },
     getRowId: row => options.itemKey(row),
-    getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
     manualFiltering: true,
     manualPagination: true,

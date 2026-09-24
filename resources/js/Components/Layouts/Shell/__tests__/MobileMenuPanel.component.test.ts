@@ -35,13 +35,38 @@ describe('MobileMenuPanel', () => {
     expect(dialog.attributes('aria-label')).toBe('shell.chrome.menu');
   });
 
-  it('lists every workspace with all its sections, nothing folded away', () => {
+  it('opens only the active workspace initially', () => {
+    const wrapper = mountPanel();
+    const workspaces = wrapper.findAll('[data-slot="mobile-menu-workspace"]');
+
+    expect(workspaces).toHaveLength(3);
+    expect(workspaces.map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['false', 'true', 'false']);
+    expect(wrapper.text()).not.toContain('shell.sections.uzduotys');
+    expect(wrapper.text()).toContain('shell.sections.posedziai');
+    expect(wrapper.text()).not.toContain('shell.sections.rezervacijos');
+  });
+
+  it('toggles sections and keeps at most one workspace open', async () => {
+    const wrapper = mountPanel();
+    const workspaces = wrapper.findAll('[data-slot="mobile-menu-workspace"]');
+
+    await workspaces[0].find('button').trigger('click');
+    expect(workspaces.map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['true', 'false', 'false']);
+    expect(wrapper.text()).toContain('shell.sections.uzduotys');
+    expect(wrapper.text()).not.toContain('shell.sections.posedziai');
+
+    await workspaces[0].find('button').trigger('click');
+    expect(workspaces.map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['false', 'false', 'false']);
+  });
+
+  it('reopens on the active workspace after closing', async () => {
     const wrapper = mountPanel();
 
-    expect(wrapper.findAll('[data-slot="mobile-menu-workspace"]')).toHaveLength(3);
-    expect(wrapper.text()).toContain('shell.sections.uzduotys');
-    expect(wrapper.text()).toContain('shell.sections.posedziai');
-    expect(wrapper.text()).toContain('shell.sections.rezervacijos');
+    await wrapper.findAll('[data-slot="mobile-menu-workspace"]')[0].find('button').trigger('click');
+    await wrapper.setProps({ open: false });
+    await wrapper.setProps({ open: true });
+
+    expect(wrapper.findAll('[data-slot="mobile-menu-workspace"]').map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['false', 'true', 'false']);
   });
 
   it('marks the current section', () => {

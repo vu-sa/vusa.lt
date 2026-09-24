@@ -62,21 +62,14 @@
     {{-- Dark mode initialization script - MUST be before any CSS to prevent flash --}}
     <script>
         (function() {
-            // Check localStorage for saved theme preference
-            const savedTheme = localStorage.getItem('vueuse-color-scheme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let savedTheme = localStorage.getItem('vueuse-color-scheme');
 
-            // Determine if dark mode should be active
-            let isDark = false;
-
-            if (savedTheme === 'dark') {
-                isDark = true;
-            } else if (savedTheme === 'light') {
-                isDark = false;
-            } else {
-                // savedTheme is 'auto' or null - use system preference
-                isDark = prefersDark;
+            if (savedTheme === null) {
+                savedTheme = 'light';
+                localStorage.setItem('vueuse-color-scheme', savedTheme);
             }
+
+            const isDark = savedTheme === 'dark' || (savedTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
             if (isDark) {
                 document.documentElement.classList.add('dark');

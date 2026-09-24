@@ -34,7 +34,7 @@
     "@pnp/graph": "^4.3.0",
     "@pnp/sp": "^4.3.0",
     "@tailwindcss/vite": "^4.0.8",
-    "@tanstack/vue-table": "^8.21.2",
+    "@tanstack/vue-table": "^9.2.4",
     "@tanstack/vue-virtual": "^3.13.18",
     "@tiptap/extension-collaboration": "^3.23.6",
     "@tiptap/extension-collaboration-caret": "^3.23.6",

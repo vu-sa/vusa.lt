@@ -323,7 +323,7 @@ const allSelectedState = computed<boolean | 'indeterminate'>(() => {
     return true;
   }
 
-  return table.getIsSomeRowsSelected() ? 'indeterminate' : false;
+  return table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected() ? 'indeterminate' : false;
 });
 
 function ariaSort(sorted: false | 'asc' | 'desc'): 'ascending' | 'descending' | undefined {

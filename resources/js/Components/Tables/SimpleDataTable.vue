@@ -33,7 +33,7 @@
       <template #empty>
         <slot name="empty">
           <div class="flex flex-col items-center justify-center py-8 text-center">
-            <component :is="emptyIcon || CircleIcon" class="h-12 w-12 text-muted-foreground mb-4" />
+            <component :is="emptyIcon || Circle" class="h-12 w-12 text-muted-foreground mb-4" />
             <h3 class="text-lg font-medium mb-2">
               {{ emptyMessage || $t('tables.no_results') }}
             </h3>
@@ -51,7 +51,7 @@
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { CircleIcon } from 'lucide-vue-next';
+import { Circle } from 'lucide-vue-next';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
 

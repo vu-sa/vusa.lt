@@ -7,6 +7,8 @@ lastUpdated: true
 
 ## v2.21 — Reservation drafts (2026-09-24) {#v2-21}
 
+- 🔧 **Collapsible phone menu** — opening the menu shows only the active workspace's sections; tap another workspace heading to expand it
+- ✨ **Light mode by default** — the public site and Mano VU SA now open in light mode on a first visit; saved theme choices are preserved
 - ✨ **Easier testing** — staging can be opened temporarily without an extra browser password, and its notice can be closed until the next page
 - ✨ **Consistent public accents** — the highlights button and START FM player use the site's colors, square shapes, and matching icons
 - 🔧 **Clearer confirmations** — image optimization and leaving an unfinished registration form now use the standard confirmation dialog

@@ -147,7 +147,7 @@
 
 <script setup lang="tsx">
 import { router, usePage } from '@inertiajs/vue3';
-import type { CellContext, ColumnDef, HeaderContext } from '@tanstack/vue-table';
+import type { CellContext, ColumnDef, HeaderContext, TableFeatures } from '@tanstack/vue-table';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Copy, Download, Edit, ExternalLink, Eye, Inbox, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -432,12 +432,12 @@ const formatFieldValue = (field: { key?: string; id?: string | number; type?: st
   return String(value);
 };
 
-const registrationColumns = computed<ColumnDef<Record<string, unknown>, unknown>[]>(() => {
-  const columns: ColumnDef<Record<string, unknown>, unknown>[] = [
+const registrationColumns = computed<ColumnDef<TableFeatures, Record<string, unknown>, unknown>[]>(() => {
+  const columns: ColumnDef<TableFeatures, Record<string, unknown>, unknown>[] = [
     {
       id: 'actions',
       header: () => '',
-      cell: ({ row }: CellContext<Record<string, unknown>, unknown>) => (
+      cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => (
         <div class="flex justify-center">
           <Button
             variant="ghost"
@@ -467,7 +467,7 @@ const registrationColumns = computed<ColumnDef<Record<string, unknown>, unknown>
         id: String(field.id),
         size: columnWidth,
         enableSorting: true,
-        header: (info: HeaderContext<Record<string, unknown>, unknown>) => {
+        header: (info: HeaderContext<TableFeatures, Record<string, unknown>, unknown>) => {
           return (
             <TooltipProvider>
               <Tooltip>
@@ -488,7 +488,7 @@ const registrationColumns = computed<ColumnDef<Record<string, unknown>, unknown>
             </TooltipProvider>
           );
         },
-        cell: ({ row }: CellContext<Record<string, unknown>, unknown>) => {
+        cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => {
           const value = row.getValue(String(field.id));
           const formattedValue = formatFieldValue(field, value);
 

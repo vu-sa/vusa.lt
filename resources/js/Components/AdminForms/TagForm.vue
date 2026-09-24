@@ -155,7 +155,8 @@ const topicStatus: StatusPresentation = {
   icon: Star,
 };
 
-const columns: ColumnDef<NewsItem, unknown>[] = [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const columns: ColumnDef<any, NewsItem, unknown>[] = [
   {
     accessorKey: 'title',
     header: () => $t('forms.fields.title'),

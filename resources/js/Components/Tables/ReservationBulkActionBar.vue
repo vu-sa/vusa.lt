@@ -10,16 +10,16 @@
   >
     <div
       v-if="count > 0"
-      class="absolute -top-12 left-0 z-20 inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+      class="absolute -top-12 left-0 z-20 inline-flex flex-wrap items-center gap-2 border border-foreground/80 bg-popover p-2.5 text-popover-foreground"
+      role="region"
+      :aria-label="$t('reservations.actions.selected')"
+      data-slot="reservation-bulk-actions"
     >
-      <div class="flex size-6 items-center justify-center rounded-full bg-zinc-900 text-xs font-bold text-white dark:bg-zinc-100 dark:text-zinc-900">
-        {{ count }}
-      </div>
-      <span class="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-        {{ $t('reservations.actions.selected') }}
+      <span class="text-xs font-bold uppercase tracking-wide">
+        {{ $t('reservations.actions.selected') }}: <span class="tabular-nums text-brand">{{ count }}</span>
       </span>
 
-      <div class="mx-1 h-4 w-px bg-zinc-200 dark:bg-zinc-700" />
+      <div class="mx-1 h-4 w-px bg-border" />
 
       <Button size="sm" :disabled @click="$emit('approve')">
         <Check class="size-4" />
@@ -43,7 +43,7 @@
         {{ $t('reservations.actions.resolve') }}
       </Button>
 
-      <Button size="icon-sm" variant="ghost" @click="$emit('clear')">
+      <Button size="icon-sm" variant="ghost" :aria-label="$t('Atšaukti žymėjimą')" @click="$emit('clear')">
         <X class="size-4" />
       </Button>
     </div>
@@ -62,8 +62,8 @@ withDefaults(defineProps<{
   canReject?: boolean;
   disabled?: boolean;
 }>(), {
+  // eslint-disable-next-line vue/no-boolean-default
   canReject: true,
-  disabled: false,
 });
 
 defineEmits<{

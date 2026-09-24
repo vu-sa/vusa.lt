@@ -7,6 +7,8 @@ lastUpdated: true
 
 ## v2.21 — Rezervacijų juodraščiai (2026-09-24) {#v2-21}
 
+- 🔧 **Suskleidžiamas telefono meniu** — atidarius meniu rodomi tik aktyvios darbo srities skyriai; kitas sritis gali išskleisti paliesdamas jų pavadinimus
+- ✨ **Šviesus režimas pagal nutylėjimą** — pirmą kartą atsidarius viešą svetainę ar Mano VU SA įjungiamas šviesus režimas; anksčiau pasirinktas režimas išlieka
 - ✨ **Patogesnis bandymas** — testavimo aplinką galima laikinai atverti be papildomo naršyklės slaptažodžio, o jos įspėjimą galima uždaryti iki kito puslapio
 - ✨ **Vienodesni svetainės akcentai** — svarbiausių punktų mygtukas ir START FM grotuvas naudoja svetainės spalvas, stačiakampes formas ir vienodo stiliaus piktogramas
 - 🔧 **Aiškesni patvirtinimai** — optimizuojant paveikslėlį ir išeinant iš neužpildytos registracijos formos sprendimą gali priimti įprastame dialoge

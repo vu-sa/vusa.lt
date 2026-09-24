@@ -21,14 +21,20 @@
       </div>
 
       <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <!-- The phone's Visi skyriai: every workspace and section the user may open, nothing folded away. -->
         <ul>
           <li v-for="workspace in workspaces" :key="workspace.key" class="border-b border-border py-2" data-slot="mobile-menu-workspace">
-            <p class="flex items-center gap-3 px-4 py-1.5">
+            <button
+              type="button"
+              class="u-touch flex w-full items-center gap-3 px-4 py-1.5 text-left"
+              :aria-expanded="expandedWorkspaceKey === workspace.key"
+              :aria-controls="`mobile-menu-sections-${workspace.key}`"
+              @click="toggleWorkspace(workspace.key)"
+            >
               <component :is="workspaceIcon(workspace.key)" class="size-4 shrink-0 text-brand" aria-hidden="true" />
-              <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">{{ $t(workspace.label) }}</span>
-            </p>
-            <ul>
+              <span class="flex-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">{{ $t(workspace.label) }}</span>
+              <ChevronDown :class="['size-4 text-muted-foreground transition-transform', expandedWorkspaceKey === workspace.key && 'rotate-180']" aria-hidden="true" />
+            </button>
+            <ul v-if="expandedWorkspaceKey === workspace.key" :id="`mobile-menu-sections-${workspace.key}`">
               <li
                 v-for="(section, index) in workspace.sections"
                 :key="section.key"
@@ -201,6 +207,7 @@ import {
   Bell,
   BookOpen,
   Bug,
+  ChevronDown,
   Languages,
   LogOut,
   MessagesSquare,
@@ -236,6 +243,7 @@ const props = defineProps<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+const expandedWorkspaceKey = ref<string | null>(props.activeWorkspace?.key ?? null);
 
 const page = usePage<PageProps>();
 const user = computed(() => page.props.auth?.user);
@@ -272,6 +280,10 @@ function changeLocale(): void {
 const isCurrent = (workspace: AdminWorkspace, section: AdminSection) =>
   section.key === props.activeSection?.key && workspace.key === props.activeWorkspace?.key;
 
+function toggleWorkspace(key: string): void {
+  expandedWorkspaceKey.value = expandedWorkspaceKey.value === key ? null : key;
+}
+
 const close = () => {
   open.value = false;
 };
@@ -280,6 +292,7 @@ watch(open, (isOpen) => {
   scrollLock.value = isOpen;
 
   if (isOpen) {
+    expandedWorkspaceKey.value = props.activeWorkspace?.key ?? null;
     nextTick(() => closeRef.value?.$el?.focus());
   }
 });

@@ -55,14 +55,14 @@
       :row-class-name
       :enable-filtering
       :enable-column-visibility
-      :manual-sorting="true"
-      :manual-filtering="true"
-      :manual-pagination="true"
+      manual-sorting
+      manual-filtering
+      manual-pagination
       :external-sorting="serverSorting"
       :external-pagination="serverPagination"
       :row-count="totalItems"
       :page-count="totalItems ? Math.ceil(totalItems / pageSize) : undefined"
-      :pagination="true"
+      pagination
       :empty-message
       :global-filter
       :enable-row-selection
@@ -78,10 +78,10 @@
     >
       <template #pagination>
         <!-- Server-side pagination -->
-        <div v-if="enablePagination && isServerSide" class="flex flex-nowrap items-center justify-between gap-4 py-2 px-3 border-t overflow-hidden">
+        <div v-if="enablePagination && isServerSide" class="flex flex-wrap items-center justify-between gap-4 border-t border-border bg-secondary/20 px-4 py-2.5">
           <!-- Show pagination controls when there are results -->
           <template v-if="totalItems > 0">
-            <div class="text-xs text-muted-foreground shrink-0">
+            <div class="text-xs text-muted-foreground shrink-0 tabular-nums">
               <strong>{{ (serverPagination?.pageIndex || 0) * pageSize + 1 }}</strong>
               –
               <strong>{{ Math.min((serverPagination?.pageIndex || 0) * pageSize + pageSize, totalItems) }}</strong>
@@ -95,13 +95,15 @@
               @update:page="(newPage: number) => emit('page-change', newPage - 1)"
             >
               <PaginationContent class="gap-1">
-                <PaginationFirst size="icon">
-                  <ChevronsLeftIcon class="h-4 w-4" />
-                  <span class="sr-only">{{ $t('tables.first_page') }}</span>
-                </PaginationFirst>
+                <PaginationItem :value="1">
+                  <PaginationFirst size="icon-sm">
+                    <ChevronsLeft class="size-4" />
+                    <span class="sr-only">{{ $t('tables.first_page') }}</span>
+                  </PaginationFirst>
+                </PaginationItem>
 
-                <PaginationPrevious size="icon">
-                  <ChevronLeftIcon class="h-4 w-4" />
+                <PaginationPrevious size="icon-sm">
+                  <ChevronLeft class="size-4" />
                   <span class="sr-only">{{ $t('tables.previous_page') }}</span>
                 </PaginationPrevious>
 
@@ -111,7 +113,10 @@
                     min="1"
                     :max="Math.max(1, Math.ceil(totalItems / pageSize))"
                     :model-value="(serverPagination?.pageIndex || 0) + 1"
-                    class="h-7 w-14 px-1.5 text-center text-xs tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    :class="[
+                      'h-7 w-14 px-1.5 text-center text-xs tabular-nums [appearance:textfield]',
+                      '[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+                    ]"
                     @keydown.enter="(e: Event) => {
                       const target = e.target as HTMLInputElement;
                       const val = parseInt(target.value, 10);
@@ -126,13 +131,13 @@
                   </span>
                 </div>
 
-                <PaginationNext size="icon">
-                  <ChevronRightIcon class="h-4 w-4" />
+                <PaginationNext size="icon-sm">
+                  <ChevronRight class="size-4" />
                   <span class="sr-only">{{ $t('tables.next_page') }}</span>
                 </PaginationNext>
 
-                <PaginationLast size="icon">
-                  <ChevronsRightIcon class="h-4 w-4" />
+                <PaginationLast size="icon-sm">
+                  <ChevronsRight class="size-4" />
                   <span class="sr-only">{{ $t('tables.last_page') }}</span>
                 </PaginationLast>
               </PaginationContent>
@@ -162,19 +167,18 @@
 </template>
 
 <script setup lang="ts" generic="TData">
-import { computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef, SortingState, PaginationState, RowSelectionState } from '@tanstack/vue-table';
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-vue-next';
 
 import DataTable from './DataTable.vue';
 
-import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import {
   Pagination,
@@ -188,7 +192,8 @@ import {
 
 const props = defineProps<{
   // Data props
-  columns: ColumnDef<TData, any>[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: ColumnDef<any, TData, any>[];
   data: TData[];
 
   // Optional customization
@@ -219,6 +224,7 @@ const props = defineProps<{
   enableRowSelectionColumn?: boolean;
   rowSelectionState?: RowSelectionState;
   initialRowSelection?: RowSelectionState;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getRowId?: (originalRow: TData, index: number, parent?: any) => string;
 }>();
 
@@ -251,22 +257,6 @@ const clientSorting = computed(() => {
   }));
 });
 
-// Pagination handling for server-side mode
-const handlePrevPage = () => {
-  if (props.serverPagination && props.serverPagination.pageIndex > 0) {
-    emit('page-change', props.serverPagination.pageIndex - 1);
-  }
-};
-
-const handleNextPage = () => {
-  if (props.serverPagination && props.totalItems) {
-    const maxPage = Math.ceil(props.totalItems / pageSize) - 1;
-    if (props.serverPagination.pageIndex < maxPage) {
-      emit('page-change', props.serverPagination.pageIndex + 1);
-    }
-  }
-};
-
 const handleSortingChange = (sorting: SortingState) => {
   emit('update:sorting', sorting);
 };
@@ -282,10 +272,6 @@ const handlePaginationChange = (pagination: { pageIndex: number; pageSize: numbe
 
 // Create a ref to the DataTable component for forwarding methods
 const dataTableRef = ref<InstanceType<typeof DataTable>>();
-
-onMounted(() => {
-  // Initial handling if needed
-});
 
 // Watch for changes to row selection state and emit events
 watch(() => dataTableRef.value?.rowSelection, (newVal) => {
@@ -304,5 +290,6 @@ defineExpose({
   getSelectedRows: () => dataTableRef.value?.getSelectedRows(),
   clearRowSelection: () => dataTableRef.value?.clearRowSelection(),
   rowSelection: () => dataTableRef.value?.rowSelection,
+  getFilteredData: () => dataTableRef.value?.table.getFilteredRowModel().rows.map(r => r.original) ?? [],
 });
 </script>
