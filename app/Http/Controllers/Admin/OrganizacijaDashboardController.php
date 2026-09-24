@@ -93,19 +93,24 @@ class OrganizacijaDashboardController extends AdminController
      */
     private function serializeEnding(Builder $ending): array
     {
-        return $ending
+        $terms = $ending
             ->with(['duty:id,name', 'user:id,name'])
             ->orderBy('end_date')
             ->take(self::LIST_SIZE)
-            ->get()
-            ->map(fn (Dutiable $dutiable): array => [
+            ->get();
+
+        $rows = [];
+
+        foreach ($terms as $dutiable) {
+            $rows[] = [
                 'id' => (string) $dutiable->id,
                 'duty_id' => (string) $dutiable->duty?->id,
                 'duty' => (string) $dutiable->duty?->name,
                 'user' => $dutiable->user?->name,
                 'ends_on' => $dutiable->end_date?->toDateString(),
-            ])
-            ->values()
-            ->all();
+            ];
+        }
+
+        return $rows;
     }
 }

@@ -157,7 +157,7 @@ describe('CollectionPage', () => {
     const wrapper = mountPage(source);
 
     expect(wrapper.text()).toContain('Metai: 2026');
-    expect(wrapper.find('[data-slot="collection-active-chips"]').text()).toContain('Rasta 2');
+    expect(wrapper.find('[data-slot="collection-results-toolbar"]').text()).toContain('Rasta 2');
 
     await wrapper.findAll('[data-slot="collection-active-chips"] button')[0].trigger('click');
     expect(spies.clearChip).toHaveBeenCalledWith('year:2026');
@@ -312,7 +312,7 @@ describe('CollectionPage', () => {
   it('does not claim "Rasta 0" next to an error — the count is unknown, not zero', () => {
     const { source } = makeSource({ error: ref('Paieška nepavyko.'), items: ref([]), total: ref(0) });
 
-    expect(mountPage(source).find('[data-slot="collection-active-chips"]').text()).not.toContain('Rasta');
+    expect(mountPage(source).find('[data-slot="collection-results-toolbar"]').text()).not.toContain('Rasta');
   });
 
   it('shows the source error with a way to retry', async () => {
@@ -350,7 +350,9 @@ describe('CollectionPage', () => {
     const { source } = makeSource();
     const wrapper = mountPage(source, { trash: { count: 3, active: false } });
 
-    const control = wrapper.findAll('[data-slot="collection-control-row"] button').find(button => button.text().includes('Ištrinti'));
+    await wrapper.get('[data-slot="collection-filters-toggle"]').trigger('click');
+
+    const control = wrapper.findAll('[data-slot="collection-filter-bar"] button').find(button => button.text().includes('Ištrinti'));
     expect(control?.text()).toContain('3');
 
     await control?.trigger('click');

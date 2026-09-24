@@ -190,10 +190,14 @@ class AtstovavimasDashboardController extends AdminController
             ->representational()
             ->orderBy('shortname_vu')
             ->get(['id', 'shortname', 'type'])
-            ->map(fn (Tenant $tenant) => [
-                'id' => $tenant->id,
-                'shortname' => __($tenant->shortname),
-                'type' => $tenant->type,
-            ]);
+            ->map(function (Tenant $tenant): array {
+                $shortname = __($tenant->shortname);
+
+                return [
+                    'id' => $tenant->id,
+                    'shortname' => is_string($shortname) ? $shortname : $tenant->shortname,
+                    'type' => $tenant->type,
+                ];
+            });
     }
 }

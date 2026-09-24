@@ -382,10 +382,10 @@ describe('removing a row from the timeline', function (): void {
         expect(Dutiable::query()->whereKey($this->row->id)->exists())->toBeFalse();
     });
 
-    test('without it the dutiable edit page still leaves for the user', function (): void {
+    test('without it the deleted row returns to the user record', function (): void {
         asUserWithInertia($this->manager)
             ->delete(route('dutiables.destroy', $this->row))
-            ->assertRedirect(route('users.edit', $this->holder));
+            ->assertRedirect(route('users.show', $this->holder));
 
         expect(Dutiable::query()->whereKey($this->row->id)->exists())->toBeFalse();
     });

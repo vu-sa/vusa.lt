@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.21 — Rezervacijų juodraščiai (2026-09-24) {#v2-21}
 
+- 🔧 **Tikslesnė naujienos paieškos peržiūra** — įvadinio teksto peržiūroje nebėra HTML žymų, net jei jos įdėtos viena į kitą
 - ⭐ **Rezervacija išsaugoma kaip juodraštis** — „Nauja rezervacija“ atveria formą, kuri saugoma automatiškai; išteklius renkiesi naršydamas skiltį „Ištekliai“ ir prie kiekvieno spausdamas „Pridėti“. Pasirinkimas išlieka, net jei uždarysi puslapį ar atsidarysi kitame įrenginyje, o nebaigtą rezervaciją rasi Pradžioje ir Rezervacijų apžvalgoje. Ji ištrinama po 14 d. be pakeitimų
 - ✨ **Aiškesnė rezervacijos forma** — pavadinimas, aprašymas, laikas ir ištekliai vienoje kolonoje, o pateikimo sąlygos ir taisyklės – šoninėje juostoje, kaip ir kitose Mano VU SA formose
 - ⭐ **Ištekliai kortelėmis** — išteklių sąrašas pagal nutylėjimą rodomas kortelėmis su nuotrauka ir laisvu kiekiu; kol rezervacijos nepradėjai, kortelė kviečia „Peržiūrėti“, o pradėjus – „Pridėti“. Ištekliaus puslapyje mygtukas „Rezervuoti“ iškart pradeda rezervaciją su tuo daiktu

@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.21 — Reservation drafts (2026-09-24) {#v2-21}
 
+- 🔧 **More accurate news search preview** — the intro preview no longer shows HTML tags, even when tags are nested
 - ⭐ **Reservations are saved as drafts** — “New reservation” opens a form that saves itself; pick resources by browsing “Resources” and pressing “Add” on each. Your picks stay even if you close the page or open it on another device, and the unfinished reservation shows on Home and in the Reservations overview. It is deleted after 14 days without changes
 - ✨ **A clearer reservation form** — name, description, time and resources in one column, with the submit terms and rules in the side panel, like other Mano VU SA forms
 - ⭐ **Resources as cards** — the resource list now opens as cards with a photo and the free quantity; until you start a reservation a card offers “View”, afterwards “Add”. On a resource’s page, “Reserve” starts a reservation with that item straight away

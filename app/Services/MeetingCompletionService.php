@@ -34,60 +34,60 @@ class MeetingCompletionService
 
         $requiresStudentPerspective = $meeting->requiresStudentPerspective();
 
-        return $meeting->agendaItems
-            ->sortBy('order')
-            ->values()
-            ->map(function ($item, int $index) use ($requiresStudentPerspective): ?array {
-                $base = [
-                    'agenda_item_id' => (string) $item->getKey(),
-                    'title' => (string) $item->title,
-                    'position' => $index + 1,
-                ];
+        $actions = [];
 
-                $type = $item->getAttribute('type');
+        foreach ($meeting->agendaItems->sortBy('order')->values() as $index => $item) {
+            $base = [
+                'agenda_item_id' => (string) $item->getKey(),
+                'title' => (string) $item->title,
+                'position' => $index + 1,
+            ];
 
-                if ($type === null) {
-                    return ['type' => 'agenda_item_type_missing', ...$base];
-                }
+            $type = $item->getAttribute('type');
 
-                if ($type instanceof AgendaItemType && ! $type->requiresVote()) {
-                    return null;
-                }
+            if ($type === null) {
+                $actions[] = ['type' => 'agenda_item_type_missing', ...$base];
 
-                if (! $item->relationLoaded('votes')) {
-                    $item->load('votes');
-                }
+                continue;
+            }
 
-                $mainVote = $item->votes->firstWhere('is_main', true);
+            if ($type instanceof AgendaItemType && ! $type->requiresVote()) {
+                continue;
+            }
 
-                if ($mainVote !== null && $this->voteIsComplete($mainVote, $requiresStudentPerspective)) {
-                    return null;
-                }
+            if (! $item->relationLoaded('votes')) {
+                $item->load('votes');
+            }
 
-                if ($mainVote === null && $item->votes->contains(
-                    fn (Vote $vote): bool => $this->voteIsComplete($vote, $requiresStudentPerspective)
-                )) {
-                    return null;
-                }
+            $mainVote = $item->votes->firstWhere('is_main', true);
 
-                $vote = $mainVote ?? $item->votes->first();
-                $requiredFields = $requiresStudentPerspective
-                    ? ['decision', 'student_vote', 'student_benefit']
-                    : ['decision'];
-                $missingFields = collect($requiredFields)
-                    ->filter(fn (string $field): bool => empty($vote?->{$field}))
-                    ->values()
-                    ->all();
+            if ($mainVote !== null && $this->voteIsComplete($mainVote, $requiresStudentPerspective)) {
+                continue;
+            }
 
-                return [
-                    'type' => 'agenda_item_vote_missing',
-                    ...$base,
-                    'missing_fields' => $missingFields,
-                ];
-            })
-            ->filter()
-            ->values()
-            ->all();
+            if ($mainVote === null && $item->votes->contains(
+                fn (Vote $vote): bool => $this->voteIsComplete($vote, $requiresStudentPerspective)
+            )) {
+                continue;
+            }
+
+            $vote = $mainVote ?? $item->votes->first();
+            $requiredFields = $requiresStudentPerspective
+                ? ['decision', 'student_vote', 'student_benefit']
+                : ['decision'];
+            $missingFields = collect($requiredFields)
+                ->filter(fn (string $field): bool => $vote === null || empty($vote->{$field}))
+                ->values()
+                ->all();
+
+            $actions[] = [
+                'type' => 'agenda_item_vote_missing',
+                ...$base,
+                'missing_fields' => $missingFields,
+            ];
+        }
+
+        return $actions;
     }
 
     /**

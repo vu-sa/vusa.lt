@@ -6,6 +6,7 @@ import CoordinatorCard from '../CoordinatorCard.vue';
 import FirstLoginChecklist from '../FirstLoginChecklist.vue';
 import type { HomeAccessChange, HomeChecklist } from '../types';
 
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { useApiMutation } from '@/Composables/useApi';
 import { globalProgress } from '@/Composables/useTutorialProgress';
 
@@ -148,11 +149,13 @@ describe('CoordinatorCard compact', () => {
     expect(wrapper.find('a[href="mailto:jonas@vusa.lt"]').exists()).toBe(true);
   });
 
-  it('uses a quieter heading than the full card', () => {
+  it('uses a smaller avatar in compact mode while keeping the home heading', () => {
     const compact = mount(CoordinatorCard, { props: { coordinators: [coordinator], compact: true } });
     const full = mount(CoordinatorCard, { props: { coordinators: [coordinator] } });
 
     expect(compact.get('h2').classes()).toContain('text-sm');
-    expect(full.get('h2').classes()).toContain('text-base');
+    expect(full.get('h2').classes()).toContain('text-sm');
+    expect(compact.findComponent(UserAvatar).props('size')).toBe(32);
+    expect(full.findComponent(UserAvatar).props('size')).toBe(40);
   });
 });

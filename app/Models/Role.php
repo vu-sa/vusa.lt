@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Role as SpatieRole;
@@ -62,7 +63,7 @@ class Role extends SpatieRole
             });
     }
 
-    public function attachable_types()
+    public function attachable_types(): BelongsToMany
     {
         return $this->belongsToMany(Type::class, 'role_can_attach_types');
     }

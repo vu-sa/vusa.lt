@@ -2,7 +2,7 @@
   <CollectionPage
     :source
     collection="quickLinks"
-    entity-type="quick_link"
+    entity-type="quickLink"
     :eyebrow="`${$t('shell.workspaces.website.title')} · ${$t('Greitosios nuorodos')}`"
     :title="isTrash ? $t('Ištrintos greitosios nuorodos') : $t('Greitosios nuorodos')"
     :lead="isTrash

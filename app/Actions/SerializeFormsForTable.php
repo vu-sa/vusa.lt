@@ -11,7 +11,7 @@ final class SerializeFormsForTable
 {
     /**
      * @param  Collection<int, Form>  $forms
-     * @return Collection<int, array<string, mixed>>
+     * @return Collection<int, covariant array<string, mixed>>
      */
     public static function execute(Collection $forms, User $user, FormRegistrationVisibilityService $registrationVisibility): Collection
     {

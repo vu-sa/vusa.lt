@@ -10,13 +10,15 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * A bulk action over records picked in a collection. Every record must pass the policy
  * ability, so one record outside the actor's scope refuses the whole batch.
+ *
+ * @template TModel of Model
  */
 abstract class BulkContentRequest extends FormRequest
 {
-    /** @var Collection<int, Model>|null */
+    /** @var Collection<int, TModel>|null */
     private ?Collection $resolvedRecords = null;
 
-    /** @return class-string<Model> */
+    /** @return class-string<TModel> */
     abstract protected function modelClass(): string;
 
     /** The policy ability every selected record must pass. */
@@ -51,7 +53,7 @@ abstract class BulkContentRequest extends FormRequest
     }
 
     /**
-     * @return Collection<int, Model>
+     * @return Collection<int, TModel>
      */
     public function records(): Collection
     {

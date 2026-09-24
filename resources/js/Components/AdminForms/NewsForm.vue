@@ -269,6 +269,7 @@ import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import { newsTemplate } from '@/Types/formTemplates';
 import { formatDateTime } from '@/Utils/dateTime';
 import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
+import { stripHtmlTags } from '@/Utils/String';
 
 const props = withDefaults(defineProps<{
   news?: App.Entities.News;
@@ -351,7 +352,7 @@ const barTitle = computed(() => (isCreate.value ? $t('Nauja naujiena') : (props.
 // The redirect note is a consequence of an edit, so it appears only once there is one.
 const permalinkChanged = computed(() => form.permalink !== props.news?.permalink);
 
-const shortPlainText = computed(() => (form.short ?? '').replace(/<[^>]*>/g, '').trim());
+const shortPlainText = computed(() => stripHtmlTags(form.short ?? '').trim());
 
 const filledHighlightCount = computed(() => (form.highlights as string[]).filter(item => item?.trim()).length);
 

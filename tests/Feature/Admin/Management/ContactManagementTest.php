@@ -154,6 +154,11 @@ test('contact manager can detach duty from user', function (): void {
             ->component('Admin/People/EditUser')
             ->has('flash.success')
             ->has('user.current_duties', 0)
+        );
+
+    $admin->get(route('users.show', $this->user->id))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/ShowUser')
             ->has('user.previous_duties', 1)
         );
 

@@ -93,7 +93,7 @@ class DeviceMetricService
      * Get device metrics over the last N days with summary statistics.
      *
      * @return array{
-     *     records: Collection<int, array{date: string, phone_logins: int, tablet_logins: int, desktop_logins: int, pwa_launches: int, total_logins: int}>,
+     *     records: Collection<int, array{date: non-falsy-string, phone_logins: int, tablet_logins: int, desktop_logins: int, pwa_launches: int, total_logins: int}>,
      *     summary: array{days: int, total_logins: int, total_phone: int, total_tablet: int, total_desktop: int, total_pwa_launches: int, phone_percentage: float, tablet_percentage: float, desktop_percentage: float}
      * }
      */
@@ -117,7 +117,7 @@ class DeviceMetricService
         $desktopPercentage = $totalLogins > 0 ? round(($totalDesktop / $totalLogins) * 100, 1) : 0.0;
 
         $records = $metrics->map(fn (DailyDeviceMetric $m) => [
-            'date' => $m->date instanceof \DateTimeInterface ? $m->date->format('Y-m-d') : (string) $m->date,
+            'date' => $m->date->format('Y-m-d'),
             'phone_logins' => $m->phone_logins,
             'tablet_logins' => $m->tablet_logins,
             'desktop_logins' => $m->desktop_logins,

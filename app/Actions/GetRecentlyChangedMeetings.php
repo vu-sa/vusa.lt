@@ -20,7 +20,7 @@ class GetRecentlyChangedMeetings
     public const WINDOW_MINUTES = 2;
 
     /**
-     * @return Collection<int, array<string, mixed>>
+     * @return Collection<int, covariant array<string, mixed>>
      */
     public static function execute(User $user): Collection
     {

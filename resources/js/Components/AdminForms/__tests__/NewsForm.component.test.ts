@@ -5,6 +5,7 @@ import NewsForm from '@/Components/AdminForms/NewsForm.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
 import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
+import SEOPreview from '@/Components/AdminForms/SEOPreview.vue';
 
 // Use the real Inertia useForm (which has withPrecognition); only override usePage
 // with a minimal page object. The global inertia mock's useForm lacks withPrecognition.
@@ -72,7 +73,7 @@ describe('NewsForm.vue', () => {
             props: ['permalink', 'baseUrl', 'viewUrl', 'warning', 'hint', 'validating', 'valid', 'invalid'],
             template: '<div data-testid="permalink-field" />',
           },
-          SEOPreview: { template: '<div />' },
+          SEOPreview: { template: '<div />', props: ['description'] },
           OrderedListInput: { template: '<div />' },
           Input: { template: '<input />' },
           Button: { template: '<button><slot /></button>' },
@@ -177,6 +178,12 @@ describe('NewsForm.vue', () => {
     await wrapper.vm.$nextTick();
 
     expect(field.props('warning')).toContain('Pakeitus nuorodą');
+  });
+
+  it('shows plain text in the search preview even with nested markup', () => {
+    wrapper = createWrapper({ news: { ...defaultNews, short: '<p>Labas <scr<b>ipt>pasauli</scr<b>ipt></p>' } });
+
+    expect(wrapper.findComponent(SEOPreview).props('description')).toBe('Labas pasauli');
   });
 
   it('sets the article language with the language segment', async () => {

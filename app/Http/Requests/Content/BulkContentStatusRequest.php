@@ -4,6 +4,10 @@ namespace App\Http\Requests\Content;
 
 /**
  * Publish or unpublish records; `published` is mapped to each model's own column.
+ *
+ * @template TModel of \Illuminate\Database\Eloquent\Model
+ *
+ * @extends BulkContentRequest<TModel>
  */
 abstract class BulkContentStatusRequest extends BulkContentRequest
 {
