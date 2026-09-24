@@ -25,9 +25,9 @@
       <StatusBadge :status="calendar.is_draft ? contentStatuses.draft : contentStatuses.published" />
     </template>
 
-    <!-- Quick status tag next to language switcher for an announced meeting -->
-    <template v-if="meeting" #locale-addon>
+    <template v-if="!isCreate && (meeting || canCreateMeeting)" #locale-addon>
       <a
+        v-if="meeting"
         :href="route('meetings.show', { meeting: meeting.id })"
         target="_blank"
         rel="noopener noreferrer"
@@ -41,6 +41,16 @@
         <span>{{ $t('Susietas su posėdžiu') }}</span>
         <ArrowUpRight class="size-3 text-muted-foreground" />
       </a>
+      <Button
+        v-if="!meeting && canCreateMeeting"
+        type="button"
+        variant="outline"
+        class="min-h-11"
+        @click="openMeetingCreation"
+      >
+        <CalendarClock class="size-4" />
+        {{ $t('meetings.announce.create_from_event') }}
+      </Button>
     </template>
 
     <!-- Title -->
@@ -489,6 +499,7 @@ import { ImageUpload } from '@/Components/ui/upload';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
 import { contentStatuses } from '@/Constants/statuses';
+import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantPublicHost } from '@/Composables/useTenantSubdomain';
 
 const props = withDefaults(defineProps<{
@@ -522,6 +533,16 @@ const emit = defineEmits<{
 }>();
 
 const isCreate = computed(() => !!props.rememberKey);
+const canCreateMeeting = computed(() => Boolean(usePage().props.auth?.can?.create?.meeting));
+const { open: openActionWindow } = useActionWindow();
+
+function openMeetingCreation(): void {
+  openActionWindow({
+    flow: 'meeting.create',
+    calendarEvent: { id: Number(props.calendar.id), title: calendarTitle.value, date: String(props.calendar.date) },
+  });
+}
+
 const deleteConfirmOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
 

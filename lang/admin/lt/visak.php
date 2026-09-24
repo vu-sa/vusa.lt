@@ -135,7 +135,7 @@ return [
 
     // The overview page (PR 5.8): numbers are links, one chart carries a text summary.
     'overview' => [
-        'title' => 'Apžvalga',
+        'title' => 'Tavo apžvalga',
         'lead' => 'Stebėk savo institucijų atstovavimo veiklą: kas vėluoja, kas artėja ir kada kitas posėdis.',
         'scope' => [
             'label' => 'Rodyti',
@@ -160,6 +160,18 @@ return [
             'phone_note' => 'Laiko juostą geriausia žiūrėti didesniame ekrane.',
             'phone_link' => 'Atverti posėdžių sąrašą',
         ],
+        'tenant_link' => 'Padalinių apžvalga',
+        'tenant_spotlight' => [
+            'title' => 'Padalinio vaizdas persikėlė',
+            'description' => 'Padalinių institucijų būklę, atstovų aktyvumą ir laiko juostą dabar rasi atskirame skyriuje „Padaliniai“.',
+        ],
+    ],
+
+    'tenant_overview' => [
+        'title' => 'Padaliniai',
+        'lead' => 'Kurioms padalinio institucijoms reikia dėmesio, kaip keičiasi jų būklė ir kaip aktyvūs atstovai.',
+        'representatives' => 'Atstovų aktyvumas',
+        'insights' => 'Padalinio rodikliai',
     ],
 
     // Gantt chart loading state

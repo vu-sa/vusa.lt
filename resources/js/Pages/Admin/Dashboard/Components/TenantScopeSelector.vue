@@ -27,16 +27,17 @@
           <Button
             variant="outline"
             :class="[
-              'justify-between gap-3',
-              compact ? 'min-w-48' : 'w-full sm:w-auto sm:min-w-56',
+              'h-11 w-full justify-between gap-3 border-foreground/40 px-4 font-semibold hover:border-foreground sm:w-auto sm:min-w-72',
             ]"
             data-testid="tenant-scope-trigger"
             @click="$emit('engage')"
           >
+            <Building2 class="size-4 shrink-0 text-brand" aria-hidden="true" />
             <span class="truncate">{{ triggerLabel }}</span>
-            <span class="shrink-0 text-xs text-muted-foreground">
+            <span class="ml-auto shrink-0 text-xs font-normal tabular-nums text-muted-foreground">
               {{ selectedTenants.length }}/{{ tenants.length }}
             </span>
+            <ChevronDown class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-72">
@@ -86,7 +87,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2 } from 'lucide-vue-next';
+import { Building2, ChevronDown } from 'lucide-vue-next';
 
 import type { AtstovavimasTenant } from '../types';
 

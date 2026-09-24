@@ -29,8 +29,18 @@
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
-            <CollectionPrimaryCell :title="titleOf(item)" :href="isTrash ? undefined : route('calendar.edit', item.id)" :sub="eventTypeOf(item)" />
-            <StatusBadge v-if="item.is_draft" :status="contentStatuses.draft" class="shrink-0" />
+            <CollectionPrimaryCell
+              :title="titleOf(item)"
+              :href="isTrash ? undefined : route('calendar.edit', item.id)"
+              :sub="canEdit && !isTrash ? undefined : eventTypeOf(item)"
+            />
+            <CollectionStatusMenu
+              :status="item.is_draft ? contentStatuses.draft : contentStatuses.published"
+              :model-value="item.is_draft ? 'draft' : 'published'"
+              :options="statusOptions"
+              :editable="canEdit && !isTrash"
+              @update:model-value="value => updateEvent(item, { is_draft: value === 'draft' })"
+            />
           </div>
           <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span class="tabular-nums">{{ dateOf(item) }}</span>
@@ -38,7 +48,26 @@
             <span v-if="item.tenant">{{ item.tenant.shortname }}</span>
           </p>
         </div>
-        <CollectionRowActions :actions="actionsFor(item)" @select="key => select(key, item)" />
+        <div class="flex flex-wrap items-center gap-2">
+          <Select
+            v-if="canEdit && !isTrash"
+            :model-value="item.event_type_id == null ? 'none' : String(item.event_type_id)"
+            @update:model-value="value => updateType(item, String(value))"
+          >
+            <SelectTrigger :aria-label="$t('Renginio tipas')" class="h-9 w-44 border-border bg-background text-xs pointer-coarse:min-h-11">
+              <SelectValue :placeholder="$t('Be tipo')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">
+                {{ $t('Be tipo') }}
+              </SelectItem>
+              <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
+                {{ getTranslatedValue(type.name) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <CollectionRowActions :actions="actionsFor(item)" @select="key => select(key, item)" />
+        </div>
       </article>
     </template>
 
@@ -50,11 +79,32 @@
         :sub="item.tenant?.shortname"
       />
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
-      <template v-else-if="column.key === 'type'">
-        <span v-if="item.event_type" class="text-muted-foreground">{{ eventTypeOf(item) }}</span>
-        <StatusBadge v-else :status="untypedStatus" />
-      </template>
-      <StatusBadge v-else-if="column.key === 'status' && item.is_draft" :status="contentStatuses.draft" />
+      <Select
+        v-else-if="column.key === 'type' && canEdit && !isTrash"
+        :model-value="item.event_type_id == null ? 'none' : String(item.event_type_id)"
+        @update:model-value="value => updateType(item, String(value))"
+      >
+        <SelectTrigger :aria-label="$t('Renginio tipas')" class="h-9 w-full border-border bg-background text-xs pointer-coarse:min-h-11">
+          <SelectValue :placeholder="$t('Be tipo')" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">
+            {{ $t('Be tipo') }}
+          </SelectItem>
+          <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
+            {{ getTranslatedValue(type.name) }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+      <span v-else-if="column.key === 'type'" class="text-muted-foreground">{{ eventTypeOf(item) }}</span>
+      <CollectionStatusMenu
+        v-else-if="column.key === 'status'"
+        :status="item.is_draft ? contentStatuses.draft : contentStatuses.published"
+        :model-value="item.is_draft ? 'draft' : 'published'"
+        :options="statusOptions"
+        :editable="canEdit && !isTrash"
+        @update:model-value="value => updateEvent(item, { is_draft: value === 'draft' })"
+      />
       <CollectionRowActions
         v-else-if="column.key === 'actions'"
         :actions="actionsFor(item)"
@@ -78,21 +128,22 @@
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarPlus, Plus, Tag } from 'lucide-vue-next';
+import { Plus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { CalendarIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { contentStatuses, type StatusPresentation } from '@/Constants/statuses';
-import { useActionWindow } from '@/Composables/useActionWindow';
+import { contentStatuses } from '@/Constants/statuses';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
@@ -113,11 +164,14 @@ const page = usePage();
 const isTrash = isTrashView();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.calendar));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.calendar));
-const canCreateMeeting = computed(() => Boolean(page.props.auth?.can?.create?.meeting));
+const canEdit = computed(() => canCreate.value);
 
 const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.kalendorius')}`);
 
-const untypedStatus: StatusPresentation = { label: 'Be tipo', role: 'attention', icon: Tag };
+const statusOptions = [
+  { value: 'published', status: contentStatuses.published },
+  { value: 'draft', status: contentStatuses.draft },
+];
 
 const facets: DatabaseFacetDefinition[] = [
   {
@@ -167,34 +221,29 @@ const actions = useCollectionRecordActions({
   canForceDelete: () => canForceDelete.value,
 });
 
-const { open: openActionWindow } = useActionWindow();
-
 const eventKey = (item: EventRow) => String(item.id);
 const titleOf = (item: EventRow) => getTranslatedValue(item.title) || $t('Be pavadinimo');
 const eventTypeOf = (item: EventRow) => (item.event_type ? getTranslatedValue(item.event_type.name) : $t('Be tipo'));
 const dateOf = (item: EventRow) => (item.date ? formatDateTime(item.date) : '—');
 
-function actionsFor(item: EventRow) {
-  const shared = actions.rowActions(item, titleOf(item), isTrash);
-
-  if (isTrash || !canCreateMeeting.value || item.meeting_id) {
-    return shared;
-  }
-
-  // An event that stands for a meeting but has none yet: the date is already fixed.
-  return [...shared, { key: `meeting:${item.id}`, label: $t('meetings.announce.create_from_event'), icon: CalendarPlus }];
-}
+const actionsFor = (item: EventRow) => actions.rowActions(item, titleOf(item), isTrash);
 
 function select(key: string, item: EventRow): void {
-  if (key.startsWith('meeting:')) {
-    openActionWindow({
-      flow: 'meeting.create',
-      calendarEvent: { id: Number(item.id), title: titleOf(item), date: String(item.date) },
-    });
-    return;
-  }
-
   actions.select(key, item.force_delete_blocked_reason);
+}
+
+function updateEvent(item: EventRow, patch: Partial<EventRow>): void {
+  const undo = source.patchItems([String(item.id)], patch);
+  router.patch(route('calendar.updateIndex', item.id), patch, {
+    preserveScroll: true,
+    preserveState: true,
+    onError: undo,
+  });
+}
+
+function updateType(item: EventRow, value: string): void {
+  const eventType = props.eventTypes.find(type => String(type.id) === value);
+  updateEvent(item, { event_type_id: eventType?.id ?? null, event_type: eventType });
 }
 
 const columns = computed<CollectionColumn[]>(() => [

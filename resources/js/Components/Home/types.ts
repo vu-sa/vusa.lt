@@ -30,10 +30,13 @@ export interface HomeRecentRecord {
 }
 
 export interface HomeCoordinator {
+  id?: string;
   name: string;
   email: string | null;
   profile_photo_path: string | null;
   duty: string | null;
+  /** The rep's institutions this coordinator covers (GetUserCoordinators). */
+  institutions?: string[];
 }
 
 export interface HomeNewsPreview {

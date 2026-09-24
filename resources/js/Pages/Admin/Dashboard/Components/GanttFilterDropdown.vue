@@ -1,7 +1,8 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button size="sm" variant="outline" data-tour="gantt-filter-trigger">
+      <Button size="sm" variant="outline" class="pointer-coarse:h-11" data-tour="gantt-filter-trigger">
+        <SlidersHorizontal aria-hidden="true" />
         {{ triggerLabel }}
       </Button>
     </DropdownMenuTrigger>
@@ -126,7 +127,7 @@
         <DropdownMenuSeparator />
         <div class="p-1">
           <Button size="sm" variant="ghost" class="w-full justify-start text-muted-foreground" @click="$emit('reset')">
-            <IFluentArrowReset20Regular class="mr-2 h-4 w-4" />
+            <RotateCcw class="mr-2 h-4 w-4" />
             {{ $t('Atstatyti filtrus') }}
           </Button>
         </div>
@@ -138,6 +139,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { RotateCcw, SlidersHorizontal } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import {
@@ -148,7 +150,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
-import IFluentArrowReset20Regular from '~icons/fluent/arrow-reset-20-regular';
 
 interface Tenant {
   id: string | number;

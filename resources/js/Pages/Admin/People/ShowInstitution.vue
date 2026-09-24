@@ -163,8 +163,6 @@
         <TaskManager
           :tasks="taskManagerTasks"
           :taskable="{ id: institution.id, type: ModelEnum.INSTITUTION }"
-          @open-meeting-modal="openMeetingWindow"
-          @open-check-in-dialog="openCheckInModalFromTask"
           @open-task-detail="openTaskDetail"
         />
       </Deferred>
@@ -199,14 +197,12 @@
     @close="showCheckInModal = false"
   />
 
-  <!-- The Tasks tab's "View details" and the periodicity-gap quick actions open this dialog. -->
   <TaskDetailDialog
     v-if="selectedDetailTask"
     :open="showTaskDetail"
     :task="selectedDetailTask"
     @close="closeTaskDetail"
-    @schedule-meeting="scheduleMeetingFromDetail"
-    @report-no-meeting="reportNoMeetingFromDetail"
+    @report="reportFromDetail"
   />
 
   <ConfirmDialog
@@ -486,18 +482,10 @@ const openMeetingWindow = () => actionWindow.open({
   },
 });
 
-// The task-triggered check-in suggests a smarter date range than the plain button's default.
 const showCheckInModal = ref(false);
-const checkInSourceTask = ref<TaskDisplayData | null>(null);
-const checkInRange = computed(() => getSuggestedCheckInRange(checkInSourceTask.value));
+const checkInRange = computed(() => getSuggestedCheckInRange(null));
 
 const openCheckInModal = () => {
-  checkInSourceTask.value = null;
-  showCheckInModal.value = true;
-};
-
-const openCheckInModalFromTask = (task: TaskDisplayData) => {
-  checkInSourceTask.value = task;
   showCheckInModal.value = true;
 };
 
@@ -518,20 +506,17 @@ const closeTaskDetail = () => {
   selectedDetailTask.value = null;
 };
 
-const scheduleMeetingFromDetail = () => {
-  if (selectedDetailTask.value) {
-    closeTaskDetail();
-    openMeetingWindow();
-  }
-};
-
-const reportNoMeetingFromDetail = () => {
-  const task = selectedDetailTask.value;
-
-  if (task) {
-    closeTaskDetail();
-    openCheckInModalFromTask(task);
-  }
+// A periodicity task is always about this institution: record a meeting, or say there was none.
+const reportFromDetail = () => {
+  closeTaskDetail();
+  actionWindow.open({
+    flow: 'institution.report',
+    institution: {
+      id: props.institution.id,
+      name: props.institution.name,
+      isInternal: props.institution.governance_scope === InstitutionScope.Vusa,
+    },
+  });
 };
 
 // --- Meetings tab -----------------------------------------------------------------------------

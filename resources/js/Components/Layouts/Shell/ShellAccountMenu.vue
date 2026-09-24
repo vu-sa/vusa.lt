@@ -181,7 +181,7 @@
 
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
+import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import { useDark } from '@vueuse/core';
 import {
   ArrowUpRight,
@@ -256,6 +256,6 @@ function toggleDarkMode(): void {
 
 function changeLocale(): void {
   const locale = page.props.app?.locale === 'en' ? 'lt' : 'en';
-  router.reload({ data: { lang: locale } });
+  router.reload({ data: { lang: locale }, onSuccess: () => loadLanguageAsync(locale) });
 }
 </script>

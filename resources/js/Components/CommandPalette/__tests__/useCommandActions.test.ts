@@ -20,6 +20,7 @@ const section = (key: string, routeName: string, entityType: string | null = nul
   entityType,
   collectionActions: [],
   matches: [routeName.endsWith('.index') ? `${routeName.slice(0, -5)}*` : routeName],
+  startsGroup: false,
 });
 
 const workspace = (key: string, sections: ReturnType<typeof section>[], createActions: unknown[] = []) => ({

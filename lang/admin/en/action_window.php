@@ -52,6 +52,17 @@ return [
             'description' => 'Set when people hold their duties, on a timeline.',
         ],
     ],
+    'report' => [
+        'title' => 'Report activity',
+        'meeting' => [
+            'title' => 'Record a meeting',
+            'description' => 'A meeting took place or is coming up — record it and its agenda.',
+        ],
+        'no_meeting' => [
+            'title' => 'There was / will be no meeting',
+            'description' => 'Mark a period without meetings so you do not get needless reminders.',
+        ],
+    ],
     'flows' => [
         'new_meeting' => 'New meeting',
         'no_meeting' => 'No meetings',
@@ -164,6 +175,7 @@ return [
         'change' => 'Change',
         'continue' => 'Continue',
         'step' => 'Step',
+        'review' => 'Review',
         'loading' => 'Loading…',
         'error' => 'Could not load the data. Please try again.',
     ],

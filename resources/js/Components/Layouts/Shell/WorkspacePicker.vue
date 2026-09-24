@@ -17,7 +17,7 @@
         >
           <component :is="workspaceIcon(activeWorkspace?.key ?? 'pradzia')" class="size-4 text-brand" />
           <span>{{ activeWorkspace ? $t(activeWorkspace.label) : $t('shell.chrome.workspaces') }}</span>
-          <TaskCountBadge v-if="activeWorkspace?.key !== 'pradzia'" />
+          <TaskCountBadge v-if="onPradzia" />
           <ChevronDown class="size-4 opacity-50 transition-transform" :class="{ 'rotate-180': open }" />
         </Button>
       </PopoverTrigger>
@@ -60,7 +60,11 @@
               v-if="workspace.key === activeWorkspace?.key"
               class="flex flex-wrap gap-x-4 gap-y-1 border-l-2 border-brand-fill pb-3 pl-11 pr-4"
             >
-              <li v-for="section in workspace.sections" :key="section.key">
+              <li
+                v-for="(section, index) in workspace.sections"
+                :key="section.key"
+                :class="index > 0 && section.startsGroup && 'border-l border-border pl-4'"
+              >
                 <Link
                   :href="sectionHref(section)"
                   prefetch
@@ -128,9 +132,11 @@ const props = defineProps<{
 
 const taskBadge = useTaskBadge();
 
-// The trigger only carries the count while Pradžia (which lists it itself) is not the current
-// workspace; an `aria-label` replaces the content, so the badge's text has to be folded in.
-const triggerLabel = computed(() => props.activeWorkspace?.key !== 'pradzia' && taskBadge.value
+// The count belongs to Mano alone, so the trigger carries it only there; an `aria-label`
+// replaces the content, so the badge's text has to be folded in.
+const onPradzia = computed(() => props.activeWorkspace?.key === 'pradzia');
+
+const triggerLabel = computed(() => onPradzia.value && taskBadge.value
   ? `${$t('shell.chrome.workspaces')}, ${taskBadge.value.label}`
   : $t('shell.chrome.workspaces'));
 

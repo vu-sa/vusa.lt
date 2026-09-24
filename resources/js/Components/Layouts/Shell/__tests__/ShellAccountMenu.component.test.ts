@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { loadLanguageAsync } from 'laravel-vue-i18n';
 
 import ShellAccountMenu from '../ShellAccountMenu.vue';
 
@@ -65,5 +66,17 @@ describe('ShellAccountMenu', () => {
     expect(logoutItem?.exists()).toBe(true);
     await logoutItem?.trigger('click');
     expect(router.post).toHaveBeenCalled();
+  });
+
+  it('loads the new language dictionary once the locale reload succeeds', async () => {
+    const wrapper = mountMenu();
+    const languageItem = wrapper.findAll('button').find(b => b.text().includes('shell.account.language'));
+
+    await languageItem?.trigger('click');
+    const options = vi.mocked(router.reload).mock.lastCall?.[0];
+    expect(options?.data).toEqual({ lang: 'en' });
+
+    options?.onSuccess?.({} as never);
+    expect(loadLanguageAsync).toHaveBeenCalledWith('en');
   });
 });

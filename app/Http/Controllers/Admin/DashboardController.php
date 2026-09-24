@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetOnboardingChecklist;
 use App\Actions\GetRecentAccessChanges;
 use App\Actions\GetRecentlyEditedRecords;
-use App\Actions\GetUserCoordinator;
+use App\Actions\GetUserCoordinators;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Requests\ShowAdminHomeRequest;
@@ -129,7 +129,7 @@ class DashboardController extends AdminController
         );
 
         $coordinator = Inertia::defer(
-            fn () => GetUserCoordinator::execute($user),
+            fn () => GetUserCoordinators::execute($user)[0] ?? null,
             $secondary,
         );
 

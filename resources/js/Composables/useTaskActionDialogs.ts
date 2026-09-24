@@ -1,49 +1,30 @@
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
+import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 
 /**
- * Shared wiring for the three modals a `TaskManager` instance asks its page to open:
- * scheduling a meeting, reporting no meeting (a check-in), and the task detail dialog.
- *
- * Every `TaskManager` consumer needs all three bound or its periodicity-gap quick actions and
- * "View details" silently do nothing — several pages shipped without ever wiring them up. Bind
- * the returned handlers to `TaskManager`'s `@open-meeting-modal`, `@open-check-in-dialog`, and
- * `@open-task-detail`, then render `<AddCheckInDialog>` / a `TaskDetailDialog` from the state
- * this returns (see ShowTasks.vue for the reference wiring).
+ * Shared wiring for what a task list asks its page to open: the task detail dialog, and the
+ * action window's "Pranešti apie veiklą" choice for a periodicity-gap task (record a meeting,
+ * or say there was none). Render a `TaskDetailDialog` from the state this returns (see
+ * Pages/Admin/Tasks/IndexTask.vue for the reference wiring).
  */
 export function useTaskActionDialogs() {
   const actionWindow = useActionWindow();
 
-  const showCheckInDialog = ref(false);
   const showTaskDetail = ref(false);
-  const selectedCheckInTask = ref<TaskDisplayData | null>(null);
   const selectedDetailTask = ref<TaskDisplayData | null>(null);
 
-  const checkInRange = computed(() => getSuggestedCheckInRange(selectedCheckInTask.value));
-  const checkInStartDate = computed(() => checkInRange.value.start);
-  const checkInEndDate = computed(() => checkInRange.value.end);
-
-  const openMeetingModal = (task: TaskDisplayData) => {
+  const openReportWindow = (task: TaskDisplayData) => {
+    // An orphaned task has no institution left to report on.
     if (!task.taskable) {
       return;
     }
 
     actionWindow.open({
-      flow: 'meeting.create',
-      institution: { id: task.taskable_id, name: task.taskable.name } as App.Entities.Institution,
+      flow: 'institution.report',
+      institution: { id: String(task.taskable_id), name: task.taskable.name ?? '' },
     });
-  };
-
-  const openCheckInDialog = (task: TaskDisplayData) => {
-    selectedCheckInTask.value = task;
-    showCheckInDialog.value = true;
-  };
-
-  const closeCheckInDialog = () => {
-    showCheckInDialog.value = false;
-    selectedCheckInTask.value = null;
   };
 
   const openTaskDetail = (task: TaskDisplayData) => {
@@ -56,39 +37,22 @@ export function useTaskActionDialogs() {
     selectedDetailTask.value = null;
   };
 
-  const scheduleMeetingFromDetail = () => {
+  const reportFromDetail = () => {
     const task = selectedDetailTask.value;
     if (!task) {
       return;
     }
 
     closeTaskDetail();
-    openMeetingModal(task);
-  };
-
-  const reportNoMeetingFromDetail = () => {
-    const task = selectedDetailTask.value;
-    if (!task) {
-      return;
-    }
-
-    closeTaskDetail();
-    openCheckInDialog(task);
+    openReportWindow(task);
   };
 
   return {
-    showCheckInDialog,
     showTaskDetail,
-    selectedCheckInTask,
     selectedDetailTask,
-    checkInStartDate,
-    checkInEndDate,
-    openMeetingModal,
-    openCheckInDialog,
-    closeCheckInDialog,
+    openReportWindow,
     openTaskDetail,
     closeTaskDetail,
-    scheduleMeetingFromDetail,
-    reportNoMeetingFromDetail,
+    reportFromDetail,
   };
 }

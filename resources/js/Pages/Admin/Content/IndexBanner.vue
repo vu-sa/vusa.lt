@@ -3,7 +3,7 @@
     :source
     collection="banners"
     entity-type="banner"
-    :eyebrow="isDeleted ? $t('Ištrinti baneriai') : ($t('shell.workspaces.website.title') + ' · ' + $t('Baneriai'))"
+    :eyebrow="isDeleted ? $t('Ištrinti baneriai') : `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.baneriai')}`"
     :title="isDeleted ? $t('Ištrinti baneriai') : $t('Baneriai')"
     :lead="isDeleted ? $t('Peržiūrėk ištrintus banerius arba atkurk juos.') : $t('Tvarkyk reklaminius skydelius ir partnerių banerius.')"
     default-view="table"
@@ -11,7 +11,9 @@
     :item-key="bannerKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
+    :quick-filters
     :search-placeholder="$t('Ieškoti banerių…')"
+    @quick-filter="id => source.toggleFilter(id, '1')"
   >
     <template #actions>
       <Button v-if="canCreate && !isDeleted" as-child variant="brand" size="lg">
@@ -25,9 +27,20 @@
     <template #row="{ item }">
       <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4">
         <div class="flex min-w-0 flex-1 items-center gap-3">
-          <div v-if="item.image_url" class="size-10 shrink-0 overflow-hidden border border-border bg-muted">
-            <img :src="item.image_url" :alt="item.title" class="size-full object-cover">
-          </div>
+          <HoverCard v-if="item.image_url" :open-delay="150">
+            <HoverCardTrigger as-child>
+              <button
+                type="button"
+                class="size-10 shrink-0 overflow-hidden border border-border bg-muted focus-visible:outline-2 focus-visible:outline-ring pointer-coarse:size-11"
+                :aria-label="`${$t('Peržiūrėti')} · ${item.title}`"
+              >
+                <img :src="item.image_url" :alt="item.title" class="size-full object-cover">
+              </button>
+            </HoverCardTrigger>
+            <HoverCardContent class="w-80 overflow-hidden rounded-none p-2 shadow-none sm:w-96">
+              <img :src="item.image_url" :alt="item.title" class="max-h-72 w-full object-contain">
+            </HoverCardContent>
+          </HoverCard>
           <div v-else class="flex size-10 shrink-0 items-center justify-center border border-border bg-muted text-muted-foreground">
             <ImageIcon class="size-5" />
           </div>
@@ -40,12 +53,6 @@
               >
                 {{ item.title }}
               </Link>
-              <span
-                v-if="!item.is_active"
-                class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
-              >
-                {{ $t('Neaktyvus') }}
-              </span>
             </div>
             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span v-if="item.tenant?.shortname" class="font-medium">{{ item.tenant.shortname }}</span>
@@ -63,6 +70,13 @@
             </div>
           </div>
         </div>
+        <CollectionStatusMenu
+          :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive"
+          :model-value="item.is_active ? 'active' : 'inactive'"
+          :options="statusOptions"
+          :editable="canCreate && !isDeleted"
+          @update:model-value="value => updateStatus(item, value === 'active')"
+        />
         <div class="flex shrink-0 items-center gap-1">
           <Button as-child variant="outline" size="icon">
             <Link :href="route('banners.edit', item.id)">
@@ -75,9 +89,20 @@
 
     <template #cell="{ item, column }">
       <div v-if="column.key === 'title'" class="flex min-w-0 items-center gap-3">
-        <div v-if="item.image_url" class="size-8 shrink-0 overflow-hidden border border-border bg-muted">
-          <img :src="item.image_url" :alt="item.title" class="size-full object-cover">
-        </div>
+        <HoverCard v-if="item.image_url" :open-delay="150">
+          <HoverCardTrigger as-child>
+            <button
+              type="button"
+              class="size-8 shrink-0 overflow-hidden border border-border bg-muted focus-visible:outline-2 focus-visible:outline-ring pointer-coarse:size-11"
+              :aria-label="`${$t('Peržiūrėti')} · ${item.title}`"
+            >
+              <img :src="item.image_url" :alt="item.title" class="size-full object-cover">
+            </button>
+          </HoverCardTrigger>
+          <HoverCardContent class="w-80 overflow-hidden rounded-none p-2 shadow-none sm:w-96">
+            <img :src="item.image_url" :alt="item.title" class="max-h-72 w-full object-contain">
+          </HoverCardContent>
+        </HoverCard>
         <div v-else class="flex size-8 shrink-0 items-center justify-center border border-border bg-muted text-muted-foreground">
           <ImageIcon class="size-4" />
         </div>
@@ -108,20 +133,14 @@
         {{ item.tenant?.shortname ?? '—' }}
       </span>
 
-      <span v-else-if="column.key === 'is_active'">
-        <span
-          v-if="item.is_active"
-          class="border border-[var(--status-success-border)] bg-[var(--status-success-surface)] px-1.5 py-0.5 text-xs font-medium text-[var(--status-success)]"
-        >
-          {{ $t('Aktyvus') }}
-        </span>
-        <span
-          v-else
-          class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
-        >
-          {{ $t('Neaktyvus') }}
-        </span>
-      </span>
+      <CollectionStatusMenu
+        v-else-if="column.key === 'is_active'"
+        :status="item.is_active ? bannerStatuses.active : bannerStatuses.inactive"
+        :model-value="item.is_active ? 'active' : 'inactive'"
+        :options="statusOptions"
+        :editable="canCreate && !isDeleted"
+        @update:model-value="value => updateStatus(item, value === 'active')"
+      />
 
       <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
         <template v-if="isDeleted">
@@ -153,9 +172,9 @@
       <EmptyState
         :mode="isFiltered ? 'no-results' : 'empty'"
         :icon="BannerIcon"
-        :title="isDeleted ? $t('Ištrintų banerių nėra') : $t('Banerių dar nėra')"
-        :description="isDeleted ? $t('Šiukšliadėžėje nėra pašalintų banerių.') : $t('Sukurk pirmąjį banerį, kad jis būtų rodomas svetainėje.')"
-        :action-label="canCreate && !isDeleted ? $t('Naujas baneris') : undefined"
+        :title="emptyTitle"
+        :description="emptyDescription"
+        :action-label="canCreate && !isDeleted && !isFiltered ? $t('Naujas baneris') : undefined"
         @action="router.visit(route('banners.create'))"
       />
     </template>
@@ -179,12 +198,15 @@ import { ChevronRight, Edit, ExternalLink, Image as ImageIcon, Plus, RotateCcw, 
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
-import type { CollectionColumn } from '@/Components/Collection/types';
+import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
+import { bannerStatuses } from '@/Constants/statuses';
 import { BannerIcon } from '@/Components/icons';
-import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
+import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 
 const entityName = 'banner';
 
@@ -209,12 +231,25 @@ const props = defineProps<{
 }>();
 
 const isDeleted = computed(() => Boolean(props.showDeleted));
-const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.banner ?? true));
+const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.banner));
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.banner));
 
 const targetBannerToForceDelete = ref<BannerRow | null>(null);
 
 const bannerKey = (item: BannerRow) => String(item.id);
+const statusOptions = [
+  { value: 'active', status: bannerStatuses.active },
+  { value: 'inactive', status: bannerStatuses.inactive },
+];
+const facets: DatabaseFacetDefinition[] = [{
+  field: 'is_active',
+  label: $t('Būsena'),
+  single: true,
+  values: [
+    { value: '1', label: $t('Aktyvus') },
+    { value: '0', label: $t('Neaktyvus') },
+  ],
+}];
 
 const source = useDatabaseCollectionSource<BannerRow>({
   endpoint: route('api.v1.admin.banners.index'),
@@ -231,6 +266,15 @@ const source = useDatabaseCollectionSource<BannerRow>({
     { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)') },
   ],
   preserveUrlKeys: ['showDeleted'],
+  facets,
+});
+
+const quickFilters = computed<CollectionQuickFilter[]>(() => {
+  if (isDeleted.value) {
+    return [];
+  }
+
+  return [{ id: 'is_active', label: $t('Aktyvus'), active: source.filters.value.is_active === '1' }];
 });
 
 const columns = computed<CollectionColumn[]>(() => [
@@ -242,6 +286,25 @@ const columns = computed<CollectionColumn[]>(() => [
 ]);
 
 const isFiltered = computed(() => source.query.value.trim() !== '' || source.activeFilterCount.value > 0);
+const emptyTitle = computed(() => {
+  if (isFiltered.value) return undefined;
+  return isDeleted.value ? $t('Ištrintų banerių nėra') : $t('Banerių dar nėra');
+});
+const emptyDescription = computed(() => {
+  if (isFiltered.value) return undefined;
+  return isDeleted.value
+    ? $t('Šiukšliadėžėje nėra pašalintų banerių.')
+    : $t('Sukurk pirmąjį banerį, kad jis būtų rodomas svetainėje.');
+});
+
+function updateStatus(item: BannerRow, active: boolean): void {
+  const undo = source.patchItems([String(item.id)], { is_active: active ? 1 : 0 });
+  router.patch(route('banners.updateStatus', item.id), { is_active: active }, {
+    preserveScroll: true,
+    preserveState: true,
+    onError: undo,
+  });
+}
 
 function restoreBanner(item: BannerRow): void {
   router.patch(route('banners.restore', item.id), {}, {

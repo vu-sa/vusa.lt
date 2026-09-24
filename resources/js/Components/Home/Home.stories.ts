@@ -52,7 +52,7 @@ export const CoordinatorAndRecent: Story = {
     }),
     template: `
       <div class="grid max-w-4xl gap-8 bg-background p-6 text-foreground lg:grid-cols-2">
-        <CoordinatorCard :coordinator="coordinator" />
+        <CoordinatorCard :coordinators="[coordinator]" />
         <RecentlyEditedList :records="records" />
         <OverviewSection title="Artimiausi posėdžiai" empty empty-text="artimiausiu metu nieko nesuplanuota" />
       </div>`,

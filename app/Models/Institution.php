@@ -16,6 +16,7 @@ use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
+use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
@@ -361,6 +362,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
                 ->all(),
             // Self-referential institution_ids for .own permission filtering
             'institution_ids' => [(string) $this->id],
+            'activity_status' => app(InstitutionActivityStatusService::class)->resolve($this)->status->value,
             'current_user_names' => $currentUserNames,
             'duty_names' => $dutyNames,
             'created_at' => $this->created_at->timestamp,

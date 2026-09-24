@@ -118,8 +118,6 @@
         :tasks
         :task-stats
         :disabled="false"
-        @open-meeting-modal="openMeetingModal"
-        @open-check-in-dialog="openCheckInDialog"
         @open-task-detail="openTaskDetail"
       />
     </template>
@@ -193,24 +191,12 @@
 
   <DutiableTimelineDialog v-model:open="timelineOpen" scope-type="user" :scope-id="user.id" />
 
-  <!-- Check-in dialog for periodicity gap tasks assigned to this user -->
-  <AddCheckInDialog
-    v-if="selectedCheckInTask"
-    :open="showCheckInDialog"
-    :institution-id="selectedCheckInTask.taskable_id"
-    :institution-name="selectedCheckInTask.taskable?.name"
-    :initial-start-date="checkInStartDate"
-    :initial-end-date="checkInEndDate"
-    @close="closeCheckInDialog"
-  />
-
   <TaskDetailDialog
     v-if="selectedDetailTask"
     :open="showTaskDetail"
     :task="selectedDetailTask"
     @close="closeTaskDetail"
-    @schedule-meeting="scheduleMeetingFromDetail"
-    @report-no-meeting="reportNoMeetingFromDetail"
+    @report="reportFromDetail"
   />
 </template>
 
@@ -241,7 +227,6 @@ import { changeDutyNameEndings } from '@/Utils/String';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { todayIso } from '@/Utils/dateTime';
 
-const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
 type Pivot = { id?: string; start_date?: string; end_date?: string | null; additional_email?: string | null; use_original_duty_name?: boolean };
@@ -507,19 +492,11 @@ const saveRoles = () => {
 // --- Tasks ------------------------------------------------------------------------------------
 
 const {
-  showCheckInDialog,
   showTaskDetail,
-  selectedCheckInTask,
   selectedDetailTask,
-  checkInStartDate,
-  checkInEndDate,
-  openMeetingModal,
-  openCheckInDialog,
-  closeCheckInDialog,
   openTaskDetail,
   closeTaskDetail,
-  scheduleMeetingFromDetail,
-  reportNoMeetingFromDetail,
+  reportFromDetail,
 } = useTaskActionDialogs();
 
 usePageBreadcrumbs(() =>

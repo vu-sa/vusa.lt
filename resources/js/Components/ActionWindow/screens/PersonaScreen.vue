@@ -1,5 +1,5 @@
 <template>
-  <ActionWindowScreen centered :title="$t('action_window.personas.title')">
+  <ActionWindowScreen>
     <ActionChoiceList>
       <ActionChoiceButton
         v-for="persona in personas"

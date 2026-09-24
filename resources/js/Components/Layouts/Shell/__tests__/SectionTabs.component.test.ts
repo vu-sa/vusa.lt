@@ -32,6 +32,17 @@ describe('SectionTabs', () => {
     expect(wrapper.findAll('a').every(link => link.classes().includes('font-bold'))).toBe(true);
   });
 
+  it('draws a separator before a section that starts a group, but never before the first tab', () => {
+    const grouped = workspace('atstovavimas', [
+      section('apzvalga', 'dashboard.atstovavimas', true),
+      section('uzduociu_suvestine', 'tasks.summary'),
+      section('institucijos', 'institutions.index', true),
+    ]);
+    const items = mount(SectionTabs, { props: { workspace: grouped } }).findAll('li');
+
+    expect(items.map(item => item.classes().includes('border-l'))).toEqual([false, false, true]);
+  });
+
   it('marks the active section with aria-current and a brand rule', () => {
     const wrapper = mount(SectionTabs, { props: { workspace: atstovavimas, activeSection: atstovavimas.sections[1] } });
     const [overview, meetings] = wrapper.findAll('a');

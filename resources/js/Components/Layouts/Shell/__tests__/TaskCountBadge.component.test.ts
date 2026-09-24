@@ -5,8 +5,9 @@ import { reactive } from 'vue';
 import MobileBottomBar from '../MobileBottomBar.vue';
 import SectionTabs from '../SectionTabs.vue';
 import TaskCountBadge from '../TaskCountBadge.vue';
+import WorkspacePicker from '../WorkspacePicker.vue';
 
-import { pradzia } from './fixtures';
+import { atstovavimas, pradzia } from './fixtures';
 
 const page = reactive({ props: { auth: { user: { tasks_count: 0, overdue_tasks_count: 0 } } } });
 
@@ -63,5 +64,20 @@ describe('where the badge sits', () => {
     const links = mount(MobileBottomBar, { props: { activeWorkspace: pradzia } }).findAll('a');
 
     expect(links.map(link => link.find('[data-slot="task-count-badge"]').exists())).toEqual([false, true, false]);
+  });
+
+  it('is on the workspace picker trigger only while Mano is the current workspace', () => {
+    const stubs = {
+      Popover: { template: '<div><slot /></div>' },
+      PopoverTrigger: { template: '<div data-testid="trigger"><slot /></div>' },
+      PopoverContent: { template: '<div data-testid="panel"><slot /></div>' },
+    };
+    const triggerBadge = (activeWorkspace: typeof pradzia) => mount(WorkspacePicker, {
+      props: { workspaces: [pradzia, atstovavimas], activeWorkspace },
+      global: { stubs },
+    }).find('[data-testid="trigger"] [data-slot="task-count-badge"]').exists();
+
+    expect(triggerBadge(pradzia)).toBe(true);
+    expect(triggerBadge(atstovavimas)).toBe(false);
   });
 });

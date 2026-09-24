@@ -5,6 +5,27 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.20 — Aiškesnė ViSAK apžvalga (2026-09-24) {#v2-20}
+
+- ✨ **Daugiau vietos puslapių apačioje** — administravimo puslapius gali nuslinkti toliau, todėl paskutinis turinys nelieka prispaustas prie ekrano krašto
+- ✨ **Aiškesnė Pradžios tvarka** — „Eiti į“ nuorodos turi atskirą viso pločio eilutę ir kompiuteryje telpa keturios greta; tavo institucijos, kai prieinamos, rodomos šalia greitųjų veiksmų
+- 🔧 **Posėdžio kūrimas kitam padaliniui** — sukūrus viešą posėdį kitam padaliniui, jo puslapis vėl atsidaro be klaidos
+- ✨ **Padalinių apžvalga – atskiras skyrius** — padalinio institucijų būklė, atstovų aktyvumas ir laiko juosta dabar skyriuje „Padaliniai“, o ViSAK apžvalga rodo tik tavo institucijas; senos nuorodos į padalinio vaizdą veda į naują skyrių
+- ✨ **Apžvalga dviem stulpeliais** — kairėje matai skaičius, kurioms institucijoms reikia dėmesio, ir artimiausius posėdžius, dešinėje – koordinatorius; padalinio puslapyje būklės pokyčiai ir atstovų aktyvumas perjungiami skirtukais, o ilgas institucijų sąrašas rodo penkias svarbiausias, visas kitas rasi lange su paieška
+- ✨ **Visi tavo koordinatoriai** — jei atstovauji kelių padalinių institucijose, matai kiekvieno padalinio koordinatorių ir kurias institucijas jis kuruoja
+- ✨ **Vienodesnės laiko juostos** — posėdžių laiko juosta atrodo kaip pareigybių laikotarpių: tie patys mastelio mygtukai, stačiakampiai rėmai ir spalvos, o šiandienos linija pažymėta VU SA spalva
+- ✨ **Užduotys viename sąraše** — tavo užduotys ir padalinio užduotys dabar tas pats sąrašas su paieška, filtrais ir peržiūros skydeliu; greitieji filtrai rodo, kiek užduočių vėluoja, kiek užbaigs sistema ir kiek jau atlikta, o užduotį pažymi atlikta vienu paspaudimu tiesiai eilutėje. Jei gali matyti padalinio užduotis, prie savo sąrašo rasi mygtuką „Visos užduotys“
+- ✨ **Vienas mygtukas pranešti apie veiklą** — užduotyje „Pranešti apie veiklą“ dabar atveria veiksmų langą su dviem pasirinkimais: „Fiksuoti posėdį“ arba „Posėdžio nebuvo / nebus“; institucijų, posėdžių ir narių puslapiuose užduotys rodomos tokiomis pat eilutėmis kaip užduočių sąraše, o „Rodyti visas“ parodo ir atliktas
+- ✨ **Tvarkingesnis ViSAK meniu** — „Užduotys“ (buvusi „Užduočių suvestinė“) rodoma iškart po „Padaliniai“, o sąrašai nuo „Institucijos“ atskirti linija; užduočių skaičius prie darbo sričių rodomas tik ties „Mano“
+- ✨ **Skaičiai veda į atfiltruotus sąrašus** — ViSAK apžvalgoje paspaudęs „Vėluoja“ ar „Artėja“ atsidursi institucijų sąraše, atfiltruotame pagal veiklos būklę; institucijas pagal aktyvumą gali filtruoti ir pats. Apžvalga pervadinta į „Tavo apžvalga“, o skyrių sąrašas perkeltas į „Padaliniai“
+- 🔧 **Tikras padalinio užduočių skaičius** — „Padaliniai“ apžvalgoje atvirų užduočių skaičius dabar rodo pasirinktų padalinių užduotis, o ne tavo asmenines, ir veda į jų sąrašą
+
+## v2.19 — Patogesni turinio sąrašai (2026-09-24) {#v2-19}
+
+- 🔧 **Aiškesni naujienų ir žymų sąrašai** — naujienų veiksmai telpa lentelėje, padalinių filtras rodo trumpus pavadinimus, o žymas gali redaguoti matomu mygtuku tiesiai lentelėje
+- ✨ **Renginius ir banerius redaguok sąraše** — renginio būseną ir tipą bei banerio aktyvumą gali pakeisti tiesiai lentelėje; banerius taip pat gali filtruoti pagal aktyvumą ir peržiūrėti didesnį vaizdą užvedęs ant nuotraukos
+- ✨ **Aiškesni naujienų ir renginių veiksmai** — naujienų lentelėje pavadinimas telpa per dvi eilutes be nuorodos adreso, o posėdžio kūrimas iš renginio dabar pasiekiamas renginio formoje
+
 ## v2.18 — Vienodi sąrašai visoje Mano VU SA (2026-09-23) {#v2-18}
 
 - 🔧 **Patogesnis nuotraukų apkirpimas** — proporcijų mygtukai vėl veikia, redagavimo langas aiškesnis telefone, o išsaugoti kadrai išlieka ryškesni

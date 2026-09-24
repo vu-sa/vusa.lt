@@ -15,11 +15,11 @@ import type { Locale } from 'date-fns';
 import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
 
 /**
- * Shared presentation rules for a task. TaskTable (desktop) and TaskCard (mobile) render the
+ * Shared presentation rules for a task. TaskRow and the task collection render the
  * same task in two shapes, so every action-type switch lives here rather than in both.
  */
 
-/** The shape both TaskTable and TaskCard receive from the task endpoints. */
+/** The shape every task list receives from the task endpoints. */
 export interface TaskDisplayData {
   id: string;
   name: string;

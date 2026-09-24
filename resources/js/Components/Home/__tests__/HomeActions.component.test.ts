@@ -118,4 +118,24 @@ describe('home actions', () => {
       ['/mano/forms/reps', 'home.quick_access.rep_registrations'],
     ]);
   });
+
+  it('lays out four permitted destinations in one desktop row', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { can: { accessAdministration: true } },
+      adminNavigation: { workspaces: [pradzia, rezervacijos] },
+    }) as ReturnType<typeof usePage>);
+
+    const wrapper = mount(QuickAccess, {
+      props: {
+        registrationForms: [
+          { key: 'member', href: '/mano/forms/member' },
+          { key: 'student_rep', href: '/mano/forms/reps' },
+        ],
+      },
+      global: { stubs: { SpotlightPopover: { template: '<div><slot /></div>' } } },
+    });
+
+    expect(wrapper.find('[data-slot="navigation-tiles"]').classes()).toContain('lg:grid-cols-4');
+    expect(wrapper.findAll('[data-slot="navigation-tiles"] > li')).toHaveLength(4);
+  });
 });

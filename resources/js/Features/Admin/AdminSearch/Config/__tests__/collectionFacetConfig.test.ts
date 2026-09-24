@@ -32,6 +32,15 @@ describe('page facets', () => {
   });
 });
 
+describe('news facets', () => {
+  it('filters news by tenant short name', () => {
+    const config = getCollectionFacetConfig('news');
+
+    expect(config?.facetBy).toContain('tenant_shortname');
+    expect(config?.fields.find(field => field.label === 'Padalinys')?.field).toBe('tenant_shortname');
+  });
+});
+
 describe('resolveSortValue', () => {
   it('expands the relevance sentinel into a bucketed text_match sort with a date tiebreak', () => {
     expect(resolveSortValue('meetings', RELEVANCE_SORT_VALUE))

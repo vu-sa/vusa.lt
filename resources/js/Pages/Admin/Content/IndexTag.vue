@@ -28,6 +28,10 @@
       <article class="flex min-h-16 items-center gap-3 px-4 py-4">
         <CollectionPrimaryCell class="flex-1" :title="title(item)" :clickable="!isDeleted" :sub="item.alias" mono @open="openSheet(item)" />
         <span v-if="item.is_topic" class="text-xs text-muted-foreground">{{ $t('Teminė') }}</span>
+        <Button v-if="!isDeleted" variant="outline" size="sm" class="shrink-0" @click="openSheet(item)">
+          <Pencil aria-hidden="true" class="size-4" />
+          {{ $t('Redaguoti') }}
+        </Button>
       </article>
     </template>
 
@@ -36,6 +40,10 @@
       <span v-else-if="column.key === 'alias'">{{ item.alias || '—' }}</span>
       <span v-else-if="column.key === 'topic'">{{ item.is_topic ? $t('Taip') : '—' }}</span>
       <span v-else-if="column.key === 'created'" class="tabular-nums">{{ formatDate(new Date(item.created_at)) }}</span>
+      <Button v-else-if="column.key === 'actions'" variant="outline" size="sm" @click="openSheet(item)">
+        <Pencil aria-hidden="true" class="size-4" />
+        {{ $t('Redaguoti') }}
+      </Button>
     </template>
 
     <template #preview="{ item }">
@@ -109,7 +117,7 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Merge, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { Merge, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -170,6 +178,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'alias', label: $t('Alias'), class: 'w-48' },
   { key: 'topic', label: $t('Tema'), class: 'w-28' },
   { key: 'created', label: $t('Sukurta'), class: 'w-32' },
+  ...(!isDeleted.value ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-36 text-right', pinned: true }] : []),
 ]);
 
 const tagKey = (tag: Tag) => String(tag.id);

@@ -3,8 +3,7 @@
     <p v-if="heading" class="pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
       {{ heading }}
     </p>
-    <!-- Hairlines, not a box per choice: the whole list is one thing you pick from. -->
-    <div class="flex flex-col divide-y divide-border border-y border-border">
+    <div class="flex flex-col gap-2">
       <slot />
     </div>
   </div>

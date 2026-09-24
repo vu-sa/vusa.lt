@@ -160,9 +160,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     .attr('height', d => getRectHeight(d.institution_id))
     .attr('fill', colors.safetyBandFlat ?? colors.safetyBandMid)
     .attr('stroke', colors.safetyBandStroke ?? 'transparent')
-    .attr('stroke-width', 1)
-    .attr('rx', 4)
-    .attr('ry', 4);
+    .attr('stroke-width', 1);
 
   // Meeting icons group
   const dotGroup = g.append('g').attr('class', 'meeting-icons');

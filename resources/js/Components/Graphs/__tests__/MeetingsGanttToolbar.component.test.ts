@@ -62,10 +62,7 @@ describe('MeetingsGanttToolbar', () => {
   it('emits update:detailsExpanded when the details toggle is clicked', async () => {
     wrapper = mountToolbar({ detailsExpanded: false });
 
-    // Details toggle is the first button inside the right-hand controls group.
-    const detailsButton = wrapper.find('button svg path[d^="M3 4a1 1 0 011-1h12"]').element
-      .closest('button') as HTMLButtonElement;
-    await detailsButton.click();
+    await wrapper.get('[data-slot="gantt-details-toggle"]').trigger('click');
 
     expect(wrapper.emitted('update:detailsExpanded')).toEqual([[true]]);
   });

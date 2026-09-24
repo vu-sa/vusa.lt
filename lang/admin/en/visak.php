@@ -135,7 +135,7 @@ return [
 
     // The overview page (PR 5.8): numbers are links, one chart carries a text summary.
     'overview' => [
-        'title' => 'Overview',
+        'title' => 'Your overview',
         'lead' => 'Keep an eye on how your institutions are represented: what is overdue, what is coming up and when the next meeting is.',
         'scope' => [
             'label' => 'Show',
@@ -160,6 +160,18 @@ return [
             'phone_note' => 'The timeline is best viewed on a larger screen.',
             'phone_link' => 'Open the meetings list',
         ],
+        'tenant_link' => 'Units overview',
+        'tenant_spotlight' => [
+            'title' => 'The unit view has moved',
+            'description' => 'Institution health, representative activity and the unit timeline now live in their own section, “Units”.',
+        ],
+    ],
+
+    'tenant_overview' => [
+        'title' => 'Units',
+        'lead' => 'Which of the unit\'s institutions need attention, how their status is changing and how active the representatives are.',
+        'representatives' => 'Representative activity',
+        'insights' => 'Unit indicators',
     ],
 
     // Gantt chart loading state

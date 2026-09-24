@@ -13,7 +13,7 @@
           v-for="(section, index) in workspace.sections"
           :key="section.key"
           :ref="(el) => setItemRef(el, index)"
-          :class="['shrink-0', overflowIndexes.has(index) && 'invisible']"
+          :class="['shrink-0', overflowIndexes.has(index) && 'invisible', startsGroup(section, index) && 'ml-2 border-l border-border pl-2']"
           :aria-hidden="overflowIndexes.has(index) || undefined"
         >
           <Link
@@ -48,23 +48,24 @@
           <ChevronDown class="size-3.5 shrink-0 opacity-60" aria-hidden="true" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-60 rounded-none p-1 shadow-none">
-          <DropdownMenuItem
-            v-for="section in overflowing"
-            :key="section.key"
-            as-child
-            class="cursor-pointer gap-3 rounded-none px-3 py-2.5 text-sm font-medium pointer-coarse:min-h-11"
-          >
-            <Link
-              :href="sectionHref(section)"
-              prefetch
-              :cache-for="SHELL_PREFETCH_CACHE_FOR"
-              v-bind="ariaCurrent(section.key === activeSection?.key)"
+          <template v-for="(section, index) in overflowing" :key="section.key">
+            <DropdownMenuSeparator v-if="index > 0 && section.startsGroup" />
+            <DropdownMenuItem
+              as-child
+              class="cursor-pointer gap-3 rounded-none px-3 py-2.5 text-sm font-medium pointer-coarse:min-h-11"
             >
-              <component :is="sectionIcon(section)" class="size-4 shrink-0" aria-hidden="true" />
-              <span class="flex-1">{{ $t(section.label) }}</span>
-              <TaskCountBadge v-if="hasTaskBadge(section)" />
-            </Link>
-          </DropdownMenuItem>
+              <Link
+                :href="sectionHref(section)"
+                prefetch
+                :cache-for="SHELL_PREFETCH_CACHE_FOR"
+                v-bind="ariaCurrent(section.key === activeSection?.key)"
+              >
+                <component :is="sectionIcon(section)" class="size-4 shrink-0" aria-hidden="true" />
+                <span class="flex-1">{{ $t(section.label) }}</span>
+                <TaskCountBadge v-if="hasTaskBadge(section)" />
+              </Link>
+            </DropdownMenuItem>
+          </template>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -83,6 +84,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 import {
@@ -108,6 +110,8 @@ const overflowing = computed(() => sections.value.filter((_, index) => overflowI
 const activeOverflowing = computed(() => overflowing.value.find(section => section.key === props.activeSection?.key));
 
 const hasTaskBadge = (section: AdminSection) => props.workspace?.key === 'pradzia' && section.key === 'uzduotys';
+
+const startsGroup = (section: AdminSection, index: number) => index > 0 && section.startsGroup;
 
 const tabClass = (active: boolean) => [
   'flex h-10 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-sm font-bold transition-colors pointer-coarse:h-11',

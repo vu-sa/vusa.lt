@@ -28,12 +28,6 @@ return [
             'save' => 'Pakeitimai',
         ],
 
-        'zoom' => [
-            'label' => 'Mastelis',
-            'in' => 'Priartinti',
-            'out' => 'Atitolinti',
-        ],
-
         'legend' => [
             'title' => 'Žymėjimai',
             'active' => 'Dabartinis',

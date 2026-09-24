@@ -5,6 +5,27 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.20 — A clearer ViSAK overview (2026-09-24) {#v2-20}
+
+- ✨ **More room at the bottom of pages** — admin pages scroll farther so the final content has space below it
+- ✨ **Clearer Home layout** — “Go to” links have a full-width row with four tiles across on desktop, and your institutions appear beside quick actions when available
+- 🔧 **Creating meetings for another unit** — after creating a public meeting for another unit, its page opens without an error again
+- ✨ **Units overview is its own section** — institution health, representative activity and the timeline for a unit now live under "Units", while the ViSAK overview shows only your institutions; old links to the unit view lead to the new section
+- ✨ **Two-column overview** — numbers, institutions that need attention and upcoming meetings on the left, coordinators on the right; on the unit page, status trends and representative activity switch with tabs, and a long institution list shows the five most urgent, with the rest in a searchable dialog
+- ✨ **All your coordinators** — if you represent institutions in several units, you see each unit's coordinator and which institutions they cover
+- ✨ **More consistent timelines** — the meetings timeline now matches the duty-terms timeline: the same zoom buttons, square frames and colours, with today's line in VU SA colour
+- ✨ **Tasks in one list** — your tasks and your units' tasks are now the same list, with search, filters and a preview pane; quick filters show how many tasks are overdue, how many the system will close itself and how many are done, and you mark a task done with one click right in the row. If you can see unit tasks, your own list has an "All tasks" button
+- ✨ **One button to report activity** — "Report activity" on a task now opens the action window with two choices: "Record a meeting" or "There was / will be no meeting"; tasks on institution, meeting and member pages use the same rows as the task list, and "Show all" adds the completed ones
+- ✨ **Tidier ViSAK menu** — "Tasks" (formerly "Task summary") sits right after "Units", and the lists from "Institutions" onwards are set apart by a divider; the task count on the workspace switcher now appears only on "Mano"
+- ✨ **Numbers open filtered lists** — on the ViSAK overview, "Overdue" and "Approaching" open the institutions list filtered by activity status, and you can filter institutions by activity yourself. The overview is renamed "Your overview", and the section tiles moved to "Units"
+- 🔧 **Real unit task count** — the open-task number on the "Units" overview now counts the selected units' tasks instead of your personal ones, and links to them
+
+## v2.19 — Easier content lists (2026-09-24) {#v2-19}
+
+- 🔧 **Clearer News and Tags lists** — News actions fit in the table, the unit filter shows short names, and Tags have a visible edit button in table view
+- ✨ **Edit events and banners in the list** — change an event's status or type and a banner's active status directly in the table; filter banners by active status and hover over an image for a larger preview
+- ✨ **Clearer news and event actions** — news titles fit on two lines without the permalink in the table, and creating a meeting from an event is now available in the event form
+
 ## v2.18 — Consistent lists across Mano VU SA (2026-09-23) {#v2-18}
 
 - 🔧 **Better photo cropping** — aspect ratio buttons work again, the editor is easier to use on a phone, and saved crops retain more detail

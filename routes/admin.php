@@ -32,6 +32,7 @@ Route::get('profile/roles', [ProfileController::class, 'roles'])->name('profile.
 Route::get('profile/notifications', [ProfileController::class, 'notificationSettings'])->name('profile.notifications');
 Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
 Route::get('dashboard/atstovavimas', [AtstovavimasDashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
+Route::get('dashboard/atstovavimas/padaliniai', [AtstovavimasDashboardController::class, 'padaliniai'])->name('dashboard.atstovavimas.padaliniai');
 Route::get('dashboard/svetaine', [SvetaineDashboardController::class, 'svetaine'])->name('dashboard.svetaine');
 Route::get('dashboard/reservations', [ReservationsDashboardController::class, 'reservations'])->name('dashboard.reservations');
 Route::get('dashboard/organizacija', [OrganizacijaDashboardController::class, 'index'])->name('dashboard.organizacija');
@@ -123,6 +124,7 @@ Route::post('tags/merge', [TagController::class, 'processMergeTags'])->name('tag
 Route::post('quickLinks/update-order', [QuickLinkController::class, 'updateOrder'])->name('quickLinks.update-order');
 Route::resource('quickLinks', QuickLinkController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
+Route::patch('banners/{banner}/status', [BannerController::class, 'updateStatus'])->name('banners.updateStatus');
 Route::resource('navigation', NavigationController::class)->except(['show']);
 Route::post('navigation/updateOrder', [NavigationController::class, 'updateOrder'])->name('navigation.updateOrder');
 
@@ -153,6 +155,7 @@ Route::resource('eventTypes', EventTypeController::class)->only(['index', 'store
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
+Route::patch('calendar/{calendar}/index', [CalendarController::class, 'updateIndex'])->name('calendar.updateIndex');
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
 Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');

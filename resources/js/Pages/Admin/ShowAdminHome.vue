@@ -20,13 +20,24 @@
           :remaining-count="Math.max(0, taskStats.total - visibleTasks.length)"
           :more-href="route('userTasks')"
         />
-        <QuickAccess :registration-forms />
+
+        <Deferred v-if="hasAtstovavimas" :data="deferredProps">
+          <template #fallback>
+            <CollectionSkeleton :rows="3" />
+          </template>
+          <InstitutionsNeedingAttention
+            :institutions="institutionsNeedingAttention ?? []"
+            @record="recordMeetingFor"
+          />
+        </Deferred>
       </div>
 
       <aside class="min-w-0">
         <CreateShortcuts />
       </aside>
     </div>
+
+    <QuickAccess :registration-forms data-slot="home-destinations-section" />
 
     <div class="grid gap-10 border-t border-border pt-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:pt-14" data-slot="home-secondary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
@@ -35,16 +46,6 @@
           :meetings="upcomingMeetings"
           :href="route('dashboard.atstovavimas')"
         />
-        <Deferred :data="deferredProps">
-          <template #fallback>
-            <CollectionSkeleton :rows="3" />
-          </template>
-          <InstitutionsNeedingAttention
-            v-if="hasAtstovavimas"
-            :institutions="institutionsNeedingAttention ?? []"
-            @record="recordMeetingFor"
-          />
-        </Deferred>
         <OverviewStatusList />
       </div>
 

@@ -1,6 +1,6 @@
 import type { AdminSection, AdminWorkspace } from '@/Composables/useAdminNavigation';
 
-export const section = (key: string, routeName: string): AdminSection => ({
+export const section = (key: string, routeName: string, startsGroup = false): AdminSection => ({
   key,
   label: `shell.sections.${key}`,
   routeName,
@@ -9,6 +9,7 @@ export const section = (key: string, routeName: string): AdminSection => ({
   description: key === 'apzvalga' ? null : `shell.section_descriptions.${key}`,
   collectionActions: [],
   matches: [routeName],
+  startsGroup,
 });
 
 export const workspace = (key: string, sections: AdminSection[], createActions: AdminWorkspace['createActions'] = []): AdminWorkspace => ({

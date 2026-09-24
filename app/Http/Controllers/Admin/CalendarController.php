@@ -9,6 +9,7 @@ use App\Actions\HandleModelMediaUploads;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexCalendarRequest;
 use App\Http\Requests\StoreCalendarRequest;
+use App\Http\Requests\UpdateCalendarIndexRequest;
 use App\Http\Requests\UpdateCalendarRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
@@ -225,6 +226,23 @@ class CalendarController extends AdminController
                 'images' => ['collection' => 'images', 'single' => false],
             ]);
         });
+
+        return back()->with('success', $this->entityMessage('updated', 'calendar'));
+    }
+
+    public function updateIndex(UpdateCalendarIndexRequest $request, Calendar $calendar): RedirectResponse
+    {
+        $data = $request->validated();
+
+        if (array_key_exists('is_draft', $data)) {
+            $calendar->is_draft = $data['is_draft'];
+        }
+
+        if (array_key_exists('event_type_id', $data)) {
+            $calendar->event_type_id = $data['event_type_id'];
+        }
+
+        $calendar->save();
 
         return back()->with('success', $this->entityMessage('updated', 'calendar'));
     }

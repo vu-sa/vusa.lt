@@ -94,6 +94,11 @@ export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
   draft: status('Juodraštis', 'neutral', FilePenLine),
 };
 
+export const bannerStatuses = {
+  active: status('Aktyvus', 'success', Eye),
+  inactive: status('Neaktyvus', 'neutral', CircleSlash),
+};
+
 export const problemStatuses: Record<ProblemStatus, StatusPresentation> = {
   open: status('Atvira', 'attention', CircleDot),
   in_progress: status('Vykdoma', 'progress', LoaderCircle),

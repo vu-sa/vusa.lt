@@ -525,6 +525,8 @@ return [
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         // Self-referential institution_ids for .own permission filtering
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
+                        // Refreshed nightly (institutions:refresh-activity-status) and on meeting/check-in changes
+                        ['name' => 'activity_status', 'type' => 'string', 'facet' => true, 'optional' => true],
                         // Linked members and duties for discoverability
                         ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'duty_names', 'type' => 'string[]', 'optional' => true],

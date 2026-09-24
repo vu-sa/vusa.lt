@@ -102,6 +102,13 @@ Schedule::command('search:sync-public')
     ->name('sync-public-search-index')
     ->withoutOverlapping(5);
 
+// An institution's activity status drifts with the calendar alone, so the admin index is
+// refreshed nightly; meeting and check-in saves update it in between.
+Schedule::command('institutions:refresh-activity-status')
+    ->dailyAt('03:30')
+    ->name('refresh-institution-activity-status')
+    ->withoutOverlapping(30);
+
 // Prune stale digest items so a stalled mail pipeline cannot build an
 // unbounded backlog of notifications nobody will ever want to read.
 // The cutoff is deliberately conservative: a shorter one risks deleting

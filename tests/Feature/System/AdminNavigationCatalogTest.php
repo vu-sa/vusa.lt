@@ -29,7 +29,7 @@ pest()->use(RefreshDatabase::class);
  * so the coverage guard must check them exactly like an `.index` route.
  */
 const SECTION_LANDING_ROUTES = [
-    'dashboard', 'dashboard.atstovavimas', 'dashboard.reservations', 'dashboard.svetaine',
+    'dashboard', 'dashboard.atstovavimas', 'dashboard.atstovavimas.padaliniai', 'dashboard.reservations', 'dashboard.svetaine',
     'dashboard.organizacija', 'dashboard.sistema',
     'userTasks', 'institutionGraph', 'dutiables.timeline', 'tasks.summary', 'systemStatus',
     'mailQueue', 'repMetrics', 'administration', 'duties.updateUsersWizard', 'profile',
@@ -162,9 +162,9 @@ describe('per-persona visibility', function (): void {
             'label' => 'shell.workspaces.pradzia.title',
             'description' => 'shell.workspaces.pradzia.description',
             'sections' => [
-                ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard']],
-                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'userTasks', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['userTasks']],
-                ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.pranesimai', 'collectionActions' => [], 'matches' => ['notifications.*']],
+                ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard'], 'startsGroup' => false],
+                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'userTasks', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['userTasks'], 'startsGroup' => false],
+                ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.pranesimai', 'collectionActions' => [], 'matches' => ['notifications.*'], 'startsGroup' => false],
             ],
             'createActions' => [],
         ])
@@ -181,7 +181,7 @@ describe('per-persona visibility', function (): void {
         // get is the scoped search key's job (own_permission), not the catalog's.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'istekliai'],
         ]);
     });
@@ -196,7 +196,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'studiju_programos', 'formos'],
@@ -224,12 +224,18 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'uzduociu_suvestine', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'formos'],
             'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'rysiai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'rep_metrics', 'pagalbos_uzklausos', 'sharepoint_failai'],
         ]);
+    });
+
+    test('ViSAK separates its own views from the collections, starting at Institucijos', function (): void {
+        $atstovavimas = collect($this->catalog->for(makeAdminUser($this->tenant))['workspaces'])->firstWhere('key', 'atstovavimas');
+
+        expect(collect($atstovavimas['sections'])->where('startsGroup', true)->pluck('key')->all())->toBe(['institucijos']);
     });
 
     test('every section but an overview carries a tile description', function (): void {

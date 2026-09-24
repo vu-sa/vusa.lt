@@ -145,20 +145,15 @@
       />
       <span v-else-if="column.key === 'tenant'" class="block truncate text-muted-foreground" :title="item.tenant_shortname">{{ item.tenant_shortname ?? '—' }}</span>
       <span v-else-if="column.key === 'lang'" class="text-muted-foreground">{{ languageLabel(item.lang) }}</span>
-      <component
-        :is="item.id === publishing.spotlightId.value ? SpotlightPopover : 'div'"
-        v-else-if="column.key === 'status'"
-        v-bind="item.id === publishing.spotlightId.value ? publishing.spotlightProps.value : {}"
-      >
+      <div v-else-if="column.key === 'status'">
         <CollectionStatusMenu
           :status="pageStatus(item)"
           :model-value="publishing.statusValue(item)"
           :options="publishing.statusOptions"
           :editable="canBulkEdit"
-          @open="publishing.dismissSpotlight"
           @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
         />
-      </component>
+      </div>
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
       <CollectionRowActions
         v-else-if="column.key === 'actions'"
@@ -210,7 +205,6 @@ import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.v
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { PageIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import {
@@ -290,7 +284,6 @@ const publishing = useCollectionPublishing<PageRow>({
   source,
   isPublished: item => Boolean(item.is_active),
   patchFor: published => ({ is_active: published }),
-  enabled: () => canBulkEdit.value,
 });
 
 const languageLabel = (lang?: string) => (lang === 'en' ? 'English' : 'Lietuvių');

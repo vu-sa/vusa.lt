@@ -196,7 +196,7 @@ class MeetingController extends AdminController
             ->all();
         $publicUrl = $meeting->is_public && $primaryInstitution?->tenant
             ? route('publicMeetings.show', [
-                'subdomain' => $primaryInstitution->tenant->subdomain,
+                'subdomain' => $primaryInstitution->tenant->subdomain(),
                 'lang' => app()->getLocale(),
                 'meeting' => $meeting,
             ])

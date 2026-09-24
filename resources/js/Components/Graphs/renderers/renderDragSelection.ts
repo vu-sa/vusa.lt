@@ -96,9 +96,7 @@ export function renderDragSelection(ctx: DragSelectionRenderContext): void {
     .attr('fill', 'url(#dragSelectionPattern)')
     .attr('stroke', isDarkMode ? 'rgba(59, 130, 246, 0.7)' : 'rgba(59, 130, 246, 0.6)')
     .attr('stroke-width', 1.5)
-    .attr('stroke-dasharray', '4,2')
-    .attr('rx', 4)
-    .attr('ry', 4);
+    .attr('stroke-dasharray', '4,2');
 
   // Start marker line
   group.append('line')

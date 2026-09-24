@@ -47,7 +47,7 @@ export function createGanttTooltip(
     .selectAll<HTMLDivElement, null>('.gantt-unified-tooltip')
     .data([null])
     .join('div')
-    .attr('class', 'gantt-unified-tooltip pointer-events-none absolute z-50 hidden text-[11px] shadow-sm ring-1 rounded px-2 py-1')
+    .attr('class', 'gantt-unified-tooltip pointer-events-none absolute z-50 hidden text-xs ring-1 px-2 py-1')
     .style('background', colors.tooltipBg)
     .style('color', colors.tooltipText)
     .style('--tw-ring-color', colors.tooltipBorder)
@@ -152,10 +152,10 @@ export function buildMeetingTooltipContent(
 
   // Unauthorized meetings show a special badge
   if (meeting.authorized === false) {
-    statusBadge = '<span class="text-zinc-500 dark:text-zinc-400">(unauthorized)</span>';
+    statusBadge = '<span class="text-muted-foreground">(unauthorized)</span>';
   }
   else if (meeting.completion_status === 'no_items') {
-    statusBadge = '<span class="text-zinc-500">(no agenda items)</span>';
+    statusBadge = '<span class="text-muted-foreground">(no agenda items)</span>';
   }
   else if (meeting.completion_status === 'incomplete') {
     statusBadge = '<span class="text-amber-600 dark:text-amber-400">(incomplete)</span>';
@@ -251,12 +251,12 @@ function getAgendaItemStatusIcon(
   // Type-based statuses first
   if (type === 'deferred') {
     // Deferred - gray clock
-    return '<svg class="w-3 h-3 shrink-0 text-zinc-400 dark:text-zinc-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>';
+    return '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>';
   }
 
   if (type === 'informational') {
     // Informational - gray info
-    return '<svg class="w-3 h-3 shrink-0 text-zinc-400 dark:text-zinc-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>';
+    return '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>';
   }
 
   if (type === null || type === undefined) {
@@ -273,7 +273,7 @@ function getAgendaItemStatusIcon(
   // Decision is neutral
   if (decision === 'neutral') {
     // Neutral decided - gray minus
-    return '<svg class="w-3 h-3 shrink-0 text-zinc-500 dark:text-zinc-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>';
+    return '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>';
   }
 
   // Check alignment

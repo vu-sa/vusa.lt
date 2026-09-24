@@ -11,7 +11,7 @@ use App\Models\User;
 class GetInstitutionCoordinator
 {
     /**
-     * @return array{name: string, email: string|null, profile_photo_path: string|null, duty: string|null}|null
+     * @return array{id: string, name: string, email: string|null, profile_photo_path: string|null, duty: string|null}|null
      */
     public static function execute(Institution $institution, ?User $except = null): ?array
     {
@@ -23,6 +23,7 @@ class GetInstitutionCoordinator
         }
 
         return [
+            'id' => (string) $manager->id,
             'name' => $manager->name,
             'email' => $manager->email,
             'profile_photo_path' => $manager->profile_photo_path,

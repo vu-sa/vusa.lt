@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetUserCoordinator;
+use App\Actions\GetUserCoordinators;
+use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
 use App\Models\Institution;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
@@ -14,8 +16,13 @@ use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class AtstovavimasDashboardController extends AdminController
 {
@@ -24,8 +31,15 @@ class AtstovavimasDashboardController extends AdminController
         private readonly InstitutionActivityStatusService $activityStatusService,
     ) {}
 
-    public function atstovavimas()
+    public function atstovavimas(Request $request): Response|RedirectResponse
     {
+        // `?scope=tenant` and `?tab=tenant` are bookmarks from when both views shared this page.
+        $requestedScope = $request->query('scope', $request->query('tab'));
+
+        if ($requestedScope === 'tenant' && Gate::allows('view-tenant-representation-overview')) {
+            return redirect()->route('dashboard.atstovavimas.padaliniai');
+        }
+
         // Get basic user info with duty institution IDs only
         $user = User::query()->where('id', Auth::id())
             ->with(['current_duties:id,name,institution_id'])
@@ -79,26 +93,6 @@ class AtstovavimasDashboardController extends AdminController
 
         // Append computed attributes to user institutions (all duty-based for user's own institutions)
         $appendInstitutionAttributes($userInstitutions, $userDutyInstitutionIds);
-
-        // Get available tenants for filtering - only for coordinators and admins
-        // Regular users should not see the tenant tab (they only see their assigned institutions)
-        $atstovavimasSettings = app(AtstovavimasSettings::class);
-        $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
-
-        if ($visibleTenantIds->isNotEmpty()) {
-            $availableTenants = Tenant::query()
-                ->whereIn('id', $visibleTenantIds)
-                ->representational()
-                ->orderBy('shortname_vu')
-                ->get(['id', 'shortname', 'type'])
-                ->map(fn ($tenant) => [
-                    'id' => $tenant->id,
-                    'shortname' => __($tenant->shortname),
-                    'type' => $tenant->type,
-                ]);
-        } else {
-            $availableTenants = collect();
-        }
 
         // Quick check if user might have related institutions (without loading them)
         // This enables the filter UI even when relatedInstitutions is lazy-loaded
@@ -160,11 +154,46 @@ class AtstovavimasDashboardController extends AdminController
 
                 return $relatedInstitutions->values();
             })->once(),
-            'availableTenants' => $availableTenants,
+            'canViewTenantOverview' => Gate::allows('view-tenant-representation-overview'),
             'openTasksCount' => $user->tasks()->whereNull('completed_at')->count(),
             // R-g: the human answer to "I'm stuck" belongs on every rep screen, but never on the first paint.
-            'coordinator' => Inertia::defer(fn () => GetUserCoordinator::execute($user), 'secondary'),
-            // Note: recentMeetings is fetched via API endpoint: api.v1.admin.meetings.recent
+            'coordinators' => Inertia::defer(fn () => GetUserCoordinators::execute($user), 'secondary'),
         ]);
+    }
+
+    /**
+     * The padalinys overview for coordinators: its institutions, meetings and status history
+     * load through the admin API once the tenant selection is known.
+     */
+    public function padaliniai(Request $request): Response
+    {
+        $this->authorize('view-tenant-representation-overview');
+
+        /** @var User $user */
+        $user = $request->user();
+
+        return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimasPadaliniai', [
+            'availableTenants' => $this->availableTenants($user),
+            'canViewTenantTasks' => $user->can('viewAny', Task::class),
+        ]);
+    }
+
+    /**
+     * @return SupportCollection<int, array{id: int, shortname: string, type: TenantType|null}>
+     */
+    private function availableTenants(User $user): SupportCollection
+    {
+        $visibleTenantIds = app(AtstovavimasSettings::class)->getVisibleTenantIds($user);
+
+        return Tenant::query()
+            ->whereIn('id', $visibleTenantIds)
+            ->representational()
+            ->orderBy('shortname_vu')
+            ->get(['id', 'shortname', 'type'])
+            ->map(fn (Tenant $tenant) => [
+                'id' => $tenant->id,
+                'shortname' => __($tenant->shortname),
+                'type' => $tenant->type,
+            ]);
     }
 }

@@ -59,9 +59,11 @@ beforeEach(() => {
 });
 
 describe('ShowAdminHome', () => {
-  it('keeps tasks and destinations beside quick actions, then puts the other content below', () => {
+  it('places institutions beside quick actions and destinations in a full row below', () => {
     const wrapper = mountPage({
       upcomingMeetings: [{ id: '1', title: 'Meeting' }],
+      upcomingTasks: [{ id: 'task-1' }],
+      taskStats: { total: 1, overdue: 0, dueSoon: 0 },
       coordinator: { name: 'Jonas', email: 'jonas@vusa.lt', profile_photo_path: null, duty: null },
     });
     const tasks = wrapper.find('attention-queue-stub');
@@ -69,12 +71,40 @@ describe('ShowAdminHome', () => {
     const primary = wrapper.find('[data-slot="home-primary-section"]');
     const secondary = wrapper.find('[data-slot="home-secondary-section"]');
 
-    expect(tasks.element.nextElementSibling).toBe(quickAccess.element);
+    const content = primary.element.firstElementChild;
+    expect(content?.firstElementChild).toBe(tasks.element);
+    expect(primary.classes()).toContain('lg:grid-cols-[1.4fr_1fr]');
+    expect(content?.querySelector('institutions-needing-attention-stub')).not.toBeNull();
     expect(primary.find('aside').find('create-shortcuts-stub').exists()).toBe(true);
-    expect(primary.element.nextElementSibling).toBe(secondary.element);
+    expect(primary.element.lastElementChild).toBe(primary.find('aside').element);
+    expect(quickAccess.element.parentElement).toBe(wrapper.find('[data-slot="overview-page"]').element);
+    expect(primary.element.nextElementSibling).toBe(quickAccess.element);
+    expect(quickAccess.element.nextElementSibling).toBe(secondary.element);
     expect(secondary.find('upcoming-meetings-list-stub').exists()).toBe(true);
     expect(secondary.find('recently-edited-list-stub').exists()).toBe(true);
     expect(wrapper.find('coordinator-card-stub').exists()).toBe(false);
+  });
+
+  it('lets institutions and quick actions share the full row when tasks collapse', () => {
+    const primary = mountPage().find('[data-slot="home-primary-section"]');
+
+    expect(primary.classes()).toContain('lg:grid-cols-[1.4fr_1fr]');
+    expect(primary.element.firstElementChild?.querySelector('institutions-needing-attention-stub')).not.toBeNull();
+    expect(primary.find('aside').find('create-shortcuts-stub').exists()).toBe(true);
+  });
+
+  it('keeps tasks beside quick actions without a gap when institutions are unavailable', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { can: { create: { meeting: false }, index: { meeting: false } } },
+    }) as ReturnType<typeof usePage>);
+
+    const primary = mountPage({ upcomingTasks: [{ id: 'task-1' }], taskStats: { total: 1, overdue: 0, dueSoon: 0 } })
+      .find('[data-slot="home-primary-section"]');
+
+    expect(primary.classes()).toContain('lg:grid-cols-[1.4fr_1fr]');
+    expect(primary.element.firstElementChild?.querySelector('attention-queue-stub')).not.toBeNull();
+    expect(primary.find('institutions-needing-attention-stub').exists()).toBe(false);
+    expect(primary.find('aside').find('create-shortcuts-stub').exists()).toBe(true);
   });
 
   it('shows the first three upcoming tasks and counts all remaining open tasks', () => {

@@ -83,6 +83,7 @@ return [
 
     'sections' => [
         'apzvalga' => 'Overview',
+        'padaliniu_apzvalga' => 'Units',
         'uzduotys' => 'Tasks',
         'pranesimai' => 'Notifications',
         'institucijos' => 'Institutions',
@@ -90,7 +91,7 @@ return [
         'darbotvarkes_klausimai' => 'Agenda items',
         'problemos' => 'Problems',
         'pareigybiu_laikotarpiai' => 'Duty terms',
-        'uzduociu_suvestine' => 'Task summary',
+        'uzduociu_suvestine' => 'Tasks',
         'institucijos_grafas' => 'Institution graph',
         'rezervacijos' => 'Reservations',
         'istekliai' => 'Resources',
@@ -133,8 +134,9 @@ return [
         'posedziai' => 'Recorded and upcoming meetings',
         'darbotvarkes_klausimai' => 'Agenda items and votes across meetings',
         'problemos' => 'Problems raised by reps and their progress',
+        'padaliniu_apzvalga' => 'Institution and representative health across units',
         'pareigybiu_laikotarpiai' => 'Who held which duty and when',
-        'uzduociu_suvestine' => 'Task status across all reps',
+        'uzduociu_suvestine' => 'Tasks and deadlines across units',
         'institucijos_grafas' => 'Institution relations in one graph',
         'rezervacijos' => 'Item and space reservations',
         'istekliai' => 'Items and spaces to borrow',

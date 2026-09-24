@@ -44,7 +44,8 @@ describe('atstovavimas dashboard', function (): void {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
                 ->has('userInstitutions')
-                ->has('availableTenants')
+                ->has('canViewTenantOverview')
+                ->missing('availableTenants')
                 ->missing('tenantInstitutions')
                 ->missing('representativeActivity')
             );
@@ -70,18 +71,28 @@ describe('atstovavimas dashboard', function (): void {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
                 ->has('userInstitutions')
-                ->has('availableTenants')
+                ->where('canViewTenantOverview', false)
             );
     });
 
     test('atstovavimas filters PKP tenants', function (): void {
         asUser($this->admin)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
                 ->where('availableTenants', fn ($tenants) => collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp'))
             );
+    });
+
+    test('the padaliniai task number counts padalinys tasks, not the viewer\'s own', function (): void {
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas.padaliniai'))
+            ->assertInertia(fn (Assert $page) => $page->missing('openTasksCount'));
+
+        asUser(makeAdminUser($this->tenant))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
+            ->assertInertia(fn (Assert $page) => $page->where('canViewTenantTasks', true));
     });
 
     test('atstovavimas provides accessible institutions and available tenants', function (): void {
@@ -94,12 +105,11 @@ describe('atstovavimas dashboard', function (): void {
             $duty->assignRole($role);
         }
 
-        $response = asUser($this->admin)->get(route('dashboard.atstovavimas'));
+        $response = asUser($this->admin)->get(route('dashboard.atstovavimas.padaliniai'));
 
         $response->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
                 ->has('availableTenants')
                 ->where('availableTenants', function ($tenants) {
                     // Convert to collection if it's an array, or keep as collection
@@ -137,20 +147,23 @@ describe('atstovavimas dashboard authorization', function (): void {
             );
     });
 
-    test('regular user has no available tenants for tenant tab', function (): void {
-        // Regular user without coordinator role should not see the tenant tab
+    test('a user who sees no padalinys cannot open the padalinys overview', function (): void {
         asUser($this->user)
-            ->get(route('dashboard.atstovavimas'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('availableTenants', function ($tenants) {
-                    $collection = collect($tenants);
+            ->get(route('dashboard.atstovavimas.padaliniai'))
+            ->assertForbidden();
+    });
 
-                    // Regular users should have empty availableTenants
-                    return $collection->isEmpty();
-                })
-            );
+    test('the old tenant-scope bookmark opens the padalinys overview', function (): void {
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas', ['scope' => 'tenant']))
+            ->assertRedirect(route('dashboard.atstovavimas.padaliniai'));
+    });
+
+    test('the old tenant-scope bookmark stays on the personal overview without access', function (): void {
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas', ['tab' => 'tenant']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Admin/Dashboard/ShowAtstovavimas'));
     });
 
     test('user with global read permission sees all tenants', function (): void {
@@ -168,10 +181,10 @@ describe('atstovavimas dashboard authorization', function (): void {
         $globalUser = makeTenantUserWithRole($globalRole->name, $mainTenant);
 
         asUser($globalUser)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
                 ->where('availableTenants', function ($tenants) use ($mainTenant, $otherTenant) {
                     $collection = collect($tenants);
 
@@ -193,11 +206,10 @@ describe('atstovavimas dashboard authorization', function (): void {
 
         // The admin should have available tenants for the tenant tab
         asUser($this->admin)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
                 ->where('availableTenants', function ($tenants) {
                     $collection = collect($tenants);
 
@@ -216,11 +228,10 @@ describe('atstovavimas dashboard authorization', function (): void {
 
         // Verify super admin has access to all tenants via availableTenants
         asUser($superAdmin)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
                 ->where('availableTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
 
@@ -344,11 +355,10 @@ describe('atstovavimas tenant isolation', function (): void {
 
     test('user sees institutions and tenants based on their permissions', function (): void {
         asUser($this->admin)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
                 ->has('availableTenants')
                 ->where('availableTenants',
                     // User should see tenants they have permissions for

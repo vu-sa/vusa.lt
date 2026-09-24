@@ -98,8 +98,6 @@
         <TaskManager
           :taskable="{ id: meeting.id, type: ModelEnum.MEETING }"
           :tasks="tasks ?? []"
-          @open-meeting-modal="openMeetingModal"
-          @open-check-in-dialog="openCheckInDialog"
           @open-task-detail="openTaskDetail"
         />
       </Deferred>
@@ -113,7 +111,7 @@
       <template #fallback>
         <Skeleton class="mt-10 h-16 w-full" />
       </template>
-      <CoordinatorCard :coordinator="coordinator ?? null" class="mt-10" compact />
+      <CoordinatorCard :coordinators="coordinator ? [coordinator] : []" class="mt-10" compact />
     </Deferred>
 
     <!-- Modals -->
@@ -286,25 +284,12 @@
       :tenant-ids
     />
 
-    <!-- Task detail dialog: the meeting's own tasks are always meeting-taskable (agenda
-         creation/completion), so the check-in flow below is unreachable in practice — wired
-         anyway so "View details" never silently does nothing. -->
     <TaskDetailDialog
       v-if="selectedDetailTask"
       :open="showTaskDetail"
       :task="selectedDetailTask"
       @close="closeTaskDetail"
-      @schedule-meeting="scheduleMeetingFromDetail"
-      @report-no-meeting="reportNoMeetingFromDetail"
-    />
-    <AddCheckInDialog
-      v-if="selectedCheckInTask"
-      :open="showCheckInDialog"
-      :institution-id="selectedCheckInTask.taskable_id"
-      :institution-name="selectedCheckInTask.taskable?.name"
-      :initial-start-date="checkInStartDate"
-      :initial-end-date="checkInEndDate"
-      @close="closeCheckInDialog"
+      @report="reportFromDetail"
     />
   </RecordPage>
 </template>
@@ -425,23 +410,14 @@ const isInternalBody = computed(() => props.governanceScope === InstitutionScope
  */
 const calendarEvent = computed(() => props.meeting.calendar_event ?? null);
 
-const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
 const {
-  showCheckInDialog,
   showTaskDetail,
-  selectedCheckInTask,
   selectedDetailTask,
-  checkInStartDate,
-  checkInEndDate,
-  openMeetingModal,
-  openCheckInDialog,
-  closeCheckInDialog,
   openTaskDetail,
   closeTaskDetail,
-  scheduleMeetingFromDetail,
-  reportNoMeetingFromDetail,
+  reportFromDetail,
 } = useTaskActionDialogs();
 
 const showAnnounceDialog = ref(false);

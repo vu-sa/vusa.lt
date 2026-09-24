@@ -1,6 +1,6 @@
 <template>
-  <Card v-if="institutions.length > 0" :class="{ 'h-full flex flex-col': height === '100%' }">
-    <CardContent class="p-4" :class="{ 'flex-1 min-h-0': height === '100%' }">
+  <div v-if="institutions.length > 0" :class="{ 'h-full flex flex-col': height === '100%' }">
+    <div :class="{ 'flex-1 min-h-0': height === '100%' }">
       <MeetingsGantt
         v-model:details-expanded="detailsExpanded"
         :meetings
@@ -36,11 +36,10 @@
         @show-legend-modal="showLegendModal = true"
         @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
       />
-    </CardContent>
+    </div>
 
-    <!-- Legend Modal -->
     <GanttLegendModal :is-open="showLegendModal" @update:is-open="showLegendModal = $event" />
-  </Card>
+  </div>
   <p v-else class="text-sm text-muted-foreground">
     {{ emptyMessage }}
   </p>
@@ -61,7 +60,6 @@ import type {
 import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
 import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
 import { horizontalScrollbarSize } from '@/Components/Graphs/scrollbarSize';
-import { Card, CardContent } from '@/Components/ui/card';
 
 interface Props {
   institutions: GanttInstitution[];

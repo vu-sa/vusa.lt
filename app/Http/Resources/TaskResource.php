@@ -14,6 +14,19 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class TaskResource extends JsonResource
 {
     /**
+     * A row of the task collection: the resource plus whether this user may delete it.
+     *
+     * @return array<string, mixed>
+     */
+    public static function forListing(Task $task, User $user): array
+    {
+        return [
+            ...new self($task)->resolve(),
+            'can_delete' => $task->isDeletableBy($user),
+        ];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     #[\Override]

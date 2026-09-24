@@ -8,6 +8,7 @@ import RecentlyEditedList from '../RecentlyEditedList.vue';
 import UpcomingMeetingsList from '../UpcomingMeetingsList.vue';
 
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+import { commonStubs } from '@/tests/stubs';
 
 describe('OverviewSection', () => {
   it('collapses an empty section to one line instead of an empty box', () => {
@@ -46,12 +47,12 @@ describe('OverviewSection', () => {
 
 describe('CoordinatorCard', () => {
   it('renders nothing when no coordinator is configured', () => {
-    expect(mount(CoordinatorCard, { props: { coordinator: null } }).html()).toBe('<!--v-if-->');
+    expect(mount(CoordinatorCard, { props: { coordinators: [] } }).html()).toBe('<!--v-if-->');
   });
 
   it('names the coordinator and offers one tap to write to them', () => {
     const wrapper = mount(CoordinatorCard, {
-      props: { coordinator: { name: 'Jonas Jonaitis', email: 'jonas@vusa.lt', profile_photo_path: null, duty: 'Koordinatorius' } },
+      props: { coordinators: [{ name: 'Jonas Jonaitis', email: 'jonas@vusa.lt', profile_photo_path: null, duty: 'Koordinatorius' }] },
     });
 
     expect(wrapper.text()).toContain('Tavo koordinatorius');
@@ -62,11 +63,35 @@ describe('CoordinatorCard', () => {
 
   it('shows the person without a contact button when they have no email', () => {
     const wrapper = mount(CoordinatorCard, {
-      props: { coordinator: { name: 'Jonas Jonaitis', email: null, profile_photo_path: null, duty: null } },
+      props: { coordinators: [{ name: 'Jonas Jonaitis', email: null, profile_photo_path: null, duty: null }] },
     });
 
     expect(wrapper.text()).toContain('Jonas Jonaitis');
     expect(wrapper.find('a[href^="mailto:"]').exists()).toBe(false);
+  });
+
+  it('names every coordinator, and what each covers, when the rep sits in several padaliniai', () => {
+    const wrapper = mount(CoordinatorCard, {
+      props: {
+        coordinators: [
+          { id: '1', name: 'Jonas Jonaitis', email: 'jonas@vusa.lt', profile_photo_path: null, duty: null, institutions: ['MIF SA'] },
+          { id: '2', name: 'Ona Onaitė', email: 'ona@vusa.lt', profile_photo_path: null, duty: null, institutions: ['FF SA', 'FF taryba'] },
+        ],
+      },
+    });
+
+    expect(wrapper.text()).toContain('Tavo koordinatoriai');
+    expect(wrapper.findAll('a[href^="mailto:"]')).toHaveLength(2);
+    expect(wrapper.text()).toContain('FF SA, FF taryba');
+  });
+
+  it('keeps a single coordinator free of the coverage line', () => {
+    const wrapper = mount(CoordinatorCard, {
+      props: { coordinators: [{ id: '1', name: 'Jonas Jonaitis', email: null, profile_photo_path: null, duty: null, institutions: ['MIF SA'] }] },
+    });
+
+    expect(wrapper.text()).toContain('Tavo koordinatorius');
+    expect(wrapper.text()).not.toContain('MIF SA');
   });
 });
 
@@ -137,5 +162,42 @@ describe('InstitutionsNeedingAttention', () => {
 
     expect(wrapper.find('ul').exists()).toBe(false);
     expect(wrapper.text()).toContain('Tavo institucijos');
+  });
+
+  it('shows only the first rows of a long list and opens the rest in a searchable dialog', async () => {
+    const institutions = Array.from({ length: 7 }, (_, i) => ({ ...institution, id: `i${i}`, name: `Institucija ${i}` }));
+    const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions, limit: 5 }, global: { stubs: commonStubs } });
+    const dialogList = () => wrapper.get('[data-slot="institutions-needing-attention-dialog-list"]');
+
+    expect(wrapper.findAll('[data-slot="institutions-needing-attention"]')[0]!.findAll('li')).toHaveLength(5);
+
+    await wrapper.get('[data-slot="institutions-needing-attention-more"]').trigger('click');
+    expect(dialogList().findAll('li')).toHaveLength(7);
+
+    await wrapper.get('input[type="search"]').setValue('Institucija 6');
+    expect(dialogList().findAll('li')).toHaveLength(1);
+  });
+
+  it('closes the dialog before recording a meeting from it', async () => {
+    const institutions = Array.from({ length: 7 }, (_, i) => ({ ...institution, id: `i${i}` }));
+    const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions, limit: 5 }, global: { stubs: commonStubs } });
+
+    await wrapper.get('[data-slot="institutions-needing-attention-more"]').trigger('click');
+    await wrapper.get('[data-slot="institutions-needing-attention-dialog-list"] button').trigger('click');
+
+    expect(wrapper.emitted('record')).toEqual([[institutions[0]]]);
+    expect(wrapper.find('[data-slot="institutions-needing-attention-dialog-list"]').exists()).toBe(false);
+  });
+
+  it('offers no dialog when the list fits', () => {
+    const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions: [institution], limit: 5 } });
+
+    expect(wrapper.find('[data-slot="institutions-needing-attention-more"]').exists()).toBe(false);
+  });
+
+  it('names the padalinys when the row carries one', () => {
+    const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions: [{ ...institution, tenant_name: 'VU SA MIF' }] } });
+
+    expect(wrapper.text()).toContain('VU SA MIF');
   });
 });

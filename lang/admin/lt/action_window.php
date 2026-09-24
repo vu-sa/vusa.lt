@@ -52,6 +52,17 @@ return [
             'description' => 'Laiko juostoje nustatyti, nuo kada iki kada žmonės eina pareigas.',
         ],
     ],
+    'report' => [
+        'title' => 'Pranešti apie veiklą',
+        'meeting' => [
+            'title' => 'Fiksuoti posėdį',
+            'description' => 'Posėdis įvyko arba įvyks — užfiksuok jį ir darbotvarkę.',
+        ],
+        'no_meeting' => [
+            'title' => 'Posėdžio nebuvo / nebus',
+            'description' => 'Pažymėk laikotarpį be posėdžių, kad negautum nereikalingų priminimų.',
+        ],
+    ],
     'flows' => [
         'new_meeting' => 'Naujas posėdis',
         'no_meeting' => 'Posėdžio nebus',
@@ -164,6 +175,7 @@ return [
         'change' => 'Keisti',
         'continue' => 'Toliau',
         'step' => 'Žingsnis',
+        'review' => 'Peržiūra',
         'loading' => 'Kraunama…',
         'error' => 'Nepavyko įkelti duomenų. Bandyk dar kartą.',
     ],

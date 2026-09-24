@@ -38,7 +38,7 @@ dataset('admin index entity names', array_map(
 test('the entity name scan finds every admin index page', function () use ($entityNames): void {
     // Guards the regex above: a rename that silently matches nothing would make
     // every dataset case vanish and the suite pass while covering nothing.
-    expect($entityNames)->toHaveCount(22);
+    expect($entityNames)->toHaveCount(24);
 });
 
 test('every admin index entity name has a Lithuanian model translation', function (string $entityName): void {

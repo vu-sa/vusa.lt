@@ -142,15 +142,15 @@ describe('CoordinatorCard compact', () => {
   const coordinator = { name: 'Jonas Jonaitis', email: 'jonas@vusa.lt', profile_photo_path: null, duty: 'Koordinatorius' };
 
   it('still names the person and offers to write to them', () => {
-    const wrapper = mount(CoordinatorCard, { props: { coordinator, compact: true } });
+    const wrapper = mount(CoordinatorCard, { props: { coordinators: [coordinator], compact: true } });
 
     expect(wrapper.text()).toContain('Jonas Jonaitis');
     expect(wrapper.find('a[href="mailto:jonas@vusa.lt"]').exists()).toBe(true);
   });
 
   it('uses a quieter heading than the full card', () => {
-    const compact = mount(CoordinatorCard, { props: { coordinator, compact: true } });
-    const full = mount(CoordinatorCard, { props: { coordinator } });
+    const compact = mount(CoordinatorCard, { props: { coordinators: [coordinator], compact: true } });
+    const full = mount(CoordinatorCard, { props: { coordinators: [coordinator] } });
 
     expect(compact.get('h2').classes()).toContain('text-sm');
     expect(full.get('h2').classes()).toContain('text-base');

@@ -16,7 +16,7 @@
       </h2>
     </SpotlightPopover>
 
-    <NavigationTiles :items="links" :columns="2" class="mt-3" @navigate="spotlight.dismiss()" />
+    <NavigationTiles :items="links" :columns="4" class="mt-3" @navigate="spotlight.dismiss()" />
   </section>
 </template>
 

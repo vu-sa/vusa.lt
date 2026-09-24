@@ -21,6 +21,7 @@ use App\Listeners\SendMemberRegistrationNotification;
 use App\Listeners\SendStudentRepRegistrationNotification;
 use App\Listeners\SyncContactSearchIndexes;
 use App\Listeners\SyncExOfficioDutiables;
+use App\Listeners\SyncInstitutionActivityIndex;
 use App\Listeners\UpdateSharepointFolder;
 use App\Models\Calendar;
 use App\Models\Document;
@@ -117,6 +118,8 @@ class EventServiceProvider extends ServiceProvider
         InstitutionCheckInTaskSubscriber::class,
         // Notification subscribers
         ApprovalNotificationSubscriber::class,
+        // Search index subscribers
+        SyncInstitutionActivityIndex::class,
     ];
 
     /**

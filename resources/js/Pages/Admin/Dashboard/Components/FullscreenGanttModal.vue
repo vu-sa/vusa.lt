@@ -4,7 +4,7 @@
       <DialogHeader class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <DialogTitle class="flex items-center gap-2">
-            <component :is="MeetingIconFilled" class="h-5 w-5" />
+            <CalendarRange class="size-5 text-brand" aria-hidden="true" />
             {{
               ganttType === 'user'
                 ? $t('Tavo institucijos — laiko juosta')
@@ -135,6 +135,7 @@
 <script setup lang="ts">
 import { computed, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { CalendarRange } from 'lucide-vue-next';
 
 import { useGanttSettings } from '../Composables/useGanttSettings';
 import { useTimelineFilters } from '../Composables/useTimelineFilters';
@@ -153,7 +154,6 @@ import TimelineGanttChart from './TimelineGanttChart.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 import TenantScopeSelector from './TenantScopeSelector.vue';
 
-import { MeetingIconFilled } from '@/Components/icons';
 import {
   Dialog,
   DialogContent,

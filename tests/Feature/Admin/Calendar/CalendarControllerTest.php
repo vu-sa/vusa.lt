@@ -29,6 +29,48 @@ function makeCalendarManager($tenant): User
     return $user;
 }
 
+test('calendar status and type can be changed from the index independently', function (): void {
+    $calendar = Calendar::factory()->for($this->tenant)->create([
+        'is_draft' => true,
+        'event_type_id' => $this->eventType->id,
+    ]);
+
+    asUser($this->calendarManager)
+        ->patch(route('calendar.updateIndex', $calendar), ['is_draft' => false])
+        ->assertRedirect();
+    $this->assertDatabaseHas('calendar', ['id' => $calendar->id, 'is_draft' => 0, 'event_type_id' => $this->eventType->id]);
+
+    asUser($this->calendarManager)
+        ->patch(route('calendar.updateIndex', $calendar), ['event_type_id' => null])
+        ->assertRedirect();
+    $this->assertDatabaseHas('calendar', ['id' => $calendar->id, 'is_draft' => 0, 'event_type_id' => null]);
+});
+
+test('calendar index changes require update permission and a live event type', function (): void {
+    $calendar = Calendar::factory()->for($this->tenant)->create(['is_draft' => true]);
+
+    asUser($this->calendarReader)
+        ->patch(route('calendar.updateIndex', $calendar), ['is_draft' => false])
+        ->assertForbidden();
+
+    asUser($this->calendarManager)
+        ->patch(route('calendar.updateIndex', $calendar), ['event_type_id' => 999999])
+        ->assertSessionHasErrors('event_type_id');
+
+    $this->assertDatabaseHas('calendar', ['id' => $calendar->id, 'is_draft' => 1]);
+});
+
+test('calendar index change cannot edit another tenant event', function (): void {
+    $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+    $calendar = Calendar::factory()->for($otherTenant)->create(['is_draft' => true]);
+
+    asUser($this->calendarManager)
+        ->patch(route('calendar.updateIndex', $calendar), ['is_draft' => false])
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('calendar', ['id' => $calendar->id, 'is_draft' => 1]);
+});
+
 describe('unauthorized access', function (): void {
     beforeEach(function (): void {
         $response = asUser($this->regularUser)->get(route('dashboard'));

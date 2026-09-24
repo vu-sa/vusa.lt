@@ -6,10 +6,10 @@ import ShowAtstovavimas from '@/Pages/Admin/Dashboard/ShowAtstovavimas.vue';
 import type { AtstovavimasUser } from '@/Pages/Admin/Dashboard/types';
 import { commonStubs } from '@/tests/stubs';
 
-// The page orchestrates ~10 composables and several heavy Gantt/dialog children. The data
+// The page orchestrates several composables and heavy Gantt/dialog children. The data
 // composables are reduced to stable refs and the heavy children are stubbed: this test is about the
-// overview's contract — who gets the scope switch, that every number is a link, and that the trend
-// chart belongs to the tenant scope only.
+// personal overview's contract — every number is a link, the padalinys view is a link away for those
+// who may see it, and nothing tenant-wide leaks onto this page.
 
 const institution = (id: string, status: string) => ({
   id,
@@ -18,8 +18,6 @@ const institution = (id: string, status: string) => ({
   activity_status: { status, requires_action: status !== 'healthy', priority: 1, effective_days_since_activity: 40 },
   meetings: [],
 });
-
-const tenantLoaded = ref(true);
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasData', () => ({
   useAtstovavimasData: () => ({
@@ -31,7 +29,6 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasData', () => ({
     ]),
     allUserMeetings: ref([]),
     userGaps: ref([]),
-    institutionsInsights: ref({ attention: [] }),
   }),
 }));
 
@@ -40,18 +37,12 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTimelineFilters', () => ({
     availableTenantsUser: ref([]),
     userTenantFilter: ref(['1']),
     setUserTenantFilter: vi.fn(),
-    selectedTenantForGantt: ref(['1']),
-    setSelectedTenants: vi.fn(),
-    currentTenant: ref(undefined),
-    tenantInstitutionsLoading: ref(false),
-    tenantInstitutionsLoaded: ref(false),
   }),
 }));
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasActions', () => ({
   useAtstovavimasActions: () => ({
     showFullscreenGantt: ref(false),
-    fullscreenGanttType: ref(null),
     showCreateCheckIn: ref(null),
     onGapCreateMeeting: vi.fn(),
     onGapCreateCheckIn: vi.fn(),
@@ -59,63 +50,16 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasActions', () => ({
   }),
 }));
 
-vi.mock('@/Pages/Admin/Dashboard/Composables/useGanttChartData', () => ({
-  useGanttChartData: () => ({
-    formattedTenantInstitutions: ref([]),
-    tenantMeetings: ref([]),
-    tenantGaps: ref([]),
-    tenantInstitutions: ref([]),
-    tenantInstitutionHasActivity: ref({}),
-    tenantDutyMembers: ref({}),
-    tenantInactivePeriods: ref({}),
-    getInstitutionNames: () => ({}),
-    getInstitutionTenant: () => ({}),
-    getInstitutionHasPublicMeetings: () => ({}),
-    getInstitutionPeriodicity: () => ({}),
-    getDutyMembersFromInstitutions: () => ({}),
-    getInactivePeriodsFromInstitutions: () => ({}),
-    getTenantNames: () => ({}),
-  }),
-}));
-
 vi.mock('@/Pages/Admin/Dashboard/Composables/useGanttSettings', () => ({
   provideGanttSettings: vi.fn(),
 }));
 
-vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
-  useTenantTimelineData: () => ({
-    data: ref({ institutions: [], institution_summary: { all: 5, needs_attention: 3, overdue: 2, approaching: 1, no_activity: 0, current: 2 } }),
-    isFetching: ref(false),
-    loaded: tenantLoaded,
-    load: vi.fn(),
-  }),
-}));
-
-vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantMeetings', () => ({
-  useTenantMeetings: () => ({
-    meetings: ref([]),
-    pendingWindow: ref(null),
-    isFetching: ref(false),
-    ensureRange: vi.fn(),
-    reset: vi.fn(),
-    refresh: vi.fn(() => Promise.resolve()),
-  }),
-}));
-
-vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantStatusHistory', () => ({
-  useTenantStatusHistory: () => ({
-    data: ref([
-      { date: '2026-06-01', all: 5, needs_attention: 4, overdue: 4, approaching: 0, no_activity: 0, current: 1 },
-      { date: '2026-08-30', all: 5, needs_attention: 2, overdue: 2, approaching: 0, no_activity: 0, current: 3 },
-    ]),
-    isFetching: ref(false),
-    loaded: ref(true),
-    load: vi.fn(),
-  }),
-}));
-
 vi.mock('@/Composables/useActionWindow', () => ({
   useActionWindow: () => ({ isOpen: ref(false), open: vi.fn() }),
+}));
+
+vi.mock('@/Composables/useFeatureSpotlight', () => ({
+  useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: vi.fn() }),
 }));
 
 const marker = (name: string) => ({ name, template: `<div data-testid="${name}" />` });
@@ -124,29 +68,27 @@ const stubs = {
   ...commonStubs,
   InstitutionsNeedingAttention: marker('attention'),
   UpcomingMeetingsList: marker('upcoming'),
+  CoordinatorCard: marker('coordinators'),
+  WorkspaceSectionTiles: marker('section-tiles'),
   UserTimelineSection: marker('user-timeline'),
-  TenantTimelineSection: marker('tenant-timeline'),
   TimelineGanttSkeleton: marker('timeline-skeleton'),
   TenantScopeSelector: marker('tenant-scope-selector'),
-  InstitutionStatusTrendChart: marker('trend-chart'),
   FullscreenGanttModal: marker('fullscreen'),
   AddCheckInDialog: marker('check-in'),
+  SpotlightPopover: { template: '<div><slot /></div>' },
+  OverviewStatusList: marker('overview-status-list'),
 };
 
 const baseUser = { id: '1', name: 'Lina Žilinskaitė' } as unknown as AtstovavimasUser;
-const tenants = (count: number) => Array.from({ length: count }, (_, i) => ({
-  id: String(i + 1),
-  shortname: `VU SA ${i + 1}`,
-  type: 'padalinys',
-}));
 
-function createWrapper(availableTenantsCount: number) {
+function createWrapper(canViewTenantOverview: boolean) {
   return mount(ShowAtstovavimas, {
     props: {
       user: baseUser,
       userInstitutions: [],
-      availableTenants: tenants(availableTenantsCount),
+      canViewTenantOverview,
       openTasksCount: 4,
+      coordinators: [],
     },
     global: { stubs },
   });
@@ -155,7 +97,6 @@ function createWrapper(availableTenantsCount: number) {
 let wrapper: ReturnType<typeof mount>;
 
 beforeEach(() => {
-  tenantLoaded.value = true;
   vi.stubGlobal('route', (name: string, params?: Record<string, string>) =>
     `/mano/${name}${params ? `?${new URLSearchParams(params).toString()}` : ''}`);
 });
@@ -163,64 +104,53 @@ beforeEach(() => {
 afterEach(() => {
   wrapper?.unmount();
   vi.unstubAllGlobals();
-  window.history.replaceState({}, '', '/');
 });
 
-describe('scope switch', () => {
-  it('is offered to a coordinator whose duty role grants visible tenants', () => {
-    // Regression: access used to be gated on a hardcoded role name that was always false.
-    wrapper = createWrapper(1);
+describe('the padalinys overview', () => {
+  it('is one link away for someone who may see a padalinys', () => {
+    wrapper = createWrapper(true);
 
-    expect(wrapper.find('[data-slot="overview-scope-switch"]').exists()).toBe(true);
+    expect(wrapper.find('a[href$="/dashboard.atstovavimas.padaliniai"]').exists()).toBe(true);
   });
 
-  it('is not offered to a rep with no visible tenants, and there are no page tabs', () => {
-    wrapper = createWrapper(0);
+  it('is not offered to a rep who sees no padalinys', () => {
+    wrapper = createWrapper(false);
 
-    expect(wrapper.find('[data-slot="overview-scope-switch"]').exists()).toBe(false);
-    expect(wrapper.find('[role="tab"]').exists()).toBe(false);
+    expect(wrapper.find('a[href$="/dashboard.atstovavimas.padaliniai"]').exists()).toBe(false);
   });
 });
 
 describe('numbers', () => {
   it('counts the personal institutions and links every number', () => {
-    wrapper = createWrapper(0);
+    wrapper = createWrapper(false);
 
     const links = wrapper.findAll('[data-slot="overview-numbers"] a');
     expect(links.map(link => link.attributes('data-number'))).toEqual(['overdue', 'approaching', 'incomplete_meetings', 'open_tasks']);
     expect(links.map(link => link.find('span').text())).toEqual(['1', '1', '1', '4']);
     expect(links[2].attributes('href')).toBe('/mano/meetings.index?completion_status=incomplete');
   });
-
-  it('reads the tenant summary once the tenant scope is chosen', () => {
-    window.history.replaceState({}, '', '/?scope=tenant');
-    wrapper = createWrapper(1);
-
-    const links = wrapper.findAll('[data-slot="overview-numbers"] a');
-    expect(links.map(link => link.find('span').text())).toEqual(['2', '1', '0', '4']);
-  });
-
-  it('shows a placeholder, not a wrong zero, while the tenant summary loads', () => {
-    tenantLoaded.value = false;
-    window.history.replaceState({}, '', '/?scope=tenant');
-    wrapper = createWrapper(1);
-
-    expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(false);
-  });
 });
 
-describe('trend chart', () => {
-  it('belongs to the tenant scope and carries a text summary', () => {
-    window.history.replaceState({}, '', '/?scope=tenant');
-    wrapper = createWrapper(1);
+describe('layout', () => {
+  it('puts the numbers and what needs the rep on the left, the coordinators and the all-clear list on the right', () => {
+    wrapper = createWrapper(false);
 
-    expect(wrapper.find('[data-testid="trend-chart"]').exists()).toBe(true);
-    // 4 overdue at the start of the window, 2 at the end: the caption picks the "fell" sentence.
-    expect(wrapper.get('[data-testid="chart-summary"]').text()).toBe('visak.overview.trend.down');
+    const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
+    const aside = primary.get('aside');
+    expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(true);
+    expect(primary.find('[data-testid="attention"]').exists()).toBe(true);
+    expect(aside.find('[data-testid="coordinators"]').exists()).toBe(true);
+    expect(aside.find('[data-testid="overview-status-list"]').exists()).toBe(true);
   });
 
-  it('is absent from the personal scope', () => {
-    wrapper = createWrapper(1);
+  it('leaves the section tiles to the Padaliniai overview', () => {
+    wrapper = createWrapper(false);
+
+    expect(wrapper.find('[data-testid="section-tiles"]').exists()).toBe(false);
+  });
+
+  it('carries no tenant-wide trend chart', () => {
+    wrapper = createWrapper(true);
 
     expect(wrapper.find('[data-testid="trend-chart"]').exists()).toBe(false);
   });

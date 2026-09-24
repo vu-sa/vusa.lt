@@ -719,4 +719,14 @@ describe('institution search indexing', function (): void {
             ->and($searchable['duty_names'])->toContain('Pirmininkas')
             ->and($searchable['current_user_names'])->toContain('Jonas Jonaitis');
     });
+
+    test('searchable array carries the activity status the ViSAK numbers filter by', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+
+        expect($institution->fresh()->toSearchableArray()['activity_status'])->toBe('no_activity');
+
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->addWeek()]);
+
+        expect($institution->fresh()->toSearchableArray()['activity_status'])->toBe('covered_by_upcoming_meeting');
+    });
 });

@@ -172,14 +172,15 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.atstovavimas.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.atstovavimas', [], null, Visibility::can('viewAny', Meeting::class)),
-                new Section('institucijos', 'shell.sections.institucijos', 'institutions.index', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos'),
+                new Section('padaliniu_apzvalga', 'shell.sections.padaliniu_apzvalga', 'dashboard.atstovavimas.padaliniai', [], null, Visibility::gate('view-tenant-representation-overview'), descriptionKey: 'shell.section_descriptions.padaliniu_apzvalga'),
+                new Section('uzduociu_suvestine', 'shell.sections.uzduociu_suvestine', 'tasks.summary', [], 'task', Visibility::can('viewAny', Task::class), descriptionKey: 'shell.section_descriptions.uzduociu_suvestine'),
+                new Section('institucijos', 'shell.sections.institucijos', 'institutions.index', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos', startsGroup: true),
                 new Section('posedziai', 'shell.sections.posedziai', 'meetings.index', [], 'meeting', Visibility::can('viewAny', Meeting::class), matches: ['meetings.*', 'agendaItems.*'], descriptionKey: 'shell.section_descriptions.posedziai'),
                 // `search.agendaItems` is a legacy redirect to this same destination — link
                 // straight to it instead (SearchController::agendaItems() docblock).
                 new Section('darbotvarkes_klausimai', 'shell.sections.darbotvarkes_klausimai', 'search.index', ['tab' => 'agenda-items'], 'agenda_item', Visibility::can('viewAny', Meeting::class), descriptionKey: 'shell.section_descriptions.darbotvarkes_klausimai'),
                 new Section('problemos', 'shell.sections.problemos', 'problems.index', [], 'problem', Visibility::can('viewAny', Problem::class), descriptionKey: 'shell.section_descriptions.problemos'),
                 new Section('pareigybiu_laikotarpiai', 'shell.sections.pareigybiu_laikotarpiai', 'dutiables.timeline', [], 'dutiable', Visibility::can('viewAny', Duty::class), descriptionKey: 'shell.section_descriptions.pareigybiu_laikotarpiai'),
-                new Section('uzduociu_suvestine', 'shell.sections.uzduociu_suvestine', 'tasks.summary', [], 'task', Visibility::can('viewAny', Task::class), descriptionKey: 'shell.section_descriptions.uzduociu_suvestine'),
                 new Section('institucijos_grafas', 'shell.sections.institucijos_grafas', 'institutionGraph', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos_grafas'),
             ],
             createActions: [

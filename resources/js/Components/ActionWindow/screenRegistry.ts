@@ -21,6 +21,7 @@ const screen = (loader: AsyncComponentLoader): Component =>
 export const ACTION_WINDOW_SCREENS: Record<ScreenId, Component> = {
   'persona': screen(() => import('./screens/PersonaScreen.vue')),
   'persona.actions': screen(() => import('./screens/PersonaActionsScreen.vue')),
+  'institution.report': screen(() => import('./screens/InstitutionReportScreen.vue')),
   'meeting.institution': screen(() => import('./screens/InstitutionPickerScreen.vue')),
   'meeting.institution.search': screen(() => import('./screens/InstitutionSearchScreen.vue')),
   'meeting.type': screen(() => import('./screens/MeetingTypeScreen.vue')),

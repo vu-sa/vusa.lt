@@ -11,6 +11,7 @@
     default-view="table"
     :item-key="newsKey"
     :columns
+    table-fixed
     :selectable="canBulkEdit"
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti naujienų')"
@@ -54,26 +55,20 @@
       <CollectionPrimaryCell
         v-if="column.key === 'title'"
         :title="item.title"
+        :title-lines="2"
         :href="isTrash ? undefined : route('news.edit', item.id)"
-        :sub="item.permalink"
-        mono
       />
       <span v-else-if="column.key === 'tenant'" class="text-muted-foreground">{{ item.tenant_shortname ?? '—' }}</span>
       <span v-else-if="column.key === 'lang'" class="text-muted-foreground">{{ languageLabel(item.lang) }}</span>
-      <component
-        :is="item.id === publishing.spotlightId.value ? SpotlightPopover : 'div'"
-        v-else-if="column.key === 'status'"
-        v-bind="item.id === publishing.spotlightId.value ? publishing.spotlightProps.value : {}"
-      >
+      <div v-else-if="column.key === 'status'">
         <CollectionStatusMenu
           :status="newsStatus(item)"
           :model-value="publishing.statusValue(item)"
           :options="publishing.statusOptions"
           :editable="canBulkEdit"
-          @open="publishing.dismissSpotlight"
           @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
         />
-      </component>
+      </div>
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
       <CollectionRowActions
         v-else-if="column.key === 'actions'"
@@ -124,7 +119,6 @@ import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.v
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { NewsIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useCollectionPublishing } from '@/Composables/useCollectionPublishing';
@@ -177,7 +171,6 @@ const publishing = useCollectionPublishing<NewsRow>({
   source,
   isPublished: item => !item.draft,
   patchFor: published => ({ draft: !published }),
-  enabled: () => canBulkEdit.value,
 });
 
 const newsKey = (item: NewsRow) => String(item.id);
@@ -194,11 +187,11 @@ function dateOf(item: NewsRow): string {
 }
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'title', label: $t('Naujiena'), sortField: 'title' },
+  { key: 'title', label: $t('Naujiena'), class: 'w-64', sortField: 'title' },
   { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
   { key: 'lang', label: $t('Kalba'), class: 'w-28' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
   { key: 'date', label: isTrash ? $t('Ištrinta') : $t('Paskelbta'), class: 'w-32', sortField: isTrash ? 'deleted_at' : 'publish_time' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-56 text-right', pinned: true },
 ]);
 </script>

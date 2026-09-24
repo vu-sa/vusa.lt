@@ -12,6 +12,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -374,6 +375,34 @@ describe('end-to-end refactored meeting flow', function (): void {
 });
 
 describe('meeting show payload', function (): void {
+    test('shows the public link after creating a meeting for another tenant', function (): void {
+        $otherTenant = Tenant::factory()->create(['alias' => 'other']);
+        $institution = Institution::factory()->for($otherTenant)->create();
+        $institution->types()->attach($this->meetingType);
+        app(MeetingSettings::class)->fill([
+            'public_meeting_institution_type_ids' => [$this->meetingType->id],
+        ])->save();
+        $admin = makeAdminUser($this->tenant);
+
+        $response = asUser($admin)->post(route('meetings.store'), [
+            'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
+            'institution_id' => $institution->id,
+        ]);
+
+        $meeting = Meeting::latest('id')->firstOrFail();
+        $response->assertRedirect(route('meetings.show', $meeting));
+
+        asUser($admin)->get(route('meetings.show', $meeting))
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/ShowMeeting')
+                ->where('publicUrl', route('publicMeetings.show', [
+                    'subdomain' => 'other',
+                    'lang' => app()->getLocale(),
+                    'meeting' => $meeting,
+                ]))
+            );
+    });
+
     test('defers task and document panels', function (): void {
         $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
         $meeting->institutions()->attach($this->institution);

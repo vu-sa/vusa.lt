@@ -112,7 +112,6 @@
     "tasks.auto_completing": "auto-completing",
     "tasks.stats.pending": "Pending",
     "tasks.stats.auto_completing": "Auto-completing",
-    "tasks.summary.title": "Tasks Summary",
     "tasks.summary.view_meeting_tasks": "Meeting Tasks",
     "tasks.summary.view_reservation_tasks": "Reservation Tasks",
     "copy_link": "Copy link",
@@ -1798,5 +1797,17 @@
     "Ištrinti pažymėtus įrašus (:count)?": "Delete the selected records (:count)?",
     "Įrašai bus perkelti į ištrintus — iš ten juos galėsi atkurti.": "The records will move to deleted — you can restore them from there.",
     "Būseną keisk tiesiai sąraše": "Change the status right in the list",
-    "Paspausk būsenos žymą ir pasirink naują. Pažymėk kelis įrašus, kad pakeistum juos visus iš karto.": "Click the status tag and pick a new one. Select several records to change them all at once."
+    "Paspausk būsenos žymą ir pasirink naują. Pažymėk kelis įrašus, kad pakeistum juos visus iš karto.": "Click the status tag and pick a new one. Select several records to change them all at once.",
+    "Tavo koordinatoriai": "Your coordinators",
+    "Kuruoja": "Covers",
+    "Visas ekranas": "Full screen",
+    "Išsamios eilutės": "Detailed rows",
+    "Institucijų": "Institutions",
+    "Slinkti į": "Scroll to",
+    "Posėdžių": "Meetings",
+    "Laiko ašis": "Timeline axis",
+    "Keisti stulpelio plotį": "Resize column",
+    "Atidaryti instituciją": "Open institution",
+    "Rodyti visas (:count)": "Show all (:count)",
+    "Ieškoti institucijos": "Search institutions"
 }

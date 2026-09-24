@@ -83,6 +83,7 @@ return [
 
     'sections' => [
         'apzvalga' => 'Apžvalga',
+        'padaliniu_apzvalga' => 'Padaliniai',
         'uzduotys' => 'Užduotys',
         'pranesimai' => 'Pranešimai',
         'institucijos' => 'Institucijos',
@@ -90,7 +91,7 @@ return [
         'darbotvarkes_klausimai' => 'Darbotvarkės klausimai',
         'problemos' => 'Problemos',
         'pareigybiu_laikotarpiai' => 'Pareigybių laikotarpiai',
-        'uzduociu_suvestine' => 'Užduočių suvestinė',
+        'uzduociu_suvestine' => 'Užduotys',
         'institucijos_grafas' => 'Institucijų grafas',
         'rezervacijos' => 'Rezervacijos',
         'istekliai' => 'Ištekliai',
@@ -133,8 +134,9 @@ return [
         'posedziai' => 'Užfiksuoti ir būsimi posėdžiai',
         'darbotvarkes_klausimai' => 'Klausimai ir balsavimai iš visų posėdžių',
         'problemos' => 'Atstovų keliamos problemos ir jų eiga',
+        'padaliniu_apzvalga' => 'Padalinių institucijų ir atstovų būklė',
         'pareigybiu_laikotarpiai' => 'Kas kada ėjo kokias pareigas',
-        'uzduociu_suvestine' => 'Visų atstovų užduočių būklė',
+        'uzduociu_suvestine' => 'Padalinių užduotys ir terminai',
         'institucijos_grafas' => 'Institucijų ryšiai viename grafe',
         'rezervacijos' => 'Daiktų ir erdvių rezervacijos',
         'istekliai' => 'Skolinami daiktai ir erdvės',

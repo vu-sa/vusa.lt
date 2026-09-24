@@ -29,7 +29,11 @@
               <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">{{ $t(workspace.label) }}</span>
             </p>
             <ul>
-              <li v-for="section in workspace.sections" :key="section.key">
+              <li
+                v-for="(section, index) in workspace.sections"
+                :key="section.key"
+                :class="index > 0 && section.startsGroup && 'mt-2 border-t border-border pt-2'"
+              >
                 <Link
                   :href="sectionHref(section)"
                   prefetch
@@ -192,7 +196,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { onKeyStroke, useDark, useScrollLock } from '@vueuse/core';
-import { trans as $t } from 'laravel-vue-i18n';
+import { loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
 import {
   Bell,
   BookOpen,
@@ -262,7 +266,7 @@ function toggleDarkMode(): void {
 
 function changeLocale(): void {
   const locale = page.props.app?.locale === 'en' ? 'lt' : 'en';
-  router.reload({ data: { lang: locale } });
+  router.reload({ data: { lang: locale }, onSuccess: () => loadLanguageAsync(locale) });
 }
 
 const isCurrent = (workspace: AdminWorkspace, section: AdminSection) =>

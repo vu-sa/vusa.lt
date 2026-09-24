@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Page;
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -182,6 +183,18 @@ describe('Rezervacijos ir žymos', function (): void {
             ->assertNoJavaScriptErrors();
 
         expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+    });
+
+    it('shows an edit action for tags in table view', function (): void {
+        $page = openAdminPage('/mano/tags', 1180, 900, function (): void {
+            Tag::factory()->create(['name' => ['lt' => 'Bandomoji žyma', 'en' => 'Test tag']]);
+        });
+
+        $page->assertPresent('[data-slot=collection-table] button:has-text("Redaguoti")');
+        $page->page()->locator('[data-slot=collection-table] button:has-text("Redaguoti")')->first()->click();
+        $page->assertSee('Redaguoti žymą');
+
+        $page->assertNoJavaScriptErrors();
     });
 });
 

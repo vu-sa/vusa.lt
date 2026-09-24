@@ -135,6 +135,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
             ->name('trash.index');
 
         // Tasks
+        Route::get('tasks', [TaskApiController::class, 'index'])->name('tasks.index');
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
 
         // Tenant-scoped page-view statistics (Umami) for the Svetainė dashboard

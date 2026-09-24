@@ -5,7 +5,6 @@ import { computed, ref } from 'vue';
 import type { CollectionStatusOption } from '@/Components/Collection/CollectionStatusMenu.vue';
 import { contentStatuses } from '@/Constants/statuses';
 import type { CollectionSource } from '@/Composables/useCollectionSource';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 interface PublishingOptions<T> {
   /** `pages` → `pages.bulkStatus` / `pages.bulkDestroy`. */
@@ -15,7 +14,6 @@ interface PublishingOptions<T> {
   /** The row fields `published` stands for, so the row changes before the index catches up. */
   patchFor: (published: boolean) => Partial<T>;
   /** Status menu, selection and bulk actions are offered only when this holds. */
-  enabled: () => boolean;
 }
 
 const statusOptions: CollectionStatusOption[] = [
@@ -79,18 +77,6 @@ export function useCollectionPublishing<T extends { id: string | number }>(optio
     });
   }
 
-  const spotlight = useFeatureSpotlight('collection-inline-status-v1');
-  const spotlightId = computed(() => (options.enabled() && !spotlight.isDismissed.value
-    ? options.source.items.value[0]?.id
-    : undefined));
-  const spotlightProps = computed(() => ({
-    title: $t('Būseną keisk tiesiai sąraše'),
-    description: $t('Paspausk būsenos žymą ir pasirink naują. Pažymėk kelis įrašus, kad pakeistum juos visus iš karto.'),
-    position: 'bottom',
-    isDismissed: spotlight.isDismissed.value,
-    onDismiss: spotlight.dismiss,
-  }));
-
   return {
     statusOptions,
     statusValue,
@@ -100,8 +86,5 @@ export function useCollectionPublishing<T extends { id: string | number }>(optio
     pendingDelete,
     deleteDialog,
     confirmDelete,
-    spotlightId,
-    spotlightProps,
-    dismissSpotlight: spotlight.dismiss,
   };
 }

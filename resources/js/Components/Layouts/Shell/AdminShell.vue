@@ -43,7 +43,7 @@
       </div>
 
       <main class="flex-1">
-        <div class="mx-auto min-h-full w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8 md:py-6" data-slot="admin-page-measure">
+        <div class="mx-auto min-h-full w-full max-w-7xl px-4 pt-4 pb-24 sm:px-6 lg:px-8 md:pt-6 md:pb-32" data-slot="admin-page-measure">
           <slot />
         </div>
       </main>

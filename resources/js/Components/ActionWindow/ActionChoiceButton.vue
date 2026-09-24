@@ -5,11 +5,11 @@
     :disabled
     :aria-pressed="selected ? 'true' : undefined"
     :class="cn(
-      'group relative flex w-full items-center gap-4 px-3 py-3 text-left',
-      'min-h-16 transition-colors hover:bg-secondary',
+      'group relative flex w-full items-center justify-between gap-3.5 border p-3.5 sm:p-4 text-left min-h-14 transition-all duration-150',
+      'border-border/50 bg-secondary/35 hover:border-brand/60 hover:bg-secondary/60 dark:bg-secondary/20 dark:hover:bg-secondary/40',
       'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
       'disabled:pointer-events-none disabled:opacity-50',
-      selected && 'bg-secondary',
+      selected && 'border-brand bg-brand/10 dark:bg-brand/20 hover:bg-brand/15 dark:hover:bg-brand/25',
       props.class,
     )"
   >
@@ -22,10 +22,10 @@
     </span>
 
     <span class="flex min-w-0 flex-1 flex-col gap-0.5">
-      <span class="text-base font-medium leading-snug text-foreground">
+      <span class="text-base font-bold leading-snug text-foreground">
         <slot name="title">{{ title }}</slot>
       </span>
-      <span v-if="description || $slots.description" class="text-sm leading-snug text-muted-foreground">
+      <span v-if="description || $slots.description" class="text-xs leading-snug text-muted-foreground mt-0.5">
         <slot name="description">{{ description }}</slot>
       </span>
       <span v-if="$slots.meta" class="mt-1 flex flex-wrap items-center gap-2">
@@ -33,12 +33,21 @@
       </span>
     </span>
 
+    <span
+      v-if="!showChevron || selected !== undefined"
+      class="flex size-6 shrink-0 items-center justify-center border transition-colors"
+      :class="selected
+        ? 'border-brand bg-brand-fill text-brand-foreground'
+        : 'border-border bg-background text-transparent group-hover:border-brand/80'"
+      aria-hidden="true"
+    >
+      <Check class="size-3.5" />
+    </span>
     <ChevronRight
-      v-if="showChevron"
-      class="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground"
+      v-else-if="showChevron"
+      class="size-4 shrink-0 text-muted-foreground/70 transition-colors group-hover:text-foreground"
       aria-hidden="true"
     />
-    <Check v-else-if="selected" class="size-5 shrink-0 text-foreground" aria-hidden="true" />
   </button>
 </template>
 
@@ -66,7 +75,7 @@ const props = withDefaults(defineProps<{
 });
 
 const toneClasses: Record<StatusRole, string> = {
-  neutral: 'border-border bg-card text-foreground',
+  neutral: 'border-border bg-background text-foreground group-hover:border-foreground/30',
   info: 'border-status-info-border bg-status-info-surface text-status-info',
   progress: 'border-status-progress-border bg-status-progress-surface text-status-progress',
   attention: 'border-status-attention-border bg-status-attention-surface text-status-attention',

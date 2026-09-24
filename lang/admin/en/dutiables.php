@@ -28,12 +28,6 @@ return [
             'save' => 'Changes',
         ],
 
-        'zoom' => [
-            'label' => 'Zoom',
-            'in' => 'Zoom in',
-            'out' => 'Zoom out',
-        ],
-
         'legend' => [
             'title' => 'Legend',
             'active' => 'Currently held',

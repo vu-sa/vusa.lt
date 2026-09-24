@@ -1,31 +1,30 @@
 <template>
-  <section data-tour="timeline-section" class="space-y-6" aria-labelledby="user-timeline-heading">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <h2 id="user-timeline-heading" class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-        {{ $t('Tavo institucijos') }} — {{ $t('laiko juosta') }}
-      </h2>
-      <div class="flex items-center gap-2">
-        <GanttFilterDropdown
-          :show-only-with-activity="filters.showOnlyWithActivityUser.value"
-          :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
-          :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
-          :show-duty-members="filters.showDutyMembersUser.value"
-          :show-tenant-headers="ganttSettings.showTenantHeaders.value"
-          :show-related-institutions="filters.showRelatedInstitutionsUser.value"
-          :has-related-institutions
-          :trigger-label-override="$t('Rodymo nustatymai')"
-          @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
-          @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
-          @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsUser.value = val"
-          @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
-          @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
-          @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
-          @reset="filters.resetUserFilters()"
-        />
-      </div>
-    </div>
+  <OverviewSection
+    :title="$t('visak.overview.timeline.title')"
+    :icon="CalendarRange"
+    variant="home"
+    data-tour="timeline-section"
+  >
+    <template #actions>
+      <GanttFilterDropdown
+        :show-only-with-activity="filters.showOnlyWithActivityUser.value"
+        :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
+        :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
+        :show-duty-members="filters.showDutyMembersUser.value"
+        :show-tenant-headers="ganttSettings.showTenantHeaders.value"
+        :show-related-institutions="filters.showRelatedInstitutionsUser.value"
+        :has-related-institutions
+        :trigger-label-override="$t('Rodymo nustatymai')"
+        @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
+        @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
+        @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsUser.value = val"
+        @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
+        @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
+        @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
+        @reset="filters.resetUserFilters()"
+      />
+    </template>
 
-    <!-- Deferred Gantt chart rendering for better initial load performance -->
     <TimelineGanttSkeleton v-if="!isReady" />
     <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
       :tenant-filter="[]"
@@ -39,12 +38,13 @@
       :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
       @create-check-in="$emit('create-check-in', $event)"
       @fullscreen="$emit('fullscreen')" @update:day-width="emit('update:dayWidth', $event)" />
-  </section>
+  </OverviewSection>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted, watch, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { CalendarRange } from 'lucide-vue-next';
 
 import type {
   AtstovavimasInstitution,
@@ -60,6 +60,8 @@ import { useUserTimelineData } from '../Composables/useUserTimelineData';
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
+
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 interface Props {
   institutions: AtstovavimasInstitution[];

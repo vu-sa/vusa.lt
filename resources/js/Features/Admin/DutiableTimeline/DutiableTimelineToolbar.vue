@@ -61,37 +61,13 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-1">
-        <Button
-          type="button"
-          size="icon-xs"
-          variant="ghost"
-          :disabled="monthWidthPx <= MIN_MONTH_WIDTH"
-          :aria-label="$t('dutiables.timeline.zoom.out')"
-          @click="step(-ZOOM_STEP)"
-        >
-          <ZoomOut class="size-3.5" />
-        </Button>
-        <Slider
-          :model-value="[monthWidthPx]"
-          :min="MIN_MONTH_WIDTH"
-          :max="MAX_MONTH_WIDTH"
-          :step="ZOOM_STEP"
-          class="w-24"
-          :aria-label="$t('dutiables.timeline.zoom.label')"
-          @update:model-value="value => value && emit('update:monthWidthPx', value[0])"
-        />
-        <Button
-          type="button"
-          size="icon-xs"
-          variant="ghost"
-          :disabled="monthWidthPx >= MAX_MONTH_WIDTH"
-          :aria-label="$t('dutiables.timeline.zoom.in')"
-          @click="step(ZOOM_STEP)"
-        >
-          <ZoomIn class="size-3.5" />
-        </Button>
-      </div>
+      <GanttZoomControl
+        :model-value="monthWidthPx"
+        :min="MIN_MONTH_WIDTH"
+        :max="MAX_MONTH_WIDTH"
+        :step="ZOOM_STEP"
+        @update:model-value="emit('update:monthWidthPx', $event)"
+      />
 
       <DutiableTimelineLegend :colors="timelineColors" />
     </div>
@@ -101,7 +77,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { EyeOff, ZoomIn, ZoomOut } from 'lucide-vue-next';
+import { EyeOff } from 'lucide-vue-next';
 
 import DutiableTimelineFilterMenu, { type FilterOption } from './DutiableTimelineFilterMenu.vue';
 import DutiableTimelineLegend from './DutiableTimelineLegend.vue';
@@ -109,9 +85,8 @@ import { MAX_MONTH_WIDTH, MIN_MONTH_WIDTH } from './constants';
 import type { TimelineColors } from './timelineColors';
 import type { TimelineScope } from './types';
 
-import { Slider } from '@/Components/ui/slider';
+import GanttZoomControl from '@/Components/Graphs/GanttZoomControl.vue';
 import { DropdownMenuCheckboxItem, DropdownMenuLabel } from '@/Components/ui/dropdown-menu';
-import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 
 /** One slider notch. Eight px is roughly one readable step at either end of the range. */
@@ -147,11 +122,4 @@ const scopeHref = computed<string | null>(() => {
     default: return null;
   }
 });
-
-function step(delta: number): void {
-  emit(
-    'update:monthWidthPx',
-    Math.min(MAX_MONTH_WIDTH, Math.max(MIN_MONTH_WIDTH, props.monthWidthPx + delta)),
-  );
-}
 </script>
