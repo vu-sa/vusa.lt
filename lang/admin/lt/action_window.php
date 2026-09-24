@@ -41,7 +41,7 @@ return [
         ],
         'new_reservation' => [
             'title' => 'Rezervuoti inventorių',
-            'description' => 'Pasiimti VU SA daiktą ar patalpą.',
+            'description' => 'Pasiskolinti VU SA įrangą ar daiktą.',
         ],
         'duty_update' => [
             'title' => 'Atnaujinti pareigybes',

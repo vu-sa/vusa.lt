@@ -4,7 +4,7 @@
     :resource
     :categories
     :assignable-tenants
-    :reservations="resource.reservations"
+    :reservations="recentReservations"
     @submit:form="handleResourceUpdate"
     @delete="() => router.delete(route('resources.destroy', resource.id))"
   />
@@ -14,22 +14,23 @@
 import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
+import type { ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
 import { ResourceIcon } from '@/Components/icons';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type { ResourceMediaEntry } from '@/Pages/Admin/Reservations/CreateResource.vue';
 
 export type ResourceEditType = Omit<
   App.Entities.Resource,
-  'created_at' | 'updated_at' | 'deleted_at' | 'name' | 'description'
+  'deleted_at' | 'name' | 'description'
 > & {
   name: Record<'lt' | 'en', string>;
   description: Record<'lt' | 'en', string>;
   media: ResourceMediaEntry[];
-  reservations?: App.Entities.Reservation[];
 };
 
 const { resource } = defineProps<{
   resource: ResourceEditType;
+  recentReservations: ResourceBooking[];
   categories: App.Entities.ResourceCategory[];
   assignableTenants: Array<App.Entities.Tenant>;
 }>();

@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage>
+  <div class="min-h-full">
     <Head>
       <title>{{ headTitle }}</title>
     </Head>
@@ -70,7 +70,7 @@
                   v-for="action in overflowActions"
                   :key="action.key"
                   :class="action.destructive ? 'text-destructive focus:text-destructive' : undefined"
-                  @select="emit('action', action.key)"
+                  @select="selectOverflow(action)"
                 >
                   <component :is="action.icon" v-if="action.icon" class="mr-2 size-4" />
                   {{ action.label }}
@@ -94,7 +94,7 @@
                       variant="ghost"
                       class="u-touch justify-start"
                       :class="action.destructive ? 'text-destructive' : undefined"
-                      @click="emit('action', action.key)"
+                      @click="selectOverflow(action)"
                     >
                       <component :is="action.icon" v-if="action.icon" class="mr-2 size-4" />
                       {{ action.label }}
@@ -169,7 +169,7 @@
 
       <slot />
     </div>
-  </AdminContentPage>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -180,7 +180,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-vue-next';
 
 import ActionControl from './RecordPageAction.vue';
-import AdminContentPage from './AdminContentPage.vue';
 
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -253,6 +252,19 @@ const headTitle = computed(() => `${props.title} · ${$t(entityLabel.value)} · 
 const visit = (href?: string | null) => {
   if (href) {
     router.visit(href);
+  }
+};
+
+/** A menu item is not a link element, so an action carrying `href` is followed here, as the primary one is. */
+const selectOverflow = (action: RecordAction) => {
+  if (action.href && action.external) {
+    window.open(action.href, '_blank', 'noopener');
+  }
+  else if (action.href) {
+    router.visit(action.href);
+  }
+  else {
+    emit('action', action.key);
   }
 };
 </script>

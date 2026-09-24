@@ -1,6 +1,7 @@
 <template>
   <FormPage
     :title="isEditing ? resourceTitle : $t('Naujas išteklius')"
+    :bar-title="isEditing ? resourceTitle : undefined"
     :head-title="isEditing ? resourceTitle : $t('Naujas išteklius')"
     :lead="isEditing ? undefined : $t('Pridėk ištekliaus pavadinimą, vietą ir kiekį — nuotraukas ir aprašymą galėsi papildyti vėliau.')"
     :entity-type="ModelEnum.RESOURCE"
@@ -14,140 +15,45 @@
     :locale="activeLocale"
     :available-locales="['lt', 'en']"
     :missing-locale-counts
+    :activity-subject="props.resource.id ? { type: 'resource', id: props.resource.id } : undefined"
+    :created-at="'created_at' in props.resource ? props.resource.created_at : undefined"
+    :updated-at="'updated_at' in props.resource ? props.resource.updated_at : undefined"
     @update:locale="activeLocale = $event"
     @submit="emit('submit:form', form)"
   >
-    <FormSection
-      :title="$t('Kas tai?')"
-      :description="$t('Pavadinimas ir aprašymas, pagal kuriuos kiti ras išteklių.')"
+    <FormFieldWrapper
+      id="resource-name"
+      :label="`${$t('forms.fields.title')} (${activeLocale.toUpperCase()})`"
+      required
+      :error="form.errors[`name.${activeLocale}`]"
     >
-      <div class="space-y-1.5">
-        <Label for="resource-name" class="text-sm font-medium">
-          {{ $t('forms.fields.title') }} ({{ activeLocale.toUpperCase() }}) *
-        </Label>
-        <Input id="resource-name" v-model="form.name[activeLocale]" :placeholder="RESOURCE_PLACEHOLDERS.title[activeLocale]" />
-        <p v-if="form.errors[`name.${activeLocale}`]" class="text-xs text-destructive">
-          {{ form.errors[`name.${activeLocale}`] }}
-        </p>
-      </div>
+      <Input
+        id="resource-name"
+        v-model="form.name[activeLocale]"
+        :placeholder="RESOURCE_PLACEHOLDERS.title[activeLocale]"
+        :class="['h-11', fieldSurfaceClass]"
+      />
+    </FormFieldWrapper>
 
-      <div class="space-y-1.5">
-        <Label for="resource-description" class="text-sm font-medium">
-          {{ $t('forms.fields.description') }} ({{ activeLocale.toUpperCase() }}) *
-        </Label>
-        <Textarea
-          id="resource-description"
-          v-model="form.description[activeLocale]"
-          rows="4"
-          :placeholder="RESOURCE_PLACEHOLDERS.description[activeLocale]"
-        />
-        <p v-if="form.errors[`description.${activeLocale}`]" class="text-xs text-destructive">
-          {{ form.errors[`description.${activeLocale}`] }}
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="space-y-1.5">
-          <Label for="resource-tenant" class="text-sm font-medium">
-            {{ capitalize($tChoice('entities.tenant.model', 1)) }} *
-          </Label>
-          <Select v-model="tenantIdString">
-            <SelectTrigger id="resource-tenant">
-              <SelectValue placeholder="VU SA X" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
-                {{ tenant.shortname }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p v-if="form.errors.tenant_id" class="text-xs text-destructive">
-            {{ form.errors.tenant_id }}
-          </p>
-        </div>
-
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <Label for="resource-category" class="text-sm font-medium">{{ $t('Kategorija') }}</Label>
-            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
-          </div>
-          <Select v-model="categoryIdString">
-            <SelectTrigger id="resource-category">
-              <SelectValue :placeholder="$t('Kategorija')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="category in categoriesOptions" :key="category.value" :value="String(category.value)">
-                <span class="inline-flex items-center gap-2">
-                  <!-- The icon name is stored as data, so it can only be resolved at runtime. -->
-                  <Icon v-if="category.icon" :icon="`fluent:${category.icon}`" />
-                  {{ category.label }}
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p v-if="form.errors.resource_category_id" class="text-xs text-destructive">
-            {{ form.errors.resource_category_id }}
-          </p>
-        </div>
-      </div>
-    </FormSection>
-
-    <FormSection
-      :title="$t('Kur jis ir kiek jo yra?')"
-      :description="$t('Pagal tai sistema tikrina, ar užtenka išteklių pasirinktam laikui.')"
+    <FormFieldWrapper
+      id="resource-description"
+      :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+      required
+      :error="form.errors[`description.${activeLocale}`]"
     >
-      <div class="space-y-1.5">
-        <Label for="resource-location" class="text-sm font-medium">{{ $t('forms.fields.location') }} *</Label>
-        <Input id="resource-location" v-model="form.location" placeholder="Naugarduko g. X (VU P), 010 kab." />
-        <p v-if="form.errors.location" class="text-xs text-destructive">
-          {{ form.errors.location }}
-        </p>
-      </div>
+      <Textarea
+        id="resource-description"
+        v-model="form.description[activeLocale]"
+        rows="4"
+        :placeholder="RESOURCE_PLACEHOLDERS.description[activeLocale]"
+        :class="fieldSurfaceClass"
+      />
+    </FormFieldWrapper>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="space-y-1.5">
-          <Label for="capacity" class="text-sm font-medium">{{ $t('forms.fields.quantity') }} *</Label>
-          <NumberField id="capacity" v-model="form.capacity" :min="1" />
-          <p v-if="form.errors.capacity" class="text-xs text-destructive">
-            {{ form.errors.capacity }}
-          </p>
-        </div>
-
-        <div class="space-y-1.5">
-          <Label for="resource-identifier" class="text-sm font-medium">{{ $t('Identifikacinis kodas') }}</Label>
-          <Input id="resource-identifier" v-model="form.identifier" placeholder="PRJ-CB-01-K" />
-          <p class="text-xs text-muted-foreground">
-            {{ $t('(neprivaloma)') }}
-          </p>
-          <p v-if="form.errors.identifier" class="text-xs text-destructive">
-            {{ form.errors.identifier }}
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-start gap-2.5">
-        <Checkbox
-          id="resource-reservable"
-          class="mt-0.5"
-          :model-value="Boolean(form.is_reservable)"
-          @update:model-value="form.is_reservable = $event === true"
-        />
-        <div class="space-y-0.5">
-          <Label for="resource-reservable" class="cursor-pointer text-sm font-normal">
-            {{ capitalize($t('entities.reservation.is_reservable')) }}
-          </Label>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Nerezervuojamo ištekliaus kiti negali užsisakyti.') }}
-          </p>
-          <p v-if="form.errors.is_reservable" class="text-xs text-destructive">
-            {{ form.errors.is_reservable }}
-          </p>
-        </div>
-      </div>
-    </FormSection>
-
-    <FormSection :title="$t('forms.fields.media')" :description="$t('Nuotraukos padeda kitiems atpažinti išteklių.')">
-      <MdSuspenseWrapper directory="resources" :locale="$page.props.app.locale" file="description" />
+    <FormFieldWrapper
+      id="resource-media"
+      :label="`${$t('reservations.resource.photos')} (${$t('neprivaloma')})`"
+    >
       <ImageUpload
         v-model:files="mediaFiles"
         :max="10"
@@ -157,15 +63,114 @@
         :existing-urls="existingMediaItems"
         @remove:existing="handleRemoveExistingMedia"
       />
-    </FormSection>
+    </FormFieldWrapper>
 
-    <FormSection
+    <!-- Read-only here: the reservations belong to the resource page, which has the full history. -->
+    <FormFieldWrapper
       v-if="isEditing && reservations"
-      :title="$t('Rezervacijų istorija')"
-      :description="$t('Kas ir kada šį išteklių rezervavo.')"
+      id="resource-reservations"
+      :label="$t('reservations.resource.recent')"
     >
-      <ResourceReservationsTable :reservations />
-    </FormSection>
+      <p v-if="reservations.length === 0" class="text-sm text-muted-foreground">
+        {{ $t('reservations.resource.recent_empty') }}
+      </p>
+      <ul v-else class="divide-y divide-border border-y border-border" data-testid="resource-recent-reservations">
+        <ResourceBookingRow v-for="booking in reservations" :key="booking.id" :booking />
+      </ul>
+      <Link
+        v-if="props.resource.id"
+        :href="route('resources.show', props.resource.id)"
+        class="inline-flex items-center gap-1 text-sm font-semibold text-brand hover:text-foreground"
+      >
+        {{ $t('reservations.resource.full_history') }}
+        <ArrowRight class="size-4" aria-hidden="true" />
+      </Link>
+    </FormFieldWrapper>
+
+    <template #aside>
+      <FormPanel :title="$t('Priskyrimas ir nustatymai')" :icon="Boxes" title-class="text-brand">
+        <TenantSelectField
+          id="resource-tenant"
+          v-model="form.tenant_id"
+          :tenants="assignableTenants"
+          :error="form.errors.tenant_id"
+        />
+
+        <FormFieldWrapper
+          id="resource-category"
+          :label="`${$t('Kategorija')} (${$t('neprivaloma')})`"
+          :error="form.errors.resource_category_id"
+        >
+          <Select v-model="categoryIdString">
+            <SelectTrigger id="resource-category">
+              <SelectValue :placeholder="$t('Kategorija')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">
+                {{ $t('Be kategorijos') }}
+              </SelectItem>
+              <SelectItem v-for="category in categoriesOptions" :key="category.value" :value="String(category.value)">
+                <span class="inline-flex items-center gap-2">
+                  <!-- The icon name is stored as data, so it can only be resolved at runtime. -->
+                  <Icon v-if="category.icon" :icon="`fluent:${category.icon}`" />
+                  {{ category.label }}
+                </span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <div class="flex items-start gap-2.5 pt-1">
+          <Checkbox
+            id="resource-reservable"
+            class="mt-0.5"
+            :model-value="Boolean(form.is_reservable)"
+            @update:model-value="form.is_reservable = $event === true"
+          />
+          <div class="space-y-0.5">
+            <Label for="resource-reservable" class="cursor-pointer text-sm font-normal">
+              {{ capitalize($t('entities.reservation.is_reservable')) }}
+            </Label>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Nerezervuojamo ištekliaus kiti negali užsisakyti.') }}
+            </p>
+            <p v-if="form.errors.is_reservable" class="text-xs text-destructive">
+              {{ form.errors.is_reservable }}
+            </p>
+          </div>
+        </div>
+      </FormPanel>
+
+      <FormPanel :title="$t('Vieta ir kiekis')" :icon="MapPin" title-class="text-brand">
+        <FormFieldWrapper
+          id="resource-location"
+          :label="$t('forms.fields.location')"
+          required
+          :error="form.errors.location"
+        >
+          <Input id="resource-location" v-model="form.location" placeholder="Naugarduko g. X (VU P), 010 kab." />
+        </FormFieldWrapper>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormFieldWrapper
+            id="capacity"
+            :label="$t('forms.fields.quantity')"
+            required
+            :error="form.errors.capacity"
+          >
+            <NumberField id="capacity" v-model="form.capacity" :min="1" />
+          </FormFieldWrapper>
+
+          <FormFieldWrapper
+            id="resource-identifier"
+            :label="`${$t('Identifikacinis kodas')} (${$t('neprivaloma')})`"
+            :error="form.errors.identifier"
+          >
+            <Input id="resource-identifier" v-model="form.identifier" placeholder="PRJ-CB-01-K" />
+          </FormFieldWrapper>
+        </div>
+      </FormPanel>
+    </template>
 
     <template v-if="isEditing && enableDelete" #danger-zone>
       <div class="flex items-center justify-between gap-4">
@@ -197,17 +202,20 @@
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
-import { capitalize, computed, ref, watch } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Trash2 } from 'lucide-vue-next';
+import { ArrowRight, Boxes, MapPin, Trash2 } from 'lucide-vue-next';
+import { capitalize, computed, ref, watch } from 'vue';
+
+import FormFieldWrapper from './FormFieldWrapper.vue';
+import TenantSelectField from './TenantSelectField.vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
-import ResourceReservationsTable from '@/Components/Tables/ResourceReservationsTable.vue';
+import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
+import ResourceBookingRow, { type ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { NumberField } from '@/Components/ui/number-field';
@@ -215,7 +223,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
 import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
-import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import type { ResourceCreationTemplate, ResourceMediaEntry } from '@/Pages/Admin/Reservations/CreateResource.vue';
 import type { ResourceEditType } from '@/Pages/Admin/Reservations/EditResource.vue';
 import { ModelEnum } from '@/Types/enums';
@@ -227,8 +234,8 @@ const props = defineProps<{
   /** Create mode when set: keeps the draft across a failed submit. */
   rememberKey?: 'CreateResource';
   enableDelete?: boolean;
-  /** Edit only: every reservation this resource is on, newest first. */
-  reservations?: App.Entities.Reservation[];
+  /** Edit only: the newest few reservations, shaped as on the resource page. */
+  reservations?: ResourceBooking[];
 }>();
 
 const emit = defineEmits<{
@@ -267,15 +274,11 @@ const missingLocaleCounts = computed(() => ({
   en: (form.name.en ? 0 : 1) + (form.description.en ? 0 : 1),
 }));
 
-// Shadcn Select requires string values
-const tenantIdString = computed({
-  get: () => (form.tenant_id != null ? String(form.tenant_id) : ''),
-  set: (val: string) => { form.tenant_id = val ? Number(val) : null; },
-});
-
 const categoryIdString = computed({
-  get: () => (form.resource_category_id != null ? String(form.resource_category_id) : ''),
-  set: (val: string) => { form.resource_category_id = val ? Number(val) : null; },
+  get: () => (form.resource_category_id != null ? String(form.resource_category_id) : '__none__'),
+  set: (val: string) => {
+    form.resource_category_id = val === '__none__' || !val ? null : Number(val);
+  },
 });
 
 // Deferred upload files

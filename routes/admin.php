@@ -185,6 +185,13 @@ Route::resource('resources', ResourceController::class);
 Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
+
+// The acting user's reservation cart; no draft id in the URL — it is always their own.
+Route::put('reservationCart', [ReservationCartController::class, 'update'])->name('reservationCart.update');
+Route::delete('reservationCart', [ReservationCartController::class, 'destroy'])->name('reservationCart.destroy');
+Route::post('reservationCart/items', [ReservationCartController::class, 'storeItem'])->name('reservationCart.items.store');
+Route::patch('reservationCart/items/{resource}', [ReservationCartController::class, 'updateItem'])->name('reservationCart.items.update');
+Route::delete('reservationCart/items/{resource}', [ReservationCartController::class, 'destroyItem'])->name('reservationCart.items.destroy')->withTrashed();
 // Reservations are never updated directly — every mutation goes through the
 // reservationResources pivot below, so `edit`/`update` are not registered.
 Route::resource('reservations', ReservationController::class)->except(['edit', 'update']);
@@ -259,6 +266,8 @@ Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStat
 Route::resource('problems', ProblemController::class);
 
 Route::resource('types', TypeController::class);
+Route::put('types/{type}/models', [TypeController::class, 'syncModels'])->name('types.models.sync');
+Route::put('types/{type}/roles', [TypeController::class, 'syncRoles'])->name('types.roles.sync');
 Route::resource('relationships', RelationshipController::class);
 Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
 Route::patch('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'updateModelRelationship'])->name('relationships.updateModelRelationship');

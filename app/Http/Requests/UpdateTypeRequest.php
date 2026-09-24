@@ -35,12 +35,6 @@ class UpdateTypeRequest extends FormRequest
             // `different:id` was inert — the payload carries no `id` field — so a type
             // could be set as its own parent. Compare against the route model.
             'parent_id' => ['nullable', SoftDeleteRules::existsLive('types'), Rule::notIn([$this->type->id])],
-            'roles' => 'nullable|array',
-            'roles.*' => ['string', Rule::exists('roles', 'id')],
-            'institutions' => 'nullable|array',
-            'institutions.*' => ['string', SoftDeleteRules::existsLive('institutions')],
-            'duties' => 'nullable|array',
-            'duties.*' => ['string', SoftDeleteRules::existsLive('duties')],
             'extra_attributes' => 'nullable|array',
             'extra_attributes.meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
             // Null means "inherit from the parent type" — see InstitutionScopeResolver.

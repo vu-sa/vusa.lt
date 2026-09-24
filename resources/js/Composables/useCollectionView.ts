@@ -2,15 +2,18 @@ import { computed, ref, type Ref } from 'vue';
 import { useLocalStorage, useMediaQuery } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
-export type CollectionViewMode = 'rows' | 'table' | 'preview';
+export type CollectionViewMode = 'cards' | 'rows' | 'table' | 'preview';
 
-const VIEW_MODES: readonly CollectionViewMode[] = ['rows', 'table', 'preview'];
+const VIEW_MODES: readonly CollectionViewMode[] = ['cards', 'rows', 'table', 'preview'];
 
 interface UseCollectionViewOptions {
   /** Stable name of the collection; scopes the remembered choice (O3: per user per collection). */
   collection: string;
   defaultView: CollectionViewMode;
-  /** Views this collection offers at all; the viewport narrows them further. Rows are always kept. */
+  /**
+   * Views this collection offers at all; the viewport narrows them further. Rows are always kept;
+   * cards only where a collection opts in (browsing things to pick, e.g. resources).
+   */
   views?: CollectionViewMode[];
 }
 
@@ -20,8 +23,8 @@ function isViewMode(value: unknown): value is CollectionViewMode {
 
 /**
  * The view a collection shows: the URL wins (U1), then the user's last choice, then the
- * entity's default. What a viewport can actually show narrows it: rows only below `md`,
- * the preview pane only from `xl` (O1, O2).
+ * entity's default. What a viewport can actually show narrows it: rows (and opted-in cards) only
+ * below `md`, the preview pane only from `xl` (O1, O2).
  */
 export function useCollectionView(options: UseCollectionViewOptions) {
   const userId = usePage().props.auth?.user?.id ?? 'guest';
@@ -41,14 +44,18 @@ export function useCollectionView(options: UseCollectionViewOptions) {
   const isAtLeastMd = useMediaQuery('(min-width: 768px)');
   const isAtLeastXl = useMediaQuery('(min-width: 1280px)');
 
+  const offersCards = options.views?.includes('cards') ?? false;
+
   const availableViews = computed<CollectionViewMode[]>(() => {
+    const cards: CollectionViewMode[] = offersCards ? ['cards'] : [];
+
     if (!isAtLeastMd.value) {
-      return ['rows'];
+      return [...cards, 'rows'];
     }
 
     const byViewport: CollectionViewMode[] = isAtLeastXl.value ? ['rows', 'table', 'preview'] : ['rows', 'table'];
 
-    return byViewport.filter(mode => mode === 'rows' || !options.views || options.views.includes(mode));
+    return [...cards, ...byViewport.filter(mode => mode === 'rows' || !options.views || options.views.includes(mode))];
   });
 
   const view = computed<CollectionViewMode>(() => {

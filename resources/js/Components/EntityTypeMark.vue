@@ -9,14 +9,14 @@
     <span
       :class="[
         'inline-flex shrink-0 items-center justify-center bg-[var(--entity-category-surface)] text-[var(--entity-category)]',
-        size === 'sm' ? 'size-5' : 'size-6',
+        boxClass,
       ]"
       :style="categoryVariables"
       aria-hidden="true"
     >
-      <component :is="definition.icon" :class="size === 'sm' ? 'size-3.5' : 'size-4'" />
+      <component :is="definition.icon" :class="iconClass" />
     </span>
-    <span>{{ $t(label ?? definition.label) }}</span>
+    <span v-if="!iconOnly">{{ $t(label ?? definition.label) }}</span>
   </span>
 </template>
 
@@ -32,7 +32,10 @@ import { cn } from '@/Utils/Shadcn/utils';
 const props = withDefaults(defineProps<{
   type: ModelEnum | keyof typeof ModelEnum | string;
   label?: string;
-  size?: 'sm' | 'md';
+  /** `lg` and `xl` are picture placeholders (a row thumbnail, a card image). */
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** A stand-in for a missing picture next to the record's own name: the label would only repeat the type. */
+  iconOnly?: boolean;
   class?: HTMLAttributes['class'];
 }>(), {
   label: undefined,
@@ -41,6 +44,16 @@ const props = withDefaults(defineProps<{
 });
 
 const definition = computed(() => getEntityTypeDefinition(props.type));
+
+const SIZES = {
+  sm: { box: 'size-5', icon: 'size-3.5' },
+  md: { box: 'size-6', icon: 'size-4' },
+  lg: { box: 'size-10', icon: 'size-5' },
+  xl: { box: 'size-16', icon: 'size-8' },
+} as const;
+
+const boxClass = computed(() => SIZES[props.size].box);
+const iconClass = computed(() => SIZES[props.size].icon);
 const categoryVariables = computed<CSSProperties>(() => ({
   '--entity-category': `var(--cat-${definition.value?.category ?? 1})`,
   '--entity-category-surface': `var(--cat-${definition.value?.category ?? 1}-surface)`,

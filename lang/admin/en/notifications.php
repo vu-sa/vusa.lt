@@ -89,6 +89,8 @@ return [
     'reservation_status_changed_body_with_user' => ':user changed reservation ":reservation" (:resource) status to :status',
     'reservation_task_hint_pickup' => '📋 Pick up :resource by :date.',
     'reservation_task_hint_return' => '📋 Return :resource by :date.',
+    'reservation_draft_item_taken_title' => 'Not enough left for your reservation',
+    'reservation_draft_item_taken_body' => '{1} Someone reserved :resources, so there is no longer enough of it for your chosen time. Change the quantity or the time.|[2,*] Someone reserved :resources, so there is no longer enough of them for your chosen time. Change the quantities or the time.',
 
     // Approval notifications
     'approval_requested_title' => 'Approval Required',
@@ -146,6 +148,7 @@ return [
     'action_view_tasks' => 'View Tasks',
     'action_view_registration' => 'View Registration',
     'action_view_reservation' => 'View Reservation',
+    'action_review_reservation_draft' => 'Review reservation',
     'action_view_meeting' => 'View Meeting',
     'action_view_duty' => 'View Duty',
     'action_view_access' => 'View my roles',

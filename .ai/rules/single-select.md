@@ -20,8 +20,8 @@ For multi-tagging and topic assignment, use `TagMultiSelect.vue` with polymorphi
 
 ## Pickers: native where the OS is better, one picker per data kind
 Extends the three-picker rule above.
-- Dates, times and ranges use the shared pickers. They go native (`<input type="date|time">`) on coarse pointers via `useCoarsePointer`; on desktop, typing always works alongside the calendar. Date and time are two fields, never a combined popover.
-- Dates near today (meetings, reservations) offer preset chips first (Šiandien · Vakar · Kita data…), as in the ActionWindow `MeetingWhenScreen`.
+- Dates, times and ranges use the shared pickers. They go native (`<input type="date|time">`) on coarse pointers via `useCoarsePointer`; on desktop, typing always works alongside the calendar. A moment (date + time: publish time, reservation start/end) is one `DateTimePicker` with `variant="popover"` — calendar, time and „Dabar“ in one trigger, as in `ContentPublishPanel`; a date alone uses `DatePicker`, a time alone `TimePicker`. Calendars start on Monday (the `ui/calendar` and `ui/range-calendar` default).
+- Meeting dates near today offer preset chips first (Šiandien · Vakar · Kita data…), as in the ActionWindow `MeetingWhenScreen`. Reservation periods do not.
 - By option count: 2–5 → `ToggleGroup`/radio; 6–15 plain text → native `<select>`; options with icons or descriptions → shadcn `Select`; 16+ → `SingleSelect`; indexed records → `CollectionSelectDialog`; several of many → `MultiSelect` chips; tags → `TagMultiSelect`.
 - One picker per data kind, so never a second date picker. The trigger shows readable text plus context, never an id. Optional fields get "Išvalyti". Lithuanian locale: Monday first, 24h.
 - No dialog inside a dialog: on mobile, a picker opened from a sheet replaces the sheet's content, with a back action.

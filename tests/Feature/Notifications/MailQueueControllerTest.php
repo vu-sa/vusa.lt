@@ -49,6 +49,26 @@ describe('mail queue page', function (): void {
     test('a user without the system permission cannot open it', function (): void {
         asUser(makeUser($this->tenant))->get(route('mailQueue'))->assertStatus(403);
     });
+
+    test('collection API searches recipients and enforces the same permission', function (): void {
+        $admin = makeAdminUser($this->tenant);
+        $matching = makeUser($this->tenant);
+        $matching->update(['name' => 'Mail Queue Match']);
+        queueDigestItem($matching);
+        queueDigestItem(makeUser($this->tenant));
+
+        asUser($admin)->getJson(route('api.v1.admin.mailQueue.index', ['search' => 'Mail Queue Match']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.user.id', $matching->id);
+
+        asUser($admin)->getJson(route('api.v1.admin.mailQueue.index', ['sorting' => '[null]']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 2);
+
+        asUser(makeUser($this->tenant))->getJson(route('api.v1.admin.mailQueue.index'))
+            ->assertForbidden();
+    });
 });
 
 describe('discarding queued email', function (): void {

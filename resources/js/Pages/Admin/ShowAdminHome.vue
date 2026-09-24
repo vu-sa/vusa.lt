@@ -30,6 +30,8 @@
             @record="recordMeetingFor"
           />
         </Deferred>
+
+        <ReservationDraftSummary v-if="reservationDraft" :draft="reservationDraft" variant="home" />
       </div>
 
       <aside class="min-w-0">
@@ -93,6 +95,8 @@ import type {
   InstitutionActivityInsight,
 } from '@/Components/Home/types';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import type { ReservationDraftSummaryData } from '@/Components/Reservations/ReservationDraftRow.vue';
+import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
 import { CollectionSkeleton, OverviewStatusList } from '@/Components/Patterns';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
@@ -121,6 +125,8 @@ const props = defineProps<{
   latestNews?: HomeNewsPreview[];
   recentlyEdited?: HomeRecentRecord[];
   registrationForms: HomeRegistrationForm[];
+  /** The user's unfinished reservation, so a started one is one tap away. */
+  reservationDraft: ReservationDraftSummaryData | null;
 }>();
 
 const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited'];

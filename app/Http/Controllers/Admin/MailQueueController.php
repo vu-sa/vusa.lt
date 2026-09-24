@@ -6,7 +6,6 @@ use App\Http\Controllers\AdminController;
 use App\Models\NotificationDigestQueue;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Response;
@@ -20,68 +19,18 @@ use Inertia\Response;
  */
 class MailQueueController extends AdminController
 {
-    public function index(): Response
+    public function index(\App\Http\Requests\IndexMailQueueRequest $request, \App\Actions\BuildMailQueuePage $builder): Response
     {
         $this->handleAuthorization('viewAny', Role::class);
 
-        $recipientPage = NotificationDigestQueue::query()
-            ->select('user_id')
-            ->selectRaw('count(*) as items_count')
-            ->selectRaw('min(created_at) as oldest_at')
-            ->selectRaw('max(created_at) as newest_at')
-            ->groupBy('user_id')
-            ->orderByDesc('items_count')
-            ->paginate(25)
-            ->withQueryString();
-
-        $itemsByUser = NotificationDigestQueue::query()
-            ->with('user:id,name,email,profile_photo_path')
-            ->whereIn('user_id', $recipientPage->getCollection()->pluck('user_id'))
-            ->orderByDesc('created_at')
-            ->get()
-            ->groupBy('user_id');
-
-        $recipients = $recipientPage->through(fn (NotificationDigestQueue $recipient): array => $this->describeRecipient(
-            $itemsByUser->get($recipient->user_id, new Collection),
-            (int) $recipient->items_count,
-        ));
-
         return $this->inertiaResponse('Admin/MailQueue', [
-            'recipients' => $recipients,
+            'recipients' => $builder->execute($request),
             'canManage' => Auth::user()->isSuperAdmin(),
             'totals' => [
                 'items' => NotificationDigestQueue::query()->count(),
                 'recipients' => NotificationDigestQueue::query()->distinct('user_id')->count('user_id'),
             ],
         ]);
-    }
-
-    /**
-     * One recipient's pending digest: who it is for, and the lines it will contain.
-     *
-     * @param  Collection<int, NotificationDigestQueue>  $items
-     * @return array<string, mixed>
-     */
-    private function describeRecipient(Collection $items, int $itemsCount): array
-    {
-        $first = $items->first();
-
-        return [
-            'user_id' => $first->user_id,
-            'user' => $first->user?->only(['id', 'name', 'email', 'profile_photo_path']),
-            'items_count' => $itemsCount,
-            'oldest_at' => $items->min('created_at')?->toISOString(),
-            'newest_at' => $items->max('created_at')?->toISOString(),
-            'items' => $items->map(fn (NotificationDigestQueue $item): array => [
-                'id' => $item->id,
-                'category' => $item->category,
-                'notification_class' => class_basename($item->notification_class),
-                'title' => $item->data['title'] ?? null,
-                'body' => $item->data['body'] ?? null,
-                'url' => $item->data['url'] ?? null,
-                'created_at' => $item->created_at?->toISOString(),
-            ])->values()->all(),
-        ];
     }
 
     /**

@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :title="$t('Profilis')">
+  <OverviewPage :title="$t('Profilis')">
     <div class="mx-auto flex max-w-2xl flex-col gap-6">
       <SectionCard :title="$t('Nustatymai')">
         <p class="mb-4 text-sm text-muted-foreground">
@@ -129,7 +129,7 @@
         />
       </div>
     </div>
-  </AdminContentPage>
+  </OverviewPage>
 </template>
 
 <script setup lang="tsx">
@@ -143,7 +143,7 @@ import { resetInitialization } from '@/Composables/useTutorialProgress';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import { EntityLinkCard, SectionCard } from '@/Components/Patterns';

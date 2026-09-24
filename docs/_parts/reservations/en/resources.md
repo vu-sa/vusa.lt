@@ -1,1 +1,1 @@
-Changing the reservation time will clear the selected resources.  The number of resources displayed is **automatically calculated for the specified reservation period.**
+Changing the reservation time keeps the selected resources in your cart and marks the ones that no longer fit. The number of resources displayed is **automatically calculated for the specified reservation period.**

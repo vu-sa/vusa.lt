@@ -4,6 +4,8 @@ use App\Enums\ApprovalDecision;
 use App\Models\Approval;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
+use App\Models\ReservationDraft;
+use App\Models\ReservationDraftItem;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Support\MorphMap;
@@ -357,5 +359,21 @@ describe('index filters', function (): void {
             ->assertUnprocessable();
         $this->actingAs($this->manager)->getJson(route('api.v1.admin.reservations.index', ['scope' => 'everyone']))
             ->assertUnprocessable();
+    });
+});
+
+describe('unfinished reservation', function (): void {
+    test('the overview shows the user\'s reservation cart, and nothing without one', function (): void {
+        asUser($this->admin)->get(route('dashboard.reservations'))
+            ->assertInertia(fn (Assert $page) => $page->where('reservationCart', null));
+
+        $draft = ReservationDraft::factory()->for($this->admin)->create(['name' => 'Renginys']);
+        ReservationDraftItem::factory()->for($draft, 'draft')->for($this->myResource)->create();
+
+        asUser($this->admin)->get(route('dashboard.reservations'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reservationCart.name', 'Renginys')
+                ->where('reservationCart.count', 1)
+            );
     });
 });

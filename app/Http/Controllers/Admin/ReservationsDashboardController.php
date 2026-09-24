@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\SerializeReservationCart;
 use App\Actions\SerializeReservationsForTable;
 use App\Http\Controllers\AdminController;
 use App\Models\Reservation;
@@ -34,6 +35,7 @@ class ReservationsDashboardController extends AdminController
         // Counts are aggregates and stay on the first paint; the two lists are the secondary group.
         return $this->inertiaResponse('Admin/Dashboard/ShowReservations', [
             'managesResources' => $managedTenantIds->isNotEmpty(),
+            'reservationCart' => SerializeReservationCart::execute($user),
             'counts' => [
                 'waitingForMe' => $this->administered($managedTenantIds, ['created'])->count(),
                 'lentOut' => $this->administered($managedTenantIds, ['lent'])->count(),

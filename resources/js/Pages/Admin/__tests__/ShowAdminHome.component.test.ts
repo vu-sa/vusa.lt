@@ -33,6 +33,7 @@ const stubs = {
   SiteContentLists: true,
   FirstLoginChecklist: { name: 'FirstLoginChecklist', template: '<div data-stub="checklist" />' },
   AccessChangeBand: { name: 'AccessChangeBand', template: '<div data-stub="band" />' },
+  ReservationDraftSummary: { name: 'ReservationDraftSummary', props: ['draft'], template: '<div data-stub="reservation-draft">{{ draft.count }}</div>' },
 };
 
 const baseProps = {
@@ -44,6 +45,7 @@ const baseProps = {
   upcomingMeetings: [],
   heroImage: null,
   registrationForms: [],
+  reservationDraft: null,
 };
 
 const mountPage = (props: Record<string, unknown> = {}) => mount(ShowAdminHome, {
@@ -123,6 +125,19 @@ describe('ShowAdminHome', () => {
     expect(summary.text()).toBe('home.summary.waiting · home.summary.overdue');
     expect(mountPage({ taskStats: { total: 3, overdue: 0, dueSoon: 0 } }).find('[data-testid="hero-summary"]').text())
       .toBe('home.summary.waiting');
+  });
+
+  it('shows an unfinished reservation as its own section under the tasks, only when there is one', () => {
+    expect(mountPage().find('[data-stub="reservation-draft"]').exists()).toBe(false);
+
+    const wrapper = mountPage({ reservationDraft: { name: null, count: 2, start_time: null, end_time: null } });
+    const column = wrapper.find('[data-slot="home-primary-section"]').element.firstElementChild!;
+    const draft = wrapper.find('[data-stub="reservation-draft"]');
+
+    expect(draft.text()).toBe('2');
+    expect(draft.element.parentElement).toBe(column);
+    expect(column.lastElementChild).toBe(draft.element);
+    expect(wrapper.find('attention-queue-stub [data-stub="reservation-draft"]').exists()).toBe(false);
   });
 
   it('shows the checklist and the access band only when the server sends them', () => {

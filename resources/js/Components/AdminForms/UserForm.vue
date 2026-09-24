@@ -1,6 +1,7 @@
 <template>
   <FormPage
     :title="isCreating ? $t('Naujas narys (-ė)') : userTitle"
+    :bar-title="isCreating ? undefined : userTitle"
     :head-title="isCreating ? $t('Naujas narys (-ė)') : userTitle"
     :lead="isCreating ? $t('Sukurk profilį ir iškart priskirk bent vieną pareigybę — kitas galėsi pridėti asmens puslapyje.') : undefined"
     :entity-type="ModelEnum.USER"
@@ -11,14 +12,22 @@
     :errors="form.errors"
     :field-ids
     :mode="isCreating ? 'create' : 'edit'"
+    :available-locales="[]"
+    :activity-subject="user.id ? { type: 'user', id: user.id } : undefined"
+    :created-at="user?.created_at"
+    :updated-at="user?.updated_at"
     @submit="emit('submit:form', form)"
   >
     <FormSection
       :title="$t('Kas tai?')"
       :description="$t('Dažniausiai tai studentas, VU SA narys. Naudotojai iš vusa.lt/mano netrinami, o esamų vardų pavardžių keisti negalima.')"
     >
-      <div class="space-y-1.5">
-        <Label for="user-name" class="text-sm font-medium">{{ $t('forms.fields.name_and_surname') }} *</Label>
+      <FormFieldWrapper
+        id="user-name"
+        :label="$t('forms.fields.name_and_surname')"
+        required
+        :error="form.errors.name"
+      >
         <Input
           id="user-name"
           v-model="form.name"
@@ -26,17 +35,20 @@
           type="text"
           placeholder="Vardas Pavardė"
         />
-        <p v-if="form.errors.name" class="text-xs text-destructive">
-          {{ form.errors.name }}
-        </p>
-      </div>
+      </FormFieldWrapper>
 
-      <div class="space-y-1.5">
-        <Label for="user-email" class="text-sm font-medium">{{ $t('El. paštas') }} *</Label>
-        <Input id="user-email" v-model="form.email" :disabled="!canUpdateIdentity" placeholder="vardas.pavarde@stud.vu.lt" />
-        <p v-if="form.errors.email" class="text-xs text-destructive">
-          {{ form.errors.email }}
-        </p>
+      <FormFieldWrapper
+        id="user-email"
+        :label="$t('El. paštas')"
+        required
+        :error="form.errors.email"
+      >
+        <Input
+          id="user-email"
+          v-model="form.email"
+          :disabled="!canUpdateIdentity"
+          placeholder="vardas.pavarde@stud.vu.lt"
+        />
         <p v-if="!canUpdateIdentity" class="flex items-start gap-1.5 text-xs text-muted-foreground">
           <Lock class="mt-0.5 size-3 shrink-0" aria-hidden="true" />
           {{ $t('users.identity_locked_hint') }}
@@ -57,42 +69,7 @@
             </li>
           </ul>
         </div>
-      </div>
-
-      <template v-if="isCreating">
-        <div class="space-y-1.5">
-          <Label for="user-duties" class="text-sm font-medium">{{ $t('Pareigybės') }} *</Label>
-          <MultiSelect
-            id="user-duties"
-            v-model="selectedDuties"
-            :options="dutyOptions"
-            label-field="label"
-            value-field="value"
-            :placeholder="$t('Pasirinkite pareigybes…')"
-          />
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Profilis be pareigybės niekam nematomas. Pareigybių sąrašą ir datas vėliau tvarkysi asmens puslapyje.') }}
-          </p>
-          <p v-if="form.errors.current_duties" class="text-xs text-destructive">
-            {{ form.errors.current_duties }}
-          </p>
-        </div>
-
-        <div v-if="isSuperAdmin" class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <Label for="user-roles" class="text-sm font-medium">{{ $t('forms.fields.admin_role') }}</Label>
-            <span class="text-xs text-muted-foreground">{{ $t('(superadmin)') }}</span>
-          </div>
-          <MultiSelect
-            id="user-roles"
-            v-model="selectedRoles"
-            :options="rolesOptions"
-            label-field="label"
-            value-field="value"
-            :placeholder="$t('Be rolės...')"
-          />
-        </div>
-      </template>
+      </FormFieldWrapper>
     </FormSection>
 
     <FormSection
@@ -102,24 +79,27 @@
       public-marker
     >
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="space-y-1.5">
-          <Label for="user-phone" class="text-sm font-medium">{{ $t('forms.fields.phone') }}</Label>
+        <FormFieldWrapper
+          id="user-phone"
+          :label="`${$t('forms.fields.phone')} (${$t('neprivaloma')})`"
+          :error="form.errors.phone"
+        >
           <Input id="user-phone" v-model="form.phone" placeholder="+370 612 34 567" />
-          <p v-if="form.errors.phone" class="text-xs text-destructive">
-            {{ form.errors.phone }}
-          </p>
-        </div>
-        <div class="space-y-1.5">
-          <Label for="user-facebook" class="text-sm font-medium">{{ $t('forms.fields.facebook_url') }}</Label>
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          id="user-facebook"
+          :label="`${$t('forms.fields.facebook_url')} (${$t('neprivaloma')})`"
+          :error="form.errors.facebook_url"
+        >
           <Input id="user-facebook" v-model="form.facebook_url" placeholder="https://www.facebook.com/..." />
-          <p v-if="form.errors.facebook_url" class="text-xs text-destructive">
-            {{ form.errors.facebook_url }}
-          </p>
-        </div>
+        </FormFieldWrapper>
       </div>
 
-      <div class="space-y-1.5">
-        <Label class="text-sm font-medium">{{ $t('forms.fields.picture') }}</Label>
+      <FormFieldWrapper
+        id="user-picture"
+        :label="`${$t('forms.fields.picture')} (${$t('neprivaloma')})`"
+      >
         <ImageUpload
           v-model:url="form.profile_photo_path"
           v-model:focal-point-value="form.profile_photo_focal_point"
@@ -130,57 +110,97 @@
           preview-aspect="4/3"
           :existing-url="user?.profile_photo_path"
         />
-      </div>
+      </FormFieldWrapper>
     </FormSection>
 
-    <FormSection
-      :title="$t('Kaip į jį kreiptis?')"
-      :description="$t('Nurodžius įvardį, pareigybės pavadinimo galūnė keičiasi automatiškai (nebent tai išjungta asmens ir pareigybės įraše).')"
-    >
-      <div class="space-y-1.5">
-        <Label for="user-pronouns" class="text-sm font-medium">
-          {{ $t('forms.fields.pronouns') }} ({{ activeLocale.toUpperCase() }})
-        </Label>
-        <Input
+    <template #aside>
+      <FormPanel
+        v-if="isCreating"
+        :title="$t('Pareigybės ir rolės')"
+        :icon="Briefcase"
+        title-class="text-brand"
+      >
+        <FormFieldWrapper
+          id="user-duties"
+          :label="$t('Pareigybės')"
+          required
+          :hint="$t('Profilis be pareigybės niekam nematomas. Pareigybių sąrašą ir datas vėliau tvarkysi asmens puslapyje.')"
+          :error="form.errors.current_duties"
+        >
+          <MultiSelect
+            id="user-duties"
+            v-model="selectedDuties"
+            :options="dutyOptions"
+            label-field="label"
+            value-field="value"
+            :placeholder="$t('Pasirinkite pareigybes…')"
+          />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          v-if="isSuperAdmin"
+          id="user-roles"
+          :label="`${$t('forms.fields.admin_role')} (superadmin)`"
+        >
+          <MultiSelect
+            id="user-roles"
+            v-model="selectedRoles"
+            :options="rolesOptions"
+            label-field="label"
+            value-field="value"
+            :placeholder="$t('Be rolės...')"
+          />
+        </FormFieldWrapper>
+      </FormPanel>
+
+      <FormPanel
+        :title="$t('Kreipinys ir įvardžiai')"
+        :icon="UserCheck"
+        title-class="text-brand"
+      >
+        <FormFieldWrapper
           id="user-pronouns"
-          v-model="form.pronouns[activeLocale]"
-          :placeholder="activeLocale === 'lt' ? 'Jie/jų' : 'They/them'"
-        />
-        <div class="inline-flex border border-border bg-secondary p-0.5" role="group" :aria-label="$t('Kalba')">
-          <button
-            v-for="loc in LOCALES"
-            :key="loc"
-            type="button"
-            :class="[
-              'u-touch px-2.5 py-1 text-xs font-semibold uppercase tracking-wider transition-colors',
-              activeLocale === loc ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground',
-            ]"
-            :aria-pressed="activeLocale === loc"
-            @click="activeLocale = loc"
-          >
-            {{ loc }}
-          </button>
-        </div>
-      </div>
+          :label="`${$t('forms.fields.pronouns')} (${$t('neprivaloma')})`"
+          :hint="$t('Nurodžius įvardį, pareigybės pavadinimo galūnė keičiasi automatiškai.')"
+          :error="form.errors.pronouns || form.errors['pronouns.lt'] || form.errors['pronouns.en']"
+        >
+          <MultiLocaleInput
+            id="user-pronouns"
+            v-model:input="form.pronouns"
+            :placeholder="{ lt: 'Jie/jų', en: 'They/them' }"
+          />
+        </FormFieldWrapper>
 
-      <div class="flex items-start gap-2.5">
-        <Checkbox
-          id="user-show-pronouns"
-          class="mt-0.5"
-          :model-value="Boolean(form.show_pronouns)"
-          :disabled="!hasPronouns"
-          @update:model-value="form.show_pronouns = $event === true"
-        />
-        <div class="space-y-0.5">
-          <Label for="user-show-pronouns" class="cursor-pointer text-sm font-normal">
-            {{ $t('forms.fields.show_pronouns') }}
-          </Label>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Matoma vusa.lt') }} · {{ $t('Įvardžiai rodomi prie asmens vardo ir pavardės.') }}
-          </p>
+        <div class="flex items-start gap-2.5 pt-1">
+          <Checkbox
+            id="user-show-pronouns"
+            class="mt-0.5"
+            :model-value="Boolean(form.show_pronouns)"
+            :disabled="!hasPronouns"
+            @update:model-value="form.show_pronouns = $event === true"
+          />
+          <div class="space-y-0.5">
+            <Label for="user-show-pronouns" class="cursor-pointer text-sm font-normal">
+              {{ $t('forms.fields.show_pronouns') }}
+            </Label>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Matoma vusa.lt') }} · {{ $t('Įvardžiai rodomi prie asmens vardo ir pavardės.') }}
+            </p>
+          </div>
         </div>
-      </div>
-    </FormSection>
+      </FormPanel>
+
+      <FormPanel
+        v-if="!isCreating && user.last_action"
+        :title="$t('Paskutinis veiksmas')"
+        :icon="Clock"
+        title-class="text-brand"
+      >
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Paskutinį kartą prisijungė') }} {{ formatStaticTime(user.last_action) }}
+        </p>
+      </FormPanel>
+    </template>
 
     <template v-if="!isCreating && user.last_action" #footer-extra>
       <span class="text-xs text-muted-foreground">
@@ -191,14 +211,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Lock } from 'lucide-vue-next';
+import { Briefcase, Clock, Lock, UserCheck } from 'lucide-vue-next';
 
 import DuplicateUserWarning from './DuplicateUserWarning.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
 
+import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
+import { FormPanel } from '@/Components/Patterns';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
@@ -208,8 +231,6 @@ import { ImageUpload } from '@/Components/ui/upload';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import { ModelEnum } from '@/Types/enums';
 import { formatStaticTime } from '@/Utils/IntlTime';
-
-const LOCALES = ['lt', 'en'] as const;
 
 const props = withDefaults(defineProps<{
   user: App.Entities.User;
@@ -232,11 +253,12 @@ const props = withDefaults(defineProps<{
   canUpdateIdentity: true,
 });
 
-const emit = defineEmits<(event: 'submit:form', form: unknown) => void>();
+const emit = defineEmits<{
+  (event: 'submit:form', form: unknown): void;
+}>();
 
 const isCreating = computed(() => !props.user.id);
 const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? false);
-const activeLocale = ref<(typeof LOCALES)[number]>('lt');
 
 const userTitle = computed(() => props.user.name);
 

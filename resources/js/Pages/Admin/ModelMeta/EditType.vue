@@ -1,11 +1,7 @@
 <template>
   <TypeForm
     :content-types
-    :all-models-from-model-type
     :type="contentType"
-    :roles
-    :model-type
-    :sharepoint-path
     enable-delete
     @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).patch(route('types.update', contentType.id), { preserveScroll: true })"
     @delete="() => router.delete(route('types.destroy', contentType.id))"
@@ -23,10 +19,6 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 const props = defineProps<{
   contentType: App.Entities.Type;
   contentTypes: App.Entities.Type[];
-  sharepointPath: string;
-  allModelsFromModelType?: Record<string, unknown>[];
-  modelType?: string;
-  roles?: App.Entities.Role[];
 }>();
 
 usePageBreadcrumbs(() => BreadcrumbHelpers.adminForm($t('Tipai'), 'types.index', getTranslatedValue(props.contentType.title)));

@@ -50,7 +50,11 @@ import { RangeCalendarCell, RangeCalendarCellTrigger, RangeCalendarGrid, RangeCa
 
 import { cn } from '@/Utils/Shadcn/utils';
 
-const props = defineProps<RangeCalendarRootProps & { class?: HTMLAttributes['class'] }>();
+// Lithuanian weeks start on Monday (.ai/rules/single-select.md); reka defaults to Sunday.
+const props = withDefaults(defineProps<RangeCalendarRootProps & { class?: HTMLAttributes['class'] }>(), {
+  class: undefined,
+  weekStartsOn: 1,
+});
 
 const emits = defineEmits<RangeCalendarRootEmits>();
 

@@ -103,8 +103,12 @@ describe('authorized access', function (): void {
     });
 
     test('can view relationship', function (): void {
-        // Note: ShowRelationship component doesn't exist, so we just test the response
-        asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200);
+        asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ModelMeta/ShowRelationship')
+                ->has('relationship.relationshipables')
+                ->missing('relatedModels')
+            );
     });
 
     test('can access edit page', function (): void {
@@ -112,7 +116,6 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ModelMeta/EditRelationship')
                 ->has('relationship')
-                // relatedModels might be lazy-loaded, so we just check the page loads
             );
     });
 
@@ -122,7 +125,6 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ModelMeta/EditRelationship')
                 ->has('relationship')
-                // relatedModels might be lazy-loaded
             );
     });
 });
@@ -246,7 +248,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship))
+            ->assertRedirect(route('relationships.show', $this->relationship))
             ->assertSessionHas('success', 'Ryšys sėkmingai sukurtas.');
 
         $this->assertDatabaseHas('relationshipables', [
@@ -290,7 +292,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship))
+            ->assertRedirect(route('relationships.show', $this->relationship))
             ->assertSessionHas('success', 'Ryšys sėkmingai sukurtas.');
 
         $this->assertDatabaseHas('relationshipables', [
@@ -310,7 +312,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship));
+            ->assertRedirect(route('relationships.show', $this->relationship));
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
@@ -329,7 +331,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship));
+            ->assertRedirect(route('relationships.show', $this->relationship));
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
@@ -349,7 +351,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship));
+            ->assertRedirect(route('relationships.show', $this->relationship));
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
@@ -369,7 +371,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship));
+            ->assertRedirect(route('relationships.show', $this->relationship));
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
@@ -497,22 +499,21 @@ describe('relationship data handling', function (): void {
     });
 
     test('show page displays relationship correctly', function (): void {
-        // Note: ShowRelationship component doesn't exist, so we just test the response
         asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200);
     });
 
-    test('edit page loads relationship with related models', function (): void {
+    test('edit page loads relationship attributes only', function (): void {
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship))->assertStatus(200);
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/ModelMeta/EditRelationship')
             ->has('relationship')
             ->where('relationship.id', $this->relationship->id)
-            // relatedModels might be lazy-loaded
+            ->missing('relatedModels')
         );
     });
 
-    test('edit page with model type loads specific models', function (): void {
+    test('edit page ignores model type selection', function (): void {
         $modelType = urlencode(Institution::class);
 
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship)."?modelType={$modelType}")
@@ -521,7 +522,7 @@ describe('relationship data handling', function (): void {
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/ModelMeta/EditRelationship')
             ->has('relationship')
-            // relatedModels might be lazy-loaded
+            ->missing('relatedModels')
         );
     });
 
@@ -534,14 +535,13 @@ describe('relationship data handling', function (): void {
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/ModelMeta/EditRelationship')
             ->has('relationship')
-            // relatedModels might be lazy-loaded
+            ->missing('relatedModels')
         );
     });
 });
 
 describe('relationship eager loading', function (): void {
-    test('edit page loads relationship with all necessary relations', function (): void {
-        // Create relationshipables for the relationship
+    test('show page loads connections while edit page stays attribute-only', function (): void {
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
             'relationshipable_type' => MorphMap::alias(Institution::class),
@@ -550,13 +550,19 @@ describe('relationship eager loading', function (): void {
         ]);
         $relationshipable->save();
 
+        asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ModelMeta/ShowRelationship')
+                ->has('relationship.relationshipables', 1)
+                ->missing('relatedModels')
+            );
+
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship))->assertStatus(200);
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/ModelMeta/EditRelationship')
             ->has('relationship')
-            ->has('relationship.relationshipables')
-            // relatedModels might be lazy-loaded
+            ->missing('relationship.relationshipables')
         );
     });
 });

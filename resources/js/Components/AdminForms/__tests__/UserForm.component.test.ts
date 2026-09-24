@@ -20,15 +20,18 @@ const stubs = {
   FormPage: {
     props: ['title', 'mode'],
     emits: ['submit'],
-    template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent="$emit(\'submit\')"><h1>{{ title }}</h1><slot /><slot name="footer-extra" /></form>',
+    template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent="$emit(\'submit\')"><h1>{{ title }}</h1><slot /><slot name="aside" /><slot name="footer-extra" /></form>',
   },
+  FormPanel: { props: ['title'], template: '<div data-testid="form-panel" :data-panel="title"><slot /></div>' },
   FormSection: { props: ['title'], template: '<section :data-section="title"><slot /></section>' },
+  FormFieldWrapper: { props: ['id'], template: '<div :data-field="id"><slot /></div>' },
   Input: {
     props: ['modelValue', 'disabled'],
     template: '<input data-testid="input" :disabled="disabled" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
   },
-  Checkbox: { props: ['modelValue', 'disabled'], template: '<input type="checkbox" :checked="modelValue" :disabled="disabled" />' },
+  Checkbox: { props: ['modelValue', 'disabled', 'id'], template: '<input :id="id" type="checkbox" :checked="modelValue" :disabled="disabled" />' },
   MultiSelect: { props: ['id', 'options'], template: '<div :data-testid="id" :data-options="options.map(o => o.label).join(\'|\')" />' },
+  MultiLocaleInput: { template: '<div />' },
   ImageUpload: true,
   DuplicateUserWarning: true,
 };
@@ -87,7 +90,9 @@ describe('UserForm.vue', () => {
       expect(wrapper.findAll('[data-section]').map(section => section.attributes('data-section'))).toEqual([
         'Kas tai?',
         'Kaip su juo susisiekti?',
-        'Kaip į jį kreiptis?',
+      ]);
+      expect(wrapper.findAll('[data-panel]').map(panel => panel.attributes('data-panel'))).toEqual([
+        'Kreipinys ir įvardžiai',
       ]);
     });
 

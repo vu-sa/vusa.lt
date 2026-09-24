@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { CircleCheck } from 'lucide-vue-next';
 import { describe, expect, it, vi } from 'vitest';
+import { router } from '@inertiajs/vue3';
 
 import RecordPage from '@/Components/Layouts/RecordPage.vue';
 import { commonStubs } from '@/tests/stubs';
@@ -59,5 +60,28 @@ describe('RecordPage', () => {
     await wrapper.findAll('button').find(button => button.text().includes('Redaguoti'))!.trigger('click');
 
     expect(wrapper.emitted('action')).toEqual([['edit']]);
+  });
+
+  it('follows an overflow action that carries a link, and emits one that does not', async () => {
+    const wrapper = mount(RecordPage, {
+      props: {
+        title: 'Projektorius',
+        entityType: 'resource',
+        overflowActions: [
+          { key: 'edit', label: 'Redaguoti', href: '/mano/resources/1/edit' },
+          { key: 'delete', label: 'Ištrinti', destructive: true },
+        ],
+      },
+      global: { stubs: { ...commonStubs, SheetClose: { template: '<div><slot /></div>' } } },
+    });
+
+    const button = (label: string) => wrapper.findAll('button').find(candidate => candidate.text() === label);
+
+    await button('Redaguoti')!.trigger('click');
+    expect(router.visit).toHaveBeenCalledWith('/mano/resources/1/edit');
+    expect(wrapper.emitted('action')).toBeUndefined();
+
+    await button('Ištrinti')!.trigger('click');
+    expect(wrapper.emitted('action')).toEqual([['delete']]);
   });
 });

@@ -25,6 +25,11 @@ class ApplyReservationIndexFilters
      */
     public static function execute(Builder $query, IndexReservationRequest $request, User $user, ModelAuthorizer $authorizer): Builder
     {
+        // Without the list permission the list is the user's own, whatever the filters say.
+        if (! $user->can('viewAny', Reservation::class)) {
+            $query->whereHas('users', fn (Builder|Relation $users) => $users->where('users.id', $user->id));
+        }
+
         $scope = $request->getScope();
         $states = $request->getStates();
         $overdue = $request->getOverdue();

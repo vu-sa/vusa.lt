@@ -19,7 +19,11 @@
   >
     <template #actions>
       <Button v-if="canCreate && !isDeleted" as-child variant="brand" size="lg">
-        <Link :href="route('reservations.create')">
+        <Link v-if="cartItems.length > 0" :href="route('reservations.create')">
+          <ArrowRight aria-hidden="true" />
+          {{ $t('reservations.cart.continue_with_count', { count: String(cartItems.length) }) }}
+        </Link>
+        <Link v-else :href="route('reservations.create')">
           <Plus aria-hidden="true" />
           {{ $t('Nauja rezervacija') }}
         </Link>
@@ -135,7 +139,7 @@
         :mode="isFiltered ? 'no-results' : 'empty'"
         :icon="ReservationIcon"
         :title="isDeleted ? $t('Ištrintų rezervacijų nėra') : $t('Rezervacijų dar nėra')"
-        :description="isDeleted ? $t('Šiukšliadėžėje nėra pašalintų rezervacijų.') : $t('Čia matysi patalpų ir įrangos prašymus bei jų eigą.')"
+        :description="isDeleted ? $t('Šiukšliadėžėje nėra pašalintų rezervacijų.') : $t('reservations.resource.reservations_empty')"
         :action-label="canCreate && !isDeleted ? $t('Nauja rezervacija') : undefined"
         @action="router.visit(route('reservations.create'))"
       />
@@ -182,7 +186,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Check, CheckCheck, Plus, RotateCcw, Trash2, X } from 'lucide-vue-next';
+import { ArrowRight, Check, CheckCheck, Plus, RotateCcw, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -195,6 +199,7 @@ import ReservationDecisionDialog from '@/Components/Reservations/ReservationDeci
 import ReservationResourceChips from '@/Components/Reservations/ReservationResourceChips.vue';
 import ReservationRowActions from '@/Components/Reservations/ReservationRowActions.vue';
 import type { ReservationDecision } from '@/Components/Reservations/types';
+import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
 import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
@@ -218,25 +223,31 @@ const props = defineProps<{
   deletedCount: number;
   managesResources?: boolean;
   showDeleted?: boolean;
+  /** No list permission: every row is already the user's own, so "Mano rezervacijos" filters nothing. */
+  onlyOwn?: boolean;
 }>();
 
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.reservation));
+
+const { items: cartItems } = useReservationCart();
 const selectedIds = ref<string[]>([]);
 const targetReservationToForceDelete = ref<DashboardReservation | null>(null);
 
 const STATES = ['created', 'reserved', 'lent', 'returned', 'rejected', 'cancelled'] as const;
 
 const facets = computed<DatabaseFacetDefinition[]>(() => [
-  {
-    field: 'scope',
-    label: $t('Rodyti'),
-    single: true,
-    values: [
-      { value: 'mine', label: $t('Mano rezervacijos') },
-      ...(props.managesResources ? [{ value: 'administered', label: $t('Administruoju') }] : []),
-    ],
-  },
+  ...(props.onlyOwn
+    ? []
+    : [{
+        field: 'scope',
+        label: $t('Rodyti'),
+        single: true,
+        values: [
+          { value: 'mine', label: $t('Mano rezervacijos') },
+          ...(props.managesResources ? [{ value: 'administered', label: $t('Administruoju') }] : []),
+        ],
+      }]),
   {
     field: 'state',
     label: $t('Būsena'),
@@ -290,7 +301,7 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => {
           active: scope.includes('administered') && states.length === 1 && states[0] === 'created',
         }]
       : []),
-    { id: 'mine', label: $t('Mano rezervacijos'), active: scope.includes('mine') },
+    ...(props.onlyOwn ? [] : [{ id: 'mine', label: $t('Mano rezervacijos'), active: scope.includes('mine') }]),
     ...(props.managesResources
       ? [{ id: 'administered', label: $t('Administruoju'), active: scope.includes('administered') && states.length === 0 }]
       : []),

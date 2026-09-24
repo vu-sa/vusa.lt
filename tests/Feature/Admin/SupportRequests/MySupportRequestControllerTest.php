@@ -40,6 +40,23 @@ describe('guest access', function (): void {
 });
 
 describe('authenticated user index', function (): void {
+    test('collection API keeps private requests out and filters the mine tab', function (): void {
+        $own = SupportRequest::factory()->create(['created_by' => $this->user->id]);
+        SupportRequest::factory()->create([
+            'created_by' => makeUser($this->tenant)->id,
+            'visibility' => SupportRequestVisibility::Private,
+        ]);
+
+        asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index'))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $own->id);
+
+        asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index', ['tab' => 'mine']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1);
+    });
+
     test('shows all visible support requests by default and mine on request', function (): void {
         $ownActive = SupportRequest::factory()->create([
             'created_by' => $this->user->id,

@@ -5,8 +5,25 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.21 — Rezervacijų juodraščiai (2026-09-24) {#v2-21}
+
+- ⭐ **Rezervacija išsaugoma kaip juodraštis** — „Nauja rezervacija“ atveria formą, kuri saugoma automatiškai; išteklius renkiesi naršydamas skiltį „Ištekliai“ ir prie kiekvieno spausdamas „Pridėti“. Pasirinkimas išlieka, net jei uždarysi puslapį ar atsidarysi kitame įrenginyje, o nebaigtą rezervaciją rasi Pradžioje ir Rezervacijų apžvalgoje. Ji ištrinama po 14 d. be pakeitimų
+- ✨ **Aiškesnė rezervacijos forma** — pavadinimas, aprašymas, laikas ir ištekliai vienoje kolonoje, o pateikimo sąlygos ir taisyklės – šoninėje juostoje, kaip ir kitose Mano VU SA formose
+- ⭐ **Ištekliai kortelėmis** — išteklių sąrašas pagal nutylėjimą rodomas kortelėmis su nuotrauka ir laisvu kiekiu; kol rezervacijos nepradėjai, kortelė kviečia „Peržiūrėti“, o pradėjus – „Pridėti“. Ištekliaus puslapyje mygtukas „Rezervuoti“ iškart pradeda rezervaciją su tuo daiktu
+- ⭐ **Ištekliaus puslapis** — kiekvienas išteklius turi savo puslapį: kiek jo laisva dabar, kas jį šiuo metu turi, artimiausios rezervacijos ir istorija; jei ankstesnė rezervacija laiku neuždaryta, tai parodoma ramiu priminimu, kuris netrukdo rezervuoti
+- ✨ **Laikas nebeišvalo išteklių** — pakeitus rezervacijos laiką, pasirinkti ištekliai lieka, o tie, kurių tuo metu nebeužtenka, pažymimi su pasiūlymu sumažinti kiekį
+- ✨ **Žinosi, jei kažkas aplenkė** — jei kas nors užsirezervuoja išteklių, esantį tavo nebaigtoje rezervacijoje, ir jo tavo laikui nebeužtenka, gausi pranešimą
+- ✨ **Rezervacijų sąrašas visiems** — skiltis „Rezervacijos“ atsidaro kiekvienam: jei neadministruoji rezervacijų, matai tik savo. Nuorodos „Mano rezervacijos“ ir mygtukas „Grįžti“ formoje nebeveda į draudžiamą puslapį
+- ✨ **Tvarkingesnė Rezervacijų apžvalga** — viršuje skaičiai, po jais tavo rezervacijos ir skyriai greta, o laukiantys sprendimo – visu pločiu apačioje
+- ✨ **Aiškesnis „Filtrai“ mygtukas** — sąrašuose mygtukas nuspalvinamas tik tada, kai filtrai atidaryti; kai jie paslėpti, pasirinktų filtrų skaičius rodomas ant mygtuko
+- 🔧 **Dvikalbės formos nebešokinėja** — perjungus kalbą, pranešimas apie trūkstamus vertimus rodomas šalia kalbos jungiklio ir forma nebepasislenka žemyn
+- ✨ **Glaustesnė ištekliaus forma** — be nereikalingų antraščių, nuotraukos – įprastas formos laukas, o vietoj rezervacijų lentelės rodomos kelios naujausios rezervacijos su nuoroda į visą istoriją ištekliaus puslapyje
+- 🔧 **Savaitė prasideda pirmadienį** — datų pasirinkimo kalendoriai visoje Mano VU SA savaitę pradeda pirmadieniu, ne sekmadieniu
+- 🔧 **Kiekis tikrinamas pateikiant** — rezervacija nebesukuriama, jei pasirinktu laiku išteklių nebeužtenka arba jis nerezervuojamas, net jei du žmonės pateikia vienu metu
+
 ## v2.20 — Aiškesnė ViSAK apžvalga (2026-09-24) {#v2-20}
 
+- ✨ **Vienodesni administravimo puslapiai** — rolės, pagalbos pranešimai, profilis, pranešimai ir laiškų eilė naudoja tuos pačius sąrašo, įrašo ir formos valdiklius kaip kiti Mano VU SA puslapiai; susietus tipų ir ryšių įrašus tvarkysi jų peržiūros puslapiuose
 - ✨ **Daugiau vietos puslapių apačioje** — administravimo puslapius gali nuslinkti toliau, todėl paskutinis turinys nelieka prispaustas prie ekrano krašto
 - ✨ **Aiškesnė Pradžios tvarka** — „Eiti į“ nuorodos turi atskirą viso pločio eilutę ir kompiuteryje telpa keturios greta; tavo institucijos, kai prieinamos, rodomos šalia greitųjų veiksmų
 - 🔧 **Posėdžio kūrimas kitam padaliniui** — sukūrus viešą posėdį kitam padaliniui, jo puslapis vėl atsidaro be klaidos

@@ -15,13 +15,11 @@
           <div class="min-w-0 flex-1 space-y-1">
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
               <Link
-                v-if="resource.can_edit"
-                :href="route('resources.edit', resource.id)"
+                :href="route('resources.show', resource.id)"
                 class="truncate text-sm font-medium text-foreground hover:text-brand hover:underline"
               >
                 {{ resource.name }}
               </Link>
-              <span v-else class="truncate text-sm font-medium text-foreground">{{ resource.name }}</span>
               <span v-if="resource.pivot.quantity > 1" class="text-sm text-muted-foreground tabular-nums">×{{ resource.pivot.quantity }}</span>
               <span
                 v-if="resource.tenant?.shortname"

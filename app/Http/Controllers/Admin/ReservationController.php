@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\ApplyReservationIndexFilters;
+use App\Actions\EnsureReservationCapacity;
+use App\Actions\NotifyAffectedReservationDrafts;
+use App\Actions\SerializeReservationCart;
 use App\Actions\SerializeReservationsForTable;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexReservationRequest;
@@ -18,6 +21,7 @@ use App\Services\TanstackTableService;
 /* use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests; */
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -36,7 +40,7 @@ class ReservationController extends AdminController
      */
     public function index(IndexReservationRequest $request)
     {
-        $this->handleAuthorization('viewAny', Reservation::class);
+        $this->handleAuthorization('viewList', Reservation::class);
 
         $query = Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS);
 
@@ -78,6 +82,8 @@ class ReservationController extends AdminController
             'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'managesResources' => $managesResources,
+            'reservationCart' => SerializeReservationCart::execute($request->user()),
+            'onlyOwn' => ! $request->user()->can('viewAny', Reservation::class),
             'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds): void {
                 $query->whereIn('resources.tenant_id', $allowedTenantIds);
             })->with(['resources.tenant', 'users'])->get(),
@@ -85,82 +91,58 @@ class ReservationController extends AdminController
     }
 
     /**
-     * Show the form for creating a new resource.
+     * The checkout: the user's reservation cart with its name, description and period.
      */
     public function create()
     {
         $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
 
-        $dateTimeRange = request()->input('dateTimeRange') ?? [
-            'start' => now()->setTimeFromTimeString('09:00')->addDay()->format('Uv'),
-            'end' => now()->setTimeFromTimeString('17:00')->addDays(5)->format('Uv'),
-        ];
-
-        // dateTimeRange to numeric
-        $dateTimeRange = [
-            'start' => intval($dateTimeRange['start']),
-            'end' => intval($dateTimeRange['end']),
-        ];
-
-        request()->merge(['dateTimeRange' => $dateTimeRange]);
-        request()->validate([
-            'dateTimeRange.start' => ['required', 'integer', 'lt:dateTimeRange.end'],
-            'dateTimeRange.end' => ['required', 'integer'],
-        ]);
-
         return $this->inertiaResponse('Admin/Reservations/CreateReservation', [
-            // 'assignableTenants' => GetTenantsForUpserts::execute('resources.create.all', $this->authorizer)
-            'resources' => Resource::with('tenant')->select('id', 'name', 'capacity', 'is_reservable', 'tenant_id')->get()->map(function ($resource) use ($dateTimeRange) {
-                $strictCapacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end']);
-                $flexibleCapacityAtDateTimeRange = $resource->getCapacityAtDateTimeRange($dateTimeRange['start'], $dateTimeRange['end'], [], [], true);
-
-                return [
-                    ...$resource->toArray(),
-                    'capacityAtDateTimeRange' => $strictCapacityAtDateTimeRange,
-                    'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($flexibleCapacityAtDateTimeRange),
-                    'strictLowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($strictCapacityAtDateTimeRange),
-                    'discrepancies' => $resource->findTimeEndedActiveReservations($dateTimeRange['start'], $dateTimeRange['end'])
-                        ->map(fn ($reservation) => [
-                            'id' => (string) $reservation->id,
-                            'name' => $reservation->name,
-                            'quantity' => (int) $reservation->pivot->quantity,
-                            'state' => (string) $reservation->pivot->state,
-                            'start_time' => $reservation->pivot->start_time?->timestamp,
-                            'end_time' => $reservation->pivot->end_time?->timestamp,
-                        ])->values()->all(),
-                ];
-            }),
-            'dateTimeRange' => $dateTimeRange,
+            'reservationCart' => SerializeReservationCart::execute(request()->user()),
+            'defaultDateTimeRange' => [
+                'start' => (int) now()->setTimeFromTimeString('09:00')->addDay()->format('Uv'),
+                'end' => (int) now()->setTimeFromTimeString('17:00')->addDays(5)->format('Uv'),
+            ],
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Submitting the cart: capacity is checked under a row lock, and the draft is consumed with
+     * the reservation so a failed check leaves it intact.
      */
     public function store(StoreReservationRequest $request)
     {
         $this->handleAuthorization('create', [Reservation::class, $this->authorizer]);
 
-        $reservation = new Reservation;
+        $reservation = DB::transaction(function () use ($request): Reservation {
+            $reservation = new Reservation;
 
-        $reservation->fill($request->safe()->only(['name', 'description', 'start_time', 'end_time']));
-        $reservation->save();
+            $reservation->fill($request->safe()->only(['name', 'description', 'start_time', 'end_time']));
 
-        $reservation->fresh();
+            EnsureReservationCapacity::execute($request->validated('resources'), $reservation->start_time, $reservation->end_time);
 
-        foreach ($request->validated('resources') as $resource) {
-            $reservation->attachAudited(
-                'resources',
-                $resource['id'], [
-                    'quantity' => $resource['quantity'],
-                    'start_time' => $reservation->start_time,
-                    'end_time' => $reservation->end_time,
-                    'state' => 'created',
-                ]
-            );
-        }
+            $reservation->save();
 
-        $reservation->attachAudited('users', auth()->id());
+            foreach ($request->validated('resources') as $resource) {
+                $reservation->attachAudited(
+                    'resources',
+                    $resource['id'], [
+                        'quantity' => $resource['quantity'],
+                        'start_time' => $reservation->start_time,
+                        'end_time' => $reservation->end_time,
+                        'state' => 'created',
+                    ]
+                );
+            }
+
+            $reservation->attachAudited('users', auth()->id());
+
+            $request->user()->reservationDraft()->delete();
+
+            return $reservation;
+        });
+
+        NotifyAffectedReservationDrafts::execute($reservation);
 
         return redirect()->route('reservations.show', $reservation->id)->with('success', $this->entityMessage('created', 'reservation'));
     }

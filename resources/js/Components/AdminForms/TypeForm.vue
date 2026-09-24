@@ -115,46 +115,6 @@
       </div>
     </FormSection>
 
-    <!-- Associations are still edited here until they move to ShowType. -->
-    <FormSection
-      v-if="modelType"
-      :title="$t('forms.sections.type_models')"
-      :description="$t('forms.helpers.type_models_desc')"
-    >
-      <FormFieldWrapper id="type_models" :label="$t('forms.fields.models')">
-        <TransferList v-model="form[modelType]" :options="modelOptions ?? []">
-          <template #source-label="{ option }">
-            <span class="inline-flex items-center gap-2">
-              {{ option.label }} ({{ option.model?.tenants?.[0]?.shortname ?? option.model?.tenants?.shortname }})
-              <a
-                target="_blank"
-                :href="route(`${modelType}.edit`, option.value)"
-                class="inline-flex size-6 items-center justify-center text-muted-foreground hover:text-foreground"
-                :aria-label="$t('Redaguoti')"
-                @click.stop
-              >
-                <Pencil class="size-3.5" />
-              </a>
-            </span>
-          </template>
-        </TransferList>
-      </FormFieldWrapper>
-    </FormSection>
-
-    <FormSection
-      v-if="form.model_type === ModelEnum.DUTY"
-      :title="$t('forms.sections.type_duty_roles')"
-      :description="$t('forms.helpers.type_duty_roles_desc')"
-    >
-      <FormFieldWrapper id="type_roles" :label="$t('forms.fields.roles')">
-        <TransferList v-model="form.roles" :options="roleOptions" />
-      </FormFieldWrapper>
-    </FormSection>
-
-    <FormSection v-if="sharepointPath" :title="$t('forms.sections.files')" :description="$t('forms.helpers.type_files_desc')">
-      <FileManager :starting-path="sharepointPath" :fileable="{ id: form.id, type: 'Type' }" />
-    </FormSection>
-
     <template #advanced>
       <FormFieldWrapper
         id="slug"
@@ -197,7 +157,6 @@
 import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Pencil } from 'lucide-vue-next';
 
 import TiptapEditor from '../TipTap/TiptapEditor.vue';
 
@@ -213,8 +172,6 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { TransferList } from '@/Components/ui/transfer-list';
-import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import { modelTypeLabel, modelTypes } from '@/Types/formOptions';
 
 defineEmits<{
@@ -224,11 +181,7 @@ defineEmits<{
 
 const props = defineProps<{
   type: App.Entities.Type;
-  modelType?: string;
-  contentTypes: Record<string, any>[];
-  sharepointPath?: string;
-  allModelsFromModelType?: Record<string, any>[];
-  roles?: App.Entities.Role[];
+  contentTypes: Array<{ id: string; title: string | { lt?: string; en?: string }; model_type: string }>;
   rememberKey?: 'CreateType';
   enableDelete?: boolean;
 }>();
@@ -332,12 +285,6 @@ const enableCrossTenantSiblingRelationships = computed({
   },
 });
 
-// map e.g. form.institutions to id only, so it's used in transfer values
-
-if (props.modelType) {
-  form[props.modelType] = props.type[props.modelType]?.map(model => model.id);
-}
-
 const localizedTitle = computed(() => getTranslatedValue(form.title));
 
 const missingLocaleCounts = computed(() => ({
@@ -345,22 +292,10 @@ const missingLocaleCounts = computed(() => ({
   en: [form.title?.en].filter(value => !value).length,
 }));
 
-const roleOptions = computed(() => props.roles?.map(role => ({ value: role.id, label: role.name })) ?? []);
-
 const modelDefaults = modelTypes.type.map(alias => ({
   value: alias,
   label: modelTypeLabel(alias),
 }));
-
-const modelOptions = computed(() => {
-  return props.allModelsFromModelType?.map((model) => {
-    return {
-      value: model.id,
-      label: model.title ?? model.name,
-      model,
-    };
-  });
-});
 
 const parentTypeOptions = computed(() => {
   return props.contentTypes.filter(

@@ -6,6 +6,7 @@ use App\Actions\GetOnboardingChecklist;
 use App\Actions\GetRecentAccessChanges;
 use App\Actions\GetRecentlyEditedRecords;
 use App\Actions\GetUserCoordinators;
+use App\Actions\SerializeReservationCart;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Http\Requests\ShowAdminHomeRequest;
@@ -150,6 +151,7 @@ class DashboardController extends AdminController
             'recentlyEdited' => $recentlyEdited,
             'coordinator' => $coordinator,
             'registrationForms' => $this->registrationForms($user),
+            'reservationDraft' => SerializeReservationCart::summary($user),
         ]);
     }
 

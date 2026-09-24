@@ -14,6 +14,8 @@
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
+import { DutyIconFilled } from '@/Components/icons';
+import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   dutyTypes: App.Entities.Type[];
@@ -24,6 +26,8 @@ const props = defineProps<{
   assignableDuties: Array<{ id: string; name: string; institution?: App.Entities.Institution | Record<string, unknown> }>;
   prefillInstitutionId?: string | null;
 }>();
+
+usePageBreadcrumbs(BreadcrumbHelpers.adminForm('Pareigybės', 'duties.index', 'Nauja pareigybė', DutyIconFilled));
 
 const duty = {
   name: { lt: '', en: '' },

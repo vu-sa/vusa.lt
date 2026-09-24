@@ -99,4 +99,14 @@ describe('useCollectionView', () => {
     expect(params.get('year')).toBe('2026');
     expect(params.get('view')).toBe('table');
   });
+
+  it('offers cards only to a collection that opts in, on phones too', () => {
+    expect(useCollectionView(options).availableViews.value).not.toContain('cards');
+
+    const browsing = { collection: 'resources', defaultView: 'cards' as const, views: ['cards', 'rows', 'table'] as const };
+    expect(useCollectionView({ ...browsing, views: [...browsing.views] }).view.value).toBe('cards');
+
+    media.md = false;
+    expect(useCollectionView({ ...browsing, views: [...browsing.views] }).availableViews.value).toEqual(['cards', 'rows']);
+  });
 });

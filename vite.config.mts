@@ -209,7 +209,6 @@ export default defineConfig(({ command }) => {
         'assets/index-*.js',
         // Admin home page and layout
         'assets/ShowAdminHome-*.js',
-        'assets/AdminContentPage*.js',
         'assets/AdminLayout*.js',
         // Dashboard components
         'assets/TasksCard*.js',

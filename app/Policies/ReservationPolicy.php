@@ -27,6 +27,15 @@ class ReservationPolicy extends ModelPolicy
     }
 
     /**
+     * The reservation list opens for everyone who can reserve; without `viewAny` it holds only
+     * their own reservations (ApplyReservationIndexFilters), so "Mano rezervacijos" never 403s.
+     */
+    public function viewList(User $user): bool
+    {
+        return $this->viewAny($user) || $this->create($user);
+    }
+
+    /**
      * Determine whether the user can view the model.
      *
      * @param  Reservation  $reservation

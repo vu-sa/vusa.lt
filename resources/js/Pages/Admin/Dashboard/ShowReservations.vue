@@ -18,55 +18,70 @@
       </Button>
     </template>
 
-    <template v-if="managesResources" #attention>
-      <Deferred data="waitingForMe">
-        <template #fallback>
-          <CollectionSkeleton :rows="2" />
-        </template>
-        <ReservationsNeedingDecision
-          :reservations="waitingForMe ?? []"
-          :href="route('reservations.index', { scope: 'administered', state: 'created' })"
-          @decide="openDecision"
-        />
-      </Deferred>
-    </template>
-
-    <WorkspaceSectionTiles workspace-key="rezervacijos" />
-
     <OverviewNumbers :numbers />
 
-    <Deferred data="myUpcoming">
+    <!-- Two columns only while the user has reservations of their own; otherwise the sections take the row. -->
+    <div
+      :class="hasOwnReservations ? 'grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16' : 'flex flex-col gap-10 lg:gap-14'"
+      data-slot="reservations-overview-columns"
+    >
+      <!-- Kept without reservations too: the empty "Mano rezervacijos" still reports to the status list. -->
+      <div :class="hasOwnReservations ? 'flex min-w-0 flex-col gap-10 lg:gap-14' : 'contents'">
+        <ReservationDraftSummary v-if="startedDraft" :draft="startedDraft" variant="home" />
+
+        <Deferred data="myUpcoming">
+          <template #fallback>
+            <CollectionSkeleton v-if="hasOwnReservations" :rows="2" />
+          </template>
+          <OverviewSection
+            :title="$t('reservations.overview.mine')"
+            :icon="CalendarClock"
+            variant="home"
+            content-ruled
+            :empty="(myUpcoming ?? []).length === 0"
+            :empty-text="$t('reservations.overview.mine_empty')"
+            :href="route('reservations.index', { scope: 'mine' })"
+            :href-label="$t('reservations.overview.mine_link')"
+          >
+            <ul class="divide-y divide-border border-y border-border" data-slot="my-reservations">
+              <li v-for="reservation in myUpcoming ?? []" :key="reservation.id">
+                <Link
+                  :href="route('reservations.show', reservation.id)"
+                  prefetch
+                  class="flex items-center gap-3 px-1 py-3 hover:bg-secondary pointer-coarse:py-4"
+                >
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate font-medium">{{ reservation.name }}</span>
+                    <span class="block truncate text-sm text-muted-foreground">
+                      {{ formatDate(new Date(reservation.start_time)) }} – {{ formatDate(new Date(reservation.end_time)) }}
+                    </span>
+                  </span>
+                  <ReservationStateSummary
+                    :states="getReservationStates(reservation)"
+                    :unresolved="isReservationUnresolved(reservation)"
+                  />
+                </Link>
+              </li>
+            </ul>
+          </OverviewSection>
+        </Deferred>
+      </div>
+
+      <aside v-if="hasOwnReservations" class="min-w-0">
+        <WorkspaceSectionTiles workspace-key="rezervacijos" variant="home" :columns="2" />
+      </aside>
+      <WorkspaceSectionTiles v-else workspace-key="rezervacijos" variant="home" />
+    </div>
+
+    <Deferred v-if="managesResources" data="waitingForMe">
       <template #fallback>
         <CollectionSkeleton :rows="2" />
       </template>
-      <OverviewSection
-        :title="$t('reservations.overview.mine')"
-        :empty="(myUpcoming ?? []).length === 0"
-        :empty-text="$t('reservations.overview.mine_empty')"
-        :href="route('reservations.index', { scope: 'mine' })"
-        :href-label="$t('reservations.overview.mine_link')"
-      >
-        <ul class="divide-y divide-border border-y border-border" data-slot="my-reservations">
-          <li v-for="reservation in myUpcoming ?? []" :key="reservation.id">
-            <Link
-              :href="route('reservations.show', reservation.id)"
-              prefetch
-              class="flex items-center gap-3 px-1 py-3 hover:bg-secondary pointer-coarse:py-4"
-            >
-              <span class="min-w-0 flex-1">
-                <span class="block truncate font-medium">{{ reservation.name }}</span>
-                <span class="block truncate text-sm text-muted-foreground">
-                  {{ formatDate(new Date(reservation.start_time)) }} – {{ formatDate(new Date(reservation.end_time)) }}
-                </span>
-              </span>
-              <ReservationStateSummary
-                :states="getReservationStates(reservation)"
-                :unresolved="isReservationUnresolved(reservation)"
-              />
-            </Link>
-          </li>
-        </ul>
-      </OverviewSection>
+      <ReservationsNeedingDecision
+        :reservations="waitingForMe ?? []"
+        :href="route('reservations.index', { scope: 'administered', state: 'created' })"
+        @decide="openDecision"
+      />
     </Deferred>
 
     <ReservationDecisionDialog
@@ -90,7 +105,7 @@
 <script setup lang="ts">
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Info, Plus } from 'lucide-vue-next';
+import { CalendarClock, Info, Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
@@ -98,8 +113,9 @@ import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.v
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { CollectionSkeleton, OverviewSection } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
+import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
 import ReservationsNeedingDecision from '@/Components/Reservations/ReservationsNeedingDecision.vue';
-import type { ReservationDecision } from '@/Components/Reservations/types';
+import type { ReservationCart, ReservationDecision } from '@/Components/Reservations/types';
 import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
@@ -113,10 +129,19 @@ import {
 
 const props = defineProps<{
   managesResources: boolean;
+  reservationCart: ReservationCart | null;
   counts: { waitingForMe: number; lentOut: number; overdue: number; mine: number; myOverdue: number };
   waitingForMe?: DashboardReservation[];
   myUpcoming?: DashboardReservation[];
 }>();
+
+// Known on first paint from the count, so the layout does not jump when the list arrives.
+// A draft opened only to browse, with nothing in it yet, is nothing to come back to.
+const startedDraft = computed(() => (props.reservationCart && (props.reservationCart.count > 0 || props.reservationCart.name)
+  ? props.reservationCart
+  : null));
+
+const hasOwnReservations = computed(() => props.counts.mine > 0 || startedDraft.value !== null);
 
 // Every number lands on the filtered list it counts (O17), so the page agrees with the rows.
 const numbers = computed<OverviewNumberItem[]>(() => {

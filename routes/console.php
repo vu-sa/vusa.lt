@@ -3,6 +3,7 @@
 use App\Actions\Schedulable\TaskNotifier;
 use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
+use App\Models\ReservationDraft;
 use App\Services\SystemMonitorService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -165,3 +166,8 @@ if (config('app.env') === 'staging') {
 Schedule::call(fn () => Cache::forever(SystemMonitorService::HEARTBEAT_CACHE_KEY, now()->toIso8601String()))
     ->everyMinute()
     ->name('scheduler-heartbeat');
+
+// Unfinished reservation carts expire after config('vusa.reservation_draft_ttl_days') without changes.
+Schedule::command('model:prune', ['--model' => [ReservationDraft::class]])
+    ->dailyAt('03:30')
+    ->name('prune-reservation-drafts');

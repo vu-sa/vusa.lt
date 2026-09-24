@@ -8,6 +8,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -78,41 +79,85 @@ describe('model_type allowlist', function (): void {
 });
 
 describe('allowed model types still work', function (): void {
-    test('can store an institution type', function (): void {
-        asUser($this->admin)->post(route('types.store'), [
-            'title' => ['lt' => 'Padalinys', 'en' => 'Unit'],
-            'model_type' => MorphMap::alias(Institution::class),
-        ])->assertRedirect(route('types.index'));
-
-        expect(Type::query()->where('model_type', MorphMap::alias(Institution::class))->exists())->toBeTrue();
-    });
-
-    test('can sync institutions onto an institution type', function (): void {
+    test('record page shows assigned models and defers picker options', function (): void {
         $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
         $institution = Institution::factory()->for($this->tenant)->create();
+        $type->institutions()->attach($institution);
+
+        asUser($this->admin)->get(route('types.show', $type))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ModelMeta/ShowType')
+                ->where('attachedModels.0.id', $institution->id)
+                ->missing('modelOptions')
+                ->missing('roleOptions')
+            );
+    });
+
+    test('can store an institution type', function (): void {
+        $response = asUser($this->admin)->post(route('types.store'), [
+            'title' => ['lt' => 'Padalinys', 'en' => 'Unit'],
+            'model_type' => MorphMap::alias(Institution::class),
+        ]);
+
+        $type = Type::query()->where('model_type', MorphMap::alias(Institution::class))
+            ->where('title->lt', 'Padalinys')->firstOrFail();
+        $response->assertRedirect(route('types.show', $type));
+    });
+
+    test('saving attributes leaves institution assignments alone', function (): void {
+        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $type->institutions()->attach($institution);
 
         asUser($this->admin)->patch(route('types.update', $type), [
             'title' => ['lt' => 'Padalinys', 'en' => 'Unit'],
             'model_type' => MorphMap::alias(Institution::class),
-            'institutions' => [$institution->id],
         ])->assertRedirect();
 
         expect($type->fresh()->institutions->pluck('id'))->toContain($institution->id);
     });
 
-    test('can sync duties and roles onto a duty type', function (): void {
+    test('syncs institutions from the record page', function (): void {
+        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+        $institution = Institution::factory()->for($this->tenant)->create();
+
+        asUser($this->admin)->put(route('types.models.sync', $type), [
+            'models' => [$institution->id],
+        ])->assertRedirect();
+
+        expect($type->fresh()->institutions->pluck('id'))->toContain($institution->id);
+    });
+
+    test('syncs duties and roles from separate record actions', function (): void {
         $type = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
         $role = Role::query()->first();
 
-        asUser($this->admin)->patch(route('types.update', $type), [
-            'title' => ['lt' => 'Pareigos', 'en' => 'Duty'],
-            'model_type' => MorphMap::alias(Duty::class),
-            'duties' => [$duty->id],
+        asUser($this->admin)->put(route('types.models.sync', $type), [
+            'models' => [$duty->id],
+        ])->assertRedirect();
+        asUser($this->admin)->put(route('types.roles.sync', $type), [
             'roles' => [$role->id],
         ])->assertRedirect();
 
         expect($type->fresh()->duties->pluck('id'))->toContain($duty->id)
             ->and($type->fresh()->roles->pluck('id'))->toContain($role->id);
+    });
+
+    test('rejects a model id from the wrong relation', function (): void {
+        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+
+        asUser($this->admin)->put(route('types.models.sync', $type), [
+            'models' => [$duty->id],
+        ])->assertSessionHasErrors('models.0');
+    });
+
+    test('rejects role assignments on an institution type', function (): void {
+        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+
+        asUser($this->admin)->put(route('types.roles.sync', $type), [
+            'roles' => [Role::query()->first()->id],
+        ])->assertStatus(403);
     });
 });

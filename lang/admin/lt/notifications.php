@@ -89,6 +89,8 @@ return [
     'reservation_status_changed_body_with_user' => ':user pakeitė rezervacijos „:reservation" (:resource) statusą į :status',
     'reservation_task_hint_pickup' => '📋 Atsimink :resource iki :date.',
     'reservation_task_hint_return' => '📋 Grąžink :resource iki :date.',
+    'reservation_draft_item_taken_title' => 'Tavo rezervacijoje nebeužtenka išteklių',
+    'reservation_draft_item_taken_body' => '{1} Kažkas užsirezervavo :resources, todėl tavo pasirinktam laikui jo nebeužtenka. Pakeisk kiekį arba laiką.|[2,*] Kažkas užsirezervavo :resources, todėl tavo pasirinktam laikui jų nebeužtenka. Pakeisk kiekius arba laiką.',
 
     // Approval notifications
     'approval_requested_title' => 'Reikalingas patvirtinimas',
@@ -146,6 +148,7 @@ return [
     'action_view_tasks' => 'Peržiūrėti užduotis',
     'action_view_registration' => 'Peržiūrėti registraciją',
     'action_view_reservation' => 'Peržiūrėti rezervaciją',
+    'action_review_reservation_draft' => 'Peržiūrėti rezervaciją',
     'action_view_meeting' => 'Peržiūrėti posėdį',
     'action_view_duty' => 'Peržiūrėti pareigas',
     'action_view_access' => 'Peržiūrėti mano roles',

@@ -155,6 +155,21 @@
           </Table>
         </div>
 
+        <ul
+          v-else-if="view === 'cards'"
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+          data-slot="collection-cards"
+        >
+          <li
+            v-for="row in table.getRowModel().rows"
+            :key="row.id"
+            :data-collection-key="row.id"
+            class="min-w-0"
+          >
+            <slot name="card" :item="row.original" :pinned="isPinned(row.original)" />
+          </li>
+        </ul>
+
         <ul v-else ref="rowsEl" class="divide-y divide-border/60 border-y border-border" data-slot="collection-rows">
           <li
             v-for="row in table.getRowModel().rows"
@@ -268,6 +283,7 @@ const emit = defineEmits<{
 
 defineSlots<{
   row: (props: { item: T; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
+  card?: (props: { item: T; pinned: boolean }) => unknown;
   cell: (props: { item: T; column: CollectionColumn; pinned: boolean }) => unknown;
   preview: (props: { item: T }) => unknown;
   empty: () => unknown;

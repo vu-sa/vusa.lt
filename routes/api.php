@@ -34,6 +34,8 @@ use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\TagApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
+use App\Http\Controllers\Api\Admin\MailQueueApiController;
+use App\Http\Controllers\Api\Admin\SupportRequestCollectionApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TrashApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
@@ -136,6 +138,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Tasks
         Route::get('tasks', [TaskApiController::class, 'index'])->name('tasks.index');
+        Route::get('mail-queue', [MailQueueApiController::class, 'index'])->name('mailQueue.index');
+        Route::get('support-requests', [SupportRequestCollectionApiController::class, 'index'])->name('supportRequests.index');
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
 
         // Tenant-scoped page-view statistics (Umami) for the Svetainė dashboard

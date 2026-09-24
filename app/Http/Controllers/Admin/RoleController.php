@@ -85,7 +85,9 @@ class RoleController extends AdminController
             return back()->with('info', __('messages.role.not_editable'));
         }
 
-        return $this->inertiaResponse('Admin/Permissions/EditRole', $this->roleRecordPayload($role));
+        return $this->inertiaResponse('Admin/Permissions/EditRole', [
+            'role' => $role->only(['id', 'name']),
+        ]);
     }
 
     /**

@@ -30,12 +30,6 @@ class StoreTypeRequest extends FormRequest
             // see Type::TYPEABLE_RELATIONS.
             'model_type' => ['required', 'string', Rule::in(array_keys(Type::TYPEABLE_RELATIONS))],
             'parent_id' => ['nullable', SoftDeleteRules::existsLive('types')],
-            'roles' => 'nullable|array',
-            'roles.*' => ['string', Rule::exists('roles', 'id')],
-            'institutions' => 'nullable|array',
-            'institutions.*' => ['string', SoftDeleteRules::existsLive('institutions')],
-            'duties' => 'nullable|array',
-            'duties.*' => ['string', SoftDeleteRules::existsLive('duties')],
             'slug' => 'nullable|string',
             'extra_attributes' => 'nullable|array',
             'extra_attributes.meeting_periodicity_days' => 'nullable|integer|min:1|max:365',

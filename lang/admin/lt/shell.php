@@ -20,7 +20,7 @@ return [
         ],
         'rezervacijos' => [
             'title' => 'Rezervacijos',
-            'description' => 'Patalpos, įranga, reklama',
+            'description' => 'Įrangos ir daiktų skolinimas',
         ],
         'svetaine' => [
             'title' => 'Svetainė',
@@ -138,8 +138,8 @@ return [
         'pareigybiu_laikotarpiai' => 'Kas kada ėjo kokias pareigas',
         'uzduociu_suvestine' => 'Padalinių užduotys ir terminai',
         'institucijos_grafas' => 'Institucijų ryšiai viename grafe',
-        'rezervacijos' => 'Daiktų ir erdvių rezervacijos',
-        'istekliai' => 'Skolinami daiktai ir erdvės',
+        'rezervacijos' => 'Įrangos ir daiktų rezervacijos',
+        'istekliai' => 'Skolinama įranga ir daiktai',
         'kategorijos' => 'Išteklių grupavimas',
         'puslapiai' => 'Svetainės tekstai ir jų struktūra',
         'naujienos' => 'Straipsniai ir pranešimai svetainėje',
@@ -194,7 +194,7 @@ return [
         ],
         'new_reservation' => [
             'title' => 'Nauja rezervacija',
-            'description' => 'Rezervuok patalpą ar įrangą',
+            'description' => 'Rezervuok įrangą ar kitus daiktus',
         ],
         'new_news' => [
             'title' => 'Nauja naujiena',

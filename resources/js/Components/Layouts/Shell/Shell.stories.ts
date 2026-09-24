@@ -47,7 +47,7 @@ export const WorkspacePickerOpen: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.hover(within(canvasElement).getByRole('button'));
 
-    await expect(await within(document.body).findByText('Patalpos, įranga, reklama')).toBeVisible();
+    await expect(await within(document.body).findByText('Įrangos ir daiktų skolinimas')).toBeVisible();
   },
 };
 

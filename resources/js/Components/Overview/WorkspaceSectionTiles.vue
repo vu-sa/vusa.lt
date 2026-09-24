@@ -4,8 +4,9 @@
     :title="$t('shell.chrome.sections')"
     :variant
     :icon="variant === 'home' ? LayoutGrid : undefined"
+    content-ruled
   >
-    <NavigationTiles :items="tiles" :data-workspace="workspaceKey" />
+    <NavigationTiles :items="tiles" :columns :data-workspace="workspaceKey" />
   </OverviewSection>
 </template>
 
@@ -18,11 +19,16 @@ import { NavigationTiles, OverviewSection } from '@/Components/Patterns';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { sectionTile } from '@/Constants/adminSections';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   workspaceKey: string;
   /** `home` matches pages whose other sections use the home heading. */
   variant?: 'default' | 'home';
-}>();
+  /** Fewer when the tiles sit in a side column. */
+  columns?: 2 | 3 | 4;
+}>(), {
+  variant: undefined,
+  columns: 4,
+});
 
 const { workspaces } = useAdminNavigation();
 

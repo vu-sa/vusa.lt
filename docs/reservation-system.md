@@ -27,6 +27,8 @@ Už rezervacijos sistemą bei jos išteklius yra atsakingi VU SA P bei studentų
 - Aprašyme parašome visą reikalingą informaciją - kam bus skirti daiktai, kada planuotumėte atvykti atsiimti jų, kas juos atsiims;
 - Rezervacijos laikotarpis – pasirenkame laikotarp, nuo kada iki kada planuojate pasiskolinti daiktus;
 - Išteklių skiltis – galite pasirinkti daiktus ir jų kiekius iš visų padalinių vienu metu, nereikia kurti atskirų rezervacijų. Skolintis galima iš VU SA CB, VU SA P ir VU SA studentų (-čių) iniciatyvų.
+- Išteklius patogiausia rinktis skiltyje **Rezervacijos → Ištekliai**: prie kiekvieno spauskite „Pridėti“ ir jis atsidurs jūsų rezervacijos krepšelyje. Krepšelis išsaugomas (ir kitame įrenginyje), kol jį pateiksite arba 14 d. jo nekeisite. Kiekvienas išteklius turi savo puslapį, kuriame matyti, kiek jo laisva dabar, kas jį turi ir kada jis rezervuotas.
+- Krepšelis nerezervuoja daiktų – kol renkatės, juos gali užsirezervuoti kiti. Tada krepšelyje pamatysite, kiek dar laisva, ir galėsite sumažinti kiekį arba pakeisti laiką; apie tai gausite ir pranešimą.
 - Papildomoje informacijos Jūsų pažymite, jog pilnai atsakote už daiktų grąžinimą sutartu laiku, jų būklę bei žalos kompensavimą, jeigu tokia yra padaryta.
 
 

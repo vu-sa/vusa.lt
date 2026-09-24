@@ -105,10 +105,11 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Reservations/**',
   'resources/js/Components/Duties/**',
   'resources/js/Components/Institutions/{AddCheckInDialog,InstitutionDutiesSection,InstitutionMeetingsList,InstitutionOverviewSection,RelatedInstitutionTile,SecretariesSection}.vue',
-  'resources/js/Components/AdminForms/{DutyCard,InstitutionForm,ReservationForm,ResourceForm,UserForm}.vue',
+  'resources/js/Components/AdminForms/{DutyCard,InstitutionForm,ReservationForm,ResourceForm,UserForm,TenantForm,StudyProgramForm}.vue',
   'resources/js/Features/Admin/DutiableTimeline/**',
   'resources/js/Features/Admin/ResourceCategories/**',
-  'resources/js/Pages/Admin/People/{CreateInstitution,EditInstitution,ShowInstitution,IndexInstitution,CreateUser,EditUser,ShowUser,IndexUser,IndexDuty,DutyUserUpdateWizard,DutiableTimeline}.vue',
+  'resources/js/Features/Admin/Tenants/**',
+  'resources/js/Pages/Admin/People/{CreateInstitution,EditInstitution,ShowInstitution,IndexInstitution,CreateUser,EditUser,ShowUser,IndexUser,IndexDuty,DutyUserUpdateWizard,DutiableTimeline,CreateTenant,EditTenant,CreateStudyProgram,EditStudyProgram}.vue',
   'resources/js/Pages/Admin/Reservations/{CreateReservation,ShowReservation,CreateResource,EditResource,IndexResource,IndexResourceCategory}.vue',
   'resources/js/Pages/Admin/Problems/**',
   'resources/js/Components/AdminForms/ProblemForm.vue',
@@ -134,6 +135,12 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Tasks/TaskItem.vue',
   'resources/js/Pages/Admin/ShowNotifications.vue',
   'resources/js/Features/Admin/Notifications/NotificationCard.vue',
+  'resources/js/Pages/Admin/Dashboard/ShowSupportRequests.vue',
+  'resources/js/Pages/Admin/Permissions/{CreateRole,EditRole}.vue',
+  'resources/js/Pages/Admin/SupportRequests/{CreateSupportRequest,EditSupportRequest}.vue',
+  'resources/js/Pages/Admin/ShowInstitutionGraph.vue',
+  'resources/js/Components/AdminForms/RoleForm.vue',
+  'resources/js/Components/SupportRequests/SupportRequestForm.vue',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

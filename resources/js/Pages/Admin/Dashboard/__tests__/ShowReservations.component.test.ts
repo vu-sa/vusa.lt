@@ -66,6 +66,36 @@ describe('ShowReservations overview', () => {
     expect(Object.keys(hrefs(mountPage({ managesResources: false })))).toEqual(['mine', 'my_overdue']);
   });
 
+  it('orders the page: numbers, then my reservations beside the sections, then decisions full width', () => {
+    const wrapper = mountPage({
+      waitingForMe: [reservation('1', 'Kalėdų šventė')],
+      myUpcoming: [reservation('2', 'Stovykla')],
+      reservationCart: { name: 'Stovykla', count: 1, start_time: null, end_time: null, problemCount: 0, description: null, expiresAt: null, ttlDays: 14, items: [] },
+    });
+    const page = wrapper.get('[data-slot="overview-page"]').element;
+    const numbers = wrapper.get('[data-number]').element;
+    const columns = wrapper.get('[data-slot="reservations-overview-columns"]');
+    const decisions = wrapper.get('[data-slot="reservations-needing-decision"]').element;
+
+    const position = (element: Element) => Array.from(page.querySelectorAll('*')).indexOf(element);
+    expect(position(numbers)).toBeLessThan(position(columns.element));
+    expect(position(columns.element)).toBeLessThan(position(decisions));
+
+    const [main, side] = Array.from(columns.element.children);
+    expect(main!.querySelector('[data-slot="my-reservations"]')).not.toBeNull();
+    expect(main!.querySelector('[data-slot="reservation-draft-summary"]')).not.toBeNull();
+    expect(side!.tagName).toBe('ASIDE');
+    expect(columns.element.contains(decisions)).toBe(false);
+  });
+
+  it('gives the sections the whole row when the user has no reservations of their own', () => {
+    const wrapper = mountPage({ counts: { ...counts, mine: 0 }, reservationCart: null });
+    const columns = wrapper.get('[data-slot="reservations-overview-columns"]');
+
+    expect(columns.classes()).not.toContain('grid');
+    expect(columns.find('aside').exists()).toBe(false);
+  });
+
   it('moves the attention band to the status list when nothing waits', async () => {
     const wrapper = mountPage({});
     await nextTick();

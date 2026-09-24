@@ -5,8 +5,25 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.21 — Reservation drafts (2026-09-24) {#v2-21}
+
+- ⭐ **Reservations are saved as drafts** — “New reservation” opens a form that saves itself; pick resources by browsing “Resources” and pressing “Add” on each. Your picks stay even if you close the page or open it on another device, and the unfinished reservation shows on Home and in the Reservations overview. It is deleted after 14 days without changes
+- ✨ **A clearer reservation form** — name, description, time and resources in one column, with the submit terms and rules in the side panel, like other Mano VU SA forms
+- ⭐ **Resources as cards** — the resource list now opens as cards with a photo and the free quantity; until you start a reservation a card offers “View”, afterwards “Add”. On a resource’s page, “Reserve” starts a reservation with that item straight away
+- ⭐ **Resource page** — every resource has its own page: how many are free now, who has it at the moment, upcoming reservations and history; an earlier reservation that was not closed on time shows as a calm notice that does not block reserving
+- ✨ **Changing the time keeps your resources** — after changing the reservation time the picked resources stay, and those that no longer fit are marked with an offer to lower the quantity
+- ✨ **Know when someone got there first** — if someone reserves a resource that is in your unfinished reservation and there is no longer enough for your time, you get a notification
+- ✨ **The reservation list for everyone** — the “Reservations” section opens for everyone: if you do not manage reservations, you see only your own. “My reservations” links and the form’s back button no longer lead to a forbidden page
+- ✨ **A tidier Reservations overview** — numbers first, then your reservations beside the sections, with the ones waiting for a decision full width below
+- ✨ **A clearer “Filters” button** — in lists the button is highlighted only while the filters are open; when they are hidden, the button shows how many filters are set
+- 🔧 **Bilingual forms no longer jump** — after switching language, the missing-translation notice sits beside the language switch and the form stays in place
+- ✨ **A leaner resource form** — no redundant headings, photos are a regular form field, and instead of the reservations table the form shows the latest few with a link to the full history on the resource page
+- 🔧 **Weeks start on Monday** — date-picker calendars across Mano VU SA now start the week on Monday instead of Sunday
+- 🔧 **Quantities checked on submit** — a reservation is no longer created when there is not enough free for the chosen time or the resource is not reservable, even if two people submit at once
+
 ## v2.20 — A clearer ViSAK overview (2026-09-24) {#v2-20}
 
+- ✨ **More consistent admin pages** — roles, support requests, profile, notifications, and the mail queue now use the same collection, record, and form controls as other Mano VU SA pages; manage type and relationship connections on their record pages
 - ✨ **More room at the bottom of pages** — admin pages scroll farther so the final content has space below it
 - ✨ **Clearer Home layout** — “Go to” links have a full-width row with four tiles across on desktop, and your institutions appear beside quick actions when available
 - 🔧 **Creating meetings for another unit** — after creating a public meeting for another unit, its page opens without an error again

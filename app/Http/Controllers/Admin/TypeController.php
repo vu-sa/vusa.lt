@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\StoreTypeRequest;
+use App\Http\Requests\SyncTypeModelsRequest;
+use App\Http\Requests\SyncTypeRolesRequest;
 use App\Http\Requests\UpdateTypeRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Duty;
-use App\Models\Role;
 use App\Models\Type;
-use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 
 class TypeController extends AdminController
 {
@@ -46,7 +46,6 @@ class TypeController extends AdminController
 
         return $this->inertiaResponse('Admin/ModelMeta/CreateType', [
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
-            'roles' => Role::all(),
         ]);
     }
 
@@ -55,17 +54,11 @@ class TypeController extends AdminController
      */
     public function store(StoreTypeRequest $request)
     {
-        $validated = $request->validated();
-
         $type = Type::query()->create(
             $request->safe()->only('title', 'model_type', 'description', 'parent_id', 'slug', 'extra_attributes')
         );
 
-        if ($validated['model_type'] === MorphMap::alias(Duty::class)) {
-            $type->roles()->sync($validated['roles'] ?? []);
-        }
-
-        return redirect()->route('types.index')
+        return redirect()->route('types.show', $type)
             ->with('success', $this->entityMessage('created', 'type'));
     }
 
@@ -89,6 +82,9 @@ class TypeController extends AdminController
                 'id' => $model->id,
                 'name' => $model->name,
             ])->values(),
+            'modelOptions' => Inertia::optional(fn () => $type->allModelsFromModelType()),
+            'roleOptions' => Inertia::optional(fn () => \App\Models\Role::query()->orderBy('name')->get(['id', 'name'])),
+            'sharepointPath' => $type->sharepoint_path(),
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,
                 'delete' => auth()->user()?->can('delete', $type) ?? false,
@@ -103,20 +99,9 @@ class TypeController extends AdminController
     {
         $this->handleAuthorization('update', $type);
 
-        // A type persisted before the allowlist existed may carry an unsupported
-        // model_type; fall back to loading nothing rather than blowing up.
-        $modelType = $type->typeableRelation();
-
         return $this->inertiaResponse('Admin/ModelMeta/EditType', [
-            'contentType' => [
-                ...($modelType === null ? $type : $type->load($modelType))->toFullArray(),
-                'roles' => $type->roles->pluck('id')->toArray(),
-            ],
+            'contentType' => $type->toFullArray(),
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
-            'sharepointPath' => $type->sharepoint_path(),
-            'allModelsFromModelType' => $type->allModelsFromModelType()->toArray(),
-            'modelType' => $modelType,
-            'roles' => Role::all(),
         ]);
     }
 
@@ -125,19 +110,24 @@ class TypeController extends AdminController
      */
     public function update(UpdateTypeRequest $request, Type $type)
     {
-        $validated = $request->validated();
-
         $type->update($request->safe()->only('title', 'model_type', 'description', 'parent_id', 'extra_attributes'));
 
-        // Resolved through the allowlist rather than built from the request, so
-        // only `institutions` and `duties` are ever reachable.
-        $relation = Type::TYPEABLE_RELATIONS[$validated['model_type']];
+        return back()->with('success', $this->entityMessage('updated', 'type'));
+    }
 
-        $type->{$relation}()->sync($validated[$relation] ?? []);
+    public function syncModels(SyncTypeModelsRequest $request, Type $type): RedirectResponse
+    {
+        $relation = $type->typeableRelation();
+        abort_if($relation === null, 403);
 
-        if ($validated['model_type'] === MorphMap::alias(Duty::class)) {
-            $type->roles()->sync($validated['roles'] ?? []);
-        }
+        $type->{$relation}()->sync($request->validated('models'));
+
+        return back()->with('success', $this->entityMessage('updated', 'type'));
+    }
+
+    public function syncRoles(SyncTypeRolesRequest $request, Type $type): RedirectResponse
+    {
+        $type->roles()->sync($request->validated('roles'));
 
         return back()->with('success', $this->entityMessage('updated', 'type'));
     }

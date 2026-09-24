@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage>
+  <div class="min-h-full">
     <InertiaHead :title="pageTitle" />
 
     <AgendaItemNavigator
@@ -186,7 +186,7 @@
         </div>
       </div>
     </div>
-  </AdminContentPage>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -196,7 +196,6 @@ import { useMediaQuery, useTextareaAutosize } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, CalendarDays, Check, Languages, Loader2, NotebookPen, Save } from 'lucide-vue-next';
 
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemNavigator from '@/Components/AgendaItems/AgendaItemNavigator.vue';
 import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';

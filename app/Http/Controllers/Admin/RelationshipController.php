@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexRelationshipRequest;
-use App\Http\Requests\Relationships\EditRelationshipRequest;
+use App\Http\Requests\Relationships\ShowRelationshipRequest;
 use App\Http\Requests\Relationships\StoreModelRelationshipRequest;
 use App\Http\Requests\Relationships\StoreRelationshipRequest;
 use App\Http\Requests\Relationships\UpdateModelRelationshipRequest;
@@ -62,24 +62,21 @@ class RelationshipController extends AdminController
     /**
      * Display the specified resource.
      */
-    public function show(Relationship $relationship)
+    public function show(Relationship $relationship, ShowRelationshipRequest $request)
     {
         $this->handleAuthorization('view', $relationship);
 
         $relationship->load('relationshipables.relationshipable', 'relationshipables.related_model');
 
         return $this->inertiaResponse('Admin/ModelMeta/ShowRelationship', [
-            'relationship' => [
-                ...$relationship->toArray(),
-                'relationshipables' => $relationship->relationshipables->map(fn (Relationshipable $relationshipable): array => [
-                    'id' => $relationshipable->id,
-                    'source' => $relationshipable->relationshipable?->only(['id', 'name', 'title']),
-                    'target' => $relationshipable->related_model?->only(['id', 'name', 'title']),
-                    'type' => $relationshipable->relationshipable_type,
-                    'scope' => $relationshipable->scope,
-                    'bidirectional' => $relationshipable->bidirectional,
-                ])->values(),
-            ],
+            'relationship' => $relationship,
+            'relatedModels' => Inertia::optional(function () use ($request, $relationship): array {
+                $modelType = $request->validated('modelType');
+
+                return is_string($modelType) && auth()->user()?->can('update', $relationship)
+                    ? RelationshipService::getModelsByClass($modelType)->toArray()
+                    : [];
+            }),
             'can' => [
                 'update' => auth()->user()?->can('update', $relationship) ?? false,
                 'delete' => auth()->user()?->can('delete', $relationship) ?? false,
@@ -90,25 +87,12 @@ class RelationshipController extends AdminController
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Relationship $relationship, EditRelationshipRequest $request)
+    public function edit(Relationship $relationship)
     {
         $this->handleAuthorization('update', $relationship);
 
-        // get model type from request
-        $model_type = $request->validated('modelType');
-        $related_models = [];
-
-        // getModelsByClass() already refuses anything outside
-        // AllowedRelationshipablesEnum and returns an empty list instead.
-        if (! is_null($model_type)) {
-            $related_models = RelationshipService::getModelsByClass($model_type);
-        }
-
-        $relationship->load('relationshipables', 'relationshipables.relationshipable', 'relationshipables.related_model');
-
         return $this->inertiaResponse('Admin/ModelMeta/EditRelationship', [
-            'relationship' => $relationship,
-            'relatedModels' => Inertia::optional(fn () => $related_models),
+            'relationship' => $relationship->only(['id', 'name', 'slug', 'description']),
         ]);
     }
 
@@ -160,7 +144,7 @@ class RelationshipController extends AdminController
 
         $relationship->models($validated['model_type'])->attach($validated['model_id'], $pivotData);
 
-        return redirect()->route('relationships.edit', $relationship)
+        return redirect()->route('relationships.show', $relationship)
             ->with('success', $this->entityMessage('created', 'relationship'));
     }
 

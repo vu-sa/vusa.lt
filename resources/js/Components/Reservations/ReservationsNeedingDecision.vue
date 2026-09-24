@@ -1,6 +1,9 @@
 <template>
   <OverviewSection
     :title="$t('reservations.overview.attention')"
+    :icon="Inbox"
+    variant="home"
+    content-ruled
     :empty="reservations.length === 0"
     :empty-text="$t('reservations.overview.attention_empty')"
     :href
@@ -23,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import { Inbox } from 'lucide-vue-next';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 

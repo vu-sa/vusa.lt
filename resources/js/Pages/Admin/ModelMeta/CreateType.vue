@@ -1,5 +1,5 @@
 <template>
-  <TypeForm remember-key="CreateType" :content-types :roles :type @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).post(route('types.store'))" />
+  <TypeForm remember-key="CreateType" :content-types :type @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).post(route('types.store'))" />
 </template>
 
 <script setup lang="ts">
@@ -12,7 +12,6 @@ import { typeTemplate as type } from '@/Types/formTemplates';
 
 defineProps<{
   contentTypes: App.Entities.Type[];
-  roles?: App.Entities.Role[];
 }>();
 
 usePageBreadcrumbs(BreadcrumbHelpers.adminForm($t('Tipai'), 'types.index', $t('Naujas turinio tipas')));

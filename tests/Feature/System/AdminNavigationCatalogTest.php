@@ -146,14 +146,13 @@ describe('per-persona visibility', function (): void {
     test('a plain member sees only Pradžia and the always-visible reservation entries', function (): void {
         $user = makeUser($this->tenant);
 
-        // Rezervacijos' Apžvalga is deliberately "always" (.ai/rules/shell.md), and both
-        // ResourcePolicy::viewAny() and ReservationPolicy::create() are unconditional `true` —
-        // "anyone can view the resource listing" / request a reservation — so a member with no
-        // role at all still gets a foothold in Rezervacijos. This is existing, real behaviour,
-        // not something this catalog introduces.
+        // Rezervacijos' Apžvalga is deliberately "always" (.ai/rules/shell.md); ResourcePolicy::viewAny()
+        // and ReservationPolicy::create() are unconditional, and ReservationPolicy::viewList() opens the
+        // list to anyone who can reserve (holding only their own) — so a member with no role at all
+        // still gets a foothold in Rezervacijos.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'rezervacijos' => ['apzvalga', 'istekliai'],
+            'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
 
         $payload = $this->catalog->for($user);
@@ -182,7 +181,7 @@ describe('per-persona visibility', function (): void {
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'institucijos_grafas'],
-            'rezervacijos' => ['apzvalga', 'istekliai'],
+            'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
     });
 
@@ -197,7 +196,7 @@ describe('per-persona visibility', function (): void {
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
-            'rezervacijos' => ['apzvalga', 'istekliai'],
+            'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'studiju_programos', 'formos'],
         ]);

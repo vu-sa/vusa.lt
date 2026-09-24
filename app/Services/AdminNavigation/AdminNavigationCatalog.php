@@ -41,8 +41,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class AdminNavigationCatalog
 {
-    /** Bump the suffix when the payload shape changes, so a deploy never serves the old shape from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v4-';
+    /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
+    public const string CACHE_PREFIX = 'admin-navigation-v5-';
 
     private const int CACHE_TTL = 1800;
 
@@ -200,7 +200,7 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.rezervacijos.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.reservations', [], null, Visibility::always()),
-                new Section('rezervacijos', 'shell.sections.rezervacijos', 'reservations.index', [], 'reservation', Visibility::can('viewAny', Reservation::class), matches: ['reservations.*', 'reservationResources.*'], descriptionKey: 'shell.section_descriptions.rezervacijos'),
+                new Section('rezervacijos', 'shell.sections.rezervacijos', 'reservations.index', [], 'reservation', Visibility::can('viewList', Reservation::class), matches: ['reservations.*', 'reservationResources.*'], descriptionKey: 'shell.section_descriptions.rezervacijos'),
                 new Section('istekliai', 'shell.sections.istekliai', 'resources.index', [], 'resource', Visibility::can('viewAny', Resource::class), descriptionKey: 'shell.section_descriptions.istekliai'),
                 // ResourceCategory carries no permissions of its own — its policy delegates to
                 // the `resources.*` ability (ResourceCategoryPolicy docblock), so there is no

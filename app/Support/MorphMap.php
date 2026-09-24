@@ -65,6 +65,8 @@ final class MorphMap
         'relationship' => Models\Relationship::class,
         'relationshipable' => Models\Pivots\Relationshipable::class,
         'reservation' => Models\Reservation::class,
+        'reservation_draft' => Models\ReservationDraft::class,
+        'reservation_draft_item' => Models\ReservationDraftItem::class,
         'reservation_resource' => Models\Pivots\ReservationResource::class,
         'resource' => Models\Resource::class,
         'resource_category' => Models\ResourceCategory::class,

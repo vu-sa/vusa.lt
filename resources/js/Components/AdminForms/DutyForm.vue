@@ -1,10 +1,14 @@
 <template>
   <FormPage
     :title="isEditing ? dutyTitle : $t('Nauja pareigybė')"
+    :bar-title="isEditing ? dutyTitle : undefined"
     :head-title="isEditing ? dutyTitle : $t('Nauja pareigybė')"
     :lead="isEditing ? (duty?.institution?.short_name ?? duty?.institution?.name) : $t('Sukurk naują pareigybę institucijoje')"
     :entity-type="ModelEnum.DUTY"
-    :back-href="backHref ?? route('duties.index')"
+    :activity-subject="duty?.id ? { type: 'duty', id: duty.id } : undefined"
+    :created-at="duty?.created_at"
+    :updated-at="duty?.updated_at"
+    :back-href="backHref ?? (isEditing && duty?.id ? route('duties.show', duty.id) : route('duties.index'))"
     :back-label="$t('Pareigybės')"
     :processing="form.processing"
     :dirty="form.isDirty"
@@ -26,117 +30,64 @@
     </div>
 
     <template v-if="canEditDuty">
-      <!-- Section 1: Kas tai? -->
-      <FormSection
-        :title="$t('Kas tai?')"
-        :description="$t('Pagrindinė pareigybės informacija: pavadinimas, kontaktai ir vietų skaičius.')"
+      <!-- Title input -->
+      <FormFieldWrapper
+        id="duty-name"
+        :label="`${$t('Pavadinimas')} (${activeLocale.toUpperCase()})`"
+        required
+        :error="form.errors[`name.${activeLocale}`]"
+        :help="$t('forms.helpers.duty_name_inflected_hint')"
       >
-        <!-- Title input -->
-        <div class="space-y-1.5">
-          <Label for="duty-name" class="text-sm font-medium">
-            {{ $t('Pavadinimas') }} ({{ activeLocale.toUpperCase() }}) *
-          </Label>
-          <Input
-            id="duty-name"
-            v-model="form.name[activeLocale]"
-            :placeholder="activeLocale === 'lt' ? $t('Pirmininkas, Koordinatorius…') : 'Chair, Coordinator…'"
-          />
-          <p v-if="form.errors[`name.${activeLocale}`]" class="text-xs text-destructive">
-            {{ form.errors[`name.${activeLocale}`] }}
-          </p>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('forms.helpers.duty_name_inflected_hint') }}
-          </p>
-
-          <!-- Inflected preview for Lithuanian -->
-          <div v-if="form.name.lt" class="mt-2 text-sm">
-            <InflectedDutyName :name="form.name.lt" locale="lt" class="font-medium text-foreground" />
-          </div>
-        </div>
-
-        <!-- Duplicate Duty Warning -->
-        <DuplicateDutyWarning
-          :matches="duplicateMatches"
-          :current-duty-id="duty?.id ?? null"
-          class="mt-2"
+        <Input
+          id="duty-name"
+          v-model="form.name[activeLocale]"
+          :placeholder="activeLocale === 'lt' ? $t('Pirmininkas, Koordinatorius…') : 'Chair, Coordinator…'"
         />
-
-        <!-- Email -->
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <Label for="duty-email" class="text-sm font-medium">
-              {{ $t('Pareigybės el. paštas') }}
-            </Label>
-            <span class="text-xs text-muted-foreground">
-              {{ $t('(neprivaloma)') }}
-            </span>
-          </div>
-          <Input
-            id="duty-email"
-            v-model="form.email"
-            type="email"
-            placeholder="vusa@vusa.lt"
-          />
-          <p v-if="form.errors.email" class="text-xs text-destructive">
-            {{ form.errors.email }}
-          </p>
+        <!-- Inflected preview for Lithuanian -->
+        <div v-if="form.name.lt" class="mt-2 text-sm">
+          <InflectedDutyName :name="form.name.lt" locale="lt" class="font-medium text-foreground" />
         </div>
+      </FormFieldWrapper>
 
-        <!-- Places to occupy & Contacts grouping -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div class="space-y-1.5">
-            <Label for="places_to_occupy" class="text-sm font-medium">
-              {{ $t('Kiek vietų') }}
-            </Label>
-            <NumberField
-              id="places_to_occupy"
-              v-model="form.places_to_occupy"
-              :min="1"
-            />
-            <p v-if="form.errors.places_to_occupy" class="text-xs text-destructive">
-              {{ form.errors.places_to_occupy }}
-            </p>
-          </div>
+      <!-- Duplicate Duty Warning -->
+      <DuplicateDutyWarning
+        :matches="duplicateMatches"
+        :current-duty-id="duty?.id ?? null"
+        class="mt-2"
+      />
 
-          <div class="space-y-1.5">
-            <Label for="contacts_grouping" class="text-sm font-medium">
-              {{ $t('Kontaktų grupavimas') }}
-            </Label>
-            <Select v-model="form.contacts_grouping">
-              <SelectTrigger id="contacts_grouping">
-                <SelectValue :placeholder="$t('forms.placeholders.select_grouping')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">
-                  {{ $t('Be grupavimo') }}
-                </SelectItem>
-                <SelectItem value="study_program">
-                  {{ $t('Pagal studijų programą') }}
-                </SelectItem>
-                <SelectItem value="tenant">
-                  {{ $t('Pagal padalinį') }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <p v-if="form.errors.contacts_grouping" class="text-xs text-destructive">
-              {{ form.errors.contacts_grouping }}
-            </p>
-          </div>
-        </div>
-      </FormSection>
-
-      <!-- Section 2: Kur tai rodoma? -->
-      <FormSection
-        :title="$t('Kur tai rodoma?')"
-        :description="$t('Institucija ir viešosios svetainės kategorijos, kuriose atvaizduojama ši pareigybė.')"
-        :badge="$t('Matoma vusa.lt')"
-        public-marker
+      <!-- Description -->
+      <FormFieldWrapper
+        id="duty-description"
+        :label="$t('Aprašymas')"
+        :hint="$t('Aprašymas rodomas viešame puslapyje prie pareigybės.')"
+        :error="form.errors[`description.${activeLocale}`]"
       >
+        <TiptapEditor
+          v-if="activeLocale === 'lt'"
+          v-model="form.description.lt"
+          preset="full"
+          html
+        />
+        <TiptapEditor
+          v-else
+          v-model="form.description.en"
+          preset="full"
+          html
+        />
+      </FormFieldWrapper>
+    </template>
+
+    <!-- Aside Slot -->
+    <template #aside>
+      <FormPanel :title="$t('Institucija ir kontaktai')" :icon="Building2" title-class="text-brand">
         <!-- Institution -->
-        <div class="space-y-1.5">
-          <Label for="institution_id" class="text-sm font-medium">
-            {{ $t('Institucija') }} *
-          </Label>
+        <FormFieldWrapper
+          id="institution_id"
+          :label="$t('Institucija')"
+          required
+          :error="form.errors.institution_id"
+        >
           <InstitutionSelectDialog
             v-model:open="institutionDialogOpen"
             :institutions="assignableInstitutions"
@@ -165,21 +116,67 @@
               </Button>
             </template>
           </InstitutionSelectDialog>
-          <p v-if="form.errors.institution_id" class="text-xs text-destructive">
-            {{ form.errors.institution_id }}
-          </p>
+        </FormFieldWrapper>
+
+        <!-- Email -->
+        <FormFieldWrapper
+          id="duty-email"
+          :label="$t('Pareigybės el. paštas')"
+          :error="form.errors.email"
+        >
+          <Input
+            id="duty-email"
+            v-model="form.email"
+            type="email"
+            placeholder="vusa@vusa.lt"
+          />
+        </FormFieldWrapper>
+
+        <!-- Places to occupy & Contacts grouping -->
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormFieldWrapper
+            id="places_to_occupy"
+            :label="$t('Kiek vietų')"
+            :error="form.errors.places_to_occupy"
+          >
+            <NumberField
+              id="places_to_occupy"
+              v-model="form.places_to_occupy"
+              :min="1"
+            />
+          </FormFieldWrapper>
+
+          <FormFieldWrapper
+            id="contacts_grouping"
+            :label="$t('Kontaktų grupavimas')"
+            :error="form.errors.contacts_grouping"
+          >
+            <Select v-model="form.contacts_grouping">
+              <SelectTrigger id="contacts_grouping">
+                <SelectValue :placeholder="$t('forms.placeholders.select_grouping')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">
+                  {{ $t('Be grupavimo') }}
+                </SelectItem>
+                <SelectItem value="study_program">
+                  {{ $t('Pagal studijų programą') }}
+                </SelectItem>
+                <SelectItem value="tenant">
+                  {{ $t('Pagal padalinį') }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </FormFieldWrapper>
         </div>
 
         <!-- Categories / Types -->
-        <div v-if="dutyTypes && dutyTypes.length > 0" class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <Label for="duty-types" class="text-sm font-medium">
-              {{ $t('forms.fields.duty_type') }}
-            </Label>
-            <span class="text-xs text-muted-foreground">
-              {{ $t('(neprivaloma)') }}
-            </span>
-          </div>
+        <FormFieldWrapper
+          v-if="dutyTypes && dutyTypes.length > 0"
+          id="duty-types"
+          :label="$t('forms.fields.duty_type')"
+          :error="form.errors.types"
+        >
           <MultiSelect
             id="duty-types"
             v-model="selectedTypes"
@@ -188,110 +185,20 @@
             value-field="id"
             :placeholder="$t('forms.placeholders.select_category')"
           />
-          <p v-if="form.errors.types" class="text-xs text-destructive">
-            {{ form.errors.types }}
-          </p>
-        </div>
-      </FormSection>
-
-      <!-- Section 3: Aprašymas -->
-      <FormSection
-        :title="$t('Aprašymas')"
-        :description="$t('Aprašymas rodomas viešame puslapyje prie pareigybės.')"
-        :badge="$t('Matoma vusa.lt')"
-        public-marker
-      >
-        <div class="space-y-2">
-          <TiptapEditor
-            v-if="activeLocale === 'lt'"
-            v-model="form.description.lt"
-            preset="full"
-            html
-          />
-          <TiptapEditor
-            v-else
-            v-model="form.description.en"
-            preset="full"
-            html
-          />
-          <p v-if="form.errors[`description.${activeLocale}`]" class="text-xs text-destructive">
-            {{ form.errors[`description.${activeLocale}`] }}
-          </p>
-        </div>
-      </FormSection>
-    </template>
-
-    <!-- Advanced Settings Slot -->
-    <template #advanced>
-      <!-- Ex-officio Target Duties -->
-      <div class="space-y-1.5">
-        <div class="flex items-center justify-between">
-          <Label class="text-sm font-medium">
-            {{ $t('forms.fields.ex_officio_duties') }}
-          </Label>
-          <span class="text-xs text-muted-foreground">
-            {{ $t('(neprivaloma)') }}
-          </span>
-        </div>
-        <CollectionSelectDialog
-          v-model:open="exOfficioDialogOpen"
-          collection="duties"
-          multiple
-          allow-empty
-          :base-filter-by="exOfficioBaseFilterBy"
-          :disabled-ids="exOfficioDisabledIds"
-          :initial-hits="exOfficioInitialHits"
-          :title="$t('forms.fields.ex_officio_duties')"
-          :confirm-label="$t('Pasirinkti')"
-          :search-placeholder="$t('Ieškoti pareigų pagal pavadinimą…')"
-          @confirm="onExOfficioConfirm"
-        >
-          <template #trigger>
-            <Button type="button" variant="outline" class="u-touch w-full justify-between font-normal">
-              <span class="truncate" :class="{ 'text-muted-foreground': selectedExOfficioDuties.length === 0 }">
-                {{ selectedExOfficioDuties.length > 0
-                  ? selectedExOfficioDuties.map(d => d.name).join(', ')
-                  : $t('forms.fields.ex_officio_duties') }}
-              </span>
-              <span class="flex shrink-0 items-center gap-2">
-                <span
-                  v-if="selectedExOfficioDuties.length > 0"
-                  class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-semibold text-muted-foreground"
-                >
-                  {{ selectedExOfficioDuties.length }}
-                </span>
-                <ChevronsUpDown class="size-4 opacity-50" />
-              </span>
-            </Button>
-          </template>
-        </CollectionSelectDialog>
-      </div>
-
-      <!-- Administrative Roles (Superadmin only) -->
-      <div v-if="$page.props.auth?.user?.isSuperAdmin" class="space-y-1.5">
-        <div class="flex items-center justify-between">
-          <Label class="text-sm font-medium">
-            {{ $t('forms.fields.admin_role') }}
-          </Label>
-          <span class="text-xs text-muted-foreground">
-            {{ $t('(superadmin)') }}
-          </span>
-        </div>
-        <MultiSelect
-          v-model="selectedRoles"
-          :options="rolesOptions"
-          label-field="label"
-          value-field="value"
-          :placeholder="$t('forms.placeholders.no_role')"
-        />
-      </div>
+        </FormFieldWrapper>
+      </FormPanel>
 
       <!-- Assignable Tenants (Delegated Seats) -->
-      <div v-if="assignableTenants && assignableTenants.length > 0" class="space-y-4 border-t border-border pt-4">
+      <FormPanel
+        v-if="assignableTenants && assignableTenants.length > 0"
+        :title="$t('forms.fields.assignable_tenants')"
+        :icon="Users"
+        title-class="text-brand"
+      >
         <div class="flex items-center justify-between">
           <div>
-            <h4 class="text-sm font-semibold text-foreground">
-              {{ $t('forms.fields.assignable_tenants') }}
+            <h4 class="text-xs font-semibold text-foreground">
+              {{ $t('Leisti deleguotas vietas') }}
             </h4>
             <p class="text-xs text-muted-foreground">
               {{ $t('Leisti kitiems padaliniams skirti atstovus į šią pareigybę.') }}
@@ -303,7 +210,7 @@
           />
         </div>
 
-        <div v-if="allowExternal || !canEditDuty" class="space-y-3">
+        <div v-if="allowExternal || !canEditDuty" class="space-y-3 pt-2">
           <MultiSelect
             v-if="canEditDuty"
             v-model="selectedAssignableTenants"
@@ -352,7 +259,76 @@
             </div>
           </div>
         </div>
-      </div>
+      </FormPanel>
+
+      <!-- Advanced Settings: Ex-officio and Roles -->
+      <FormPanel
+        v-if="$page.props.auth?.user?.isSuperAdmin || (assignableDuties && assignableDuties.length > 0)"
+        :title="$t('Papildomi nustatymai')"
+        :icon="SlidersHorizontal"
+        title-class="text-brand"
+      >
+        <!-- Ex-officio Target Duties -->
+        <FormFieldWrapper
+          v-if="assignableDuties && assignableDuties.length > 0"
+          id="ex_officio_duties"
+          :label="$t('forms.fields.ex_officio_duties')"
+        >
+          <CollectionSelectDialog
+            v-model:open="exOfficioDialogOpen"
+            collection="duties"
+            multiple
+            allow-empty
+            :base-filter-by="exOfficioBaseFilterBy"
+            :disabled-ids="exOfficioDisabledIds"
+            :initial-hits="exOfficioInitialHits"
+            :title="$t('forms.fields.ex_officio_duties')"
+            :confirm-label="$t('Pasirinkti')"
+            :search-placeholder="$t('Ieškoti pareigų pagal pavadinimą…')"
+            @confirm="onExOfficioConfirm"
+          >
+            <template #trigger>
+              <Button
+                id="ex_officio_duties"
+                type="button"
+                variant="outline"
+                class="u-touch w-full justify-between font-normal"
+              >
+                <span class="truncate" :class="{ 'text-muted-foreground': selectedExOfficioDuties.length === 0 }">
+                  {{ selectedExOfficioDuties.length > 0
+                    ? selectedExOfficioDuties.map(d => d.name).join(', ')
+                    : $t('forms.fields.ex_officio_duties') }}
+                </span>
+                <span class="flex shrink-0 items-center gap-2">
+                  <span
+                    v-if="selectedExOfficioDuties.length > 0"
+                    class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-semibold text-muted-foreground"
+                  >
+                    {{ selectedExOfficioDuties.length }}
+                  </span>
+                  <ChevronsUpDown class="size-4 opacity-50" />
+                </span>
+              </Button>
+            </template>
+          </CollectionSelectDialog>
+        </FormFieldWrapper>
+
+        <!-- Administrative Roles (Superadmin only) -->
+        <FormFieldWrapper
+          v-if="$page.props.auth?.user?.isSuperAdmin"
+          id="admin_role"
+          :label="`${$t('forms.fields.admin_role')} (superadmin)`"
+        >
+          <MultiSelect
+            id="admin_role"
+            v-model="selectedRoles"
+            :options="rolesOptions"
+            label-field="label"
+            value-field="value"
+            :placeholder="$t('forms.placeholders.no_role')"
+          />
+        </FormFieldWrapper>
+      </FormPanel>
     </template>
 
     <!-- Danger Zone Slot -->
@@ -394,11 +370,11 @@
 import { computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronsUpDown, Trash2 } from 'lucide-vue-next';
+import { Building2, ChevronsUpDown, SlidersHorizontal, Trash2, Users } from 'lucide-vue-next';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
-import FormSection from '@/Components/Patterns/FormSection.vue';
+import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
@@ -432,6 +408,9 @@ interface DutyPropType {
   roles?: Array<{ id: number; name?: string }>;
   ex_officio_target_duties?: Array<{ id: string; name?: string }>;
   assignable_tenants?: Array<{ id: number; shortname?: string; pivot?: { quota?: number | null } }>;
+  created_at?: string | null;
+  updated_at?: string | null;
+  institution?: { id?: string; name?: string; short_name?: string } | null;
 }
 
 const props = withDefaults(defineProps<{

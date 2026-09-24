@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -197,5 +199,117 @@ describe('tenant scoping of tenant_id', function (): void {
         ])->assertSessionHasErrors('tenant_id');
 
         expect($this->resource->fresh()->tenant_id)->toEqual($this->tenant->id);
+    });
+});
+
+describe('show', function (): void {
+    beforeEach(function (): void {
+        $this->resource->update(['is_reservable' => true, 'capacity' => 3]);
+        $this->member = makeUser($this->tenant);
+    });
+
+    /**
+     * Attaches $resource to a fresh reservation owned by $owner.
+     */
+    function bookResource(Resource $resource, User $owner, $start, $end, string $state = 'reserved', int $quantity = 1): Reservation
+    {
+        $reservation = Reservation::factory()->create(['start_time' => $start, 'end_time' => $end]);
+        $reservation->users()->attach($owner->id);
+        $reservation->resources()->attach($resource->id, [
+            'quantity' => $quantity,
+            'start_time' => $start,
+            'end_time' => $end,
+            'state' => $state,
+        ]);
+
+        return $reservation;
+    }
+
+    test('renders the record with availability, loans and upcoming reservations', function (): void {
+        bookResource($this->resource, $this->member, now()->subDay(), now()->addDay(), 'lent', 2);
+        bookResource($this->resource, $this->member, now()->addWeek(), now()->addWeek()->addDay());
+
+        asUser($this->member)->get(route('resources.show', $this->resource))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Reservations/ShowResource')
+                ->where('resource.id', $this->resource->id)
+                ->where('availableNow', 1)
+                ->has('currentLoans', 1)
+                ->where('currentLoans.0.overdue', false)
+                ->has('upcoming', 1)
+                ->where('can.reserve', true)
+                ->where('can.update', false)
+                ->missing('history')
+                ->loadDeferredProps(fn (Assert $reload) => $reload->has('history', 0))
+            );
+    });
+
+    test('an unreturned item past its end time is flagged overdue', function (): void {
+        bookResource($this->resource, $this->member, now()->subDays(3), now()->subDay(), 'lent');
+
+        asUser($this->member)->get(route('resources.show', $this->resource))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('currentLoans', 1)
+                ->where('currentLoans.0.overdue', true)
+            );
+    });
+
+    test('someone else\'s reservation is shown without its name or link', function (): void {
+        bookResource($this->resource, User::factory()->create(), now()->addWeek(), now()->addWeek()->addDay());
+
+        asUser($this->member)->get(route('resources.show', $this->resource))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcoming.0.name', null)
+                ->where('upcoming.0.href', null)
+                ->where('upcoming.0.quantity', 1)
+            );
+    });
+
+    test('a resource manager sees the reservation behind it and may edit', function (): void {
+        $reservation = bookResource($this->resource, User::factory()->create(), now()->addWeek(), now()->addWeek()->addDay());
+
+        asUser($this->resourceManager)->get(route('resources.show', $this->resource))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcoming.0.name', $reservation->name)
+                ->where('upcoming.0.href', route('reservations.show', $reservation->id))
+                ->where('can.update', true)
+            );
+    });
+
+    test('a finished reservation appears in the deferred history', function (): void {
+        bookResource($this->resource, $this->member, now()->subWeek(), now()->subDays(5), 'returned');
+
+        asUser($this->member)->get(route('resources.show', $this->resource))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('currentLoans', 0)
+                ->loadDeferredProps(fn (Assert $reload) => $reload->has('history', 1))
+            );
+    });
+});
+
+describe('edit', function (): void {
+    test('shows the latest five reservations as resource-page rows, not the whole history', function (): void {
+        $owner = User::factory()->create();
+
+        foreach (range(1, 6) as $week) {
+            $reservation = Reservation::factory()->create();
+            $reservation->users()->attach($owner->id);
+            $reservation->resources()->attach($this->resource->id, [
+                'quantity' => 1,
+                'start_time' => now()->addWeeks($week),
+                'end_time' => now()->addWeeks($week)->addDay(),
+                'state' => 'reserved',
+            ]);
+        }
+
+        asUser($this->resourceManager)->get(route('resources.edit', $this->resource))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Reservations/EditResource')
+                ->has('recentReservations', 5)
+                ->has('recentReservations.0.quantity')
+                ->missing('resource.reservations')
+            );
     });
 });

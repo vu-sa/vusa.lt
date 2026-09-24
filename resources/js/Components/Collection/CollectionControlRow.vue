@@ -29,11 +29,13 @@
     </div>
 
     <div class="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+      <!-- Filled only while the filters are showing; set filters are told by the count alone. -->
       <button
         v-if="hasFilters"
         type="button"
         :aria-expanded="filtersOpen"
-        :class="controlVariants({ active: filtersOpen || activeFilterCount > 0 })"
+        :class="controlVariants({ active: filtersOpen })"
+        data-slot="collection-filters-toggle"
         @click="emit('toggleFilters')"
       >
         <SlidersHorizontal class="size-4" aria-hidden="true" />

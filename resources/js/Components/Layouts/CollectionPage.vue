@@ -84,6 +84,9 @@
       <template #row="slotProps">
         <slot name="row" v-bind="slotProps" />
       </template>
+      <template v-if="$slots.card" #card="slotProps">
+        <slot name="card" v-bind="slotProps" />
+      </template>
       <template v-if="$slots.cell" #cell="slotProps">
         <slot name="cell" v-bind="slotProps" />
       </template>
@@ -171,6 +174,8 @@ const emit = defineEmits<{
 defineSlots<{
   'actions': () => unknown;
   'row': (props: { item: T; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
+  /** Needed when `availableViews` offers `cards`. */
+  'card'?: (props: { item: T; pinned: boolean }) => unknown;
   'cell': (props: { item: T; column: CollectionColumn; pinned: boolean }) => unknown;
   'preview': (props: { item: T }) => unknown;
   'empty': () => unknown;

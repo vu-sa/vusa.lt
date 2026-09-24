@@ -24,6 +24,8 @@ export type ResourceCreationTemplate = Omit<
   'created_at' | 'updated_at' | 'deleted_at' | 'id' | 'name' | 'description'
 > & {
   id: undefined;
+  created_at?: string;
+  updated_at?: string;
   name: Record<'lt' | 'en', string>;
   description: Record<'lt' | 'en', string>;
   media: ResourceMediaEntry[];

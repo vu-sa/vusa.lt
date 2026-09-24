@@ -34,6 +34,16 @@ describe('EntityTypeMark', () => {
     expect(wrapper.classes()).toContain('uppercase');
   });
 
+  it('shows only the icon as a picture placeholder, so the type is not repeated beside the name', () => {
+    const wrapper = mount(EntityTypeMark, {
+      props: { type: ModelEnum.RESOURCE, iconOnly: true, size: 'xl' },
+    });
+
+    expect(wrapper.text()).toBe('');
+    expect(wrapper.find('svg').exists()).toBe(true);
+    expect(wrapper.find('[aria-hidden="true"]').classes()).toContain('size-16');
+  });
+
   it('renders nothing for an unknown entity type', () => {
     const wrapper = mount(EntityTypeMark, {
       props: { type: 'unknown' },

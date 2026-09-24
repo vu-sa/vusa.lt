@@ -70,7 +70,13 @@
     </Teleport>
 
     <!-- Heading band: editing is unmistakable (.ai/rules/js-pages-admin.md) — tinted canvas + eyebrow. -->
-    <header class="space-y-3 border-b border-border pt-6 pb-8 sm:pt-10 sm:pb-12">
+    <header
+      :class="[
+        'space-y-3 border-b border-border pt-6 sm:pt-10',
+        // The language row already closes the band; the full gap under it read as a stray margin.
+        availableLocales.length > 1 ? 'pb-6 sm:pb-8' : 'pb-8 sm:pb-12',
+      ]"
+    >
       <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
         <EntityTypeMark v-if="entityType" :type="entityType" size="sm" class="text-xs font-bold uppercase tracking-[0.2em]" />
         <span v-if="entityType" class="h-3 border-l border-border" aria-hidden="true" />
@@ -108,18 +114,23 @@
           </button>
         </div>
 
-        <slot name="locale-addon" />
-      </div>
+        <!-- Beside the switch, and holding its place while hidden, so switching language never
+             moves the form. -->
+        <div
+          v-if="availableLocales.length > 1"
+          :class="[
+            'flex items-center gap-2 border px-3 py-2 text-xs font-medium',
+            'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
+            !missingInCurrentLocale && 'invisible',
+          ]"
+          :aria-hidden="!missingInCurrentLocale"
+          data-testid="form-page-missing-locale"
+        >
+          <Languages class="size-3.5 shrink-0" />
+          <span>{{ $t('Šia kalba trūksta laukų (:count)', { count: String(missingInCurrentLocale || 0) }) }}</span>
+        </div>
 
-      <div
-        v-if="missingInCurrentLocale"
-        :class="[
-          'flex items-center gap-2 border px-3 py-2 text-xs font-medium',
-          'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
-        ]"
-      >
-        <Languages class="size-3.5 shrink-0" />
-        <span>{{ $t('Šia kalba trūksta laukų (:count)', { count: String(missingInCurrentLocale) }) }}</span>
+        <slot name="locale-addon" />
       </div>
     </header>
 

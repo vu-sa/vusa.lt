@@ -20,7 +20,7 @@ return [
         ],
         'rezervacijos' => [
             'title' => 'Reservations',
-            'description' => 'Rooms, equipment, advertising',
+            'description' => 'Borrowing equipment and items',
         ],
         'svetaine' => [
             'title' => 'Website',
@@ -138,8 +138,8 @@ return [
         'pareigybiu_laikotarpiai' => 'Who held which duty and when',
         'uzduociu_suvestine' => 'Tasks and deadlines across units',
         'institucijos_grafas' => 'Institution relations in one graph',
-        'rezervacijos' => 'Item and space reservations',
-        'istekliai' => 'Items and spaces to borrow',
+        'rezervacijos' => 'Equipment and item reservations',
+        'istekliai' => 'Equipment and items to borrow',
         'kategorijos' => 'Resource grouping',
         'puslapiai' => 'Website texts and their structure',
         'naujienos' => 'Articles and announcements on the website',
@@ -194,7 +194,7 @@ return [
         ],
         'new_reservation' => [
             'title' => 'New reservation',
-            'description' => 'Reserve a room or equipment',
+            'description' => 'Reserve equipment or other items',
         ],
         'new_news' => [
             'title' => 'New news article',

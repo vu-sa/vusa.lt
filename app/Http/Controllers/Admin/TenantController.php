@@ -28,6 +28,7 @@ class TenantController extends AdminController
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return $this->inertiaResponse('Admin/People/IndexTenant', [
             'tenants' => Tenant::query()->orderBy('fullname')->get(['id', 'fullname', 'shortname', 'alias', 'type']),
+            'assignableInstitutions' => Institution::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

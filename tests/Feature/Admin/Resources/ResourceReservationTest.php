@@ -48,6 +48,7 @@ beforeEach(function (): void {
     $this->resource = Resource::factory()->create([
         'tenant_id' => $this->tenant->id,
         'resource_category_id' => $this->category->id,
+        'is_reservable' => true,
     ]);
 });
 
@@ -79,7 +80,8 @@ describe('auth: simple user', function (): void {
     });
 
     test('cannot create overlapping reservations', function (): void {
-        // Create first reservation
+        $this->resource->update(['capacity' => 1]);
+
         $existingReservation = Reservation::factory()->create([
             'start_time' => now()->addDays(1),
             'end_time' => now()->addDays(1)->addHours(2),
@@ -92,15 +94,17 @@ describe('auth: simple user', function (): void {
             'state' => 'created',
         ]);
 
-        // Try to create overlapping reservation
         asUser($this->user)->post(route('reservations.store'), [
             'name' => 'Conflicting Meeting',
+            'description' => 'Needs the same resource',
             'start_time' => now()->addDays(1)->addMinutes(30)->format('Y-m-d H:i:s'),
             'end_time' => now()->addDays(1)->addHours(3)->format('Y-m-d H:i:s'),
             'resources' => [
                 ['id' => $this->resource->id, 'quantity' => 1],
             ],
-        ])->assertSessionHasErrors();
+        ])->assertSessionHasErrors('resources.0.quantity');
+
+        expect(Reservation::where('name', 'Conflicting Meeting')->exists())->toBeFalse();
     });
 
     /**

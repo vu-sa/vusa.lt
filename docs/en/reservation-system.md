@@ -15,6 +15,8 @@ The Reservation System and its resources are managed by VU SR U and student init
 - In the description, provide all relevant details – the purpose of the items, when you plan to collect them, and who will be collecting them.
 - Reservation period – specify the exact time frame during which you intend to borrow the items.
 - In the resources section, you may select items and quantities from all units at once – there is no need to create separate reservations. Items may be borrowed from VU SR CB, VU SR U, and VU SR student initiatives.
+- The easiest way to pick items is **Reservations → Resources**: press “Add” on each one and it goes into your reservation cart. The cart is saved (also across devices) until you submit it or leave it unchanged for 14 days. Every resource has its own page showing how many are free now, who has it and when it is booked.
+- The cart does not hold the items – others can reserve them while you are choosing. Your cart then shows how many are still free so you can lower the quantity or change the time, and you also get a notification.
 - In the additional information section, confirm that you take full responsibility for returning the items on time, maintaining their condition, and covering any damage caused.
 
 ## 🎯 Reservation Management Agreements

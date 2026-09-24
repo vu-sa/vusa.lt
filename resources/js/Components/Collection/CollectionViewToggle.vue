@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { List, PanelRight, Table } from 'lucide-vue-next';
+import { LayoutGrid, List, PanelRight, Table } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';
@@ -41,6 +41,7 @@ const emit = defineEmits<{
 }>();
 
 const ALL: { value: CollectionViewMode; label: string; icon: Component }[] = [
+  { value: 'cards', label: 'Kortelės', icon: LayoutGrid },
   { value: 'rows', label: 'Eilutės', icon: List },
   { value: 'table', label: 'Lentelė', icon: Table },
   { value: 'preview', label: 'Peržiūra', icon: PanelRight },

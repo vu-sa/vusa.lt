@@ -20,7 +20,7 @@ class ReservationApiController extends ApiController
 
     public function index(IndexReservationRequest $request): JsonResponse
     {
-        $this->authorizeApi('viewAny', Reservation::class);
+        $this->authorizeApi('viewList', Reservation::class);
 
         $query = ApplyReservationIndexFilters::execute(
             Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS),

@@ -140,12 +140,12 @@ describe('ReservationResourceList', () => {
     expect(done.find('[data-testid="overbooked"]').exists()).toBe(false);
   });
 
-  it('links to the resource only when the user may edit it', () => {
+  it('links every resource to its record, which everyone may view', () => {
     const wrapper = mountList([item('1', 'created'), { ...item('2', 'created'), can_edit: false }]);
     const rows = wrapper.findAll('[data-slot="reservation-resource-row"]');
 
     expect(rows[0].find('a').exists()).toBe(true);
-    expect(rows[1].find('a').exists()).toBe(false);
+    expect(rows[1].find('a').exists()).toBe(true);
   });
 
   it('tucks the decision history behind a disclosure, crossing out what was undone', () => {

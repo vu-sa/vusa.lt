@@ -9,6 +9,8 @@ use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\QuickLink;
+use App\Models\ReservationDraft;
+use App\Models\ReservationDraftItem;
 use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Task;
@@ -706,6 +708,33 @@ describe('institution graph', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowInstitutionGraph')
                 ->where('institutions', fn ($institutions) => collect($institutions)->every(fn ($institution) => isset($institution['users_count']) && is_numeric($institution['users_count'])))
+            );
+    });
+});
+
+describe('unfinished reservation', function (): void {
+    test('home points back to a started reservation', function (): void {
+        asUser($this->user)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page->where('reservationDraft', null));
+
+        $draft = ReservationDraft::factory()->for($this->user)->withPeriod()->create();
+        ReservationDraftItem::factory()->for($draft, 'draft')->for($this->resource)->create();
+
+        asUser($this->user)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reservationDraft.count', 1)
+                ->where('reservationDraft.name', null)
+                ->where('reservationDraft.start_time', $draft->start_time->getTimestampMs())
+            );
+    });
+
+    test('a named draft with nothing picked yet still shows', function (): void {
+        ReservationDraft::factory()->for($this->user)->create(['name' => 'Stovykla']);
+
+        asUser($this->user)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reservationDraft.name', 'Stovykla')
+                ->where('reservationDraft.count', 0)
             );
     });
 });

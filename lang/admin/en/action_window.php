@@ -41,7 +41,7 @@ return [
         ],
         'new_reservation' => [
             'title' => 'Reserve equipment',
-            'description' => 'Borrow a VU SR item or room.',
+            'description' => 'Borrow VU SR equipment or an item.',
         ],
         'duty_update' => [
             'title' => 'Update duties',

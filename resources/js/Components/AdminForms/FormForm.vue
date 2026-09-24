@@ -1,9 +1,14 @@
 <template>
   <FormPage
     :title="isEditing ? formTitle : $t('Nauja registracijos forma')"
+    :bar-title="isEditing ? formTitle : undefined"
     :head-title="isEditing ? formTitle : $t('Nauja registracijos forma')"
     :lead="isEditing ? undefined : $t('Kurk naują registracijos formą studentams ir nariams.')"
     :entity-type="ModelEnum.FORM"
+    :activity-subject="isEditing && form.id ? { type: 'form', id: String(form.id) } : undefined"
+    :public-url="publicUrl('lt')"
+    :created-at="(form.created_at as string | undefined)"
+    :updated-at="(form.updated_at as string | undefined)"
     :back-href="isEditing && form.id ? route('forms.show', form.id) : route('forms.index')"
     :back-label="isEditing ? $t('Į formą') : $t('Formos')"
     :processing="form.processing"
@@ -17,102 +22,37 @@
     @update:locale="activeLocale = $event"
     @submit="emit('submit:form', form)"
   >
-    <FormSection
-      :title="$t('forms.context.main_info')"
-      :description="$t('forms.helpers.form_main_info')"
+    <FormFieldWrapper
+      id="form-name"
+      :label="`${$t('forms.fields.name')} (${activeLocale.toUpperCase()})`"
+      required
+      :error="form.errors[`name.${activeLocale}`]"
     >
-      <div class="space-y-1.5">
-        <Label for="form-name" class="text-sm font-medium">
-          {{ $t('forms.fields.name') }} ({{ activeLocale.toUpperCase() }}) *
-        </Label>
-        <Input
-          id="form-name"
-          v-model="form.name[activeLocale]"
-          :placeholder="$t('forms.fields.name')"
-        />
-        <p v-if="form.errors[`name.${activeLocale}`]" class="text-xs text-destructive">
-          {{ form.errors[`name.${activeLocale}`] }}
-        </p>
-      </div>
+      <Input
+        id="form-name"
+        v-model="form.name[activeLocale]"
+        :placeholder="$t('forms.fields.name')"
+      />
+    </FormFieldWrapper>
 
-      <div class="space-y-2">
-        <Label class="text-sm font-medium">
-          {{ $t('forms.fields.description') }} ({{ activeLocale.toUpperCase() }})
-        </Label>
-        <TiptapEditor
-          v-if="activeLocale === 'lt'"
-          v-model="form.description.lt"
-          preset="full"
-          html
-        />
-        <TiptapEditor
-          v-else
-          v-model="form.description.en"
-          preset="full"
-          html
-        />
-        <p v-if="form.errors[`description.${activeLocale}`]" class="text-xs text-destructive">
-          {{ form.errors[`description.${activeLocale}`] }}
-        </p>
-      </div>
-
-      <div class="space-y-3">
-        <PermalinkField
-          :permalink="form.path.lt"
-          :base-url="registrationBaseUrl('lt')"
-          label="LT"
-          :view-url="publicUrl('lt')"
-          @update:permalink="onPathInput('lt', $event)"
-        />
-        <PermalinkField
-          :permalink="form.path.en"
-          :base-url="registrationBaseUrl('en')"
-          label="EN"
-          :view-url="publicUrl('en')"
-          @update:permalink="onPathInput('en', $event)"
-        />
-        <div
-          v-if="pathChangedOnExistingForm"
-          :class="[
-            'flex items-center gap-2 border p-2.5 text-xs font-medium',
-            'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
-          ]"
-        >
-          <AlertTriangle class="size-4 shrink-0" />
-          <span>{{ $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') }}</span>
-        </div>
-      </div>
-
-      <div v-if="assignableTenants && assignableTenants.length > 0" class="space-y-1.5">
-        <Label for="form-tenant" class="text-sm font-medium">
-          {{ $t('forms.fields.tenant') }}
-        </Label>
-        <Select v-model="tenantIdString">
-          <SelectTrigger id="form-tenant">
-            <SelectValue placeholder="VU SA ..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
-              {{ tenant.shortname }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-        <p v-if="form.errors.tenant_id" class="text-xs text-destructive">
-          {{ form.errors.tenant_id }}
-        </p>
-      </div>
-
-      <div class="space-y-1.5">
-        <Label class="text-sm font-medium">
-          {{ $t('forms.fields.form_publish_time') }}
-        </Label>
-        <DateTimePicker
-          v-model="publishTimeDate"
-          :placeholder="$t('forms.placeholders.date')"
-          @change="onPublishTimeChange"
-        />
-      </div>
-    </FormSection>
+    <FormFieldWrapper
+      id="form-description"
+      :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+      :error="form.errors[`description.${activeLocale}`]"
+    >
+      <TiptapEditor
+        v-if="activeLocale === 'lt'"
+        v-model="form.description.lt"
+        preset="full"
+        html
+      />
+      <TiptapEditor
+        v-else
+        v-model="form.description.en"
+        preset="full"
+        html
+      />
+    </FormFieldWrapper>
 
     <FormSection
       :title="$t('forms.sections.form_fields')"
@@ -233,6 +173,57 @@
       </div>
     </FormSection>
 
+    <template #aside>
+      <FormPanel :title="$t('Paskelbimas ir nuoroda')" :icon="Send" title-class="text-brand">
+        <div class="space-y-3">
+          <PermalinkField
+            :permalink="form.path.lt"
+            :base-url="registrationBaseUrl('lt')"
+            label="LT"
+            :view-url="publicUrl('lt')"
+            @update:permalink="onPathInput('lt', $event)"
+          />
+          <PermalinkField
+            :permalink="form.path.en"
+            :base-url="registrationBaseUrl('en')"
+            label="EN"
+            :view-url="publicUrl('en')"
+            @update:permalink="onPathInput('en', $event)"
+          />
+          <div
+            v-if="pathChangedOnExistingForm"
+            :class="[
+              'flex items-center gap-2 border p-2.5 text-xs font-medium',
+              'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
+            ]"
+          >
+            <AlertTriangle class="size-4 shrink-0" />
+            <span>{{ $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') }}</span>
+          </div>
+        </div>
+
+        <TenantSelectField
+          v-if="assignableTenants && assignableTenants.length > 0"
+          id="form-tenant"
+          v-model="form.tenant_id"
+          :tenants="assignableTenants"
+          :error="form.errors.tenant_id"
+        />
+
+        <FormFieldWrapper
+          id="form-publish-time"
+          :label="$t('forms.fields.form_publish_time')"
+        >
+          <DateTimePicker
+            id="form-publish-time"
+            v-model="publishTimeDate"
+            :placeholder="$t('forms.placeholders.date')"
+            @change="onPublishTimeChange"
+          />
+        </FormFieldWrapper>
+      </FormPanel>
+    </template>
+
     <template v-if="isEditing && enableDelete" #danger-zone>
       <div class="flex items-center justify-between gap-4">
         <div>
@@ -259,18 +250,24 @@
       />
     </template>
 
-    <CardModal
-      v-model:show="showFormFieldModal"
-      :title="$t('forms.sections.form_field')"
-      @close="showFormFieldModal = false"
-    >
-      <FormFieldForm
-        :field-models="fieldModelOptions"
-        :has-registrations
-        :form-field="selectedFormField"
-        @submit="handleFormFieldSubmitted"
-      />
-    </CardModal>
+    <Sheet v-model:open="showFormFieldModal">
+      <SheetContent class="flex w-full flex-col overflow-y-auto sm:max-w-xl">
+        <SheetHeader>
+          <SheetTitle>{{ $t('forms.sections.form_field') }}</SheetTitle>
+          <SheetDescription class="sr-only">
+            {{ $t('forms.sections.form_field') }}
+          </SheetDescription>
+        </SheetHeader>
+        <div class="mt-4">
+          <FormFieldForm
+            :field-models="fieldModelOptions"
+            :has-registrations
+            :form-field="selectedFormField"
+            @submit="handleFormFieldSubmitted"
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
   </FormPage>
 </template>
 
@@ -290,6 +287,7 @@ import {
   List,
   Pencil,
   Plus,
+  Send,
   Trash2,
   Type,
 } from 'lucide-vue-next';
@@ -297,18 +295,17 @@ import {
 import FormFieldForm from './FormFieldForm.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 import PermalinkField from './PermalinkField.vue';
+import TenantSelectField from './TenantSelectField.vue';
 
-import CardModal from '@/Components/Dialogs/CardModal.vue';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import SortableFormFieldsTable from '@/Components/Tables/SortableFormFieldsTable.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { DateTimePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { formFieldTemplate } from '@/Types/formTemplates';
 import { ModelEnum } from '@/Types/enums';
 import { localizedSlug } from '@/Utils/LocalizedRoutes';
@@ -405,11 +402,6 @@ const onPathInput = (locale: Locale, value: string) => {
 
     form.path[locale] = generateSlug(String(name || ''));
   });
-});
-
-const tenantIdString = computed({
-  get: () => form.tenant_id != null ? String(form.tenant_id) : '',
-  set: (val: string) => { form.tenant_id = val ? Number(val) : null; },
 });
 
 const publishTimeDate = ref<Date | null>(

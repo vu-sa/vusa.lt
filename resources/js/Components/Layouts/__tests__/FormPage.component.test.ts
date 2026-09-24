@@ -82,6 +82,22 @@ describe('FormPage.vue', () => {
     expect(wrapper.emitted('update:locale')).toEqual([['en']]);
   });
 
+  it('keeps the missing-translation notice in place across languages, so the form never shifts', async () => {
+    const wrapper = mount(FormPage, {
+      props: { title: 'Išteklius', locale: 'lt', availableLocales: ['lt', 'en'], missingLocaleCounts: { lt: 0, en: 2 } },
+      global: { stubs },
+    });
+    const notice = () => wrapper.get('[data-testid="form-page-missing-locale"]');
+
+    expect(notice().classes()).toContain('invisible');
+    expect(notice().attributes('aria-hidden')).toBe('true');
+
+    await wrapper.setProps({ locale: 'en' });
+
+    expect(notice().classes()).not.toContain('invisible');
+    expect(notice().attributes('aria-hidden')).toBe('false');
+  });
+
   describe('editing state', () => {
     it('says it is editing, and offers a saved state only for an existing record', () => {
       const edit = mount(FormPage, { props: { title: 'Pareigybė' }, global: { stubs } });

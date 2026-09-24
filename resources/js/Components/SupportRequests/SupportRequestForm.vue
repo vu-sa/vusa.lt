@@ -1,12 +1,20 @@
 <template>
-  <AdminForm :model="form" :is-create-form="!isEditing">
-    <FormElement :section-number="1" :is-complete="Boolean(form.title && form.description)">
-      <template #title>
-        {{ $t('Pranešimo informacija') }}
-      </template>
-      <template #description>
-        {{ $t('Aprašykite problemą ar idėją taip, kad ją būtų galima suprasti ir įvertinti.') }}
-      </template>
+  <FormPage
+    :title="isEditing ? supportRequest?.title ?? $t('Redaguoti pranešimą') : $t('Naujas pranešimas')"
+    entity-type="support_request"
+    :back-href="backUrl"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :mode="isEditing ? 'edit' : 'create'"
+    :available-locales="[]"
+    max-width="4xl"
+    @submit="submit"
+  >
+    <FormSection
+      :title="$t('Pranešimo informacija')"
+      :description="$t('Aprašykite problemą ar idėją taip, kad ją būtų galima suprasti ir įvertinti.')"
+    >
       <div class="grid gap-4 sm:grid-cols-2">
         <FormFieldWrapper id="support_request_type_id" :label="$t('Tipas')" required :error="form.errors.support_request_type_id">
           <Select v-model="form.support_request_type_id">
@@ -62,26 +70,23 @@
           />
         </FormFieldWrapper>
       </div>
-    </FormElement>
+    </FormSection>
 
-    <FormElement :section-number="2" :is-complete="form.visibility !== 'roles' || form.roles.length > 0">
-      <template #title>
-        {{ $t('Matomumas') }}
-      </template>
-      <template #description>
-        {{ $t('Nurodykite, kas gali matyti ir aptarti šį pranešimą.') }}
-      </template>
-      <div class="space-y-3 rounded-lg border bg-muted/20 p-4">
+    <FormSection
+      :title="$t('Matomumas')"
+      :description="$t('Nurodykite, kas gali matyti ir aptarti šį pranešimą.')"
+    >
+      <div class="space-y-3 border-y border-border py-4">
         <FormFieldWrapper id="visibility" :label="$t('Matomumas')" required :error="form.errors.visibility">
           <RadioGroup v-model="form.visibility" class="grid gap-2.5 sm:grid-cols-3">
             <label
               v-for="opt in visibilityOptions"
               :key="opt.value"
-              class="flex items-start gap-3 rounded-lg border p-3.5 transition-all"
+              class="flex min-h-11 items-start gap-3 border p-3.5 transition-colors"
               :class="[
                 opt.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
                 form.visibility === opt.value
-                  ? 'border-primary bg-background shadow-xs ring-1 ring-primary'
+                  ? 'border-foreground bg-muted/50'
                   : 'border-border bg-card hover:bg-muted/40 hover:border-muted-foreground/40',
               ]"
             >
@@ -98,9 +103,8 @@
             </label>
           </RadioGroup>
 
-          <!-- Informational note why visibility is selected (for colleagues to see and expect a possible regression) -->
-          <div class="mt-3 flex items-start gap-2 rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground border">
-            <Info class="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+          <div class="mt-3 flex items-start gap-2 border-l-2 border-border bg-muted/50 p-2.5 text-xs text-muted-foreground">
+            <Info class="h-4 w-4 shrink-0 mt-0.5" />
             <span class="leading-relaxed">
               <!-- eslint-disable-next-line max-len -->
               {{ $t('Viešesnis matomumas (rolėms arba visiems nariams) leidžia kitiems matyti žinomas problemas, išvengti pasikartojančių pranešimų ir numatyti galimus sistemos sutrikimus (regresijas).') }}
@@ -108,7 +112,6 @@
           </div>
         </FormFieldWrapper>
 
-        <!-- Roles selection and dynamic user list preview -->
         <div v-if="form.visibility === 'roles'" class="space-y-4 pt-2 border-t">
           <div>
             <Label class="text-sm font-medium mb-2 block">{{ $t('Pasirinkti roles:') }}</Label>
@@ -116,7 +119,7 @@
               <label
                 v-for="role in roles"
                 :key="role.id"
-                class="flex items-center gap-2 rounded-md border p-2.5 text-sm cursor-pointer hover:bg-muted/50 transition-colors"
+                class="flex min-h-11 items-center gap-2 border p-2.5 text-sm cursor-pointer hover:bg-muted/50 transition-colors"
               >
                 <Checkbox
                   :model-value="form.roles.includes(role.id)"
@@ -128,13 +131,12 @@
             <p v-else class="text-xs text-muted-foreground italic">
               {{ $t('Neturite priskirtų rolių, kurioms galėtumėte suteikti prieigą.') }}
             </p>
-            <p v-if="form.errors.roles" class="text-xs text-red-600 mt-1">
+            <p v-if="form.errors.roles" class="text-xs text-destructive mt-1">
               {{ form.errors.roles }}
             </p>
           </div>
 
-          <!-- Dynamic User List Preview -->
-          <div class="rounded-lg border bg-background p-3.5 space-y-2">
+          <div class="border border-border bg-background p-3.5 space-y-2">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {{ $t('Nariai, kurie galės matyti ir komentuoti šį pranešimą') }}
@@ -150,7 +152,7 @@
                 <span
                   v-for="u in authorizedUsers.slice(0, 5)"
                   :key="u.id"
-                  class="inline-flex items-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground"
+                  class="inline-flex items-center bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground"
                 >
                   {{ u.name }}
                 </span>
@@ -165,15 +167,12 @@
           </div>
         </div>
       </div>
-    </FormElement>
+    </FormSection>
 
-    <FormElement :section-number="3">
-      <template #title>
-        {{ $t('Ekrano nuotraukos ir failai') }}
-      </template>
-      <template #description>
-        {{ $t('Pridėkite vaizdų, kurie padėtų greičiau suprasti pranešimą.') }}
-      </template>
+    <FormSection
+      :title="$t('Ekrano nuotraukos ir failai')"
+      :description="$t('Pridėkite vaizdų, kurie padėtų greičiau suprasti pranešimą.')"
+    >
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <Label class="text-sm font-medium">{{ $t('Ekrano nuotraukos ir failai') }}</Label>
@@ -182,14 +181,13 @@
           </span>
         </div>
 
-        <!-- Upload Dropzone Area -->
         <div
           :class="[
-            'relative flex flex-col items-center justify-center rounded-lg',
-            'border-2 border-dashed border-zinc-200 dark:border-zinc-800',
-            'bg-zinc-50/50 dark:bg-zinc-900/50 p-6 text-center select-none cursor-pointer transition-colors',
-            'hover:border-primary/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50',
-            { 'border-primary bg-primary/5 dark:bg-primary/10': isDragging },
+            'relative flex min-h-11 flex-col items-center justify-center',
+            'border-2 border-dashed border-border',
+            'bg-muted/30 p-6 text-center select-none cursor-pointer transition-colors',
+            'hover:border-foreground/50 hover:bg-muted/60',
+            { 'border-foreground bg-muted/60': isDragging },
           ]"
           role="button"
           tabindex="0"
@@ -209,7 +207,7 @@
             class="hidden"
             @change="handleFileChange"
           >
-          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-muted-foreground mb-2.5 transition-colors">
+          <div class="flex h-10 w-10 items-center justify-center bg-muted text-muted-foreground mb-2.5 transition-colors">
             <Upload class="h-5 w-5" />
           </div>
           <div class="text-sm font-medium text-foreground">
@@ -220,98 +218,72 @@
           </p>
         </div>
 
-        <!-- Existing media if editing -->
         <div v-if="existingMedia.length > 0" class="space-y-2 pt-1">
           <span class="text-xs font-medium text-muted-foreground">{{ $t('Prisegti failai:') }}</span>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div
               v-for="m in existingMedia"
               :key="m.id"
-              class="relative group overflow-hidden rounded-lg border bg-muted/30 p-1"
+              class="relative group overflow-hidden border border-border bg-muted/30 p-1"
             >
-              <img :src="m.thumb_url || m.original_url" :alt="m.name" class="h-24 w-full object-cover rounded">
+              <img :src="m.thumb_url || m.original_url" :alt="m.name" class="h-24 w-full object-cover">
               <Button
                 type="button"
                 variant="destructive"
                 size="icon"
-                class="absolute top-2 right-2 h-6 w-6 opacity-80 group-hover:opacity-100 shadow-xs"
+                class="absolute top-2 right-2 u-touch opacity-80 group-hover:opacity-100"
+                :aria-label="$t('Pašalinti failą')"
                 @click="removeExistingMedia(m.id)"
               >
                 <X class="h-3.5 w-3.5" />
               </Button>
-              <div class="p-1 text-[11px] text-muted-foreground truncate">
+              <div class="p-1 text-xs text-muted-foreground truncate">
                 {{ m.file_name }}
               </div>
             </div>
           </div>
         </div>
 
-        <!-- New file uploads preview -->
         <div v-if="previewUrls.length > 0" class="space-y-2 pt-1">
           <span class="text-xs font-medium text-muted-foreground">{{ $t('Naujai pridedami failai:') }}</span>
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div
               v-for="(url, index) in previewUrls"
               :key="index"
-              class="relative group overflow-hidden rounded-lg border bg-muted/30 p-1"
+              class="relative group overflow-hidden border border-border bg-muted/30 p-1"
             >
-              <img :src="url" alt="Preview" class="h-24 w-full object-cover rounded">
+              <img :src="url" :alt="$t('Peržiūra')" class="h-24 w-full object-cover">
               <Button
                 type="button"
                 variant="destructive"
                 size="icon"
-                class="absolute top-2 right-2 h-6 w-6 opacity-80 group-hover:opacity-100 shadow-xs"
+                class="absolute top-2 right-2 u-touch opacity-80 group-hover:opacity-100"
+                :aria-label="$t('Pašalinti failą')"
                 @click="removeNewFile(index)"
               >
                 <X class="h-3.5 w-3.5" />
               </Button>
-              <div class="p-1 text-[11px] text-muted-foreground truncate">
+              <div class="p-1 text-xs text-muted-foreground truncate">
                 {{ form.images[index]?.name }}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </FormElement>
+    </FormSection>
 
-    <template #buttons>
-      <Button
-        v-if="showCancel"
-        type="button"
-        variant="outline"
-        @click="emit('cancel')"
-      >
-        {{ $t('Atšaukti') }}
-      </Button>
-
-      <Button
-        v-else-if="backUrl"
-        type="button"
-        variant="outline"
-        as-child
-      >
-        <Link :href="backUrl">
-          {{ $t('Atšaukti') }}
-        </Link>
-      </Button>
-
-      <Button type="button" :disabled="form.processing" @click="submit">
-        <Loader2 v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
-        {{ isEditing ? $t('Išsaugoti pakeitimus') : $t('Siųsti pranešimą') }}
-      </Button>
-    </template>
-  </AdminForm>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onBeforeUnmount } from 'vue';
-import { useForm, router, Link, usePage } from '@inertiajs/vue3';
-import { Globe, Info, Loader2, Lock, Upload, Users, X } from 'lucide-vue-next';
+import { useForm, router, usePage } from '@inertiajs/vue3';
+import { Globe, Info, Lock, Upload, Users, X } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import AdminForm from '@/Components/AdminForms/AdminForm.vue';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { FormSection } from '@/Components/Patterns';
 import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { Button } from '@/Components/ui/button';

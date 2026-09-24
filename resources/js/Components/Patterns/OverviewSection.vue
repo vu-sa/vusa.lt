@@ -11,7 +11,7 @@
     </p>
 
     <template v-else>
-      <header :class="['flex items-center justify-between gap-4', variant === 'home' ? 'border-b border-border pb-3' : 'border-t border-border pt-3']">
+      <header :class="['flex items-center justify-between gap-4', headerRuleClass]">
         <h2 :class="['flex items-center gap-2 text-foreground', variant === 'home' ? 'text-sm font-bold uppercase tracking-[0.18em]' : 'text-base font-semibold']">
           <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
           {{ title }}
@@ -36,11 +36,11 @@
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { inject, onBeforeUnmount, useId, watchEffect, type Component } from 'vue';
+import { computed, inject, onBeforeUnmount, useId, watchEffect, type Component } from 'vue';
 
 import { OVERVIEW_STATUS_KEY } from './overviewStatus';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   title: string;
   icon?: Component;
   variant?: 'default' | 'home';
@@ -48,7 +48,23 @@ const props = defineProps<{
   emptyText?: string;
   href?: string;
   hrefLabel?: string;
-}>();
+  /** The content draws its own rules (a bordered list, tiles), so the heading drops its hairline. */
+  contentRuled?: boolean;
+}>(), {
+  icon: undefined,
+  variant: 'default',
+  emptyText: undefined,
+  href: undefined,
+  hrefLabel: undefined,
+});
+
+const headerRuleClass = computed(() => {
+  if (props.contentRuled) {
+    return '';
+  }
+
+  return props.variant === 'home' ? 'border-b border-border pb-3' : 'border-t border-border pt-3';
+});
 
 const statusRegistry = inject(OVERVIEW_STATUS_KEY, null);
 const statusId = useId();

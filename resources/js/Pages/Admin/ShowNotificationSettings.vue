@@ -1,5 +1,5 @@
 <template>
-  <AdminContentPage :title="$t('shell.account.notifications')">
+  <OverviewPage :title="$t('shell.account.notifications')">
     <div class="mx-auto flex max-w-2xl flex-col gap-6">
       <Link :href="route('profile')" class="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft class="size-4" />
@@ -15,7 +15,7 @@
         :available-digest-emails
       />
     </div>
-  </AdminContentPage>
+  </OverviewPage>
 </template>
 
 <script setup lang="ts">
@@ -23,7 +23,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { ArrowLeft, Bell } from 'lucide-vue-next';
 
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import NotificationPreferences from '@/Features/Admin/Notifications/NotificationPreferences.vue';
 import PushDeviceManagement from '@/Features/Admin/Notifications/PushDeviceManagement.vue';
 import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';

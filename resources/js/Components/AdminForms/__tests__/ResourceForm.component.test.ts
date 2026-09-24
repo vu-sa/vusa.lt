@@ -17,6 +17,15 @@ vi.mock('@inertiajs/vue3', async () => {
   };
 });
 
+interface ResourceFormVm {
+  form: {
+    is_reservable: boolean;
+    media: Array<{ id?: number | string; status?: string; file?: File }>;
+    identifier: string;
+  };
+  existingMediaItems: Array<{ id: number | string; name: string; type: string; status: string; url: string }>;
+}
+
 describe('ResourceForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
@@ -50,12 +59,12 @@ describe('ResourceForm.vue', () => {
           ...commonStubs,
           FormPage: {
             props: ['title', 'mode'],
-            template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent><slot /><slot name="advanced" /><slot name="danger-zone" /></form>',
+            template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent><slot /><slot name="aside" /><slot name="advanced" /><slot name="danger-zone" /></form>',
           },
+          FormPanel: { template: '<div data-testid="form-panel"><slot /></div>' },
           FormSection: { props: ['title'], template: '<section :data-section="title"><slot /></section>' },
           MdSuspenseWrapper: true,
           ConfirmDialog: true,
-          ResourceReservationsTable: { props: ['reservations'], template: '<div data-testid="reservations-table" />' },
           Select: {
             template: '<select data-testid="select" :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
             props: ['modelValue'],
@@ -120,17 +129,19 @@ describe('ResourceForm.vue', () => {
     expect(wrapper.find('[data-testid="form-page"]').attributes('data-mode')).toBe('create');
   });
 
-  it('shows the reservation history only when editing and given one', () => {
+  it('shows the latest reservations as the resource page rows, only when editing', () => {
+    const booking = { id: 1, reservation_id: null, name: null, href: null, quantity: 2, state: 'reserved', start_time: 1790000000000, end_time: 1790100000000, overdue: false };
+
+    wrapper = createWrapper({ reservations: [booking] });
+    expect(wrapper.findAll('[data-testid="resource-recent-reservations"] [data-slot="resource-booking-row"]')).toHaveLength(1);
+    wrapper.unmount();
+
     wrapper = createWrapper({ reservations: [] });
-    expect(wrapper.find('[data-testid="reservations-table"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('reservations.resource.recent_empty');
     wrapper.unmount();
 
-    wrapper = createWrapper();
-    expect(wrapper.find('[data-testid="reservations-table"]').exists()).toBe(false);
-    wrapper.unmount();
-
-    wrapper = createWrapper({ rememberKey: 'CreateResource', reservations: [] });
-    expect(wrapper.find('[data-testid="reservations-table"]').exists()).toBe(false);
+    wrapper = createWrapper({ rememberKey: 'CreateResource', reservations: [booking] });
+    expect(wrapper.find('[data-testid="resource-recent-reservations"]').exists()).toBe(false);
   });
 
   describe('is_reservable checkbox', () => {
@@ -148,7 +159,7 @@ describe('ResourceForm.vue', () => {
 
     it('toggles form.is_reservable as a boolean when clicked', async () => {
       wrapper = createWrapper({ resource: { ...defaultResource, is_reservable: true } });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as ResourceFormVm;
 
       await wrapper.find('[role="checkbox"]').trigger('click');
       expect(vm.form.is_reservable).toBe(false);
@@ -163,7 +174,7 @@ describe('ResourceForm.vue', () => {
       wrapper = createWrapper();
       const upload = wrapper.find('[data-testid="image-upload"]');
       expect(upload.exists()).toBe(true);
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as ResourceFormVm;
       expect(vm.existingMediaItems).toEqual([
         { id: 10, name: 'photo.jpg', type: 'image/jpeg', status: 'finished', url: 'https://example.com/photo.jpg' },
       ]);
@@ -171,7 +182,7 @@ describe('ResourceForm.vue', () => {
 
     it('adds newly uploaded files to form.media while retaining existing media', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as ResourceFormVm;
 
       await wrapper.find('[data-testid="add-file"]').trigger('click');
 
@@ -183,7 +194,7 @@ describe('ResourceForm.vue', () => {
 
     it('removes an existing media item from form.media on remove:existing', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as ResourceFormVm;
 
       expect(vm.form.media).toHaveLength(1);
 
@@ -197,7 +208,7 @@ describe('ResourceForm.vue', () => {
   describe('identifier field', () => {
     it('binds the identifier input directly to form.identifier', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as ResourceFormVm;
       expect(vm.form.identifier).toBe('PRJ-01');
     });
   });

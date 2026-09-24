@@ -1,22 +1,16 @@
 <template>
-  <AdminContentPage :title="$t('Redaguoti pranešimą')" :back-url="route('supportRequests.show', supportRequest.id)">
-    <FormUpsertLayout>
-      <SupportRequestForm
+  <SupportRequestForm
         :types
         :areas
         :roles
         :support-request
         :back-url="route('supportRequests.show', supportRequest.id)"
-      />
-    </FormUpsertLayout>
-  </AdminContentPage>
+  />
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import FormUpsertLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import SupportRequestForm from '@/Components/SupportRequests/SupportRequestForm.vue';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type {

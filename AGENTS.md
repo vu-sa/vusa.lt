@@ -21,7 +21,7 @@ boxes, at working density. Every screen answers *what needs me?* before *where c
 2. **One catalog** (`AdminNavigationCatalog`) feeds every menu; the palette accelerates but never hides.
 3. **Seven page types** — Overview, Collection, Record, Form, Sheet form, Guided flow, Workbench; one canonical page per record.
 4. **Forms edit attributes; relations live on the record.** One create door: **+ Sukurti** → ActionWindow.
-5. **Budgets** — one brand fill per region; uppercase for display titles, eyebrows, tabs and button labels (the `ui/button` voice), sentence case everywhere else; status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/components-home.md`.
+5. **Budgets** — one brand fill per region; uppercase only for primary buttons, section titles, form labels, eyebrows and tabs (headlines and status tags where their component sets it) — every other button and tag is sentence case (`voice="sentence"`); status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/components-home.md`.
 6. **Phone and tablet are first-class** (390 · 820 · 1180 · 1440, 44px touch, nothing hover-only).
 7. **Speak like a colleague** — *tu*, verbs on buttons, one glossary. The benchmark is a rep finishing an emailed task on a phone in five minutes.
 

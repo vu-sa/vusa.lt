@@ -19,7 +19,6 @@ Patterns/      Generic, domain-free building blocks.
 <Entity>/      Duties/, Institutions/, Meetings/, Members/, Files/ …
   ↑            Compose Patterns + domain knowledge. One barrel index.ts per folder.
 Layouts/       Page shells: OverviewPage, CollectionPage, RecordPage, FormPage
-               (legacy: AdminContentPage, FormUpsertLayout)
   ↑
 Pages/Admin/   Compose only. No raw <Card>, no hand-rolled hero or grid markup.
 ```
@@ -79,8 +78,9 @@ Rules for anything added there:
 ## Buttons and controls (both surfaces)
 
 - `ui/button` is the one button. Variants are token-only (`brand`, `outline`, `default` ink,
-  `ghost`, `secondary`, `destructive`, `link`); the `voice` is bold uppercase by default.
-  `voice="sentence"` is the admin's sentence-case action button (Pradžia quick actions): at the default size it is 40px (44px on touch) — don't pass `size="lg"` or a height
+  `ghost`, `secondary`, `destructive`, `link`); the `voice` is bold uppercase by default, which in the admin
+  is only for primary actions (`.ai/rules/js-pages-admin.md`). `voice="sentence"` is the admin's sentence-case
+  button for everything else — outline, ghost, row actions, chips, Pradžia quick actions: at the default size it is 40px (44px on touch) — don't pass `size="lg"` or a height
   class. `voice="plain"` is for calendar cells and pagination numbers. Sizes: `lg` 48px for a page's primary,
   `default` 44px, `sm` 36px in toolbars and row actions, `icon*` for squares.
 - `ui/control` holds the bordered uppercase control both sites build filters from:
@@ -103,7 +103,7 @@ Rules for anything added there:
 | "Are you sure?" before ending, discarding or deleting | `ConfirmDialog` | `@/Components/Patterns` |
 | A status (reservation, vote, task, content…) | `StatusBadge` + the enum's map in `Constants/statuses.ts` | `@/Components/Patterns` |
 | An entity type's icon + category colour | `EntityTypeMark` / `getEntityTypeDefinition` | `@/Components/EntityTypeMark.vue`, `@/Constants/entityTypes` |
-| A settings screen with several independent saves | `AdminContentPage` + a `SectionCard` per block (no page type fits yet) | `@/Components/Layouts/AdminContentPage.vue` |
+| A settings screen with several independent saves | `OverviewPage` + a `SectionCard` per block | `@/Components/Layouts/OverviewPage.vue`, `@/Components/Patterns` |
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
@@ -183,8 +183,6 @@ Atšaukti ask before discarding. `FormSection` groups fields under a question he
 "Matoma vusa.lt" marker. `ConfirmDialog` is the one confirmation: name the result on the button
 ("Baigti kadenciją", "Ištrinti"), never a native `confirm()`.
 
-`Layouts/FormUpsertLayout` is `@deprecated`; new forms use `FormPage`.
-
 ## RecordPage
 
 `RecordPage` is the canonical shell for migrated records. It owns the identity/title band,
@@ -192,5 +190,4 @@ status and action placement, key facts, desktop tabs/mobile stacked sections, co
 navigation, and the final `activity` slot. Pass resolved URLs and permission-filtered actions;
 domain behavior stays in the page.
 
-`AdminContentPage` remains only for pages not yet migrated; don't add new consumers (see
-`.ai/rules/js-pages-admin.md` → migrate on touch). Collections: see [Tables/CLAUDE.md](Tables/CLAUDE.md).
+Collections: see [Tables/CLAUDE.md](Tables/CLAUDE.md).

@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
+import CollectionControlRow from '../CollectionControlRow.vue';
 import CollectionFilterBar from '../CollectionFilterBar.vue';
 import CollectionPrimaryCell from '../CollectionPrimaryCell.vue';
 import CollectionResults from '../CollectionResults.vue';
@@ -9,6 +10,18 @@ import CollectionViewToggle from '../CollectionViewToggle.vue';
 import { commonStubs } from '@/tests/stubs';
 
 describe('collection controls', () => {
+  it('fills the Filtrai button only while the filters show, and lets the count tell set filters', () => {
+    const toggleOf = (filtersOpen: boolean, activeFilterCount: number) => mount(CollectionControlRow, {
+      props: { query: '', placeholder: 'Ieškoti', hasFilters: true, filtersOpen, activeFilterCount },
+    }).get('[data-slot="collection-filters-toggle"]');
+
+    const closedWithFilters = toggleOf(false, 2);
+    expect(closedWithFilters.classes()).not.toContain('border-brand');
+    expect(closedWithFilters.text()).toContain('2');
+
+    expect(toggleOf(true, 0).classes()).toContain('border-brand');
+  });
+
   it('clamps a title to two lines when requested', () => {
     const wrapped = mount(CollectionPrimaryCell, {
       props: { title: 'A long page title', titleLines: 2 },

@@ -20,7 +20,7 @@ beforeEach(function (): void {
 
     $this->user = makeUser($this->tenant);
 
-    $this->resources = Resource::factory()->for($this->tenant)->count(3)->create();
+    $this->resources = Resource::factory()->for($this->tenant)->count(3)->create(['is_reservable' => true]);
 
     $this->admin = User::factory()->create();
 
@@ -64,10 +64,22 @@ describe('database collection API', function (): void {
             ]);
     });
 
-    test('returns 403 JSON to a member without reservation access', function (): void {
+    test('gives a member without the list permission only their own reservations', function (): void {
+        $own = Reservation::factory()->hasAttached($this->resources->first())->create();
+        $own->users()->attach($this->user->id);
+
         $this->actingAs($this->user)
             ->getJson(route('api.v1.admin.reservations.index'))
-            ->assertForbidden();
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $own->id);
+    });
+
+    test('keeps a member to their own reservations even when asking for the administered scope', function (): void {
+        $this->actingAs($this->user)
+            ->getJson(route('api.v1.admin.reservations.index', ['scope' => 'administered']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 0);
     });
 });
 
@@ -76,8 +88,18 @@ describe('auth: simple user', function (): void {
         asUser($this->user)->get(route('dashboard'));
     });
 
-    test('can\'t index reservations', function (): void {
-        asUser($this->user)->get(route('reservations.index'))->assertStatus(403);
+    test('opens the reservation list with only their own reservations', function (): void {
+        $own = Reservation::factory()->hasAttached($this->resources->first())->create();
+        $own->users()->attach($this->user->id);
+
+        asUser($this->user)->get(route('reservations.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Reservations/IndexReservation')
+                ->where('onlyOwn', true)
+                ->has('reservations.data', 1)
+                ->where('reservations.data.0.id', $own->id)
+            );
     });
 
     test('can access reservation create page', function (): void {
@@ -87,7 +109,7 @@ describe('auth: simple user', function (): void {
     test('can store reservation', function (): void {
         asUser($this->user)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/CreateReservation')
-            ->whereNot('resources', null)
+            ->has('defaultDateTimeRange')
         );
 
         $reservation = Reservation::factory()->make([
@@ -175,8 +197,15 @@ describe('auth: reservation manager', function (): void {
         asUser($this->reservationManager)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('can\'t index reservations', function (): void {
-        asUser($this->reservationManager)->get(route('reservations.index'))->assertStatus(403);
+    test('sees their own reservation in the list, and no one else\'s', function (): void {
+        Reservation::factory()->hasAttached($this->resources->first())->create();
+
+        asUser($this->reservationManager)->get(route('reservations.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('reservations.data', 1)
+                ->where('reservations.data.0.id', $this->reservation->id)
+            );
     });
 
     test('can access reservation create page', function (): void {
@@ -186,7 +215,7 @@ describe('auth: reservation manager', function (): void {
     test('can store reservation', function (): void {
         asUser($this->reservationManager)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/CreateReservation')
-            ->whereNot('resources', null)
+            ->has('defaultDateTimeRange')
         );
 
         $reservation = Reservation::factory()->make([
