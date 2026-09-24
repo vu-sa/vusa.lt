@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\IndexCalendarRequest;
 use App\Models\Calendar;
 use App\Services\TanstackTableService;
+use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
 
 class CalendarApiController extends ApiController
@@ -17,7 +18,8 @@ class CalendarApiController extends ApiController
     {
         $this->authorizeApi('viewAny', Calendar::class);
 
-        $events = BuildCalendarIndexQuery::execute($request, $this->tableService)->paginate($request->getPerPage());
+        $query = fn (IndexCalendarRequest $request) => BuildCalendarIndexQuery::execute($request, $this->tableService);
+        $events = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
             'items' => $events->getCollection()->map(fn (Calendar $event): array => $event->toFullArray())->values(),
@@ -25,6 +27,7 @@ class CalendarApiController extends ApiController
             'per_page' => $events->perPage(),
             'current_page' => $events->currentPage(),
             'last_page' => $events->lastPage(),
+            'facets' => CollectionFacetCounts::forRequest($request, ['event_type_id', 'is_draft', 'untyped'], $query),
         ]);
     }
 }

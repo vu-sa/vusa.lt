@@ -13,7 +13,6 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import SupportRequestForm from '@/Components/SupportRequests/SupportRequestForm.vue';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import type {
   SupportRequestRoleOption,
   SupportRequestTaxonomyItem,
@@ -48,8 +47,4 @@ const reportContext = computed<{ url?: string; viewport?: string; browser?: stri
   }
 });
 
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.createRouteBreadcrumb($t('Mano pranešimai'), 'mySupportRequests.index'),
-  BreadcrumbHelpers.createBreadcrumbItem($t('Naujas pranešimas')),
-]);
 </script>

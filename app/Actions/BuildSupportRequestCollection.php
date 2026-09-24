@@ -20,16 +20,7 @@ class BuildSupportRequestCollection
 
         $tab = $request->validated('tab', 'all');
         $allRequests = $this->visibleRequestsFor($user);
-        $tabRequests = $tab === 'mine'
-            ? (clone $allRequests)->where('created_by', $user->id)
-            : clone $allRequests;
-        $filters = $request->getFilters();
-        $search = $request->validated('search');
-        if (is_string($search) && $search !== '') {
-            $filters['search'] = $search;
-        }
-
-        $this->applyDashboardFilters($tabRequests, $filters, includeStatus: false);
+        [$tabRequests, $filters] = $this->tabRequests($request, $user);
 
         $statusCounts = collect(SupportRequestStatus::cases())
             ->mapWithKeys(fn (SupportRequestStatus $status): array => [$status->value => 0]);
@@ -78,6 +69,44 @@ class BuildSupportRequestCollection
                 'badgeVariant' => $status->badgeVariant(),
             ]),
         ];
+    }
+
+    /**
+     * The list as the page shows it — tab, search and every filter — before sorting and paging.
+     *
+     * @return Builder<SupportRequest>
+     */
+    public function query(IndexSupportRequestRequest $request): Builder
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User, 403);
+
+        [$query, $filters] = $this->tabRequests($request, $user);
+        $this->applyDashboardFilters($query, $filters, includeStatus: true);
+
+        return $query;
+    }
+
+    /**
+     * The visible requests of the chosen tab with every filter but status applied.
+     *
+     * @return array{0: Builder<SupportRequest>, 1: array<string, mixed>}
+     */
+    private function tabRequests(IndexSupportRequestRequest $request, User $user): array
+    {
+        $allRequests = $this->visibleRequestsFor($user);
+        $tabRequests = $request->validated('tab', 'all') === 'mine'
+            ? (clone $allRequests)->where('created_by', $user->id)
+            : clone $allRequests;
+        $filters = $request->getFilters();
+        $search = $request->validated('search');
+        if (is_string($search) && $search !== '') {
+            $filters['search'] = $search;
+        }
+
+        $this->applyDashboardFilters($tabRequests, $filters, includeStatus: false);
+
+        return [$tabRequests, $filters];
     }
 
     private function visibleRequestsFor(User $user): Builder
@@ -145,5 +174,4 @@ class BuildSupportRequestCollection
 
         $query->orderBy($column, is_array($sort) && ($sort['desc'] ?? true) === false ? 'asc' : 'desc');
     }
-
 }

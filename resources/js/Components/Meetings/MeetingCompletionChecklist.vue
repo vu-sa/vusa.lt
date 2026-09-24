@@ -1,61 +1,42 @@
 <template>
+  <!-- An empty agenda is already the status badge and the header's "Įklijuoti darbotvarkę". -->
   <section
-    v-if="actions.length"
+    v-if="itemActions.length"
     id="meeting-completion"
-    class="border border-status-attention-border bg-status-attention-surface p-4"
+    data-slot="meeting-completion"
+    class="flex flex-col gap-3 py-3 sm:flex-row sm:items-center"
     aria-labelledby="meeting-completion-title"
   >
-    <div class="flex items-start gap-3">
-      <TriangleAlert class="mt-0.5 size-5 shrink-0 text-status-attention" aria-hidden="true" />
-      <div class="min-w-0 flex-1">
-        <h2 id="meeting-completion-title" class="font-semibold text-foreground">
-          {{ $t('Papildyk posėdžio įrašą') }}
-        </h2>
-        <p class="mt-1 text-sm text-muted-foreground">
-          {{ $t('Užbaik šiuos veiksmus, kad posėdžio įrašas būtų pilnas.') }}
-        </p>
+    <p id="meeting-completion-title" class="flex items-center gap-2 text-sm font-medium text-foreground">
+      <CircleDashed class="size-4 shrink-0 text-status-attention" aria-hidden="true" />
+      {{ $t('meetings.completion.items_missing', { count: String(itemActions.length) }) }}
+    </p>
 
-        <div class="mt-4 divide-y divide-status-attention-border border-y border-status-attention-border">
-          <button
-            v-for="action in actions"
-            :key="actionKey(action)"
-            type="button"
-            class="u-touch flex w-full items-center gap-3 py-3 text-left text-sm font-medium text-foreground hover:text-primary"
-            @click="$emit('select', action)"
-          >
-            <span class="flex size-7 shrink-0 items-center justify-center border border-status-attention-border text-xs font-semibold text-status-attention">
-              {{ action.position ?? 1 }}
-            </span>
-            <span class="min-w-0 flex-1">
-              <span class="block">{{ actionTitle(action) }}</span>
-              <span v-if="action.title" class="block truncate text-xs font-normal text-muted-foreground">
-                {{ action.title }}
-              </span>
-            </span>
-            <ChevronRight class="size-4 shrink-0 text-muted-foreground" />
-          </button>
-        </div>
-      </div>
-    </div>
+    <ul class="flex flex-wrap gap-1.5" :aria-label="$t('meetings.completion.items_label')">
+      <li v-for="action in itemActions" :key="action.agenda_item_id">
+        <button
+          type="button"
+          class="flex size-8 items-center justify-center border border-status-attention-border text-xs font-semibold tabular-nums text-status-attention transition-colors hover:bg-status-attention-surface pointer-coarse:size-11"
+          :title="`${action.title} — ${missingFieldsLabel(action)}`"
+          :aria-label="`${action.position}. ${action.title} — ${missingFieldsLabel(action)}`"
+          @click="$emit('select', action)"
+        >
+          {{ action.position }}
+        </button>
+      </li>
+    </ul>
   </section>
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, TriangleAlert } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { CircleDashed } from 'lucide-vue-next';
 
-export type MeetingMissingAction
-  = | { type: 'agenda_missing' }
-    | { type: 'agenda_item_type_missing'; agenda_item_id: string; title: string; position: number }
-    | {
-      type: 'agenda_item_vote_missing';
-      agenda_item_id: string;
-      title: string;
-      position: number;
-      missing_fields: Array<'decision' | 'student_vote' | 'student_benefit'>;
-    };
+import { isAgendaItemAction, missingFieldsLabel, type MeetingMissingAction } from './meetingCompletion';
 
-defineProps<{
+export type { MeetingMissingAction } from './meetingCompletion';
+
+const props = defineProps<{
   actions: MeetingMissingAction[];
 }>();
 
@@ -63,15 +44,5 @@ defineEmits<{
   select: [action: MeetingMissingAction];
 }>();
 
-const actionKey = (action: MeetingMissingAction) => `${action.type}-${'agenda_item_id' in action ? action.agenda_item_id : 'meeting'}`;
-
-const actionTitle = (action: MeetingMissingAction): string => {
-  if (action.type === 'agenda_missing') {
-    return $t('Pridėti darbotvarkę');
-  }
-  if (action.type === 'agenda_item_type_missing') {
-    return $t('Nurodyti klausimo tipą');
-  }
-  return $t('Užfiksuoti balsavimo rezultatą');
-};
+const itemActions = computed(() => props.actions.filter(isAgendaItemAction));
 </script>

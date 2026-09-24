@@ -1,33 +1,45 @@
 <template>
-  <CardModal :show :title="modalTitle" @close="$emit('close')">
-    <Stepper v-if="!props.fileable" v-model="stepperStep" class="my-2 py-2">
-      <StepperItem :step="1">
-        <StepperTrigger>
-          <StepperIndicator>
-            <FileSearch class="h-4 w-4" />
-          </StepperIndicator>
-        </StepperTrigger>
-        <StepperTitle>{{ $t('Į ką kelsi failą?') }}</StepperTitle>
-        <StepperSeparator />
-      </StepperItem>
-      <StepperItem :step="2">
-        <StepperTrigger>
-          <StepperIndicator>2</StepperIndicator>
-        </StepperTrigger>
-        <StepperTitle>{{ $t('Failo įkėlimas') }}</StepperTitle>
-      </StepperItem>
-    </Stepper>
-    <FadeTransition>
-      <FileableForm v-if="current === 1" :show-alert @close:alert="showAlert = false"
-        @submit="handleFileableSubmit" />
-      <div v-else-if="current === 2">
-        <FileForm :fileable="fileForm.fileable" :loading @submit="handleFileSubmit" />
+  <Sheet :open="show" @update:open="(open) => { if (!open) $emit('close'); }">
+    <SheetContent
+      :side="isMobile ? 'bottom' : 'right'"
+      :class="['flex flex-col gap-0 p-0', isMobile ? 'h-[92dvh] max-h-[92dvh]' : 'w-full sm:max-w-xl']"
+    >
+      <SheetHeader class="border-b border-border px-6 py-4">
+        <SheetTitle class="text-xl font-semibold tracking-tight text-foreground">
+          {{ modalTitle }}
+        </SheetTitle>
+      </SheetHeader>
+      <div class="flex-1 overflow-y-auto px-6 py-5">
+        <Stepper v-if="!props.fileable" v-model="stepperStep" class="my-2 py-2">
+          <StepperItem :step="1">
+            <StepperTrigger>
+              <StepperIndicator>
+                <FileSearch class="h-4 w-4" />
+              </StepperIndicator>
+            </StepperTrigger>
+            <StepperTitle>{{ $t('Į ką kelsi failą?') }}</StepperTitle>
+            <StepperSeparator />
+          </StepperItem>
+          <StepperItem :step="2">
+            <StepperTrigger>
+              <StepperIndicator>2</StepperIndicator>
+            </StepperTrigger>
+            <StepperTitle>{{ $t('Failo įkėlimas') }}</StepperTitle>
+          </StepperItem>
+        </Stepper>
+        <FadeTransition>
+          <FileableForm v-if="current === 1" :show-alert @close:alert="showAlert = false"
+            @submit="handleFileableSubmit" />
+          <div v-else-if="current === 2">
+            <FileForm :fileable="fileForm.fileable" :loading @submit="handleFileSubmit" />
+          </div>
+        </FadeTransition>
+        <FadeTransition>
+          <ModalHelperButton v-if="!showAlert && current === 1" @click="showAlert = true" />
+        </FadeTransition>
       </div>
-    </FadeTransition>
-    <FadeTransition>
-      <ModalHelperButton v-if="!showAlert && current === 1" @click="showAlert = true" />
-    </FadeTransition>
-  </CardModal>
+    </SheetContent>
+  </Sheet>
 </template>
 
 <script setup lang="ts">
@@ -41,7 +53,8 @@ import FileForm, { type SharepointFileSubmitPayload } from './FileForm.vue';
 
 import FileableForm from '@/Components/AdminForms/Special/FileableForm.vue';
 import ModalHelperButton from '@/Components/Buttons/ModalHelperButton.vue';
-import CardModal from '@/Components/Dialogs/CardModal.vue';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
+import { useIsMobile } from '@/Composables/useIsMobile';
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
 import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperTitle, StepperTrigger } from '@/Components/ui/stepper';
 
@@ -51,6 +64,8 @@ const props = defineProps<{
   fileable?: FileableFormData;
   show: boolean;
 }>();
+
+const isMobile = useIsMobile();
 
 // Fileable type display names
 const typeDisplayNames: Record<string, string> = {

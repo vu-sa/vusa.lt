@@ -18,8 +18,8 @@
         <button
           type="button"
           :class="[
-            'rounded-md px-2 py-1 text-xs transition-colors',
-            showResolved ? 'text-muted-foreground hover:text-foreground' : 'bg-zinc-100 font-medium text-foreground dark:bg-zinc-800',
+            'px-2 py-1 text-xs transition-colors pointer-coarse:min-h-11',
+            showResolved ? 'text-muted-foreground hover:text-foreground' : 'bg-accent font-medium text-foreground',
           ]"
           @click="showResolved = !showResolved"
         >
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div :class="framed ? 'flex flex-col gap-4 rounded-xl border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 p-4 dark:border-zinc-800' : 'contents'">
+    <div :class="framed ? 'flex flex-col gap-4 border-y border-border py-4' : 'contents'">
       <!-- Root composer, attributed like every comment below it -->
       <div class="flex items-center gap-3">
         <UserAvatar v-if="currentUser" :user="currentUser" :size="32" class="shrink-0" />
@@ -45,7 +45,7 @@
               <DialogTrigger as-child>
                 <button
                   type="button"
-                  class="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-foreground dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                  class="inline-flex items-center gap-1 border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 >
                   <BarChart3 class="h-3.5 w-3.5" />
                   {{ $t('Apklausa') }}
@@ -72,19 +72,20 @@
 
       <!-- Loading skeleton -->
       <div v-if="loading" class="space-y-3">
-        <div v-for="n in 2" :key="n" class="animate-pulse rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+        <div v-for="n in 2" :key="n" class="animate-pulse border-b border-border py-3">
           <div class="flex gap-2.5">
-            <div class="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+            <!-- eslint-disable-next-line admin-redesign/no-legacy-utility -- avatars stay circular -->
+            <div class="size-8 rounded-full bg-muted" />
             <div class="flex-1 space-y-2">
-              <div class="h-3 w-24 rounded bg-zinc-200 dark:bg-zinc-700" />
-              <div class="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800" />
+              <div class="h-3 w-24 bg-muted" />
+              <div class="h-3 w-full bg-muted/60" />
             </div>
           </div>
         </div>
       </div>
 
       <!-- Threads -->
-      <div v-else class="space-y-3">
+      <div v-else class="divide-y divide-border">
         <CommentThread
           v-for="comment in visibleComments"
           :key="comment.id"

@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\Admin\FormApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
+use App\Http\Controllers\Api\Admin\MailQueueApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\MergeCandidateApiController;
 use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
@@ -32,10 +33,9 @@ use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
 use App\Http\Controllers\Api\Admin\ResourceCategoryApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
+use App\Http\Controllers\Api\Admin\SupportRequestCollectionApiController;
 use App\Http\Controllers\Api\Admin\TagApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
-use App\Http\Controllers\Api\Admin\MailQueueApiController;
-use App\Http\Controllers\Api\Admin\SupportRequestCollectionApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
 use App\Http\Controllers\Api\Admin\TrashApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
@@ -229,7 +229,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Institution subscription (follow/mute) management
         Route::prefix('institutions')->name('institutions.')->group(function (): void {
-            Route::get('followed', [InstitutionSubscriptionApiController::class, 'followed'])->name('followed');
+            Route::post('follows', [InstitutionSubscriptionApiController::class, 'followMany'])->name('follows.store');
+            Route::delete('follows', [InstitutionSubscriptionApiController::class, 'unfollowMany'])->name('follows.destroy');
             Route::get('{institution}/subscription-status', [InstitutionSubscriptionApiController::class, 'status'])->name('subscription.status');
             Route::post('{institution}/follow', [InstitutionSubscriptionApiController::class, 'follow'])->name('follow');
             Route::delete('{institution}/follow', [InstitutionSubscriptionApiController::class, 'unfollow'])->name('unfollow');

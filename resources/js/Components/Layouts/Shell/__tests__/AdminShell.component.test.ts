@@ -28,7 +28,6 @@ const stubs = {
   SystemAnnouncement: true,
   MobileMenuPanel: true,
   SectionTabs: { template: '<nav data-testid="section-tabs" v-bind="$attrs" />' },
-  ShellBreadcrumbs: { template: '<nav data-testid="breadcrumbs" />' },
   MobileBottomBar: { template: '<nav data-testid="bottom-bar" />' },
   ShellTopBar: { props: ['focused'], template: '<header data-testid="top-bar" :data-focused="focused" />' },
 };
@@ -54,6 +53,7 @@ describe('AdminShell focus mode', () => {
     const scrollArea = wrapper.find('[data-slot="admin-scroll-area"]');
 
     expect(scrollArea.classes()).toContain('overflow-auto');
+    expect(scrollArea.attributes('scroll-region')).toBeDefined();
     expect(scrollArea.find('.sticky').find('[data-testid="top-bar"]').exists()).toBe(true);
     expect(scrollArea.find('[data-slot="admin-page-measure"]').text()).toBe('Puslapis');
     expect(scrollArea.find('[data-testid="bottom-bar"]').exists()).toBe(false);
@@ -63,7 +63,6 @@ describe('AdminShell focus mode', () => {
     const { wrapper } = mountShell();
 
     expect(wrapper.find('[data-testid="section-tabs"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="breadcrumbs"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="bottom-bar"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="top-bar"]').attributes('data-focused')).toBe('false');
   });
@@ -75,7 +74,6 @@ describe('AdminShell focus mode', () => {
     await wrapper.vm.$nextTick();
 
     expect(wrapper.find('[data-testid="section-tabs"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="breadcrumbs"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="bottom-bar"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="top-bar"]').attributes('data-focused')).toBe('true');
 

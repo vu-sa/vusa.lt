@@ -22,7 +22,7 @@ Collection (`CollectionPage`; the v0 `/sistema/puslapiai` prototype and public `
 Record (`RecordPage`): identity band (type eyebrow, identity anchor — photo, logo, date plate or entity mark — title, status, ONE primary action, ⋯ for edit/merge/delete/copy link) → key-facts strip (3–6) → sections (tabs when ≥3) → Veikla (`RecordActivity`: comments + changes) last. Relations are managed here. Opened from a filtered list → ‹ 3 / 24 ›. Merge is a ⋯ / bulk action, never a page.
 
 ## Admin visual budget, distinctness and responsiveness
-- Budgets: uppercase is for the few things that anchor a screen — the primary button (a region's one brand-filled action, a page's `lg` primary), section titles, form field labels, eyebrows and workspace tabs; page headlines (`u-display`) and status tags only where their component already sets it. Every other button — outline, ghost, secondary, row actions, filter or preset chips — and every other tag or chip is sentence case: pass `voice="sentence"` to `ui/button` rather than restyling it per page. One brand-filled action per region. Minimum 12px text (11px eyebrows and table header labels).
+- Budgets: uppercase is for the few things that anchor a screen — the primary creation button (a region's one brand-filled action, a page's `lg` primary, dialog primary confirms), section titles, form field labels, eyebrows, workspace tabs, page headlines (`u-display`), and content publishing options (`contentStatuses` / `bannerStatuses`). Every other button — outline, ghost, secondary, row actions, filter or preset chips, and admin toolbar controls (Filtrai, Rikiuoti, Išvalyti visus) — and every other tag, chip, resource label (literal name), or status badge is sentence case: pass `voice="sentence"` to `ui/button` and `controlVariants` rather than restyling per page. One brand-filled action per region. Minimum 12px text (11px eyebrows and table header labels).
 - Structure comes from hairlines and whitespace. No shadows, gradients, `rounded-*` or cards in cards; a bordered box means "an object you act on". Titled panels are `SectionCard`, not raw `ui/card`. Empty sections collapse to one line.
 - Distinctness comes from identity (anchor + entity mark in every title band), a stated location (eyebrow "ViSAK · POSĖDŽIAI", tab title "X · Posėdis · VU SA") and the page-type silhouette, never from per-workspace colours. Editing sits on the tinted `secondary` canvas with a "REDAGUOJI" eyebrow, so viewing never looks like editing. At most one ink band per screen, only with meaning.
 - Design widths are 390 · 820 · 1180 · 1440, light + dark. Touch targets ≥44px via `pointer-coarse:`. Nothing hover-only. Dialogs become bottom sheets below `md`. Sticky save bar; filters go in a sheet on mobile.
@@ -41,3 +41,12 @@ Then add the path to `MIGRATED_ADMIN_PATHS` in `eslint.config.mjs`; the `admin-r
 
 ## Pradžia typography exception
 The general uppercase button and sentence-case section-heading defaults do not apply to Pradžia. For ShowAdminHome.vue and Components/Home/**, follow the scoped Pradžia home hierarchy rule: sentence-case quick-action buttons and icon-led tracked uppercase section headings.
+
+## Scroll regions and navigation scroll
+The admin shell uses an inner scroll container (`div[data-slot="admin-scroll-area"]`) with the `scroll-region` attribute. Inertia resets scroll to top (`(0, 0)`) by default on all page visits (`<Link>`, `router.visit`).
+- **Default off**: Never add `preserveScroll: true` to navigation links, tabs, breadcrumbs, or catalog items.
+- **When `preserveScroll: true` is allowed**:
+  1. Inline table mutations (restoring, toggling status, task completion).
+  2. Submitting drawer/sheet forms (`SheetForm`) over a base collection or record.
+  3. Granular sub-mutations on record pages (e.g. uploading an agenda document, generating a password).
+  4. Saving an edit form in place (`Edit*.vue` updates) to maintain the editor's position.

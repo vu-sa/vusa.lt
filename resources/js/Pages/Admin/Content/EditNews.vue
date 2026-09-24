@@ -14,9 +14,7 @@
 <script setup lang="ts">
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import NewsForm from '@/Components/AdminForms/NewsForm.vue';
-import { NewsIcon } from '@/Components/icons';
 
 const props = defineProps<{
   news: App.Entities.News;
@@ -25,9 +23,6 @@ const props = defineProps<{
 }>();
 
 // Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Naujienos', 'news.index', props.news.title, NewsIcon),
-);
 
 function submitForm(form: unknown): void {
   const inertiaForm = form as InertiaForm<App.Entities.News>;

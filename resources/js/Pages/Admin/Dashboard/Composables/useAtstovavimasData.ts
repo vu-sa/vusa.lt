@@ -31,7 +31,7 @@ export function useAtstovavimasData(
       );
   });
 
-  // All meetings from user's institutions (internal computed for upcomingMeetings and sortedMeetings)
+  // All meetings from user's institutions (internal computed for sortedMeetings)
   const meetings = computed<AtstovavimasMeeting[]>(() => {
     return institutions.value.flatMap((institution: AtstovavimasInstitution) => {
       return (institution?.meetings ?? []).map(meeting => ({
@@ -95,16 +95,6 @@ export function useAtstovavimasData(
     });
   });
 
-  // Upcoming meetings (including all of today's meetings) sorted by date
-  const upcomingMeetings = computed<AtstovavimasMeeting[]>(() => {
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-
-    return meetings.value
-      .filter(meeting => new Date(meeting.start_time) >= startOfToday)
-      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
-  });
-
   // Sort all meetings from newest to oldest for the table
   const sortedMeetings = computed<AtstovavimasMeeting[]>(() => {
     return [...meetings.value].sort((a, b) =>
@@ -131,7 +121,6 @@ export function useAtstovavimasData(
     institutions,
     allUserMeetings,
     userGaps,
-    upcomingMeetings,
     sortedMeetings,
     institutionsInsights,
   };

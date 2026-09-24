@@ -46,6 +46,7 @@
         <UpcomingMeetingsList
           v-if="hasAtstovavimas"
           :meetings="upcomingMeetings"
+          :total="upcomingMeetingsTotal"
           :href="route('dashboard.atstovavimas')"
         />
         <OverviewStatusList />
@@ -56,6 +57,10 @@
           <template #fallback>
             <CollectionSkeleton :rows="3" />
           </template>
+          <FollowedInstitutionsList
+            v-if="followedInstitutions?.total"
+            :followed="followedInstitutions"
+          />
           <RecentlyEditedList :records="recentlyEdited ?? []" />
           <SiteContentLists
             :events="upcomingCalendarEvents ?? []"
@@ -78,6 +83,7 @@ import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
 import QuickAccess from '@/Components/Home/QuickAccess.vue';
 import FirstLoginChecklist from '@/Components/Home/FirstLoginChecklist.vue';
+import FollowedInstitutionsList from '@/Components/Home/FollowedInstitutionsList.vue';
 import HomeHero from '@/Components/Home/HomeHero.vue';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';
@@ -86,6 +92,7 @@ import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
 import type {
   HomeAccessChange,
   HomeChecklist,
+  HomeFollowedInstitutions,
   HomeHeroImage,
   HomeMeeting,
   HomeNewsPreview,
@@ -119,6 +126,8 @@ const props = defineProps<{
   taskStats: TaskStats;
   upcomingTasks: HomeTask[];
   upcomingMeetings: HomeMeeting[];
+  upcomingMeetingsTotal: number;
+  followedInstitutions?: HomeFollowedInstitutions;
   heroImage: HomeHeroImage | null;
   institutionsNeedingAttention?: InstitutionActivityInsight[];
   upcomingCalendarEvents?: App.Entities.Calendar[];
@@ -129,7 +138,7 @@ const props = defineProps<{
   reservationDraft: ReservationDraftSummaryData | null;
 }>();
 
-const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited'];
+const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'followedInstitutions'];
 const visibleTasks = computed(() => props.upcomingTasks.slice(0, 3));
 
 const page = usePage<PageProps>();

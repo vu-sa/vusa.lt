@@ -12,11 +12,8 @@ import { router, type InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RelationshipForm from '@/Components/AdminForms/RelationshipForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{ relationship: App.Entities.Relationship }>();
-
-usePageBreadcrumbs(() => BreadcrumbHelpers.adminForm($t('Ryšiai'), 'relationships.index', props.relationship.name));
 
 function submit(form: unknown): void {
   const relationshipForm = form as InertiaForm<App.Entities.Relationship>;

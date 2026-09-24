@@ -1,154 +1,191 @@
 <template>
-  <SectionCard :title="$t('notifications.push_devices.title')">
-    <p class="mb-4 text-sm text-muted-foreground">
+  <FormPanel :title="$t('notifications.push_devices.title')" :icon="Smartphone" title-class="text-brand">
+    <p class="text-xs text-muted-foreground leading-relaxed">
       {{ $t('notifications.push_devices.description') }}
     </p>
 
-    <div class="space-y-4">
-      <!-- Current device status -->
-      <div class="flex items-center justify-between border border-border p-4">
-        <div class="flex items-center gap-3">
-          <component :is="currentDeviceIcon" class="size-5 text-muted-foreground" />
-          <div>
-            <p class="font-medium">
-              {{ $t('notifications.push_devices.this_device') }}
-            </p>
-            <p class="text-sm text-muted-foreground">
-              {{ currentDeviceStatus }}
-            </p>
-          </div>
+    <!-- Current device status -->
+    <div class="flex flex-col gap-2.5 border border-border p-3 bg-muted/10">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <component :is="currentDeviceIcon" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <p class="font-medium text-xs truncate">
+            {{ $t('notifications.push_devices.this_device') }}
+          </p>
         </div>
-        <div class="flex items-center gap-2">
-          <Button
-            v-if="!hasPushSubscription && canSubscribeToPush"
-            :disabled="isSubscribingToPush"
-            variant="outline"
-            size="sm"
-            @click="handleSubscribe"
-          >
-            <BellPlus v-if="!isSubscribingToPush" class="size-4" />
-            <Loader2 v-else class="size-4 animate-spin" />
-            {{ $t('notifications.channels.push_enable') }}
-          </Button>
-          <Button
-            v-else-if="hasPushSubscription"
-            :disabled="isUnsubscribingFromPush"
-            variant="outline"
-            size="sm"
-            @click="handleUnsubscribe"
-          >
-            <BellOff v-if="!isUnsubscribingFromPush" class="size-4" />
-            <Loader2 v-else class="size-4 animate-spin" />
-            {{ $t('notifications.channels.push_disable') }}
-          </Button>
-          <span v-else-if="pushPermission === 'denied'" class="text-sm text-destructive">
-            {{ $t('notifications.push_devices.blocked_in_browser') }}
-          </span>
-          <span v-else-if="!pushSupported" class="text-sm text-muted-foreground">
-            {{ $t('notifications.push_devices.not_supported') }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Device list header with refresh button -->
-      <div class="flex items-center justify-between">
-        <h4 class="font-medium text-sm">
-          {{ $t('notifications.push_devices.all_devices') }} ({{ devices.length }})
-        </h4>
-        <Button
-          variant="ghost"
-          size="sm"
-          :disabled="isLoading || isRefreshingSubscriptionStatus"
-          @click="refreshDevices"
+        <span
+          v-if="hasPushSubscription"
+          class="inline-flex items-center gap-1 text-xs font-medium text-[var(--status-success)]"
         >
-          <RefreshCw :class="['size-4', { 'animate-spin': isLoading || isRefreshingSubscriptionStatus }]" />
-          {{ $t('Atnaujinti') }}
-        </Button>
-      </div>
-
-      <!-- Devices list -->
-      <div v-if="isLoading" class="flex items-center justify-center py-8">
-        <Loader2 class="size-6 animate-spin text-muted-foreground" />
-      </div>
-
-      <div v-else-if="devices.length === 0" class="text-center py-8 text-muted-foreground">
-        <PhoneOff class="size-8 mx-auto mb-2 opacity-50" />
-        <p class="text-sm">
-          {{ $t('notifications.push_devices.no_devices') }}
-        </p>
-      </div>
-
-      <div v-else class="space-y-2">
-        <TransitionGroup name="device-list">
-          <div
-            v-for="device in devices"
-            :key="device.id"
-            class="flex items-center justify-between border p-3 group"
-            :class="device.isCurrentDevice ? 'border-brand bg-brand/5' : 'border-border'"
-          >
-            <div class="flex items-center gap-3">
-              <component :is="getDeviceIcon(device.device_name)" class="size-5 text-muted-foreground" />
-              <div>
-                <div class="flex items-center gap-2">
-                  <p class="font-medium text-sm">
-                    {{ device.device_name || $t('notifications.push_devices.unknown_device') }}
-                  </p>
-                  <span
-                    v-if="device.isCurrentDevice"
-                    class="text-[10px] font-medium px-1.5 py-0.5 border border-brand text-brand"
-                  >
-                    {{ $t('notifications.push_devices.current_badge') }}
-                  </span>
-                </div>
-                <p class="text-xs text-muted-foreground">
-                  {{ device.created_at ? $t('notifications.push_devices.added_at') + ': ' + formatDate(device.created_at) : '' }}
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-              :class="{ 'opacity-100': device.isCurrentDevice }"
-              :disabled="removingDeviceId === device.id"
-              @click="handleRemoveDevice(device)"
-            >
-              <Loader2 v-if="removingDeviceId === device.id" class="size-4 animate-spin" />
-              <Trash2 v-else class="size-4" />
-            </Button>
-          </div>
-        </TransitionGroup>
-      </div>
-
-      <!-- Test notification button -->
-      <div v-if="hasAnyPushSubscription" class="pt-4 border-t border-border">
-        <Button
-          :disabled="testHttp.processing"
-          variant="secondary"
-          size="sm"
-          @click="handleSendTestNotification"
+          <Check class="size-3" aria-hidden="true" />
+          {{ $t('notifications.push_devices.status_enabled') }}
+        </span>
+        <span
+          v-else-if="pushPermission === 'denied'"
+          class="text-xs font-medium text-destructive"
         >
-          <BellRing v-if="!testHttp.processing" class="size-4" />
-          <Loader2 v-else class="size-4 animate-spin" />
-          {{ $t('notifications.push_devices.send_test') }}
+          {{ $t('notifications.push_devices.status_blocked') }}
+        </span>
+        <span
+          v-else-if="!pushSupported"
+          class="text-xs text-muted-foreground"
+        >
+          {{ $t('notifications.push_devices.status_not_supported') }}
+        </span>
+        <span
+          v-else
+          class="text-xs text-muted-foreground"
+        >
+          {{ $t('notifications.push_devices.status_disabled') }}
+        </span>
+      </div>
+
+      <div v-if="canSubscribeToPush || hasPushSubscription">
+        <Button
+          v-if="!hasPushSubscription && canSubscribeToPush"
+          :disabled="isSubscribingToPush"
+          variant="outline"
+          size="sm"
+          class="w-full text-xs"
+          @click="handleSubscribe"
+        >
+          <BellPlus v-if="!isSubscribingToPush" class="size-3.5 mr-1.5" />
+          <Loader2 v-else class="size-3.5 mr-1.5 animate-spin" />
+          {{ $t('notifications.channels.push_enable') }}
         </Button>
-        <p v-if="testHttp.recentlySuccessful" class="text-sm text-status-success mt-2">
-          {{ $t('notifications.push_devices.test_sent') }}
-        </p>
+        <Button
+          v-else-if="hasPushSubscription"
+          :disabled="isUnsubscribingFromPush"
+          variant="outline"
+          size="sm"
+          class="w-full text-xs"
+          @click="handleUnsubscribe"
+        >
+          <BellOff v-if="!isUnsubscribingFromPush" class="size-3.5 mr-1.5" />
+          <Loader2 v-else class="size-3.5 mr-1.5 animate-spin" />
+          {{ $t('notifications.channels.push_disable') }}
+        </Button>
       </div>
     </div>
-  </SectionCard>
+
+    <!-- Device list header with refresh button -->
+    <div class="flex items-center justify-between pt-1">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        {{ $t('notifications.push_devices.all_devices') }} ({{ devices.length }})
+      </h3>
+      <Button
+        variant="ghost"
+        size="sm"
+        class="h-7 px-2 text-xs"
+        :disabled="isLoading || isRefreshingSubscriptionStatus"
+        @click="refreshDevices"
+      >
+        <RefreshCw :class="['size-3.5 mr-1', { 'animate-spin': isLoading || isRefreshingSubscriptionStatus }]" />
+        {{ $t('Atnaujinti') }}
+      </Button>
+    </div>
+
+    <!-- Devices list -->
+    <div v-if="isLoading" class="flex items-center justify-center py-6">
+      <Loader2 class="size-5 animate-spin text-muted-foreground" />
+    </div>
+
+    <div v-else-if="devices.length === 0" class="text-center py-6 text-muted-foreground border border-dashed border-border p-4">
+      <PhoneOff class="size-6 mx-auto mb-1.5 opacity-40" />
+      <p class="text-xs">
+        {{ $t('notifications.push_devices.no_devices') }}
+      </p>
+    </div>
+
+    <div v-else class="space-y-2">
+      <TransitionGroup name="device-list">
+        <div
+          v-for="device in devices"
+          :key="device.id"
+          :class="[
+            'flex items-center justify-between border p-2.5 transition-colors',
+            device.isCurrentDevice ? 'border-foreground/30 bg-muted/30' : 'border-border bg-background',
+          ]"
+        >
+          <div class="flex items-center gap-2.5 min-w-0">
+            <component :is="getDeviceIcon(device.device_name)" class="size-4 shrink-0 text-muted-foreground" />
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <p class="font-medium text-xs truncate">
+                  {{ device.device_name || $t('notifications.push_devices.unknown_device') }}
+                </p>
+                <span
+                  v-if="device.isCurrentDevice"
+                  class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 border border-border bg-card text-muted-foreground"
+                >
+                  {{ $t('notifications.push_devices.current_badge') }}
+                </span>
+              </div>
+              <p v-if="device.created_at" class="text-[11px] text-muted-foreground">
+                {{ formatDate(device.created_at) }}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            class="size-8 p-0 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 pointer-coarse:size-9"
+            :disabled="removingDeviceId === device.id"
+            :aria-label="$t('Ištrinti įrenginį')"
+            @click="handleRemoveDevice(device)"
+          >
+            <Loader2 v-if="removingDeviceId === device.id" class="size-3.5 animate-spin" />
+            <Trash2 v-else class="size-3.5" />
+          </Button>
+        </div>
+      </TransitionGroup>
+    </div>
+
+    <!-- Test notification button -->
+    <div v-if="hasAnyPushSubscription" class="pt-3 border-t border-border space-y-2">
+      <Button
+        :disabled="testHttp.processing"
+        variant="secondary"
+        size="sm"
+        class="w-full text-xs"
+        @click="handleSendTestNotification"
+      >
+        <BellRing v-if="!testHttp.processing" class="size-3.5 mr-1.5" />
+        <Loader2 v-else class="size-3.5 mr-1.5 animate-spin" />
+        {{ $t('notifications.push_devices.send_test') }}
+      </Button>
+      <p v-if="testHttp.recentlySuccessful" class="text-xs text-[var(--status-success)] flex items-center gap-1.5">
+        <Check class="size-3.5 shrink-0" />
+        {{ $t('notifications.push_devices.test_sent') }}
+      </p>
+    </div>
+  </FormPanel>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, h } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useHttp } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BellPlus, BellOff, BellRing, Globe, Laptop, Loader2, Monitor, PhoneOff, RefreshCw, Smartphone, Tablet, Trash2 } from 'lucide-vue-next';
+import {
+  BellPlus,
+  BellOff,
+  BellRing,
+  Check,
+  Globe,
+  Laptop,
+  Loader2,
+  Monitor,
+  PhoneOff,
+  RefreshCw,
+  Smartphone,
+  Tablet,
+  Trash2,
+} from 'lucide-vue-next';
 
 import { usePWA, type PushSubscriptionDevice } from '@/Composables/usePWA';
-import { SectionCard } from '@/Components/Patterns';
+import { FormPanel } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { formatDateTime } from '@/Utils/dateTime';
 import ISimpleIconsApple from '~icons/simple-icons/apple';
 import ISimpleIconsLinux from '~icons/simple-icons/linux';
 import ISimpleIconsWindows from '~icons/simple-icons/windows';
@@ -180,20 +217,6 @@ const currentDeviceIcon = computed(() => {
   return getDeviceIcon(null);
 });
 
-// Get current device status text
-const currentDeviceStatus = computed(() => {
-  if (!pushSupported.value) {
-    return $t('notifications.push_devices.status_not_supported');
-  }
-  if (pushPermission.value === 'denied') {
-    return $t('notifications.push_devices.status_blocked');
-  }
-  if (hasPushSubscription.value) {
-    return $t('notifications.push_devices.status_enabled');
-  }
-  return $t('notifications.push_devices.status_disabled');
-});
-
 // Get appropriate icon for device
 const getDeviceIcon = (deviceName: string | null) => {
   if (!deviceName) return Globe;
@@ -208,16 +231,9 @@ const getDeviceIcon = (deviceName: string | null) => {
   return Monitor;
 };
 
-// Format date
+// Format date with canonical helper
 const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('lt-LT', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatDateTime(dateString);
 };
 
 // Load devices on mount

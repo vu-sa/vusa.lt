@@ -12,8 +12,6 @@
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import TagForm from '@/Components/AdminForms/TagForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { TagIcon } from '@/Components/icons';
 
 interface NewsItem {
   id: number;
@@ -28,13 +26,6 @@ const props = defineProps<{
   postTag: App.Entities.Tag;
   news?: NewsItem[];
 }>();
-
-usePageBreadcrumbs(() => {
-  const name = typeof props.postTag.name === 'object' && props.postTag.name
-    ? (props.postTag.name.lt || props.postTag.name.en || 'Žyma')
-    : String(props.postTag.name ?? 'Žyma');
-  return BreadcrumbHelpers.adminForm('Žymos', 'tags.index', name, TagIcon);
-});
 
 function submitForm(form: unknown): void {
   const inertiaForm = form as InertiaForm<Record<string, unknown>>;

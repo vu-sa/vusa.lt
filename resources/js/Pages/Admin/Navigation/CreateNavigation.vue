@@ -21,8 +21,6 @@ import type { InertiaForm } from '@inertiajs/vue3';
 
 import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 import NavigationParentForm from '@/Components/AdminForms/NavigationParentForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { NavigationIcon } from '@/Components/icons';
 
 interface TopicOption {
   id: number;
@@ -38,10 +36,6 @@ const props = defineProps<{
   parentElements?: App.Entities.Navigation[];
   topicOptions?: TopicOption[];
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Navigacija', 'navigation.index', 'Naujas navigacijos elementas', NavigationIcon),
-);
 
 const navigationElement = {
   id: null,

@@ -1,7 +1,7 @@
 import { computed, type Component } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bell, Plus, Radio, Search, Settings, ShieldCheck } from 'lucide-vue-next';
+import { Bell, Plus, Radio, Settings, ShieldCheck } from 'lucide-vue-next';
 
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';
@@ -79,14 +79,6 @@ export function useCommandActions() {
     return [
       ...navigation,
       ...create,
-      {
-        id: 'nav-search',
-        label: $t('Paieška'),
-        keywords: ['search', 'paieska'],
-        icon: Search,
-        category: 'navigation',
-        action: () => router.visit(route('search.index')),
-      },
       {
         id: 'nav-profile',
         label: $t('Profilis'),

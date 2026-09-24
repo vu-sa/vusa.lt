@@ -44,8 +44,6 @@ import { Toaster } from '@/Components/ui/sonner';
 import { TooltipProvider } from '@/Components/ui/tooltip';
 import AdminShell from '@/Components/Layouts/Shell/AdminShell.vue';
 import StartFmDock from '@/Components/Layouts/Shell/StartFmDock.vue';
-import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
-import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
 import { createTourProvider } from '@/Composables/useTourProvider';
 import { createActionWindowProvider } from '@/Composables/useActionWindow';
 import { createShellFocusProvider } from '@/Composables/useShellFocus';
@@ -58,7 +56,6 @@ import KeyboardShortcutsDialog from '@/Components/KeyboardShortcutsDialog.vue';
 
 const props = defineProps<{
   title?: string;
-  breadcrumbs?: BreadcrumbItem[];
 }>();
 
 // PWA state
@@ -74,9 +71,6 @@ const unreadNotificationsCount = computed(() => {
 watch(unreadNotificationsCount, (count) => {
   setAppBadge(count);
 }, { immediate: true });
-
-// Initialize breadcrumb state for the entire admin application
-const breadcrumbState = createBreadcrumbState('admin');
 
 // Initialize tour provider - pages can register their tours via provideTour()
 const { clearTour } = createTourProvider();
@@ -129,9 +123,7 @@ useEventListener('keydown', (event: KeyboardEvent) => {
 });
 
 // Track every admin page the user visits. The page-specific title comes from
-// the breadcrumb trail (the last crumb), which every admin page registers —
-// document.title is unreliable (it's just the app name on pages without a
-// <Head>).
+// props.title or document.title set by the page shell (<Head>).
 const SITE_NAME = /^(mano\s+)?vu\s*sa$/i;
 
 // The admin landing page (/mano) is not worth keeping in history.
@@ -139,10 +131,8 @@ const EXCLUDED_ROUTES = new Set(['dashboard']);
 const ADMIN_HOME_PATH = /^\/mano\/?$/;
 
 function resolveVisitTitle(): string | undefined {
-  const crumbs = breadcrumbState.breadcrumbs.value;
-  const last = crumbs[crumbs.length - 1];
-  if (crumbs.length > 1 && last?.label && !SITE_NAME.test(last.label)) {
-    return last.label;
+  if (props.title && !SITE_NAME.test(props.title)) {
+    return props.title;
   }
 
   const docTitle = document.title.split(/\s[|–-]\s/)[0].trim();
@@ -192,30 +182,12 @@ const currentComponent = ref(usePage().component);
 // Use flush: 'sync' to ensure this runs immediately when the prop changes,
 // before the new page component's setup runs and registers its tour
 watch(() => usePage().component, (component, oldComponent) => {
-  // Clear breadcrumbs when on home page
-  if (component === 'Admin/ShowAdminHome') {
-    breadcrumbState.clear();
-  }
-
   // Only clear tour when actually navigating (not on initial load)
   if (oldComponent && oldComponent !== component) {
     clearTour();
   }
   currentComponent.value = component;
 }, { flush: 'sync' });
-
-// Handle breadcrumb initialization for new pages with prop-provided breadcrumbs
-watch(() => props.breadcrumbs, (newBreadcrumbs) => {
-  if (newBreadcrumbs?.length) {
-    breadcrumbState.set(newBreadcrumbs);
-  }
-}, { immediate: true });
-
-// Listen for navigation events - don't clear breadcrumbs to avoid flashing
-onMounted(() => {
-  // Note: We no longer clear breadcrumbs on navigation start to prevent flashing
-  // Individual pages will set their own breadcrumbs using usePageBreadcrumbs()
-});
 
 const mounted = ref(false);
 const online = useOnline();

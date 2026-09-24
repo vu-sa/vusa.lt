@@ -10,7 +10,7 @@
       <PopoverTrigger as-child>
         <button
           type="button"
-          :class="controlVariants({ size: 'sm', active: selectedCount(facet) > 0 })"
+          :class="controlVariants({ size: 'sm', active: selectedCount(facet) > 0, voice: 'sentence' })"
         >
           <span>{{ facet.label }}</span>
           <span v-if="selectedCount(facet) > 0" :class="controlCountClass">
@@ -27,7 +27,7 @@
       v-if="trash"
       type="button"
       :aria-pressed="trash.active"
-      :class="controlVariants({ size: 'sm', active: trash.active })"
+      :class="controlVariants({ size: 'sm', active: trash.active, voice: 'sentence' })"
       @click="emit('toggleTrash')"
     >
       <Trash2 class="size-4" aria-hidden="true" />
@@ -56,7 +56,7 @@
           v-if="trash"
           type="button"
           :aria-pressed="trash.active"
-          :class="controlVariants({ active: trash.active })"
+          :class="controlVariants({ active: trash.active, voice: 'sentence' })"
           @click="emit('toggleTrash')"
         >
           <Trash2 class="size-4" aria-hidden="true" />

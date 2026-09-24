@@ -1,16 +1,13 @@
 <template>
-  <component
-    :is="compact ? 'div' : Card"
+  <div
     data-tour="tenant-scope"
-    :class="compact ? 'inline-flex' : 'border-primary/20 bg-primary/[0.02]'"
+    data-slot="tenant-scope-selector"
+    :class="compact ? 'inline-flex' : 'border-y border-border py-4'"
   >
-    <component
-      :is="compact ? 'div' : CardContent"
-      :class="compact ? 'inline-flex' : 'flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between'"
-    >
+    <div :class="compact ? 'inline-flex' : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'">
       <div v-if="!compact" class="flex items-start gap-3">
-        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <Building2 class="h-4 w-4" />
+        <div class="flex size-9 shrink-0 items-center justify-center border border-border text-brand">
+          <Building2 class="size-4" />
         </div>
         <div class="space-y-1">
           <h2 class="font-semibold">
@@ -26,9 +23,8 @@
         <DropdownMenuTrigger as-child>
           <Button
             variant="outline"
-            :class="[
-              'h-11 w-full justify-between gap-3 border-foreground/40 px-4 font-semibold hover:border-foreground sm:w-auto sm:min-w-72',
-            ]"
+            voice="sentence"
+            class="h-11 w-full justify-between gap-3 border-foreground/40 px-4 font-semibold hover:border-foreground sm:w-auto sm:min-w-72"
             data-testid="tenant-scope-trigger"
             @click="$emit('engage')"
           >
@@ -47,7 +43,8 @@
               <Button
                 size="xs"
                 variant="ghost"
-                class="h-6 px-2 text-xs"
+                voice="sentence"
+                class="pointer-coarse:h-11"
                 :disabled="selectedTenants.length === tenants.length"
                 @click.stop="selectAllTenants"
               >
@@ -56,7 +53,8 @@
               <Button
                 size="xs"
                 variant="ghost"
-                class="h-6 px-2 text-xs"
+                voice="sentence"
+                class="pointer-coarse:h-11"
                 :disabled="selectedTenants.length <= 1"
                 :title="$t('visak.tenant_scope.keep_one_hint')"
                 @click.stop="keepOneTenant"
@@ -80,8 +78,8 @@
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
-    </component>
-  </component>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -92,7 +90,6 @@ import { Building2, ChevronDown } from 'lucide-vue-next';
 import type { AtstovavimasTenant } from '../types';
 
 import { Button } from '@/Components/ui/button';
-import { Card, CardContent } from '@/Components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

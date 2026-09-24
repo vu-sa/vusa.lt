@@ -41,9 +41,8 @@ describe('MobileMenuPanel', () => {
 
     expect(workspaces).toHaveLength(3);
     expect(workspaces.map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['false', 'true', 'false']);
-    expect(wrapper.text()).not.toContain('shell.sections.uzduotys');
-    expect(wrapper.text()).toContain('shell.sections.posedziai');
-    expect(wrapper.text()).not.toContain('shell.sections.rezervacijos');
+    expect(workspaces.map(workspace => workspace.find('ul').isVisible())).toEqual([false, true, false]);
+    expect(workspaces[1].find('button').attributes('aria-controls')).toBe(workspaces[1].find('ul').attributes('id'));
   });
 
   it('toggles sections and keeps at most one workspace open', async () => {
@@ -51,12 +50,11 @@ describe('MobileMenuPanel', () => {
     const workspaces = wrapper.findAll('[data-slot="mobile-menu-workspace"]');
 
     await workspaces[0].find('button').trigger('click');
-    expect(workspaces.map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['true', 'false', 'false']);
-    expect(wrapper.text()).toContain('shell.sections.uzduotys');
-    expect(wrapper.text()).not.toContain('shell.sections.posedziai');
+    expect(wrapper.findAll('[data-slot="mobile-menu-workspace"]').map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['true', 'false', 'false']);
+    expect(wrapper.findAll('[data-slot="mobile-menu-workspace"]').map(workspace => workspace.find('ul').isVisible())).toEqual([true, false, false]);
 
     await workspaces[0].find('button').trigger('click');
-    expect(workspaces.map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['false', 'false', 'false']);
+    expect(wrapper.findAll('[data-slot="mobile-menu-workspace"]').map(workspace => workspace.find('button').attributes('aria-expanded'))).toEqual(['false', 'false', 'false']);
   });
 
   it('reopens on the active workspace after closing', async () => {

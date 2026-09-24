@@ -48,7 +48,7 @@
         </div>
 
         <div class="flex justify-end gap-2">
-          <Button variant="ghost" class="pointer-coarse:h-11" @click="emit('update:open', false)">
+          <Button variant="ghost" voice="sentence" class="pointer-coarse:h-11" @click="emit('update:open', false)">
             {{ $t('reservations.actions.cancel') }}
           </Button>
           <Button

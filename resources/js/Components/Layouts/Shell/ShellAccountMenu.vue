@@ -4,6 +4,7 @@
       <Button
         variant="ghost"
         voice="plain"
+        data-slot="account-menu-trigger"
         class="u-touch h-8 gap-2 border-l border-border pl-3 pr-2.5 transition-colors hover:bg-secondary focus-visible:bg-secondary"
         :class="{ 'bg-secondary': isOpen }"
         :aria-label="$t('shell.chrome.account')"
@@ -61,7 +62,7 @@
       <!-- Tools & Preferences -->
       <div class="p-1">
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
+          <DropdownMenuSubTrigger data-slot="appearance-settings-trigger" class="gap-3 px-3.5 py-2.5 rounded-none cursor-pointer text-sm font-medium">
             <Palette class="size-4 shrink-0" />
             <span>{{ $t('shell.account.appearance') }}</span>
           </DropdownMenuSubTrigger>
@@ -75,12 +76,10 @@
               <Languages class="size-4 shrink-0" />
               <span>{{ $t('shell.account.language', { language: page.props.app?.locale === 'en' ? 'Lietuvių' : 'English' }) }}</span>
             </DropdownMenuItem>
-            <div class="flex items-center justify-between border-t border-border/60 px-3.5 py-2 text-sm text-foreground">
-              <span class="text-xs text-muted-foreground">
-                {{ $t('accessibility.menu_title') }}
-              </span>
-              <AccessibilityMenu class="size-7" />
-            </div>
+            <DropdownMenuItem data-slot="accessibility-settings-open" class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium" @select="openAccessibilitySettings">
+              <IFluentAccessibility24Regular class="size-4 shrink-0" />
+              <span>{{ $t('accessibility.menu_title') }}</span>
+            </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
 
@@ -177,6 +176,13 @@
       </div>
     </DropdownMenuContent>
   </DropdownMenu>
+
+  <Dialog v-model:open="accessibilityOpen">
+    <DialogContent class="w-80 gap-0 p-0" data-slot="admin-accessibility-dialog">
+      <DialogTitle class="sr-only">{{ $t('accessibility.menu_title') }}</DialogTitle>
+      <AccessibilitySettings />
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -205,10 +211,12 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';
 import ISimpleIconsGithub from '~icons/simple-icons/github';
 import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -224,13 +232,19 @@ import { useLogout } from '@/Composables/useLogout';
 import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
 import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
-import AccessibilityMenu from '@/Components/Public/Base/AccessibilityMenu.vue';
+import AccessibilitySettings from '@/Components/Public/Base/AccessibilitySettings.vue';
 
 const page = usePage<PageProps>();
 const user = computed(() => page.props.auth?.user);
 const initials = computed(() => (user.value?.name ?? '').split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase());
 
 const isOpen = ref(false);
+const accessibilityOpen = ref(false);
+
+function openAccessibilitySettings(): void {
+  isOpen.value = false;
+  accessibilityOpen.value = true;
+}
 
 const { logout, logoutMicrosoft } = useLogout();
 const { hasTour, startTour } = useTour();

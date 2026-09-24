@@ -1,24 +1,22 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    :history-subject="{ type: 'institution', id: institution.id }"
     :title="institution.name"
     :entity-type="ModelEnum.INSTITUTION"
-    :status="activityBadge"
     :facts="recordFacts"
     :sections="tabs"
     :primary-action
     :overflow-actions
+    actions-beside-title
     @action="handleRecordAction"
   >
-    <template #subtitle>
-      <div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <span v-if="primaryType">{{ primaryType }}</span>
-        <InstitutionScopeBadge v-if="institution.governance_scope" :scope="institution.governance_scope" />
-        <span v-if="institution.has_public_meetings" class="inline-flex items-center gap-1">
-          <Globe class="size-3.5" aria-hidden="true" />
-          {{ $t('Vieši posėdžiai') }}
-        </span>
-      </div>
+    <template #fact-members>
+      <UsersFactList :users="overview.current_users" />
+    </template>
+
+    <template #fact-managers>
+      <UsersFactList :users="institution.managers ?? []" />
     </template>
 
     <template #overview>
@@ -26,8 +24,6 @@
         :institution
         :overview
         @navigate-tab="currentSection = $event"
-        @schedule-meeting="openMeetingWindow"
-        @report-activity="openCheckInModal"
         @view-meeting="(meeting) => router.visit(route('meetings.show', meeting.id))"
       />
     </template>
@@ -69,7 +65,7 @@
           :title="$t('Nėra susitikimų')"
           :description="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
           :icon="CalendarIcon"
-          :action-label="canScheduleMeeting ? $t('Suplanuoti susitikimą') : undefined"
+          :action-label="can.recordMeeting ? $t('Suplanuoti susitikimą') : undefined"
           @action="openMeetingWindow"
         />
       </Deferred>
@@ -169,12 +165,7 @@
     </template>
 
     <template #activity>
-      <RecordActivity
-        subject-type="institution"
-        :subject-id="institution.id"
-        commentable-type="institution"
-        :commentable-id="institution.id"
-      />
+      <RecordActivity commentable-type="institution" :commentable-id="institution.id" />
     </template>
   </RecordPage>
 
@@ -229,23 +220,21 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
-  Globe,
 } from 'lucide-vue-next';
 
 import { CadenceSection } from '@/Components/Cadences';
-import { InstitutionIconFilled } from '@/Components/icons';
 import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutiesSection.vue';
 import InstitutionMeetingsList from '@/Components/Institutions/InstitutionMeetingsList.vue';
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
-import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
+import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { SecretariesSection, type SecretaryRoster, type SecretaryUser } from '@/Components/Institutions';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
+import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { useShowPageData } from '@/Composables/useShowPageData';
@@ -256,8 +245,10 @@ import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vu
 import { AssignDutyUserSheet } from '@/Features/Admin/Occupancy';
 import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import { useInstitutionSubscription } from '@/Pages/Admin/Dashboard/Composables/useInstitutionSubscription';
-import { InstitutionActivityStatus, InstitutionScope, ModelEnum } from '@/Types/enums';
+import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
+import type { InstitutionActivityStatus } from '@/Types/enums';
+import { formatDate } from '@/Utils/dateTime';
 import type {
   InstitutionOverviewData,
   InstitutionPageData,
@@ -272,7 +263,7 @@ import type { DutyWithUsers, UserWithPivot } from '@/Components/AdminForms/DutyC
 const props = defineProps<{
   institution: InstitutionPageData & { tenant?: { id: number; shortname: string } | null };
   overview: InstitutionOverviewData;
-  can: { update: boolean; delete: boolean };
+  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean };
   duties?: InstitutionPageDuty[];
   meetings?: InstitutionPageMeeting[];
   tasks?: InstitutionPageTask[];
@@ -326,18 +317,38 @@ const primaryType = computed(() => {
   return typeof type?.title === 'string' ? type.title : null;
 });
 
-/** The normal, healthy state paints no badge. */
-const activityBadge = computed<StatusPresentation | undefined>(() => {
-  const status = props.overview.activity_status.status as InstitutionActivityStatus;
-
-  return status === InstitutionActivityStatus.Healthy ? undefined : institutionActivityStatuses[status];
-});
+const activityStatus = computed<StatusPresentation>(() =>
+  institutionActivityStatuses[props.overview.activity_status.status as InstitutionActivityStatus]);
 
 const filledPositions = computed(() => props.overview.current_users.length);
 const totalPositions = computed(() => props.overview.duties.reduce((sum, duty) => sum + Number(duty.places_to_occupy ?? 0), 0));
 
 const recordFacts = computed<RecordFact[]>(() => {
-  const facts: RecordFact[] = [];
+  // The meeting status leads, toned in its colour, with what it rests on — the same line the
+  // action window's institution picker shows.
+  const facts: RecordFact[] = [{
+    key: 'status',
+    label: $t('visak.institution_summary.status'),
+    status: activityStatus.value,
+    detail: describeInstitutionActivity(props.overview.activity_status, {
+      day: value => formatDate(value, { format: 'short' }),
+      fullDay: value => formatDate(value, { format: 'full' }),
+    }),
+  }];
+
+  const scope = props.institution.governance_scope;
+  const isVusa = scope === InstitutionScope.Vusa;
+  facts.push({
+    key: 'type',
+    label: scope ? $t(`forms.options.governance_scope_${scope}`) : $t('Institucijos tipas'),
+    value: primaryType.value ?? '—',
+    surfaceClass: scope
+      ? (isVusa ? 'bg-brand/5' : 'bg-[#78003F]/10 dark:bg-[#78003F]/25')
+      : undefined,
+    labelClass: scope
+      ? (isVusa ? 'text-brand' : 'text-[#78003F] dark:text-[#d99fbd]')
+      : undefined,
+  });
 
   if (props.institution.tenant?.shortname) {
     facts.push({ key: 'tenant', label: $t('Padalinys'), value: props.institution.tenant.shortname });
@@ -345,20 +356,20 @@ const recordFacts = computed<RecordFact[]>(() => {
 
   facts.push({
     key: 'members',
-    label: $t('Nariai'),
-    value: totalPositions.value > 0 ? `${filledPositions.value} / ${totalPositions.value}` : String(filledPositions.value),
+    // The fill rate rides in the label, so the value can be the people themselves.
+    label: totalPositions.value > 0
+      ? `${$t('Nariai')} · ${filledPositions.value} / ${totalPositions.value}`
+      : $t('Nariai'),
   });
 
-  if (props.institution.meeting_periodicity_days) {
-    facts.push({
-      key: 'periodicity',
-      label: $t('Susitikimų periodiškumas'),
-      value: `${props.institution.meeting_periodicity_days} ${$t('d.')}`,
-    });
-  }
+  facts.push({
+    key: 'visibility',
+    label: $t('Posėdžių viešumas'),
+    value: props.institution.has_public_meetings ? $t('Vieši posėdžiai') : $t('Nevieši posėdžiai'),
+  });
 
   if (props.institution.managers?.length) {
-    facts.push({ key: 'managers', label: $t('Koordinatoriai'), value: props.institution.managers.map(manager => manager.name).join(', ') });
+    facts.push({ key: 'managers', label: $t('Koordinatoriai') });
   }
 
   return facts;
@@ -367,8 +378,6 @@ const recordFacts = computed<RecordFact[]>(() => {
 // --- Permissions ------------------------------------------------------------------------------
 
 const permissions = computed(() => usePage().props.auth?.can as Record<string, boolean> | undefined);
-const canScheduleMeeting = computed(() => permissions.value?.['meetings.create.padalinys'] ?? false);
-const canAddCheckIn = computed(() => permissions.value?.['institution_check_ins.create.padalinys'] ?? false);
 const canDeleteMeetings = computed(() => permissions.value?.['meetings.delete.padalinys'] ?? false);
 
 // --- Subscription (Sekti / Nutildyti) ---------------------------------------------------------
@@ -408,7 +417,9 @@ const toggleMute = async () => {
 
 // One primary action; everything else lives in ⋯ (.ai/rules/js-pages-admin.md).
 const primaryAction = computed<ActionDescriptor | undefined>(() =>
-  canScheduleMeeting.value ? { key: 'meeting', label: $t('Fiksuoti posėdį'), icon: CalendarIcon } : undefined);
+  props.can.recordMeeting || props.can.reportActivity
+    ? { key: 'activity', label: $t('Fiksuoti veiklą'), icon: CalendarIcon }
+    : undefined);
 
 /** By id, so it resolves whatever the institution's alias is (same as the old form's status link). */
 const publicUrl = computed(() => route('contacts.institution', {
@@ -424,7 +435,7 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
     actions.push({ key: 'edit', label: $t('Redaguoti instituciją'), icon: Edit3 });
   }
 
-  if (canAddCheckIn.value) {
+  if (props.can.reportActivity) {
     actions.push({ key: 'check-in', label: $t('Pridėti pažymą'), icon: Clock });
   }
 
@@ -448,8 +459,8 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
 
 const handleRecordAction = (key: string) => {
   switch (key) {
-    case 'meeting':
-      openMeetingWindow();
+    case 'activity':
+      openActivityWindow();
       break;
     case 'edit':
       router.visit(route('institutions.edit', props.institution.id));
@@ -475,6 +486,15 @@ const actionWindow = useActionWindow();
 
 const openMeetingWindow = () => actionWindow.open({
   flow: 'meeting.create',
+  institution: {
+    id: props.institution.id,
+    name: props.institution.name,
+    isInternal: props.institution.governance_scope === InstitutionScope.Vusa,
+  },
+});
+
+const openActivityWindow = () => actionWindow.open({
+  flow: 'institution.report',
   institution: {
     id: props.institution.id,
     name: props.institution.name,
@@ -509,14 +529,7 @@ const closeTaskDetail = () => {
 // A periodicity task is always about this institution: record a meeting, or say there was none.
 const reportFromDetail = () => {
   closeTaskDetail();
-  actionWindow.open({
-    flow: 'institution.report',
-    institution: {
-      id: props.institution.id,
-      name: props.institution.name,
-      isInternal: props.institution.governance_scope === InstitutionScope.Vusa,
-    },
-  });
+  openActivityWindow();
 };
 
 // --- Meetings tab -----------------------------------------------------------------------------
@@ -567,16 +580,5 @@ const openTermSheet = (duty: DutyWithUsers, user: UserWithPivot) => {
 // --- Spotlight (secretaries moved here from the form) -----------------------------------------
 
 const secretariesSpotlight = useFeatureSpotlight('institution-secretaries-v1');
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminShow(
-    'Institucijos',
-    'institutions.index',
-    {},
-    props.institution.name,
-    InstitutionIconFilled,
-    InstitutionIconFilled,
-  ),
-);
 
 </script>

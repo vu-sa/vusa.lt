@@ -136,7 +136,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useDateLocale } from '@/Composables/useDateLocale';
 
 interface QueuedItem {
@@ -215,7 +214,4 @@ const clearRecipient = (recipient: Recipient) =>
 
 const clearAll = () => submit(route('mailQueue.destroyAll'), 'all');
 
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm($t('Sistemos būsena'), 'systemStatus', $t('Laiškų eilė')),
-);
 </script>

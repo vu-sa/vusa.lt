@@ -135,3 +135,61 @@ describe('useDatabaseCollectionSource without a first page', () => {
     expect(lastUrl(fetchMock).searchParams.get('showDeleted')).toBe('true');
   });
 });
+
+describe('useDatabaseCollectionSource facet counts', () => {
+  beforeEach(() => window.history.replaceState({}, '', '/mano/reservations'));
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('shows no count until the filters ask for one', () => {
+    vi.stubGlobal('fetch', respond());
+    const source = makeSource();
+
+    expect(source.facets.value[1].values.map(value => value.count)).toEqual([undefined, undefined]);
+  });
+
+  it('asks for every declared value once, then keeps counts fresh with each new first page', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { items: [], total: 0, per_page: 1, current_page: 1, last_page: 1, facets: { state: { created: 4, lent: 1 } } },
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const source = makeSource();
+
+    source.loadFacets?.();
+    await vi.waitFor(() => expect(source.facets.value[1].values.map(value => value.count)).toEqual([4, 1]));
+
+    const url = lastUrl(fetchMock);
+    expect(url.searchParams.get('include_facets')).toBe('1');
+    expect(JSON.parse(url.searchParams.get('facet_values') ?? '{}')).toEqual({ scope: ['mine', 'administered'], state: ['created', 'lent'] });
+    expect(JSON.parse(url.searchParams.get('facet_single') ?? '[]')).toEqual(['scope']);
+
+    source.toggleFilter('state', 'lent');
+    // The list request, then a separate counting one.
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    expect(lastUrl(fetchMock).searchParams.get('include_facets')).toBe('1');
+  });
+
+  it('restores the pages the URL says were loaded', async () => {
+    window.history.replaceState({}, '', '/mano/reservations?pages=3');
+    const fetchMock = vi.fn().mockImplementation(async (url: URL) => ({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { items: [{ id: url.searchParams.get('page') }], total: 3, per_page: 1, current_page: Number(url.searchParams.get('page')), last_page: 3 },
+      }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const source = useDatabaseCollectionSource<{ id: string }>({
+      endpoint: '/api/v1/admin/reservations',
+      initial: { items: [{ id: '1' }], total: 3, perPage: 1, currentPage: 1, lastPage: 3 },
+      sortOptions: [],
+      defaultSort: 'start_time:desc',
+    });
+
+    await vi.waitFor(() => expect(source.items.value.map(item => item.id)).toEqual(['1', '2', '3']));
+  });
+});

@@ -8,7 +8,7 @@ import { cva } from 'class-variance-authority';
 export const controlVariants = cva(
   [
     'inline-flex shrink-0 items-center justify-center gap-2 border',
-    'text-xs font-bold uppercase tracking-wide transition-colors',
+    'text-xs font-bold transition-colors',
     'outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
     'disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0',
   ],
@@ -18,6 +18,10 @@ export const controlVariants = cva(
         sm: 'h-8 px-3 pointer-coarse:min-h-11',
         default: 'h-11 px-3 sm:px-4',
       },
+      voice: {
+        brand: 'uppercase tracking-wide',
+        sentence: 'normal-case tracking-normal',
+      },
       active: {
         true: 'border-brand bg-brand/5 text-brand hover:bg-brand/10',
         false: 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
@@ -25,6 +29,7 @@ export const controlVariants = cva(
     },
     defaultVariants: {
       size: 'default',
+      voice: 'brand',
       active: false,
     },
   },

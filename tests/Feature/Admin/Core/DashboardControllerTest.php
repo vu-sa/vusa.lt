@@ -50,12 +50,14 @@ describe('dashboard access', function (): void {
                 ->missing('institutionsNeedingAttention')
                 ->missing('upcomingCalendarEvents')
                 ->missing('latestNews')
+                ->missing('followedInstitutions')
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
                     ->has('institutionsNeedingAttention')
                     ->has('upcomingCalendarEvents')
                     ->has('latestNews')
                     ->has('recentlyEdited')
                     ->has('coordinator')
+                    ->has('followedInstitutions')
                 )
             );
     });
@@ -109,6 +111,41 @@ describe('dashboard data structure', function (): void {
                 ->has('upcomingTasks')
                 ->has('upcomingMeetings')
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('institutionsNeedingAttention'))
+            );
+    });
+});
+
+describe('followed institutions', function (): void {
+    test('upcoming meetings include followed institutions, marked as followed', function (): void {
+        $followed = Institution::factory()->for($this->tenant)->create();
+        $ownInstitutionId = $this->user->current_duties->first()->institution_id;
+
+        Meeting::factory()->hasAttached($followed)->create(['start_time' => now()->addDays(2)]);
+        Meeting::factory()->hasAttached(Institution::find($ownInstitutionId))->create(['start_time' => now()->addDay()]);
+        Meeting::factory()->hasAttached(Institution::factory()->for($this->tenant))->create(['start_time' => now()->addDays(3)]);
+        $this->user->followedInstitutions()->attach($followed);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingMeetingsTotal', 2)
+                ->where('upcomingMeetings.0.is_followed', false)
+                ->where('upcomingMeetings.1.is_followed', true)
+                ->where('upcomingMeetings.1.institution_id', $followed->id)
+            );
+    });
+
+    test('the followed list is capped but counts every follow', function (): void {
+        $institutions = Institution::factory()->for($this->tenant)->count(7)->create();
+        $this->user->followedInstitutions()->attach($institutions);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('followedInstitutions.items', 5)
+                    ->where('followedInstitutions.total', 7)
+                )
             );
     });
 });

@@ -15,19 +15,14 @@ class GetInstitutionCoordinator
      */
     public static function execute(Institution $institution, ?User $except = null): ?array
     {
-        $manager = GetInstitutionManagers::execute($institution)
-            ->first(fn (User $candidate): bool => $candidate->id !== $except?->id);
+        $coordinator = GetInstitutionCoordinators::execute([$institution], $except)[0] ?? null;
 
-        if ($manager === null) {
+        if ($coordinator === null) {
             return null;
         }
 
-        return [
-            'id' => (string) $manager->id,
-            'name' => $manager->name,
-            'email' => $manager->email,
-            'profile_photo_path' => $manager->profile_photo_path,
-            'duty' => $manager->loadMissing('current_duties')->current_duties->first()?->name,
-        ];
+        unset($coordinator['institutions']);
+
+        return $coordinator;
     }
 }

@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    :history-subject="{ type: 'duty', id: duty.id }"
     :title="dutyTitle"
     :entity-type="ModelEnum.DUTY"
     :status="dutyStatus"
@@ -197,12 +198,7 @@
     </template>
 
     <template #activity>
-      <RecordActivity
-        subject-type="duty"
-        :subject-id="duty.id"
-        commentable-type="duty"
-        :commentable-id="duty.id"
-      />
+      <RecordActivity commentable-type="duty" :commentable-id="duty.id" />
     </template>
   </RecordPage>
 
@@ -264,12 +260,10 @@ import {
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
-import { DutyIconFilled, InstitutionIconFilled } from '@/Components/icons';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import type { StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
@@ -478,14 +472,4 @@ const endTenure = () => {
   });
 };
 
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminShow(
-    props.duty.institution?.name,
-    'institutions.show',
-    { institution: props.duty?.institution?.id },
-    dutyTitle.value,
-    InstitutionIconFilled,
-    DutyIconFilled,
-  ),
-);
 </script>

@@ -53,7 +53,7 @@ const iconClass = [
 ].join(' ');
 
 const labelledClass = [
-  'inline-flex min-h-9 items-center gap-1.5 border border-border px-3 text-xs font-bold uppercase tracking-wide text-foreground transition-colors',
+  'inline-flex min-h-9 items-center gap-1.5 border border-border px-3 text-xs font-bold normal-case tracking-normal text-foreground transition-colors',
   'pointer-coarse:min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
 ].join(' ');
 </script>

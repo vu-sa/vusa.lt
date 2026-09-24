@@ -1,21 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { nextTick } from 'vue';
+import { router } from '@inertiajs/vue3';
 
 import ShowMeeting from '@/Pages/Admin/Representation/ShowMeeting.vue';
-import { commonStubs } from '@/tests/stubs';
+import { commonStubs, stubPopover, stubPopoverContent } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+vi.stubGlobal('route', (name?: string, params?: unknown) => (name === undefined
+  ? { current: () => false }
+  : `/mocked/${name}${params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : ''}`));
 
 const stubs = {
   ...commonStubs,
   ActivityLogSheet: { template: '<div data-testid="activity-log" />' },
-  UsersAvatarGroup: { props: ['users', 'max', 'size'], template: '<div />' },
+  UsersAvatarGroup: { props: ['users', 'max', 'size'], template: '<div data-testid="users-avatar-group" :data-user-ids="users.map(user => user.id).join(\',\')" />' },
   MeetingAgendaList: {
     name: 'MeetingAgendaList',
-    props: ['agendaItems', 'meetingId', 'editing'],
+    props: ['agendaItems', 'meetingId', 'missingActions'],
     template: '<div data-testid="agenda-list" />',
   },
   MeetingNavigationCards: { template: '<div />' },
@@ -23,8 +25,11 @@ const stubs = {
   FileManager: { name: 'FileManager', template: '<div data-testid="file-manager" />' },
   TaskManager: { name: 'TaskManager', template: '<div data-testid="task-manager" />' },
   MeetingForm: { template: '<div />' },
-  AddAgendaItemForm: { name: 'AddAgendaItemForm', template: '<div data-testid="single-agenda-form" />' },
-  AgendaItemsForm: { name: 'AgendaItemsForm', template: '<div data-testid="bulk-agenda-form" />' },
+  AddAgendaItemsSheet: {
+    name: 'AddAgendaItemsSheet',
+    props: { open: Boolean, initialMode: String, meetingId: String, recentAgendas: Array },
+    template: '<div data-testid="add-agenda-sheet" :data-open="open" :data-mode="initialMode" />',
+  },
   AnnounceMeetingDialog: { template: '<div />' },
   RecordActivity: { template: '<div data-testid="record-activity" />' },
 };
@@ -44,7 +49,6 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
       meeting: baseMeeting,
       representatives: [],
       secretaries: [],
-      administrators: [],
       abilities: {
         update: true,
         delete: true,
@@ -64,19 +68,30 @@ describe('ShowMeeting.vue', () => {
     window.history.replaceState({}, '', '/');
   });
 
-  it('shows the term secretaries apart from the representatives', () => {
-    // They are who the agenda tasks actually went to, so they must be legible as a
-    // separate group rather than merged into the representatives (O22).
+  it('shows only representatives in the people fact', () => {
     const wrapper = createWrapper({
       representatives: [{ id: 'u1', name: 'Jonas Jonaitis' }],
       secretaries: [{ id: 'u2', name: 'Rūta Petraitė', email: null, profile_photo_path: null }],
     });
 
-    expect(wrapper.text()).toContain('secretaries.label');
+    const peopleFact = wrapper.findAll('dl > div')[4];
+
+    expect(peopleFact.find('dt').text()).toBe('Atstovai');
+    expect(peopleFact.find('[data-slot="users-fact-list"]').text()).toContain('Jonas Jonaitis');
+    expect(peopleFact.find('[data-testid="users-avatar-group"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('secretaries.label');
   });
 
-  it('hides the secretary group when nobody is nominated', () => {
-    expect(createWrapper().text()).not.toContain('secretaries.label');
+  it('keeps the expandable avatar group for multiple representatives', () => {
+    const peopleFact = createWrapper({
+      representatives: [{ id: 'u1', name: 'Jonas Jonaitis' }, { id: 'u2', name: 'Rūta Petraitė' }],
+    }).findAll('dl > div')[4];
+
+    expect(peopleFact.find('[data-testid="users-avatar-group"]').attributes('data-user-ids')).toBe('u1,u2');
+  });
+
+  it('shows an empty people fact when there are no representatives', () => {
+    expect(createWrapper().findAll('dl > div')[4].find('dd').text()).toBe('—');
   });
 
   it('renders a trigger for each tab, with the agenda item count', () => {
@@ -136,39 +151,109 @@ describe('ShowMeeting.vue', () => {
   });
 
   /**
-   * The page owns tab state so it can honour `?tab=`; this asserts that the
-   * controlled binding into RecordPage actually drives the rendered panel.
-   */
-  /**
    * The action window creates the meeting server-side and hands the page the
-   * dialog to open, so the two `?action=` values must not be interchangeable.
+   * sheet to open, so the two `?action=` values must not be interchangeable.
    */
-  it('opens the bulk agenda dialog for ?action=add-bulk', async () => {
-    vi.useFakeTimers();
+  it('opens the add sheet on the paste box for ?action=add-bulk', async () => {
     window.history.replaceState({}, '', '/?action=add-bulk');
 
     const wrapper = createWrapper();
-    vi.advanceTimersByTime(200);
-    await nextTick();
-
-    expect(wrapper.find('[data-testid="bulk-agenda-form"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="single-agenda-form"]').exists()).toBe(false);
-
-    vi.useRealTimers();
+    await vi.waitFor(() => {
+      const sheet = wrapper.find('[data-testid="add-agenda-sheet"]');
+      expect(sheet.attributes('data-open')).toBe('true');
+      expect(sheet.attributes('data-mode')).toBe('paste');
+    });
   });
 
-  it('opens the single agenda dialog for ?action=add', async () => {
-    vi.useFakeTimers();
+  it('opens the add sheet on the line editor for ?action=add', async () => {
     window.history.replaceState({}, '', '/?action=add');
 
     const wrapper = createWrapper();
-    vi.advanceTimersByTime(200);
-    await nextTick();
+    await vi.waitFor(() => {
+      const sheet = wrapper.find('[data-testid="add-agenda-sheet"]');
+      expect(sheet.attributes('data-open')).toBe('true');
+      expect(sheet.attributes('data-mode')).toBe('lines');
+    });
+  });
 
-    expect(wrapper.find('[data-testid="single-agenda-form"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="bulk-agenda-form"]').exists()).toBe(false);
+  it('leads the facts with the completion status, toned in its role, instead of a title badge', () => {
+    const wrapper = createWrapper({ completion: { status: 'incomplete', missingActions: [] } });
+    const first = wrapper.find('dl > div');
 
-    vi.useRealTimers();
+    expect(first.find('dt').text()).toBe('Būsena');
+    expect(first.attributes('data-status-role')).toBe('attention');
+    expect(first.find('dd').text()).toBe('Neužpildyta');
+    expect(wrapper.find('header [data-slot="status-badge"]').exists()).toBe(false);
+  });
+
+  it('links each institution fact to the institution page instead of repeating it under the title', () => {
+    const wrapper = createWrapper({
+      meeting: { ...baseMeeting, type_label: 'Nuotolinis', institutions: [{ id: 'i1', name: 'VU SA MIF' }] },
+    });
+
+    const link = wrapper.findAll('a').find(anchor => anchor.text() === 'VU SA MIF');
+
+    expect(link?.attributes('href')).toContain('institutions.show');
+    expect(wrapper.find('[data-slot="record-eyebrow"]').text()).toContain('Nuotolinis');
+    expect(wrapper.find('[data-slot="record-title"]').text()).not.toContain('10:00');
+  });
+
+  it('shows relative and clock time together after visibility', () => {
+    const facts = createWrapper().findAll('dl > div');
+
+    expect(facts[2].find('dt').text()).toBe('Laikas');
+    expect(facts[2].find('dd').text()).toMatch(/prieš .+ · 10:00/);
+  });
+
+  it('shows visibility next to status with a globe and a surface matching public access', () => {
+    const publicFact = createWrapper({ publicUrl: 'https://www.vusa.test/lt/meeting' }).findAll('dl > div')[1];
+    const privateFact = createWrapper().findAll('dl > div')[1];
+
+    expect(publicFact.classes()).toContain('bg-status-success-surface');
+    expect(publicFact.find('dt').attributes('aria-label')).toBe('Matomumas');
+    expect(publicFact.find('dt svg').exists()).toBe(true);
+    expect(publicFact.find('dt').text()).toBe('');
+    expect(publicFact.find('dd').text()).toBe('Matoma vusa.lt');
+    expect(privateFact.classes()).toContain('bg-status-neutral-surface');
+    expect(privateFact.find('dd').text()).toBe('Tik viduje');
+  });
+
+  it('merges the protocol and report into one fact', () => {
+    const fact = createWrapper({ meeting: { ...baseMeeting, has_protocol: true } }).findAll('dl > div')[5];
+    const statuses = fact.findAll('dd [data-status-role]');
+
+    expect(fact.find('dt').text()).toBe('meetings.record.after_meeting');
+    expect(fact.find('dd > div').classes()).toContain('text-xs');
+    expect(statuses[0].findAll('span')[0].text()).toBe('meetings.record.protocol');
+    expect(statuses[1].findAll('span')[0].text()).toBe('meetings.record.report');
+    expect(statuses[0].find('.sr-only').text()).toBe('Įkeltas');
+    expect(statuses[1].find('.sr-only').text()).toBe('Neįkelta');
+    expect(statuses.map(status => status.attributes('data-status-role'))).toEqual(['success', 'attention']);
+    expect(statuses[0].find('svg').classes()).toContain('text-status-success');
+    expect(statuses[1].find('svg').classes()).toContain('text-status-attention');
+    expect(statuses[0].find('svg').classes()).toContain('size-3.5');
+  });
+
+  /**
+   * A long list of incomplete items no longer stacks above the tabs: the page leads with
+   * one action that opens the first item still missing an outcome.
+   */
+  it('leads with opening the first incomplete item when agenda items still lack an outcome', async () => {
+    const wrapper = createWrapper({
+      completion: {
+        status: 'incomplete',
+        missingActions: [
+          { type: 'agenda_item_vote_missing', agenda_item_id: 'a2', title: 'Biudžetas', position: 2, missing_fields: ['decision'] },
+          { type: 'agenda_item_type_missing', agenda_item_id: 'a5', title: 'Kita', position: 5 },
+        ],
+      },
+    });
+
+    const walk = wrapper.findAll('button').find(button => button.text().includes('meetings.completion.walk'));
+    await walk?.trigger('click');
+
+    expect(router.visit).toHaveBeenCalledWith('/mocked/agendaItems.show?agendaItem=a2');
+    expect(wrapper.find('[data-slot="meeting-completion"]').findAll('li')).toHaveLength(2);
   });
 
   /**
@@ -183,9 +268,9 @@ describe('ShowMeeting.vue', () => {
 
     const menu = wrapper.find('[data-testid="dropdown-menu-content"]');
 
-    expect(wrapper.text()).toContain('Redaguoti posėdį');
+    expect(wrapper.text()).toContain('meetings.record.edit_meeting');
     expect(menu.text()).toContain('Pridėti instituciją');
-    expect(menu.text()).not.toContain('Redaguoti posėdį');
+    expect(menu.text()).not.toContain('meetings.record.edit_meeting');
   });
 
   it('opens the tab named by the ?tab= URL parameter', () => {
@@ -225,6 +310,47 @@ describe('ShowMeeting.vue', () => {
       });
 
       expect(tasksTabText(wrapper)).not.toContain('1');
+    });
+  });
+
+  describe('meeting picker', () => {
+    const recordNavigation = {
+      position: 2,
+      total: 3,
+      previousHref: '/m/earlier',
+      nextHref: '/m/later',
+      previousLabel: '02-04',
+      nextLabel: '04-04',
+      meetings: [
+        { id: 'earlier', start_time: '2025-12-04T10:00:00.000Z', href: '/m/earlier' },
+        { id: 'meet1', start_time: '2026-03-04T10:00:00.000Z', href: '/m/meet1' },
+        { id: 'later', start_time: '2026-04-04T10:00:00.000Z', href: '/m/later' },
+      ],
+    };
+
+    const mountWithPicker = () => mount(ShowMeeting, {
+      props: {
+        meeting: baseMeeting,
+        representatives: [],
+        completion: { status: 'complete', missingActions: [] },
+        recordNavigation,
+      },
+      global: { stubs: { ...stubs, Popover: stubPopover, PopoverTrigger: { template: '<div><slot /></div>' }, PopoverContent: stubPopoverContent } },
+    });
+
+    it('lists the institution\'s meetings newest first, grouped by year', () => {
+      const wrapper = mountWithPicker();
+
+      expect(wrapper.find('[data-testid="meeting-picker-trigger"]').text()).toContain('2026-03-04');
+      expect(wrapper.findAll('[data-testid="meeting-picker-item"]').map(item => item.text().slice(0, 10)))
+        .toEqual(['2026-04-04', '2026-03-04', '2025-12-04']);
+    });
+
+    it('labels ‹ › with the neighbouring dates', () => {
+      const wrapper = mountWithPicker();
+
+      expect(wrapper.find('button[aria-label^="meetings.record.previous_meeting"]').text()).toBe('02-04');
+      expect(wrapper.find('button[aria-label^="meetings.record.next_meeting"]').text()).toBe('04-04');
     });
   });
 });

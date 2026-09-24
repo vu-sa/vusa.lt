@@ -11,7 +11,7 @@
         class="h-12 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
         @keydown.escape="close"
         @keydown.down.prevent="focusFirstResult"
-        @keydown.enter="query.trim() && goToUnifiedSearch()">
+        @keydown.enter.prevent="focusFirstResult">
     </div>
 
     <CommandList class="max-h-[50vh] scroll-py-2 max-sm:max-h-none max-sm:flex-1 sm:max-h-[60vh]">
@@ -27,16 +27,6 @@
       </div>
 
       <template v-else>
-        <!-- Search everything on the unified search page -->
-        <CommandGroup v-if="query.trim()" class="px-2">
-          <PaletteRow
-            value="search-everywhere"
-            :icon="Search"
-            :title="`${$t('Ieškoti visur')} „${query.trim()}“`"
-            @select="goToUnifiedSearch"
-          />
-        </CommandGroup>
-
         <!-- Pinned pages, then recents: both empty-state only (O20, O15) -->
         <CommandGroup v-if="!query && pinnedItems.length > 0" :heading="$t('shell.palette.pinned')" class="px-2">
           <PaletteRow
@@ -340,13 +330,6 @@ const focusFirstResult = () => {
   if (firstItem) {
     firstItem.focus();
   }
-};
-
-// Navigate to the unified search page with the current query (All tab)
-const goToUnifiedSearch = () => {
-  const trimmed = query.value.trim();
-  close();
-  router.visit(route('search.index', trimmed ? { q: trimmed } : {}));
 };
 
 // Handle a flat search hit selection

@@ -4,6 +4,7 @@
       v-if="primary"
       size="sm"
       :variant="primary.state === 'lent' ? 'outline' : 'brand'"
+      voice="sentence"
       class="pointer-coarse:h-11"
       :disabled
       @click="emit('decide', 'approved', reservation)"
@@ -48,6 +49,7 @@
       v-if="cancellable"
       size="sm"
       variant="ghost"
+      voice="sentence"
       class="text-muted-foreground pointer-coarse:h-11"
       :disabled
       @click="emit('decide', 'cancelled', reservation)"

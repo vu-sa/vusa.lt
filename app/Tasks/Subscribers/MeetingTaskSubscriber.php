@@ -86,10 +86,14 @@ class MeetingTaskSubscriber
             );
         }
 
-        $recipients = ResolveMeetingNotificationAudience::execute($meeting);
+        ['overseers' => $overseers, 'followers' => $followers] = ResolveMeetingNotificationAudience::split($meeting);
 
-        if ($recipients->isNotEmpty()) {
-            Notification::send($recipients, new MeetingCreatedNotification($meeting));
+        if ($overseers->isNotEmpty()) {
+            Notification::send($overseers, new MeetingCreatedNotification($meeting));
+        }
+
+        if ($followers->isNotEmpty()) {
+            Notification::send($followers, (new MeetingCreatedNotification($meeting))->viaFollow());
         }
     }
 
@@ -172,10 +176,14 @@ class MeetingTaskSubscriber
     {
         $meeting->load(['institutions.tenant']);
 
-        $recipients = ResolveMeetingNotificationAudience::execute($meeting);
+        ['overseers' => $overseers, 'followers' => $followers] = ResolveMeetingNotificationAudience::split($meeting);
 
-        if ($recipients->isNotEmpty()) {
-            Notification::send($recipients, new MeetingAgendaCompletedNotification($meeting, $completedBy));
+        if ($overseers->isNotEmpty()) {
+            Notification::send($overseers, new MeetingAgendaCompletedNotification($meeting, $completedBy));
+        }
+
+        if ($followers->isNotEmpty()) {
+            Notification::send($followers, (new MeetingAgendaCompletedNotification($meeting, $completedBy))->viaFollow());
         }
     }
 

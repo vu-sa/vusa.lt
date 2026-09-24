@@ -22,39 +22,28 @@ describe('authorized access', function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
     });
 
-    test('can access unified search page', function (): void {
+    test('old search URL leads to a collection page', function (): void {
         asUser($this->admin)
             ->get(route('search.index'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Search/SearchIndex')
-                ->has('destinations.meetings')
-                ->missing('can')
-            );
+            ->assertRedirect(route('dashboard'));
     });
 
-    test('every result group knows where its full list lives, and the query key that list reads', function (): void {
-        asUser(makeAdminUser($this->tenant))
-            ->get(route('search.index'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('destinations.meetings', ['href' => route('meetings.index', [], false), 'queryKey' => 'q'])
-                ->where('destinations.institutions', ['href' => route('institutions.index', [], false), 'queryKey' => 'q'])
-                ->where('destinations.agendaItems', ['href' => route('search.index', ['tab' => 'agenda-items'], false), 'queryKey' => 'q'])
-                ->where('destinations.resources', ['href' => route('resources.index', [], false), 'queryKey' => 'q'])
-            );
-    });
-
-    test('a list the user may not open gets no link', function (): void {
-        asUser(makeUser($this->tenant))
-            ->get(route('search.index'))
-            ->assertInertia(fn (Assert $page) => $page->where('destinations.news.href', null));
-    });
-
-    test('the agenda-items tab still renders the search page', function (): void {
+    test('the agenda-items tab leads to its collection', function (): void {
         asUser($this->admin)
             ->get(route('search.index', ['tab' => 'agenda-items', 'q' => 'x']))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page->component('Admin/Search/SearchIndex'));
+            ->assertRedirect(route('agendaItems.index', ['q' => 'x'], false));
+    });
+
+    test('agenda items have a collection page', function (): void {
+        asUser(makeAdminUser($this->tenant))
+            ->get(route('agendaItems.index'))
+            ->assertInertia(fn (Assert $page) => $page->component('Admin/Representation/IndexAgendaItem'));
+    });
+
+    test('agenda item collection requires meeting read access', function (): void {
+        asUser(makeUser($this->tenant))
+            ->get(route('agendaItems.index'))
+            ->assertForbidden();
     });
 
     test('the resources tab goes to the resources collection', function (): void {
@@ -63,11 +52,16 @@ describe('authorized access', function (): void {
             ->assertRedirect(route('resources.index', ['q' => 'x'], false));
     });
 
-    test('an unknown tab from a stale bookmark falls back to the search page', function (): void {
+    test('an unknown tab from a stale bookmark falls back to the dashboard', function (): void {
         asUser($this->admin)
             ->get(route('search.index', ['tab' => 'nonsense']))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page->component('Admin/Search/SearchIndex'));
+            ->assertRedirect(route('dashboard'));
+    });
+
+    test('an old text search keeps its query on the meetings collection', function (): void {
+        asUser($this->admin)
+            ->get(route('search.index', ['q' => 'senatas']))
+            ->assertRedirect(route('meetings.index', ['q' => 'senatas']));
     });
 });
 
@@ -82,6 +76,7 @@ describe('tabs that have a page of their own', function (): void {
             ->assertRedirect(route($routeName, ['q' => 'test'], false));
     })->with([
         ['meetings', 'meetings.index'],
+        ['agenda-items', 'agendaItems.index'],
         ['institutions', 'institutions.index'],
         ['resources', 'resources.index'],
         ['duties', 'duties.index'],
@@ -123,10 +118,10 @@ describe('legacy redirects', function (): void {
             ->assertRedirect(route('institutions.index', ['q' => 'test'], false));
     });
 
-    test('search.agendaItems redirects to unified search with agenda-items tab', function (): void {
+    test('search.agendaItems redirects to its collection', function (): void {
         asUser($this->admin)
             ->get(route('search.agendaItems', ['q' => 'test']))
-            ->assertRedirect(route('search.index', ['q' => 'test', 'tab' => 'agenda-items']));
+            ->assertRedirect(route('agendaItems.index', ['q' => 'test'], false));
     });
 
     test('search.resources goes straight to the resources page', function (): void {

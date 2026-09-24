@@ -35,7 +35,7 @@
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <OverviewNumbers :numbers />
         <InstitutionsNeedingAttention :institutions="attention" @record="recordMeetingFor" />
-        <UpcomingMeetingsList :meetings="upcomingMeetings" :href="route('meetings.index')" />
+        <UpcomingMeetingsList :meetings="scopedUpcoming" :total="scopedUpcomingTotal" :href="route('meetings.index')" />
       </div>
 
       <!-- Empty sections above collapse into the all-clear list, placed here under the coordinators. -->
@@ -45,6 +45,11 @@
             <Skeleton class="h-16 w-full" />
           </template>
           <CoordinatorCard :coordinators="coordinators ?? []" compact />
+        </Deferred>
+        <!-- No skeleton: most people follow nothing, and the block then never appears. -->
+        <Deferred data="followedInstitutions">
+          <template #fallback />
+          <FollowedInstitutionsList v-if="followedInstitutions?.total" :followed="followedInstitutions" />
         </Deferred>
         <OverviewStatusList />
       </aside>
@@ -156,7 +161,8 @@ import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
-import type { HomeCoordinator, HomeMeeting, InstitutionActivityInsight } from '@/Components/Home/types';
+import FollowedInstitutionsList from '@/Components/Home/FollowedInstitutionsList.vue';
+import type { HomeCoordinator, HomeFollowedInstitutions, HomeMeeting, InstitutionActivityInsight } from '@/Components/Home/types';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
@@ -171,6 +177,8 @@ const props = defineProps<{
   canViewTenantOverview: boolean;
   openTasksCount: number;
   coordinators?: HomeCoordinator[];
+  upcomingMeetings: { items: HomeMeeting[]; total: number };
+  followedInstitutions?: HomeFollowedInstitutions;
 }>();
 
 const actionWindow = useActionWindow();
@@ -212,16 +220,18 @@ const userScopedMeetings = computed(() =>
   atstovavimasData.sortedMeetings.value.filter(meetingBelongsToSelectedUserInstitutions),
 );
 
-const upcomingMeetings = computed<HomeMeeting[]>(() =>
-  atstovavimasData.upcomingMeetings.value
-    .filter(meetingBelongsToSelectedUserInstitutions)
-    .slice(0, 5)
-    .map(meeting => ({
-      id: String(meeting.id),
-      title: meeting.title ?? '',
-      start_time: meeting.start_time,
-      institution_name: meeting.institutions?.[0]?.name ?? null,
-    })),
+// Followed institutions sit outside the tenant selector, which only lists the user's duty tenants.
+const scopedUpcoming = computed<HomeMeeting[]>(() => {
+  const selectedTenantIds = new Set(timelineFilters.userTenantFilter.value);
+
+  return props.upcomingMeetings.items.filter(meeting =>
+    meeting.is_followed || selectedTenantIds.has(String(meeting.tenant_id)),
+  );
+});
+
+// Only the unfiltered total is known beyond the capped payload.
+const scopedUpcomingTotal = computed(() =>
+  scopedUpcoming.value.length === props.upcomingMeetings.items.length ? props.upcomingMeetings.total : scopedUpcoming.value.length,
 );
 
 const userScopedGanttMeetings = computed(() =>

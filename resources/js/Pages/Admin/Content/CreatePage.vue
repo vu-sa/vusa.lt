@@ -14,17 +14,11 @@
 import type { InertiaForm } from '@inertiajs/vue3';
 
 import PageForm from '@/Components/AdminForms/PageForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { PageIcon } from '@/Components/icons';
 
 defineProps<{
   availableTags?: App.Entities.Tag[];
   assignableTenants: App.Entities.Tenant[];
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Puslapiai', 'pages.index', 'Naujas puslapis', PageIcon),
-);
 
 const page = {
   title: '',

@@ -7,13 +7,17 @@ import {
   CircleCheck,
   CircleDashed,
   CircleDot,
+  CircleHelp,
   CircleMinus,
   CircleSlash,
   CircleX,
   Clock3,
+  Coffee,
   Eye,
   FilePenLine,
+  Handshake,
   Inbox,
+  Info,
   LoaderCircle,
   PackageOpen,
   RotateCcw,
@@ -31,6 +35,7 @@ export interface StatusPresentation {
   label: string;
   role: StatusRole;
   icon: LucideIcon;
+  uppercase?: boolean;
 }
 
 /** Border, surface and ink per role — StatusBadge and any control that shows a chosen status. */
@@ -49,6 +54,19 @@ export type TaskStatus = 'completed' | 'open' | 'due_soon' | 'overdue';
 export type ContentStatus = 'published' | 'scheduled' | 'draft';
 export type ProblemStatus = 'open' | 'in_progress' | 'resolved';
 export type MissingVoteStatus = 'not_recorded';
+/** Derived by getAgendaItemStatus() from the item's type and main vote. */
+export type AgendaItemStatus
+  = | 'consensus'
+    | 'student_aligned'
+    | 'student_misaligned'
+    | 'decision_positive'
+    | 'decision_negative'
+    | 'neutral_decided'
+    | 'no_vote'
+    | 'deferred'
+    | 'informational'
+    | 'break'
+    | 'unset';
 export type UnknownBenefitStatus = 'unknown';
 
 export const reservationResourceStatuses: Record<ReservationResourceStatus, StatusPresentation> = {
@@ -81,6 +99,31 @@ export const studentBenefitStatuses: Record<VoteValue | UnknownBenefitStatus, St
   unknown: status('Nežinoma', 'attention', CircleDashed),
 };
 
+/** One word, role and icon per agenda item outcome — admin records, lists and the public meeting page alike. */
+export const agendaItemStatuses: Record<AgendaItemStatus, StatusPresentation> = {
+  consensus: status('Pritarta bendru sutarimu', 'success', Handshake),
+  student_aligned: status('Studentų pozicija priimta', 'success', CircleCheck),
+  student_misaligned: status('Studentų pozicija nesutampa', 'danger', CircleX),
+  decision_positive: status('Priimtas', 'success', CircleCheck),
+  decision_negative: status('Atmestas', 'danger', CircleX),
+  neutral_decided: status('Neutralus sprendimas', 'neutral', CircleMinus),
+  no_vote: status('Neaptartas', 'attention', CircleDashed),
+  deferred: status('Atidėtas', 'neutral', Clock3),
+  informational: status('Informacinis', 'info', Info),
+  break: status('Pertrauka', 'neutral', Coffee),
+  unset: status('Nepažymėtas', 'attention', CircleHelp),
+};
+
+/** The ink, surface, border and dot of one role, for places that colour a part rather than render a StatusBadge. */
+export const statusRoleParts: Record<StatusRole, { text: string; surface: string; border: string; dot: string }> = {
+  neutral: { text: 'text-status-neutral', surface: 'bg-status-neutral-surface', border: 'border-status-neutral-border', dot: 'bg-status-neutral' },
+  info: { text: 'text-status-info', surface: 'bg-status-info-surface', border: 'border-status-info-border', dot: 'bg-status-info' },
+  progress: { text: 'text-status-progress', surface: 'bg-status-progress-surface', border: 'border-status-progress-border', dot: 'bg-status-progress' },
+  attention: { text: 'text-status-attention', surface: 'bg-status-attention-surface', border: 'border-status-attention-border', dot: 'bg-status-attention' },
+  success: { text: 'text-status-success', surface: 'bg-status-success-surface', border: 'border-status-success-border', dot: 'bg-status-success' },
+  danger: { text: 'text-status-danger', surface: 'bg-status-danger-surface', border: 'border-status-danger-border', dot: 'bg-status-danger' },
+};
+
 export const taskStatuses: Record<TaskStatus, StatusPresentation> = {
   completed: status('Atlikta', 'success', CircleCheck),
   open: status('Atvira', 'info', Circle),
@@ -89,14 +132,14 @@ export const taskStatuses: Record<TaskStatus, StatusPresentation> = {
 };
 
 export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
-  published: status('Paskelbta', 'success', Eye),
-  scheduled: status('Suplanuota', 'info', CalendarClock),
-  draft: status('Juodraštis', 'neutral', FilePenLine),
+  published: status('Paskelbta', 'success', Eye, true),
+  scheduled: status('Suplanuota', 'info', CalendarClock, true),
+  draft: status('Juodraštis', 'neutral', FilePenLine, true),
 };
 
 export const bannerStatuses = {
-  active: status('Aktyvus', 'success', Eye),
-  inactive: status('Neaktyvus', 'neutral', CircleSlash),
+  active: status('Aktyvus', 'success', Eye, true),
+  inactive: status('Neaktyvus', 'neutral', CircleSlash, true),
 };
 
 export const problemStatuses: Record<ProblemStatus, StatusPresentation> = {
@@ -123,6 +166,6 @@ export const institutionActivityStatuses: Record<InstitutionActivityStatus, Stat
   [InstitutionActivityStatus.CoveredByCheckIn]: status('Užfiksuotas kontaktas', 'info', CalendarCheck),
 };
 
-function status(label: string, role: StatusRole, icon: LucideIcon): StatusPresentation {
-  return { label, role, icon };
+function status(label: string, role: StatusRole, icon: LucideIcon, uppercase = false): StatusPresentation {
+  return uppercase ? { label, role, icon, uppercase } : { label, role, icon };
 }

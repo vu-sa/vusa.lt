@@ -15,8 +15,6 @@ import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
 import type { ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
-import { ResourceIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type { ResourceMediaEntry } from '@/Pages/Admin/Reservations/CreateResource.vue';
 
 export type ResourceEditType = Omit<
@@ -34,10 +32,6 @@ const { resource } = defineProps<{
   categories: App.Entities.ResourceCategory[];
   assignableTenants: Array<App.Entities.Tenant>;
 }>();
-
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', resource.name[usePage().props.app.locale], ResourceIcon),
-);
 
 function handleResourceUpdate(form: unknown) {
   (form as InertiaForm<Record<string, unknown>>).transform(data => ({

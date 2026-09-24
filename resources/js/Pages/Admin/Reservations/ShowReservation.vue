@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    :history-subject="{ type: 'reservation', id: reservation.id }"
     :title="reservation.name"
     :entity-type="ModelEnum.RESERVATION"
     :status="undefined"
@@ -78,12 +79,7 @@
     </template>
 
     <template #activity>
-      <RecordActivity
-        subject-type="reservation"
-        :subject-id="reservation.id"
-        commentable-type="reservation"
-        :commentable-id="reservation.id"
-      />
+      <RecordActivity commentable-type="reservation" :commentable-id="reservation.id" />
     </template>
   </RecordPage>
 
@@ -190,8 +186,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/u
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { ReservationIconFilled } from '@/Components/icons';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { RESERVATION_CARD_MODAL_TITLES } from '@/Constants/I18n/CardModalTitles';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
@@ -210,17 +204,6 @@ const props = defineProps<{
   allResources?: App.Entities.Resource[];
   allUsers?: App.Entities.User[];
 }>();
-
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.homeItem(),
-  BreadcrumbHelpers.createRouteBreadcrumb(
-    capitalize($tChoice('entities.reservation.model', 2)),
-    'reservations.index',
-    {},
-    ReservationIconFilled,
-  ),
-  BreadcrumbHelpers.createBreadcrumbItem(props.reservation.name),
-]);
 
 // --- Sections and key facts -------------------------------------------------------------------
 

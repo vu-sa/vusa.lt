@@ -46,6 +46,7 @@ const EXCLUDED_FROM_CATALOG = [
     'mySupportRequests.index' => 'Pagalba entry point, not a workspace section (PR 4.4)',
     'push-subscription.index' => 'device push-subscription settings, no navigational destination',
     'settings.cadences.index' => 'reached from within Nustatymai, not a top-level section',
+    'search.index' => 'legacy redirect; cross-entity search lives in the command palette',
 ];
 
 /**
@@ -341,7 +342,7 @@ describe('route resolution', function (): void {
         expect(catalogCandidates($workspaces, $routeName)[0] ?? null)->toBe(['workspace' => $workspace, 'section' => $section]);
     })->with([
         'meeting record' => ['meetings.show', 'atstovavimas', 'posedziai'],
-        'agenda item editor' => ['agendaItems.edit', 'atstovavimas', 'posedziai'],
+        'agenda item editor' => ['agendaItems.edit', 'atstovavimas', 'darbotvarkes_klausimai'],
         'institution form' => ['institutions.edit', 'atstovavimas', 'institucijos'],
         'reservation record' => ['reservations.show', 'rezervacijos', 'rezervacijos'],
         'reservation resource' => ['reservationResources.show', 'rezervacijos', 'rezervacijos'],

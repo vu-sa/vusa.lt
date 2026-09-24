@@ -857,3 +857,31 @@ describe('Posėdžiai collection', function (): void {
             );
     });
 });
+
+describe('institution meeting navigation', function (): void {
+    test('steps through the primary institution\'s meetings in date order', function (): void {
+        [$earlier, $middle, $later] = collect(['2026-01-10', '2026-02-10', '2026-03-10'])
+            ->map(fn (string $date) => Meeting::factory()->hasAttached($this->institution)->create(['start_time' => $date.' 10:00']))
+            ->all();
+
+        asUser($this->admin)->get(route('meetings.show', $middle))
+            ->assertInertia(fn ($page) => $page
+                ->where('recordNavigation.position', 2)
+                ->where('recordNavigation.total', 3)
+                ->where('recordNavigation.previousHref', route('meetings.show', $earlier))
+                ->where('recordNavigation.nextHref', route('meetings.show', $later))
+                ->where('recordNavigation.previousLabel', '01-10')
+                ->where('recordNavigation.nextLabel', '03-10')
+                ->has('recordNavigation.meetings', 3)
+                ->where('recordNavigation.meetings.0.id', $earlier->id)
+                ->where('recordNavigation.meetings.2.href', route('meetings.show', $later))
+            );
+    });
+
+    test('offers no navigation for an institution\'s only meeting', function (): void {
+        $only = Meeting::factory()->hasAttached($this->institution)->create();
+
+        asUser($this->admin)->get(route('meetings.show', $only))
+            ->assertInertia(fn ($page) => $page->where('recordNavigation', null));
+    });
+});

@@ -11,6 +11,7 @@ use App\Models\Form;
 use App\Services\FormAccessService;
 use App\Services\FormRegistrationVisibilityService;
 use App\Services\TanstackTableService;
+use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
 
 class FormApiController extends ApiController
@@ -29,14 +30,13 @@ class FormApiController extends ApiController
 
         $user = $request->user();
 
-        $query = BuildFormIndexQuery::execute($request, $user, $this->formAccess, $this->tableService);
-
-        $forms = $this->applyTanstackFilters(
-            $query,
+        $query = fn (IndexFormRequest $request) => $this->applyTanstackFilters(
+            BuildFormIndexQuery::execute($request, $user, $this->formAccess, $this->tableService),
             $request,
             $this->tableService,
             ['name', 'path'],
-        )->paginate($request->getPerPage());
+        );
+        $forms = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
             'items' => SerializeFormsForTable::execute($forms->getCollection(), $user, $this->registrationVisibility)->values(),
@@ -44,6 +44,7 @@ class FormApiController extends ApiController
             'per_page' => $forms->perPage(),
             'current_page' => $forms->currentPage(),
             'last_page' => $forms->lastPage(),
+            'facets' => CollectionFacetCounts::forRequest($request, ['tenant.id'], $query),
         ]);
     }
 }

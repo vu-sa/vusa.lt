@@ -21,7 +21,7 @@ boxes, at working density. Every screen answers *what needs me?* before *where c
 2. **One catalog** (`AdminNavigationCatalog`) feeds every menu; the palette accelerates but never hides.
 3. **Seven page types** — Overview, Collection, Record, Form, Sheet form, Guided flow, Workbench; one canonical page per record.
 4. **Forms edit attributes; relations live on the record.** One create door: **+ Sukurti** → ActionWindow.
-5. **Budgets** — one brand fill per region; uppercase only for primary buttons, section titles, form labels, eyebrows and tabs (headlines and status tags where their component sets it) — every other button and tag is sentence case (`voice="sentence"`); status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/components-home.md`.
+5. **Budgets** — one brand fill per region; uppercase only for primary creation buttons, section titles, form labels, eyebrows, tabs, headlines, and content publishing options (`contentStatuses` / `bannerStatuses`) — every other button, row action, tag, chip (including quick filters and literal resource names) and status badge is sentence case (`voice="sentence"`); status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/components-home.md`.
 6. **Phone and tablet are first-class** (390 · 820 · 1180 · 1440, 44px touch, nothing hover-only).
 7. **Speak like a colleague** — *tu*, verbs on buttons, one glossary. The benchmark is a rep finishing an emailed task on a phone in five minutes.
 
@@ -245,7 +245,7 @@ if ($request->filled('field')) {
 
 `ui/` (shadcn primitives) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → pages. Dependencies run one way only.
 
-Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint warns on `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (`ShowDuty.vue` / `ShowMeeting.vue` are reference pages); collections use `CollectionPage`.
+Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint rejects `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (`ShowDuty.vue` / `ShowMeeting.vue` are reference pages); collections use `CollectionPage`.
 
 Before adding a card, check the ~40 that exist: `find resources/js -name '*Card*.vue' -not -path '*/ui/*'`.
 
@@ -282,10 +282,7 @@ Details: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tabl
 
 ### Breadcrumbs
 
-The admin shell shows breadcrumbs only **below section level** — the workspace and section tabs already state the location (`ShellBreadcrumbs` trims the trail with `belowSectionTrail`).
-
-- Form pages → `usePageBreadcrumbs()` + `BreadcrumbHelpers.adminForm()`.
-- Show pages → `usePageBreadcrumbs()` + `BreadcrumbHelpers.adminShow()`.
+Breadcrumbs are used exclusively on public-facing pages (`PublicBreadcrumbs.vue`). The admin shell does not display breadcrumbs — the workspace switcher, section tabs, and page headers establish location.
 
 Source: `resources/js/Composables/useBreadcrumbsUnified.ts`.
 

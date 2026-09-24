@@ -3,7 +3,7 @@
     v-model:section="currentTab"
     :title="meetingTitle"
     :entity-type="ModelEnum.MEETING"
-    :status="meetingStatus"
+    :eyebrow-suffix="meeting.type_label"
     :facts="recordFacts"
     :sections="tabs"
     :primary-action
@@ -15,31 +15,47 @@
       <MeetingDatePlate :value="meeting.start_time" />
     </template>
 
-    <template #subtitle>
-      <div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <span>{{ heroSubtitle }}</span>
-        <span aria-hidden="true">·</span>
-        <span>{{ meetingRelativeTime }}</span>
+    <template #fact-institution>
+      <div v-if="meeting.institutions?.length" class="flex flex-wrap gap-x-1">
+        <template v-for="(institution, index) in meeting.institutions" :key="institution.id">
+          <span v-if="index" aria-hidden="true">·</span>
+          <Link :href="route('institutions.show', institution.id)" class="text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand">
+            {{ institution.name }}
+          </Link>
+        </template>
       </div>
+      <span v-else>{{ $t('Be institucijos') }}</span>
     </template>
 
     <template #fact-people>
-      <div class="flex flex-col gap-2">
-        <UsersAvatarGroup v-if="representatives.length" :users="representatives" :max="4" :size="24" expandable />
-        <div v-if="resolvedSecretaries.length" class="flex items-center gap-2">
-          <span class="text-xs text-muted-foreground">{{ $t('secretaries.label') }}</span>
-          <UsersAvatarGroup :users="(resolvedSecretaries as unknown as App.Entities.User[])" :max="3" :size="22" expandable />
-        </div>
-        <span v-if="!representatives.length && !resolvedSecretaries.length">—</span>
-      </div>
+      <UsersFactList :users="representatives" :inline-limit="1" />
     </template>
 
     <template #fact-visibility>
-      <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 underline underline-offset-4">
-        <Globe class="size-4" />
+      <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-status-success underline underline-offset-4">
         {{ $t('Matoma vusa.lt') }}
       </a>
       <span v-else>{{ $t('Tik viduje') }}</span>
+    </template>
+
+    <template #fact-after-meeting>
+      <div v-if="isPastMeeting" class="space-y-0.5 text-xs font-normal">
+        <p
+          v-for="document in documentStatuses"
+          :key="document.key"
+          class="flex items-start gap-1.5"
+          :data-status-role="document.uploaded ? 'success' : 'attention'"
+        >
+          <component
+            :is="document.uploaded ? CircleCheck : CircleDashed"
+            :class="['size-3.5 shrink-0', document.uploaded ? 'text-status-success' : 'text-status-attention']"
+            aria-hidden="true"
+          />
+          <span>{{ document.label }}</span>
+          <span class="sr-only">{{ document.state }}</span>
+        </p>
+      </div>
+      <span v-else>{{ $t('meetings.record.not_yet') }}</span>
     </template>
 
     <template #alert>
@@ -58,7 +74,7 @@
           :can-add="abilities.createAgendaItems"
           :can-reorder="abilities.reorderAgendaItems"
           :requires-student-perspective="!isInternalBody"
-          @add="showSingleAgendaItemModal = true"
+          @add="openAgendaSheet('lines')"
           @add-bulk="openBulkAgendaModal"
           @delete="requestAgendaItemDelete"
         />
@@ -126,42 +142,12 @@
       </DialogContent>
     </Dialog>
 
-    <Dialog v-model:open="showSingleAgendaItemModal">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle class="flex items-center gap-2">
-            <Plus class="h-5 w-5" />
-            {{ $t("Pridėti darbotvarkės punktą") }}
-          </DialogTitle>
-        </DialogHeader>
-        <AddAgendaItemForm :meeting-id="meeting.id" :loading @submit="handleSingleAgendaItemSubmit" />
-        <div class="mt-4 pt-4 border-t">
-          <Button variant="outline" size="sm" class="w-full" @click="showSingleAgendaItemModal = false; openBulkAgendaModal();">
-            {{ $t("Pridėti kelis punktus iš karto") }}...
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-
-    <Dialog v-model:open="showAgendaItemStoreModal">
-      <DialogContent class="max-h-[85vh] sm:max-w-3xl flex flex-col">
-        <DialogHeader class="flex-none">
-          <DialogTitle>{{ $t("Pridėti darbotvarkės punktus") }}</DialogTitle>
-        </DialogHeader>
-        <div class="flex-1 overflow-y-auto -mx-6 px-6">
-          <AgendaItemsForm
-            :key="bulkAgendaInitialInput"
-            class="w-full"
-            :loading
-            mode="add"
-            :initial-input="bulkAgendaInitialInput"
-            :submit-label="$t('Pridėti punktus')"
-            :show-skip-button="false"
-            @submit="handleAgendaItemsFormSubmit"
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+    <AddAgendaItemsSheet
+      v-model:open="showAgendaSheet"
+      :meeting-id="meeting.id"
+      :initial-mode="agendaSheetMode"
+      :recent-agendas
+    />
 
     <!-- Add Institution Dialog -->
     <Dialog v-model:open="showAddInstitutionDialog">
@@ -296,17 +282,16 @@
 
 <script setup lang="tsx">
 import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
-import { Deferred, router, useForm } from '@inertiajs/vue3';
+import { Deferred, Link, router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, CalendarPlus, CalendarX, Copy, Edit, Globe, Link2, Plus, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from 'lucide-vue-next';
 import { DialogDescription } from 'reka-ui';
 
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { formatRelativeTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { genitivizeEveryWord } from '@/Utils/String';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
@@ -314,22 +299,19 @@ import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import type { HomeCoordinator } from '@/Components/Home/types';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
 import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';
-import AddAgendaItemForm from '@/Components/AdminForms/AddAgendaItemForm.vue';
-import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue';
+import AddAgendaItemsSheet, { type AddAgendaMode, type RecentAgenda } from '@/Components/Meetings/AddAgendaItemsSheet.vue';
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
-import type { SecretaryUser } from '@/Components/Institutions';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 
@@ -349,9 +331,6 @@ interface MeetingCompletion {
 const props = withDefaults(defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
-  /** Institution secretaries resolved at the meeting's own date (O22). */
-  secretaries?: SecretaryUser[];
-  administrators?: SecretaryUser[];
   availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
   governanceScope?: string;
   abilities?: MeetingAbilities;
@@ -361,9 +340,8 @@ const props = withDefaults(defineProps<{
   tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
   documents?: NonNullable<App.Entities.Meeting['documents']>;
   coordinator?: HomeCoordinator | null;
+  recentAgendas?: RecentAgenda[] | null;
 }>(), {
-  secretaries: () => [],
-  administrators: () => [],
   availableInstitutionsForAttach: () => [],
   governanceScope: undefined,
   abilities: () => ({
@@ -379,9 +357,8 @@ const props = withDefaults(defineProps<{
   tasks: undefined,
   documents: undefined,
   coordinator: null,
+  recentAgendas: undefined,
 });
-
-const resolvedSecretaries = computed(() => props.secretaries ?? props.administrators ?? []);
 
 const institutionIds = computed(() => props.meeting.institutions?.map(institution => institution.id) ?? []);
 const tenantIds = computed(() =>
@@ -439,17 +416,31 @@ const { hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
 const meetingRelativeTime = computed(() => formatRelativeTime(new Date(props.meeting.start_time)));
 const meetingStatus = computed(() => meetingCompletionStatuses[props.completion.status]);
+const documentStatuses = computed(() => [
+  {
+    key: 'protocol',
+    label: $t('meetings.record.protocol'),
+    uploaded: hasProtocol.value,
+    state: hasProtocol.value ? $t('Įkeltas') : $t('Neįkeltas'),
+  },
+  {
+    key: 'report',
+    label: $t('meetings.record.report'),
+    uploaded: hasReport.value,
+    state: hasReport.value ? $t('Įkelta') : $t('Neįkelta'),
+  },
+]);
 
 // Component state
 const showMeetingModal = ref(false);
-const showAgendaItemStoreModal = ref(false);
-
-// The action window's "paste the whole agenda" choice promises the paste box, not the
-// one-by-one editor the menu's own bulk entry opens on.
-const bulkAgendaInitialInput = ref<'one-by-one' | 'text'>('one-by-one');
-const showSingleAgendaItemModal = ref(false);
+const showAgendaSheet = ref(false);
+const agendaSheetMode = ref<AddAgendaMode>('lines');
 const showDeleteDialog = ref(false);
-const loading = ref(false);
+
+const openAgendaSheet = (mode: AddAgendaMode) => {
+  agendaSheetMode.value = mode;
+  showAgendaSheet.value = true;
+};
 
 // Read-only by default; toggled on to add/reorder/delete agenda items
 const agendaEditing = ref(false);
@@ -504,34 +495,30 @@ const tabs = computed(() => [
 
 const recordFacts = computed<RecordFact[]>(() => [
   {
-    key: 'institution',
-    label: $t('Institucija'),
-    value: props.meeting.institutions?.map(institution => institution.name).join(' · ') || $t('Be institucijos'),
+    key: 'status',
+    label: $t('Būsena'),
+    status: meetingStatus.value,
   },
-  {
-    key: 'time',
-    label: $t('Laikas ir tipas'),
-    value: [meetingTimeLabel.value, props.meeting.type_label].filter(Boolean).join(' · ') || '—',
-  },
-  { key: 'people', label: $t('Atstovai ir sekretoriai') },
   {
     key: 'visibility',
     label: $t('Matomumas'),
+    labelIcon: Globe,
+    surfaceClass: props.publicUrl ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
     value: props.publicUrl ? $t('Matoma vusa.lt') : $t('Tik viduje'),
   },
   {
-    key: 'protocol',
-    label: $t('Protokolas'),
-    value: isPastMeeting.value
-      ? (hasProtocol.value ? $t('Įkeltas') : $t('Neįkeltas'))
-      : $t('Dar neaktualu'),
+    key: 'time',
+    label: $t('Laikas'),
+    value: [meetingRelativeTime.value, meetingTimeLabel.value].filter(Boolean).join(' · '),
   },
   {
-    key: 'report',
-    label: $t('Ataskaita'),
-    value: isPastMeeting.value
-      ? (hasReport.value ? $t('Įkelta') : $t('Neįkelta'))
-      : $t('Dar neaktualu'),
+    key: 'institution',
+    label: $t('Institucija'),
+  },
+  { key: 'people', label: $t('Atstovai') },
+  {
+    key: 'after-meeting',
+    label: $t('meetings.record.after_meeting'),
   },
 ]);
 
@@ -603,13 +590,7 @@ onMounted(() => {
     currentTab.value = 'agenda';
     setTimeout(() => {
       agendaEditing.value = true;
-      if (urlAction === 'add-bulk') {
-        bulkAgendaInitialInput.value = 'text';
-        showAgendaItemStoreModal.value = true;
-      }
-      else {
-        showSingleAgendaItemModal.value = true;
-      }
+      openAgendaSheet(urlAction === 'add-bulk' ? 'paste' : 'lines');
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('action');
@@ -617,12 +598,6 @@ onMounted(() => {
       }
     }, 100);
   }
-});
-
-// Form handling
-const meetingAgendaForm = useForm({
-  meeting: props.meeting.id,
-  agendaItems: [],
 });
 
 // Computed values
@@ -643,8 +618,6 @@ const meetingTitle = computed(() => {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   });
 
   if (isJoint.value) {
@@ -656,36 +629,6 @@ const meetingTitle = computed(() => {
     : mainInstitution.name;
 
   return `${datePart} ${genitivizeEveryWord(institutionName)} posėdis`;
-});
-
-// Hero subtitle - institution name(s) with link
-const heroSubtitle = computed(() => {
-  if (isJoint.value) {
-    return props.meeting.institutions?.map((i: App.Entities.Institution) => i.name).join(' · ') ?? '';
-  }
-  if (typeof mainInstitution === 'string') {
-    return mainInstitution;
-  }
-  return mainInstitution.name;
-});
-
-// Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(() => {
-  if (typeof mainInstitution === 'string') {
-    return [
-      { label: mainInstitution, icon: InstitutionIconFilled },
-      { label: meetingTitle.value, icon: MeetingIconFilled },
-    ];
-  }
-
-  return BreadcrumbHelpers.adminShow(
-    mainInstitution.name,
-    'institutions.show',
-    { institution: mainInstitution.id },
-    meetingTitle.value,
-    InstitutionIconFilled,
-    MeetingIconFilled,
-  );
 });
 
 // Joint meeting — institution management
@@ -724,8 +667,7 @@ const handleMissingAction = (action: MeetingMissingAction) => {
   if (action.type === 'agenda_missing') {
     currentTab.value = 'agenda';
     agendaEditing.value = true;
-    bulkAgendaInitialInput.value = 'text';
-    showAgendaItemStoreModal.value = true;
+    openAgendaSheet('paste');
     return;
   }
 
@@ -801,46 +743,8 @@ const confirmAgendaItemDelete = () => {
   });
 };
 
-const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string; description?: string; brought_by_students?: boolean }) => {
-  loading.value = true;
-
-  router.post(route('agendaItems.store'), {
-    meeting_id: data.meeting_id,
-    agendaItemTitles: [data.title],
-    agendaItemDescriptions: data.description ? [data.description] : [],
-    broughtByStudentsFlags: [data.brought_by_students || false],
-  }, {
-    onSuccess: () => {
-      showSingleAgendaItemModal.value = false;
-    },
-    onFinish: () => {
-      loading.value = false;
-    },
-  });
-};
-
 const openBulkAgendaModal = () => {
-  bulkAgendaInitialInput.value = 'one-by-one';
-  showAgendaItemStoreModal.value = true;
-};
-
-const handleAgendaItemsFormSubmit = (agendaItems: Record<string, unknown>) => {
-  loading.value = true;
-
-  meetingAgendaForm
-    .transform(data => ({
-      meeting_id: props.meeting.id,
-      ...agendaItems,
-    }))
-    .post(route('agendaItems.store'), {
-      onSuccess: () => {
-        meetingAgendaForm.reset();
-        showAgendaItemStoreModal.value = false;
-      },
-      onFinish: () => {
-        loading.value = false;
-      },
-    });
+  openAgendaSheet('lines');
 };
 
 const handleMeetingDelete = () => {

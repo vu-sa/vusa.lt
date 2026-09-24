@@ -207,7 +207,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, CalendarRange, Copy, Edit3, KeyRound, Plus, Shield, Trash2 } from 'lucide-vue-next';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
-import { UserIconFilled } from '@/Components/icons';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -215,7 +214,6 @@ import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
@@ -499,14 +497,4 @@ const {
   reportFromDetail,
 } = useTaskActionDialogs();
 
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminShow(
-    $t('Nariai'),
-    'users.index',
-    undefined,
-    props.user.name,
-    UserIconFilled,
-    UserIconFilled,
-  ),
-);
 </script>

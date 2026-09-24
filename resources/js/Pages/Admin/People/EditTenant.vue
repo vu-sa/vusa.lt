@@ -12,17 +12,11 @@
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import TenantForm from '@/Components/AdminForms/TenantForm.vue';
-import { TenantIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   assignableInstitutions: Array<App.Entities.Institution>;
   tenant: App.Entities.Tenant;
 }>();
-
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Padaliniai', 'tenants.index', props.tenant.shortname, TenantIcon),
-);
 
 function submitForm(form: unknown): void {
   const inertiaForm = form as InertiaForm<Record<string, unknown>>;

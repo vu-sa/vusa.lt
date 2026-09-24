@@ -3,8 +3,9 @@
     :datetime="date.toISOString()"
     class="flex size-16 shrink-0 flex-col items-center justify-center border border-border bg-card text-center"
   >
-    <span class="text-2xl font-semibold leading-none text-foreground">{{ day }}</span>
-    <span class="mt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ month }}</span>
+    <!-- Month first, as Lithuanian dates are read ("rugs. 24"). -->
+    <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ month }}</span>
+    <span class="mt-1 text-2xl font-semibold leading-none text-foreground">{{ day }}</span>
   </time>
 </template>
 

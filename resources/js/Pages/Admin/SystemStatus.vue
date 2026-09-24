@@ -111,7 +111,6 @@ import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import type { StatusPresentation } from '@/Constants/statuses';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { formatNearDate } from '@/Utils/dateTime';
 
 type ServiceStatus = Record<string, unknown> & { status?: string; error?: string; message?: string };
@@ -153,5 +152,4 @@ const deviceStats = computed(() => {
     { label: $t('PWA paleidimai'), value: summary.total_pwa_launches },
   ];
 });
-usePageBreadcrumbs(BreadcrumbHelpers.adminForm($t('Sistema'), 'systemStatus', $t('Sistemos būsena')));
 </script>

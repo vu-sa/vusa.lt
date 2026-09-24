@@ -5,9 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The cross-entity search page. It only reads `q` and `tab`; what a user may find is decided by
- * the scoped Typesense keys at the search layer, and each destination page authorizes itself.
- * An unknown `tab` is not an error: a stale bookmark should land on the search page, not on a 422.
+ * Validates old search URLs before redirecting to a collection page or dashboard.
  */
 class IndexSearchRequest extends FormRequest
 {

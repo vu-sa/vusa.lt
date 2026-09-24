@@ -84,17 +84,18 @@ describe('InstitutionOverviewSection', () => {
     expect(wrapper.text()).not.toContain('VU MIF Taryba');
   });
 
-  it('paints no badge for the healthy state', () => {
+  it('leaves the status and the day counter to the record\'s status card', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: { institution: makeInstitution(), overview: makeOverview() },
       global: { stubs },
     });
 
     expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
-    expect(wrapper.text()).toContain('10 d. / 30 d.');
+    expect(wrapper.text()).not.toContain('10 d. / 30 d.');
+    expect(wrapper.text()).not.toContain('Paskutinis susitikimas');
   });
 
-  it('names an overdue institution with the shared status badge and offers both answers', async () => {
+  it('keeps the activity action out of the overview even when overdue', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: {
         institution: makeInstitution(),
@@ -112,43 +113,18 @@ describe('InstitutionOverviewSection', () => {
       global: { stubs },
     });
 
-    expect(wrapper.find('[data-slot="status-badge"]').attributes('data-status-role')).toBe('danger');
-    expect(wrapper.text()).toContain('35 d. / 30 d.');
-
-    const buttons = wrapper.findAll('button');
-    await buttons.find(b => b.text().includes('tasks.periodicity_gap.schedule_meeting'))!.trigger('click');
-    await buttons.find(b => b.text().includes('tasks.periodicity_gap.report_no_meeting'))!.trigger('click');
-
-    expect(wrapper.emitted('schedule-meeting')).toHaveLength(1);
-    expect(wrapper.emitted('report-activity')).toHaveLength(1);
+    expect(wrapper.find('[data-testid="institution-activity"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('Fiksuoti veiklą');
   });
 
-  it('offers no action while nothing is due', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution(), overview: makeOverview() },
-      global: { stubs },
-    });
-
-    expect(wrapper.text()).not.toContain('tasks.periodicity_gap.schedule_meeting');
-  });
-
-  it('shows the last meeting date from the activity status', () => {
-    const wrapper = mount(InstitutionOverviewSection, {
-      props: { institution: makeInstitution(), overview: makeOverview() },
-      global: { stubs },
-    });
-
-    expect(wrapper.text()).toContain('Paskutinis susitikimas');
-    expect(wrapper.text()).toContain('2025');
-  });
-
-  it('teaches an empty meetings list to schedule the first one', async () => {
+  it('shows an empty meetings message without another action button', () => {
     const wrapper = mount(InstitutionOverviewSection, {
       props: { institution: makeInstitution(), overview: makeOverview() },
       global: { stubs },
     });
 
     expect(wrapper.text()).toContain('Nėra susitikimų');
+    expect(wrapper.text()).not.toContain('Suplanuoti susitikimą');
   });
 
   it('links to all meetings once there are some', async () => {

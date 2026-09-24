@@ -11,16 +11,10 @@
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import BannerForm from '@/Components/AdminForms/BannerForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { BannerIcon } from '@/Components/icons';
 
 const props = defineProps<{
   banner: App.Entities.Banner;
 }>();
-
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Baneriai', 'banners.index', props.banner.title, BannerIcon),
-);
 
 function submitForm(form: unknown): void {
   const inertiaForm = form as InertiaForm<App.Entities.Banner>;

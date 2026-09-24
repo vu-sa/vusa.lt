@@ -13,8 +13,6 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import FormForm from '@/Components/AdminForms/FormForm.vue';
-import { FormIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { formTemplate } from '@/Types/formTemplates';
 
 defineProps<{
@@ -22,15 +20,6 @@ defineProps<{
   fieldModelOptions: Record<string, unknown>[];
   fieldModelFields: Record<string, unknown>[];
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm(
-    $tChoice('entities.form.model', 2),
-    'forms.index',
-    $t('Nauja registracijos forma'),
-    FormIcon,
-  ),
-);
 
 const form = structuredClone(formTemplate);
 

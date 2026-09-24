@@ -32,8 +32,6 @@ import { router, type InertiaForm } from '@inertiajs/vue3';
 import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 import NavigationParentForm from '@/Components/AdminForms/NavigationParentForm.vue';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { NavigationIcon } from '@/Components/icons';
 
 interface TopicOption {
   id: number;
@@ -46,10 +44,6 @@ const props = defineProps<{
   parentElements?: App.Entities.Navigation[];
   topicOptions?: TopicOption[];
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Navigacija', 'navigation.index', props.navigationElement.name || 'Redaguoti elementą', NavigationIcon),
-);
 
 const navigationElement = {
   ...props.navigationElement,

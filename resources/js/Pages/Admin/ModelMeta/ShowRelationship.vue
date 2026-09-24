@@ -34,7 +34,6 @@ import RelationshipConnections from './RelationshipConnections.vue';
 
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { ModelEnum } from '@/Types/enums';
 
 const props = defineProps<{
@@ -57,5 +56,4 @@ function handleAction(action: string): void {
     deleteOpen.value = true;
   }
 }
-usePageBreadcrumbs(BreadcrumbHelpers.adminShow($t('Ryšiai'), route('relationships.index'), props.relationship.name));
 </script>

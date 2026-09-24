@@ -8,6 +8,7 @@ use App\Http\Requests\IndexTasksRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Services\ModelAuthorizer;
+use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,8 +29,8 @@ class TaskApiController extends ApiController
             $this->authorizeApi('viewAny', Task::class);
         }
 
-        $tasks = BuildTaskIndexQuery::execute($request, $scope, $user, $this->authorizer)
-            ->paginate($request->getPerPage());
+        $query = fn (IndexTasksRequest $request) => BuildTaskIndexQuery::execute($request, $scope, $user, $this->authorizer);
+        $tasks = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
             'items' => $tasks->getCollection()->map(fn (Task $task) => TaskResource::forListing($task, $user))->values(),
@@ -37,6 +38,7 @@ class TaskApiController extends ApiController
             'per_page' => $tasks->perPage(),
             'current_page' => $tasks->currentPage(),
             'last_page' => $tasks->lastPage(),
+            'facets' => CollectionFacetCounts::forRequest($request, ['completion', 'taskable_type', 'tenant', 'overdue', 'auto', 'assigned'], $query),
         ]);
     }
 

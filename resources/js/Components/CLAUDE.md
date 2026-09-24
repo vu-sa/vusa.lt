@@ -83,10 +83,12 @@ Rules for anything added there:
   button for everything else — outline, ghost, row actions, chips, Pradžia quick actions: at the default size it is 40px (44px on touch) — don't pass `size="lg"` or a height
   class. `voice="plain"` is for calendar cells and pagination numbers. Sizes: `lg` 48px for a page's primary,
   `default` 44px, `sm` 36px in toolbars and row actions, `icon*` for squares.
-- `ui/control` holds the bordered uppercase control both sites build filters from:
-  `controlVariants({ size, active })` for chips and Filtrai/Rikiuoti/popover triggers,
+- `ui/control` holds the bordered control both sites build filters and toolbar triggers from:
+  `controlVariants({ size, active, voice })` (`voice="brand"` uppercase default for public/standard controls; `voice="sentence"` for admin quick filters, facet pills, and toolbar buttons),
   `segmentGroupClass` + `segmentVariants({ active })` for view toggles, `searchFieldClass`,
   `controlCountClass`. Don't hand-roll `border-brand bg-brand/5 …` again.
+- `ui/badge` defaults to sentence case / literal casing (`voice="sentence"`), with opt-in `voice="brand"` for uppercase.
+- `StatusBadge` renders sentence case by default, automatically keeping `contentStatuses` and `bannerStatuses` uppercase (or via explicit `voice="brand"`).
 - Tables style through `ui/table` (hairline box, shaded uppercase header, roomy rows).
 
 ## What do I reach for?

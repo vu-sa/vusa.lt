@@ -4,6 +4,7 @@ import {
   getNotificationColorClasses,
   getNotificationColorKey,
   getNotificationContext,
+  getNotificationCategoryTag,
   getNotificationPrimaryAction,
   getNotificationSecondaryAction,
   type Notification,
@@ -87,3 +88,16 @@ describe('notification category colour', () => {
     expect(getNotificationColorKey({ ...make({}), type: 'App\\Notifications\\SomethingElse' })).toBe('neutral');
   });
 });
+
+describe('notification category tag', () => {
+  it('extracts human-readable category tag from category, modelKey or type', () => {
+    expect(getNotificationCategoryTag(make({ category: 'task' }))).toBe('Užduotis');
+    expect(getNotificationCategoryTag(make({ category: 'meeting' }))).toBe('Posėdis');
+    expect(getNotificationCategoryTag(make({ category: 'reservation' }))).toBe('Rezervacija');
+    expect(getNotificationCategoryTag(make({ category: 'comment' }))).toBe('Komentaras');
+    expect(getNotificationCategoryTag(make({ modelClass: 'Duty' }))).toBe('Pareigybė');
+    expect(getNotificationCategoryTag({ ...make({}), type: 'App\\Notifications\\StudentRepRegistrationNotification' })).toBe('Registracija');
+    expect(getNotificationCategoryTag({ ...make({}), type: 'App\\Notifications\\UnknownNotification' })).toBe('Pranešimas');
+  });
+});
+

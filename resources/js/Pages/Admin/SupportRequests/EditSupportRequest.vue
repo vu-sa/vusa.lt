@@ -12,7 +12,6 @@
 import { trans as $t } from 'laravel-vue-i18n';
 
 import SupportRequestForm from '@/Components/SupportRequests/SupportRequestForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type {
   SupportRequestItem,
   SupportRequestRoleOption,
@@ -36,9 +35,4 @@ const props = defineProps<{
   service?: SupportRequestTaxonomyItem;
 }>();
 
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.createRouteBreadcrumb($t('vusa.lt pagalba'), 'mySupportRequests.index'),
-  BreadcrumbHelpers.createRouteBreadcrumb(props.supportRequest.title, 'supportRequests.show', props.supportRequest.id),
-  BreadcrumbHelpers.createBreadcrumbItem($t('Redaguoti')),
-]);
 </script>

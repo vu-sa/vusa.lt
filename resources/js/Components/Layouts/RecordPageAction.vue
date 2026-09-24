@@ -13,7 +13,7 @@
     <component :is="action.icon" v-if="action.icon" class="size-4" />
     {{ action.label }}
   </Link>
-  <Button v-else :variant="primary ? 'brand' : 'outline'" :size="primary ? 'lg' : 'default'" @click="$emit('select', action.key)">
+  <Button v-else :variant="primary ? 'brand' : 'outline'" size="default" :voice="primary ? 'brand' : 'sentence'" @click="$emit('select', action.key)">
     <component :is="action.icon" v-if="action.icon" class="size-4" />
     {{ action.label }}
   </Button>
@@ -27,12 +27,10 @@ import type { RecordAction } from './RecordPage.vue';
 
 import { Button, buttonVariants } from '@/Components/ui/button';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   action: RecordAction;
   primary?: boolean;
-}>(), {
-  primary: false,
-});
+}>();
 
 defineEmits<{
   select: [key: string];
@@ -40,6 +38,7 @@ defineEmits<{
 
 const buttonClass = computed(() => buttonVariants({
   variant: props.primary ? 'brand' : 'outline',
-  size: props.primary ? 'lg' : 'default',
+  size: 'default',
+  voice: props.primary ? 'brand' : 'sentence',
 }));
 </script>

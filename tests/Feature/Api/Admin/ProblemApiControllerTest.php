@@ -52,3 +52,30 @@ test('filters problem collection by status', function (): void {
         ->assertJsonCount(1, 'data.items')
         ->assertJsonPath('data.items.0.status', 'resolved');
 });
+
+test('counts facet values within the coordinator scope, each facet ignoring its own selection', function (): void {
+    Problem::factory()->count(2)->create([
+        'tenant_id' => $this->tenant->id,
+        'status' => 'resolved',
+    ]);
+
+    // Selecting "open" narrows the list but not the status counts; the other tenant stays out of scope.
+    asUser($this->coordinator)
+        ->getJson(route('api.v1.admin.problems.index', [
+            'status' => ['open'],
+            'filters' => json_encode(['status' => ['open']]),
+            'include_facets' => 1,
+            'facet_values' => json_encode(['status' => ['open', 'resolved']]),
+        ]))
+        ->assertOk()
+        ->assertJsonCount(1, 'data.items')
+        ->assertJsonPath('data.facets.status.open', 1)
+        ->assertJsonPath('data.facets.status.resolved', 2);
+});
+
+test('leaves facet counts out unless the page asks for them', function (): void {
+    asUser($this->coordinator)
+        ->getJson(route('api.v1.admin.problems.index'))
+        ->assertOk()
+        ->assertJsonPath('data.facets', null);
+});

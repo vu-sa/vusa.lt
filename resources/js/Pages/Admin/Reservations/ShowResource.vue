@@ -166,7 +166,6 @@ import { Ban, CalendarClock, CalendarPlus, Check, Clock, Edit3, Link2, PackageCh
 import { toast } from 'vue-sonner';
 import { capitalize, computed, ref, watch } from 'vue';
 
-import { ResourceIcon } from '@/Components/icons';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, OverviewStatusList } from '@/Components/Patterns';
 import ReservationCartBar from '@/Components/Reservations/ReservationCartBar.vue';
@@ -175,7 +174,6 @@ import { formatReservationPeriod } from '@/Components/Reservations/reservationPe
 import ResourceBookingRow, { type ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
 import type { ReservationCart } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
 import { ModelEnum } from '@/Types/enums';
@@ -349,14 +347,4 @@ const handleAction = async (key: string) => {
   }
 };
 
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminShow(
-    capitalize($tChoice('entities.resource.model', 2)),
-    'resources.index',
-    {},
-    props.resource.name ?? '',
-    ResourceIcon,
-    ResourceIcon,
-  ),
-);
 </script>

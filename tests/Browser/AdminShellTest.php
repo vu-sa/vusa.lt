@@ -120,6 +120,30 @@ it('uses the bottom bar and hides the create button and bell in the top bar on a
         ->and($page->script("document.querySelector('[data-slot=shell-top-bar] [data-tour=notifications-indicator]').offsetParent"))->toBeNull();
 });
 
+it('opens only the active workspace in the phone menu and switches sections when tapped', function (): void {
+    $page = openShell(390, 844);
+    $page->click('[data-tour=mobile-menu]');
+
+    $workspaceState = 'Array.from(document.querySelectorAll("[data-slot=mobile-menu-workspace]"), workspace => ({
+        label: workspace.querySelector("button").textContent.trim(),
+        expanded: workspace.querySelector("button").getAttribute("aria-expanded"),
+        visible: getComputedStyle(workspace.querySelector("ul")).display !== "none",
+    }))';
+
+    $initial = $page->script($workspaceState);
+    expect(array_values(array_filter($initial, fn (array $workspace): bool => $workspace['visible'])))->toHaveCount(1)
+        ->and($initial[array_search('true', array_column($initial, 'expanded'), true)]['label'])->toContain('ViSAK');
+
+    $page->click('[data-slot=mobile-menu-workspace]:first-child > button');
+
+    $switched = $page->script($workspaceState);
+    expect($switched[0]['expanded'])->toBe('true')
+        ->and($switched[0]['visible'])->toBeTrue()
+        ->and(array_values(array_filter($switched, fn (array $workspace): bool => $workspace['visible'])))->toHaveCount(1);
+
+    $page->assertNoJavaScriptErrors();
+});
+
 it('has no bottom bar and shows the create button in the top bar on a desktop', function (): void {
     $page = openShell(1440, 900);
 

@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from 'lucide-vue-next';
+import { ArrowUpRight, Plus } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
@@ -123,15 +123,19 @@ const eyebrow = computed(() => `${$t('shell.workspaces.atstovavimas.title')} · 
 
 // Built directly rather than through useTrashAwareSource: the quick filters need the scoped
 // key's own institutions, which only the live source knows.
-const liveSource = isTrash ? null : useTypesenseCollectionSource<MeetingSearchResult>({
-  collection: 'meetings',
-  preserveUrlKeys: ['view', 'item'],
-  collapsedChips: { institution_ids: $t('Mano institucijos') },
-  // The filter popover and chips name a status exactly as the row badge does (U10).
-  valueLabel: (field, value) => (field === 'completion_status' && value in meetingCompletionStatuses
-    ? $t(meetingCompletionStatuses[value as MeetingCompletionStatus].label)
-    : undefined),
-});
+const liveSource = isTrash
+  ? null
+  : useTypesenseCollectionSource<MeetingSearchResult>({
+      collection: 'meetings',
+      preserveUrlKeys: ['view', 'item'],
+      collapsedChips: { institution_ids: $t('Mano institucijos') },
+      // The filter popover and chips name a status exactly as the row badge does (U10).
+      valueLabel: (field, value) => (
+        field === 'completion_status' && value in meetingCompletionStatuses
+          ? $t(meetingCompletionStatuses[value as MeetingCompletionStatus].label)
+          : undefined
+      ),
+    });
 const source: CollectionSource<MeetingSearchResult> = liveSource ?? useTrashCollectionSource<MeetingSearchResult>('meetings');
 
 const actions = useCollectionRecordActions({
@@ -139,7 +143,9 @@ const actions = useCollectionRecordActions({
   canRestore: () => canCreate.value,
   canForceDelete: () => canForceDelete.value,
 });
-const actionsFor = (meeting: MeetingSearchResult) => actions.rowActions(meeting, meeting.title, true);
+const actionsFor = (meeting: MeetingSearchResult) => isTrash
+  ? actions.rowActions(meeting, meeting.title, true)
+  : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), labelled: true }];
 
 const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);
 
@@ -149,7 +155,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'institution', label: $t('Institucija') },
   { key: 'agenda', label: $t('Punktai'), class: 'w-24' },
   { key: 'status', label: $t('Būsena'), class: 'w-48' },
-  ...(isTrash ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 
 // --- Quick filters (.ai/rules/js-pages-admin.md) ---------------------------------------------

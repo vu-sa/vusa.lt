@@ -12,7 +12,8 @@ vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () =>
 /** RecordPage is stubbed so the test can read what the page hands it and fire its emits. */
 const stubs = {
   RecordPage: {
-    props: ['title', 'status', 'facts', 'sections', 'primaryAction', 'overflowActions'],
+    name: 'RecordPage',
+    props: ['title', 'status', 'facts', 'sections', 'primaryAction', 'overflowActions', 'actionsBesideTitle'],
     emits: ['action', 'update:section'],
     template: `
       <div>
@@ -73,7 +74,7 @@ const baseInstitution = {
 
 const createWrapper = (props: Record<string, unknown> = {}) => {
   const {
-    can = { update: true, delete: true },
+    can = { update: true, delete: true, recordMeeting: true, reportActivity: true },
     overview = {},
     management = null,
     ...institution
@@ -113,14 +114,26 @@ describe('ShowInstitution.vue', () => {
     });
   });
 
-  it('paints no status for an institution that is simply active', () => {
-    expect(createWrapper().find('[data-testid="status"]').exists()).toBe(false);
+  const statusFact = (wrapper: ReturnType<typeof createWrapper>) =>
+    (wrapper.findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; detail?: string; status?: { label: string; role: string } }>)[0];
+
+  it('leads the facts with the activity status, "Aktyvi" included, instead of a title badge', () => {
+    const wrapper = createWrapper();
+
+    expect(wrapper.find('[data-testid="status"]').exists()).toBe(false);
+    expect(statusFact(wrapper)).toMatchObject({ key: 'status', status: { label: 'Aktyvi', role: 'success' } });
   });
 
-  it('names an overdue institution in the title band', () => {
+  it('says under the status what it rests on, as the institution picker does', () => {
+    const wrapper = createWrapper({ overview: { activity_status: { status: 'healthy', next_meeting_at: '2026-10-15T10:00:00Z' } } });
+
+    expect(statusFact(wrapper)).toMatchObject({ detail: 'action_window.institution.next_meeting' });
+  });
+
+  it('tones an overdue institution\'s status card as danger', () => {
     const wrapper = createWrapper({ overview: { activity_status: { status: 'overdue' } } });
 
-    expect(wrapper.find('[data-testid="status"]').text()).toBe('Vėluoja');
+    expect(statusFact(wrapper)).toMatchObject({ status: { label: 'Vėluoja', role: 'danger' } });
   });
 
   it('offers the sections an editor can act on, and only those', () => {
@@ -139,12 +152,49 @@ describe('ShowInstitution.vue', () => {
     expect(facts).toEqual(expect.arrayContaining(['tenant', 'members']));
   });
 
-  it('has one primary action — recording a meeting — and keeps the rest in the overflow', () => {
+  it('moves the type and governance scope to a fact and shows meeting visibility instead of periodicity', () => {
+    const wrapper = createWrapper({
+      types: [{ title: 'Taryba' }],
+      governance_scope: 'vusa',
+      has_public_meetings: false,
+      meeting_periodicity_days: 30,
+    });
+    const facts = wrapper.findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; value?: string }>;
+
+    expect(facts.find(fact => fact.key === 'type')).toMatchObject({
+      label: 'forms.options.governance_scope_vusa',
+      value: 'Taryba',
+      surfaceClass: 'bg-brand/5',
+    });
+    expect(facts[1]?.key).toBe('type');
+    expect(facts.find(fact => fact.key === 'visibility')?.value).toBe('Nevieši posėdžiai');
+    expect(facts.map(fact => fact.key)).not.toContain('periodicity');
+  });
+
+  it('uses the muted burgundy surface for a VU organ', () => {
+    const facts = createWrapper({ governance_scope: 'vu', types: [{ title: 'Senatas' }] })
+      .findComponent({ name: 'RecordPage' }).props('facts') as Array<{ key: string; label: string; surfaceClass?: string }>;
+
+    expect(facts.find(fact => fact.key === 'type')).toMatchObject({
+      label: 'forms.options.governance_scope_vu',
+      surfaceClass: 'bg-[#78003F]/10 dark:bg-[#78003F]/25',
+    });
+  });
+
+  it('puts the activity action beside the title and keeps the rest in the overflow', () => {
     const wrapper = createWrapper();
 
-    expect(wrapper.find('[data-testid="primary"]').text()).toBe('Fiksuoti posėdį');
+    expect(wrapper.find('[data-testid="primary"]').text()).toBe('Fiksuoti veiklą');
+    expect(wrapper.findComponent({ name: 'RecordPage' }).props('actionsBesideTitle')).toBe('');
     expect(wrapper.find('[data-testid="overflow-edit"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="overflow-timeline"]').exists()).toBe(true);
+  });
+
+  it('shows the primary action when either activity option is available', () => {
+    expect(createWrapper({ can: { update: false, delete: false, recordMeeting: false, reportActivity: true } })
+      .find('[data-testid="primary"]').exists()).toBe(true);
+    expect(createWrapper({ can: { update: false, delete: false, recordMeeting: false, reportActivity: false } })
+      .find('[data-testid="primary"]').exists()).toBe(false);
   });
 
   it('hides editing from someone who may not update the institution', () => {

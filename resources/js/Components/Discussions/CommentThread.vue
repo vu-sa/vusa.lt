@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-lg border border-zinc-100 p-3 dark:border-zinc-800" :class="comment.is_resolved ? 'bg-zinc-50/60 dark:bg-zinc-900/40' : 'bg-white dark:bg-zinc-900'">
+  <div data-slot="comment-thread" :class="comment.is_resolved ? 'text-muted-foreground' : undefined">
     <CommentItem
       :comment
       :mentionables
@@ -14,7 +14,7 @@
     />
 
     <!-- Replies -->
-    <div v-if="comment.replies?.length" class="mt-3 space-y-3 border-l-2 border-zinc-100 pl-3 dark:border-zinc-800">
+    <div v-if="comment.replies?.length" class="mt-3 space-y-3 border-l border-border pl-4">
       <CommentItem
         v-for="reply in comment.replies"
         :key="reply.id"

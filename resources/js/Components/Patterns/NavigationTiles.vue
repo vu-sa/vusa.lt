@@ -1,8 +1,6 @@
 <template>
-  <!-- Each tile draws all four rules and overlaps its neighbours by 1px, so lines exist only where
-       a tile does — a container-level rule would run on past a short row's last tile. -->
-  <ul :class="['grid grid-cols-2 pt-px pl-px', columnsClass]" data-slot="navigation-tiles">
-    <li v-for="item in items" :key="item.key" class="-mt-px -ml-px flex border border-border">
+  <RuledGrid as="ul" :columns="{ base: 2, lg: columns }" top-rule="cells" data-slot="navigation-tiles">
+    <li v-for="item in items" :key="item.key" class="flex">
       <Link
         :href="item.href"
         prefetch
@@ -30,13 +28,15 @@
         />
       </Link>
     </li>
-  </ul>
+  </RuledGrid>
 </template>
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight } from 'lucide-vue-next';
-import { computed, type Component } from 'vue';
+import type { Component } from 'vue';
+
+import { RuledGrid } from '@/Components/Brand';
 
 export interface NavigationTileItem {
   key: string;
@@ -47,7 +47,7 @@ export interface NavigationTileItem {
   icon: Component;
 }
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   items: NavigationTileItem[];
   columns?: 2 | 3 | 4;
 }>(), {
@@ -57,6 +57,4 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   navigate: [key: string];
 }>();
-
-const columnsClass = computed(() => ({ 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4' })[props.columns]);
 </script>

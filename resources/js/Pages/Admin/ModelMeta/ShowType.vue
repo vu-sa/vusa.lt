@@ -120,7 +120,6 @@ import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { ModelEnum } from '@/Types/enums';
 
@@ -199,5 +198,4 @@ function handleAction(action: string): void {
   if (action === 'edit') router.visit(route('types.edit', props.contentType.id));
   if (action === 'delete') deleteOpen.value = true;
 }
-usePageBreadcrumbs(BreadcrumbHelpers.adminShow($t('Tipai'), route('types.index'), title.value));
 </script>

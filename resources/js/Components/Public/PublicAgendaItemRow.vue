@@ -15,7 +15,7 @@
       <span class="flex items-center gap-1.5 pt-0.5">
         <span class="w-4 text-right font-mono text-xs tabular-nums text-muted-foreground">{{ item.order }}</span>
         <span
-          class="size-1.5 shrink-0 rounded-full"
+          class="size-1.5 shrink-0"
           :class="showStatus ? status.dotClass : 'bg-transparent'"
           :title="showStatus ? status.label : undefined"
         />

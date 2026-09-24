@@ -159,7 +159,7 @@ Route::patch('calendar/{calendar}/index', [CalendarController::class, 'updateInd
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
 Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');
-Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
+Route::resource('agendaItems', AgendaItemController::class)->except(['create']);
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
 Route::resource('votes', VoteController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('votes/{vote}/set-main', [VoteController::class, 'setMain'])->name('votes.setMain');

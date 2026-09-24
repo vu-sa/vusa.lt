@@ -118,3 +118,16 @@ describe('useAdminCollectionSearch — restoring loaded pages', () => {
     expect(params.get('item')).toBe('abc');
   });
 });
+
+describe('useAdminCollectionSearch — reactive base filter', () => {
+  it('searches again, with the new clause, when the base filter changes', async () => {
+    const baseFilterBy = ref<string | undefined>(undefined);
+    await mountController({ baseFilterBy });
+
+    baseFilterBy.value = 'id:=[a,b]';
+    await flushPromises();
+
+    const filters = search.searchWithFacets.mock.calls.map(call => call[2].filterBy);
+    expect(filters).toEqual([undefined, 'id:=[a,b]']);
+  });
+});

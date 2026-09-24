@@ -6,6 +6,7 @@ use App\Enums\NotificationCategory;
 use App\Enums\NotificationUrgency;
 use App\Models\Meeting;
 use App\Models\User;
+use App\Notifications\Concerns\ReachesFollowers;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use Illuminate\Support\Arr;
 
@@ -14,6 +15,8 @@ use Illuminate\Support\Arr;
  */
 class MeetingAgendaCompletedNotification extends BaseNotification
 {
+    use ReachesFollowers;
+
     /**
      * Create a new notification instance.
      *

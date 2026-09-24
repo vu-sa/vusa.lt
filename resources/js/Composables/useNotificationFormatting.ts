@@ -9,10 +9,9 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
 
-import { formatRelativeTime } from '@/Utils/IntlTime';
+import { formatNearDate } from '@/Utils/dateTime';
 import { getModelIcon } from '@/Components/icons';
 import type { ModelEnum } from '@/Types/enums';
-
 // Default icons for notification categories
 import IFluentComment24Regular from '~icons/fluent/comment24-regular';
 import IFluentTaskListSquareLtr24Regular from '~icons/fluent/task-list-square-ltr24-regular';
@@ -429,10 +428,71 @@ export function getNotificationContext(notification: Notification): Notification
 }
 
 /**
+ * Localized tag representing the notification's domain/entity (e.g. "Posėdis", "Užduotis").
+ */
+export function getNotificationCategoryTag(notification: Notification): string {
+  const { data } = notification;
+  const category = data.category?.toLowerCase();
+
+  switch (category) {
+    case 'task':
+      return $t('Užduotis');
+    case 'meeting':
+      return $t('Posėdis');
+    case 'reservation':
+      return $t('Rezervacija');
+    case 'comment':
+      return $t('Komentaras');
+    case 'registration':
+      return $t('Registracija');
+    case 'duty':
+      return $t('Pareigybė');
+    case 'user':
+      return $t('Narys');
+    case 'system':
+      return $t('Sistema');
+  }
+
+  const modelKey = getModelEnumKey(data);
+  if (modelKey) {
+    switch (modelKey) {
+      case 'TASK':
+        return $t('Užduotis');
+      case 'MEETING':
+        return $t('Posėdis');
+      case 'RESERVATION':
+      case 'RESERVATION_RESOURCE':
+        return $t('Rezervacija');
+      case 'COMMENT':
+        return $t('Komentaras');
+      case 'DUTY':
+        return $t('Pareigybė');
+      case 'USER':
+        return $t('Narys');
+      case 'FORM':
+        return $t('Forma');
+      case 'INSTITUTION':
+        return $t('Institucija');
+    }
+  }
+
+  const type = getNotificationType(notification);
+  if (type.includes('Task')) return $t('Užduotis');
+  if (type.includes('Meeting')) return $t('Posėdis');
+  if (type.includes('Reservation')) return $t('Rezervacija');
+  if (type.includes('Comment')) return $t('Komentaras');
+  if (type.includes('Registration')) return $t('Registracija');
+  if (type.includes('Duty')) return $t('Pareigybė');
+  if (type.includes('Member') || type.includes('User')) return $t('Narys');
+
+  return $t('Pranešimas');
+}
+
+/**
  * Format notification timestamp
  */
 export function formatNotificationTime(notification: Notification): string {
-  return formatRelativeTime(new Date(notification.created_at));
+  return formatNearDate(notification.created_at);
 }
 
 /**

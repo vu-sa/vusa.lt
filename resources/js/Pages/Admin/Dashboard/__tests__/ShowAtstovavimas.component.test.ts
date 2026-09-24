@@ -22,7 +22,6 @@ const institution = (id: string, status: string) => ({
 vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasData', () => ({
   useAtstovavimasData: () => ({
     institutions: ref([institution('1', 'overdue'), institution('2', 'healthy'), institution('3', 'approaching')]),
-    upcomingMeetings: ref([]),
     sortedMeetings: ref([
       { id: 'm1', start_time: '2026-09-01T10:00:00', institution_id: '1', completion_status: 'incomplete' },
       { id: 'm2', start_time: '2026-09-02T10:00:00', institution_id: '2', completion_status: 'complete' },
@@ -89,6 +88,7 @@ function createWrapper(canViewTenantOverview: boolean) {
       canViewTenantOverview,
       openTasksCount: 4,
       coordinators: [],
+      upcomingMeetings: { items: [], total: 0 },
     },
     global: { stubs },
   });

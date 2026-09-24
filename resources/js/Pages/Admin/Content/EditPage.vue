@@ -15,8 +15,6 @@
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import PageForm from '@/Components/AdminForms/PageForm.vue';
-import { PageIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   // `descendant_ids` is server-computed (Page::descendantIds()), not a real relation.
@@ -24,10 +22,6 @@ const props = defineProps<{
   availableTags?: App.Entities.Tag[];
   otherLangPages: App.Entities.Page[];
 }>();
-
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Puslapiai', 'pages.index', props.page.title, PageIcon),
-);
 
 function submitForm(form: unknown): void {
   const inertiaForm = form as InertiaForm<App.Entities.Page>;

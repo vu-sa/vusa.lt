@@ -18,8 +18,6 @@
 import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import CalendarForm from '@/Components/AdminForms/CalendarForm.vue';
-import { CalendarIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const { calendar, canUpdate } = withDefaults(defineProps<{
   calendar: App.Entities.Calendar;
@@ -39,15 +37,6 @@ const { calendar, canUpdate } = withDefaults(defineProps<{
 }>(), {
   availableTags: () => [],
   meeting: null,
-});
-
-usePageBreadcrumbs(() => {
-  const currentLocale = usePage().props.app.locale as 'lt' | 'en';
-  const title = (calendar.title as Record<string, string>)?.[currentLocale]
-    || (calendar.title as Record<string, string>)?.lt
-    || 'Renginys';
-
-  return BreadcrumbHelpers.adminForm('Kalendorius', 'calendar.index', title, CalendarIcon);
 });
 
 function handleUpdateCalendar(form: unknown) {

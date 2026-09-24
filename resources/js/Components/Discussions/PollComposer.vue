@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-3 rounded-lg border border-zinc-200 bg-zinc-50/60 p-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+  <div class="space-y-3 border border-border bg-card p-3">
     <div class="flex items-center gap-2 text-sm font-medium text-foreground">
       <BarChart3 class="h-4 w-4 text-muted-foreground" />
       {{ $t('Sukurti apklausą') }}
@@ -12,7 +12,7 @@
         v-for="preset in presets"
         :key="preset.key"
         type="button"
-        class="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+        class="border border-border bg-background px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         @click="applyPreset(preset.labels)"
       >
         {{ preset.label }}
@@ -30,7 +30,7 @@
         <button
           v-if="options.length > 2"
           type="button"
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-zinc-100 hover:text-destructive dark:hover:bg-zinc-800"
+          class="flex size-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-destructive pointer-coarse:size-11"
           :title="$t('Pašalinti')"
           @click="options.splice(index, 1)"
         >
@@ -40,7 +40,7 @@
       <button
         v-if="options.length < 10"
         type="button"
-        class="inline-flex items-center gap-1 text-xs text-vusa-red transition-colors hover:underline"
+        class="inline-flex items-center gap-1 text-xs text-brand transition-colors hover:underline"
         @click="options.push('')"
       >
         <Plus class="h-3.5 w-3.5" />

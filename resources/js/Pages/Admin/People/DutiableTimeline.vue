@@ -110,10 +110,8 @@ import {
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { DutiableTimelineEditor } from '@/Features/Admin/DutiableTimeline';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
-import { InstitutionIconFilled } from '@/Components/icons';
 
 interface ScopeInstitution {
   id: string;
@@ -248,7 +246,4 @@ onMounted(() => {
   setTimeout(() => startTourIfNew(), TOUR_START_DELAY_MS);
 });
 
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.createBreadcrumbItem($t('dutiables.timeline.page.title'), undefined, InstitutionIconFilled),
-]);
 </script>

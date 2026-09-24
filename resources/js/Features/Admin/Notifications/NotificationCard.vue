@@ -1,51 +1,61 @@
 <template>
-  <div
-    class="group relative flex items-start gap-4 p-4 cursor-pointer transition-colors hover:bg-accent"
-    :class="notification.read_at ? '' : 'bg-brand/5'"
-    role="button"
-    tabindex="0"
-    @click="handleNavigate"
-    @keydown.enter="handleNavigate"
-    @keydown.space.prevent="handleNavigate"
+  <article
+    class="group relative flex items-start gap-3 p-4 transition-colors hover:bg-secondary/40 sm:gap-4"
+    :class="notification.read_at ? '' : 'bg-secondary/20'"
+    data-slot="notification-row"
   >
-    <!-- Unread indicator -->
-    <div
-      v-if="!notification.read_at"
-      class="absolute left-0 top-0 h-full w-0.5 bg-brand"
-      aria-hidden="true"
-    />
-
     <!-- Icon -->
     <div
       :class="[
-        'flex items-center justify-center size-11 shrink-0 border border-border',
-        colors.combined
+        'mt-0.5 flex size-9 shrink-0 items-center justify-center border border-border sm:size-10',
+        colors.combined,
       ]"
     >
-      <component :is="icon" class="size-5" />
+      <component :is="icon" class="size-4 sm:size-5" />
     </div>
 
     <!-- Content -->
-    <div class="flex-1 min-w-0 space-y-1">
-      <!-- Header with avatar and title -->
+    <div class="min-w-0 flex-1 space-y-1">
+      <!-- Eyebrow: Category Tag & Unread marker dot -->
+      <div class="flex items-center gap-1.5">
+        <span class="text-[10px] font-bold uppercase tracking-wide text-brand">
+          {{ categoryTag }}
+        </span>
+        <span
+          v-if="!notification.read_at"
+          class="size-1.5 shrink-0 bg-brand-fill"
+          aria-hidden="true"
+        />
+      </div>
+
+      <!-- Title with avatar if present -->
       <div class="flex items-center gap-2">
         <img
           v-if="notification.data.subject?.image"
           :src="notification.data.subject.image"
           :alt="notification.data.subject.name"
-          class="size-5 object-cover"
+          class="size-4 shrink-0 object-cover sm:size-5"
         >
         <h4
-          class="text-sm truncate"
+          class="text-sm leading-snug line-clamp-2 text-pretty"
           :class="notification.read_at ? 'font-medium text-muted-foreground' : 'font-semibold text-foreground'"
         >
-          {{ title }}
+          <a
+            v-if="url"
+            :href="url"
+            class="transition-colors hover:text-brand"
+            @click.prevent="handleNavigate"
+          >
+            {{ title }}
+          </a>
+          <span v-else>{{ title }}</span>
         </h4>
       </div>
 
-      <!-- Body -->
+      <!-- Body message -->
       <p
-        class="text-sm text-muted-foreground line-clamp-2"
+        v-if="message"
+        class="line-clamp-2 text-xs text-muted-foreground sm:text-sm"
         v-html="message"
       />
 
@@ -53,29 +63,30 @@
       <dl
         v-if="context.length"
         data-slot="notification-context"
-        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 border-t border-border pt-2 text-xs"
+        class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 border-t border-border/60 pt-2 text-xs"
       >
         <template v-for="row in context" :key="row.label">
           <dt class="text-muted-foreground">
             {{ row.label }}
           </dt>
-          <dd class="min-w-0 truncate text-foreground">
+          <dd class="min-w-0 truncate font-medium text-foreground">
             {{ row.value }}
           </dd>
         </template>
       </dl>
 
-      <!-- The ask -->
+      <!-- The ask / action buttons -->
       <div
         v-if="primaryAction"
         data-slot="notification-actions"
-        class="flex flex-wrap items-center gap-2 pt-1"
+        class="flex flex-wrap items-center gap-2 pt-1.5"
       >
         <Button
           variant="outline"
           size="sm"
-          class="max-sm:h-11"
-          @click.stop="visit(primaryAction.url)"
+          voice="sentence"
+          class="pointer-coarse:min-h-11"
+          @click="visit(primaryAction.url)"
         >
           {{ primaryAction.label }}
         </Button>
@@ -83,81 +94,63 @@
           v-if="secondaryAction"
           variant="ghost"
           size="sm"
-          class="max-sm:h-11"
-          @click.stop="visit(secondaryAction.url)"
+          voice="sentence"
+          class="pointer-coarse:min-h-11"
+          @click="visit(secondaryAction.url)"
         >
           {{ secondaryAction.label }}
         </Button>
       </div>
 
-      <!-- Footer with timestamp and actions on mobile -->
-      <div class="flex items-center justify-between pt-1">
+      <!-- Timestamp -->
+      <div class="pt-1">
         <span class="text-xs text-muted-foreground">
           {{ formattedTime }}
         </span>
-
-        <!-- Mobile actions -->
-        <div class="flex items-center gap-1 sm:hidden">
-          <button
-            v-if="!notification.read_at"
-            type="button"
-            class="p-1.5 text-status-success hover:bg-status-success-surface"
-            :title="$t('Pažymėti kaip skaitytą')"
-            @click.stop="emit('markAsRead', notification.id)"
-          >
-            <Check class="size-4" />
-          </button>
-          <button
-            type="button"
-            class="p-1.5 text-destructive hover:bg-destructive/10"
-            :title="$t('Ištrinti')"
-            @click.stop="emit('delete', notification.id)"
-          >
-            <Trash2 class="size-4" />
-          </button>
-        </div>
       </div>
     </div>
 
-    <!-- Desktop actions (show on hover) -->
-    <div
-      class="hidden sm:flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-    >
-      <Tooltip v-if="!notification.read_at">
-        <TooltipTrigger as-child>
-          <button
-            type="button"
-            class="p-2 text-status-success hover:bg-status-success-surface transition-colors"
-            @click.stop="emit('markAsRead', notification.id)"
-          >
-            <Check class="size-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>{{ $t('Pažymėti kaip skaitytą') }}</TooltipContent>
-      </Tooltip>
+    <!-- Row actions (always visible, touch-friendly) -->
+    <div class="flex shrink-0 items-center gap-1.5 self-start pt-0.5">
+      <button
+        v-if="!notification.read_at"
+        type="button"
+        class="flex size-8 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11"
+        :title="$t('Pažymėti kaip skaitytą')"
+        :aria-label="$t('Pažymėti kaip skaitytą')"
+        @click="emit('markAsRead', notification.id)"
+      >
+        <Check class="size-3.5" />
+      </button>
 
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <button
-            type="button"
-            class="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-            @click.stop="emit('delete', notification.id)"
-          >
-            <Trash2 class="size-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>{{ $t('Ištrinti') }}</TooltipContent>
-      </Tooltip>
-    </div>
+      <button
+        type="button"
+        :class="[
+          'flex size-8 items-center justify-center border border-border text-muted-foreground',
+          'transition-colors hover:border-destructive hover:text-destructive pointer-coarse:size-11',
+        ]"
+        :title="$t('Ištrinti')"
+        :aria-label="$t('Ištrinti')"
+        @click="emit('delete', notification.id)"
+      >
+        <Trash2 class="size-3.5" />
+      </button>
 
-    <!-- Action URL indicator -->
-    <div
-      v-if="url"
-      class="hidden sm:flex items-center shrink-0 text-muted-foreground group-hover:text-foreground transition-colors"
-    >
-      <ArrowRight class="size-4" />
+      <a
+        v-if="url"
+        :href="url"
+        :class="[
+          'hidden size-8 items-center justify-center border border-border text-muted-foreground',
+          'transition-colors hover:border-brand hover:text-foreground sm:flex pointer-coarse:size-11',
+        ]"
+        :title="$t('Atidaryti')"
+        :aria-label="$t('Atidaryti')"
+        @click.prevent="handleNavigate"
+      >
+        <ArrowRight class="size-3.5" />
+      </a>
     </div>
-  </div>
+  </article>
 </template>
 
 <script setup lang="ts">
@@ -175,11 +168,11 @@ import {
   getNotificationPrimaryAction,
   getNotificationSecondaryAction,
   getNotificationContext,
+  getNotificationCategoryTag,
   formatNotificationTime,
   type Notification,
 } from '@/Composables/useNotificationFormatting';
 import { Button } from '@/Components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
 
 const props = defineProps<{
   notification: Notification;
@@ -192,6 +185,7 @@ const emit = defineEmits<{
 
 const icon = computed(() => getNotificationIcon(props.notification));
 const colors = computed(() => getNotificationColorClasses(props.notification));
+const categoryTag = computed(() => getNotificationCategoryTag(props.notification));
 const title = computed(() => getNotificationTitle(props.notification));
 const message = computed(() => getNotificationMessage(props.notification));
 const url = computed(() => getNotificationUrl(props.notification));

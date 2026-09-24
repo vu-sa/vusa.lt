@@ -20,8 +20,6 @@ import { Head } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import Graph from '@/Components/Graphs/InstitutionGraph.vue';
-import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { InstitutionIconFilled } from '@/Components/icons';
 
 interface InstitutionGraphEdge {
   source: string;
@@ -48,7 +46,4 @@ defineProps<{
 }>();
 
 // Setup breadcrumbs for the Institution Graph page
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.createBreadcrumbItem($t('Institucijų grafa'), undefined, InstitutionIconFilled),
-]);
 </script>

@@ -135,7 +135,7 @@ describe('home actions', () => {
       global: { stubs: { SpotlightPopover: { template: '<div><slot /></div>' } } },
     });
 
-    expect(wrapper.find('[data-slot="navigation-tiles"]').classes()).toContain('lg:grid-cols-4');
+    expect(wrapper.find('[data-slot="navigation-tiles"]').classes()).toContain('lg:[&>*]:basis-1/4');
     expect(wrapper.findAll('[data-slot="navigation-tiles"] > li')).toHaveLength(4);
   });
 });

@@ -13,8 +13,6 @@
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import QuickLinkForm from '@/Components/AdminForms/QuickLinkForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { QuickLinkIcon } from '@/Components/icons';
 
 interface TopicOption {
   id: number;
@@ -27,10 +25,6 @@ const props = defineProps<{
   tenantOptions: Record<string, unknown>[];
   topicOptions: TopicOption[];
 }>();
-
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Greitosios nuorodos', 'quickLinks.index', props.quickLink.text, QuickLinkIcon),
-);
 
 function submitForm(form: unknown): void {
   const inertiaForm = form as InertiaForm<App.Entities.QuickLink>;

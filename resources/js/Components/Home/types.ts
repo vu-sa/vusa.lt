@@ -1,4 +1,4 @@
-import type { InstitutionActivityInsight } from '@/Types/InstitutionActivity';
+import type { InstitutionActivityInsight, InstitutionActivityStatusName } from '@/Types/InstitutionActivity';
 
 export type { InstitutionActivityInsight };
 
@@ -19,6 +19,23 @@ export interface HomeMeeting {
   title: string;
   start_time: string;
   institution_name: string | null;
+  institution_id?: string | null;
+  tenant_id?: number | null;
+  /** Reached only through a followed institution, not one of the user's duties. */
+  is_followed?: boolean;
+}
+
+/** A row of "Sekamos institucijos" (GetFollowedInstitutions). */
+export interface HomeFollowedInstitution {
+  id: string;
+  name: string;
+  is_muted: boolean;
+  activity_status: InstitutionActivityStatusName;
+}
+
+export interface HomeFollowedInstitutions {
+  items: HomeFollowedInstitution[];
+  total: number;
 }
 
 export interface HomeRecentRecord {

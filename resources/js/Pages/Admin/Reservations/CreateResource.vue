@@ -11,9 +11,7 @@
 <script setup lang="ts">
 import { usePage, type InertiaForm } from '@inertiajs/vue3';
 
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
-import { ResourceIcon } from '@/Components/icons';
 
 export type ResourceMediaEntry
   = | { id: string | number; name: string; type: string; status: 'finished'; url: string }
@@ -35,10 +33,6 @@ defineProps<{
   assignableTenants: Array<App.Entities.Tenant>;
   categories: App.Entities.ResourceCategory[];
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', 'Naujas išteklius', ResourceIcon),
-);
 
 const resource: ResourceCreationTemplate = {
   id: undefined,

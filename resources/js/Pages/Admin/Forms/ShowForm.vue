@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    :history-subject="{ type: 'form', id: form.id }"
     :title="localizedTitle"
     :entity-type="ModelEnum.FORM"
     :facts="recordFacts"
@@ -97,12 +98,7 @@
     </template>
 
     <template #veikla>
-      <RecordActivity
-        subject-type="form"
-        :subject-id="form.id"
-        commentable-type="form"
-        :commentable-id="form.id"
-      />
+      <RecordActivity commentable-type="form" :commentable-id="form.id" />
     </template>
   </RecordPage>
 
@@ -167,8 +163,6 @@ import {
   DialogTitle,
 } from '@/Components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { FormIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { createIdColumn, createTimestampColumn } from '@/Composables/useDataTableColumns';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
@@ -538,14 +532,4 @@ const handleDelete = () => {
   });
 };
 
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminShow(
-    $tChoice('entities.form.model', 2),
-    'forms.index',
-    {},
-    localizedTitle.value,
-    FormIcon,
-    FormIcon,
-  ),
-);
 </script>

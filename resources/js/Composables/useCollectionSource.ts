@@ -1,4 +1,4 @@
-import { computed, isRef, ref, shallowReactive, watch, type ComputedRef, type Ref } from 'vue';
+import { computed, isRef, ref, shallowReactive, watch, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -9,7 +9,8 @@ import type { AdminCollection } from '@/Features/Admin/AdminSearch/Types/AdminSe
 export interface CollectionFacetValue {
   value: string;
   label: string;
-  count: number;
+  /** Undefined when the source has not counted it (yet); the panel then shows no number. */
+  count?: number;
   isSelected: boolean;
 }
 
@@ -70,6 +71,8 @@ export interface CollectionSource<T> {
   setSortBy: (value: string) => void;
   loadMore: () => void;
   refresh: () => void;
+  /** Counting costs a query per value, so a source may wait until the filter panel is opened. */
+  loadFacets?: () => void;
 }
 
 export interface TypesenseCollectionSource<T> extends CollectionSource<T> {
@@ -91,7 +94,9 @@ interface DatabaseCollectionSourceOptions<T> {
   preserveUrlKeys?: string[];
   /**
    * Filters the endpoint understands, sent as plain query params (`field=a` or `field[]=a`) and
-   * carried in the page URL. Values have no counts: the database source does not facet.
+   * as the `filters` JSON (PHP turns a dotted param like `tenant.id[]` into `tenant_id[]`, so
+   * dotted keys only survive there), and carried in the page URL. Counts arrive once the filter
+   * panel asks for them (CollectionFacetCounts on the endpoint).
    */
   facets?: DatabaseFacetDefinition[];
   /** No first page came with the page (a trash view): show the skeleton and fetch it now. */
@@ -112,7 +117,12 @@ interface DatabaseCollectionResponse<T> {
   per_page: number;
   current_page: number;
   last_page: number;
+  /** `{ field: { value: count } }`, present only when `include_facets` was sent. */
+  facets?: Record<string, Record<string, number>> | null;
 }
+
+/** Bounds the replay of `?pages=`, as in the Typesense source. */
+const MAX_RESTORED_PAGES = 10;
 
 interface TypesenseSourceOptions {
   collection: AdminCollection;
@@ -126,6 +136,8 @@ interface TypesenseSourceOptions {
    * Return undefined to fall back to the shared facet labels.
    */
   valueLabel?: (field: string, value: string) => string | undefined;
+  /** An always-on Typesense filter the page owns, e.g. a quick filter over per-user state. */
+  baseFilterBy?: MaybeRefOrGetter<string | undefined>;
 }
 
 /**
@@ -179,6 +191,7 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
     syncToUrl: true,
     preserveUrlKeys: options.preserveUrlKeys,
     perPage: options.perPage ?? PAGE_SIZE,
+    baseFilterBy: options.baseFilterBy,
   });
 
   const labelOf = (field: string, value: string) => options.valueLabel?.(field, value) ?? getFacetValueLabel(field, value);
@@ -320,15 +333,8 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
   const currentPage = ref(options.initial.currentPage);
   const lastPage = ref(options.initial.lastPage);
   const sortBy = ref(initialParams.get('sort') ?? options.defaultSort);
-
-  watch(() => options.initial.items, (newItems) => {
-    if (newItems) {
-      items.value = [...newItems];
-      total.value = options.initial.total;
-      currentPage.value = options.initial.currentPage;
-      lastPage.value = options.initial.lastPage;
-    }
-  });
+  const facetCounts = ref<Record<string, Record<string, number>> | null>(null);
+  let facetsWanted = false;
 
   const selectedValues = (field: string): string[] => {
     const raw = filters.value[field];
@@ -343,7 +349,7 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
       type: 'checkbox',
       values: facet.values.map(value => ({
         ...value,
-        count: 0,
+        count: facetCounts.value?.[facet.field]?.[value.value],
         isSelected: selectedValues(facet.field).includes(value.value),
       })),
     })),
@@ -412,24 +418,11 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     window.history.replaceState(window.history.state, '', url.toString());
   }
 
-  // Two quick filter toggles start two requests; only the latest one may write its rows.
-  let latestRequest = 0;
-
-  async function fetchPage(page: number, append: boolean): Promise<void> {
-    const request = ++latestRequest;
-
-    if (append) {
-      isLoadingMore.value = true;
-    }
-    else {
-      isLoading.value = true;
-    }
-    error.value = null;
-
+  function buildRequestUrl(page: number, perPage: number): URL {
     const [column, direction = 'asc'] = sortBy.value.split(':');
     const requestUrl = new URL(options.endpoint, window.location.origin);
     requestUrl.searchParams.set('page', String(page));
-    requestUrl.searchParams.set('per_page', String(options.initial.perPage));
+    requestUrl.searchParams.set('per_page', String(perPage));
     requestUrl.searchParams.set('sorting', JSON.stringify([{ id: column, desc: direction === 'desc' }]));
     if (query.value.trim()) {
       requestUrl.searchParams.set('search', query.value.trim());
@@ -454,34 +447,61 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
       requestUrl.searchParams.set('filters', JSON.stringify(filters.value));
     }
 
-    try {
-      const response = await fetch(requestUrl, {
-        credentials: 'same-origin',
-        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      });
-      const payload = await response.json() as { success: boolean; data?: DatabaseCollectionResponse<T>; message?: string };
+    return requestUrl;
+  }
 
-      if (request !== latestRequest) {
+  async function request(url: URL): Promise<DatabaseCollectionResponse<T>> {
+    const response = await fetch(url, {
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    const payload = await response.json() as { success: boolean; data?: DatabaseCollectionResponse<T>; message?: string };
+
+    if (!response.ok || !payload.success || !payload.data) {
+      throw new Error(payload.message ?? $t('Nepavyko įkelti sąrašo.'));
+    }
+
+    return payload.data;
+  }
+
+  // Two quick filter toggles start two requests; only the latest one may write its rows.
+  let latestRequest = 0;
+
+  async function fetchPage(page: number, append: boolean): Promise<void> {
+    const current = ++latestRequest;
+
+    if (append) {
+      isLoadingMore.value = true;
+    }
+    else {
+      isLoading.value = true;
+    }
+    error.value = null;
+
+    try {
+      const data = await request(buildRequestUrl(page, options.initial.perPage));
+
+      if (current !== latestRequest) {
         return;
       }
 
-      if (!response.ok || !payload.success || !payload.data) {
-        throw new Error(payload.message ?? 'Nepavyko įkelti sąrašo.');
-      }
-
-      items.value = append ? [...items.value, ...payload.data.items] : payload.data.items;
-      total.value = payload.data.total;
-      currentPage.value = payload.data.current_page;
-      lastPage.value = payload.data.last_page;
+      items.value = append ? [...items.value, ...data.items] : data.items;
+      total.value = data.total;
+      currentPage.value = data.current_page;
+      lastPage.value = data.last_page;
       syncUrl();
+
+      if (!append && facetsWanted) {
+        void fetchFacetCounts();
+      }
     }
     catch (cause) {
-      if (request === latestRequest) {
-        error.value = cause instanceof Error ? cause.message : 'Nepavyko įkelti sąrašo.';
+      if (current === latestRequest) {
+        error.value = cause instanceof Error ? cause.message : $t('Nepavyko įkelti sąrašo.');
       }
     }
     finally {
-      if (request === latestRequest) {
+      if (current === latestRequest) {
         isLoading.value = false;
         isLoadingMore.value = false;
         hasSearched.value = true;
@@ -489,11 +509,48 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     }
   }
 
+  let latestFacetRequest = 0;
+
+  // A separate, one-row request, so the list never waits on the counting.
+  async function fetchFacetCounts(): Promise<void> {
+    if (facetDefinitions.length === 0) {
+      return;
+    }
+
+    const current = ++latestFacetRequest;
+    const url = buildRequestUrl(1, 1);
+    url.searchParams.set('include_facets', '1');
+    url.searchParams.set('facet_values', JSON.stringify(Object.fromEntries(
+      facetDefinitions.map(facet => [facet.field, facet.values.map(value => value.value)]),
+    )));
+    url.searchParams.set('facet_single', JSON.stringify(facetDefinitions.filter(facet => facet.single).map(facet => facet.field)));
+
+    try {
+      const data = await request(url);
+
+      if (current === latestFacetRequest) {
+        facetCounts.value = data.facets ?? null;
+      }
+    }
+    catch {
+      // Counts are a nicety; the filters work without them.
+    }
+  }
+
+  async function restorePages(): Promise<void> {
+    const wanted = Math.min(Number(initialParams.get('pages')) || 1, MAX_RESTORED_PAGES);
+
+    if (options.fetchOnMount) {
+      await fetchPage(1, false);
+    }
+    while (currentPage.value < wanted && currentPage.value < lastPage.value && !error.value) {
+      await fetchPage(currentPage.value + 1, true);
+    }
+  }
+
   const debouncedRefresh = useDebounceFn(() => fetchPage(1, false), 250);
 
-  if (options.fetchOnMount) {
-    void fetchPage(1, false);
-  }
+  void restorePages();
 
   const overlay = useOptimisticOverlay<T>();
 
@@ -544,6 +601,12 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
       }
     },
     refresh: () => void fetchPage(1, false),
+    loadFacets: () => {
+      if (!facetsWanted) {
+        facetsWanted = true;
+        void fetchFacetCounts();
+      }
+    },
   };
 }
 

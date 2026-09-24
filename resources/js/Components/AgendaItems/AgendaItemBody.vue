@@ -1,101 +1,54 @@
 <template>
-  <!-- The same controls in both modes, merely locked when not editing: swapping in a
-       read-only rendering used to shift the whole page as the toggle flipped. -->
-  <div class="space-y-8">
-    <div id="agenda-item-type" class="rounded-xl border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 p-4 sm:p-5 dark:border-zinc-800">
-      <div class="flex flex-wrap items-start justify-between gap-x-10 gap-y-6">
-        <div class="min-w-0 flex-1 basis-64 space-y-3">
-          <span class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <ListChecks class="h-3.5 w-3.5" />
-            {{ $t('Klausimo tipas') }}
-          </span>
-          <div class="flex flex-wrap items-center gap-1.5">
-            <button
-              v-for="option in typeOptions"
-              :key="option.value"
-              type="button"
-              :disabled="!editing"
-              class="flex items-center gap-1.5 rounded-md border px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-default"
-              :class="form.type === option.value
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-zinc-200 bg-white dark:bg-zinc-950/40 text-zinc-500 enabled:hover:border-zinc-400 enabled:hover:text-foreground disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-400 dark:enabled:hover:border-zinc-500'"
-              @click="form.type = option.value"
-            >
-              <component :is="option.icon" class="h-4 w-4 shrink-0" />
-              {{ option.label }}
-            </button>
-            <button
-              v-if="form.type && editing"
-              type="button"
-              class="rounded-md px-2 py-2 text-sm text-muted-foreground hover:text-destructive"
-              :title="$t('Išvalyti')"
-              @click="form.type = null"
-            >
-              <X class="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        <div class="min-w-0 space-y-3">
-          <span class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <Clock class="h-3.5 w-3.5" />
-            {{ $t('Laikas') }}
-          </span>
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- TimePicker rather than <input type="time">: the native control follows the browser's
-                 locale and shows AM/PM for anyone whose machine is set to English. -->
-            <TimePicker
-              :model-value="startTimeValue"
-              :minute-step="5"
-              clearable
-              :disabled="!editing"
-              class="h-9 w-[6.5rem] text-sm"
-              :title="$t('Kada klausimas pradedamas svarstyti')"
-              @update:model-value="(value) => form.start_time = toTimeString(value)"
-            />
-            <span class="text-muted-foreground">–</span>
-            <TimePicker
-              :model-value="endTimeValue"
-              :minute-step="5"
-              clearable
-              :disabled="!editing"
-              class="h-9 w-[6.5rem] text-sm"
-              :title="$t('Kada klausimo svarstymas baigiamas')"
-              @update:model-value="(value) => form.end_time = toTimeString(value)"
-            />
-          </div>
-          <p v-if="form.errors.end_time" class="text-xs text-destructive">
-            {{ form.errors.end_time }}
-          </p>
-        </div>
+  <div data-slot="agenda-item-body" class="space-y-8">
+    <section v-if="!editable || typeOpen" id="agenda-item-type" aria-labelledby="agenda-item-type-title" class="space-y-2">
+      <div class="flex items-center justify-between gap-3">
+        <h3 id="agenda-item-type-title" :class="[LABEL_CLASS, 'flex items-center gap-2']">
+          {{ $t('meetings.item.type') }}
+          <span v-if="awaitingType" class="size-1.5 bg-status-attention" aria-hidden="true" data-testid="agenda-item-type-pending" />
+        </h3>
+        <Button
+          v-if="editable && form.type"
+          variant="ghost"
+          size="sm"
+          voice="sentence"
+          class="text-muted-foreground pointer-coarse:h-11"
+          data-testid="agenda-item-type-collapse"
+          @click="typeOpen = false"
+        >
+          <ChevronUp class="size-4" />
+          {{ $t('meetings.item.collapse_type') }}
+        </Button>
       </div>
+      <!-- An unset type is the one thing between the rep and the outcome, so the picker itself asks for it. -->
+      <FormSegmentedControl
+        v-if="editable"
+        v-model="typeModel"
+        :options="typeOptions"
+        :aria-label="$t('meetings.item.type')"
+        test-id-prefix="agenda-item-type"
+        stack-on-phone
+        :class="awaitingType ? 'border-status-attention-border bg-status-attention-surface' : undefined"
+      />
+      <p v-else class="flex items-center gap-2 text-sm font-medium text-foreground">
+        <component :is="currentType?.icon ?? CircleHelp" class="size-4 text-muted-foreground" aria-hidden="true" />
+        {{ currentType?.label ?? $t('Nepažymėtas') }}
+      </p>
+    </section>
 
-      <label class="mt-6 flex w-fit items-center gap-2.5" :class="editing ? 'cursor-pointer' : ''">
-        <Switch v-model="form.brought_by_students" :disabled="!editing" />
-        <span class="text-sm text-zinc-700 dark:text-zinc-300">{{ $t('Atstovų iškeltas klausimas') }}</span>
-      </label>
-    </div>
-
-    <AgendaItemVotes
+    <section
       v-if="form.type === 'voting'"
       id="agenda-item-votes"
-      :form
-      :editing
-      :locale
-      :requires-student-perspective
-    />
-
-    <!-- Description + student position -->
-    <div class="rounded-xl border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 p-4 sm:p-5 dark:border-zinc-800">
-      <AgendaItemTextTabs
-        :editable="editing"
-        :description="form.description[locale]"
-        :student-position="form.student_position[locale]"
-        :show-student-position="requiresStudentPerspective"
-        @update:description="(v) => form.description[locale] = v"
-        @update:student-position="(v) => form.student_position[locale] = v"
-      />
-    </div>
+      aria-labelledby="agenda-item-votes-title"
+      class="space-y-3"
+    >
+      <div class="flex items-center justify-between gap-3">
+        <h3 id="agenda-item-votes-title" :class="LABEL_CLASS">
+          {{ $t('meetings.item.outcome') }}
+        </h3>
+        <AdminVotingHelpButton />
+      </div>
+      <AgendaItemVotes :form :editable :requires-student-perspective @manage="emit('manageVotes')" />
+    </section>
   </div>
 </template>
 
@@ -103,51 +56,61 @@
 import { computed } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarClock, Clock, Coffee, Info, ListChecks, Vote, X } from 'lucide-vue-next';
+import { CalendarClock, ChevronUp, CircleHelp, Coffee, Info, Vote } from 'lucide-vue-next';
 
-import { Switch } from '@/Components/ui/switch';
-import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
-import AgendaItemTextTabs from '@/Components/AgendaItems/AgendaItemTextTabs.vue';
+import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
 import AgendaItemVotes from '@/Components/AgendaItems/AgendaItemVotes.vue';
-import type { AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';
+import { FormSegmentedControl, type FormSegmentOption } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
+import { createVote, type AgendaItemFormData } from '@/Composables/useAgendaItemAutosave';
+
+type AgendaItemType = NonNullable<AgendaItemFormData['type']>;
 
 const props = withDefaults(defineProps<{
   form: InertiaForm<AgendaItemFormData>;
-  editing?: boolean;
-  /** Which translation the inputs write. See EditAgendaItem.vue. */
-  locale?: 'lt' | 'en';
-  /**
-   * False for VU SA's own bodies: the representatives *are* the organisation, so there is no
-   * separate student position or student benefit to record — only the outcome.
-   */
+  /** Live controls that autosave; without it the same layout reads as text and badges. */
+  editable?: boolean;
+  /** False for VU SA's own bodies: only the outcome is recorded, not a student position. */
   requiresStudentPerspective?: boolean;
 }>(), {
-  editing: false,
-  locale: 'lt',
+  editable: false,
   requiresStudentPerspective: true,
 });
 
-const typeOptions = [
-  { value: 'voting' as const, label: $t('Balsavimas'), icon: Vote },
-  { value: 'informational' as const, label: $t('Informacinis'), icon: Info },
-  { value: 'deferred' as const, label: $t('Atidėtas'), icon: CalendarClock },
+const emit = defineEmits<{
+  manageVotes: [];
+}>();
+
+/** Once a type is set the picker folds away; the record page offers a way back to it. */
+const typeOpen = defineModel<boolean>('typeOpen', { default: true });
+
+const LABEL_CLASS = 'text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground';
+
+const typeOptions: FormSegmentOption<AgendaItemType>[] = [
+  { value: 'voting', label: $t('Balsavimas'), icon: Vote },
+  { value: 'informational', label: $t('Informacinis'), icon: Info },
+  { value: 'deferred', label: $t('Atidėtas'), icon: CalendarClock },
   // A pause is a real agenda entry — excluding it forced editors to mistype it as something else.
-  { value: 'break' as const, label: $t('Pertrauka'), icon: Coffee },
+  { value: 'break', label: $t('Pertrauka'), icon: Coffee },
 ];
 
-/** The form holds `HH:MM` strings; TimePicker speaks {hour, minute}. */
-const toTimeValue = (value: string | null): TimeValue | undefined => {
-  if (!value) return undefined;
-  const [hour, minute] = value.split(':');
+const awaitingType = computed(() => props.editable && !props.form.type);
 
-  return { hour: Number(hour), minute: Number(minute) };
-};
+const currentType = computed(() => typeOptions.find(option => option.value === props.form.type));
 
-const toTimeString = (value: TimeValue | undefined): string | null =>
-  value
-    ? `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`
-    : null;
+/**
+ * Choosing "Balsavimas" opens the first vote straight away, so the outcome is one more tap —
+ * not a separate "add a vote" step before anything can be recorded.
+ */
+const typeModel = computed<AgendaItemType>({
+  // FormSegmentedControl needs a value; an unset type simply matches no option.
+  get: () => props.form.type as AgendaItemType,
+  set: (value) => {
+    props.form.type = value;
+    if (value === 'voting' && props.form.votes.length === 0) {
+      props.form.votes.push(createVote(true));
+    }
+  },
+});
 
-const startTimeValue = computed(() => toTimeValue(props.form.start_time));
-const endTimeValue = computed(() => toTimeValue(props.form.end_time));
 </script>

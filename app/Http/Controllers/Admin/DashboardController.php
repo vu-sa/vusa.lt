@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetFollowedInstitutions;
 use App\Actions\GetOnboardingChecklist;
 use App\Actions\GetRecentAccessChanges;
 use App\Actions\GetRecentlyEditedRecords;
+use App\Actions\GetUpcomingMeetingsForUser;
 use App\Actions\GetUserCoordinators;
 use App\Actions\SerializeReservationCart;
 use App\Http\Controllers\AdminController;
@@ -13,7 +15,6 @@ use App\Http\Requests\ShowAdminHomeRequest;
 use App\Models\Calendar;
 use App\Models\Form;
 use App\Models\Institution;
-use App\Models\Meeting;
 use App\Models\News;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
@@ -31,6 +32,9 @@ class DashboardController extends AdminController
 
     /** How long a duty change stays a band on Pradžia; the history on *Mano rolės* keeps it longer. */
     private const int ACCESS_BAND_DAYS = 14;
+
+    /** "Sekamos institucijos" rows before the list links to the full, filtered collection. */
+    public const int FOLLOWED_PREVIEW_COUNT = 5;
 
     public function __construct(
         public Authorizer $authorizer,
@@ -86,23 +90,8 @@ class DashboardController extends AdminController
                 'color' => $task->color,
             ]);
 
-        // Get user's institutions and upcoming meetings
         $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
-
-        $upcomingMeetings = Meeting::query()
-            ->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $userInstitutionIds))
-            ->where('start_time', '>=', now()->startOfDay())
-            ->where('start_time', '<', now()->addMonths(2))
-            ->orderBy('start_time')
-            ->with(['institutions:id,name'])
-            ->take(3)
-            ->get()
-            ->map(fn ($meeting) => [
-                'id' => $meeting->id,
-                'title' => $meeting->title,
-                'start_time' => $meeting->start_time->toISOString(),
-                'institution_name' => $meeting->institutions->first()?->name,
-            ]);
+        $upcomingMeetings = GetUpcomingMeetingsForUser::execute($user);
 
         // Everything below the attention queue and upcoming meetings is deferred so the first
         // paint stays cheap (U19). One group: these panels are always wanted together.
@@ -129,6 +118,11 @@ class DashboardController extends AdminController
             $secondary,
         );
 
+        $followedInstitutions = Inertia::defer(
+            fn () => GetFollowedInstitutions::execute($user, self::FOLLOWED_PREVIEW_COUNT),
+            $secondary,
+        );
+
         $coordinator = Inertia::defer(
             fn () => GetUserCoordinators::execute($user)[0] ?? null,
             $secondary,
@@ -140,7 +134,8 @@ class DashboardController extends AdminController
             'actionWindowLaunch' => $request->actionWindowLaunch($user),
             'taskStats' => $taskStats,
             'upcomingTasks' => $upcomingTasks,
-            'upcomingMeetings' => $upcomingMeetings,
+            'upcomingMeetings' => $upcomingMeetings['items'],
+            'upcomingMeetingsTotal' => $upcomingMeetings['total'],
             'heroImage' => $heroInstitution === null ? null : [
                 'url' => $heroInstitution->image_url,
                 'focalPoint' => $heroInstitution->image_focal_point,
@@ -149,6 +144,7 @@ class DashboardController extends AdminController
             'upcomingCalendarEvents' => $upcomingCalendarEvents,
             'latestNews' => $latestNews,
             'recentlyEdited' => $recentlyEdited,
+            'followedInstitutions' => $followedInstitutions,
             'coordinator' => $coordinator,
             'registrationForms' => $this->registrationForms($user),
             'reservationDraft' => SerializeReservationCart::summary($user),

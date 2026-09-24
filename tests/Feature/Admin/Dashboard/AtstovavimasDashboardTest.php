@@ -51,6 +51,24 @@ describe('atstovavimas dashboard', function (): void {
             );
     });
 
+    test('followed institutions load with the secondary group, upcoming meetings on first paint', function (): void {
+        $followed = Institution::factory()->for($this->tenant)->create();
+        $this->admin->followedInstitutions()->attach($followed);
+        Meeting::factory()->hasAttached($followed)->create(['start_time' => now()->addDay()]);
+
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingMeetings.total', 1)
+                ->where('upcomingMeetings.items.0.is_followed', true)
+                ->missing('followedInstitutions')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('followedInstitutions.total', 1)
+                    ->where('followedInstitutions.items.0.id', $followed->id)
+                )
+            );
+    });
+
     test('the overview number counts only the user\'s own open tasks', function (): void {
         $open = Task::factory()->create(['completed_at' => null]);
         $done = Task::factory()->create(['completed_at' => now()]);

@@ -19,7 +19,7 @@
         </span>
         <button
           type="button"
-          class="inline-flex h-8 items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wide text-brand hover:text-foreground pointer-coarse:min-h-11"
+          class="inline-flex h-8 items-center gap-1.5 px-1 text-xs font-bold text-brand hover:text-foreground pointer-coarse:min-h-11"
           @click="emit('clear')"
         >
           <X class="size-3.5" aria-hidden="true" />

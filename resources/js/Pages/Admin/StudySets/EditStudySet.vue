@@ -13,8 +13,6 @@ import { router, type InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import StudySetForm from '@/Components/AdminForms/StudySetForm.vue';
-import { StudySetIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
 const props = defineProps<{
@@ -22,5 +20,4 @@ const props = defineProps<{
   assignableTenants: Array<{ id: number; shortname: string }>;
 }>();
 
-usePageBreadcrumbs(() => BreadcrumbHelpers.adminForm($t('Individualių studijų komplektai'), 'studySets.index', getTranslatedValue(props.studySet.name), StudySetIcon));
 </script>

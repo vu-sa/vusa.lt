@@ -2,19 +2,27 @@
   <CollectionPage
     :source
     collection="notifications"
-    :eyebrow="$t('Pranešimai')"
+    entity-type="notification"
+    :eyebrow
     :title="$t('Pranešimai')"
     :lead="$t('Peržiūrėk naujus ir ankstesnius pranešimus.')"
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"
-    :quick-filters="quickFilters"
+    :quick-filters
     @quick-filter="toggleUnread"
   >
     <template #actions>
+      <Button as-child variant="outline" size="lg" voice="sentence">
+        <Link :href="route('profile.notifications')">
+          <Settings aria-hidden="true" />
+          {{ $t('shell.account.notifications') }}
+        </Link>
+      </Button>
+
       <DropdownMenu v-if="notifications.length > 0">
         <DropdownMenuTrigger as-child>
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" voice="sentence">
             <MoreHorizontal aria-hidden="true" />
             {{ $t('notifications.index.actions') }}
           </Button>
@@ -47,41 +55,50 @@
 
 <script setup lang="ts">
 import { computed, toRef } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BellOff, MoreHorizontal } from 'lucide-vue-next';
+import { BellOff, MoreHorizontal, Settings } from 'lucide-vue-next';
 
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import NotificationCard from '@/Features/Admin/Notifications/NotificationCard.vue';
 import { Button } from '@/Components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { EmptyState } from '@/Components/Patterns';
-import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useToasts } from '@/Composables/useToasts';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import type { Notification } from '@/Composables/useNotificationFormatting';
-import { NotificationIcon } from '@/Components/icons';
 
 const props = defineProps<{ notifications: Notification[] }>();
-usePageBreadcrumbs([{ label: $t('Pranešimai'), icon: NotificationIcon }]);
+
+const eyebrow = computed(() => `${$t('shell.workspaces.pradzia.title')} · ${$t('Pranešimai')}`);
+
 const toasts = useToasts();
 const source = useLocalCollectionSource<Notification>({
   items: toRef(props, 'notifications'),
   searchText: item => [item.data.title, item.data.body, item.data.message],
   defaultSort: 'created_at:desc',
   sortOptions: [{ value: 'created_at:desc', label: $t('Naujausi'), by: item => item.created_at }],
-  facets: [{ field: 'read', label: $t('Būsena'), get: item => item.read_at ? 'read' : 'unread', valueLabel: value => value === 'unread' ? $t('notifications.index.filter_unread') : $t('Visi') }],
+  facets: [{
+    field: 'read',
+    label: $t('Būsena'),
+    get: item => item.read_at ? 'read' : 'unread',
+    valueLabel: value => value === 'unread' ? $t('notifications.index.filter_unread') : $t('Visi'),
+  }],
 });
+
 if (!new URLSearchParams(window.location.search).has('read')) {
   source.setFilter('read', ['unread']);
 }
+
 const unreadCount = computed(() => props.notifications.filter(item => !item.read_at).length);
 const readCount = computed(() => props.notifications.filter(item => item.read_at).length);
 const unreadOnly = computed(() => source.filters.value.read === 'unread' || (Array.isArray(source.filters.value.read) && source.filters.value.read.includes('unread')));
+
 const quickFilters = computed(() => [
   { id: 'unread', label: `${$t('notifications.index.filter_unread')} · ${unreadCount.value}`, active: unreadOnly.value },
   { id: 'all', label: $t('Visi'), active: !unreadOnly.value },
 ]);
+
 function toggleUnread(id: string): void {
   source.setFilter('read', id === 'unread' ? ['unread'] : undefined);
 }

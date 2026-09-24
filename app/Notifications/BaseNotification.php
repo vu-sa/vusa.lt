@@ -2,13 +2,12 @@
 
 namespace App\Notifications;
 
-use App\Actions\GetInstitutionManagers;
+use App\Actions\GetInstitutionCoordinators;
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationChannel;
 use App\Enums\NotificationUrgency;
 use App\Models\Institution;
 use App\Models\User;
-use App\Services\NotificationRouter;
 use App\Support\QuietHours;
 use Carbon\CarbonInterface;
 use Illuminate\Bus\Queueable;
@@ -225,17 +224,16 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             return null;
         }
 
-        $manager = GetInstitutionManagers::execute($institution)
-            ->first(fn (User $candidate): bool => $candidate->id !== ($notifiable->id ?? null));
+        $coordinator = GetInstitutionCoordinators::execute([$institution], $notifiable instanceof User ? $notifiable : null)[0] ?? null;
 
-        if ($manager === null) {
+        if ($coordinator === null || $coordinator['email'] === null) {
             return null;
         }
 
         return [
-            'name' => $manager->name,
-            'duty' => $manager->current_duties->first()?->name,
-            'email' => app(NotificationRouter::class)->preferredEmail($manager),
+            'name' => $coordinator['name'],
+            'duty' => $coordinator['duty'],
+            'email' => $coordinator['email'],
         ];
     }
 
@@ -266,7 +264,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
         // In-app is the record of what happened, so it is never gated; push and email follow the policy.
         $channels = ['database', 'broadcast'];
 
-        if ($this->sendsPush() && $this->userWants($notifiable, NotificationChannel::Push)) {
+        if ($this->sendsPush() && $this->wantsPush($notifiable)) {
             $channels[] = WebPushChannel::class;
         }
 
@@ -275,6 +273,14 @@ abstract class BaseNotification extends Notification implements ShouldQueue
         }
 
         return $channels;
+    }
+
+    /**
+     * Whether the notifiable takes this one as a push; by default, their category setting decides.
+     */
+    protected function wantsPush(object $notifiable): bool
+    {
+        return $this->userWants($notifiable, NotificationChannel::Push);
     }
 
     /**

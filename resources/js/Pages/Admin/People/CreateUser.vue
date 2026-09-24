@@ -13,18 +13,12 @@
 import type { InertiaForm } from '@inertiajs/vue3';
 
 import UserForm from '@/Components/AdminForms/UserForm.vue';
-import { UserIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 defineProps<{
   roles: App.Entities.Role[];
   tenantsWithDuties: App.Entities.Tenant[];
   permissableTenants: App.Entities.Tenant[];
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Nariai', 'users.index', 'Naujas narys (-ė)', UserIcon),
-);
 
 const user = {
   name: '',

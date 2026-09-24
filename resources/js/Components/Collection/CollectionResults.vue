@@ -23,7 +23,7 @@
           v-if="sortOptions.length > 1"
           class="relative flex h-9 min-w-0 items-center gap-2 border border-border bg-background pr-9 pl-3 focus-within:border-brand pointer-coarse:min-h-11"
         >
-          <span class="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{{ $t('Rikiuoti') }}</span>
+          <span class="text-[11px] font-bold text-muted-foreground">{{ $t('Rikiuoti') }}</span>
           <span class="max-w-44 truncate text-sm font-bold text-foreground">{{ sortOptions.find(option => option.value === sortBy)?.label ?? sortBy }}</span>
           <ChevronDown class="pointer-events-none absolute right-3 size-4 text-muted-foreground" aria-hidden="true" />
           <select
@@ -38,7 +38,7 @@
 
         <DropdownMenu v-if="view === 'table' && hideableColumns.length > 0">
           <DropdownMenuTrigger as-child>
-            <button type="button" :class="controlVariants({ size: 'sm' })">
+            <button type="button" :class="controlVariants({ size: 'sm', voice: 'sentence' })">
               <Columns3 class="size-4" aria-hidden="true" />
               {{ $t('Stulpeliai') }}
             </button>

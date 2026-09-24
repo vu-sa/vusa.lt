@@ -33,6 +33,8 @@ class UpdateNotificationPreferencesRequest extends FormRequest
             'reminder_settings.task_reminder_days.*' => 'integer|min:1',
             'reminder_settings.meeting_reminder_hours' => 'nullable|array',
             'reminder_settings.meeting_reminder_hours.*' => 'integer|min:1',
+            'followed_institutions' => 'nullable|array',
+            'followed_institutions.push' => 'boolean',
         ];
     }
 }

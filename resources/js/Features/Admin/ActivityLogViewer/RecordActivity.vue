@@ -1,28 +1,17 @@
 <template>
   <section aria-labelledby="record-activity-title">
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <h2 id="record-activity-title" class="text-xl font-semibold text-foreground">
           {{ $t('Veikla') }}
         </h2>
         <p class="mt-1 text-sm text-muted-foreground">
-          {{ $t('Komentarai ir įrašo pakeitimai vienoje vietoje.') }}
+          {{ $t('activity.comments_lead') }}
         </p>
-      </div>
-      <div class="flex border border-border p-1">
-        <Button
-          v-for="option in filterOptions"
-          :key="option.value"
-          size="sm"
-          :variant="filter === option.value ? 'secondary' : 'ghost'"
-          @click="filter = option.value"
-        >
-          {{ option.label }}
-        </Button>
       </div>
     </div>
 
-    <div v-if="filter !== 'changes'" class="mt-6 flex items-center gap-3 border-b border-border pb-6">
+    <div class="mt-6 flex items-center gap-3 border-b border-border pb-6">
       <UserAvatar v-if="currentUser" :user="currentUser" :size="32" class="shrink-0" />
       <CommentComposer
         ref="rootComposer"
@@ -35,7 +24,7 @@
         <template #leading>
           <Dialog v-model:open="pollDialogOpen">
             <DialogTrigger as-child>
-              <Button variant="outline" size="xs">
+              <Button variant="outline" size="xs" voice="sentence">
                 <BarChart3 class="size-3.5" />
                 {{ $t('Apklausa') }}
               </Button>
@@ -63,15 +52,14 @@
       <Skeleton v-for="index in 3" :key="index" class="h-20 w-full" />
     </div>
 
-    <div v-else-if="items.length === 0" class="mt-6 border-y border-border py-8 text-center text-sm text-muted-foreground">
-      {{ $t('activity.empty') }}
-    </div>
+    <p v-else-if="discussion.comments.value.length === 0" class="py-6 text-sm text-muted-foreground">
+      {{ $t('activity.comments_empty') }}
+    </p>
 
-    <div v-else class="mt-6 divide-y divide-border border-y border-border">
-      <div v-for="item in items" :key="item.key" class="py-5">
+    <div v-else class="divide-y divide-border border-b border-border">
+      <div v-for="comment in discussion.comments.value" :key="comment.id" class="py-5">
         <CommentThread
-          v-if="item.kind === 'comment'"
-          :comment="item.comment"
+          :comment
           :mentionables="discussion.mentionables.value"
           :submitting="discussion.mutating.value"
           @reply="discussion.post"
@@ -82,19 +70,8 @@
           @toggle-reaction="discussion.toggleReaction"
           @vote="discussion.vote"
         />
-        <ActivityLogEntry v-else :entry="item.entry" />
       </div>
     </div>
-
-    <Button
-      v-if="filter !== 'comments' && activity.hasMore.value"
-      variant="outline"
-      class="mt-4 w-full"
-      :disabled="activity.loadingMore.value"
-      @click="activity.loadMore"
-    >
-      {{ activity.loadingMore.value ? $t('activity.loading') : $t('activity.load_more') }}
-    </Button>
   </section>
 </template>
 
@@ -103,8 +80,6 @@ import { computed, onMounted, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BarChart3 } from 'lucide-vue-next';
-
-import ActivityLogEntry from './ActivityLogEntry.vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
@@ -120,61 +95,20 @@ import {
   DialogTrigger,
 } from '@/Components/ui/dialog';
 import { Skeleton } from '@/Components/ui/skeleton';
-import { useActivityLog } from '@/Composables/useActivityLog';
 import { useDiscussionThread } from '@/Composables/useDiscussionThread';
-import type { ActivityEntry } from '@/Types/activityLog';
-import type { CommentData, PollDraft } from '@/Types/discussions';
+import type { PollDraft } from '@/Types/discussions';
 
 const props = defineProps<{
-  subjectType: string;
-  subjectId: string;
   commentableType: string;
   commentableId: string;
 }>();
 
-type Filter = 'all' | 'comments' | 'changes';
-type TimelineItem
-  = | { kind: 'comment'; key: string; date: string | null; comment: CommentData }
-    | { kind: 'activity'; key: string; date: string | null; entry: ActivityEntry };
-
-const filter = ref<Filter>('all');
 const pollDialogOpen = ref(false);
 const rootComposer = ref<InstanceType<typeof CommentComposer> | null>(null);
 const currentUser = computed(() => (usePage().props.auth as { user?: App.Entities.User } | undefined)?.user ?? null);
 const discussion = useDiscussionThread(props.commentableType, props.commentableId);
-const activity = useActivityLog(props.subjectType, props.subjectId);
 
-const filterOptions = computed(() => [
-  { value: 'all' as const, label: $t('Visi') },
-  { value: 'comments' as const, label: $t('Komentarai') },
-  { value: 'changes' as const, label: $t('Pakeitimai') },
-]);
-
-const loading = computed(() => discussion.loading.value || activity.loading.value);
-const items = computed<TimelineItem[]>(() => {
-  const comments: TimelineItem[] = filter.value === 'changes'
-    ? []
-    : discussion.comments.value.map(comment => ({
-        kind: 'comment',
-        key: `comment-${comment.id}`,
-        date: comment.created_at,
-        comment,
-      }));
-  const changes: TimelineItem[] = filter.value === 'comments'
-    ? []
-    : activity.entries.value.map(entry => ({
-        kind: 'activity',
-        key: `activity-${entry.id}`,
-        date: entry.created_at,
-        entry,
-      }));
-
-  return [...comments, ...changes].sort((left, right) => {
-    const leftTime = left.date ? new Date(left.date).getTime() : 0;
-    const rightTime = right.date ? new Date(right.date).getTime() : 0;
-    return rightTime - leftTime;
-  });
-});
+const loading = computed(() => discussion.loading.value);
 
 const postComment = async (html: string) => {
   const comment = await discussion.post(html);
@@ -190,6 +124,6 @@ const createPoll = async (html: string, poll: PollDraft) => {
 };
 
 onMounted(() => {
-  void Promise.all([discussion.load(), activity.load()]);
+  void discussion.load();
 });
 </script>

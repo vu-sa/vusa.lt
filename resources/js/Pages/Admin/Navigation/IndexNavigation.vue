@@ -151,7 +151,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import ConfirmDangerousActionDialog from '@/Components/ui/data-table/ConfirmDangerousActionDialog.vue';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import TrashViewToggle from '@/Components/Tables/TrashViewToggle.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import FooterNavigationManager from '@/Features/Admin/NavigationBuilder/FooterNavigationManager.vue';
 import NavigationBuilder from '@/Features/Admin/NavigationBuilder/NavigationBuilder.vue';
 import type { AdminFooterColumn, AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from '@/Features/Admin/NavigationBuilder/types';
@@ -178,10 +177,6 @@ const props = defineProps<{
   deletedCount?: number;
   translationSummary?: TranslationSummary;
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminIndex('Navigacija', NavigationIcon),
-);
 
 const itemPendingForceDelete = ref<TrashedNavigationItem | null>(null);
 const isForceDeleteDialogOpen = ref(false);

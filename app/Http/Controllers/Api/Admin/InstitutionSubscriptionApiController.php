@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\BulkInstitutionFollowRequest;
 use App\Models\Institution;
-use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionSubscriptionService;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,36 +13,7 @@ class InstitutionSubscriptionApiController extends ApiController
 {
     public function __construct(
         protected InstitutionSubscriptionService $subscriptionService,
-        private readonly InstitutionActivityStatusService $activityStatusService,
     ) {}
-
-    /**
-     * Get list of followed institutions for the current user.
-     */
-    public function followed(Request $request): JsonResponse
-    {
-        $user = $this->requireAuth($request);
-
-        /** @var Collection<int, Institution> $institutions */
-        $institutions = $user->followedInstitutions()
-            ->with([
-                'types',
-                'meetings:id,title,start_time',
-                'checkIns' => fn ($query) => $query
-                    ->where('start_date', '<=', today())
-                    ->where('end_date', '>=', today()),
-            ])
-            ->get()
-            ->map(function (Model $institution) use ($user) {
-                if (! $institution instanceof Institution) {
-                    return [];
-                }
-
-                return $this->transformInstitution($institution, $user);
-            });
-
-        return $this->jsonSuccess($institutions);
-    }
 
     /**
      * Get subscription status for a specific institution.
@@ -93,6 +62,42 @@ class InstitutionSubscriptionApiController extends ApiController
     }
 
     /**
+     * Follow several institutions; refused as a whole when any one is not viewable.
+     */
+    public function followMany(BulkInstitutionFollowRequest $request): JsonResponse
+    {
+        $user = $this->requireAuth($request);
+        $institutions = Institution::query()->whereIn('id', $request->institutionIds())->get();
+
+        foreach ($institutions as $institution) {
+            $this->authorizeApi('view', $institution);
+        }
+
+        $this->subscriptionService->followMany($user, $institutions);
+
+        return $this->jsonSuccess([
+            'institution_ids' => $institutions->pluck('id')->map(fn ($id): string => (string) $id)->values(),
+            'is_followed' => true,
+        ]);
+    }
+
+    /**
+     * Unfollow several institutions; only the user's own follows are touched.
+     */
+    public function unfollowMany(BulkInstitutionFollowRequest $request): JsonResponse
+    {
+        $user = $this->requireAuth($request);
+        $institutionIds = $request->institutionIds();
+
+        $this->subscriptionService->unfollowMany($user, $institutionIds);
+
+        return $this->jsonSuccess([
+            'institution_ids' => $institutionIds,
+            'is_followed' => false,
+        ]);
+    }
+
+    /**
      * Mute notifications for an institution.
      */
     public function mute(Request $request, Institution $institution): JsonResponse
@@ -136,31 +141,5 @@ class InstitutionSubscriptionApiController extends ApiController
         return $this->jsonSuccess([
             'message' => __('visak.preferences_reset'),
         ]);
-    }
-
-    /**
-     * Transform institution for API response.
-     */
-    protected function transformInstitution(Institution $institution, $user): array
-    {
-        $nextMeeting = $institution->meetings
-            ->filter(fn ($meeting) => $meeting->start_time->isFuture())
-            ->sortBy('start_time')
-            ->first();
-
-        return [
-            'id' => $institution->id,
-            'name' => $institution->name,
-            'short_name' => $institution->short_name,
-            'alias' => $institution->alias,
-            'meeting_periodicity_days' => $institution->meeting_periodicity_days,
-            'activity_status' => $this->activityStatusService->resolve($institution)->toArray(),
-            'next_meeting' => $nextMeeting ? [
-                'id' => $nextMeeting->id,
-                'title' => $nextMeeting->title,
-                'start_time' => $nextMeeting->start_time->toISOString(),
-            ] : null,
-            'subscription' => $this->subscriptionService->getStatus($user, $institution),
-        ];
     }
 }

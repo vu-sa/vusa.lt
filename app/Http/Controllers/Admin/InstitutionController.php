@@ -17,6 +17,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\StudyProgram;
 use App\Models\Task;
@@ -50,6 +51,8 @@ class InstitutionController extends AdminController
         // from api.v1.admin.trash.index, so the page itself needs no rows.
         return $this->inertiaResponse('Admin/People/IndexInstitution', [
             'deletedCount' => $this->scopedTrashedCount(Institution::query(), 'tenant', 'institutions.read.padalinys'),
+            // Following is per user, so the index cannot carry it; the page filters Typesense by these ids.
+            'followedInstitutionIds' => $request->user()->followedInstitutions()->pluck('institutions.id')->map(fn ($id): string => (string) $id)->values(),
         ]);
     }
 
@@ -226,6 +229,9 @@ class InstitutionController extends AdminController
             'can' => [
                 'update' => $user?->can('update', $institution) ?? false,
                 'delete' => $user?->can('delete', $institution) ?? false,
+                'recordMeeting' => $user !== null && $user->can('create', Meeting::class)
+                    && $this->authorizer->tenants($user, 'meetings.create.padalinys')->contains('id', $institution->tenant_id),
+                'reportActivity' => $user?->can('create', [InstitutionCheckIn::class, $institution]) ?? false,
             ],
             // Terms and secretary rosters are associations, edited on the record rather than in the
             // form (O22, Forms rule 15). Only someone who may update the institution needs them.

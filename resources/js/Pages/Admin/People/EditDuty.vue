@@ -29,9 +29,7 @@ import { computed } from 'vue';
 import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
-import { DutyIconFilled } from '@/Components/icons';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 
 const props = defineProps<{
@@ -61,8 +59,6 @@ const dutyTitle = computed(() => {
   if (typeof props.duty?.name === 'string') return props.duty.name;
   return props.duty?.name?.lt || props.duty?.name?.en || '';
 });
-
-usePageBreadcrumbs(() => BreadcrumbHelpers.adminForm('Pareigybės', 'duties.index', dutyTitle.value, DutyIconFilled));
 
 const handleSubmit = (form: InertiaForm<Record<string, unknown>>) => {
   if (props.canEditDuty) {

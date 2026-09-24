@@ -17,9 +17,7 @@ import { usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import UserForm from '@/Components/AdminForms/UserForm.vue';
-import { UserIcon } from '@/Components/icons';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -43,7 +41,4 @@ const userName = computed(() => {
   return props.user.name;
 });
 
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Nariai', 'users.index', userName.value, UserIcon),
-);
 </script>

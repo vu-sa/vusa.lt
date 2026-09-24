@@ -12,16 +12,10 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 import TenantForm from '@/Components/AdminForms/TenantForm.vue';
-import { TenantIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 defineProps<{
   assignableInstitutions: Array<App.Entities.Institution>;
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Padaliniai', 'tenants.index', 'Naujas padalinys', TenantIcon),
-);
 
 const tenant = ref({
   fullname: '',

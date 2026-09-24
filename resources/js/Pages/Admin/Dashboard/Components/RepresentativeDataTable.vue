@@ -18,47 +18,49 @@
               {{ $t('Visi') }} ({{ stats.total }})
             </TabsTrigger>
             <TabsTrigger value="active" class="flex-1 whitespace-nowrap text-xs sm:text-sm gap-1.5">
-              <div class="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+              <span class="size-1.5 bg-status-success" aria-hidden="true" />
               {{ $t('Aktyvūs') }} ({{ stats.activeLast30Days }})
             </TabsTrigger>
             <TabsTrigger value="inactive" class="flex-1 whitespace-nowrap text-xs sm:text-sm gap-1.5">
-              <div class="h-1.5 w-1.5 rounded-full bg-red-500 dark:bg-red-400" />
+              <span class="size-1.5 bg-status-danger" aria-hidden="true" />
               {{ $t('Neaktyvūs') }} ({{ inactiveCount }})
             </TabsTrigger>
           </TabsList>
 
           <div class="mt-4 space-y-4">
             <div class="relative">
-              <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-              <input
+              <Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
                 v-model="searchQuery"
-                type="text"
+                type="search"
                 :placeholder="$t('Ieškoti atstovų...')"
-                class="w-full rounded-md border border-zinc-300 bg-white py-2 pr-3 pl-9 text-sm text-zinc-900 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
-              >
+                :aria-label="$t('Ieškoti atstovų...')"
+                class="h-11 pl-9"
+              />
             </div>
 
             <div v-if="isFetching" class="space-y-2">
-              <Skeleton v-for="index in 5" :key="index" class="h-20 rounded-lg" />
+              <Skeleton v-for="index in 5" :key="index" class="h-14" />
             </div>
 
-            <div v-else class="max-h-[55vh] space-y-2 overflow-y-auto">
+            <div v-else class="max-h-[55vh] divide-y divide-border overflow-y-auto border-y border-border">
               <RepresentativeUserRow
                 v-for="user in pageUsers"
                 :key="user.id"
                 :user
               />
 
-              <div v-if="pageUsers.length === 0" class="py-8 text-center text-zinc-500 dark:text-zinc-400">
+              <div v-if="pageUsers.length === 0" class="py-8 text-center text-muted-foreground">
                 <Users class="mx-auto mb-4 h-12 w-12 opacity-50" />
                 <p>{{ searchQuery ? $t('Atstovų nerasta pagal paiešką') : $t('Atstovų nerasta') }}</p>
               </div>
             </div>
 
-            <div v-if="pagination.total > 0" class="flex items-center justify-between gap-3 border-t pt-4">
+            <div v-if="pagination.total > 0" class="flex items-center justify-between gap-3 pt-2">
               <Button
                 variant="outline"
                 size="sm"
+                voice="sentence"
                 :disabled="pagination.current_page <= 1 || isFetching"
                 @click="previousPage"
               >
@@ -73,6 +75,7 @@
               <Button
                 variant="outline"
                 size="sm"
+                voice="sentence"
                 :disabled="pagination.current_page >= pagination.last_page || isFetching"
                 @click="nextPage"
               >
@@ -102,6 +105,7 @@ import RepresentativeUserRow from './RepresentativeUserRow.vue';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { useApi } from '@/Composables/useApi';
 

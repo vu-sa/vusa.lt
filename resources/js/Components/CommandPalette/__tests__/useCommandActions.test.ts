@@ -63,13 +63,13 @@ describe('useCommandActions', () => {
     } }));
 
     expect(resolve().actions.value.map(action => action.id))
-      .toEqual(expect.arrayContaining(['nav-organizacija-nariai', 'create-new_news', 'nav-search', 'nav-profile']));
+      .toEqual(expect.arrayContaining(['nav-organizacija-nariai', 'create-new_news', 'nav-profile']));
   });
 
   it('keeps only global exclusions when the catalog is empty', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: { workspaces: [] } }));
 
-    expect(resolve().actions.value.map(action => action.id)).toEqual(['nav-search', 'nav-profile', 'nav-roles', 'nav-profile-notifications', 'action-start-fm']);
+    expect(resolve().actions.value.map(action => action.id)).toEqual(['nav-profile', 'nav-roles', 'nav-profile-notifications', 'action-start-fm']);
   });
 
   it('opens the docked START FM player from the palette', () => {
@@ -114,7 +114,6 @@ describe('useCommandActions', () => {
     const action = resolve().actions.value.find(candidate => candidate.id === 'nav-atstovavimas-posedziai');
 
     expect(action?.page).toEqual({ routeName: 'meetings.index', href: '/mocked-route/meetings.index', title: 'shell.sections.posedziai' });
-    expect(resolve().actions.value.find(candidate => candidate.id === 'nav-search')?.page).toBeUndefined();
   });
 
   it('ranks entries from the workspace the user is standing in first', () => {

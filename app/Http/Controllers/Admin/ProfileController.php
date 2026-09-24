@@ -122,6 +122,10 @@ class ProfileController extends AdminController
             );
         }
 
+        if (isset($validated['followed_institutions']['push'])) {
+            $preferences['followed_institutions']['push'] = $validated['followed_institutions']['push'];
+        }
+
         $user->notification_preferences = $preferences;
         $user->save();
 

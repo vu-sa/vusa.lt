@@ -36,16 +36,15 @@
       </span>
     </Link>
 
-    <div v-if="badge || needsFilling" class="flex shrink-0 flex-col items-end gap-2">
+    <div class="flex shrink-0 flex-col items-end gap-2">
       <StatusBadge v-if="badge" :status="badge" />
       <!-- The record page decides whether this person may edit; the row only points there (U5). -->
       <Link
-        v-if="needsFilling"
         :href="route('meetings.show', meeting.id)"
         prefetch
         class="inline-flex h-8 items-center gap-1.5 border border-border px-3 text-sm font-medium hover:border-brand hover:text-brand pointer-coarse:h-11"
       >
-        {{ $t('Papildyk') }}
+        {{ $t('Atidaryti') }}
       </Link>
     </div>
   </div>
@@ -96,5 +95,4 @@ const status = computed(() => props.meeting.completion_status as MeetingCompleti
 
 // The healthy state gets no badge: don't paint every row (.ai/rules/css.md).
 const badge = computed(() => (status.value && status.value !== 'complete' ? meetingCompletionStatuses[status.value] ?? null : null));
-const needsFilling = computed(() => status.value === 'incomplete' || status.value === 'no_items');
 </script>

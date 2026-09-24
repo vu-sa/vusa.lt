@@ -23,7 +23,6 @@ import { usePage } from '@inertiajs/vue3';
 import {
   CalendarRange,
   Home,
-  Search,
   Settings,
   Plus,
   LayoutDashboard,
@@ -109,14 +108,6 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     category: 'navigation',
     keywords: ['meetings', 'posedziai', 'susirinkimai'],
     can: c => !!c.index?.meeting,
-  },
-  {
-    id: 'nav-search',
-    routeName: 'search.index',
-    labelKey: 'Paieška',
-    icon: Search,
-    category: 'navigation',
-    keywords: ['search', 'paieska', 'ieskoti', 'viskas', 'posedziai', 'institucijos', 'istekliai'],
   },
   {
     id: 'nav-institutions',

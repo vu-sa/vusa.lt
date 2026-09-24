@@ -1,14 +1,14 @@
 <template>
-  <aside class="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/40">
-    <div class="flex items-center justify-between gap-2 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
+  <aside data-slot="agenda-item-notes" class="border border-border bg-card">
+    <div class="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
       <div class="flex min-w-0 items-center gap-2">
-        <Users class="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
-        <h3 class="truncate whitespace-nowrap text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <Users class="size-4 shrink-0 text-muted-foreground" />
+        <h3 class="truncate whitespace-nowrap text-sm font-semibold text-foreground">
           {{ $t('Atstovų pastabos') }}
         </h3>
       </div>
       <div class="flex shrink-0 items-center gap-1.5">
-        <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 ring-1 ring-amber-200/70 dark:ring-amber-900/50">
+        <span class="inline-flex items-center gap-1 border border-status-attention-border bg-status-attention-surface px-1.5 py-0.5 text-xs font-semibold text-status-attention">
           <Lock class="h-3 w-3" />
           {{ $t('PRIVATU') }}
         </span>
@@ -36,16 +36,16 @@
             :key="participant.id"
             :user="(participant as any)"
             :size="22"
-            class="ring-2 ring-white dark:ring-zinc-900"
+            class="ring-2 ring-card"
           />
           <span
             v-if="extraParticipants > 0"
-            class="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-[10px] font-semibold text-zinc-600 dark:text-zinc-200 ring-2 ring-white dark:ring-zinc-900"
+            :class="OVERFLOW_AVATAR_CLASS"
           >
             +{{ extraParticipants }}
           </span>
         </div>
-        <span class="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <span class="text-xs text-muted-foreground">
           {{ presenceLabel }}
         </span>
       </div>
@@ -55,9 +55,9 @@
     <!-- Body -->
     <div class="px-2 pb-3">
       <div v-if="notes.isHydrating.value" class="space-y-2 px-2 py-3">
-        <div class="h-3 w-3/4 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-        <div class="h-3 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-        <div class="h-3 w-2/3 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
+        <div class="h-3 w-3/4 animate-pulse bg-muted" />
+        <div class="h-3 w-full animate-pulse bg-muted" />
+        <div class="h-3 w-2/3 animate-pulse bg-muted" />
       </div>
 
       <!-- While the dialog holds the live editor, the sidebar shows a snapshot. -->
@@ -67,15 +67,15 @@
           class="typography max-h-64 overflow-y-auto text-sm"
           v-html="notes.notesHtml.value"
         />
-        <p v-else class="py-3 text-xs text-zinc-400">
+        <p v-else class="py-3 text-xs text-muted-foreground">
           {{ $t('Nėra pastabų.') }}
         </p>
-        <p class="mt-2 text-[11px] italic text-zinc-400">
+        <p class="mt-2 text-xs italic text-muted-foreground">
           {{ $t('Redaguojama atskirame lange…') }}
         </p>
       </div>
 
-      <div v-else class="max-h-72 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40">
+      <div v-else class="max-h-72 overflow-y-auto border border-border bg-background">
         <AgendaItemNotesEditor
           :doc="notes.doc"
           :awareness="notes.awareness"
@@ -86,7 +86,7 @@
         />
       </div>
 
-      <p v-if="!notes.isHydrating.value && !expanded" class="px-2 pt-2 text-[11px] leading-relaxed text-zinc-400">
+      <p v-if="!notes.isHydrating.value && !expanded" class="px-2 pt-2 text-xs leading-relaxed text-muted-foreground">
         <span class="font-semibold">{{ $t('Eksperimentinė funkcija') }}.</span>
         {{ $t('Pažymėkite tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
       </p>
@@ -99,7 +99,7 @@
           <DialogTitle class="flex flex-wrap items-center gap-2">
             <Users class="h-4 w-4" />
             {{ $t('Atstovų pastabos') }}
-            <span class="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+            <span class="inline-flex items-center gap-1 border border-status-attention-border bg-status-attention-surface px-1.5 py-0.5 text-xs font-semibold text-status-attention">
               <Lock class="h-3 w-3" />
               {{ $t('PRIVATU') }}
             </span>
@@ -114,15 +114,15 @@
                 :key="participant.id"
                 :user="(participant as any)"
                 :size="24"
-                class="ring-2 ring-white dark:ring-zinc-900"
+                class="ring-2 ring-card"
               />
             </div>
-            <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ presenceLabel }}</span>
+            <span class="text-xs text-muted-foreground">{{ presenceLabel }}</span>
           </div>
           <SaveStatusChip :status="notes.saveStatus.value" />
         </div>
 
-        <div class="max-h-[60vh] min-h-64 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40">
+        <div class="max-h-[60vh] min-h-64 overflow-y-auto border border-border bg-background">
           <AgendaItemNotesEditor
             v-if="expanded"
             :doc="notes.doc"
@@ -134,7 +134,7 @@
           />
         </div>
 
-        <p class="text-[11px] leading-relaxed text-zinc-400">
+        <p class="text-xs leading-relaxed text-muted-foreground">
           <span class="font-semibold">{{ $t('Eksperimentinė funkcija') }}.</span>
           {{ $t('Pažymėkite tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
         </p>
@@ -157,6 +157,9 @@ import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { useAgendaItemNotes } from '@/Composables/useAgendaItemNotes';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+
+// eslint-disable-next-line admin-redesign/no-legacy-utility -- circular: it sits in a row of avatars
+const OVERFLOW_AVATAR_CLASS = 'flex size-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground ring-2 ring-card';
 
 const props = defineProps<{
   agendaItemId: string;

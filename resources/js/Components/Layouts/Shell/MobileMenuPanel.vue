@@ -34,7 +34,7 @@
               <span class="flex-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">{{ $t(workspace.label) }}</span>
               <ChevronDown :class="['size-4 text-muted-foreground transition-transform', expandedWorkspaceKey === workspace.key && 'rotate-180']" aria-hidden="true" />
             </button>
-            <ul v-if="expandedWorkspaceKey === workspace.key" :id="`mobile-menu-sections-${workspace.key}`">
+            <ul v-show="expandedWorkspaceKey === workspace.key" :id="`mobile-menu-sections-${workspace.key}`">
               <li
                 v-for="(section, index) in workspace.sections"
                 :key="section.key"

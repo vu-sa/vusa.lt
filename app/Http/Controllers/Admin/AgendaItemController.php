@@ -9,12 +9,23 @@ use App\Http\Requests\UpdateAgendaItemRequest;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
+use App\Services\MeetingCompletionService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Response as InertiaResponse;
 
 class AgendaItemController extends AdminController
 {
+    public function index(): InertiaResponse
+    {
+        $this->handleAuthorization('viewAny', Meeting::class);
+
+        return $this->inertiaResponse('Admin/Representation/IndexAgendaItem');
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -28,6 +39,8 @@ class AgendaItemController extends AdminController
                 ->max('order') ?? 0;
 
             $broughtByStudentsFlags = $validatedData['broughtByStudentsFlags'] ?? [];
+            $startTimes = $validatedData['startTimes'] ?? [];
+            $endTimes = $validatedData['endTimes'] ?? [];
 
             foreach ($validatedData['agendaItemTitles'] as $index => $agendaItemTitle) {
                 AgendaItem::create([
@@ -37,55 +50,47 @@ class AgendaItemController extends AdminController
                     'title' => ['lt' => $agendaItemTitle],
                     'order' => $maxOrder + $index + 1,
                     'brought_by_students' => $broughtByStudentsFlags[$index] ?? false,
+                    'start_time' => $startTimes[$index] ?? null,
+                    'end_time' => $endTimes[$index] ?? null,
                 ]);
             }
-
-            // We no longer create tasks for placeholder agenda items
         }
 
         return back()->with(['success' => __('messages.agenda_item.created_many')]);
     }
 
     /**
-     * Display the specified resource.
+     * The agenda item record: outcomes are recorded here directly, text is edited in a sheet.
+     *
+     * Gated on `view` so coordinators and related-institution viewers can read it and join the
+     * discussion; `abilities.update` decides whether the outcome controls are live.
      */
-    public function show(AgendaItem $agendaItem)
+    public function show(AgendaItem $agendaItem, MeetingCompletionService $meetingCompletionService)
     {
         $this->handleAuthorization('view', $agendaItem);
 
-        $agendaItem->load(['votes', 'meeting.institutions']);
-
-        return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
-            'agendaItem' => $agendaItem,
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(AgendaItem $agendaItem)
-    {
-        // This page doubles as the read-only "show" surface (it hosts the notes
-        // and discussion). Gate it on the broad `view` ability so coordinators
-        // and related-institution viewers can open it; editing affordances are
-        // gated client-side by the `canUpdate` prop, and the update/store
-        // endpoints remain `update`-gated.
-        $this->handleAuthorization('view', $agendaItem);
-
-        $canUpdate = Gate::allows('update', $agendaItem);
-
-        $agendaItem->load(['votes', 'note', 'meeting.institutions.types', 'meeting.agendaItems' => function ($query): void {
-            $query->orderBy('order')->with('mainVote')->withCount('comments')
+        $agendaItem->load(['votes', 'note', 'meeting.institutions.types', 'meeting.institutions.tenant', 'meeting.agendaItems' => function ($query): void {
+            $query->orderBy('order')->with(['mainVote', 'votes'])->withCount('comments')
                 ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')]);
         }]);
 
-        // Whether votes/description are publicly visible follows the meeting's
-        // institution settings (computed attribute, not auto-appended).
-        $agendaItem->meeting->append('is_public');
+        $meeting = $agendaItem->meeting;
+        $meeting->append('is_public');
+        $primaryInstitution = $meeting->institutions->first();
+        $publicUrl = $meeting->is_public && $primaryInstitution?->tenant
+            ? route('publicMeetings.show', [
+                'subdomain' => $primaryInstitution->tenant->subdomain(),
+                'lang' => app()->getLocale(),
+                'meeting' => $meeting,
+            ])
+            : null;
 
-        // Lightweight sibling list for in-meeting navigation (popover + prev/next)
-        $siblingAgendaItems = $agendaItem->meeting->agendaItems
-            ->map(fn (AgendaItem $item) => [
+        $missingByItem = collect($meetingCompletionService->missingActions($meeting))
+            ->filter(fn (array $action): bool => isset($action['agenda_item_id']))
+            ->keyBy('agenda_item_id');
+
+        $siblingAgendaItems = $meeting->agendaItems
+            ->map(fn (AgendaItem $item): array => [
                 'id' => $item->id,
                 'title' => $item->title,
                 'type' => $item->type?->value,
@@ -94,25 +99,40 @@ class AgendaItemController extends AdminController
                 'main_vote' => $item->mainVote,
                 'comments_count' => $item->comments_count,
                 'has_notes' => (bool) $item->getAttribute('has_notes'),
-                // Lets the editor default this item's start time from the previous item's end
-                // time — see EditAgendaItem.vue.
+                // The previous item's end time seeds this one's start (ShowAgendaItem.vue).
                 'start_time' => $item->start_time,
                 'end_time' => $item->end_time,
+                'missing' => $missingByItem->get((string) $item->getKey()),
             ])
             ->values();
 
-        return $this->inertiaResponse('Admin/Representation/EditAgendaItem', [
-            // toFullArray(), not the model: the editor writes translations, so it needs the
-            // whole `{lt, en}` map rather than the current locale's string.
+        return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
+            // toFullArray(): the page writes translations, so it needs the whole `{lt, en}` map.
             'agendaItem' => [
                 ...$agendaItem->toFullArray(),
                 'votes' => $agendaItem->votes->map->toFullArray()->all(),
             ],
             'siblingAgendaItems' => $siblingAgendaItems,
-            'canUpdate' => $canUpdate,
-            // VU SA's own bodies have no separate student position to record — see
-            // Meeting::requiresStudentPerspective().
-            'requiresStudentPerspective' => $agendaItem->meeting->requiresStudentPerspective(),
+            'publicUrl' => $publicUrl,
+            'abilities' => [
+                'update' => Gate::allows('update', $agendaItem),
+                'delete' => Gate::allows('delete', $agendaItem),
+            ],
+            // VU SA's own bodies have no separate student position to record.
+            'requiresStudentPerspective' => $meeting->requiresStudentPerspective(),
+        ]);
+    }
+
+    /**
+     * The old editor URL, kept for links in sent emails and notifications.
+     */
+    public function edit(Request $request, AgendaItem $agendaItem): RedirectResponse
+    {
+        $this->handleAuthorization('view', $agendaItem);
+
+        return redirect()->route('agendaItems.show', [
+            'agendaItem' => $agendaItem,
+            ...$request->only('focus'),
         ]);
     }
 
@@ -223,9 +243,12 @@ class AgendaItemController extends AdminController
     {
         $this->handleAuthorization('delete', $agendaItem);
 
+        $meetingId = $agendaItem->meeting_id;
         $agendaItem->delete();
 
-        return back()->with(['success' => $this->entityMessage('deleted', 'agendaItem')]);
+        // Deleted from its own page, `back()` would land on a 404.
+        return redirect()->route('meetings.show', $meetingId)
+            ->with(['success' => $this->entityMessage('deleted', 'agendaItem')]);
     }
 
     /**

@@ -7,6 +7,28 @@ lastUpdated: true
 
 ## v2.21 — Rezervacijų juodraščiai (2026-09-24) {#v2-21}
 
+- ⭐ **Sekamos institucijos** — institucijų sąraše pažymėk kelias institucijas ir spausk „Sekti“ arba „Nebesekti“; greitasis filtras „Sekamos“ parodo visas sekamas institucijas. Kai ką nors seki, Pradžioje ir ViSAK apžvalgoje atsiranda „Sekamos institucijos“ blokas. Kai sekamoje institucijoje sukuriamas posėdis ar užpildoma darbotvarkė, gauni naršyklės pranešimą – jį gali išjungti pranešimų nustatymuose
+- ✨ **Sekamų institucijų posėdžiai** — „Artimiausi posėdžiai“ rodo ir sekamų institucijų posėdžius; kai jų daugiau nei trys, visus atversi viename lange
+- 🔧 **Filtrų skaičiai sąrašuose** — problemų, užduočių, rezervacijų, pareigybių, formų, reklaminių juostų, renginių ir pagalbos užklausų filtruose vietoj nulių rodomas tikras įrašų skaičius
+- ✨ **Aiškesnė institucijos apžvalga** — institucijos tipas, VU ar VU SA priklausomybė ir posėdžių viešumas rodomi faktų kortelėse; vienas „Fiksuoti veiklą“ mygtukas leidžia pasirinkti posėdį arba pranešti, kad jo nebuvo
+- 🔧 **Vėl veikia darbotvarkės pildymas** — posėdžio puslapyje punktai atveriami veikiančiame šoniniame lange
+- ✨ **Tvarkingesnės mažų kortelių linijos** — partnerių, kontaktų, greitųjų nuorodų ir įrašų faktų kortelių kraštinės dabar taisyklingai susijungia ir mažesniuose ekranuose
+- ⭐ **Balsavimo rezultatai vienu palietimu** — darbotvarkės punkto puslapyje klausimo tipą, sprendimą, studentų balsą ir naudą pažymi dideliais mygtukais, kurie išsaugomi iškart – nebereikia įjungti redagavimo. Pavadinimą, aprašymą ir studentų poziciją (ir angliškai) redaguoji šoniniame lange
+- ✨ **Ramesnis balsavimų redagavimas** — kiekvienas balsavimas rodomas atskiroje kortelėje; pažymėtas atsakymas susitraukia į vieną mygtuką, kurį palietęs gali pakeisti ar išvalyti. Balsavimo klausimus, tvarką, pagrindinį balsavimą, pastabas ir šalinimą tvarkai lange „Tvarkyti balsavimus“. Punkto, posėdžio ir institucijos būsena rodoma pirmoje faktų kortelėje, nuspalvinta jos spalva; institucijos kortelėje parašyta ir tai, kuo būsena remiasi (kitas ar paskutinis posėdis, pranešimas, kad posėdžio nebus)
+- ✨ **Posėdžių perjungimas pagal datą** — posėdžio puslapio ‹ › rodyklės rodo ankstesnio ir kito posėdžio datas, o paspaudęs dabartinę datą gali pasirinkti bet kurį tos institucijos posėdį; skirtukai turi piktogramas
+- ✨ **Erdvesnė įrašo antraštė** — ilgas pavadinimas užima visą eilutę, o veiksmų mygtukai perkelti po juo; institucijos nariai ir koordinatoriai rodomi su nuotraukomis. Nepažymėtas punkto tipas paryškinamas pačiame pasirinkime
+- 🔧 **Vienas „Daugiau veiksmų“ mygtukas telefone** — įrašų puslapiuose telefone nebėra dviejų ⋯ mygtukų, o klausimo tipo pasirinkimas telpa ekrane
+- 🔧 **Prieinamumo nustatymai veikia iškart** — valdymo sistemoje išsaugotas teksto dydis, aukštas kontrastas ir nuorodų pabraukimas pritaikomi atidarius bet kurį puslapį, o ne tik atvėrus nustatymų langą
+- ⭐ **Pildyti trūkstamus** — posėdžio puslapis nebesudaro ilgo trūkstamų veiksmų sąrašo: rodomas nepilnų punktų skaičius, o „Pildyti trūkstamus“ atveria pirmą nepilną punktą; ‹ › rodyklės veda per visus darbotvarkės punktus
+- ✨ **Atnaujintas posėdžio puslapis** — institucija rodoma kaip nuoroda į jos puslapį, vienintelis atstovas rodomas vardu be išskleidžiamo sąrašo, o protokolas ir ataskaita – viename lauke su būsenos piktogramomis. Posėdžio ir darbotvarkės punkto matomumas rodomas iškart po būsenos: viešas – žaliame, vidinis – pilkame lauke. Darbotvarkės punkto matomumo nuoroda atidaro viešą posėdį naujame skirtuke, o aprašyme matomumas nebekartojamas
+- ✨ **Darbotvarkės punktų pridėjimas viename lange** — punktus gali įrašyti po vieną, įklijuoti visą darbotvarkę iš kvietimo arba paimti iš ankstesnio tos pačios institucijos posėdžio; tvarką keiti mygtuku „Keisti tvarką“
+- ✨ **Pakeitimų istorija šoniniame lange** — įrašų puslapiuose komentarai lieka po įrašu, o kas ir ką pakeitė, atsiveria mygtuku „Pakeitimų istorija“
+- ✨ **Vienodi balsavimo žodžiai ir spalvos** — darbotvarkės punktų būsenos Mano VU SA ir viešame posėdžio puslapyje vadinamos ir žymimos vienodai; atnaujinti posėdžių kortelės, aptarimų ir atstovų aktyvumo vaizdai
+- 🔧 **Įklijuotos darbotvarkės laikai išsaugomi** — įklijavus darbotvarkę su laikais (pvz., „10.00–10.30“), punktų pradžios ir pabaigos laikai nebeprarandami
+- 🔧 **Koordinatoriui rašoma pareigų adresu** — kontaktas su koordinatoriumi naudoja jo koordinatoriaus pareigų el. paštą, o ne asmeninį adresą
+- 🔧 **Pakeitimai neprarandami išeinant** — jei punkto rezultatą pažymėjai ir iškart išėjai į kitą puslapį, pakeitimas pirmiausia išsaugomas
+- ✨ **Aiškesni atstovavimo sąrašai** — institucijų sąraše neberodomas trumpinys, o institucijų ir posėdžių įrašus gali atidaryti iš visų sąrašo rodinių
+- ✨ **Darbotvarkės klausimų sąrašas** — klausimai dabar turi atskirą sąrašą su paieška, filtrais ir peržiūra; bendra paieška lieka komandų paletėje
 - 🔧 **Suskleidžiamas telefono meniu** — atidarius meniu rodomi tik aktyvios darbo srities skyriai; kitas sritis gali išskleisti paliesdamas jų pavadinimus
 - ✨ **Šviesus režimas pagal nutylėjimą** — pirmą kartą atsidarius viešą svetainę ar Mano VU SA įjungiamas šviesus režimas; anksčiau pasirinktas režimas išlieka
 - ✨ **Patogesnis bandymas** — testavimo aplinką galima laikinai atverti be papildomo naršyklės slaptažodžio, o jos įspėjimą galima uždaryti iki kito puslapio

@@ -59,7 +59,6 @@ import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { supportRequestStatuses } from '@/Constants/statuses';
 import type { SupportRequestStatus } from '@/Types/enums';
 import type { SupportRequestItem } from '@/Types/supportRequests';
@@ -108,5 +107,4 @@ function handleAction(action: string): void {
     deleteOpen.value = true;
   }
 }
-usePageBreadcrumbs(() => [BreadcrumbHelpers.createRouteBreadcrumb($t('vusa.lt pagalba'), 'mySupportRequests.index'), BreadcrumbHelpers.createBreadcrumbItem(props.supportRequest.title)]);
 </script>

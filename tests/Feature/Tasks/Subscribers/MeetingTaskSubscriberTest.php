@@ -24,6 +24,7 @@ use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use App\Tasks\Handlers\AgendaCreationTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 use Tests\Feature\Tasks\MeetingTaskTestHelpers;
 
 pest()->use(RefreshDatabase::class, MeetingTaskTestHelpers::class);
@@ -447,7 +448,31 @@ describe('MeetingTaskSubscriber', function (): void {
             // Dispatch the event
             event(new MeetingFullyCreated($meeting));
 
-            Notification::assertSentTo($follower, MeetingCreatedNotification::class);
+            // They asked to hear about it, so a follower's notice pushes, unlike the overseers'.
+            Notification::assertSentTo(
+                $follower,
+                MeetingCreatedNotification::class,
+                fn ($notification, array $channels): bool => in_array(WebPushChannel::class, $channels, true),
+            );
+        });
+
+        test('a follower who turned followed-institution push off gets the notice without a push', function (): void {
+            $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
+                ?? Tenant::factory()->create(['type' => 'padalinys']);
+
+            $institution = Institution::factory()->for($tenant)->create();
+            $follower = User::factory()->create(['notification_preferences' => ['followed_institutions' => ['push' => false]]]);
+            $follower->followedInstitutions()->attach($institution);
+
+            $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
+            event(new MeetingFullyCreated($meeting));
+
+            Notification::assertSentTo(
+                $follower,
+                MeetingCreatedNotification::class,
+                fn ($notification, array $channels): bool => in_array('database', $channels, true)
+                    && ! in_array(WebPushChannel::class, $channels, true),
+            );
         });
 
         test('does not notify followers who have muted the institution', function (): void {
@@ -500,13 +525,11 @@ describe('MeetingTaskSubscriber', function (): void {
 
             $institution = Institution::factory()->for($tenant)->create();
 
-            // Create the institution-manager-role type for GetInstitutionManagers
-            $institutionManagerType = Type::query()->where('slug', 'institution-manager-role')->first()
-                ?? Type::factory()->create(['slug' => 'institution-manager-role', 'model_type' => MorphMap::alias(Role::class)]);
-
-            // Create a role attached to the institution manager type
+            // GetInstitutionManagers reads the manager role from AtstovavimasSettings.
             $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $managerRole->types()->attach($institutionManagerType);
+            $settings = app(AtstovavimasSettings::class);
+            $settings->institution_manager_role_id = $managerRole->id;
+            $settings->save();
 
             // Create duty with the manager role
             $duty = Duty::factory()->for($institution)->create();
@@ -530,6 +553,20 @@ describe('MeetingTaskSubscriber', function (): void {
             event(new MeetingFullyCreated($meeting));
 
             Notification::assertSentToTimes($manager, MeetingCreatedNotification::class, 1);
+            // Their seat, not the follow, is why they hear about it: no push.
+            Notification::assertSentTo(
+                $manager,
+                MeetingCreatedNotification::class,
+                fn ($notification, array $channels): bool => ! in_array(WebPushChannel::class, $channels, true),
+            );
+        });
+
+        test('agenda completion pushes to followers too', function (): void {
+            $follower = User::factory()->create();
+            $meeting = Meeting::factory()->create();
+
+            expect((new MeetingAgendaCompletedNotification($meeting))->viaFollow()->via($follower))->toContain(WebPushChannel::class)
+                ->and((new MeetingAgendaCompletedNotification($meeting))->via($follower))->not->toContain(WebPushChannel::class);
         });
     });
 

@@ -23,16 +23,39 @@ beforeEach(function (): void {
     $settings->setInstitutionManagerRoleId($role->id);
     $settings->save();
 
-    $duty = Duty::factory()->for($this->institution)->create(['name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator']]);
-    $duty->roles()->attach($role);
-    $this->coordinator = User::factory()->create(['name' => 'Ona Koordinatorė']);
-    $this->coordinator->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
+    $this->managerDuty = Duty::factory()->for($this->institution)->create([
+        'name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator'],
+        'email' => 'koordinatorius@vusa.lt',
+    ]);
+    $this->managerDuty->roles()->attach($role);
+    $this->coordinator = User::factory()->create(['name' => 'Ona Koordinatorė', 'email' => 'ona@gmail.com']);
+    $this->coordinator->duties()->attach($this->managerDuty, ['start_date' => now()->subMonth(), 'end_date' => null]);
 });
 
 describe('GetInstitutionCoordinator', function (): void {
     test('names the koordinatorius with their duty', function (): void {
         expect(GetInstitutionCoordinator::execute($this->institution))
             ->toMatchArray(['name' => 'Ona Koordinatorė', 'duty' => 'Koordinatorius']);
+    });
+
+    test('is written to at the coordinator duty, not a personal or unrelated duty address', function (): void {
+        $this->coordinator->duties()->attach(
+            Duty::factory()->for($this->institution)->create(['name' => ['lt' => 'Narys', 'en' => 'Member'], 'email' => 'narys@vusa.lt']),
+            ['start_date' => now()->subYear(), 'end_date' => null],
+        );
+
+        expect(GetInstitutionCoordinator::execute($this->institution))
+            ->toMatchArray(['email' => 'koordinatorius@vusa.lt', 'duty' => 'Koordinatorius']);
+    });
+
+    test('falls back to their vusa.lt address when the coordinator duty has none', function (): void {
+        $this->managerDuty->update(['email' => null]);
+        $this->coordinator->duties()->attach(
+            Duty::factory()->for($this->institution)->create(['email' => 'ona@vusa.lt']),
+            ['start_date' => now()->subYear(), 'end_date' => null],
+        );
+
+        expect(GetInstitutionCoordinator::execute($this->institution)['email'])->toBe('ona@vusa.lt');
     });
 
     test('is never the person asking', function (): void {
@@ -90,12 +113,12 @@ describe('the coordinator is one tap away on rep screens (R-g)', function (): vo
         );
     });
 
-    test('the meeting record names its own institution\'s coordinator, deferred', function (): void {
+    test('the meeting record leaves the coordinators out, even among its deferred panels', function (): void {
         $meeting = Meeting::factory()->hasAttached($this->institution)->create();
 
         asUser(makeAdminUser())->get(route('meetings.show', $meeting))->assertInertia(fn (Assert $page) => $page
-            ->missing('coordinator')
-            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page->where('coordinator.name', 'Ona Koordinatorė'))
+            ->missing('coordinators')
+            ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page->missing('coordinators'))
         );
     });
 });

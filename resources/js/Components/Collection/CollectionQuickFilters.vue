@@ -11,7 +11,7 @@
       :key="filter.id"
       type="button"
       :aria-pressed="filter.active"
-      :class="controlVariants({ size: 'sm', active: filter.active })"
+      :class="controlVariants({ size: 'sm', active: filter.active, voice: 'sentence' })"
       @click="emit('toggle', filter.id)"
     >
       <span>{{ filter.label }}</span>

@@ -1,11 +1,15 @@
 <template>
+  <!-- stackOnPhone sizes buttons only below sm; inside the fixed-height frame they would overflow its padding. -->
   <div
     :class="cn(
-      'grid h-11 w-full border border-border bg-secondary/50 p-0.5 transition-colors pointer-coarse:h-12',
+      'grid w-full border border-border bg-secondary/50 p-0.5 transition-colors',
+      stackOnPhone
+        ? 'grid-cols-2 max-sm:[&>button]:min-h-10 max-sm:pointer-coarse:[&>button]:min-h-11 sm:h-11 sm:grid-cols-[repeat(var(--segments),minmax(0,1fr))] sm:pointer-coarse:h-12'
+        : 'h-11 grid-cols-[repeat(var(--segments),minmax(0,1fr))] pointer-coarse:h-12',
       'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
       props.class,
     )"
-    :style="{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }"
+    :style="{ '--segments': options.length }"
     role="group"
     :aria-label
     data-slot="form-segmented-control"
@@ -48,6 +52,8 @@ const props = defineProps<{
   options: FormSegmentOption<T>[];
   ariaLabel: string;
   testIdPrefix?: string;
+  /** Four long labels do not fit a phone's width in one row, so they wrap to a 2×2 grid below `sm`. */
+  stackOnPhone?: boolean;
   class?: HTMLAttributes['class'];
 }>();
 

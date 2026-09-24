@@ -16,8 +16,6 @@ import { router, type InertiaForm } from '@inertiajs/vue3';
 import { transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import FormForm from '@/Components/AdminForms/FormForm.vue';
-import { FormIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   form: App.Entities.Form;
@@ -32,15 +30,6 @@ const formTitle = computed(() => {
   }
   return String(props.form.name ?? '');
 });
-
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm(
-    $tChoice('entities.form.model', 2),
-    'forms.index',
-    formTitle.value,
-    FormIcon,
-  ),
-);
 
 function handleFormSubmitted(form: unknown) {
   (form as InertiaForm<Record<string, unknown>>).patch(route('forms.update', props.form.id));

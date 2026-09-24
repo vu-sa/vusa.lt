@@ -40,18 +40,12 @@ import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import RichContentFormElement from '@/Components/RichContent/RichContentFormElement.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { PageIcon } from '@/Components/icons';
 
 const props = defineProps<{
   tenant: App.Entities.Tenant;
   content: App.Entities.Content | null;
   locale: 'lt' | 'en';
 }>();
-
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Puslapiai', 'pages.index', `${$t('Pagrindinis puslapis')} (${props.tenant.shortname})`, PageIcon),
-);
 
 const form = useForm({
   locale: props.locale,

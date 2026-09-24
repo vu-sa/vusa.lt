@@ -4,7 +4,7 @@ import { cva } from 'class-variance-authority';
 export { default as Badge } from './Badge.vue';
 
 export const badgeVariants = cva(
-  'inline-flex items-center gap-1 border font-bold uppercase tracking-wide transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
+  'inline-flex items-center gap-1 border font-bold transition-colors focus:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40',
   {
     variants: {
       variant: {
@@ -25,10 +25,15 @@ export const badgeVariants = cva(
         default: 'px-2 py-0.5 text-[11px]',
         tiny: 'px-1.5 py-0 text-[11px]',
       },
+      voice: {
+        brand: 'uppercase tracking-wide',
+        sentence: 'normal-case tracking-normal',
+      },
     },
     defaultVariants: {
       variant: 'default',
       size: 'default',
+      voice: 'sentence',
     },
   },
 );

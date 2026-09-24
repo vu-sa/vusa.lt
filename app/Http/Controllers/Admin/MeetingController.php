@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\AnnounceMeetingInCalendar;
-use App\Actions\GetInstitutionCoordinator;
 use App\Actions\GetRecentlyChangedMeetings;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
@@ -219,7 +218,6 @@ class MeetingController extends AdminController
             // Nominated for the term the meeting fell in (O22). When present, these are the
             // people the agenda tasks went to instead of the whole membership.
             'secretaries' => InstitutionSecretaryController::forMeetingPayload($meeting),
-            'administrators' => InstitutionSecretaryController::forMeetingPayload($meeting),
             'abilities' => [
                 'update' => $canUpdate,
                 'delete' => Gate::allows('delete', $meeting),
@@ -236,6 +234,7 @@ class MeetingController extends AdminController
                 ? $this->getAvailableInstitutionsForAttach($meeting)
                 : [],
             'governanceScope' => $this->governanceScopeFor($meeting),
+            'recordNavigation' => $primaryInstitution === null ? null : $this->institutionMeetingNavigation($meeting, $primaryInstitution),
             'tasks' => Inertia::defer(fn () => TaskResource::collection(
                 $meeting->tasks()->with('users:id,name,email,profile_photo_path', 'taskable')->get()
             )->resolve(), 'meetingPanels'),
@@ -245,12 +244,84 @@ class MeetingController extends AdminController
                 ->get()
                 ->each->append('language_code')
                 ->toArray(), 'meetingPanels'),
-            // R-g: a rep stuck on a record asks their institution's koordinatorius.
-            'coordinator' => Inertia::defer(
-                fn () => $primaryInstitution === null ? null : GetInstitutionCoordinator::execute($primaryInstitution, request()->user()),
-                'meetingPanels',
-            ),
+            // Loaded only when "Iš ankstesnio posėdžio" is opened in the add-items sheet.
+            'recentAgendas' => Inertia::optional(fn () => $this->recentAgendasFor($meeting)),
         ]);
+    }
+
+    /**
+     * ‹ › through the primary institution's meetings in date order, labelled with the neighbours'
+     * dates, plus the whole list for the header's meeting picker.
+     *
+     * @return array{position: int, total: int, previousHref: string|null, nextHref: string|null, previousLabel: string|null, nextLabel: string|null, meetings: list<array{id: string, start_time: string, href: string}>}|null
+     */
+    private function institutionMeetingNavigation(Meeting $meeting, Institution $institution): ?array
+    {
+        $meetings = $institution->meetings()
+            ->orderBy('start_time')
+            ->orderBy('meetings.id')
+            ->get(['meetings.id', 'meetings.start_time'])
+            ->map(fn (Meeting $sibling): array => [
+                'id' => (string) $sibling->getKey(),
+                'start_time' => $sibling->start_time->toIso8601String(),
+                'href' => route('meetings.show', $sibling),
+            ])
+            ->values();
+
+        $index = $meetings->search(fn (array $sibling): bool => $sibling['id'] === (string) $meeting->getKey());
+
+        if ($index === false || $meetings->count() < 2) {
+            return null;
+        }
+
+        $previous = $index > 0 ? $meetings->get($index - 1) : null;
+        $next = $meetings->get($index + 1);
+
+        return [
+            'position' => $index + 1,
+            'total' => $meetings->count(),
+            'previousHref' => $previous['href'] ?? null,
+            'nextHref' => $next['href'] ?? null,
+            'previousLabel' => $this->shortMeetingDate($previous['start_time'] ?? null),
+            'nextLabel' => $this->shortMeetingDate($next['start_time'] ?? null),
+            'meetings' => $meetings->all(),
+        ];
+    }
+
+    private function shortMeetingDate(?string $startTime): ?string
+    {
+        return $startTime === null ? null : Carbon::parse($startTime)->format('m-d');
+    }
+
+    /**
+     * Earlier agendas of the same institutions, to start a recurring meeting's agenda from.
+     *
+     * @return list<array{id: string, start_time: string, institution_name: string, agenda_items: list<string>}>
+     */
+    private function recentAgendasFor(Meeting $meeting): array
+    {
+        $institutionIds = $meeting->institutions->pluck('id');
+
+        return Meeting::query()
+            ->whereKeyNot($meeting->getKey())
+            ->whereHas('institutions', fn ($query) => $query->whereIn('institutions.id', $institutionIds))
+            ->whereHas('agendaItems')
+            ->with(['institutions:id,name', 'agendaItems' => fn ($query) => $query->orderBy('order')])
+            ->latest('start_time')
+            ->limit(6)
+            ->get()
+            ->map(fn (Meeting $recent): array => [
+                'id' => (string) $recent->getKey(),
+                'start_time' => $recent->start_time->toISOString(),
+                'institution_name' => (string) $recent->institutions->first()?->getTranslation('name', app()->getLocale()),
+                // Lithuanian: the template refills a new agenda, which is written in Lithuanian.
+                'agenda_items' => $recent->agendaItems
+                    ->map(fn (AgendaItem $item): string => (string) $item->getTranslation('title', 'lt'))
+                    ->values()
+                    ->all(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

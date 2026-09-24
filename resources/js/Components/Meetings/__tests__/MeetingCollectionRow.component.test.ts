@@ -38,11 +38,11 @@ describe('MeetingCollectionRow', () => {
     expect(wrapper.find('time').attributes('datetime')).toBe('2026-09-18T07:00:00.000Z');
   });
 
-  it('paints no badge and offers no action on a complete meeting — the healthy state stays quiet', () => {
+  it('keeps a complete meeting quiet while offering its record link', () => {
     const wrapper = mountRow({ meeting: meeting({ completion_status: 'complete' }) });
 
     expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
-    expect(wrapper.text()).not.toContain('Papildyk');
+    expect(wrapper.findAll('a').some(link => link.text() === 'Atidaryti')).toBe(true);
   });
 
   it.each([
@@ -56,7 +56,7 @@ describe('MeetingCollectionRow', () => {
     expect(badge.text()).toBe(label);
     expect(wrapper.findAll('[data-slot="status-badge"]')).toHaveLength(1);
 
-    const action = wrapper.findAll('a').find(link => link.text() === 'Papildyk');
+    const action = wrapper.findAll('a').find(link => link.text() === 'Atidaryti');
     expect(action?.attributes('href')).toContain('meetings.show');
     // The action is not the row's main link, so the preview view cannot swallow it.
     expect(action?.attributes('data-collection-open')).toBeUndefined();

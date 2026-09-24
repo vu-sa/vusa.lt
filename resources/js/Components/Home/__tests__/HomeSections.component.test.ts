@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { ClipboardList } from 'lucide-vue-next';
 
 import CoordinatorCard from '../CoordinatorCard.vue';
+import FollowedInstitutionsList from '../FollowedInstitutionsList.vue';
 import InstitutionsNeedingAttention from '../InstitutionsNeedingAttention.vue';
 import RecentlyEditedList from '../RecentlyEditedList.vue';
 import UpcomingMeetingsList from '../UpcomingMeetingsList.vue';
@@ -128,6 +129,52 @@ describe('UpcomingMeetingsList', () => {
 
     expect(wrapper.find('ul a').attributes('href')).toContain('meetings.show');
     expect(wrapper.text()).toContain('Senato atstovai');
+  });
+
+  const meeting = (index: number, isFollowed = false) => ({
+    id: `m${index}`,
+    title: `Posėdis ${index}`,
+    start_time: '2026-09-25T07:00:00Z',
+    institution_name: 'Senato atstovai',
+    is_followed: isFollowed,
+  });
+
+  it('shows three and offers the rest in a dialog only when there are more', async () => {
+    const three = mount(UpcomingMeetingsList, { props: { meetings: [1, 2, 3].map(index => meeting(index)) }, global: { stubs: commonStubs } });
+    expect(three.find('[data-slot="upcoming-meetings-more"]').exists()).toBe(false);
+
+    const five = mount(UpcomingMeetingsList, {
+      props: { meetings: [1, 2, 3, 4, 5].map(index => meeting(index)), total: 12 },
+      global: { stubs: commonStubs },
+    });
+    expect(five.findAll('[data-slot="upcoming-meetings"] li')).toHaveLength(3);
+    await five.find('[data-slot="upcoming-meetings-more"]').trigger('click');
+    // The server total, not only the rows it sent.
+    expect(five.text()).toContain('· 12');
+    expect(five.findAll('[data-slot="upcoming-meetings-dialog-list"] li')).toHaveLength(5);
+  });
+
+  it('marks a meeting reached only through a follow', () => {
+    const wrapper = mount(UpcomingMeetingsList, { props: { meetings: [meeting(1, true), meeting(2)] } });
+
+    expect(wrapper.findAll('[data-slot="upcoming-meeting-followed"]')).toHaveLength(1);
+  });
+});
+
+describe('FollowedInstitutionsList', () => {
+  it('lists the followed institutions and links to all of them', () => {
+    const wrapper = mount(FollowedInstitutionsList, {
+      props: {
+        followed: {
+          items: [{ id: 'i1', name: 'Senatas', is_muted: true, activity_status: 'healthy' }],
+          total: 12,
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain('Senatas');
+    expect(wrapper.find('[aria-label="Pranešimai nutildyti"]').exists()).toBe(true);
+    expect(wrapper.find('header a').attributes('href')).toContain('institutions.index');
   });
 });
 

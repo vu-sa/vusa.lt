@@ -15,6 +15,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    $this->travelTo(now()->setTime(12, 0));
     $this->tenant = Tenant::query()->first();
     $this->user = User::factory()->create([
         'email' => 'user@example.com',
@@ -293,6 +294,17 @@ describe('setDigestEmails', function (): void {
 });
 
 describe('updateNotificationPreferences endpoint', function (): void {
+    test('followed-institution push is on until the user turns it off', function (): void {
+        expect($this->user->wantsFollowedInstitutionPush())->toBeTrue();
+
+        asUser($this->user)
+            ->patch(route('profile.updateNotificationPreferences'), ['followed_institutions' => ['push' => false]])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        expect($this->user->refresh()->wantsFollowedInstitutionPush())->toBeFalse();
+    });
+
     test('user can update digest emails through API', function (): void {
         asUser($this->user)
             ->patch(route('profile.updateNotificationPreferences'), [

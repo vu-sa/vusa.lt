@@ -5,33 +5,36 @@
         {{ $t('notifications.preferences.digest_emails_description') }}
       </p>
       <div class="space-y-2">
-        <div
+        <label
           v-for="emailOption in availableEmails"
           :key="emailOption.email"
-          class="flex items-center gap-3 border border-border p-3 hover:bg-accent transition-colors"
+          :for="`digest-email-${emailOption.email}`"
+          data-slot="digest-email-option"
+          :class="[
+            'flex items-center gap-3 border border-border p-3 cursor-pointer select-none transition-colors pointer-coarse:min-h-11',
+            'hover:bg-accent/60',
+            isSelected(emailOption.email) ? 'border-brand/40 bg-brand/5' : '',
+          ]"
         >
           <Checkbox
             :id="`digest-email-${emailOption.email}`"
             :model-value="isSelected(emailOption.email)"
             @update:model-value="(checked) => toggleEmail(emailOption.email, checked === true)"
           />
-          <label
-            :for="`digest-email-${emailOption.email}`"
-            class="flex-1 flex items-center gap-2 cursor-pointer"
-          >
+          <div class="flex-1 flex items-center gap-2 min-w-0">
             <component
               :is="emailOption.type === 'duty' ? Briefcase : User"
-              class="size-4 text-muted-foreground"
+              class="size-4 shrink-0 text-muted-foreground"
             />
-            <span class="font-mono text-sm">{{ emailOption.email }}</span>
-            <span class="text-xs text-muted-foreground">
+            <span class="font-mono text-sm truncate">{{ emailOption.email }}</span>
+            <span class="text-xs text-muted-foreground shrink-0">
               ({{ emailOption.type === 'duty' ? $t('notifications.preferences.duty_email') : $t('notifications.preferences.personal_email') }})
             </span>
-          </label>
-        </div>
+          </div>
+        </label>
       </div>
-      <p v-if="selectedEmails.length === 0" class="text-sm text-status-attention flex items-center gap-2 mt-2">
-        <Info class="size-4" />
+      <p v-if="selectedEmails.length === 0" class="text-xs text-[var(--status-attention)] flex items-center gap-1.5 mt-2">
+        <Info class="size-3.5 shrink-0" aria-hidden="true" />
         {{ $t('notifications.preferences.digest_emails_default_info') }}
       </p>
     </div>

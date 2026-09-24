@@ -69,6 +69,7 @@ import { useWindowDates } from '../useWindowDates';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData, type ActionWindowInstitution } from '@/Composables/useActionWindowData';
+import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { EmptyState } from '@/Components/Patterns';
 import type { StatusRole } from '@/Constants/statuses';
 import { Input } from '@/Components/ui/input';
@@ -128,37 +129,8 @@ const FALLBACK_STYLE: { icon: LucideIcon; tone: StatusRole } = { icon: Landmark,
 const statusStyle = (institution: ActionWindowInstitution) =>
   STATUS_STYLES[institution.activity_status.status] ?? FALLBACK_STYLE;
 
-/**
- * What is already scheduled, before what is overdue: a body can hold both an upcoming
- * meeting and an active check-in, and knowing only one of them was what made the list
- * look wrong ("no meetings until October" beside a meeting next Tuesday).
- */
-const contextLine = (institution: ActionWindowInstitution): string => {
-  const status = institution.activity_status;
-  const parts: string[] = [];
-
-  if (status.next_meeting_at) {
-    parts.push($t('action_window.institution.next_meeting', { date: dates.day(status.next_meeting_at) }));
-  }
-
-  if (status.active_check_in_until) {
-    parts.push(parts.length > 0
-      ? $t('action_window.institution.check_in_until_short', { date: dates.day(status.active_check_in_until) })
-      : $t('action_window.institution.check_in_until', { date: dates.day(status.active_check_in_until) }));
-  }
-
-  if (parts.length > 0) {
-    return parts.join(' · ');
-  }
-
-  // The date, not `effective_days_since_activity`: that counter skips vacation periods,
-  // so rendering it as "N days ago" told the reader something no calendar agrees with.
-  if (status.last_meeting_at) {
-    return $t('action_window.institution.last_meeting', { date: dates.fullDay(status.last_meeting_at) });
-  }
-
-  return $t('action_window.institution.no_meetings_yet');
-};
+const contextLine = (institution: ActionWindowInstitution): string =>
+  describeInstitutionActivity(institution.activity_status, dates);
 
 /**
  * Carries the return frame, so changing the institution from the review still lands

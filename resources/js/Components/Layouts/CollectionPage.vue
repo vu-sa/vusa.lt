@@ -8,7 +8,9 @@
       </template>
     </CollectionTitleBand>
 
-    <CollectionQuickFilters :filters="quickFilters ?? []" @toggle="id => emit('quickFilter', id)" />
+    <slot name="quick-filters" :filters="quickFilters ?? []" :toggle="(id: string) => emit('quickFilter', id)">
+      <CollectionQuickFilters :filters="quickFilters ?? []" @toggle="id => emit('quickFilter', id)" />
+    </slot>
 
     <section class="flex flex-col gap-3 border-y border-border py-4" :aria-label="$t('Paieška ir filtrai')">
       <CollectionControlRow
@@ -173,6 +175,8 @@ const emit = defineEmits<{
 
 defineSlots<{
   'actions': () => unknown;
+  /** Replaces the chips row, e.g. to wrap it in a spotlight; render `CollectionQuickFilters` inside. */
+  'quick-filters'?: (props: { filters: CollectionQuickFilter[]; toggle: (id: string) => void }) => unknown;
   'row': (props: { item: T; view: CollectionViewMode; selected: boolean; pinned: boolean }) => unknown;
   /** Needed when `availableViews` offers `cards`. */
   'card'?: (props: { item: T; pinned: boolean }) => unknown;
@@ -239,6 +243,17 @@ function toggleFilters(): void {
     sheetOpen.value = true;
   }
 }
+
+// Counts are asked for only once someone looks at the filters (a remembered open panel counts).
+watch(
+  () => (isAtLeastMd.value ? filtersOpen.value : sheetOpen.value),
+  (open) => {
+    if (open) {
+      props.source.loadFacets?.();
+    }
+  },
+  { immediate: true },
+);
 
 const isFiltered = computed(() => props.source.query.value.trim() !== '' || props.source.activeFilterCount.value > 0);
 

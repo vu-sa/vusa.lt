@@ -68,9 +68,9 @@ const startEditing = () => {
 };
 
 /**
- * Pasting a whole timetable belongs in the meeting page's editor, which handles
- * per-item times and reordering. The window only records the intent; the server
- * redirects into that dialog once the meeting exists.
+ * Pasting a whole timetable belongs in the meeting page's add sheet, which recognises
+ * per-item times. The window only records the intent; the server opens that sheet
+ * once the meeting exists.
  */
 const chooseBulk = () => {
   setAgendaItems([]);

@@ -5,12 +5,15 @@ namespace App\Notifications;
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationUrgency;
 use App\Models\Meeting;
+use App\Notifications\Concerns\ReachesFollowers;
 
 /**
  * Notification sent to administrators when a new meeting is created.
  */
 class MeetingCreatedNotification extends BaseNotification
 {
+    use ReachesFollowers;
+
     /**
      * Create a new notification instance.
      */

@@ -12,17 +12,11 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 import StudyProgramForm from '@/Components/AdminForms/StudyProgramForm.vue';
-import { StudyProgramIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 defineProps<{
   tenants: Array<App.Entities.Tenant>;
   degreeOptions?: Array<{ label: string; value: string }>;
 }>();
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Studijų programos', 'studyPrograms.index', 'Nauja studijų programa', StudyProgramIcon),
-);
 
 const studyProgram = ref({
   name: { lt: '', en: '' },

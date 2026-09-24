@@ -5,7 +5,7 @@
  * Handles state management, URL sync, facet merging, and search operations.
  */
 
-import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick, toValue, type MaybeRefOrGetter } from 'vue';
 import { useUrlSearchParams } from '@vueuse/core';
 import { debounce } from 'lodash-es';
 
@@ -58,8 +58,9 @@ export interface UseAdminCollectionSearchOptions {
    * applied to the initial facet universe too. Used to scope a collection to a
    * caller-defined subset (e.g. the institution picker restricted to the
    * duty-assignable tenants). Leave undefined for the unrestricted collection.
+   * A ref or getter re-runs the search when it changes (IndexInstitution's "Sekamos").
    */
-  baseFilterBy?: string;
+  baseFilterBy?: MaybeRefOrGetter<string | undefined>;
 }
 
 export function useAdminCollectionSearch(options: UseAdminCollectionSearchOptions) {
@@ -72,8 +73,8 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     preserveUrlKeys = [],
     debounceMs = 300,
     perPage = 24,
-    baseFilterBy,
   } = options;
+  const baseFilterBy = computed(() => toValue(options.baseFilterBy) || undefined);
 
   // Get the facet config for this collection
   const facetConfig = getCollectionFacetConfig(collection);
@@ -177,7 +178,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     try {
       const rawFacets = await adminSearch.loadInitialFacets(collection, facetConfig.facetBy, {
         queryBy: facetConfig.queryBy,
-        filterBy: baseFilterBy,
+        filterBy: baseFilterBy.value,
       });
 
       initialFacets.value = parseFacets(rawFacets, facetConfig, filters.value);
@@ -213,7 +214,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     }
 
     // Build filter string from current filters, ANDed with any always-on base filter.
-    const filterString = [baseFilterBy, buildFilterString(filters.value, facetConfig)]
+    const filterString = [baseFilterBy.value, buildFilterString(filters.value, facetConfig)]
       .filter(Boolean)
       .join(' && ');
 
@@ -473,8 +474,24 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     },
   );
 
+  let isMounted = false;
+
+  // A new base filter is a new universe: its facets and first page are loaded again.
+  watch(baseFilterBy, async () => {
+    if (!isMounted) return;
+
+    initialFacetsLoaded.value = false;
+    facets.value = [];
+    if (loadFacetsOnMount) {
+      await loadInitialFacets();
+    }
+    await performSearch(false);
+  });
+
   // Initialize on mount
   onMounted(async () => {
+    isMounted = true;
+
     // Initialize admin search
     await adminSearch.initialize();
 

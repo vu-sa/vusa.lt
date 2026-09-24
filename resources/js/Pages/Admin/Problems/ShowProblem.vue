@@ -1,6 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
+    :history-subject="{ type: 'problem', id: problem.id }"
     :title="localizedTitle"
     :entity-type="ModelEnum.PROBLEM"
     :status="problemStatuses[problem.status as ProblemStatus]"
@@ -38,7 +39,7 @@
               type="button"
               :disabled="!canUpdate || statusChanging"
               :class="[
-                'u-touch flex items-center gap-1.5 px-3 py-1 text-xs font-semibold uppercase tracking-wider transition-colors border-r last:border-r-0 border-border',
+                'u-touch flex items-center gap-1.5 px-3 py-1 text-xs font-semibold transition-colors border-r last:border-r-0 border-border',
                 step.isActive
                   ? 'bg-primary text-primary-foreground'
                   : step.isCompleted
@@ -125,12 +126,7 @@
     </template>
 
     <template #activity>
-      <RecordActivity
-        subject-type="problem"
-        :subject-id="problem.id"
-        commentable-type="problem"
-        :commentable-id="problem.id"
-      />
+      <RecordActivity commentable-type="problem" :commentable-id="problem.id" />
     </template>
   </RecordPage>
 
@@ -164,8 +160,6 @@ import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection 
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import { ProblemIcon } from '@/Components/icons';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
@@ -317,14 +311,4 @@ const handleDelete = () => {
   });
 };
 
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminShow(
-    $tChoice('entities.problem.model', 2),
-    'problems.index',
-    {},
-    localizedTitle.value,
-    ProblemIcon,
-    ProblemIcon,
-  ),
-);
 </script>

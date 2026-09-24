@@ -149,7 +149,6 @@ import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import { EntityLinkCard, SectionCard } from '@/Components/Patterns';
 import { ImageUpload } from '@/Components/ui/upload';
 import InfoText from '@/Components/SmallElements/InfoText.vue';
-import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
 const props = defineProps<{
   user: App.Entities.User;
@@ -203,9 +202,6 @@ const passwordForm = useForm({
 });
 
 // Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs([
-  { label: $t('Profilis'), icon: Settings },
-]);
 
 const handleSubmit = () => {
   loading.value = true;

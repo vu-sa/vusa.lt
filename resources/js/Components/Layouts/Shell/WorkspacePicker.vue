@@ -43,14 +43,14 @@
               :cache-for="SHELL_PREFETCH_CACHE_FOR"
               v-bind="ariaCurrent(workspace.key === activeWorkspace?.key, 'true')"
               :class="[
-                'flex items-start gap-3 border-l-2 px-4 py-3 transition-colors hover:bg-secondary',
+                'group flex items-start gap-3 border-l-2 px-4 py-3 transition-colors hover:bg-brand/8 focus-visible:bg-brand/8 focus-visible:outline-none',
                 workspace.key === activeWorkspace?.key ? 'border-brand-fill' : 'border-transparent',
               ]"
               @click="close"
             >
-              <component :is="workspaceIcon(workspace.key)" class="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <component :is="workspaceIcon(workspace.key)" class="mt-0.5 size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-brand group-focus-visible:text-brand" />
               <span class="min-w-0">
-                <span class="block text-xs font-bold uppercase tracking-wide">{{ $t(workspace.label) }}</span>
+                <span class="block text-xs font-bold uppercase tracking-wide transition-colors group-hover:text-brand group-focus-visible:text-brand">{{ $t(workspace.label) }}</span>
                 <span class="block text-sm text-muted-foreground">{{ $t(workspace.description) }}</span>
               </span>
               <TaskCountBadge v-if="workspace.key === 'pradzia'" class="ml-auto mt-0.5" />
@@ -88,7 +88,7 @@
             :href="route('administration')"
             prefetch
             :cache-for="SHELL_PREFETCH_CACHE_FOR"
-            class="flex items-center justify-between px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            class="flex items-center justify-between px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-brand/8 hover:text-brand focus-visible:bg-brand/8 focus-visible:text-brand focus-visible:outline-none"
             @click="close"
           >
             {{ $t('shell.chrome.all_sections') }}

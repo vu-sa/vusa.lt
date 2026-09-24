@@ -23,17 +23,21 @@ class GetUserCoordinators
             ->filter()
             ->unique('id');
 
+        // One coordinator per tenant: the first a rep would be pointed to, as before.
         $coordinators = [];
 
-        foreach ($institutions as $institution) {
-            $coordinator = GetInstitutionCoordinator::execute($institution, $user);
+        foreach ($institutions->groupBy('tenant_id') as $tenantInstitutions) {
+            $coordinator = GetInstitutionCoordinators::execute([$tenantInstitutions->first()], $user)[0] ?? null;
 
             if ($coordinator === null) {
                 continue;
             }
 
             $coordinators[$coordinator['id']] ??= [...$coordinator, 'institutions' => []];
-            $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->name;
+
+            foreach ($tenantInstitutions as $institution) {
+                $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->name;
+            }
         }
 
         return array_values($coordinators);

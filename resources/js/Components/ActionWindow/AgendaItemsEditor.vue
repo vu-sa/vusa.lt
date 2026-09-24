@@ -1,10 +1,5 @@
 <template>
   <div data-slot="agenda-items-editor" class="flex flex-col gap-2">
-    <!--
-      Deliberately not AdminForms/Special/AgendaItemsForm: that one carries templates,
-      drag-and-drop reordering and per-item times, which is the right tool on the meeting
-      page and far too much on a phone. Here a question is a line of text.
-    -->
     <div
       v-for="(item, index) in items"
       :key="index"

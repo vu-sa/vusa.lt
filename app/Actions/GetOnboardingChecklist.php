@@ -27,7 +27,7 @@ class GetOnboardingChecklist
 
         $items = [
             ['key' => 'photo', 'done' => $user->profile_photo_path !== null, 'href' => route('profile')],
-            ['key' => 'follow', 'done' => $user->followedInstitutions()->exists(), 'href' => route('dashboard.atstovavimas')],
+            ['key' => 'follow', 'done' => $user->followedInstitutions()->exists(), 'href' => route('institutions.index')],
             ['key' => 'notifications', 'done' => self::hasSavedNotificationPreferences($user), 'href' => route('profile')],
             // No link: the page opens the ActionWindow instead of navigating.
             ['key' => 'meeting', 'done' => CountUserRecordedMeetings::execute($user) > 0, 'href' => null],

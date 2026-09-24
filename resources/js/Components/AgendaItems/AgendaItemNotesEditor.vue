@@ -28,7 +28,7 @@
             ref="linkInput"
             v-model="linkUrl"
             type="url"
-            class="h-7 w-44 rounded-md border border-zinc-200 bg-transparent px-2 text-xs focus:outline-none dark:border-zinc-700"
+            class="h-7 w-44 border border-border bg-transparent px-2 text-xs focus:border-brand focus:outline-none"
             :placeholder="$t('Įklijuokite nuorodą…')"
             @keydown.enter.prevent="applyLink"
             @keydown.esc.prevent="closeLink"
@@ -233,10 +233,10 @@ function bubbleShouldShow({ editor: instance, state }: any): boolean {
 
 function btnClass(active: boolean): string[] {
   return [
-    'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
+    'flex size-7 items-center justify-center transition-colors pointer-coarse:size-11',
     active
-      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-      : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800',
+      ? 'bg-foreground text-background'
+      : 'text-muted-foreground hover:bg-accent hover:text-foreground',
   ];
 }
 
@@ -285,16 +285,9 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 0.125rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(228 228 231);
-  background: var(--popover, #fff);
+  border: 1px solid var(--border);
+  background: var(--popover);
   padding: 0.2rem;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-}
-
-:global(.dark) .notes-menu {
-  border-color: rgb(63 63 70);
-  background: rgb(24 24 27);
 }
 
 /* Tailwind's reset strips list markers and there is no typography plugin, so the
@@ -360,11 +353,10 @@ onBeforeUnmount(() => {
 
 /* @mention chip */
 .agenda-notes-editor :deep(.notes-mention) {
-  border-radius: 0.3rem;
   padding: 0.05rem 0.3rem;
   font-weight: 600;
-  color: var(--vusa-red, #bd2835);
-  background: rgb(189 40 53 / 0.1);
+  color: var(--brand);
+  background: color-mix(in oklab, var(--brand) 10%, transparent);
 }
 
 /* Remote collaborators' carets + labels (CollaborationCaret renders these;
@@ -405,6 +397,6 @@ onBeforeUnmount(() => {
   float: left;
   height: 0;
   pointer-events: none;
-  color: rgb(161 161 170);
+  color: var(--muted-foreground);
 }
 </style>

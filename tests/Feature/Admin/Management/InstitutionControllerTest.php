@@ -125,6 +125,7 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
                 ->where('can.update', true)
+                ->where('can.recordMeeting', true)
                 ->missing('management')
                 ->loadDeferredProps('institutionPanels', fn ($panels) => $panels
                     ->has('management.cadences')
@@ -144,6 +145,8 @@ describe('authorized access', function (): void {
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('can.update', false)
+                ->where('can.recordMeeting', true)
+                ->where('can.reportActivity', true)
                 ->loadDeferredProps('institutionPanels', fn ($panels) => $panels->where('management', null)));
     });
 
@@ -265,6 +268,14 @@ describe('authorized access', function (): void {
                 ->component('Admin/People/IndexInstitution')
                 ->where('deletedCount', 1)
                 ->missing('data'));
+    });
+
+    test('the index carries the ids the user follows, since Typesense cannot know them', function (): void {
+        $followed = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $this->admin->followedInstitutions()->attach($followed);
+
+        asUser($this->admin)->get(route('institutions.index'))
+            ->assertInertia(fn ($page) => $page->where('followedInstitutionIds', [$followed->id]));
     });
 
     test('the trash is the same collection, fed from the database', function (): void {

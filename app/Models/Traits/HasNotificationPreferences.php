@@ -44,6 +44,10 @@ trait HasNotificationPreferences
                 'task_reminder_days' => [7, 3, 1],
                 'meeting_reminder_hours' => [24, 1],
             ],
+            // Meeting notices reached only through a follow push, unlike the same notice to overseers.
+            'followed_institutions' => [
+                'push' => true,
+            ],
         ];
     }
 
@@ -65,6 +69,14 @@ trait HasNotificationPreferences
         $preferences = $this->notification_preferences;
 
         return $preferences['channels'][$category->value][$channel->value] ?? true;
+    }
+
+    /**
+     * Whether meeting notices from followed institutions may reach this user as a push.
+     */
+    public function wantsFollowedInstitutionPush(): bool
+    {
+        return (bool) ($this->notification_preferences['followed_institutions']['push'] ?? true);
     }
 
     /**

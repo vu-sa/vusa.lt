@@ -13,7 +13,6 @@ import { router, type InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import TypeForm from '@/Components/AdminForms/TypeForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
 const props = defineProps<{
@@ -21,5 +20,4 @@ const props = defineProps<{
   contentTypes: App.Entities.Type[];
 }>();
 
-usePageBreadcrumbs(() => BreadcrumbHelpers.adminForm($t('Tipai'), 'types.index', getTranslatedValue(props.contentType.title)));
 </script>

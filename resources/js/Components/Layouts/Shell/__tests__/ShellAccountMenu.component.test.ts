@@ -14,7 +14,7 @@ const stubs = {
   DropdownMenuSub: { template: '<div data-testid="dropdown-menu-sub"><slot /></div>' },
   DropdownMenuSubTrigger: { template: '<button type="button" data-testid="dropdown-sub-trigger"><slot /></button>' },
   DropdownMenuSubContent: { template: '<div data-testid="dropdown-sub-content"><slot /></div>' },
-  AccessibilityMenu: { template: '<div data-testid="accessibility-menu" />' },
+  AccessibilitySettings: { template: '<div data-testid="accessibility-settings" />' },
 };
 
 const mountMenu = () => mount(ShellAccountMenu, {

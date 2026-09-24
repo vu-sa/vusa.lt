@@ -4,22 +4,21 @@
       v-if="collapsible && !isExpanded"
       type="button"
       :class="[
-        'w-full rounded-lg border border-zinc-200/80 bg-white px-3.5 py-2.5 text-left transition-colors',
-        'hover:border-zinc-300 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vusa-red/30',
-        'dark:border-zinc-700/80 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:hover:bg-zinc-900/50',
-      ]"
+        'w-full border border-border bg-background px-3.5 py-2.5 text-left transition-colors pointer-coarse:min-h-11',
+        'hover:border-foreground/30 focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/20',
+              ]"
       @click="expand"
     >
-      <span class="text-zinc-500 dark:text-zinc-400">{{ placeholder || $t('Parašykite komentarą…') }}</span>
+      <span class="text-muted-foreground">{{ placeholder || $t('Parašykite komentarą…') }}</span>
     </button>
     <div
       v-else
       ref="composerRef"
-      class="rounded-lg border border-zinc-200 bg-white focus-within:border-vusa-red/50 focus-within:ring-1 focus-within:ring-vusa-red/30 dark:border-zinc-700 dark:bg-zinc-900"
+      class="border border-border bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20"
       @focusout="onFocusOut"
     >
       <EditorContent :editor />
-      <div class="flex items-center justify-between gap-2 border-t border-zinc-100 px-2 py-1.5 dark:border-zinc-800">
+      <div class="flex items-center justify-between gap-2 border-t border-border px-2 py-1.5">
         <div class="flex items-center gap-2">
           <span class="text-xs text-muted-foreground">{{ $t('Naudokite @ paminėti') }}</span>
           <slot name="leading" />
@@ -168,7 +167,7 @@ const editor = useEditor({
   ],
   editorProps: {
     attributes: {
-      class: 'focus:outline-none px-3.5 py-2.5 min-h-12 text-zinc-800 dark:text-zinc-200',
+      class: 'focus:outline-none px-3.5 py-2.5 min-h-12 text-foreground',
     },
   },
   onUpdate: ({ editor: instance }) => {
@@ -250,7 +249,7 @@ onBeforeUnmount(() => {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: "kern", "liga", "calt";
-  caret-color: var(--vusa-red, #bd2835);
+  caret-color: var(--brand);
 }
 
 .comment-composer :deep(.ProseMirror) ::selection {
@@ -265,7 +264,7 @@ onBeforeUnmount(() => {
   border-radius: 0.3rem;
   padding: 0.05rem 0.3rem;
   font-weight: 600;
-  color: var(--vusa-red, #bd2835);
+  color: var(--brand);
   background: rgb(189 40 53 / 0.1);
 }
 

@@ -7,6 +7,7 @@ use App\Http\Requests\IndexBannerRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Banner;
 use App\Services\TanstackTableService;
+use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
 
 class BannerApiController extends ApiController
@@ -19,10 +20,8 @@ class BannerApiController extends ApiController
     {
         $this->authorizeApi('viewAny', Banner::class);
 
-        $query = Banner::query()->with('tenant:id,shortname');
-
-        $banners = $this->applyTanstackFilters(
-            $query,
+        $query = fn (IndexBannerRequest $request) => $this->applyTanstackFilters(
+            Banner::query()->with('tenant:id,shortname'),
             $request,
             $this->tableService,
             ['title'],
@@ -31,7 +30,8 @@ class BannerApiController extends ApiController
                 'tenantRelation' => 'tenant',
                 'permission' => 'banners.read.padalinys',
             ]
-        )->paginate($request->getPerPage());
+        );
+        $banners = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
             'items' => $banners->getCollection()->values(),
@@ -39,6 +39,7 @@ class BannerApiController extends ApiController
             'per_page' => $banners->perPage(),
             'current_page' => $banners->currentPage(),
             'last_page' => $banners->lastPage(),
+            'facets' => CollectionFacetCounts::forRequest($request, ['is_active'], $query),
         ]);
     }
 }

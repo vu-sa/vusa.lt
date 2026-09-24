@@ -1,16 +1,14 @@
 import { trans as $t } from 'laravel-vue-i18n';
+import type { LucideIcon } from 'lucide-vue-next';
+
 import {
-  CheckCircle,
-  XCircle,
-  MinusCircle,
-  CircleDashed,
-  Clock,
-  Coffee,
-  Info,
-  HelpCircle,
-  Handshake,
-  type LucideIcon,
-} from 'lucide-vue-next';
+  agendaItemStatuses,
+  statusRoleParts,
+  type AgendaItemStatus,
+  type StatusRole,
+} from '@/Constants/statuses';
+
+export type { AgendaItemStatus };
 
 // ============================================================================
 // Type Definitions (exported for component usage)
@@ -38,29 +36,11 @@ export interface AgendaItem {
 }
 
 /**
- * Agenda item status types - 9 distinct statuses for display
- *
- * Used for both admin and public views to consistently represent
- * the state of an agenda item based on its type and main vote.
- */
-export type AgendaItemStatus
-  = 'consensus' // Voting: approved by consensus (teal/cyan)
-    | 'student_aligned' // Voting: student_vote === decision (green)
-    | 'student_misaligned' // Voting: student_vote !== decision (red/amber)
-    | 'decision_positive' // Internal body: decision is positive, no student perspective exists (green)
-    | 'decision_negative' // Internal body: decision is negative, no student perspective exists (red)
-    | 'neutral_decided' // Voting: decision is neutral (gray)
-    | 'no_vote' // Voting type but no vote recorded yet (amber/warning)
-    | 'deferred' // Type is deferred (gray muted)
-    | 'informational' // Type is informational (gray)
-    | 'break' // Type is break (amber muted) — a pause is still part of the agenda
-    | 'unset'; // Type is null/undefined - needs attention (amber/warning)
-
-/**
  * Status metadata for consistent display across components
  */
 export interface AgendaItemStatusMeta {
   status: AgendaItemStatus;
+  role: StatusRole;
   icon: LucideIcon;
   label: string;
   colorClass: string;
@@ -144,111 +124,32 @@ export function getAgendaItemStatus(item: AgendaItem, requiresStudentPerspective
  */
 export function getAgendaItemStatusMeta(item: AgendaItem, requiresStudentPerspective = true): AgendaItemStatusMeta {
   const status = getAgendaItemStatus(item, requiresStudentPerspective);
+  const presentation = agendaItemStatuses[status];
+  const parts = statusRoleParts[presentation.role];
 
-  const statusMap: Record<AgendaItemStatus, AgendaItemStatusMeta> = {
-    consensus: {
-      status: 'consensus',
-      icon: Handshake,
-      label: $t('Pritarta bendru sutarimu'),
-      colorClass: 'text-teal-600 dark:text-teal-400',
-      bgClass: 'bg-teal-100 dark:bg-teal-900/30',
-      borderClass: 'border-teal-200 dark:border-teal-800',
-      dotClass: 'bg-teal-500',
-    },
-    student_aligned: {
-      status: 'student_aligned',
-      icon: CheckCircle,
-      label: $t('Studentų pozicija priimta'),
-      colorClass: 'text-emerald-600 dark:text-emerald-400',
-      bgClass: 'bg-emerald-100 dark:bg-emerald-900/30',
-      borderClass: 'border-emerald-200 dark:border-emerald-800',
-      dotClass: 'bg-emerald-500',
-    },
-    student_misaligned: {
-      status: 'student_misaligned',
-      icon: XCircle,
-      label: $t('Studentų pozicija nesutampa su sprendimu'),
-      colorClass: 'text-red-600 dark:text-red-400',
-      bgClass: 'bg-red-100 dark:bg-red-900/30',
-      borderClass: 'border-red-200 dark:border-red-800',
-      dotClass: 'bg-red-500',
-    },
-    decision_positive: {
-      status: 'decision_positive',
-      icon: CheckCircle,
-      label: $t('Priimtas'),
-      colorClass: 'text-emerald-600 dark:text-emerald-400',
-      bgClass: 'bg-emerald-100 dark:bg-emerald-900/30',
-      borderClass: 'border-emerald-200 dark:border-emerald-800',
-      dotClass: 'bg-emerald-500',
-    },
-    decision_negative: {
-      status: 'decision_negative',
-      icon: XCircle,
-      label: $t('Atmestas'),
-      colorClass: 'text-red-600 dark:text-red-400',
-      bgClass: 'bg-red-100 dark:bg-red-900/30',
-      borderClass: 'border-red-200 dark:border-red-800',
-      dotClass: 'bg-red-500',
-    },
-    neutral_decided: {
-      status: 'neutral_decided',
-      icon: MinusCircle,
-      label: $t('Neutralus sprendimas'),
-      colorClass: 'text-zinc-600 dark:text-zinc-400',
-      bgClass: 'bg-zinc-100 dark:bg-zinc-800',
-      borderClass: 'border-zinc-200 dark:border-zinc-700',
-      dotClass: 'bg-zinc-400',
-    },
-    no_vote: {
-      status: 'no_vote',
-      icon: CircleDashed,
-      label: $t('Neaptartas'),
-      colorClass: 'text-amber-600 dark:text-amber-400',
-      bgClass: 'bg-amber-100 dark:bg-amber-900/30',
-      borderClass: 'border-amber-200 dark:border-amber-800',
-      dotClass: 'bg-amber-500',
-    },
-    deferred: {
-      status: 'deferred',
-      icon: Clock,
-      label: $t('Atidėtas'),
-      colorClass: 'text-zinc-400 dark:text-zinc-500',
-      bgClass: 'bg-zinc-100 dark:bg-zinc-800',
-      borderClass: 'border-zinc-200 dark:border-zinc-700',
-      dotClass: 'bg-zinc-300 dark:bg-zinc-600',
-    },
-    informational: {
-      status: 'informational',
-      icon: Info,
-      label: $t('Informacinis'),
-      colorClass: 'text-zinc-500 dark:text-zinc-400',
-      bgClass: 'bg-zinc-100 dark:bg-zinc-800',
-      borderClass: 'border-zinc-200 dark:border-zinc-700',
-      dotClass: 'bg-zinc-400',
-    },
-    break: {
-      status: 'break',
-      icon: Coffee,
-      label: $t('Pertrauka'),
-      colorClass: 'text-amber-700 dark:text-amber-400',
-      bgClass: 'bg-amber-50 dark:bg-amber-900/20',
-      borderClass: 'border-amber-200 dark:border-amber-800',
-      dotClass: 'bg-amber-300 dark:bg-amber-700',
-    },
-    unset: {
-      status: 'unset',
-      icon: HelpCircle,
-      label: $t('Nepažymėtas'),
-      colorClass: 'text-amber-600 dark:text-amber-400',
-      bgClass: 'bg-amber-100 dark:bg-amber-900/30',
-      borderClass: 'border-amber-200 dark:border-amber-800',
-      dotClass: 'bg-amber-500',
-    },
+  return {
+    status,
+    role: presentation.role,
+    icon: presentation.icon,
+    label: $t(presentation.label),
+    colorClass: parts.text,
+    bgClass: parts.surface,
+    borderClass: parts.border,
+    dotClass: parts.dot,
   };
-
-  return statusMap[status];
 }
+
+/** Role of a single vote value: a recorded yes/no/abstain, or nothing recorded yet. */
+export function getVoteValueRole(value: VoteValue): StatusRole | null {
+  switch (value) {
+    case 'positive': return 'success';
+    case 'negative': return 'danger';
+    case 'neutral': return 'neutral';
+    default: return null;
+  }
+}
+
+const MUTED_TEXT = 'text-muted-foreground';
 
 /**
  * Calculate meeting-level status summary from agenda items
@@ -408,50 +309,11 @@ export function getMainVote(item: AgendaItem): Vote | undefined {
  * Get number badge class based on item type and vote status
  * Used for the numbered badge next to agenda item titles
  */
-export function getNumberBadgeClass(item: AgendaItem): string {
-  // Items without type set - amber/warning (needs attention)
-  if (item.type === null || item.type === undefined) {
-    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-  }
+export function getNumberBadgeClass(item: AgendaItem, requiresStudentPerspective = true): string {
+  const { role } = agendaItemStatuses[getAgendaItemStatus(item, requiresStudentPerspective)];
+  const parts = statusRoleParts[role];
 
-  // Deferred items - muted gray
-  if (item.type === 'deferred') {
-    return 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500';
-  }
-
-  // Informational items - neutral gray
-  if (item.type === 'informational') {
-    return 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400';
-  }
-
-  // Breaks - muted amber, so they read as a pause rather than an unanswered item
-  if (item.type === 'break') {
-    return 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400';
-  }
-
-  // Voting items - check vote status
-  const mainVote = getMainVote(item);
-
-  if (!mainVote?.decision) {
-    // Not yet discussed - amber/warning
-    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
-  }
-
-  // Consensus - teal
-  if (mainVote.is_consensus) {
-    return 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400';
-  }
-
-  // Has a decision
-  if (mainVote.decision === 'positive') {
-    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
-  }
-  if (mainVote.decision === 'negative') {
-    return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
-  }
-
-  // Neutral decision
-  return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300';
+  return `${parts.surface} ${parts.text}`;
 }
 
 /**
@@ -492,21 +354,11 @@ export function getStatusIcon(item: AgendaItem): string {
 /**
  * Get status text class for coloring
  */
-export function getStatusTextClass(item: AgendaItem): string {
-  // Unset type - amber/warning color
-  if (item.type === null || item.type === undefined) return 'text-amber-600 dark:text-amber-400';
+export function getStatusTextClass(item: AgendaItem, requiresStudentPerspective = true): string {
+  const status = getAgendaItemStatus(item, requiresStudentPerspective);
 
-  if (item.type === 'informational') return 'text-zinc-500 dark:text-zinc-400';
-  if (item.type === 'deferred') return 'text-zinc-400 dark:text-zinc-500';
-
-  const mainVote = getMainVote(item);
-
-  if (!mainVote?.decision) return 'text-zinc-400 dark:text-zinc-500';
-
-  if (mainVote.is_consensus) return 'text-teal-600 dark:text-teal-400';
-  if (mainVote.decision === 'positive') return 'text-emerald-600 dark:text-emerald-400';
-  if (mainVote.decision === 'negative') return 'text-red-600 dark:text-red-400';
-  return 'text-zinc-500 dark:text-zinc-400';
+  // An undiscussed vote is a quiet gap in a list, not an alarm on every row.
+  return status === 'no_vote' ? MUTED_TEXT : statusRoleParts[agendaItemStatuses[status].role].text;
 }
 
 /**
@@ -545,185 +397,81 @@ export function getDecisionLabel(decision: VoteValue): string {
   }
 }
 
+const roleText = (value: VoteValue, fallback = MUTED_TEXT): string => {
+  const role = getVoteValueRole(value);
+  return role ? statusRoleParts[role].text : fallback;
+};
+
 /**
- * Get vote badge class based on decision and student vote alignment
+ * Decision colours the badge; its border turns danger when the students' vote lost.
  */
 export function getVoteBadgeClass(vote: Vote): string {
-  const { decision, student_vote } = vote;
+  const role = getVoteValueRole(vote.decision);
 
-  // If no decision, show neutral styling
-  if (!decision) {
-    return 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700';
+  if (!role || role === 'neutral') {
+    return `${statusRoleParts.neutral.surface} ${statusRoleParts.neutral.text} ${statusRoleParts.neutral.border}`;
   }
 
-  // Check alignment
-  const aligned = decision === student_vote;
+  const aligned = vote.decision === vote.student_vote;
+  const border = aligned ? statusRoleParts[role].border : statusRoleParts.danger.border;
 
-  if (decision === 'positive') {
-    return aligned
-      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'
-      : 'bg-emerald-50 text-emerald-700 border-red-300 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-red-700';
-  }
-
-  if (decision === 'negative') {
-    return aligned
-      ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'
-      : 'bg-red-50 text-red-700 border-emerald-300 dark:bg-red-900/30 dark:text-red-400 dark:border-emerald-700';
-  }
-
-  // Neutral
-  return 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700';
+  return `${statusRoleParts[role].surface} ${statusRoleParts[role].text} ${border}`;
 }
 
-/**
- * Get student vote alignment class (for showing if student vote matches decision)
- */
+/** Student vote ink: alignment when both are known, otherwise the vote itself. */
 export function getStudentVoteAlignmentClass(vote: Vote): string {
-  const { student_vote, decision } = vote;
-
-  // Show alignment color when both are set
-  if (decision && student_vote) {
-    if (decision === student_vote) {
-      return 'text-emerald-600 dark:text-emerald-400';
-    }
-    return 'text-red-600 dark:text-red-400';
+  if (vote.decision && vote.student_vote) {
+    return vote.decision === vote.student_vote ? statusRoleParts.success.text : statusRoleParts.danger.text;
   }
 
-  // Otherwise just show student vote color
-  switch (student_vote) {
-    case 'positive': return 'text-emerald-600 dark:text-emerald-400';
-    case 'negative': return 'text-red-600 dark:text-red-400';
-    case 'neutral': return 'text-zinc-500 dark:text-zinc-400';
-    default: return 'text-zinc-400 dark:text-zinc-500';
-  }
+  return roleText(vote.student_vote);
 }
 
-/**
- * Get background color class based on student_benefit value
- * Used for vote badges to indicate the perceived benefit of the decision
- */
+/** Surface for a vote badge, from the perceived benefit to students. */
 export function getStudentBenefitBgClass(benefit: VoteValue): string {
-  switch (benefit) {
-    case 'positive':
-      return 'bg-emerald-50 dark:bg-emerald-950/40';
-    case 'negative':
-      return 'bg-red-50 dark:bg-red-950/40';
-    case 'neutral':
-      return 'bg-zinc-100 dark:bg-zinc-800';
-    default:
-      return 'bg-zinc-100 dark:bg-zinc-800';
-  }
+  return statusRoleParts[getVoteValueRole(benefit) ?? 'neutral'].surface;
 }
 
-/**
- * Get decision text color that works on student_benefit background
- * Ensures text is readable regardless of background color
- */
+/** Decision ink that stays readable on any benefit surface. */
 export function getDecisionTextColorClass(decision: VoteValue): string {
-  switch (decision) {
-    case 'positive':
-      return 'text-emerald-700 dark:text-emerald-300';
-    case 'negative':
-      return 'text-red-700 dark:text-red-300';
-    case 'neutral':
-      return 'text-zinc-700 dark:text-zinc-300';
-    default:
-      return 'text-zinc-700 dark:text-zinc-300';
-  }
+  return roleText(decision, 'text-foreground');
 }
 
-/**
- * Get icon color for student vote that contrasts with background
- * Ensures icon stands out regardless of student_benefit background
- */
 export function getStudentVoteIconClass(studentVote: VoteValue): string {
-  // Always use strong colors that contrast with any background
-  switch (studentVote) {
-    case 'positive':
-      return 'text-emerald-600 dark:text-emerald-400';
-    case 'negative':
-      return 'text-red-600 dark:text-red-400';
-    case 'neutral':
-      return 'text-zinc-600 dark:text-zinc-400';
-    default:
-      return 'text-zinc-400 dark:text-zinc-500';
-  }
+  return roleText(studentVote);
 }
 
-/**
- * Get vote status color dot class
- */
 export function getVoteStatusDotClass(vote: Vote): string {
   if (!vote.decision && !vote.student_vote) {
-    return 'bg-zinc-300 dark:bg-zinc-600';
+    return 'bg-muted-foreground/40';
   }
-  if (vote.decision === 'positive') {
-    return 'bg-emerald-500';
-  }
-  if (vote.decision === 'negative') {
-    return 'bg-red-500';
-  }
-  return 'bg-zinc-400';
+
+  return statusRoleParts[getVoteValueRole(vote.decision) ?? 'neutral'].dot;
 }
 
 // ============================================================================
 // Shared Vote Display Utilities (for both admin and public components)
 // ============================================================================
 
-/**
- * Get text color class for a vote value (positive/negative/neutral)
- * Used by both VoteStatusIndicator (public) and VoteSelectionBadge (admin)
- */
+/** Ink for a vote value, e.g. in the public VoteStatusIndicator. */
 export function getVoteTextColorClass(value: VoteValue): string {
-  switch (value) {
-    case 'positive':
-      return 'text-green-600 dark:text-green-400';
-    case 'negative':
-      return 'text-red-600 dark:text-red-400';
-    case 'neutral':
-      return 'text-zinc-600 dark:text-zinc-400';
-    default:
-      return 'text-zinc-300 dark:text-zinc-500'; // No data
-  }
+  return roleText(value, 'text-muted-foreground/60');
 }
 
-/**
- * Get background color class for a vote value
- * Used for vote selection buttons and badges
- */
 export function getVoteBgColorClass(value: VoteValue, isSelected = false): string {
   if (!isSelected) {
-    return 'bg-zinc-100 dark:bg-zinc-800';
+    return 'bg-muted';
   }
-  switch (value) {
-    case 'positive':
-      return 'bg-green-100 dark:bg-green-900/40';
-    case 'negative':
-      return 'bg-red-100 dark:bg-red-900/40';
-    case 'neutral':
-      return 'bg-zinc-200 dark:bg-zinc-700';
-    default:
-      return 'bg-zinc-100 dark:bg-zinc-800';
-  }
+
+  return statusRoleParts[getVoteValueRole(value) ?? 'neutral'].surface;
 }
 
-/**
- * Get border color class for a vote value
- */
 export function getVoteBorderColorClass(value: VoteValue, isSelected = false): string {
   if (!isSelected) {
-    return 'border-zinc-200 dark:border-zinc-700';
+    return 'border-border';
   }
-  switch (value) {
-    case 'positive':
-      return 'border-green-300 dark:border-green-700';
-    case 'negative':
-      return 'border-red-300 dark:border-red-700';
-    case 'neutral':
-      return 'border-zinc-400 dark:border-zinc-500';
-    default:
-      return 'border-zinc-200 dark:border-zinc-700';
-  }
+
+  return statusRoleParts[getVoteValueRole(value) ?? 'neutral'].border;
 }
 
 /**
@@ -796,9 +544,9 @@ export function calculateSuccessRate(items: AgendaItem[]): number {
  * Get success rate color class based on percentage
  */
 export function getSuccessRateColorClass(rate: number): string {
-  if (rate >= 75) return 'text-green-600 dark:text-green-400 font-medium';
-  if (rate >= 50) return 'text-amber-600 dark:text-amber-400 font-medium';
-  return 'text-red-600 dark:text-red-400 font-medium';
+  if (rate >= 75) return `${statusRoleParts.success.text} font-medium`;
+  if (rate >= 50) return `${statusRoleParts.attention.text} font-medium`;
+  return `${statusRoleParts.danger.text} font-medium`;
 }
 
 /**
@@ -863,17 +611,15 @@ export function getVoteComparisonText(item: AgendaItem): string {
   if (!canCompareVotes(item)) return '';
   return isVoteAligned(item)
     ? $t('Studentų pozicija priimta')
-    : $t('Studentų pozicija nesutampa su sprendimu');
+    : $t('Studentų pozicija nesutampa');
 }
 
 /**
  * Get vote comparison color class for an agenda item
  */
 export function getVoteComparisonColorClass(item: AgendaItem): string {
-  if (!canCompareVotes(item)) return 'text-zinc-400 dark:text-zinc-500';
-  return isVoteAligned(item)
-    ? 'text-green-600 dark:text-green-500'
-    : 'text-amber-600 dark:text-amber-500';
+  if (!canCompareVotes(item)) return MUTED_TEXT;
+  return isVoteAligned(item) ? statusRoleParts.success.text : statusRoleParts.attention.text;
 }
 
 /**
@@ -885,6 +631,7 @@ export function useAgendaItemStyling() {
     getMainVote,
     getAgendaItemStatus,
     getAgendaItemStatusMeta,
+    getVoteValueRole,
     getMeetingStatusSummary,
     getNumberBadgeClass,
     getStatusText,

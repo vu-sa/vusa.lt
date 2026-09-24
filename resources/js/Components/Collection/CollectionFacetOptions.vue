@@ -5,7 +5,7 @@
       :key="value.value"
       type="button"
       :aria-pressed="value.isSelected"
-      :class="[controlVariants({ size: 'sm', active: value.isSelected }), 'tabular-nums']"
+      :class="[controlVariants({ size: 'sm', active: value.isSelected, voice: 'sentence' }), 'tabular-nums']"
       @click="emit('toggle', facet.field, value.value)"
     >
       {{ value.label }}
@@ -31,7 +31,7 @@
           <Check v-if="value.isSelected" class="size-3" />
         </span>
         <span class="min-w-0 flex-1 truncate">{{ value.label }}</span>
-        <span class="text-xs tabular-nums text-muted-foreground">{{ value.count }}</span>
+        <span v-if="value.count !== undefined" class="text-xs tabular-nums text-muted-foreground">{{ value.count }}</span>
       </button>
     </li>
   </ul>

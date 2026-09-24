@@ -61,7 +61,11 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Brand/**',
   'resources/js/Components/ui/control/**',
   'resources/js/Pages/Admin/Representation/ShowMeeting.vue',
-  'resources/js/Pages/Admin/Representation/EditAgendaItem.vue',
+  'resources/js/Pages/Admin/Representation/ShowAgendaItem.vue',
+  'resources/js/Components/AgendaItems/**',
+  'resources/js/Components/Meetings/**',
+  'resources/js/Components/Discussions/**',
+  'resources/js/Components/Avatars/{UserAvatar,UsersAvatarGroup,UserPopover,UsersFactList}.vue',
   'resources/js/Components/Home/**',
   'resources/js/Components/Collection/**',
   'resources/js/Components/Layouts/CollectionPage.vue',
@@ -423,7 +427,8 @@ export default tseslint.config(
     rules: {
       // NOTE: no-restricted-imports fully overrides rather than merges, so the
       // lodash and Fluent-icon entries from the block above must be repeated here.
-      'no-restricted-imports': ['warn', {
+      // An error since no admin page imports ui/card any more.
+      'no-restricted-imports': ['error', {
         paths: [...lodashImportPaths],
         patterns: [
           ...lodashImportPatterns,

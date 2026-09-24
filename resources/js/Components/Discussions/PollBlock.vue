@@ -3,7 +3,7 @@
     <!-- Meta row -->
     <div class="flex items-center justify-between text-xs text-muted-foreground">
       <span>{{ $t('Balsų: :count', { count: poll.total_votes }) }}</span>
-      <span v-if="poll.is_closed" class="inline-flex items-center gap-1 font-medium text-zinc-500">
+      <span v-if="poll.is_closed" class="inline-flex items-center gap-1 font-medium text-muted-foreground">
         <Lock class="h-3 w-3" />
         {{ $t('Apklausa uždaryta') }}
       </span>
@@ -21,23 +21,23 @@
       type="button"
       :disabled="poll.is_closed"
       :class="[
-        'relative w-full overflow-hidden rounded-md border px-3 py-2 text-left transition-colors',
+        'relative w-full overflow-hidden border px-3 py-2 text-left transition-colors pointer-coarse:min-h-11',
         isMine(option.id)
-          ? 'border-vusa-red/50 bg-vusa-red/5'
-          : 'border-zinc-200 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60',
+          ? 'border-brand/50 bg-brand/5'
+          : 'border-border hover:bg-accent',
         poll.is_closed ? 'cursor-default' : 'cursor-pointer',
       ]"
       @click="!poll.is_closed && $emit('vote', option.id)"
     >
       <!-- Fill bar -->
       <span
-        class="absolute inset-y-0 left-0 -z-0 bg-vusa-red/10 transition-[width] duration-300"
+        class="absolute inset-y-0 left-0 -z-0 bg-brand/10 transition-[width] duration-300"
         :style="{ width: `${percentage(option.id)}%` }"
         aria-hidden="true"
       />
       <span class="relative z-10 flex items-center justify-between gap-3 text-sm">
         <span class="flex min-w-0 items-center gap-2">
-          <component :is="isMine(option.id) ? CheckCircle2 : Circle" class="h-4 w-4 shrink-0" :class="isMine(option.id) ? 'text-vusa-red' : 'text-zinc-400'" />
+          <component :is="isMine(option.id) ? CheckCircle2 : Circle" class="h-4 w-4 shrink-0" :class="isMine(option.id) ? 'text-brand' : 'text-muted-foreground'" />
           <span class="truncate font-medium text-foreground">{{ option.label }}</span>
         </span>
         <span class="shrink-0 tabular-nums text-xs text-muted-foreground">

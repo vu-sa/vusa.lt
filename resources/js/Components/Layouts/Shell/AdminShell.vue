@@ -13,6 +13,7 @@
 
     <div
       ref="scrollArea"
+      scroll-region
       data-slot="admin-scroll-area"
       class="min-h-0 flex flex-1 flex-col overflow-auto"
       :style="scrollAreaHeight ? {
@@ -37,7 +38,6 @@
             :active-section
             :class="activeWorkspace?.key === 'pradzia' && 'max-md:hidden'"
           />
-          <ShellBreadcrumbs :active-section />
         </template>
         <SystemAnnouncement :message="systemMessage" />
       </div>
@@ -75,7 +75,6 @@ import { computed, ref } from 'vue';
 import MobileBottomBar from './MobileBottomBar.vue';
 import MobileMenuPanel from './MobileMenuPanel.vue';
 import SectionTabs from './SectionTabs.vue';
-import ShellBreadcrumbs from './ShellBreadcrumbs.vue';
 import ShellTopBar from './ShellTopBar.vue';
 import SystemAnnouncement from './SystemAnnouncement.vue';
 

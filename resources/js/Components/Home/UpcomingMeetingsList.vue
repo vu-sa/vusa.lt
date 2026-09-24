@@ -10,48 +10,73 @@
     :href-label="$t('Visi posėdžiai')"
   >
     <ul class="divide-y divide-border/60" data-slot="upcoming-meetings">
-      <li v-for="meeting in meetings" :key="meeting.id">
-        <Link
-          :href="route('meetings.show', meeting.id)"
-          prefetch
-          class="flex items-center gap-4 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
-        >
-          <time
-            :datetime="meeting.start_time"
-            class="flex size-12 shrink-0 flex-col items-center justify-center border border-border bg-card text-center"
-          >
-            <span class="text-lg leading-none font-semibold tabular-nums">{{ day(meeting.start_time) }}</span>
-            <span class="mt-0.5 text-[11px] leading-none font-semibold uppercase text-brand">{{ formatMonthShort(new Date(meeting.start_time)) }}</span>
-          </time>
-          <span class="min-w-0 flex-1">
-            <span class="block truncate font-bold">{{ meeting.title }}</span>
-            <span class="block truncate text-xs text-muted-foreground">
-              {{ meeting.institution_name }}
-            </span>
-          </span>
-          <span class="shrink-0 text-xs text-muted-foreground">{{ formatNearDate(meeting.start_time, { thresholdDays: 365 }) }}</span>
-        </Link>
+      <li v-for="meeting in visibleMeetings" :key="meeting.id">
+        <UpcomingMeetingRow :meeting />
       </li>
     </ul>
+
+    <template v-if="meetings.length > limit">
+      <Button
+        variant="outline"
+        size="sm"
+        class="self-start pointer-coarse:h-11"
+        data-slot="upcoming-meetings-more"
+        @click="dialogOpen = true"
+      >
+        <List aria-hidden="true" />
+        {{ $t('Rodyti visus (:count)', { count: String(allCount) }) }}
+      </Button>
+
+      <Dialog v-model:open="dialogOpen">
+        <DialogContent class="flex max-h-[85vh] flex-col gap-4 sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{{ $t('Artimiausi posėdžiai') }} · {{ allCount }}</DialogTitle>
+            <DialogDescription class="sr-only">
+              {{ $t('Ateinančių dviejų mėnesių posėdžiai') }}
+            </DialogDescription>
+          </DialogHeader>
+          <ul class="-mx-6 min-h-0 flex-1 divide-y divide-border/60 overflow-y-auto px-6" data-slot="upcoming-meetings-dialog-list">
+            <li v-for="meeting in meetings" :key="meeting.id">
+              <UpcomingMeetingRow :meeting />
+            </li>
+          </ul>
+          <!-- The payload is capped; the rest live in the meetings collection. -->
+          <Link v-if="href && allCount > meetings.length" :href class="text-sm underline underline-offset-4">
+            {{ $t('Visi posėdžiai') }}
+          </Link>
+        </DialogContent>
+      </Dialog>
+    </template>
   </OverviewSection>
 </template>
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarDays } from 'lucide-vue-next';
+import { CalendarDays, List } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 import type { HomeMeeting } from './types';
+import UpcomingMeetingRow from './UpcomingMeetingRow.vue';
 
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
-import { useDateFormatter } from '@/Composables/useDateFormatter';
-import { formatMonthShort } from '@/Utils/IntlTime';
+import { Button } from '@/Components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 
-defineProps<{
+const props = withDefaults(defineProps<{
   meetings: HomeMeeting[];
+  /** Every upcoming meeting, when the server capped `meetings`. */
+  total?: number;
   href?: string;
-}>();
+  /** Rows shown on the page; the rest open in a dialog. */
+  limit?: number;
+}>(), {
+  total: undefined,
+  href: undefined,
+  limit: 3,
+});
 
-const { formatDate, formatNearDate } = useDateFormatter();
-const day = (value: string) => formatDate(value).slice(8, 10);
+const dialogOpen = ref(false);
+const visibleMeetings = computed(() => props.meetings.slice(0, props.limit));
+const allCount = computed(() => Math.max(props.total ?? 0, props.meetings.length));
 </script>

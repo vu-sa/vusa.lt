@@ -59,7 +59,6 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
-import { usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { supportRequestStatuses } from '@/Constants/statuses';
 import type { SupportRequestItem, SupportRequestTaxonomyItem } from '@/Types/supportRequests';
@@ -73,7 +72,6 @@ const props = defineProps<{
   assignees: Array<{ id: string; name: string }>;
 }>();
 
-usePageBreadcrumbs([{ label: $t('vusa.lt pagalba') }]);
 const page = usePage();
 const locale = computed(() => (page.props as { app?: { locale?: string } }).app?.locale ?? 'lt');
 const translatedName = (name: SupportRequestTaxonomyItem['name'] | undefined): string => getTranslatedValue(name, locale.value, '—');

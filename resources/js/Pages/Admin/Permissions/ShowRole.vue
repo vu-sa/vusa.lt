@@ -92,7 +92,6 @@ import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection 
 import { ConfirmDialog } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { TransferList } from '@/Components/ui/transfer-list';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { ModelEnum } from '@/Types/enums';
 
 type Translation = string | { lt?: string; en?: string };
@@ -140,5 +139,4 @@ function handleAction(action: string): void {
   if (action === 'delete') deleteOpen.value = true;
 }
 
-usePageBreadcrumbs(BreadcrumbHelpers.adminShow($t('Rolės'), route('roles.index'), props.role.name));
 </script>

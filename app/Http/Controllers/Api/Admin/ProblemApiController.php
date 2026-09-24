@@ -9,6 +9,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Problem;
 use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
+use App\Support\CollectionFacetCounts;
 use Illuminate\Http\JsonResponse;
 
 class ProblemApiController extends ApiController
@@ -24,13 +25,14 @@ class ProblemApiController extends ApiController
     {
         $this->authorizeApi('viewAny', Problem::class);
 
-        $problems = $this->applyTanstackFilters(
+        $query = fn (IndexProblemRequest $request) => $this->applyTanstackFilters(
             BuildProblemIndexQuery::execute($request, $this->authorizer, $this->tableService),
             $request,
             $this->tableService,
             ['title', 'description'],
             ['applySortBeforePagination' => true]
-        )->paginate($request->getPerPage());
+        );
+        $problems = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
             'items' => $problems->getCollection()->map(fn (Problem $problem): array => $problem->toFullArray())->values(),
@@ -38,6 +40,7 @@ class ProblemApiController extends ApiController
             'per_page' => $problems->perPage(),
             'current_page' => $problems->currentPage(),
             'last_page' => $problems->lastPage(),
+            'facets' => CollectionFacetCounts::forRequest($request, ['status', 'category', 'institution', 'tenant.id'], $query),
         ]);
     }
 }

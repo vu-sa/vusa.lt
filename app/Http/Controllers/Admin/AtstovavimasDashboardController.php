@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetFollowedInstitutions;
+use App\Actions\GetUpcomingMeetingsForUser;
 use App\Actions\GetUserCoordinators;
 use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
@@ -45,16 +47,12 @@ class AtstovavimasDashboardController extends AdminController
             ->with(['current_duties:id,name,institution_id'])
             ->first();
 
-        // Pre-load user's subscription data (followed and muted institution IDs)
-        $followedInstitutionIds = $user->followedInstitutions()->pluck('institutions.id');
-        $mutedInstitutionIds = $user->mutedInstitutions()->pluck('institutions.id');
-
         // Get only user's directly assigned institutions (lightweight, always loaded)
         $userInstitutions = DutyService::getUserInstitutionsForDashboard();
 
         // Helper function to append computed attributes to institutions
-        $appendInstitutionAttributes = function ($institutions, $userInstitutionIds = null) use ($followedInstitutionIds, $mutedInstitutionIds) {
-            $institutions->each(function ($institution) use ($userInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds): void {
+        $appendInstitutionAttributes = function ($institutions) {
+            $institutions->each(function ($institution): void {
                 $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol', 'has_calendar_event']);
                 // VU SA's own bodies are drawn like any other and hidden behind the chart's
                 // own toggle; they used to be dropped here, which left the chart incomplete
@@ -76,23 +74,12 @@ class AtstovavimasDashboardController extends AdminController
                     'activity_status',
                     $this->activityStatusService->resolve($institution)->toArray()
                 );
-
-                // Add subscription status for follow/mute UI
-                $institution->subscription = [
-                    'is_followed' => $followedInstitutionIds->contains($institution->id),
-                    'is_muted' => $mutedInstitutionIds->contains($institution->id),
-                    'is_duty_based' => $userInstitutionIds?->contains($institution->id) ?? false,
-                ];
             });
 
             return $institutions;
         };
 
-        // Get user's duty-based institution IDs for subscription status
-        $userDutyInstitutionIds = $userInstitutions->pluck('id');
-
-        // Append computed attributes to user institutions (all duty-based for user's own institutions)
-        $appendInstitutionAttributes($userInstitutions, $userDutyInstitutionIds);
+        $appendInstitutionAttributes($userInstitutions);
 
         // Quick check if user might have related institutions (without loading them)
         // This enables the filter UI even when relatedInstitutions is lazy-loaded
@@ -116,7 +103,7 @@ class AtstovavimasDashboardController extends AdminController
             // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
             'mayHaveRelatedInstitutions' => $mayHaveRelatedInstitutions,
             // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload
-            'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions, $userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds) {
+            'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions) {
                 /** @var Collection<int, Institution> $institutionCollection */
                 $institutionCollection = new Collection($userInstitutions->values()->all());
                 $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
@@ -125,8 +112,8 @@ class AtstovavimasDashboardController extends AdminController
 
                 // Append computed attributes to related institution meetings
                 // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load
-                $relatedInstitutions->each(function ($institution) use ($userDutyInstitutionIds, $followedInstitutionIds, $mutedInstitutionIds): void {
-                    /** @var Institution&object{authorized?: bool, subscription?: array<string, bool>} $institution */
+                $relatedInstitutions->each(function ($institution): void {
+                    /** @var Institution&object{authorized?: bool} $institution */
                     $isAuthorized = ($institution->authorized ?? true) !== false;
                     $institution->meetings->each(function ($meeting) use ($isAuthorized): void {
                         // Only append completion_status for authorized institutions (it lazy-loads agendaItems)
@@ -142,20 +129,18 @@ class AtstovavimasDashboardController extends AdminController
                         'activity_status',
                         $this->activityStatusService->resolve($institution)->toArray()
                     );
-
-                    // Add subscription status for related institutions
-                    // @phpstan-ignore property.notFound
-                    $institution->subscription = [
-                        'is_followed' => $followedInstitutionIds->contains($institution->id),
-                        'is_muted' => $mutedInstitutionIds->contains($institution->id),
-                        'is_duty_based' => $userDutyInstitutionIds->contains($institution->id),
-                    ];
                 });
 
                 return $relatedInstitutions->values();
             })->once(),
             'canViewTenantOverview' => Gate::allows('view-tenant-representation-overview'),
             'openTasksCount' => $user->tasks()->whereNull('completed_at')->count(),
+            // Duty and followed institutions alike; the page narrows it by the tenant selector.
+            'upcomingMeetings' => GetUpcomingMeetingsForUser::execute($user),
+            'followedInstitutions' => Inertia::defer(
+                fn () => GetFollowedInstitutions::execute($user, DashboardController::FOLLOWED_PREVIEW_COUNT),
+                'secondary',
+            ),
             // R-g: the human answer to "I'm stuck" belongs on every rep screen, but never on the first paint.
             'coordinators' => Inertia::defer(fn () => GetUserCoordinators::execute($user), 'secondary'),
         ]);

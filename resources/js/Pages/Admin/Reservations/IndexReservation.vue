@@ -120,11 +120,11 @@
         </dl>
         <template v-if="isDeleted">
           <div class="flex flex-col gap-2 pt-2">
-            <Button variant="outline" @click="restoreReservation(item)">
+            <Button variant="outline" voice="sentence" @click="restoreReservation(item)">
               <RotateCcw aria-hidden="true" class="size-4" />
               {{ $t('Atkurti') }}
             </Button>
-            <Button variant="ghost" class="text-destructive hover:text-destructive" @click="targetReservationToForceDelete = item">
+            <Button variant="ghost" voice="sentence" class="text-destructive hover:text-destructive" @click="targetReservationToForceDelete = item">
               <Trash2 aria-hidden="true" class="size-4" />
               {{ $t('Ištrinti visam laikui') }}
             </Button>
@@ -145,7 +145,7 @@
       />
     </template>
     <template #bulk-actions>
-      <Button variant="brand" size="sm" @click="openDecision('approved', selectedReservations)">
+      <Button variant="brand" size="sm" voice="sentence" @click="openDecision('approved', selectedReservations)">
         <Check aria-hidden="true" />
         {{ $t('reservations.actions.approve') }}
       </Button>
@@ -153,12 +153,13 @@
         v-if="selectedReservations.some(reservation => getRejectablePivotIds(reservation).length > 0)"
         variant="outline"
         size="sm"
+        voice="sentence"
         @click="openDecision('rejected', selectedReservations)"
       >
         <X aria-hidden="true" />
         {{ $t('reservations.actions.reject') }}
       </Button>
-      <Button variant="outline" size="sm" @click="openDecision('resolved', selectedReservations)">
+      <Button variant="outline" size="sm" voice="sentence" @click="openDecision('resolved', selectedReservations)">
         <CheckCheck aria-hidden="true" />
         {{ $t('reservations.actions.resolve') }}
       </Button>

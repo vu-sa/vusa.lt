@@ -10,13 +10,7 @@
 import type { InertiaForm } from '@inertiajs/vue3';
 
 import TagForm from '@/Components/AdminForms/TagForm.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { TagIcon } from '@/Components/icons';
 import { tagTemplate } from '@/Types/formTemplates';
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Žymos', 'tags.index', 'Nauja žyma', TagIcon),
-);
 
 const tag = tagTemplate as unknown as App.Entities.Tag;
 

@@ -34,7 +34,7 @@
         v-if="hasFilters"
         type="button"
         :aria-expanded="filtersOpen"
-        :class="controlVariants({ active: filtersOpen })"
+        :class="controlVariants({ active: filtersOpen, voice: 'sentence' })"
         data-slot="collection-filters-toggle"
         @click="emit('toggleFilters')"
       >

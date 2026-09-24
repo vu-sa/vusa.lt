@@ -29,9 +29,36 @@ describe('StatusBadge', () => {
 
   it('merges caller classes onto the root', () => {
     const wrapper = mount(StatusBadge, {
-      props: { status: taskStatuses.overdue, class: 'uppercase' },
+      props: { status: taskStatuses.overdue, class: 'font-mono' },
+    });
+
+    expect(wrapper.classes()).toContain('font-mono');
+  });
+
+  it('renders content statuses with uppercase tracking-wide', () => {
+    const wrapper = mount(StatusBadge, {
+      props: { status: contentStatuses.published },
     });
 
     expect(wrapper.classes()).toContain('uppercase');
+    expect(wrapper.classes()).toContain('tracking-wide');
+  });
+
+  it('renders standard statuses in sentence case without uppercase', () => {
+    const wrapper = mount(StatusBadge, {
+      props: { status: taskStatuses.completed },
+    });
+
+    expect(wrapper.classes()).toContain('normal-case');
+    expect(wrapper.classes()).not.toContain('uppercase');
+  });
+
+  it('honors voice override on status badge', () => {
+    const wrapper = mount(StatusBadge, {
+      props: { status: contentStatuses.published, voice: 'sentence' },
+    });
+
+    expect(wrapper.classes()).toContain('normal-case');
+    expect(wrapper.classes()).not.toContain('uppercase');
   });
 });

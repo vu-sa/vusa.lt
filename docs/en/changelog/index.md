@@ -7,6 +7,28 @@ lastUpdated: true
 
 ## v2.21 — Reservation drafts (2026-09-24) {#v2-21}
 
+- ⭐ **Followed institutions** — select several institutions in the list and press “Follow” or “Unfollow”; the “Followed” quick filter shows every institution you follow. Once you follow any, Home and the ViSAK overview show a “Followed institutions” block. When a meeting is created in an institution you follow, or its agenda is filled in, you get a browser notification – you can turn it off in notification settings
+- ✨ **Meetings of followed institutions** — “Upcoming meetings” now include meetings of institutions you follow; when there are more than three, open them all in one window
+- 🔧 **Filter counts in lists** — the filters of problems, tasks, reservations, duties, forms, banners, events and support requests show real counts instead of zeros
+- ✨ **Clearer institution overview** — fact cards show the institution type, whether it belongs to VU or VU SA, and meeting visibility; one “Record activity” button lets you record a meeting or report that none took place
+- 🔧 **Agenda entry works again** — meeting pages open agenda entry in the working side sheet
+- ✨ **Cleaner small-card borders** — partner, contact, quick-access and record-fact cards now have borders that meet neatly at smaller screen widths
+- ⭐ **One-tap vote outcomes** — on an agenda item, set the item type, decision, student vote and benefit with large buttons that save immediately — no edit switch. Title, description and student position (also in English) are edited in a side sheet
+- ✨ **Calmer vote editing** — each vote sits in its own card; a recorded answer collapses to one button you tap to change or clear it. Vote questions, order, the main vote, notes and removal live in “Manage votes”. The status of an agenda item, meeting and institution now leads the facts, tinted in its colour; the institution's card also says what the status rests on (next or last meeting, or a note that no meeting is due)
+- ✨ **Switch meetings by date** — the meeting page's ‹ › show the previous and next meeting dates, and tapping the current date lets you pick any meeting of that institution; tabs now have icons
+- ✨ **Roomier record headings** — a long title now spans the full row, with the action buttons below it; institution members and coordinators appear with their photos. An agenda item without a type is highlighted in the type picker itself
+- 🔧 **One “More actions” button on phones** — record pages no longer show two ⋯ buttons on phones, and the item type picker fits the screen
+- 🔧 **Accessibility settings apply straight away** — in the admin, your saved text size, high contrast and link underlines now apply on every page load, not only after opening the settings window
+- ⭐ **Fill in missing** — the meeting page no longer lists every missing step: it shows how many items are incomplete, and “Fill in missing” opens the first one; ‹ › step through every agenda item
+- ✨ **Refreshed meeting page** — the institution links to its page, a sole representative appears by name without a dropdown, and minutes and report share one fact with status icons. Meeting and agenda item visibility now appears right after status, with a green field for public and a gray field for internal records. The agenda item's visibility link opens the public meeting in a new tab, and its description no longer repeats visibility
+- ✨ **Adding agenda items in one sheet** — add items one by one, paste the whole agenda from the invitation, or start from an earlier meeting of the same institution; reorder with “Change order”
+- ✨ **Change history in a side sheet** — on record pages comments stay below the record, while who changed what opens from “Activity log”
+- ✨ **Consistent voting words and colours** — agenda item statuses read and look the same in Mano VU SA and on the public meeting page; the meeting card, discussions and representative activity views were refreshed
+- 🔧 **Pasted agenda times are kept** — pasting an agenda with times (e.g. “10.00–10.30”) now keeps each item's start and end time
+- 🔧 **Coordinators are emailed at their role address** — contacting a coordinator uses their coordinator duty email instead of a personal address
+- 🔧 **No lost changes when leaving** — an outcome tapped right before moving to another page is saved first
+- ✨ **Clearer representation lists** — institution aliases are hidden in the list, and institution and meeting records can be opened from every list view
+- ✨ **Agenda item list** — agenda items now have their own list with search, filters, and preview; cross entity search remains in the command palette
 - 🔧 **Collapsible phone menu** — opening the menu shows only the active workspace's sections; tap another workspace heading to expand it
 - ✨ **Light mode by default** — the public site and Mano VU SA now open in light mode on a first visit; saved theme choices are preserved
 - ✨ **Easier testing** — staging can be opened temporarily without an extra browser password, and its notice can be closed until the next page
