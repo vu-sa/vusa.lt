@@ -340,7 +340,7 @@ const summaryOf = (vote: EditableVote) =>
     });
 
 const addVote = () => {
-  const votes = props.form.votes;
+  const { votes } = props.form;
   const vote: EditableVote = {
     id: null,
     is_main: votes.length === 0,
@@ -356,7 +356,7 @@ const addVote = () => {
 };
 
 const removeVote = (index: number) => {
-  const votes = props.form.votes;
+  const { votes } = props.form;
   const removed = votes[index];
   votes.splice(index, 1);
 

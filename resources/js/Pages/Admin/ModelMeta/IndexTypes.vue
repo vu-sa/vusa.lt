@@ -27,7 +27,9 @@
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :title="titleOf(item)" :href="isTrash ? undefined : route('types.edit', item.id)" :sub="item.slug" mono />
-          <p class="mt-2 text-xs text-muted-foreground">{{ modelLabel(item.model_type) }}</p>
+          <p class="mt-2 text-xs text-muted-foreground">
+            {{ modelLabel(item.model_type) }}
+          </p>
         </div>
         <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
       </article>

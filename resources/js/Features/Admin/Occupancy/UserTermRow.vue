@@ -50,7 +50,7 @@ import DutyLabel, { type DutyLabelHolder } from '@/Components/Duties/DutyLabel.v
 import { Button } from '@/Components/ui/button';
 import { formatStaticTime } from '@/Utils/IntlTime';
 
-type Term = {
+interface Term {
   id?: string;
   start_date?: string | null;
   end_date?: string | null;
@@ -59,7 +59,7 @@ type Term = {
   via_dutiable_id?: string | null;
   tenant_id?: number | null;
   study_program_id?: string | null;
-};
+}
 
 const props = defineProps<{
   /** A duty of the person, with its institution and the term (`pivot`) they hold it in. */

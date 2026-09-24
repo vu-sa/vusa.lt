@@ -82,7 +82,7 @@
           <h2 :class="sectionHeadingClass">
             {{ $t('Dokumentai') }}
           </h2>
-          <PublicMeetingDocuments :documents="documents" />
+          <PublicMeetingDocuments :documents />
         </section>
 
         <nav

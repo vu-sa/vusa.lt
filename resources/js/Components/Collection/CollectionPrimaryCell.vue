@@ -34,7 +34,9 @@
       v-if="sub || $slots.sub"
       :class="['mt-0.5 truncate text-xs text-muted-foreground', mono && 'font-mono']"
     >
-      <slot name="sub">{{ sub }}</slot>
+      <slot name="sub">
+        {{ sub }}
+      </slot>
     </p>
   </div>
 </template>

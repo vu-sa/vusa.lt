@@ -165,7 +165,7 @@ import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollecti
 import type { StatusPresentation } from '@/Constants/statuses';
 
 type QuickLinkRow = App.Entities.QuickLink;
-type TenantOption = { id: number; shortname: string; type: string };
+interface TenantOption { id: number; shortname: string; type: string }
 
 const props = defineProps<{
   quickLinks: QuickLinkRow[];

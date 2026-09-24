@@ -1,7 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Naujas puslapis') : (form.title || $t('Puslapis'))"
-    :bar-title="barTitle"
+    :bar-title
     entity-type="page"
     :back-href="route('pages.index')"
     :back-label="$t('Puslapiai')"

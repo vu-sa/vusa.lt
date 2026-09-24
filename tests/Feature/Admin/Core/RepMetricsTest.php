@@ -120,7 +120,7 @@ describe('GetRepOutcomeMetrics', function (): void {
     test('a task that predates the window is left out', function (): void {
         Task::factory()->create(['action_type' => ActionType::Manual, 'created_at' => '2025-01-01 08:00:00']);
 
-        expect(GetRepOutcomeMetrics::execute(2)['tasks'])->toBe([]);
+        expect(GetRepOutcomeMetrics::execute(2)['tasks'])->toBeEmpty();
     });
 
     test('reps active in the last 30 days are a snapshot of the people holding a rep duty', function (): void {
@@ -144,9 +144,8 @@ describe('metrics:reps', function (): void {
     test('prints each metric against its baseline and target', function (): void {
         pastMeeting($this->institution, '2026-09-10 10:00:00', 2);
 
-        expect(Artisan::call('metrics:reps', ['--months' => 2]))->toBe(0);
-
-        expect(Artisan::output())->toContain('recorded_within_week', '91.9 %', '95 %', '2026-09');
+        expect(Artisan::call('metrics:reps', ['--months' => 2]))->toBe(0)
+            ->and(Artisan::output())->toContain('recorded_within_week', '91.9 %', '95 %', '2026-09');
     });
 });
 

@@ -129,7 +129,7 @@ describe('TiptapEditor framed field', () => {
     expect(wrapper.findComponent({ name: 'BubbleMenu' }).exists()).toBe(false);
   });
 
-    it('keeps the standalone toolbar card by default', async () => {
+  it('keeps the standalone toolbar card by default', async () => {
     const wrapper = mount(TiptapEditor, {
       props: { modelValue: null, preset: 'marks', disableLinks: true },
     });

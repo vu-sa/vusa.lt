@@ -1,7 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Nauja naujiena') : (form.title || $t('Naujiena'))"
-    :bar-title="barTitle"
+    :bar-title
     entity-type="news"
     :back-href="route('news.index')"
     :back-label="$t('Naujienos')"

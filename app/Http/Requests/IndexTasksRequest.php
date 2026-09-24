@@ -12,6 +12,7 @@ use Illuminate\Validation\Rule;
  */
 class IndexTasksRequest extends BaseIndexRequest
 {
+    #[\Override]
     protected int $defaultPerPage = 50;
 
     #[\Override]

@@ -3,30 +3,42 @@
     v-model:section="section"
     :title="role.name"
     :entity-type="ModelEnum.ROLE"
-    :facts="facts"
-    :sections="sections"
-    :primary-action="primaryAction"
-    :overflow-actions="overflowActions"
+    :facts
+    :sections
+    :primary-action
+    :overflow-actions
     @action="handleAction"
   >
     <template #permissions>
       <RolePermissionForms v-if="can.update" :role :all-available-permissions model-route="roles.update" />
-      <p v-else class="text-sm text-muted-foreground">{{ $t('Neturite teisės keisti šios rolės teisių.') }}</p>
+      <p v-else class="text-sm text-muted-foreground">
+        {{ $t('Neturite teisės keisti šios rolės teisių.') }}
+      </p>
     </template>
 
     <template #duties>
       <div class="max-w-4xl space-y-4">
         <div class="flex items-center justify-between border-b border-border pb-3">
           <div>
-            <h2 class="text-base font-semibold text-foreground">{{ $t('Priskirtos pareigybės') }}</h2>
-            <p class="mt-1 text-sm text-muted-foreground">{{ $t('Rolė taikoma šias pareigybes einantiems nariams.') }}</p>
+            <h2 class="text-base font-semibold text-foreground">
+              {{ $t('Priskirtos pareigybės') }}
+            </h2>
+            <p class="mt-1 text-sm text-muted-foreground">
+              {{ $t('Rolė taikoma šias pareigybes einantiems nariams.') }}
+            </p>
           </div>
-          <Button v-if="can.update" size="sm" @click="saveDuties">{{ $t('Išsaugoti') }}</Button>
+          <Button v-if="can.update" size="sm" @click="saveDuties">
+            {{ $t('Išsaugoti') }}
+          </Button>
         </div>
         <TransferList v-if="can.update" v-model="dutyIds" :options="dutyOptions" />
         <ul v-else class="divide-y divide-border border-y border-border">
-          <li v-for="duty in role.duties ?? []" :key="duty.id" class="py-3 text-sm font-medium">{{ duty.name }}</li>
-          <li v-if="!role.duties?.length" class="py-5 text-sm text-muted-foreground">{{ $t('Pareigybių nepriskirta.') }}</li>
+          <li v-for="duty in role.duties ?? []" :key="duty.id" class="py-3 text-sm font-medium">
+            {{ duty.name }}
+          </li>
+          <li v-if="!role.duties?.length" class="py-5 text-sm text-muted-foreground">
+            {{ $t('Pareigybių nepriskirta.') }}
+          </li>
         </ul>
       </div>
     </template>
@@ -35,15 +47,25 @@
       <div class="max-w-4xl space-y-4">
         <div class="flex items-center justify-between border-b border-border pb-3">
           <div>
-            <h2 class="text-base font-semibold text-foreground">{{ $t('Priskiriami tipai') }}</h2>
-            <p class="mt-1 text-sm text-muted-foreground">{{ $t('Ši rolė gali būti priskiriama tik pasirinktiems tipams.') }}</p>
+            <h2 class="text-base font-semibold text-foreground">
+              {{ $t('Priskiriami tipai') }}
+            </h2>
+            <p class="mt-1 text-sm text-muted-foreground">
+              {{ $t('Ši rolė gali būti priskiriama tik pasirinktiems tipams.') }}
+            </p>
           </div>
-          <Button v-if="can.update" size="sm" @click="saveAttachableTypes">{{ $t('Išsaugoti') }}</Button>
+          <Button v-if="can.update" size="sm" @click="saveAttachableTypes">
+            {{ $t('Išsaugoti') }}
+          </Button>
         </div>
         <TransferList v-if="can.update" v-model="attachableTypeIds" :options="typeOptions" />
         <ul v-else class="divide-y divide-border border-y border-border">
-          <li v-for="type in attachedTypes" :key="type.id" class="py-3 text-sm font-medium">{{ localized(type.title) }}</li>
-          <li v-if="!attachedTypes.length" class="py-5 text-sm text-muted-foreground">{{ $t('Tipų nepriskirta.') }}</li>
+          <li v-for="type in attachedTypes" :key="type.id" class="py-3 text-sm font-medium">
+            {{ localized(type.title) }}
+          </li>
+          <li v-if="!attachedTypes.length" class="py-5 text-sm text-muted-foreground">
+            {{ $t('Tipų nepriskirta.') }}
+          </li>
         </ul>
       </div>
     </template>
@@ -74,8 +96,8 @@ import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcru
 import { ModelEnum } from '@/Types/enums';
 
 type Translation = string | { lt?: string; en?: string };
-type Duty = { id: string; name: string };
-type RoleType = { id: string; title: Translation };
+interface Duty { id: string; name: string }
+interface RoleType { id: string; title: Translation }
 
 const props = defineProps<{
   role: App.Entities.Role & { duties?: Duty[]; attachable_types?: string[] };

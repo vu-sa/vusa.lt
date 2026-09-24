@@ -34,7 +34,7 @@ import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 
-type PermissionRow = { id: string | number; name: string };
+interface PermissionRow { id: string | number; name: string }
 
 const props = defineProps<{
   permissions: PermissionRow[];

@@ -19,8 +19,8 @@ it('keeps the home layout within the viewport at the redesign widths', function 
 
             $page->screenshot(fullPage: false, filename: 'admin-home-'.$width.($dark ? '-dark' : '-light'));
 
-            expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width);
-            expect($page->script('document.querySelector("[data-slot=overview-page]").getBoundingClientRect().width <= window.innerWidth'))->toBeTrue();
+            expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width)
+                ->and($page->script('document.querySelector("[data-slot=overview-page]").getBoundingClientRect().width <= window.innerWidth'))->toBeTrue();
 
             $alignment = $page->script('(() => {
                 const bar = document.querySelector("[data-slot=shell-top-bar] > div");

@@ -162,14 +162,14 @@ const formattedDisplay = computed(() => {
 });
 
 const calendarValue = computed<CalendarDate | undefined>(() => {
-  const value = modelDate.value;
+  const { value } = modelDate;
   return value ? new CalendarDate(value.getFullYear(), value.getMonth() + 1, value.getDate()) : undefined;
 });
 
 const dateValue = computed(() => calendarValue.value);
 
 const timeValue = computed<TimeValue | undefined>(() => {
-  const value = modelDate.value;
+  const { value } = modelDate;
   return value ? { hour: value.getHours(), minute: value.getMinutes() } : undefined;
 });
 

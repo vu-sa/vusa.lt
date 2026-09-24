@@ -232,9 +232,7 @@ const props = withDefaults(defineProps<{
   canUpdateIdentity: true,
 });
 
-const emit = defineEmits<{
-  (event: 'submit:form', form: unknown): void;
-}>();
+const emit = defineEmits<(event: 'submit:form', form: unknown) => void>();
 
 const isCreating = computed(() => !props.user.id);
 const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? false);

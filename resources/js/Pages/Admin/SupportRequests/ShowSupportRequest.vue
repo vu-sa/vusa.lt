@@ -1,5 +1,5 @@
 <template>
-  <RecordPage v-model:section="section" :title="supportRequest.title" entity-type="support_request" :status="statusPresentation" :facts="facts" :sections="sections" :primary-action="primaryAction" :overflow-actions="overflowActions" @action="handleAction">
+  <RecordPage v-model:section="section" :title="supportRequest.title" entity-type="support_request" :status="statusPresentation" :facts :sections :primary-action :overflow-actions @action="handleAction">
     <template #alert>
       <div v-if="permissions.can_update_status || permissions.can_assign" class="flex flex-wrap items-center gap-3 border border-border bg-card p-3">
         <label v-if="permissions.can_update_status" class="flex items-center gap-2 text-sm font-medium">
@@ -22,9 +22,13 @@
       <div class="max-w-3xl space-y-6">
         <div v-if="supportRequest.context_url || supportRequest.selected_text" class="border border-border bg-card p-4 text-sm">
           <a v-if="supportRequest.context_url" :href="supportRequest.context_url" target="_blank" rel="noopener noreferrer" class="break-all underline underline-offset-4">{{ supportRequest.context_url }}</a>
-          <blockquote v-if="supportRequest.selected_text" class="mt-3 border-l-2 border-primary pl-3 italic">„{{ supportRequest.selected_text }}“</blockquote>
+          <blockquote v-if="supportRequest.selected_text" class="mt-3 border-l-2 border-primary pl-3 italic">
+            „{{ supportRequest.selected_text }}“
+          </blockquote>
         </div>
-        <p class="whitespace-pre-wrap text-sm leading-relaxed">{{ supportRequest.description }}</p>
+        <p class="whitespace-pre-wrap text-sm leading-relaxed">
+          {{ supportRequest.description }}
+        </p>
       </div>
     </template>
     <template #evidence>
@@ -33,10 +37,14 @@
           <img :src="file.thumb_url || file.original_url" :alt="file.name" class="mb-3 h-32 w-full object-cover">
           <p class="truncate text-sm font-medium">{{ file.file_name }}</p>
         </a>
-        <p v-if="!supportRequest.media?.length" class="bg-card p-6 text-sm text-muted-foreground">{{ $t('Prisegtų failų nėra.') }}</p>
+        <p v-if="!supportRequest.media?.length" class="bg-card p-6 text-sm text-muted-foreground">
+          {{ $t('Prisegtų failų nėra.') }}
+        </p>
       </div>
     </template>
-    <template #discussion><DiscussionPanel commentable-type="supportRequest" :commentable-id="supportRequest.id" /></template>
+    <template #discussion>
+      <DiscussionPanel commentable-type="supportRequest" :commentable-id="supportRequest.id" />
+    </template>
   </RecordPage>
   <ConfirmDialog v-model:open="deleteOpen" :title="$t('Šalinti pranešimą?')" :description="$t('Pranešimas bus perkeltas į šiukšlinę.')" :confirm-label="$t('Šalinti')" destructive @confirm="router.delete(route('supportRequests.destroy', supportRequest.id))" />
 </template>

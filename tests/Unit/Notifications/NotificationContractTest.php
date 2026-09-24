@@ -36,8 +36,8 @@ function expectContextRows(array $rows): void
 
     foreach ($rows as $row) {
         expect($row)->toHaveKeys(['label', 'value'])
-            ->and($row['label'])->toBeString()->not->toBe('')->not->toStartWith('notifications.context.')
-            ->and($row['value'])->toBeString()->not->toBe('');
+            ->and($row['label'])->toBeString()->not->toBeEmpty()->not->toStartWith('notifications.context.')
+            ->and($row['value'])->toBeString()->not->toBeEmpty();
     }
 }
 
@@ -47,8 +47,8 @@ describe('base contract', function (): void {
 
         expect($notification->primaryAction())->toBeNull()
             ->and($notification->secondaryAction())->toBeNull()
-            ->and($notification->actions())->toBe([])
-            ->and($notification->context(User::factory()->create()))->toBe([]);
+            ->and($notification->actions())->toBeEmpty()
+            ->and($notification->context(User::factory()->create()))->toBeEmpty();
     });
 
     test('toArray carries the contract and keeps the derived actions list', function (): void {
@@ -95,11 +95,11 @@ describe('base contract', function (): void {
         $overriding = collect(glob(app_path('Notifications/*Notification.php')))
             ->map(fn (string $file): string => 'App\\Notifications\\'.basename($file, '.php'))
             ->filter(fn (string $class): bool => is_subclass_of($class, BaseNotification::class))
-            ->filter(fn (string $class): bool => (new ReflectionMethod($class, 'actions'))->getDeclaringClass()->getName() !== BaseNotification::class)
+            ->filter(fn (string $class): bool => new ReflectionMethod($class, 'actions')->getDeclaringClass()->getName() !== BaseNotification::class)
             ->values()
             ->all();
 
-        expect($overriding)->toBe([]);
+        expect($overriding)->toBeEmpty();
     });
 });
 
@@ -116,7 +116,7 @@ describe('act-tier context rows', function (): void {
             'due_date' => now()->addDays(2),
         ]);
 
-        $rows = (new TaskAssignedNotification($task))->context($this->user);
+        $rows = new TaskAssignedNotification($task)->context($this->user);
 
         expectContextRows($rows);
         expect(collect($rows)->pluck('value'))->toContain($institution->name, $task->due_date->format('Y-m-d'));
@@ -125,7 +125,7 @@ describe('act-tier context rows', function (): void {
     test('a blank value is dropped rather than rendered empty', function (): void {
         $task = Task::factory()->create(['due_date' => null]);
 
-        $rows = (new TaskReminderNotification($task, 1))->context($this->user);
+        $rows = new TaskReminderNotification($task, 1)->context($this->user);
 
         expect($rows)->toHaveCount(1)
             ->and($rows[0]['value'])->toBe($task->name);
@@ -137,7 +137,7 @@ describe('act-tier context rows', function (): void {
             Task::factory()->create(['due_date' => now()->subDays(10)]),
         ]);
 
-        $rows = (new TaskOverdueNotification($tasks))->context($this->user);
+        $rows = new TaskOverdueNotification($tasks)->context($this->user);
 
         expectContextRows($rows);
         expect(collect($rows)->pluck('value'))->toContain(now()->subDays(10)->format('Y-m-d'));
@@ -148,7 +148,7 @@ describe('act-tier context rows', function (): void {
         $meeting = Meeting::factory()->create(['type' => 'remote']);
         $meeting->institutions()->attach($institution);
 
-        $rows = (new MeetingReminderNotification($meeting->refresh(), 24))->context($this->user);
+        $rows = new MeetingReminderNotification($meeting->refresh(), 24)->context($this->user);
 
         expectContextRows($rows);
         expect(collect($rows)->pluck('value'))->toContain($institution->name, $meeting->start_time->format('Y-m-d H:i'));
@@ -158,7 +158,7 @@ describe('act-tier context rows', function (): void {
         $institution = Institution::factory()->create();
         $task = Task::factory()->create(['metadata' => ['activity_status' => 'overdue', 'effective_days_since_activity' => 45]]);
 
-        $rows = (new InstitutionActivityNotification($task, $institution))->context($this->user);
+        $rows = new InstitutionActivityNotification($task, $institution)->context($this->user);
 
         expectContextRows($rows);
         expect(collect($rows)->pluck('value'))->toContain($institution->name, '45 d.');
@@ -167,8 +167,8 @@ describe('act-tier context rows', function (): void {
     test('ApprovalRequested only shows the step after the first', function (): void {
         $task = Task::factory()->create();
 
-        expect((new ApprovalRequestedNotification($task, 1))->context($this->user))->toHaveCount(1)
-            ->and((new ApprovalRequestedNotification($task, 2))->context($this->user))->toHaveCount(2);
+        expect(new ApprovalRequestedNotification($task, 1)->context($this->user))->toHaveCount(1)
+            ->and(new ApprovalRequestedNotification($task, 2)->context($this->user))->toHaveCount(2);
     });
 
     test('AssignedToResource lists the object and who assigned it', function (): void {
@@ -187,7 +187,7 @@ describe('act-tier context rows', function (): void {
         $duty = Duty::factory()->create();
         $dutiable = Dutiable::factory()->create(['duty_id' => $duty->id, 'end_date' => now()->addDays(30)]);
 
-        $rows = (new DutyExpiringNotification($duty, $dutiable, 30))->context($this->user);
+        $rows = new DutyExpiringNotification($duty, $dutiable, 30)->context($this->user);
 
         expectContextRows($rows);
         expect(collect($rows)->pluck('value'))->toContain($duty->name, now()->addDays(30)->format('Y-m-d'));
@@ -247,13 +247,13 @@ describe('channel policy', function (): void {
         $this->user->muteNotificationsUntil(now()->addHour());
         $notification = new TaskReminderNotification(Task::factory()->create(), 3);
 
-        expect($notification->via($this->user))->toBe([]);
+        expect($notification->via($this->user))->toBeEmpty();
     });
 
     test('a task assigned with a deadline inside a week is urgent, otherwise only worth knowing', function (?int $days, NotificationUrgency $expected): void {
         $task = Task::factory()->create(['due_date' => $days === null ? null : now()->addDays($days)]);
 
-        expect((new TaskAssignedNotification($task))->urgency())->toBe($expected);
+        expect(new TaskAssignedNotification($task)->urgency())->toBe($expected);
     })->with([
         'due in 3 days' => [3, NotificationUrgency::Act],
         'due in 30 days' => [30, NotificationUrgency::Know],
@@ -264,8 +264,8 @@ describe('channel policy', function (): void {
         $object = ['modelClass' => 'Task', 'name' => 'Užduotis', 'url' => '/t/1', 'id' => '1'];
         $author = ['modelClass' => 'User', 'name' => 'Jonas'];
 
-        expect((new CommentPostedNotification('x', $object, $author, isMention: true))->urgency())->toBe(NotificationUrgency::Act)
-            ->and((new CommentPostedNotification('x', $object, $author))->urgency())->toBe(NotificationUrgency::Know);
+        expect(new CommentPostedNotification('x', $object, $author, isMention: true)->urgency())->toBe(NotificationUrgency::Act)
+            ->and(new CommentPostedNotification('x', $object, $author)->urgency())->toBe(NotificationUrgency::Know);
     });
 
     test('a welcome greeting stays in the app', function (): void {

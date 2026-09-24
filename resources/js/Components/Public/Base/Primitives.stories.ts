@@ -11,8 +11,8 @@ import ReadingSizeControl from './ReadingSizeControl.vue';
 import SectionBand from './SectionBand.vue';
 import ShareButton from './ShareButton.vue';
 import StatCell from './StatCell.vue';
-import { TagChip } from '@/Components/Brand';
 
+import { TagChip } from '@/Components/Brand';
 import { Button } from '@/Components/ui/button';
 
 /**

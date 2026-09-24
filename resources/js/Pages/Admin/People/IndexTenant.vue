@@ -24,7 +24,9 @@
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :title="item.fullname" :href="route('tenants.edit', item.id)" :sub="item.alias" mono />
-          <p class="mt-2 text-xs text-muted-foreground">{{ item.shortname }} · {{ item.type }}</p>
+          <p class="mt-2 text-xs text-muted-foreground">
+            {{ item.shortname }} · {{ item.type }}
+          </p>
         </div>
         <CollectionRowActions :actions="actions.rowActions(item, item.fullname, false)" @select="key => actions.select(key)" />
       </article>

@@ -1,5 +1,5 @@
 <template>
-<!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -->
+  <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -->
   <div
     class="relative min-h-[440px] flex flex-col bg-background"
     @dragover.prevent="dragOver = true"
@@ -56,8 +56,8 @@
           :is-selected="selectedFile === file.path"
           :is-multi-selected="selectedFiles.has(file.path)"
           :is-starred="starredFiles?.has(file.path)"
-          :selection-mode="selectionMode"
-          :is-multi-select-mode="isMultiSelectMode"
+          :selection-mode
+          :is-multi-select-mode
           @click="$emit('fileClick', file, $event)"
           @double-click="$emit('fileDoubleClick', file)"
           @toggle-select="$emit('toggleSelect', file)"
@@ -173,10 +173,18 @@
           class="border border-border bg-background px-2 py-1 text-xs text-foreground outline-none"
           @change="$emit('update:itemsPerPage', Number(($event.target as HTMLSelectElement).value))"
         >
-          <option :value="25">25</option>
-          <option :value="50">50</option>
-          <option :value="100">100</option>
-          <option :value="totalItems">{{ $t('files.ui.show_all') }}</option>
+          <option :value="25">
+            25
+          </option>
+          <option :value="50">
+            50
+          </option>
+          <option :value="100">
+            100
+          </option>
+          <option :value="totalItems">
+            {{ $t('files.ui.show_all') }}
+          </option>
         </select>
         <span>{{ $t('iš') }} {{ totalItems }}</span>
       </div>
@@ -227,9 +235,10 @@ import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Check, Folder, Star, Upload } from 'lucide-vue-next';
 
-import FileItem from './FileItem.vue';
 import type { FileEntry } from '../types';
 import { formatBytes, formatDate } from '../utils';
+
+import FileItem from './FileItem.vue';
 
 import { Skeleton } from '@/Components/ui/skeleton';
 import { getFileIcon } from '@/Utils/fileIcons';

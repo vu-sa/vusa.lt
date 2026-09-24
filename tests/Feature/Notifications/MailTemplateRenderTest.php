@@ -207,7 +207,7 @@ describe('digest email', function (): void {
             'comment' => [['title' => 'Senas', 'body' => 'Įrašas', 'url' => '/x', 'icon' => '💬']],
         ]);
 
-        $html = (string) (new Markdown(view(), config('mail.markdown')))->render('emails.notification-digest', $digest->content()->with);
+        $html = (string) new Markdown(view(), config('mail.markdown'))->render('emails.notification-digest', $digest->content()->with);
 
         expect($html)->toContain('Senas');
     });

@@ -16,7 +16,7 @@
             :placeholder="$t('files.ui.search_placeholder')"
             class="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
             @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
-          />
+          >
           <Spinner v-if="searching" class="size-4 shrink-0" />
           <button
             v-else-if="search"

@@ -40,7 +40,7 @@ describe('GetRecentAccessChanges', function (): void {
     test('a term ends the day after its last day, not on it', function (): void {
         giveTerm($this->user, $this->tenant, '2026-01-01', '2026-09-20');
 
-        expect(GetRecentAccessChanges::execute($this->user, 0))->toBe([]);
+        expect(GetRecentAccessChanges::execute($this->user, 0))->toBeEmpty();
 
         $this->travelTo('2026-09-21 10:00:00');
         $changes = GetRecentAccessChanges::execute($this->user, 0);
@@ -69,7 +69,7 @@ describe('GetRecentAccessChanges', function (): void {
     test('nobody else\'s terms are included', function (): void {
         giveTerm(User::factory()->create(), $this->tenant, '2026-09-20');
 
-        expect(GetRecentAccessChanges::execute($this->user, 14))->toBe([]);
+        expect(GetRecentAccessChanges::execute($this->user, 14))->toBeEmpty();
     });
 });
 

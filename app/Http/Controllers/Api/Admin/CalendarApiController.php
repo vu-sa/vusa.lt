@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class CalendarApiController extends ApiController
 {
-    public function __construct(private TanstackTableService $tableService) {}
+    public function __construct(private readonly TanstackTableService $tableService) {}
 
     public function index(IndexCalendarRequest $request): JsonResponse
     {

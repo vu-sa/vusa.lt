@@ -3,7 +3,7 @@
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 it('changes crop proportions and fits phone and tablet screens', function (): void {
     $user = makeUser(Tenant::query()->first());
@@ -22,8 +22,8 @@ it('changes crop proportions and fits phone and tablet screens', function (): vo
         $page->resize($width, 900);
         $page->screenshot(fullPage: false, filename: 'cropper-'.$width.'-light');
 
-        expect($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
-        expect($page->script('document.querySelector("[data-slot=dialog-content]").getBoundingClientRect().bottom <= window.innerHeight'))->toBeTrue();
+        expect($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue()
+            ->and($page->script('document.querySelector("[data-slot=dialog-content]").getBoundingClientRect().bottom <= window.innerHeight'))->toBeTrue();
     }
 
     $page->resize(390, 900);

@@ -46,7 +46,7 @@
             v-if="!isDeleted"
             variant="outline"
             size="icon"
-           
+
             :title="$t('Redaguoti')"
             :aria-label="$t('Redaguoti')"
             @click="openSheet(item)"
@@ -97,7 +97,7 @@
             v-if="canRestore"
             variant="outline"
             size="icon"
-           
+
             :title="$t('Atkurti')"
             :aria-label="$t('Atkurti')"
             @click="restoreEventType(item)"
@@ -121,7 +121,7 @@
             v-if="canUpdate"
             variant="outline"
             size="icon"
-           
+
             :title="$t('Redaguoti')"
             :aria-label="$t('Redaguoti')"
             @click="openSheet(item)"

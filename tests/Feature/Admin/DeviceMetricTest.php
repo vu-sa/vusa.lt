@@ -3,6 +3,7 @@
 use App\Models\DailyDeviceMetric;
 use App\Models\Tenant;
 use App\Services\DeviceMetricService;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 
@@ -110,7 +111,7 @@ describe('RecordDeviceLogin Listener & Privacy', function (): void {
         $tenant = Tenant::query()->first();
         $user = makeUser($tenant);
 
-        event(new Illuminate\Auth\Events\Login('web', $user, false));
+        event(new Login('web', $user, false));
 
         $metric = DailyDeviceMetric::where('date', today()->toDateString())->first();
         expect($metric)->not->toBeNull()

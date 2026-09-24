@@ -57,7 +57,7 @@
         decoding="async"
         class="size-full object-cover transition-transform duration-200 group-hover:scale-105"
         @error="handleThumbnailError"
-      />
+      >
 
       <!-- Folder Icon -->
       <Folder

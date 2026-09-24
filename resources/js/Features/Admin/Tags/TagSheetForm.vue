@@ -10,14 +10,20 @@
     <div class="space-y-2">
       <Label for="tag-name">{{ $t('Pavadinimas') }}</Label>
       <MultiLocaleInput id="tag-name" v-model:input="form.name" />
-      <p v-if="form.errors.name" class="text-sm text-status-danger">{{ form.errors.name }}</p>
+      <p v-if="form.errors.name" class="text-sm text-status-danger">
+        {{ form.errors.name }}
+      </p>
     </div>
 
     <div class="space-y-2">
       <Label for="tag-alias">{{ $t('Alias') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span></Label>
       <Input id="tag-alias" v-model="form.alias" :placeholder="$t('Pvz: stipendijos')" />
-      <p class="text-sm text-muted-foreground">{{ $t('Trumpa nuorodos dalis naudojama ten, kur reikia pastovaus adreso.') }}</p>
-      <p v-if="form.errors.alias" class="text-sm text-status-danger">{{ form.errors.alias }}</p>
+      <p class="text-sm text-muted-foreground">
+        {{ $t('Trumpa nuorodos dalis naudojama ten, kur reikia pastovaus adreso.') }}
+      </p>
+      <p v-if="form.errors.alias" class="text-sm text-status-danger">
+        {{ form.errors.alias }}
+      </p>
     </div>
 
     <div class="space-y-2">

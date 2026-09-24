@@ -136,12 +136,12 @@ const props = withDefaults(defineProps<{
 
 const currentUser = computed(() => (usePage().props.auth as { user?: App.Entities.User } | undefined)?.user ?? null);
 const discussion = useDiscussionThread(props.commentableType, props.commentableId);
-const comments = discussion.comments;
-const mentionables = discussion.mentionables;
-const loading = discussion.loading;
-const posting = discussion.posting;
-const mutating = discussion.mutating;
-const members = discussion.members;
+const { comments } = discussion;
+const { mentionables } = discussion;
+const { loading } = discussion;
+const { posting } = discussion;
+const { mutating } = discussion;
+const { members } = discussion;
 const showResolved = ref(true);
 const pollDialogOpen = ref(false);
 

@@ -117,7 +117,7 @@
             {{ fact.label }}
           </dt>
           <dd class="mt-1 min-w-0 text-sm font-medium text-foreground">
-            <slot :name="`fact-${fact.key}`" :fact="fact">
+            <slot :name="`fact-${fact.key}`" :fact>
               <a v-if="fact.href" :href="fact.href" class="underline underline-offset-4">
                 {{ fact.value }}
               </a>

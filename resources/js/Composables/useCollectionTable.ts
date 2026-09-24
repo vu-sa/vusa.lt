@@ -139,7 +139,7 @@ export function useCollectionTable<T>(options: CollectionTableOptions<T>): {
   });
 
   function toggleRow(rowId: string, value: boolean, { range = false } = {}): void {
-    const rows = table.getRowModel().rows;
+    const { rows } = table.getRowModel();
     const from = range && anchorId !== null ? rows.findIndex(row => row.id === anchorId) : -1;
     const to = rows.findIndex(row => row.id === rowId);
     anchorId = rowId;

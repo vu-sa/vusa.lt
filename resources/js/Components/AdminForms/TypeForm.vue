@@ -237,7 +237,7 @@ const isCreate = computed(() => props.rememberKey === 'CreateType');
 const isDeleteDialogOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
 
-type Translations = { lt: string; en: string };
+interface Translations { lt: string; en: string }
 
 /** `description` may be null or missing a locale; the editor binds `.lt` / `.en` directly. */
 const asTranslations = (value: unknown): Translations => ({

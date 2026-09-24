@@ -11,7 +11,9 @@
     </p>
     <div class="flex shrink-0 items-center gap-2">
       <Button as-child variant="outline" size="sm" class="pointer-coarse:h-11">
-        <Link :href="`${route('profile.roles')}#history`" @click="spotlight.dismiss()">{{ $t('access.band.view') }}</Link>
+        <Link :href="`${route('profile.roles')}#history`" @click="spotlight.dismiss()">
+          {{ $t('access.band.view') }}
+        </Link>
       </Button>
       <Button variant="ghost" size="sm" class="pointer-coarse:h-11" data-testid="access-change-dismiss" @click="spotlight.dismiss()">
         {{ $t('access.band.dismiss') }}

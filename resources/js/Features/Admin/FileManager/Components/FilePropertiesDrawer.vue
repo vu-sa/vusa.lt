@@ -17,7 +17,7 @@
             :alt="fileName"
             class="size-full object-cover"
             @error="thumbnailFailed = true"
-          />
+          >
           <component :is="typeIcon" v-else class="size-12 text-muted-foreground" aria-hidden="true" />
         </div>
 
@@ -34,20 +34,36 @@
         <!-- Metadata Definition List -->
         <dl class="flex flex-col gap-2 text-xs border-y border-border/60 py-3">
           <div class="flex items-center justify-between gap-2">
-            <dt class="text-muted-foreground">{{ $t('files.ui.type') }}</dt>
-            <dd class="text-right font-medium text-foreground">{{ fileExtension }}</dd>
+            <dt class="text-muted-foreground">
+              {{ $t('files.ui.type') }}
+            </dt>
+            <dd class="text-right font-medium text-foreground">
+              {{ fileExtension }}
+            </dd>
           </div>
           <div class="flex items-center justify-between gap-2">
-            <dt class="text-muted-foreground">{{ $t('files.ui.size') }}</dt>
-            <dd class="text-right font-medium text-foreground">{{ fileSize }}</dd>
+            <dt class="text-muted-foreground">
+              {{ $t('files.ui.size') }}
+            </dt>
+            <dd class="text-right font-medium text-foreground">
+              {{ fileSize }}
+            </dd>
           </div>
           <div class="flex items-center justify-between gap-2">
-            <dt class="text-muted-foreground">{{ $t('files.ui.modified') }}</dt>
-            <dd class="text-right font-medium text-foreground">{{ fileDate }}</dd>
+            <dt class="text-muted-foreground">
+              {{ $t('files.ui.modified') }}
+            </dt>
+            <dd class="text-right font-medium text-foreground">
+              {{ fileDate }}
+            </dd>
           </div>
           <div class="flex items-center justify-between gap-2">
-            <dt class="text-muted-foreground">{{ $t('files.ui.location') }}</dt>
-            <dd class="text-right font-medium text-foreground truncate max-w-[180px]">{{ relativePath }}</dd>
+            <dt class="text-muted-foreground">
+              {{ $t('files.ui.location') }}
+            </dt>
+            <dd class="text-right font-medium text-foreground truncate max-w-[180px]">
+              {{ relativePath }}
+            </dd>
           </div>
         </dl>
 
@@ -211,8 +227,12 @@
               :key="index"
               class="p-1.5 bg-background border border-border/60 text-[11px]"
             >
-              <p class="font-medium text-foreground truncate">{{ usage.title }}</p>
-              <p class="text-muted-foreground text-[10px]">{{ getModelDisplayName(usage.model_type) }}</p>
+              <p class="font-medium text-foreground truncate">
+                {{ usage.title }}
+              </p>
+              <p class="text-muted-foreground text-[10px]">
+                {{ getModelDisplayName(usage.model_type) }}
+              </p>
             </div>
           </div>
         </div>

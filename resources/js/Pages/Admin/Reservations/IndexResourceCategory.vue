@@ -97,7 +97,7 @@ import { Button } from '@/Components/ui/button';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import ResourceCategorySheetForm from '@/Features/Admin/ResourceCategories/ResourceCategorySheetForm.vue';
 
-type Translation = { lt?: string; en?: string };
+interface Translation { lt?: string; en?: string }
 type Category = App.Entities.ResourceCategory & { name: Translation; description?: Translation | null; icon?: string | null };
 
 const props = defineProps<{

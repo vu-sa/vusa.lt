@@ -4,8 +4,8 @@ namespace App\Http\Requests\Relationships;
 
 use App\Services\RelationshipService;
 use App\Support\MorphMap;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;

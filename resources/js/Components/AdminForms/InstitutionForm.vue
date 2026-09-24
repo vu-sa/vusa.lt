@@ -280,7 +280,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
-type Translated = { lt: string; en: string };
+interface Translated { lt: string; en: string }
 
 const props = defineProps<{
   institution: App.Entities.Institution;

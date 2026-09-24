@@ -482,7 +482,7 @@ describe('roles are edited on the record', function (): void {
 
         asUser($this->admin)->put(route('users.roles.update', $this->person), ['roles' => []])->assertRedirect();
 
-        expect($this->person->fresh()->roles)->toHaveCount(0);
+        expect($this->person->fresh()->roles)->toBeEmpty();
     });
 
     test('anyone else is refused, even with permission to edit the person', function (): void {

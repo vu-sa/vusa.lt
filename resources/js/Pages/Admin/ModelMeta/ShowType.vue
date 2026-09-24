@@ -1,42 +1,62 @@
 <template>
   <RecordPage
     v-model:section="section"
-    :title="title"
+    :title
     :entity-type="ModelEnum.TYPE"
-    :facts="facts"
-    :sections="sections"
-    :primary-action="primaryAction"
-    :overflow-actions="overflowActions"
+    :facts
+    :sections
+    :primary-action
+    :overflow-actions
     @action="handleAction"
   >
     <template #overview>
       <div class="max-w-3xl space-y-6">
         <div>
-          <h2 class="mb-2 text-base font-semibold">{{ $t('Aprašymas') }}</h2>
-          <p class="whitespace-pre-wrap text-sm text-foreground">{{ description || $t('Aprašymo nėra.') }}</p>
+          <h2 class="mb-2 text-base font-semibold">
+            {{ $t('Aprašymas') }}
+          </h2>
+          <p class="whitespace-pre-wrap text-sm text-foreground">
+            {{ description || $t('Aprašymo nėra.') }}
+          </p>
         </div>
         <dl class="grid border border-border sm:grid-cols-2">
           <div class="border-b border-border p-4 sm:border-b-0 sm:border-r">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ $t('Techninė žymė') }}</dt>
-            <dd class="mt-1 text-sm font-medium">{{ contentType.slug || '—' }}</dd>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {{ $t('Techninė žymė') }}
+            </dt>
+            <dd class="mt-1 text-sm font-medium">
+              {{ contentType.slug || '—' }}
+            </dd>
           </div>
           <div class="p-4">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ $t('Tėvinis tipas') }}</dt>
-            <dd class="mt-1 text-sm font-medium">{{ localized(contentType.parent?.title) || '—' }}</dd>
+            <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {{ $t('Tėvinis tipas') }}
+            </dt>
+            <dd class="mt-1 text-sm font-medium">
+              {{ localized(contentType.parent?.title) || '—' }}
+            </dd>
           </div>
         </dl>
       </div>
     </template>
     <template #models>
       <div class="max-w-3xl divide-y divide-border border-y border-border">
-        <div v-for="model in attachedModels" :key="model.id" class="py-3 text-sm font-medium">{{ model.name }}</div>
-        <p v-if="!attachedModels.length" class="py-6 text-sm text-muted-foreground">{{ $t('Susietų įrašų nėra.') }}</p>
+        <div v-for="model in attachedModels" :key="model.id" class="py-3 text-sm font-medium">
+          {{ model.name }}
+        </div>
+        <p v-if="!attachedModels.length" class="py-6 text-sm text-muted-foreground">
+          {{ $t('Susietų įrašų nėra.') }}
+        </p>
       </div>
     </template>
     <template #roles>
       <div class="max-w-3xl divide-y divide-border border-y border-border">
-        <div v-for="role in contentType.roles ?? []" :key="role.id" class="py-3 text-sm font-medium">{{ role.name }}</div>
-        <p v-if="!contentType.roles?.length" class="py-6 text-sm text-muted-foreground">{{ $t('Rolių nepriskirta.') }}</p>
+        <div v-for="role in contentType.roles ?? []" :key="role.id" class="py-3 text-sm font-medium">
+          {{ role.name }}
+        </div>
+        <p v-if="!contentType.roles?.length" class="py-6 text-sm text-muted-foreground">
+          {{ $t('Rolių nepriskirta.') }}
+        </p>
       </div>
     </template>
   </RecordPage>

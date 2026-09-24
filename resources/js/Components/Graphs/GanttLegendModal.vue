@@ -297,8 +297,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Globe, Link2 } from 'lucide-vue-next';
-import { CalendarOff } from 'lucide-vue-next';
+import { Globe, Link2, CalendarOff } from 'lucide-vue-next';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';

@@ -20,11 +20,21 @@
             <table class="w-full min-w-[32rem] text-sm" data-testid="metrics-table">
               <thead>
                 <tr class="text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <th scope="col" class="py-2 pr-4 font-semibold">{{ $t('metrics.table.metric') }}</th>
-                  <th scope="col" class="px-4 py-2 text-right font-semibold">{{ $t('metrics.table.now') }}</th>
-                  <th scope="col" class="px-4 py-2 text-right font-semibold">{{ $t('metrics.table.baseline') }}</th>
-                  <th scope="col" class="px-4 py-2 text-right font-semibold">{{ $t('metrics.table.target') }}</th>
-                  <th scope="col" class="py-2 pl-4 font-semibold">{{ $t('metrics.table.status') }}</th>
+                  <th scope="col" class="py-2 pr-4 font-semibold">
+                    {{ $t('metrics.table.metric') }}
+                  </th>
+                  <th scope="col" class="px-4 py-2 text-right font-semibold">
+                    {{ $t('metrics.table.now') }}
+                  </th>
+                  <th scope="col" class="px-4 py-2 text-right font-semibold">
+                    {{ $t('metrics.table.baseline') }}
+                  </th>
+                  <th scope="col" class="px-4 py-2 text-right font-semibold">
+                    {{ $t('metrics.table.target') }}
+                  </th>
+                  <th scope="col" class="py-2 pl-4 font-semibold">
+                    {{ $t('metrics.table.status') }}
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-border">
@@ -35,9 +45,15 @@
                       {{ $t('metrics.table.snapshot') }}
                     </span>
                   </th>
-                  <td class="px-4 py-3 text-right font-semibold tabular-nums">{{ percent(metric.now) }}</td>
-                  <td class="px-4 py-3 text-right tabular-nums text-muted-foreground">{{ percent(metric.baseline) }}</td>
-                  <td class="px-4 py-3 text-right tabular-nums text-muted-foreground">{{ percent(metric.target) }}</td>
+                  <td class="px-4 py-3 text-right font-semibold tabular-nums">
+                    {{ percent(metric.now) }}
+                  </td>
+                  <td class="px-4 py-3 text-right tabular-nums text-muted-foreground">
+                    {{ percent(metric.baseline) }}
+                  </td>
+                  <td class="px-4 py-3 text-right tabular-nums text-muted-foreground">
+                    {{ percent(metric.target) }}
+                  </td>
                   <td :class="['py-3 pl-4 font-medium', statusClass(metric)]" data-slot="metric-status">
                     {{ $t(`metrics.status.${statusOf(metric)}`) }}
                   </td>
@@ -66,20 +82,40 @@
             <table class="w-full min-w-[28rem] text-sm" data-testid="task-table">
               <thead>
                 <tr class="text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <th scope="col" class="py-2 pr-4 font-semibold">{{ $t('metrics.tasks.type') }}</th>
-                  <th scope="col" class="px-4 py-2 text-right font-semibold">{{ $t('metrics.tasks.total') }}</th>
-                  <th scope="col" class="px-4 py-2 text-right font-semibold">{{ $t('metrics.tasks.completed') }}</th>
-                  <th scope="col" class="px-4 py-2 text-right font-semibold">{{ $t('metrics.tasks.rate') }}</th>
-                  <th scope="col" class="py-2 pl-4 text-right font-semibold">{{ $t('metrics.tasks.median_days') }}</th>
+                  <th scope="col" class="py-2 pr-4 font-semibold">
+                    {{ $t('metrics.tasks.type') }}
+                  </th>
+                  <th scope="col" class="px-4 py-2 text-right font-semibold">
+                    {{ $t('metrics.tasks.total') }}
+                  </th>
+                  <th scope="col" class="px-4 py-2 text-right font-semibold">
+                    {{ $t('metrics.tasks.completed') }}
+                  </th>
+                  <th scope="col" class="px-4 py-2 text-right font-semibold">
+                    {{ $t('metrics.tasks.rate') }}
+                  </th>
+                  <th scope="col" class="py-2 pl-4 text-right font-semibold">
+                    {{ $t('metrics.tasks.median_days') }}
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-border">
                 <tr v-for="task in report.tasks" :key="task.actionType" :data-task-type="task.actionType">
-                  <th scope="row" class="py-3 pr-4 text-left font-medium">{{ $t(`metrics.task_types.${task.actionType}`) }}</th>
-                  <td class="px-4 py-3 text-right tabular-nums">{{ task.total }}</td>
-                  <td class="px-4 py-3 text-right tabular-nums">{{ task.completed }}</td>
-                  <td class="px-4 py-3 text-right font-semibold tabular-nums">{{ percent(task.rate) }}</td>
-                  <td class="py-3 pl-4 text-right tabular-nums text-muted-foreground">{{ task.medianDays ?? '—' }}</td>
+                  <th scope="row" class="py-3 pr-4 text-left font-medium">
+                    {{ $t(`metrics.task_types.${task.actionType}`) }}
+                  </th>
+                  <td class="px-4 py-3 text-right tabular-nums">
+                    {{ task.total }}
+                  </td>
+                  <td class="px-4 py-3 text-right tabular-nums">
+                    {{ task.completed }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-semibold tabular-nums">
+                    {{ percent(task.rate) }}
+                  </td>
+                  <td class="py-3 pl-4 text-right tabular-nums text-muted-foreground">
+                    {{ task.medianDays ?? '—' }}
+                  </td>
                 </tr>
               </tbody>
             </table>

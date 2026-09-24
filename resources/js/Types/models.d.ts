@@ -1024,7 +1024,6 @@ declare global {
       show_breadcrumbs: boolean
       featured_image?: string | null
       meta_description?: string | null
-      publish_time?: string | null
       tenant_id: number
       created_at: string
       updated_at: string
@@ -1366,7 +1365,6 @@ declare global {
       show_breadcrumbs: boolean
       featured_image?: string | null
       meta_description?: string | null
-      publish_time?: string | null
       tenant_id: number
       created_at: string
       updated_at: string

@@ -99,7 +99,7 @@ describe('ReservationForm.vue', () => {
 
     await setPeriod(wrapper);
 
-    const form = (wrapper.vm as unknown as { form: { start_time: number; end_time: number } }).form;
+    const { form } = wrapper.vm as unknown as { form: { start_time: number; end_time: number } };
 
     expect(new Date(form.start_time).getHours()).toBe(9);
     expect(new Date(form.start_time).getDate()).toBe(21);
@@ -110,7 +110,7 @@ describe('ReservationForm.vue', () => {
 
   it('reloads the capacities once a valid period exists, and drops resources picked for the old one', async () => {
     wrapper = mountForm();
-    const form = (wrapper.vm as unknown as { form: { resources: unknown[] } }).form;
+    const { form } = wrapper.vm as unknown as { form: { resources: unknown[] } };
     form.resources.push({ id: 'r1', quantity: 1 });
 
     await setPeriod(wrapper);

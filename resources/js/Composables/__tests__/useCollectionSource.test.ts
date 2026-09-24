@@ -173,4 +173,3 @@ describe('useTypesenseCollectionSource', () => {
     expect(source.items.value).toEqual([{ id: 'a' }, { id: 'b' }]);
   });
 });
-

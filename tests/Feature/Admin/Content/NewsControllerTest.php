@@ -698,7 +698,7 @@ describe('bulk actions', function (): void {
             ->patch(route('news.bulkStatus'), ['ids' => [$own->id, $foreign->id], 'published' => false])
             ->assertStatus(403);
 
-        expect((bool) $own->fresh()->draft)->toBeFalse();
+        expect($own->fresh()->draft)->toBeFalsy();
     });
 
     test('bulk delete soft-deletes every selected article', function (): void {

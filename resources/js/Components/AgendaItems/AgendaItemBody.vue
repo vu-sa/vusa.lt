@@ -77,8 +77,8 @@
     </div>
 
     <AgendaItemVotes
-      id="agenda-item-votes"
       v-if="form.type === 'voting'"
+      id="agenda-item-votes"
       :form
       :editing
       :locale

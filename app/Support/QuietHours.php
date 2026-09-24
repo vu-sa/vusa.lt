@@ -10,9 +10,9 @@ use Carbon\CarbonInterface;
  */
 final class QuietHours
 {
-    public const START_HOUR = 22;
+    public const int START_HOUR = 22;
 
-    public const END_HOUR = 7;
+    public const int END_HOUR = 7;
 
     public static function isQuiet(CarbonInterface $at): bool
     {

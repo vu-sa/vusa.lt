@@ -40,87 +40,89 @@
         <aside class="lg:col-span-4 xl:col-span-3">
           <div class="lg:sticky lg:top-24">
             <section class="border-y border-border">
-              <h2 class="border-b border-border px-4 py-3 text-sm font-medium text-foreground">{{ $t('Žingsniai') }}</h2>
+              <h2 class="border-b border-border px-4 py-3 text-sm font-medium text-foreground">
+                {{ $t('Žingsniai') }}
+              </h2>
               <nav class="flex flex-col">
-                  <button
-                    v-for="(step, index) in steps"
-                    :key="step.id"
-                    type="button"
-                    :disabled="step.id > wizard.state.maxCompletedStep + 1"
-                    class="group relative flex items-start gap-4 border-l-2 border-transparent px-4 py-3 text-left transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                <button
+                  v-for="(step, index) in steps"
+                  :key="step.id"
+                  type="button"
+                  :disabled="step.id > wizard.state.maxCompletedStep + 1"
+                  class="group relative flex items-start gap-4 border-l-2 border-transparent px-4 py-3 text-left transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                  :class="{
+                    'bg-muted': step.active,
+                    'border-l-2 border-l-primary': step.active,
+                    'border-l-2 border-l-transparent': !step.active
+                  }"
+                  @click="handleStepClick(step.id)"
+                >
+                  <div
+                    class="relative z-10 flex size-10 shrink-0 items-center justify-center border transition-colors"
                     :class="{
-                      'bg-muted': step.active,
-                      'border-l-2 border-l-primary': step.active,
-                      'border-l-2 border-l-transparent': !step.active
+                      'border-brand-fill bg-brand-fill text-brand-foreground': step.active,
+                      'border-status-success bg-status-success-surface text-status-success': step.completed && !step.active,
+                      'border-border bg-background text-muted-foreground group-hover:border-brand-fill': !step.active && !step.completed
                     }"
-                    @click="handleStepClick(step.id)"
                   >
-                    <div
-                      class="relative z-10 flex size-10 shrink-0 items-center justify-center border transition-colors"
-                      :class="{
-                        'border-brand-fill bg-brand-fill text-brand-foreground': step.active,
-                        'border-status-success bg-status-success-surface text-status-success': step.completed && !step.active,
-                        'border-border bg-background text-muted-foreground group-hover:border-brand-fill': !step.active && !step.completed
-                      }"
+                    <CheckCircle2 v-if="step.completed && !step.active" class="h-5 w-5" />
+                    <component :is="step.icon" v-else class="h-5 w-5" />
+                  </div>
+
+                  <div
+                    v-if="index < steps.length - 1"
+                    class="absolute left-9 top-14 h-[calc(100%-2rem)] w-px"
+                    :class="step.completed ? 'bg-status-success' : 'bg-border'"
+                  />
+
+                  <div class="flex-1 min-w-0 pt-1">
+                    <p
+                      class="text-sm font-medium transition-colors"
+                      :class="step.active ? 'text-primary' : 'text-foreground'"
                     >
-                      <CheckCircle2 v-if="step.completed && !step.active" class="h-5 w-5" />
-                      <component :is="step.icon" v-else class="h-5 w-5" />
-                    </div>
-
-                    <div
-                      v-if="index < steps.length - 1"
-                      class="absolute left-9 top-14 h-[calc(100%-2rem)] w-px"
-                      :class="step.completed ? 'bg-status-success' : 'bg-border'"
-                    />
-
-                    <div class="flex-1 min-w-0 pt-1">
-                      <p
-                        class="text-sm font-medium transition-colors"
-                        :class="step.active ? 'text-primary' : 'text-foreground'"
-                      >
-                        {{ step.title }}
-                      </p>
-                      <p class="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                        {{ step.description }}
-                      </p>
-                      <!-- Selection hint -->
-                      <p
-                        v-if="step.hint && step.completed"
-                        class="mt-1 truncate text-xs font-medium text-brand"
-                      >
-                        {{ step.hint }}
-                      </p>
-                    </div>
-                  </button>
+                      {{ step.title }}
+                    </p>
+                    <p class="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                      {{ step.description }}
+                    </p>
+                    <!-- Selection hint -->
+                    <p
+                      v-if="step.hint && step.completed"
+                      class="mt-1 truncate text-xs font-medium text-brand"
+                    >
+                      {{ step.hint }}
+                    </p>
+                  </div>
+                </button>
               </nav>
             </section>
 
             <section class="mt-4 border-y border-status-attention-border bg-status-attention-surface px-4 py-3">
-                <div class="flex items-start gap-3">
-                  <div class="flex size-8 shrink-0 items-center justify-center border border-status-attention-border text-status-attention">
-                    <Lightbulb class="size-4" />
-                  </div>
-                  <div>
-                    <p class="text-sm font-medium text-status-attention">
-                      {{ $t('Patarimas') }}
-                    </p>
-                    <p class="mt-1 text-xs text-foreground">
-                      <template v-if="wizard.state.currentStep === 1">
-                        {{ $t('Pasirinkite instituciją, kurioje norite atnaujinti pareigybes. Galite ieškoti pagal pavadinimą.') }}
-                      </template>
-                      <template v-else-if="wizard.state.currentStep === 2">
-                        {{ $t('Pasirinkite pareigybę. Skaičius prie pareigybės rodo kiek vietų užimta.') }}
-                      </template>
-                      <template v-else-if="wizard.state.currentStep === 3">
-                        {{ $t('Galite pridėti kelis narius vienu metu. Siūloma pabaigos data: ') }}
-                        <strong>{{ formatDateForDisplay(getSuggestedEndDate()) }}</strong>
-                      </template>
-                      <template v-else>
-                        {{ $t('Peržiūrėkite visus pakeitimus prieš patvirtindami.') }}
-                      </template>
-                    </p>
-                  </div>
+              <div class="flex items-start gap-3">
+                <div class="flex size-8 shrink-0 items-center justify-center border border-status-attention-border text-status-attention">
+                  <Lightbulb class="size-4" />
                 </div>
+                <div>
+                  <p class="text-sm font-medium text-status-attention">
+                    {{ $t('Patarimas') }}
+                  </p>
+                  <p class="mt-1 text-xs text-foreground">
+                    <template v-if="wizard.state.currentStep === 1">
+                      {{ $t('Pasirinkite instituciją, kurioje norite atnaujinti pareigybes. Galite ieškoti pagal pavadinimą.') }}
+                    </template>
+                    <template v-else-if="wizard.state.currentStep === 2">
+                      {{ $t('Pasirinkite pareigybę. Skaičius prie pareigybės rodo kiek vietų užimta.') }}
+                    </template>
+                    <template v-else-if="wizard.state.currentStep === 3">
+                      {{ $t('Galite pridėti kelis narius vienu metu. Siūloma pabaigos data: ') }}
+                      <strong>{{ formatDateForDisplay(getSuggestedEndDate()) }}</strong>
+                    </template>
+                    <template v-else>
+                      {{ $t('Peržiūrėkite visus pakeitimus prieš patvirtindami.') }}
+                    </template>
+                  </p>
+                </div>
+              </div>
             </section>
           </div>
         </aside>

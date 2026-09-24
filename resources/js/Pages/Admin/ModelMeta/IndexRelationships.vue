@@ -24,7 +24,9 @@
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :title="item.name" :href="route('relationships.edit', item.id)" :sub="item.slug" mono />
-          <p v-if="item.description" class="mt-2 line-clamp-2 text-xs text-muted-foreground">{{ item.description }}</p>
+          <p v-if="item.description" class="mt-2 line-clamp-2 text-xs text-muted-foreground">
+            {{ item.description }}
+          </p>
         </div>
         <CollectionRowActions :actions="actions.rowActions(item, item.name, false)" @select="key => actions.select(key)" />
       </article>

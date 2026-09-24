@@ -184,8 +184,8 @@
     :dutiable="sheetDutiable"
     :user="sheetUser"
     :study-programs="management?.studyPrograms ?? []"
-    :taken-ids="takenIds"
-    :occupied-places="occupiedPlaces"
+    :taken-ids
+    :occupied-places
   />
 
   <AddCheckInDialog

@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 final class SerializeFormsForTable
 {
     /**
-     * @param Collection<int, Form> $forms
+     * @param  Collection<int, Form>  $forms
      * @return Collection<int, array<string, mixed>>
      */
     public static function execute(Collection $forms, User $user, FormRegistrationVisibilityService $registrationVisibility): Collection

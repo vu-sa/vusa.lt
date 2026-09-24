@@ -118,9 +118,13 @@
       </SectionCard>
 
       <nav v-if="recipients.last_page > 1" class="flex items-center justify-between border-t border-border pt-4" :aria-label="$t('Puslapiai')">
-        <Button variant="outline" :disabled="recipients.current_page === 1" @click="visitPage(recipients.current_page - 1)">{{ $t('Ankstesnis') }}</Button>
+        <Button variant="outline" :disabled="recipients.current_page === 1" @click="visitPage(recipients.current_page - 1)">
+          {{ $t('Ankstesnis') }}
+        </Button>
         <span class="text-sm text-muted-foreground">{{ recipients.current_page }} / {{ recipients.last_page }}</span>
-        <Button variant="outline" :disabled="recipients.current_page === recipients.last_page" @click="visitPage(recipients.current_page + 1)">{{ $t('Kitas') }}</Button>
+        <Button variant="outline" :disabled="recipients.current_page === recipients.last_page" @click="visitPage(recipients.current_page + 1)">
+          {{ $t('Kitas') }}
+        </Button>
       </nav>
     </div>
   </AdminContentPage>

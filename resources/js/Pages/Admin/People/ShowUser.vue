@@ -229,7 +229,7 @@ import { todayIso } from '@/Utils/dateTime';
 
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
-type Pivot = { id?: string; start_date?: string; end_date?: string | null; additional_email?: string | null; use_original_duty_name?: boolean };
+interface Pivot { id?: string; start_date?: string; end_date?: string | null; additional_email?: string | null; use_original_duty_name?: boolean }
 type UserDuty = App.Entities.Duty & { pivot?: Pivot };
 
 const props = defineProps<{
@@ -333,7 +333,7 @@ const pronounsBadge = computed(() => {
     return null;
   }
 
-  const pronouns = props.user.pronouns;
+  const { pronouns } = props.user;
 
   return typeof pronouns === 'string' ? pronouns : (getTranslatedValue(pronouns) || null);
 });

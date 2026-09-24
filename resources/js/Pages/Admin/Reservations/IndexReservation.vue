@@ -1,5 +1,6 @@
 <template>
   <CollectionPage
+    v-model:selection="selectedIds"
     :source
     collection="reservations"
     entity-type="reservation"
@@ -9,7 +10,6 @@
     default-view="table"
     :item-key="reservationKey"
     :trash="{ count: deletedCount ?? 0, active: isDeleted }"
-    v-model:selection="selectedIds"
     :columns
     :selectable="!isDeleted && managesResources"
     :can-select="isReservationSelectable"

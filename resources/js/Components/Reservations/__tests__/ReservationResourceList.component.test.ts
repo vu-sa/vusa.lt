@@ -25,7 +25,7 @@ const stubs = {
   },
 };
 
-type Flags = { approvable?: boolean; backtrackable?: boolean; cancellable?: boolean };
+interface Flags { approvable?: boolean; backtrackable?: boolean; cancellable?: boolean }
 
 const pivot = (id: string, state: string, flags: Flags = {}, extra: Record<string, unknown> = {}) => ({
   id,

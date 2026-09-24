@@ -26,12 +26,12 @@
       <!-- Left Sidebar (Full Mode) -->
       <FileManagerSidebar
         v-if="!props.small && !props.selectionMode"
-        :active-view="activeView"
+        :active-view
         :directories="displayedDirectories"
         :current-path="props.path"
         :starred-count="starredSet.size"
         :files-count="totalItems"
-        :total-size="totalSize"
+        :total-size
         @update:active-view="activeView = $event"
         @open-folder="handleFolderClickByPath"
         @open-create-folder="openCreateFolder"
@@ -44,21 +44,21 @@
         <!-- Toolbar & Breadcrumb Sub-bar -->
         <FileManagerHeader
           :path="props.path"
-          :search="search"
-          :search-everywhere="searchEverywhere"
+          :search
+          :search-everywhere
           :searching="props.searching"
-          :is-upload-mode="isUploadMode"
+          :is-upload-mode
           :selection-mode="props.selectionMode"
           :small="props.small"
           :allow-upload-in-selection="props.allowUploadInSelection"
-          :type-filter="typeFilter"
-          :sort-key="sortKey"
-          :sort-dir="sortDir"
-          :view-mode="viewMode"
-          :total-items="totalItems"
+          :type-filter
+          :sort-key
+          :sort-dir
+          :view-mode
+          :total-items
           :selected-count="selectedFiles.size"
           :all-selected="allFilesSelected"
-          :active-view="activeView"
+          :active-view
           @update:search="search = $event"
           @update:search-everywhere="searchEverywhere = $event"
           @update:type-filter="typeFilter = $event"
@@ -88,7 +88,7 @@
         <div v-if="isUploadMode && (!props.selectionMode || props.allowUploadInSelection)" class="p-4 flex-1">
           <FileUploadArea
             ref="uploadAreaRef"
-            :loading="loading"
+            :loading
             :force-accept="!!props.uploadAccept || !!props.uploadExtensions"
             :accept="props.uploadAccept || '*'"
             :extensions="props.uploadExtensions"
@@ -100,20 +100,20 @@
         <!-- Browse Mode (Grid / List) -->
         <FileGrid
           v-else
-          :paginated-files="paginatedFiles"
-          :selected-file="selectedFile"
-          :selected-files="selectedFiles"
+          :paginated-files
+          :selected-file
+          :selected-files
           :starred-files="starredSet"
-          :is-multi-select-mode="isMultiSelectMode"
+          :is-multi-select-mode
           :selection-mode="props.selectionMode"
           :loading="props.listLoading || props.searching"
-          :view-mode="viewMode"
-          :search="search"
-          :total-items="totalItems"
-          :items-per-page="itemsPerPage"
-          :current-page="currentPage"
-          :totalPages="totalPages"
-          :visible-pages="visiblePages"
+          :view-mode
+          :search
+          :total-items
+          :items-per-page
+          :current-page
+          :total-pages
+          :visible-pages
           @file-click="handleFileClick"
           @file-double-click="handleFileDoubleClick"
           @toggle-select="handleToggleSelect"
@@ -128,7 +128,7 @@
 
     <!-- Right Slide-Over File Detail Drawer -->
     <FilePropertiesDrawer
-      :selected-file="selectedFile"
+      :selected-file
       :files="displayedFiles"
       :selection-mode="props.selectionMode"
       :is-starred="selectedFile ? starredSet.has(selectedFile) : false"
@@ -632,7 +632,7 @@ function handleToggleSelect(file: FileEntry) {
 }
 
 function handleToggleStar(file: FileEntry) {
-  const path = file.path;
+  const { path } = file;
   if (starredSet.value.has(path)) {
     starredList.value = starredList.value.filter(p => p !== path);
   }

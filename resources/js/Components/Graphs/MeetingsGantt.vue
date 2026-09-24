@@ -50,7 +50,7 @@
                   </div>
                   <span v-if="lastMeetingByInstitution.get(row.institutionId!)"
                     class="shrink-0 text-xs tabular-nums text-muted-foreground">{{
-                      labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
+                    labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
                 </div>
                 <div v-if="detailsExpanded" class="mt-1 truncate text-xs leading-snug text-muted-foreground">
                   {{ $t('Posėdžių') }}: {{ meetings.filter(m => m.institution_id === row.institutionId).length }}

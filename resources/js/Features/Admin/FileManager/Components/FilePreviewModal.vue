@@ -33,12 +33,14 @@
             :src="previewSrc"
             :alt="file.name"
             class="max-h-[80vh] max-w-full border border-border object-contain bg-secondary/30"
-          />
+          >
 
           <!-- Caption bar -->
           <div class="mt-3 flex w-full items-center justify-between gap-4 text-foreground">
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-bold text-foreground">{{ file.name }}</p>
+              <p class="truncate text-sm font-bold text-foreground">
+                {{ file.name }}
+              </p>
               <p class="text-xs text-muted-foreground">
                 <span v-if="file.dimensions">{{ file.dimensions }} · </span>
                 <span>{{ formatBytes(file.size) }}</span>

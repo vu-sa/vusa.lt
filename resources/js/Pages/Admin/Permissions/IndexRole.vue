@@ -56,7 +56,7 @@ import { useCollectionRecordActions } from '@/Composables/useCollectionRecordAct
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { formatDate } from '@/Utils/dateTime';
 
-type RoleRow = { id: string | number; name: string; permissions_count?: number; created_at: string; updated_at: string };
+interface RoleRow { id: string | number; name: string; permissions_count?: number; created_at: string; updated_at: string }
 
 const props = defineProps<{
   roles: RoleRow[];

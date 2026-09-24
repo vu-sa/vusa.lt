@@ -49,11 +49,19 @@
     <template #preview="{ item }">
       <section class="flex flex-col gap-4 p-5">
         <div>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{{ $t('Žyma') }}</p>
-          <h2 class="mt-1 text-lg font-semibold">{{ title(item) }}</h2>
-          <p v-if="item.alias" class="mt-1 text-sm text-muted-foreground">{{ item.alias }}</p>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {{ $t('Žyma') }}
+          </p>
+          <h2 class="mt-1 text-lg font-semibold">
+            {{ title(item) }}
+          </h2>
+          <p v-if="item.alias" class="mt-1 text-sm text-muted-foreground">
+            {{ item.alias }}
+          </p>
         </div>
-        <p v-if="description(item)" class="border-y border-border py-4 text-sm text-muted-foreground">{{ description(item) }}</p>
+        <p v-if="description(item)" class="border-y border-border py-4 text-sm text-muted-foreground">
+          {{ description(item) }}
+        </p>
         <template v-if="isDeleted">
           <div class="flex flex-col gap-2 pt-2">
             <Button variant="outline" @click="restoreTag(item)">
@@ -67,8 +75,12 @@
           </div>
         </template>
         <template v-else>
-          <Button variant="brand" @click="openSheet(item)">{{ $t('Redaguoti') }}</Button>
-          <Button v-if="canDelete" variant="ghost" @click="remove(item)">{{ $t('Ištrinti') }}</Button>
+          <Button variant="brand" @click="openSheet(item)">
+            {{ $t('Redaguoti') }}
+          </Button>
+          <Button v-if="canDelete" variant="ghost" @click="remove(item)">
+            {{ $t('Ištrinti') }}
+          </Button>
         </template>
       </section>
     </template>
@@ -135,7 +147,7 @@ import { formatDate } from '@/Utils/dateTime';
 
 const entityName = 'tag';
 
-type Translation = { lt?: string; en?: string };
+interface Translation { lt?: string; en?: string }
 type Tag = App.Entities.Tag & { name: Translation; description?: Translation | null };
 
 const props = defineProps<{

@@ -32,7 +32,9 @@
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('studyPrograms.edit', item.id)" :sub="item.tenant?.shortname" />
-          <p class="mt-2 text-xs text-muted-foreground">{{ degreeLabel(item.degree) }}</p>
+          <p class="mt-2 text-xs text-muted-foreground">
+            {{ degreeLabel(item.degree) }}
+          </p>
         </div>
         <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
       </article>

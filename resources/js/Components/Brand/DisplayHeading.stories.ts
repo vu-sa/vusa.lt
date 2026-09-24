@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 
 import DisplayHeading from './DisplayHeading.vue';
+
 import SectionBand from '@/Components/Public/Base/SectionBand.vue';
 
 /**
