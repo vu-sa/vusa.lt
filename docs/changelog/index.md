@@ -179,6 +179,7 @@ lastUpdated: true
 
 ## v2.2 — Padalinių puslapių redagavimas (2026-09-14) {#v2-2}
 
+- ✨ **Lengviau skaitomos antraštės** — viešojo puslapio antraštės (herojaus, naujienų, turinio puslapių) šiek tiek sumažintos ir turi daugiau tarpo tarp eilučių, todėl ilgesni pavadinimai ir lietuviškos raidės su diakritiniais ženklais nesilieja
 - ✨ **Rezervacijos veiksmą galima atšaukti** — išteklių valdytojas gali grąžinti klaidingą patvirtinimą, išdavimą ar grąžinimą vienu žingsniu atgal; kas ir kodėl veiksmą atšaukė, lieka istorijoje
 - 🔧 **Teisinga pagrindinio puslapio redagavimo nuoroda** — padalinio puslapyje ji atveria to padalinio redaktorių, net jei laikinai rodomas centrinės VU SA turinys
 - 🔧 **Tikslesnė kontaktų paieška** — atnaujinus atstovo paskyrimą, vardą ar pareigybę, paieškoje atnaujinami susijusių institucijų kontaktai; būsimi atstovai nerodomi iki paskyrimo pradžios, o pasibaigęs paskyrimas automatiškai pašalinamas suėjus terminui

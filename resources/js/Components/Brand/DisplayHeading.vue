@@ -64,7 +64,7 @@ const props = withDefaults(defineProps<{
 const sizeClass = computed(() => ({
   sm: 'text-2xl sm:text-3xl',
   md: 'text-3xl sm:text-4xl lg:text-5xl',
-  lg: 'text-4xl sm:text-5xl lg:text-6xl',
-  xl: 'text-5xl sm:text-6xl lg:text-7xl',
+  lg: 'text-4xl sm:text-5xl',
+  xl: 'text-5xl sm:text-6xl',
 }[props.size]));
 </script>

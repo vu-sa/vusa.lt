@@ -90,14 +90,14 @@
         <!-- Title -->
         <h2
           v-if="!editable"
-          class="rc-hero-title u-display mt-4 text-pretty text-[2.25rem] text-white sm:text-6xl lg:text-7xl"
+          :class="titleClass"
         >
           <span v-if="hasTitle" v-html="slide.title" />
           <span v-else>{{ slide.title }}</span>
         </h2>
         <div
           v-else-if="!isTitleLive"
-          class="rc-hero-title u-display mt-4 text-pretty text-[2.25rem] text-white sm:text-6xl lg:text-7xl"
+          :class="titleClass"
           role="heading"
           aria-level="2"
         >
@@ -111,7 +111,7 @@
             <span v-else class="text-white/40">{{ $t('rich-content.title') }}</span>
           </button>
         </div>
-        <div v-else class="rc-hero-title u-display mt-4 text-pretty text-[2.25rem] text-white sm:text-6xl lg:text-7xl" data-rc-interactive @focusout="releaseTitle">
+        <div v-else :class="titleClass" data-rc-interactive @focusout="releaseTitle">
           <TiptapEditor
             :model-value="slide.title"
             preset="marks"
@@ -192,7 +192,7 @@ import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { Button } from '@/Components/ui/button';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { HeroCarousel } from '@/Types/contentParts';
-import { hasHtmlText } from '@/Utils/String';
+import { hasHtmlText, stripHtmlTags } from '@/Utils/String';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
@@ -274,6 +274,17 @@ const descriptionHotspotId = computed(() => `${props.blockKey ?? ''}:slide-${pro
 const imageHotspotId = computed(() => `${props.blockKey ?? ''}:slide-${props.slideIndex}:image`);
 
 const hasTitle = computed(() => hasHtmlText(props.slide.title));
+
+// Full-bleed display caps overwhelm the photo once a title runs past a couple of lines.
+const titleClass = computed(() => {
+  const length = stripHtmlTags(props.slide.title ?? '').trim().length;
+  const size = length > 60
+    ? 'text-[1.75rem] sm:text-4xl lg:text-5xl'
+    : length > 35
+      ? 'text-3xl sm:text-5xl lg:text-[3.5rem]'
+      : 'text-3xl sm:text-5xl lg:text-6xl';
+  return ['rc-hero-title u-display mt-4 text-pretty text-white', size];
+});
 const hasDesc = computed(() => hasTiptapContent(props.slide.description) || hasHtmlContent(props.slide.description));
 
 const isTitleLive = computed(() => !!props.editable && !!hotspots?.isTextFieldLive(titleHotspotId.value));

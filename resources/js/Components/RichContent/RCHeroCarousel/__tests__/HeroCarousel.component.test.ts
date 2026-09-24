@@ -70,9 +70,9 @@ describe('HeroCarouselDisplay', () => {
     expect(h2.classes()).toEqual(expect.arrayContaining([
       'u-display',
       'text-white',
-      'text-[2.25rem]',
-      'sm:text-6xl',
-      'lg:text-7xl',
+      'text-3xl',
+      'sm:text-5xl',
+      'lg:text-6xl',
     ]));
     expect(wrapper.text()).toContain('VU SA kviečia');
     expect(wrapper.text()).toContain('Paantraštė');
@@ -80,6 +80,15 @@ describe('HeroCarouselDisplay', () => {
 
     const link = wrapper.findAll('a').find(a => a.text().includes('Tapk nariu'));
     expect(link?.attributes('href')).toBe('/lt/narys');
+  });
+
+  it('steps a long title down in size, ignoring its markup', () => {
+    const title = 'susipažinkite: nauji (-os) <strong>STUDENTŲ (-ČIŲ) ATSTOVai (-ės)</strong> vu SENATE';
+    const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement([{ title }]) }, global: { stubs } });
+
+    const classes = wrapper.find('h2').classes();
+    expect(classes).toEqual(expect.arrayContaining(['text-[1.75rem]', 'sm:text-4xl', 'lg:text-5xl']));
+    expect(classes).not.toContain('lg:text-6xl');
   });
 
   it('sets the description on a fixed-white rc-prose so it stays readable on the photo scrim in light mode', () => {

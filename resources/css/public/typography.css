@@ -6,7 +6,7 @@
   }
 
   .u-display {
-    @apply font-bold uppercase leading-[0.92] tracking-tight;
+    @apply font-bold uppercase leading-[1.05] tracking-[-0.01em];
   }
 }
 

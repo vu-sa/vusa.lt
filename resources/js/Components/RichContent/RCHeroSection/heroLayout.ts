@@ -16,7 +16,7 @@ export function heroTitleClass(variant: HeroVariant): string {
     case 'panel':
       return 'rc-hero-title u-display uppercase mt-2 text-2xl text-foreground sm:text-3xl';
     default:
-      return 'rc-hero-title u-display uppercase text-3xl text-foreground sm:text-4xl md:text-5xl lg:text-6xl';
+      return 'rc-hero-title u-display uppercase text-3xl text-foreground sm:text-4xl lg:text-5xl';
   }
 }
 

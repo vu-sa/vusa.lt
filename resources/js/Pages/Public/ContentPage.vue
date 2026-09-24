@@ -133,8 +133,8 @@ const pageLayout = computed(() => props.page.layout || 'default');
 const pageTitleClass = computed(() => [
   'u-display',
   props.page.title.length > 52
-    ? 'text-3xl leading-[1.08] sm:text-5xl sm:leading-[1.05] lg:text-6xl'
-    : 'text-4xl leading-[1.08] sm:text-6xl sm:leading-none',
+    ? 'text-3xl sm:text-4xl lg:text-5xl'
+    : 'text-3xl sm:text-5xl',
 ]);
 
 // The sidebar ToC only applies to the `default` layout, requires at least one anchor,

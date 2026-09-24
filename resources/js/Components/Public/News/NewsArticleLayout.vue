@@ -8,7 +8,7 @@
         <PublicBreadcrumbs v-if="showBreadcrumbs" variant="inline" class="mb-8" />
 
         <div class="border-l-2 border-brand pl-5 sm:pl-7">
-          <h1 class="u-display text-3xl sm:text-5xl">
+          <h1 class="u-display text-pretty text-3xl sm:text-4xl">
             {{ article.title }}
           </h1>
         </div>
