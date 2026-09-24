@@ -6,7 +6,7 @@
           <span><strong>mano.vusa.lt</strong> platformoje failai yra
             laikomi</span>
           <Badge size="tiny" variant="secondary" class="mx-1">
-            <IFluentDocumentTableSearch24Regular class="h-3 w-3" />
+            <FileSearch class="size-3" />
             <strong>objektuose</strong>
           </Badge><span>
             (institucijose, posėdžiuose, etc.), kad būtų išlaikyta failų
@@ -80,7 +80,7 @@
 import { computed, ref, watch } from 'vue';
 import { useFetch } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronsUpDown, X } from 'lucide-vue-next';
+import { ChevronsUpDown, FileSearch, X } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';

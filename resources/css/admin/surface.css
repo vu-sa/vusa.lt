@@ -102,3 +102,7 @@ html[data-surface="admin"] #nprogress .peg {
 [data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"], [data-slot="textarea"]):focus-visible:not([aria-invalid="true"]) {
   border-color: var(--brand);
 }
+
+[data-slot="form-page"] [data-slot="select-trigger"]:focus-within:not([aria-invalid="true"]) {
+  border-color: var(--brand);
+}

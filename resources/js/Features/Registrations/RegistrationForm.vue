@@ -16,18 +16,28 @@
       {{ $t("Pateikti") }}
     </Button>
   </AutoForm>
+  <ConfirmDialog
+    :open="pendingVisit !== null"
+    :title="$t('Neišsaugoti pakeitimai')"
+    :description="$t('Neišsaugoti pakeitimai bus prarasti.')"
+    :confirm-label="$t('Išeiti iš puslapio')"
+    @update:open="handleDiscardDialogOpen"
+    @confirm="continueNavigation"
+  />
 </template>
 
 <script setup lang="ts">
 import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import { ref, watch, computed, onMounted } from 'vue';
+import { ref, shallowRef, watch, computed, onMounted, onBeforeUnmount } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import type { PendingVisit } from '@inertiajs/core';
 
 import { Button } from '@/Components/ui/button';
 import AutoForm from '@/Components/ui/auto-form/AutoForm.vue';
 import AutoFormField from '@/Components/ui/auto-form/AutoFormField.vue';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 
 interface PrefilledValue {
   value: string | number | boolean;
@@ -45,6 +55,8 @@ const schema = {};
 const fieldsWithDescription = ref([]);
 
 const removeInertiaBeforeEventListener = ref<VoidFunction | null>(null);
+const pendingVisit = shallowRef<PendingVisit | null>(null);
+let allowNextVisit = false;
 
 // Track which fields should be hidden (prefilled with hidden: true)
 const hiddenFieldIds = computed(() => {
@@ -211,29 +223,45 @@ onMounted(() => {
   }
 });
 
-// Track if we're submitting to avoid showing dialog
 const isSubmitting = ref(false);
 
 watch(() => autoform.meta.value.dirty, (isDirty) => {
   if (isDirty) {
-    // Add Inertia listener for SPA navigation
     removeInertiaBeforeEventListener.value = router.on('before', (event) => {
-      // Skip for prefetch requests
-      if (event.detail?.visit?.prefetch) {
+      if (event.detail.visit.prefetch || isSubmitting.value || !autoform.meta.value.dirty) {
         return;
       }
 
-      // Skip if we're submitting
-      if (isSubmitting.value) {
+      if (allowNextVisit) {
+        allowNextVisit = false;
         return;
       }
 
-      if (!confirm('You have unsaved changes. Continue?')) {
-        event.preventDefault();
-      }
+      event.preventDefault();
+      pendingVisit.value = event.detail.visit;
     });
   }
 }, { once: true });
+
+function handleDiscardDialogOpen(open: boolean) {
+  if (!open) pendingVisit.value = null;
+}
+
+function continueNavigation() {
+  const visit = pendingVisit.value;
+  pendingVisit.value = null;
+  if (!visit) return;
+
+  const { url, ...options } = visit;
+  for (const key of ['id', 'completed', 'cancelled', 'interrupted']) {
+    Reflect.deleteProperty(options, key);
+  }
+
+  allowNextVisit = true;
+  router.visit(url, options);
+}
+
+onBeforeUnmount(() => removeInertiaBeforeEventListener.value?.());
 
 const onSubmit = (data: Record<string, any>) => {
   isSubmitting.value = true;

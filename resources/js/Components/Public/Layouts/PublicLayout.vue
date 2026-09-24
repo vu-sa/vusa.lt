@@ -123,7 +123,7 @@ const toasts = useToasts();
 // Persistent "edit this page" toast for signed-in editors (no-op for guests —
 // the backend never shares the link for them)
 usePublicEditLinkToast(() => usePage().props.publicEditLink);
-usePublicStagingToast(() => usePage().props.staging);
+usePublicStagingToast(() => usePage().props.staging, () => usePage().url);
 
 // Handle validation errors (show only first error for public pages)
 watch(() => usePage().props.errors, (errors) => {

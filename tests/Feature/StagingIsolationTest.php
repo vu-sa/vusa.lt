@@ -4,10 +4,13 @@ use App\Http\Middleware\StagingReadOnlyMode;
 use App\Listeners\BlockExternalNotificationsOnStaging;
 use App\Notifications\ReminderToLoginNotification;
 use App\Services\MediaLibrary\StagingAwareFileRemover;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Storage;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $connection = (string) config('database.default');
@@ -15,6 +18,7 @@ beforeEach(function (): void {
         'app.env',
         'app.staging_user',
         'app.staging_password',
+        'app.staging_basic_auth_enabled',
         'app.files_read_only',
         'app.sharepoint_read_only',
         'app.staging_refresh.expected_database',
@@ -51,6 +55,7 @@ function configureSafeStagingIsolation(): void
         'app.env' => 'staging',
         'app.staging_user' => 'reviewer',
         'app.staging_password' => 'secret',
+        'app.staging_basic_auth_enabled' => true,
         'app.files_read_only' => true,
         'app.sharepoint_read_only' => true,
         'app.staging_refresh.expected_database' => 'staging_database',
@@ -109,6 +114,43 @@ test('staging basic auth fails closed when credentials are missing', function ()
     $this->get('/login')->assertServiceUnavailable();
 
     $this->get('/up')->assertOk();
+});
+
+test('staging basic auth requires valid credentials while enabled', function (): void {
+    configureSafeStagingIsolation();
+
+    $this->get('/login')->assertUnauthorized();
+    $this->withHeader('Authorization', 'Basic '.base64_encode('reviewer:wrong'))
+        ->get('/login')->assertUnauthorized();
+    $this->withHeader('Authorization', 'Basic '.base64_encode('reviewer:secret'))
+        ->get('/login')->assertOk();
+});
+
+test('disabling staging basic auth leaves application login in place', function (): void {
+    configureSafeStagingIsolation();
+    config(['app.staging_basic_auth_enabled' => false]);
+
+    $this->get('/login')->assertOk()->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+    $this->get('/mano')->assertRedirect(route('login'));
+});
+
+test('staging access settings do not affect local login', function (): void {
+    config([
+        'app.env' => 'local',
+        'app.staging_user' => null,
+        'app.staging_password' => null,
+    ]);
+
+    $this->get('/login')->assertOk()->assertHeaderMissing('X-Robots-Tag');
+});
+
+test('staging robots rules remain available when the password gate is off', function (): void {
+    configureSafeStagingIsolation();
+    config(['app.staging_basic_auth_enabled' => false]);
+
+    $this->get('https://www.naujas.vusa.lt/robots.txt')
+        ->assertOk()
+        ->assertSee('Disallow: /');
 });
 
 test('read only middleware blocks the real file and SharePoint mutation route names', function (string $routeName): void {

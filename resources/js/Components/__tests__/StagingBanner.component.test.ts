@@ -1,3 +1,4 @@
+import { nextTick, reactive } from 'vue';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -33,19 +34,26 @@ describe('StagingBanner', () => {
   });
 
   it('dismisses the staging notice without leaving a spacer', async () => {
-    vi.mocked(usePage).mockReturnValue(createMockPage({
+    const page = reactive(createMockPage({
       staging: {
         isStaging: true,
         filesReadOnly: false,
         sharepointReadOnly: false,
       },
     }));
+    page.url = '/mano';
+    vi.mocked(usePage).mockReturnValue(page);
 
     const wrapper = mount(StagingBanner);
 
     await wrapper.get('button[aria-label="Dismiss staging banner"]').trigger('click');
 
     expect(wrapper.html()).toBe('<!--v-if-->');
+
+    page.url = '/mano/meetings';
+    await nextTick();
+
+    expect(wrapper.find('[data-slot="staging-status"]').exists()).toBe(true);
   });
 
   it('does not render outside staging', () => {

@@ -132,7 +132,6 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Pages/Admin/{ShowProfile,ShowNotificationSettings}.vue',
   'resources/js/Features/Admin/Notifications/{PushDeviceManagement,NotificationPreferences,DigestEmailSelector}.vue',
   'resources/js/Features/Admin/TaskManager/**',
-  'resources/js/Components/Tasks/TaskItem.vue',
   'resources/js/Pages/Admin/ShowNotifications.vue',
   'resources/js/Features/Admin/Notifications/NotificationCard.vue',
   'resources/js/Pages/Admin/Dashboard/ShowSupportRequests.vue',

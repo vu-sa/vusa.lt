@@ -1810,5 +1810,12 @@
     "Keisti stulpelio plotį": "Resize column",
     "Atidaryti instituciją": "Open institution",
     "Rodyti visas (:count)": "Show all (:count)",
-    "Ieškoti institucijos": "Search institutions"
+    "Ieškoti institucijos": "Search institutions",
+    "Optimizuoti paveikslėlį?": "Optimize this image?",
+    "Paveikslėlis bus perrašytas.": "The image file will be overwritten.",
+    "Optimizuoti paveikslėlį": "Optimize image",
+    "Optimizuojamas paveikslėlis...": "Optimizing image...",
+    "Paveikslėlis optimizuotas": "Image optimized",
+    "Nepavyko optimizuoti paveikslėlio": "Failed to optimize image",
+    "Išeiti iš puslapio": "Leave page"
 }

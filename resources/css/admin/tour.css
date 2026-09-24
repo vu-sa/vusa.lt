@@ -76,7 +76,7 @@
 }
 
 .driver-popover-next-btn {
-  background-color: var(--brand-fill, var(--brand, #bd2835)) !important;
+  background-color: var(--brand-fill) !important;
   color: var(--brand-foreground, #ffffff) !important;
   border: 1px solid transparent !important;
 }
@@ -112,6 +112,6 @@
 }
 
 .driver-active-element {
-  outline: 2px solid var(--brand-fill, var(--brand, #bd2835)) !important;
+  outline: 2px solid var(--brand-fill) !important;
   outline-offset: 2px !important;
 }

@@ -7,6 +7,10 @@ lastUpdated: true
 
 ## v2.21 — Rezervacijų juodraščiai (2026-09-24) {#v2-21}
 
+- ✨ **Patogesnis bandymas** — testavimo aplinką galima laikinai atverti be papildomo naršyklės slaptažodžio, o jos įspėjimą galima uždaryti iki kito puslapio
+- ✨ **Vienodesni svetainės akcentai** — svarbiausių punktų mygtukas ir START FM grotuvas naudoja svetainės spalvas, stačiakampes formas ir vienodo stiliaus piktogramas
+- 🔧 **Aiškesni patvirtinimai** — optimizuojant paveikslėlį ir išeinant iš neužpildytos registracijos formos sprendimą gali priimti įprastame dialoge
+- ✨ **Patogesni formų valdikliai** — paieškos pasirinkimo laukai ir patvirtinimo dialogai dera su kitais Mano VU SA laukais ir abiem spalvų režimais
 - 🔧 **Tikslesnė naujienos paieškos peržiūra** — įvadinio teksto peržiūroje nebėra HTML žymų, net jei jos įdėtos viena į kitą
 - ⭐ **Rezervacija išsaugoma kaip juodraštis** — „Nauja rezervacija“ atveria formą, kuri saugoma automatiškai; išteklius renkiesi naršydamas skiltį „Ištekliai“ ir prie kiekvieno spausdamas „Pridėti“. Pasirinkimas išlieka, net jei uždarysi puslapį ar atsidarysi kitame įrenginyje, o nebaigtą rezervaciją rasi Pradžioje ir Rezervacijų apžvalgoje. Ji ištrinama po 14 d. be pakeitimų
 - ✨ **Aiškesnė rezervacijos forma** — pavadinimas, aprašymas, laikas ir ištekliai vienoje kolonoje, o pateikimo sąlygos ir taisyklės – šoninėje juostoje, kaip ir kitose Mano VU SA formose

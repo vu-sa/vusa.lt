@@ -239,6 +239,14 @@
       </div>
     </SheetContent>
   </Sheet>
+  <ConfirmDialog
+    :open="pendingCompressionPath !== null"
+    :title="$t('Optimizuoti paveikslėlį?')"
+    :description="$t('Paveikslėlis bus perrašytas.')"
+    :confirm-label="$t('Optimizuoti paveikslėlį')"
+    @update:open="handleCompressionDialogOpen"
+    @confirm="confirmCompression"
+  />
 </template>
 
 <script setup lang="ts">
@@ -264,6 +272,7 @@ import { formatBytes } from '../utils';
 
 import { Sheet, SheetContent } from '@/Components/ui/sheet';
 import { Spinner } from '@/Components/ui/spinner';
+import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import { useToasts } from '@/Composables/useToasts';
 import { getFileIcon } from '@/Utils/fileIcons';
 
@@ -321,6 +330,7 @@ const scanningUsage = ref(false);
 const usageData = ref<FileUsageResult | null>(null);
 const usageError = ref<string | null>(null);
 const compressing = ref(false);
+const pendingCompressionPath = ref<string | null>(null);
 
 const loadingPublicPermission = ref(false);
 const publicWebUrl = ref<string | null>(null);
@@ -412,6 +422,7 @@ function handleClose(open: boolean) {
 }
 
 watch([() => props.selectedFile, () => props.sharepointFile], () => {
+  pendingCompressionPath.value = null;
   usageData.value = null;
   usageError.value = null;
   publicWebUrl.value = null;
@@ -539,28 +550,36 @@ const showCompress = computed(() => {
 });
 
 const compressTitle = computed(() => {
-  return compressing.value ? 'Optimizing image...' : 'Optimize image';
+  return compressing.value ? $t('Optimizuojamas paveikslėlis...') : $t('Optimizuoti paveikslėlį');
 });
 
 function confirmAndCompress() {
   if (!props.selectedFile || compressing.value) return;
-  const confirmText = 'Optimize this image? It will be overwritten.';
-  if (!window.confirm(confirmText)) return;
-  compressImage();
+  pendingCompressionPath.value = props.selectedFile;
 }
 
-function compressImage() {
-  if (!props.selectedFile) return;
+function handleCompressionDialogOpen(open: boolean) {
+  if (!open) pendingCompressionPath.value = null;
+}
+
+function confirmCompression() {
+  const path = pendingCompressionPath.value;
+  pendingCompressionPath.value = null;
+  if (!path || compressing.value) return;
+  compressImage(path);
+}
+
+function compressImage(path: string) {
   compressing.value = true;
-  router.post(route('files.compress'), { path: props.selectedFile }, {
+  router.post(route('files.compress'), { path }, {
     preserveScroll: true,
     preserveState: true,
     onSuccess: () => {
-      toasts.success('Image optimized');
+      toasts.success($t('Paveikslėlis optimizuotas'));
       router.reload({ only: ['files'] });
     },
     onError: (errors) => {
-      toasts.error('Failed to optimize image', { description: (errors.error as string) || 'Unknown error' });
+      toasts.error($t('Nepavyko optimizuoti paveikslėlio'), { description: (errors.error as string) || 'Unknown error' });
     },
     onFinish: () => {
       compressing.value = false;

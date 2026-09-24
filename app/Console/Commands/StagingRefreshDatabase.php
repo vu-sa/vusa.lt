@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\StagingAccountScrubber;
 use App\Services\StagingIsolationService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\Process\Process;
 
-#[Description('Replace the staging database with the newest production backup, scrubbed')]
+#[Description('Replace the staging database with the newest production backup')]
 #[Signature('staging:refresh-database
                            {--source= : Directory holding production backups (default: config)}
                            {--scrub-only : Scrub and empty tables in place, without importing}
@@ -38,7 +39,7 @@ class StagingRefreshDatabase extends Command
         'activity_log',
     ];
 
-    public function handle(StagingIsolationService $isolation): int
+    public function handle(StagingIsolationService $isolation, StagingAccountScrubber $accountScrubber): int
     {
         // The only thing standing between this command and dropping the production database. It is
         // deliberately not overridable: there is no --force, and no prompt a tired person can accept
@@ -78,7 +79,13 @@ class StagingRefreshDatabase extends Command
             }
         }
 
-        $this->scrubPersonalData();
+        $preserveAccountEmails = ! $this->option('scrub-only')
+            && config('app.staging_refresh.preserve_account_emails') === true;
+        $scrubbed = $accountScrubber->scrub($preserveAccountEmails);
+        $this->info($preserveAccountEmails
+            ? 'Preserved account emails; cleared phone numbers and remember tokens.'
+            : "Scrubbed {$scrubbed} user record(s)."
+        );
         $this->emptyDisposableTables();
 
         // The point of the whole exercise: dev-branch migrations get exercised nightly against real
@@ -192,54 +199,6 @@ class StagingRefreshDatabase extends Command
         }
 
         return true;
-    }
-
-    /**
-     * Staging inherits production's real student data. Even behind basic auth, the addresses are the
-     * live risk: staging's scheduler runs meeting reminders every 30 minutes, so a real address in
-     * this table is a real email to a real student.
-     * MAIL_MAILER=log is the other half of that guard; this is the half that survives a misconfigured
-     * .env.
-     */
-    private function scrubPersonalData(): void
-    {
-        $allowlist = $this->emailAllowlist();
-        $scrubbed = 0;
-
-        // Chunked in PHP rather than one UPDATE ... CONCAT(): SQLite has no CONCAT, and keeping this
-        // driver-agnostic is what lets the test suite prove the scrub actually happens. A few
-        // thousand rows once a night is not worth a portability hole in the one piece of this
-        // command that protects real people's contact details.
-        DB::table('users')
-            ->select('id', 'email')
-            ->whereNotIn('email', $allowlist)
-            ->orderBy('id')
-            ->chunkById(500, function ($users) use (&$scrubbed): void {
-                foreach ($users as $user) {
-                    DB::table('users')->where('id', $user->id)->update([
-                        'email' => 'user'.$user->id.'@staging.invalid',
-                        'phone' => null,
-                        'remember_token' => null,
-                    ]);
-                    $scrubbed++;
-                }
-            });
-
-        $this->info("Scrubbed {$scrubbed} user record(s); ".count($allowlist).' address(es) kept.');
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function emailAllowlist(): array
-    {
-        $configured = config('app.staging_refresh.email_allowlist', []);
-
-        if (is_string($configured)) {
-            $configured = explode(',', $configured);
-        }
-
-        return array_values(array_filter(array_map(trim(...), (array) $configured)));
     }
 
     private function emptyDisposableTables(): void

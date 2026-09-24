@@ -69,6 +69,8 @@ return [
 
     'staging_password' => env('STAGING_PASSWORD'),
 
+    'staging_basic_auth_enabled' => env('STAGING_BASIC_AUTH_ENABLED', true),
+
     /*
     |--------------------------------------------------------------------------
     | Staging Database Refresh
@@ -78,15 +80,16 @@ return [
     | the newest production backup. Production and staging share a VPS, so the
     | source is a local path rather than a transfer.
     |
-    | Every address outside the allowlist is rewritten to user{id}@staging.invalid
-    | on import, so staging's schedule cannot mail real students. Keep the list to
-    | the people who need to receive staging mail.
+    | Normally every address outside the allowlist is rewritten to
+    | user{id}@staging.invalid on import. Keep the allowlist small and only
+    | preserve all account emails for a short testing window.
     |
     */
 
     'staging_refresh' => [
         'source_backup_dir' => env('STAGING_SOURCE_BACKUP_DIR'),
         'email_allowlist' => env('STAGING_EMAIL_ALLOWLIST', ''),
+        'preserve_account_emails' => env('STAGING_PRESERVE_ACCOUNT_EMAILS', false),
         'expected_database' => env('STAGING_EXPECTED_DATABASE'),
         'expected_database_username' => env('STAGING_EXPECTED_DB_USERNAME'),
     ],

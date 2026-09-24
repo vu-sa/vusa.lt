@@ -34,7 +34,7 @@
       <button
         type="button"
         :class="[
-          'shrink-0 rounded-lg p-1.5 transition-colors',
+          'flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg transition-colors',
           'hover:bg-amber-200/70 dark:hover:bg-amber-900/60',
           'focus-visible:outline-none focus-visible:ring-2',
           'focus-visible:ring-amber-600 dark:focus-visible:ring-amber-400',
@@ -50,10 +50,14 @@
 
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { AlertTriangle, X, FileWarning, CloudOff } from 'lucide-vue-next';
 
 const dismissed = ref(false);
+
+watch(() => usePage().url, () => {
+  dismissed.value = false;
+});
 
 interface StagingProps {
   isStaging: boolean;

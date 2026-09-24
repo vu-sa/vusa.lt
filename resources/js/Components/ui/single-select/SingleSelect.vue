@@ -8,7 +8,9 @@
     :disabled
   >
     <ComboboxAnchor
-      class="relative flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+      data-slot="select-trigger"
+      data-size="default"
+      class="relative flex h-9 w-full items-center gap-2 border border-input bg-background px-3 text-sm transition-[color,box-shadow] outline-none focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/40"
       :class="{ 'opacity-50 cursor-not-allowed': disabled }"
       @click.self="open = true"
     >

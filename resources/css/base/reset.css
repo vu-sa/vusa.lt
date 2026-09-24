@@ -50,7 +50,16 @@
   }
 
   a:not(.plain) {
-    @apply hover:text-vusa-red duration-200;
+    transition-duration: 200ms;
+  }
+
+  a:not(.plain):hover {
+    color: var(--brand);
+  }
+
+  [data-surface="public"] a:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 
   p>a {

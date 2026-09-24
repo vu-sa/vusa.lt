@@ -4,8 +4,8 @@ import { vi } from 'vitest';
 /**
  * Factory for creating reactive mock Inertia form objects.
  *
- * Use this in component tests that mount AdminForm (or any component
- * expecting an InertiaForm instance). The returned object is fully
+ * Use this in component tests that mount a component
+ * expecting an InertiaForm instance. The returned object is fully
  * reactive, so mutations like `form.processing = true` trigger Vue
  * reactivity updates inside the mounted component.
  */

@@ -8,9 +8,9 @@ Place tests in `__tests__/` directories adjacent to the source files they test:
 
 ```
 resources/js/Components/AdminForms/
-├── AdminForm.vue
+├── TenantForm.vue
 └── __tests__/
-    └── AdminForm.component.test.ts
+    └── TenantForm.component.test.ts
 ```
 
 Shared test helpers go in `resources/js/tests/helpers/`.
@@ -103,7 +103,7 @@ let wrapper: ReturnType<typeof mount>;
 vendor/bin/sail npx vitest run --project component
 
 # Specific component test file
-vendor/bin/sail npx vitest run --project component resources/js/Components/AdminForms/__tests__/AdminForm.component.test.ts
+vendor/bin/sail npx vitest run --project component resources/js/Components/AdminForms/__tests__/TenantForm.component.test.ts
 
 # Unit tests
 vendor/bin/sail npx vitest run --project unit

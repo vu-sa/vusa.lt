@@ -16,9 +16,9 @@ export const badgeVariants = cva(
         warning: 'border-status-attention-border bg-status-attention-surface text-status-attention',
         rose: 'border-status-danger-border bg-status-danger-surface text-status-danger',
         // Content-authored colours (navigation link badges); not statuses.
-        emerald: 'border-transparent bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-        amber: 'border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-        sky: 'border-transparent bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300',
+        emerald: 'border-border bg-secondary text-foreground before:size-1.5 before:bg-cat-8 before:content-[\'\']',
+        amber: 'border-border bg-secondary text-foreground before:size-1.5 before:bg-cat-7 before:content-[\'\']',
+        sky: 'border-border bg-secondary text-foreground before:size-1.5 before:bg-cat-2 before:content-[\'\']',
         zinc: 'border-transparent bg-secondary text-muted-foreground',
       },
       size: {
