@@ -166,6 +166,16 @@ describe('numbers', () => {
     wrapper = createWrapper();
 
     expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(false);
+    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(4);
+    expect(wrapper.findAll('[data-slot="institution-attention-skeleton"] li')).toHaveLength(3);
+    expect(wrapper.find('[data-testid="attention"]').exists()).toBe(false);
+  });
+
+  it('sizes the loading metric strip to the viewer’s available counts', () => {
+    tenantLoaded.value = false;
+    wrapper = createWrapper(false);
+
+    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(3);
   });
 });
 

@@ -10,7 +10,7 @@
       @mousedown.prevent
     >
       <!-- Heading Level Selector -->
-      <Select :model-value="currentHeading" @update:model-value="setHeading($event as string)">
+      <Select :model-value="commands.currentHeadingLevel.value" @update:model-value="commands.setHeadingLevel($event as string)">
         <SelectTrigger size="sm" class="h-8 w-28 text-xs">
           <SelectValue />
         </SelectTrigger>
@@ -33,21 +33,21 @@
       <Separator orientation="vertical" class="mx-0.5 h-5" />
 
       <!-- Marks: Bold, Italic, Underline -->
-      <TiptapFormattingButtons :editor bubble />
+      <TiptapFormattingButtons :editor />
 
       <Separator orientation="vertical" class="mx-0.5 h-5" />
 
-      <!-- Link button -->
-      <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-        <Button size="icon-sm" :variant="editor.isActive('link') ? 'brand' : 'ghost'" :title="$t('rich-content.link')">
+      <TiptapLinkButton :editor @submit="(url, text) => commands.insertLink(url, text)" @document:submit="(url, text) => commands.insertLink(url, text, { document: true })">
+        <TiptapToolButton toggle :active="editor.isActive('link')" :label="$t('rich-content.link')">
           <IFluentLink24Regular class="size-4" />
-        </Button>
+        </TiptapToolButton>
       </TiptapLinkButton>
 
       <Separator orientation="vertical" class="mx-0.5 h-5" />
 
       <!-- Lists: Bullet & Ordered -->
       <Button
+        type="button"
         size="icon-sm"
         :variant="editor.isActive('bulletList') ? 'brand' : 'ghost'"
         :title="$t('rich-content.bullet_list')"
@@ -56,6 +56,7 @@
         <IFluentTextBulletList20Regular class="size-4" />
       </Button>
       <Button
+        type="button"
         size="icon-sm"
         :variant="editor.isActive('orderedList') ? 'brand' : 'ghost'"
         :title="$t('rich-content.ordered_list')"
@@ -64,6 +65,7 @@
         <IFluentTextNumberListLtr20Regular class="size-4" />
       </Button>
       <Button
+        type="button"
         size="icon-sm"
         :variant="editor.isActive('blockquote') ? 'brand' : 'ghost'"
         :title="$t('rich-content.blockquote')"
@@ -77,8 +79,8 @@
       <!-- Image insert — as-child: without it TiptapImageButton renders its own
          button+icon and uses this slotted icon button as its label, so the
          toolbar showed two image icons. -->
-      <TiptapImageButton as-child @submit:object="handleImageSubmit">
-        <Button size="icon-sm" variant="ghost" :title="$t('rich-content.select_image')">
+      <TiptapImageButton as-child @submit:object="commands.insertImage">
+        <Button type="button" size="icon-sm" variant="ghost" :title="$t('rich-content.select_image')">
           <IFluentImage24Regular class="size-4" />
         </Button>
       </TiptapImageButton>
@@ -86,20 +88,22 @@
       <!-- Table insert -->
       <Button
         v-if="!editor.isActive('table')"
+        type="button"
         size="icon-sm"
         variant="ghost"
         :title="$t('rich-content.insert_table')"
-        @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()"
+        @click="commands.insertTable()"
       >
         <IFluentTableAdd24Regular class="size-4" />
       </Button>
 
       <Separator orientation="vertical" class="mx-0.5 h-5" />
 
-      <TiptapSmartToolbarOverflow :editor />
+      <TiptapMoreMenu :editor :tools include-inserts />
 
       <!-- Undo / Redo -->
       <Button
+        type="button"
         size="icon-sm"
         variant="ghost"
         :disabled="!editor.can().chain().focus().undo().run()"
@@ -109,6 +113,7 @@
         <IFluentArrowUndo20Regular class="size-3.5" />
       </Button>
       <Button
+        type="button"
         size="icon-sm"
         variant="ghost"
         :disabled="!editor.can().chain().focus().redo().run()"
@@ -121,6 +126,7 @@
       <!-- Close / Minimize button -->
       <Separator orientation="vertical" class="mx-0.5 h-5" />
       <Button
+        type="button"
         size="icon-sm"
         variant="ghost"
         class="text-muted-foreground hover:text-foreground"
@@ -153,7 +159,10 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import TiptapFormattingButtons from './TiptapFormattingButtons.vue';
 import TiptapLinkButton from './TiptapLinkButton.vue';
-import TiptapSmartToolbarOverflow from './TiptapSmartToolbarOverflow.vue';
+import TiptapMoreMenu from './TiptapMoreMenu.vue';
+import TiptapToolButton from './TiptapToolButton.vue';
+import { useTiptapCommands } from './composables/useTiptapCommands';
+import { toolsFor } from './toolbarProfiles';
 import TiptapImageButton from './TiptapImageButton.vue';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from './smartToolbarPortal';
 
@@ -189,51 +198,9 @@ const isContainerVisible = ref(true);
 
 const isVisible = computed(() => isActive.value && isContainerVisible.value);
 
-const currentHeading = computed(() => {
-  if (props.editor.isActive('heading', { level: 2 })) return '2';
-  if (props.editor.isActive('heading', { level: 3 })) return '3';
-  if (props.editor.isActive('heading', { level: 4 })) return '4';
-  return 'paragraph';
-});
-
-function setHeading(val: string): void {
-  if (val === 'paragraph') {
-    props.editor.chain().focus().setParagraph().run();
-  }
-  else {
-    props.editor.chain().focus().toggleHeading({ level: Number(val) as 2 | 3 | 4 }).run();
-  }
-}
-
-function handleLinkSubmit(url: string, text?: string): void {
-  if (!url) {
-    props.editor.chain().focus().unsetLink().run();
-    return;
-  }
-  props.editor.chain().focus().extendMarkRange('link').setLink({
-    href: url,
-    target: '_blank',
-  }).run();
-}
-
-function handleDocumentLinkSubmit(url: string, text?: string): void {
-  props.editor.chain().focus().extendMarkRange('link').setLink({
-    href: url,
-    target: '_blank',
-  }).insertContent(text ?? url).run();
-}
-
-function handleImageSubmit(image: { src: string; alt?: string }): void {
-  if (props.editor.commands.setAccessibleImage) {
-    props.editor.chain().focus().setAccessibleImage({
-      src: image.src,
-      alt: image.alt || '',
-    }).run();
-  }
-  else {
-    props.editor.chain().focus().setImage({ src: image.src, alt: image.alt }).run();
-  }
-}
+const commands = useTiptapCommands(() => props.editor);
+// Blockquote sits in the row itself, so the More menu leaves it out.
+const tools = { ...toolsFor('full'), blockquote: false };
 
 // Positioning logic: Tracks active paragraph and sticks to top when scrolled past
 const positionCoords = ref<{ top: number; left: number }>({ top: 0, left: 0 });

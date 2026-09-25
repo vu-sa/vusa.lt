@@ -1,13 +1,13 @@
 <template>
   <div class="space-y-6">
     <!-- Loading state while the step's lazily-loaded data arrives -->
-    <div v-if="isLoadingStepData" class="flex flex-col items-center justify-center py-12 space-y-4">
-      <Loader2 class="h-8 w-8 animate-spin text-primary" />
+    <div v-if="isLoadingStepData" class="flex flex-col items-center justify-center py-12 space-y-3">
+      <Loader2 class="size-6 animate-spin text-brand" />
       <div class="text-center">
-        <p class="font-medium text-foreground">
+        <p class="font-bold text-sm text-foreground">
           {{ $t('Kraunami duomenys...') }}
         </p>
-        <p class="text-sm text-muted-foreground">
+        <p class="text-xs text-muted-foreground">
           {{ $t('Prašome palaukti') }}
         </p>
       </div>
@@ -15,83 +15,90 @@
 
     <template v-else>
       <!-- Selected duty header -->
-      <div class="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
-        <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <DutyIcon class="h-5 w-5 text-primary" />
+      <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 sm:p-4 border border-border bg-muted/40">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="flex size-9 items-center justify-center border border-border bg-background shrink-0">
+            <DutyIcon class="size-4 text-foreground" />
+          </div>
+          <div class="min-w-0">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              {{ $t('Pasirinkta pareigybė') }}
+            </p>
+            <p class="min-w-0 font-semibold text-sm text-foreground truncate">
+              <InflectedDutyName v-if="wizard.state.duty" :name="wizard.state.duty.name" />
+            </p>
+            <p class="text-xs text-muted-foreground truncate">
+              {{ wizard.state.institution?.name }}
+            </p>
+          </div>
         </div>
-        <div class="flex-1 min-w-0">
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Pasirinkta pareigybė') }}
-          </p>
-          <p class="min-w-0 font-medium text-foreground">
-            <InflectedDutyName v-if="wizard.state.duty" :name="wizard.state.duty.name" />
-          </p>
-          <p class="text-xs text-muted-foreground">
-            {{ wizard.state.institution?.name }}
-          </p>
+
+        <div class="flex items-center gap-4">
+          <div class="text-right">
+            <p class="text-[11px] text-muted-foreground font-medium">
+              {{ $t('Vietų skaičius') }}
+            </p>
+            <p class="font-bold text-sm text-foreground">
+              {{ currentUsers.length }} / {{ wizard.state.duty?.places_to_occupy || '?' }}
+            </p>
+            <p v-if="isExternalDuty" class="text-[11px] text-muted-foreground">
+              {{ $t('forms.fields.tenant_quota') }}: {{ tenantQuota ?? '∞' }}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" @click="wizard.previousStep()">
+            <Edit3 class="size-3.5 mr-1.5" />
+            {{ $t('Keisti') }}
+          </Button>
         </div>
-        <div class="text-right">
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Dabartinis vietų skaičius') }}
-          </p>
-          <p class="font-medium">
-            {{ currentUsers.length }} / {{ wizard.state.duty?.places_to_occupy || '?' }}
-          </p>
-          <p v-if="isExternalDuty" class="text-xs text-muted-foreground">
-            {{ $t('forms.fields.tenant_quota') }}: {{ tenantQuota ?? '∞' }}
-          </p>
-        </div>
-        <Button variant="ghost" size="sm" @click="wizard.previousStep()">
-          <Edit3 class="h-4 w-4 mr-1" />
-          {{ $t('Keisti') }}
-        </Button>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Left: Current members -->
-        <div class="space-y-4">
+        <div class="space-y-3.5">
           <div class="flex items-center justify-between">
-            <h3 class="font-medium flex items-center gap-2">
-              <UserMinus class="h-4 w-4 text-muted-foreground" />
+            <h3 class="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+              <UserMinus class="size-4 text-muted-foreground" />
               {{ $t('Dabartiniai nariai') }}
-              <Badge variant="secondary">
+              <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
                 {{ currentUsers.length }}
-              </Badge>
+              </span>
             </h3>
           </div>
 
-          <ScrollArea class="h-[280px] pr-2">
+          <ScrollArea class="h-[240px] sm:h-[280px] pr-2">
             <div class="space-y-2">
               <!-- Remaining users -->
               <div
                 v-for="user in remainingCurrentUsers"
                 :key="user.id"
-                class="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/30 transition-colors group"
+                class="flex items-center gap-3 p-3 border border-border bg-card hover:bg-muted/40 transition-colors group pointer-coarse:py-3.5"
               >
-                <div class="h-9 w-9 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                <div class="size-8 border border-border bg-muted flex items-center justify-center overflow-hidden shrink-0">
                   <img
                     v-if="user.profile_photo_path"
                     :src="user.profile_photo_path"
                     :alt="user.name"
-                    class="h-full w-full object-cover"
+                    class="size-full object-cover"
                   >
-                  <span v-else class="text-sm font-medium">{{ user.name?.charAt(0) }}</span>
+                  <span v-else class="text-xs font-bold text-muted-foreground">{{ user.name?.charAt(0) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-medium text-sm truncate">
+                  <p class="font-semibold text-sm truncate text-foreground">
                     {{ user.name }}
                   </p>
                   <p class="text-xs text-muted-foreground truncate">
                     {{ user.email }}
                   </p>
                 </div>
+                <!-- Remove button: visible on touch devices, hover-only on desktop -->
                 <Button
                   variant="ghost"
-                  size="sm"
-                  class="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                  size="icon"
+                  class="size-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 pointer-coarse:opacity-100 pointer-coarse:size-11"
+                  :title="$t('Pašalinti narį')"
                   @click="handleRemoveUser(user)"
                 >
-                  <UserMinus class="h-4 w-4" />
+                  <UserMinus class="size-4" />
                 </Button>
               </div>
 
@@ -99,23 +106,23 @@
               <div
                 v-for="change in usersToRemove"
                 :key="change.userId"
-                class="flex items-center gap-3 p-3 rounded-lg border border-vusa-red/30 bg-vusa-red/5"
+                class="flex items-center gap-3 p-3 border border-destructive/30 bg-destructive/5"
               >
-                <div class="h-9 w-9 rounded-full bg-vusa-red/10 flex items-center justify-center overflow-hidden shrink-0">
+                <div class="size-8 border border-destructive/30 bg-destructive/10 flex items-center justify-center overflow-hidden shrink-0">
                   <img
                     v-if="change.userPhoto"
                     :src="change.userPhoto"
                     :alt="change.userName"
-                    class="h-full w-full object-cover opacity-50"
+                    class="size-full object-cover opacity-50"
                   >
-                  <span v-else class="text-sm font-medium text-vusa-red">{{ change.userName?.charAt(0) }}</span>
+                  <span v-else class="text-xs font-bold text-destructive">{{ change.userName?.charAt(0) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-medium text-sm text-vusa-red line-through truncate">
+                  <p class="font-semibold text-sm text-destructive line-through truncate">
                     {{ change.userName }}
                   </p>
                   <div class="flex items-center gap-2 mt-1">
-                    <Label class="text-xs text-muted-foreground">{{ $t('Pabaigos data:') }}</Label>
+                    <Label class="text-[11px] text-muted-foreground font-medium">{{ $t('Pabaigos data:') }}</Label>
                     <Input
                       type="date"
                       :model-value="change.endDate"
@@ -127,16 +134,17 @@
                 <Button
                   variant="ghost"
                   size="icon"
-                  class="h-8 w-8"
+                  class="size-8 pointer-coarse:size-11"
+                  :title="$t('Atšaukti pašalinimą')"
                   @click="cancelRemoval(change.userId)"
                 >
-                  <X class="h-4 w-4" />
+                  <X class="size-4" />
                 </Button>
               </div>
 
               <!-- Empty state -->
-              <div v-if="currentUsers.length === 0" class="text-center py-8 text-muted-foreground">
-                <p class="text-sm">
+              <div v-if="currentUsers.length === 0" class="text-center py-8 text-muted-foreground border border-dashed border-border p-4">
+                <p class="text-xs">
                   {{ $t('Ši pareigybė neturi narių') }}
                 </p>
               </div>
@@ -145,61 +153,67 @@
         </div>
 
         <!-- Right: Add new members -->
-        <div class="space-y-4">
+        <div class="space-y-3.5">
           <div class="flex items-center justify-between">
-            <h3 class="font-medium flex items-center gap-2">
-              <UserPlus class="h-4 w-4 text-muted-foreground" />
+            <h3 class="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+              <UserPlus class="size-4 text-muted-foreground" />
               {{ $t('Pridėti narius') }}
-              <Badge v-if="usersToAdd.length > 0" variant="default">
+              <span v-if="usersToAdd.length > 0" class="inline-flex items-center border border-status-success-border bg-status-success-surface px-1.5 py-0.5 text-[10px] font-bold text-status-success">
                 {{ usersToAdd.length }}
-              </Badge>
+              </span>
             </h3>
           </div>
 
-          <p v-if="quotaReached" class="text-xs text-vusa-yellow-dark dark:text-vusa-yellow flex items-center gap-1">
-            <AlertTriangle class="h-3 w-3" />
-            {{ $t('forms.fields.tenant_quota') }}: {{ tenantQuota }} — {{ $t('Pasiekta padalinio kvota') }}
+          <p v-if="quotaReached" class="text-xs text-status-attention flex items-center gap-1.5 border border-status-attention-border bg-status-attention-surface/40 p-2">
+            <AlertTriangle class="size-3.5 shrink-0" />
+            <span>{{ $t('forms.fields.tenant_quota') }}: {{ tenantQuota }} — {{ $t('Pasiekta padalinio kvota') }}</span>
           </p>
 
           <!-- User search -->
           <div class="space-y-1">
             <div class="relative h-10">
-              <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
               <Input
                 v-model="userSearchQuery"
                 :disabled="quotaReached"
                 :placeholder="$t('Įveskite vardą arba el. paštą...')"
-                class="pl-10 h-10"
+                class="pl-9 pr-8 h-10"
                 @focus="showUserSearch = true"
               />
+              <Button
+                v-if="userSearchQuery"
+                variant="ghost"
+                size="icon"
+                class="absolute right-1 top-1/2 -translate-y-1/2 size-8"
+                @click="userSearchQuery = ''"
+              >
+                <X class="size-3.5" />
+              </Button>
 
               <!-- Search dropdown -->
               <div
                 v-if="showUserSearch && userSearchQuery.length >= 2"
-                class="absolute top-full left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-lg border bg-popover shadow-lg"
+                class="absolute top-full left-0 right-0 z-50 mt-1 max-h-52 overflow-y-auto border border-border bg-popover divide-y divide-border"
               >
                 <button
                   v-for="user in availableUsers"
                   :key="user.id"
                   type="button"
-                  class="w-full flex items-center gap-3 p-3 text-left hover:bg-accent transition-colors"
+                  class="w-full flex items-center gap-3 p-3 text-left hover:bg-accent transition-colors pointer-coarse:py-3.5"
                   @click="handleAddUser(user)"
                 >
-                  <div class="h-8 w-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                  <div class="size-8 border border-border bg-muted flex items-center justify-center overflow-hidden shrink-0">
                     <img
                       v-if="user.profile_photo_path"
                       :src="user.profile_photo_path"
                       :alt="user.name"
-                      class="h-full w-full object-cover"
+                      class="size-full object-cover"
                     >
-                    <span v-else class="text-xs font-medium">{{ user.name?.charAt(0) }}</span>
+                    <span v-else class="text-xs font-bold text-muted-foreground">{{ user.name?.charAt(0) }}</span>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="flex items-center gap-1.5 font-medium text-sm truncate">
+                    <p class="flex items-center gap-1.5 font-semibold text-sm truncate text-foreground">
                       {{ user.name }}
-                      <!-- Results span every unit, so the unit is what tells two people
-                           with the same name apart — and flags that this assignment is
-                           what will place a unit-less person somewhere. -->
                       <Badge v-if="user.duties_count === 0" variant="outline" class="text-[10px] shrink-0">
                         {{ $t('users.no_tenant') }}
                       </Badge>
@@ -211,15 +225,14 @@
                       {{ user.email }}
                     </p>
                   </div>
-                  <Plus class="h-4 w-4 text-primary shrink-0" />
+                  <Plus class="size-4 text-foreground shrink-0" />
                 </button>
 
-                <!-- Results now arrive asynchronously; without this the "not found"
-                     message flashes on every keystroke while the request is in flight. -->
-                <div v-if="isSearchingUsers" class="p-4 text-center text-sm text-muted-foreground">
+                <div v-if="isSearchingUsers" class="p-4 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
+                  <Loader2 class="size-3.5 animate-spin" />
                   {{ $t('Ieškoma...') }}
                 </div>
-                <div v-else-if="availableUsers.length === 0" class="p-4 text-center text-sm text-muted-foreground">
+                <div v-else-if="availableUsers.length === 0" class="p-4 text-center text-xs text-muted-foreground">
                   {{ $t('Nerasta naudotojų') }}
                 </div>
               </div>
@@ -230,33 +243,33 @@
           </div>
 
           <!-- Batch date setting -->
-          <Collapsible v-model:open="showBatchDateSetter">
+          <Collapsible v-model:open="showBatchDateSetter" class="border border-border bg-muted/20">
             <CollapsibleTrigger as-child>
-              <Button variant="outline" size="sm" class="w-full justify-between">
-                <span class="flex items-center gap-2">
-                  <Calendar class="h-4 w-4" />
+              <Button variant="ghost" size="sm" class="w-full justify-between h-9 px-3">
+                <span class="flex items-center gap-2 text-xs font-semibold">
+                  <Calendar class="size-3.5" />
                   {{ $t('Datos nustatymai') }}
                 </span>
-                <ChevronDown class="h-4 w-4 transition-transform" :class="{ 'rotate-180': showBatchDateSetter }" />
+                <ChevronDown class="size-4 transition-transform" :class="{ 'rotate-180': showBatchDateSetter }" />
               </Button>
             </CollapsibleTrigger>
-            <CollapsibleContent class="pt-3 space-y-3">
-              <div class="grid grid-cols-2 gap-3">
+            <CollapsibleContent class="p-3 pt-0 space-y-3 border-t border-border mt-1">
+              <div class="grid grid-cols-2 gap-3 pt-2">
                 <div>
-                  <Label class="text-xs">{{ $t('Pradžios data') }}</Label>
+                  <Label class="text-[11px] font-medium">{{ $t('Pradžios data') }}</Label>
                   <div class="flex gap-1 mt-1">
                     <Input v-model="batchStartDate" type="date" class="h-8 text-xs" />
                     <Button size="sm" variant="secondary" class="h-8 px-2" @click="applyBatchStartDate">
-                      <Check class="h-3 w-3" />
+                      <Check class="size-3.5" />
                     </Button>
                   </div>
                 </div>
                 <div>
-                  <Label class="text-xs">{{ $t('Pabaigos data') }}</Label>
+                  <Label class="text-[11px] font-medium">{{ $t('Pabaigos data') }}</Label>
                   <div class="flex gap-1 mt-1">
                     <Input v-model="batchEndDate" type="date" class="h-8 text-xs" />
                     <Button size="sm" variant="secondary" class="h-8 px-2" @click="applyBatchEndDate">
-                      <Check class="h-3 w-3" />
+                      <Check class="size-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -270,122 +283,121 @@
           </Collapsible>
 
           <!-- Users being added -->
-          <ScrollArea class="h-[200px] pr-2">
+          <ScrollArea class="h-[150px] sm:h-[180px] pr-2">
             <div class="space-y-2">
               <div
                 v-for="change in usersToAdd"
                 :key="change.userId"
-                class="p-3 rounded-lg border border-green-200 dark:border-green-900 bg-green-50/50 dark:bg-green-950/20"
+                class="p-3 border border-status-success-border bg-status-success-surface/20"
               >
                 <div class="flex items-center gap-3">
-                  <div class="h-9 w-9 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center overflow-hidden shrink-0">
+                  <div class="size-8 border border-status-success-border bg-status-success-surface flex items-center justify-center overflow-hidden shrink-0">
                     <img
                       v-if="change.userPhoto"
                       :src="change.userPhoto"
                       :alt="change.userName"
-                      class="h-full w-full object-cover"
+                      class="size-full object-cover"
                     >
-                    <span v-else class="text-sm font-medium text-green-700 dark:text-green-300">{{ change.userName?.charAt(0) }}</span>
+                    <span v-else class="text-xs font-bold text-status-success">{{ change.userName?.charAt(0) }}</span>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="font-medium text-sm truncate text-green-800 dark:text-green-200">
+                    <p class="font-semibold text-sm truncate text-foreground">
                       {{ change.userName }}
                       <Badge v-if="change.isNewUser" variant="outline" class="ml-1 text-[10px]">
                         {{ $t('Naujas') }}
                       </Badge>
                     </p>
-                    <p class="text-xs text-green-600 dark:text-green-400 truncate">
+                    <p class="text-xs text-muted-foreground truncate">
                       {{ change.userEmail }}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    class="h-8 w-8"
+                    class="size-8 pointer-coarse:size-11"
+                    :title="$t('Atšaukti pridėjimą')"
                     @click="cancelAddition(change.userId)"
                   >
-                    <X class="h-4 w-4" />
+                    <X class="size-4" />
                   </Button>
                 </div>
 
                 <!-- Date inputs -->
                 <div class="mt-3 grid grid-cols-2 gap-2">
                   <div>
-                    <Label class="text-xs text-muted-foreground">{{ $t('Pradžia') }}</Label>
+                    <Label class="text-[11px] text-muted-foreground font-medium">{{ $t('Pradžia') }}</Label>
                     <Input
                       type="date"
                       :model-value="change.startDate"
                       class="h-7 text-xs mt-0.5"
-                      :class="{ 'border-vusa-red focus-visible:ring-vusa-red': hasDateError(change) }"
+                      :class="{ 'border-destructive focus-visible:ring-destructive': hasDateError(change) }"
                       @update:model-value="(v) => updateChangeDate(change.userId, 'startDate', String(v))"
                     />
                   </div>
                   <div>
-                    <Label class="text-xs text-muted-foreground">{{ $t('Pabaiga') }}</Label>
+                    <Label class="text-[11px] text-muted-foreground font-medium">{{ $t('Pabaiga') }}</Label>
                     <Input
                       type="date"
                       :model-value="change.endDate"
                       class="h-7 text-xs mt-0.5"
-                      :class="{ 'border-vusa-red focus-visible:ring-vusa-red': hasDateError(change) }"
+                      :class="{ 'border-destructive focus-visible:ring-destructive': hasDateError(change) }"
                       @update:model-value="(v) => updateChangeDate(change.userId, 'endDate', String(v))"
                     />
                   </div>
                 </div>
                 <!-- Date error message -->
-                <p v-if="hasDateError(change)" class="text-xs text-vusa-red mt-1 flex items-center gap-1">
-                  <AlertTriangle class="h-3 w-3" />
+                <p v-if="hasDateError(change)" class="text-xs text-destructive mt-1 flex items-center gap-1">
+                  <AlertTriangle class="size-3.5" />
                   {{ $t('Pabaigos data negali būti ankstesnė nei pradžios data') }}
                 </p>
               </div>
 
               <!-- Empty state -->
-              <div v-if="usersToAdd.length === 0" class="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                <UserPlus class="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p class="text-sm">
+              <div v-if="usersToAdd.length === 0" class="text-center py-6 text-muted-foreground border border-dashed border-border p-4">
+                <UserPlus class="size-6 mx-auto mb-1.5 opacity-50" />
+                <p class="text-xs">
                   {{ $t('Ieškokite ir pridėkite narius') }}
                 </p>
               </div>
             </div>
           </ScrollArea>
 
-          <!-- Create new user -->
-          <div v-if="canCreateUser">
-            <Separator class="my-3" />
-            <Collapsible v-model:open="showNewUserForm">
+          <!-- Create new user inline -->
+          <div v-if="canCreateUser" class="pt-2">
+            <Collapsible v-model:open="showNewUserForm" class="border border-border">
               <CollapsibleTrigger as-child>
                 <Button variant="outline" size="sm" class="w-full">
-                  <Plus class="h-4 w-4 mr-2" />
+                  <Plus class="size-3.5 mr-1.5" />
                   {{ $t('Sukurti naują naudotoją') }}
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent class="pt-3 space-y-3">
-                <div class="p-3 border rounded-lg bg-muted/30 space-y-3">
-                  <div>
-                    <Label class="text-xs">{{ $t('Vardas ir pavardė') }} *</Label>
-                    <Input v-model="newUser.name" :placeholder="$t('Jonas Jonaitis')" class="h-8 mt-1" />
-                  </div>
-                  <div>
-                    <Label class="text-xs">{{ $t('El. paštas') }} *</Label>
-                    <Input v-model="newUser.email" type="email" placeholder="jonas@stud.vu.lt" class="h-8 mt-1" />
-                  </div>
-                  <div>
-                    <Label class="text-xs">{{ $t('Telefonas') }}</Label>
-                    <Input v-model="newUser.phone" placeholder="+370 600 00000" class="h-8 mt-1" />
-                  </div>
-                  <DuplicateUserWarning :matches="duplicateMatches" show-use-action @use="useExistingProfile" />
-                  <div class="flex gap-2">
-                    <Button
-                      size="sm"
-                      :disabled="!newUser.name || !newUser.email"
-                      @click="createNewUser"
-                    >
-                      <Check class="h-4 w-4 mr-1" />
-                      {{ $t('Pridėti') }}
-                    </Button>
-                    <Button variant="ghost" size="sm" @click="showNewUserForm = false">
-                      {{ $t('Atšaukti') }}
-                    </Button>
-                  </div>
+              <CollapsibleContent class="p-3.5 space-y-3 border-t border-border mt-1 bg-muted/20">
+                <div class="space-y-1.5">
+                  <Label class="text-xs font-semibold">{{ $t('Vardas ir pavardė') }} *</Label>
+                  <Input v-model="newUser.name" :placeholder="$t('Jonas Jonaitis')" class="h-8" />
+                </div>
+                <div class="space-y-1.5">
+                  <Label class="text-xs font-semibold">{{ $t('El. paštas') }} *</Label>
+                  <Input v-model="newUser.email" type="email" placeholder="jonas@stud.vu.lt" class="h-8" />
+                </div>
+                <div class="space-y-1.5">
+                  <Label class="text-xs font-semibold">{{ $t('Telefonas') }}</Label>
+                  <Input v-model="newUser.phone" placeholder="+370 600 00000" class="h-8" />
+                </div>
+                <DuplicateUserWarning :matches="duplicateMatches" show-use-action @use="useExistingProfile" />
+                <div class="flex gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="brand"
+                    :disabled="!newUser.name || !newUser.email"
+                    @click="createNewUser"
+                  >
+                    <Check class="size-3.5 mr-1" />
+                    {{ $t('Pridėti') }}
+                  </Button>
+                  <Button variant="ghost" size="sm" @click="showNewUserForm = false">
+                    {{ $t('Atšaukti') }}
+                  </Button>
                 </div>
               </CollapsibleContent>
             </Collapsible>
@@ -394,22 +406,22 @@
       </div>
 
       <!-- Summary footer -->
-      <div v-if="wizard.hasChanges" class="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
-        <div class="flex items-center gap-4 text-sm">
-          <span v-if="usersToAdd.length > 0" class="text-green-600 dark:text-green-400 flex items-center gap-1">
-            <UserPlus class="h-4 w-4" />
+      <div v-if="wizard.hasChanges" class="flex flex-wrap items-center justify-between gap-3 p-3.5 border border-border bg-muted/40">
+        <div class="flex items-center gap-4 text-xs font-semibold">
+          <span v-if="usersToAdd.length > 0" class="text-status-success flex items-center gap-1">
+            <UserPlus class="size-3.5" />
             +{{ usersToAdd.length }}
           </span>
-          <span v-if="usersToRemove.length > 0" class="text-vusa-red flex items-center gap-1">
-            <UserMinus class="h-4 w-4" />
+          <span v-if="usersToRemove.length > 0" class="text-destructive flex items-center gap-1">
+            <UserMinus class="size-3.5" />
             -{{ usersToRemove.length }}
           </span>
           <Separator orientation="vertical" class="h-4" />
-          <span class="text-muted-foreground">
+          <span class="text-muted-foreground font-normal">
             {{ $t('Naujas vietų skaičius:') }}
-            <strong>{{ wizard.projectedUserCount.value }}</strong>
-            <span v-if="wizard.capacityMismatch.value" class="text-vusa-yellow-dark dark:text-vusa-yellow ml-1">
-              <AlertTriangle class="h-3 w-3 inline" />
+            <strong class="text-foreground ml-1">{{ wizard.projectedUserCount.value }}</strong>
+            <span v-if="wizard.capacityMismatch.value" class="text-status-attention ml-1.5 inline-flex items-center">
+              <AlertTriangle class="size-3.5 inline" />
             </span>
           </span>
         </div>
@@ -457,21 +469,14 @@ const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 const page = usePage();
 const auth = page.props.auth as any;
 
-// Only the lazily-loaded step data (study programmes) is waited on. Members are no
-// longer a prop to wait for — they are searched on demand, see below.
 const isLoadingStepData = computed(() => wizard.state.loading.stepData);
 
-// Search for users
 const userSearchQuery = ref('');
 const showUserSearch = ref(false);
 
-// Searched server-side rather than filtering a preloaded list: the wizard used to
-// ship every user in the system (name and email) to any admin who reached this step.
-/** What api.v1.admin.users.search returns — not a full User entity. */
 interface UserSearchResult {
   id: string;
   name: string;
-  /** Masked (j***@stud.vu.lt) for people outside the acting admin's units. */
   email: string;
   profile_photo_path: string | null;
   duties_count: number;
@@ -493,9 +498,6 @@ const runUserSearch = useDebounceFn(() => {
   const params = new URLSearchParams({
     search: userSearchQuery.value.trim(),
     permission: 'duties.update.padalinys',
-    // Every tenant, deliberately. Assigning somebody from another unit is how a
-    // person joins a new one; if they are hidden here, admins create a second
-    // account for someone who already exists.
     scope: 'all',
   });
   userSearchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
@@ -504,7 +506,6 @@ const runUserSearch = useDebounceFn(() => {
 
 watch(userSearchQuery, runUserSearch);
 
-// Inline user creation
 const showNewUserForm = ref(false);
 const newUser = ref<NewUserData>({
   name: '',
@@ -512,19 +513,14 @@ const newUser = ref<NewUserData>({
   phone: '',
 });
 
-// Batch date setting
 const batchStartDate = ref(getTodayDate());
 const batchEndDate = ref(getSuggestedEndDate());
 const showBatchDateSetter = ref(false);
 
-// Current users from selected duty
 const currentUsers = computed(() => {
   return wizard.state.duty?.current_users || [];
 });
 
-// "External" duty: owned by another tenant, but the acting tenant may assign reps
-// to it (subject to a per-tenant quota). The quota is enforced server-side; here
-// it's shown for guidance.
 const assignableTenantPivot = computed<{ quota?: number | null } | null>(() => {
   const list = (wizard.state.duty as { assignable_tenants?: Array<{ pivot?: { quota?: number | null } }> } | undefined)?.assignable_tenants;
   return list && list.length > 0 ? (list[0].pivot ?? null) : null;
@@ -532,7 +528,6 @@ const assignableTenantPivot = computed<{ quota?: number | null } | null>(() => {
 const isExternalDuty = computed(() => assignableTenantPivot.value !== null);
 const tenantQuota = computed<number | null>(() => assignableTenantPivot.value?.quota ?? null);
 
-// Drop anyone already on the duty, or already queued to be added, from the results.
 const availableUsers = computed(() => {
   const currentUserIds = currentUsers.value.map(u => u.id);
   const addedUserIds = wizard.state.userChanges
@@ -544,13 +539,10 @@ const availableUsers = computed(() => {
   return (searchedUsers.value ?? []).filter(u => !excludeIds.has(u.id));
 });
 
-// Users being added
 const usersToAdd = computed(() => {
   return wizard.state.userChanges.filter(c => c.action === 'add');
 });
 
-// For external duties the member list is already scoped to the acting tenant,
-// so we can guard the per-tenant quota client-side (server still enforces it).
 const projectedTenantMemberCount = computed(() => {
   const removeIds = new Set(wizard.state.userChanges.filter(c => c.action === 'remove').map(c => c.userId));
   const remaining = currentUsers.value.filter(u => !removeIds.has(u.id)).length;
@@ -560,18 +552,15 @@ const quotaReached = computed(() =>
   isExternalDuty.value && tenantQuota.value !== null && projectedTenantMemberCount.value >= tenantQuota.value,
 );
 
-// Users being removed
 const usersToRemove = computed(() => {
   return wizard.state.userChanges.filter(c => c.action === 'remove');
 });
 
-// Current users not being removed
 const remainingCurrentUsers = computed(() => {
   const removeIds = new Set(usersToRemove.value.map(c => c.userId));
   return currentUsers.value.filter(u => !removeIds.has(u.id));
 });
 
-// Handle adding a user
 const handleAddUser = (user: UserSearchResult) => {
   if (quotaReached.value) return;
   wizard.addUserToAdd({
@@ -586,27 +575,22 @@ const handleAddUser = (user: UserSearchResult) => {
   showUserSearch.value = false;
 };
 
-// Handle removing a user
 const handleRemoveUser = (user: any) => {
   wizard.addUserToRemove(user as App.Entities.User, getTodayDate());
 };
 
-// Cancel removal
 const cancelRemoval = (userId: string) => {
   wizard.removeUserChange(userId);
 };
 
-// Cancel addition
 const cancelAddition = (userId: string) => {
   wizard.removeUserChange(userId);
 };
 
-// Update date for a change
 const updateChangeDate = (userId: string, field: 'startDate' | 'endDate', value: string) => {
   wizard.updateUserChange(userId, { [field]: value });
 };
 
-// Apply batch dates
 const applyBatchStartDate = () => {
   wizard.setAllAddedUsersStartDate(batchStartDate.value);
 };
@@ -615,18 +599,13 @@ const applyBatchEndDate = () => {
   wizard.setAllAddedUsersEndDate(batchEndDate.value);
 };
 
-// Create new user inline
 const createNewUser = () => {
   if (!newUser.value.name || !newUser.value.email) return;
 
-  // Generate temp_id first so it can be used in both places for proper correlation
   const tempId = `new-${Date.now()}`;
 
-  // Add to newUsersToCreate with temp_id for backend matching
   wizard.addNewUserToCreate({ ...newUser.value, temp_id: tempId });
 
-  // Also add to userChanges with the same temporary ID
-  // Create temporary user object to pass to addUserToAdd
   const tempUser = {
     id: tempId,
     name: newUser.value.name,
@@ -639,23 +618,17 @@ const createNewUser = () => {
     endDate: batchEndDate.value,
   });
 
-  // Mark as new user
   wizard.updateUserChange(tempId, { isNewUser: true });
 
-  // Reset form
   newUser.value = { name: '', email: '', phone: '' };
   showNewUserForm.value = false;
 };
 
-// Warn when the person being typed in already has an account, usually in a unit this
-// admin cannot see. Creating the duplicate is still allowed — names do repeat — but
-// merging afterwards needs users.update.*, which coordinators do not have.
 const { matches: duplicateMatches } = useDuplicateUserCheck(
   () => newUser.value.name ?? '',
   () => newUser.value.email ?? '',
 );
 
-/** Attach the existing person instead of creating a second record for them. */
 const useExistingProfile = (match: { id: string; name: string }) => {
   if (quotaReached.value) return;
 
@@ -668,15 +641,8 @@ const useExistingProfile = (match: { id: string; name: string }) => {
   showNewUserForm.value = false;
 };
 
-// Check permissions
-const canCreateUser = computed(() => auth?.can?.create?.user);
+const canCreateUser = computed(() => Boolean(auth?.can?.create?.user));
 
-// Check for date validation errors
-const dateValidationError = computed(() => {
-  return wizard.state.errors['date_range']?.[0] || null;
-});
-
-// Check if a specific user has date error (end < start)
 const hasDateError = (change: UserChange) => {
   if (change.action !== 'add' || !change.startDate || !change.endDate) return false;
   return new Date(change.endDate) < new Date(change.startDate);

@@ -1,20 +1,10 @@
 <template>
   <Sheet v-model:open="open">
-    <SpotlightPopover
-      v-if="!hideTrigger"
-      :title="$t('activity.title')"
-      :description="$t('activity.spotlight_description')"
-      :is-dismissed="spotlight.isDismissed.value"
-      float
-      style="display: inline-flex;"
-      @dismiss="spotlight.dismiss"
-    >
-      <SheetTrigger as-child>
-        <Button size="icon" variant="outline" :title="$t('activity.title')" :aria-label="$t('activity.title')">
-          <History class="size-4" />
-        </Button>
-      </SheetTrigger>
-    </SpotlightPopover>
+    <SheetTrigger v-if="!hideTrigger" as-child>
+      <Button size="icon" variant="outline" :title="$t('activity.title')" :aria-label="$t('activity.title')">
+        <History class="size-4" />
+      </Button>
+    </SheetTrigger>
     <SheetContent
       data-slot="activity-log-sheet"
       :side="isMobile ? 'bottom' : 'right'"
@@ -90,9 +80,7 @@ import { Button } from '@/Components/ui/button';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useActivityLog } from '@/Composables/useActivityLog';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useIsMobile } from '@/Composables/useIsMobile';
 
 const props = defineProps<{
@@ -106,7 +94,6 @@ const open = defineModel<boolean>('open', { default: false });
 
 const isMobile = useIsMobile();
 const activityLog = useActivityLog(props.subjectType, props.subjectId);
-const spotlight = useFeatureSpotlight('activity-log-v1');
 
 const scope = computed(() => activityLog.filters.value.scope ?? 'tree');
 const subjectTypeFilter = computed(() => activityLog.filters.value.subject_type ?? 'all');
@@ -135,8 +122,6 @@ function setSubjectType(value: string): void {
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
-
-  spotlight.dismiss();
 
   if (!activityLog.hasLoadedOnce.value) {
     void activityLog.load();

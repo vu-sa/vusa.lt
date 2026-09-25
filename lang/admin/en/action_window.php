@@ -3,10 +3,6 @@
 return [
     'trigger' => 'Quick actions',
     'trigger_short' => 'Actions',
-    'spotlight' => [
-        'title' => 'Not sure where to start?',
-        'description' => 'Click here for the most common actions — report a meeting, note that there will be no meetings, or fill in a meeting that already happened.',
-    ],
     'personas' => [
         'title' => 'What would you like to do?',
         'representative' => [

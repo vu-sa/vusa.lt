@@ -40,7 +40,7 @@ class StagingReadOnlyMode
      * are ALLOWED because they only modify local database or READ from SharePoint
      */
     protected array $sharepointWriteRoutes = [
-        'sharepointFiles.store',                  // Upload file TO SharePoint
+        'fileableFiles.store',                    // Upload files TO SharePoint
         'sharepointFiles.destroy',                // Delete file FROM SharePoint
         'fileableFiles.destroy',                  // Delete file FROM SharePoint
         'sharepoint.createFolder',                // Create folder IN SharePoint

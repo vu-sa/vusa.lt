@@ -76,18 +76,10 @@
         </li>
       </ul>
 
-      <SpotlightPopover
-        v-if="canUpdate"
-        :title="$t('relationships.model_connections')"
-        :description="$t('Susietus įrašus dabar tvarkyk ryšio puslapyje.')"
-        :is-dismissed="connectionsSpotlight.isDismissed.value"
-        @dismiss="connectionsSpotlight.dismiss"
-      >
-        <Button type="button" variant="outline" class="pointer-coarse:min-h-11" @click="openCreateModal">
-          <PlusIcon class="size-4" />
-          {{ relationship.relationshipables?.length ? $t('relationships.create_new') : $t('relationships.create_first') }}
-        </Button>
-      </SpotlightPopover>
+      <Button v-if="canUpdate" type="button" variant="outline" class="pointer-coarse:min-h-11" @click="openCreateModal">
+        <PlusIcon class="size-4" />
+        {{ relationship.relationshipables?.length ? $t('relationships.create_new') : $t('relationships.create_first') }}
+      </Button>
     </FormSection>
   </div>
   <!-- Create/Edit Dialog -->
@@ -316,8 +308,6 @@ import { Switch } from '@/Components/ui/switch';
 import { modelTypeLabel, modelTypes } from '@/Types/formOptions';
 import { ConfirmDialog } from '@/Components/Patterns';
 import FormSection from '@/Components/Patterns/FormSection.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 const props = defineProps<{
   relationship: App.Entities.Relationship;
@@ -335,7 +325,6 @@ interface Connection {
 }
 
 const showModal = ref(false);
-const connectionsSpotlight = useFeatureSpotlight('relationship-connections-v1');
 const isEditing = ref(false);
 const editingItem = ref<Connection | null>(null);
 const sourceOpen = ref(false);
@@ -454,7 +443,6 @@ const modelTypeOptions = modelTypes.relationshipable.map(alias => ({
 }));
 
 function openCreateModal() {
-  connectionsSpotlight.dismiss();
   isEditing.value = false;
   editingItem.value = null;
   relationForm.reset();

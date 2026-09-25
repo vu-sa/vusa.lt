@@ -28,9 +28,4 @@ return [
         'confirm' => 'Išsaugoti',
         'search' => 'Ieškoti žmogaus...',
     ],
-
-    'spotlight' => [
-        'title' => 'Naujiena: institucijos sekretoriai',
-        'description' => 'Nurodykite, kas atsakingas už šios institucijos posėdžius. Tada užduotys ir priminimai keliaus tik jiems, o ne visiems nariams.',
-    ],
 ];

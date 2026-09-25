@@ -89,7 +89,7 @@ import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import { Spinner } from '@/Components/ui/spinner';
 import { NumberField } from '@/Components/ui/number-field';
-import { DateRangePicker } from '@/Components/ui/date-range-picker';
+import { DateRangePicker } from '@/Components/ui/date-picker';
 import { capitalize } from '@/Utils/String';
 import { ResourceIcon } from '@/Components/icons';
 import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';

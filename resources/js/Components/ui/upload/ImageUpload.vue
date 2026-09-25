@@ -275,7 +275,7 @@ import { Upload, UploadDropzone, type UploadFile } from '@/Components/ui/upload'
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
-import { ImageCropper } from '@/Components/ui/cropper';
+import ImageCropper from './ImageCropper.vue';
 
 export interface ImageUploadProps {
   /** Maximum number of files allowed. Use 1 for single file upload (default: 1) */

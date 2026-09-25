@@ -46,8 +46,9 @@
           id="agenda-item-start-time"
           :model-value="toTimeValue(draft.start_time)"
           :minute-step="5"
+          :suggest-from="startSuggestionsFrom"
           clearable
-          class="h-11 w-[6.5rem] text-sm"
+          class="h-11 w-32 text-sm"
           :aria-label="$t('Kada klausimas pradedamas svarstyti')"
           @update:model-value="(value) => draft.start_time = toTimeString(value)"
         />
@@ -55,8 +56,9 @@
         <TimePicker
           :model-value="toTimeValue(draft.end_time)"
           :minute-step="5"
+          :suggest-from="toTimeValue(draft.start_time) ?? startSuggestionsFrom"
           clearable
-          class="h-11 w-[6.5rem] text-sm"
+          class="h-11 w-32 text-sm"
           :aria-label="$t('Kada klausimo svarstymas baigiamas')"
           @update:model-value="(value) => draft.end_time = toTimeString(value)"
         />
@@ -124,11 +126,14 @@ const props = withDefaults(defineProps<{
   saveThen: (callback: () => void) => void;
   /** Pre-fills an empty start time, e.g. from the previous item's end. */
   defaultStartTime?: string | null;
+  /** `HH:MM`; the time suggestions start here when there is no earlier item to follow. */
+  meetingStartTime?: string | null;
   requiresStudentPerspective?: boolean;
   isPublic?: boolean;
   canDelete?: boolean;
 }>(), {
   defaultStartTime: null,
+  meetingStartTime: null,
   requiresStudentPerspective: true,
   isPublic: false,
   canDelete: false,
@@ -185,6 +190,10 @@ const toTimeValue = (value: string | null): TimeValue | undefined => {
 
   return { hour: Number(hour), minute: Number(minute) };
 };
+
+// Items are discussed during the meeting, so the list opens there rather than at midnight.
+const startSuggestionsFrom = computed<TimeValue>(() =>
+  toTimeValue(props.defaultStartTime) ?? toTimeValue(props.meetingStartTime) ?? { hour: 8, minute: 0 });
 
 const toTimeString = (value: TimeValue | undefined): string | null =>
   value

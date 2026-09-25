@@ -79,7 +79,7 @@
           :confirm-label="$t('secretaries.picker.confirm')"
           :search-placeholder="$t('secretaries.picker.search')"
           :initial-hits="hitsFor(roster)"
-          @update:open="open => { pickerCadenceId = open ? roster.cadence_id : null; if (open) { emit('engaged'); } }"
+          @update:open="open => { pickerCadenceId = open ? roster.cadence_id : null }"
           @confirm="hits => onConfirm(roster, hits)"
         >
           <template #trigger>
@@ -117,11 +117,6 @@ const props = defineProps<{
   suggested: SecretaryUser[];
 }>();
 
-const emit = defineEmits<{
-  /** The editor actually used the roster — enough to retire the spotlight. */
-  engaged: [];
-}>();
-
 const { processingCadenceId, save } = useSecretaryRoster(props.institutionId);
 const pickerCadenceId = ref<string | null>(null);
 
@@ -145,18 +140,15 @@ function hitsFor(roster: SecretaryRoster): NormalizedSearchHit[] {
 }
 
 function add(roster: SecretaryRoster, user: SecretaryUser): void {
-  emit('engaged');
   save(roster.cadence_id, [...getSecretaries(roster).map(a => a.id), user.id]);
 }
 
 function remove(roster: SecretaryRoster, user: SecretaryUser): void {
-  emit('engaged');
   save(roster.cadence_id, getSecretaries(roster).filter(a => a.id !== user.id).map(a => a.id));
 }
 
 function onConfirm(roster: SecretaryRoster, hits: NormalizedSearchHit[]): void {
   pickerCadenceId.value = null;
-  emit('engaged');
   save(roster.cadence_id, hits.map(hit => hit.recordId));
 }
 </script>

@@ -44,12 +44,6 @@ return [
         ],
     ],
 
-    // Tenant Tab Spotlight
-    'tenant_tab_spotlight' => [
-        'title' => 'Unit View',
-        'description' => 'As a manager, you can view the entire unit\'s institution timeline. Click here to see the overall picture.',
-    ],
-
     // Gantt Chart Tour
     'gantt_tour' => [
         'fullscreen' => [
@@ -148,11 +142,5 @@ return [
             'title' => 'Preview and save',
             'description' => 'Nothing is written until you save, and you can <strong>preview</strong> exactly how the records will look first.',
         ],
-    ],
-
-    // Help Button Spotlight
-    'help_button_spotlight' => [
-        'title' => 'Need help?',
-        'description' => 'Click this button to start an interactive page tour and learn how to use the features.',
     ],
 ];

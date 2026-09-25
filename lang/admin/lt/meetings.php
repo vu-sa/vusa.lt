@@ -32,8 +32,6 @@ return [
         'no_nearby_events' => 'Netoli posėdžio datos nėra laisvų kalendoriaus įrašų.',
         'draft_hint' => 'Kalendoriaus įrašas dar yra juodraštis — posėdis viešai nematomas.',
         'published_hint' => 'Posėdis paskelbtas kalendoriuje ir matomas viešai.',
-        'spotlight_title' => 'Posėdį galima paskelbti kalendoriuje',
-        'spotlight_description' => 'Susiekite posėdį su kalendoriaus įrašu — darbotvarkė, laikai ir dokumentai bus rodomi renginio puslapyje, o ne vedami atskirai.',
         'form_alert_title' => 'Šis renginys skelbia posėdį',
         'form_alert_draft' => 'Kol renginys yra juodraštis, posėdžio darbotvarkė ir dokumentai viešai nematomi. Paskelbus — jie atsiras šio renginio puslapyje.',
         'form_alert_published' => 'Posėdžio darbotvarkė ir su juo susieti dokumentai rodomi šio renginio puslapyje.',

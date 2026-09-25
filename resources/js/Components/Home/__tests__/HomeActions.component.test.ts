@@ -67,16 +67,14 @@ describe('home actions', () => {
   });
 
   it('shows quick access only for the permitted administration and reservations areas', () => {
-    const stubs = { SpotlightPopover: { template: '<div><slot /></div>' } };
-
-    expect(mount(QuickAccess, { global: { stubs } }).find('[data-slot="home-quick-access"]').exists()).toBe(false);
+    expect(mount(QuickAccess).find('[data-slot="home-quick-access"]').exists()).toBe(false);
 
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: { can: { accessAdministration: true } },
       adminNavigation: { workspaces: [pradzia, rezervacijos] },
     }) as ReturnType<typeof usePage>);
 
-    const links = mount(QuickAccess, { global: { stubs } }).findAll('a');
+    const links = mount(QuickAccess).findAll('a');
     expect(links).toHaveLength(2);
     expect(links[0].attributes('href')).toBe('/mocked-route/administration');
     expect(links[1].attributes('href')).toBe('/mocked-route/dashboard.reservations');
@@ -84,25 +82,22 @@ describe('home actions', () => {
   });
 
   it('shows each quick access link independently when only that area is available', () => {
-    const stubs = { SpotlightPopover: { template: '<div><slot /></div>' } };
-
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: { can: { accessAdministration: true } },
       adminNavigation: { workspaces: [pradzia] },
     }) as ReturnType<typeof usePage>);
-    expect(mount(QuickAccess, { global: { stubs } }).findAll('a').map(link => link.attributes('href')))
+    expect(mount(QuickAccess).findAll('a').map(link => link.attributes('href')))
       .toEqual(['/mocked-route/administration']);
 
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: { can: { accessAdministration: false } },
       adminNavigation: { workspaces: [pradzia, rezervacijos] },
     }) as ReturnType<typeof usePage>);
-    expect(mount(QuickAccess, { global: { stubs } }).findAll('a').map(link => link.attributes('href')))
+    expect(mount(QuickAccess).findAll('a').map(link => link.attributes('href')))
       .toEqual(['/mocked-route/dashboard.reservations']);
   });
 
   it('adds a link per registration form the server allows, even without other areas', () => {
-    const stubs = { SpotlightPopover: { template: '<div><slot /></div>' } };
     const wrapper = mount(QuickAccess, {
       props: {
         registrationForms: [
@@ -110,7 +105,6 @@ describe('home actions', () => {
           { key: 'student_rep', href: '/mano/forms/reps' },
         ],
       },
-      global: { stubs },
     });
 
     expect(wrapper.findAll('a').map(link => [link.attributes('href'), link.find('[data-tile-label]').text()])).toEqual([
@@ -132,7 +126,6 @@ describe('home actions', () => {
           { key: 'student_rep', href: '/mano/forms/reps' },
         ],
       },
-      global: { stubs: { SpotlightPopover: { template: '<div><slot /></div>' } } },
     });
 
     expect(wrapper.find('[data-slot="navigation-tiles"]').classes()).toContain('lg:[&>*]:basis-1/4');

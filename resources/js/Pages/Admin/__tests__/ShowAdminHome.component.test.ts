@@ -169,6 +169,14 @@ describe('ShowAdminHome', () => {
     expect(window.location.search).toBe('');
   });
 
+  it('asks whether there was a meeting when recording activity for a lagging institution', () => {
+    const wrapper = mountPage();
+
+    wrapper.findComponent({ name: 'InstitutionsNeedingAttention' }).vm.$emit('record', { id: 'abc', name: 'VU MIF' });
+
+    expect(open).toHaveBeenCalledWith({ flow: 'institution.report', institution: { id: 'abc', name: 'VU MIF' } });
+  });
+
   it('opens nothing when the URL asked for nothing it may honour', () => {
     mountPage({ actionWindowLaunch: null });
 

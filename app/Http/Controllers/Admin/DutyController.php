@@ -6,6 +6,7 @@ use App\Actions\BackfillExOfficioTargetDuty;
 use App\Actions\BuildDutyIndexQuery;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\GetTypeFiles;
 use App\Actions\MergeDuties;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\BatchUpdateDutyUsersRequest;
@@ -24,6 +25,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
+use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -142,8 +144,11 @@ class DutyController extends AdminController
 
         return $this->inertiaResponse('Admin/People/ShowDuty', [
             'duty' => array_merge($duty->toArray(), [
-                'sharepointPath' => $duty->institution?->tenant ? $duty->sharepoint_path() : null,
+                'sharepointPath' => SharepointFileService::pathOrNull($duty),
             ]),
+            'files' => Inertia::defer(fn () => $duty->availableFiles()->orderByDesc('file_date')->get(), 'files'),
+            'typeFiles' => Inertia::defer(fn () => GetTypeFiles::forFileable($duty), 'files'),
+
             // Per-record, not from `auth.can`: `duties.update.padalinys` is tenant-scoped,
             // so a single global boolean would be wrong for every cross-tenant case.
             'can' => [

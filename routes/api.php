@@ -209,7 +209,6 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Sharepoint / FileableFiles
         Route::get('fileables/{type}/{id}/files', [SharepointApiController::class, 'fileableFiles'])->name('fileables.files');
         Route::get('fileables/{type}/{id}/inherited', [SharepointApiController::class, 'inheritedFiles'])->name('fileables.inherited');
-        Route::get('sharepoint/potential-fileables', [SharepointApiController::class, 'potentialFileables'])->name('sharepoint.potentialFileables');
         Route::get('sharepoint/drive-items', [SharepointApiController::class, 'driveItems'])->name('sharepoint.driveItems');
 
         // Tutorials

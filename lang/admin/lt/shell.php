@@ -59,6 +59,11 @@ return [
         'back_to' => 'Atgal į :page',
     ],
 
+    'trail' => [
+        'agenda_item' => ':position punktas',
+        'open_section' => 'Atidaryti sąrašą: :section',
+    ],
+
     'account' => [
         'appearance' => 'Išvaizda', 'light' => 'Šviesi tema', 'dark' => 'Tamsi tema', 'language' => 'Kalba: :language',
         'help' => 'Pagalba', 'docs' => 'Dokumentacija', 'tour' => 'Parodyk, kaip veikia', 'report_problem' => 'Pranešti apie problemą',

@@ -3,506 +3,236 @@
     class="tiptap-editor"
     :class="[
       `tiptap-editor--${preset}`,
-      framed && [
+      isFramed && [
         'tiptap-editor--framed border border-border bg-background transition-colors',
         'focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
       ],
     ]"
   >
-    <!-- Bubble Menu (for compact and full presets) -->
-    <!-- A framed field already shows the same controls in its toolbar row. -->
-    <BubbleMenu v-if="editor && preset !== 'minimal' && !framed"
-      class="flex items-center gap-0.5 border border-border bg-background p-1 text-foreground shadow-md"
-      :editor plugin-key="textBubbleMenu" :should-show="shouldShowTextBubbleMenu" :options="{ placement: 'top', offset: 8 }"
-      @mousedown.prevent>
-      <TiptapFormattingButtons v-model:editor="editor" :show-bold bubble />
+    <template v-if="editor && preset !== 'minimal'">
+      <TiptapContextMenus
+        ref="contextMenus"
+        :editor
+        :show-bold
+        :disable-links
+        :text-bubble="!showToolbar || tools.headingLevels.length > 0"
+        :image-menu="preset === 'full'"
+      />
+    </template>
 
-      <!-- Link controls in bubble menu -->
-      <template v-if="!disableLinks && editor.schema.marks.link">
-        <Separator orientation="vertical" class="h-5 mx-0.5" />
-        <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-          <Button size="icon-sm" :variant="editor.isActive('link') ? 'brand' : 'ghost'">
-            <IFluentLink24Regular class="h-4 w-4" />
-          </Button>
-        </TiptapLinkButton>
-        <Button v-if="editor.isActive('link')" variant="ghost" size="icon-sm"
-          @click="editor?.chain().focus().unsetLink().run()">
-          <IFluentLinkDismiss20Filled class="h-4 w-4" />
-        </Button>
-      </template>
-    </BubbleMenu>
-
-    <!-- Toolbar (configurable visibility) -->
-    <div v-if="editor && showToolbar"
+    <div
+      v-if="editor && showToolbar"
       :class="[
-        'tiptap-toolbar flex flex-wrap items-center',
-        framed
-          ? 'gap-0.5 border-b border-border bg-secondary/50 p-1.5'
-          : 'mb-2 gap-2 rounded-lg border bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900',
-      ]">
-      <!-- Formatting buttons -->
-      <TiptapFormattingButtons v-model:editor="editor" :show-bold :bubble="framed" />
+        'tiptap-toolbar flex flex-nowrap items-center gap-0.5 overflow-x-auto p-1',
+        isFramed ? 'border-b border-border bg-secondary/50' : 'border border-border bg-secondary/50',
+      ]"
+      role="toolbar"
+      :aria-label="$t('rich-content.toolbar')"
+    >
+      <Select
+        v-if="tools.headingLevels.length"
+        :model-value="commands.currentHeadingLevel.value"
+        @update:model-value="commands.setHeadingLevel($event as string)"
+      >
+        <SelectTrigger size="sm" class="h-8 w-28 shrink-0 border-transparent bg-transparent text-xs shadow-none hover:bg-accent" data-testid="tiptap-heading-select" :aria-label="$t('rich-content.text_style')">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="paragraph">
+            {{ headingLevelLabel('paragraph') }}
+          </SelectItem>
+          <SelectItem v-for="level in tools.headingLevels" :key="level" :value="String(level)">
+            {{ headingLevelLabel(level) }}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+      <Separator v-if="tools.headingLevels.length" orientation="vertical" class="mx-0.5 h-5" />
 
-      <!-- Mobile-only toggle for the rest of the toolbar — on small screens the full
-           control set doesn't fit above the keyboard, so only bold/italic/underline
-           show by default and everything else is one tap away. `sm:hidden` means
-           desktop always sees the full toolbar regardless of this state. -->
-      <Button v-if="preset !== 'marks'" size="sm" variant="ghost" class="sm:hidden" data-testid="tiptap-toolbar-mobile-toggle"
-        :title="mobileToolbarExpanded ? $t('rich-content.toolbar_less') : $t('rich-content.toolbar_more')"
-        @click="mobileToolbarExpanded = !mobileToolbarExpanded">
-        <IFluentChevronUp20Regular v-if="mobileToolbarExpanded" />
-        <IFluentChevronDown20Regular v-else />
-      </Button>
+      <TiptapFormattingButtons :editor :show-bold />
 
-      <div data-testid="tiptap-toolbar-extra" :class="preset === 'marks' || mobileToolbarExpanded ? 'contents' : 'hidden sm:contents'">
-        <!-- Link buttons -->
-        <ButtonGroup v-if="!disableLinks && editor.schema.marks.link">
-          <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-            <Button :size="toolSize" :variant="toolVariant(editor.isActive('link'))">
-              <IFluentLink24Regular />
-            </Button>
-          </TiptapLinkButton>
-          <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.isActive('link')"
-            @click="editor?.chain().focus().unsetLink().run()">
-            <IFluentLinkDismiss20Filled />
-          </Button>
-        </ButtonGroup>
+      <TiptapToolButton
+        v-if="linksEnabled"
+        toggle
+        data-testid="tiptap-link"
+        :active="editor.isActive('link')"
+        :label="$t('rich-content.link')"
+        @click="contextMenus?.openLinkDialog()"
+      >
+        <IFluentLink24Regular />
+      </TiptapToolButton>
 
-        <!-- Clear formatting -->
-        <Button v-if="preset !== 'marks'" :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().unsetAllMarks().run()">
-          <IFluentClearFormatting20Filled />
-        </Button>
+      <template v-if="tools.lists">
+        <Separator orientation="vertical" class="mx-0.5 h-5" />
+        <TiptapToolButton
+          toggle
+          :active="editor.isActive('bulletList')"
+          :label="$t('rich-content.bullet_list')"
+          @click="editor.chain().focus().toggleBulletList().run()"
+        >
+          <IFluentTextBulletListLtr20Regular />
+        </TiptapToolButton>
+        <TiptapToolButton
+          toggle
+          :active="editor.isActive('orderedList')"
+          :label="$t('rich-content.ordered_list')"
+          @click="editor.chain().focus().toggleOrderedList().run()"
+        >
+          <IFluentTextNumberListLtr20Regular />
+        </TiptapToolButton>
+      </template>
 
-        <Separator v-if="preset !== 'marks'" orientation="vertical" class="h-5" />
+      <template v-if="hasInsertTools(tools) || hasMoreMenu">
+        <Separator orientation="vertical" class="mx-0.5 h-5" />
+        <TiptapInsertMenu v-if="hasInsertTools(tools)" :editor :tools />
+        <TiptapMoreMenu v-if="hasMoreMenu" :editor :tools show-history />
+      </template>
 
-        <!-- Headings (compact and full). `full` gets a level dropdown (up to h4) instead
-             of the plain paragraph/h2 toggle pair, since it also needs room for size/
-             accent below — a level Select scales to more options than a ButtonGroup. -->
-        <ButtonGroup v-if="preset === 'compact'">
-          <Button :size="toolSize" :variant="toolVariant(editor.isActive('paragraph'))"
-            @click="editor?.chain().focus().setParagraph().run()">
-            <IFluentTextT24Regular />
-          </Button>
-          <Button :size="toolSize" :variant="toolVariant(editor.isActive('heading', { level: 2 }))"
-            @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()">
-            <TextHeader220Filled />
-          </Button>
-        </ButtonGroup>
-
-        <template v-if="preset === 'full'">
-          <Select :model-value="currentHeadingLevel" @update:model-value="setHeadingLevel($event as string)">
-            <SelectTrigger size="sm" class="w-[104px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="paragraph">
-                {{ $t('rich-content.heading_paragraph') }}
-              </SelectItem>
-              <SelectItem value="2">
-                {{ $t('rich-content.heading_level_2') }}
-              </SelectItem>
-              <SelectItem value="3">
-                {{ $t('rich-content.heading_level_3') }}
-              </SelectItem>
-              <SelectItem value="4">
-                {{ $t('rich-content.heading_level_4') }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
-          <!-- Heading style: size + color accent. Only meaningful on a heading — the
-               trigger stays enabled either way so an author can set a style *then*
-               turn the current block into a heading, but the attributes only render
-               visually once a heading is actually active. -->
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button :size="toolSize" :variant="toolVariant(false)" :title="$t('rich-content.heading_style')">
-                <IFluentTextEffects20Regular />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
-                {{ $t('rich-content.heading_size') }}
-              </DropdownMenuLabel>
-              <DropdownMenuItem v-for="size in headingSizes" :key="size.value" @click="setHeadingAttr('size', size.value)">
-                <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingSize === size.value ? 'opacity-100' : 'opacity-0'" />
-                {{ size.label }}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
-                {{ $t('rich-content.heading_accent') }}
-              </DropdownMenuLabel>
-              <DropdownMenuItem v-for="accent in headingAccents" :key="accent.value" @click="setHeadingAttr('accent', accent.value)">
-                <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingAccent === accent.value ? 'opacity-100' : 'opacity-0'" />
-                <span v-if="accent.value !== 'none'" class="mr-2 inline-block size-2.5 rounded-full" :class="accent.swatch" />
-                {{ accent.label }}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
-                {{ $t('rich-content.heading_spacing') }}
-              </DropdownMenuLabel>
-              <DropdownMenuItem v-for="spacing in headingSpacings" :key="spacing.value" @click="setHeadingAttr('spacing', spacing.value)">
-                <IFluentCheckmark12Regular class="mr-2 h-3.5 w-3.5" :class="currentHeadingSpacing === spacing.value ? 'opacity-100' : 'opacity-0'" />
-                {{ spacing.label }}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </template>
-
-        <!-- Alignment + dot-tag mark: available in `compact` too (not just `full`) —
-             content-grid cells and other compact-preset surfaces edit exactly this kind
-             of content (e.g. the MembershipPage-style mascot column), so an author needs
-             to be able to apply them there, not just view them if they arrived seeded. -->
-        <template v-if="preset === 'compact' || preset === 'full'">
-          <!-- Alignment — applies to whichever block type (heading or paragraph) has
-               focus. Hidden while an image node is selected: it would sit next to the
-               image's own alignment control doing something else entirely. -->
-          <ButtonGroup v-if="!editor.isActive('image')">
-            <Button :size="toolSize" :variant="toolVariant(currentAlign === 'start')" @click="setAlign('start')">
-              <IFluentTextAlignLeft24Regular />
-            </Button>
-            <Button :size="toolSize" :variant="toolVariant(currentAlign === 'center')" @click="setAlign('center')">
-              <IFluentTextAlignCenter24Regular />
-            </Button>
-            <Button :size="toolSize" :variant="toolVariant(currentAlign === 'end')" @click="setAlign('end')">
-              <IFluentTextAlignRight24Regular />
-            </Button>
-          </ButtonGroup>
-
-          <!-- Dot-tag mark (see App/Tiptap/RCTag.php, RCTag.ts) — the MembershipPage-style pill. -->
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button :size="toolSize" :variant="toolVariant(editor.isActive('rcTag'))" :title="$t('rich-content.tag')">
-                <IFluentTag24Regular />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuLabel class="text-xs font-normal text-zinc-400">
-                {{ $t('rich-content.tag_variant') }}
-              </DropdownMenuLabel>
-              <div class="flex gap-1 px-2 pb-2">
-                <Button size="sm" :variant="tagVariant === 'filled' ? 'default' : 'outline'" @click="tagVariant = 'filled'">
-                  {{ $t('rich-content.tag_variant_filled') }}
-                </Button>
-                <Button size="sm" :variant="tagVariant === 'plain' ? 'default' : 'outline'" @click="tagVariant = 'plain'">
-                  {{ $t('rich-content.tag_variant_plain') }}
-                </Button>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem v-for="color in tagColors" :key="color.value" @click="applyTag(color.value)">
-                <span class="mr-2 inline-block size-2.5 rounded-full" :class="color.swatch" />
-                {{ color.label }}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem :disabled="!editor.isActive('rcTag')" @click="editor?.chain().focus().unsetRCTag().run()">
-                {{ $t('rich-content.tag_remove') }}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </template>
-
-        <!-- Lists -->
-        <ButtonGroup v-if="preset !== 'marks'">
-          <Button :size="toolSize" :variant="toolVariant(editor.isActive('bulletList'))"
-            @click="editor?.chain().focus().toggleBulletList().run()">
-            <IFluentTextBulletListLtr24Filled />
-          </Button>
-          <Button :size="toolSize" :variant="toolVariant(editor.isActive('orderedList'))"
-            @click="editor?.chain().focus().toggleOrderedList().run()">
-            <IFluentTextNumberListLtr24Filled />
-          </Button>
-        </ButtonGroup>
-
-        <!-- Quote and horizontal rule (full preset) -->
-        <template v-if="preset === 'full'">
-          <Button :size="toolSize" :variant="toolVariant(editor.isActive('blockquote'))"
-            @click="editor?.chain().focus().toggleBlockquote().run()">
-            <IFluentTextQuote24Filled />
-          </Button>
-          <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().setHorizontalRule().run()">
-            <LineHorizontal120Regular />
-          </Button>
-        </template>
-
-        <!-- Media buttons (compact and full) -->
-        <template v-if="preset === 'compact' || preset === 'full'">
-          <Suspense>
-            <TiptapImageButton as-child @submit:object="attachImage">
-              <Button :size="toolSize" :variant="toolVariant(false)">
-                <IFluentImage24Regular />
-              </Button>
-            </TiptapImageButton>
-          </Suspense>
-          <TiptapYoutubeButton @submit="(url) => editor?.commands.setYoutubeVideo({ src: url })">
-            <Button :size="toolSize" :variant="toolVariant(false)">
-              <IFluentVideoClip24Regular />
-            </Button>
-          </TiptapYoutubeButton>
-        </template>
-
-        <!-- Video button (full preset) -->
-        <template v-if="preset === 'full'">
-          <TiptapVideoButton :show-modal="showVideoModal" @update:show-modal="showVideoModal = $event"
-            @submit="attachVideo">
-            <Button :size="toolSize" :variant="toolVariant(false)">
-              <IFluentVideo24Regular />
-            </Button>
-          </TiptapVideoButton>
-        </template>
-
-        <!-- Table controls (full preset, when in table) -->
-        <template v-if="preset === 'full' && !disableTables && editor.isActive('table')">
-          <Separator orientation="vertical" class="h-5" />
-          <ButtonGroup>
-            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().toggleHeaderRow().run()">
-              <IFluentTableFreezeRow24Regular />
-            </Button>
-            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().addColumnAfter().run()">
-              <IFluentTableInsertColumn24Regular />
-            </Button>
-            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().addRowAfter().run()">
-              <IFluentTableInsertRow24Regular />
-            </Button>
-          </ButtonGroup>
-          <ButtonGroup>
-            <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.can().mergeCells()"
-              @click="editor?.chain().focus().mergeCells().run()">
-              <IFluentTableCellsMerge24Regular />
-            </Button>
-            <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.can().splitCell()"
-              @click="editor?.chain().focus().splitCell().run()">
-              <IFluentTableCellsSplit24Regular />
-            </Button>
-          </ButtonGroup>
-          <ButtonGroup>
-            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().deleteColumn().run()">
-              <IFluentTableDeleteColumn24Regular />
-            </Button>
-            <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().deleteRow().run()">
-              <IFluentTableDeleteRow24Regular />
-            </Button>
-          </ButtonGroup>
-          <Button :size="toolSize" :variant="toolVariant(false)" @click="editor?.chain().focus().fixTables().run()">
-            <IFluentTableSettings24Regular />
-          </Button>
-        </template>
-
-        <!-- Insert table button (full preset, when not in table) -->
-        <Button v-if="preset === 'full' && !disableTables && !editor.isActive('table')" :size="toolSize" :variant="toolVariant(false)"
-          @click="editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()">
-          <IFluentTableAdd24Regular />
-        </Button>
-
-        <!-- Undo/Redo -->
-        <ButtonGroup class="ml-auto">
-          <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.can().chain().focus().undo().run()"
-            @click="editor?.chain().focus().undo().run()">
-            <IFluentArrowUndo20Regular />
-          </Button>
-          <Button :size="toolSize" :variant="toolVariant(false)" :disabled="!editor.can().chain().focus().redo().run()"
-            @click="editor?.chain().focus().redo().run()">
-            <IFluentArrowRedo20Regular />
-          </Button>
-        </ButtonGroup>
+      <div v-if="tools.lists" class="ml-auto hidden items-center gap-0.5 pl-1 sm:flex">
+        <TiptapToolButton
+          :label="$t('rich-content.undo')"
+          :disabled="!editor.can().undo()"
+          @click="editor.chain().focus().undo().run()"
+        >
+          <IFluentArrowUndo20Regular />
+        </TiptapToolButton>
+        <TiptapToolButton
+          :label="$t('rich-content.redo')"
+          :disabled="!editor.can().redo()"
+          @click="editor.chain().focus().redo().run()"
+        >
+          <IFluentArrowRedo20Regular />
+        </TiptapToolButton>
       </div>
     </div>
 
-    <!-- Toolbar toggle (optional) -->
-    <div v-if="showToolbarToggle && editor" class="flex justify-end mb-1">
-      <Button size="sm" variant="ghost" @click="internalShowToolbar = !internalShowToolbar">
-        <IFluentSettings16Filled v-if="!internalShowToolbar" class="h-3 w-3" />
-        <IFluentSettings16Regular v-else class="h-3 w-3" />
-        <span class="ml-1 text-xs">{{ internalShowToolbar ? $t('Hide toolbar') : $t('Show toolbar') }}</span>
-      </Button>
-    </div>
-
-    <!-- Editor Content -->
     <div
       :class="[
         'tiptap-content overflow-hidden',
-        framed ? '' : 'rounded-md border dark:border-zinc-700 dark:bg-zinc-800',
+        isFramed ? '' : 'border border-border bg-background',
         { 'tiptap-content--prose': proseStyle },
       ]"
     >
       <EditorContent :editor />
     </div>
-
-    <!-- Contextual image controls, rendered next to the selected image -->
-    <TiptapImageMenu v-if="preset === 'full'" :editor />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, useTemplateRef } from 'vue';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
-import { BubbleMenu } from '@tiptap/vue-3/menus';
+import { Extension } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
-// Import AccessibleImage command type definitions
 import './accessible-image-commands.d.ts';
 
-// Extensions
 import { type EditorPreset, getExtensionsForPreset } from './extensions/presets';
 import { useTiptapFileUpload } from './composables/useTiptapFileUpload';
+import { useTiptapCommands } from './composables/useTiptapCommands';
 import { normalizeContent } from './normalizeContent';
-
-// UI Components
+import { headingLevelLabel } from './toolbarOptions';
+import { hasInsertTools, profileForPreset, toolsFor, type ToolbarProfile } from './toolbarProfiles';
+import TiptapContextMenus from './TiptapContextMenus.vue';
 import TiptapFormattingButtons from './TiptapFormattingButtons.vue';
-import TiptapImageButton from './TiptapImageButton.vue';
-import TiptapLinkButton from './TiptapLinkButton.vue';
-import TiptapVideoButton from './TiptapVideoButton.vue';
-import TiptapYoutubeButton from './TiptapYoutubeButton.vue';
-import TiptapImageMenu from './TiptapImageMenu.vue';
-import { shouldShowTextBubbleMenu } from './bubbleMenuVisibility';
-import type { HeadingAccent, HeadingSize, HeadingSpacing } from './CustomHeading';
-import type { RCTagColor, RCTagVariant } from './RCTag';
-import type { TextAlignValue } from './TextAlign';
+import TiptapInsertMenu from './TiptapInsertMenu.vue';
+import TiptapMoreMenu from './TiptapMoreMenu.vue';
+import TiptapToolButton from './TiptapToolButton.vue';
 
-import { Button } from '@/Components/ui/button';
-import { ButtonGroup } from '@/Components/ui/button-group';
 import { Separator } from '@/Components/ui/separator';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { latinizeId } from '@/Utils/String';
-
-// Icons
-import IFluentLink24Regular from '~icons/fluent/link24-regular';
-import IFluentLinkDismiss20Filled from '~icons/fluent/link-dismiss20-filled';
-import IFluentClearFormatting20Filled from '~icons/fluent/clear-formatting20-filled';
-import IFluentTextT24Regular from '~icons/fluent/text-t24-regular';
-import TextHeader220Filled from '~icons/fluent/text-header-2-20-filled';
-import TextHeader320Filled from '~icons/fluent/text-header-3-20-filled';
-import IFluentTextBulletListLtr24Filled from '~icons/fluent/text-bullet-list-ltr24-filled';
-import IFluentTextNumberListLtr24Filled from '~icons/fluent/text-number-list-ltr24-filled';
-import IFluentTextQuote24Filled from '~icons/fluent/text-quote24-filled';
-import LineHorizontal120Regular from '~icons/fluent/line-horizontal-1-20-regular';
-import IFluentArrowUndo20Regular from '~icons/fluent/arrow-undo20-regular';
 import IFluentArrowRedo20Regular from '~icons/fluent/arrow-redo20-regular';
-import IFluentTableAdd24Regular from '~icons/fluent/table-add24-regular';
-import IFluentTableFreezeRow24Regular from '~icons/fluent/table-freeze-row24-regular';
-import IFluentTableInsertColumn24Regular from '~icons/fluent/table-insert-column24-regular';
-import IFluentTableInsertRow24Regular from '~icons/fluent/table-insert-row24-regular';
-import IFluentTableDeleteColumn24Regular from '~icons/fluent/table-delete-column24-regular';
-import IFluentTableDeleteRow24Regular from '~icons/fluent/table-delete-row24-regular';
-import IFluentTableCellsMerge24Regular from '~icons/fluent/table-cells-merge24-regular';
-import IFluentTableCellsSplit24Regular from '~icons/fluent/table-cells-split24-regular';
-import IFluentTableSettings24Regular from '~icons/fluent/table-settings24-regular';
-import IFluentSettings16Filled from '~icons/fluent/settings16-filled';
-import IFluentSettings16Regular from '~icons/fluent/settings16-regular';
-import IFluentTextAlignLeft24Regular from '~icons/fluent/text-align-left24-regular';
-import IFluentTextAlignCenter24Regular from '~icons/fluent/text-align-center24-regular';
-import IFluentTextAlignRight24Regular from '~icons/fluent/text-align-right24-regular';
-import IFluentImage24Regular from '~icons/fluent/image24-regular';
-import IFluentVideoClip24Regular from '~icons/fluent/video-clip24-regular';
-import IFluentVideo24Regular from '~icons/fluent/video24-regular';
-import IFluentTextEffects20Regular from '~icons/fluent/text-effects20-regular';
-import IFluentTag24Regular from '~icons/fluent/tag24-regular';
-import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
-import IFluentChevronDown20Regular from '~icons/fluent/chevron-down-20-regular';
-import IFluentChevronUp20Regular from '~icons/fluent/chevron-up-20-regular';
+import IFluentArrowUndo20Regular from '~icons/fluent/arrow-undo20-regular';
+import IFluentLink24Regular from '~icons/fluent/link24-regular';
+import IFluentTextBulletListLtr20Regular from '~icons/fluent/text-bullet-list-ltr20-regular';
+import IFluentTextNumberListLtr20Regular from '~icons/fluent/text-number-list-ltr20-regular';
 
-// Styles
 import './tiptap-base.css';
 
 const props = withDefaults(defineProps<{
-  /** Editor preset: 'minimal' | 'compact' | 'full' */
+  /** Extension schema: 'minimal' | 'marks' | 'compact' | 'full' */
   preset?: EditorPreset;
+  /** Controls the toolbar offers; defaults to everything the preset supports. */
+  tools?: ToolbarProfile;
   /** Content (JSON object or HTML string) */
   modelValue: string | Record<string, unknown> | null;
   /** Output HTML instead of JSON */
   html?: boolean;
-  /** Disable table support (full preset) */
   disableTables?: boolean;
-  /** Disable link support */
   disableLinks?: boolean;
-  /** Maximum character count */
   maxCharacters?: number;
-  /** Placeholder text */
   placeholder?: string;
-  /** Show toolbar toggle button */
-  showToolbarToggle?: boolean;
-  /** Initial toolbar visibility (when showToolbarToggle is true) */
-  toolbarVisible?: boolean;
   /** Keep controls next to a selection instead of reserving space above the editor. */
   toolbar?: 'inline' | 'bubble';
   /** Hide bold where the surrounding component already enforces a bold display style. */
   showBold?: boolean;
   /**
    * Style the editing surface with `.rc-prose-editing` — the same flow/heading-scale
-   * rules as the published rich-content output (`.rc-prose`) — so what you type looks
-   * like what renders. Default false: comment/note/other non-rich-content callers keep
-   * `tiptap-base.css`'s more compact styling unless they opt in.
+   * rules as the published rich-content output — so what you type looks like what renders.
    */
   proseStyle?: boolean;
-  /** One hairline field box on a form canvas: tinted toolbar row, flat buttons, brand focus ring. */
+  /**
+   * One hairline field box with a tinted toolbar row. Defaults on for an inline toolbar;
+   * canvas and comment editors (bubble toolbar, `minimal`) stay unframed.
+   */
   framed?: boolean;
 }>(), {
   preset: 'full',
+  tools: undefined,
   html: false,
   disableTables: false,
-  showToolbarToggle: false,
-  toolbarVisible: true,
   toolbar: 'inline',
   showBold: true,
   proseStyle: false,
-  framed: false,
+  framed: undefined,
 });
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | Record<string, unknown> | null];
 }>();
 
-// Internal state
-const internalShowToolbar = ref(props.toolbarVisible);
-const showVideoModal = ref(false);
-const mobileToolbarExpanded = ref(false);
+const contextMenus = useTemplateRef<InstanceType<typeof TiptapContextMenus>>('contextMenus');
 
-// Computed toolbar visibility
-const toolSize = computed(() => (props.framed ? 'icon-sm' : 'sm'));
-
-function toolVariant(active: boolean) {
-  if (props.framed) {
-    return active ? 'brand' : 'ghost';
-  }
-  return active ? 'default' : 'outline';
-}
-
-const showToolbar = computed(() => {
-  if (props.toolbar === 'bubble') {
-    return false;
-  }
-  if (props.showToolbarToggle) {
-    return internalShowToolbar.value;
-  }
-  // Always show toolbar for full preset, hide for minimal
-  return props.preset !== 'minimal';
+const showToolbar = computed(() => props.toolbar !== 'bubble' && props.preset !== 'minimal');
+const isFramed = computed(() => props.framed ?? showToolbar.value);
+const tools = computed(() => toolsFor(props.tools ?? profileForPreset(props.preset), { disableTables: props.disableTables }));
+const hasMoreMenu = computed(() => {
+  const t = tools.value;
+  return t.lists || t.blockquote || t.clearFormatting || t.alignment || t.tag || t.headingStyle;
 });
+const linksEnabled = computed(() => !props.disableLinks && Boolean(editor.value?.schema.marks.link));
 
-// File upload composable
 const { handleFileDrop, handleFilePaste, clearPendingUploads } = useTiptapFileUpload();
 
-// Build extensions based on preset
-const extensions = getExtensionsForPreset(props.preset, {
-  placeholder: props.placeholder ?? $t('rich-content.text_placeholder'),
-  maxCharacters: props.maxCharacters ?? null,
-  disableTables: props.disableTables,
-  disableLinks: props.disableLinks,
-  onFileDrop: props.preset === 'full' ? handleFileDrop : undefined,
-  onFilePaste: props.preset === 'full' ? handleFilePaste : undefined,
+/** ⌘K / Ctrl+K opens the link dialog, as in most editors. */
+const LinkShortcut = Extension.create({
+  name: 'linkDialogShortcut',
+  addKeyboardShortcuts() {
+    return {
+      'Mod-k': () => {
+        if (!linksEnabled.value) return false;
+        contextMenus.value?.openLinkDialog();
+        return true;
+      },
+    };
+  },
 });
 
-// Create editor
+const extensions = [
+  ...getExtensionsForPreset(props.preset, {
+    placeholder: props.placeholder ?? $t('rich-content.text_placeholder'),
+    maxCharacters: props.maxCharacters ?? null,
+    disableTables: props.disableTables,
+    disableLinks: props.disableLinks,
+    onFileDrop: props.preset === 'full' ? handleFileDrop : undefined,
+    onFilePaste: props.preset === 'full' ? handleFilePaste : undefined,
+  }),
+  LinkShortcut,
+];
+
 const editor = useEditor({
   editorProps: {
     attributes: {
-      class: ['focus:outline-none w-full min-h-[80px]', props.framed ? 'px-4 py-3 text-sm leading-relaxed' : 'px-3 py-2', props.proseStyle ? 'rc-prose-editing tracking-normal' : ''].filter(Boolean).join(' '),
+      class: ['focus:outline-none w-full min-h-[80px]', isFramed.value ? 'px-4 py-3 text-sm leading-relaxed' : 'px-3 py-2', props.proseStyle ? 'rc-prose-editing tracking-normal' : ''].filter(Boolean).join(' '),
     },
   },
   extensions,
@@ -522,6 +252,8 @@ const editor = useEditor({
     });
   },
 });
+
+const commands = useTiptapCommands(editor);
 
 // Heading ID generation for TOC support
 function updateHeadingIds() {
@@ -558,154 +290,6 @@ function updateHeadingIds() {
   editor.value.view.dispatch(transaction);
 }
 
-// Heading level (full preset) — a Select rather than the compact preset's toggle
-// buttons, since it needs to scale to 4 options (paragraph + h2/h3/h4) plus the
-// size/accent/align controls alongside it.
-const currentHeadingLevel = computed(() => {
-  if (!editor.value) return 'paragraph';
-  for (const level of [2, 3, 4] as const) {
-    if (editor.value.isActive('heading', { level })) return String(level);
-  }
-  return 'paragraph';
-});
-
-function setHeadingLevel(value: string) {
-  if (!editor.value) return;
-
-  if (value === 'paragraph') {
-    editor.value.chain().focus().setParagraph().run();
-  }
-  else {
-    // `setHeading` (not `toggleHeading`) — a Select always sets the target level,
-    // it never toggles back to paragraph on a repeat pick.
-    editor.value.chain().focus().setHeading({ level: Number(value) as 2 | 3 | 4 }).run();
-  }
-}
-
-// Heading size + color accent (CustomHeading's own attributes) — `updateAttributes`
-// is a no-op unless the current selection is inside a heading, so picking one while
-// focused on a paragraph simply does nothing until the block becomes a heading.
-const headingSizes: { value: HeadingSize; label: string }[] = [
-  { value: 'sm', label: $t('rich-content.heading_size_sm') },
-  { value: 'md', label: $t('rich-content.heading_size_md') },
-  { value: 'lg', label: $t('rich-content.heading_size_lg') },
-  { value: 'xl', label: $t('rich-content.heading_size_xl') },
-];
-
-const headingAccents: { value: HeadingAccent; label: string; swatch?: string }[] = [
-  { value: 'none', label: $t('rich-content.heading_accent_none') },
-  { value: 'red', label: $t('rich-content.colors.red'), swatch: 'bg-red-500' },
-  { value: 'yellow', label: $t('rich-content.colors.yellow'), swatch: 'bg-yellow-500' },
-  { value: 'zinc', label: $t('rich-content.colors.gray'), swatch: 'bg-zinc-500' },
-];
-
-const headingSpacings: { value: HeadingSpacing; label: string }[] = [
-  { value: 'default', label: $t('rich-content.heading_spacing_default') },
-  { value: 'tight', label: $t('rich-content.heading_spacing_tight') },
-  { value: 'loose', label: $t('rich-content.heading_spacing_loose') },
-  { value: 'none', label: $t('rich-content.heading_spacing_none') },
-];
-
-const currentHeadingSize = computed<HeadingSize | null>(
-  () => (editor.value?.getAttributes('heading').size as HeadingSize | undefined) ?? null,
-);
-const currentHeadingAccent = computed<HeadingAccent>(
-  () => (editor.value?.getAttributes('heading').accent as HeadingAccent | undefined) ?? 'none',
-);
-// `null` (the schema default) means `default` spacing — normalized here so the
-// dropdown's checkmark lands on the Default row when no spacing has been set.
-const currentHeadingSpacing = computed<HeadingSpacing>(
-  () => (editor.value?.getAttributes('heading').spacing as HeadingSpacing | undefined) ?? 'default',
-);
-
-function setHeadingAttr(attr: 'size' | 'accent' | 'spacing', value: string) {
-  editor.value?.chain().focus().updateAttributes('heading', { [attr]: value }).run();
-}
-
-// Alignment — applies to whichever block type (heading or paragraph) currently has
-// the selection; both carry the `align` global attribute (see TextAlign.ts).
-const currentAlign = computed<TextAlignValue>(() => {
-  if (!editor.value) return 'start';
-  const type = editor.value.isActive('heading') ? 'heading' : 'paragraph';
-  return (editor.value.getAttributes(type).align as TextAlignValue | undefined) ?? 'start';
-});
-
-function setAlign(align: TextAlignValue) {
-  if (!editor.value) return;
-  const type = editor.value.isActive('heading') ? 'heading' : 'paragraph';
-  editor.value.chain().focus().updateAttributes(type, { align }).run();
-}
-
-// Dot-tag mark (RCTag.ts / App\Tiptap\RCTag) — the MembershipPage-style pill.
-const tagVariant = ref<RCTagVariant>('filled');
-const tagColors: { value: RCTagColor; label: string; swatch: string }[] = [
-  { value: 'zinc', label: $t('rich-content.colors.gray'), swatch: 'bg-zinc-500' },
-  { value: 'red', label: $t('rich-content.colors.red'), swatch: 'bg-red-500' },
-  { value: 'yellow', label: $t('rich-content.colors.yellow'), swatch: 'bg-yellow-500' },
-  { value: 'green', label: $t('rich-content.colors.green'), swatch: 'bg-green-500' },
-];
-
-function applyTag(color: RCTagColor) {
-  editor.value?.chain().focus().setRCTag({ variant: tagVariant.value, color }).run();
-}
-
-// Link handlers
-function handleLinkSubmit(url: string, text?: string) {
-  if (!editor.value) return;
-
-  const { from, to } = editor.value.state.selection;
-  const hasSelection = from !== to;
-
-  if (hasSelection) {
-    editor.value.chain().focus().extendMarkRange('link').setLink({ href: url, class: '' }).run();
-  }
-  else if (text) {
-    editor.value.chain().focus().insertContent(`<a href="${url}" class="">${text}</a>`).run();
-  }
-  else {
-    editor.value.chain().focus().insertContent(`<a href="${url}" class="">${url}</a>`).run();
-  }
-}
-
-function handleDocumentLinkSubmit(url: string, text?: string) {
-  if (!editor.value) return;
-
-  const { from, to } = editor.value.state.selection;
-  const hasSelection = from !== to;
-
-  if (hasSelection) {
-    editor.value.chain().focus().extendMarkRange('link').setLink({ href: url, class: 'archive-document-link plain' }).run();
-  }
-  else if (text) {
-    editor.value.chain().focus().insertContent(`<a href="${url}" class="archive-document-link plain">${text}</a>`).run();
-  }
-  else {
-    editor.value.chain().focus().insertContent(`<a href="${url}" class="archive-document-link plain">${url}</a>`).run();
-  }
-}
-
-// Media handlers
-function attachImage(imageData: { src: string; alt?: string; title?: string } | string) {
-  if (!editor.value) return;
-
-  if (typeof imageData === 'string') {
-    editor.value.chain().focus().setImage({ src: imageData }).run();
-  }
-  else {
-    editor.value.chain().focus().setImage({
-      src: imageData.src,
-      alt: imageData.alt || '',
-      title: imageData.title || '',
-    }).run();
-  }
-}
-
-function attachVideo(url: string) {
-  editor.value?.chain().focus().setVideo(url).run();
-  showVideoModal.value = false;
-}
-
-// Cleanup
 onBeforeUnmount(() => {
   clearPendingUploads();
   editor.value?.destroy();

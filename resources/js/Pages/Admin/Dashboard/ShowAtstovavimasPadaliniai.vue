@@ -16,17 +16,17 @@
 
     <!-- Tenant numbers arrive with the timeline request; until then a placeholder, not a wrong zero. -->
     <OverviewNumbers v-if="tenantTimelineData.loaded.value" :numbers />
-    <Skeleton v-else class="h-20 w-full" />
+    <OverviewNumbersSkeleton v-else :count="canViewTenantTasks ? 4 : 3" />
 
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-tenant-primary-section">
       <div class="min-w-0">
-        <CollectionSkeleton v-if="!tenantTimelineData.loaded.value" :rows="3" />
+        <InstitutionAttentionSkeleton v-if="!tenantTimelineData.loaded.value" />
         <InstitutionsNeedingAttention
           v-else
           :institutions="attention"
           :title="$t('visak.institution_summary.needs_attention')"
           :limit="ATTENTION_LIMIT"
-          @record="recordMeetingFor"
+          @record="recordActivityFor"
         />
       </div>
 
@@ -131,6 +131,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted, ref, watch } from 'vue';
 
 import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
+import InstitutionAttentionSkeleton from './Components/InstitutionAttentionSkeleton.vue';
+import OverviewNumbersSkeleton from './Components/OverviewNumbersSkeleton.vue';
 import TenantInsightsTabs from './Components/TenantInsightsTabs.vue';
 import TenantScopeSelector from './Components/TenantScopeSelector.vue';
 import TenantTimelineSection from './Components/TenantTimelineSection.vue';
@@ -145,8 +147,6 @@ import { useTenantStatusHistory } from './Composables/useTenantStatusHistory';
 import { useTenantTimelineData } from './Composables/useTenantTimelineData';
 import type { AtstovavimasInstitution, AtstovavimasTenant, InstitutionStatusSummaryData } from './types';
 
-import { Skeleton } from '@/Components/ui/skeleton';
-import { CollectionSkeleton } from '@/Components/Patterns';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
@@ -238,8 +238,8 @@ const numbers = computed<OverviewNumberItem[]>(() => [
     : []),
 ]);
 
-function recordMeetingFor(institution: InstitutionActivityInsight): void {
-  actionWindow.open({ flow: 'meeting.create', institution: { id: institution.id, name: institution.name } });
+function recordActivityFor(institution: InstitutionActivityInsight): void {
+  actionWindow.open({ flow: 'institution.report', institution: { id: institution.id, name: institution.name } });
 }
 
 // Tenant institutions are rarely the viewer's own, so the window needs the name handed to it.

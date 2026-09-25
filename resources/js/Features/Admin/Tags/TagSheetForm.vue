@@ -28,7 +28,7 @@
 
     <div class="space-y-2">
       <Label>{{ $t('Aprašymas') }} <span class="text-muted-foreground">({{ $t('neprivaloma') }})</span></Label>
-      <MultiLocaleTiptapFormItem v-model:input="form.description" :label="$t('Aprašymas')" />
+      <MultiLocaleTiptapFormItem v-model:input="form.description" />
     </div>
 
     <label class="flex min-h-11 items-center gap-3 border-y border-border py-3 text-sm">

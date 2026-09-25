@@ -102,10 +102,6 @@ return [
         'will_backtrack_return' => 'Return will be undone',
         'backtrack_hint' => 'The resource moves back one state, while the reverted approval remains visible in its history.',
     ],
-    'spotlight' => [
-        'backtrack_title' => 'Undo a mistaken action',
-        'backtrack_description' => 'You can now move an approval, hand-over, or return one step back.',
-    ],
     'history' => [
         'reverted' => 'Undone by :user · :date',
         'reversion_reason' => 'Reason: :reason',
@@ -174,8 +170,6 @@ return [
         'removed' => 'This resource was deleted',
         'expires' => 'An unfinished reservation is kept for :days days after its last change.',
         'quantity' => 'Quantity',
-        'spotlight_title' => 'Pick resources like into a cart',
-        'spotlight_description' => 'Press “Add” on each resource you need. Your picks are saved even if you close the page.',
         'capacity_exceeded' => ':resource: only :count free at this time. Lower the quantity or change the time.',
         'not_reservable_error' => 'This resource cannot be reserved.',
         'quick_add' => 'Quick add',

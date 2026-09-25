@@ -22,19 +22,26 @@
 
       <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <ul>
-          <li v-for="workspace in workspaces" :key="workspace.key" class="border-b border-border py-2" data-slot="mobile-menu-workspace">
+          <li v-for="workspace in workspaces" :key="workspace.key" class="border-b border-border" data-slot="mobile-menu-workspace">
             <button
               type="button"
-              class="u-touch flex w-full items-center gap-3 px-4 py-1.5 text-left"
+              :class="[
+                'flex w-full items-center justify-between gap-3 px-4 py-4 text-left',
+                'text-base font-bold uppercase tracking-wide text-foreground',
+                'transition-colors hover:text-brand',
+                'focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring',
+              ]"
               :aria-expanded="expandedWorkspaceKey === workspace.key"
               :aria-controls="`mobile-menu-sections-${workspace.key}`"
               @click="toggleWorkspace(workspace.key)"
             >
-              <component :is="workspaceIcon(workspace.key)" class="size-4 shrink-0 text-brand" aria-hidden="true" />
-              <span class="flex-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">{{ $t(workspace.label) }}</span>
-              <ChevronDown :class="['size-4 text-muted-foreground transition-transform', expandedWorkspaceKey === workspace.key && 'rotate-180']" aria-hidden="true" />
+              <span class="flex items-center gap-2">
+                <component :is="workspaceIcon(workspace.key)" class="size-4 shrink-0 text-brand" aria-hidden="true" />
+                {{ $t(workspace.label) }}
+              </span>
+              <Plus :class="['size-5 shrink-0 text-brand transition-transform duration-200', expandedWorkspaceKey === workspace.key && 'rotate-45']" aria-hidden="true" />
             </button>
-            <ul v-show="expandedWorkspaceKey === workspace.key" :id="`mobile-menu-sections-${workspace.key}`">
+            <ul v-show="expandedWorkspaceKey === workspace.key" :id="`mobile-menu-sections-${workspace.key}`" class="bg-secondary/40 pb-2">
               <li
                 v-for="(section, index) in workspace.sections"
                 :key="section.key"
@@ -46,10 +53,11 @@
                   :cache-for="SHELL_PREFETCH_CACHE_FOR"
                   v-bind="ariaCurrent(isCurrent(workspace, section))"
                   :class="[
-                    'u-touch flex items-center gap-2 border-l-2 py-3 pl-11 pr-4 text-sm',
+                    'u-touch flex items-center gap-2 border-l-2 border-t border-t-border/50 py-3 pl-11 pr-4 text-sm',
+                    'transition-colors hover:text-brand focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-ring',
                     isCurrent(workspace, section)
-                      ? 'border-brand-fill font-semibold text-foreground'
-                      : 'border-transparent text-foreground',
+                      ? 'border-l-brand-fill font-semibold text-foreground'
+                      : 'border-l-transparent text-foreground',
                   ]"
                   @click="close"
                 >
@@ -207,11 +215,11 @@ import {
   Bell,
   BookOpen,
   Bug,
-  ChevronDown,
   Languages,
   LogOut,
   MessagesSquare,
   Moon,
+  Plus,
   Radio,
   ShieldCheck,
   Sparkles,

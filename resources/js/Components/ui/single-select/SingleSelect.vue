@@ -3,15 +3,18 @@
     v-model="selectedItem"
     v-model:open="open"
     :by
-    :open-on-focus="true"
+    open-on-focus
     :ignore-filter="shouldVirtualize"
     :disabled
   >
     <ComboboxAnchor
       data-slot="select-trigger"
-      data-size="default"
-      class="relative flex h-9 w-full items-center gap-2 border border-input bg-background px-3 text-sm transition-[color,box-shadow] outline-none focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/40"
-      :class="{ 'opacity-50 cursor-not-allowed': disabled }"
+      :data-size="size"
+      :class="cn(
+        singleSelectTriggerVariants({ variant, size }),
+        disabled && 'opacity-50 cursor-not-allowed',
+        props.class,
+      )"
       @click.self="open = true"
     >
       <slot name="prefix" :selected="selectedItem" />
@@ -82,10 +85,13 @@
 </template>
 
 <script setup lang="ts" generic="T extends Record<string, any>">
+import type { HTMLAttributes } from 'vue';
 import { ref, watch, computed } from 'vue';
+import { cva } from 'class-variance-authority';
 import { ChevronDownIcon } from 'lucide-vue-next';
 import { ComboboxInput, ComboboxVirtualizer } from 'reka-ui';
 
+import { cn } from '@/Utils/Shadcn/utils';
 import {
   Combobox,
   ComboboxAnchor,
@@ -95,6 +101,27 @@ import {
   ComboboxTrigger,
   ComboboxViewport,
 } from '@/Components/ui/combobox';
+
+const singleSelectTriggerVariants = cva(
+  'relative flex w-full items-center gap-2 border transition-colors outline-none disabled:cursor-not-allowed disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default: 'border-border bg-background focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/40',
+        surface: 'border-border bg-secondary/50 focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
+      },
+      size: {
+        default: 'h-11 px-3.5 text-sm',
+        sm: 'h-9 px-3 text-xs md:text-sm',
+        xs: 'h-8 px-2.5 text-xs',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  },
+);
 
 const props = withDefaults(defineProps<{
   /** The v-model value - single selected item or null */
@@ -119,14 +146,23 @@ const props = withDefaults(defineProps<{
   contentClass?: string;
   /** Additional classes for each dropdown item (both virtualized and standard rendering) */
   itemClass?: string;
+  /** Visual variant of the trigger */
+  variant?: 'default' | 'surface';
+  /** Sizing of the trigger control */
+  size?: 'default' | 'sm' | 'xs';
+  class?: HTMLAttributes['class'];
 }>(), {
   labelField: 'label',
   valueField: 'id',
   placeholder: 'Select an item...',
   emptyText: 'No items found.',
-  disabled: false,
   virtualizationThreshold: 50,
   estimateSize: 40,
+  contentClass: undefined,
+  itemClass: undefined,
+  variant: 'default',
+  size: 'default',
+  class: undefined,
 });
 
 const emit = defineEmits<(e: 'update:modelValue', value: T | null) => void>();

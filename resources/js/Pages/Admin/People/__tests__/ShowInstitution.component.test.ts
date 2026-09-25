@@ -21,6 +21,7 @@ const stubs = {
         <div v-if="status" data-testid="status">{{ status.label }}</div>
         <div data-testid="tabs">{{ sections.map(s => s.value).join('|') }}</div>
         <div data-testid="facts">{{ facts.map(f => f.key).join('|') }}</div>
+        <slot name="fact-managers" />
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
         <button v-for="a in overflowActions" :key="a.key" :data-testid="'overflow-' + a.key" @click="$emit('action', a.key)">{{ a.label }}</button>
         <slot name="subtitle" />
@@ -41,17 +42,17 @@ const stubs = {
     template: '<div data-testid="duties-section" :data-can-manage="canManage" />',
   },
   InstitutionMeetingsList: true,
+  UserAvatar: true,
+  UsersAvatarGroup: true,
   InstitutionScopeBadge: true,
   CadenceSection: { template: '<div data-testid="cadences" />' },
   SecretariesSection: { template: '<div data-testid="secretaries" />' },
-  SpotlightPopover: { template: '<div><slot /></div>' },
   AssignDutyUserSheet: { props: ['open', 'duty', 'dutiable'], template: '<div data-testid="assign-sheet" :data-open="open" />' },
   AddCheckInDialog: true,
   ConfirmDialog: true,
   RecordActivity: { template: '<div data-testid="record-activity" />' },
   TaskManager: true,
-  SimpleFileViewer: true,
-  FileManager: true,
+  FileableFilesPanel: true,
   RelatedInstitutions: true,
   EmptyState: true,
   Deferred: { template: '<div><slot /></div>' },
@@ -150,6 +151,23 @@ describe('ShowInstitution.vue', () => {
     const facts = createWrapper().find('[data-testid="facts"]').text().split('|');
 
     expect(facts).toEqual(expect.arrayContaining(['tenant', 'members']));
+  });
+
+  it('shows up to two coordinator names, then uses the expandable avatar group', () => {
+    const twoCoordinators = createWrapper({ managers: [
+      { id: 1, name: 'Rūta' },
+      { id: 2, name: 'Jonas' },
+    ] });
+    const threeCoordinators = createWrapper({ managers: [
+      { id: 1, name: 'Rūta' },
+      { id: 2, name: 'Jonas' },
+      { id: 3, name: 'Ieva' },
+    ] });
+
+    expect(twoCoordinators.findAll('[data-slot="users-fact-list"] li')).toHaveLength(2);
+    expect(twoCoordinators.find('users-avatar-group-stub').exists()).toBe(false);
+    expect(threeCoordinators.find('[data-slot="users-fact-list"]').exists()).toBe(false);
+    expect(threeCoordinators.find('users-avatar-group-stub').attributes('expandable')).toBe('true');
   });
 
   it('moves the type and governance scope to a fact and shows meeting visibility instead of periodicity', () => {

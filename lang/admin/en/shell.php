@@ -59,6 +59,11 @@ return [
         'back_to' => 'Back to :page',
     ],
 
+    'trail' => [
+        'agenda_item' => 'Item :position',
+        'open_section' => 'Open list: :section',
+    ],
+
     'account' => [
         'appearance' => 'Appearance', 'light' => 'Light theme', 'dark' => 'Dark theme', 'language' => 'Language: :language',
         'help' => 'Help', 'docs' => 'Documentation', 'tour' => 'Show me how it works', 'report_problem' => 'Report a problem',

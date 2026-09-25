@@ -5,10 +5,6 @@
       <div class="space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4">
           <div class="flex gap-2">
-            <Button type="button" @click="showFileUploader = true">
-              <FilePlus class="mr-2 h-4 w-4" />
-              {{ $t('forms.add') }}
-            </Button>
             <Button
               type="button"
               :disabled="loading"
@@ -65,14 +61,6 @@
         </div>
       </div>
 
-      <!-- Upload Context Indicator -->
-      <Alert v-if="fileable" variant="default" class="mt-4 border-status-info/30 bg-status-info/10 text-status-info">
-        <Info class="h-4 w-4 text-status-info" />
-        <AlertDescription class="text-foreground">
-          {{ $t('Nauji failai bus priskirti') }}: <strong>{{ fileableDisplayName }}</strong>
-        </AlertDescription>
-      </Alert>
-
       <!-- File Grid -->
       <FileGrid
         :paginated-directories
@@ -101,7 +89,6 @@
         @file-double-click="handleFileDoubleClick"
         @go-back="navigateUp"
         @clear-search="search = ''"
-        @show-upload-mode="showFileUploader = true"
         @show-create-folder="handleCreateFolder"
       />
 
@@ -112,13 +99,6 @@
         @close="selectedFile = null"
         @delete="handleSharepointFileDelete"
       />
-
-      <!-- SharePoint File Uploader (modal) -->
-      <FileUploader
-        :show="showFileUploader"
-        :fileable="sanitizedFileable"
-        @close="handleFileUploaderClose"
-      />
     </template>
     <p v-else v-once>
       Failų tvarkyklė išjungta, nes institucija nėra priskirta padaliniui.
@@ -127,45 +107,33 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { router, useHttp } from '@inertiajs/vue3';
 import { useFetch, useStorage } from '@vueuse/core';
 import { useFuse } from '@vueuse/integrations/useFuse';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
-  FilePlus,
   Folder,
-  Info,
   RefreshCw,
   Search,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
-import FileUploader from './Uploader/FileUploader.vue';
-
-import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import FileGrid from '@/Features/Admin/FileManager/Components/FileGrid.vue';
 import FilePropertiesDrawer from '@/Features/Admin/FileManager/Components/FilePropertiesDrawer.vue';
 import type { DirectoryEntry, FileEntry } from '@/Features/Admin/FileManager/types';
 
+/** The storage browser for Failai → SharePoint. Records upload through `Components/Files` instead. */
 const props = defineProps<{
-  fileable?: FileableFormData;
   startingPath?: string;
 }>();
-
-// Sanitize fileable to prevent serialization issues
-const sanitizedFileable = computed(() => {
-  if (!props.fileable) return undefined;
-  return { id: props.fileable.id, type: props.fileable.type };
-});
 
 // State
 const currentPath = ref(props.startingPath ?? '');
 const loading = ref(true);
 const files = ref<MyDriveItem[]>([]);
-const showFileUploader = ref(false);
 const viewMode = useStorage<'grid' | 'list'>('fileManager-viewMode', 'grid');
 const selectedFile = ref<MyDriveItem | null>(null);
 const search = ref('');
@@ -174,28 +142,6 @@ const currentPage = ref(1);
 const folderHttp = useHttp({
   path: '',
   name: '',
-});
-
-// Display name for upload context indicator
-const fileableDisplayName = computed(() => {
-  if (!props.fileable) return '';
-
-  // Extract a readable name from the fileable type
-  const typeMap: Record<string, string> = {
-    Meeting: 'Posėdis',
-    Institution: 'Institucija',
-    Duty: 'Pareigos',
-    Type: 'Tipas',
-  };
-
-  const typeName = typeMap[props.fileable.type] || props.fileable.type;
-
-  const fileableObj = props.fileable as { fileable_name?: string } | undefined;
-  if (fileableObj?.fileable_name) {
-    return `${typeName}: ${fileableObj.fileable_name}`;
-  }
-
-  return typeName;
 });
 
 // Fuse.js fuzzy search
@@ -326,10 +272,6 @@ async function fetchFiles(path: string) {
   loading.value = true;
   try {
     const params: Record<string, string> = { path };
-    if (props.fileable) {
-      params.fileable_type = props.fileable.type;
-      params.fileable_id = String(props.fileable.id);
-    }
 
     const { data } = await useFetch(
       route('api.v1.admin.sharepoint.driveItems', params),
@@ -404,11 +346,6 @@ function navigateToPath(path: string) {
 
 function refreshFiles() {
   fetchFiles(currentPath.value);
-}
-
-function handleFileUploaderClose() {
-  showFileUploader.value = false;
-  refreshFiles();
 }
 
 async function handleCreateFolder() {
@@ -490,14 +427,4 @@ function handleSharepointFileDelete() {
   // No associated record found - cannot delete backend state
   toast.error($t('Nepavyko ištrinti failo: failas nėra susietas su jokiu įrašu'));
 }
-
-function handleUploadModeChange(value: boolean) {
-  if (value) {
-    showFileUploader.value = true;
-  }
-}
-
-// Provide handlers for child components (legacy support)
-provide('handleFileSelect', handleFileClick);
-provide('handleFileDblClick', handleFileDoubleClick);
 </script>

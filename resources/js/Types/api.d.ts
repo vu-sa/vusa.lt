@@ -132,39 +132,6 @@ export interface DirectoryItem {
   type: 'directory';
 }
 
-/**
- * Fileable files response
- * Route: GET /api/v1/admin/fileables/{type}/{id}/files
- */
-export interface FileableFileData {
-  id: number;
-  fileable_type: string;
-  fileable_id: number;
-  sharepoint_id: string;
-  name: string;
-  file_type: string;
-  file_date: string | null;
-  description: string | null;
-  web_url: string;
-  created_at: string;
-  updated_at: string;
-}
-
-/**
- * Potential fileables response
- * Route: GET /api/v1/admin/sharepoint/potential-fileables
- */
-export interface PotentialFileablesData {
-  institutions: Array<{
-    id: number;
-    name: string;
-    meetings: Array<{ id: number; start_time: string }>;
-  }>;
-  types: Array<{
-    id: number;
-    title: string;
-  }>;
-}
 
 /**
  * Tutorial progress response

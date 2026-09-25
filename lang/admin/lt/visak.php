@@ -26,14 +26,10 @@ return [
     'user_tenant_scope' => [
         'title' => 'Tavo institucijų padaliniai',
         'description' => 'Pasirinkimas taikomas tavo institucijų suvestinei, susitikimams ir laiko juostai.',
-        'spotlight_title' => 'Filtruok savo institucijas pagal padalinį',
-        'spotlight_description' => 'Jei atstovauji kelių padalinių institucijose, pasirink, kurių padalinių informaciją nori matyti. Tas pats pasirinkimas veikia ir viso ekrano laiko juostoje.',
     ],
     'institution_summary' => [
         'title' => 'Padalinių institucijų būklė',
         'description' => 'Greita pasirinkto padalinio institucijų veiklos suvestinė',
-        'spotlight_title' => 'Institucijų būklės suvestinė',
-        'spotlight_description' => 'Pasirinkite vieną ar kelis padalinius ir vienoje vietoje peržiūrėkite jų institucijų būklę, atstovų aktyvumą bei laiko juostą.',
         'all' => 'Visos',
         'needs_attention' => 'Reikia dėmesio',
         'overdue' => 'Vėluoja',
@@ -51,8 +47,6 @@ return [
         'last_meeting' => 'Paskutinis susitikimas: :date',
         'overview_tab' => 'Apžvalga',
         'trend_tab' => 'Pokyčiai',
-        'trend_spotlight_title' => 'Būklės pokyčiai laikui bėgant',
-        'trend_spotlight_description' => 'Peržiūrėkite, kaip institucijų būklė keitėsi diena iš dienos, ir pastebėkite gerėjimo ar blogėjimo tendencijas.',
         'trend_description' => 'Kaip institucijų būklė keitėsi diena iš dienos',
         'trend_empty' => 'Šiam laikotarpiui duomenų nėra',
         'trend_range_days' => ':days d.',
@@ -145,10 +139,6 @@ return [
             'phone_link' => 'Atverti posėdžių sąrašą',
         ],
         'tenant_link' => 'Padalinių apžvalga',
-        'tenant_spotlight' => [
-            'title' => 'Padalinio vaizdas persikėlė',
-            'description' => 'Padalinių institucijų būklę, atstovų aktyvumą ir laiko juostą dabar rasi atskirame skyriuje „Padaliniai“.',
-        ],
     ],
 
     'tenant_overview' => [

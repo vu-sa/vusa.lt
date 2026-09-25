@@ -57,6 +57,7 @@ describe('InstitutionStatusTrendChart', () => {
     });
 
     expect(wrapper.text()).not.toContain('visak.institution_summary.trend_empty');
+    expect(wrapper.find('[data-slot="institution-trend-skeleton"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="trend-chart-svg"]').exists()).toBe(false);
   });
 
@@ -74,6 +75,7 @@ describe('InstitutionStatusTrendChart', () => {
     await wrapper.setProps({ data: [point('2026-05-01'), point('2026-05-02')], loading: false });
 
     expect(wrapper.find('[data-testid="trend-chart-svg"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="institution-trend-skeleton"]').exists()).toBe(false);
   });
 
   it('renders the chart and a legend entry per status series once data arrives', () => {

@@ -16,7 +16,7 @@
     </template>
 
     <template #fact-managers>
-      <UsersFactList :users="institution.managers ?? []" />
+      <UsersFactList :users="institution.managers ?? []" :inline-limit="2" class="mt-1" />
     </template>
 
     <template #overview>
@@ -105,20 +105,11 @@
                 {{ $t('secretaries.institution.description') }}
               </p>
             </div>
-            <SpotlightPopover
-              :title="$t('secretaries.spotlight.title')"
-              :description="$t('secretaries.spotlight.description')"
-              :is-dismissed="!secretariesSpotlight.isVisible.value"
-              position="top"
-              @dismiss="secretariesSpotlight.dismiss"
-            >
-              <SecretariesSection
-                :institution-id="institution.id"
-                :rosters="management.secretaryRosters"
-                :suggested="management.suggestedSecretaries"
-                @engaged="secretariesSpotlight.dismiss"
-              />
-            </SpotlightPopover>
+            <SecretariesSection
+              :institution-id="institution.id"
+              :rosters="management.secretaryRosters"
+              :suggested="management.suggestedSecretaries"
+            />
           </section>
         </div>
       </Deferred>
@@ -136,17 +127,13 @@
     </template>
 
     <template #files>
-      <div class="space-y-6">
-        <Suspense v-if="institution.types.length > 0">
-          <SimpleFileViewer :fileable="{ id: institution.id, type: 'Institution' }" />
-          <template #fallback>
-            <div class="flex h-24 items-center justify-center text-sm text-muted-foreground">
-              {{ $t('Kraunami susiję failai...') }}
-            </div>
-          </template>
-        </Suspense>
-        <FileManager :starting-path="institution.sharepointPath ?? undefined" :fileable="{ id: institution.id, type: 'Institution' }" />
-      </div>
+      <FileableFilesPanel
+        :fileable="{ id: institution.id, type: 'Institution' }"
+        :files
+        :type-files
+        :can-upload="can.update && !!institution.sharepointPath"
+        :can-delete="can.update"
+      />
     </template>
 
     <template #tasks>
@@ -207,7 +194,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { Deferred, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -232,18 +219,17 @@ import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { enterInstitution } from '@/Composables/useRecordTrail';
 import { useShowPageData } from '@/Composables/useShowPageData';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 import { institutionActivityStatuses, type StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { AssignDutyUserSheet } from '@/Features/Admin/Occupancy';
-import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
+import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
@@ -268,6 +254,9 @@ const props = defineProps<{
   meetings?: InstitutionPageMeeting[];
   tasks?: InstitutionPageTask[];
   relatedInstitutions?: InstitutionPageRelatedInstitution[];
+  /** Deferred (`files`). */
+  files?: FileableFileItem[];
+  typeFiles?: FileableFileItem[];
   /** Deferred, and null unless the user may update the institution. */
   management?: {
     cadences: CadenceRow[];
@@ -284,9 +273,10 @@ const props = defineProps<{
   } | null;
 }>();
 
+watch(() => props.institution.id, () => enterInstitution(props.institution), { immediate: true });
+
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 const RelatedInstitutions = defineAsyncComponent(() => import('@/Components/Carousels/RelatedInstitutions.vue'));
-const FileManager = defineAsyncComponent(() => import('@/Features/Admin/SharepointFileManager/SharepointFileManager.vue'));
 
 // --- Sections ---------------------------------------------------------------------------------
 
@@ -576,9 +566,4 @@ const openTermSheet = (duty: DutyWithUsers, user: UserWithPivot) => {
   sheetUser.value = user;
   assignSheetOpen.value = true;
 };
-
-// --- Spotlight (secretaries moved here from the form) -----------------------------------------
-
-const secretariesSpotlight = useFeatureSpotlight('institution-secretaries-v1');
-
 </script>

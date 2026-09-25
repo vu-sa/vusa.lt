@@ -36,7 +36,7 @@ it('has admin API routes', function (): void {
         ->and(Route::has('api.v1.admin.files.index'))->toBeTrue()
         ->and(Route::has('api.v1.admin.files.allowedTypes'))->toBeTrue()
         ->and(Route::has('api.v1.admin.fileables.files'))->toBeTrue()
-        ->and(Route::has('api.v1.admin.sharepoint.potentialFileables'))->toBeTrue()
+        ->and(Route::has('api.v1.admin.fileables.inherited'))->toBeTrue()
         ->and(Route::has('api.v1.admin.tutorials.progress'))->toBeTrue();
 });
 

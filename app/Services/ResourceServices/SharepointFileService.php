@@ -16,9 +16,19 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Microsoft\Kiota\Abstractions\ApiException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SharepointFileService
 {
+    private ?SharepointGraphService $graph = null;
+
+    /** Resolved through the container so tests can bind a fake instead of reaching Graph. */
+    protected function graph(): SharepointGraphService
+    {
+        return $this->graph ??= app(SharepointGraphService::class, ['driveId' => config('filesystems.sharepoint.vusa_drive_id')]);
+    }
+
     public function generateUniqueFolderName(string $fileable_id, string $fileable_name)
     {
         // name + last 4 characters of id
@@ -109,13 +119,26 @@ class SharepointFileService
     }
 
     /**
+     * Null when the record cannot have a folder yet (e.g. its institution has no tenant),
+     * which is what hides the upload action instead of a 500 on the page.
+     */
+    public static function pathOrNull(Model $fileable): ?string
+    {
+        try {
+            return self::pathForFileableDriveItem($fileable);
+        } catch (HttpException) {
+            return null;
+        }
+    }
+
+    /**
      * Upload file to SharePoint and create local FileableFile record.
      */
     public function uploadFile(UploadedFile $file, string $filename, Model $fileable, array $listItemProperties): FileableFile
     {
         StagingProtection::ensureSharepointIsWritable();
 
-        $sharepointService = new SharepointGraphService(driveId: config('filesystems.sharepoint.vusa_drive_id'));
+        $sharepointService = $this->graph();
 
         $folderPath = self::pathForFileableDriveItem($fileable);
         $filePath = $folderPath.'/'.$filename;
@@ -127,8 +150,9 @@ class SharepointFileService
             'fileable_type' => $fileable->getMorphClass(),
             'fileable_id' => $fileable->getKey(),
             'sharepoint_id' => $driveItem->getId(),
-            'sharepoint_path' => $filePath,
-            'name' => $filename,
+            // Graph renames on conflict ("x (1).pdf"), so keep the name it actually stored.
+            'sharepoint_path' => $folderPath.'/'.($driveItem->getName() ?? $filename),
+            'name' => $driveItem->getName() ?? $filename,
             'file_type' => $listItemProperties['Type'] ?? null,
             'mime_type' => $file->getMimeType(),
             'size_bytes' => $file->getSize(),
@@ -153,5 +177,41 @@ class SharepointFileService
         }
 
         return $fileableFile;
+    }
+
+    /**
+     * The anonymous view link readers open the file with — they hold no VU SA tenant account,
+     * so SharePoint's own webUrl is useless to them. Reuses an existing link before minting one.
+     */
+    public function publicLinkFor(FileableFile $file): string
+    {
+        if ($file->public_link && ! $file->hasExpiredPublicLink()) {
+            return $file->public_link;
+        }
+
+        $graph = $this->graph();
+
+        $permission = $graph->getDriveItemPublicLink($file->sharepoint_id)
+            ?? $graph->createPublicPermission($graph->siteId, $file->sharepoint_id, false);
+
+        $url = $permission->getLink()?->getWebUrl();
+
+        if ($url === null) {
+            throw new \RuntimeException('SharePoint returned a sharing link without a URL.');
+        }
+
+        $file->update(['public_link' => $url, 'public_link_expires_at' => null]);
+
+        return $url;
+    }
+
+    public function deleteFile(FileableFile $file): void
+    {
+        $this->graph()->deleteDriveItem($file->sharepoint_id);
+    }
+
+    public static function isNotFound(\Throwable $e): bool
+    {
+        return $e instanceof ApiException && $e->getResponseStatusCode() === 404;
     }
 }

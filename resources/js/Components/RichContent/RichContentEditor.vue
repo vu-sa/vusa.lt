@@ -32,18 +32,10 @@
         </div>
 
         <div class="flex items-center">
-          <SpotlightPopover
-            :title="$t('rich-content.spotlight.title')"
-            :description="$t('rich-content.spotlight.description')"
-            :is-dismissed="editorSpotlight.isDismissed.value"
-            position="top-right"
-            @dismiss="editorSpotlight.dismiss"
-          >
-            <Button type="button" variant="outline" class="gap-1.5" @click="handleOpenEditor">
-              <Pencil class="size-4" />
-              {{ $t('rich-content.edit_content') }}
-            </Button>
-          </SpotlightPopover>
+          <Button type="button" variant="outline" class="gap-1.5" @click="isFullscreenOpen = true">
+            <Pencil class="size-4" />
+            {{ $t('rich-content.edit_content') }}
+          </Button>
         </div>
       </div>
 
@@ -75,8 +67,6 @@ import RCFullscreenEditor from './Editor/Fullscreen/RCFullscreenEditor.vue';
 import { deriveBlockSummary } from './Editor/blockSummary';
 import { getContentType, type ContentPart } from './Types';
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { Button } from '@/Components/ui/button';
 
 defineProps<{
@@ -108,11 +98,4 @@ onMounted(() => {
 const { commit, undo, redo, canUndo, canRedo } = useManualRefHistory(contents, { clone: true, capacity: 30 });
 
 const isFullscreenOpen = ref(false);
-
-const editorSpotlight = useFeatureSpotlight('rich-content-fullscreen-v1');
-
-function handleOpenEditor(): void {
-  editorSpotlight.dismiss();
-  isFullscreenOpen.value = true;
-}
 </script>

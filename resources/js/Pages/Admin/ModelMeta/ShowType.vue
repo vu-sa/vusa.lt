@@ -41,17 +41,9 @@
     </template>
     <template #models>
       <div class="max-w-3xl">
-        <SpotlightPopover
-          v-if="can.update"
-          :title="$t('Susieti įrašai')"
-          :description="$t('Susietus įrašus dabar tvarkyk šio tipo puslapyje.')"
-          :is-dismissed="modelsSpotlight.isDismissed.value"
-          @dismiss="modelsSpotlight.dismiss"
-        >
-          <Button variant="outline" class="mb-4" @click="openModels">
-            {{ $t('Tvarkyti susietus įrašus') }}
-          </Button>
-        </SpotlightPopover>
+        <Button v-if="can.update" variant="outline" class="mb-4" @click="openModels">
+          {{ $t('Tvarkyti susietus įrašus') }}
+        </Button>
         <div class="divide-y divide-border border-y border-border">
           <div v-for="model in attachedModels" :key="model.id" class="py-3 text-sm font-medium">
             {{ model.name }}
@@ -77,9 +69,14 @@
         </div>
       </div>
     </template>
-    <template v-if="sharepointPath && can.update" #files>
+    <template #files>
       <div class="max-w-4xl">
-        <FileManager :starting-path="sharepointPath" :fileable="{ id: contentType.id, type: 'Type' }" />
+        <FileableFilesPanel
+          :fileable="{ id: contentType.id, type: 'Type' }"
+          :files
+          :can-upload="can.update && !!sharepointPath"
+          :can-delete="can.update"
+        />
       </div>
     </template>
   </RecordPage>
@@ -114,13 +111,11 @@ import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Edit, Trash2 } from 'lucide-vue-next';
 
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { ModelEnum } from '@/Types/enums';
 
 type Translation = string | { lt?: string; en?: string } | null | undefined;
@@ -129,7 +124,9 @@ const props = defineProps<{
   attachedModels: Array<{ id: string; name: string }>;
   modelOptions?: Array<{ id: string; name?: string; title?: Translation }>;
   roleOptions?: Array<{ id: string; name: string }>;
-  sharepointPath?: string;
+  sharepointPath?: string | null;
+  /** Deferred (`files`). */
+  files?: FileableFileItem[];
   can: { update: boolean; delete: boolean };
 }>();
 const section = ref('overview');
@@ -141,7 +138,6 @@ const rolesProcessing = ref(false);
 const modelSearch = ref('');
 const modelIds = ref(props.attachedModels.map(model => model.id));
 const roleIds = ref(props.contentType.roles?.map(role => role.id) ?? []);
-const modelsSpotlight = useFeatureSpotlight('type-relations-v1');
 const localized = (value: Translation): string => typeof value === 'string' ? value : value?.[getActiveLanguage() as 'lt' | 'en'] ?? value?.lt ?? value?.en ?? '';
 const title = computed(() => localized(props.contentType.title));
 const description = computed(() => localized(props.contentType.description));
@@ -155,7 +151,6 @@ function toggleRole(id: string, checked: boolean): void {
   roleIds.value = checked ? [...new Set([...roleIds.value, id])] : roleIds.value.filter(value => value !== id);
 }
 function openModels(): void {
-  modelsSpotlight.dismiss();
   modelIds.value = props.attachedModels.map(model => model.id);
   modelsOpen.value = true;
   router.reload({ only: ['modelOptions'] });
@@ -190,7 +185,9 @@ const sections = computed<RecordPageSection[]>(() => [
   { value: 'overview', label: $t('Apžvalga') },
   { value: 'models', label: $t('Susieti įrašai'), count: props.attachedModels.length },
   { value: 'roles', label: $t('Rolės'), count: props.contentType.roles?.length },
-  ...(props.sharepointPath && props.can.update ? [{ value: 'files', label: $t('Failai') }] : []),
+  // Type files are reference documents for every duty or institution of the type, so anyone who can
+  // see the type reads them; only uploading needs update and a folder.
+  ...(props.sharepointPath || props.files?.length ? [{ value: 'files', label: $t('Failai') }] : []),
 ]);
 const primaryAction = computed<RecordAction | undefined>(() => props.can.update ? { key: 'edit', label: $t('Redaguoti'), icon: Edit } : undefined);
 const overflowActions = computed<RecordAction[]>(() => props.can.delete ? [{ key: 'delete', label: $t('Šalinti'), icon: Trash2, destructive: true }] : []);

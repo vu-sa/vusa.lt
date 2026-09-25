@@ -44,20 +44,7 @@
       :label="`${capitalize($tChoice('entities.problem.description', 1))} (${activeLocale.toUpperCase()})`"
       :error="form.errors[`description.${activeLocale}`]"
     >
-      <TiptapEditor
-        v-if="activeLocale === 'lt'"
-        v-model="form.description.lt"
-        preset="full"
-        html
-        framed
-      />
-      <TiptapEditor
-        v-else
-        v-model="form.description.en"
-        preset="full"
-        html
-        framed
-      />
+      <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
     </FormFieldWrapper>
 
     <FormFieldWrapper
@@ -66,20 +53,7 @@
       :hint="$t('Aprašykite veiksmus, kurie jau buvo atlikti bandant išspręsti šią problemą.')"
       :error="form.errors[`steps_taken.${activeLocale}`]"
     >
-      <TiptapEditor
-        v-if="activeLocale === 'lt'"
-        v-model="form.steps_taken.lt"
-        preset="full"
-        html
-        framed
-      />
-      <TiptapEditor
-        v-else
-        v-model="form.steps_taken.en"
-        preset="full"
-        html
-        framed
-      />
+      <TiptapEditor :key="activeLocale" v-model="form.steps_taken[activeLocale]" tools="description" html />
     </FormFieldWrapper>
 
     <FormFieldWrapper
@@ -88,20 +62,7 @@
       :hint="$t('Aprašykite problemos sprendimą, jei toks jau rastas. Šis laukas gali būti užpildytas vėliau.')"
       :error="form.errors[`solution.${activeLocale}`]"
     >
-      <TiptapEditor
-        v-if="activeLocale === 'lt'"
-        v-model="form.solution.lt"
-        preset="full"
-        html
-        framed
-      />
-      <TiptapEditor
-        v-else
-        v-model="form.solution.en"
-        preset="full"
-        html
-        framed
-      />
+      <TiptapEditor :key="activeLocale" v-model="form.solution[activeLocale]" tools="description" html />
     </FormFieldWrapper>
 
     <template #aside>
@@ -160,7 +121,7 @@
             :filter-function="() => userOptions"
             @update:model-value="handleUserSelect"
           >
-            <ComboboxAnchor class="flex h-9 w-full items-center justify-between gap-2 border border-input bg-card px-3 py-2 text-sm">
+            <ComboboxAnchor class="flex h-9 w-full items-center justify-between gap-2 border border-border bg-card px-3 py-2 text-sm">
               <ComboboxInput
                 :display-value="(val: unknown) => (val as UserOption)?.name ?? ''"
                 :placeholder="capitalize($tChoice('entities.problem.responsible_user', 1))"

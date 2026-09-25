@@ -184,10 +184,6 @@ return [
             'no_scope' => 'Pasirinkite instituciją, kad matytumėte laikotarpius.',
         ],
 
-        'spotlight' => [
-            'title' => 'Laikotarpius galima tvarkyti vienoje vietoje',
-            'description' => 'Vietoj to, kad kiekvieno nario laikotarpį redaguotumėte atskirai, atidarykite laiko juostą ir sutvarkykite visus iš karto.',
-        ],
     ],
 
     'assign' => [

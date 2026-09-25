@@ -39,8 +39,15 @@
               />
             </div>
 
-            <div v-if="isFetching" class="space-y-2">
-              <Skeleton v-for="index in 5" :key="index" class="h-14" />
+            <div v-if="isFetching" class="divide-y divide-border border-y border-border" aria-hidden="true">
+              <div v-for="index in 5" :key="index" class="flex items-center gap-3 py-3">
+                <Skeleton class="size-8 shrink-0 rounded-full" />
+                <div class="flex min-w-0 flex-1 flex-col gap-2">
+                  <Skeleton class="h-4 w-36 max-w-full" />
+                  <Skeleton class="h-3 w-28 max-w-full" />
+                </div>
+                <Skeleton class="h-3 w-16 shrink-0" />
+              </div>
             </div>
 
             <div v-else class="max-h-[55vh] divide-y divide-border overflow-y-auto border-y border-border">

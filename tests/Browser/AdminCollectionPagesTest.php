@@ -1,6 +1,9 @@
 <?php
 
 use App\Models\Page;
+use App\Models\Reservation;
+use App\Models\Resource;
+use App\Models\ResourceCategory;
 use App\Models\Task;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,6 +75,44 @@ const ADMIN_PAGES = [
     '/mano/profile/roles',
     '/mano/search?q=senatas',
 ];
+
+it('keeps reservation actions visible beside a two-line title at table widths', function (): void {
+    $page = openAdminPage('/mano/reservations', 1440, 900, function ($user): void {
+        $reservation = Reservation::factory()->create([
+            'name' => 'Labai ilgas rezervacijos pavadinimas studentų renginiui auditorijoje',
+        ]);
+        $reservation->users()->attach($user->id);
+        $resource = Resource::factory()->create([
+            'tenant_id' => Tenant::query()->first()->id,
+            'resource_category_id' => ResourceCategory::factory()->create()->id,
+            'is_reservable' => true,
+        ]);
+        $reservation->resources()->attach($resource->id, [
+            'quantity' => 1,
+            'start_time' => $reservation->start_time,
+            'end_time' => $reservation->end_time,
+            'state' => 'created',
+        ]);
+    });
+
+    foreach ([1440, 1180, 820] as $width) {
+        $page->resize($width, 900);
+        waitForInertiaRender($page, '[data-slot=collection-table]');
+
+        expect($page->script('(function () { const table = document.querySelector("[data-slot=collection-table]"); const title = table.querySelector("[data-slot=collection-primary-cell] a"); const actions = table.querySelector("[data-slot=reservation-row-actions]"); return getComputedStyle(title).webkitLineClamp === "2" && actions.getBoundingClientRect().right <= table.getBoundingClientRect().right; })()'))->toBeTrue();
+    }
+
+    expect($page->script('(function () { const title = document.querySelector("[data-slot=collection-table] [data-slot=collection-primary-cell] a"); return title.getBoundingClientRect().height > parseFloat(getComputedStyle(title).lineHeight) * 1.5; })()'))->toBeTrue();
+
+    $page->click('[data-slot=collection-table] [data-slot=reservation-row-actions] button[aria-label="Veiksmai"]')
+        ->assertPresent('[data-slot=dropdown-menu-content]');
+    expect($page->script('document.querySelector("[data-slot=dropdown-menu-content]").getBoundingClientRect().right <= window.innerWidth'))->toBeTrue();
+
+    $page->resize(390, 844);
+    $page->assertPresent('[data-slot=collection-rows] [data-slot=reservation-row-actions]')
+        ->assertNoJavaScriptErrors();
+    expect(settlesWithoutSidewaysScroll($page))->toBeTrue();
+});
 
 // One login for the sweep: a login per page would cost more than every assertion here combined.
 it('mounts every admin page without JavaScript errors and fits a phone without scrolling sideways', function (): void {

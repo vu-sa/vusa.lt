@@ -184,10 +184,6 @@ return [
             'no_scope' => 'Pick an institution to see its periods.',
         ],
 
-        'spotlight' => [
-            'title' => 'Periods can be managed in one place',
-            'description' => 'Instead of editing each member’s period on its own page, open the timeline and fix them all at once.',
-        ],
     ],
 
     'assign' => [

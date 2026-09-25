@@ -22,7 +22,7 @@ const stubs = {
   },
   MeetingNavigationCards: { template: '<div />' },
   DiscussionPanel: { template: '<div />' },
-  FileManager: { name: 'FileManager', template: '<div data-testid="file-manager" />' },
+  FileableFilesPanel: { name: 'FileableFilesPanel', template: '<div data-testid="files-panel" />' },
   TaskManager: { name: 'TaskManager', template: '<div data-testid="task-manager" />' },
   MeetingForm: { template: '<div />' },
   AddAgendaItemsSheet: {
@@ -147,7 +147,7 @@ describe('ShowMeeting.vue', () => {
 
     expect(wrapper.find('[data-testid="agenda-list"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="agenda-list"]').element.closest('section')?.className).toContain('md:block');
-    expect(wrapper.find('[data-testid="file-manager"]').element.closest('section')?.className).toContain('md:hidden');
+    expect(wrapper.find('[data-testid="files-panel"]').element.closest('section')?.className).toContain('md:hidden');
   });
 
   /**
@@ -275,8 +275,8 @@ describe('ShowMeeting.vue', () => {
 
     const wrapper = createWrapper();
 
-    expect(wrapper.find('[data-testid="file-manager"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="file-manager"]').element.closest('section')?.className).toContain('md:block');
+    expect(wrapper.find('[data-testid="files-panel"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="files-panel"]').element.closest('section')?.className).toContain('md:block');
     expect(wrapper.find('[data-testid="agenda-list"]').element.closest('section')?.className).toContain('md:hidden');
   });
 

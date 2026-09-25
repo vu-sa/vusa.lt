@@ -163,5 +163,10 @@ return [
         'file_deleted' => 'File deleted.',
         'invalid_request' => 'Invalid request. Please report this to an administrator.',
         'deleted_locally_only' => 'The file was marked as deleted, but the SharePoint operation failed.',
+        'uploaded_many' => 'Files uploaded: :count.',
+        'uploaded_partially' => 'Uploaded :uploaded of :total. Failed: :failed.',
+        'upload_failed' => 'Could not upload: :failed.',
+        'link_failed' => 'Could not open the file. Try again or contact an administrator.',
+        'file_missing' => 'This file is no longer in SharePoint.',
     ],
 ];

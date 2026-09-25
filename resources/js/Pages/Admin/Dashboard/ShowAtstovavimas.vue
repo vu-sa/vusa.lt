@@ -13,45 +13,34 @@
         :selected-tenants="timelineFilters.userTenantFilter.value"
         @update:selected-tenants="timelineFilters.setUserTenantFilter"
       />
-      <!-- The padalinys view used to be a switch on this page; it is a section of its own now. -->
-      <SpotlightPopover
-        v-if="canViewTenantOverview"
-        :title="$t('visak.overview.tenant_spotlight.title')"
-        :description="$t('visak.overview.tenant_spotlight.description')"
-        position="bottom"
-        :is-dismissed="tenantSpotlight.isDismissed.value"
-        @dismiss="tenantSpotlight.dismiss"
-      >
-        <Button as-child variant="ghost" size="sm" class="pointer-coarse:h-11">
-          <Link :href="route('dashboard.atstovavimas.padaliniai')" @click="tenantSpotlight.dismiss">
-            {{ $t('visak.overview.tenant_link') }}
-            <ArrowRight aria-hidden="true" />
-          </Link>
-        </Button>
-      </SpotlightPopover>
+      <Button v-if="canViewTenantOverview" as-child variant="ghost" size="sm" class="pointer-coarse:h-11">
+        <Link :href="route('dashboard.atstovavimas.padaliniai')">
+          {{ $t('visak.overview.tenant_link') }}
+          <ArrowRight aria-hidden="true" />
+        </Link>
+      </Button>
     </template>
+
+    <OverviewNumbers :numbers />
 
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-primary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
-        <OverviewNumbers :numbers />
-        <InstitutionsNeedingAttention :institutions="attention" @record="recordMeetingFor" />
+        <InstitutionsNeedingAttention :institutions="attention" @record="recordActivityFor" />
         <UpcomingMeetingsList :meetings="scopedUpcoming" :total="scopedUpcomingTotal" :href="route('meetings.index')" />
       </div>
 
-      <!-- Empty sections above collapse into the all-clear list, placed here under the coordinators. -->
       <aside class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <Deferred data="coordinators">
           <template #fallback>
-            <Skeleton class="h-16 w-full" />
+            <CoordinatorSkeleton />
           </template>
           <CoordinatorCard :coordinators="coordinators ?? []" compact />
         </Deferred>
-        <!-- No skeleton: most people follow nothing, and the block then never appears. -->
-        <Deferred data="followedInstitutions">
+        <!-- No skeleton: most duty types have no reference files yet, and the block then never appears. -->
+        <Deferred data="referenceDocuments">
           <template #fallback />
-          <FollowedInstitutionsList v-if="followedInstitutions?.total" :followed="followedInstitutions" />
+          <ReferenceDocumentTiles v-if="referenceDocuments?.length" :files="referenceDocuments" />
         </Deferred>
-        <OverviewStatusList />
       </aside>
     </div>
 
@@ -82,12 +71,26 @@
         />
       </div>
     </section>
-    <p v-else class="border-t border-border pt-3 text-sm text-muted-foreground">
+    <p v-else class="border-t border-border pt-3 text-sm text-muted-foreground" data-slot="atstovavimas-timeline-phone-note">
       {{ $t('visak.overview.timeline.phone_note') }}
       <Link :href="route('meetings.index')" class="text-foreground underline underline-offset-4">
         {{ $t('visak.overview.timeline.phone_link') }}
       </Link>
     </p>
+
+    <Deferred data="followedInstitutions">
+      <template #fallback />
+      <FollowedInstitutionsList v-if="followedInstitutions?.total" :followed="followedInstitutions" />
+      <OverviewSection
+        v-else-if="followedInstitutions"
+        :title="$t('Sekamos institucijos')"
+        :empty-text="$t('Dar nieko neseki')"
+        :icon="Eye"
+        empty
+      />
+    </Deferred>
+
+    <OverviewStatusList />
 
     <!-- FullscreenGanttModal first so dialogs opened from within it appear on top -->
     <FullscreenGanttModal
@@ -133,10 +136,11 @@
 import { Deferred, Link } from '@inertiajs/vue3';
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight } from 'lucide-vue-next';
+import { ArrowRight, Eye } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
+import CoordinatorSkeleton from './Components/CoordinatorSkeleton.vue';
 import TenantScopeSelector from './Components/TenantScopeSelector.vue';
 import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';
 import UserTimelineSection from './Components/UserTimelineSection.vue';
@@ -155,19 +159,18 @@ import {
 } from './utils/ganttHelpers';
 
 import { Button } from '@/Components/ui/button';
-import { Skeleton } from '@/Components/ui/skeleton';
 import { OverviewStatusList } from '@/Components/Patterns';
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import { type FileableFileItem, ReferenceDocumentTiles } from '@/Components/Files';
 import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
 import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
 import FollowedInstitutionsList from '@/Components/Home/FollowedInstitutionsList.vue';
 import type { HomeCoordinator, HomeFollowedInstitutions, HomeMeeting, InstitutionActivityInsight } from '@/Components/Home/types';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 const props = defineProps<{
   user: AtstovavimasUser;
@@ -177,13 +180,13 @@ const props = defineProps<{
   canViewTenantOverview: boolean;
   openTasksCount: number;
   coordinators?: HomeCoordinator[];
+  referenceDocuments?: FileableFileItem[];
   upcomingMeetings: { items: HomeMeeting[]; total: number };
   followedInstitutions?: HomeFollowedInstitutions;
 }>();
 
 const actionWindow = useActionWindow();
 const isAtLeastMd = useMediaQuery('(min-width: 768px)');
-const tenantSpotlight = useFeatureSpotlight('visak-tenant-overview-v1');
 
 const relatedInstitutions = computed<AtstovavimasInstitution[]>(() =>
   (props.relatedInstitutions ?? []).map(institution => ({ ...institution, id: String(institution.id) })),
@@ -270,8 +273,8 @@ const numbers = computed<OverviewNumberItem[]>(() => [
   { key: 'open_tasks', label: $t('visak.overview.numbers.open_tasks'), value: props.openTasksCount, href: route('userTasks') },
 ]);
 
-function recordMeetingFor(institution: InstitutionActivityInsight): void {
-  actionWindow.open({ flow: 'meeting.create', institution: { id: institution.id, name: institution.name } });
+function recordActivityFor(institution: InstitutionActivityInsight): void {
+  actionWindow.open({ flow: 'institution.report', institution: { id: institution.id, name: institution.name } });
 }
 
 // --- The timeline workbench -------------------------------------------------------------------

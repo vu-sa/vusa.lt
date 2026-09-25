@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetFollowedInstitutions;
+use App\Actions\GetTypeFiles;
 use App\Actions\GetUpcomingMeetingsForUser;
 use App\Actions\GetUserCoordinators;
 use App\Enums\TenantType;
@@ -28,6 +29,8 @@ use Inertia\Response;
 
 class AtstovavimasDashboardController extends AdminController
 {
+    public const int REFERENCE_DOCUMENTS_LIMIT = 8;
+
     public function __construct(
         public Authorizer $authorizer,
         private readonly InstitutionActivityStatusService $activityStatusService,
@@ -143,6 +146,11 @@ class AtstovavimasDashboardController extends AdminController
             ),
             // R-g: the human answer to "I'm stuck" belongs on every rep screen, but never on the first paint.
             'coordinators' => Inertia::defer(fn () => GetUserCoordinators::execute($user), 'secondary'),
+            // Reference files kept on the user's duty types ("Studentų atstovai" regulations, templates).
+            'referenceDocuments' => Inertia::defer(fn () => GetTypeFiles::forTypes(
+                $user->current_duties->load('types')->flatMap(fn ($duty) => $duty->types)->unique('id')->values(),
+                self::REFERENCE_DOCUMENTS_LIMIT,
+            ), 'secondary'),
         ]);
     }
 

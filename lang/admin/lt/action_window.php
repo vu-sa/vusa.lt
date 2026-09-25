@@ -3,10 +3,6 @@
 return [
     'trigger' => 'Greiti veiksmai',
     'trigger_short' => 'Veiksmai',
-    'spotlight' => [
-        'title' => 'Nežinai, nuo ko pradėti?',
-        'description' => 'Paspaudęs čia rasi dažniausius veiksmus — pranešti apie posėdį, pažymėti, kad posėdžių nebus, ar papildyti jau įvykusį posėdį.',
-    ],
     'personas' => [
         'title' => 'Ką norėtum padaryti?',
         'representative' => [

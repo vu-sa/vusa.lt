@@ -9,8 +9,6 @@ return [
     'showing_deleted_only_description' => 'These records are deleted. You can restore them or delete them permanently.',
     'exit_trash_view' => 'Leave trash view',
     'no_deleted_records' => 'No deleted records',
-    'spotlight_title' => 'Trash view is now available',
-    'spotlight_description' => 'Use this toggle to review deleted records, restore them, or permanently delete them when needed.',
 
     'restore' => 'Restore',
     'restore_conflict' => 'The record could not be restored — another record took its value while it was deleted.',

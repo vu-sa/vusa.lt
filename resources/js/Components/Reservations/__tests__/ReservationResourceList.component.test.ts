@@ -82,7 +82,7 @@ describe('ReservationResourceList', () => {
     const rows = wrapper.findAll('[data-slot="reservation-resource-row"]');
 
     expect(rows[0].find('[data-slot="reservation-row-actions"]').text()).toContain('reservations.actions.approve');
-    expect(rows[1].find('[data-slot="reservation-row-actions"]').text()).toBe('');
+    expect(rows[1].find('[data-slot="reservation-row-actions"]').text()).not.toContain('reservations.actions.approve');
   });
 
   it('opens the decision dialog for that one item, not the whole reservation', async () => {
@@ -95,6 +95,31 @@ describe('ReservationResourceList', () => {
     expect(dialog.attributes('data-open')).toBe('true');
     expect(dialog.attributes('data-decision')).toBe('approved');
     expect(dialog.attributes('data-pivots')).toBe('2');
+  });
+
+  it('keeps the main decision visible and groups rejection, cancellation, edit, and removal', async () => {
+    const wrapper = mountList([item('1', 'created', { approvable: true, cancellable: true })]);
+    const actions = wrapper.get('[data-slot="reservation-row-actions"]');
+
+    expect(actions.get('[aria-label="Veiksmai"]').exists()).toBe(true);
+    expect(actions.text()).toContain('reservations.actions.approve');
+    expect(actions.get('[data-testid="dropdown-menu-content"]').text()).toContain('reservations.actions.reject');
+    expect(actions.get('[data-testid="dropdown-menu-content"]').text()).toContain('reservations.actions.cancel_reservation');
+
+    await actions.findAll('[data-testid="dropdown-menu-content"] button')
+      .find(button => button.text().includes('reservations.actions.reject'))!.trigger('click');
+
+    expect(wrapper.get('[data-testid="decision-dialog"]').attributes('data-decision')).toBe('rejected');
+  });
+
+  it('offers backtracking through the shared actions menu', async () => {
+    const wrapper = mountList([item('1', 'reserved', { approvable: true, backtrackable: true })]);
+    const actions = wrapper.get('[data-slot="reservation-row-actions"]');
+
+    await actions.findAll('[data-testid="dropdown-menu-content"] button')
+      .find(button => button.text().includes('reservations.actions.backtrack'))!.trigger('click');
+
+    expect(wrapper.get('[data-testid="decision-dialog"]').attributes('data-decision')).toBe('backtracked');
   });
 
   it('hides edit and remove for a finished item and for someone who may not edit', () => {

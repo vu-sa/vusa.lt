@@ -90,7 +90,7 @@ export const AccessibleImage = Image.extend({
 
     return ['img', {
       ...HTMLAttributes,
-      class: `tiptap-image max-w-full h-auto rounded-md ${alignmentClasses[align] || alignmentClasses.center}`,
+      class: `tiptap-image max-w-full h-auto ${alignmentClasses[align] || alignmentClasses.center}`,
     }];
   },
 });

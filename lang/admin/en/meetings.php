@@ -32,8 +32,6 @@ return [
         'no_nearby_events' => 'No unlinked calendar events near the meeting date.',
         'draft_hint' => 'The calendar event is still a draft — the meeting is not public.',
         'published_hint' => 'The meeting is announced in the calendar and publicly visible.',
-        'spotlight_title' => 'A meeting can be announced in the calendar',
-        'spotlight_description' => 'Link the meeting to a calendar event — the agenda, times and documents then show on the event page instead of being entered separately.',
         'form_alert_title' => 'This event announces a meeting',
         'form_alert_draft' => 'While the event stays a draft the meeting\'s agenda and documents are not public. Publishing it puts them on this event\'s page.',
         'form_alert_published' => 'The meeting\'s agenda and its linked documents show on this event\'s page.',

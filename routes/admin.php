@@ -282,17 +282,18 @@ Route::get('tasks/summary', [TaskController::class, 'summary'])->name('tasks.sum
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 // GET tasks/indicator moved to API: route('api.v1.admin.tasks.indicator')
 
-Route::resource('sharepointFiles', SharepointFileController::class)->except('create', 'show', 'edit', 'update');
+Route::resource('sharepointFiles', SharepointFileController::class)->only('index', 'destroy');
 
-// FileableFiles - local metadata-based file management
-// GET endpoints moved to API: route('api.v1.admin.fileables.files'), route('api.v1.admin.fileables.inherited')
-Route::delete('fileableFiles/{fileableFile}', [SharepointFileController::class, 'destroyFileableFile'])->name('fileableFiles.destroy');
+// FileableFiles - a record's files kept in SharePoint
+Route::post('fileables/{type}/{id}/files', [FileableFileController::class, 'store'])->name('fileableFiles.store');
+Route::get('fileableFiles/{fileableFile}/open', [FileableFileController::class, 'open'])->name('fileableFiles.open');
+Route::post('fileableFiles/{fileableFile}/public-link', [FileableFileController::class, 'publicLink'])->name('fileableFiles.publicLink');
+Route::delete('fileableFiles/{fileableFile}', [FileableFileController::class, 'destroy'])->name('fileableFiles.destroy');
 
 // SharePoint integration
-// GET endpoints moved to API: route('api.v1.admin.sharepoint.potentialFileables'), route('api.v1.admin.sharepoint.driveItems')
+// GET endpoints moved to API: route('api.v1.admin.sharepoint.driveItems')
 Route::post('sharepoint/createFolder', [SharepointFileController::class, 'createFolder'])->name('sharepoint.createFolder');
 Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPublicLink'])->name('sharepoint.getDriveItemPublicLink');
-Route::get('sharepoint/{type}/{id}', [SharepointFileController::class, 'getTypesDriveItems'])->name('sharepoint.getTypesDriveItems');
 Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');
 
 // Settings routes

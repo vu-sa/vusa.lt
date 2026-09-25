@@ -51,7 +51,7 @@
                 :minute-step
                 :hour-range
                 :disabled
-                class="h-8 text-xs"
+                size="sm"
                 @update:model-value="updateTime"
               />
             </div>

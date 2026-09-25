@@ -1,10 +1,7 @@
 <template>
   <!-- Sits in the padalinys overview's aside tabs, which carry its title. -->
   <div class="flex flex-col gap-3" data-slot="representative-activity">
-    <div v-if="loading" class="flex flex-col gap-3">
-      <Skeleton class="h-8 w-32" />
-      <Skeleton v-for="row in 4" :key="row" class="h-5 w-full" />
-    </div>
+    <RepresentativeActivitySkeleton v-if="loading" />
 
     <template v-else>
       <p class="flex items-baseline gap-2">
@@ -63,10 +60,10 @@ import { computed, ref } from 'vue';
 import type { RepresentativeActivityStats, RepresentativeUser } from '../types';
 
 import RepresentativeDataTable from './RepresentativeDataTable.vue';
+import RepresentativeActivitySkeleton from './RepresentativeActivitySkeleton.vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Button } from '@/Components/ui/button';
-import { Skeleton } from '@/Components/ui/skeleton';
 import { formatRelativeTime } from '@/Utils/IntlTime';
 
 const props = defineProps<{

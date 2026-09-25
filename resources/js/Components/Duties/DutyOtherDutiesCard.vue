@@ -43,7 +43,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Users, ChevronRight } from 'lucide-vue-next';
 
-import { SectionCard } from '@/Components/ui/section-card';
+import { SectionCard } from '@/Components/Patterns';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';

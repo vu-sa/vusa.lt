@@ -12,6 +12,7 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Role;
 use App\Models\Type;
+use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 
@@ -85,7 +86,8 @@ class TypeController extends AdminController
             ])->values(),
             'modelOptions' => Inertia::optional(fn () => $type->allModelsFromModelType()),
             'roleOptions' => Inertia::optional(fn () => Role::query()->orderBy('name')->get(['id', 'name'])),
-            'sharepointPath' => $type->sharepoint_path(),
+            'sharepointPath' => SharepointFileService::pathOrNull($type),
+            'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,
                 'delete' => auth()->user()?->can('delete', $type) ?? false,

@@ -165,5 +165,10 @@ return [
         'file_deleted' => 'Failas ištrintas.',
         'invalid_request' => 'Neteisinga užklausa. Praneškite administratoriui.',
         'deleted_locally_only' => 'Failas pažymėtas kaip ištrintas, bet SharePoint operacija nepavyko.',
+        'uploaded_many' => 'Įkelta failų: :count.',
+        'uploaded_partially' => 'Įkelta :uploaded iš :total. Nepavyko: :failed.',
+        'upload_failed' => 'Nepavyko įkelti failų: :failed.',
+        'link_failed' => 'Nepavyko atidaryti failo. Pabandyk dar kartą arba parašyk administratoriui.',
+        'file_missing' => 'Šio failo SharePoint nebėra.',
     ],
 ];

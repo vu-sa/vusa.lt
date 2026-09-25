@@ -18,7 +18,7 @@ class Video extends Node
     {
         return [
             'HTMLAttributes' => [
-                'class' => 'aspect-video h-auto w-full rounded-xl shadow-lg',
+                'class' => 'rc-embed',
             ],
         ];
     }

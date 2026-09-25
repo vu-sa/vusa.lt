@@ -170,31 +170,13 @@
     </template>
 
     <template #files>
-      <div class="space-y-6">
-        <div v-if="duty.sharepointPath">
-          <h3 class="mb-4 text-base font-semibold text-foreground">
-            {{ $t('Pareigybės failai') }}
-          </h3>
-          <FileManager :starting-path="duty.sharepointPath" :fileable="{ id: duty.id, type: 'Duty' }" />
-        </div>
-
-        <div v-if="hasTypeFiles">
-          <h3 class="mb-2 text-base font-semibold text-foreground">
-            {{ $t('Susiję failai pagal tipą') }}
-          </h3>
-          <p class="mb-4 text-sm text-muted-foreground">
-            {{ $t('Šie failai yra susiję su pareigybės tipais ir yra bendrinami tarp visų tos kategorijos pareigybių.') }}
-          </p>
-          <Suspense>
-            <SimpleFileViewer :fileable="{ id: duty.id, type: 'Duty' }" />
-            <template #fallback>
-              <div class="flex h-24 items-center justify-center text-sm text-muted-foreground">
-                {{ $t('Kraunami susiję failai...') }}
-              </div>
-            </template>
-          </Suspense>
-        </div>
-      </div>
+      <FileableFilesPanel
+        :fileable="{ id: duty.id, type: 'Duty' }"
+        :files
+        :type-files
+        :can-upload="canManageDuty && !!duty.sharepointPath"
+        :can-delete="canManageDuty"
+      />
     </template>
 
     <template #activity>
@@ -269,8 +251,7 @@ import type { StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, MemberTermRow, termStatus } from '@/Features/Admin/Occupancy';
-import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
-import SimpleFileViewer from '@/Features/Admin/SharepointFileManager/Viewer/SimpleFileViewer.vue';
+import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { ModelEnum } from '@/Types/enums';
 import { todayIso } from '@/Utils/dateTime';
 
@@ -288,6 +269,9 @@ const props = defineProps<{
   otherDuties?: App.Entities.Duty[];
   /** Deferred (`dutyPanels`): only the assignment sheet's picker needs them. */
   studyPrograms?: App.Entities.StudyProgram[];
+  /** Deferred (`files`). */
+  files?: FileableFileItem[];
+  typeFiles?: FileableFileItem[];
 }>();
 
 const chipClass = 'border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground';

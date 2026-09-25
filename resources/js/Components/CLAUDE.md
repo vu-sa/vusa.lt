@@ -87,7 +87,11 @@ Rules for anything added there:
   `controlVariants({ size, active, voice })` (`voice="brand"` uppercase default for public/standard controls; `voice="sentence"` for admin quick filters, facet pills, and toolbar buttons),
   `segmentGroupClass` + `segmentVariants({ active })` for view toggles, `searchFieldClass`,
   `controlCountClass`. Don't hand-roll `border-brand bg-brand/5 …` again.
+- `ui/input` and `ui/textarea` are token-driven text controls: `inputVariants({ variant, size })` and `textareaVariants({ variant })`. Default size is `h-11` (44px touch) matching buttons and controls; use `size="sm"` (`h-9`) for compact toolbars. On form edit canvases, pass `variant="surface"` (`bg-secondary/50 border-border focus:border-brand`).
+- `ui/select` and `ui/single-select` share `selectTriggerVariants({ variant, size })`: `h-11` default height, `variant="surface"` for forms, square corners.
+- `ui/card` provides `cardVariants({ variant })` (`default`, `surface`, `interactive`, `ghost`). Hairline border, square corners, no shadows.
 - `ui/badge` defaults to sentence case / literal casing (`voice="sentence"`), with opt-in `voice="brand"` for uppercase.
+- `Brand/TagChip` provides square tag kickers with `tagChipVariants({ variant })` (`solid`, `outline`, `muted`).
 - `StatusBadge` renders sentence case by default, automatically keeping `contentStatuses` and `bannerStatuses` uppercase (or via explicit `voice="brand"`).
 - Tables style through `ui/table` (hairline box, shaded uppercase header, roomy rows).
 

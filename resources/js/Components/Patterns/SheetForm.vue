@@ -58,9 +58,10 @@
 
     <ConfirmDialog
       v-model:open="discardOpen"
-      :title="$t('Atmesti pakeitimus?')"
-      :description="$t('Neišsaugoti pakeitimai bus prarasti.')"
-      :confirm-label="$t('Atmesti')"
+      :title="$t('Uždaryti neišsaugojus?')"
+      :description="$t('Tai, ką įvedei šiame lange, nebus išsaugota.')"
+      :cancel-label="$t('Grįžti į redagavimą')"
+      :confirm-label="$t('Uždaryti neišsaugojus')"
       destructive
       @confirm="close"
     />

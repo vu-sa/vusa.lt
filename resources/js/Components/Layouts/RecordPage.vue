@@ -26,7 +26,7 @@
                 'mt-3 min-w-0 text-balance text-foreground',
                 titleVoice === 'sentence'
                   ? 'text-2xl leading-tight font-semibold tracking-tight sm:text-3xl'
-                  : 'u-display text-3xl leading-[0.95] sm:text-4xl lg:text-5xl',
+                  : 'u-display text-2xl leading-[1.12] tracking-[0.02em] sm:text-3xl xl:text-[2.125rem]',
                 titleExpanded ? undefined : 'line-clamp-3',
                 actionsBesideTitle && 'lg:col-start-1 lg:row-start-2',
               ]"
@@ -38,7 +38,8 @@
               v-if="titleOverflows || titleExpanded"
               type="button"
               :class="[
-                'mt-1 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground pointer-coarse:min-h-11',
+                // A grid item stretches, and a button centres its label, so it has to be pinned left.
+                'mt-1 justify-self-start text-left text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground pointer-coarse:min-h-11',
                 actionsBesideTitle && 'lg:col-start-1 lg:row-start-3',
               ]"
               :aria-expanded="titleExpanded"

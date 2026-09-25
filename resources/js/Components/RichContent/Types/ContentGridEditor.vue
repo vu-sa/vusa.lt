@@ -140,7 +140,7 @@
               <!-- Content editor based on content type -->
               <div class="mt-2 w-full">
                 <div v-if="column.content.type === 'tiptap'" class="w-full">
-                  <TiptapEditor v-model="column.content.value" preset="compact" :show-toolbar-toggle="true" />
+                  <TiptapEditor v-model="column.content.value" preset="compact" />
                 </div>
                 <div v-else-if="column.content.type === 'image'" class="flex flex-col gap-3">
                   <FormFieldWrapper :id="`image-${rowIndex}-${colIndex}`" :label="$t('rich-content.image')">

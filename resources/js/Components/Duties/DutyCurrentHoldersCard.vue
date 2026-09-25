@@ -61,7 +61,7 @@ import { Users, UserPlus, UserX } from 'lucide-vue-next';
 
 import DutyHolderCard from './DutyHolderCard.vue';
 
-import { SectionCard } from '@/Components/ui/section-card';
+import { SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 
 const props = withDefaults(defineProps<{

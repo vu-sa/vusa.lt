@@ -1,10 +1,14 @@
+import { usePage } from '@inertiajs/vue3';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flushPromises, mount } from '@vue/test-utils';
+import { reactive } from 'vue';
 
 import SectionTabs from '../SectionTabs.vue';
 
 import { atstovavimas, pradzia, rezervacijos, section, workspace } from './fixtures';
 
+import { clearTrail, enterAgendaItem } from '@/Composables/useRecordTrail';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -73,6 +77,74 @@ describe('SectionTabs', () => {
   it('renders nothing without a workspace', () => {
     expect(mount(SectionTabs).find('nav').exists()).toBe(false);
     expect(mount(SectionTabs, { props: { workspace: workspace('empty', []) } }).find('nav').exists()).toBe(false);
+  });
+
+  describe('on the institution → meeting → agenda item trail', () => {
+    const visak = workspace('atstovavimas', [
+      section('apzvalga', 'dashboard.atstovavimas'),
+      section('institucijos', 'institutions.index'),
+      section('posedziai', 'meetings.index'),
+      section('darbotvarkes_klausimai', 'agendaItems.index'),
+    ]);
+    const meeting = { id: 'm1', start_time: '2026-09-12T10:00:00', institutions: [{ id: 'senatas', name: 'Vilniaus universiteto senatas' }] };
+
+    const onAgendaItem = () => {
+      vi.mocked(usePage).mockReturnValue(reactive({ ...createMockPage(), component: 'Admin/Representation/ShowAgendaItem' }) as ReturnType<typeof usePage>);
+      clearTrail();
+      enterAgendaItem({ id: 'a1', title: 'Dėl studijų programų' }, 3, meeting);
+    };
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      clearTrail();
+    });
+
+    it('lets the parent tabs stand in for their records, with the collection behind the chevron', () => {
+      onAgendaItem();
+      const wrapper = mount(SectionTabs, { props: { workspace: visak, activeSection: visak.sections[3] }, global: { stubs: commonStubs } });
+      const [institution, meetingTab] = wrapper.findAll('[data-slot="section-tab-crumb"]');
+
+      expect(wrapper.findAll('[data-slot="section-tab-crumb"]')).toHaveLength(3);
+      expect(institution.find('a').attributes('href')).toBe('/mocked-route/institutions.show?institution=senatas');
+      expect(institution.find('a .truncate').text()).toBe('Vilniaus universiteto senatas');
+      expect(institution.find('[data-testid="dropdown-menu-content"] a').attributes('href')).toBe('/mocked-route/institutions.index');
+      expect(meetingTab.find('a').attributes('href')).toBe('/mocked-route/meetings.show?meeting=m1');
+      expect(meetingTab.find('a .truncate').text()).toBe('2026-09-12');
+      expect(meetingTab.find('[data-testid="dropdown-menu-content"] a').attributes('href')).toBe('/mocked-route/meetings.index');
+      expect(meetingTab.classes()).toContain('border-transparent');
+      expect(meetingTab.find('a').attributes('aria-current')).toBeUndefined();
+    });
+
+    it('names the active tab after the current record, keeping its active rule', () => {
+      onAgendaItem();
+      const wrapper = mount(SectionTabs, { props: { workspace: visak, activeSection: visak.sections[3] }, global: { stubs: commonStubs } });
+      const [overview, , , agendaItems] = wrapper.findAll('li');
+      const current = agendaItems.find('[data-slot="section-tab-crumb"]');
+
+      expect(overview.find('a').attributes('href')).toBe('/mocked-route/dashboard.atstovavimas');
+      expect(current.classes()).toContain('border-brand-fill');
+      expect(current.find('a').attributes('aria-current')).toBe('page');
+      expect(current.find('a .truncate').text()).toBe('shell.trail.agenda_item');
+      expect(current.find('[data-testid="dropdown-menu-content"] a').attributes('href')).toBe('/mocked-route/agendaItems.index');
+    });
+
+    it('offers the remembered child record from its parent page', () => {
+      onAgendaItem();
+      vi.mocked(usePage).mockReturnValue(reactive({ ...createMockPage(), component: 'Admin/Representation/ShowMeeting' }) as ReturnType<typeof usePage>);
+      const wrapper = mount(SectionTabs, { props: { workspace: visak, activeSection: visak.sections[2] }, global: { stubs: commonStubs } });
+      const agendaItems = wrapper.findAll('li')[3];
+
+      expect(agendaItems.find('a').attributes('href')).toBe('/mocked-route/agendaItems.show?agendaItem=a1');
+      expect(agendaItems.find('a .truncate').text()).toBe('shell.trail.agenda_item');
+    });
+
+    it('shows no crumbs once the user is off the record pages', () => {
+      onAgendaItem();
+      vi.mocked(usePage).mockReturnValue(reactive({ ...createMockPage(), component: 'Admin/Representation/IndexMeeting' }) as ReturnType<typeof usePage>);
+      const wrapper = mount(SectionTabs, { props: { workspace: visak, activeSection: visak.sections[2] }, global: { stubs: commonStubs } });
+
+      expect(wrapper.find('[data-slot="section-tab-crumb"]').exists()).toBe(false);
+    });
   });
 
   describe('when the tabs do not fit', () => {

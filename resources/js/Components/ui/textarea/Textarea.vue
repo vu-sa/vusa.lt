@@ -2,10 +2,7 @@
   <textarea
     v-model="modelValue"
     data-slot="textarea"
-    :class="cn(
-      'border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-input/30',
-      props.class
-    )"
+    :class="cn(textareaVariants({ variant }), props.class)"
   />
 </template>
 
@@ -13,13 +10,21 @@
 import type { HTMLAttributes } from 'vue';
 import { useVModel } from '@vueuse/core';
 
+import { textareaVariants, type TextareaVariants } from './index';
+
 import { cn } from '@/Utils/Shadcn/utils';
 
-const props = defineProps<{
-  class?: HTMLAttributes['class'];
+const props = withDefaults(defineProps<{
   defaultValue?: string | number;
   modelValue?: string | number;
-}>();
+  variant?: TextareaVariants['variant'];
+  class?: HTMLAttributes['class'];
+}>(), {
+  defaultValue: undefined,
+  modelValue: undefined,
+  variant: 'default',
+  class: undefined,
+});
 
 const emits = defineEmits<(e: 'update:modelValue', payload: string | number) => void>();
 

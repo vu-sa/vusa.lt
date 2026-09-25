@@ -16,18 +16,6 @@
     :selectable="!isTrash"
     @quick-filter="toggleFollowedOnly"
   >
-    <template v-if="!isTrash" #quick-filters="{ filters, toggle }">
-      <SpotlightPopover
-        :title="$t('Sek institucijas')"
-        :description="$t('Pažymėk institucijas ir spausk „Sekti“ – jų posėdžiai atsiras tavo pradžioje, o visas sekamas rasi po „Sekamos“.')"
-        position="bottom"
-        :is-dismissed="followSpotlight.isDismissed.value"
-        @dismiss="followSpotlight.dismiss"
-      >
-        <CollectionQuickFilters :filters @toggle="toggle" />
-      </SpotlightPopover>
-    </template>
-
     <template #actions>
       <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg">
         <Link :href="route('institutions.create')">
@@ -158,16 +146,13 @@ import { computed, ref } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionQuickFilters from '@/Components/Collection/CollectionQuickFilters.vue';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { InstitutionIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Button } from '@/Components/ui/button';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
 import { escapeFilterValue } from '@/Features/Admin/AdminSearch/Services/AdminSearchService';
 import {
@@ -200,7 +185,6 @@ const followedIds = ref(new Set(props.followedInstitutionIds));
 const followedOnly = ref(new URLSearchParams(window.location.search).get('followed') === '1');
 const selection = ref<string[]>([]);
 const subscriptions = useInstitutionSubscription();
-const followSpotlight = useFeatureSpotlight('institution-follow-v1');
 
 // No follows still filters: an empty list is the honest answer, and `id:=[]` is not valid syntax.
 const followedFilter = computed(() => {
@@ -218,8 +202,6 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => isTrash
   : [{ id: 'followed', label: `${$t('Sekamos')} (${followedIds.value.size})`, active: followedOnly.value }]);
 
 function toggleFollowedOnly(): void {
-  followSpotlight.dismiss();
-
   const url = new URL(window.location.href);
   if (followedOnly.value) {
     url.searchParams.delete('followed');

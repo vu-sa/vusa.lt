@@ -40,32 +40,22 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-1">
-            <ReservationRowActions :reservation="rowTarget(resource)" @decide="onDecide" />
-
-            <template v-if="canEdit && isEditable(resource)">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                class="pointer-coarse:size-11"
-                :title="$t('Redaguoti')"
-                :aria-label="$t('Redaguoti')"
-                @click="emit('edit', resource)"
-              >
-                <Pencil aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                class="text-destructive hover:text-destructive pointer-coarse:size-11"
-                :title="$t('Pašalinti')"
-                :aria-label="$t('Pašalinti')"
-                @click="askRemove(resource)"
-              >
-                <Trash2 aria-hidden="true" />
-              </Button>
-            </template>
+            <ReservationRowActions
+              :reservation="rowTarget(resource)"
+              :extra-actions="canEdit && isEditable(resource)"
+              @decide="onDecide"
+            >
+              <template v-if="canEdit && isEditable(resource)" #more-actions>
+                <DropdownMenuItem class="pointer-coarse:min-h-11" :aria-label="$t('Redaguoti')" @select="emit('edit', resource)">
+                  <Pencil aria-hidden="true" />
+                  {{ $t('Redaguoti') }}
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" class="pointer-coarse:min-h-11" :aria-label="$t('Pašalinti')" @select="askRemove(resource)">
+                  <Trash2 aria-hidden="true" />
+                  {{ $t('Pašalinti') }}
+                </DropdownMenuItem>
+              </template>
+            </ReservationRowActions>
           </div>
         </div>
 
@@ -120,6 +110,7 @@ import { ResourceIcon } from '@/Components/icons';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import ReservationPeriod from '@/Components/SmallElements/ReservationPeriod.vue';
 import { Button } from '@/Components/ui/button';
+import { DropdownMenuItem } from '@/Components/ui/dropdown-menu';
 import { reservationResourceStatuses, type ReservationResourceStatus } from '@/Constants/statuses';
 import type { DashboardReservation } from '@/Utils/ReservationStatus';
 import { formatDateTime } from '@/Utils/dateTime';

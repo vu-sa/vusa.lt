@@ -19,7 +19,8 @@
   <ConfirmDialog
     :open="pendingVisit !== null"
     :title="$t('Neišsaugoti pakeitimai')"
-    :description="$t('Neišsaugoti pakeitimai bus prarasti.')"
+    :description="$t('Tai, ką įvedei formoje, nebus išsaugota.')"
+    :cancel-label="$t('Likti puslapyje')"
     :confirm-label="$t('Išeiti iš puslapio')"
     @update:open="handleDiscardDialogOpen"
     @confirm="continueNavigation"

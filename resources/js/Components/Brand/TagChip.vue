@@ -3,8 +3,7 @@
     :is="href ? 'a' : 'span'"
     :href
     :class="cn(
-      'inline-flex items-center px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.14em]',
-      variantClass,
+      tagChipVariants({ variant }),
       href && 'transition-colors',
       props.class,
     )"
@@ -26,10 +25,11 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed } from 'vue';
 
-import { cn } from '@/Utils/Shadcn/utils';
+import { tagChipVariants, type TagChipVariants } from './tagChip';
+
 import IFluentDismiss16Regular from '~icons/fluent/dismiss-16-regular';
+import { cn } from '@/Utils/Shadcn/utils';
 
 /**
  * The tag/topic marker on a news card, event tile or article header. Square by design — the
@@ -41,7 +41,7 @@ const props = withDefaults(defineProps<{
   /** Renders an `<a>` when given. A resolved URL — this tier never calls `route()`. */
   href?: string;
   /** `solid` is the one-accent-per-view marker; `outline` and `muted` are for lists of many. */
-  variant?: 'solid' | 'outline' | 'muted';
+  variant?: TagChipVariants['variant'];
   /** Shows a dismiss button at the trailing edge. Emits `remove` when clicked. */
   removable?: boolean;
   /** Accessible label for the dismiss button. Defaults to 'Išvalyti'. */
@@ -56,10 +56,4 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<(e: 'remove') => void>();
-
-const variantClass = computed(() => ({
-  solid: 'bg-brand-fill text-brand-foreground',
-  outline: 'border border-brand text-brand hover:bg-brand/10',
-  muted: 'border border-border text-muted-foreground hover:border-brand hover:text-brand',
-}[props.variant]));
 </script>

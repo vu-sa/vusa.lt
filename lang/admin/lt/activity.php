@@ -2,7 +2,6 @@
 
 return [
     'title' => 'Pakeitimų istorija',
-    'spotlight_description' => 'Peržiūrėk, kas ir kada pakeitė šį įrašą — įskaitant susijusius pakeitimus.',
     'empty' => 'Pakeitimų nėra.',
     'comments_empty' => 'Komentarų dar nėra. Parašyk pirmas – kolegą paminėk su @.',
     'comments_lead' => 'Aptark įrašą su komanda. Kas ir ką pakeitė, rasi meniu ⋯ → „Pakeitimų istorija“.',

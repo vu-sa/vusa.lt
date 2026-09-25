@@ -183,9 +183,8 @@
         v-else
         :key="activeLocale"
         v-model="form.description[activeLocale]"
-        preset="full"
+        tools="description"
         html
-        framed
       />
     </FormFieldWrapper>
 
@@ -281,24 +280,6 @@
               placeholder="https://www.facebook.com/events/..."
               :class="['h-11', fieldSurfaceClass]"
               @change="form.validate('facebook_url')"
-            />
-          </div>
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
-          id="video_url"
-          :label="$t('Youtube video kodas')"
-          :hint="$t('Tik video kodas, ne pilna nuoroda')"
-        >
-          <div class="flex items-center gap-2">
-            <span class="shrink-0 text-sm text-muted-foreground">youtube.com/embed/</span>
-            <Input
-              id="video_url"
-              v-model="form.video_url"
-              type="text"
-              placeholder="dQw4w9WgXcQ"
-              :class="['h-11 flex-1', fieldSurfaceClass]"
-              :disabled="readOnly"
             />
           </div>
         </FormFieldWrapper>

@@ -12,18 +12,9 @@
           <Lock class="h-3 w-3" />
           {{ $t('PRIVATU') }}
         </span>
-        <SpotlightPopover
-          :title="$t('Bendros pastabos realiu laiku')"
-          :description="$t('Rašykite pastabas kartu su kitais atstovais — pakeitimai matomi iškart. Spauskite, kad atvertumėte didesnį langą.')"
-          position="left"
-          :show-badge="spotlight.isVisible.value"
-          :is-dismissed="spotlight.isDismissed.value"
-          @dismiss="spotlight.dismiss"
-        >
-          <Button variant="ghost" size="icon" class="h-7 w-7" :title="$t('Atverti didesnį langą')" @click="expand">
-            <Maximize2 class="h-4 w-4" />
-          </Button>
-        </SpotlightPopover>
+        <Button variant="ghost" size="icon" class="h-7 w-7" :title="$t('Atverti didesnį langą')" @click="expanded = true">
+          <Maximize2 class="h-4 w-4" />
+        </Button>
       </div>
     </div>
 
@@ -152,11 +143,9 @@ import { Lock, Maximize2, Users } from 'lucide-vue-next';
 import AgendaItemNotesEditor from '@/Components/AgendaItems/AgendaItemNotesEditor.vue';
 import SaveStatusChip from '@/Components/AgendaItems/NotesSaveStatusChip.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { useAgendaItemNotes } from '@/Composables/useAgendaItemNotes';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 // eslint-disable-next-line admin-redesign/no-legacy-utility -- circular: it sits in a row of avatars
 const OVERFLOW_AVATAR_CLASS = 'flex size-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground ring-2 ring-card';
@@ -174,14 +163,6 @@ const currentUser = computed(() => {
 const notes = useAgendaItemNotes(props.agendaItemId, currentUser.value);
 
 const expanded = ref(false);
-const spotlight = useFeatureSpotlight('agenda-notes-v2');
-
-const expand = () => {
-  expanded.value = true;
-  if (spotlight.isVisible.value) {
-    spotlight.dismiss();
-  }
-};
 
 // Keep the expanded dialog open when the click/focus lands on a Tiptap menu
 // (e.g. the @mention dropdown, which is portalled to <body>, i.e. "outside").

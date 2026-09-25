@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\GetInstitutionMembers;
 use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\GetTypeFiles;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
@@ -25,6 +26,7 @@ use App\Models\Type;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
+use App\Services\ResourceServices\SharepointFileService;
 use App\Settings\CadenceSettings;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
@@ -180,7 +182,7 @@ class InstitutionController extends AdminController
                 'secretaries' => InstitutionSecretaryController::usersPayload(
                     GetInstitutionSecretaries::execute($institution)
                 ),
-                'sharepointPath' => $institution->tenant ? $institution->sharepoint_path() : null,
+                'sharepointPath' => SharepointFileService::pathOrNull($institution),
             ],
             'overview' => [
                 'activity_status' => $activityStatus,
@@ -190,6 +192,8 @@ class InstitutionController extends AdminController
                 'meetings_count' => $institution->meetings_count,
                 'recentComments' => $recentComments,
             ],
+            'files' => Inertia::defer(fn () => $institution->availableFiles()->orderByDesc('file_date')->get(), 'files'),
+            'typeFiles' => Inertia::defer(fn () => GetTypeFiles::forFileable($institution), 'files'),
             'duties' => Inertia::defer(fn () => $institution->duties()
                 ->with('current_users')
                 ->orderBy('order')

@@ -26,14 +26,10 @@ return [
     'user_tenant_scope' => [
         'title' => 'Your institutions by unit',
         'description' => 'This selection scopes your institution overview, meetings, and timeline.',
-        'spotlight_title' => 'Filter your institutions by unit',
-        'spotlight_description' => 'If you represent institutions in several units, choose which units to display. The same selection also applies in the fullscreen timeline.',
     ],
     'institution_summary' => [
         'title' => 'Unit institution status',
         'description' => 'A quick activity overview for the selected units.',
-        'spotlight_title' => 'Institution status summary',
-        'spotlight_description' => 'Select one or more units and review their institution status, representative activity, and timeline in one place.',
         'all' => 'All',
         'needs_attention' => 'Needs attention',
         'overdue' => 'Overdue',
@@ -51,8 +47,6 @@ return [
         'last_meeting' => 'Last meeting: :date',
         'overview_tab' => 'Overview',
         'trend_tab' => 'Trend',
-        'trend_spotlight_title' => 'Status trend over time',
-        'trend_spotlight_description' => 'See how institution status has changed day to day, and spot improving or worsening trends.',
         'trend_description' => 'How institution status has changed day to day',
         'trend_empty' => 'No data for this range yet',
         'trend_range_days' => ':days d.',
@@ -145,10 +139,6 @@ return [
             'phone_link' => 'Open the meetings list',
         ],
         'tenant_link' => 'Units overview',
-        'tenant_spotlight' => [
-            'title' => 'The unit view has moved',
-            'description' => 'Institution health, representative activity and the unit timeline now live in their own section, “Units”.',
-        ],
     ],
 
     'tenant_overview' => [

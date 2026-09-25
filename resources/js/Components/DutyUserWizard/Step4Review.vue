@@ -1,283 +1,264 @@
 <template>
   <div class="space-y-6">
     <!-- Summary header -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
       <!-- Institution -->
-      <div class="p-4 rounded-xl bg-gradient-to-br from-vusa-yellow/10 to-amber-50/50 dark:from-vusa-yellow-dark/20 dark:to-amber-950/20 border border-vusa-yellow/30 dark:border-vusa-yellow-dark/30">
-        <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-lg bg-vusa-yellow/20 dark:bg-vusa-yellow-dark/30 flex items-center justify-center">
-            <Building2 class="h-5 w-5 text-vusa-yellow-dark dark:text-vusa-yellow" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-xs text-vusa-yellow-dark/70 dark:text-vusa-yellow/70">
-              {{ $t('Institucija') }}
-            </p>
-            <p class="font-medium text-vusa-yellow-dark dark:text-vusa-yellow truncate">
-              {{ wizard.state.institution?.name }}
-            </p>
-          </div>
+      <div class="p-3.5 sm:p-4 border border-border bg-card flex items-center gap-3">
+        <div class="flex size-9 items-center justify-center border border-border bg-muted shrink-0">
+          <Building2 class="size-4 text-foreground" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            {{ $t('Institucija') }}
+          </p>
+          <p class="font-semibold text-sm text-foreground truncate">
+            {{ wizard.state.institution?.name }}
+          </p>
         </div>
       </div>
 
       <!-- Duty -->
-      <div class="p-4 rounded-xl bg-gradient-to-br from-zinc-50 to-slate-50/50 dark:from-zinc-900/50 dark:to-slate-950/20 border border-zinc-100 dark:border-zinc-800">
-        <div class="flex items-center gap-3">
-          <div class="h-10 w-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-            <DutyIcon class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-xs text-zinc-600/70 dark:text-zinc-400/70">
-              {{ $t('Pareigybė') }}
-            </p>
-            <p class="min-w-0 font-medium text-zinc-900 dark:text-zinc-100">
-              <InflectedDutyName v-if="wizard.state.duty" :name="wizard.state.duty.name" />
-            </p>
-          </div>
+      <div class="p-3.5 sm:p-4 border border-border bg-card flex items-center gap-3">
+        <div class="flex size-9 items-center justify-center border border-border bg-muted shrink-0">
+          <DutyIcon class="size-4 text-foreground" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            {{ $t('Pareigybė') }}
+          </p>
+          <p class="min-w-0 font-semibold text-sm text-foreground truncate">
+            <InflectedDutyName v-if="wizard.state.duty" :name="wizard.state.duty.name" />
+          </p>
         </div>
       </div>
 
       <!-- Capacity -->
       <div
-        class="p-4 rounded-xl border transition-colors"
+        class="p-3.5 sm:p-4 border flex items-center justify-between gap-3 transition-colors"
         :class="{
-          'bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-900/20 border-green-200 dark:border-green-900/50': !hasCapacityMismatch,
-          'bg-gradient-to-br from-vusa-yellow/10 to-amber-50/50 dark:from-vusa-yellow-dark/20 dark:to-amber-950/20 border-vusa-yellow/30 dark:border-vusa-yellow-dark/30': hasCapacityMismatch
+          'border-border bg-card': !hasCapacityMismatch,
+          'border-status-attention-border bg-status-attention-surface/30': hasCapacityMismatch
         }"
       >
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 min-w-0">
           <div
-            class="h-10 w-10 rounded-lg flex items-center justify-center"
+            class="flex size-9 items-center justify-center border shrink-0"
             :class="{
-              'bg-green-100 dark:bg-green-900/50': !hasCapacityMismatch,
-              'bg-vusa-yellow/20 dark:bg-vusa-yellow-dark/30': hasCapacityMismatch
+              'border-border bg-muted text-foreground': !hasCapacityMismatch,
+              'border-status-attention-border bg-status-attention-surface text-status-attention': hasCapacityMismatch
             }"
           >
-            <Users
-              class="h-5 w-5"
-              :class="{
-                'text-green-600 dark:text-green-400': !hasCapacityMismatch,
-                'text-vusa-yellow-dark dark:text-vusa-yellow': hasCapacityMismatch
-              }"
-            />
+            <Users class="size-4" />
           </div>
-          <div class="flex-1">
+          <div class="min-w-0">
             <p
-              class="text-xs"
-              :class="{
-                'text-green-600/70 dark:text-green-400/70': !hasCapacityMismatch,
-                'text-vusa-yellow-dark/70 dark:text-vusa-yellow/70': hasCapacityMismatch
-              }"
+              class="text-[11px] font-bold uppercase tracking-wider"
+              :class="hasCapacityMismatch ? 'text-status-attention' : 'text-muted-foreground'"
             >
               {{ $t('Nariai') }}
             </p>
-            <p
-              class="font-medium"
-              :class="{
-                'text-green-900 dark:text-green-100': !hasCapacityMismatch,
-                'text-vusa-yellow-dark dark:text-vusa-yellow': hasCapacityMismatch
-              }"
-            >
-              {{ currentCount }} <ArrowRight class="h-3 w-3 inline mx-1" /> {{ projectedCount }} / {{ targetCapacity }}
+            <p class="font-semibold text-sm text-foreground truncate">
+              {{ currentCount }} <ArrowRight class="size-3 inline mx-0.5" /> {{ projectedCount }} / {{ targetCapacity }}
             </p>
           </div>
-          <Button
-            v-if="hasCapacityMismatch && !isEditingCapacity && !isExternalDuty"
-            variant="ghost"
-            size="sm"
-            @click="startEditingCapacity"
-          >
-            <Edit3 class="h-4 w-4" />
-          </Button>
         </div>
+
+        <Button
+          v-if="hasCapacityMismatch && !isEditingCapacity && !isExternalDuty"
+          variant="outline"
+          size="sm"
+          @click="startEditingCapacity"
+        >
+          <Edit3 class="size-3.5 mr-1" />
+          {{ $t('Keisti') }}
+        </Button>
       </div>
     </div>
 
     <!-- Capacity mismatch alert -->
-    <Alert v-if="hasCapacityMismatch && !isEditingCapacity && !isExternalDuty" variant="default" class="border-vusa-yellow/30 dark:border-vusa-yellow-dark/30 bg-vusa-yellow/10 dark:bg-vusa-yellow-dark/20">
-      <AlertTriangle class="h-4 w-4 text-vusa-yellow-dark dark:text-vusa-yellow" />
-      <AlertTitle class="text-vusa-yellow-dark dark:text-vusa-yellow">
-        {{ $t('Vietų skaičiaus neatitikimas') }}
-      </AlertTitle>
-      <AlertDescription class="text-vusa-yellow-dark/80 dark:text-vusa-yellow/80">
-        {{ $t('Bus') }} {{ projectedCount }} {{ $t('nariai, bet nurodyta') }} {{ targetCapacity }}.
-        <Button variant="link" class="h-auto p-0 ml-1 text-vusa-yellow-dark dark:text-vusa-yellow" @click="startEditingCapacity">
-          {{ $t('Atnaujinti?') }}
-        </Button>
-      </AlertDescription>
-    </Alert>
+    <div
+      v-if="hasCapacityMismatch && !isEditingCapacity && !isExternalDuty"
+      class="border border-status-attention-border bg-status-attention-surface/40 p-3.5 text-xs text-foreground flex items-start gap-3"
+    >
+      <AlertTriangle class="size-4 text-status-attention shrink-0 mt-0.5" />
+      <div class="flex-1">
+        <p class="font-bold text-status-attention text-xs">
+          {{ $t('Vietų skaičiaus neatitikimas') }}
+        </p>
+        <p class="mt-0.5 text-foreground">
+          {{ $t('Bus') }} <strong>{{ projectedCount }}</strong> {{ $t('nariai, bet nurodyta') }} <strong>{{ targetCapacity }}</strong>.
+          <button
+            type="button"
+            class="ml-1.5 underline font-bold text-status-attention hover:text-foreground transition-colors"
+            @click="startEditingCapacity"
+          >
+            {{ $t('Atnaujinti vietų skaičių?') }}
+          </button>
+        </p>
+      </div>
+    </div>
 
     <!-- Capacity editor -->
-    <Card v-if="isEditingCapacity && !isExternalDuty" class="border-primary/50">
-      <CardContent class="p-4">
-        <div class="flex items-center gap-4">
-          <div class="flex-1">
-            <Label>{{ $t('Vietų skaičius') }}</Label>
-            <div class="flex items-center gap-2 mt-1">
-              <Input
-                v-model.number="newCapacity"
-                type="number"
-                min="1"
-                class="w-24 h-9"
-              />
-              <Button size="sm" @click="handleUpdateCapacity">
-                <CheckCircle class="h-4 w-4 mr-1" />
-                {{ $t('Patvirtinti') }}
-              </Button>
-              <Button variant="ghost" size="sm" @click="cancelEditingCapacity">
-                {{ $t('Atšaukti') }}
-              </Button>
-            </div>
-          </div>
-          <div class="text-sm text-muted-foreground">
-            {{ $t('Siūloma:') }} <strong>{{ projectedCount }}</strong>
-          </div>
+    <div v-if="isEditingCapacity && !isExternalDuty" class="border border-border bg-muted/20 p-3.5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <Label class="text-xs font-semibold">{{ $t('Vietų skaičius') }}:</Label>
+          <Input
+            v-model.number="newCapacity"
+            type="number"
+            min="1"
+            class="w-20 h-8 text-xs font-bold"
+          />
+          <Button size="sm" variant="brand" @click="handleUpdateCapacity">
+            {{ $t('Patvirtinti') }}
+          </Button>
+          <Button variant="ghost" size="sm" @click="cancelEditingCapacity">
+            {{ $t('Atšaukti') }}
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+        <div class="text-xs text-muted-foreground">
+          {{ $t('Siūloma pagal narių skaičių:') }} <strong class="text-foreground">{{ projectedCount }}</strong>
+        </div>
+      </div>
+    </div>
 
     <Separator />
 
     <!-- Changes summary -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
       <!-- Users being added -->
-      <Card class="border-green-200 dark:border-green-900/50 overflow-hidden">
-        <CardHeader class="bg-gradient-to-r from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-900/20 py-3 px-4">
-          <CardTitle class="text-base flex items-center gap-2 text-green-800 dark:text-green-200">
-            <UserPlus class="h-4 w-4" />
+      <div class="border border-status-success-border bg-card">
+        <div class="border-b border-status-success-border bg-status-success-surface/40 px-4 py-2.5 flex items-center justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-status-success flex items-center gap-2">
+            <UserPlus class="size-4" />
             {{ $t('Pridedami nariai') }}
-            <Badge variant="secondary" class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">
-              {{ usersToAdd.length }}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent class="p-0">
-          <div v-if="usersToAdd.length === 0" class="p-6 text-center text-muted-foreground text-sm">
-            {{ $t('Nėra pridedamų narių') }}
-          </div>
-          <div v-else class="divide-y">
-            <div
-              v-for="change in usersToAdd"
-              :key="change.userId"
-              class="p-3 flex items-center gap-3"
-            >
-              <div class="h-9 w-9 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center overflow-hidden shrink-0">
-                <img
-                  v-if="change.userPhoto"
-                  :src="change.userPhoto"
-                  :alt="change.userName"
-                  class="h-full w-full object-cover"
-                >
-                <span v-else class="text-sm font-medium text-green-700 dark:text-green-300">{{ change.userName?.charAt(0) }}</span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm truncate">
-                  {{ change.userName }}
-                  <Badge v-if="change.isNewUser" variant="outline" class="ml-1 text-[10px]">
-                    {{ $t('Naujas') }}
-                  </Badge>
-                </p>
-                <div class="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                  <Calendar class="h-3 w-3" />
-                  <span>{{ formatDateForDisplay(change.startDate || '') }}</span>
-                  <span>→</span>
-                  <span>{{ formatDateForDisplay(change.endDate || '') }}</span>
-                </div>
-                <p v-if="change.studyProgramName" class="text-xs text-muted-foreground mt-0.5">
-                  📚 {{ change.studyProgramName }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </h3>
+          <span class="inline-flex items-center border border-status-success-border bg-status-success-surface px-1.5 py-0.5 text-[10px] font-bold text-status-success">
+            {{ usersToAdd.length }}
+          </span>
+        </div>
 
-      <!-- Users being removed -->
-      <Card class="border-vusa-red/30 dark:border-vusa-red-dark/30 overflow-hidden">
-        <CardHeader class="bg-gradient-to-r from-vusa-red/10 to-rose-50/50 dark:from-vusa-red-dark/20 dark:to-rose-950/20 py-3 px-4">
-          <CardTitle class="text-base flex items-center gap-2 text-vusa-red dark:text-vusa-red-quaternary">
-            <UserMinus class="h-4 w-4" />
-            {{ $t('Šalinami nariai') }}
-            <Badge variant="secondary" class="bg-vusa-red/10 dark:bg-vusa-red-dark/30 text-vusa-red dark:text-vusa-red-quaternary">
-              {{ usersToRemove.length }}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent class="p-0">
-          <div v-if="usersToRemove.length === 0" class="p-6 text-center text-muted-foreground text-sm">
-            {{ $t('Nėra šalinamų narių') }}
-          </div>
-          <div v-else class="divide-y">
-            <div
-              v-for="change in usersToRemove"
-              :key="change.userId"
-              class="p-3 flex items-center gap-3"
-            >
-              <div class="h-9 w-9 rounded-full bg-vusa-red/10 dark:bg-vusa-red-dark/30 flex items-center justify-center overflow-hidden shrink-0">
-                <img
-                  v-if="change.userPhoto"
-                  :src="change.userPhoto"
-                  :alt="change.userName"
-                  class="h-full w-full object-cover opacity-50"
-                >
-                <span v-else class="text-sm font-medium text-vusa-red dark:text-vusa-red-quaternary">{{ change.userName?.charAt(0) }}</span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm truncate line-through text-vusa-red dark:text-vusa-red-quaternary">
-                  {{ change.userName }}
-                </p>
-                <div class="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                  <Calendar class="h-3 w-3" />
-                  <span>{{ $t('Pabaiga:') }} {{ formatDateForDisplay(change.endDate || '') }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-
-    <!-- New users to create -->
-    <Card v-if="newUsersToCreate.length > 0" class="border-primary/30 overflow-hidden">
-      <CardHeader class="bg-gradient-to-r from-primary/5 to-primary/10 py-3 px-4">
-        <CardTitle class="text-base flex items-center gap-2 text-foreground">
-          <UserPlus class="h-4 w-4" />
-          {{ $t('Nauji naudotojai bus sukurti') }}
-          <Badge variant="secondary" class="bg-primary/10 text-primary">
-            {{ newUsersToCreate.length }}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
-      <CardContent class="p-0">
-        <div class="divide-y">
+        <div v-if="usersToAdd.length === 0" class="p-6 text-center text-muted-foreground text-xs">
+          {{ $t('Nėra pridedamų narių') }}
+        </div>
+        <div v-else class="divide-y divide-border max-h-[240px] overflow-y-auto">
           <div
-            v-for="(user, index) in newUsersToCreate"
-            :key="index"
+            v-for="change in usersToAdd"
+            :key="change.userId"
             class="p-3 flex items-center gap-3"
           >
-            <div class="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span class="text-sm font-medium text-primary">{{ user.name?.charAt(0) }}</span>
+            <div class="size-8 border border-status-success-border bg-status-success-surface flex items-center justify-center overflow-hidden shrink-0">
+              <img
+                v-if="change.userPhoto"
+                :src="change.userPhoto"
+                :alt="change.userName"
+                class="size-full object-cover"
+              >
+              <span v-else class="text-xs font-bold text-status-success">{{ change.userName?.charAt(0) }}</span>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-medium text-sm truncate">
-                {{ user.name }}
+              <p class="font-semibold text-sm truncate text-foreground">
+                {{ change.userName }}
+                <Badge v-if="change.isNewUser" variant="outline" class="ml-1 text-[10px]">
+                  {{ $t('Naujas') }}
+                </Badge>
               </p>
-              <p class="text-xs text-muted-foreground truncate">
-                {{ user.email }}
+              <div class="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                <Calendar class="size-3" />
+                <span>{{ formatDateForDisplay(change.startDate || '') }}</span>
+                <span>→</span>
+                <span>{{ formatDateForDisplay(change.endDate || '') }}</span>
+              </div>
+              <p v-if="change.studyProgramName" class="text-xs text-muted-foreground mt-0.5">
+                {{ change.studyProgramName }}
               </p>
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
 
-    <!-- Final confirmation -->
-    <Alert class="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-      <CheckCircle class="h-4 w-4 text-primary" />
-      <AlertTitle>{{ $t('Patvirtinkite pakeitimus') }}</AlertTitle>
-      <AlertDescription>
-        {{ $t('Paspaudus "Patvirtinti", pakeitimai bus išsaugoti. Šią operaciją galima atšaukti tik rankiniu būdu.') }}
-      </AlertDescription>
-    </Alert>
+      <!-- Users being removed -->
+      <div class="border border-destructive/30 bg-card">
+        <div class="border-b border-destructive/30 bg-destructive/5 px-4 py-2.5 flex items-center justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-destructive flex items-center gap-2">
+            <UserMinus class="size-4" />
+            {{ $t('Šalinami nariai') }}
+          </h3>
+          <span class="inline-flex items-center border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold text-destructive">
+            {{ usersToRemove.length }}
+          </span>
+        </div>
+
+        <div v-if="usersToRemove.length === 0" class="p-6 text-center text-muted-foreground text-xs">
+          {{ $t('Nėra šalinamų narių') }}
+        </div>
+        <div v-else class="divide-y divide-border max-h-[240px] overflow-y-auto">
+          <div
+            v-for="change in usersToRemove"
+            :key="change.userId"
+            class="p-3 flex items-center gap-3"
+          >
+            <div class="size-8 border border-destructive/30 bg-destructive/10 flex items-center justify-center overflow-hidden shrink-0">
+              <img
+                v-if="change.userPhoto"
+                :src="change.userPhoto"
+                :alt="change.userName"
+                class="size-full object-cover opacity-50"
+              >
+              <span v-else class="text-xs font-bold text-destructive">{{ change.userName?.charAt(0) }}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm truncate line-through text-destructive">
+                {{ change.userName }}
+              </p>
+              <div class="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                <Calendar class="size-3" />
+                <span>{{ $t('Pabaiga:') }} {{ formatDateForDisplay(change.endDate || '') }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New users to create -->
+    <div v-if="newUsersToCreate.length > 0" class="border border-border bg-card">
+      <div class="border-b border-border bg-muted/40 px-4 py-2.5 flex items-center justify-between">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
+          <UserPlus class="size-4" />
+          {{ $t('Nauji naudotojai bus sukurti') }}
+        </h3>
+        <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-bold text-foreground">
+          {{ newUsersToCreate.length }}
+        </span>
+      </div>
+
+      <div class="divide-y divide-border max-h-[180px] overflow-y-auto">
+        <div
+          v-for="(user, index) in newUsersToCreate"
+          :key="index"
+          class="p-3 flex items-center gap-3"
+        >
+          <div class="size-8 border border-border bg-muted flex items-center justify-center shrink-0">
+            <span class="text-xs font-bold text-foreground">{{ user.name?.charAt(0) }}</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-sm truncate text-foreground">
+              {{ user.name }}
+            </p>
+            <p class="text-xs text-muted-foreground truncate">
+              {{ user.email }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final confirmation notice -->
+    <div class="border border-border bg-muted/30 p-3.5 flex items-center gap-3 text-xs text-muted-foreground">
+      <CheckCircle class="size-4 text-foreground shrink-0" />
+      <span>{{ $t('Paspaudus "Patvirtinti", pakeitimai bus išsaugoti. Šią operaciją galima atšaukti tik rankiniu būdu.') }}</span>
+    </div>
   </div>
 </template>
 
@@ -298,8 +279,6 @@ import {
 
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Separator } from '@/Components/ui/separator';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -310,39 +289,31 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 
-// Capacity editing
 const isEditingCapacity = ref(false);
 const newCapacity = ref(wizard.state.duty?.places_to_occupy || 0);
 
-// External (cross-tenant) duties: places_to_occupy is the owning tenant's soft cap,
-// not editable from here by an assigning-tenant admin.
 const isExternalDuty = computed(() => {
   const list = (wizard.state.duty as { assignable_tenants?: unknown[] } | undefined)?.assignable_tenants;
   return Array.isArray(list) && list.length > 0;
 });
 
-// Users being added
 const usersToAdd = computed(() => {
   return wizard.state.userChanges.filter(c => c.action === 'add');
 });
 
-// Users being removed
 const usersToRemove = computed(() => {
   return wizard.state.userChanges.filter(c => c.action === 'remove');
 });
 
-// New users being created
 const newUsersToCreate = computed(() => {
   return wizard.state.newUsersToCreate;
 });
 
-// Summary calculations
 const currentCount = computed(() => wizard.state.duty?.current_users?.length || 0);
 const projectedCount = computed(() => wizard.projectedUserCount.value);
 const targetCapacity = computed(() => wizard.targetCapacity.value);
 const hasCapacityMismatch = computed(() => wizard.capacityMismatch.value);
 
-// Handle capacity update
 const handleUpdateCapacity = () => {
   wizard.setNewPlacesToOccupy(newCapacity.value);
   isEditingCapacity.value = false;

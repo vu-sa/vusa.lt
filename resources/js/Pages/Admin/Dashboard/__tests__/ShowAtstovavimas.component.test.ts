@@ -4,6 +4,7 @@ import { ref } from 'vue';
 
 import ShowAtstovavimas from '@/Pages/Admin/Dashboard/ShowAtstovavimas.vue';
 import type { AtstovavimasUser } from '@/Pages/Admin/Dashboard/types';
+import type { HomeFollowedInstitutions } from '@/Components/Home/types';
 import { commonStubs } from '@/tests/stubs';
 
 // The page orchestrates several composables and heavy Gantt/dialog children. The data
@@ -57,10 +58,6 @@ vi.mock('@/Composables/useActionWindow', () => ({
   useActionWindow: () => ({ isOpen: ref(false), open: vi.fn() }),
 }));
 
-vi.mock('@/Composables/useFeatureSpotlight', () => ({
-  useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: vi.fn() }),
-}));
-
 const marker = (name: string) => ({ name, template: `<div data-testid="${name}" />` });
 
 const stubs = {
@@ -74,13 +71,11 @@ const stubs = {
   TenantScopeSelector: marker('tenant-scope-selector'),
   FullscreenGanttModal: marker('fullscreen'),
   AddCheckInDialog: marker('check-in'),
-  SpotlightPopover: { template: '<div><slot /></div>' },
-  OverviewStatusList: marker('overview-status-list'),
 };
 
 const baseUser = { id: '1', name: 'Lina Žilinskaitė' } as unknown as AtstovavimasUser;
 
-function createWrapper(canViewTenantOverview: boolean) {
+function createWrapper(canViewTenantOverview: boolean, followedInstitutions?: HomeFollowedInstitutions) {
   return mount(ShowAtstovavimas, {
     props: {
       user: baseUser,
@@ -89,6 +84,7 @@ function createWrapper(canViewTenantOverview: boolean) {
       openTasksCount: 4,
       coordinators: [],
       upcomingMeetings: { items: [], total: 0 },
+      followedInstitutions,
     },
     global: { stubs },
   });
@@ -132,15 +128,40 @@ describe('numbers', () => {
 });
 
 describe('layout', () => {
-  it('puts the numbers and what needs the rep on the left, the coordinators and the all-clear list on the right', () => {
-    wrapper = createWrapper(false);
+  it('puts the numbers across the page above the two-column content', () => {
+    wrapper = createWrapper(false, { total: 0, items: [] });
 
     const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
     const aside = primary.get('aside');
-    expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(true);
+    const numbers = wrapper.get('[data-slot="overview-numbers"]');
+    expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(false);
+    expect(numbers.element.compareDocumentPosition(primary.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(primary.find('[data-testid="attention"]').exists()).toBe(true);
     expect(aside.find('[data-testid="coordinators"]').exists()).toBe(true);
-    expect(aside.find('[data-testid="overview-status-list"]').exists()).toBe(true);
+    const status = wrapper.get('[data-slot="overview-status-list"]');
+    const timeline = wrapper.get('[data-slot="atstovavimas-timeline-phone-note"]');
+    expect(aside.find('[data-slot="overview-status-list"]').exists()).toBe(false);
+    expect(timeline.element.compareDocumentPosition(status.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows followed institutions below the timeline', () => {
+    wrapper = createWrapper(false, {
+      total: 1,
+      items: [{ id: '5', name: 'VU SA', is_muted: false, activity_status: 'healthy' }],
+    });
+
+    const timeline = wrapper.get('[data-slot="atstovavimas-timeline-phone-note"]');
+    const followed = wrapper.get('[data-slot="followed-institutions"]');
+    expect(timeline.element.compareDocumentPosition(followed.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('moves empty followed institutions into the all-clear list', () => {
+    wrapper = createWrapper(false, { total: 0, items: [] });
+
+    const status = wrapper.get('[data-slot="overview-status-list"]');
+    expect(status.text()).toContain('Sekamos institucijos');
+    expect(status.text()).toContain('Dar nieko neseki');
+    expect(wrapper.find('[data-slot="followed-institutions"]').exists()).toBe(false);
   });
 
   it('leaves the section tiles to the Padaliniai overview', () => {

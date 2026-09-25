@@ -79,14 +79,9 @@
                   :class="isFullyBooked(item) ? 'font-medium text-status-attention' : 'text-muted-foreground'"
                   data-slot="resource-availability"
                 >{{ availabilityLabel(item) }}</span>
-                <component
-                  :is="item.id === spotlightId ? SpotlightPopover : 'div'"
-                  v-if="canReserve"
-                  v-bind="item.id === spotlightId ? spotlightProps : {}"
-                  class="relative z-10"
-                >
-                  <AddToReservationButton :resource-id="String(item.id)" @added="cartSpotlight.dismiss()" />
-                </component>
+                <div v-if="canReserve" class="relative z-10">
+                  <AddToReservationButton :resource-id="String(item.id)" />
+                </div>
               </template>
             </div>
           </div>
@@ -128,14 +123,9 @@
             </span>
           </Link>
           <StatusBadge v-if="!item.is_reservable" :status="notReservable" class="shrink-0" />
-          <component
-            :is="item.id === spotlightId ? SpotlightPopover : 'div'"
-            v-else-if="canReserve"
-            v-bind="item.id === spotlightId ? spotlightProps : {}"
-            class="shrink-0"
-          >
-            <AddToReservationButton :resource-id="String(item.id)" @added="cartSpotlight.dismiss()" />
-          </component>
+          <div v-else-if="canReserve" class="shrink-0">
+            <AddToReservationButton :resource-id="String(item.id)" />
+          </div>
         </div>
       </template>
 
@@ -159,7 +149,7 @@
         </span>
         <template v-else-if="column.key === 'status'">
           <StatusBadge v-if="!item.is_reservable" :status="notReservable" />
-          <AddToReservationButton v-else-if="canReserve" :resource-id="String(item.id)" @added="cartSpotlight.dismiss()" />
+          <AddToReservationButton v-else-if="canReserve" :resource-id="String(item.id)" />
         </template>
       </template>
 
@@ -218,7 +208,6 @@ import type { CollectionColumn } from '@/Components/Collection/types';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { ResourceIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import AddToReservationButton from '@/Components/Reservations/AddToReservationButton.vue';
 import ReservationCartBar from '@/Components/Reservations/ReservationCartBar.vue';
@@ -228,7 +217,6 @@ import type { ReservationCart } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import { Button } from '@/Components/ui/button';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import type { StatusPresentation } from '@/Constants/statuses';
 import ResourceDetail from '@/Features/Admin/AdminSearch/Components/Detail/ResourceDetail.vue';
 import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
@@ -268,18 +256,13 @@ const columns = computed<CollectionColumn[]>(() => [
 
 // --- Availability: for the cart's period, or right now until one is picked ---------------------
 
-const { period, hasPeriod, hasDraft, openSheet } = useReservationCart();
+const { period, hasPeriod, openSheet } = useReservationCart();
 
 // Captured once: a "now" that ticked would invalidate the availability cache on every render.
 const openedAt = Date.now();
 const availabilityRange = computed(() => period.value ?? { start: openedAt, end: openedAt + 60_000 });
 
 const { availability, ensure } = useResourceAvailability(() => availabilityRange.value);
-
-const firstReservableId = computed(() => source.items.value.find(item => item.is_reservable)?.id);
-
-// The hint teaches "Pridėti", which only exists once a reservation is started.
-const spotlightId = computed(() => (hasDraft.value ? firstReservableId.value : undefined));
 
 const reservableIds = computed(() => source.items.value.filter(item => item.is_reservable).map(item => String(item.id)));
 
@@ -308,18 +291,6 @@ const availabilityLabel = (item: ResourceSearchResult) => {
 const periodLabel = computed(() => (period.value
   ? $t('reservations.cart.availability_for', { period: formatReservationPeriod(period.value.start, period.value.end) })
   : $t('reservations.cart.availability_now')));
-
-// --- Discovery ---------------------------------------------------------------------------------
-
-const cartSpotlight = useFeatureSpotlight('reservation-cart-v1');
-
-const spotlightProps = computed(() => ({
-  title: $t('reservations.cart.spotlight_title'),
-  description: $t('reservations.cart.spotlight_description'),
-  position: 'left',
-  isDismissed: cartSpotlight.isDismissed.value,
-  onDismiss: cartSpotlight.dismiss,
-}));
 
 // Notifications and "+ Sukurti" land here with `?cart=open` to continue a started reservation.
 onMounted(() => {

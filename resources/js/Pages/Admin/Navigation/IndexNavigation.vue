@@ -127,7 +127,7 @@
       </TabsContent>
     </Tabs>
 
-    <ConfirmDangerousActionDialog
+    <ConfirmDangerousDialog
       v-model:open="isForceDeleteDialogOpen"
       :title="$t('trash.permanently_delete')"
       :description="$t('trash.permanently_delete_description')"
@@ -145,10 +145,9 @@ import { RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import { NavigationIcon } from '@/Components/icons';
-import { EmptyState } from '@/Components/Patterns';
+import { ConfirmDangerousDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
-import ConfirmDangerousActionDialog from '@/Components/ui/data-table/ConfirmDangerousActionDialog.vue';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import TrashViewToggle from '@/Components/Tables/TrashViewToggle.vue';
 import FooterNavigationManager from '@/Features/Admin/NavigationBuilder/FooterNavigationManager.vue';

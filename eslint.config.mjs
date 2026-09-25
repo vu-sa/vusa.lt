@@ -144,6 +144,8 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Pages/Admin/ShowInstitutionGraph.vue',
   'resources/js/Components/AdminForms/RoleForm.vue',
   'resources/js/Components/SupportRequests/SupportRequestForm.vue',
+  'resources/js/Pages/Admin/People/DutyUserUpdateWizard.vue',
+  'resources/js/Components/DutyUserWizard/**',
 ];
 
 // Shared import restriction fragments — reused in per-surface blocks so the

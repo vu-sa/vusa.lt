@@ -14,7 +14,7 @@ const SheetFormStub = {
   template: '<form @submit.prevent="$emit(\'submit\')"><slot /><slot name="danger-zone" /><button class="save" type="submit" /></form>',
 };
 
-function factory() {
+function factory(props: Record<string, unknown> = {}) {
   const form = createMockForm({
     title: { lt: 'Stipendijos', en: '' },
     brought_by_students: false,
@@ -24,7 +24,7 @@ function factory() {
   });
   const saveThen = vi.fn((callback: () => void) => callback());
   const wrapper = mount(AgendaItemSheetForm, {
-    props: { open: true, form, saveThen },
+    props: { open: true, form, saveThen, ...props },
     global: { stubs: { ...commonStubs, SheetForm: SheetFormStub, LocaleFlag: { template: '<span />' } } },
   });
 
@@ -55,5 +55,24 @@ describe('AgendaItemSheetForm', () => {
     await wrapper.find('form').trigger('submit');
 
     expect(form.title).toEqual({ lt: 'Stipendijos', en: 'Scholarships' });
+  });
+
+  it('opens the time suggestions at the meeting, and the end ones at the chosen start', async () => {
+    const { wrapper } = factory({ meetingStartTime: '14:00' });
+    const [start, end] = wrapper.findAllComponents({ name: 'TimePicker' });
+
+    expect(start!.props('suggestFrom')).toEqual({ hour: 14, minute: 0 });
+
+    await wrapper.find('input#agenda-item-start-time').setValue('15:10');
+
+    expect(end!.props('suggestFrom')).toEqual({ hour: 15, minute: 10 });
+  });
+
+  it('prefers the previous item\'s end over the meeting start, and falls back to the morning', () => {
+    const following = factory({ meetingStartTime: '14:00', defaultStartTime: '15:30' }).wrapper;
+    expect(following.findComponent({ name: 'TimePicker' }).props('suggestFrom')).toEqual({ hour: 15, minute: 30 });
+
+    const unknown = factory().wrapper;
+    expect(unknown.findComponent({ name: 'TimePicker' }).props('suggestFrom')).toEqual({ hour: 8, minute: 0 });
   });
 });

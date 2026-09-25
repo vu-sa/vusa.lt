@@ -10,8 +10,6 @@ return [
         'manage_reservations_description' => 'Tvirtink ir sek išteklių rezervacijas',
         'member_registrations_description' => 'Naujų narių prašymai',
         'rep_registrations_description' => 'Naujų studentų atstovų prašymai',
-        'spotlight_title' => 'Skyriai po ranka',
-        'spotlight_description' => 'Čia rasi administravimą, rezervacijas ir registracijų formas, jei turi prieigą.',
     ],
     'hero' => [
         'news_eyebrow' => 'Naujiena',

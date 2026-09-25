@@ -5,6 +5,7 @@
     type="date"
     :min="minDateValue"
     :max="maxDateValue"
+    :size
     :disabled
     :class="props.class"
     @update:model-value="updateFromInput"
@@ -15,13 +16,14 @@
       :model-value="dateValue"
       inputmode="numeric"
       :placeholder="placeholder ?? 'YYYY-MM-DD'"
+      :size
       :disabled
       @update:model-value="updateFromInput"
       @blur="emit('blur')"
     />
     <Popover @close="emit('blur')">
       <PopoverTrigger as-child>
-        <Button type="button" variant="outline" size="icon" :disabled :aria-label="$t('Pasirinkti datą')">
+        <Button type="button" variant="outline" :size="buttonSize" class="shrink-0" :disabled :aria-label="$t('Pasirinkti datą')">
           <CalendarIcon class="size-4" />
         </Button>
       </PopoverTrigger>
@@ -39,7 +41,8 @@
       v-if="clearable && calendarValue"
       type="button"
       variant="ghost"
-      size="icon"
+      :size="buttonSize"
+      class="shrink-0"
       :disabled
       :aria-label="$t('Išvalyti')"
       @click="clear"
@@ -70,6 +73,8 @@ const props = defineProps<{
   placeholder?: string;
   disabled?: boolean;
   clearable?: boolean;
+  /** Matches `ui/input` sizes; the calendar and clear buttons follow so the row stays one height. */
+  size?: 'default' | 'sm';
   class?: HTMLAttributes['class'];
 }>();
 
@@ -141,4 +146,6 @@ function updateFromCalendar(value: DateValue | undefined): void {
 function clear(): void {
   emitDate(undefined);
 }
+
+const buttonSize = computed(() => (props.size === 'sm' ? 'icon' : 'icon-lg'));
 </script>

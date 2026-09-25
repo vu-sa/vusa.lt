@@ -57,6 +57,8 @@ const WORKSPACELESS_ROUTES = [
     'administration', 'profile', 'profile.roles', 'profile.notifications', 'approvals.history', 'mySupportRequests.index', 'mySupportRequests.create',
     'push-subscription.index', 'search.index', 'search.agendaItems', 'search.institutions',
     'search.meetings', 'search.resources',
+    // Redirects straight out to the file's anonymous SharePoint link; never rendered as a page.
+    'fileableFiles.open',
 ];
 
 /**

@@ -195,7 +195,7 @@ describe('InstitutionsNeedingAttention', () => {
     active_check_in_until: null,
   };
 
-  it('marks an overdue institution with its canonical status and offers to record a meeting for it', async () => {
+  it('marks an overdue institution with its canonical status and offers to record its activity', async () => {
     const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions: [institution] } });
 
     expect(wrapper.find('[data-slot="status-badge"]').attributes('data-status-role')).toBe('danger');

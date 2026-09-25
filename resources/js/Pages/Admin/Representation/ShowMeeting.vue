@@ -9,6 +9,7 @@
     :primary-action
     :overflow-actions
     :navigation="recordNavigation"
+    actions-beside-title
     @action="handleRecordAction"
   >
     <template #identity>
@@ -40,11 +41,17 @@
 
     <template #fact-after-meeting>
       <div v-if="isPastMeeting" class="space-y-0.5 text-xs font-normal">
-        <p
+        <component
+          :is="canUploadFiles && !document.uploaded ? 'button' : 'p'"
           v-for="document in documentStatuses"
           :key="document.key"
-          class="flex items-start gap-1.5"
+          :type="canUploadFiles && !document.uploaded ? 'button' : undefined"
+          :class="[
+            'flex items-start gap-1.5 text-left',
+            canUploadFiles && !document.uploaded && 'underline decoration-border underline-offset-4 hover:decoration-foreground pointer-coarse:min-h-11 pointer-coarse:items-center',
+          ]"
           :data-status-role="document.uploaded ? 'success' : 'attention'"
+          @click="canUploadFiles && !document.uploaded && openFilesUpload(document.fileType)"
         >
           <component
             :is="document.uploaded ? CircleCheck : CircleDashed"
@@ -53,7 +60,7 @@
           />
           <span>{{ document.label }}</span>
           <span class="sr-only">{{ document.state }}</span>
-        </p>
+        </component>
       </div>
       <span v-else>{{ $t('meetings.record.not_yet') }}</span>
     </template>
@@ -100,7 +107,15 @@
     </template>
 
     <template #files>
-      <FileManager :starting-path="meeting.sharepointPath" :fileable="{ id: meeting.id, type: 'Meeting' }" />
+      <FileableFilesPanel
+        ref="filesPanel"
+        :fileable="{ id: meeting.id, type: 'Meeting' }"
+        :files
+        :can-upload="canUploadFiles"
+        :can-delete="abilities.update"
+        :primary-types="MEETING_PRIMARY_FILE_TYPES"
+        :default-date="meeting.start_time"
+      />
     </template>
 
     <template #tasks>
@@ -122,13 +137,6 @@
     <template #activity>
       <RecordActivity subject-type="meeting" :subject-id="meeting.id" commentable-type="meeting" :commentable-id="meeting.id" />
     </template>
-
-    <Deferred data="coordinator">
-      <template #fallback>
-        <Skeleton class="mt-10 h-16 w-full" />
-      </template>
-      <CoordinatorCard :coordinators="coordinator ? [coordinator] : []" class="mt-10" compact />
-    </Deferred>
 
     <!-- Modals -->
     <Dialog v-model:open="showMeetingModal">
@@ -281,7 +289,7 @@
 </template>
 
 <script setup lang="tsx">
-import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
+import { ref, computed, watch, onMounted, defineAsyncComponent, nextTick } from 'vue';
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -300,8 +308,6 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
-import CoordinatorCard from '@/Components/Home/CoordinatorCard.vue';
-import type { HomeCoordinator } from '@/Components/Home/types';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
 import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
 import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';
@@ -309,9 +315,11 @@ import AddAgendaItemsSheet, { type AddAgendaMode, type RecentAgenda } from '@/Co
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
+import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
+import { MEETING_PRIMARY_FILE_TYPES, type FileableFileType } from '@/Constants/fileTypes';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
-import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
+import { enterMeeting } from '@/Composables/useRecordTrail';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 
@@ -339,8 +347,8 @@ const props = withDefaults(defineProps<{
   recordNavigation?: RecordNavigationContext;
   tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
   documents?: NonNullable<App.Entities.Meeting['documents']>;
-  coordinator?: HomeCoordinator | null;
   recentAgendas?: RecentAgenda[] | null;
+  files?: FileableFileItem[];
 }>(), {
   availableInstitutionsForAttach: () => [],
   governanceScope: undefined,
@@ -356,8 +364,8 @@ const props = withDefaults(defineProps<{
   recordNavigation: undefined,
   tasks: undefined,
   documents: undefined,
-  coordinator: null,
   recentAgendas: undefined,
+  files: () => [],
 });
 
 const institutionIds = computed(() => props.meeting.institutions?.map(institution => institution.id) ?? []);
@@ -419,17 +427,29 @@ const meetingStatus = computed(() => meetingCompletionStatuses[props.completion.
 const documentStatuses = computed(() => [
   {
     key: 'protocol',
+    fileType: 'Protokolai' as FileableFileType,
     label: $t('meetings.record.protocol'),
     uploaded: hasProtocol.value,
     state: hasProtocol.value ? $t('Įkeltas') : $t('Neįkeltas'),
   },
   {
     key: 'report',
+    fileType: 'Ataskaitos' as FileableFileType,
     label: $t('meetings.record.report'),
     uploaded: hasReport.value,
     state: hasReport.value ? $t('Įkelta') : $t('Neįkelta'),
   },
 ]);
+
+// The folder needs an institution with a padalinys; without one there is nowhere to upload.
+const canUploadFiles = computed(() => props.abilities.update && !!props.meeting.sharepointPath);
+const filesPanel = ref<InstanceType<typeof FileableFilesPanel> | null>(null);
+
+const openFilesUpload = async (type: FileableFileType) => {
+  currentTab.value = 'files';
+  await nextTick();
+  filesPanel.value?.openUpload(type);
+};
 
 // Component state
 const showMeetingModal = ref(false);
@@ -630,6 +650,8 @@ const meetingTitle = computed(() => {
 
   return `${datePart} ${genitivizeEveryWord(institutionName)} posėdis`;
 });
+
+watch(() => props.meeting.id, () => enterMeeting(props.meeting), { immediate: true });
 
 // Joint meeting — institution management
 const showAddInstitutionDialog = ref(false);

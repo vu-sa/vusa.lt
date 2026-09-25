@@ -143,11 +143,14 @@ describe('InstitutionOverviewSection', () => {
     expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['meetings']);
   });
 
-  it('shows the current-term secretaries apart from the managers', () => {
+  it('shows current-term secretaries without repeating coordinators from the key facts', () => {
     // A secretary need not hold a duty here, so they must never read as a member (O22).
     const wrapper = mount(InstitutionOverviewSection, {
       props: {
-        institution: makeInstitution({ secretaries: [{ id: 'u1', name: 'Rūta', email: null, profile_photo_path: null }] }),
+        institution: makeInstitution({
+          managers: [{ id: 'u2', name: 'Jonas', email: null, profile_photo_path: null }],
+          secretaries: [{ id: 'u1', name: 'Rūta', email: null, profile_photo_path: null }],
+        }),
         overview: makeOverview(),
       },
       global: { stubs },

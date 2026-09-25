@@ -28,9 +28,4 @@ return [
         'confirm' => 'Save',
         'search' => 'Search for a person...',
     ],
-
-    'spotlight' => [
-        'title' => 'New: institution secretaries',
-        'description' => 'Name who looks after this institution\'s meetings. Tasks and reminders then go to them instead of the whole membership.',
-    ],
 ];

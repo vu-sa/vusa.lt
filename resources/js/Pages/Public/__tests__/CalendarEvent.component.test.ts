@@ -35,7 +35,6 @@ function makeEvent(overrides: Record<string, unknown> = {}) {
     is_all_day: false,
     cto_url: 'https://forms.example.com/register',
     facebook_url: null,
-    video_url: null,
     images: [],
     ...overrides,
   };

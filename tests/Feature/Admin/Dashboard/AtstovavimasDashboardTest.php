@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
@@ -65,6 +66,32 @@ describe('atstovavimas dashboard', function (): void {
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
                     ->where('followedInstitutions.total', 1)
                     ->where('followedInstitutions.items.0.id', $followed->id)
+                )
+            );
+    });
+
+    test('reference documents of the user\'s duty types, parents included, load with the secondary group', function (): void {
+        $parentType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+        $dutyType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class), 'parent_id' => $parentType->id]);
+        $this->user->current_duties()->first()->types()->attach($dutyType);
+        $unrelatedType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+
+        $fileOn = fn (Type $type, array $attributes = []) => FileableFile::factory()->create([
+            'fileable_type' => MorphMap::alias(Type::class),
+            'fileable_id' => $type->id,
+            ...$attributes,
+        ]);
+        $regulation = $fileOn($parentType);
+        $fileOn($unrelatedType);
+        $fileOn($dutyType, ['deleted_externally_at' => now()]);
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('referenceDocuments')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('referenceDocuments', 1)
+                    ->where('referenceDocuments.0.id', $regulation->id)
                 )
             );
     });

@@ -30,7 +30,7 @@
         :tenant-ids
         :loading="representativesLoading"
       />
-      <Skeleton v-else class="h-40 w-full" />
+      <RepresentativeActivitySkeleton v-else />
     </TabsContent>
   </Tabs>
 </template>
@@ -44,9 +44,9 @@ import type { InstitutionStatusHistoryPoint, RepresentativeActivityData } from '
 
 import InstitutionStatusTrendChart from './InstitutionStatusTrendChart.vue';
 import RepresentativeActivitySection from './RepresentativeActivitySection.vue';
+import RepresentativeActivitySkeleton from './RepresentativeActivitySkeleton.vue';
 
 import OverviewChart from '@/Components/Overview/OverviewChart.vue';
-import { Skeleton } from '@/Components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 
 defineProps<{

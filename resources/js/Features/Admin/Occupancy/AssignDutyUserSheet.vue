@@ -259,7 +259,7 @@
             <TiptapEditor
               :key="descriptionLocale"
               v-model="form.description[descriptionLocale]"
-              preset="full"
+              tools="description"
               html
             />
             <p v-if="form.errors.description" class="text-xs text-destructive">

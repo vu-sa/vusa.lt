@@ -15,6 +15,16 @@ describe('admin date and time pickers', () => {
     expect(date.toISOString()).toBe('2026-09-19T12:00:00.000Z');
   });
 
+  it.each([
+    [undefined, 'h-11', 'size-11'],
+    ['sm', 'h-9', 'size-9'],
+  ] as const)('sizes the calendar button to the field (size %s)', (size, inputHeight, buttonSize) => {
+    const wrapper = mount(DatePicker, { props: { size } });
+
+    expect(wrapper.find('input').classes()).toContain(inputHeight);
+    expect(wrapper.find('button').classes()).toContain(buttonSize);
+  });
+
   it('accepts a typed time matching the configured interval', async () => {
     const wrapper = mount(TimePicker, { props: { minuteStep: 15 } });
 

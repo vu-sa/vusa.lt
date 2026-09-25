@@ -212,8 +212,9 @@ class MeetingController extends AdminController
                 // The edit dialog writes the description, so it needs every locale rather
                 // than the current one — the rest of the page reads the localized array above.
                 'description' => $meeting->getTranslations('description'),
-                'sharepointPath' => $meeting->institutions->isNotEmpty() ? SharepointFileService::pathForFileableDriveItem($meeting) : null,
+                'sharepointPath' => SharepointFileService::pathOrNull($meeting),
             ],
+            'files' => $meeting->fileableFiles->whereNull('deleted_externally_at')->sortByDesc('file_date')->values(),
             'representatives' => $representatives,
             // Nominated for the term the meeting fell in (O22). When present, these are the
             // people the agenda tasks went to instead of the whole membership.

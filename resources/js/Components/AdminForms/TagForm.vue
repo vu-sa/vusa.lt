@@ -29,7 +29,7 @@
       </FormFieldWrapper>
 
       <FormFieldWrapper id="description" :label="$t('forms.fields.description')">
-        <MultiLocaleTiptapFormItem v-model:input="form.description" :label="$t('forms.fields.description')" />
+        <MultiLocaleTiptapFormItem v-model:input="form.description" />
       </FormFieldWrapper>
 
       <!-- Associated news list -->

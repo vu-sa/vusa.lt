@@ -102,10 +102,6 @@ return [
         'will_backtrack_return' => 'Grąžinimas bus atšauktas',
         'backtrack_hint' => 'Išteklius bus grąžintas viena būsena atgal, o atšauktas patvirtinimas liks istorijoje.',
     ],
-    'spotlight' => [
-        'backtrack_title' => 'Atšaukite klaidingą veiksmą',
-        'backtrack_description' => 'Rezervacijos patvirtinimą, išdavimą ar grąžinimą dabar galima grąžinti vienu žingsniu atgal.',
-    ],
     'history' => [
         'reverted' => 'Atšaukė :user · :date',
         'reversion_reason' => 'Priežastis: :reason',
@@ -174,8 +170,6 @@ return [
         'removed' => 'Išteklius ištrintas',
         'expires' => 'Nebaigta rezervacija saugoma :days d. nuo paskutinio pakeitimo.',
         'quantity' => 'Kiekis',
-        'spotlight_title' => 'Rinkis išteklius kaip į krepšelį',
-        'spotlight_description' => 'Spausk „Pridėti“ prie kiekvieno reikalingo ištekliaus. Pasirinkimas išsaugomas, net jei uždarysi puslapį.',
         'capacity_exceeded' => ':resource: šiuo laiku laisva tik :count vnt. Sumažink kiekį arba pakeisk laiką.',
         'not_reservable_error' => 'Šio ištekliaus rezervuoti negalima.',
         'quick_add' => 'Greitai pridėti',

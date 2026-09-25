@@ -38,21 +38,13 @@
       />
     </section>
 
-    <section v-if="institution.managers?.length || secretaries.length" class="grid gap-6 sm:grid-cols-2">
-      <div v-if="institution.managers?.length" class="space-y-2">
-        <h3 class="border-b border-border pb-2 text-base font-semibold text-foreground">
-          {{ $t('Koordinatoriai') }}
-        </h3>
-        <UsersAvatarGroup :users="institution.managers" :max="5" :size="32" />
-      </div>
+    <section v-if="secretaries.length" class="space-y-2">
       <!-- Nominated for the current term (O22). Distinct from the body's members: a secretary
            need not hold a duty here at all. -->
-      <div v-if="secretaries.length" class="space-y-2">
-        <h3 class="border-b border-border pb-2 text-base font-semibold text-foreground">
-          {{ $t('secretaries.label') }}
-        </h3>
-        <UsersAvatarGroup :users="(secretaries as unknown as App.Entities.User[])" :max="5" :size="32" />
-      </div>
+      <h3 class="border-b border-border pb-2 text-base font-semibold text-foreground">
+        {{ $t('secretaries.label') }}
+      </h3>
+      <UsersAvatarGroup :users="(secretaries as unknown as App.Entities.User[])" :max="5" :size="32" />
     </section>
   </div>
 </template>

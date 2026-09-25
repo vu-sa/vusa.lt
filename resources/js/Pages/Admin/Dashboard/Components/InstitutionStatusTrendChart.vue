@@ -20,8 +20,16 @@
       </div>
     </div>
 
-    <div v-if="loading && data.length === 0" class="flex h-64 items-center justify-center border border-border">
-      <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+    <div v-if="loading && data.length === 0" class="flex h-64 flex-col justify-between border border-border bg-card p-4" data-slot="institution-trend-skeleton" aria-hidden="true">
+      <div class="flex flex-1 items-end border-b border-border pb-3">
+        <Skeleton
+          class="h-3/4 w-full"
+          :style="{ clipPath: skeletonAreaClipPath }"
+        />
+      </div>
+      <div class="flex justify-between gap-4 pt-3">
+        <Skeleton v-for="tick in 4" :key="tick" class="h-3 w-10" />
+      </div>
     </div>
     <div
       v-else-if="data.length === 0"
@@ -79,9 +87,10 @@ import {
   timeFormat,
 } from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2 } from 'lucide-vue-next';
 
 import type { InstitutionStatusHistoryPoint } from '../types';
+
+import { Skeleton } from '@/Components/ui/skeleton';
 
 type StatusKey = 'current' | 'approaching' | 'overdue' | 'no_activity';
 
@@ -96,6 +105,7 @@ defineEmits<{
 }>();
 
 const rangeOptions = [30, 90, 180] as const;
+const skeletonAreaClipPath = 'polygon(0 55%, 12% 48%, 24% 58%, 36% 35%, 48% 42%, 60% 28%, 72% 40%, 84% 20%, 100% 32%, 100% 100%, 0 100%)';
 
 // Bottom-to-top: healthy baseline first, escalating severity stacked above it. The series are
 // statuses, so they use the status roles, not the categorical `--cat-*` hues (visual.md).

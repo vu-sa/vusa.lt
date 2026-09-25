@@ -27,7 +27,7 @@
           </template>
           <InstitutionsNeedingAttention
             :institutions="institutionsNeedingAttention ?? []"
-            @record="recordMeetingFor"
+            @record="recordActivityFor"
           />
         </Deferred>
 
@@ -271,8 +271,8 @@ const taskSummary = computed(() => {
     : waiting;
 });
 
-const recordMeetingFor = (institution: InstitutionActivityInsight) => {
-  actionWindow.open({ flow: 'meeting.create', institution: { id: institution.id, name: institution.name } });
+const recordActivityFor = (institution: InstitutionActivityInsight) => {
+  actionWindow.open({ flow: 'institution.report', institution: { id: institution.id, name: institution.name } });
 };
 
 </script>

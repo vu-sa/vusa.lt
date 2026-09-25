@@ -44,12 +44,6 @@ return [
         ],
     ],
 
-    // Tenant Tab Spotlight
-    'tenant_tab_spotlight' => [
-        'title' => 'Padalinio vaizdas',
-        'description' => 'Kaip vadovas, galite peržiūrėti viso padalinio institucijų laiko juostą. Spustelėkite čia, kad matytumėte bendrą vaizdą.',
-    ],
-
     // Gantt Chart Tour
     'gantt_tour' => [
         'fullscreen' => [
@@ -148,11 +142,5 @@ return [
             'title' => 'Peržiūra ir išsaugojimas',
             'description' => 'Niekas neišsaugoma, kol nepaspaudžiate. Prieš tai galite <strong>peržiūrėti</strong>, kaip įrašai atrodys po pakeitimų.',
         ],
-    ],
-
-    // Help Button Spotlight
-    'help_button_spotlight' => [
-        'title' => 'Reikia pagalbos?',
-        'description' => 'Spauskite šį mygtuką, kad pradėtumėte interaktyvų puslapio vadovą ir sužinotumėte, kaip naudotis funkcijomis.',
     ],
 ];

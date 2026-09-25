@@ -39,8 +39,7 @@
         :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
         :error="form.errors[`description.${activeLocale}`]"
       >
-        <TiptapEditor v-if="activeLocale === 'lt'" v-model="form.description.lt" preset="full" html framed />
-        <TiptapEditor v-else v-model="form.description.en" preset="full" html framed />
+        <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
       </FormFieldWrapper>
     </FormSection>
 

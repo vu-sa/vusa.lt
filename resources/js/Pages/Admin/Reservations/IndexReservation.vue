@@ -50,8 +50,8 @@
       <CollectionPrimaryCell
         v-if="column.key === 'name'"
         :title="item.name"
+        :title-lines="2"
         :href="isDeleted ? undefined : route('reservations.show', item.id)"
-        :sub="item.users?.length ? $tChoice('reservations.dashboard.managers', item.users.length, { count: item.users.length }) : undefined"
       />
       <div v-else-if="column.key === 'requester'" class="flex items-center gap-2">
         <template v-if="item.users?.length">
@@ -74,7 +74,6 @@
       <ReservationRowActions
         v-else-if="column.key === 'actions' && !isDeleted"
         :reservation="item"
-        :spotlight="reservationKey(item) === spotlightKey"
         @decide="openDecision"
       />
     </template>
@@ -186,7 +185,7 @@
 
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Check, CheckCheck, Plus, RotateCcw, Trash2, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
@@ -209,7 +208,6 @@ import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Com
 import { formatDate } from '@/Utils/dateTime';
 import { capitalize } from '@/Utils/String';
 import {
-  getBacktrackAction,
   getReservationStates,
   getRejectablePivotIds,
   isReservationSelectable,
@@ -277,12 +275,12 @@ const source = useDatabaseCollectionSource<DashboardReservation>({
 });
 
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Rezervacija') },
+  { key: 'name', label: $t('Rezervacija'), class: 'min-w-44' },
   { key: 'requester', label: $t('Prašytojas'), class: 'w-44' },
   { key: 'resources', label: $t('Ištekliai') },
   { key: 'period', label: $t('Laikas'), class: 'w-36' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
-  ...(!isDeleted.value ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-56' }] : []),
+  ...(!isDeleted.value ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-52', pinned: true }] : []),
 ]);
 
 // --- Quick filters: the URL state an overview number links to ---------------------------------
@@ -333,13 +331,6 @@ const reservationPeriod = (reservation: DashboardReservation) => `${formatDate(n
 const isAdministrator = (reservation: DashboardReservation) => reservation.resources.some(resource => resource.pivot.approvable);
 const statesOf = (reservation: DashboardReservation) => getReservationStates(reservation, { approvableOnly: isAdministrator(reservation) });
 const isUnresolved = (reservation: DashboardReservation) => isReservationUnresolved(reservation, { approvableOnly: isAdministrator(reservation) });
-
-/** One row carries the backtrack hint, so it never shows twice on a page. */
-const spotlightKey = computed(() => {
-  const first = source.items.value.find(reservation => getBacktrackAction(reservation) !== null);
-
-  return first ? reservationKey(first) : null;
-});
 
 // --- Selection and decisions ---------------------------------------------------------------------
 

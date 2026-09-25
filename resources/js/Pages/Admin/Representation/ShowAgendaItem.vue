@@ -10,6 +10,7 @@
     :primary-action
     :overflow-actions
     :navigation
+    actions-beside-title
     @action="handleRecordAction"
   >
     <template #identity>
@@ -176,6 +177,7 @@
       :form
       :save-then
       :default-start-time="defaultStartTimeFromPreviousItem()"
+      :meeting-start-time
       :requires-student-perspective
       :is-public="meetingIsPublic"
       :can-delete="abilities.delete"
@@ -212,7 +214,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { useMediaQuery } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
@@ -230,10 +232,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
 import { agendaItemStatuses } from '@/Constants/statuses';
 import { getAgendaItemStatus } from '@/Composables/useAgendaItemStyling';
+import { enterAgendaItem } from '@/Composables/useRecordTrail';
 import { useAgendaItemAutosave, toTranslatedField, type AgendaItemFormData, type EditableVote, type VoteValue } from '@/Composables/useAgendaItemAutosave';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { ModelEnum } from '@/Types/enums';
-import { formatDate } from '@/Utils/dateTime';
+import { formatDate, formatTime } from '@/Utils/dateTime';
+import { isEmailMeeting } from '@/Utils/MeetingDisplay';
 
 /**
  * `AgendaItemController::show()` sends `toFullArray()`, so the translatable fields arrive as
@@ -340,6 +344,14 @@ const status = computed(() => agendaItemStatuses[getAgendaItemStatus({
 
 const meeting = computed(() => props.agendaItem.meeting as (App.Entities.Meeting & { is_public?: boolean }) | undefined);
 const meetingIsPublic = computed(() => Boolean(meeting.value?.is_public));
+// An email meeting's time is only a placeholder, so it would anchor the time suggestions nowhere useful.
+const meetingStartTime = computed(() => {
+  if (!meeting.value?.start_time || isEmailMeeting(meeting.value)) {
+    return null;
+  }
+
+  return formatTime(meeting.value.start_time) || null;
+});
 const institutions = computed(() => meeting.value?.institutions ?? []);
 const mainInstitution = computed(() => institutions.value[0] ?? null);
 
@@ -349,6 +361,10 @@ const meetingLabel = computed(() => (meeting.value?.start_time
 
 const currentIndex = computed(() => props.siblingAgendaItems.findIndex(item => item.id === props.agendaItem.id));
 const currentPosition = computed(() => (currentIndex.value >= 0 ? currentIndex.value + 1 : props.agendaItem.order));
+
+watch(() => props.agendaItem.id, () => {
+  enterAgendaItem({ id: props.agendaItem.id, title: displayTitle.value }, currentPosition.value, meeting.value);
+}, { immediate: true });
 
 const timeRange = computed(() => [form.start_time, form.end_time].filter(Boolean).join('–'));
 

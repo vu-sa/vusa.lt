@@ -74,7 +74,7 @@ describe('destroy (legacy sharepointFile)', function (): void {
 });
 
 /**
- * These three endpoints address SharePoint drive items by their opaque Graph id, so there is
+ * These two endpoints address SharePoint drive items by their opaque Graph id, so there is
  * no local model to authorize against — they are gated on the SharepointFile capability the
  * way createFolder already is. Authorization must happen before any Graph call is attempted.
  */
@@ -88,15 +88,6 @@ describe('drive item permission endpoints', function (): void {
     test('getDriveItemPublicLink returns 403 for unauthorized user', function (): void {
         asUser($this->user)
             ->get(route('sharepoint.getDriveItemPublicLink', ['id' => 'some-drive-item-id']))
-            ->assertStatus(403);
-    });
-
-    test('getTypesDriveItems returns 403 when the user cannot view the fileable', function (): void {
-        asUser($this->user)
-            ->get(route('sharepoint.getTypesDriveItems', [
-                'type' => 'Institution',
-                'id' => $this->institution->id,
-            ]))
             ->assertStatus(403);
     });
 });

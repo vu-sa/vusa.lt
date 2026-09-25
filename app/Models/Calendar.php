@@ -44,7 +44,6 @@ use Spatie\SchemaOrg\Place;
  * @property array|string|null $organizer
  * @property array|string|null $cto_url URL for Call To Action
  * @property string|null $facebook_url
- * @property string|null $video_url
  * @property string|null $main_image_focal_point
  * @property bool $is_draft
  * @property bool $is_all_day

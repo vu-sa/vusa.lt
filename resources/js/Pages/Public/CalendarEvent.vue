@@ -96,25 +96,6 @@
             <PublicMeetingDocuments :documents="meeting.documents" />
           </section>
 
-          <!-- Video Section -->
-          <section v-if="event.video_url">
-            <div class="mb-4 flex items-baseline gap-3 border-l-2 border-brand pl-3">
-              <h2 class="u-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
-                {{ $t("Video") }}
-              </h2>
-            </div>
-            <div class="overflow-hidden border border-border bg-secondary">
-              <iframe
-                class="aspect-video w-full"
-                :src="`https://www.youtube-nocookie.com/embed/${event.video_url}`"
-                title="YouTube video player"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
-              />
-            </div>
-          </section>
-
           <!-- Image Gallery Section -->
           <section v-if="normalizedImages.length > 1">
             <div class="mb-6 flex items-baseline gap-3 border-l-2 border-brand pl-3">

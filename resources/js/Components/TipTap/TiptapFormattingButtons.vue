@@ -1,58 +1,51 @@
 <template>
-  <ButtonGroup v-if="!bubble">
-    <TipTapMarkButton v-if="showBold" :editor type="bold" data-testid="tiptap-format-bold">
-      <template #icon>
-        <IFluentTextBold20Regular />
-      </template>
-    </TipTapMarkButton>
-    <TipTapMarkButton :editor type="italic" data-testid="tiptap-format-italic">
-      <template #icon>
-        <IFluentTextItalic20Regular />
-      </template>
-    </TipTapMarkButton>
-    <Button size="sm" data-testid="tiptap-format-underline" :variant="editor.isActive('underline') ? 'default' : 'outline'"
-      @click="editor.chain().focus().toggleUnderline().run()">
+  <div class="flex items-center gap-0.5">
+    <TiptapToolButton
+      v-if="showBold"
+      data-testid="tiptap-format-bold"
+      toggle
+      :active="editor.isActive('bold')"
+      :label="$t('rich-content.bold')"
+      @click="editor.chain().focus().toggleBold().run()"
+    >
+      <IFluentTextBold20Regular />
+    </TiptapToolButton>
+    <TiptapToolButton
+      data-testid="tiptap-format-italic"
+      toggle
+      :active="editor.isActive('italic')"
+      :label="$t('rich-content.italic')"
+      @click="editor.chain().focus().toggleItalic().run()"
+    >
+      <IFluentTextItalic20Regular />
+    </TiptapToolButton>
+    <TiptapToolButton
+      data-testid="tiptap-format-underline"
+      toggle
+      :active="editor.isActive('underline')"
+      :label="$t('rich-content.underline')"
+      @click="editor.chain().focus().toggleUnderline().run()"
+    >
       <IFluentTextUnderline20Regular />
-    </Button>
-  </ButtonGroup>
-
-  <!-- Bubble menu: a flat cluster, not a bordered pill nested inside the bubble's own
-       border — that "wrap in a wrap" look is what the ButtonGroup/outline combination
-       above produces when floated inside `BubbleMenu`'s already-bordered container. -->
-  <div v-else class="flex items-center gap-0.5">
-    <TipTapMarkButton v-if="showBold" :editor type="bold" data-testid="tiptap-format-bold" bubble>
-      <template #icon>
-        <IFluentTextBold20Regular />
-      </template>
-    </TipTapMarkButton>
-    <TipTapMarkButton :editor type="italic" data-testid="tiptap-format-italic" bubble>
-      <template #icon>
-        <IFluentTextItalic20Regular />
-      </template>
-    </TipTapMarkButton>
-    <Button size="icon-sm" data-testid="tiptap-format-underline" :variant="editor.isActive('underline') ? 'brand' : 'ghost'"
-      @click="editor.chain().focus().toggleUnderline().run()">
-      <IFluentTextUnderline20Regular />
-    </Button>
+    </TiptapToolButton>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Editor } from '@tiptap/core';
+import { trans as $t } from 'laravel-vue-i18n';
 
-import TipTapMarkButton from '@/Features/Admin/CommentViewer/TipTap/TipTapMarkButton.vue';
-import { Button } from '@/Components/ui/button';
-import { ButtonGroup } from '@/Components/ui/button-group';
+import TiptapToolButton from './TiptapToolButton.vue';
+
+import IFluentTextBold20Regular from '~icons/fluent/text-bold20-regular';
+import IFluentTextItalic20Regular from '~icons/fluent/text-italic20-regular';
+import IFluentTextUnderline20Regular from '~icons/fluent/text-underline20-regular';
 
 withDefaults(defineProps<{
+  editor: Editor;
   showBold?: boolean;
-  /** Flat ghost/brand icon buttons for a bubble menu or framed toolbar, instead of the bordered
-   *  outline/default `ButtonGroup` pill used in the fixed toolbar. */
-  bubble?: boolean;
 }>(), {
-  // eslint-disable-next-line vue/no-boolean-default -- true is the actual default for every caller but TiptapEditor's toolbar mode.
+  // eslint-disable-next-line vue/no-boolean-default -- true is the actual default for every caller but a bold-styled field.
   showBold: true,
 });
-
-defineModel<Editor>('editor', { required: true });
 </script>

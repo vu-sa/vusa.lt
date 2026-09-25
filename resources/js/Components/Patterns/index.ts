@@ -28,6 +28,7 @@ export { default as FormSkeleton } from './Skeletons/FormSkeleton.vue';
 export { default as SectionCardSkeleton } from './Skeletons/SectionCardSkeleton.vue';
 export { default as TopProgressBar } from './TopProgressBar.vue';
 export { default as ConfirmDialog } from './ConfirmDialog.vue';
+export { default as ConfirmDangerousDialog } from './ConfirmDangerousDialog.vue';
 export { default as SheetForm } from './SheetForm.vue';
 export { default as FormSection } from './FormSection.vue';
 export { default as FormPanel } from './FormPanel.vue';
@@ -35,8 +36,4 @@ export { default as FormToggleRow } from './FormToggleRow.vue';
 export { default as FormSegmentedControl } from './FormSegmentedControl.vue';
 export type { FormSegmentOption } from './FormSegmentedControl.vue';
 
-/**
- * Re-exported so callers have one import path for the whole pattern tier and
- * don't need to know SectionCard lives in ui/ for historical reasons.
- */
-export { SectionCard } from '@/Components/ui/section-card';
+export { default as SectionCard } from './SectionCard.vue';

@@ -26,10 +26,6 @@ vi.mock('@/Composables/useInstitutionSubscription', () => ({
   useInstitutionSubscription: () => ({ ...subscription, bulkLoading: ref(false) }),
 }));
 
-vi.mock('@/Composables/useFeatureSpotlight', () => ({
-  useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: vi.fn() }),
-}));
-
 /** The collection shell is covered by its own suite; here it only hands over its slots and events. */
 const CollectionPageStub = {
   name: 'CollectionPage',

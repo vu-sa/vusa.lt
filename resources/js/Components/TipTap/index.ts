@@ -26,6 +26,8 @@ export {
 // Composables
 export { useTiptapEditor, type UseTiptapEditorOptions } from './composables/useTiptapEditor';
 export { useTiptapFileUpload } from './composables/useTiptapFileUpload';
+export { useTiptapCommands } from './composables/useTiptapCommands';
+export { type ToolbarProfile, type ToolbarTools, toolsFor } from './toolbarProfiles';
 
 // Extensions (for advanced customization)
 export { AccessibleImage } from './AccessibleImage';
@@ -33,7 +35,11 @@ export { CustomHeading } from './CustomHeading';
 export { Video } from './Video';
 
 // Helper buttons (for building custom toolbars)
+export { default as TiptapContextMenus } from './TiptapContextMenus.vue';
 export { default as TiptapFormattingButtons } from './TiptapFormattingButtons.vue';
+export { default as TiptapInsertMenu } from './TiptapInsertMenu.vue';
+export { default as TiptapMoreMenu } from './TiptapMoreMenu.vue';
+export { default as TiptapToolButton } from './TiptapToolButton.vue';
 export { default as TiptapImageButton } from './TiptapImageButton.vue';
 export { default as TiptapLinkButton } from './TiptapLinkButton.vue';
 export { default as TiptapVideoButton } from './TiptapVideoButton.vue';

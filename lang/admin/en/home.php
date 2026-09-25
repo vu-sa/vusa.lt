@@ -10,8 +10,6 @@ return [
         'manage_reservations_description' => 'Approve and track resource reservations',
         'member_registrations_description' => 'New member applications',
         'rep_registrations_description' => 'New student rep applications',
-        'spotlight_title' => 'Your sections at hand',
-        'spotlight_description' => 'Administration, reservations and registration forms, when you have access.',
     ],
     'hero' => [
         'news_eyebrow' => 'News',
