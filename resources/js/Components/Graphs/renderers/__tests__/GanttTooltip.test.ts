@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { JSDOM } from 'jsdom';
 
 import { buildMeetingTooltipContent, createGanttTooltip } from '../GanttTooltip';
 import { getGanttColors } from '../../ganttColors';
 
 function makeManager() {
-  const dom = new JSDOM('<!DOCTYPE html><div id="container"></div>');
-  const container = dom.window.document.getElementById('container')!;
-  return createGanttTooltip(container as unknown as HTMLElement, getGanttColors(false));
+  const container = document.createElement('div');
+  return createGanttTooltip(container, getGanttColors(false));
 }
 
 describe('GanttTooltipManager priority', () => {

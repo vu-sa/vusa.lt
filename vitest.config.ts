@@ -65,6 +65,9 @@ const jsdomProject = (name: string, include: string[], exclude?: string[]) => ({
   test: {
     name,
     environment: 'jsdom',
+    // One jsdom per worker instead of one per file (~38s → ~13s) while keeping per-file module
+    // isolation. Specs must not redefine `window.location` or leave dynamic imports pending.
+    pool: 'vmThreads' as const,
     setupFiles: ['tests/setup.ts'],
     include,
     ...(exclude ? { exclude } : {}),

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use Illuminate\Support\Str;
 
 /**
  * Admin index pages resolve model names through `entities.{entityName}.model`, so a
@@ -17,7 +18,7 @@ $entityNames = collect(glob($projectRoot.'/resources/js/Pages/Admin/*/Index*.vue
     ->map(function (string $path): ?string {
         $source = (string) file_get_contents($path);
 
-        // Pages declare the key they will look up as a top-level constant or CollectionPage entity-type.
+        // CollectionPage entity types may use snake_case while translation keys use camelCase.
         if (preg_match('/(?:^const entityName\s*=\s*\'([^\']+)\'|entity-type="([^"]+)")/m', $source, $matches) === 1) {
             return ! empty($matches[1]) ? $matches[1] : $matches[2];
         }
@@ -25,6 +26,7 @@ $entityNames = collect(glob($projectRoot.'/resources/js/Pages/Admin/*/Index*.vue
         return null;
     })
     ->filter()
+    ->map(fn (string $entityName): string => Str::camel($entityName))
     ->unique()
     ->sort()
     ->values()
@@ -38,7 +40,7 @@ dataset('admin index entity names', array_map(
 test('the entity name scan finds every admin index page', function () use ($entityNames): void {
     // Guards the regex above: a rename that silently matches nothing would make
     // every dataset case vanish and the suite pass while covering nothing.
-    expect($entityNames)->toHaveCount(24);
+    expect($entityNames)->toHaveCount(25);
 });
 
 test('every admin index entity name has a Lithuanian model translation', function (string $entityName): void {

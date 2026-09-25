@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterAll, vi } from 'vitest';
 import { config } from '@vue/test-utils';
 
 // Note: Icon auto-imports now handled by unplugin-icons in vitest.config.ts
@@ -30,6 +30,16 @@ for (const key of ['localStorage', 'sessionStorage'] as const) {
     writable: true,
   });
 }
+
+// Under `pool: 'vmThreads'` the window's `performance` is jsdom's, which lacks the timeline API
+// that @inertiajs/core reads on import to detect back/forward navigation.
+if (typeof performance.getEntriesByType !== 'function') {
+  performance.getEntriesByType = () => [];
+}
+
+// Async components start loading on mount; under `vmThreads` any import still pending when the
+// file ends rejects with "Vite module runner has been closed" and fails the run.
+afterAll(() => vi.dynamicImportSettled());
 
 // Mock route function from Ziggy
 vi.mock('ziggy-js', () => ({
