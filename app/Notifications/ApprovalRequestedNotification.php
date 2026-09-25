@@ -3,8 +3,7 @@
 namespace App\Notifications;
 
 use App\Contracts\Approvable;
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -12,17 +11,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ApprovalRequestedNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::ApprovalRequested;
+    }
+
     public function __construct(protected Model $approvable, protected int $step = 1) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Reservation;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
 
     public function title(object $notifiable): string
     {

@@ -2,20 +2,23 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Task;
 use App\Models\User;
 
 /**
  * Notification sent to task assignees when a task is auto-completed by the system.
  *
- * This is different from TaskCompletedNotification which is for user-completed tasks.
  * Auto-completed tasks include approval tasks (when decision is made), pickup tasks
  * (when resource is lent), and return tasks (when resource is returned).
  */
 class TaskAutoCompletedNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::TaskAutoCompleted;
+    }
+
     /**
      * Create a new notification instance.
      *
@@ -23,16 +26,6 @@ class TaskAutoCompletedNotification extends BaseNotification
      * @param  User|null  $completedBy  The user who triggered the auto-completion
      */
     public function __construct(protected Task $task, protected string $completionReason, protected ?User $completedBy = null) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Record;
-    }
 
     public function title(object $notifiable): string
     {

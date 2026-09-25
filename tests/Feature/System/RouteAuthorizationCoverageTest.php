@@ -36,6 +36,8 @@ const SELF_SCOPED_ROUTE_NAMES = [
     'profile.update',
     'profile.updatePassword',
     'profile.updateNotificationPreferences',
+    'profile.muteNotifications',
+    'profile.resetNotificationPreferences',
     'profile.sendTestNotificationEmail',
     'notifications.markAsRead',
     'notifications.mark-as-read.all',

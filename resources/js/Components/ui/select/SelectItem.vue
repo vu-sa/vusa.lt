@@ -27,9 +27,11 @@
       <SelectItemText class="sr-only">
         {{ label }}
       </SelectItemText>
+      <component :is="icon" v-if="icon" aria-hidden="true" />
       <slot />
     </template>
     <SelectItemText v-else>
+      <component :is="icon" v-if="icon" aria-hidden="true" />
       <slot />
     </SelectItemText>
   </SelectItem>
@@ -44,14 +46,14 @@ import {
   SelectItemText,
   useForwardProps,
 } from 'reka-ui';
-import { computed, type HTMLAttributes } from 'vue';
+import { computed, type Component, type HTMLAttributes } from 'vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
 
-const props = defineProps<SelectItemProps & { class?: HTMLAttributes['class']; label?: string }>();
+const props = defineProps<SelectItemProps & { class?: HTMLAttributes['class']; label?: string; icon?: Component }>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props;
+  const { class: _, icon: __, ...delegated } = props;
 
   return delegated;
 });

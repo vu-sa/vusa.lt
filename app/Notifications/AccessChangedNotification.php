@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 
 /**
  * "Tavo prieigos pasikeitė" (U14): one notice per person per day listing the duty terms that
@@ -11,6 +10,11 @@ use App\Enums\NotificationUrgency;
  */
 class AccessChangedNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::AccessChanged;
+    }
+
     /** More rows than this stop being a glance; the history on *Mano rolės* has the rest. */
     private const int MAX_ROWS = 4;
 
@@ -26,16 +30,6 @@ class AccessChangedNotification extends BaseNotification
     public static function key(string $date): string
     {
         return 'access-change-'.$date;
-    }
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Duty;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Know;
     }
 
     public function title(object $notifiable): string

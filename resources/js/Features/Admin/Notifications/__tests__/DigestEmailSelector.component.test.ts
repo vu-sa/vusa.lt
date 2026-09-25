@@ -14,6 +14,7 @@ describe('DigestEmailSelector', () => {
       props: {
         availableEmails,
         modelValue: ['user@example.com'],
+        defaultEmail: 'duty@vusa.lt',
       },
     });
 
@@ -26,6 +27,7 @@ describe('DigestEmailSelector', () => {
       props: {
         availableEmails,
         modelValue: ['user@example.com'],
+        defaultEmail: 'duty@vusa.lt',
       },
     });
 
@@ -39,5 +41,17 @@ describe('DigestEmailSelector', () => {
     expect(wrapper.emitted('update:modelValue')).toBeTruthy();
     const emitted = wrapper.emitted('update:modelValue')!;
     expect(emitted[0][0]).toEqual(['user@example.com', 'duty@vusa.lt']);
+  });
+
+  it('names the default address while none is selected', () => {
+    const wrapper = mount(DigestEmailSelector, {
+      props: {
+        availableEmails,
+        modelValue: [],
+        defaultEmail: 'duty@vusa.lt',
+      },
+    });
+
+    expect(wrapper.text()).toContain('duty@vusa.lt');
   });
 });

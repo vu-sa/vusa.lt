@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Institution;
 use App\Models\Task;
 use App\Models\User;
@@ -15,25 +14,15 @@ use App\Models\User;
  */
 class TaskAssignedNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::TaskAssigned;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Task $task, protected ?User $assigner = null) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
-
-    /**
-     * Due within a week it asks for action now; further out it is worth knowing, not mailing.
-     */
-    public function urgency(): NotificationUrgency
-    {
-        $due = $this->task->due_date;
-
-        return $due !== null && $due->lte(now()->addDays(7)) ? NotificationUrgency::Act : NotificationUrgency::Know;
-    }
 
     public function title(object $notifiable): string
     {

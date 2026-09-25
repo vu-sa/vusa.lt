@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Meeting;
 use App\Notifications\Concerns\ReachesFollowers;
 
@@ -14,20 +13,15 @@ class MeetingCreatedNotification extends BaseNotification
 {
     use ReachesFollowers;
 
+    public function type(): NotificationType
+    {
+        return $this->viaFollow ? NotificationType::FollowedInstitutionActivity : NotificationType::MeetingCreated;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Meeting $meeting) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Meeting;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Know;
-    }
 
     public function title(object $notifiable): string
     {

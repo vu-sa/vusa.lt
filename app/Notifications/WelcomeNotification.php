@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 
 /**
  * Welcome notification sent to users after completing their first tutorial.
@@ -13,14 +12,9 @@ use App\Enums\NotificationUrgency;
  */
 class WelcomeNotification extends BaseNotification
 {
-    public function category(): NotificationCategory
+    public function type(): NotificationType
     {
-        return NotificationCategory::System;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Onboarding;
+        return NotificationType::Welcome;
     }
 
     public function title(object $notifiable): string

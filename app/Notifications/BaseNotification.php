@@ -3,8 +3,9 @@
 namespace App\Notifications;
 
 use App\Actions\GetInstitutionCoordinators;
+use App\Enums\EmailDelivery;
 use App\Enums\NotificationCategory;
-use App\Enums\NotificationChannel;
+use App\Enums\NotificationType;
 use App\Enums\NotificationUrgency;
 use App\Models\Institution;
 use App\Models\User;
@@ -21,32 +22,25 @@ use NotificationChannels\WebPush\WebPushChannel;
 use NotificationChannels\WebPush\WebPushMessage;
 
 /**
- * Base notification class providing standardized structure for all notifications.
- *
- * All notifications should extend this class and implement:
- * - category(): NotificationCategory - The notification category
- * - title(): string - The notification title (for display and WebPush)
- * - body(): string - The notification body/description
- * - url(): string - The URL to navigate to when clicked
- * - urgency(): NotificationUrgency - How much it asks of the reader; decides email, push and digest
- *
- * Optionally override:
- * - icon(): string - Emoji or icon indicator (default: from category)
- * - modelClass(): ?string - The related model type for icon mapping
- * - primaryAction()/secondaryAction(): ?array - The ask, as {label: string, url: string}
- * - context(): array - Label/value rows [{label: string, value: string}]
- * - subject(): ?array - The actor/subject who triggered the notification
- * - object(): ?array - The object the notification is about
- * - mailSignature(): ?array - The person an email is signed by
+ * One content contract (title, body, primaryAction, context) rendered in-app, by email and as push.
+ * Subclasses declare their NotificationType; category, urgency and channel defaults follow from it,
+ * and the recipient's per-type preferences decide delivery in via().
  */
 abstract class BaseNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    /**
-     * Get the notification category.
-     */
-    abstract public function category(): NotificationCategory;
+    abstract public function type(): NotificationType;
+
+    public function category(): NotificationCategory
+    {
+        return $this->type()->section();
+    }
+
+    public function urgency(): NotificationUrgency
+    {
+        return $this->type()->urgency();
+    }
 
     /**
      * Get the notification title.
@@ -62,11 +56,6 @@ abstract class BaseNotification extends Notification implements ShouldQueue
      * Get the URL to navigate to.
      */
     abstract public function url(): string;
-
-    /**
-     * How much this notification asks of its reader.
-     */
-    abstract public function urgency(): NotificationUrgency;
 
     /**
      * Get the emoji/icon for the notification.
@@ -187,23 +176,6 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Determine if this notification is batched into the email digest (derived from urgency).
-     */
-    public function supportsEmailDigest(): bool
-    {
-        return $this->urgency()->usesDigest();
-    }
-
-    /**
-     * Determine if this notification sends a web push (derived from urgency); override where the
-     * channel policy (.ai/rules/notifications.md) disagrees with the tier.
-     */
-    public function sendsPush(): bool
-    {
-        return $this->urgency()->sendsPush();
-    }
-
-    /**
      * The person the email is signed by, or null to sign as Mano VU SA.
      *
      * @return array{name: string, duty: string|null, email: string}|null
@@ -250,46 +222,32 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Get the notification's delivery channels.
+     * In-app always, so the bell is the full record even while muted; email and push follow the
+     * recipient's choice for this type. Locked role-inbox mail is sent regardless.
      *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
     {
-        // Check if notifications are globally muted for this user
-        if (method_exists($notifiable, 'isGloballyMuted') && $notifiable->isGloballyMuted()) {
-            return [];
-        }
-
-        // In-app is the record of what happened, so it is never gated; push and email follow the policy.
         $channels = ['database', 'broadcast'];
 
-        if ($this->sendsPush() && $this->wantsPush($notifiable)) {
+        if (! $notifiable instanceof User) {
+            return $channels;
+        }
+
+        $type = $this->type();
+        $muted = $notifiable->isGloballyMuted();
+
+        if (! $muted && $notifiable->wantsPushFor($type)) {
             $channels[] = WebPushChannel::class;
         }
 
-        if ($this->urgency()->sendsImmediateMail() && $this->userWants($notifiable, NotificationChannel::EmailDigest)) {
+        if ($type->lockedEmail() === EmailDelivery::Immediate
+            || (! $muted && $notifiable->emailDeliveryFor($type) === EmailDelivery::Immediate)) {
             $channels[] = 'mail';
         }
 
         return $channels;
-    }
-
-    /**
-     * Whether the notifiable takes this one as a push; by default, their category setting decides.
-     */
-    protected function wantsPush(object $notifiable): bool
-    {
-        return $this->userWants($notifiable, NotificationChannel::Push);
-    }
-
-    /**
-     * Whether the notifiable allows this category on the channel; non-users (duties) always do.
-     */
-    protected function userWants(object $notifiable, NotificationChannel $channel): bool
-    {
-        return ! method_exists($notifiable, 'shouldReceiveNotification')
-            || $notifiable->shouldReceiveNotification($this->category(), $channel);
     }
 
     /**
@@ -301,6 +259,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     {
         return [
             'category' => $this->category()->value,
+            'type' => $this->type()->value,
             'modelClass' => $this->modelClass() ?? $this->category()->modelEnumKey(),
             'title' => $this->title($notifiable),
             'body' => $this->body($notifiable),
@@ -342,7 +301,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
                 'secondaryIsAnswer' => $this->secondaryActionIsAnswer(),
                 'signature' => $this->mailSignature($notifiable),
                 'category' => __($this->category()->labelKey()),
-                'settingsUrl' => route('profile'),
+                'settingsUrl' => route('profile.notifications'),
             ]);
     }
 
@@ -358,7 +317,10 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             ->icon('/images/icons/favicons/favicon-196x196.png')
             ->body(Str::limit(strip_tags($this->body($notifiable)), 120))
             ->action($action['label'], 'view')
-            ->options(['TTL' => $this->urgency() === NotificationUrgency::Act ? 86400 : 3600])
+            // Android defers normal-urgency pushes while the phone idles (Doze); an ask should not wait.
+            ->options($this->urgency() === NotificationUrgency::Act
+                ? ['TTL' => 86400, 'urgency' => 'high']
+                : ['TTL' => 3600, 'urgency' => 'normal'])
             ->data(['url' => $action['url']]);
     }
 

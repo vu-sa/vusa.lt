@@ -1,319 +1,86 @@
 <?php
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationChannel;
-use App\Enums\NotificationUrgency;
-use App\Events\CommentPosted;
-use App\Events\TaskCreated;
-use App\Models\Comment;
-use App\Models\Pivots\ReservationResource;
+use App\Enums\EmailDelivery;
+use App\Enums\NotificationType;
+use App\Models\Institution;
 use App\Models\Task;
-use App\Notifications\BaseNotification;
 use App\Notifications\CommentPostedNotification;
-use App\Notifications\ReservationStatusChangedNotification;
+use App\Notifications\MemberRegistrationNotification;
 use App\Notifications\TaskAssignedNotification;
-use App\Support\MorphMap;
+use App\Notifications\TaskReminderNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 use Tests\Feature\Notifications\NotificationTestHelpers;
 
 pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
-beforeEach(function (): void {
-    Notification::fake();
-});
+function mutingTestMention(): CommentPostedNotification
+{
+    return new CommentPostedNotification(
+        'Test',
+        ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
+        ['modelClass' => 'User', 'name' => 'Test'],
+        isMention: true,
+    );
+}
 
 describe('global muting', function (): void {
-    test('via method returns empty array when user is globally muted', function (): void {
+    test('a muted user still gets the in-app record, but no email or push', function (): void {
         $user = $this->createMutedUser(now()->addHours(2));
 
-        // Create a notification and test via() directly
-        $task = Task::factory()->create(['due_date' => now()->addDays(7)]);
-        $notification = new TaskAssignedNotification($task, null);
-
-        // Verify that via() returns empty channels due to muting
-        $channels = $notification->via($user);
-
-        expect($channels)->toBeEmpty();
+        expect(mutingTestMention()->via($user))->toBe(['database', 'broadcast']);
     });
 
-    test('muted user via() returns empty for all notification types', function (): void {
-        $user = $this->createMutedUser(now()->addHours(2));
-
-        // Test with different notification types
-        $task = Task::factory()->create(['due_date' => now()->addDays(7)]);
-
-        $taskNotification = new TaskAssignedNotification($task, null);
-        expect($taskNotification->via($user))->toBeEmpty();
-
-        $commentNotification = new CommentPostedNotification(
-            'Test',
-            ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
-            ['modelClass' => 'User', 'name' => 'Test']
-        );
-        expect($commentNotification->via($user))->toBeEmpty();
-    });
-
-    test('notifications resume after mute expires', function (): void {
+    test('email and push resume once the mute expires', function (): void {
         $user = $this->createMutedUser(now()->addMinutes(30));
 
-        // Initially muted
-        expect($user->isGloballyMuted())->toBeTrue();
-
-        // Travel past the mute expiry
         $this->travelTo(now()->addMinutes(31));
 
-        expect($user->isGloballyMuted())->toBeFalse();
-
-        // Create and send notification after mute expired
-        $task = Task::factory()->create(['due_date' => now()->addDays(7)]);
-        $task->users()->attach($user);
-
-        event(new TaskCreated($task));
-
-        Notification::assertSentTo($user, TaskAssignedNotification::class, function ($notification, $channels) use ($user) {
-            $viaChannels = $notification->via($user);
-
-            return ! empty($viaChannels);
-        });
+        expect(mutingTestMention()->via($user))->toContain('mail', WebPushChannel::class);
     });
 
-    test('globally muted user via() returns empty for reservation notifications', function (): void {
+    test('role-inbox registration mail is sent even while muted', function (): void {
         $user = $this->createMutedUser(now()->addHours(2));
+        $notification = new MemberRegistrationNotification(1, 'Jonas', Institution::factory()->create(), 'duty@vusa.lt', 'form-id');
 
-        ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
-
-        // Test via() directly without state transition
-        $notification = new ReservationStatusChangedNotification(
-            $reservationResource,
-            'created',
-            'reserved',
-            null
-        );
-
-        expect($notification->via($user))->toBeEmpty();
-    });
-
-    test('globally muted user via() returns empty for comment notifications', function (): void {
-        $user = $this->createMutedUser(now()->addHours(2));
-
-        $notification = new CommentPostedNotification(
-            'Test comment',
-            ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
-            ['modelClass' => 'User', 'name' => 'Commenter']
-        );
-
-        expect($notification->via($user))->toBeEmpty();
+        expect($notification->via($user))->toBe(['database', 'broadcast', 'mail']);
     });
 });
 
-describe('thread muting', function (): void {
-    test('muted thread does not receive notification channels', function (): void {
+describe('per-type preferences', function (): void {
+    test('defaults follow the type: a mention mails and pushes at once, a new task waits for the digest', function (): void {
         $user = $this->createUserWithPreferences();
-        $commenter = $this->createUserWithPreferences();
+        $task = Task::factory()->create(['due_date' => now()->addDay()]);
 
-        ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
-
-        // Mute this specific thread - use short class name to match notification's object format
-        $user->muteThread('ReservationResource', (string) $reservationResource->id);
-
-        $comment = Comment::factory()->create([
-            'commentable_type' => MorphMap::alias(ReservationResource::class),
-            'commentable_id' => $reservationResource->id,
-            'user_id' => $commenter->id,
-            'body' => 'Test',
-        ]);
-
-        event(new CommentPosted($comment));
-
-        // The notification is sent, but isNotificationMuted should return true
-        // which affects via() channels based on notification implementation
-        Notification::assertSentTo($user, CommentPostedNotification::class);
-
-        // Verify the mute is in place
-        $user->refresh();
-        expect($user->notification_preferences['muted_threads'])->not->toBeEmpty();
+        expect(mutingTestMention()->via($user))->toContain('mail', WebPushChannel::class)
+            ->and((new TaskAssignedNotification($task))->via($user))->toBe(['database', 'broadcast'])
+            ->and($user->emailDeliveryFor(NotificationType::TaskAssigned))->toBe(EmailDelivery::Digest);
     });
 
-    test('other threads still receive notifications when one is muted', function (): void {
-        $user = $this->createUserWithPreferences();
-        $commenter = $this->createUserWithPreferences();
+    test('turning email off for one type stops its mail and leaves other types alone', function (): void {
+        $user = $this->createUserWithTypePreference(NotificationType::TaskReminder, ['email' => 'off']);
+        $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
 
-        ['reservationResource' => $reservationResource1] = $this->createReservationWithResource($user);
-        ['reservationResource' => $reservationResource2] = $this->createReservationWithResource($user);
-
-        // Mute only the first thread - use short class name
-        $user->muteThread('ReservationResource', (string) $reservationResource1->id);
-
-        // Comment on the second (unmuted) thread
-        $comment = Comment::factory()->create([
-            'commentable_type' => MorphMap::alias(ReservationResource::class),
-            'commentable_id' => $reservationResource2->id,
-            'user_id' => $commenter->id,
-            'body' => 'Test on unmuted thread',
-        ]);
-
-        event(new CommentPosted($comment));
-
-        Notification::assertSentTo($user, CommentPostedNotification::class, function ($notification, $channels) use ($user) {
-            // Channels should NOT be empty for unmuted thread
-            $viaChannels = $notification->via($user);
-
-            return ! empty($viaChannels);
-        });
+        expect((new TaskReminderNotification($task, 3))->via($user))->not->toContain('mail')
+            ->and(mutingTestMention()->via($user))->toContain('mail');
     });
 
-    test('thread mute expires correctly with time travel', function (): void {
-        $user = $this->createUserWithPreferences();
+    test('turning push off for a type drops only the push', function (): void {
+        $user = $this->createUserWithTypePreference(NotificationType::CommentMention, ['push' => false]);
 
-        ['reservationResource' => $reservationResource] = $this->createReservationWithResource($user);
-
-        // Mute for 1 hour - use short class name to match notification's object format
-        $user->muteThread(
-            'ReservationResource',
-            (string) $reservationResource->id,
-            now()->addHour()
-        );
-
-        // Create a mock notification to test against
-        $notification = new CommentPostedNotification(
-            'Test',
-            [
-                'modelClass' => 'ReservationResource',
-                'name' => 'Test',
-                'url' => '/test',
-                'id' => (string) $reservationResource->id, // Cast to string to match storage
-            ],
-            ['modelClass' => 'User', 'name' => 'Test']
-        );
-
-        // Currently muted
-        expect($user->isNotificationMuted($notification))->toBeTrue();
-
-        // Travel past expiry
-        $this->travelTo(now()->addHours(2));
-
-        // No longer muted
-        expect($user->isNotificationMuted($notification))->toBeFalse();
-    });
-});
-
-describe('channel preferences', function (): void {
-    test('disabled push channel means no webpush in via array', function (): void {
-        $user = $this->createUserWithDisabledChannel(
-            NotificationCategory::Task,
-            NotificationChannel::Push
-        );
-
-        $task = Task::factory()->create(['due_date' => now()->addDays(7)]);
-        $task->users()->attach($user);
-
-        event(new TaskCreated($task));
-
-        // The notification is sent, but we verify the user preference is set
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Task,
-            NotificationChannel::Push
-        ))->toBeFalse();
-
-        // InApp should still work
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Task,
-            NotificationChannel::InApp
-        ))->toBeTrue();
+        expect(mutingTestMention()->via($user))->toBe(['database', 'broadcast', 'mail']);
     });
 
-    test('disabled in_app channel preference is respected', function (): void {
-        $user = $this->createUserWithDisabledChannel(
-            NotificationCategory::Comment,
-            NotificationChannel::InApp
-        );
+    test('a know-tier type can be asked for at once', function (): void {
+        $user = $this->createUserWithTypePreference(NotificationType::TaskAssigned, ['email' => 'immediate']);
+        $task = Task::factory()->create(['due_date' => now()->addMonth()]);
 
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Comment,
-            NotificationChannel::InApp
-        ))->toBeFalse();
-
-        // Other categories should still work
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Task,
-            NotificationChannel::InApp
-        ))->toBeTrue();
+        expect((new TaskAssignedNotification($task))->via($user))->toContain('mail');
     });
 
-    test('category-specific preferences only affect that category', function (): void {
-        $user = $this->createUserWithPreferences();
+    test('a locked type ignores a stored override', function (): void {
+        $user = $this->createUserWithTypePreference(NotificationType::MemberRegistration, ['email' => 'off']);
 
-        // Disable email digest only for comments
-        $user->setNotificationPreference(
-            NotificationCategory::Comment,
-            NotificationChannel::EmailDigest,
-            false
-        );
-
-        $user->refresh();
-
-        // Comment email digest is disabled
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Comment,
-            NotificationChannel::EmailDigest
-        ))->toBeFalse();
-
-        // Task email digest is still enabled
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Task,
-            NotificationChannel::EmailDigest
-        ))->toBeTrue();
-
-        // Reservation email digest is still enabled
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Reservation,
-            NotificationChannel::EmailDigest
-        ))->toBeTrue();
-    });
-});
-
-describe('muting edge cases', function (): void {
-    test('notification without object does not crash thread mute check', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        // Mute a thread
-        $user->muteThread(Task::class, '999');
-
-        // Create notification without object() returning data
-        $notification = new class extends BaseNotification
-        {
-            public function category(): NotificationCategory
-            {
-                return NotificationCategory::System;
-            }
-
-            public function urgency(): NotificationUrgency
-            {
-                return NotificationUrgency::Know;
-            }
-
-            public function title(object $notifiable): string
-            {
-                return 'Test';
-            }
-
-            public function body(object $notifiable): string
-            {
-                return 'Test';
-            }
-
-            public function url(): string
-            {
-                return '/';
-            }
-
-            // object() returns null by default
-        };
-
-        // Should not throw exception
-        $isMuted = $user->isNotificationMuted($notification);
-
-        expect($isMuted)->toBeFalse();
+        expect($user->emailDeliveryFor(NotificationType::MemberRegistration))->toBe(EmailDelivery::Immediate);
     });
 });

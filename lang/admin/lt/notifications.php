@@ -95,12 +95,6 @@ return [
     // Approval notifications
     'approval_requested_title' => 'Reikalingas patvirtinimas',
     'approval_requested_body' => 'Reikia tavo patvirtinimo: :item',
-    'approval_approved_title' => 'Patvirtinta',
-    'approval_approved_body' => ':user patvirtino :item',
-    'approval_rejected_title' => 'Atmesta',
-    'approval_rejected_body' => ':user atmetė :item',
-    'approval_cancelled_title' => 'Atšaukta',
-    'approval_cancelled_body' => ':user atšaukė :item',
     'approval_escalation_title' => 'Patvirtinimas vėluoja',
     'approval_escalation_body' => ':item patvirtinimas vėluoja ir reikalauja tavo dėmesio',
 
@@ -184,8 +178,114 @@ return [
         'author' => 'Autorius',
     ],
 
+    // One entry per NotificationType
+    'types' => [
+        'task_assigned' => [
+            'label' => 'Tau priskirta užduotis',
+            'description' => 'Kai tau priskiriama nauja užduotis — rankiniu būdu ar automatiškai, pvz., užpildyti posėdžio darbotvarkę.',
+        ],
+        'task_reminder' => [
+            'label' => 'Artėja užduoties terminas',
+            'description' => 'Pasirinktą dienų skaičių iki neatliktos užduoties termino.',
+        ],
+        'task_overdue' => [
+            'label' => 'Vėluojančios užduotys',
+            'description' => 'Pirmadieniais, jei turi neatliktų užduočių, kurių terminas praėjo.',
+        ],
+        'task_auto_completed' => [
+            'label' => 'Užduotis atlikta automatiškai',
+            'description' => 'Kai sistema pati uždaro tavo užduotį, pvz., priėmus sprendimą dėl rezervacijos.',
+        ],
+        'meeting_reminder' => [
+            'label' => 'Artėjantis posėdis',
+            'description' => 'Pasirinktą valandų skaičių iki posėdžio institucijoje, kurioje turi pareigas.',
+        ],
+        'institution_activity' => [
+            'label' => 'Ar institucija posėdžiavo?',
+            'description' => 'Kai tavo institucija ilgai neturi užfiksuoto posėdžio. Atsakai vienu mygtuku.',
+        ],
+        'meeting_created' => [
+            'label' => 'Sukurtas naujas posėdis',
+            'description' => 'Kai posėdis sukuriamas institucijoje, kurią koordinuoji ar kuruoji.',
+        ],
+        'meeting_agenda_completed' => [
+            'label' => 'Užpildyta posėdžio darbotvarkė',
+            'description' => 'Kai koordinuojamos ar kuruojamos institucijos posėdžio darbotvarkė užpildoma iki galo.',
+        ],
+        'followed_institution_activity' => [
+            'label' => 'Sekamų institucijų posėdžiai',
+            'description' => 'Kai sekamoje institucijoje sukuriamas posėdis ar užpildoma jo darbotvarkė. Institucijas seki institucijų sąraše.',
+        ],
+        'approval_requested' => [
+            'label' => 'Reikia patvirtinti rezervaciją',
+            'description' => 'Kai kas nors rezervuoja tavo padalinio išteklių ir reikia tavo sprendimo.',
+        ],
+        'reservation_status_changed' => [
+            'label' => 'Pasikeitė rezervacijos būsena',
+            'description' => 'Kai tavo rezervuotas išteklius paimamas, grąžinamas ar pasikeičia kita jo būsena.',
+        ],
+        'assigned_to_resource' => [
+            'label' => 'Tave pridėjo prie rezervacijos',
+            'description' => 'Kai kas nors prideda tave prie savo rezervacijos.',
+        ],
+        'reservation_draft_item_taken' => [
+            'label' => 'Juodraščiui trūksta išteklių',
+            'description' => 'Kai kiti rezervavo išteklius, kurių reikėjo tavo nepateiktai rezervacijai.',
+        ],
+        'comment_mention' => [
+            'label' => 'Tave paminėjo komentare',
+            'description' => 'Kai kas nors komentare pažymi tave @vardu.',
+        ],
+        'comment_activity' => [
+            'label' => 'Nauji komentarai',
+            'description' => 'Kai komentuojama tavo posėdyje, užduotyje ar kitame įraše arba atsakoma į tavo komentarą.',
+        ],
+        'duty_expiring' => [
+            'label' => 'Baigiasi tavo kadencija',
+            'description' => 'Likus 30 dienų iki tavo pareigų pabaigos.',
+        ],
+        'access_changed' => [
+            'label' => 'Pasikeitė tavo prieigos',
+            'description' => 'Kai prasideda ar baigiasi tavo pareigos ir pasikeičia, ką matai sistemoje.',
+        ],
+        'member_registration' => [
+            'label' => 'Naujo nario registracija',
+            'description' => 'Kai kas nors užsiregistruoja tapti VU SA nariu tavo padalinyje.',
+        ],
+        'student_rep_registration' => [
+            'label' => 'Studentų atstovo registracija',
+            'description' => 'Kai kas nors užsiregistruoja tapti studentų atstovu tavo padalinyje.',
+        ],
+        'support_request_status_changed' => [
+            'label' => 'Pagalbos užklausos būsena',
+            'description' => 'Kai pasikeičia tavo pateiktos pagalbos užklausos būsena.',
+        ],
+    ],
+
     // Preferences UI
     'preferences' => [
+        'spotlight_title' => 'Nauji pranešimų nustatymai',
+        'spotlight_description' => 'Dabar kiekvienam pranešimui atskirai renkiesi el. laišką (iškart, suvestinėje ar ne) ir push.',
+        'lead' => 'Pasirink, kaip gauti kiekvieną pranešimą. Varpelyje visi pranešimai rodomi visada.',
+        'email_label' => 'El. paštas',
+        'push_label' => 'Push',
+        'email_immediate' => 'Laiškas iškart',
+        'email_digest' => 'Suvestinėje',
+        'email_off' => 'Be laiško',
+        'email_locked' => 'Siunčiama pareigybės el. paštu',
+        'section_all' => 'Visiems',
+        'push_no_devices' => 'Neturi prijungtų įrenginių, todėl push pranešimai neateis. Įjunk juos šoninėje skiltyje.',
+        'emails_title' => 'El. laiškai',
+        'emails_description' => 'Šiais adresais ateina ir iškart siunčiami laiškai, ir suvestinė.',
+        'emails_default_info' => 'Nepasirinkus adreso, laiškai siunčiami :email.',
+        'quiet_hours' => '22:00–07:00 push pranešimai ir suvestinės laukia ryto.',
+        'mute_description' => 'Nutildžius nesiunčiami el. laiškai, push pranešimai ir suvestinės. Varpelyje pranešimai vis tiek rodomi.',
+        'mute_locked_note' => 'Registracijų laiškai pareigybės el. paštu siunčiami ir nutildžius.',
+        'unmuted' => 'Pranešimai vėl įjungti.',
+        'in_app_title' => 'Varpelis',
+        'in_app_description' => 'Visi pranešimai realiuoju laiku rodomi varpelyje ir pranešimų centre – net kai el. paštas išjungtas ar pranešimai nutildyti.',
+        'push_description' => 'Pasiekia prijungtą įrenginį, net kai sistema neatidaryta.',
+        'email_description' => '„Iškart“ – atskiras laiškas tuoj pat. „Suvestinėje“ – kartu su kitais pasirinktu dažnumu.',
         'title' => 'Pranešimų nustatymai',
         'description' => 'Pasirink, kaip nori gauti pranešimus ir kada.',
         'mute_all' => 'Laikinas išjungimas',
@@ -207,6 +307,28 @@ return [
         'task_reminder_days_description' => 'Prieš kiek dienų priminti apie artėjančių užduočių terminus',
         'meeting_reminder_hours' => 'Posėdžių priminimo valandos',
         'meeting_reminder_hours_description' => 'Prieš kiek valandų priminti apie artėjančius posėdžius',
+        'emails_hint' => 'Čia ateina ir iškart siunčiami laiškai, ir suvestinė. Nepasirinkus adreso, siunčiama :email.',
+        'emails_label' => 'Adresai',
+        'digest_label' => 'Suvestinė',
+        'digest_hint' => 'Kas kiek laiko siųsti neskaitytų pranešimų suvestinę.',
+        'section_all_label' => 'Visiems šios skilties pranešimams',
+        'push_off_all' => 'Išjungti push visiems',
+        'push_on_all' => 'Įjungti push visiems',
+        'reset' => 'Atkurti numatytuosius',
+        'reset_title' => 'Atkurti numatytuosius nustatymus?',
+        'reset_description' => 'Visų pranešimų el. laiškų ir push pasirinkimai, priminimų laikai ir suvestinės dažnumas grįš į numatytuosius. El. pašto adresai ir nutildymas nesikeis.',
+        'reset_done' => 'Pranešimų nustatymai atkurti.',
+        'how_title' => 'Kas ir kada gauna pranešimus?',
+        'how_bell' => 'Varpelyje ir pranešimų centre matai visus savo pranešimus – net kai el. laiškai išjungti ar pranešimai nutildyti.',
+        'how_email' => '„Laiškas iškart“ siunčia atskirą laišką tuoj pat, „Suvestinėje“ – kartu su kitais pasirinktu dažnumu.',
+        'how_quiet' => 'Nuo 22:00 iki 07:00 push pranešimai ir suvestinės laukia ryto; skubūs laiškai siunčiami iškart.',
+        'how_mute' => 'Nutildžius nesiunčiami laiškai, push ir suvestinės, išskyrus registracijų laiškus pareigybės el. paštu.',
+        'how_tasks' => 'Užduočių pranešimus gauna tie, kam užduotis priskirta ir kas vis dar turi pareigas toje institucijoje. Jei kadencijai paskirti sekretoriai, posėdžių užduotys tenka jiems, o ne visiems atstovams.',
+        'how_meetings' => 'Posėdžių priminimai siunčiami visiems, kurie posėdžio dieną turi pareigas institucijoje, ir tos kadencijos sekretoriams. Apie naują posėdį ar užpildytą darbotvarkę sužino koordinatoriai; kam tenka darbotvarkės užduotis, gauna tik užduoties pranešimą.',
+        'how_followed' => 'Sekamų institucijų pranešimus gauni tik tada, kai tų pačių žinių negauni dėl pareigų, ir tik jei institucijos nenutildei.',
+        'how_reservations' => 'Išteklių administratoriai gauna tik prašymą patvirtinti. Rezervavęs apie sprendimą sužino vieną kartą – kai pasikeičia rezervacijos būsena.',
+        'how_self' => 'Apie savo paties veiksmą (patvirtinimą, užduoties uždarymą, būsenos pakeitimą) pranešimo negauni.',
+        'how_list' => 'Čia matai tik tuos pranešimus, kuriuos gali gauti pagal savo pareigas ir roles.',
     ],
 
     // Legacy compatibility
@@ -272,5 +394,9 @@ return [
         'status_blocked' => 'Push pranešimai užblokuoti naršyklės nustatymuose',
         'status_enabled' => 'Push pranešimai įjungti',
         'status_disabled' => 'Push pranešimai išjungti',
+        'worker_missing' => 'Šioje naršyklėje push pranešimai dar neparuošti. Perkrauk puslapį; jei nepadeda, išvalyk svetainės duomenis.',
+        'subscribe_failed' => 'Nepavyko įjungti push pranešimų. Patikrink naršyklės leidimus ir bandyk dar kartą.',
+        'test_result' => 'Push paslauga priėmė pranešimą :accepted iš :total įrenginių. Jei jo nematai, patikrink įrenginio pranešimų leidimus naršyklei.',
+        'test_failed' => 'Nė vienas įrenginys nepriėmė pranešimo. Pasenę įrenginiai pašalinti – įjunk push šiame įrenginyje iš naujo.',
     ],
 ];

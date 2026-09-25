@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationChannel;
+use App\Enums\EmailDelivery;
+use App\Enums\NotificationType;
 use App\Enums\NotificationUrgency;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -17,7 +17,7 @@ use App\Notifications\DutyExpiringNotification;
 use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\MeetingReminderNotification;
 use App\Notifications\TaskAssignedNotification;
-use App\Notifications\TaskCompletedNotification;
+use App\Notifications\TaskAutoCompletedNotification;
 use App\Notifications\TaskOverdueNotification;
 use App\Notifications\TaskReminderNotification;
 use App\Notifications\WelcomeNotification;
@@ -216,15 +216,15 @@ describe('channel policy', function (): void {
         expect($notification->via($this->user))->toBe(['database', 'broadcast', WebPushChannel::class, 'mail']);
     });
 
-    test('a know or record notification is in-app only: no push, no instant email', function (): void {
-        $notification = new TaskCompletedNotification(Task::factory()->create(), $this->user);
+    test('a record of something done stays in the app: no push, no email', function (): void {
+        $notification = new TaskAutoCompletedNotification(Task::factory()->create(), 'Patvirtinta');
 
         expect($notification->urgency())->toBe(NotificationUrgency::Record)
             ->and($notification->via($this->user))->toBe(['database', 'broadcast'])
-            ->and($notification->supportsEmailDigest())->toBeTrue();
+            ->and($this->user->emailDeliveryFor($notification->type()))->toBe(EmailDelivery::Off);
     });
 
-    test('an act notification the tier says should not push still emails', function (): void {
+    test('an act notification whose type does not push still emails', function (): void {
         $notification = new AssignedToResourceNotification(
             ['modelClass' => 'User', 'name' => 'Ona'],
             ['modelClass' => 'Reservation', 'name' => 'Salė', 'url' => '/r/1'],
@@ -233,46 +233,45 @@ describe('channel policy', function (): void {
         expect($notification->via($this->user))->toBe(['database', 'broadcast', 'mail']);
     });
 
-    test('the email toggle governs instant mail, and the push toggle governs push', function (): void {
+    test('the type\'s email choice governs instant mail, and its push choice governs push', function (): void {
         $notification = new TaskReminderNotification(Task::factory()->create(['due_date' => now()->addDays(3)]), 3);
 
-        $this->user->setNotificationPreference(NotificationCategory::Task, NotificationChannel::EmailDigest, false);
+        $this->user->update(['notification_preferences' => ['types' => ['task_reminder' => ['email' => 'digest']]]]);
         expect($notification->via($this->user))->toBe(['database', 'broadcast', WebPushChannel::class]);
 
-        $this->user->setNotificationPreference(NotificationCategory::Task, NotificationChannel::Push, false);
+        $this->user->update(['notification_preferences' => ['types' => ['task_reminder' => ['email' => 'digest', 'push' => false]]]]);
         expect($notification->via($this->user))->toBe(['database', 'broadcast']);
     });
 
-    test('a globally muted user gets nothing', function (): void {
+    test('a globally muted user keeps only the in-app record', function (): void {
         $this->user->muteNotificationsUntil(now()->addHour());
         $notification = new TaskReminderNotification(Task::factory()->create(), 3);
 
-        expect($notification->via($this->user))->toBeEmpty();
+        expect($notification->via($this->user))->toBe(['database', 'broadcast']);
     });
 
-    test('a task assigned with a deadline inside a week is urgent, otherwise only worth knowing', function (?int $days, NotificationUrgency $expected): void {
-        $task = Task::factory()->create(['due_date' => $days === null ? null : now()->addDays($days)]);
+    test('a new task waits for the digest whatever its deadline; reminders carry the urgency', function (): void {
+        $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
 
-        expect(new TaskAssignedNotification($task)->urgency())->toBe($expected);
-    })->with([
-        'due in 3 days' => [3, NotificationUrgency::Act],
-        'due in 30 days' => [30, NotificationUrgency::Know],
-        'no deadline' => [null, NotificationUrgency::Know],
-    ]);
+        expect($this->user->emailDeliveryFor(new TaskAssignedNotification($task)->type()))->toBe(EmailDelivery::Digest)
+            ->and($this->user->emailDeliveryFor(new TaskReminderNotification($task, 3)->type()))->toBe(EmailDelivery::Immediate);
+    });
 
     test('a mention asks for a reply, thread activity is only news', function (): void {
         $object = ['modelClass' => 'Task', 'name' => 'Užduotis', 'url' => '/t/1', 'id' => '1'];
         $author = ['modelClass' => 'User', 'name' => 'Jonas'];
 
-        expect(new CommentPostedNotification('x', $object, $author, isMention: true)->urgency())->toBe(NotificationUrgency::Act)
-            ->and(new CommentPostedNotification('x', $object, $author)->urgency())->toBe(NotificationUrgency::Know);
+        expect(new CommentPostedNotification('x', $object, $author, isMention: true)->type())->toBe(NotificationType::CommentMention)
+            ->and(new CommentPostedNotification('x', $object, $author)->type())->toBe(NotificationType::CommentActivity)
+            ->and(NotificationType::CommentMention->urgency())->toBe(NotificationUrgency::Act)
+            ->and(NotificationType::CommentActivity->urgency())->toBe(NotificationUrgency::Know);
     });
 
     test('a welcome greeting stays in the app', function (): void {
         $notification = new WelcomeNotification;
 
         expect($notification->via($this->user))->toBe(['database', 'broadcast'])
-            ->and($notification->supportsEmailDigest())->toBeFalse();
+            ->and($this->user->emailDeliveryFor($notification->type()))->toBe(EmailDelivery::Off);
     });
 
     test('push is held until 07:00 during quiet hours and nothing else is delayed', function (): void {
@@ -296,4 +295,20 @@ describe('channel policy', function (): void {
             ->and($push['data']['url'])->toBe($notification->primaryAction()['url'])
             ->and($push['actions'][0]['title'])->toBe($notification->primaryAction()['label']);
     });
+
+    test('an ask is pushed with high urgency so Android does not hold it back', function (): void {
+        $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
+
+        expect(new TaskReminderNotification($task, 3)->toWebPush($this->user, null)->getOptions())->toMatchArray(['urgency' => 'high'])
+            ->and(new TaskAssignedNotification($task)->toWebPush($this->user, null)->getOptions())->toMatchArray(['urgency' => 'normal']);
+    });
+});
+
+describe('the notification catalog', function (): void {
+    test('every configurable type has a label and a "when" line in both locales', function (string $locale): void {
+        foreach (NotificationType::configurable() as $type) {
+            expect(trans($type->labelKey(), [], $locale))->not->toBe($type->labelKey())
+                ->and(trans($type->descriptionKey(), [], $locale))->not->toBe($type->descriptionKey());
+        }
+    })->with(['lt', 'en']);
 });

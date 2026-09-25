@@ -8,8 +8,12 @@ use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
+use App\Notifications\TaskAutoCompletedNotification;
 use App\Notifications\TaskReminderNotification;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\Handlers\ApprovalTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
@@ -139,5 +143,53 @@ describe('task reminders', function (): void {
 
         Notification::assertSentTo($current, TaskReminderNotification::class);
         Notification::assertNotSentTo($former, TaskReminderNotification::class);
+    });
+});
+
+describe('task reminder intervals', function (): void {
+    test('a reminder skips users who deselected that interval', function (): void {
+        $wantsIt = User::factory()->create();
+        $optedOut = User::factory()->create(['notification_preferences' => ['reminder_settings' => ['task_reminder_days' => [7, 1]]]]);
+
+        $task = Task::factory()->create(['taskable_type' => 'user', 'taskable_id' => $wantsIt->id, 'due_date' => now()->addDays(3)]);
+        $task->users()->sync([$wantsIt->id, $optedOut->id]);
+
+        TaskNotifier::notifyDaysLeft(3);
+
+        Notification::assertSentTo($wantsIt, TaskReminderNotification::class);
+        Notification::assertNotSentTo($optedOut, TaskReminderNotification::class);
+    });
+});
+
+describe('manual tasks', function (): void {
+    test('creating a task by hand tells its assignees, and names who assigned it', function (): void {
+        $admin = makeTenantUserWithRole('Student Representative Coordinator', $this->institution->tenant);
+        $assignee = User::factory()->create();
+
+        asUser($admin)->post(route('tasks.store'), [
+            'name' => 'Sutvarkyti dokumentus',
+            'taskable_type' => MorphMap::alias(User::class),
+            'taskable_id' => $admin->id,
+            'due_date' => now()->addWeek()->getTimestampMs(),
+            'responsible_people' => [$assignee->id],
+            'separate_tasks' => false,
+        ])->assertRedirect();
+
+        Notification::assertSentTo($assignee, TaskAssignedNotification::class, fn (TaskAssignedNotification $notification): bool => str_contains($notification->body($assignee), $admin->name));
+    });
+});
+
+describe('automatic completion', function (): void {
+    test('the person whose action completed the task is not told about it', function (): void {
+        $completer = User::factory()->create();
+        $other = User::factory()->create();
+
+        $task = Task::factory()->create(['taskable_type' => 'user', 'taskable_id' => $completer->id]);
+        $task->users()->sync([$completer->id, $other->id]);
+
+        app(ApprovalTaskHandler::class)->complete($task->fresh(), 'Patvirtinta', $completer);
+
+        Notification::assertSentTo($other, TaskAutoCompletedNotification::class);
+        Notification::assertNotSentTo($completer, TaskAutoCompletedNotification::class);
     });
 });

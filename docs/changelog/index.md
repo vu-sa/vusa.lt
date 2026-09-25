@@ -7,6 +7,17 @@ lastUpdated: true
 
 ## v2.21 — Rezervacijų juodraščiai (2026-09-24) {#v2-21}
 
+- ⭐ **Pranešimų nustatymai kiekvienam pranešimui** — vietoj kategorijų lentelės matai konkrečius pranešimus, kuriuos gali gauti pagal savo pareigas, su paaiškinimu, kada kiekvienas ateina. Kiekvienam renkiesi el. laišką – „Iškart“, „Suvestinėje“ ar „Ne“ – ir push. Priminimų dienos ir valandos rodomos prie atitinkamų pranešimų, o push pasirinkimai neaktyvūs, kol neprijungei įrenginio
+- ✨ **Vieni el. laiškų adresai** — iškart siunčiami laiškai ir suvestinė ateina tais pačiais pasirinktais adresais; nepasirinkus, laiškai siunčiami tavo pareigybės el. paštu
+- ✨ **Mažiau pasikartojančių pranešimų** — tvirtintojai gauna tik prašymą patvirtinti, o ne dar ir užduotį; rezervuotojas apie sprendimą sužino vieną kartą, kai pasikeičia būsena; sekretorius, kuriam tenka darbotvarkės užduotis, negauna papildomo pranešimo apie tą patį posėdį; apie savo paties atliktą veiksmą pranešimo nebegauni
+- 🔧 **Nutildymas nebetrina pranešimų** — nutildžius nesiunčiami el. laiškai, push ir suvestinės, bet pranešimai lieka varpelyje. Nutildymas įsigalioja iškart, be išsaugojimo
+- 🔧 **Priminimų nustatymai veikia** — atžymėta priminimo valanda nebegrįžta po išsaugojimo, o užduočių priminimų dienos pagaliau taikomos
+- 🔧 **El. laiškas nebeišjungiamas kartu su suvestine** — anksčiau atžymėjus „El. paštas“ dingdavo ir skubūs laiškai (priminimai, patvirtinimai, paminėjimai)
+- 🔧 **Rankiniu būdu sukurtos užduotys praneša atsakingiems** — naujai priskirtos užduoties gavėjai gauna pranešimą su priskyrusio vardu
+- ✨ **Pranešimų nustatymų atkūrimas** — mygtukas „Atkurti numatytuosius“ grąžina visų pranešimų pasirinkimus, priminimus ir suvestinės dažnumą; skiltyje „Kas ir kada gauna pranešimus?“ paaiškinta, kas ir kodėl gauna kiekvieną pranešimą
+- 🔧 **Push įjungimas ir išjungimas** — įrenginys nebėra rodomas kaip įjungtas, kai jame push nėra; nepavykus įjungti, parodomas paaiškinimas, o ne sėkmės pranešimas. Nutildymo atšaukimas vėl veikia
+- 🔧 **Perskaitytas pranešimas nebepatenka į suvestinę**, o laiškų nuoroda veda tiesiai į pranešimų nustatymus
+
 - ✨ **Glaustesni institucijos koordinatoriai** — iki dviejų koordinatorių matai vardais, o daugiau jų rasi po nuotraukomis ir išskleidžiama rodykle; apžvalgoje koordinatoriai nebesidubliuoja
 - ✨ **Tvarkingesni teksto redaktoriai formose** — pareigybės, institucijos, renginio, tipo, problemos, formos ir žymės aprašymo laukai atrodo vienodai: vienoje eilutėje – teksto stilius, B/I/U, nuoroda ir sąrašai, o retesni veiksmai slepiasi po „Įterpti“ ir ⋯. Nuorodos keitimas ir šalinimas rodomas tik stovint ant nuorodos, lentelės veiksmai – tik lentelėje. Nuorodą įterpsi ir su ⌘K / Ctrl+K, o formatavimo mygtukai nebeišsaugo formos netyčia
 - ✨ **Renginio vaizdo įrašas – aprašyme** — atskiras „YouTube video kodas“ laukas pašalintas: vaizdo įrašą įterpk į aprašymą per „Įterpti“ → „YouTube“. Esami renginių vaizdo įrašai perkelti į aprašymo pabaigą

@@ -2,33 +2,21 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Institution;
 use App\Models\Task;
 
 class InstitutionActivityNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::InstitutionActivity;
+    }
+
     public function __construct(
         private readonly Task $task,
         private readonly Institution $institution,
     ) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
-
-    #[\Override]
-    public function sendsPush(): bool
-    {
-        return false;
-    }
 
     public function title(object $notifiable): string
     {

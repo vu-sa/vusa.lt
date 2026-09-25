@@ -1,7 +1,8 @@
 <?php
 
+use App\Enums\EmailDelivery;
 use App\Enums\NotificationCategory;
-use App\Enums\NotificationChannel;
+use App\Enums\NotificationType;
 use App\Listeners\QueueNotificationForDigest;
 use App\Mail\NotificationDigest;
 use App\Models\NotificationDigestQueue;
@@ -32,25 +33,20 @@ describe('digest queuing via QueueNotificationForDigest listener', function (): 
     test('QueueNotificationForDigest queues eligible notifications', function (): void {
         $user = $this->createUserWithPreferences();
 
-        // Ensure email digest is enabled for comments
-        $user->setNotificationPreference(
-            NotificationCategory::Comment,
-            NotificationChannel::EmailDigest,
-            true
-        );
-
         $notification = new CommentPostedNotification(
             'Test comment',
             ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
             ['modelClass' => 'User', 'name' => 'Commenter']
         );
 
+        $notification->id = (string) Str::uuid();
+
         // Simulate the NotificationSending event that triggers QueueNotificationForDigest
         $event = new NotificationSending($user, $notification, 'database');
 
         app(QueueNotificationForDigest::class)->handle($event);
 
-        expect($this->getDigestQueueCountForUser($user))->toBe(1);
+        expect($this->getDigestQueueItemsForUser($user)->pluck('notification_id')->all())->toBe([$notification->id]);
     });
 
     test('time-sensitive notifications are not queued for digest', function (): void {
@@ -59,8 +55,7 @@ describe('digest queuing via QueueNotificationForDigest listener', function (): 
         $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
         $notification = new TaskReminderNotification($task, 3);
 
-        // TaskReminderNotification has supportsEmailDigest() = false
-        expect($notification->supportsEmailDigest())->toBeFalse();
+        expect($user->emailDeliveryFor(NotificationType::TaskReminder))->toBe(EmailDelivery::Immediate);
 
         $event = new NotificationSending($user, $notification, 'database');
 
@@ -70,15 +65,8 @@ describe('digest queuing via QueueNotificationForDigest listener', function (): 
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
     });
 
-    test('notifications are not queued when email digest is disabled for category', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        // Disable email digest for comments
-        $user->setNotificationPreference(
-            NotificationCategory::Comment,
-            NotificationChannel::EmailDigest,
-            false
-        );
+    test('notifications are not queued when the type\'s email is off', function (): void {
+        $user = $this->createUserWithTypePreference(NotificationType::CommentActivity, ['email' => 'off']);
 
         $notification = new CommentPostedNotification(
             'Test comment',
@@ -169,7 +157,7 @@ describe('digest processing command', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->setDigestFrequencyHours(4);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 4]]);
 
         // Create digest item created 2 hours ago (not enough time passed)
         $item = NotificationDigestQueue::create([
@@ -193,7 +181,7 @@ describe('digest processing command', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->setDigestFrequencyHours(4);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 4]]);
 
         // Create digest item then update created_at directly (not in $fillable)
         $item = NotificationDigestQueue::create([
@@ -207,7 +195,7 @@ describe('digest processing command', function (): void {
         Artisan::call('notifications:send-digests');
 
         // Digest SHOULD be queued (NotificationDigest implements ShouldQueue)
-        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo($user->email));
+        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo($user->notificationEmails()[0]));
 
         // Item should be deleted from queue
         expect($this->getDigestQueueCountForUser($user))->toBe(0);
@@ -217,7 +205,7 @@ describe('digest processing command', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->setDigestFrequencyHours(1);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 1]]);
 
         // Create multiple digest items with old created_at
         for ($i = 0; $i < 5; $i++) {
@@ -250,7 +238,7 @@ describe('digest processing command', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->setDigestFrequencyHours(1);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 1]]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,
@@ -291,7 +279,7 @@ describe('digest processing command', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->setDigestFrequencyHours(1);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 1]]);
 
         // Add notifications from different categories with old timestamps
         $items = collect();
@@ -324,7 +312,7 @@ describe('digest processing command', function (): void {
 
         Mail::assertSent(NotificationDigest::class,
             // The mail should be queued to the correct user
-            fn ($mail) => $mail->hasTo($user->email));
+            fn ($mail) => $mail->hasTo($user->notificationEmails()[0]));
     });
 });
 
@@ -333,7 +321,7 @@ describe('digest frequency settings', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->setDigestFrequencyHours(1);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 1]]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,
@@ -352,7 +340,7 @@ describe('digest frequency settings', function (): void {
         Mail::fake();
 
         $user = $this->createUserWithPreferences();
-        $user->setDigestFrequencyHours(24);
+        $user->update(['notification_preferences' => ['digest_frequency_hours' => 24]]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $user->id,
@@ -430,11 +418,6 @@ describe('digest frequency settings', function (): void {
 describe('triplicate prevention', function (): void {
     test('QueueNotificationForDigest only queues once per notification, not per channel', function (): void {
         $user = $this->createUserWithPreferences();
-        $user->setNotificationPreference(
-            NotificationCategory::Comment,
-            NotificationChannel::EmailDigest,
-            true
-        );
 
         $notification = new CommentPostedNotification(
             'Test comment',
@@ -456,11 +439,6 @@ describe('triplicate prevention', function (): void {
 
     test('non-database channels are skipped by digest listener', function (): void {
         $user = $this->createUserWithPreferences();
-        $user->setNotificationPreference(
-            NotificationCategory::Comment,
-            NotificationChannel::EmailDigest,
-            true
-        );
 
         $notification = new CommentPostedNotification(
             'Test comment',
@@ -553,12 +531,13 @@ describe('digest queue cleanup on read', function (): void {
 
         $dbNotification = $user->unreadNotifications()->first();
 
-        // Create matching digest queue item
+        // The digest copy is linked by id; its text is trimmed, so it would not match on content.
         NotificationDigestQueue::create([
             'user_id' => $user->id,
+            'notification_id' => $dbNotification->id,
             'notification_class' => CommentPostedNotification::class,
             'category' => 'comment',
-            'data' => ['title' => 'Naujas komentaras: Test', 'body' => 'Comment body', 'url' => '/test/123', 'icon' => '💬'],
+            'data' => ['title' => 'Naujas komentaras: Test', 'body' => 'Comment bo…', 'url' => '/test/123', 'icon' => '💬'],
         ]);
 
         // Create a non-matching digest queue item (should remain)
@@ -582,11 +561,13 @@ describe('digest queue cleanup on read', function (): void {
 
     test('marking as read only removes one digest entry when same title and url but different body', function (): void {
         $user = $this->createUserWithPreferences();
+        $idA = (string) Str::uuid();
+        $idB = (string) Str::uuid();
 
         // Create two notifications with same title and URL but different bodies
         // (e.g. two "Nauja užduotis" notifications for different tasks)
         $user->notifications()->create([
-            'id' => Str::uuid(),
+            'id' => $idA,
             'type' => TaskAssignedNotification::class,
             'data' => [
                 'category' => 'task',
@@ -598,7 +579,7 @@ describe('digest queue cleanup on read', function (): void {
         ]);
 
         $user->notifications()->create([
-            'id' => Str::uuid(),
+            'id' => $idB,
             'type' => TaskAssignedNotification::class,
             'data' => [
                 'category' => 'task',
@@ -612,12 +593,14 @@ describe('digest queue cleanup on read', function (): void {
         // Create two digest entries with same title/url but different bodies
         NotificationDigestQueue::create([
             'user_id' => $user->id,
+            'notification_id' => $idA,
             'notification_class' => TaskAssignedNotification::class,
             'category' => 'task',
             'data' => ['title' => 'Nauja užduotis', 'body' => 'Jums priskirta nauja užduotis: Task A', 'url' => '/mano/tasks', 'icon' => '☑️'],
         ]);
         NotificationDigestQueue::create([
             'user_id' => $user->id,
+            'notification_id' => $idB,
             'notification_class' => TaskAssignedNotification::class,
             'category' => 'task',
             'data' => ['title' => 'Nauja užduotis', 'body' => 'Jums priskirta nauja užduotis: Task B', 'url' => '/mano/tasks', 'icon' => '☑️'],
@@ -657,6 +640,7 @@ describe('digest queue cleanup on read', function (): void {
 
         NotificationDigestQueue::create([
             'user_id' => $user->id,
+            'notification_id' => $dbNotification->id,
             'notification_class' => CommentPostedNotification::class,
             'category' => 'comment',
             'data' => ['title' => 'Test notification', 'body' => 'Body', 'url' => '/test/456', 'icon' => '💬'],

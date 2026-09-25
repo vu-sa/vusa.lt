@@ -2,7 +2,7 @@
 
 use App\Http\Middleware\StagingReadOnlyMode;
 use App\Listeners\BlockExternalNotificationsOnStaging;
-use App\Notifications\ReminderToLoginNotification;
+use App\Notifications\WelcomeNotification;
 use App\Services\MediaLibrary\StagingAwareFileRemover;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -175,7 +175,7 @@ test('read only middleware blocks the real file and SharePoint mutation route na
 
 test('only database notification channels are allowed in staging', function (): void {
     $listener = new BlockExternalNotificationsOnStaging;
-    $notification = new ReminderToLoginNotification;
+    $notification = new WelcomeNotification;
 
     config(['app.env' => 'staging']);
 

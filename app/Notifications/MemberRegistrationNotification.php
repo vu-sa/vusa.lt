@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Mail\InformChairAboutMemberRegistration;
 use App\Models\Institution;
 use Illuminate\Contracts\Mail\Mailable;
@@ -15,26 +14,15 @@ use Illuminate\Contracts\Mail\Mailable;
  */
 class MemberRegistrationNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::MemberRegistration;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected int $registrationId, protected string $memberName, protected Institution $institution, protected string $email, protected string $formId) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Registration;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
-
-    #[\Override]
-    public function sendsPush(): bool
-    {
-        return false;
-    }
 
     public function title(object $notifiable): string
     {
@@ -76,22 +64,6 @@ class MemberRegistrationNotification extends BaseNotification
             'label' => __('notifications.action_view_registration'),
             'url' => route('forms.show', $this->formId),
         ];
-    }
-
-    /**
-     * Override via to use custom mail.
-     */
-    #[\Override]
-    public function via(object $notifiable): array
-    {
-        $channels = parent::via($notifiable);
-
-        // Always include mail for registration notifications
-        if (! in_array('mail', $channels)) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
     }
 
     /**

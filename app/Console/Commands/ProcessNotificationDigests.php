@@ -86,7 +86,7 @@ class ProcessNotificationDigests extends Command
             // failure in the worker would destroy them. Sending synchronously means a
             // failure leaves the items queued for the next run.
             try {
-                $digestEmails = $user->getDigestEmails();
+                $digestEmails = $user->notificationEmails();
                 Mail::to($digestEmails)->sendNow(new NotificationDigest($user, $groupedItems));
 
                 // Delete processed items

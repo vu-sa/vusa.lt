@@ -131,18 +131,18 @@ describe('meeting reminder notifications', function (): void {
             'start_date' => now()->subMonth(),
             'end_date' => null,
         ]);
-        $user->setMeetingReminderHours([6]);
+        $user->update(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [12]]]]);
 
         Meeting::factory()
             ->hasAttached($institution)
-            ->create(['start_time' => now()->addHours(6)]);
+            ->create(['start_time' => now()->addHours(12)]);
 
         $this->artisan('notifications:meeting-reminders')->assertExitCode(0);
 
         Notification::assertSentTo(
             $user,
             MeetingReminderNotification::class,
-            fn (MeetingReminderNotification $notification): bool => str_contains($notification->body($user), '6')
+            fn (MeetingReminderNotification $notification): bool => str_contains($notification->body($user), '12')
         );
     });
 });

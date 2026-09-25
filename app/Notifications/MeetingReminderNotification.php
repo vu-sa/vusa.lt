@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Meeting;
 
 /**
@@ -11,20 +10,15 @@ use App\Models\Meeting;
  */
 class MeetingReminderNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::MeetingReminder;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Meeting $meeting, protected int $hoursUntil) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Meeting;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
 
     public function title(object $notifiable): string
     {

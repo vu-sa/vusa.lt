@@ -1,7 +1,6 @@
 <?php
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Mail\NotificationDigest;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -13,7 +12,7 @@ use App\Notifications\BaseNotification;
 use App\Notifications\CommentPostedNotification;
 use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\TaskAssignedNotification;
-use App\Notifications\TaskCompletedNotification;
+use App\Notifications\TaskAutoCompletedNotification;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Markdown;
@@ -112,14 +111,9 @@ describe('notification email', function (): void {
     test('any other second action stays a plain link, so no other mail changes', function (): void {
         $notification = new class extends BaseNotification
         {
-            public function category(): NotificationCategory
+            public function type(): NotificationType
             {
-                return NotificationCategory::System;
-            }
-
-            public function urgency(): NotificationUrgency
-            {
-                return NotificationUrgency::Act;
+                return NotificationType::TaskReminder;
             }
 
             public function title(object $notifiable): string
@@ -171,7 +165,7 @@ describe('notification email', function (): void {
     });
 
     test('without a person to sign it falls back to Mano VU SA, never the system', function (): void {
-        $rendered = renderNotificationMail(new TaskCompletedNotification(Task::factory()->create(), User::factory()->create()), $this->recipient);
+        $rendered = renderNotificationMail(new TaskAutoCompletedNotification(Task::factory()->create(), 'Patvirtinta'), $this->recipient);
 
         expect($rendered['text'])->toContain(__('notifications.mail.sign_off'))
             ->not->toContain(__('notifications.mail.signature_intro'))

@@ -134,7 +134,7 @@ test('the secretary carries the task alone and is the only one mailed about it',
         ->not->toContain(TaskAssignedNotification::class));
 });
 
-test('auto-completing the agenda mails the secretary, not the members', function (): void {
+test('auto-completing the agenda tells the secretary, not the members', function (): void {
     nominateSecretary($this->institution, $this->cadence, $this->secretary);
 
     $meeting = meetingNeedingItsAgendaFilled($this->institution);
@@ -143,9 +143,10 @@ test('auto-completing the agenda mails the secretary, not the members', function
     fillEveryAgendaItem($meeting);
 
     expect(agendaCompletionTaskFor($meeting)->completed_at)->not->toBeNull()
-        ->and(scheduledMailFor($this->secretary))->toContain(TaskAutoCompletedNotification::class);
+        ->and(receivedBy($this->secretary))->toContain(TaskAutoCompletedNotification::class);
 
-    $this->members->each(fn (User $member) => expect(scheduledMailFor($member))->toBeEmpty());
+    $this->members->each(fn (User $member) => expect(receivedBy($member))->not->toContain(TaskAutoCompletedNotification::class)
+        ->and(scheduledMailFor($member))->toBeEmpty());
 });
 
 test('a task reopened after the nomination is re-staffed, and mails only the secretary', function (): void {
@@ -179,7 +180,7 @@ test('a task reopened after the nomination is re-staffed, and mails only the sec
     $reopener->save();
 
     expect($task->fresh()->completed_at)->not->toBeNull()
-        ->and(scheduledMailFor($this->secretary))->toContain(TaskAutoCompletedNotification::class);
+        ->and(receivedBy($this->secretary))->toContain(TaskAutoCompletedNotification::class);
 
     $this->members->each(fn (User $member) => expect(scheduledMailFor($member))->toBeEmpty());
 });

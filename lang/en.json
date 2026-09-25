@@ -1869,5 +1869,8 @@
     "Ataskaita": "Report",
     "Pristatymas": "Presentation",
     "Reglamentuojantis dokumentas": "Governing document",
-    "Metodinė medžiaga": "Guidance material"
+    "Metodinė medžiaga": "Guidance material",
+    "Užklausos būsena atnaujinta": "Support request status updated",
+    ":user pakeitė užklausos „:title“ būseną į :status.": ":user changed the status of “:title” to :status.",
+    "Užklausos „:title“ būsena pakeista į :status.": "The status of “:title” changed to :status."
 }

@@ -11,6 +11,9 @@ use App\Notifications\TestPushNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
+use NotificationChannels\WebPush\Events\NotificationFailed;
+use NotificationChannels\WebPush\Events\NotificationSent;
 use NotificationChannels\WebPush\PushSubscription;
 
 class PushSubscriptionController extends Controller
@@ -133,8 +136,25 @@ class PushSubscriptionController extends Controller
             );
         }
 
-        $user->notify(new TestPushNotification);
+        // Sent now and counted, so the button reports what the push service accepted rather than "sent".
+        $accepted = 0;
+        $rejected = 0;
+        Event::listen(NotificationSent::class, function () use (&$accepted): void {
+            $accepted++;
+        });
+        Event::listen(NotificationFailed::class, function () use (&$rejected): void {
+            $rejected++;
+        });
 
-        return $this->jsonSuccess(message: __('Test notification sent successfully.'));
+        $user->notifyNow(new TestPushNotification);
+
+        if ($accepted === 0) {
+            return $this->jsonError(__('notifications.push_devices.test_failed'), 502);
+        }
+
+        return $this->jsonSuccess(message: __('notifications.push_devices.test_result', [
+            'accepted' => $accepted,
+            'total' => $accepted + $rejected,
+        ]));
     }
 }

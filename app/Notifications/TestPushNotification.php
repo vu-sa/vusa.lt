@@ -2,28 +2,18 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
+use Carbon\CarbonInterface;
+use NotificationChannels\WebPush\WebPushChannel;
 
 /**
  * Test notification for verifying push notification functionality.
  */
 class TestPushNotification extends BaseNotification
 {
-    public function category(): NotificationCategory
+    public function type(): NotificationType
     {
-        return NotificationCategory::System;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Know;
-    }
-
-    #[\Override]
-    public function sendsPush(): bool
-    {
-        return true;
+        return NotificationType::TestPush;
     }
 
     public function title(object $notifiable): string
@@ -38,7 +28,7 @@ class TestPushNotification extends BaseNotification
 
     public function url(): string
     {
-        return route('profile');
+        return route('profile.notifications');
     }
 
     #[\Override]
@@ -48,11 +38,19 @@ class TestPushNotification extends BaseNotification
     }
 
     /**
-     * Test notifications should not be queued for digest.
+     * A test answers "does push reach this device?", so preferences, mute and quiet hours stay out of it.
+     *
+     * @return array<int, string>
      */
     #[\Override]
-    public function supportsEmailDigest(): bool
+    public function via(object $notifiable): array
     {
-        return false;
+        return [WebPushChannel::class];
+    }
+
+    #[\Override]
+    public function withDelay(object $notifiable, string $channel): ?CarbonInterface
+    {
+        return null;
     }
 }

@@ -80,7 +80,7 @@ class NotificationDigest extends Mailable implements ShouldQueue
                 'categoryColors' => $categoryColors,
                 'totalCount' => collect($this->groupedItems)->flatten(1)->count(),
                 'dashboardUrl' => route('notifications.index'),
-                'settingsUrl' => route('profile'),
+                'settingsUrl' => route('profile.notifications'),
             ],
         );
     }

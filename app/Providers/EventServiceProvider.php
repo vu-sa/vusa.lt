@@ -13,6 +13,7 @@ use App\Listeners\BlockExternalNotificationsOnStaging;
 use App\Listeners\HandleDutiableChange;
 use App\Listeners\HandleTaskCreated;
 use App\Listeners\NotifyUsersOfComment;
+use App\Listeners\PruneRejectedPushSubscription;
 use App\Listeners\QueueNotificationForDigest;
 use App\Listeners\RecordDeviceLogin;
 use App\Listeners\ReservationResource\HandleReservationResourceCreated;
@@ -49,6 +50,7 @@ use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Notifications\Events\NotificationSending;
+use NotificationChannels\WebPush\Events\NotificationFailed;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
 use Spatie\ModelStates\Events\StateChanged;
@@ -101,6 +103,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         Login::class => [
             RecordDeviceLogin::class,
+        ],
+        NotificationFailed::class => [
+            PruneRejectedPushSubscription::class,
         ],
     ];
 

@@ -19,7 +19,8 @@ export const selectTriggerVariants = cva(
     'flex w-fit items-center justify-between gap-2 border text-sm whitespace-nowrap transition-colors outline-none',
     'placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
     'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
-    '*:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 *:data-[slot=select-value]:line-clamp-1',
+    // truncate, not line-clamp: line-clamp switches the value to a vertical -webkit-box and stacks an icon above its text.
+    '*:data-[slot=select-value]:flex *:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 *:data-[slot=select-value]:truncate',
     '[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*=\'size-\'])]:size-4 [&_svg:not([class*=\'text-\'])]:text-muted-foreground',
   ],
   {

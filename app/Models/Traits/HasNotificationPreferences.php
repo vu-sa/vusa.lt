@@ -2,86 +2,86 @@
 
 namespace App\Models\Traits;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationChannel;
+use App\Enums\EmailDelivery;
+use App\Enums\NotificationType;
 use App\Models\Duty;
-use App\Notifications\BaseNotification;
+use App\Services\NotificationRouter;
 use Illuminate\Support\Carbon;
 
 /**
- * Trait for managing user notification preferences.
- *
- * Add to User model:
- * - Use this trait
- * - Add 'notification_preferences' to $casts as 'array'
+ * Per-type notification preferences, stored as overrides only: a type without an entry uses its
+ * NotificationType defaults, so changing a default reaches everyone who never touched it.
  *
  * @property array|null $notification_preferences
  */
 trait HasNotificationPreferences
 {
+    public const array TASK_REMINDER_DAY_OPTIONS = [7, 3, 1];
+
+    public const array MEETING_REMINDER_HOUR_OPTIONS = [24, 12, 1];
+
+    public const array DIGEST_FREQUENCY_OPTIONS = [1, 4, 12, 24];
+
     /**
-     * Default notification preferences structure: every category on, on every channel.
+     * @return array{types: array<string, array{email?: string, push?: bool}>, digest_frequency_hours: int, emails: array<int, string>, muted_until: string|null, reminder_settings: array{task_reminder_days: array<int, int>, meeting_reminder_hours: array<int, int>}}
      */
     protected function getDefaultNotificationPreferences(): array
     {
-        $channels = [];
-
-        foreach (NotificationCategory::cases() as $category) {
-            $channels[$category->value] = [
-                NotificationChannel::InApp->value => true,
-                NotificationChannel::Push->value => true,
-                NotificationChannel::EmailDigest->value => true,
-            ];
-        }
-
         return [
-            'channels' => $channels,
-            'digest_frequency_hours' => 4, // Default: every 4 hours
-            'digest_emails' => [], // Empty means use default (duty email if exists, else user email)
+            'types' => [],
+            'digest_frequency_hours' => 4,
+            'emails' => [],
             'muted_until' => null,
-            'muted_threads' => [],
             'reminder_settings' => [
                 'task_reminder_days' => [7, 3, 1],
                 'meeting_reminder_hours' => [24, 1],
-            ],
-            // Meeting notices reached only through a follow push, unlike the same notice to overseers.
-            'followed_institutions' => [
-                'push' => true,
             ],
         ];
     }
 
     /**
-     * Get notification preferences with defaults applied.
+     * Defaults fill missing keys only; lists are never merged, so a deselected reminder stays gone.
      */
     public function getNotificationPreferencesAttribute($value): array
     {
-        $preferences = $value ? (is_string($value) ? json_decode($value, true) : $value) : [];
+        $stored = $value ? (is_string($value) ? json_decode($value, true) : $value) : [];
+        $defaults = $this->getDefaultNotificationPreferences();
 
-        return array_replace_recursive($this->getDefaultNotificationPreferences(), $preferences);
+        $preferences = array_replace($defaults, array_intersect_key($stored, $defaults));
+        $preferences['reminder_settings'] = array_replace(
+            $defaults['reminder_settings'],
+            is_array($stored['reminder_settings'] ?? null) ? $stored['reminder_settings'] : [],
+        );
+
+        return $preferences;
     }
 
-    /**
-     * Check if user should receive notification for a category on a channel.
-     */
-    public function shouldReceiveNotification(NotificationCategory $category, NotificationChannel $channel): bool
+    public function emailDeliveryFor(NotificationType $type): EmailDelivery
     {
-        $preferences = $this->notification_preferences;
+        if ($type->lockedEmail() !== null) {
+            return $type->lockedEmail();
+        }
 
-        return $preferences['channels'][$category->value][$channel->value] ?? true;
+        if (! $type->isConfigurable()) {
+            return $type->defaultEmail();
+        }
+
+        $stored = $this->notification_preferences['types'][$type->value]['email'] ?? null;
+
+        return EmailDelivery::tryFrom((string) $stored) ?? $type->defaultEmail();
     }
 
-    /**
-     * Whether meeting notices from followed institutions may reach this user as a push.
-     */
-    public function wantsFollowedInstitutionPush(): bool
+    public function wantsPushFor(NotificationType $type): bool
     {
-        return (bool) ($this->notification_preferences['followed_institutions']['push'] ?? true);
+        if (! $type->isConfigurable()) {
+            return $type->defaultPush();
+        }
+
+        $stored = $this->notification_preferences['types'][$type->value]['push'] ?? null;
+
+        return is_bool($stored) ? $stored : $type->defaultPush();
     }
 
-    /**
-     * Check if all notifications are globally muted.
-     */
     public function isGloballyMuted(): bool
     {
         $mutedUntil = $this->notification_preferences['muted_until'] ?? null;
@@ -93,48 +93,6 @@ trait HasNotificationPreferences
         return Carbon::parse($mutedUntil)->isFuture();
     }
 
-    /**
-     * Check if a specific notification is muted (global or thread-specific).
-     */
-    public function isNotificationMuted(BaseNotification $notification): bool
-    {
-        // Check global mute
-        if ($this->isGloballyMuted()) {
-            return true;
-        }
-
-        // Check thread-specific mute
-        $object = $notification->object();
-        if (! $object) {
-            return false;
-        }
-
-        $mutedThreads = $this->notification_preferences['muted_threads'] ?? [];
-
-        foreach ($mutedThreads as $thread) {
-            // Get values with array_key_exists check for optional fields
-            $objectModelClass = $object['modelClass'];
-            $objectId = array_key_exists('id', $object) ? $object['id'] : null;
-
-            if (
-                $thread['model_class'] === $objectModelClass &&
-                $thread['model_id'] === $objectId
-            ) {
-                // Check if mute has expired
-                if (isset($thread['until']) && Carbon::parse($thread['until'])->isPast()) {
-                    continue;
-                }
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Mute all notifications until a specific time.
-     */
     public function muteNotificationsUntil(?Carbon $until): void
     {
         $preferences = $this->notification_preferences;
@@ -143,156 +101,48 @@ trait HasNotificationPreferences
         $this->update(['notification_preferences' => $preferences]);
     }
 
-    /**
-     * Unmute all notifications.
-     */
     public function unmuteNotifications(): void
     {
         $this->muteNotificationsUntil(null);
     }
 
-    /**
-     * Mute a specific thread (model).
-     */
-    public function muteThread(string $modelClass, string $modelId, ?Carbon $until = null): void
-    {
-        $preferences = $this->notification_preferences;
-        $mutedThreads = $preferences['muted_threads'] ?? [];
-
-        // Remove existing mute for this thread if any
-        $mutedThreads = array_filter($mutedThreads, fn ($thread) => ! ($thread['model_class'] === $modelClass && $thread['model_id'] === $modelId));
-
-        // Add new mute
-        $mutedThreads[] = [
-            'model_class' => $modelClass,
-            'model_id' => $modelId,
-            'until' => $until?->toIso8601String(),
-        ];
-
-        $preferences['muted_threads'] = array_values($mutedThreads);
-        $this->update(['notification_preferences' => $preferences]);
-    }
-
-    /**
-     * Unmute a specific thread.
-     */
-    public function unmuteThread(string $modelClass, string $modelId): void
-    {
-        $preferences = $this->notification_preferences;
-        $mutedThreads = $preferences['muted_threads'] ?? [];
-
-        $mutedThreads = array_filter($mutedThreads, fn ($thread) => ! ($thread['model_class'] === $modelClass && $thread['model_id'] === $modelId));
-
-        $preferences['muted_threads'] = array_values($mutedThreads);
-        $this->update(['notification_preferences' => $preferences]);
-    }
-
-    /**
-     * Update channel preference for a category.
-     */
-    public function setNotificationPreference(
-        NotificationCategory $category,
-        NotificationChannel $channel,
-        bool $enabled
-    ): void {
-        $preferences = $this->notification_preferences;
-        $preferences['channels'][$category->value][$channel->value] = $enabled;
-
-        $this->update(['notification_preferences' => $preferences]);
-    }
-
-    /**
-     * Get the user's digest frequency in hours.
-     */
     public function getDigestFrequencyHours(): int
     {
-        return $this->notification_preferences['digest_frequency_hours'] ?? 4;
+        return (int) $this->notification_preferences['digest_frequency_hours'];
     }
 
     /**
-     * Set the digest frequency in hours (1, 4, 12, or 24).
-     */
-    public function setDigestFrequencyHours(int $hours): void
-    {
-        $allowedValues = [1, 4, 12, 24];
-        if (! in_array($hours, $allowedValues)) {
-            $hours = 4; // Default to 4 if invalid
-        }
-
-        $preferences = $this->notification_preferences;
-        $preferences['digest_frequency_hours'] = $hours;
-
-        $this->update(['notification_preferences' => $preferences]);
-    }
-
-    /**
-     * Get custom task reminder days or default.
-     *
-     * @return array<int>
+     * @return array<int, int>
      */
     public function getTaskReminderDays(): array
     {
-        return $this->notification_preferences['reminder_settings']['task_reminder_days'] ?? [7, 3, 1];
+        return $this->notification_preferences['reminder_settings']['task_reminder_days'];
     }
 
     /**
-     * Set custom task reminder days.
-     *
-     * @param  array<int>  $days
-     */
-    public function setTaskReminderDays(array $days): void
-    {
-        $preferences = $this->notification_preferences;
-        $preferences['reminder_settings']['task_reminder_days'] = array_values(array_unique(array_filter($days, fn ($d) => $d > 0)));
-
-        $this->update(['notification_preferences' => $preferences]);
-    }
-
-    /**
-     * Get custom meeting reminder hours or default.
-     *
-     * @return array<int>
+     * @return array<int, int>
      */
     public function getMeetingReminderHours(): array
     {
-        return $this->notification_preferences['reminder_settings']['meeting_reminder_hours'] ?? [24, 1];
+        return $this->notification_preferences['reminder_settings']['meeting_reminder_hours'];
     }
 
     /**
-     * Set custom meeting reminder hours.
+     * The personal address and every current duty address the user may send notifications to.
      *
-     * @param  array<int>  $hours
+     * @return array<int, array{email: string, label: string, type: string}>
      */
-    public function setMeetingReminderHours(array $hours): void
+    public function getAvailableNotificationEmails(): array
     {
-        $preferences = $this->notification_preferences;
-        $preferences['reminder_settings']['meeting_reminder_hours'] = array_values(array_unique(array_filter($hours, fn ($h) => $h > 0)));
-
-        $this->update(['notification_preferences' => $preferences]);
-    }
-
-    /**
-     * Get all available email addresses the user can use for digests.
-     *
-     * Returns the user's personal email and all current duty emails.
-     *
-     * @return array<array{email: string, label: string, type: string}>
-     */
-    public function getAvailableDigestEmails(): array
-    {
-        $emails = [];
-
-        // User's personal email
-        $emails[] = [
+        $emails = [[
             'email' => $this->email,
-            'label' => $this->email.' (asmeninis)',
+            'label' => $this->email.' ('.__('notifications.preferences.personal_email').')',
             'type' => 'user',
-        ];
+        ]];
 
-        // Current duty emails
         /** @var Duty $duty */
         foreach ($this->current_duties()->get() as $duty) {
-            if (! empty($duty->email)) {
+            if (! empty($duty->email) && ! in_array($duty->email, array_column($emails, 'email'), true)) {
                 $emails[] = [
                     'email' => $duty->email,
                     'label' => $duty->email.' ('.$duty->name.')',
@@ -305,58 +155,24 @@ trait HasNotificationPreferences
     }
 
     /**
-     * Get the email addresses to send notification digests to.
+     * Where immediate emails and the digest go: the chosen addresses that are still available,
+     * else the default duty address ({@see NotificationRouter::preferredEmail()}).
      *
-     * Applies lazy cleanup: removes any emails that are no longer available
-     * (e.g., from duties that have ended).
-     *
-     * @return array<string>
+     * @return array<int, string>
      */
-    public function getDigestEmails(): array
+    public function notificationEmails(): array
     {
-        $preferences = $this->notification_preferences;
-        $configuredEmails = $preferences['digest_emails'] ?? [];
-        $availableEmails = collect($this->getAvailableDigestEmails())->pluck('email')->toArray();
+        $configured = $this->notification_preferences['emails'];
 
-        // If no emails configured, use default behavior:
-        // - First @vusa.lt duty email if exists
-        // - Otherwise, user's personal email
-        if (empty($configuredEmails)) {
-            foreach ($this->current_duties()->get() as $duty) {
-                if (! empty($duty->email) && str_ends_with($duty->email, 'vusa.lt')) {
-                    return [$duty->email];
-                }
+        if (! empty($configured)) {
+            $available = array_column($this->getAvailableNotificationEmails(), 'email');
+            $valid = array_values(array_intersect($configured, $available));
+
+            if (! empty($valid)) {
+                return $valid;
             }
-
-            return [$this->email];
         }
 
-        // Lazy cleanup: filter to only currently available emails
-        $validEmails = array_values(array_intersect($configuredEmails, $availableEmails));
-
-        // If all configured emails became invalid, fall back to default
-        if (empty($validEmails)) {
-            return [$this->email];
-        }
-
-        return $validEmails;
-    }
-
-    /**
-     * Set the email addresses to send notification digests to.
-     *
-     * @param  array<string>  $emails
-     */
-    public function setDigestEmails(array $emails): void
-    {
-        $availableEmails = collect($this->getAvailableDigestEmails())->pluck('email')->toArray();
-
-        // Only store valid emails
-        $validEmails = array_values(array_intersect($emails, $availableEmails));
-
-        $preferences = $this->notification_preferences;
-        $preferences['digest_emails'] = $validEmails;
-
-        $this->update(['notification_preferences' => $preferences]);
+        return [app(NotificationRouter::class)->preferredEmail($this)];
     }
 }

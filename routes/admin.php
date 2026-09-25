@@ -41,6 +41,8 @@ Route::get('dashboard/sistema', [SistemaDashboardController::class, 'index'])->n
 Route::patch('profile', [ProfileController::class, 'updateUserSettings'])->name('profile.update');
 Route::patch('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
 Route::patch('profile/notification-preferences', [ProfileController::class, 'updateNotificationPreferences'])->name('profile.updateNotificationPreferences');
+Route::delete('profile/notification-preferences', [ProfileController::class, 'resetNotificationPreferences'])->name('profile.resetNotificationPreferences');
+Route::patch('profile/notification-preferences/mute', [ProfileController::class, 'muteNotifications'])->name('profile.muteNotifications');
 Route::post('profile/notification-preferences/test-email', [ProfileController::class, 'sendTestNotificationEmail'])->name('profile.sendTestNotificationEmail');
 Route::get('tasks', [TaskController::class, 'index'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');

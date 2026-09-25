@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Task;
 
 /**
@@ -11,20 +10,15 @@ use App\Models\Task;
  */
 class TaskReminderNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::TaskReminder;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Task $task, protected int $daysLeft) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
 
     public function title(object $notifiable): string
     {

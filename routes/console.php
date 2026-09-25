@@ -4,6 +4,7 @@ use App\Actions\Schedulable\TaskNotifier;
 use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use App\Models\ReservationDraft;
+use App\Models\User;
 use App\Services\SystemMonitorService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -54,12 +55,11 @@ Schedule::command('notifications:send-digests')
     ->name('notification-digests')
     ->withoutOverlapping(10);
 
-// Task reminders - runs daily at 8 AM for tasks due in 7, 3, or 1 days
+// Task reminders: each user picks which of these intervals reach them
 Schedule::call(function (): void {
-    // These reminder days are defaults; users can customize in preferences
-    TaskNotifier::notifyDaysLeft(7);
-    TaskNotifier::notifyDaysLeft(3);
-    TaskNotifier::notifyDaysLeft(1);
+    foreach (User::TASK_REMINDER_DAY_OPTIONS as $days) {
+        TaskNotifier::notifyDaysLeft($days);
+    }
 })->dailyAt('08:00')
     ->name('task-reminders');
 

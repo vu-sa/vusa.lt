@@ -5,12 +5,9 @@ namespace App\Listeners;
 use App\Enums\CommentKind;
 use App\Events\CommentPosted;
 use App\Models\Pivots\ReservationResource;
-use App\Models\User;
 use App\Notifications\CommentPostedNotification;
 use App\Services\CommentRecipientResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
@@ -75,7 +72,7 @@ class NotifyUsersOfComment implements ShouldQueue
 
             $text = $this->text($user->name, $objectName, $action);
 
-            Notification::send($this->withDuties($audience), new CommentPostedNotification($text, $object, $subject));
+            Notification::send($audience, new CommentPostedNotification($text, $object, $subject));
         }
     }
 
@@ -85,23 +82,5 @@ class NotifyUsersOfComment implements ShouldQueue
     protected function text(string $authorName, ?string $objectName, string $actionKey): string
     {
         return "<p><strong>{$authorName}</strong> ".__($actionKey)." <strong>{$objectName}</strong></p>";
-    }
-
-    /**
-     * Append the recipients' duties so duty inboxes (name@vusa.lt) also receive
-     * the mail notification — preserving the pre-existing behaviour.
-     *
-     * @param  Collection<int, User>  $users
-     * @return Collection<int, mixed>
-     */
-    protected function withDuties(Collection $users): Collection
-    {
-        return $users->merge(
-            EloquentCollection::make($users->all())->load('duties')
-                ->pluck('duties')
-                ->flatten()
-                ->unique('id')
-                ->values()
-        );
     }
 }

@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use Illuminate\Support\Carbon;
@@ -19,26 +18,15 @@ use Illuminate\Support\Carbon;
  */
 class DutyExpiringNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::DutyExpiring;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Duty $duty, protected Dutiable $dutiable, protected int $daysUntilExpiry = 30) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Duty;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
-
-    #[\Override]
-    public function sendsPush(): bool
-    {
-        return false;
-    }
 
     public function title(object $notifiable): string
     {

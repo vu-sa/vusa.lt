@@ -102,7 +102,17 @@ class SendMemberRegistrationNotification implements ShouldQueue
 
         foreach ($mailableDuties as $mailableDuty) {
             /** @var Duty $mailableDuty */
-            Notification::send($mailableDuty->current_users()->first(), new MemberRegistrationNotification($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email, $form->id));
+            $notification = new MemberRegistrationNotification($event->registration->id, $nameResponse->getValue(), $institution, $mailableDuty->email, $form->id);
+            $holder = $mailableDuty->current_users()->first();
+
+            // A vacant duty still has an inbox; only the in-app notice needs a person.
+            if ($holder === null) {
+                Mail::send($notification->toMail($mailableDuty));
+
+                continue;
+            }
+
+            Notification::send($holder, $notification);
         }
     }
 }

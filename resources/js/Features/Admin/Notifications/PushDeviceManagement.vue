@@ -1,170 +1,133 @@
 <template>
-  <FormPanel :title="$t('notifications.push_devices.title')" :icon="Smartphone" title-class="text-brand">
-    <p class="text-xs text-muted-foreground leading-relaxed">
-      {{ $t('notifications.push_devices.description') }}
-    </p>
-
-    <!-- Current device status -->
-    <div class="flex flex-col gap-2.5 border border-border p-3 bg-muted/10">
-      <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 min-w-0">
+  <FormPanel :title="$t('notifications.push_devices.title')" :icon="Smartphone" title-class="text-brand" flush>
+    <div class="flex flex-col gap-3 border-b border-border px-4 py-3">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-2">
           <component :is="currentDeviceIcon" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <p class="font-medium text-xs truncate">
+          <p class="truncate text-sm font-bold text-foreground">
             {{ $t('notifications.push_devices.this_device') }}
           </p>
         </div>
-        <span
-          v-if="hasPushSubscription"
-          class="inline-flex items-center gap-1 text-xs font-medium text-[var(--status-success)]"
-        >
-          <Check class="size-3" aria-hidden="true" />
-          {{ $t('notifications.push_devices.status_enabled') }}
-        </span>
-        <span
-          v-else-if="pushPermission === 'denied'"
-          class="text-xs font-medium text-destructive"
-        >
-          {{ $t('notifications.push_devices.status_blocked') }}
-        </span>
-        <span
-          v-else-if="!pushSupported"
-          class="text-xs text-muted-foreground"
-        >
-          {{ $t('notifications.push_devices.status_not_supported') }}
-        </span>
-        <span
-          v-else
-          class="text-xs text-muted-foreground"
-        >
-          {{ $t('notifications.push_devices.status_disabled') }}
+        <span :class="['inline-flex shrink-0 items-center gap-1 text-xs', statusClass]">
+          <Check v-if="hasPushSubscription" class="size-3.5" aria-hidden="true" />
+          {{ statusLabel }}
         </span>
       </div>
 
-      <div v-if="canSubscribeToPush || hasPushSubscription">
-        <Button
-          v-if="!hasPushSubscription && canSubscribeToPush"
-          :disabled="isSubscribingToPush"
-          variant="outline"
-          size="sm"
-          class="w-full text-xs"
-          @click="handleSubscribe"
-        >
-          <BellPlus v-if="!isSubscribingToPush" class="size-3.5 mr-1.5" />
-          <Loader2 v-else class="size-3.5 mr-1.5 animate-spin" />
-          {{ $t('notifications.channels.push_enable') }}
-        </Button>
-        <Button
-          v-else-if="hasPushSubscription"
-          :disabled="isUnsubscribingFromPush"
-          variant="outline"
-          size="sm"
-          class="w-full text-xs"
-          @click="handleUnsubscribe"
-        >
-          <BellOff v-if="!isUnsubscribingFromPush" class="size-3.5 mr-1.5" />
-          <Loader2 v-else class="size-3.5 mr-1.5 animate-spin" />
-          {{ $t('notifications.channels.push_disable') }}
-        </Button>
-      </div>
+      <p v-if="pushSupported && !serviceWorkerReady && !hasPushSubscription" class="text-xs leading-snug text-muted-foreground text-pretty">
+        {{ $t('notifications.push_devices.worker_missing') }}
+      </p>
+
+      <Button
+        v-if="hasPushSubscription"
+        type="button"
+        :disabled="isUnsubscribingFromPush"
+        variant="outline"
+        size="sm"
+        voice="sentence"
+        class="w-full"
+        @click="handleUnsubscribe"
+      >
+        <Loader2 v-if="isUnsubscribingFromPush" class="size-3.5 animate-spin" />
+        <BellOff v-else class="size-3.5" />
+        {{ $t('notifications.channels.push_disable') }}
+      </Button>
+      <Button
+        v-else-if="canSubscribeToPush"
+        type="button"
+        :disabled="isSubscribingToPush"
+        variant="outline"
+        size="sm"
+        voice="sentence"
+        class="w-full"
+        @click="handleSubscribe"
+      >
+        <Loader2 v-if="isSubscribingToPush" class="size-3.5 animate-spin" />
+        <BellPlus v-else class="size-3.5" />
+        {{ $t('notifications.channels.push_enable') }}
+      </Button>
     </div>
 
-    <!-- Device list header with refresh button -->
-    <div class="flex items-center justify-between pt-1">
-      <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-        {{ $t('notifications.push_devices.all_devices') }} ({{ devices.length }})
+    <div class="flex items-center justify-between gap-2 px-4 pt-3 pb-1">
+      <h3 class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        {{ $t('notifications.push_devices.all_devices') }} · {{ devices.length }}
       </h3>
       <Button
+        type="button"
         variant="ghost"
         size="sm"
-        class="h-7 px-2 text-xs"
+        voice="sentence"
+        class="h-8 px-2 text-xs pointer-coarse:min-h-11"
         :disabled="isLoading || isRefreshingSubscriptionStatus"
         @click="refreshDevices"
       >
-        <RefreshCw :class="['size-3.5 mr-1', { 'animate-spin': isLoading || isRefreshingSubscriptionStatus }]" />
+        <RefreshCw :class="['size-3.5', { 'animate-spin': isLoading || isRefreshingSubscriptionStatus }]" />
         {{ $t('Atnaujinti') }}
       </Button>
     </div>
 
-    <!-- Devices list -->
     <div v-if="isLoading" class="flex items-center justify-center py-6">
       <Loader2 class="size-5 animate-spin text-muted-foreground" />
     </div>
 
-    <div v-else-if="devices.length === 0" class="text-center py-6 text-muted-foreground border border-dashed border-border p-4">
-      <PhoneOff class="size-6 mx-auto mb-1.5 opacity-40" />
-      <p class="text-xs">
-        {{ $t('notifications.push_devices.no_devices') }}
-      </p>
-    </div>
+    <p v-else-if="devices.length === 0" class="flex items-center gap-2 px-4 pb-3 text-xs text-muted-foreground">
+      <PhoneOff class="size-4 shrink-0" aria-hidden="true" />
+      {{ $t('notifications.push_devices.no_devices') }}
+    </p>
 
-    <div v-else class="space-y-2">
-      <TransitionGroup name="device-list">
-        <div
-          v-for="device in devices"
-          :key="device.id"
-          :class="[
-            'flex items-center justify-between border p-2.5 transition-colors',
-            device.isCurrentDevice ? 'border-foreground/30 bg-muted/30' : 'border-border bg-background',
-          ]"
-        >
-          <div class="flex items-center gap-2.5 min-w-0">
-            <component :is="getDeviceIcon(device.device_name)" class="size-4 shrink-0 text-muted-foreground" />
-            <div class="min-w-0">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <p class="font-medium text-xs truncate">
-                  {{ device.device_name || $t('notifications.push_devices.unknown_device') }}
-                </p>
-                <span
-                  v-if="device.isCurrentDevice"
-                  class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 border border-border bg-card text-muted-foreground"
-                >
-                  {{ $t('notifications.push_devices.current_badge') }}
-                </span>
-              </div>
-              <p v-if="device.created_at" class="text-[11px] text-muted-foreground">
-                {{ formatDate(device.created_at) }}
-              </p>
-            </div>
+    <ul v-else class="pb-1">
+      <li
+        v-for="device in devices"
+        :key="device.id"
+        class="flex items-center justify-between gap-2 border-b border-border px-4 py-2 last:border-b-0"
+      >
+        <div class="flex min-w-0 items-center gap-2.5">
+          <component :is="getDeviceIcon(device.device_name)" class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <div class="min-w-0">
+            <p class="truncate text-sm text-foreground">
+              {{ deviceLabel(device.device_name, device.endpoint) || $t('notifications.push_devices.unknown_device') }}
+              <span v-if="device.isCurrentDevice" class="text-xs text-muted-foreground">· {{ $t('notifications.push_devices.current_badge') }}</span>
+            </p>
+            <p v-if="device.created_at" class="text-xs text-muted-foreground">
+              {{ formatDate(device.created_at) }}
+            </p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            class="size-8 p-0 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 pointer-coarse:size-9"
-            :disabled="removingDeviceId === device.id"
-            :aria-label="$t('Ištrinti įrenginį')"
-            @click="handleRemoveDevice(device)"
-          >
-            <Loader2 v-if="removingDeviceId === device.id" class="size-3.5 animate-spin" />
-            <Trash2 v-else class="size-3.5" />
-          </Button>
         </div>
-      </TransitionGroup>
-    </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          class="size-8 shrink-0 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive pointer-coarse:size-11"
+          :disabled="removingDeviceId === device.id"
+          :aria-label="$t('Ištrinti įrenginį')"
+          @click="handleRemoveDevice(device)"
+        >
+          <Loader2 v-if="removingDeviceId === device.id" class="size-3.5 animate-spin" />
+          <Trash2 v-else class="size-3.5" />
+        </Button>
+      </li>
+    </ul>
 
-    <!-- Test notification button -->
-    <div v-if="hasAnyPushSubscription" class="pt-3 border-t border-border space-y-2">
+    <div v-if="devices.length > 0" class="border-t border-border px-4 py-3">
       <Button
-        :disabled="testHttp.processing"
-        variant="secondary"
+        type="button"
+        :disabled="isSendingTest"
+        variant="outline"
         size="sm"
-        class="w-full text-xs"
+        voice="sentence"
+        class="w-full"
         @click="handleSendTestNotification"
       >
-        <BellRing v-if="!testHttp.processing" class="size-3.5 mr-1.5" />
-        <Loader2 v-else class="size-3.5 mr-1.5 animate-spin" />
+        <Loader2 v-if="isSendingTest" class="size-3.5 animate-spin" />
+        <BellRing v-else class="size-3.5" />
         {{ $t('notifications.push_devices.send_test') }}
       </Button>
-      <p v-if="testHttp.recentlySuccessful" class="text-xs text-[var(--status-success)] flex items-center gap-1.5">
-        <Check class="size-3.5 shrink-0" />
-        {{ $t('notifications.push_devices.test_sent') }}
-      </p>
     </div>
   </FormPanel>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useHttp } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   BellPlus,
@@ -182,10 +145,12 @@ import {
   Trash2,
 } from 'lucide-vue-next';
 
+import { useApiMutation } from '@/Composables/useApi';
 import { usePWA, type PushSubscriptionDevice } from '@/Composables/usePWA';
 import { FormPanel } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { formatDateTime } from '@/Utils/dateTime';
+import { deviceLabel } from '@/Utils/pushDevice';
 import ISimpleIconsApple from '~icons/simple-icons/apple';
 import ISimpleIconsLinux from '~icons/simple-icons/linux';
 import ISimpleIconsWindows from '~icons/simple-icons/windows';
@@ -195,7 +160,6 @@ const {
   pushPermission,
   canSubscribeToPush,
   hasPushSubscription,
-  hasAnyPushSubscription,
   isSubscribingToPush,
   isUnsubscribingFromPush,
   isRefreshingSubscriptionStatus,
@@ -204,12 +168,28 @@ const {
   removeSubscriptionById,
   fetchPushSubscriptions,
   refreshSubscriptionStatus,
+  serviceWorkerReady,
 } = usePWA();
+
+const statusLabel = computed(() => {
+  if (hasPushSubscription.value) return $t('notifications.push_devices.status_enabled');
+  if (!pushSupported.value) return $t('notifications.push_devices.status_not_supported');
+  if (pushPermission.value === 'denied') return $t('notifications.push_devices.status_blocked');
+
+  return $t('notifications.push_devices.status_disabled');
+});
+
+const statusClass = computed(() => {
+  if (hasPushSubscription.value) return 'font-medium text-[var(--status-success)]';
+  if (pushPermission.value === 'denied') return 'font-medium text-[var(--status-danger)]';
+
+  return 'text-muted-foreground';
+});
 
 const devices = ref<PushSubscriptionDevice[]>([]);
 const isLoading = ref(false);
 const removingDeviceId = ref<number | null>(null);
-const testHttp = useHttp({});
+const isSendingTest = ref(false);
 
 // Get current device icon based on status
 const currentDeviceIcon = computed(() => {
@@ -269,7 +249,10 @@ const handleUnsubscribe = async () => {
 const handleRemoveDevice = async (device: PushSubscriptionDevice) => {
   removingDeviceId.value = device.id;
   try {
-    const success = await removeSubscriptionById(device.id);
+    // Removing only the server row would leave this browser subscribed and reporting "įjungti".
+    const success = device.isCurrentDevice
+      ? await unsubscribeFromPush()
+      : await removeSubscriptionById(device.id);
     if (success) {
       devices.value = devices.value.filter(d => d.id !== device.id);
     }
@@ -280,46 +263,20 @@ const handleRemoveDevice = async (device: PushSubscriptionDevice) => {
 };
 
 // Send test notification
+// The server answers with how many devices the push service accepted; useApiMutation toasts it.
 const handleSendTestNotification = async () => {
-  await testHttp.post(route('push-subscription.test'), {
-    onError: () => {
-      console.error('Failed to send test notification');
-    },
-    onHttpException: (response) => {
-      console.error('Failed to send test notification:', response);
-    },
-    onNetworkError: (error) => {
-      console.error('Failed to send test notification:', error);
-    },
-  });
+  isSendingTest.value = true;
+  try {
+    const { execute } = useApiMutation(route('push-subscription.test'));
+    await execute();
+    await loadDevices();
+  }
+  finally {
+    isSendingTest.value = false;
+  }
 };
 
 onMounted(() => {
   loadDevices();
 });
 </script>
-
-<style scoped>
-.device-list-enter-from {
-  opacity: 0;
-  transform: translateX(-20px);
-}
-
-.device-list-leave-to {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.device-list-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.device-list-leave-active {
-  transition: all 0.2s ease-in;
-  position: absolute;
-}
-
-.device-list-move {
-  transition: transform 0.3s ease;
-}
-</style>

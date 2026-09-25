@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -15,6 +14,11 @@ use Illuminate\Support\Str;
  */
 class AssignedToResourceNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::AssignedToResource;
+    }
+
     /**
      * Create a new notification instance.
      *
@@ -56,28 +60,6 @@ class AssignedToResourceNotification extends BaseNotification
         ];
 
         return new self($assignerData, $resource);
-    }
-
-    public function category(): NotificationCategory
-    {
-        // Determine category based on resource type
-        return match ($this->resource['modelClass']) {
-            'Reservation', 'ReservationResource' => NotificationCategory::Reservation,
-            'Task' => NotificationCategory::Task,
-            'Meeting' => NotificationCategory::Meeting,
-            default => NotificationCategory::User,
-        };
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
-
-    #[\Override]
-    public function sendsPush(): bool
-    {
-        return false;
     }
 
     public function title(object $notifiable): string

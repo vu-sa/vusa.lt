@@ -7,6 +7,17 @@ lastUpdated: true
 
 ## v2.21 — Reservation drafts (2026-09-24) {#v2-21}
 
+- ⭐ **Notification settings per notification** — instead of a category table, you see the concrete notifications your duties can bring you, each with a note on when it arrives. For each, choose email – “At once”, “In digest” or “Off” – and push. Reminder days and hours sit next to their notifications, and push choices stay inactive until you connect a device
+- ✨ **One set of email addresses** — immediate emails and the digest go to the same chosen addresses; with none chosen, they go to your duty email
+- ✨ **Fewer duplicate notifications** — approvers get only the approval request, not a task on top; a requester hears about a decision once, when the status changes; a secretary who carries the agenda task no longer gets a second notice about the same meeting; you are no longer notified about your own action
+- 🔧 **Muting no longer deletes notifications** — while muted, no emails, push or digests are sent, but notifications stay in the bell. Muting applies at once, without saving
+- 🔧 **Reminder settings work** — a deselected reminder hour no longer comes back after saving, and task reminder days are finally applied
+- 🔧 **Email no longer switches off with the digest** — unticking “Email” used to stop urgent emails too (reminders, approvals, mentions)
+- 🔧 **Manually created tasks notify their assignees** — people given a new task get a notification naming who assigned it
+- ✨ **Restore notification defaults** — “Restore defaults” resets every notification's choices, reminders and the digest frequency; a “Who gets notifications, and when?” section explains who receives each notification and why
+- 🔧 **Turning push on and off** — a device no longer shows push as on when it has none; a failed attempt explains why instead of showing a success toast. Unmuting works again
+- 🔧 **A read notification no longer lands in the digest**, and email links go straight to notification settings
+
 - ✨ **More compact institution coordinators** — up to two appear by name; larger groups use avatars with an expandable list, and coordinators no longer repeat in the overview
 - ✨ **Tidier text editors in forms** — duty, institution, event, type, problem, form and tag description fields now look the same: one row with text style, B/I/U, link and lists, with rarer actions under “Insert” and ⋯. Editing or removing a link appears only when the cursor is on a link, and table actions only inside a table. Insert a link with ⌘K / Ctrl+K, and formatting buttons no longer save the form by accident
 - ✨ **Event video now lives in the description** — the separate “YouTube video code” field is gone: add a video to the description with “Insert” → “YouTube”. Existing event videos were moved to the end of their description

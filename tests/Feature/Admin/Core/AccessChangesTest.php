@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\GetRecentAccessChanges;
+use App\Enums\EmailDelivery;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Tenant;
@@ -126,8 +127,7 @@ describe('notifications:access-changes', function (): void {
     test('it is a digest item, not an email of its own', function (): void {
         $notification = new AccessChangedNotification([], '2026-09-20');
 
-        expect($notification->urgency()->sendsImmediateMail())->toBeFalse()
-            ->and($notification->urgency()->usesDigest())->toBeTrue();
+        expect($notification->type()->defaultEmail())->toBe(EmailDelivery::Digest);
     });
 });
 

@@ -8,7 +8,7 @@
   >
     <span class="flex flex-col gap-0.5">
       <span class="text-sm font-bold text-foreground">{{ label }}</span>
-      <span v-if="hint" class="text-xs leading-relaxed text-muted-foreground">{{ hint }}</span>
+      <span v-if="hint" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">{{ hint }}</span>
     </span>
     <Switch
       v-model="model"

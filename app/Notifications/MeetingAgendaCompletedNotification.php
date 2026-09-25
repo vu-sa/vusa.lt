@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Notifications\Concerns\ReachesFollowers;
@@ -17,22 +16,17 @@ class MeetingAgendaCompletedNotification extends BaseNotification
 {
     use ReachesFollowers;
 
+    public function type(): NotificationType
+    {
+        return $this->viaFollow ? NotificationType::FollowedInstitutionActivity : NotificationType::MeetingAgendaCompleted;
+    }
+
     /**
      * Create a new notification instance.
      *
      * @param  User|null  $completedBy  The user who completed the last agenda item
      */
     public function __construct(protected Meeting $meeting, protected ?User $completedBy = null) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Meeting;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Know;
-    }
 
     public function title(object $notifiable): string
     {

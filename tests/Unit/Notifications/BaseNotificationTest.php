@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EmailDelivery;
 use App\Enums\NotificationCategory;
 use App\Models\Task;
 use App\Notifications\CommentPostedNotification;
@@ -11,7 +12,7 @@ use Tests\Feature\Notifications\NotificationTestHelpers;
 pest()->use(RefreshDatabase::class, NotificationTestHelpers::class);
 
 describe('via method', function (): void {
-    test('via returns empty array when user is globally muted', function (): void {
+    test('via keeps only the in-app channels while the user is muted', function (): void {
         $user = $this->createMutedUser();
 
         $notification = new CommentPostedNotification(
@@ -20,9 +21,7 @@ describe('via method', function (): void {
             ['modelClass' => 'User', 'name' => 'Commenter']
         );
 
-        $channels = $notification->via($user);
-
-        expect($channels)->toBeEmpty();
+        expect($notification->via($user))->toBe(['database', 'broadcast']);
     });
 
     test('via includes database, broadcast, and webpush for an act-tier notification', function (): void {
@@ -105,25 +104,23 @@ describe('toDigestItem method', function (): void {
     });
 });
 
-describe('supportsEmailDigest', function (): void {
-    test('most notifications support email digest by default', function (): void {
+describe('email delivery defaults', function (): void {
+    test('thread activity waits for the digest by default', function (): void {
+        $user = $this->createUserWithPreferences();
         $notification = new CommentPostedNotification(
             'Test',
             ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test', 'id' => '1'],
             ['modelClass' => 'User', 'name' => 'Test']
         );
 
-        expect($notification->supportsEmailDigest())->toBeTrue();
+        expect($user->emailDeliveryFor($notification->type()))->toBe(EmailDelivery::Digest);
     });
 
-    test('TaskReminderNotification does not support email digest', function (): void {
-        $task = Task::factory()->create([
-            'due_date' => now()->addDays(3),
-        ]);
+    test('a task reminder is emailed at once by default', function (): void {
+        $user = $this->createUserWithPreferences();
+        $notification = new TaskReminderNotification(Task::factory()->create(['due_date' => now()->addDays(3)]), 3);
 
-        $notification = new TaskReminderNotification($task, 3);
-
-        expect($notification->supportsEmailDigest())->toBeFalse();
+        expect($user->emailDeliveryFor($notification->type()))->toBe(EmailDelivery::Immediate);
     });
 });
 

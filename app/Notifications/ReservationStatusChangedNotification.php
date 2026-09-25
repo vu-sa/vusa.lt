@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Pivots\ReservationResource;
 use App\Models\User;
 
@@ -14,20 +13,15 @@ use App\Models\User;
  */
 class ReservationStatusChangedNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::ReservationStatusChanged;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected ReservationResource $reservationResource, protected string $oldState, protected string $newState, protected ?User $changedBy = null) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Reservation;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Know;
-    }
 
     public function title(object $notifiable): string
     {

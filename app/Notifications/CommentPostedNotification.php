@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -15,6 +14,11 @@ use Illuminate\Support\Str;
  */
 class CommentPostedNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return $this->isMention ? NotificationType::CommentMention : NotificationType::CommentActivity;
+    }
+
     /**
      * Create a new notification instance.
      *
@@ -61,16 +65,6 @@ class CommentPostedNotification extends BaseNotification
         ];
 
         return new self($text, $object, $subject);
-    }
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Comment;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return $this->isMention ? NotificationUrgency::Act : NotificationUrgency::Know;
     }
 
     public function title(object $notifiable): string
@@ -133,19 +127,5 @@ class CommentPostedNotification extends BaseNotification
             'label' => __('notifications.action_view_comment'),
             'url' => $this->url(),
         ];
-    }
-
-    /**
-     * Override via to also handle Duty notifiable (mail only).
-     */
-    #[\Override]
-    public function via(object $notifiable): array
-    {
-        // If notifiable is a Duty, only send mail
-        if (class_basename($notifiable::class) === 'Duty') {
-            return ['mail'];
-        }
-
-        return parent::via($notifiable);
     }
 }

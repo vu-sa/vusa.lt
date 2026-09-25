@@ -88,6 +88,9 @@ class MeetingTaskSubscriber
 
         ['overseers' => $overseers, 'followers' => $followers] = ResolveMeetingNotificationAudience::split($meeting);
 
+        // Whoever carries the agenda task hears about the meeting from that task.
+        $overseers = $overseers->reject(fn (User $user): bool => $representatives->contains('id', $user->id));
+
         if ($overseers->isNotEmpty()) {
             Notification::send($overseers, new MeetingCreatedNotification($meeting));
         }
@@ -177,6 +180,10 @@ class MeetingTaskSubscriber
         $meeting->load(['institutions.tenant']);
 
         ['overseers' => $overseers, 'followers' => $followers] = ResolveMeetingNotificationAudience::split($meeting);
+
+        // The task's own people already get TaskAutoCompleted, and the completer needs no news.
+        $taskCarriers = ResolveTaskAssignees::forMeeting($meeting);
+        $overseers = $overseers->reject(fn (User $user): bool => $user->is($completedBy) || $taskCarriers->contains('id', $user->id));
 
         if ($overseers->isNotEmpty()) {
             Notification::send($overseers, new MeetingAgendaCompletedNotification($meeting, $completedBy));

@@ -216,10 +216,6 @@ class User extends Authenticatable implements GuardsForceDelete
         return Attribute::make(get: fn () => ! empty($this->getAttributeValue('password')));
     }
 
-    /**
-     * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
-     * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
-     */
     public function routeNotificationForMail(Notification $notification): array|string
     {
         return app(NotificationRouter::class)->routeForMail($this, $notification);

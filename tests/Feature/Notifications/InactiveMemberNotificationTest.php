@@ -42,12 +42,12 @@ describe('meeting reminders', function (): void {
     beforeEach(function (): void {
         Notification::fake();
 
-        $this->current->setMeetingReminderHours([6]);
-        $this->departed->setMeetingReminderHours([6]);
+        $this->current->update(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [12]]]]);
+        $this->departed->update(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [12]]]]);
 
         $this->meeting = Meeting::factory()
             ->hasAttached($this->institution)
-            ->create(['start_time' => now()->addHours(6)]);
+            ->create(['start_time' => now()->addHours(12)]);
     });
 
     test('reach a member active at the meeting date', function (): void {
@@ -65,7 +65,7 @@ describe('meeting reminders', function (): void {
     test('reach a nominated secretary who holds no duty at all', function (): void {
         $cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $this->institution->id]);
         $nominee = User::factory()->create(['notification_preferences' => []]);
-        $nominee->setMeetingReminderHours([6]);
+        $nominee->update(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [12]]]]);
 
         InstitutionSecretary::create([
             'institution_id' => $this->institution->id,

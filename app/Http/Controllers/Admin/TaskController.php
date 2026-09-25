@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildTaskIndexQuery;
+use App\Events\TaskCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTasksRequest;
 use App\Http\Requests\StoreTaskRequest;
@@ -67,14 +68,16 @@ class TaskController extends AdminController
         ];
 
         // if separate_tasks is true, create separate tasks for each responsible person
-        if ($request->separate_tasks) {
-            foreach ($request->responsible_people as $responsible_person) {
-                $task = Task::create($taskData);
-                $task->users()->attach($responsible_person);
-            }
-        } else {
+        $people = $validatedData['responsible_people'] ?? [];
+        $assigneeGroups = $request->boolean('separate_tasks')
+            ? array_map(fn ($person): array => [$person], $people)
+            : [$people];
+
+        foreach ($assigneeGroups as $assignees) {
             $task = Task::create($taskData);
-            $task->users()->attach($request->responsible_people);
+            $task->users()->attach($assignees);
+
+            event(new TaskCreated($task, $request->user()));
         }
 
         return back()->with('success', $this->entityMessage('created', 'task'));

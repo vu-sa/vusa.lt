@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Models\Task;
 use Illuminate\Support\Collection;
 
@@ -14,6 +13,11 @@ use Illuminate\Support\Collection;
  */
 class TaskOverdueNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::TaskOverdue;
+    }
+
     /**
      * Create a new notification instance.
      *
@@ -25,16 +29,6 @@ class TaskOverdueNotification extends BaseNotification
          */
         protected Collection $tasks
     ) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
 
     public function title(object $notifiable): string
     {

@@ -140,9 +140,9 @@ describe('notification settings', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowNotificationSettings')
                 ->has('notificationPreferences')
-                ->has('notificationCategories')
-                ->has('notificationChannels')
-                ->has('availableDigestEmails')
+                ->has('notificationTypes')
+                ->has('availableEmails')
+                ->has('defaultEmail')
             );
     });
 

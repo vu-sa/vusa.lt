@@ -1,14 +1,11 @@
 <template>
-  <FormFieldWrapper id="digest-emails" :label="$t('notifications.preferences.digest_emails')">
+  <FormFieldWrapper id="notification-emails" :label="$t('notifications.preferences.emails_label')" :hint="$t('notifications.preferences.emails_hint', { email: defaultEmail })">
     <div class="space-y-2">
-      <p class="text-sm text-muted-foreground mb-3">
-        {{ $t('notifications.preferences.digest_emails_description') }}
-      </p>
       <div class="space-y-2">
         <label
           v-for="emailOption in availableEmails"
           :key="emailOption.email"
-          :for="`digest-email-${emailOption.email}`"
+          :for="`notification-email-${emailOption.email}`"
           data-slot="digest-email-option"
           :class="[
             'flex items-center gap-3 border border-border p-3 cursor-pointer select-none transition-colors pointer-coarse:min-h-11',
@@ -17,7 +14,7 @@
           ]"
         >
           <Checkbox
-            :id="`digest-email-${emailOption.email}`"
+            :id="`notification-email-${emailOption.email}`"
             :model-value="isSelected(emailOption.email)"
             @update:model-value="(checked) => toggleEmail(emailOption.email, checked === true)"
           />
@@ -26,17 +23,13 @@
               :is="emailOption.type === 'duty' ? Briefcase : User"
               class="size-4 shrink-0 text-muted-foreground"
             />
-            <span class="font-mono text-sm truncate">{{ emailOption.email }}</span>
-            <span class="text-xs text-muted-foreground shrink-0">
+            <span class="truncate text-sm">{{ emailOption.email }}</span>
+            <span class="shrink-0 text-xs text-muted-foreground">
               ({{ emailOption.type === 'duty' ? $t('notifications.preferences.duty_email') : $t('notifications.preferences.personal_email') }})
             </span>
           </div>
         </label>
       </div>
-      <p v-if="selectedEmails.length === 0" class="text-xs text-[var(--status-attention)] flex items-center gap-1.5 mt-2">
-        <Info class="size-3.5 shrink-0" aria-hidden="true" />
-        {{ $t('notifications.preferences.digest_emails_default_info') }}
-      </p>
     </div>
   </FormFieldWrapper>
 </template>
@@ -44,7 +37,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, Info, User } from 'lucide-vue-next';
+import { Briefcase, User } from 'lucide-vue-next';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
@@ -58,6 +51,8 @@ interface EmailOption {
 const props = defineProps<{
   availableEmails: EmailOption[];
   modelValue: string[];
+  /** Where mail goes while nothing is selected. */
+  defaultEmail: string;
 }>();
 
 const emit = defineEmits<{

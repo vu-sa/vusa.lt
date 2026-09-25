@@ -88,19 +88,13 @@ class SendMeetingReminders extends Command
     }
 
     /**
+     * Every interval a user can pick; each participant is then filtered by their own choice.
+     *
      * @return array<int, int>
      */
     protected function getConfiguredReminderHours(): array
     {
-        return User::query()
-            ->get()
-            ->flatMap(fn (User $user): array => $user->getMeetingReminderHours())
-            ->map(fn ($hours): int => (int) $hours)
-            ->filter(fn (int $hours): bool => $hours > 0)
-            ->unique()
-            ->sortDesc()
-            ->values()
-            ->all();
+        return User::MEETING_REMINDER_HOUR_OPTIONS;
     }
 
     /**

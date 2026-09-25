@@ -40,7 +40,7 @@
 
     <slot />
 
-    <p v-if="hint || helperText" class="text-xs leading-relaxed text-muted-foreground">
+    <p v-if="hint || helperText" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
       {{ hint ?? helperText }}
     </p>
     <p v-if="error" class="text-xs text-destructive">

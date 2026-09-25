@@ -5,8 +5,10 @@ use App\Actions\GetMeetingOverseers;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Role;
@@ -17,6 +19,7 @@ use App\Models\User;
 use App\Models\Vote;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
+use App\Notifications\TaskAssignedNotification;
 use App\Settings\AtstovavimasSettings;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
@@ -430,6 +433,23 @@ describe('MeetingTaskSubscriber', function (): void {
             Notification::assertSentToTimes($admin, MeetingCreatedNotification::class, 1);
         });
 
+        test('a secretary who carries the agenda task is not also sent the overseer notice', function (): void {
+            $institution = Institution::factory()->for(Tenant::query()->first())->create();
+            $cadence = Cadence::factory()->create([
+                'institution_id' => $institution->id,
+                'start_date' => now()->subMonth()->toDateString(),
+                'end_date' => now()->addMonth()->toDateString(),
+            ]);
+            $secretary = User::factory()->create();
+            InstitutionSecretary::create(['institution_id' => $institution->id, 'cadence_id' => $cadence->id, 'user_id' => $secretary->id]);
+
+            $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
+            event(new MeetingFullyCreated($meeting));
+
+            Notification::assertSentTo($secretary, TaskAssignedNotification::class);
+            Notification::assertNotSentTo($secretary, MeetingCreatedNotification::class);
+        });
+
         test('notifies followers when meeting is created', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
@@ -461,7 +481,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
             $institution = Institution::factory()->for($tenant)->create();
-            $follower = User::factory()->create(['notification_preferences' => ['followed_institutions' => ['push' => false]]]);
+            $follower = User::factory()->create(['notification_preferences' => ['types' => ['followed_institution_activity' => ['push' => false]]]]);
             $follower->followedInstitutions()->attach($institution);
 
             $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);

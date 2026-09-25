@@ -2,10 +2,10 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 use App\Mail\InformManagerAboutStudentRepRegistration;
 use App\Models\Institution;
+use App\Models\User;
 use Illuminate\Contracts\Mail\Mailable;
 
 /**
@@ -15,26 +15,15 @@ use Illuminate\Contracts\Mail\Mailable;
  */
 class StudentRepRegistrationNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::StudentRepRegistration;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected string $registrationId, protected string $repName, protected Institution $institution, protected string $formId) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Registration;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Act;
-    }
-
-    #[\Override]
-    public function sendsPush(): bool
-    {
-        return false;
-    }
 
     public function title(object $notifiable): string
     {
@@ -79,22 +68,6 @@ class StudentRepRegistrationNotification extends BaseNotification
     }
 
     /**
-     * Override via to use custom mail.
-     */
-    #[\Override]
-    public function via(object $notifiable): array
-    {
-        $channels = parent::via($notifiable);
-
-        // Always include mail for registration notifications
-        if (! in_array('mail', $channels)) {
-            $channels[] = 'mail';
-        }
-
-        return $channels;
-    }
-
-    /**
      * Use custom mailable for rich email content.
      */
     #[\Override]
@@ -105,6 +78,6 @@ class StudentRepRegistrationNotification extends BaseNotification
             $this->repName,
             $this->institution,
             $this->formId
-        )->to($notifiable->email);
+        )->to($notifiable instanceof User ? $notifiable->notificationEmails() : $notifiable->email);
     }
 }

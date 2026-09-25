@@ -2,8 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationUrgency;
+use App\Enums\NotificationType;
 
 /**
  * Someone else reserved a resource that sits in the recipient's unfinished reservation, and there
@@ -11,20 +10,15 @@ use App\Enums\NotificationUrgency;
  */
 class ReservationDraftItemTakenNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::ReservationDraftItemTaken;
+    }
+
     /**
      * @param  list<string>  $resourceNames
      */
     public function __construct(protected array $resourceNames, protected ?string $period = null) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Reservation;
-    }
-
-    public function urgency(): NotificationUrgency
-    {
-        return NotificationUrgency::Know;
-    }
 
     public function title(object $notifiable): string
     {
