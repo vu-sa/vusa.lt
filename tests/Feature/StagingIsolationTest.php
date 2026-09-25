@@ -10,7 +10,7 @@ use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Storage;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $connection = (string) config('database.default');

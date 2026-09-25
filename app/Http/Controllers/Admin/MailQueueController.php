@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildMailQueuePage;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexMailQueueRequest;
 use App\Models\NotificationDigestQueue;
 use App\Models\Role;
 use App\Models\User;
@@ -19,7 +21,7 @@ use Inertia\Response;
  */
 class MailQueueController extends AdminController
 {
-    public function index(\App\Http\Requests\IndexMailQueueRequest $request, \App\Actions\BuildMailQueuePage $builder): Response
+    public function index(IndexMailQueueRequest $request, BuildMailQueuePage $builder): Response
     {
         $this->handleAuthorization('viewAny', Role::class);
 

@@ -1528,6 +1528,43 @@ declare global {
       activities_as_subject_exists: boolean
     }
 
+    export interface ReservationDraft {
+      // columns
+      id: number
+      user_id: string
+      name?: string | null
+      description?: string | null
+      start_time?: string | null
+      end_time?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      user?: User
+      items?: ReservationDraftItem[]
+      // counts
+      items_count: number
+      // exists
+      user_exists: boolean
+      items_exists: boolean
+    }
+
+    export interface ReservationDraftItem {
+      // columns
+      id: number
+      reservation_draft_id: number
+      resource_id: string
+      quantity: number
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      draft?: ReservationDraft
+      resource?: Resource
+      // counts
+      // exists
+      draft_exists: boolean
+      resource_exists: boolean
+    }
+
     export interface ReservationResource {
       // columns
       id: number
@@ -2165,6 +2202,7 @@ declare global {
       followed_institutions?: Institution[]
       muted_institutions?: Institution[]
       reservations?: Reservation[]
+      reservation_draft?: ReservationDraft
       push_subscriptions?: PushSubscription[]
       roles?: Role[]
       teams?: Permission[]
@@ -2199,6 +2237,7 @@ declare global {
       followed_institutions_exists: boolean
       muted_institutions_exists: boolean
       reservations_exists: boolean
+      reservation_draft_exists: boolean
       push_subscriptions_exists: boolean
       roles_exists: boolean
       teams_exists: boolean

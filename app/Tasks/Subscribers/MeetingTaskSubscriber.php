@@ -93,7 +93,7 @@ class MeetingTaskSubscriber
         }
 
         if ($followers->isNotEmpty()) {
-            Notification::send($followers, (new MeetingCreatedNotification($meeting))->viaFollow());
+            Notification::send($followers, new MeetingCreatedNotification($meeting)->viaFollow());
         }
     }
 
@@ -183,7 +183,7 @@ class MeetingTaskSubscriber
         }
 
         if ($followers->isNotEmpty()) {
-            Notification::send($followers, (new MeetingAgendaCompletedNotification($meeting, $completedBy))->viaFollow());
+            Notification::send($followers, new MeetingAgendaCompletedNotification($meeting, $completedBy)->viaFollow());
         }
     }
 

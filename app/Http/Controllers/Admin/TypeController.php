@@ -10,6 +10,7 @@ use App\Http\Requests\SyncTypeRolesRequest;
 use App\Http\Requests\UpdateTypeRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
+use App\Models\Role;
 use App\Models\Type;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -83,7 +84,7 @@ class TypeController extends AdminController
                 'name' => $model->name,
             ])->values(),
             'modelOptions' => Inertia::optional(fn () => $type->allModelsFromModelType()),
-            'roleOptions' => Inertia::optional(fn () => \App\Models\Role::query()->orderBy('name')->get(['id', 'name'])),
+            'roleOptions' => Inertia::optional(fn () => Role::query()->orderBy('name')->get(['id', 'name'])),
             'sharepointPath' => $type->sharepoint_path(),
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,

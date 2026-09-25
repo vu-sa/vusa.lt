@@ -33,6 +33,6 @@ class BulkInstitutionFollowRequest extends FormRequest
      */
     public function institutionIds(): array
     {
-        return array_values(array_map('strval', $this->validated('institution_ids')));
+        return array_values(array_map(strval(...), $this->validated('institution_ids')));
     }
 }

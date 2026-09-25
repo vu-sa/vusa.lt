@@ -565,8 +565,8 @@ describe('MeetingTaskSubscriber', function (): void {
             $follower = User::factory()->create();
             $meeting = Meeting::factory()->create();
 
-            expect((new MeetingAgendaCompletedNotification($meeting))->viaFollow()->via($follower))->toContain(WebPushChannel::class)
-                ->and((new MeetingAgendaCompletedNotification($meeting))->via($follower))->not->toContain(WebPushChannel::class);
+            expect(new MeetingAgendaCompletedNotification($meeting)->viaFollow()->via($follower))->toContain(WebPushChannel::class)
+                ->and(new MeetingAgendaCompletedNotification($meeting)->via($follower))->not->toContain(WebPushChannel::class);
         });
     });
 

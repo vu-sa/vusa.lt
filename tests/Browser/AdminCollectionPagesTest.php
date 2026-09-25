@@ -98,7 +98,7 @@ it('mounts every admin page without JavaScript errors and fits a phone without s
         }
     }
 
-    expect($failures)->toBe([]);
+    expect($failures)->toBeEmpty();
 });
 
 describe('Puslapiai', function (): void {

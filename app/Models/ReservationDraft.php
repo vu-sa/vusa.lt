@@ -25,8 +25,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, ReservationDraftItem> $items
- * @property-read User $user
- * @property-read int|null $items_count
+ * @property-read User|null $user
+ *
+ * @method static \Database\Factories\ReservationDraftFactory factory($count = null, $state = [])
+ * @method static Builder<static>|ReservationDraft newModelQuery()
+ * @method static Builder<static>|ReservationDraft newQuery()
+ * @method static Builder<static>|ReservationDraft query()
+ *
+ * @mixin \Eloquent
  */
 #[Fillable(['name', 'description', 'start_time', 'end_time'])]
 class ReservationDraft extends Model

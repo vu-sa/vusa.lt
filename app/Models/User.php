@@ -78,6 +78,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Duty> $previous_duties
  * @property-read Collection<int, PushSubscription> $pushSubscriptions
+ * @property-read ReservationDraft|null $reservationDraft
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Institution> $secretariedInstitutions

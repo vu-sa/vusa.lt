@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildSupportRequestCollection;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexSupportRequestRequest;
 use App\Http\Requests\StoreSupportRequestRequest;
@@ -16,7 +17,7 @@ use Inertia\Response;
 
 class MySupportRequestController extends AdminController
 {
-    public function index(IndexSupportRequestRequest $request, \App\Actions\BuildSupportRequestCollection $builder): Response
+    public function index(IndexSupportRequestRequest $request, BuildSupportRequestCollection $builder): Response
     {
         return $this->inertiaResponse('Admin/Dashboard/ShowSupportRequests', $builder->execute($request));
     }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\ReservationDraftItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Touches;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -17,15 +18,20 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property-read ReservationDraft $draft
  * @property-read \App\Models\Resource|null $resource
+ *
+ * @method static \Database\Factories\ReservationDraftItemFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationDraftItem newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationDraftItem newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReservationDraftItem query()
+ *
+ * @mixin \Eloquent
  */
 #[Fillable(['resource_id', 'quantity'])]
+#[Touches(['draft'])]
 class ReservationDraftItem extends Model
 {
     /** @use HasFactory<ReservationDraftItemFactory> */
     use HasFactory;
-
-    /** Keeps the draft's updated_at fresh so pruning measures the last real change. */
-    protected $touches = ['draft'];
 
     #[\Override]
     protected function casts(): array
