@@ -463,13 +463,13 @@ class SystemMonitorService
                            ! empty(config('services.microsoft.client_secret'))) ? 'configured' : 'missing',
             ],
             'sharepoint' => [
-                'configured' => ! empty(config('services.sharepoint.client_id')) &&
-                              ! empty(config('services.sharepoint.client_secret')),
-                'client_id_set' => ! empty(config('services.sharepoint.client_id')),
-                'client_secret_set' => ! empty(config('services.sharepoint.client_secret')),
-                'tenant_id' => config('services.sharepoint.tenant_id'),
-                'status' => (! empty(config('services.sharepoint.client_id')) &&
-                           ! empty(config('services.sharepoint.client_secret'))) ? 'configured' : 'missing',
+                'configured' => ! empty(config('filesystems.sharepoint.client_id')) &&
+                              ! empty(config('filesystems.sharepoint.client_secret')),
+                'client_id_set' => ! empty(config('filesystems.sharepoint.client_id')),
+                'client_secret_set' => ! empty(config('filesystems.sharepoint.client_secret')),
+                'tenant_id' => config('filesystems.sharepoint.tenant_id'),
+                'status' => (! empty(config('filesystems.sharepoint.client_id')) &&
+                           ! empty(config('filesystems.sharepoint.client_secret'))) ? 'configured' : 'missing',
             ],
             'mail' => [
                 'driver' => config('mail.default'),

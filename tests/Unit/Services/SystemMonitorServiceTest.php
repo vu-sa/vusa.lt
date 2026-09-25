@@ -139,9 +139,9 @@ describe('SystemMonitorService', function (): void {
                 'services.microsoft.client_id' => 'ms-client',
                 'services.microsoft.client_secret' => 'ms-secret',
                 'services.microsoft.redirect' => 'https://example.com/callback',
-                'services.sharepoint.client_id' => null,
-                'services.sharepoint.client_secret' => null,
-                'services.sharepoint.tenant_id' => 'tenant-1',
+                'filesystems.sharepoint.client_id' => null,
+                'filesystems.sharepoint.client_secret' => null,
+                'filesystems.sharepoint.tenant_id' => 'tenant-1',
                 'mail.default' => 'smtp',
                 'mail.mailers.smtp.host' => 'smtp.example.com',
                 'mail.mailers.smtp.port' => 587,
@@ -190,6 +190,20 @@ describe('SystemMonitorService', function (): void {
                     'chunk_size' => 500,
                     'status' => 'configured',
                 ]);
+        });
+
+        test('reports SharePoint as configured from the filesystems SharePoint credentials', function (): void {
+            config([
+                'filesystems.sharepoint.client_id' => 'sp-client',
+                'filesystems.sharepoint.client_secret' => 'sp-secret',
+                'filesystems.sharepoint.tenant_id' => 'tenant-1',
+            ]);
+
+            expect($this->service->getIntegrationsStatus()['sharepoint'])->toMatchArray([
+                'configured' => true,
+                'tenant_id' => 'tenant-1',
+                'status' => 'configured',
+            ]);
         });
 
         test('reflects missing configuration correctly', function (): void {

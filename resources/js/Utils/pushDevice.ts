@@ -17,15 +17,33 @@ const SYSTEMS: [RegExp, string][] = [
   [/Linux/, 'Linux'],
 ];
 
-const PUSH_SERVICES: [RegExp, string][] = [
-  [/fcm\.googleapis\.com/, 'Chrome'],
-  [/mozilla\.com|mozaws\.net/, 'Firefox'],
-  [/push\.apple\.com/, 'Safari'],
-  [/notify\.windows\.com/, 'Edge'],
+const PUSH_SERVICES: [string, string][] = [
+  ['fcm.googleapis.com', 'Chrome'],
+  ['mozilla.com', 'Firefox'],
+  ['mozaws.net', 'Firefox'],
+  ['push.apple.com', 'Safari'],
+  ['notify.windows.com', 'Edge'],
 ];
 
 const firstMatch = (value: string, patterns: [RegExp, string][]): string | null =>
   patterns.find(([pattern]) => pattern.test(value))?.[1] ?? null;
+
+const pushService = (endpoint: string): string | null => {
+  try {
+    const url = new URL(endpoint);
+
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      return null;
+    }
+
+    return PUSH_SERVICES.find(([domain]) =>
+      url.hostname === domain || url.hostname.endsWith(`.${domain}`),
+    )?.[1] ?? null;
+  }
+  catch {
+    return null;
+  }
+};
 
 /**
  * "Chrome · Android" from a user agent. Android's reduced UA names the model "K", so the model is
@@ -47,7 +65,7 @@ export function deviceLabel(deviceName: string | null, endpoint: string): string
     return deviceName;
   }
 
-  const browser = firstMatch(endpoint, PUSH_SERVICES);
+  const browser = pushService(endpoint);
 
   return [browser, deviceName].filter(Boolean).join(' · ') || null;
 }

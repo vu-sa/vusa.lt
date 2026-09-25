@@ -23,6 +23,19 @@ describe('deviceLabel', () => {
   it('adds the browser from the push service for names saved before it was recorded', () => {
     expect(deviceLabel('Mac', 'https://fcm.googleapis.com/fcm/send/x')).toBe('Chrome · Mac');
     expect(deviceLabel('Linux PC', 'https://updates.push.services.mozilla.com/wpush/v2/x')).toBe('Firefox · Linux PC');
+    expect(deviceLabel('Linux PC', 'https://push.mozaws.net/wpush/v2/x')).toBe('Firefox · Linux PC');
     expect(deviceLabel('iPhone', 'https://web.push.apple.com/x')).toBe('Safari · iPhone');
+    expect(deviceLabel('Windows', 'https://notify.windows.com/x')).toBe('Edge · Windows');
+  });
+
+  it.each([
+    'https://fcm.googleapis.com.evil.com/x',
+    'https://evil.com/fcm.googleapis.com/x',
+    'https://fcm.googleapis.com@evil.com/x',
+    'https://evil.com/?next=https://push.apple.com/x',
+    'not a URL with mozilla.com',
+    'javascript://notify.windows.com/x',
+  ])('does not infer a browser from a foreign or invalid endpoint: %s', (endpoint) => {
+    expect(deviceLabel('Device', endpoint)).toBe('Device');
   });
 });
