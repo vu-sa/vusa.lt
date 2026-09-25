@@ -36,7 +36,7 @@
         :label="`${$t('Pavadinimas')} (${activeLocale.toUpperCase()})`"
         required
         :error="form.errors[`name.${activeLocale}`]"
-        :help="$t('forms.helpers.duty_name_inflected_hint')"
+        :hint="$t('forms.helpers.duty_name_inflected_hint')"
       >
         <Input
           id="duty-name"
@@ -333,26 +333,15 @@
 
     <!-- Danger Zone Slot -->
     <template v-if="isEditing && canEditDuty" #danger-zone>
-      <div class="flex items-center justify-between">
-        <div>
-          <h4 class="text-sm font-semibold text-destructive">
-            {{ $t('Ištrinti pareigybę') }}
-          </h4>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Pareigybė bus visiškai pašalinta iš sistemos.') }}
-          </p>
-        </div>
-        <Button
-          type="button"
-          variant="destructive"
-          size="sm"
-          class="u-touch"
-          @click="deleteConfirmOpen = true"
-        >
-          <Trash2 class="mr-1.5 size-4" />
-          {{ $t('Ištrinti') }}
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+        @click="deleteConfirmOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('Ištrinti pareigybę') }}
+      </Button>
 
       <ConfirmDialog
         v-model:open="deleteConfirmOpen"
@@ -479,8 +468,13 @@ const deleteConfirmOpen = ref(false);
 const fieldIds = {
   'name.lt': 'duty-name',
   'name.en': 'duty-name',
+  'description.lt': 'duty-description',
+  'description.en': 'duty-description',
   'email': 'duty-email',
   'institution_id': 'institution_id',
+  'places_to_occupy': 'places_to_occupy',
+  'contacts_grouping': 'contacts_grouping',
+  'types': 'duty-types',
 };
 
 // Form Initialization

@@ -71,7 +71,7 @@ describe('StudySetForm.vue', () => {
         stubs: {
           ...commonStubs,
           FormPage: {
-            template: '<form @submit.prevent><slot /><slot name="danger-zone" /></form>',
+            template: '<form @submit.prevent><slot /><slot name="aside" /><slot name="danger-zone" /></form>',
             props: ['title', 'locale', 'barTitle', 'activitySubject', 'timestamps'],
           },
           ConfirmDialog: {

@@ -14,7 +14,7 @@ const stubs = {
   FormPage: {
     props: ['title', 'mode', 'errors'],
     emits: ['submit'],
-    template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent="$emit(\'submit\')"><h1>{{ title }}</h1><slot /><slot name="advanced" /><slot name="danger-zone" /></form>',
+    template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent="$emit(\'submit\')"><h1>{{ title }}</h1><slot /><slot name="aside" /><slot name="advanced" /><slot name="danger-zone" /></form>',
   },
   FormSection: { props: ['title'], template: '<section :data-section="title"><slot /></section>' },
   MultiSelect: true,
@@ -74,7 +74,7 @@ describe('InstitutionForm.vue', () => {
 
     const sections = wrapper.findAll('[data-section]').map(section => section.attributes('data-section'));
 
-    expect(sections).toEqual(['Kas tai?', 'Kokia tai institucija?', 'Kaip su ja susisiekti?']);
+    expect(sections).toEqual(['Kas tai?', 'Kaip su ja susisiekti?']);
     expect(wrapper.text()).not.toContain('Pareigybės');
   });
 

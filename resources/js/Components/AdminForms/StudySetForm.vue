@@ -8,16 +8,21 @@
     :processing="form.processing"
     :dirty="form.isDirty"
     :errors="form.errors"
+    :field-ids
     :mode="isCreate ? 'create' : 'edit'"
     :locale="activeLocale"
     :available-locales="['lt', 'en']"
     :missing-locale-counts
-    :timestamps="!isCreate && studySetTimestamps ? studySetTimestamps : undefined"
-    :activity-subject="!isCreate && props.studySet.id ? { type: 'study_set', id: props.studySet.id } : undefined"
-    max-width="4xl"
+    :created-at="!isCreate ? props.studySet.created_at : undefined"
+    :updated-at="!isCreate ? props.studySet.updated_at : undefined"
+    :activity-subject="!isCreate && props.studySet.id ? { type: 'study_set', id: String(props.studySet.id) } : undefined"
     @update:locale="activeLocale = $event"
     @submit="$emit('submit:form', form)"
   >
+    <template v-if="!isCreate" #title-status>
+      <StatusBadge :status="form.is_visible ? bannerStatuses.active : bannerStatuses.inactive" />
+    </template>
+
     <FormSection :title="$t('forms.context.main_info')" :description="$t('Individualaus studijų komplekto pagrindinė informacija.')">
       <FormFieldWrapper
         id="name"
@@ -25,7 +30,7 @@
         required
         :error="form.errors[`name.${activeLocale}`]"
       >
-        <Input id="name" v-model="form.name[activeLocale]" />
+        <Input id="name" v-model="form.name[activeLocale]" :class="['h-11', fieldSurfaceClass]" />
       </FormFieldWrapper>
 
       <FormFieldWrapper
@@ -33,36 +38,8 @@
         :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
         :error="form.errors[`description.${activeLocale}`]"
       >
-        <Textarea id="description" v-model="form.description[activeLocale]" />
+        <Textarea id="description" v-model="form.description[activeLocale]" :class="fieldSurfaceClass" />
       </FormFieldWrapper>
-
-      <FormFieldWrapper id="tenant_id" :label="$t('Padalinys')" required :error="form.errors.tenant_id">
-        <Select v-model="tenantIdString">
-          <SelectTrigger id="tenant_id">
-            <SelectValue :placeholder="$t('Pasirinkite padalinį')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
-              {{ tenant.shortname }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
-
-      <div class="grid gap-4 sm:grid-cols-2">
-        <FormFieldWrapper id="order" :label="$t('Eilės nr.')" :error="form.errors.order">
-          <Input id="order" v-model="form.order" type="number" min="0" />
-        </FormFieldWrapper>
-
-        <FormFieldWrapper id="is_visible" :label="$t('Matomas')">
-          <div class="flex items-center gap-2 pt-2">
-            <Switch id="is_visible" :model-value="form.is_visible" @update:model-value="form.is_visible = $event" />
-            <span class="text-sm text-muted-foreground">
-              {{ form.is_visible ? $t('Taip') : $t('Ne') }}
-            </span>
-          </div>
-        </FormFieldWrapper>
-      </div>
     </FormSection>
 
     <FormSection
@@ -82,7 +59,7 @@
               :aria-label="$t('Pašalinti')"
               @click="removeCourse(index)"
             >
-              <Trash2Icon class="size-4 text-destructive" />
+              <Trash2 class="size-4 text-destructive" />
             </Button>
           </div>
 
@@ -92,7 +69,7 @@
             required
             :error="form.errors[`courses.${index}.name.${activeLocale}`]"
           >
-            <Input :id="`course-name-${index}`" v-model="course.name[activeLocale]" />
+            <Input :id="`course-name-${index}`" v-model="course.name[activeLocale]" :class="['h-11', fieldSurfaceClass]" />
           </FormFieldWrapper>
 
           <div class="grid gap-4 sm:grid-cols-4">
@@ -113,11 +90,11 @@
             </FormFieldWrapper>
 
             <FormFieldWrapper :id="`course-credits-${index}`" :label="$t('Kreditai')">
-              <Input :id="`course-credits-${index}`" v-model="course.credits" type="number" min="0" step="0.5" />
+              <Input :id="`course-credits-${index}`" v-model="course.credits" type="number" min="0" step="0.5" :class="fieldSurfaceClass" />
             </FormFieldWrapper>
 
             <FormFieldWrapper :id="`course-order-${index}`" :label="$t('Eilės nr.')">
-              <Input :id="`course-order-${index}`" v-model="course.order" type="number" min="0" />
+              <Input :id="`course-order-${index}`" v-model="course.order" type="number" min="0" :class="fieldSurfaceClass" />
             </FormFieldWrapper>
 
             <FormFieldWrapper :id="`course-visible-${index}`" :label="$t('Matomas')">
@@ -130,7 +107,7 @@
       </ol>
 
       <Button variant="outline" type="button" class="pointer-coarse:min-h-11" @click="addCourse">
-        <PlusIcon class="size-4" />
+        <Plus class="size-4" />
         {{ $t("Pridėti dalyką") }}
       </Button>
     </FormSection>
@@ -152,7 +129,7 @@
               :aria-label="$t('Pašalinti')"
               @click="removeReview(index)"
             >
-              <Trash2Icon class="size-4 text-destructive" />
+              <Trash2 class="size-4 text-destructive" />
             </Button>
           </div>
 
@@ -174,11 +151,11 @@
             :label="`${$t('Dėstytojas')} (${activeLocale.toUpperCase()})`"
             required
           >
-            <Input :id="`review-lecturer-${index}`" v-model="review.lecturer[activeLocale]" />
+            <Input :id="`review-lecturer-${index}`" v-model="review.lecturer[activeLocale]" :class="['h-11', fieldSurfaceClass]" />
           </FormFieldWrapper>
 
           <FormFieldWrapper :id="`review-comment-${index}`" :label="`${$t('Komentaras')} (${activeLocale.toUpperCase()})`">
-            <Textarea :id="`review-comment-${index}`" v-model="review.comment[activeLocale]" />
+            <Textarea :id="`review-comment-${index}`" v-model="review.comment[activeLocale]" :class="fieldSurfaceClass" />
           </FormFieldWrapper>
 
           <FormFieldWrapper :id="`review-visible-${index}`" :label="$t('Matomas')">
@@ -189,7 +166,7 @@
 
       <div class="space-y-2">
         <Button variant="outline" type="button" class="pointer-coarse:min-h-11" :disabled="savedCourses.length === 0" @click="addReview">
-          <PlusIcon class="size-4" />
+          <Plus class="size-4" />
           {{ $t("Pridėti atsiliepimą") }}
         </Button>
         <p v-if="savedCourses.length === 0" class="text-xs text-muted-foreground">
@@ -198,27 +175,44 @@
       </div>
     </FormSection>
 
+    <template #aside>
+      <FormPanel :title="$t('Nustatymai')" :icon="SlidersHorizontal" title-class="text-brand">
+        <FormToggleRow
+          v-model="form.is_visible"
+          :label="$t('Matomas')"
+          :hint="$t('Ar šis komplektas rodomas viešai studentams.')"
+        />
+
+        <FormFieldWrapper id="tenant_id" :label="$t('Padalinys')" required :error="form.errors.tenant_id">
+          <Select v-model="tenantIdString">
+            <SelectTrigger id="tenant_id">
+              <SelectValue :placeholder="$t('Pasirinkite padalinį')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
+                {{ tenant.shortname }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="order" :label="$t('Eilės nr.')" :error="form.errors.order">
+          <Input id="order" v-model.number="form.order" type="number" min="0" :class="fieldSurfaceClass" />
+        </FormFieldWrapper>
+      </FormPanel>
+    </template>
+
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <div class="flex flex-wrap items-center justify-between gap-3 border border-destructive/20 bg-destructive/5 p-4">
-        <div>
-          <h3 class="text-sm font-semibold text-destructive">
-            {{ $t('Ištrinti komplektą') }}
-          </h3>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Komplektas bus perkeltas į šiukšliadėžę.') }}
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          type="button"
-          class="border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-          @click="isDeleteDialogOpen = true"
-        >
-          <Trash2Icon class="size-4" />
-          {{ $t('Ištrinti') }}
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        type="button"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+        @click="isDeleteDialogOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('Ištrinti komplektą') }}
+      </Button>
     </template>
   </FormPage>
 
@@ -233,22 +227,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { PlusIcon, Trash2Icon } from 'lucide-vue-next';
+import { Plus, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Input } from '@/Components/ui/input';
+import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
+import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import { Button } from '@/Components/ui/button';
+import { fieldSurfaceClass } from '@/Components/ui/control';
+import { Input } from '@/Components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { bannerStatuses } from '@/Constants/statuses';
 import { ModelEnum } from '@/Types/enums';
 
 interface CourseForm {
@@ -299,13 +298,14 @@ const isCreate = computed(() => props.rememberKey === 'CreateStudySet' || !props
 const isDeleteDialogOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
 
-const studySetTimestamps = computed(() => {
-  if (!props.studySet.created_at) return undefined;
-  return {
-    createdAt: props.studySet.created_at,
-    updatedAt: props.studySet.updated_at,
-  };
-});
+const fieldIds = {
+  'name.lt': 'name',
+  'name.en': 'name',
+  'description.lt': 'description',
+  'description.en': 'description',
+  'tenant_id': 'tenant_id',
+  'order': 'order',
+};
 
 let keyCounter = 0;
 const generateKey = () => `item-${++keyCounter}`;

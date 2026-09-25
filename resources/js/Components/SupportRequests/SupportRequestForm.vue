@@ -1,53 +1,33 @@
 <template>
   <FormPage
     :title="isEditing ? supportRequest?.title ?? $t('Redaguoti pranešimą') : $t('Naujas pranešimas')"
+    :bar-title="isEditing ? (supportRequest?.title ?? $t('Redaguoti pranešimą')) : $t('Naujas pranešimas')"
     entity-type="support_request"
     :back-href="backUrl"
     :processing="form.processing"
     :dirty="form.isDirty"
     :errors="form.errors"
+    :field-ids
     :mode="isEditing ? 'edit' : 'create'"
     :available-locales="[]"
-    max-width="4xl"
+    :created-at="supportRequest?.created_at"
+    :updated-at="supportRequest?.updated_at"
     @submit="submit"
   >
+    <template v-if="isEditing && supportRequest?.status" #title-status>
+      <StatusBadge :status="supportRequestStatuses[supportRequest.status]" />
+    </template>
+
     <FormSection
       :title="$t('Pranešimo informacija')"
       :description="$t('Aprašykite problemą ar idėją taip, kad ją būtų galima suprasti ir įvertinti.')"
     >
-      <div class="grid gap-4 sm:grid-cols-2">
-        <FormFieldWrapper id="support_request_type_id" :label="$t('Tipas')" required :error="form.errors.support_request_type_id">
-          <Select v-model="form.support_request_type_id">
-            <SelectTrigger id="support_request_type_id">
-              <SelectValue :placeholder="$t('Pasirinkti tipą')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="t in typeOptions" :key="t.value" :value="t.value">
-                {{ t.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
-
-        <FormFieldWrapper id="support_request_area_id" :label="$t('Sritis')" required :error="form.errors.support_request_area_id">
-          <Select v-model="form.support_request_area_id">
-            <SelectTrigger id="support_request_area_id">
-              <SelectValue :placeholder="$t('Pasirinkti sritį')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="a in areaOptions" :key="a.value" :value="a.value">
-                {{ a.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
-      </div>
-
       <FormFieldWrapper id="title" :label="$t('Pavadinimas')" required :error="form.errors.title">
         <Input
           id="title"
           v-model="form.title"
           :placeholder="$t('Trumpai nusakyk problemą ar idėją...')"
+          :class="['h-11', fieldSurfaceClass]"
         />
       </FormFieldWrapper>
 
@@ -57,6 +37,7 @@
           v-model="form.description"
           rows="5"
           :placeholder="$t('Išsamiai aprašyk, kas nutiko, kaip atkartoti problemą arba ką siūlai patobulinti...')"
+          :class="fieldSurfaceClass"
         />
       </FormFieldWrapper>
 
@@ -67,105 +48,9 @@
             v-model="form.context_url"
             type="url"
             placeholder="https://vusa.lt/..."
+            :class="['h-11', fieldSurfaceClass]"
           />
         </FormFieldWrapper>
-      </div>
-    </FormSection>
-
-    <FormSection
-      :title="$t('Matomumas')"
-      :description="$t('Nurodykite, kas gali matyti ir aptarti šį pranešimą.')"
-    >
-      <div class="space-y-3 border-y border-border py-4">
-        <FormFieldWrapper id="visibility" :label="$t('Matomumas')" required :error="form.errors.visibility">
-          <RadioGroup v-model="form.visibility" class="grid gap-2.5 sm:grid-cols-3">
-            <label
-              v-for="opt in visibilityOptions"
-              :key="opt.value"
-              class="flex min-h-11 items-start gap-3 border p-3.5 transition-colors"
-              :class="[
-                opt.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-                form.visibility === opt.value
-                  ? 'border-foreground bg-muted/50'
-                  : 'border-border bg-card hover:bg-muted/40 hover:border-muted-foreground/40',
-              ]"
-            >
-              <RadioGroupItem :id="`visibility-${opt.value}`" :value="opt.value" :disabled="opt.disabled" class="mt-0.5" />
-              <div class="flex-1 select-none">
-                <div class="flex items-center gap-1.5">
-                  <component :is="opt.icon" class="h-4 w-4 text-muted-foreground" />
-                  <span class="text-sm font-medium text-foreground">{{ opt.label }}</span>
-                </div>
-                <p class="mt-1 text-xs text-muted-foreground leading-relaxed">
-                  {{ opt.description }}
-                </p>
-              </div>
-            </label>
-          </RadioGroup>
-
-          <div class="mt-3 flex items-start gap-2 border-l-2 border-border bg-muted/50 p-2.5 text-xs text-muted-foreground">
-            <Info class="h-4 w-4 shrink-0 mt-0.5" />
-            <span class="leading-relaxed">
-              <!-- eslint-disable-next-line max-len -->
-              {{ $t('Viešesnis matomumas (rolėms arba visiems nariams) leidžia kitiems matyti žinomas problemas, išvengti pasikartojančių pranešimų ir numatyti galimus sistemos sutrikimus (regresijas).') }}
-            </span>
-          </div>
-        </FormFieldWrapper>
-
-        <div v-if="form.visibility === 'roles'" class="space-y-4 pt-2 border-t">
-          <div>
-            <Label class="text-sm font-medium mb-2 block">{{ $t('Pasirinkti roles:') }}</Label>
-            <div v-if="roles.length > 0" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              <label
-                v-for="role in roles"
-                :key="role.id"
-                class="flex min-h-11 items-center gap-2 border p-2.5 text-sm cursor-pointer hover:bg-muted/50 transition-colors"
-              >
-                <Checkbox
-                  :model-value="form.roles.includes(role.id)"
-                  @update:model-value="(checked: boolean) => toggleRole(role.id, checked)"
-                />
-                <span class="truncate font-medium">{{ role.name }}</span>
-              </label>
-            </div>
-            <p v-else class="text-xs text-muted-foreground italic">
-              {{ $t('Neturite priskirtų rolių, kurioms galėtumėte suteikti prieigą.') }}
-            </p>
-            <p v-if="form.errors.roles" class="text-xs text-destructive mt-1">
-              {{ form.errors.roles }}
-            </p>
-          </div>
-
-          <div class="border border-border bg-background p-3.5 space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {{ $t('Nariai, kurie galės matyti ir komentuoti šį pranešimą') }}
-              </span>
-              <span class="text-xs font-medium text-muted-foreground">
-                {{ authorizedUsers.length }} {{ $t('nariai') }}
-              </span>
-            </div>
-
-            <div v-if="authorizedUsers.length > 0" class="flex flex-wrap items-center gap-2 pt-1">
-              <UsersAvatarGroup :users="authorizedUsers" :max="8" :size="28" />
-              <div class="flex flex-wrap gap-1">
-                <span
-                  v-for="u in authorizedUsers.slice(0, 5)"
-                  :key="u.id"
-                  class="inline-flex items-center bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground"
-                >
-                  {{ u.name }}
-                </span>
-                <span v-if="authorizedUsers.length > 5" class="text-xs text-muted-foreground self-center">
-                  +{{ authorizedUsers.length - 5 }} {{ $t('kitų') }}
-                </span>
-              </div>
-            </div>
-            <p v-else class="text-xs text-muted-foreground italic">
-              {{ $t('Pasirink bent vieną rolę, kad pamatytum narius, turėsiančius prieigą.') }}
-            </p>
-          </div>
-        </div>
       </div>
     </FormSection>
 
@@ -272,23 +157,147 @@
       </div>
     </FormSection>
 
+    <template #aside>
+      <FormPanel :title="$t('Klasifikacija')" :icon="Layers" title-class="text-brand">
+        <FormFieldWrapper id="support_request_type_id" :label="$t('Tipas')" required :error="form.errors.support_request_type_id">
+          <Select v-model="form.support_request_type_id">
+            <SelectTrigger id="support_request_type_id">
+              <SelectValue :placeholder="$t('Pasirinkti tipą')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="t in typeOptions" :key="t.value" :value="t.value">
+                {{ t.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="support_request_area_id" :label="$t('Sritis')" required :error="form.errors.support_request_area_id">
+          <Select v-model="form.support_request_area_id">
+            <SelectTrigger id="support_request_area_id">
+              <SelectValue :placeholder="$t('Pasirinkti sritį')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="a in areaOptions" :key="a.value" :value="a.value">
+                {{ a.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+      </FormPanel>
+
+      <FormPanel :title="$t('Matomumas')" :icon="Eye" title-class="text-brand">
+        <FormFieldWrapper id="visibility" :label="$t('Matomumas')" required :error="form.errors.visibility">
+          <RadioGroup v-model="form.visibility" class="grid gap-2.5">
+            <label
+              v-for="opt in visibilityOptions"
+              :key="opt.value"
+              class="flex min-h-11 items-start gap-3 border p-3.5 transition-colors"
+              :class="[
+                opt.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                form.visibility === opt.value
+                  ? 'border-foreground bg-muted/50'
+                  : 'border-border bg-card hover:bg-muted/40 hover:border-muted-foreground/40',
+              ]"
+            >
+              <RadioGroupItem :id="`visibility-${opt.value}`" :value="opt.value" :disabled="opt.disabled" class="mt-0.5" />
+              <div class="flex-1 select-none">
+                <div class="flex items-center gap-1.5">
+                  <component :is="opt.icon" class="h-4 w-4 text-muted-foreground" />
+                  <span class="text-sm font-medium text-foreground">{{ opt.label }}</span>
+                </div>
+                <p class="mt-1 text-xs text-muted-foreground leading-relaxed">
+                  {{ opt.description }}
+                </p>
+              </div>
+            </label>
+          </RadioGroup>
+
+          <div class="mt-3 flex items-start gap-2 border-l-2 border-border bg-muted/50 p-2.5 text-xs text-muted-foreground">
+            <Info class="h-4 w-4 shrink-0 mt-0.5" />
+            <span class="leading-relaxed">
+              <!-- eslint-disable-next-line max-len -->
+              {{ $t('Viešesnis matomumas (rolėms arba visiems nariams) leidžia kitiems matyti žinomas problemas, išvengti pasikartojančių pranešimų ir numatyti galimus sistemos sutrikimus (regresijas).') }}
+            </span>
+          </div>
+        </FormFieldWrapper>
+
+        <div v-if="form.visibility === 'roles'" class="space-y-4 pt-2 border-t">
+          <div>
+            <Label class="text-sm font-medium mb-2 block">{{ $t('Pasirinkti roles:') }}</Label>
+            <div v-if="roles.length > 0" class="grid gap-2">
+              <label
+                v-for="role in roles"
+                :key="role.id"
+                class="flex min-h-11 items-center gap-2 border p-2.5 text-sm cursor-pointer hover:bg-muted/50 transition-colors"
+              >
+                <Checkbox
+                  :model-value="form.roles.includes(role.id)"
+                  @update:model-value="(checked: boolean) => toggleRole(role.id, checked)"
+                />
+                <span class="truncate font-medium">{{ role.name }}</span>
+              </label>
+            </div>
+            <p v-else class="text-xs text-muted-foreground italic">
+              {{ $t('Neturite priskirtų rolių, kurioms galėtumėte suteikti prieigą.') }}
+            </p>
+            <p v-if="form.errors.roles" class="text-xs text-destructive mt-1">
+              {{ form.errors.roles }}
+            </p>
+          </div>
+
+          <div class="border border-border bg-background p-3.5 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {{ $t('Nariai, kurie galės matyti ir komentuoti šį pranešimą') }}
+              </span>
+              <span class="text-xs font-medium text-muted-foreground">
+                {{ authorizedUsers.length }} {{ $t('nariai') }}
+              </span>
+            </div>
+
+            <div v-if="authorizedUsers.length > 0" class="flex flex-wrap items-center gap-2 pt-1">
+              <UsersAvatarGroup :users="authorizedUsers" :max="8" :size="28" />
+              <div class="flex flex-wrap gap-1">
+                <span
+                  v-for="u in authorizedUsers.slice(0, 5)"
+                  :key="u.id"
+                  class="inline-flex items-center bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground"
+                >
+                  {{ u.name }}
+                </span>
+                <span v-if="authorizedUsers.length > 5" class="text-xs text-muted-foreground self-center">
+                  +{{ authorizedUsers.length - 5 }} {{ $t('kitų') }}
+                </span>
+              </div>
+            </div>
+            <p v-else class="text-xs text-muted-foreground italic">
+              {{ $t('Pasirink bent vieną rolę, kad pamatytum narius, turėsiančius prieigą.') }}
+            </p>
+          </div>
+        </div>
+      </FormPanel>
+    </template>
   </FormPage>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onBeforeUnmount } from 'vue';
-import { useForm, router, usePage } from '@inertiajs/vue3';
-import { Globe, Info, Lock, Upload, Users, X } from 'lucide-vue-next';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Eye, Globe, Info, Layers, Lock, Upload, Users, X } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { FormSection } from '@/Components/Patterns';
-import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
+import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import { Button } from '@/Components/ui/button';
-import { Label } from '@/Components/ui/label';
 import { Checkbox } from '@/Components/ui/checkbox';
+import { fieldSurfaceClass } from '@/Components/ui/control';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 import {
   Select,
@@ -297,8 +306,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/Components/ui/select';
-import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import { Textarea } from '@/Components/ui/textarea';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { supportRequestStatuses } from '@/Constants/statuses';
 import type {
   SupportRequestItem,
   SupportRequestMediaFile,
@@ -331,6 +341,15 @@ const currentLocale = computed(() => (page.props as { app?: { locale?: string } 
 
 const resolveName = (name: string | Record<string, string> | undefined): string => {
   return getTranslatedValue(name, currentLocale.value, '—');
+};
+
+const fieldIds = {
+  support_request_type_id: 'support_request_type_id',
+  support_request_area_id: 'support_request_area_id',
+  title: 'title',
+  description: 'description',
+  context_url: 'context_url',
+  visibility: 'visibility',
 };
 
 // Mirrors InstitutionForm options pattern so taxonomy items are translated by locale
@@ -374,7 +393,7 @@ const visibilityOptions = computed(() => [
   },
 ]);
 
-const isEditing = computed(() => !!props.supportRequest?.id);
+const isEditing = computed(() => Boolean(props.supportRequest?.id));
 
 const visibilityValue = computed(() => {
   const vis = props.supportRequest?.visibility;

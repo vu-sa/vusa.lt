@@ -1,6 +1,7 @@
 <template>
   <FormPage
     :title="isEditing ? institutionTitle : $t('Nauja institucija')"
+    :bar-title
     :head-title="isEditing ? institutionTitle : $t('Nauja institucija')"
     :lead="isEditing ? undefined : $t('Sukurk institucijos įrašą; pareigybes, kadencijas ir sekretorius pridėsi jos puslapyje.')"
     :entity-type="ModelEnum.INSTITUTION"
@@ -14,119 +15,46 @@
     :locale="activeLocale"
     :available-locales="['lt', 'en']"
     :missing-locale-counts
+    :created-at="isEditing ? (source.created_at as string | undefined) : undefined"
+    :updated-at="isEditing ? (source.updated_at as string | undefined) : undefined"
+    :activity-subject="isEditing && institution?.id ? { type: 'institution', id: institution.id } : undefined"
     @update:locale="activeLocale = $event"
     @submit="emit('submit:form', form)"
   >
+    <template v-if="isEditing" #title-status>
+      <StatusBadge :status="institutionStatus" />
+    </template>
+
     <FormSection
       :title="$t('Kas tai?')"
       :description="$t('Institucija gali būti bet koks VU SA arba VU organas: padalinys, darbo grupė, studijų programos komitetas ir pan.')"
     >
-      <div class="space-y-1.5">
-        <Label for="institution-name" class="text-sm font-medium">
-          {{ $t('Pavadinimas') }} ({{ activeLocale.toUpperCase() }}) *
-        </Label>
-        <Input id="institution-name" v-model="form.name[activeLocale]" />
-        <p v-if="form.errors[`name.${activeLocale}`]" class="text-xs text-destructive">
-          {{ form.errors[`name.${activeLocale}`] }}
-        </p>
-      </div>
+      <FormFieldWrapper
+        id="institution-name"
+        :label="`${$t('Pavadinimas')} (${activeLocale.toUpperCase()})`"
+        required
+        :error="form.errors[`name.${activeLocale}`]"
+      >
+        <Input id="institution-name" v-model="form.name[activeLocale]" :class="['h-11', fieldSurfaceClass]" />
+      </FormFieldWrapper>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <Label for="institution-short-name" class="text-sm font-medium">
-              {{ $t('forms.fields.short_name') }} ({{ activeLocale.toUpperCase() }})
-            </Label>
-            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
-          </div>
-          <Input id="institution-short-name" v-model="form.short_name[activeLocale]" />
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Trumpas pavadinimas rodomas, kai vietos mažai.') }}
-          </p>
-          <p v-if="form.errors[`short_name.${activeLocale}`]" class="text-xs text-destructive">
-            {{ form.errors[`short_name.${activeLocale}`] }}
-          </p>
-        </div>
+      <FormFieldWrapper
+        id="institution-short-name"
+        :label="`${$t('forms.fields.short_name')} (${activeLocale.toUpperCase()}) (${$t('neprivaloma')})`"
+        :hint="$t('Trumpas pavadinimas rodomas, kai vietos mažai.')"
+        :error="form.errors[`short_name.${activeLocale}`]"
+      >
+        <Input id="institution-short-name" v-model="form.short_name[activeLocale]" :class="['h-11', fieldSurfaceClass]" />
+      </FormFieldWrapper>
 
-        <div class="space-y-1.5">
-          <Label for="institution-tenant" class="text-sm font-medium">
-            {{ $t('Padalinys') }} *
-          </Label>
-          <Select v-model="tenantIdString">
-            <SelectTrigger id="institution-tenant">
-              <SelectValue :placeholder="$t('Pasirinkite padalinį')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
-                {{ tenant.shortname }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p v-if="form.errors.tenant_id" class="text-xs text-destructive">
-            {{ form.errors.tenant_id }}
-          </p>
-        </div>
-      </div>
-
-      <div class="flex items-start gap-2.5">
-        <Checkbox
-          id="institution-active"
-          class="mt-0.5"
-          :model-value="isActive"
-          @update:model-value="isActive = $event === true"
-        />
-        <div class="space-y-0.5">
-          <Label for="institution-active" class="cursor-pointer text-sm font-normal">
-            {{ $t('Aktyvi institucija') }}
-          </Label>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Neaktyvios institucijos nebelaukiamos posėdžių ir nerodomos viešame sąraše.') }}
-          </p>
-        </div>
-      </div>
-    </FormSection>
-
-    <FormSection
-      :title="$t('Kokia tai institucija?')"
-      :description="$t('Tipas nustato, kokią papildomą informaciją galima užpildyti.')"
-      :badge="$t('Matoma vusa.lt')"
-      public-marker
-    >
-      <div class="space-y-1.5">
-        <Label for="institution-types" class="text-sm font-medium">
-          {{ $t('Institucijos tipas') }}
-        </Label>
-        <MultiSelect
-          id="institution-types"
-          v-model="selectedTypes"
-          :options="institutionTypeOptions"
-          :placeholder="$t('Pasirinkite tipus')"
-        />
-        <!-- The scope decides whether the contact fields below appear at all; without it stated
-             they would simply vanish for no visible reason. -->
-        <div v-if="resolvedScope" class="flex flex-wrap items-center gap-2 pt-1">
-          <InstitutionScopeBadge :scope="resolvedScope" />
-          <span class="text-xs text-muted-foreground">
-            {{ showContactFields
-              ? $t('forms.helpers.governance_scope_internal_fields')
-              : $t('forms.helpers.governance_scope_external_fields') }}
-          </span>
-        </div>
-        <p v-if="form.errors.types" class="text-xs text-destructive">
-          {{ form.errors.types }}
-        </p>
-      </div>
-
-      <div class="space-y-2">
-        <Label class="text-sm font-medium">
-          {{ $t('Aprašymas') }} ({{ activeLocale.toUpperCase() }})
-        </Label>
-        <TiptapEditor v-if="activeLocale === 'lt'" v-model="form.description.lt" preset="full" html />
-        <TiptapEditor v-else v-model="form.description.en" preset="full" html />
-        <p v-if="form.errors[`description.${activeLocale}`]" class="text-xs text-destructive">
-          {{ form.errors[`description.${activeLocale}`] }}
-        </p>
-      </div>
+      <FormFieldWrapper
+        id="institution-description"
+        :label="`${$t('Aprašymas')} (${activeLocale.toUpperCase()})`"
+        :error="form.errors[`description.${activeLocale}`]"
+      >
+        <TiptapEditor v-if="activeLocale === 'lt'" v-model="form.description.lt" preset="full" html framed />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" html framed />
+      </FormFieldWrapper>
     </FormSection>
 
     <FormSection
@@ -137,8 +65,7 @@
       public-marker
     >
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="space-y-1.5">
-          <Label class="text-sm font-medium">{{ $t('Nuotrauka') }}</Label>
+        <FormFieldWrapper id="institution-image" :label="$t('Nuotrauka')">
           <ImageUpload
             v-model:url="form.image_url"
             v-model:focal-point-value="form.image_focal_point"
@@ -148,71 +75,102 @@
             focal-point
             folder="institutions"
           />
-        </div>
-        <div class="space-y-1.5">
-          <Label class="text-sm font-medium">{{ $t('Logotipas') }}</Label>
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="institution-logo" :label="$t('Logotipas')">
           <ImageUpload v-model:url="form.logo_url" mode="immediate" cropper compress folder="institutions" />
-        </div>
+        </FormFieldWrapper>
       </div>
 
-      <div class="space-y-1.5">
-        <Label for="institution-address" class="text-sm font-medium">
-          {{ $t('Adresas') }} ({{ activeLocale.toUpperCase() }})
-        </Label>
-        <Input id="institution-address" v-model="form.address[activeLocale]" />
-      </div>
+      <FormFieldWrapper
+        id="institution-address"
+        :label="`${$t('Adresas')} (${activeLocale.toUpperCase()})`"
+      >
+        <Input id="institution-address" v-model="form.address[activeLocale]" :class="['h-11', fieldSurfaceClass]" />
+      </FormFieldWrapper>
 
-      <div class="space-y-1.5">
-        <Label for="institution-hours" class="text-sm font-medium">
-          {{ $t('Darbo laikas') }} ({{ activeLocale.toUpperCase() }})
-        </Label>
-        <Textarea id="institution-hours" v-model="form.working_hours[activeLocale]" rows="3" />
-      </div>
+      <FormFieldWrapper
+        id="institution-hours"
+        :label="`${$t('Darbo laikas')} (${activeLocale.toUpperCase()})`"
+      >
+        <Textarea id="institution-hours" v-model="form.working_hours[activeLocale]" rows="3" :class="fieldSurfaceClass" />
+      </FormFieldWrapper>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="space-y-1.5">
-          <Label for="institution-email" class="text-sm font-medium">{{ $t('El. paštas') }}</Label>
-          <Input id="institution-email" v-model="form.email" type="email" placeholder="info@vusa.lt" />
-          <p v-if="form.errors.email" class="text-xs text-destructive">
-            {{ form.errors.email }}
-          </p>
-        </div>
-        <div class="space-y-1.5">
-          <Label for="institution-phone" class="text-sm font-medium">{{ $t('Telefonas') }}</Label>
-          <Input id="institution-phone" v-model="form.phone" type="tel" placeholder="+370…" />
-        </div>
-        <div class="space-y-1.5">
-          <Label for="institution-website" class="text-sm font-medium">{{ $t('Svetainė') }}</Label>
-          <Input id="institution-website" v-model="form.website" type="url" placeholder="https://…" />
-          <p v-if="form.errors.website" class="text-xs text-destructive">
-            {{ form.errors.website }}
-          </p>
-        </div>
-        <div class="space-y-1.5">
-          <Label for="institution-facebook" class="text-sm font-medium">Facebook</Label>
-          <Input id="institution-facebook" v-model="form.facebook_url" type="url" placeholder="facebook.com/…" />
-        </div>
-        <div class="space-y-1.5">
-          <Label for="institution-instagram" class="text-sm font-medium">Instagram</Label>
-          <Input id="institution-instagram" v-model="form.instagram_url" type="url" placeholder="instagram.com/…" />
-        </div>
+        <FormFieldWrapper id="institution-email" :label="$t('El. paštas')" :error="form.errors.email">
+          <Input id="institution-email" v-model="form.email" type="email" placeholder="info@vusa.lt" :class="['h-11', fieldSurfaceClass]" />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="institution-phone" :label="$t('Telefonas')">
+          <Input id="institution-phone" v-model="form.phone" type="tel" placeholder="+370…" :class="['h-11', fieldSurfaceClass]" />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="institution-website" :label="$t('Svetainė')" :error="form.errors.website">
+          <Input id="institution-website" v-model="form.website" type="url" placeholder="https://…" :class="['h-11', fieldSurfaceClass]" />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="institution-facebook" :label="$t('Facebook')">
+          <Input id="institution-facebook" v-model="form.facebook_url" type="url" placeholder="facebook.com/…" :class="['h-11', fieldSurfaceClass]" />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="institution-instagram" :label="$t('Instagram')">
+          <Input id="institution-instagram" v-model="form.instagram_url" type="url" placeholder="instagram.com/…" :class="['h-11', fieldSurfaceClass]" />
+        </FormFieldWrapper>
       </div>
     </FormSection>
 
-    <template #advanced>
-      <div class="space-y-1.5">
-        <Label for="institution-alias" class="text-sm font-medium">{{ $t('Techninė žymė') }}</Label>
-        <Input id="institution-alias" v-model="form.alias" type="text" placeholder="vu-sa-mif" />
-        <p class="text-xs text-muted-foreground">
-          {{ $t('Unikali žymė naudojama URL adresuose.') }}
-        </p>
-        <p v-if="form.errors.alias" class="text-xs text-destructive">
-          {{ form.errors.alias }}
-        </p>
-      </div>
+    <template #aside>
+      <FormPanel :title="$t('Būsena ir padalinys')" :icon="Building2" title-class="text-brand">
+        <FormToggleRow
+          v-model="isActive"
+          :label="$t('Aktyvi institucija')"
+          :hint="$t('Neaktyvios institucijos nebelaukiamos posėdžių ir nerodomos viešame sąraše.')"
+        />
 
-      <div class="space-y-1.5">
-        <Label for="institution-periodicity" class="text-sm font-medium">{{ $t('Susitikimų periodiškumas') }}</Label>
+        <FormFieldWrapper id="institution-tenant" :label="$t('Padalinys')" required :error="form.errors.tenant_id">
+          <Select v-model="tenantIdString">
+            <SelectTrigger id="institution-tenant">
+              <SelectValue :placeholder="$t('Pasirinkite padalinį')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
+                {{ tenant.shortname }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+      </FormPanel>
+
+      <FormPanel :title="$t('Tipas ir valdymas')" :icon="Layers" title-class="text-brand">
+        <FormFieldWrapper id="institution-types" :label="$t('Institucijos tipas')" :error="form.errors.types">
+          <MultiSelect
+            id="institution-types"
+            v-model="selectedTypes"
+            :options="institutionTypeOptions"
+            :placeholder="$t('Pasirinkite tipus')"
+          />
+          <div v-if="resolvedScope" class="flex flex-wrap items-center gap-2 pt-1">
+            <InstitutionScopeBadge :scope="resolvedScope" />
+            <span class="text-xs text-muted-foreground">
+              {{ showContactFields
+                ? $t('forms.helpers.governance_scope_internal_fields')
+                : $t('forms.helpers.governance_scope_external_fields') }}
+            </span>
+          </div>
+        </FormFieldWrapper>
+      </FormPanel>
+    </template>
+
+    <template #advanced>
+      <FormFieldWrapper id="institution-alias" :label="$t('Techninė žymė')" :hint="$t('Unikali žymė naudojama URL adresuose.')" :error="form.errors.alias">
+        <Input id="institution-alias" v-model="form.alias" type="text" placeholder="vu-sa-mif" :class="fieldSurfaceClass" />
+      </FormFieldWrapper>
+
+      <FormFieldWrapper
+        id="institution-periodicity"
+        :label="$t('Susitikimų periodiškumas')"
+        :hint="$t('Perrašo tipo nustatymą. Jei nenurodyta, naudojamas tipo arba numatytasis 30 dienų nustatymas.')"
+      >
         <div class="flex items-center gap-2">
           <Input
             id="institution-periodicity"
@@ -221,31 +179,23 @@
             :min="1"
             :max="365"
             placeholder="30"
-            class="w-24"
+            :class="['w-24', fieldSurfaceClass]"
           />
           <span class="text-sm text-muted-foreground">{{ $t('dienų') }}</span>
         </div>
-        <p class="text-xs text-muted-foreground">
-          {{ $t('Perrašo tipo nustatymą. Jei nenurodyta, naudojamas tipo arba numatytasis 30 dienų nustatymas.') }}
-        </p>
-      </div>
+      </FormFieldWrapper>
     </template>
 
     <template v-if="isEditing && enableDelete" #danger-zone>
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <h4 class="text-sm font-semibold text-destructive">
-            {{ $t('Ištrinti instituciją') }}
-          </h4>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Institucija bus perkelta į šiukšlinę; pareigybės ir posėdžiai liks.') }}
-          </p>
-        </div>
-        <Button type="button" variant="destructive" size="sm" class="u-touch shrink-0" @click="deleteConfirmOpen = true">
-          <Trash2 class="mr-1.5 size-4" />
-          {{ $t('Ištrinti') }}
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+        @click="deleteConfirmOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('Ištrinti instituciją') }}
+      </Button>
 
       <ConfirmDialog
         v-model:open="deleteConfirmOpen"
@@ -260,24 +210,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Trash2 } from 'lucide-vue-next';
+import { Building2, CircleCheck, CircleSlash, Layers, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
+import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
-import { Checkbox } from '@/Components/ui/checkbox';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
+import type { StatusPresentation } from '@/Constants/statuses';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
 interface Translated { lt: string; en: string }
@@ -337,6 +291,7 @@ const initial = () => ({
 const form = props.rememberKey ? useForm(props.rememberKey, initial()) : useForm(initial());
 
 const institutionTitle = computed(() => form.name.lt || form.name.en || '');
+const barTitle = computed(() => (isEditing.value ? (institutionTitle.value || $t('Institucija')) : $t('Nauja institucija')));
 
 // Error keys that are not the id of the field they belong to.
 const fieldIds = {
@@ -344,11 +299,18 @@ const fieldIds = {
   'name.en': 'institution-name',
   'short_name.lt': 'institution-short-name',
   'short_name.en': 'institution-short-name',
+  'description.lt': 'institution-description',
+  'description.en': 'institution-description',
   'tenant_id': 'institution-tenant',
   'types': 'institution-types',
+  'address.lt': 'institution-address',
+  'address.en': 'institution-address',
+  'working_hours.lt': 'institution-hours',
+  'working_hours.en': 'institution-hours',
   'alias': 'institution-alias',
   'email': 'institution-email',
   'website': 'institution-website',
+  'phone': 'institution-phone',
 };
 
 const missingLocaleCounts = computed(() => ({
@@ -363,6 +325,12 @@ const isActive = computed({
     form.is_active = value ? 1 : 0;
   },
 });
+
+const institutionStatus = computed<StatusPresentation>(() => ({
+  label: isActive.value ? $t('Aktyvi') : $t('Neaktyvi'),
+  role: isActive.value ? 'success' : 'neutral',
+  icon: isActive.value ? CircleCheck : CircleSlash,
+}));
 
 const tenantIdString = computed({
   get: () => (form.tenant_id ? String(form.tenant_id) : ''),

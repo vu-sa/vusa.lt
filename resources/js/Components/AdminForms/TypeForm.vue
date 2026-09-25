@@ -1,24 +1,24 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Naujas turinio tipas') : (localizedTitle || $t('Tipas'))"
+    :bar-title="isCreate ? $t('Naujas turinio tipas') : (localizedTitle || undefined)"
     :entity-type="ModelEnum.TYPE"
     :back-href="route('types.index')"
     :back-label="$t('Tipai')"
     :processing="form.processing"
     :dirty="form.isDirty"
     :errors="form.errors"
+    :field-ids
     :mode="isCreate ? 'create' : 'edit'"
     :locale="activeLocale"
     :available-locales="['lt', 'en']"
     :missing-locale-counts
-    max-width="4xl"
+    :created-at="!isCreate ? (type?.created_at as string | undefined) : undefined"
+    :updated-at="!isCreate ? (type?.updated_at as string | undefined) : undefined"
+    :activity-subject="!isCreate && form.id ? { type: 'type', id: String(form.id) } : undefined"
     @update:locale="activeLocale = $event"
     @submit="$emit('submit:form', form)"
   >
-    <template v-if="!isCreate" #header-actions>
-      <ActivityLogSheet subject-type="type" :subject-id="form.id" />
-    </template>
-
     <FormSection :title="$t('forms.context.main_info')" :description="$t('forms.helpers.type_main_info')">
       <FormFieldWrapper
         id="title"
@@ -30,6 +30,7 @@
           id="title"
           v-model="form.title[activeLocale]"
           :placeholder="activeLocale === 'lt' ? 'Studentų atstovų organas' : 'Student representative body'"
+          :class="['h-11', fieldSurfaceClass]"
         />
       </FormFieldWrapper>
 
@@ -38,82 +39,88 @@
         :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
         :error="form.errors[`description.${activeLocale}`]"
       >
-        <TiptapEditor v-if="activeLocale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
-        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
+        <TiptapEditor v-if="activeLocale === 'lt'" v-model="form.description.lt" preset="full" html framed />
+        <TiptapEditor v-else v-model="form.description.en" preset="full" html framed />
       </FormFieldWrapper>
     </FormSection>
 
-    <FormSection :title="$t('forms.sections.type_parameters')" :description="$t('forms.helpers.type_parameters_desc')">
-      <FormFieldWrapper id="model_type" :label="$t('forms.fields.model_type')" required :error="form.errors.model_type">
-        <Select v-model="modelTypeString">
-          <SelectTrigger id="model_type">
-            <SelectValue placeholder="Institucija" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="opt in modelDefaults" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
-      <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')" :error="form.errors.parent_id">
-        <Select v-model="parentIdString">
-          <SelectTrigger id="parent_id">
-            <SelectValue placeholder="Studentų atstovybė" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">
-              {{ $t('Nėra') }}
-            </SelectItem>
-            <SelectItem v-for="opt in parentTypeOptions" :key="opt.id" :value="String(opt.id)">
-              {{ getTranslatedValue(opt.title) }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
-    </FormSection>
+    <template #aside>
+      <FormPanel :title="$t('forms.sections.type_parameters')" :icon="SlidersHorizontal" title-class="text-brand">
+        <FormFieldWrapper id="model_type" :label="$t('forms.fields.model_type')" required :error="form.errors.model_type">
+          <Select v-model="modelTypeString">
+            <SelectTrigger id="model_type">
+              <SelectValue placeholder="Institucija" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in modelDefaults" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
 
-    <FormSection
-      v-if="form.model_type === ModelEnum.INSTITUTION"
-      :title="$t('forms.sections.institution_settings')"
-      :description="$t('forms.helpers.institution_settings_desc')"
-    >
-      <FormFieldWrapper
-        id="governance_scope"
-        :label="$t('forms.fields.governance_scope')"
-        :hint="$t('forms.helpers.governance_scope_hint')"
+        <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')" :error="form.errors.parent_id">
+          <Select v-model="parentIdString">
+            <SelectTrigger id="parent_id">
+              <SelectValue placeholder="Studentų atstovybė" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">
+                {{ $t('Nėra') }}
+              </SelectItem>
+              <SelectItem v-for="opt in parentTypeOptions" :key="opt.id" :value="String(opt.id)">
+                {{ getTranslatedValue(opt.title) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+      </FormPanel>
+
+      <FormPanel
+        v-if="form.model_type === ModelEnum.INSTITUTION"
+        :title="$t('forms.sections.institution_settings')"
+        :icon="Building2"
+        title-class="text-brand"
       >
-        <Select v-model="governanceScope">
-          <SelectTrigger id="governance_scope">
-            <SelectValue :placeholder="$t('forms.options.governance_scope_inherit')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="option in governanceScopeOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
-      <FormFieldWrapper
-        id="meeting_periodicity_days"
-        :label="$t('forms.fields.meeting_periodicity_days')"
-        :hint="$t('forms.helpers.meeting_periodicity_hint')"
-      >
-        <NumberField v-model="extraAttributesPeriodicityDays" :min="1" :max="365" />
-      </FormFieldWrapper>
-      <div class="border border-border">
-        <FormToggleRow
-          v-model="enableSiblingRelationships"
-          :label="$t('forms.fields.enable_sibling_relationships')"
-          :hint="$t('forms.helpers.enable_sibling_hint')"
-        />
-        <FormToggleRow
-          v-model="enableCrossTenantSiblingRelationships"
-          :label="$t('forms.fields.enable_cross_tenant')"
-          :hint="$t('forms.helpers.enable_cross_tenant_hint')"
-        />
-      </div>
-    </FormSection>
+        <FormFieldWrapper
+          id="governance_scope"
+          :label="$t('forms.fields.governance_scope')"
+          :hint="$t('forms.helpers.governance_scope_hint')"
+        >
+          <Select v-model="governanceScope">
+            <SelectTrigger id="governance_scope">
+              <SelectValue :placeholder="$t('forms.options.governance_scope_inherit')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="option in governanceScopeOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          id="meeting_periodicity_days"
+          :label="$t('forms.fields.meeting_periodicity_days')"
+          :hint="$t('forms.helpers.meeting_periodicity_hint')"
+        >
+          <NumberField v-model="extraAttributesPeriodicityDays" :min="1" :max="365" />
+        </FormFieldWrapper>
+
+        <div class="border border-border">
+          <FormToggleRow
+            v-model="enableSiblingRelationships"
+            :label="$t('forms.fields.enable_sibling_relationships')"
+            :hint="$t('forms.helpers.enable_sibling_hint')"
+          />
+          <FormToggleRow
+            v-model="enableCrossTenantSiblingRelationships"
+            :label="$t('forms.fields.enable_cross_tenant')"
+            :hint="$t('forms.helpers.enable_cross_tenant_hint')"
+          />
+        </div>
+      </FormPanel>
+    </template>
 
     <template #advanced>
       <FormFieldWrapper
@@ -122,24 +129,20 @@
         :hint="$t('forms.helpers.technical_slug_hint')"
         :error="form.errors.slug"
       >
-        <Input id="slug" v-model="form.slug" type="text" placeholder="pvz.: turinio-tipas" />
+        <Input id="slug" v-model="form.slug" type="text" placeholder="pvz.: turinio-tipas" :class="fieldSurfaceClass" />
       </FormFieldWrapper>
     </template>
 
     <template v-if="enableDelete && !isCreate" #danger-zone>
-      <div class="flex flex-wrap items-center justify-between gap-3 border border-destructive/20 bg-destructive/5 p-4">
-        <div>
-          <h3 class="text-sm font-semibold text-destructive">
-            {{ $t('Šalinti tipą') }}
-          </h3>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Tipas bus perkeltas į šiukšlinę.') }}
-          </p>
-        </div>
-        <Button variant="destructive" size="sm" type="button" class="pointer-coarse:min-h-11" @click="isDeleteDialogOpen = true">
-          {{ $t('Šalinti') }}
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        type="button"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+        @click="isDeleteDialogOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('Šalinti tipą') }}
+      </Button>
     </template>
   </FormPage>
 
@@ -154,9 +157,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Building2, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 import TiptapEditor from '../TipTap/TiptapEditor.vue';
 
@@ -164,14 +168,15 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormToggleRow } from '@/Components/Patterns';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
-import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { Button } from '@/Components/ui/button';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { modelTypeLabel, modelTypes } from '@/Types/formOptions';
 
 defineEmits<{
@@ -189,6 +194,16 @@ const props = defineProps<{
 const isCreate = computed(() => props.rememberKey === 'CreateType');
 const isDeleteDialogOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
+
+const fieldIds = {
+  'title.lt': 'title',
+  'title.en': 'title',
+  'description.lt': 'description',
+  'description.en': 'description',
+  'model_type': 'model_type',
+  'parent_id': 'parent_id',
+  'slug': 'slug',
+};
 
 interface Translations { lt: string; en: string }
 
