@@ -1,11 +1,11 @@
 <template>
-  <div class="flex min-h-9 flex-wrap items-center gap-2" data-slot="collection-active-chips">
-    <div class="flex min-w-0 flex-wrap items-center gap-2">
+  <div class="flex min-h-9 min-w-0 items-center gap-2 overflow-x-auto lg:flex-wrap lg:overflow-visible" data-slot="collection-active-chips">
+    <div class="flex min-w-0 flex-nowrap items-center gap-2 lg:flex-wrap">
       <template v-if="chips.length > 0">
         <span
           v-for="chip in chips"
           :key="chip.id"
-          class="inline-flex h-8 items-center gap-1 border border-border bg-background pl-2.5 text-xs font-medium text-foreground"
+          class="inline-flex h-8 shrink-0 items-center gap-1 border border-border bg-background pl-2.5 text-xs font-medium text-foreground pointer-coarse:min-h-11"
         >
           {{ chip.label }}
           <button
@@ -19,7 +19,7 @@
         </span>
         <button
           type="button"
-          class="inline-flex h-8 items-center gap-1.5 px-1 text-xs font-bold text-brand hover:text-foreground pointer-coarse:min-h-11"
+          class="inline-flex h-8 shrink-0 items-center gap-1.5 px-1 text-xs font-bold text-brand hover:text-foreground pointer-coarse:min-h-11"
           @click="emit('clear')"
         >
           <X class="size-3.5" aria-hidden="true" />

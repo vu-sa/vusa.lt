@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
+use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Policies\ProblemPolicy;
@@ -33,10 +35,12 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, ProblemCategory> $categories
+ * @property-read Collection<int, Comment> $comments
  * @property-read User|null $createdBy
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, Institution> $institutions
  * @property-read User|null $responsibleUser
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
@@ -55,9 +59,9 @@ use Spatie\Activitylog\Support\LogOptions;
  * @mixin \Eloquent
  */
 #[Unguarded]
-class Problem extends Model
+class Problem extends Model implements Commentable
 {
-    use HasFactory, HasTranslations, HasUlids, LogsModelActivity, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasTranslations, HasUlids, LogsModelActivity, Searchable, SoftDeletes;
 
     public $translatable = ['title', 'description', 'solution', 'steps_taken'];
 

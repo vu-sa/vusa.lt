@@ -146,14 +146,15 @@ export function useProductTour(options: ProductTourOptions) {
     // Resolve steps at tour start time (lazy evaluation for translations)
     const rawSteps = resolveSteps();
 
-    // Skip steps whose target elements are hidden or absent from the DOM
-    const steps = rawSteps.filter((step) => {
-      if (!step.element || typeof window === 'undefined') return true;
-      const el = typeof step.element === 'string'
-        ? document.querySelector(step.element)
-        : step.element;
-      if (!el) return false;
-      return window.getComputedStyle(el).display !== 'none';
+    // An anchor can exist in both the phone and the desktop chrome: target the copy that is actually
+    // rendered, and skip the step when none is (a hidden ancestor leaves no client rects).
+    const steps = rawSteps.flatMap((step) => {
+      if (!step.element || typeof window === 'undefined') return [step];
+      const candidates = typeof step.element === 'string'
+        ? [...document.querySelectorAll(step.element)]
+        : [step.element as Element];
+      const visible = candidates.find(el => el.getClientRects().length > 0);
+      return visible ? [{ ...step, element: visible }] : [];
     });
 
     if (isActive.value || steps.length === 0) return;

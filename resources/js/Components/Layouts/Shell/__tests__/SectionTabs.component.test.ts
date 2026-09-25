@@ -27,13 +27,21 @@ describe('SectionTabs', () => {
   it('renders one tab per section of the workspace', () => {
     const wrapper = mount(SectionTabs, { props: { workspace: pradzia, activeSection: pradzia.sections[0] } });
 
-    expect(wrapper.findAll('a').map(link => link.text())).toEqual([
+    expect(wrapper.findAll('li a').map(link => link.text())).toEqual([
       'shell.sections.apzvalga',
       'shell.sections.uzduotys',
       'shell.sections.pranesimai',
     ]);
-    expect(wrapper.findAll('a svg')).toHaveLength(3);
-    expect(wrapper.findAll('a').every(link => link.classes().includes('font-bold'))).toBe(true);
+    expect(wrapper.findAll('li a svg')).toHaveLength(3);
+    expect(wrapper.findAll('li a').every(link => link.classes().includes('font-bold'))).toBe(true);
+  });
+
+  it('ends Pradžia\'s row with Visi skyriai, and no other workspace\'s', () => {
+    const allSections = (props: Record<string, unknown>) =>
+      mount(SectionTabs, { props }).find('[data-slot="section-tabs-all-sections"]');
+
+    expect(allSections({ workspace: pradzia, activeSection: pradzia.sections[0] }).text()).toBe('shell.chrome.all_sections');
+    expect(allSections({ workspace: atstovavimas, activeSection: atstovavimas.sections[0] }).exists()).toBe(false);
   });
 
   it('draws a separator before a section that starts a group, but never before the first tab', () => {

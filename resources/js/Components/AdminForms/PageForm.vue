@@ -220,7 +220,7 @@
 
       <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-brand" flush>
         <div class="flex flex-col gap-2 border-b border-border p-4" data-slot="form-field">
-          <Label class="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">{{ $t('Išdėstymas') }}</Label>
+          <Label class="text-sm font-bold text-foreground">{{ $t('Išdėstymas') }}</Label>
           <VisualOptionSelect v-model="form.layout" :options="layoutOptions" :columns="3" />
         </div>
 

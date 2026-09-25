@@ -6,12 +6,6 @@
 
     <AccessChangeBand v-if="accessChanges.length > 0" :changes="accessChanges" />
 
-    <FirstLoginChecklist
-      v-if="onboardingChecklist"
-      :checklist="onboardingChecklist"
-      @record-meeting="actionWindow.open({ flow: 'meeting.create' })"
-    />
-
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-primary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <AttentionQueue
@@ -82,7 +76,6 @@ import AccessChangeBand from '@/Components/Home/AccessChangeBand.vue';
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
 import QuickAccess from '@/Components/Home/QuickAccess.vue';
-import FirstLoginChecklist from '@/Components/Home/FirstLoginChecklist.vue';
 import FollowedInstitutionsList from '@/Components/Home/FollowedInstitutionsList.vue';
 import HomeHero from '@/Components/Home/HomeHero.vue';
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
@@ -91,7 +84,6 @@ import SiteContentLists from '@/Components/Home/SiteContentLists.vue';
 import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
 import type {
   HomeAccessChange,
-  HomeChecklist,
   HomeFollowedInstitutions,
   HomeHeroImage,
   HomeMeeting,
@@ -119,7 +111,6 @@ interface TaskStats {
 
 // The first response carries the queue and upcoming meetings; the rest arrives as one deferred group.
 const props = defineProps<{
-  onboardingChecklist: HomeChecklist | null;
   accessChanges: HomeAccessChange[];
   /** Set when the URL asked for the ActionWindow (a reminder's answer buttons, U21). */
   actionWindowLaunch: { flow: 'meeting.create' | 'check-in'; institution: ActionWindowInstitutionRef } | null;
@@ -153,93 +144,51 @@ const actionWindow = useActionWindow();
 
 const isMobile = useIsMobile();
 
-const tourSteps = computed<DriveStep[]>(() => {
-  if (isMobile.value) {
-    return [
-      {
-        element: '[data-tour="command-palette"]',
-        popover: {
-          title: $t('tutorials.admin_home.command_palette.title'),
-          description: $t('tutorials.admin_home.command_palette.description'),
-        },
-      },
-      {
-        element: '[data-tour="action-create-mobile"]',
-        popover: {
-          title: $t('tutorials.admin_home.action_create.title'),
-          description: $t('tutorials.admin_home.action_create.description'),
-        },
-      },
-      {
-        element: '[data-tour="tasks-card"]',
-        popover: {
-          title: $t('tutorials.admin_home.tasks_card.title'),
-          description: $t('tutorials.admin_home.tasks_card.description'),
-        },
-      },
-      {
-        element: '[data-tour="mobile-menu"]',
-        popover: {
-          title: $t('tutorials.admin_home.account_menu.title'),
-          description: $t('tutorials.admin_home.account_menu.description'),
-        },
-      },
-    ];
-  }
-
-  return [
-    {
-      element: '[data-tour="workspace-picker"]',
-      popover: {
-        title: $t('tutorials.admin_home.workspaces.title'),
-        description: $t('tutorials.admin_home.workspaces.description'),
-      },
-    },
-    {
-      element: '[data-tour="command-palette"]',
-      popover: {
-        title: $t('tutorials.admin_home.command_palette.title'),
-        description: $t('tutorials.admin_home.command_palette.description'),
-      },
-    },
-    {
-      element: '[data-tour="action-create"]',
-      popover: {
-        title: $t('tutorials.admin_home.action_create.title'),
-        description: $t('tutorials.admin_home.action_create.description'),
-      },
-    },
-    {
-      element: '[data-tour="tasks-card"]',
-      popover: {
-        title: $t('tutorials.admin_home.tasks_card.title'),
-        description: $t('tutorials.admin_home.tasks_card.description'),
-      },
-    },
-    {
-      element: '[data-tour="account-menu"]',
-      popover: {
-        title: $t('tutorials.admin_home.account_menu.title'),
-        description: $t('tutorials.admin_home.account_menu.description'),
-      },
-    },
-  ];
+const tourStep = (key: string, anchor?: string): DriveStep => ({
+  element: anchor ? `[data-tour="${anchor}"]` : undefined,
+  popover: {
+    title: $t(`tutorials.admin_home.${key}.title`),
+    description: $t(`tutorials.admin_home.${key}.description`),
+  },
 });
 
-// The tour no longer starts by itself: the first-login checklist (U13) replaces it for new reps.
-// It stays one tap away behind the layout's help button.
-const { startTour } = useProductTour({
-  tourId: 'admin-welcome-v1',
+// Phones and desktops have different chrome, so each gets its own walk through it.
+const tourSteps = computed<DriveStep[]>(() => isMobile.value
+  ? [
+      tourStep('welcome'),
+      tourStep('section_switcher', 'section-switcher'),
+      tourStep('command_palette_mobile', 'command-palette-mobile'),
+      tourStep('action_create', 'action-create-mobile'),
+      tourStep('tasks_card', 'tasks-card'),
+      tourStep('mobile_menu', 'mobile-menu'),
+    ]
+  : [
+      tourStep('welcome'),
+      tourStep('workspaces', 'workspace-picker'),
+      tourStep('all_sections', 'all-sections'),
+      tourStep('command_palette', 'command-palette'),
+      tourStep('action_create', 'action-create'),
+      tourStep('tasks_card', 'tasks-card'),
+      tourStep('quick_actions', 'quick-actions'),
+      tourStep('account_menu', 'account-menu'),
+    ]);
+
+const { startTour, startTourIfNew } = useProductTour({
+  tourId: 'admin-welcome-v2',
   steps: () => tourSteps.value,
 });
 
 provideTour(startTour);
+
+/** Lets the shell and the first cards settle before driver.js measures them. */
+const TOUR_START_DELAY_MS = 1000;
 
 // A reminder's answer buttons open Pradžia with the window already on the right flow (U21).
 onMounted(() => {
   const launch = props.actionWindowLaunch;
 
   if (!launch) {
+    setTimeout(() => startTourIfNew(), TOUR_START_DELAY_MS);
     return;
   }
 

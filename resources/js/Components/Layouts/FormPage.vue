@@ -120,7 +120,7 @@
         <div
           v-if="availableLocales.length > 1"
           :class="[
-            'flex items-center gap-2 border px-3 py-2 text-xs font-medium',
+            'flex h-11 shrink-0 items-center gap-2 border px-3 text-xs font-medium pointer-coarse:h-12',
             'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
             !missingInCurrentLocale && 'invisible',
           ]"

@@ -170,7 +170,7 @@ function onInstitutionSelected(hits: NormalizedSearchHit[]): void {
 }
 
 const { startTour, startTourIfNew } = useProductTour({
-  tourId: 'dutiable-timeline-v1',
+  tourId: 'dutiable-timeline-v2',
   // A function, so the strings resolve when the tour runs rather than at import time.
   steps: () => [
     {

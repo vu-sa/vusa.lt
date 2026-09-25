@@ -5,6 +5,22 @@ lastUpdated: true
 
 # Platformos atnaujinimai
 
+## v2.23 — Patogesnis naršymas telefone (2026-09-26) {#v2-23}
+
+- ✨ **Kompaktiškesni sąrašų valdikliai telefone** — paieška ir filtrai telpa vienoje eilutėje, greiti filtrai yra filtrų lange, o aktyvius filtrus gali slinkti į šoną, todėl įrašus pamatai anksčiau.
+- ✨ **Aiškesni privalomi problemos laukai** — viena pastaba paaiškina žvaigždutę, o kalbos perspėjimas dabar tokio pat aukščio kaip perjungiklis.
+- 🔧 **Problemų komentarai vėl veikia** — problemos puslapyje galima matyti ir rašyti komentarus be klaidos „Commentable not found“
+- 🔧 **Atsakingo nario paieška veikia** — problemos formoje paieškos rezultatai matomi ir ieškant pagal el. paštą, o pasirinktas narys išsaugomas
+- ✨ **Patogesnis institucijų pasirinkimas problemose** — kuriant ar redaguojant problemą institucijas galima rasti per paiešką ir filtrus
+- ✨ **Nauja viršutinė juosta telefone** — vietoj logotipo ir skyrių eilutės matai, kurioje srityje ir skyriuje esi; paspaudęs greitai pereisi į kitą tos srities skyrių, o paieška liko šalia
+- ✨ **Puslapių turai grąžinti** — Pradžios ir pareigybių laikotarpių turai vėl parodomi visiems; ViSAK apžvalga gavo savo turą. Turą bet kada pakartosi per Pagalba, dabar ir telefone (Meniu → Pagalba)
+- ✨ **„Visi skyriai“ Pradžioje** — nuoroda į visų skyrių sąrašą dabar ir Pradžios skyrių juostos dešinėje, ne tik sričių meniu
+- ✨ **Pirmųjų žingsnių sąrašas pašalintas** — naujus narius Pradžioje pasitinka trumpas turas
+
+## v2.22 — Aiškesnės formų etiketės (2026-09-26) {#v2-22}
+
+- ✨ **Aiškesnės laukų etiketės** — redagavimo formose laukų pavadinimai rodomi įprastu raidžių dydžiu ir be išretintų tarpų tarp raidžių.
+
 ## v2.21 — Rezervacijų juodraščiai (2026-09-24) {#v2-21}
 
 - ⭐ **Pranešimų nustatymai kiekvienam pranešimui** — vietoj kategorijų lentelės matai konkrečius pranešimus, kuriuos gali gauti pagal savo pareigas, su paaiškinimu, kada kiekvienas ateina. Kiekvienam renkiesi el. laišką – „Iškart“, „Suvestinėje“ ar „Ne“ – ir push. Priminimų dienos ir valandos rodomos prie atitinkamų pranešimų, o push pasirinkimai neaktyvūs, kol neprijungei įrenginio

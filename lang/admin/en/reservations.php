@@ -196,6 +196,10 @@ return [
         'view' => 'View',
         'reserve' => 'Reserve',
         'fix_before_submit' => 'Fix the marked resources to submit.',
+        'name_required' => 'Enter a title.',
+        'description_required' => 'Enter a description.',
+        'resources_required' => 'Add at least one resource.',
+        'terms_required' => 'Tick the box to agree to the reservation terms.',
     ],
     'resource' => [
         'index_lead' => 'Equipment and other items you can borrow.',

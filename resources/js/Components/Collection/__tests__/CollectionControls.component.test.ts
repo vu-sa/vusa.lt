@@ -17,6 +17,7 @@ describe('collection controls', () => {
 
     const closedWithFilters = toggleOf(false, 2);
     expect(closedWithFilters.classes()).not.toContain('border-brand');
+    expect(closedWithFilters.attributes('aria-label')).toBe('Filtrai');
     expect(closedWithFilters.text()).toContain('2');
 
     expect(toggleOf(true, 0).classes()).toContain('border-brand');
@@ -56,6 +57,32 @@ describe('collection controls', () => {
     await deleted.trigger('click');
 
     expect(wrapper.emitted('toggleTrash')).toHaveLength(1);
+  });
+
+  it('shows quick filters first in the phone sheet and forwards their choices', async () => {
+    const wrapper = mount(CollectionFilterBar, {
+      props: {
+        facets: [],
+        quickFilters: [{ id: 'mine', label: 'Mano', active: true }],
+        open: false,
+        sheetOpen: true,
+        isAtLeastMd: false,
+        activeCount: 0,
+      },
+      global: {
+        stubs: {
+          ...commonStubs,
+          Sheet: { template: '<div><slot /></div>' },
+          SheetContent: { template: '<div><slot /></div>' },
+        },
+      },
+    });
+
+    const quickFilters = wrapper.get('[data-slot="collection-quick-filters"]');
+    expect(quickFilters.find('button').attributes('aria-pressed')).toBe('true');
+
+    await quickFilters.find('button').trigger('click');
+    expect(wrapper.emitted('quickFilter')).toEqual([['mine']]);
   });
 
   it('renders view choices as labelled icons', () => {

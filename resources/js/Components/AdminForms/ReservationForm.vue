@@ -10,7 +10,6 @@
     :save-label="$t('Pateikti')"
     :processing="form.processing"
     :dirty="form.isDirty"
-    :disabled="!canSubmit"
     :errors="form.errors"
     :field-ids
     :available-locales="[]"
@@ -101,6 +100,7 @@
 
         <div class="flex flex-wrap gap-2">
           <Button
+            id="reservation-resources"
             type="button"
             :variant="items.length === 0 ? 'brand' : 'outline'"
             :voice="items.length === 0 ? 'brand' : 'sentence'"
@@ -148,6 +148,9 @@
             {{ $t('Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti ir grąžinti laiku.') }}
           </Label>
         </div>
+        <p v-if="form.errors.condition" class="text-xs text-destructive">
+          {{ form.errors.condition }}
+        </p>
 
         <p v-if="items.length > 0 && problemCount > 0" class="text-xs text-status-danger">
           {{ $t('reservations.cart.fix_before_submit') }}
@@ -326,8 +329,6 @@ watch(period, (value) => {
 
 const problemCount = computed(() => items.value.filter(item => item.problem !== null).length);
 
-const canSubmit = computed(() => conditionAcquaintance.value && items.value.length > 0 && problemCount.value === 0);
-
 const resourceErrors = computed(() => Object.entries(form.errors)
   .filter(([key]) => key.startsWith('resources'))
   .map(([, message]) => message));
@@ -352,7 +353,46 @@ const onResourcesConfirm = (hits: NormalizedSearchHit[]) => {
   }
 };
 
+// Checked on press rather than by disabling the button, so pressing it always says what is missing.
+const findClientErrors = () => {
+  const errors: Partial<Record<'name' | 'description' | 'resources' | 'condition', string>> = {};
+
+  if (!form.name.trim()) {
+    errors.name = $t('reservations.cart.name_required');
+  }
+  if (!form.description.trim()) {
+    errors.description = $t('reservations.cart.description_required');
+  }
+  if (items.value.length === 0) {
+    errors.resources = $t('reservations.cart.resources_required');
+  }
+  else if (problemCount.value > 0) {
+    errors.resources = $t('reservations.cart.fix_before_submit');
+  }
+  if (!conditionAcquaintance.value) {
+    errors.condition = $t('reservations.cart.terms_required');
+  }
+
+  return errors;
+};
+
+watch(conditionAcquaintance, (accepted) => {
+  if (accepted) {
+    form.clearErrors('condition');
+  }
+});
+
 const submit = () => {
+  const clientErrors = findClientErrors();
+
+  form.clearErrors();
+
+  if (Object.keys(clientErrors).length > 0) {
+    form.setError(clientErrors);
+
+    return;
+  }
+
   form
     .transform(data => ({
       ...data,

@@ -64,6 +64,8 @@ const cartWith = (items: ReservationCartItem[], overrides: Partial<ReservationCa
   ...overrides,
 });
 
+type FormSpies = { form: { setError: ReturnType<typeof vi.fn>; post: ReturnType<typeof vi.fn> } };
+
 const defaultPeriod = { start: new Date(2026, 9, 10, 9, 0).getTime(), end: new Date(2026, 9, 12, 17, 0).getTime() };
 
 const mountForm = (cart: ReservationCart | null) => {
@@ -113,30 +115,42 @@ describe('ReservationForm.vue', () => {
     expect(wrapper.findAll('[data-slot="reservation-cart-item"]')).toHaveLength(1);
   });
 
-  it('cannot be submitted until the terms are acknowledged', async () => {
-    wrapper = mountForm(cartWith([item()]));
-    expect(wrapper.find('[data-testid="form-page"]').attributes('data-disabled')).toBe('true');
+  it('keeps the submit button active and says what is missing on press', async () => {
+    wrapper = mountForm(null);
+    expect(wrapper.find('[data-testid="form-page"]').attributes('data-disabled')).toBeUndefined();
 
-    await wrapper.find('#condition').setValue(true);
+    await wrapper.find('[data-testid="form-page"]').trigger('submit');
 
-    expect(wrapper.find('[data-testid="form-page"]').attributes('data-disabled')).toBe('false');
+    const { form } = wrapper.vm as unknown as FormSpies;
+    expect(form.setError).toHaveBeenCalledWith({
+      name: 'reservations.cart.name_required',
+      description: 'reservations.cart.description_required',
+      resources: 'reservations.cart.resources_required',
+      condition: 'reservations.cart.terms_required',
+    });
+    expect(form.post).not.toHaveBeenCalled();
   });
 
-  it('cannot be submitted while an item no longer fits, and says why', async () => {
+  it('does not submit until the terms are acknowledged', async () => {
+    wrapper = mountForm(cartWith([item()]));
+
+    await wrapper.find('[data-testid="form-page"]').trigger('submit');
+
+    const { form } = wrapper.vm as unknown as FormSpies;
+    expect(form.setError).toHaveBeenCalledWith({ condition: 'reservations.cart.terms_required' });
+    expect(form.post).not.toHaveBeenCalled();
+  });
+
+  it('does not submit while an item no longer fits, and says why', async () => {
     wrapper = mountForm(cartWith([item({ problem: 'unavailable', available: 1 })]));
 
     await wrapper.find('#condition').setValue(true);
+    await wrapper.find('[data-testid="form-page"]').trigger('submit');
 
-    expect(wrapper.find('[data-testid="form-page"]').attributes('data-disabled')).toBe('true');
+    const { form } = wrapper.vm as unknown as FormSpies;
+    expect(form.setError).toHaveBeenCalledWith({ resources: 'reservations.cart.fix_before_submit' });
+    expect(form.post).not.toHaveBeenCalled();
     expect(wrapper.find('[data-testid="reservation-cart-conflicts"]').exists()).toBe(true);
-  });
-
-  it('cannot be submitted with an empty cart', async () => {
-    wrapper = mountForm(null);
-
-    await wrapper.find('#condition').setValue(true);
-
-    expect(wrapper.find('[data-testid="form-page"]').attributes('data-disabled')).toBe('true');
   });
 
   it('saves a new period to the cart and keeps the resources', async () => {

@@ -87,10 +87,10 @@
 
 .driver-popover-close-btn {
   position: absolute !important;
-  top: 0.75rem !important;
-  right: 0.75rem !important;
-  width: 1.5rem !important;
-  height: 1.5rem !important;
+  top: 0.5rem !important;
+  right: 0.5rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -99,7 +99,16 @@
   border: none !important;
   border-radius: 0 !important;
   cursor: pointer !important;
-  font-size: 1.25rem !important;
+  /* The "×" glyph sits on the font's baseline, off the box centre; draw the icon instead. */
+  font-size: 0 !important;
+}
+
+.driver-popover-close-btn::before {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18M6 6l12 12'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
 .driver-popover-close-btn:hover {
@@ -113,5 +122,6 @@
 
 .driver-active-element {
   outline: 2px solid var(--brand-fill) !important;
-  outline-offset: 2px !important;
+  /* Matches the tour's stagePadding, so the frame sits at the cut-out's edge, not on the content. */
+  outline-offset: 12px !important;
 }

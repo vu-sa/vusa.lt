@@ -207,6 +207,30 @@ describe('CollectionPage', () => {
     expect(wrapper.emitted('quickFilter')).toEqual([['this_year']]);
   });
 
+  it('puts quick filters at the top of the phone filter sheet, even without facets', async () => {
+    media.md = false;
+    const wrapper = mountPage(makeSource().source, {
+      quickFilters: [
+        { id: 'mine', label: 'Mano institucijos', active: true },
+        { id: 'this_year', label: 'Šie metai', active: false },
+      ],
+    });
+
+    expect(wrapper.find('[data-slot="collection-quick-filters"]').exists()).toBe(false);
+
+    await wrapper.get('[data-slot="collection-filters-toggle"]').trigger('click');
+
+    const filterBar = wrapper.findComponent({ name: 'CollectionFilterBar' });
+    expect(filterBar.props('sheetOpen')).toBe(true);
+    expect(filterBar.props('quickFilters')).toEqual([
+      { id: 'mine', label: 'Mano institucijos', active: true },
+      { id: 'this_year', label: 'Šie metai', active: false },
+    ]);
+
+    filterBar.vm.$emit('quickFilter', 'this_year');
+    expect(wrapper.emitted('quickFilter')).toEqual([['this_year']]);
+  });
+
   describe('views', () => {
     it('offers rows and table at md, and adds the preview pane only from xl', () => {
       const { source } = makeSource();

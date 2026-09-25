@@ -5,6 +5,22 @@ lastUpdated: true
 
 # Platform Updates
 
+## v2.23 — Easier navigation on phones (2026-09-26) {#v2-23}
+
+- ✨ **More compact list controls on phones** — search and filters share a row, quick filters are at the top of the filter sheet, and active filters scroll sideways so records appear sooner.
+- ✨ **Clearer required fields in problem forms** — one note explains the asterisk, and the missing-fields notice now matches the language switcher’s height.
+- 🔧 **Problem comments work again** — you can read and post comments on a problem without the “Commentable not found” error
+- 🔧 **Responsible member search works** — the problem form shows matches found by email and saves the selected member
+- ✨ **Easier institution selection for problems** — find institutions through search and filters when creating or editing a problem
+- ✨ **New top bar on phones** — instead of the logo and the section row, you see the workspace and section you are in; tap it to jump to another section of that workspace, with search right beside it
+- ✨ **Page tours are back** — the Home and duty timeline tours show again for everyone, and the ViSAK overview has its own tour. Replay a tour any time from Help, now on phones too (Menu → Help)
+- ✨ **“All sections” on Home** — the link to every section now also sits at the right end of Home's section bar, not only in the workspace menu
+- ✨ **First-steps checklist removed** — new members are welcomed on Home by a short tour instead
+
+## v2.22 — Clearer form labels (2026-09-26) {#v2-22}
+
+- ✨ **Clearer field labels** — edit forms show field names in their normal letter case without extra spacing between letters.
+
 ## v2.21 — Reservation drafts (2026-09-24) {#v2-21}
 
 - ⭐ **Notification settings per notification** — instead of a category table, you see the concrete notifications your duties can bring you, each with a note on when it arrives. For each, choose email – “At once”, “In digest” or “Off” – and push. Reminder days and hours sit next to their notifications, and push choices stay inactive until you connect a device

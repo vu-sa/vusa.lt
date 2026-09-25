@@ -8,39 +8,31 @@ return [
     'skip' => 'Skip',
     'step_of' => '{{current}} of {{total}}',
 
-    // Atstovavimas Overview Tour
+    // ViSAK overview (/mano/dashboard/atstovavimas)
     'atstovavimas_overview' => [
         'welcome' => [
-            'title' => 'Welcome to Representation!',
-            'description' => 'This area helps you <strong>track and manage</strong> your representation activities in institutions. Let us briefly introduce you to the main features.',
+            'title' => 'ViSAK overview',
+            'description' => 'Your representation work in institutions at a glance: where <strong>attention is needed</strong>, what is coming up and how it has gone so far.',
         ],
         'institutions_card' => [
-            'title' => 'Your Institutions',
-            'description' => 'Here you can see all institutions where you represent. The card shows which institutions <strong>need attention</strong> – whether meetings are missing or it\'s time to plan new activities.',
-        ],
-        'institution_item' => [
-            'title' => 'Institution Row',
-            'description' => 'Each institution has a <strong>status indicator</strong> and action buttons. You can schedule a meeting or report an absence (vacation, exams, etc.).',
+            'title' => 'Needs attention',
+            'description' => 'Institutions with no recent meeting or activity recorded. From here you can <strong>record a meeting</strong> straight away or mark that there was none (holidays, exam session, etc.).',
         ],
         'meetings_card' => [
-            'title' => 'Upcoming Meetings',
-            'description' => 'Here you can see your <strong>nearest scheduled meetings</strong>. The number at the top shows how many meetings are waiting. Click on a meeting to view details.',
+            'title' => 'Upcoming meetings',
+            'description' => 'The nearest scheduled meetings. Tap a meeting to see its agenda and details.',
         ],
         'create_meeting' => [
-            'title' => 'Create New Meeting',
-            'description' => 'Use this button to <strong>create a new meeting</strong>. You can select the institution and set the date and agenda.',
-        ],
-        'all_meetings' => [
-            'title' => 'View All Meetings',
-            'description' => 'This button opens the <strong>full meeting list</strong> with advanced search and filters. Here you\'ll also find past meetings.',
+            'title' => 'New meeting',
+            'description' => 'Use <strong>+ Create</strong> to register a new meeting: pick the institution, date and agenda.',
         ],
         'timeline' => [
             'title' => 'Timeline',
-            'description' => 'Here you can see your institutions\' <strong>activity timeline</strong> – meetings, gaps, and activity periods. This helps you visually plan your representation activities.',
+            'description' => 'An <strong>activity timeline</strong> of your institutions – meetings, gaps and active periods. It helps you plan ahead.',
         ],
         'complete' => [
-            'title' => 'You\'re Ready!',
-            'description' => 'Now you know the main Representation features. If you have questions, contact your unit coordinator.',
+            'title' => 'All set!',
+            'description' => 'Questions? Reach out to your unit coordinator. You can replay this tour any time from <strong>Help</strong>.',
         ],
     ],
 
@@ -86,9 +78,33 @@ return [
 
     // Admin Home / Welcome Tour (≤ 5 steps)
     'admin_home' => [
+        'welcome' => [
+            'title' => 'Welcome to Mano VU SA!',
+            'description' => 'A quick look at where things are: moving between workspaces, finding and creating what you need, and where your tasks wait for you. It takes less than a minute.',
+        ],
+        'all_sections' => [
+            'title' => 'All sections',
+            'description' => 'Everything you can open with your account, in one place. Handy when you are not sure which workspace something lives in.',
+        ],
+        'quick_actions' => [
+            'title' => 'Quick actions',
+            'description' => 'Create actions from the workspaces you can work in – the same as <strong>+ Create</strong>, one click closer.',
+        ],
+        'section_switcher' => [
+            'title' => 'Where you are',
+            'description' => 'Shows the workspace and section you are in. Tap it to jump to another section.',
+        ],
+        'command_palette_mobile' => [
+            'title' => 'Search',
+            'description' => 'Find pages, documents, contacts or recently edited records.',
+        ],
+        'mobile_menu' => [
+            'title' => 'Menu',
+            'description' => 'Other workspaces, your account, settings and help – you can replay this tour from here too.',
+        ],
         'workspaces' => [
             'title' => 'Workspaces',
-            'description' => 'Mano VU SA is organized into workspaces based on your duties and permissions (Home, Representation, Reservations, etc.). Switch between them here.',
+            'description' => 'Mano VU SA is organized into workspaces based on your duties and permissions (Home, ViSAK, Reservations, etc.). Switch between them here.',
         ],
         'command_palette' => [
             'title' => 'Quick search',

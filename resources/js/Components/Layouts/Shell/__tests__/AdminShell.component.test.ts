@@ -29,6 +29,7 @@ const stubs = {
   MobileMenuPanel: true,
   SectionTabs: { template: '<nav data-testid="section-tabs" v-bind="$attrs" />' },
   MobileBottomBar: { template: '<nav data-testid="bottom-bar" />' },
+  MobileContextBar: { template: '<div data-testid="context-bar" />' },
   ShellTopBar: { props: ['focused'], template: '<header data-testid="top-bar" :data-focused="focused" />' },
 };
 
@@ -74,6 +75,7 @@ describe('AdminShell focus mode', () => {
     await wrapper.vm.$nextTick();
 
     expect(wrapper.find('[data-testid="section-tabs"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="context-bar"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="bottom-bar"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="top-bar"]').attributes('data-focused')).toBe('true');
 
@@ -99,7 +101,7 @@ describe('AdminShell focus mode', () => {
   });
 });
 
-describe('AdminShell section tabs on phones', () => {
+describe('AdminShell on phones', () => {
   const onRoute = (routeName: string) => {
     vi.stubGlobal('route', () => ({ current: () => routeName, params: {} }));
     vi.mocked(usePage).mockReturnValue(createMockPage({
@@ -107,15 +109,11 @@ describe('AdminShell section tabs on phones', () => {
     }) as ReturnType<typeof usePage>);
   };
 
-  it('hides Pradžia\'s tab row below md, where the bottom bar already holds its sections', () => {
-    onRoute('dashboard');
+  it.each(['dashboard', 'meetings.index'])('swaps the tab row for the context bar below md on %s', (routeName) => {
+    onRoute(routeName);
+    const { wrapper } = mountShell();
 
-    expect(mountShell().wrapper.find('[data-testid="section-tabs"]').classes()).toContain('max-md:hidden');
-  });
-
-  it('keeps other workspaces\' tabs, their only section switcher on phones', () => {
-    onRoute('meetings.index');
-
-    expect(mountShell().wrapper.find('[data-testid="section-tabs"]').classes()).not.toContain('max-md:hidden');
+    expect(wrapper.find('[data-testid="section-tabs"]').classes()).toContain('max-md:hidden');
+    expect(wrapper.find('.sticky').find('[data-testid="context-bar"]').exists()).toBe(true);
   });
 });

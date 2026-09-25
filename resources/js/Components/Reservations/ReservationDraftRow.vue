@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route('reservations.create')"
-    class="flex items-start gap-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11"
+    class="flex items-start gap-3 px-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11"
     data-slot="reservation-draft-row"
   >
     <ShoppingBasket class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />

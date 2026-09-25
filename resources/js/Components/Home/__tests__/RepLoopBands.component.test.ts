@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AccessChangeBand from '../AccessChangeBand.vue';
 import CoordinatorCard from '../CoordinatorCard.vue';
-import FirstLoginChecklist from '../FirstLoginChecklist.vue';
-import type { HomeAccessChange, HomeChecklist } from '../types';
+import type { HomeAccessChange } from '../types';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { useApiMutation } from '@/Composables/useApi';
@@ -13,16 +12,6 @@ import { globalProgress } from '@/Composables/useTutorialProgress';
 vi.mock('@/Composables/useApi', () => ({
   useApiMutation: vi.fn(() => ({ execute: vi.fn().mockResolvedValue(undefined) })),
 }));
-
-const checklist = (done: Record<string, boolean> = {}): HomeChecklist => {
-  const items = (['photo', 'follow', 'notifications', 'meeting'] as const).map(key => ({
-    key,
-    done: done[key] ?? false,
-    href: key === 'meeting' ? null : `/mocked-route/${key}`,
-  }));
-
-  return { items, doneCount: items.filter(item => item.done).length };
-};
 
 const change = (overrides: Partial<HomeAccessChange> = {}): HomeAccessChange => ({
   kind: 'started',
@@ -37,56 +26,6 @@ const change = (overrides: Partial<HomeAccessChange> = {}): HomeAccessChange => 
 beforeEach(() => {
   vi.clearAllMocks();
   globalProgress.value = {};
-});
-
-describe('FirstLoginChecklist', () => {
-  it('lists the four steps with how far along the rep is', () => {
-    const wrapper = mount(FirstLoginChecklist, { props: { checklist: checklist({ photo: true }) } });
-
-    expect(wrapper.findAll('li')).toHaveLength(4);
-    expect(wrapper.get('[data-testid="checklist-progress"]').text()).toBe('onboarding.progress');
-    expect(wrapper.get('[data-item="photo"]').attributes('data-done')).toBe('true');
-    expect(wrapper.get('[data-item="follow"]').attributes('data-done')).toBe('false');
-  });
-
-  it('offers an action only for what is still open, and says the rest is done', () => {
-    const wrapper = mount(FirstLoginChecklist, { props: { checklist: checklist({ photo: true }) } });
-
-    expect(wrapper.get('[data-item="photo"]').text()).toContain('onboarding.done');
-    expect(wrapper.get('[data-item="photo"]').find('a, button').exists()).toBe(false);
-    expect(wrapper.get('[data-item="follow"]').find('a').attributes('href')).toBe('/mocked-route/follow');
-  });
-
-  it('opens the ActionWindow for the first meeting instead of navigating', async () => {
-    const wrapper = mount(FirstLoginChecklist, { props: { checklist: checklist() } });
-
-    const action = wrapper.get('[data-item="meeting"]').find('button');
-    expect(wrapper.get('[data-item="meeting"]').find('a').exists()).toBe(false);
-
-    await action.trigger('click');
-
-    expect(wrapper.emitted('record-meeting')).toHaveLength(1);
-  });
-
-  it('is remembered as dismissed on the server, so it does not come back', async () => {
-    const wrapper = mount(FirstLoginChecklist, { props: { checklist: checklist() } });
-
-    await wrapper.get('[data-testid="checklist-dismiss"]').trigger('click');
-
-    expect(wrapper.find('[data-slot="first-login-checklist"]').exists()).toBe(false);
-    expect(useApiMutation).toHaveBeenCalledWith(
-      expect.stringContaining('tutorials.complete'),
-      'POST',
-      { tour_id: 'spotlight-checklist-first-login-v1' },
-      expect.anything(),
-    );
-  });
-
-  it('renders nothing for someone who dismissed it earlier', () => {
-    globalProgress.value = { 'spotlight-checklist-first-login-v1': '2026-09-01T00:00:00Z' };
-
-    expect(mount(FirstLoginChecklist, { props: { checklist: checklist() } }).find('[data-slot="first-login-checklist"]').exists()).toBe(false);
-  });
 });
 
 describe('AccessChangeBand', () => {

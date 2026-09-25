@@ -1,6 +1,8 @@
 <template>
   <div data-slot="palette-field" class="contents">
+    <!-- Both copies carry the anchor; the tour highlights whichever one the breakpoint shows. -->
     <button
+      data-tour="command-palette"
       type="button"
       :class="[
         'hidden h-8 w-full max-w-md items-center gap-2 lg:flex',
@@ -15,6 +17,7 @@
     </button>
 
     <Button
+      data-tour="command-palette"
       variant="ghost"
       size="icon"
       class="u-touch lg:hidden"

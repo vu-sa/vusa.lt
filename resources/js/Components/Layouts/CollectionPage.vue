@@ -1,5 +1,5 @@
 <template>
-  <div ref="root" class="flex flex-col gap-4" data-slot="collection-page">
+  <div ref="root" class="flex flex-col gap-3 lg:gap-4" data-slot="collection-page">
     <Head :title />
 
     <CollectionTitleBand :eyebrow :title :lead :entity-type>
@@ -8,15 +8,17 @@
       </template>
     </CollectionTitleBand>
 
-    <slot name="quick-filters" :filters="quickFilters ?? []" :toggle="(id: string) => emit('quickFilter', id)">
-      <CollectionQuickFilters :filters="quickFilters ?? []" @toggle="id => emit('quickFilter', id)" />
-    </slot>
+    <div v-if="isAtLeastMd && (quickFilters?.length || $slots['quick-filters'])">
+      <slot name="quick-filters" :filters="quickFilters ?? []" :toggle="(id: string) => emit('quickFilter', id)">
+        <CollectionQuickFilters :filters="quickFilters ?? []" @toggle="id => emit('quickFilter', id)" />
+      </slot>
+    </div>
 
-    <section class="flex flex-col gap-3 border-y border-border py-4" :aria-label="$t('Paieška ir filtrai')">
+    <section class="flex flex-col gap-2 border-y border-border py-3 lg:gap-3 lg:py-4" :aria-label="$t('Paieška ir filtrai')">
       <CollectionControlRow
         :query="source.query.value"
         :placeholder="searchPlaceholder ?? $t('Ieškoti')"
-        :has-filters="source.facets.value.length > 0 || Boolean(trash && (trash.active || trash.count > 0))"
+        :has-filters="source.facets.value.length > 0 || Boolean(trash && (trash.active || trash.count > 0)) || (!isAtLeastMd && Boolean(quickFilters?.length))"
         :filters-open="isAtLeastMd ? filtersOpen : sheetOpen"
         :active-filter-count="source.activeFilterCount.value + (trash?.active ? 1 : 0)"
         @search="(query, immediate) => source.search(query, immediate)"
@@ -30,11 +32,13 @@
       <CollectionFilterBar
         v-model:sheet-open="sheetOpen"
         :facets="source.facets.value"
+        :quick-filters="quickFilters ?? []"
         :trash="trash && (trash.active || trash.count > 0) ? trash : undefined"
         :open="filtersOpen"
         :is-at-least-md
         :active-count="source.activeFilterCount.value + (trash?.active ? 1 : 0)"
         @toggle="source.toggleFilter"
+        @quick-filter="id => emit('quickFilter', id)"
         @toggle-trash="toggleTrash"
         @clear="clearFilters"
       />

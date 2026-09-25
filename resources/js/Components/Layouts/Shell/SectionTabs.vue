@@ -5,7 +5,7 @@
     :aria-label="$t('shell.chrome.sections_nav')"
     class="shrink-0 border-b border-(--border-opaque) bg-secondary/50 backdrop-blur-sm [.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none"
   >
-    <div class="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] px-2 sm:px-4 lg:px-6">
+    <div class="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto_auto] px-2 sm:px-4 lg:px-6">
       <!-- Tabs that do not fit stay in the flow (so the measurement is stable) but hidden; the
            Daugiau menu lists exactly those. -->
       <ul ref="listRef" class="flex min-w-0 overflow-hidden">
@@ -122,6 +122,20 @@
           </template>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <!-- Pradžia has no sections of its own to browse, so its row is where the full map lives. -->
+      <Link
+        v-if="workspace.key === 'pradzia'"
+        data-tour="all-sections"
+        data-slot="section-tabs-all-sections"
+        :href="route('administration')"
+        prefetch
+        :cache-for="SHELL_PREFETCH_CACHE_FOR"
+        :class="[tabClass(false), 'col-start-3']"
+      >
+        <LayoutGrid class="size-4 shrink-0" aria-hidden="true" />
+        {{ $t('shell.chrome.all_sections') }}
+      </Link>
     </div>
   </nav>
 </template>
@@ -129,7 +143,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, Ellipsis } from 'lucide-vue-next';
+import { ChevronDown, Ellipsis, LayoutGrid } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';

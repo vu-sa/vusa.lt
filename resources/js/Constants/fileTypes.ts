@@ -26,7 +26,7 @@ const NAME_HINTS: Array<[RegExp, FileableFileType]> = [
   [/protokol/i, 'Protokolai'],
   [/ataskait|report/i, 'Ataskaitos'],
   [/darbotvark|agenda/i, 'Darbotvarkės'],
-  [/pristatym|\.pptx$/i, 'Pristatymai'],
+  [/(?:pristatym.*|.*\.pptx)$/i, 'Pristatymai'],
   [/šablon|sablon|template/i, 'Šablonai'],
 ];
 

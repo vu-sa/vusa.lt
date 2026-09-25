@@ -1,7 +1,10 @@
 <template>
   <div
     v-if="filters.length > 0"
-    class="flex flex-wrap items-center gap-2"
+    :class="[
+      'flex min-w-0 items-center gap-2',
+      wrap ? 'flex-wrap' : 'flex-nowrap overflow-x-auto lg:flex-wrap lg:overflow-visible',
+    ]"
     role="group"
     :aria-label="$t('Greiti filtrai')"
     data-slot="collection-quick-filters"
@@ -28,6 +31,7 @@ import { controlVariants } from '@/Components/ui/control';
 
 defineProps<{
   filters: CollectionQuickFilter[];
+  wrap?: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetFollowedInstitutions;
-use App\Actions\GetOnboardingChecklist;
 use App\Actions\GetRecentAccessChanges;
 use App\Actions\GetRecentlyEditedRecords;
 use App\Actions\GetUpcomingMeetingsForUser;
@@ -129,7 +128,6 @@ class DashboardController extends AdminController
         );
 
         return $this->inertiaResponse('Admin/ShowAdminHome', [
-            'onboardingChecklist' => GetOnboardingChecklist::execute($user),
             'accessChanges' => GetRecentAccessChanges::execute($user, self::ACCESS_BAND_DAYS),
             'actionWindowLaunch' => $request->actionWindowLaunch($user),
             'taskStats' => $taskStats,

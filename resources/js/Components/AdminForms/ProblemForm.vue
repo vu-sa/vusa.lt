@@ -25,23 +25,29 @@
       <StatusBadge :status="problemStatuses[form.status as keyof typeof problemStatuses]" />
     </template>
 
-    <FormFieldWrapper
-      id="problem-title"
-      :label="`${capitalize($tChoice('entities.problem.title', 1))} (${activeLocale.toUpperCase()})`"
-      required
-      :error="form.errors[`title.${activeLocale}`]"
-    >
-      <Input
+    <div class="space-y-4">
+      <p class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground" data-testid="problem-required-note">
+        {{ $t('problems.form.instructions') }}
+      </p>
+      <FormFieldWrapper
         id="problem-title"
-        v-model="form.title[activeLocale]"
-        :placeholder="capitalize($tChoice('entities.problem.title', 1))"
-        :class="['h-11', fieldSurfaceClass]"
-      />
-    </FormFieldWrapper>
+        :label="`${capitalize($tChoice('entities.problem.title', 1))} (${activeLocale.toUpperCase()})`"
+        :required="!form.title[otherLocale].trim()"
+        :error="form.errors[`title.${activeLocale}`]"
+      >
+        <Input
+          id="problem-title"
+          v-model="form.title[activeLocale]"
+          :placeholder="capitalize($tChoice('entities.problem.title', 1))"
+          :class="['h-11', fieldSurfaceClass]"
+        />
+      </FormFieldWrapper>
+    </div>
 
     <FormFieldWrapper
       id="problem-description"
       :label="`${capitalize($tChoice('entities.problem.description', 1))} (${activeLocale.toUpperCase()})`"
+      :required="!form.description[otherLocale].trim()"
       :error="form.errors[`description.${activeLocale}`]"
     >
       <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
@@ -113,15 +119,17 @@
 
         <FormFieldWrapper
           id="problem-responsible-user"
-          :label="`${capitalize($tChoice('entities.problem.responsible_user', 1))} (${$t('neprivaloma')})`"
+          :label="capitalize($tChoice('entities.problem.responsible_user', 1))"
           :error="form.errors.responsible_user_id"
         >
           <Combobox
             v-model="selectedUser"
-            :filter-function="() => userOptions"
+            ignore-filter
+            open-on-focus
+            open-on-click
             @update:model-value="handleUserSelect"
           >
-            <ComboboxAnchor class="flex h-9 w-full items-center justify-between gap-2 border border-border bg-card px-3 py-2 text-sm">
+            <ComboboxAnchor class="flex min-h-11 w-full items-center justify-between gap-2 border border-border bg-card px-3 py-2 text-sm">
               <ComboboxInput
                 :display-value="(val: unknown) => (val as UserOption)?.name ?? ''"
                 :placeholder="capitalize($tChoice('entities.problem.responsible_user', 1))"
@@ -138,7 +146,7 @@
               </button>
               <ChevronsUpDown v-else class="size-4 shrink-0 opacity-50" />
             </ComboboxAnchor>
-            <ComboboxList>
+            <ComboboxList class="min-w-[var(--reka-popper-anchor-width)]">
               <ComboboxViewport class="max-h-60">
                 <div v-if="userSearchTerm.length < 2 && !selectedUser" class="px-2 py-4 text-center text-sm text-muted-foreground">
                   {{ $t('Įveskite bent 2 simbolius') }}
@@ -153,7 +161,10 @@
                     :key="user.id"
                     :value="user"
                   >
-                    {{ user.name }}
+                    <span class="flex min-w-0 flex-col">
+                      <span class="truncate">{{ user.name }}</span>
+                      <span v-if="user.email" class="truncate text-xs text-muted-foreground">{{ user.email }}</span>
+                    </span>
                   </ComboboxItem>
                 </template>
               </ComboboxViewport>
@@ -173,7 +184,7 @@
 
           <FormFieldWrapper
             id="problem-resolved-at"
-            :label="`${capitalize($tChoice('entities.problem.resolved_at', 1))} (${$t('neprivaloma')})`"
+            :label="capitalize($tChoice('entities.problem.resolved_at', 1))"
             :error="form.errors.resolved_at"
           >
             <Input id="problem-resolved-at" v-model="form.resolved_at" type="date" :class="fieldSurfaceClass" />
@@ -184,7 +195,7 @@
       <FormPanel :title="$t('Klasifikacija')" :icon="Layers" title-class="text-brand">
         <FormFieldWrapper
           id="problem-categories"
-          :label="`${capitalize($tChoice('entities.problem.categories', 2))} (${$t('neprivaloma')})`"
+          :label="capitalize($tChoice('entities.problem.categories', 2))"
           :error="form.errors.categories"
         >
           <MultiSelect
@@ -203,14 +214,37 @@
 
         <FormFieldWrapper
           id="problem-institutions"
-          :label="`${capitalize($tChoice('entities.institution.model', 2))} (${$t('neprivaloma')})`"
+          :label="capitalize($tChoice('entities.institution.model', 2))"
           :error="form.errors.institutions"
         >
-          <MultiSelect
-            v-model="selectedInstitutions"
-            :options="institutionOptions"
-            :placeholder="capitalize($tChoice('entities.institution.model', 2))"
-          />
+          <CollectionSelectDialog
+            v-model:open="institutionDialogOpen"
+            collection="institutions"
+            multiple
+            allow-empty
+            :base-filter-by="institutionBaseFilterBy"
+            :initial-hits="selectedInstitutionHits"
+            :title="capitalize($tChoice('entities.institution.model', 2))"
+            :confirm-label="$t('Pasirinkti')"
+            :search-placeholder="$t('Ieškoti institucijos pagal pavadinimą...')"
+            :empty-message="$t('Institucijų nerasta')"
+            @confirm="onInstitutionsConfirm"
+          >
+            <template #trigger>
+              <Button
+                id="problem-institutions"
+                type="button"
+                variant="outline"
+                voice="sentence"
+                :class="['w-full justify-between font-normal', fieldSurfaceClass]"
+              >
+                <span class="truncate" :class="{ 'text-muted-foreground': selectedInstitutionHits.length === 0 }">
+                  {{ selectedInstitutionLabel }}
+                </span>
+                <ChevronsUpDown class="size-4 shrink-0 opacity-50" />
+              </Button>
+            </template>
+          </CollectionSelectDialog>
         </FormFieldWrapper>
       </FormPanel>
     </template>
@@ -275,6 +309,8 @@ import {
 } from '@/Components/ui/select';
 import { useApi } from '@/Composables/useApi';
 import { problemStatuses } from '@/Constants/statuses';
+import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { ModelEnum } from '@/Types/enums';
 
 interface Translated {
@@ -285,6 +321,7 @@ interface Translated {
 interface UserOption {
   id: string;
   name: string;
+  email?: string;
 }
 
 const props = defineProps<{
@@ -304,7 +341,9 @@ const emit = defineEmits<{
 }>();
 
 const activeLocale = ref<'lt' | 'en'>('lt');
+const otherLocale = computed(() => activeLocale.value === 'lt' ? 'en' : 'lt');
 const deleteConfirmOpen = ref(false);
+const institutionDialogOpen = ref(false);
 
 const asTranslated = (value: unknown): Translated => {
   if (typeof value === 'string') {
@@ -376,7 +415,12 @@ const missingLocaleCounts = computed(() => ({
 const tenantIdString = computed({
   get: () => (form.tenant_id != null ? String(form.tenant_id) : ''),
   set: (val: string) => {
-    form.tenant_id = val ? Number(val) : null;
+    const tenantId = val ? Number(val) : null;
+    if (tenantId !== form.tenant_id) {
+      form.institutions = [];
+      selectedInstitutionHits.value = [];
+    }
+    form.tenant_id = tenantId;
   },
 });
 
@@ -396,7 +440,7 @@ const debouncedSearch = useDebounceFn(() => {
   if (userSearchTerm.value.length >= 2) {
     const params = new URLSearchParams({
       search: userSearchTerm.value,
-      permission: 'problems.create.padalinys',
+      permission: isEditing.value ? 'problems.update.padalinys' : 'problems.create.padalinys',
     });
     userSearchUrl.value = `${route('api.v1.admin.users.search')}?${params.toString()}`;
     executeUserSearch();
@@ -441,24 +485,27 @@ const selectedCategories = computed({
   },
 });
 
-const institutionOptions = computed(() => {
-  const filtered = form.tenant_id
-    ? props.institutions.filter(i => i.tenant_id === form.tenant_id)
-    : props.institutions;
+const selectedInstitutionHits = ref<NormalizedSearchHit[]>(props.institutions
+  .filter(institution => (form.institutions as string[]).includes(institution.id))
+  .map(institution => normalizeHit('institutions', {
+    id: institution.id,
+    name_lt: institution.name,
+    tenant_id: institution.tenant_id,
+  })));
 
-  return filtered.map(institution => ({
-    label: institution.name as string,
-    value: institution.id,
-  }));
+const institutionBaseFilterBy = computed(() => {
+  const tenantIds = form.tenant_id != null
+    ? [form.tenant_id]
+    : props.tenants.map(tenant => tenant.id);
+  return `tenant_ids:=[${tenantIds.length ? tenantIds.join(',') : -1}]`;
 });
 
-const selectedInstitutions = computed({
-  get: () =>
-    (form.institutions as string[])
-      .map(id => institutionOptions.value.find(opt => opt.value === id))
-      .filter((opt): opt is { label: string; value: string } => Boolean(opt)),
-  set: (items: { label: string; value: string }[]) => {
-    form.institutions = items.map(item => item.value);
-  },
-});
+const selectedInstitutionLabel = computed(() => selectedInstitutionHits.value.length
+  ? selectedInstitutionHits.value.map(hit => hit.title).join(', ')
+  : capitalize($tChoice('entities.institution.model', 2)));
+
+function onInstitutionsConfirm(hits: NormalizedSearchHit[]) {
+  selectedInstitutionHits.value = hits;
+  form.institutions = hits.map(hit => hit.recordId);
+}
 </script>

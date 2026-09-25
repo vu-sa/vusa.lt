@@ -55,7 +55,7 @@ describe('where the badge sits', () => {
   beforeEach(() => setTasks(2));
 
   it('is on the Užduotys tab of Pradžia, and on no other tab', () => {
-    const tabs = mount(SectionTabs, { props: { workspace: pradzia, activeSection: pradzia.sections[0] } }).findAll('a');
+    const tabs = mount(SectionTabs, { props: { workspace: pradzia, activeSection: pradzia.sections[0] } }).findAll('li a');
 
     expect(tabs.map(tab => tab.find('[data-slot="task-count-badge"]').exists())).toEqual([false, true, false]);
   });

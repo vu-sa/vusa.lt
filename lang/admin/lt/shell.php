@@ -57,6 +57,8 @@ return [
         'account' => 'Paskyra',
         'breadcrumbs' => 'Puslapio kelias',
         'back_to' => 'Atgal į :page',
+        'switch_section' => 'Pereik į kitą šios srities skyrių.',
+        'other_workspaces' => 'Kitos sritys',
     ],
 
     'trail' => [

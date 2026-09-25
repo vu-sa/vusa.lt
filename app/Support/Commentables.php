@@ -6,6 +6,7 @@ use App\Contracts\Commentable;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Problem;
 use App\Models\Reservation;
 use App\Models\SharepointFile;
 use App\Models\SupportRequest;
@@ -26,6 +27,7 @@ class Commentables
         'meeting' => Meeting::class,
         'agendaItem' => AgendaItem::class,
         'institution' => Institution::class,
+        'problem' => Problem::class,
         'reservation' => Reservation::class,
         'sharepointFile' => SharepointFile::class,
         'supportRequest' => SupportRequest::class,

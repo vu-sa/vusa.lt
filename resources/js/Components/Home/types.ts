@@ -71,19 +71,6 @@ export interface HomeHeroImage {
   focalPoint: string | null;
 }
 
-export interface HomeChecklistItem {
-  key: 'photo' | 'follow' | 'notifications' | 'meeting';
-  done: boolean;
-  /** Null when the item opens the ActionWindow instead of a page. */
-  href: string | null;
-}
-
-/** The first-login checklist (U13); the server sends null once it no longer applies. */
-export interface HomeChecklist {
-  items: HomeChecklistItem[];
-  doneCount: number;
-}
-
 /** A duty term that began or ended lately (U14), newest first. */
 export interface HomeAccessChange {
   kind: 'started' | 'ended';

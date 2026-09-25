@@ -196,6 +196,10 @@ return [
         'view' => 'Peržiūrėti',
         'reserve' => 'Rezervuoti',
         'fix_before_submit' => 'Sutvarkyk pažymėtus išteklius, kad galėtum pateikti.',
+        'name_required' => 'Įrašyk pavadinimą.',
+        'description_required' => 'Įrašyk aprašymą.',
+        'resources_required' => 'Pridėk bent vieną išteklių.',
+        'terms_required' => 'Pažymėk, kad sutinki su rezervacijos sąlygomis.',
     ],
     'resource' => [
         'index_lead' => 'Įranga ir kiti daiktai, kuriuos gali pasiskolinti.',

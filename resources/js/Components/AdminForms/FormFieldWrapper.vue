@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-2" data-slot="form-field">
     <div class="flex items-baseline justify-between gap-2">
-      <Label :for="id" :class="cn('flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground', labelClass)">
+      <Label :for="id" :class="cn('flex items-center gap-1.5 text-sm font-bold text-muted-foreground', labelClass)">
         {{ label }}
         <span v-if="required" class="text-destructive">*</span>
         <!-- Validation status indicators -->

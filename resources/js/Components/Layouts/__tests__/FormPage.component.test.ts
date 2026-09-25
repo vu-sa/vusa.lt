@@ -89,6 +89,9 @@ describe('FormPage.vue', () => {
     });
     const notice = () => wrapper.get('[data-testid="form-page-missing-locale"]');
 
+    expect(wrapper.get('[role="group"]').classes()).toContain('h-11');
+    expect(notice().classes()).toContain('h-11');
+    expect(notice().classes()).toContain('pointer-coarse:h-12');
     expect(notice().classes()).toContain('invisible');
     expect(notice().attributes('aria-hidden')).toBe('true');
 

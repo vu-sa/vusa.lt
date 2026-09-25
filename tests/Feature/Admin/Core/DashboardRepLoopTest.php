@@ -2,7 +2,6 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,66 +16,11 @@ beforeEach(function (): void {
 function userWithFirstTermStarting(Tenant $tenant, string $start): User
 {
     $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
-    // The factory may give a random photo, which would tick a checklist step nobody did.
-    $user = User::factory()->create(['profile_photo_path' => null, 'notification_preferences' => null]);
+    $user = User::factory()->create();
     $user->duties()->attach($duty, ['start_date' => $start]);
 
     return $user;
 }
-
-function recordedMeetingBy(User $user): Meeting
-{
-    $meeting = Meeting::factory()->create();
-
-    activity()->performedOn($meeting)->causedBy($user)->event('created')->log('created');
-
-    return $meeting;
-}
-
-describe('first-login checklist (U13)', function (): void {
-    test('a new rep sees four open steps', function (): void {
-        $user = userWithFirstTermStarting($this->tenant, now()->subDays(3)->toDateString());
-
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
-            ->where('onboardingChecklist.doneCount', 0)
-            ->where('onboardingChecklist.items', fn ($items) => collect($items)->pluck('key')->all() === ['photo', 'follow', 'notifications', 'meeting']
-                && collect($items)->pluck('done')->every(fn ($done) => $done === false))
-            ->where('onboardingChecklist.items.3.href', null)
-        );
-    });
-
-    test('someone whose first term is long past never sees it', function (): void {
-        $user = userWithFirstTermStarting($this->tenant, now()->subDays(200)->toDateString());
-
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->where('onboardingChecklist', null));
-    });
-
-    test('someone with no current duty never sees it', function (): void {
-        $user = User::factory()->create();
-
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->where('onboardingChecklist', null));
-    });
-
-    test('each step ticks off by what the user actually did', function (): void {
-        $user = userWithFirstTermStarting($this->tenant, now()->subDay()->toDateString());
-        $user->forceFill(['profile_photo_path' => 'photos/me.jpg', 'notification_preferences' => ['digest_frequency_hours' => 12]])->save();
-        $user->followedInstitutions()->attach(Institution::factory()->for($this->tenant)->create());
-
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
-            ->where('onboardingChecklist.doneCount', 3)
-            ->where('onboardingChecklist.items', fn ($items) => collect($items)->pluck('done')->all() === [true, true, true, false])
-        );
-    });
-
-    test('it disappears once the first meeting is recorded too', function (): void {
-        $user = userWithFirstTermStarting($this->tenant, now()->subDay()->toDateString());
-        $user->forceFill(['profile_photo_path' => 'photos/me.jpg', 'notification_preferences' => ['digest_frequency_hours' => 12]])->save();
-        $user->followedInstitutions()->attach(Institution::factory()->for($this->tenant)->create());
-        recordedMeetingBy($user);
-
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->where('onboardingChecklist', null));
-    });
-});
 
 describe('access-change band (U14)', function (): void {
     test('a term that began today is announced', function (): void {

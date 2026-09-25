@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-3 lg:flex-row lg:items-center" data-slot="collection-control-row">
+  <div class="flex items-center gap-2 lg:gap-3" data-slot="collection-control-row">
     <div class="relative min-w-0 flex-1">
       <Search
         class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground"
@@ -28,18 +28,19 @@
       </button>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+    <div class="flex shrink-0 items-center gap-2">
       <!-- Filled only while the filters are showing; set filters are told by the count alone. -->
       <button
         v-if="hasFilters"
         type="button"
+        :aria-label="$t('Filtrai')"
         :aria-expanded="filtersOpen"
-        :class="controlVariants({ active: filtersOpen, voice: 'sentence' })"
+        :class="[controlVariants({ active: filtersOpen, voice: 'sentence' }), 'max-md:px-3']"
         data-slot="collection-filters-toggle"
         @click="emit('toggleFilters')"
       >
         <SlidersHorizontal class="size-4" aria-hidden="true" />
-        <span>{{ $t('Filtrai') }}</span>
+        <span class="sr-only md:not-sr-only">{{ $t('Filtrai') }}</span>
         <span v-if="activeFilterCount > 0" :class="controlCountClass">
           {{ activeFilterCount }}
         </span>

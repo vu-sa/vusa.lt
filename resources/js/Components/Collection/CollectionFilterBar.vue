@@ -46,6 +46,7 @@
       </SheetHeader>
 
       <div class="flex flex-col gap-5 px-4 pb-4">
+        <CollectionQuickFilters :filters="quickFilters" wrap @toggle="id => emit('quickFilter', id)" />
         <section v-for="facet in facets" :key="facet.field">
           <h3 class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {{ facet.label }}
@@ -82,7 +83,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, Trash2 } from 'lucide-vue-next';
 
 import CollectionFacetOptions from './CollectionFacetOptions.vue';
-import type { CollectionTrash } from './types';
+import CollectionQuickFilters from './CollectionQuickFilters.vue';
+import type { CollectionQuickFilter, CollectionTrash } from './types';
 
 import { Button } from '@/Components/ui/button';
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
@@ -99,6 +101,7 @@ import type { CollectionFacet } from '@/Composables/useCollectionSource';
 
 defineProps<{
   facets: CollectionFacet[];
+  quickFilters?: CollectionQuickFilter[];
   /** The inline row is shown (md and up). */
   open: boolean;
   /** The bottom sheet is shown (below md). */
@@ -110,6 +113,7 @@ defineProps<{
 
 const emit = defineEmits<{
   'toggle': [field: string, value: string];
+  'quickFilter': [id: string];
   'clear': [];
   'toggleTrash': [];
   'update:sheetOpen': [open: boolean];

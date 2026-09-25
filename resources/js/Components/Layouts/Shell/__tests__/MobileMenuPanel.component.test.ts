@@ -7,6 +7,13 @@ import { atstovavimas, pradzia, rezervacijos } from './fixtures';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
+const tour = vi.hoisted(() => ({ available: false, start: vi.fn() }));
+vi.mock('@/Composables/useTourProvider', async () => {
+  const { computed } = await import('vue');
+
+  return { useTour: () => ({ hasTour: computed(() => tour.available), startTour: tour.start }) };
+});
+
 const mountPanel = (props: Record<string, unknown> = {}) => mount(MobileMenuPanel, {
   props: {
     open: true,
@@ -21,6 +28,8 @@ const mountPanel = (props: Record<string, unknown> = {}) => mount(MobileMenuPane
 
 afterEach(() => {
   document.body.innerHTML = '';
+  tour.available = false;
+  tour.start.mockClear();
 });
 
 describe('MobileMenuPanel', () => {
@@ -112,5 +121,23 @@ describe('MobileMenuPanel', () => {
     expect(wrapper.text()).toContain('shell.account.start_fm');
     expect(wrapper.text()).toContain('auth.logout');
     expect(wrapper.text()).toContain('auth.logout_microsoft');
+  });
+
+  it('offers the page tour only when the page has one', () => {
+    expect(mountPanel().find('[data-slot="mobile-menu-tour"]').exists()).toBe(false);
+
+    tour.available = true;
+    expect(mountPanel().find('[data-slot="mobile-menu-tour"]').exists()).toBe(true);
+  });
+
+  it('closes itself before starting the tour', async () => {
+    tour.available = true;
+    const wrapper = mountPanel();
+
+    await wrapper.get('[data-slot="mobile-menu-tour"]').trigger('click');
+    expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);
+
+    await flushPromises();
+    expect(tour.start).toHaveBeenCalledOnce();
   });
 });

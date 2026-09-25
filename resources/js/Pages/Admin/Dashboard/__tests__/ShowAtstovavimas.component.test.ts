@@ -58,6 +58,14 @@ vi.mock('@/Composables/useActionWindow', () => ({
   useActionWindow: () => ({ isOpen: ref(false), open: vi.fn() }),
 }));
 
+const startTour = vi.fn();
+const startTourIfNew = vi.fn();
+vi.mock('@/Composables/useProductTour', () => ({
+  useProductTour: () => ({ startTour, startTourIfNew }),
+}));
+const provideTour = vi.fn();
+vi.mock('@/Composables/useTourProvider', () => ({ provideTour: (fn: () => void) => provideTour(fn) }));
+
 const marker = (name: string) => ({ name, template: `<div data-testid="${name}" />` });
 
 const stubs = {
@@ -174,5 +182,19 @@ describe('layout', () => {
     wrapper = createWrapper(true);
 
     expect(wrapper.find('[data-testid="trend-chart"]').exists()).toBe(false);
+  });
+});
+
+describe('tour', () => {
+  it('registers the overview tour and starts it for someone who has not seen it', () => {
+    vi.useFakeTimers();
+    startTourIfNew.mockClear();
+
+    wrapper = createWrapper(false);
+    vi.advanceTimersByTime(2000);
+
+    expect(provideTour).toHaveBeenCalledWith(startTour);
+    expect(startTourIfNew).toHaveBeenCalledOnce();
+    vi.useRealTimers();
   });
 });

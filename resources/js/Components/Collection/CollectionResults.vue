@@ -3,8 +3,8 @@
     <!-- Overlaid, not in flow: inserting it on every sort or search pushed the table down and back. -->
     <TopProgressBar v-if="refreshing" class="absolute inset-x-0 top-0" :label="$t('Kraunami duomenys')" />
 
-    <div class="mb-3 flex flex-wrap items-center justify-between gap-3" data-slot="collection-results-toolbar">
-      <div class="flex min-h-9 items-center gap-4">
+    <div class="mb-3 flex items-center justify-between gap-2 sm:flex-wrap sm:gap-3" data-slot="collection-results-toolbar">
+      <div class="flex min-h-9 min-w-0 items-center gap-3 sm:gap-4">
         <p v-if="hasSearched && !error" class="text-xs text-muted-foreground" aria-live="polite">
           {{ $t('Rasta') }} <span class="font-bold tabular-nums text-foreground">{{ total }}</span>
         </p>
@@ -14,17 +14,17 @@
             :aria-label="$t('Pažymėti visus rodomus')"
             @update:model-value="value => table.toggleAllRowsSelected(value === true)"
           />
-          {{ $t('Pažymėti visus rodomus') }}
+          <span class="max-sm:sr-only">{{ $t('Pažymėti visus rodomus') }}</span>
         </label>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex shrink-0 items-center gap-2 sm:flex-wrap">
         <label
           v-if="sortOptions.length > 1"
           class="relative flex h-9 min-w-0 items-center gap-2 border border-border bg-background pr-9 pl-3 focus-within:border-brand pointer-coarse:min-h-11"
         >
           <span class="text-[11px] font-bold text-muted-foreground">{{ $t('Rikiuoti') }}</span>
-          <span class="max-w-44 truncate text-sm font-bold text-foreground">{{ sortOptions.find(option => option.value === sortBy)?.label ?? sortBy }}</span>
+          <span class="hidden max-w-44 truncate text-sm font-bold text-foreground sm:inline">{{ sortOptions.find(option => option.value === sortBy)?.label ?? sortBy }}</span>
           <ChevronDown class="pointer-events-none absolute right-3 size-4 text-muted-foreground" aria-hidden="true" />
           <select
             :value="sortBy"

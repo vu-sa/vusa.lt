@@ -16,7 +16,7 @@
           :is="task.href ? Link : 'div'"
           :href="task.href ?? undefined"
           :prefetch="task.href ? true : undefined"
-          class="flex items-start gap-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11"
+          class="flex items-start gap-3 px-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring pointer-coarse:min-h-11"
         >
           <span class="min-w-0 flex-1">
             <span class="block text-pretty font-bold text-foreground">{{ task.name }}</span>

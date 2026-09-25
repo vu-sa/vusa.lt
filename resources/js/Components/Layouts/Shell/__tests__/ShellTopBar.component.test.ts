@@ -62,4 +62,9 @@ describe('ShellTopBar', () => {
     expect(formBar.exists()).toBe(true);
     expect(formBar.classes()).toContain('flex-1');
   });
+
+  it('gives way to the context bar on phones, but stays for a form\'s editor bar', () => {
+    expect(mountTopBar({ focused: false }).find('header').classes()).toContain('max-md:hidden');
+    expect(mountTopBar({ focused: true }).find('header').classes()).not.toContain('max-md:hidden');
+  });
 });

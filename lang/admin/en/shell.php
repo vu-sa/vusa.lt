@@ -57,6 +57,8 @@ return [
         'account' => 'Account',
         'breadcrumbs' => 'Page path',
         'back_to' => 'Back to :page',
+        'switch_section' => 'Jump to another section of this workspace.',
+        'other_workspaces' => 'Other workspaces',
     ],
 
     'trail' => [

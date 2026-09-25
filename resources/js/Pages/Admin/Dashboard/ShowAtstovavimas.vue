@@ -25,7 +25,7 @@
 
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-primary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
-        <InstitutionsNeedingAttention :institutions="attention" @record="recordActivityFor" />
+        <InstitutionsNeedingAttention data-tour="attention-card" :institutions="attention" @record="recordActivityFor" />
         <UpcomingMeetingsList :meetings="scopedUpcoming" :total="scopedUpcomingTotal" :href="route('meetings.index')" />
       </div>
 
@@ -47,6 +47,7 @@
     <!-- The timeline is a workbench: it renders only once it is near the viewport, and never on a phone. -->
     <section
       v-if="isAtLeastMd"
+      data-tour="visak-timeline"
       :aria-label="$t('visak.overview.timeline.title')"
     >
       <div ref="timelineAnchor" class="min-h-64">
@@ -137,7 +138,7 @@ import { Deferred, Link } from '@inertiajs/vue3';
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Eye } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
 import CoordinatorSkeleton from './Components/CoordinatorSkeleton.vue';
@@ -171,6 +172,9 @@ import type { HomeCoordinator, HomeFollowedInstitutions, HomeMeeting, Institutio
 import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
+import { useIsMobile } from '@/Composables/useIsMobile';
+import { useProductTour } from '@/Composables/useProductTour';
+import { provideTour } from '@/Composables/useTourProvider';
 
 const props = defineProps<{
   user: AtstovavimasUser;
@@ -310,5 +314,64 @@ const checkInInstitutionName = computed(() => {
   const institutionId = actions.showCreateCheckIn.value?.institutionId;
 
   return institutionId ? userInstitutionNames.value?.[institutionId] : undefined;
+});
+
+// --- Tour -------------------------------------------------------------------------------------
+
+const isMobile = useIsMobile();
+
+const { startTour, startTourIfNew } = useProductTour({
+  tourId: 'atstovavimas-overview-v1',
+  // Steps whose anchor is absent (an empty section, the timeline on a phone) are skipped.
+  steps: () => [
+    {
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.welcome.title'),
+        description: $t('tutorials.atstovavimas_overview.welcome.description'),
+      },
+    },
+    {
+      element: '[data-tour="attention-card"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.institutions_card.title'),
+        description: $t('tutorials.atstovavimas_overview.institutions_card.description'),
+      },
+    },
+    {
+      element: '[data-tour="meetings-card"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.meetings_card.title'),
+        description: $t('tutorials.atstovavimas_overview.meetings_card.description'),
+      },
+    },
+    {
+      element: isMobile.value ? '[data-tour="action-create-mobile"]' : '[data-tour="action-create"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.create_meeting.title'),
+        description: $t('tutorials.atstovavimas_overview.create_meeting.description'),
+      },
+    },
+    {
+      element: '[data-tour="visak-timeline"]',
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.timeline.title'),
+        description: $t('tutorials.atstovavimas_overview.timeline.description'),
+      },
+    },
+    {
+      popover: {
+        title: $t('tutorials.atstovavimas_overview.complete.title'),
+        description: $t('tutorials.atstovavimas_overview.complete.description'),
+      },
+    },
+  ],
+});
+
+provideTour(startTour);
+
+const TOUR_START_DELAY_MS = 1000;
+
+onMounted(() => {
+  setTimeout(() => startTourIfNew(), TOUR_START_DELAY_MS);
 });
 </script>

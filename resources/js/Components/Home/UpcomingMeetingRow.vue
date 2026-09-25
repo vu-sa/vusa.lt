@@ -2,7 +2,7 @@
   <Link
     :href="route('meetings.show', meeting.id)"
     prefetch
-    class="flex items-center gap-4 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+    class="flex items-center gap-4 px-3 py-4 hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
   >
     <time
       :datetime="meeting.start_time"

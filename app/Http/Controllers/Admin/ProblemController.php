@@ -75,16 +75,11 @@ class ProblemController extends AdminController
         $this->handleAuthorization('create', Problem::class);
 
         $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
-        $tenantIds = collect($tenants)->pluck('id')->toArray();
 
         return $this->inertiaResponse('Admin/Problems/CreateProblem', [
             'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
-            'institutions' => Institution::select('id', 'name', 'tenant_id')
-                ->whereIn('tenant_id', $tenantIds)
-                ->orderBy('name')
-                ->get()
-                ->map(fn ($institution) => $institution->toArray()),
+            'institutions' => [],
         ]);
     }
 
@@ -150,7 +145,6 @@ class ProblemController extends AdminController
         $problemData['institutions'] = $problem->institutions->pluck('id')->toArray();
 
         $tenants = GetTenantsForUpserts::execute('problems.update.padalinys', $this->authorizer);
-        $tenantIds = collect($tenants)->pluck('id')->toArray();
 
         return $this->inertiaResponse('Admin/Problems/EditProblem', [
             'problem' => $problemData,
@@ -159,11 +153,8 @@ class ProblemController extends AdminController
             'initialResponsibleUser' => $problem->responsibleUser
                 ? ['id' => $problem->responsibleUser->id, 'name' => $problem->responsibleUser->name]
                 : null,
-            'institutions' => Institution::select('id', 'name', 'tenant_id')
-                ->whereIn('tenant_id', $tenantIds)
-                ->orderBy('name')
-                ->get()
-                ->map(fn ($institution) => $institution->toArray()),
+            'institutions' => $problem->institutions
+                ->map(fn (Institution $institution) => $institution->only(['id', 'name', 'tenant_id'])),
         ]);
     }
 

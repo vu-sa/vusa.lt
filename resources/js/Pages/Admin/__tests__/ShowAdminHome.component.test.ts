@@ -31,13 +31,11 @@ const stubs = {
   InstitutionsNeedingAttention: true,
   RecentlyEditedList: true,
   SiteContentLists: true,
-  FirstLoginChecklist: { name: 'FirstLoginChecklist', template: '<div data-stub="checklist" />' },
   AccessChangeBand: { name: 'AccessChangeBand', template: '<div data-stub="band" />' },
   ReservationDraftSummary: { name: 'ReservationDraftSummary', props: ['draft'], template: '<div data-stub="reservation-draft">{{ draft.count }}</div>' },
 };
 
 const baseProps = {
-  onboardingChecklist: null,
   accessChanges: [],
   actionWindowLaunch: null,
   taskStats: { total: 0, overdue: 0, dueSoon: 0 },
@@ -140,21 +138,25 @@ describe('ShowAdminHome', () => {
     expect(wrapper.find('attention-queue-stub [data-stub="reservation-draft"]').exists()).toBe(false);
   });
 
-  it('shows the checklist and the access band only when the server sends them', () => {
-    expect(mountPage().find('[data-stub="checklist"]').exists()).toBe(false);
+  it('shows the access band only when the server sends it', () => {
     expect(mountPage().find('[data-stub="band"]').exists()).toBe(false);
 
     const wrapper = mountPage({
-      onboardingChecklist: { items: [], doneCount: 0 },
       accessChanges: [{ kind: 'started', dutyName: 'X', institutionName: null, date: '2026-09-20', effectiveOn: '2026-09-20', isExOfficio: false }],
     });
 
-    expect(wrapper.find('[data-stub="checklist"]').exists()).toBe(true);
     expect(wrapper.find('[data-stub="band"]').exists()).toBe(true);
   });
 
-  it('no longer starts the welcome tour by itself — the checklist replaces it', () => {
+  it('starts the welcome tour for someone who has not seen it', () => {
     mountPage();
+    vi.advanceTimersByTime(5000);
+
+    expect(startTourIfNew).toHaveBeenCalledOnce();
+  });
+
+  it('leaves the tour for later when the page opens straight into the ActionWindow', () => {
+    mountPage({ actionWindowLaunch: { flow: 'check-in', institution: { id: 'abc', name: 'VU MIF', isInternal: true } } });
     vi.advanceTimersByTime(5000);
 
     expect(startTourIfNew).not.toHaveBeenCalled();

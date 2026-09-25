@@ -3,6 +3,8 @@
     data-slot="shell-top-bar"
     :class="[
       'shrink-0 border-b border-(--border-opaque) bg-background/90 backdrop-blur-sm',
+      // Phones get the context bar instead; a form still needs this bar for its editor controls.
+      !focused && 'max-md:hidden',
       '[.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none',
     ]"
   >
@@ -31,7 +33,7 @@
           :show-all-sections
         />
 
-        <div data-tour="command-palette" class="flex min-w-0 flex-1 items-center justify-end md:justify-start">
+        <div class="flex min-w-0 flex-1 items-center justify-end md:justify-start">
           <PaletteField />
         </div>
 

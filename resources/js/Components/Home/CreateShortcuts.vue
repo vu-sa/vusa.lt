@@ -7,6 +7,7 @@
     variant="home"
     class="max-md:hidden"
     data-slot="create-shortcuts"
+    data-tour="quick-actions"
   >
     <div class="flex flex-wrap gap-3">
       <Button

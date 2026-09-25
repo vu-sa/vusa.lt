@@ -15,7 +15,7 @@
       ref="scrollArea"
       scroll-region
       data-slot="admin-scroll-area"
-      class="min-h-0 flex flex-1 flex-col overflow-auto"
+      class="min-h-0 flex flex-1 flex-col overflow-auto overscroll-y-contain"
       :style="scrollAreaHeight ? {
         '--shell-chrome-height': `${shellChromeHeight}px`,
         '--shell-scroll-height': `${scrollAreaHeight}px`,
@@ -32,12 +32,8 @@
           @create="actionWindow.open()"
         />
         <template v-if="!focused">
-          <!-- Pradžia's sections are all in the phone bottom bar, so its tab row would only repeat it. -->
-          <SectionTabs
-            :workspace="activeWorkspace"
-            :active-section
-            :class="activeWorkspace?.key === 'pradzia' && 'max-md:hidden'"
-          />
+          <MobileContextBar :active-workspace :active-section @menu="menuOpen = true" />
+          <SectionTabs :workspace="activeWorkspace" :active-section class="max-md:hidden" />
         </template>
         <SystemAnnouncement :message="systemMessage" />
       </div>
@@ -73,6 +69,7 @@ import { useElementSize } from '@vueuse/core';
 import { computed, ref } from 'vue';
 
 import MobileBottomBar from './MobileBottomBar.vue';
+import MobileContextBar from './MobileContextBar.vue';
 import MobileMenuPanel from './MobileMenuPanel.vue';
 import SectionTabs from './SectionTabs.vue';
 import ShellTopBar from './ShellTopBar.vue';

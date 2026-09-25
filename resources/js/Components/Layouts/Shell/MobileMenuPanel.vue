@@ -153,6 +153,12 @@
                 {{ $t('shell.account.docs') }}
               </a>
             </li>
+            <li v-if="hasTour">
+              <button type="button" data-slot="mobile-menu-tour" class="u-touch flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-foreground" @click="replayTour">
+                <Map class="size-5 text-muted-foreground" />
+                {{ $t('shell.account.tour') }}
+              </button>
+            </li>
             <li>
               <Link :href="reportProblemHref" prefetch class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground" @click="close">
                 <Bug class="size-5 text-muted-foreground" />
@@ -217,6 +223,7 @@ import {
   Bug,
   Languages,
   LogOut,
+  Map,
   MessagesSquare,
   Moon,
   Plus,
@@ -242,6 +249,7 @@ import {
 } from '@/Composables/useAdminNavigation';
 import { useLogout } from '@/Composables/useLogout';
 import { useStartFm } from '@/Composables/useStartFm';
+import { useTour } from '@/Composables/useTourProvider';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
 
 const props = defineProps<{
@@ -295,6 +303,14 @@ function toggleWorkspace(key: string): void {
 const close = () => {
   open.value = false;
 };
+
+const { hasTour, startTour } = useTour();
+
+// The panel covers the page, so it has to be gone before driver.js measures what it highlights.
+function replayTour(): void {
+  close();
+  nextTick(startTour);
+}
 
 watch(open, (isOpen) => {
   scrollLock.value = isOpen;

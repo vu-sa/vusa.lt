@@ -404,7 +404,7 @@
 
       <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-brand" flush>
         <div class="flex flex-col gap-2 p-4" data-slot="form-field">
-          <Label class="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">{{ $t('Renginio vaizdas') }}</Label>
+          <Label class="text-sm font-bold text-foreground">{{ $t('Renginio vaizdas') }}</Label>
           <VisualOptionSelect
             v-model="heroStyle"
             :options="heroStyleOptions"
