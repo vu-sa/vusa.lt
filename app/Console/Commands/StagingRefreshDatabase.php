@@ -205,7 +205,13 @@ class StagingRefreshDatabase extends Command
     {
         $emptied = [];
 
-        foreach (self::DISPOSABLE_TABLES as $table) {
+        // Rows copied from production point at production SharePoint items that a writable
+        // staging cannot reach; starting empty keeps fileable file lists test-site only.
+        $tables = config('app.sharepoint_read_only') === true
+            ? self::DISPOSABLE_TABLES
+            : [...self::DISPOSABLE_TABLES, 'fileable_files'];
+
+        foreach ($tables as $table) {
             if (Schema::hasTable($table)) {
                 if ($table === 'telescope_entries') {
                     // MySQL cannot truncate a table that another table references.

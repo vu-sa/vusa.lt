@@ -33,6 +33,21 @@ describe('StagingBanner', () => {
     expect(status.classes()).not.toContain('shadow-lg');
   });
 
+  it('tells reviewers SharePoint writes go to the test site when staging SharePoint is writable', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      staging: {
+        isStaging: true,
+        filesReadOnly: true,
+        sharepointReadOnly: false,
+      },
+    }));
+
+    const text = mount(StagingBanner).get('[data-slot="staging-status"]').text();
+
+    expect(text).toContain('SharePoint uploads go to the test site');
+    expect(text).not.toContain('SharePoint is shared with production');
+  });
+
   it('dismisses the staging notice without leaving a spacer', async () => {
     const page = reactive(createMockPage({
       staging: {

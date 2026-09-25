@@ -21,6 +21,10 @@ beforeEach(function (): void {
         'app.staging_basic_auth_enabled',
         'app.files_read_only',
         'app.sharepoint_read_only',
+        'filesystems.sharepoint.client_id',
+        'filesystems.sharepoint.site_id',
+        'filesystems.sharepoint.vusa_drive_id',
+        'filesystems.sharepoint.writable_site_ids',
         'app.staging_refresh.expected_database',
         'app.staging_refresh.expected_database_username',
         "database.connections.{$connection}.database",
@@ -101,6 +105,42 @@ test('the staging isolation command reports every unsafe boundary', function ():
         ->expectsOutputToContain('SCOUT_PREFIX must be staging_')
         ->expectsOutputToContain('staging mailer must be log')
         ->expectsOutputToContain('UMAMI_WEBSITE_ID must be empty')
+        ->assertExitCode(1);
+});
+
+test('a writable staging SharePoint accepts its own app and an allowlisted test site', function (): void {
+    configureSafeStagingIsolation();
+
+    config([
+        'app.sharepoint_read_only' => false,
+        'filesystems.sharepoint.client_id' => 'staging-app',
+        'filesystems.sharepoint.site_id' => 'test-site',
+        'filesystems.sharepoint.vusa_drive_id' => 'test-drive',
+        'filesystems.sharepoint.writable_site_ids' => ['test-site'],
+    ]);
+
+    $this->artisan('staging:verify-isolation')
+        ->expectsOutputToContain('configuration is safe')
+        ->assertExitCode(0);
+});
+
+test('a writable staging SharePoint refuses production identifiers', function (): void {
+    configureSafeStagingIsolation();
+    $production = config('filesystems.sharepoint.production');
+
+    config([
+        'app.sharepoint_read_only' => false,
+        'filesystems.sharepoint.client_id' => $production['client_id'],
+        'filesystems.sharepoint.site_id' => 'unlisted-site',
+        'filesystems.sharepoint.vusa_drive_id' => $production['drive_ids'][0],
+        'filesystems.sharepoint.writable_site_ids' => $production['site_ids'],
+    ]);
+
+    $this->artisan('staging:verify-isolation')
+        ->expectsOutputToContain('SHAREPOINT_CLIENT_ID must be the staging Entra app')
+        ->expectsOutputToContain('SHAREPOINT_WRITABLE_SITE_IDS must not contain a production site')
+        ->expectsOutputToContain('SHAREPOINT_SITE_ID must be listed in SHAREPOINT_WRITABLE_SITE_IDS')
+        ->expectsOutputToContain('SHAREPOINT_VUSA_DRIVE_ID must not be a production drive')
         ->assertExitCode(1);
 });
 

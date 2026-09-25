@@ -136,7 +136,10 @@ class SharepointFileService
      */
     public function uploadFile(UploadedFile $file, string $filename, Model $fileable, array $listItemProperties): FileableFile
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable(
+            config('filesystems.sharepoint.site_id'),
+            config('filesystems.sharepoint.vusa_drive_id'),
+        );
 
         $sharepointService = $this->graph();
 

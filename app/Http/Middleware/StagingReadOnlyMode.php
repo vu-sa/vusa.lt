@@ -94,8 +94,7 @@ class StagingReadOnlyMode
         if (config('app.sharepoint_read_only') && $this->isSharepointWriteRoute($routeName)) {
             return $this->readOnlyResponse(
                 $request,
-                'SharePoint modifications are disabled in staging environment. '.
-                'SharePoint is shared with production.'
+                'SharePoint modifications are disabled in staging environment.'
             );
         }
 

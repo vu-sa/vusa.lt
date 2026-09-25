@@ -106,7 +106,9 @@ return [
 
     'files_read_only' => env('APP_ENV') === 'staging' || env('FILES_READ_ONLY', false),
 
-    'sharepoint_read_only' => env('APP_ENV') === 'staging' || env('SHAREPOINT_READ_ONLY', false),
+    // Staging defaults to read-only; SHAREPOINT_READ_ONLY=false only takes effect once
+    // StagingIsolationService confirms a separate app and test site (see filesystems.sharepoint).
+    'sharepoint_read_only' => (bool) env('SHAREPOINT_READ_ONLY', env('APP_ENV') === 'staging'),
 
     /*
     |--------------------------------------------------------------------------

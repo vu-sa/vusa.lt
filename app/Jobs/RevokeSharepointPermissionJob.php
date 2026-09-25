@@ -44,7 +44,7 @@ class RevokeSharepointPermissionJob implements ShouldQueue
      */
     public function handle(): void
     {
-        if (StagingProtection::sharepointIsReadOnly()) {
+        if (StagingProtection::sharepointIsReadOnly($this->sharepointSiteId, config('filesystems.sharepoint.archive_drive_id'))) {
             return;
         }
 

@@ -24,7 +24,7 @@ class StagingIsolationService
             config('queue.connections.redis.queue') !== 'staging' ? 'REDIS_QUEUE must be staging.' : null,
             config('scout.prefix') !== 'staging_' ? 'SCOUT_PREFIX must be staging_.' : null,
             config('app.files_read_only') !== true ? 'FILES_READ_ONLY must be true.' : null,
-            config('app.sharepoint_read_only') !== true ? 'SHAREPOINT_READ_ONLY must be true.' : null,
+            ...$this->sharepointErrors(),
             config('mail.default') !== 'log' ? 'The staging mailer must be log.' : null,
             config('broadcasting.default') !== 'null' ? 'The staging broadcaster must be null.' : null,
             ! $this->missing(config('webpush.vapid.public_key')) ? 'VAPID_PUBLIC_KEY must be empty.' : null,
@@ -56,6 +56,38 @@ class StagingIsolationService
                 : null,
             ! $this->missing($expectedUsername) && $username !== $expectedUsername
                 ? 'DB_USERNAME does not match STAGING_EXPECTED_DB_USERNAME.'
+                : null,
+        ]));
+    }
+
+    /**
+     * A writable staging SharePoint must use its own Entra app and an allowlisted, non-production site.
+     *
+     * @return list<string>
+     */
+    public function sharepointErrors(): array
+    {
+        if (config('app.env') !== 'staging' || config('app.sharepoint_read_only') === true) {
+            return [];
+        }
+
+        $sharepoint = config('filesystems.sharepoint');
+        $writableSiteIds = $sharepoint['writable_site_ids'] ?? [];
+        $production = $sharepoint['production'];
+
+        return array_values(array_filter([
+            in_array($sharepoint['client_id'], [null, '', $production['client_id']], true)
+                ? 'SHAREPOINT_CLIENT_ID must be the staging Entra app, not production.'
+                : null,
+            $writableSiteIds === [] ? 'SHAREPOINT_WRITABLE_SITE_IDS must be set.' : null,
+            array_intersect($writableSiteIds, $production['site_ids']) !== []
+                ? 'SHAREPOINT_WRITABLE_SITE_IDS must not contain a production site.'
+                : null,
+            ! in_array($sharepoint['site_id'], $writableSiteIds, true)
+                ? 'SHAREPOINT_SITE_ID must be listed in SHAREPOINT_WRITABLE_SITE_IDS.'
+                : null,
+            in_array($sharepoint['vusa_drive_id'], $production['drive_ids'], true)
+                ? 'SHAREPOINT_VUSA_DRIVE_ID must not be a production drive.'
                 : null,
         ]));
     }

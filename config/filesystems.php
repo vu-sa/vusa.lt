@@ -87,6 +87,19 @@ return [
         'tenant_id' => env('SHAREPOINT_TENANT_ID'),
         'archive_drive_id' => env('SHAREPOINT_ARCHIVE_DRIVE_ID'),
         'vusa_drive_id' => env('SHAREPOINT_VUSA_DRIVE_ID'),
+
+        // Staging may only write to these sites (the test site). Empty everywhere else.
+        'writable_site_ids' => array_values(array_filter(explode(',', (string) env('SHAREPOINT_WRITABLE_SITE_IDS', '')))),
+
+        // Hard-coded, not env-driven, so a production .env copied to staging still fails closed.
+        'production' => [
+            'client_id' => '0a8deef8-374f-4a29-8f26-d0eb16062464',
+            'site_ids' => ['cbb85cec-3f73-4867-8101-446082b58722'],
+            'drive_ids' => [
+                'b!7Fy4y3M_Z0iBAURggrWHIqgF1hPcnhJHsPCb0cd27VC7sDDnG_SQTqWB1gU9N7tB',
+                'b!pMfaXjYdIEy8zqO3LWICz9geSweNHJhMi7VW4z5KDW0k2jqzC_i8TaX9RPnDbkJq',
+            ],
+        ],
     ],
 
 ];

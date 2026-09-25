@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\FileableFile;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
@@ -197,6 +198,19 @@ describe('scrubbing personal data', function (): void {
         expect(DB::table('notifications')->count())->toBe(0)
             ->and(DB::table('push_subscriptions')->count())->toBe(0);
     });
+
+    test('it empties production fileable files only when staging SharePoint is writable', function (bool $readOnly, int $remaining): void {
+        config(['app.sharepoint_read_only' => $readOnly]);
+        FileableFile::factory()->create();
+
+        $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
+            ->assertExitCode(0);
+
+        expect(DB::table('fileable_files')->count())->toBe($remaining);
+    })->with([
+        'writable test site' => [false, 0],
+        'read-only' => [true, 1],
+    ]);
 
     test('it empties Telescope tables with a foreign-key relationship', function (): void {
         Schema::drop('telescope_entries_tags');

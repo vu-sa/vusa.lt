@@ -68,9 +68,6 @@ interface StagingProps {
 const staging = computed(() => usePage().props.staging as StagingProps | undefined);
 
 const isStaging = computed(() => staging.value?.isStaging ?? false);
-const hasSharedResources = computed(() =>
-  staging.value?.filesReadOnly || staging.value?.sharepointReadOnly,
-);
 
 const warnings = computed(() => {
   const list: string[] = [];
@@ -79,7 +76,11 @@ const warnings = computed(() => {
   }
   if (staging.value?.sharepointReadOnly) {
     list.push('SharePoint is shared with production (read-only)');
+  } else if (staging.value?.isStaging) {
+    list.push('SharePoint uploads go to the test site');
   }
   return list;
 });
+
+const hasSharedResources = computed(() => warnings.value.length > 0);
 </script>
