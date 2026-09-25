@@ -13,6 +13,10 @@ return [
     'duplicate_open_profile' => 'Peržiūrėti',
     'duplicate_contact_admins' => 'Kreipkis į to padalinio administratorius',
     'no_tenant' => 'Be padalinio',
+    'filters' => [
+        'duty_timing' => 'Pareigų pradžia',
+        'scheduled' => 'Būsimos pareigos',
+    ],
     'validation' => [
         'current_password_required' => 'Dabartinis slaptažodis yra privalomas.',
         'current_password_string' => 'Dabartinis slaptažodis turi būti tekstas.',

@@ -65,6 +65,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
  * @property-read Collection<int, Institution> $administeredInstitutions
+ * @property-read Collection<int, Duty> $authorization_duties
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -83,6 +84,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Institution> $secretariedInstitutions
  * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Duty> $upcoming_duties
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
@@ -253,6 +255,21 @@ class User extends Authenticatable implements GuardsForceDelete
                     });
             })
             ->withTimestamps();
+    }
+
+    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
+    public function authorization_duties(): MorphToMany
+    {
+        return $this->duties()
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                ->orWhere('dutiables.end_date', '>=', now()));
+    }
+
+    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
+    public function upcoming_duties(): MorphToMany
+    {
+        return $this->authorization_duties()
+            ->whereDate('dutiables.start_date', '>', now()->toDateString());
     }
 
     #[\Override]

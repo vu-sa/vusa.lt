@@ -28,6 +28,7 @@ return [
             'queued_mail' => 'Laiškų eilėje',
             'roles' => 'Rolės',
             'users' => 'Naudotojai',
+            'future_duty_holders' => 'Nariai su būsimomis pareigomis',
         ],
     ],
 ];

@@ -43,7 +43,7 @@ class SupportRequestPolicy
         $roleIds = $supportRequest->roles()->pluck('roles.id');
 
         return $user->roles()->whereIn('roles.id', $roleIds)->exists()
-            || $user->current_duties()->whereHas('roles', fn ($query) => $query->whereIn('roles.id', $roleIds))->exists();
+            || $user->authorization_duties()->whereHas('roles', fn ($query) => $query->whereIn('roles.id', $roleIds))->exists();
     }
 
     /**

@@ -88,7 +88,7 @@ class InstitutionAccessService
      */
     public function getUserDutyInstitutionIds(User $user): Collection
     {
-        return $user->current_duties()
+        return $user->authorization_duties()
             ->whereNotNull('institution_id')
             ->pluck('institution_id')
             ->filter()

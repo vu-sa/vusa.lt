@@ -2,7 +2,9 @@
 
 namespace App\Actions;
 
+use App\Http\Requests\IndexUserRequest;
 use App\Models\User;
+use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -17,9 +19,9 @@ final class BuildUserIndexQuery
     /**
      * @return Builder<User>
      */
-    public static function execute(): Builder
+    public static function execute(IndexUserRequest $request, ModelAuthorizer $authorizer): Builder
     {
-        return User::query()
+        $query = User::query()
             ->where(fn (Builder $query) => $query
                 ->whereHas('duties')
                 ->orWhereHas('roles'))
@@ -28,5 +30,35 @@ final class BuildUserIndexQuery
                 'duties.institution:id,tenant_id',
                 'duties.institution.tenant:id,shortname',
             ])->withCount('duties');
+
+        $futureDuty = $request->getFilters()['future_duty'] ?? $request->validated('future_duty');
+
+        return $futureDuty === 'scheduled'
+            ? self::withScheduledDuty($query, $request->user(), $authorizer)
+            : $query;
+    }
+
+    /** @return Builder<User> */
+    public static function scheduledFor(User $actor, ModelAuthorizer $authorizer): Builder
+    {
+        return self::withScheduledDuty(User::query(), $actor, $authorizer);
+    }
+
+    /** @param Builder<User> $query */
+    private static function withScheduledDuty(Builder $query, User $actor, ModelAuthorizer $authorizer): Builder
+    {
+        $tenantIds = $actor->isSuperAdmin() || $authorizer->allows($actor, 'users.read.*')
+            ? null
+            : $authorizer->tenants($actor, 'users.read.padalinys')->pluck('id');
+
+        return $query->whereHas('duties', function (Builder $dutyQuery) use ($tenantIds): void {
+            $dutyQuery->whereDate('dutiables.start_date', '>', now()->toDateString())
+                ->where(fn (Builder $dates) => $dates->whereNull('dutiables.end_date')
+                    ->orWhere('dutiables.end_date', '>=', now()));
+
+            if ($tenantIds !== null) {
+                $dutyQuery->whereHas('institution', fn (Builder $institution) => $institution->whereIn('tenant_id', $tenantIds));
+            }
+        });
     }
 }

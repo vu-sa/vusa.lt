@@ -102,7 +102,7 @@ class DutyService
         $user = request()->user();
         $atstovavimasSettings = app(AtstovavimasSettings::class);
         $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
-        $userInstitutionIds = $user->current_duties()
+        $userInstitutionIds = $user->authorization_duties()
             ->pluck('institution_id')
             ->filter()
             ->unique();
@@ -153,7 +153,7 @@ class DutyService
      * Get only user's directly assigned institutions for the dashboard.
      *
      * This is a lightweight version that only includes institutions where the user
-     * has active duties, plus the ones they have been nominated to administer. Each
+     * has non-ended duties, plus the ones they have been nominated to administer. Each
      * result carries `is_administered` so the UI can say which is which — an
      * administrator is not a member and must not be drawn as one.
      *
@@ -164,7 +164,7 @@ class DutyService
         $user = request()->user();
 
         // Get user's directly assigned institution IDs
-        $dutyInstitutionIds = $user->current_duties()
+        $dutyInstitutionIds = $user->authorization_duties()
             ->pluck('institution_id')
             ->filter()
             ->unique();

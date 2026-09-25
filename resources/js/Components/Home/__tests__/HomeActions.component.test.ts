@@ -131,4 +131,18 @@ describe('home actions', () => {
     expect(wrapper.find('[data-slot="navigation-tiles"]').classes()).toContain('lg:[&>*]:basis-1/4');
     expect(wrapper.findAll('[data-slot="navigation-tiles"] > li')).toHaveLength(4);
   });
+
+  it('lays out two destinations per row in the narrow home column', () => {
+    const wrapper = mount(QuickAccess, {
+      props: {
+        columns: 2,
+        registrationForms: [
+          { key: 'member', href: '/mano/forms/member' },
+          { key: 'student_rep', href: '/mano/forms/reps' },
+        ],
+      },
+    });
+
+    expect(wrapper.find('[data-slot="navigation-tiles"]').classes()).toContain('lg:[&>*]:basis-1/2');
+  });
 });

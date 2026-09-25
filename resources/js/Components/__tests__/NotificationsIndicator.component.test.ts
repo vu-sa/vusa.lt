@@ -190,4 +190,15 @@ describe('NotificationsIndicator', () => {
     const viewAllLink = wrapper.find('a[href*="notifications.index"]');
     expect(viewAllLink.exists()).toBe(true);
   });
+
+  it('keeps notification settings accessible without a spotlight', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage());
+
+    const wrapper = mount(NotificationsIndicator, {
+      global: { stubs: popoverStubs },
+    });
+
+    expect(wrapper.find('a[href*="profile.notifications"]').exists()).toBe(true);
+    expect(wrapper.findComponent({ name: 'SpotlightPopover' }).exists()).toBe(false);
+  });
 });

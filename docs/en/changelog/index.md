@@ -7,6 +7,10 @@ lastUpdated: true
 
 ## v2.23 — Easier navigation on phones (2026-09-26) {#v2-23}
 
+- ✨ **Access before a duty starts** — members assigned an upcoming duty can prepare in the system immediately; they appear in public contacts only when their term begins. The System overview shows their count and links to their list.
+- ✨ **Clearer member list** — phone numbers are no longer shown in the list.
+- ✨ **Fewer Home prompts** — removed the notification-settings highlight by the bell and the access-change band on Home; settings remain available from the bell menu.
+- ✨ **“Go to” beside quick actions** — when Home has no tasks, institutions, or reservation draft in its left column, the links appear two per row beside “Quick actions”.
 - ✨ **More compact list controls on phones** — search and filters share a row, quick filters are at the top of the filter sheet, and active filters scroll sideways so records appear sooner.
 - ✨ **Clearer required fields in problem forms** — one note explains the asterisk, and the missing-fields notice now matches the language switcher’s height.
 - 🔧 **Problem comments work again** — you can read and post comments on a problem without the “Commentable not found” error

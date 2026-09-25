@@ -31,7 +31,7 @@ const institution = (
 describe('useAtstovavimasData', () => {
   it('orders attention insights by backend priority', () => {
     const user = {
-      current_duties: [
+      authorization_duties: [
         { institution: institution('1', 'approaching', 30) },
         { institution: institution('2', 'healthy', 0) },
         { institution: institution('3', 'overdue', 50) },

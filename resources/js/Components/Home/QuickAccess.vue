@@ -6,7 +6,7 @@
       {{ $t('home.quick_access.title') }}
     </h2>
 
-    <NavigationTiles :items="links" :columns="4" class="mt-3" />
+    <NavigationTiles :items="links" :columns class="mt-3" />
   </section>
 </template>
 
@@ -24,8 +24,10 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 const props = withDefaults(defineProps<{
   /** Shared registration forms the user may open (members, student reps). */
   registrationForms?: HomeRegistrationForm[];
+  columns?: 2 | 4;
 }>(), {
   registrationForms: () => [],
+  columns: 4,
 });
 
 const registrationLinks = {

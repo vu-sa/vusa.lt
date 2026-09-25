@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildUserIndexQuery;
 use App\Enums\SupportRequestStatus;
 use App\Http\Controllers\AdminController;
 use App\Models\NotificationDigestQueue;
 use App\Models\Role;
 use App\Models\SupportRequest;
 use App\Models\User;
+use App\Services\ModelAuthorizer;
 use App\Services\SystemMonitorService;
+use App\Services\TanstackTableService;
 use Inertia\Inertia;
 
 /**
@@ -24,7 +27,11 @@ class SistemaDashboardController extends AdminController
 
     private const int LIST_SIZE = 5;
 
-    public function __construct(private readonly SystemMonitorService $monitor) {}
+    public function __construct(
+        private readonly SystemMonitorService $monitor,
+        private readonly ModelAuthorizer $authorizer,
+        private readonly TanstackTableService $tableService,
+    ) {}
 
     public function index()
     {
@@ -34,13 +41,20 @@ class SistemaDashboardController extends AdminController
 
         $canSeeRequests = $user->can('viewAny', SupportRequest::class);
         $canSeeRoles = $user->can('viewAny', Role::class);
+        $canSeeUsers = $user->can('viewAny', User::class);
 
         return $this->inertiaResponse('Admin/Dashboard/ShowSistema', [
             'counts' => [
                 'openRequests' => $canSeeRequests ? SupportRequest::query()->open()->count() : null,
                 'queuedMail' => $canSeeRoles ? NotificationDigestQueue::query()->count() : null,
                 'roles' => $canSeeRoles ? Role::query()->count() : null,
-                'users' => $user->can('viewAny', User::class) ? User::query()->count() : null,
+                'users' => $canSeeUsers ? User::query()->count() : null,
+                'futureDutyHolders' => $canSeeUsers ? $this->tableService->applyPermissionFiltering(
+                    BuildUserIndexQuery::scheduledFor($user, $this->authorizer),
+                    'tenants',
+                    'users.read.padalinys',
+                    $this->authorizer,
+                )->count() : null,
             ],
             'newRequests' => $canSeeRequests ? $this->newRequests() : [],
             // The monitor probes Redis, Typesense and the mailer over the network, so it never blocks the first paint.

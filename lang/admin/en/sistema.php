@@ -28,6 +28,7 @@ return [
             'queued_mail' => 'Emails in the queue',
             'roles' => 'Roles',
             'users' => 'Users',
+            'future_duty_holders' => 'People with upcoming duties',
         ],
     ],
 ];

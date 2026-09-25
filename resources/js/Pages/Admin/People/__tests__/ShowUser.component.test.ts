@@ -72,6 +72,7 @@ const baseUser = {
   has_password: true,
   roles: [],
   current_duties: [makeDuty()],
+  upcoming_duties: [],
   previous_duties: [makeDuty({ id: 'd2', name: 'Kuratorius', pivot: { id: 'p2', start_date: '2022-09-01', end_date: '2023-06-01' } })],
 };
 
@@ -99,13 +100,14 @@ describe('ShowUser.vue', () => {
     vi.mocked(router.get).mockClear?.();
   });
 
-  it('counts duties in the section from both current and previous assignments', () => {
+  it('counts current, upcoming, and previous assignments', () => {
     const wrapper = createWrapper({
       current_duties: [makeDuty(), makeDuty({ id: 'd3', pivot: { id: 'p3', start_date: '2024-07-01' } })],
+      upcoming_duties: [makeDuty({ id: 'd5', pivot: { id: 'p5', start_date: '2999-01-01' } })],
       previous_duties: [makeDuty({ id: 'd4', pivot: { id: 'p4', start_date: '2020-01-01', end_date: '2021-01-01' } })],
     });
 
-    expect(tabs(wrapper)).toContain('duties:3');
+    expect(tabs(wrapper)).toContain('duties:4');
   });
 
   it('takes the tasks count from the task stats', () => {
@@ -114,7 +116,7 @@ describe('ShowUser.vue', () => {
 
   it('groups terms by where they sit today, and never lets someone manage a past one', () => {
     const wrapper = createWrapper({
-      current_duties: [makeDuty(), makeDuty({ id: 'd5', name: 'Būsima', pivot: { id: 'p5', start_date: '2999-01-01', end_date: null } })],
+      upcoming_duties: [makeDuty({ id: 'd5', name: 'Būsima', pivot: { id: 'p5', start_date: '2999-01-01', end_date: null } })],
     });
 
     expect(wrapper.findAll('[data-group]').map(group => group.attributes('data-group'))).toEqual(['current', 'upcoming', 'previous']);

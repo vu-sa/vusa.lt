@@ -45,7 +45,6 @@
         <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('users.show', item.id)" />
       </div>
       <a v-else-if="column.key === 'email' && item.email" :href="`mailto:${item.email}`" class="text-muted-foreground hover:text-brand">{{ item.email }}</a>
-      <a v-else-if="column.key === 'phone' && item.phone" :href="`tel:${item.phone}`" class="tabular-nums text-muted-foreground hover:text-brand">{{ item.phone }}</a>
       <template v-else-if="column.key === 'last_action'">
         <span v-if="item.last_action" class="tabular-nums text-muted-foreground">{{ formatDate(new Date(item.last_action as string)) }}</span>
         <span v-else class="text-muted-foreground">{{ $t('Niekada') }}</span>
@@ -142,6 +141,12 @@ const source = useDatabaseCollectionSource<UserRow>({
     lastPage: props.users.meta.last_page,
   },
   defaultSort: 'name:asc',
+  facets: [{
+    field: 'future_duty',
+    label: $t('users.filters.duty_timing'),
+    single: true,
+    values: [{ value: 'scheduled', label: $t('users.filters.scheduled') }],
+  }],
   sortOptions: [
     { value: 'name:asc', label: $t('Pagal vardą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal vardą (Z–A)') },
@@ -166,7 +171,6 @@ const noUnit = (user: UserRow) => Number(user.duties_count ?? 0) === 0;
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Vardas'), sortField: 'name' },
   { key: 'email', label: $t('El. paštas') },
-  { key: 'phone', label: $t('Telefonas'), class: 'w-40' },
   { key: 'last_action', label: $t('Paskutinis prisijungimas'), class: 'w-48' },
   { key: 'duties', label: $t('Pareigų skaičius'), class: 'w-36' },
   ...(isTrash ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),

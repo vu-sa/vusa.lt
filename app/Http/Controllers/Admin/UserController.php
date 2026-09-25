@@ -43,7 +43,7 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('viewAny', User::class);
 
-        $query = BuildUserIndexQuery::execute();
+        $query = BuildUserIndexQuery::execute($request, $this->authorizer);
 
         $searchableColumns = ['name', 'email', 'phone'];
 
@@ -56,6 +56,7 @@ class UserController extends AdminController
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
+                'handledFilters' => ['future_duty'],
             ]
         );
 
@@ -148,6 +149,7 @@ class UserController extends AdminController
         $user->load([
             'current_duties.institution.tenant',
             'current_duties.current_users:id,name,profile_photo_path',
+            'upcoming_duties.institution.tenant',
             'previous_duties.institution.tenant',
             'roles',
             'tasks.taskable',

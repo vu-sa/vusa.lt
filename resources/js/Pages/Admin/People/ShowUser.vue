@@ -233,6 +233,7 @@ type UserDuty = App.Entities.Duty & { pivot?: Pivot };
 const props = defineProps<{
   user: App.Entities.User & {
     current_duties: UserDuty[];
+    upcoming_duties: UserDuty[];
     previous_duties: UserDuty[];
     roles: Array<{ id: string; name: string }>;
     has_password: boolean;
@@ -267,7 +268,11 @@ const props = defineProps<{
 
 const currentSection = ref('duties');
 
-const allTerms = computed(() => [...(props.user.current_duties ?? []), ...(props.user.previous_duties ?? [])]);
+const allTerms = computed(() => [
+  ...(props.user.current_duties ?? []),
+  ...(props.user.upcoming_duties ?? []),
+  ...(props.user.previous_duties ?? []),
+]);
 const allDuties = allTerms;
 
 const dutyGroups = computed(() => {

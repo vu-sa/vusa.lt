@@ -7,6 +7,10 @@ lastUpdated: true
 
 ## v2.23 — Patogesnis naršymas telefone (2026-09-26) {#v2-23}
 
+- ✨ **Prieiga prieš pareigų pradžią** — būsimas pareigas gavęs narys gali ruoštis darbui sistemoje iš karto; viešuose kontaktuose atsiras tik pradėjęs eiti pareigas. Sistemos apžvalgoje matysi tokių narių skaičių ir atversi jų sąrašą.
+- ✨ **Aiškesnis narių sąrašas** — sąraše neberodomi telefono numeriai.
+- ✨ **Mažiau Pradžios užuominų** — pašalinti pranešimų nustatymų akcentas prie varpelio ir pareigų pokyčių juosta Pradžioje; nustatymai tebepasiekiami per varpelį.
+- ✨ **„Eiti į“ arčiau greitų veiksmų** — kai Pradžios kairėje nėra užduočių, institucijų ar rezervacijos juodraščio, nuorodos rodomos po dvi eilutėje šalia „Greiti veiksmai“.
 - ✨ **Kompaktiškesni sąrašų valdikliai telefone** — paieška ir filtrai telpa vienoje eilutėje, greiti filtrai yra filtrų lange, o aktyvius filtrus gali slinkti į šoną, todėl įrašus pamatai anksčiau.
 - ✨ **Aiškesni privalomi problemos laukai** — viena pastaba paaiškina žvaigždutę, o kalbos perspėjimas dabar tokio pat aukščio kaip perjungiklis.
 - 🔧 **Problemų komentarai vėl veikia** — problemos puslapyje galima matyti ir rašyti komentarus be klaidos „Commentable not found“

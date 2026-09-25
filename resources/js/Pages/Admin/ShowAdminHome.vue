@@ -4,8 +4,6 @@
       <HomeHero :greeting :image="heroImage" :summary="taskSummary" />
     </template>
 
-    <AccessChangeBand v-if="accessChanges.length > 0" :changes="accessChanges" />
-
     <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-primary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <AttentionQueue
@@ -26,6 +24,8 @@
         </Deferred>
 
         <ReservationDraftSummary v-if="reservationDraft" :draft="reservationDraft" variant="home" />
+
+        <QuickAccess v-if="!hasPrimaryContent" :registration-forms :columns="2" data-slot="home-destinations-section" />
       </div>
 
       <aside class="min-w-0">
@@ -33,9 +33,9 @@
       </aside>
     </div>
 
-    <QuickAccess :registration-forms data-slot="home-destinations-section" />
+    <QuickAccess v-if="hasPrimaryContent" :registration-forms data-slot="home-destinations-section" />
 
-    <div class="grid gap-10 border-t border-border pt-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:pt-14" data-slot="home-secondary-section">
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-secondary-section">
       <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
         <UpcomingMeetingsList
           v-if="hasAtstovavimas"
@@ -72,7 +72,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted } from 'vue';
 import type { DriveStep } from 'driver.js';
 
-import AccessChangeBand from '@/Components/Home/AccessChangeBand.vue';
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
 import QuickAccess from '@/Components/Home/QuickAccess.vue';
@@ -138,6 +137,12 @@ const hasAtstovavimas = computed(() => Boolean(
   props.upcomingMeetings?.length
   || page.props.auth?.can?.create?.meeting
   || page.props.auth?.can?.index?.meeting,
+));
+
+const hasPrimaryContent = computed(() => Boolean(
+  visibleTasks.value.length
+  || props.reservationDraft
+  || (hasAtstovavimas.value && (props.institutionsNeedingAttention === undefined || props.institutionsNeedingAttention.length > 0)),
 ));
 
 const actionWindow = useActionWindow();

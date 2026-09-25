@@ -13,10 +13,10 @@ import type {
 export function useAtstovavimasData(
   userGetter: MaybeRefOrGetter<AtstovavimasUser>,
 ) {
-  // User's direct institutions (from current_duties)
+  // User's direct institutions, including duties that begin later.
   const institutions = computed<AtstovavimasInstitution[]>(() => {
     const user = toValue(userGetter);
-    return (user?.current_duties ?? [])
+    return (user?.authorization_duties ?? [])
       .map(duty => duty.institution ?? null)
       .filter((institution): institution is AtstovavimasInstitution => institution !== null)
       .map((inst: AtstovavimasInstitution) => ({

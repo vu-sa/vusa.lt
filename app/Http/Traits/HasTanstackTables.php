@@ -52,6 +52,8 @@ trait HasTanstackTables
                 ? $request->getFilters()
                 : $this->decodeFilters($request->input('filters'));
 
+            $filters = array_diff_key($filters, array_flip($options['handledFilters'] ?? []));
+
             if (! empty($filters)) {
                 $query = $tableService->applyFiltering($query, $filters);
             }

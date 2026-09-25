@@ -77,7 +77,7 @@ import { Skeleton } from '@/Components/ui/skeleton';
 import { formatNearDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
-  counts: { openRequests: number | null; queuedMail: number | null; roles: number | null; users: number | null };
+  counts: { openRequests: number | null; queuedMail: number | null; roles: number | null; users: number | null; futureDutyHolders: number | null };
   newRequests: { id: string; title: string; reporter: string | null; created_at: string | null }[];
   problems?: { check: string; status: string }[];
 }>();
@@ -121,6 +121,14 @@ const numbers = computed<OverviewNumberItem[]>(() => {
           label: $t('sistema.overview.numbers.users'),
           value: props.counts.users,
           href: route('users.index'),
+        },
+    props.counts.futureDutyHolders === null
+      ? null
+      : {
+          key: 'future_duty_holders',
+          label: $t('sistema.overview.numbers.future_duty_holders'),
+          value: props.counts.futureDutyHolders,
+          href: route('users.index', { future_duty: 'scheduled' }),
         },
   ];
 

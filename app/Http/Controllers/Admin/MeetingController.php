@@ -433,8 +433,8 @@ class MeetingController extends AdminController
     private function getAvailableInstitutionsForAttach(Meeting $meeting): Collection
     {
         $user = auth()->user();
-        $userInstitutionIds = $user->loadMissing('current_duties')
-            ->current_duties
+        $userInstitutionIds = $user->loadMissing('authorization_duties')
+            ->authorization_duties
             ->pluck('institution_id')
             ->filter()
             ->unique();

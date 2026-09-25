@@ -17,7 +17,7 @@ class GetUserCoordinators
      */
     public static function execute(User $user): array
     {
-        $institutions = $user->current_duties
+        $institutions = $user->authorization_duties
             ->loadMissing('institution')
             ->pluck('institution')
             ->filter()

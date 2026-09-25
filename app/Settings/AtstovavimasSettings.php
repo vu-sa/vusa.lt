@@ -116,8 +116,8 @@ class AtstovavimasSettings extends Settings
             return true;
         }
 
-        // Check roles through current duties
-        return $user->current_duties()
+        // Check roles through non-ended duties
+        return $user->authorization_duties()
             ->whereHas('roles', fn ($query) => $query->where('id', $roleId))
             ->exists();
     }
@@ -145,7 +145,7 @@ class AtstovavimasSettings extends Settings
                     : collect();
 
             /** @var \Illuminate\Database\Eloquent\Collection<int, Duty> $duties */
-            $duties = $user->current_duties()
+            $duties = $user->authorization_duties()
                 ->with(['roles', 'institution'])
                 ->get();
 

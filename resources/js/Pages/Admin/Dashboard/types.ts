@@ -1,5 +1,5 @@
-export type AtstovavimasUser = Omit<App.Entities.User, 'current_duties'> & {
-  current_duties?: Array<{
+export type AtstovavimasUser = Omit<App.Entities.User, 'authorization_duties'> & {
+  authorization_duties?: Array<{
     institution?: AtstovavimasInstitution;
   }>;
 };

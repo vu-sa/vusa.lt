@@ -49,27 +49,18 @@
           >
             {{ $t('Žymėti skaitytais') }}
           </Button>
-          <SpotlightPopover
-            :title="$t('notifications.preferences.spotlight_title')"
-            :description="$t('notifications.preferences.spotlight_description')"
-            :is-dismissed="!settingsSpotlight.isVisible.value"
-            position="bottom"
-            float
-            @dismiss="settingsSpotlight.dismiss"
+          <Link
+            :href="route('profile.notifications')"
+            :title="$t('shell.account.notifications')"
+            :class="[
+              'flex size-7 items-center justify-center border border-border text-muted-foreground',
+              'transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11',
+            ]"
+            @click="isOpen = false"
           >
-            <Link
-              :href="route('profile.notifications')"
-              :title="$t('shell.account.notifications')"
-              :class="[
-                'flex size-7 items-center justify-center border border-border text-muted-foreground',
-                'transition-colors hover:border-brand hover:text-foreground pointer-coarse:size-11',
-              ]"
-              @click="openSettings"
-            >
-              <Settings class="size-3.5" />
-              <span class="sr-only">{{ $t('shell.account.notifications') }}</span>
-            </Link>
-          </SpotlightPopover>
+            <Settings class="size-3.5" />
+            <span class="sr-only">{{ $t('shell.account.notifications') }}</span>
+          </Link>
         </div>
       </div>
 
@@ -235,18 +226,8 @@ import {
   PopoverTrigger,
 } from '@/Components/ui/popover';
 import { Button } from '@/Components/ui/button';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 const isOpen = ref(false);
-
-// Notification settings moved from categories to one row per notification.
-const settingsSpotlight = useFeatureSpotlight('notification-settings-v2');
-
-const openSettings = () => {
-  isOpen.value = false;
-  settingsSpotlight.dismiss();
-};
 
 const page = usePage();
 const authUser = computed(() => page.props.auth?.user);

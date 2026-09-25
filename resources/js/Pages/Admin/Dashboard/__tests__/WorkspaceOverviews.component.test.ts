@@ -62,7 +62,7 @@ describe('ShowOrganizacija overview', () => {
 });
 
 describe('ShowSistema overview', () => {
-  const counts = { openRequests: 3, queuedMail: 7, roles: 12, users: 900 };
+  const counts = { openRequests: 3, queuedMail: 7, roles: 12, users: 900, futureDutyHolders: 8 };
 
   it('links every number to its list', () => {
     expect(numbers(mountPage(ShowSistema, { counts, newRequests: [], problems: [] }))).toEqual({
@@ -70,6 +70,7 @@ describe('ShowSistema overview', () => {
       queued_mail: '/mocked/mailQueue',
       roles: '/mocked/roles.index',
       users: '/mocked/users.index',
+      future_duty_holders: '/mocked/users.index?future_duty=scheduled',
     });
   });
 
@@ -104,7 +105,7 @@ describe('ShowSistema overview', () => {
 
   it('hides what a user may not open', () => {
     const wrapper = mountPage(ShowSistema, {
-      counts: { openRequests: null, queuedMail: null, roles: null, users: 5 },
+      counts: { openRequests: null, queuedMail: null, roles: null, users: 5, futureDutyHolders: null },
       newRequests: [],
     });
 

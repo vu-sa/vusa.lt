@@ -47,7 +47,7 @@ class AtstovavimasDashboardController extends AdminController
 
         // Get basic user info with duty institution IDs only
         $user = User::query()->where('id', Auth::id())
-            ->with(['current_duties:id,name,institution_id'])
+            ->with(['authorization_duties:id,name,institution_id'])
             ->first();
 
         // Get only user's directly assigned institutions (lightweight, always loaded)
@@ -92,7 +92,7 @@ class AtstovavimasDashboardController extends AdminController
             // User with institutions - always included, even in partial reloads (ensures check-in data stays fresh)
             'user' => Inertia::always(fn () => [
                 ...$user->toArray(),
-                'current_duties' => $user->current_duties->map(function ($duty) use ($userInstitutions) {
+                'authorization_duties' => $user->authorization_duties->map(function ($duty) use ($userInstitutions) {
                     $institution = $userInstitutions->firstWhere('id', $duty->institution_id);
 
                     return [
@@ -148,7 +148,7 @@ class AtstovavimasDashboardController extends AdminController
             'coordinators' => Inertia::defer(fn () => GetUserCoordinators::execute($user), 'secondary'),
             // Reference files kept on the user's duty types ("Studentų atstovai" regulations, templates).
             'referenceDocuments' => Inertia::defer(fn () => GetTypeFiles::forTypes(
-                $user->current_duties->load('types')->flatMap(fn ($duty) => $duty->types)->unique('id')->values(),
+                $user->authorization_duties->load('types')->flatMap(fn ($duty) => $duty->types)->unique('id')->values(),
                 self::REFERENCE_DOCUMENTS_LIMIT,
             ), 'secondary'),
         ]);

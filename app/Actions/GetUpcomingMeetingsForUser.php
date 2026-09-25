@@ -17,7 +17,7 @@ class GetUpcomingMeetingsForUser
      */
     public static function execute(User $user, int $limit = 20): array
     {
-        $dutyInstitutionIds = $user->current_duties()->pluck('duties.institution_id')->filter()->unique()->map(fn ($id): string => (string) $id);
+        $dutyInstitutionIds = $user->authorization_duties()->pluck('duties.institution_id')->filter()->unique()->map(fn ($id): string => (string) $id);
         $followedInstitutionIds = $user->followedInstitutions()->pluck('institutions.id')->map(fn ($id): string => (string) $id);
         $institutionIds = $dutyInstitutionIds->merge($followedInstitutionIds)->unique()->values();
 

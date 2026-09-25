@@ -1,12 +1,14 @@
 <?php
 
 use App\Actions\Schedulable\TaskNotifier;
+use App\Actions\ResolveTaskAssignees;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
@@ -31,7 +33,7 @@ beforeEach(function (): void {
 /**
  * Attach a user to the institution for the given term. A null end date means still serving.
  */
-function attachDuty(Institution $institution, User $user, ?string $start, ?string $end): void
+function attachDuty(Institution $institution, User $user, ?string $start, ?string $end): Duty
 {
     $duty = Duty::factory()->for($institution)->create();
 
@@ -39,6 +41,8 @@ function attachDuty(Institution $institution, User $user, ?string $start, ?strin
         'start_date' => $start,
         'end_date' => $end,
     ]);
+
+    return $duty;
 }
 
 function meetingTaskFor(Institution $institution, array $users, ?string $meetingDate = null): Task
@@ -54,6 +58,19 @@ function meetingTaskFor(Institution $institution, array $users, ?string $meeting
 }
 
 describe('ResolveTaskAudience', function (): void {
+    test('a future holder carries a future meeting task but receives no notification before the term starts', function (): void {
+        $futureHolder = User::factory()->create();
+        $duty = attachDuty($this->institution, $futureHolder, now()->addMonth()->toDateString(), null);
+        $duty->types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+
+        $meetingDate = now()->addMonths(2)->toDateTimeString();
+        $task = meetingTaskFor($this->institution, [$futureHolder], $meetingDate);
+
+        expect(ResolveTaskAssignees::forMeeting($task->taskable)->pluck('id')->all())->toBe([$futureHolder->id])
+            ->and($task->users->pluck('id')->all())->toBe([$futureHolder->id])
+            ->and($task->notifiableUsers())->toBeEmpty();
+    });
+
     test('drops an assignee whose duty in the institution has ended', function (): void {
         $former = User::factory()->create();
         attachDuty($this->institution, $former, now()->subYears(3)->toDateString(), now()->subYear()->toDateString());
