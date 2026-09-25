@@ -6,6 +6,16 @@ use App\Services\SharepointGraphService;
 use App\Support\StagingProtection;
 use Illuminate\Http\UploadedFile;
 
+/** Skips the constructor's Graph calls; the guards only need the target site and drive. */
+function sharepointServiceWithoutGraph(): SharepointGraphService
+{
+    $service = new ReflectionClass(SharepointGraphService::class)->newInstanceWithoutConstructor();
+    $service->siteId = 'site';
+    new ReflectionProperty(SharepointGraphService::class, 'driveId')->setValue($service, 'drive');
+
+    return $service;
+}
+
 beforeEach(function (): void {
     $this->originalEnvironment = config('app.env');
     $this->originalSharepointReadOnly = config('app.sharepoint_read_only');
@@ -47,7 +57,7 @@ test('the global read-only flag blocks even the test site', function (): void {
 });
 
 test('every direct SharePoint mutator refuses to run in staging', function (): void {
-    $service = new ReflectionClass(SharepointGraphService::class)->newInstanceWithoutConstructor();
+    $service = sharepointServiceWithoutGraph();
     $file = UploadedFile::fake()->create('document.pdf');
 
     $operations = [
@@ -71,7 +81,7 @@ test('a read only batch import preserves an existing local public link when Shar
     $document->anonymous_url = 'https://example.sharepoint.com/:b:/existing';
     $document->sharepoint_permission_id = 'permission';
 
-    $service = new ReflectionClass(SharepointGraphService::class)->newInstanceWithoutConstructor();
+    $service = sharepointServiceWithoutGraph();
     $method = new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink');
     $method->invoke($service, $document, null);
 
@@ -92,7 +102,7 @@ test('a production batch import clears an obsolete local public link when ShareP
     $document->anonymous_url = 'https://example.sharepoint.com/:b:/obsolete';
     $document->sharepoint_permission_id = 'permission';
 
-    $service = new ReflectionClass(SharepointGraphService::class)->newInstanceWithoutConstructor();
+    $service = sharepointServiceWithoutGraph();
     $method = new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink');
     $method->invoke($service, $document, null);
 

@@ -262,7 +262,7 @@ class SharepointGraphService
 
     public function updateDriveItemByPath(string $path, array $fields): ?DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable($this->siteId ?? null, $this->driveId ?? null);
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         try {
             $path = rawurlencode($path);
@@ -317,7 +317,7 @@ class SharepointGraphService
 
     public function updateListItem(string $listId, string $listItemId, array $fields): FieldValueSet
     {
-        StagingProtection::ensureSharepointIsWritable($this->siteId ?? null, $this->driveId ?? null);
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         try {
             $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
@@ -456,7 +456,7 @@ class SharepointGraphService
 
     public function createPublicPermission(?string $siteId, string $driveItemId, Carbon|false|null $datetime = null): Models\Permission
     {
-        StagingProtection::ensureSharepointIsWritable($siteId ?? $this->siteId ?? null, $this->driveId ?? null);
+        StagingProtection::ensureSharepointIsWritable($siteId ?? $this->siteId, $this->driveId);
         $this->validateNotEmpty(['driveItemId' => $driveItemId]);
 
         // Validate item is a file, not folder
@@ -503,7 +503,7 @@ class SharepointGraphService
      */
     public function deletePermission(string $driveItemId, string $permissionId): void
     {
-        StagingProtection::ensureSharepointIsWritable($this->siteId ?? null, $this->driveId ?? null);
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $this->graph->drives()
             ->byDriveId($this->driveId)
@@ -522,7 +522,7 @@ class SharepointGraphService
 
     public function uploadDriveItem(string $filePath, UploadedFile $file): DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable($this->siteId ?? null, $this->driveId ?? null);
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $factory = new Psr17Factory;
 
@@ -537,7 +537,7 @@ class SharepointGraphService
 
     public function deleteDriveItem(string $driveItemId): void
     {
-        StagingProtection::ensureSharepointIsWritable($this->siteId ?? null, $this->driveId ?? null);
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->delete()->wait();
     }
@@ -550,7 +550,7 @@ class SharepointGraphService
      */
     public function createFolder(string $folderPath): DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable($this->siteId ?? null, $this->driveId ?? null);
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $pathParts = explode('/', trim($folderPath, '/'));
         $folderName = array_pop($pathParts);
@@ -593,7 +593,7 @@ class SharepointGraphService
      */
     public function uploadUrlShortcut(string $filePath, string $content): DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable($this->siteId ?? null, $this->driveId ?? null);
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $factory = new Psr17Factory;
 
@@ -701,7 +701,7 @@ class SharepointGraphService
             ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission)));
 
         // Add anonymous url to drive items without it
-        if ($driveItemsWithoutAnonymousUrl->isNotEmpty() && ! StagingProtection::sharepointIsReadOnly($this->siteId ?? null, $this->driveId ?? null)) {
+        if ($driveItemsWithoutAnonymousUrl->isNotEmpty() && ! StagingProtection::sharepointIsReadOnly($this->siteId, $this->driveId)) {
             $batch = new BatchRequestContent(
                 $driveItemsWithoutAnonymousUrl->map(function (array $driveItem) {
 
@@ -1019,7 +1019,7 @@ class SharepointGraphService
         $url = $anonymousPermission['link']['webUrl'] ?? null;
 
         if ($url === null) {
-            if (! StagingProtection::sharepointIsReadOnly($this->siteId ?? null, $this->driveId ?? null)) {
+            if (! StagingProtection::sharepointIsReadOnly($this->siteId, $this->driveId)) {
                 $document->anonymous_url = null;
                 $document->sharepoint_permission_id = null;
             }
