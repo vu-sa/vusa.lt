@@ -1,10 +1,7 @@
 name: CI
 
-# `push` is deliberately limited to the two branches that need a run of their own: main and dev are
-# what deploy.yml / deploy-staging.yml hang their `workflow_run` triggers off. Every other branch is
-# covered by `pull_request` — listing them under `push` as well made each push to a branch with an
-# open PR start CI twice, and the two runs never cancel each other because their concurrency keys
-# differ (`refs/heads/<branch>` vs `refs/pull/<n>/merge`).
+# main and dev need push runs for deployment. A same-repository PR from dev mirrors its push run's
+# result below instead of repeating the build and tests; all other PRs run CI normally.
 on:
   push:
     branches:
@@ -18,6 +15,7 @@ concurrency:
 
 jobs:
   changes:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref != 'dev' || github.event.pull_request.head.repo.full_name != github.repository }}
     runs-on: ubuntu-latest
     outputs:
       php: ${{ steps.filter.outputs.php }}
@@ -448,8 +446,34 @@ jobs:
     needs: [changes, php-static-analysis, php-tests, js-tests, js-quality, browser-tests, storybook-tests]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      actions: read
     steps:
+      - name: Mirror dev push CI on its pull request
+        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'dev' && github.event.pull_request.head.repo.full_name == github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DEV_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          for attempt in {1..90}; do
+            result=$(gh api -X GET "repos/$GH_REPO/actions/workflows/ci.yml/runs" \
+              -f branch=dev -f event=push -f head_sha="$DEV_SHA" -f per_page=1 \
+              --jq '.workflow_runs[0] | if . == null then "missing" else (.conclusion // .status) end')
+
+            case "$result" in
+              success) exit 0 ;;
+              missing|queued|in_progress|requested|waiting|pending) sleep 20 ;;
+              *) echo "::error::Dev push CI for $DEV_SHA finished with $result"; exit 1 ;;
+            esac
+          done
+
+          echo "::error::No completed dev push CI found for $DEV_SHA within 30 minutes"
+          exit 1
+
       - name: Set status
+        if: ${{ github.event_name != 'pull_request' || github.head_ref != 'dev' || github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
           STATIC_ANALYSIS_RESULT="${{ needs.php-static-analysis.result }}"
           PHP_TESTS_RESULT="${{ needs.php-tests.result }}"

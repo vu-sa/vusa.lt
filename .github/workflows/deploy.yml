@@ -13,8 +13,8 @@ on:
 
 jobs:
   deploy:
-    # Only deploy if tests were successful or this is a manual trigger
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # Only a successful branch push or a manual trigger can deploy.
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success') }}
     uses: ./.github/workflows/deploy-common.yml
     secrets: inherit
     with:
