@@ -16,7 +16,7 @@ it('applies reader preferences from the admin appearance menu', function (): voi
     $page->click('[data-slot="account-menu-trigger"]');
     $page->page()->locator('[data-slot="appearance-settings-trigger"]')->hover();
     $page->click('[data-slot="accessibility-settings-open"]');
-    $page->assertVisible('[data-slot="admin-accessibility-dialog"]');
+    waitForInertiaRender($page, '[role=dialog] [data-slot="accessibility-settings"]');
 
     $page->click('[aria-label="Padidinti teksto dydį"]');
     expect((float) $page->script('getComputedStyle(document.documentElement).fontSize'))->toBeGreaterThan($initialSize);

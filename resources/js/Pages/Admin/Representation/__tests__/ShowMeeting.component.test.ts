@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import { router } from '@inertiajs/vue3';
 
 import ShowMeeting from '@/Pages/Admin/Representation/ShowMeeting.vue';
-import { commonStubs, stubPopover, stubPopoverContent } from '@/tests/stubs';
+import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -234,11 +234,7 @@ describe('ShowMeeting.vue', () => {
     expect(statuses[0].find('svg').classes()).toContain('size-3.5');
   });
 
-  /**
-   * A long list of incomplete items no longer stacks above the tabs: the page leads with
-   * one action that opens the first item still missing an outcome.
-   */
-  it('leads with opening the first incomplete item when agenda items still lack an outcome', async () => {
+  it('opens the selected incomplete item from the completion shortcuts', async () => {
     const wrapper = createWrapper({
       completion: {
         status: 'incomplete',
@@ -249,11 +245,12 @@ describe('ShowMeeting.vue', () => {
       },
     });
 
-    const walk = wrapper.findAll('button').find(button => button.text().includes('meetings.completion.walk'));
-    await walk?.trigger('click');
+    const completion = wrapper.find('[data-slot="meeting-completion"]');
+    expect(completion.findAll('li')).toHaveLength(2);
+    expect(wrapper.text()).toContain('Papildyti');
+    await completion.find('li button').trigger('click');
 
-    expect(router.visit).toHaveBeenCalledWith('/mocked/agendaItems.show?agendaItem=a2');
-    expect(wrapper.find('[data-slot="meeting-completion"]').findAll('li')).toHaveLength(2);
+    expect(router.visit).toHaveBeenCalledWith('/mocked/agendaItems.edit?agendaItem=a2&mode=edit&focus=votes');
   });
 
   /**
@@ -268,9 +265,9 @@ describe('ShowMeeting.vue', () => {
 
     const menu = wrapper.find('[data-testid="dropdown-menu-content"]');
 
-    expect(wrapper.text()).toContain('meetings.record.edit_meeting');
+    expect(wrapper.text()).toContain('Redaguoti posėdį');
     expect(menu.text()).toContain('Pridėti instituciją');
-    expect(menu.text()).not.toContain('meetings.record.edit_meeting');
+    expect(menu.text()).not.toContain('Redaguoti posėdį');
   });
 
   it('opens the tab named by the ?tab= URL parameter', () => {
@@ -313,7 +310,7 @@ describe('ShowMeeting.vue', () => {
     });
   });
 
-  describe('meeting picker', () => {
+  describe('meeting navigation', () => {
     const recordNavigation = {
       position: 2,
       total: 3,
@@ -321,36 +318,25 @@ describe('ShowMeeting.vue', () => {
       nextHref: '/m/later',
       previousLabel: '02-04',
       nextLabel: '04-04',
-      meetings: [
-        { id: 'earlier', start_time: '2025-12-04T10:00:00.000Z', href: '/m/earlier' },
-        { id: 'meet1', start_time: '2026-03-04T10:00:00.000Z', href: '/m/meet1' },
-        { id: 'later', start_time: '2026-04-04T10:00:00.000Z', href: '/m/later' },
-      ],
     };
 
-    const mountWithPicker = () => mount(ShowMeeting, {
-      props: {
-        meeting: baseMeeting,
-        representatives: [],
-        completion: { status: 'complete', missingActions: [] },
-        recordNavigation,
-      },
-      global: { stubs: { ...stubs, Popover: stubPopover, PopoverTrigger: { template: '<div><slot /></div>' }, PopoverContent: stubPopoverContent } },
-    });
+    const mountWithNavigation = () => createWrapper({ recordNavigation });
 
-    it('lists the institution\'s meetings newest first, grouped by year', () => {
-      const wrapper = mountWithPicker();
+    it('shows the meeting position and opens the neighbouring meetings', async () => {
+      const wrapper = mountWithNavigation();
 
-      expect(wrapper.find('[data-testid="meeting-picker-trigger"]').text()).toContain('2026-03-04');
-      expect(wrapper.findAll('[data-testid="meeting-picker-item"]').map(item => item.text().slice(0, 10)))
-        .toEqual(['2026-04-04', '2026-03-04', '2025-12-04']);
+      expect(wrapper.text()).toContain('2 / 3');
+      await wrapper.find('button[aria-label="Ankstesnis įrašas"]').trigger('click');
+      expect(router.visit).toHaveBeenCalledWith('/m/earlier');
+      await wrapper.find('button[aria-label="Kitas įrašas"]').trigger('click');
+      expect(router.visit).toHaveBeenCalledWith('/m/later');
     });
 
     it('labels ‹ › with the neighbouring dates', () => {
-      const wrapper = mountWithPicker();
+      const wrapper = mountWithNavigation();
 
-      expect(wrapper.find('button[aria-label^="meetings.record.previous_meeting"]').text()).toBe('02-04');
-      expect(wrapper.find('button[aria-label^="meetings.record.next_meeting"]').text()).toBe('04-04');
+      expect(wrapper.find('button[aria-label="Ankstesnis įrašas"]').text()).toBe('02-04');
+      expect(wrapper.find('button[aria-label="Kitas įrašas"]').text()).toBe('04-04');
     });
   });
 });

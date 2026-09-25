@@ -50,7 +50,8 @@ it('keeps a saved dark choice', function (): void {
 
     $page = visitPublicSubdomain('www', '/lt/naujienos');
     $page->script('localStorage.setItem("vueuse-color-scheme", "dark")');
-    $page->navigate('/lt/naujienos');
+    // The full URL: a relative navigate() resolves against the plugin's 127.0.0.1 origin, whose assets are CORS-blocked.
+    $page->navigate($page->script('location.href'));
     waitForInertiaRender($page);
 
     expect($page->script('localStorage.getItem("vueuse-color-scheme")'))->toBe('dark')

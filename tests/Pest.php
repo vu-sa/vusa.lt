@@ -209,6 +209,7 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
     // service-worker stub before the login app can attempt a registration.
     $page = visit('/up');
     disableServiceWorker($page);
+    ignoreResizeObserverLoopErrors($page);
 
     $page->navigate('/login');
     waitForInertiaRender($page);
@@ -274,6 +275,31 @@ function disableServiceWorker(PendingAwaitablePage|AwaitableWebpage $page): void
                 .catch(() => {});
         })()
         JS);
+}
+
+/**
+ * Keep Chromium's "ResizeObserver loop completed with undelivered notifications" out of
+ * assertNoJavaScriptErrors(): a benign layout-timing warning that users never see. The plugin's
+ * collector listens first, so the entry is pruned from its array afterwards rather than blocked.
+ */
+function ignoreResizeObserverLoopErrors(PendingAwaitablePage|AwaitableWebpage $page): void
+{
+    $filter = <<<'JS'
+        window.addEventListener('error', (event) => {
+            if (!event.message?.startsWith('ResizeObserver loop')) {
+                return;
+            }
+            setTimeout(() => {
+                const collector = window.__pestBrowser;
+                if (collector) {
+                    collector.jsErrors = collector.jsErrors.filter((error) => !error.message?.startsWith('ResizeObserver loop'));
+                }
+            });
+        });
+        JS;
+
+    $page->script("(() => { {$filter} })()");
+    $page->page()->context()->addInitScript("(() => { {$filter} })()");
 }
 
 /**

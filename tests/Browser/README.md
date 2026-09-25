@@ -9,7 +9,7 @@ rendered HTML or Inertia props.
 ## Running
 
 ```bash
-vendor/bin/sail pest tests/Browser
+vendor/bin/sail pest tests/Browser --parallel
 ```
 
 Browser configuration (`pest()->browser()->timeout()`, `inDarkMode()`, …) belongs in
@@ -33,16 +33,19 @@ If you ran that (or the full `dev/sailsetup.sh` bootstrap) already, you have eve
 ./dev/storybook-setup.sh
 ```
 
-Additionally, tests that navigate between **public, tenant-subdomain-routed pages** (most of them —
-see "The subdomain/SmartLink gotcha" below) need `www.vusa.test` to resolve to `127.0.0.1` from
-**inside** the Sail container, not just your host machine's `/etc/hosts`:
+Tests that visit **public, tenant-subdomain-routed pages** need `www.vusa.test` to resolve to
+`127.0.0.1` from **inside** the Sail container. `docker-compose.yml` maps it via the
+`laravel.test` service's `extra_hosts`, so it survives container recreation. If you pulled that
+change, run `vendor/bin/sail up -d` once to recreate the container. A test visiting another
+subdomain needs its own `extra_hosts` entry. (CI adds the same entry as a one-off `/etc/hosts`
+step; see `.github/workflows/ci.yml`'s `browser-tests` job.)
 
-```bash
-vendor/bin/sail root-shell -c "echo '127.0.0.1 www.vusa.test' >> /etc/hosts"
-```
+## What belongs here
 
-This doesn't persist across container recreation — re-run it if `sail down` / `sail up` wipes it.
-(CI adds the same entry as a one-off step; see `.github/workflows/ci.yml`'s `browser-tests` job.)
+Read `.ai/rules/browser.md` before adding a test. In short: only behaviour a real browser can
+prove (SPA navigation, computed layout and overflow, pointer/keyboard interaction, a real save
+round-trip, "mounts with no JS errors"). Structure and copy assertions go in Vitest. Select by
+`data-testid` / `data-slot` / scoped role, not by copy that may render twice (desktop and phone bars).
 
 ## The subdomain/SmartLink gotcha
 
@@ -80,9 +83,7 @@ across `RefreshDatabase` test boundaries.
 
 `loginAsAdmin()` (in `tests/Pest.php`) therefore calls `disableServiceWorker()`, which stubs
 `navigator.serviceWorker.register` in the live document *and* as a context init script for every
-future document, and unregisters anything the page already managed to register. MailQueueTest
-asserts the registrations count stays at zero — copy that assertion if you add another
-full-page-navigation admin test.
+future document, and unregisters anything the page already managed to register.
 
 ## The client-render gotcha (and why waitForFunction/waitForURL won't help)
 

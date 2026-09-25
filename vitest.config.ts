@@ -9,6 +9,7 @@ import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
+import { VitePWA } from 'vite-plugin-pwa';
 
 import { generateI18nTranslationFiles } from './vite-plugins/i18n-split';
 
@@ -21,9 +22,8 @@ const alias = {
 };
 
 /**
- * Mirrors the SFC-handling half of `vite.config.mts`. Inline project configs do NOT inherit
- * root-level `plugins`, so every project must build its own list — and it has to stay in step
- * with the app config, or a module resolves differently under test than it does in a build.
+ * Mirrors the SFC-handling half of `vite.config.mts`. Each project builds its own plugin list,
+ * which must stay in step with the app config so modules resolve the same way in tests and builds.
  * The `unit` project previously had no plugins at all, which is why walking a spec's dependency
  * graph (what --changed does) died on the first `.vue` file it reached.
  */
@@ -80,6 +80,7 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    clearMocks: false,
     // Beyond the defaults (vitest config, package.json): files every spec depends on implicitly
     // through setupFiles, which the import graph therefore cannot attribute to any one test.
     forceRerunTriggers: [
@@ -110,6 +111,8 @@ export default defineConfig({
         plugins: [
           ...sfcPlugins(),
           storybookTest(),
+          // Stories can import the app shell, which dynamically imports this PWA virtual module.
+          VitePWA({ devOptions: { enabled: false } }),
         ],
         resolve: {
           alias: {

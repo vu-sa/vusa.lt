@@ -18,6 +18,7 @@ test-results.junit.xml
 /storage/clockwork/
 /storage/backups
 coverage/*
+/.vitest
 
 # === Build outputs ===
 public/build

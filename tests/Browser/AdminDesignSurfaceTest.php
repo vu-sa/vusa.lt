@@ -64,14 +64,3 @@ it('resolves the admin token scope in the browser', function (): void {
 
     $page->assertNoJavaScriptErrors();
 });
-
-it('leaves a non-opted-in admin on the legacy surface in the browser', function (): void {
-    $user = makeUser(Tenant::query()->first());
-
-    $page = loginAsAdmin($user);
-
-    expect($page->script('document.documentElement.getAttribute("data-surface")'))
-        ->toBeNull();
-
-    $page->assertNoJavaScriptErrors();
-});

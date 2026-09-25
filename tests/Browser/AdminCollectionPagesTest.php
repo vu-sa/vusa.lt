@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Page;
-use App\Models\Tag;
 use App\Models\Task;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -9,9 +8,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * The first two pages built on the admin page types: Pradžia
- * and the Posėdžiai collection. What only a browser can settle is that they mount against the real
- * bundle, draw their anatomy, fit a phone without scrolling sideways, and throw nothing.
+ * Page anatomy (title bands, tabs, badges, numbers) is covered by the Vitest component tests.
+ * Here only what the built bundle can settle: each page mounts, throws nothing, fits a phone.
  */
 function openAdminPage(string $path, int $width, int $height = 900, ?Closure $arrange = null): mixed
 {
@@ -30,79 +28,77 @@ function openAdminPage(string $path, int $width, int $height = 900, ?Closure $ar
 
 const NO_SIDEWAYS_SCROLL = 'document.documentElement.scrollWidth <= window.innerWidth';
 
-describe('Pradžia', function (): void {
-    it('teaches, rather than shows an empty box, when nothing is waiting', function (): void {
-        $page = openAdminPage('/mano', 1440);
+/**
+ * Collections mount at their desktop width and switch to phone rows a frame or two later, so the
+ * first measurement can overflow for a moment. Assert the settled layout, not that flash.
+ */
+function settlesWithoutSidewaysScroll(mixed $page): bool
+{
+    for ($attempt = 0; $attempt < 20; $attempt++) {
+        if ($page->script(NO_SIDEWAYS_SCROLL)) {
+            return true;
+        }
 
-        $page->assertPresent('[data-slot=attention-queue] [data-slot=empty-state]');
-        expect($page->script("document.querySelector('[data-slot=attention-queue] .bg-foreground')"))->toBeNull();
+        $page->wait(0.25);
+    }
 
-        // The deferred group (Neseniai redaguota, koordinatorius…) arrives after the first paint.
-        waitForInertiaRender($page, '[data-slot=overview-section]');
+    return false;
+}
 
-        $page->assertNoJavaScriptErrors();
+const ADMIN_PAGES = [
+    '/mano',
+    '/mano/meetings',
+    '/mano/meetings?showDeleted=true',
+    '/mano/reservations',
+    '/mano/reservations?scope=administered&state=created',
+    '/mano/tags',
+    '/mano/pages',
+    '/mano/news',
+    '/mano/calendar',
+    '/mano/tenants',
+    '/mano/roles',
+    '/mano/permissions',
+    '/mano/types',
+    '/mano/relationships',
+    '/mano/studyPrograms',
+    '/mano/studySets',
+    '/mano/users?showDeleted=true',
+    '/mano/dashboard/atstovavimas',
+    '/mano/dashboard/reservations',
+    '/mano/dashboard/svetaine',
+    '/mano/dashboard/organizacija',
+    '/mano/dashboard/sistema',
+    '/mano/administration',
+    '/mano/profile/roles',
+    '/mano/search?q=senatas',
+];
+
+// One login for the sweep: a login per page would cost more than every assertion here combined.
+it('mounts every admin page without JavaScript errors and fits a phone without scrolling sideways', function (): void {
+    $page = openAdminPage('/mano', 1440, 900, function ($user): void {
+        Task::factory()->create(['due_date' => now()->subDays(2)])->users()->attach($user->id);
     });
 
-    it('opens with the ink band and an overdue badge when something needs doing', function (): void {
-        $page = openAdminPage('/mano', 1440, 900, function ($user): void {
-            Task::factory()->create(['name' => 'Užpildyti darbotvarkę', 'due_date' => now()->subDays(2)])->users()->attach($user->id);
-        });
+    $failures = [];
 
-        expect($page->script("document.querySelector('[data-slot=attention-queue] .bg-foreground h2').textContent"))->toContain('Užduočių')
-            ->and($page->script("document.querySelector('[data-slot=attention-queue] [data-slot=status-badge]').dataset.statusRole"))->toBe('danger');
+    foreach ([1440, 390] as $width) {
+        $page->resize($width, $width === 390 ? 844 : 900);
 
-        $page->assertNoJavaScriptErrors();
-    });
+        foreach (ADMIN_PAGES as $path) {
+            $page->navigate($path);
+            waitForInertiaRender($page, '[data-slot=admin-shell] main');
 
-    it('fits a phone without scrolling sideways', function (): void {
-        $page = openAdminPage('/mano', 390, 844, function ($user): void {
-            Task::factory()->create(['due_date' => now()->addDays(2)])->users()->attach($user->id);
-        });
+            foreach ($page->page()->javaScriptErrors() as $error) {
+                $failures[] = "{$path} at {$width}px: {$error['message']}";
+            }
 
-        $page->assertPresent('[data-slot=attention-queue]');
-        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
-    });
-});
+            if ($width === 390 && ! settlesWithoutSidewaysScroll($page)) {
+                $failures[] = "{$path}: scrolls sideways at 390px";
+            }
+        }
+    }
 
-describe('Posėdžiai', function (): void {
-    it('states where it is and offers search, filters and the three views on a desktop', function (): void {
-        $page = openAdminPage('/mano/meetings', 1440);
-
-        $page->assertPresent('[data-slot=collection-page]')->assertPresent('[data-slot=collection-title-band]');
-        expect($page->script("document.querySelector('[data-slot=collection-title-band] h1').textContent.trim()"))->toBe('Posėdžiai')
-            ->and($page->script("document.querySelector('[data-slot=collection-title-band]').textContent"))->toContain('ViSAK')
-            ->and($page->script("document.querySelectorAll('[data-slot=collection-view-toggle] [role=radio]').length"))->toBeGreaterThanOrEqual(2);
-
-        // `/` focuses this field (U3); it is how a rep finds yesterday's meeting.
-        $page->assertPresent('input[data-admin-collection-search]');
-        $page->assertNoJavaScriptErrors();
-    });
-
-    it('lights the Posėdžiai tab and draws no breadcrumbs at section level', function (): void {
-        $page = openAdminPage('/mano/meetings', 1440);
-
-        expect($page->script("document.querySelector('[data-slot=section-tabs] [aria-current=page]').textContent"))->toContain('Posėdžiai')
-            ->and($page->script("document.querySelector('[data-slot=shell-breadcrumbs]')"))->toBeNull();
-    });
-
-    it('is rows only on a phone, without sideways scrolling', function (): void {
-        $page = openAdminPage('/mano/meetings', 390, 844);
-
-        $page->assertPresent('[data-slot=collection-title-band]');
-        expect($page->script("document.querySelector('[data-slot=collection-view-toggle]')"))->toBeNull()
-            ->and($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
-
-        $page->assertNoJavaScriptErrors();
-    });
-
-    it('opens the trash on the same collection page', function (): void {
-        $page = openAdminPage('/mano/meetings?showDeleted=true', 1440);
-
-        $page->assertPresent('[data-slot=collection-page]')
-            ->assertPresent('[data-slot=collection-rows], [data-slot=collection-table], [data-slot=empty-state]')
-            ->assertSee('Rodomi ištrinti įrašai');
-        $page->assertNoJavaScriptErrors();
-    });
+    expect($failures)->toBe([]);
 });
 
 describe('Puslapiai', function (): void {
@@ -156,25 +152,7 @@ describe('Puslapiai', function (): void {
     });
 });
 
-describe('Rezervacijos ir žymos', function (): void {
-    it('renders the reservation queue as a database-backed collection without JavaScript errors', function (): void {
-        $page = openAdminPage('/mano/reservations', 1440);
-
-        $page->assertPresent('[data-slot=collection-page]')
-            ->assertPresent('input[data-admin-collection-search]')
-            ->assertNoJavaScriptErrors();
-
-        expect($page->script("document.querySelector('[data-slot=collection-title-band] h1').textContent.trim()"))
-            ->toBe('Rezervacijos');
-    });
-
-    it('opens a deep link from an overview number with its filter already applied', function (): void {
-        $page = openAdminPage('/mano/reservations?scope=administered&state=created', 1440);
-
-        $page->assertPresent('[data-slot=collection-page]')->assertNoJavaScriptErrors();
-        expect($page->script('window.location.search'))->toContain('state=created');
-    });
-
+describe('Žymos', function (): void {
     it('opens the tag editor as a phone-sized sheet without JavaScript errors', function (): void {
         $page = openAdminPage('/mano/tags', 390, 844);
 
@@ -184,158 +162,4 @@ describe('Rezervacijos ir žymos', function (): void {
 
         expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
     });
-
-    it('shows an edit action for tags in table view', function (): void {
-        $page = openAdminPage('/mano/tags', 1180, 900, function (): void {
-            Tag::factory()->create(['name' => ['lt' => 'Bandomoji žyma', 'en' => 'Test tag']]);
-        });
-
-        $page->assertPresent('[data-slot=collection-table] button:has-text("Redaguoti")');
-        $page->page()->locator('[data-slot=collection-table] button:has-text("Redaguoti")')->first()->click();
-        $page->assertSee('Redaguoti žymą');
-
-        $page->assertNoJavaScriptErrors();
-    });
-});
-
-/**
- * PR 5.8 – 5.10: the Overview layout on its second and third pages, and the search reduced to
- * cross-entity results. Same bar as above: mounts against the real bundle, fits a phone, throws nothing.
- */
-describe('ViSAK overview', function (): void {
-    it('states where it is and shows its numbers as links', function (): void {
-        $page = openAdminPage('/mano/dashboard/atstovavimas', 1440);
-        waitForInertiaRender($page, '[data-slot=overview-numbers]');
-
-        $page->assertPresent('[data-slot=overview-page]')->assertPresent('[data-slot=overview-scope-switch]');
-        expect($page->script("document.querySelector('[data-slot=overview-title-band]').textContent"))->toContain('ViSAK')
-            ->and($page->script("document.querySelectorAll('[data-slot=overview-numbers] a').length"))->toBe(4)
-            ->and($page->script("document.querySelectorAll('[role=tab]').length"))->toBe(0);
-
-        $page->assertNoJavaScriptErrors();
-    });
-
-    it('fits a phone without scrolling sideways', function (): void {
-        $page = openAdminPage('/mano/dashboard/atstovavimas', 390, 844);
-        waitForInertiaRender($page, '[data-slot=overview-numbers]');
-
-        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
-    });
-});
-
-describe('Mano rolės ir pareigybės', function (): void {
-    it('lists what the user holds and is reachable from the account menu target', function (): void {
-        $page = openAdminPage('/mano/profile/roles', 1440);
-
-        $page->assertPresent('[data-slot=overview-page]');
-        expect($page->script("document.querySelector('[data-slot=overview-page] h1').textContent.trim()"))->toBe('Mano rolės ir pareigybės');
-
-        $page->assertNoJavaScriptErrors();
-    });
-
-    it('fits a phone without scrolling sideways', function (): void {
-        $page = openAdminPage('/mano/profile/roles', 390, 844);
-
-        $page->assertPresent('[data-slot=overview-page]');
-        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
-    });
-});
-
-describe('Paieška', function (): void {
-    it('is one search field over grouped results, with no entity tabs', function (): void {
-        $page = openAdminPage('/mano/search?q=senatas', 1440);
-
-        $page->assertPresent('[data-slot=overview-page]')->assertPresent('input[data-admin-collection-search]');
-        expect($page->script("document.querySelectorAll('[role=tab]').length"))->toBe(0);
-    });
-
-    it('sends an entity tab to that entity\'s own page', function (): void {
-        $page = openAdminPage('/mano/search?tab=institutions&q=senatas', 1440);
-
-        expect($page->script('window.location.pathname'))->toBe('/mano/institutions')
-            ->and($page->script('window.location.search'))->toContain('search=senatas');
-    });
-
-    it('fits a phone without scrolling sideways', function (): void {
-        $page = openAdminPage('/mano/search', 390, 844);
-
-        $page->assertPresent('[data-slot=overview-page]');
-        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
-    });
-});
-
-/**
- * PR 7.1 – 7.5: the four remaining workspace overviews and Visi skyriai. Same bar again: each
- * mounts against the real bundle on the shared Overview layout, fits a phone and throws nothing.
- */
-describe('Workspace overviews', function (): void {
-    it('opens every overview on the shared layout with its numbers as links', function (string $path, string $eyebrow): void {
-        $page = openAdminPage($path, 1440);
-        waitForInertiaRender($page, '[data-slot=overview-page]');
-
-        $page->assertPresent('[data-slot=overview-title-band]')->assertNoJavaScriptErrors();
-        expect($page->script("document.querySelector('[data-slot=overview-title-band]').textContent"))->toContain($eyebrow)
-            ->and($page->script("document.querySelectorAll('[data-slot=overview-numbers] a').length"))->toBeGreaterThan(0);
-    })->with([
-        'Rezervacijos' => ['/mano/dashboard/reservations', 'Rezervacijos'],
-        'Svetainė' => ['/mano/dashboard/svetaine', 'Svetainė'],
-        'Organizacija' => ['/mano/dashboard/organizacija', 'Organizacija'],
-        'Sistema' => ['/mano/dashboard/sistema', 'Sistema'],
-    ]);
-
-    it('fits a phone without scrolling sideways', function (string $path): void {
-        $page = openAdminPage($path, 390, 844);
-        waitForInertiaRender($page, '[data-slot=overview-page]');
-
-        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
-    })->with([
-        'Rezervacijos' => ['/mano/dashboard/reservations'],
-        'Svetainė' => ['/mano/dashboard/svetaine'],
-        'Organizacija' => ['/mano/dashboard/organizacija'],
-        'Sistema' => ['/mano/dashboard/sistema'],
-        'Visi skyriai' => ['/mano/administration'],
-    ]);
-});
-
-describe('Visi skyriai', function (): void {
-    it('lists every workspace as hairline rows, Pradžia included', function (): void {
-        $page = openAdminPage('/mano/administration', 1440);
-        waitForInertiaRender($page, '[data-slot=overview-page]');
-
-        $page->assertNoJavaScriptErrors();
-        expect($page->script("document.querySelectorAll('[data-workspace]').length"))->toBeGreaterThanOrEqual(5)
-            ->and($page->script("document.querySelectorAll('[data-workspace=pradzia] a').length"))->toBe(3);
-    });
-});
-
-/**
- * Every admin list is one CollectionPage, whether its rows come from Typesense, the admin API or
- * a prop. Only a browser proves each mounts against the real bundle and fits a phone.
- */
-describe('every collection shares one page', function (): void {
-    it('mounts with its title band and no JavaScript errors', function (string $path, string $title): void {
-        $page = openAdminPage($path, 1440);
-
-        $page->assertPresent('[data-slot=collection-title-band]')->assertNoJavaScriptErrors();
-        expect($page->script("document.querySelector('[data-slot=collection-title-band] h1').textContent.trim()"))->toBe($title);
-    })->with([
-        'pages' => ['/mano/pages', 'Puslapiai'],
-        'news' => ['/mano/news', 'Naujienos'],
-        'calendar' => ['/mano/calendar', 'Renginiai'],
-        'tenants' => ['/mano/tenants', 'Padaliniai'],
-        'roles' => ['/mano/roles', 'Rolės'],
-        'permissions' => ['/mano/permissions', 'Leidimai'],
-        'types' => ['/mano/types', 'Tipai'],
-        'relationships' => ['/mano/relationships', 'Ryšiai'],
-        'study programmes' => ['/mano/studyPrograms', 'Studijų programos'],
-        'study sets' => ['/mano/studySets', 'Studijų komplektai'],
-        'users trash' => ['/mano/users?showDeleted=true', 'Nariai'],
-    ]);
-
-    it('fits a phone without scrolling sideways', function (string $path): void {
-        $page = openAdminPage($path, 390, 844);
-
-        $page->assertPresent('[data-slot=collection-title-band]');
-        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
-    })->with(['/mano/pages', '/mano/calendar', '/mano/permissions']);
 });

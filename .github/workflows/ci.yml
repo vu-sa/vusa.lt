@@ -222,7 +222,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
 
     - name: Install npm dependencies
@@ -377,7 +377,7 @@ jobs:
       run: echo "127.0.0.1 www.vusa.test" | sudo tee -a /etc/hosts
 
     - name: Run browser tests
-      run: vendor/bin/pest tests/Browser --compact
+      run: vendor/bin/pest tests/Browser --parallel --compact
 
     # A bare Playwright timeout says nothing about *why* the page never rendered. The screenshot
     # and captured HTML (see captureBrowserDiagnostics() in tests/Pest.php) separate "still

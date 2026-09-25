@@ -69,8 +69,8 @@ it('edits a hero button through its hotspot popover and the change survives a sa
     $page->click('button[title="Uždaryti"]');
     $page->page()->waitForSelector('button:has-text("Redaguoti turinį")', ['timeout' => 10_000]);
 
-    $page->click('button:has-text("Išsaugoti")');
-    waitForInertiaRender($page, '.text-green-600:has-text("Išsaugota")');
+    $page->click('[data-testid=form-page-save]');
+    waitForInertiaRender($page, '[role=status]:has-text("Visi pakeitimai išsaugoti")');
 
     expect(
         ContentPart::query()->where('content_id', $this->page->content_id)->first()->json_content['buttons'][0]['text']

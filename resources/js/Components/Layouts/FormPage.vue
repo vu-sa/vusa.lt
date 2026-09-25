@@ -60,6 +60,7 @@
             :form="formId"
             class="hidden md:inline-flex"
             :disabled="processing || disabled"
+            data-testid="form-page-save"
           >
             <Loader2 v-if="processing" class="size-4 animate-spin" />
             <Save v-else class="size-4" />

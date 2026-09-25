@@ -96,7 +96,7 @@
                 <!-- The root renders no element, so the breakpoint class lives on the trigger. -->
                 <DropdownMenu v-if="menuActions.length">
                   <DropdownMenuTrigger as-child>
-                    <Button variant="outline" size="icon-lg" class="hidden size-11 md:inline-flex" :aria-label="$t('Daugiau veiksmų')">
+                    <Button variant="outline" size="icon-lg" class="hidden size-11 md:inline-flex" :aria-label="$t('Daugiau veiksmų')" data-testid="record-overflow-trigger">
                       <MoreHorizontal class="size-4" />
                     </Button>
                   </DropdownMenuTrigger>
