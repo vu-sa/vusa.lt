@@ -24,7 +24,10 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     usesTypesense();
-    config(['scout.queue' => false]);
+    config([
+        'scout.queue' => false,
+        'scout.typesense.client-settings.admin_search_key' => 'test-admin-search-key',
+    ]);
 
     $this->publicType = Type::factory()->create();
     app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$this->publicType->id]])->save();
@@ -40,7 +43,7 @@ function parityKeyFilter(User $user, string $collection): string
     $keys = (new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class)))
         ->generateScopedKeysForUser($user);
 
-    return json_decode(substr(base64_decode($keys['collections'][$collection]['key']), 48), true)['filter_by'];
+    return json_decode(substr(base64_decode($keys['collections'][$collection]['key']), 48), true, flags: JSON_THROW_ON_ERROR)['filter_by'];
 }
 
 /**
