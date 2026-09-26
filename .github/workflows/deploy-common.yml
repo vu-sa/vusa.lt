@@ -123,6 +123,11 @@ jobs:
       - name: Setup Typst
         uses: typst-community/setup-typst@v4
 
+      # The runner ships Liberation but not Noto, so without this the PDF silently falls back.
+      - name: Install PDF fonts
+        continue-on-error: true
+        run: sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends fonts-noto-core
+
       # Before docs:build, which copies docs/public/vusa-lt-gidas.pdf into the site. A failed PDF
       # only drops the download link's target; it never blocks the deploy.
       - name: Build docs PDF
