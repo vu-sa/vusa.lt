@@ -23,14 +23,18 @@ afterEach(() => {
 });
 
 const stubs = {
-  StagingBanner: true,
+  StagingBanner: {
+    props: ['dismissed', 'compact'],
+    emits: ['update:dismissed'],
+    template: '<button data-testid="staging" :data-compact="compact" :data-dismissed="dismissed" @click="$emit(\'update:dismissed\', !dismissed)" />',
+  },
   ImpersonateBanner: true,
   SystemAnnouncement: true,
   MobileMenuPanel: true,
   SectionTabs: { template: '<nav data-testid="section-tabs" v-bind="$attrs" />' },
   MobileBottomBar: { template: '<nav data-testid="bottom-bar" />' },
-  MobileContextBar: { template: '<div data-testid="context-bar" />' },
-  ShellTopBar: { props: ['focused'], template: '<header data-testid="top-bar" :data-focused="focused" />' },
+  MobileContextBar: { template: '<div data-testid="context-bar"><slot name="staging-warning" /></div>' },
+  ShellTopBar: { props: ['focused'], template: '<header data-testid="top-bar" :data-focused="focused"><slot name="staging-warning" /></header>' },
 };
 
 function mountShell() {
@@ -115,5 +119,25 @@ describe('AdminShell on phones', () => {
 
     expect(wrapper.find('[data-testid="section-tabs"]').classes()).toContain('max-md:hidden');
     expect(wrapper.find('.sticky').find('[data-testid="context-bar"]').exists()).toBe(true);
+  });
+});
+
+describe('AdminShell staging warning', () => {
+  it('keeps the collapsed state across shell mounts and lets the topbar reopen it', async () => {
+    localStorage.clear();
+    const first = mountShell();
+    await first.wrapper.findAll('[data-testid="staging"]')[0].trigger('click');
+
+    expect(localStorage.getItem('admin-staging-warning:1')).toBe('true');
+    first.wrapper.unmount();
+
+    const second = mountShell();
+    const topbarWarning = second.wrapper.find('[data-testid="top-bar"] [data-testid="staging"]');
+    expect(topbarWarning.attributes('data-dismissed')).toBe('true');
+    await topbarWarning.trigger('click');
+
+    expect(localStorage.getItem('admin-staging-warning:1')).toBe('false');
+    second.wrapper.unmount();
+    localStorage.clear();
   });
 });

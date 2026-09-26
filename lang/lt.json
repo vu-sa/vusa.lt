@@ -1,4 +1,11 @@
 {
+    "Bandomoji aplinka": "Bandomoji aplinka",
+    "Bandomosios aplinkos duomenys gali skirtis nuo tikrosios": "Bandomosios aplinkos duomenys gali skirtis nuo tikrosios",
+    "Suskleisti bandomosios aplinkos įspėjimą": "Suskleisti bandomosios aplinkos įspėjimą",
+    "Atverti bandomosios aplinkos įspėjimą": "Atverti bandomosios aplinkos įspėjimą",
+    "Failų saugykla bendrinama su tikrąja aplinka (tik skaitymui)": "Failų saugykla bendrinama su tikrąja aplinka (tik skaitymui)",
+    "SharePoint bendrinama su tikrąja aplinka (tik skaitymui)": "SharePoint bendrinama su tikrąja aplinka (tik skaitymui)",
+    "SharePoint failai įkeliami į bandomąją svetainę": "SharePoint failai įkeliami į bandomąją svetainę",
     "Fiksuoti veiklą": "Fiksuoti veiklą",
     "Posėdžių viešumas": "Posėdžių viešumas",
     "Nevieši posėdžiai": "Nevieši posėdžiai",

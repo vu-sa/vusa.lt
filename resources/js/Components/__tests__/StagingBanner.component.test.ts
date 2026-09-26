@@ -1,4 +1,3 @@
-import { nextTick, reactive } from 'vue';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -25,9 +24,9 @@ describe('StagingBanner', () => {
     const wrapper = mount(StagingBanner);
     const status = wrapper.get('[data-slot="staging-status"]');
 
-    expect(status.text()).toContain('STAGING ENVIRONMENT');
-    expect(status.text()).toContain('File storage is shared with production');
-    expect(status.text()).toContain('SharePoint is shared with production');
+    expect(status.text()).toContain('Bandomoji aplinka');
+    expect(status.text()).toContain('Failų saugykla bendrinama');
+    expect(status.text()).toContain('SharePoint bendrinama');
     expect(status.classes()).toContain('rounded-xl');
     expect(status.classes()).not.toContain('fixed');
     expect(status.classes()).not.toContain('shadow-lg');
@@ -44,30 +43,35 @@ describe('StagingBanner', () => {
 
     const text = mount(StagingBanner).get('[data-slot="staging-status"]').text();
 
-    expect(text).toContain('SharePoint uploads go to the test site');
-    expect(text).not.toContain('SharePoint is shared with production');
+    expect(text).toContain('SharePoint failai įkeliami į bandomąją svetainę');
+    expect(text).not.toContain('SharePoint bendrinama su tikrąja aplinka');
   });
 
-  it('dismisses the staging notice without leaving a spacer', async () => {
-    const page = reactive(createMockPage({
+  it('collapses to a square warning control and reopens the full notice', async () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
       staging: {
         isStaging: true,
         filesReadOnly: false,
         sharepointReadOnly: false,
       },
     }));
-    page.url = '/mano';
-    vi.mocked(usePage).mockReturnValue(page);
 
-    const wrapper = mount(StagingBanner);
+    const wrapper = mount(StagingBanner, { props: { dismissed: false } });
 
-    await wrapper.get('button[aria-label="Dismiss staging banner"]').trigger('click');
+    await wrapper.get('button[aria-label="Suskleisti bandomosios aplinkos įspėjimą"]').trigger('click');
+    expect(wrapper.emitted('update:dismissed')?.[0]).toEqual([true]);
 
+    await wrapper.setProps({ dismissed: true });
     expect(wrapper.html()).toBe('<!--v-if-->');
 
-    page.url = '/mano/meetings';
-    await nextTick();
+    await wrapper.setProps({ compact: true });
+    const control = wrapper.get('[data-slot="staging-warning-button"]');
+    expect(control.classes()).toContain('size-11');
+    expect(control.attributes('aria-label')).toContain('SharePoint failai įkeliami');
+    await control.trigger('click');
+    expect(wrapper.emitted('update:dismissed')?.[1]).toEqual([false]);
 
+    await wrapper.setProps({ dismissed: false, compact: false });
     expect(wrapper.find('[data-slot="staging-status"]').exists()).toBe(true);
   });
 

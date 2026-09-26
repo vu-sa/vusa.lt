@@ -8,6 +8,8 @@
     ]"
   >
     <div class="flex h-12 items-stretch">
+      <slot name="staging-warning" />
+
       <button
         data-tour="section-switcher"
         type="button"

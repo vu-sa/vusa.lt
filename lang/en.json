@@ -1,4 +1,11 @@
 {
+    "Bandomoji aplinka": "Staging environment",
+    "Bandomosios aplinkos duomenys gali skirtis nuo tikrosios": "Test environment data may differ from production",
+    "Suskleisti bandomosios aplinkos įspėjimą": "Collapse staging warning",
+    "Atverti bandomosios aplinkos įspėjimą": "Open staging warning",
+    "Failų saugykla bendrinama su tikrąja aplinka (tik skaitymui)": "File storage is shared with production (read-only)",
+    "SharePoint bendrinama su tikrąja aplinka (tik skaitymui)": "SharePoint is shared with production (read-only)",
+    "SharePoint failai įkeliami į bandomąją svetainę": "SharePoint uploads go to the test site",
     "Fiksuoti veiklą": "Record activity",
     "Posėdžių viešumas": "Meeting visibility",
     "Nevieši posėdžiai": "Private meetings",

@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.23 — Patogesnis naršymas telefone (2026-09-26) {#v2-23}
 
+- ✨ **Kompaktiškas bandomosios aplinkos įspėjimas** — suskleidus pranešimą, viršutinėje juostoje lieka įspėjimo ženklas; pasirinkimas išlieka naršant puslapius, o ženklas vėl atveria visą pranešimą.
 - ✨ **Platesnė posėdžių laiko juosta** — didžiausias priartinimas sumažintas perpus, o atitolinus iki galo viename vaizde telpa dar ilgesnis laikotarpis.
 - ⭐ **Sistemos priežiūra be serverio** — sistemos būsenos puslapyje super administratorius gali atnaujinti viešo turinio talpyklą, išvalyti visą talpyklą, perkrauti eilės procesus, išsiųsti bandomąjį laišką, sinchronizuoti paiešką ar SharePoint dokumentus. Kiekvienas veiksmas įrašomas į veiklos žurnalą.
 - 🔧 **Padalinių ir institucijų tipų pakeitimai matomi iš karto** — pervadintas padalinys ar institucijos tipas nebelaukia kito sistemos atnaujinimo, kad pasirodytų filtruose ir pasirinkimuose.

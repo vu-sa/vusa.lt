@@ -8,7 +8,7 @@
       !focused && 'max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]',
     ]"
   >
-    <StagingBanner />
+    <StagingBanner v-model:dismissed="stagingDismissed" />
     <ImpersonateBanner />
 
     <div
@@ -30,9 +30,17 @@
           :can-create
           :focused
           @create="actionWindow.open()"
-        />
+        >
+          <template #staging-warning>
+            <StagingBanner v-model:dismissed="stagingDismissed" compact />
+          </template>
+        </ShellTopBar>
         <template v-if="!focused">
-          <MobileContextBar :active-workspace :active-section @menu="menuOpen = true" />
+          <MobileContextBar :active-workspace :active-section @menu="menuOpen = true">
+            <template #staging-warning>
+              <StagingBanner v-model:dismissed="stagingDismissed" compact />
+            </template>
+          </MobileContextBar>
           <SectionTabs :workspace="activeWorkspace" :active-section class="max-md:hidden" />
         </template>
         <SystemAnnouncement :message="systemMessage" />
@@ -65,7 +73,7 @@
 
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { useElementSize } from '@vueuse/core';
+import { useElementSize, useLocalStorage } from '@vueuse/core';
 import { computed, ref } from 'vue';
 
 import MobileBottomBar from './MobileBottomBar.vue';
@@ -82,6 +90,7 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useShellFocus } from '@/Composables/useShellFocus';
 
 const page = usePage<PageProps>();
+const stagingDismissed = useLocalStorage(`admin-staging-warning:${page.props.auth?.user?.id ?? 'guest'}`, false, { writeDefaults: false });
 const scrollArea = ref<HTMLElement | null>(null);
 const shellChrome = ref<HTMLElement | null>(null);
 const { height: scrollAreaHeight } = useElementSize(scrollArea);

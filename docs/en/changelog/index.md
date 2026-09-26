@@ -7,6 +7,7 @@ lastUpdated: true
 
 ## v2.23 — Easier navigation on phones (2026-09-26) {#v2-23}
 
+- ✨ **Compact staging warning** — after you collapse the notice, a warning icon remains in the top bar; your choice persists across pages, and the icon reopens the full notice.
 - ✨ **Wider meeting timeline** — the maximum zoom-in level is halved, and zooming all the way out fits a longer period in one view.
 - ⭐ **System maintenance without a server shell** — on the System status page, super admins can refresh the public content cache, clear the whole cache, restart queue workers, send a test email, and sync search or SharePoint documents. Each action is recorded in the activity log.
 - 🔧 **Unit and institution type changes show up immediately** — a renamed unit or institution type no longer waits for the next deploy to appear in filters and pickers.

@@ -57,6 +57,7 @@
           <ShellAccountMenu />
         </div>
       </template>
+      <slot name="staging-warning" />
     </div>
   </header>
 </template>
