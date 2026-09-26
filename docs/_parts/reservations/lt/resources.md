@@ -1,1 +1,0 @@
-Pakeitus rezervacijos laiką, pasirinkti ištekliai lieka krepšelyje, o tie, kurių tuo metu nebeužtenka, pažymimi. Rodomas išteklių kiekis **automatiškai apskaičiuojamas nurodytam rezervacijos laikotarpiui**.

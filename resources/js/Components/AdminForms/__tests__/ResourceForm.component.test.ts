@@ -63,7 +63,6 @@ describe('ResourceForm.vue', () => {
           },
           FormPanel: { template: '<div data-testid="form-panel"><slot /></div>' },
           FormSection: { props: ['title'], template: '<section :data-section="title"><slot /></section>' },
-          MdSuspenseWrapper: true,
           ConfirmDialog: true,
           Select: {
             template: '<select data-testid="select" :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',

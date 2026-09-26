@@ -28,7 +28,6 @@ const stubs = {
     template: '<input class="datetime" :data-variant="variant" @input="$emit(\'update:modelValue\', new Date($event.target.value))" />',
   },
   ResourceSelectDialog: { template: '<div><slot name="trigger" /></div>' },
-  MdSuspenseWrapper: true,
   EntityTypeMark: true,
   Checkbox: {
     props: ['modelValue'],

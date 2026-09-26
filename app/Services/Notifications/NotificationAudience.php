@@ -2,6 +2,7 @@
 
 namespace App\Services\Notifications;
 
+use App\Actions\GetResourceManagers;
 use App\Enums\NotificationType;
 use App\Models\InstitutionSecretary;
 use App\Models\User;
@@ -69,7 +70,7 @@ class NotificationAudience
     private function isResourceManager(User $user): bool
     {
         return $user->current_duties()
-            ->whereHas('roles.permissions', fn (Builder $query) => $query->where('name', config('permission.resource_managership_indicating_permission')))
+            ->whereHas('roles.permissions', fn (Builder $query) => $query->whereIn('name', GetResourceManagers::permissionNames()))
             ->exists();
     }
 

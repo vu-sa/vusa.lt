@@ -113,7 +113,7 @@
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
-              <a :href="`${docsBase}/changelog/`" target="_blank" rel="noopener noreferrer">
+              <a :href="changelogHref" target="_blank" rel="noopener noreferrer">
                 <Sparkles class="size-4 shrink-0" />
                 <span class="flex-1">{{ $t('shell.account.whats_new') }}</span>
                 <ArrowUpRight class="size-3.5 shrink-0 text-muted-foreground/60" />
@@ -144,7 +144,7 @@
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem as-child class="gap-3 px-3.5 py-2 rounded-none cursor-pointer text-sm font-medium">
-              <a :href="`${docsBase}/changelog/`" target="_blank" rel="noopener noreferrer">
+              <a :href="changelogHref" target="_blank" rel="noopener noreferrer">
                 <Sparkles class="size-4 shrink-0" />
                 <span class="flex-1">{{ $t('shell.account.whats_new') }}</span>
                 <ArrowUpRight class="size-3.5 shrink-0 text-muted-foreground/60" />
@@ -250,8 +250,7 @@ const { logout, logoutMicrosoft } = useLogout();
 const { hasTour, startTour } = useTour();
 const startFm = useStartFm();
 const isDark = useDark();
-const { latestVersion } = useDocsUpdateIndicator();
-const docsBase = computed(() => page.props.app?.locale === 'en' ? '/docs/en' : '/docs');
+const { latestVersion, docsBase, changelogHref } = useDocsUpdateIndicator();
 const reportProblemHref = computed(() => {
   const context = typeof window === 'undefined'
     ? {}

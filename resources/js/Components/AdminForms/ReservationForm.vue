@@ -162,20 +162,10 @@
           <ExternalLink class="size-4" aria-hidden="true" />
           {{ $t('Rezervacijų atmintinė') }}
         </a>
-        <details class="group">
-          <summary
-            :class="[
-              'u-touch inline-flex cursor-pointer items-center gap-1.5',
-              'text-xs font-bold uppercase tracking-wide text-foreground/80 hover:text-foreground transition-colors select-none',
-            ]"
-          >
-            <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" aria-hidden="true" />
-            {{ $t('reservations.cart.rules') }}
-          </summary>
-          <div class="mt-3 text-sm">
-            <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="description" />
-          </div>
-        </details>
+        <a class="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4" target="_blank" rel="noopener noreferrer" :href="rulesHref">
+          <ExternalLink class="size-4" aria-hidden="true" />
+          {{ $t('reservations.cart.rules') }}
+        </a>
       </FormPanel>
     </template>
 
@@ -208,7 +198,7 @@
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ChevronDown, CloudCheck, ExternalLink, Info, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-vue-next';
+import { CloudCheck, ExternalLink, Info, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-vue-next';
 import { capitalize, computed, onMounted, ref, watch } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
@@ -225,11 +215,11 @@ import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
+import { useDocsHref } from '@/Composables/useDocsHref';
 import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
-import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import { ModelEnum } from '@/Types/enums';
 
 // The checkout of the reservation cart: the draft holds the items and is saved as the user types,
@@ -248,6 +238,8 @@ const conditionAcquaintance = ref(false);
 const reservationGuideUrl = computed(() => usePage().props.app.locale === 'lt'
   ? 'https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ERnxptqtoF5DmDiqAbpfBewBjV-z7QcgAZiZi5w5sS1ODQ?e=cP6Zsv'
   : 'https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ESPcgxR0HqNFj0TBAQL4hmQBLmE5RSN72cEFe9psis3gjg?e=wS2uKj');
+
+const rulesHref = useDocsHref('/rezervacijos/rezervacijos#susitarimai');
 
 const period = computed<ReservationPeriod>(() => cartPeriod.value ?? props.defaultPeriod);
 

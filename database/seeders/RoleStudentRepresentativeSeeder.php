@@ -49,7 +49,7 @@ class RoleStudentRepresentativeSeeder extends Seeder
         // Coordinators can attach this type to duties
         $role->attachable_types()->syncWithoutDetaching([$type->id]);
 
-        // Duties with this type automatically receive this role
-        $role->types()->syncWithoutDetaching([$type->id]);
+        // Through Type::roles() so RoleTypeObserver also hands the role to the existing duties of this type.
+        $type->roles()->syncWithoutDetaching([$role->id]);
     }
 }

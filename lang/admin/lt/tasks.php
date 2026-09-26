@@ -53,7 +53,7 @@ return [
     'available_actions' => 'Galimi veiksmai',
     'assigned_to' => 'Priskirta',
     'periodicity_gap' => [
-        'name' => 'Pranešti apie :institution veiklą',
+        'name' => 'Pranešti apie veiklą: :institution',
         'description' => 'Institucijos veiklos pranešimo periodiškumas artėja prie ribos. Užregistruokite naują susitikimą arba praneškite apie veiklą.',
         'completed_meeting_created' => 'Susitikimas užregistruotas',
         'completed_checkin_created' => 'Pranešimas apie veiklą sukurtas',

@@ -25,10 +25,8 @@ export default defineConfig({
   outDir: '../public/docs',
   cleanUrls: true,
 
-  // Fragments shared with the admin UI via MdGetter.vue — included, never standalone pages.
-  // `_parts/**` are admin-UI help fragments, not pages; `maintainers/**` is the
-  // generated internal coverage dashboard — both are read in-repo, never published.
-  srcExclude: ['_parts/**', 'maintainers/**'],
+  // The generated coverage dashboard is read in-repo, never published; pdf/ holds the PDF build's sources.
+  srcExclude: ['maintainers/**', 'pdf/**'],
 
   // Global search configuration
   themeConfig: {
@@ -82,19 +80,32 @@ export default defineConfig({
   
   // Build optimization - generate changelog metadata for admin UI update indicator
   buildEnd: (siteConfig) => {
-    const changelogFile = path.resolve(__dirname, '../changelog/index.md')
+    warnAboutMissingScreenshots(siteConfig.srcDir)
+
+    const changelogDir = path.resolve(__dirname, '../changelog')
     const outDir = path.resolve(__dirname, '../..', 'public/docs')
-    
+
     try {
+      // One file per major version (v1.md, v2.md, …); the highest major holds the newest entries.
+      const majorFiles = fs.readdirSync(changelogDir)
+        .map(file => file.match(/^v(\d+)\.md$/))
+        .filter((match): match is RegExpMatchArray => match !== null)
+        .sort((a, b) => Number(b[1]) - Number(a[1]))
+      const latestChangelog = `v${majorFiles[0][1]}`
+
       // Parse changelog headings: ## vX.Y — Title (YYYY-MM-DD)
-      const content = fs.readFileSync(changelogFile, 'utf-8')
       const entryPattern = /^## (v[\d.]+) — .+\((\d{4}-\d{2}-\d{2})\)/gm
-      const matches = [...content.matchAll(entryPattern)]
-      
+      const matches = [...fs.readFileSync(path.resolve(changelogDir, `${latestChangelog}.md`), 'utf-8').matchAll(entryPattern)]
+      const totalEntries = majorFiles.reduce(
+        (count, [file]) => count + [...fs.readFileSync(path.resolve(changelogDir, file), 'utf-8').matchAll(entryPattern)].length,
+        0,
+      )
+
       const meta = {
-        latestVersion: matches.length > 0 ? matches[0][1] : 'v1.0',
+        latestVersion: matches.length > 0 ? matches[0][1] : `${latestChangelog}.0`,
         lastUpdated: matches.length > 0 ? matches[0][2] : new Date().toISOString().substring(0, 10),
-        totalEntries: matches.length,
+        latestChangelog,
+        totalEntries,
       }
       
       fs.mkdirSync(outDir, { recursive: true })
@@ -107,3 +118,26 @@ export default defineConfig({
     }
   }
 })
+
+// Screenshots are fetched from CI at deploy time, so a renamed or deleted browser test only shows up here.
+function warnAboutMissingScreenshots(srcDir: string) {
+  const screenshotsDir = path.resolve(srcDir, 'public/screenshots')
+  const missing: string[] = []
+
+  for (const file of fs.readdirSync(srcDir, { recursive: true }) as string[]) {
+    if (!file.endsWith('.md')) continue
+
+    const locale = file.startsWith(`en${path.sep}`) ? 'en' : 'lt'
+    const source = fs.readFileSync(path.resolve(srcDir, file), 'utf-8')
+
+    for (const [, name] of source.matchAll(/<DocScreenshot[^>]*\sname="([\w-]+)"/g)) {
+      if (!fs.existsSync(path.resolve(screenshotsDir, locale, `${name}.png`))) {
+        missing.push(`${file}: ${locale}/${name}`)
+      }
+    }
+  }
+
+  if (missing.length > 0) {
+    console.warn(`Missing docs screenshots (hidden on the page):\n  ${missing.join('\n  ')}`)
+  }
+}

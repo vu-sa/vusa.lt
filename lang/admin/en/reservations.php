@@ -131,6 +131,7 @@ return [
     ],
     'cart' => [
         'title' => 'Your reservation',
+        'more_about' => 'More about reservations',
         'items' => '{0} no resources|{1} :count resource|[2,*] :count resources',
         'no_period' => 'no time picked',
         'review' => 'Review',

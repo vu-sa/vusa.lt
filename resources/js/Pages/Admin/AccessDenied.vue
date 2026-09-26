@@ -47,7 +47,7 @@
         {{ $t('forbidden.help_text') }}
       </p>
       <a
-        :href="docsBase"
+        :href="docsHref"
         target="_blank"
         rel="noopener noreferrer"
         class="w-fit text-sm text-foreground underline underline-offset-4 pointer-coarse:py-3"
@@ -74,11 +74,11 @@
 </template>
 
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
 import { Lock } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
+import { useDocsHref } from '@/Composables/useDocsHref';
 
 defineProps<{
   permission: string | null;
@@ -87,6 +87,5 @@ defineProps<{
   message: string | null;
 }>();
 
-const page = usePage();
-const docsBase = computed(() => page.props.app?.locale === 'en' ? '/docs/en' : '/docs');
+const docsHref = useDocsHref('/pagrindai/teises');
 </script>

@@ -197,8 +197,11 @@ full run, or hard-fails on a 403/404.
 | Command | When |
 |---|---|
 | `sail artisan test --parallel` | Default. TIA reruns affected tests, replays the rest. |
-| `sail artisan test --parallel --no-tia` | Full run, no replay — when you distrust the graph. |
-| `sail artisan test --parallel --fresh` | Discard the graph and re-record (after a large refactor). |
+| `sail bin pest --parallel --no-tia` | Full run, no replay — when you distrust the graph. |
+| `sail bin pest --parallel --tia --fresh` | Discard the graph and re-record (after a large refactor). |
+
+The escape hatches are Pest options: `artisan test` rejects them (`The "--no-tia" option does not
+exist`), so call Pest directly for these two.
 
 Use `--filter=testName` when iterating on one failing test, not as the default.
 

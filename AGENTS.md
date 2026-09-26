@@ -392,7 +392,7 @@ That covers every write path (mass assignment, `update()`, `setTranslations()`, 
 
 ## Changelog
 
-User-facing changes go in `docs/changelog/index.md` (LT) **and** `docs/en/changelog/index.md` (EN). Skip purely internal changes (deps, refactors).
+User-facing changes go in `docs/changelog/v2.md` (LT) **and** `docs/en/changelog/v2.md` (EN) — one file per major version; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin "What's new" link follows automatically. Skip purely internal changes (deps, refactors).
 
 Use exactly three emojis:
 - ⭐ new feature
@@ -405,6 +405,14 @@ Use exactly three emojis:
 - 🔧 **Short title** — what changed and the user impact
 - ⭐ **Another change** — what users can now do
 ```
+
+**The changelog says what changed; the guide says how it works now.** A user-facing change or fix
+also updates the guide page for that section (`docs/<workspace>/<section>.md`, see
+`docs/.vitepress/structure.ts`) in the same change — its *Kas ką gali*, statuses or *Susitarimai*
+— and the LT changelog entry links to it (`[plačiau](/rezervacijos/rezervacijos#teises)`). A
+section without a page yet gets its stub filled in. If you touch the tests a page cites, update its
+`tests:` paths and `last_reviewed`. For a notable change, add a `<ChangelogNote>` next to the part of
+the guide page it changed.
 
 ## Database & debugging
 

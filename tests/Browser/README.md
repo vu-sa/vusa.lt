@@ -133,3 +133,21 @@ new URL before the destination component resolves, so a URL-based wait proves no
 `tests/Browser/Screenshots/` is gitignored. Always pass an explicit `filename:` —
 `$page->screenshot(filename: 'my-check')` — otherwise repeated runs overwrite the same
 `it_verify.png`. Delete throwaway screenshots once you've looked at them.
+
+### Docs screenshots
+
+A test can also save a reference frame for the VitePress docs with
+`docsScreenshot($page, 'name')` (or `selector:` for one element). It is a no-op unless
+`DOCS_SCREENSHOTS` is set, strips dark mode, and waits out deferred skeletons. Frames land in
+`Screenshots/docs/{locale}/{name}.png` and are never committed: CI uploads them as the
+`docs-screenshots` artifact and the deploy fetches the branch's newest one before `docs:build`.
+
+- Embed with `<DocScreenshot name="name" alt="…" />`; a missing frame hides, and `docs:build`
+  lists it. Renaming a frame breaks the docs page silently otherwise.
+- Only take one where the docs use it — the default light theme, desktop (or `-phone` at 390).
+- Seed `DocsSeeder` for realistic Lithuanian content instead of faker names.
+- A page that searches Typesense from the browser (admin collections such as `/mano/resources`)
+  needs `usesTypesenseInBrowser()` and its records indexed (`Model::query()->get()->searchable()`):
+  it points the in-container browser at `typesense:8108` and mints a throwaway search key for
+  the test's prefixed collections, since the dev key cannot read them.
+- Preview locally with `vendor/bin/sail npm run docs:screenshots`, then `docs:dev`.

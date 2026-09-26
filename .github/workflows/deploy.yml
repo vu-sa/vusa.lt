@@ -2,6 +2,10 @@ name: Deploy To Production
 
 concurrency: production
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   workflow_dispatch:
   workflow_run:
@@ -29,3 +33,4 @@ jobs:
       # Never on production: its repo root holds ~1 GB of untracked directories (two copies of the
       # old LimeSurvey install) that `git clean -fd` would silently delete.
       clean-untracked: false
+      docs-screenshots-branch: main

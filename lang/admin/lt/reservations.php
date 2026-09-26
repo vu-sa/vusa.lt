@@ -131,6 +131,7 @@ return [
     ],
     'cart' => [
         'title' => 'Tavo rezervacija',
+        'more_about' => 'Plačiau apie rezervacijas',
         'items' => '{0} nėra išteklių|{1} :count išteklius|[2,9] :count ištekliai|[10,*] :count išteklių',
         'no_period' => 'laikas nepasirinktas',
         'review' => 'Peržiūrėti',

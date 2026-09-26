@@ -58,10 +58,6 @@ const sfcPlugins = () => [
 const jsdomProject = (name: string, include: string[], exclude?: string[]) => ({
   plugins: sfcPlugins(),
   resolve: { alias },
-  // MdGetter.vue dynamic-imports docs/_parts/**/*.md. Tests never render it, but --changed walks
-  // every spec's dependency graph and would try to parse the markdown as JS; treating it as an
-  // opaque asset is far cheaper here than running the real unplugin-vue-markdown transform.
-  assetsInclude: ['**/*.md'],
   test: {
     name,
     environment: 'jsdom',

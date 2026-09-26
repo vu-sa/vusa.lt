@@ -3,7 +3,6 @@ import { VueUseComponentsResolver } from 'unplugin-vue-components/resolvers';
 import Components from 'unplugin-vue-components/vite';
 import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
-import Markdown from 'unplugin-vue-markdown/vite';
 import i18nSplit from './vite-plugins/i18n-split.ts';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
@@ -19,7 +18,6 @@ export default defineConfig(({ command }) => {
   // Define common plugins that will be used in both build and test
   const commonPlugins = [
     vue({
-      include: [/\.vue$/, /\.md$/],
       template: {
         transformAssetUrls: {
           base: null,
@@ -60,14 +58,6 @@ export default defineConfig(({ command }) => {
     tailwindcss(),
     ziggy({
       sail: true,
-    }),
-    Markdown({
-      markdownItOptions: {
-        html: true,
-        linkify: true,
-        typographer: true,
-      },
-      wrapperClasses: undefined,
     }),
   ];
 

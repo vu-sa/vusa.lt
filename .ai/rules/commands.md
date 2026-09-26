@@ -12,9 +12,9 @@ Typesense API keys bake in the collection list at creation. Renaming/adding a pu
 
 ## docs:coverage — feature/model documentation radar
 
-`php artisan docs:coverage` reports how well the app's surface is documented, keyed on the **feature area** an admin recognises (`reservations`, `duties`) rather than raw route names. Areas come from the route table grouped by name prefix; each resolves to a model through `App\Support\MorphMap` via one `Str::snake(Str::singular())` normaliser that reconciles the route area (`reservations`), the morph alias (`reservation`) and the `docs/_parts` help dir (`reservations`).
+`php artisan docs:coverage` reports how well the app's surface is documented, keyed on the **feature area** an admin recognises (`reservations`, `duties`) rather than raw route names. Areas come from the route table grouped by name prefix; each resolves to a model through `App\Support\MorphMap` via one `Str::snake(Str::singular())` normaliser that reconciles the route area (`reservations`) and the morph alias (`reservation`).
 
-Two axes, deliberately one-directional (no false positives): **documented** (a human wrote a page for the area) and **tested** (a test names one of its routes). A third, separate signal is **inline help** — a `docs/_parts/<model>` fragment feeding the admin UI.
+Two axes, deliberately one-directional (no false positives): **documented** (a human wrote a page for the area) and **tested** (a test names one of its routes). There is no inline-help signal: `docs/_parts` was retired, prose lives only in the reference pages and the admin UI links to them.
 
 ### Frontmatter a page declares
 
@@ -34,7 +34,7 @@ tests:                                  # evidence: proven by these files
 - **Attribution is by declaration only.** A page owns an area through `area:` or a class in `models:`. The old transitive route join is gone — a reservation page whose tests incidentally hit an approval route does **not** thereby document approvals.
 - **Claims name test *files*, never `it()` names** — test names churn; a deleted or moved file is exactly what you want flagged.
 - **`last_reviewed` is a plain date.** YAML turns an unquoted `2026-08-26` into a Unix timestamp; the scanner normalises timestamp / quoted string / DateTime alike, so either form works.
-- `docs/en/**` (translations), `_parts`, `.vitepress`, `public` and `maintainers` are skipped, matched on the top-level dir, never as a substring. Frontmatter is parsed with `symfony/yaml`, so inline arrays and nested lists are fine.
+- `docs/en/**` (translations), `.vitepress`, `public`, `maintainers` and `pdf` (the PDF build) are skipped, matched on the top-level dir, never as a substring. Frontmatter is parsed with `symfony/yaml`, so inline arrays and nested lists are fine.
 - **`coverage: ignore`** opts a single page out entirely — handbook/procedure prose (FAQ, changelog, "how VU SR works") that no test can prove and that should not clutter the "no evidence cited" list. Prefer it over adding a whole directory to the exclusion const.
 
 Route/test coverage is **not** the headline — this is a docs tool. The route surface is load-bearing plumbing (it is how areas are discovered and how "tested" is measured, with no hand-maintained registry), but the tested-% scorecard was removed; "N routes tested" survives only as a per-area ranking hint in the backlog.
@@ -67,3 +67,12 @@ Route references are read from test source by AST (`TestSurfaceScanner`, `nikic/
 
 - Symfony Finder skips dotfiles: a doc named `.foo.md` is never scanned.
 - `docs/maintainers/coverage.md` is generated and `srcExclude`d from the published site — read it in-repo, don't hand-edit it.
+
+## The guide's layout and PDF edition
+
+The guide (`docs/`, Lithuanian only — `docs/en/` keeps just the changelog) mirrors `AdminNavigationCatalog`: one directory per workspace (`mano/`, `visak/`, `rezervacijos/`, `svetaine/`, `organizacija/`, `sistema/`) plus `pagrindai/` and `ivadas.md`. Its order lives only in `docs/.vitepress/structure.ts`; the sidebar and the PDF both walk it, so a new page is added there, not in `lt.ts`.
+
+- A section page follows `rezervacijos/rezervacijos.md`: *Kaip tai veikia · Veiksmai · Kas ką gali · Pranešimai ir automatika · Susitarimai · Techninė informacija*, with `area`/`models`/`tests`/`last_reviewed` frontmatter. The main flow speaks in roles and plain Lithuanian; policy classes, permission strings and config keys go only in the closing `## Techninė informacija` section, which the "Įrodyta testais" block (web `TestEvidence.vue`, PDF `evidence.typ`) follows. Unwritten pages carry a `::: warning Rašoma` callout and no `tests:`.
+- `tests:` may cite Pest files (`tests/**.php`, shown as *Serveris*) and Vitest specs (`resources/js/**.test.ts`, *Sąsaja*) — `DocClaimScanner::isTestPath()` is the one definition.
+- `<ChangelogNote version="v2.21" date="…" title="…">` (blank lines around its markdown body) marks where a release changed the section; it links to the changelog anchor on the web and in the PDF.
+- `npm run docs:pdf` (`docs/pdf/build.ts`, runs on the host: it needs `typst` and Node ≥ 22.18 for native `.ts`) → `docs/public/vusa-lt-gidas.pdf`, gitignored; run it **before** `docs:build`, which copies it. It translates VitePress-only syntax for cmarker (`:::` → `<callout>`, `<DocScreenshot>` → `<screenshot>`, site links → PDF labels keyed on VitePress' slugger), so write plain VitePress markdown — don't add Typst to pages. A link to a missing page/anchor fails the Typst compile.

@@ -173,7 +173,7 @@
             </li>
             <li>
               <a
-                :href="`${docsBase}/changelog/`"
+                :href="changelogHref"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="u-touch flex items-center gap-3 px-4 py-3 text-sm text-foreground"
@@ -247,6 +247,7 @@ import {
   type AdminSection,
   type AdminWorkspace,
 } from '@/Composables/useAdminNavigation';
+import { useDocsUpdateIndicator } from '@/Composables/useDocsUpdateIndicator';
 import { useLogout } from '@/Composables/useLogout';
 import { useStartFm } from '@/Composables/useStartFm';
 import { useTour } from '@/Composables/useTourProvider';
@@ -271,7 +272,7 @@ const { logout, logoutMicrosoft } = useLogout();
 const startFm = useStartFm();
 const isDark = useDark();
 
-const docsBase = computed(() => page.props.app?.locale === 'en' ? '/docs/en' : '/docs');
+const { docsBase, changelogHref } = useDocsUpdateIndicator();
 const reportProblemHref = computed(() => {
   const context = typeof window === 'undefined'
     ? {}

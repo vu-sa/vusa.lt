@@ -85,3 +85,4 @@ jobs:
       run-backup: false
       # Staging switches between arbitrary branches, so it accumulates files from the ones it left.
       clean-untracked: true
+      docs-screenshots-branch: ${{ github.event.inputs.branch || github.event.workflow_run.head_branch || 'dev' }}

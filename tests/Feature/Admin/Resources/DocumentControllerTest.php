@@ -4,6 +4,7 @@ use App\Jobs\RevokeSharepointPermissionJob;
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Tenant;
+use Database\Seeders\RoleDocumentManagerSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -18,7 +19,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->documentManager = makeUser($this->tenant);
-    $this->documentManager->duties()->first()->assignRole('Išteklių administratorius');
+    $this->documentManager->duties()->first()->assignRole(RoleDocumentManagerSeeder::NAME);
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });
 
@@ -84,7 +85,7 @@ describe('authorized access', function (): void {
     });
 
     test('admin can access documents index', function (): void {
-        $admin = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
+        $admin = makeTenantUserWithRole(RoleDocumentManagerSeeder::NAME, $this->tenant);
         Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
 
         $response = asUser($admin)->get(route('documents.index'));

@@ -34,6 +34,11 @@ on:
         required: false
         default: false
         type: boolean
+      docs-screenshots-branch:
+        description: 'Branch whose newest docs-screenshots artifact (from CI browser tests) ships with the docs'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   deploy:
@@ -88,6 +93,41 @@ jobs:
           VITE_REVERB_PORT=${{ vars.REVERB_PORT }} \
           VITE_REVERB_SCHEME=${{ vars.REVERB_SCHEME }} \
           npm run build
+
+      # The images are never committed: the newest CI browser run on the branch uploads them. Not
+      # necessarily this commit's run — a push that skips browser tests uploads none. Docs hide any
+      # frame that is missing, so a failed fetch degrades the docs without failing the deploy.
+      - name: Fetch docs screenshots
+        if: ${{ inputs.docs-screenshots-branch != '' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ inputs.docs-screenshots-branch }}
+        run: |
+          run_id=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=docs-screenshots&per_page=50" \
+            --jq "[.artifacts[] | select(.expired == false and .workflow_run.head_branch == \"$BRANCH\")][0].workflow_run.id // empty")
+
+          if [ -z "$run_id" ]; then
+            echo "::warning::No docs-screenshots artifact for $BRANCH; docs ship without screenshots"
+            exit 0
+          fi
+
+          gh run download "$run_id" -R "${{ github.repository }}" -n docs-screenshots -D docs/public/screenshots
+
+      # Runs the .ts build script directly, which needs Node's type stripping (22.18+).
+      - name: Setup Node.js for the docs PDF
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Setup Typst
+        uses: typst-community/setup-typst@v4
+
+      # Before docs:build, which copies docs/public/vusa-lt-gidas.pdf into the site. A failed PDF
+      # only drops the download link's target; it never blocks the deploy.
+      - name: Build docs PDF
+        continue-on-error: true
+        run: npm run docs:pdf
 
       - name: Build docs
         run: |

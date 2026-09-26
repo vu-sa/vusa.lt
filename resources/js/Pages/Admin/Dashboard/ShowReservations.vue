@@ -6,9 +6,11 @@
     :lead="$t('reservations.overview.lead')"
   >
     <template #actions>
-      <Button variant="ghost" class="pointer-coarse:h-11" @click="showHelpModal = true">
-        <Info aria-hidden="true" />
-        {{ $t('reservations.overview.rules') }}
+      <Button as-child variant="ghost" class="pointer-coarse:h-11">
+        <a :href="rulesHref" target="_blank" rel="noopener noreferrer">
+          <Info aria-hidden="true" />
+          {{ $t('reservations.overview.rules') }}
+        </a>
       </Button>
       <Button as-child variant="brand" class="pointer-coarse:h-11">
         <Link :href="route('reservations.create')">
@@ -90,15 +92,6 @@
       :targets="decisionTargets"
       @done="reload"
     />
-
-    <Dialog v-model:open="showHelpModal">
-      <DialogContent class="max-h-[85vh] max-w-3xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{{ $t('reservations.dashboard.rules') }}</DialogTitle>
-        </DialogHeader>
-        <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="help" />
-      </DialogContent>
-    </Dialog>
   </OverviewPage>
 </template>
 
@@ -118,8 +111,7 @@ import ReservationsNeedingDecision from '@/Components/Reservations/ReservationsN
 import type { ReservationCart, ReservationDecision } from '@/Components/Reservations/types';
 import ReservationStateSummary from '@/Components/Tag/ReservationStateSummary.vue';
 import { Button } from '@/Components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
-import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
+import { useDocsHref } from '@/Composables/useDocsHref';
 import { formatDate } from '@/Utils/dateTime';
 import {
   getReservationStates,
@@ -191,7 +183,7 @@ const numbers = computed<OverviewNumberItem[]>(() => {
   ];
 });
 
-const showHelpModal = ref(false);
+const rulesHref = useDocsHref('/rezervacijos/rezervacijos#susitarimai');
 
 const decisionOpen = ref(false);
 const decision = ref<ReservationDecision>('approved');

@@ -318,10 +318,6 @@ jobs:
     needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    # Non-blocking for now — this is the first Pest browser-test job in the repo, and Playwright
-    # setup (browser binary download, system deps) can fail for reasons unrelated to the code
-    # under test. Drop `continue-on-error` once 2-3 consecutive runs are green.
-    continue-on-error: true
     name: Browser Tests
     steps:
     - uses: actions/checkout@v7
@@ -374,8 +370,20 @@ jobs:
     - name: Add local domain to /etc/hosts
       run: echo "127.0.0.1 www.vusa.test" | sudo tee -a /etc/hosts
 
+    # DOCS_SCREENSHOTS also saves the docs' reference frames (tests/Browser/README.md "Docs screenshots").
     - name: Run browser tests
       run: vendor/bin/pest tests/Browser --parallel --compact
+      env:
+        DOCS_SCREENSHOTS: '1'
+
+    - name: Upload docs screenshots
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: docs-screenshots
+        path: tests/Browser/Screenshots/docs
+        retention-days: 30
+        if-no-files-found: ignore
 
     # A bare Playwright timeout says nothing about *why* the page never rendered. The screenshot
     # and captured HTML (see captureBrowserDiagnostics() in tests/Pest.php) separate "still
@@ -484,8 +492,8 @@ jobs:
 
           echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT, Storybook Tests=$STORYBOOK_TESTS_RESULT"
 
-          # Check if any required job failed (js-quality, browser-tests and storybook-tests are non-blocking)
-          if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]]; then
+          # Check if any required job failed (js-quality and storybook-tests are non-blocking)
+          if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]] || [[ "$BROWSER_TESTS_RESULT" == "failure" ]]; then
             echo "❌ Some checks failed"
             exit 1
           fi
@@ -493,10 +501,6 @@ jobs:
           # Report non-blocking job status (informational only)
           if [[ "$JS_QUALITY_RESULT" == "failure" ]]; then
             echo "⚠️ TypeScript/ESLint check has issues (non-blocking)"
-          fi
-
-          if [[ "$BROWSER_TESTS_RESULT" == "failure" ]]; then
-            echo "⚠️ Browser tests have issues (non-blocking)"
           fi
 
           if [[ "$STORYBOOK_TESTS_RESULT" == "failure" ]]; then

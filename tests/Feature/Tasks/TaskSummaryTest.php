@@ -2,6 +2,7 @@
 
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -75,7 +76,8 @@ describe('tasks.summary listing', function (): void {
     test('does not offer deletion to a user who merely holds the task', function (): void {
         // tasks.delete is seeded for no role, so offering the action in the table only ever
         // produced a 403 on click.
-        $manager = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
+        Role::create(['name' => 'Task reader', 'guard_name' => 'web'])->givePermissionTo('tasks.read.padalinys');
+        $manager = makeTenantUserWithRole('Task reader', $this->tenant);
         orphanTaskFor($manager, ActionType::Manual);
 
         $response = asUser($manager)->get(route('tasks.summary'));

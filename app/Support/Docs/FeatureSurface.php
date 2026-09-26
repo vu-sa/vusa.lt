@@ -45,9 +45,4 @@ class FeatureSurface
     {
         return count($this->documented());
     }
-
-    public function withHelpCount(): int
-    {
-        return count(array_filter($this->areas, fn (FeatureArea $a) => $a->hasHelp));
-    }
 }

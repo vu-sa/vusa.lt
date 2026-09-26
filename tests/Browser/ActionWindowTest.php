@@ -39,6 +39,7 @@ it('opens from the create button and offers only the actions the user may take',
     $page->click(CREATE_TRIGGER);
 
     waitForInertiaRender($page, '[data-slot="action-window-screen"]');
+    docsScreenshot($page, 'action-window', selector: '[role="dialog"]');
 
     // No coordinator persona: a representative can manage neither duties nor settings.
     expect(actionWindowChoices($page))->toBe([

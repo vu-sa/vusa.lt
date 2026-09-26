@@ -4,22 +4,12 @@ layout: home
 
 hero:
   name: "vusa.lt guide"
-  tagline: All the information you need about the mano.vusa.lt platform
+  tagline: The guide to the My VU SR platform is written in Lithuanian. The changelog is available in English.
   actions:
     - theme: brand
-      text: For Administrators
-      link: /en/roles/administrators/faq
-    - theme: alt
       text: Updates
-      link: /en/changelog/
-
-features:
-  - title: 🎓 For Student Representatives
-    link: /en/roles/student-representatives/faq
-  - title: ⚙️ For Administrators
-    link: /en/roles/administrators/faq
-  - title: 📰 Blog
-    link: /en/blog/
-  - title: 🔄 Platform Updates
-    link: /en/changelog/
+      link: /en/changelog/v2
+    - theme: alt
+      text: Guide (Lithuanian)
+      link: /ivadas
 ---

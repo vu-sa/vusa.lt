@@ -205,19 +205,13 @@ describe('per-persona visibility', function (): void {
         ]);
     });
 
-    test('a resources administrator sees Rezervacijos plus the task summary, but no Institucijos', function (): void {
+    test('a resources administrator gets Rezervacijos management and nothing to administer elsewhere', function (): void {
         $user = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
 
-        // `tasks.read.padalinys` is part of this role's permission set — TaskPolicy::viewAny()
-        // checks exactly that string, so this role incidentally sees ViSAK's Užduočių suvestinė,
-        // despite holding none of the meeting/institution permissions the workspace is named
-        // for. Genuine, if surprising: worth a product conversation, not a bug this PR should
-        // paper over by inventing a narrower gate the controller does not itself enforce.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
-            'svetaine' => ['dokumentai'],
         ]);
     });
 

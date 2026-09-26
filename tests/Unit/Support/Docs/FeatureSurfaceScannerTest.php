@@ -25,14 +25,13 @@ describe('reportable surface', function (): void {
 });
 
 describe('feature area resolution', function (): void {
-    test('resolves a route area, morph alias and help fragment to one model', function (): void {
+    test('resolves a route area and morph alias to one model', function (): void {
         $features = (new FeatureSurfaceScanner)->scan(surface(['reservations.index' => ['tests/Foo.php']]), docClaims());
 
         $area = $features->areas['reservations'];
 
         expect($area->modelAlias)->toBe('reservation')
-            ->and($area->modelClass)->toBe(Reservation::class)
-            ->and($area->hasHelp)->toBeTrue(); // docs/_parts/reservations exists
+            ->and($area->modelClass)->toBe(Reservation::class);
     });
 
     test('marks an area tested when a test names one of its routes', function (): void {

@@ -8,12 +8,12 @@ use Illuminate\Support\Str;
 
 /**
  * Groups the app's routed surface into the feature areas an admin recognises,
- * and joins each to its model, its inline `_parts` help, the tests that exercise
- * it and the pages that document it.
+ * and joins each to its model, the tests that exercise it and the pages that
+ * document it.
  *
- * The route area (`reservations`), the morph alias (`reservation`) and the help
- * directory (`reservations`) are the same feature spelt three ways; a single
- * `Str::snake(Str::singular())` normaliser reconciles them.
+ * The route area (`reservations`) and the morph alias (`reservation`) are the same
+ * feature spelt two ways; a single `Str::snake(Str::singular())` normaliser
+ * reconciles them.
  */
 class FeatureSurfaceScanner
 {
@@ -45,7 +45,6 @@ class FeatureSurfaceScanner
 
     public function scan(TestSurface $surface, DocClaims $claims): FeatureSurface
     {
-        $helpDirs = $this->helpAliases();
         $modelAliases = array_keys(MorphMap::MAP);
 
         /** @var array<string, array{routes: list<string>, admin: bool}> $grouped */
@@ -79,7 +78,6 @@ class FeatureSurfaceScanner
                 modelClass: $alias !== null ? MorphMap::classFor($alias) : null,
                 routes: $routes,
                 testedRoutes: $tested,
-                hasHelp: $alias !== null && in_array($alias, $helpDirs, true),
                 docPages: $this->pagesDocumenting($slug, $alias, $claims),
                 isAdmin: $data['admin'],
             );
@@ -142,31 +140,5 @@ class FeatureSurfaceScanner
         $normalised = Str::snake(Str::singular($slug));
 
         return in_array($normalised, $modelAliases, true) ? $normalised : null;
-    }
-
-    /**
-     * The morph aliases that have a `docs/_parts/<dir>` inline-help fragment.
-     *
-     * @return list<string>
-     */
-    private function helpAliases(): array
-    {
-        $partsDir = base_path('docs/_parts');
-
-        if (! is_dir($partsDir)) {
-            return [];
-        }
-
-        $aliases = [];
-
-        foreach (scandir($partsDir) ?: [] as $entry) {
-            if ($entry === '.' || $entry === '..' || ! is_dir($partsDir.'/'.$entry)) {
-                continue;
-            }
-
-            $aliases[] = Str::snake(Str::singular($entry));
-        }
-
-        return $aliases;
     }
 }

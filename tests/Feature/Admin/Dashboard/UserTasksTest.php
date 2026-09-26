@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -97,7 +98,8 @@ describe('task collection API', function (): void {
     });
 
     test('a padalinys the user cannot read narrows the tenant scope to nothing', function (): void {
-        $manager = makeTenantUserWithRole('Išteklių administratorius', $this->tenant);
+        Role::create(['name' => 'Task reader', 'guard_name' => 'web'])->givePermissionTo('tasks.read.padalinys');
+        $manager = makeTenantUserWithRole('Task reader', $this->tenant);
         $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
         $task = Task::factory()->create(['taskable_type' => 'institution', 'taskable_id' => 'gone']);
         $task->users()->attach($manager);

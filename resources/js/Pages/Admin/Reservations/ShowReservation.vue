@@ -15,9 +15,11 @@
     <template #subtitle>
       <div class="flex flex-wrap items-center gap-2">
         <ReservationStateSummary :states="reservationStates" :unresolved="isUnresolved" />
-        <Button variant="ghost" size="icon-sm" class="size-6 pointer-coarse:size-11" @click="showReservationHelpModal = true">
-          <Info class="size-4 text-muted-foreground" aria-hidden="true" />
-          <span class="sr-only">{{ $t('Būsenų informacija') }}</span>
+        <Button as-child variant="ghost" size="icon-sm" class="size-6 pointer-coarse:size-11">
+          <a :href="statusesHref" target="_blank" rel="noopener noreferrer">
+            <Info class="size-4 text-muted-foreground" aria-hidden="true" />
+            <span class="sr-only">{{ $t('Būsenų informacija') }}</span>
+          </a>
         </Button>
       </div>
     </template>
@@ -82,17 +84,6 @@
       <RecordActivity commentable-type="reservation" :commentable-id="reservation.id" />
     </template>
   </RecordPage>
-
-  <Dialog :open="showReservationHelpModal" @update:open="showReservationHelpModal = $event">
-    <DialogContent class="max-w-3xl">
-      <DialogHeader>
-        <DialogTitle>
-          {{ $t('entities.meta.help', { model: $tChoice('entities.reservation.model', 2) }) }}
-        </DialogTitle>
-      </DialogHeader>
-      <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="help" />
-    </DialogContent>
-  </Dialog>
 
   <Dialog :open="showReservationResourceCreateModal" @update:open="showReservationResourceCreateModal = $event">
     <DialogContent class="max-h-[90vh] max-w-3xl overflow-y-auto">
@@ -186,9 +177,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/u
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { useDocsHref } from '@/Composables/useDocsHref';
 import { RESERVATION_CARD_MODAL_TITLES } from '@/Constants/I18n/CardModalTitles';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
-import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
 import { ModelEnum } from '@/Types/enums';
 import type { DashboardReservation, ReservationResourceState } from '@/Utils/ReservationStatus';
 import { getPrimaryAction, isPivotUnresolved, summarizeStates } from '@/Utils/ReservationStatus';
@@ -325,7 +316,7 @@ const deleteReservation = () => router.delete(route('reservations.destroy', prop
 
 const showReservationResourceCreateModal = ref(false);
 const showReservationAddUserModal = ref(false);
-const showReservationHelpModal = ref(false);
+const statusesHref = useDocsHref('/rezervacijos/rezervacijos#busenos');
 
 const reservationResourceForm = useForm({
   id: undefined as string | undefined,

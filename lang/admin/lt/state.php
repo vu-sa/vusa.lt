@@ -2,7 +2,7 @@
 
 return [
     'status' => [
-        'created' => 'sukurta',
+        'created' => 'pateikta',
         'reserved' => 'rezervuota',
         'lent' => 'paskolinta',
         'returned' => 'grąžinta',
@@ -17,7 +17,7 @@ return [
     ],
     'description' => [
         'reservation_resource' => [
-            'created' => 'Daikto rezervacijos užklausa yra sukurta! Laukiama, kol išteklių administratoriai patvirtins rezervaciją.',
+            'created' => 'Daikto rezervacijos užklausa pateikta! Laukiama, kol išteklių administratoriai patvirtins rezervaciją.',
             'cancelled' => 'Išteklio rezervacija atšaukta.',
             'lent' => 'Daiktas sėkmingai paskolintas išteklio savininkų ir įpareigotas grąžinti nurodytu laiku.',
             'rejected' => 'Išteklio rezervacija atmesta. Dėl atmetimo priežasčių pasižiūrėkite komentarų skiltį arba susisiekite su išteklio administratoriais.',

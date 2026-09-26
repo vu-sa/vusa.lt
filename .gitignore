@@ -93,3 +93,10 @@ tests/Browser/Screenshots
 /.idea/vcs.xml
 /.idea/vusa.lt.iml
 /.idea/workspace.xml
+
+# Docs screenshots come from CI browser tests at deploy time (tests/Browser/README.md)
+docs/public/screenshots
+
+# The PDF guide is built at deploy time (docs/pdf/build.ts)
+docs/pdf/.build
+docs/public/vusa-lt-gidas.pdf

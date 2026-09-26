@@ -77,9 +77,6 @@ const stubs = {
     props: ['user', 'size'],
     template: '<span class="user-avatar" />',
   },
-  MdSuspenseWrapper: {
-    template: '<div data-testid="md-suspense-wrapper" />',
-  },
   Dialog: {
     props: ['open'],
     template: '<div data-testid="dialog"><slot /></div>',
