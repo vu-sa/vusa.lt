@@ -33,7 +33,7 @@
           v-if="shouldRenderLink"
           :href="profileUrl"
           v-bind="$attrs"
-          class="inline-flex items-center gap-2 px-1 py-0.5 rounded-md transition-colors hover:bg-accent group"
+          class="group inline-flex items-center gap-2 px-1 py-0.5 transition-colors hover:bg-accent"
         >
           <UserAvatar :user :size="avatarSize" :interactive="true" />
           <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
@@ -43,7 +43,7 @@
         <div
           v-else
           v-bind="$attrs"
-          class="inline-flex items-center gap-2 px-1 py-0.5 rounded-md transition-colors hover:bg-accent group"
+          class="group inline-flex items-center gap-2 px-1 py-0.5 transition-colors hover:bg-accent"
         >
           <UserAvatar :user :size="avatarSize" :interactive="true" />
           <span :class="[nameTextClass, 'font-medium group-hover:text-accent-foreground']">
@@ -53,7 +53,7 @@
       </template>
     </HoverCardTrigger>
 
-    <HoverCardContent class="w-64 overflow-hidden p-0 shadow-lg">
+    <HoverCardContent class="w-64 overflow-hidden p-0">
       <!-- User photo / initials fallback -->
       <div class="relative aspect-[4/3] w-full overflow-hidden">
         <img
@@ -67,9 +67,9 @@
         >
         <div
           v-else
-          class="flex h-full w-full items-center justify-center bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-700 dark:to-zinc-800"
+          class="flex h-full w-full items-center justify-center bg-muted"
         >
-          <span class="text-2xl font-bold text-zinc-400 dark:text-zinc-500">{{ initials }}</span>
+          <span class="text-2xl font-bold text-muted-foreground">{{ initials }}</span>
         </div>
       </div>
 
@@ -77,7 +77,7 @@
       <div class="flex flex-col gap-2 p-3">
         <h3 class="truncate text-sm font-semibold leading-tight">
           {{ user.name }}
-          <span v-if="user.show_pronouns && pronounsLabel" class="text-[10px] font-normal text-muted-foreground">
+          <span v-if="user.show_pronouns && pronounsLabel" class="text-xs font-normal text-muted-foreground">
             ({{ pronounsLabel }})
           </span>
         </h3>
@@ -89,7 +89,7 @@
             class="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
             :href="`mailto:${user.email}`"
           >
-            <IFluentMail20Regular width="13" height="13" class="shrink-0" />
+            <Mail class="size-3.5 shrink-0" />
             <span class="line-clamp-1 hover:underline">{{ user.email }}</span>
           </a>
           <a
@@ -97,7 +97,7 @@
             class="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
             :href="`tel:${user.phone}`"
           >
-            <IFluentPhone20Regular width="13" height="13" class="shrink-0" />
+            <Phone class="size-3.5 shrink-0" />
             <span class="line-clamp-1 hover:underline">{{ user.phone }}</span>
           </a>
           <a
@@ -122,6 +122,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { Mail, Phone } from 'lucide-vue-next';
 
 import UserAvatar from './UserAvatar.vue';
 

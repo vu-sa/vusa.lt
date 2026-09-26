@@ -14,9 +14,9 @@
     <!-- Vacant state -->
     <div
       v-if="holders.length === 0"
-      class="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-8 text-center"
+      class="flex flex-col items-center gap-3 border border-dashed border-border py-8 text-center"
     >
-      <div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+      <div class="flex h-12 w-12 items-center justify-center bg-muted">
         <UserX class="h-6 w-6 text-muted-foreground" />
       </div>
       <div>
@@ -42,7 +42,7 @@
         v-if="canAssign && openSeats > 0"
         type="button"
         :class="[
-          'flex items-center justify-center gap-2 rounded-lg border border-dashed border-border px-2.5 py-2',
+          'flex items-center justify-center gap-2 border border-dashed border-border px-2.5 py-2',
           'text-sm text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground',
         ]"
         @click="$emit('assign')"
@@ -61,7 +61,7 @@ import { Users, UserPlus, UserX } from 'lucide-vue-next';
 
 import DutyHolderCard from './DutyHolderCard.vue';
 
-import { SectionCard } from '@/Components/ui/section-card';
+import { SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 
 const props = withDefaults(defineProps<{

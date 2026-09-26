@@ -1,223 +1,149 @@
 <template>
-  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange"
-    @update:row-selection="handleRowSelectionChange">
-    <template #filters>
-      <DataTableFilter v-model:value="selectedDegrees" :options="degreeOptions" multiple
-        @update:value="handleDegreeFilterChange">
-        {{ $t('Degree') }}
-      </DataTableFilter>
-
-      <DataTableFilter v-if="tenantOptions.length > 0" v-model:value="selectedTenantIds" :options="tenantOptions"
-        multiple @update:value="handleTenantFilterChange">
-        {{ capitalize($tChoice('entities.tenant.model', 1)) }}
-      </DataTableFilter>
-    </template>
-
-    <template #headerActions>
-      <Button variant="outline" as-child class="gap-1.5">
-        <Link :href="route('studyPrograms.merge')">
-          <MergeIcon class="h-4 w-4" />
-          {{ $t('Sujungti programas') }}
+  <CollectionPage
+    :source
+    collection="study-programs"
+    entity-type="studyProgram"
+    :eyebrow="`${$t('shell.workspaces.organizacija.title')} · ${$t('shell.sections.studiju_programos')}`"
+    :title="$t('Studijų programos')"
+    :lead="isTrash
+      ? $t('Ištrintos studijų programos. Atkurk tai, ko dar reikia.')
+      : $t('Studijų programos, kurias gali nurodyti nariai ir studentų atstovai.')"
+    default-view="table"
+    :item-key="program => String(program.id)"
+    :columns
+    :selectable="mergeMode"
+    :trash="{ count: deletedCount, active: isTrash }"
+    :search-placeholder="$t('Ieškoti studijų programų')"
+  >
+    <template #actions>
+      <Button v-if="canMerge && !isTrash" variant="outline" size="lg" :aria-pressed="mergeMode" @click="mergeMode = !mergeMode">
+        <Merge aria-hidden="true" />
+        {{ mergeMode ? $t('Atšaukti sujungimą') : $t('Sujungti programas') }}
+      </Button>
+      <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg">
+        <Link :href="route('studyPrograms.create')">
+          <Plus aria-hidden="true" />
+          {{ $t('Nauja studijų programa') }}
         </Link>
       </Button>
     </template>
-  </IndexTablePage>
+
+    <template #row="{ item }">
+      <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+        <div class="min-w-0 flex-1">
+          <CollectionPrimaryCell :title="item.name" :href="isTrash ? undefined : route('studyPrograms.edit', item.id)" :sub="item.tenant?.shortname" />
+          <p class="mt-2 text-xs text-muted-foreground">
+            {{ degreeLabel(item.degree) }}
+          </p>
+        </div>
+        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <CollectionPrimaryCell v-if="column.key === 'name'" :title="item.name" :href="isTrash ? undefined : route('studyPrograms.edit', item.id)" />
+      <span v-else-if="column.key === 'degree'" class="text-muted-foreground">{{ degreeLabel(item.degree) }}</span>
+      <span v-else-if="column.key === 'tenant'" class="text-muted-foreground">{{ item.tenant?.shortname ?? '—' }}</span>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+    </template>
+
+    <template #bulk-actions="{ selected }">
+      <Button variant="brand" size="sm" :disabled="selected.length < 2" @click="mergeRecords = toMergeRecords(selected)">
+        <Merge aria-hidden="true" />
+        {{ $t('Sujungti') }}
+      </Button>
+    </template>
+  </CollectionPage>
+
+  <MergeRecordsDialog
+    :open="mergeRecords.length > 0"
+    type="study-programs"
+    :records="mergeRecords"
+    :submit-url="route('studyPrograms.mergeStudyPrograms')"
+    target-field="target_study_program_id"
+    source-field="source_study_program_ids"
+    @close="mergeRecords = []"
+    @merged="merged"
+  />
+  <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, watch, capitalize } from 'vue';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { router, usePage, Link } from '@inertiajs/vue3';
-import {
-  MergeIcon,
-  PlusIcon,
-} from 'lucide-vue-next';
-import { toast } from 'vue-sonner';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Merge, Plus } from 'lucide-vue-next';
+import { computed, ref, toRef } from 'vue';
 
-import type { IndexTablePageInstance,
-  IndexTablePageProps } from '@/Types/TableConfigTypes';
-import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionColumn } from '@/Components/Collection/types';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
 import { Button } from '@/Components/ui/button';
-import { TruncatedBadge } from '@/Components/ui/data-table/cells';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import { StudyProgramIcon } from '@/Components/icons';
-import {
-  createTitleColumn,
-  createTenantColumn,
-} from '@/Composables/useDataTableColumns';
+import { useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
+
+type StudyProgramRow = App.Entities.StudyProgram & {
+  tenant?: { id: number; shortname: string } | null;
+  force_delete_blocked_reason?: string | null;
+};
 
 const props = defineProps<{
-  studyPrograms: {
-    data: App.Entities.StudyProgram[];
-    meta: {
-      total: number;
-      current_page: number;
-      per_page: number;
-      last_page: number;
-      from: number;
-      to: number;
-    };
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  degreeOptions: Array<{ label: string; value: string }>;
-  showDeleted?: boolean;
-  deletedCount?: number;
+  studyPrograms: StudyProgramRow[];
+  deletedCount: number;
+  degreeOptions: { label: string; value: string }[];
 }>();
 
-// Component constants
-const modelName = 'studyPrograms';
-const entityName = 'studyProgram';
+const page = usePage();
+const isTrash = isTrashView();
+const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.studyProgram));
+const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.studyProgram));
+const { hasCollectionAction } = useAdminNavigation();
+const canMerge = computed(() => hasCollectionAction('studyPrograms.index', 'merge'));
 
-// Component refs
-const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+// `?merge=1` is the palette's "Sujungti studijų programas" entry point.
+const mergeMode = ref(!isTrash && new URLSearchParams(window.location.search).get('merge') === '1');
+const mergeRecords = ref<MergeRecord[]>([]);
 
-// Permission checks
-const canCreate = computed(() => usePage().props.auth?.can?.create?.studyProgram || false);
-const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.studyProgram ?? false);
+const degreeLabel = (value: string) => props.degreeOptions.find(option => option.value === value)?.label ?? value;
 
-// Filter states
-const selectedDegrees = ref<string[]>(props.filters?.['degree'] || []);
-const selectedTenantIds = ref<number[]>(props.filters?.['tenant.id'] || []);
-
-// Row selection
-const selectedRows = ref([]);
-
-// Filter options computed values
-const degreeOptions = computed(() => props.degreeOptions || []);
-
-const tenantOptions = computed(() => {
-  const tenants = usePage().props.tenants || [];
-  return tenants.map(tenant => ({
-    label: $t(tenant.shortname),
-    value: tenant.id,
-  }));
+const source = useLocalCollectionSource<StudyProgramRow>({
+  items: toRef(props, 'studyPrograms'),
+  searchText: program => [program.name, program.degree, program.tenant?.shortname],
+  defaultSort: 'name:asc',
+  sortOptions: [
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: program => program.name },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: program => program.name },
+  ],
+  facets: [
+    { field: 'degree', label: $t('Laipsnis'), get: program => program.degree, valueLabel: degreeLabel },
+    { field: 'tenant', label: $t('Padalinys'), get: program => program.tenant?.shortname },
+  ],
 });
 
-// Custom row ID function to ensure stable IDs across pagination/sorting
-const getRowId = (row: App.Entities.StudyProgram) => {
-  return `study-program-${row.id}`;
-};
+const actions = useCollectionRecordActions({
+  routePrefix: 'studyPrograms',
+  canDelete: () => canCreate.value,
+  canRestore: () => canCreate.value,
+  canForceDelete: () => canForceDelete.value,
+});
+const actionsFor = (program: StudyProgramRow) => actions.rowActions(program, program.name, isTrash);
 
-// Table columns
-const columns = computed<Array<ColumnDef<App.Entities.StudyProgram, any>>>(() => [
-  createTitleColumn<App.Entities.StudyProgram>({
-    accessorKey: 'name',
-    routeName: 'studyPrograms.edit',
-    width: 300,
-  }),
-  {
-    accessorKey: 'degree',
-    header: () => $t('Laipsnis'),
-    cell: ({ row }) => {
-      const { degree } = row.original;
-      return h(TruncatedBadge, { text: degree, variant: 'outline' });
-    },
-    size: 150,
-  },
-  createTenantColumn({
-    enableSorting: false,
-  }),
-  createStandardActionsColumn<App.Entities.StudyProgram>('studyPrograms', {
-    canView: false,
-    canEdit: true,
-    canDelete: true,
-    canRestore: true,
-    canForceDelete: canForceDelete.value,
-  }),
+const toMergeRecords = (programs: StudyProgramRow[]): MergeRecord[] =>
+  programs.map(program => ({ id: program.id, label: program.name, context: program.tenant?.shortname }));
+
+function merged(): void {
+  mergeRecords.value = [];
+  mergeMode.value = false;
+  router.reload({ only: ['studyPrograms'] });
+}
+
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'name', label: $t('Studijų programa'), sortField: 'name' },
+  { key: 'degree', label: $t('Laipsnis'), class: 'w-40' },
+  { key: 'tenant', label: $t('Padalinys'), class: 'w-32' },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
-
-// Simplified table configuration using the new interfaces
-const tableConfig = computed<IndexTablePageProps<App.Entities.StudyProgram>>(() => {
-  return {
-    // Essential table configuration
-    modelName,
-    entityName,
-    data: props.studyPrograms.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.studyPrograms.meta.total,
-    initialPage: props.studyPrograms.meta.current_page,
-    pageSize: props.studyPrograms.meta.per_page,
-
-    // Advanced features
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'name', desc: false }],
-    enableFiltering: true,
-    enableColumnVisibility: true,
-    enableRowSelection: false,
-    enableRowSelectionColumn: false,
-    allowToggleDeleted: true,
-    showDeleted: props.showDeleted,
-    deletedCount: props.deletedCount,
-
-    // Page layout
-    headerTitle: 'Studijų programos',
-    icon: StudyProgramIcon,
-    createRoute: canCreate.value ? route('studyPrograms.create') : undefined,
-    canCreate: canCreate.value,
-  };
-});
-
-// Event handlers
-const handleDegreeFilterChange = (degrees: string[]) => {
-  selectedDegrees.value = degrees;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('degree', degrees);
-  }
-};
-
-const handleTenantFilterChange = (tenantIds: number[]) => {
-  selectedTenantIds.value = tenantIds;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('tenant.id', tenantIds);
-  }
-};
-
-// Row selection handler
-const handleRowSelectionChange = (selection: any) => {
-  // Get the actual row objects from the selection state
-  selectedRows.value = indexTablePageRef.value?.getSelectedRows() || [];
-};
-
-// Event handler for data loaded
-const onDataLoaded = (data: any) => {
-  // Additional handling after data is loaded if needed
-};
-
-// Event handler for sorting changes from IndexTablePage
-const handleSortingChange = (sorting: any) => {
-  // Additional handling for sorting changes if needed
-};
-
-// Event handler for page changes from IndexTablePage
-const handlePageChange = (page: any) => {
-  // Additional handling for page changes if needed
-};
-
-// Event handler for filter changes from IndexTablePage
-const handleFilterChange = (filterKey: any, value: any) => {
-  // Update local filter references if needed
-  if (filterKey === 'degree') {
-    selectedDegrees.value = value;
-  }
-  else if (filterKey === 'tenant.id') {
-    selectedTenantIds.value = value;
-  }
-};
-
-// Sync filter values when changed externally
-watch(() => props.filters, (newFilters) => {
-  if (newFilters) {
-    if (newFilters['degree'] !== undefined) {
-      selectedDegrees.value = newFilters['degree'];
-    }
-    if (newFilters['tenant.id'] !== undefined) {
-      selectedTenantIds.value = newFilters['tenant.id'];
-    }
-  }
-}, { deep: true });
 </script>

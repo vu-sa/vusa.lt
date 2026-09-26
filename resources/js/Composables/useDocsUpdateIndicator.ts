@@ -1,6 +1,11 @@
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
+
+import { useDocsHref } from '@/Composables/useDocsHref';
 
 const STORAGE_KEY = 'docs-changelog-last-seen';
+
+/** Fallback until `changelog-meta.json` names the newest per-major changelog page. */
+const DEFAULT_CHANGELOG = 'v2';
 
 /**
  * Tracks whether there are unseen documentation/platform updates.
@@ -13,6 +18,10 @@ export function useDocsUpdateIndicator() {
   const hasNewUpdates = ref(false);
   const lastUpdateDate = ref<string | null>(null);
   const latestVersion = ref<string | null>(null);
+  const latestChangelog = ref(DEFAULT_CHANGELOG);
+
+  const docsBase = useDocsHref();
+  const changelogHref = computed(() => `${docsBase.value}/changelog/${latestChangelog.value}`);
 
   onMounted(async () => {
     try {
@@ -23,6 +32,7 @@ export function useDocsUpdateIndicator() {
       const meta = await response.json();
       lastUpdateDate.value = meta.lastUpdated;
       latestVersion.value = meta.latestVersion;
+      latestChangelog.value = meta.latestChangelog ?? DEFAULT_CHANGELOG;
 
       const lastSeen = localStorage.getItem(STORAGE_KEY);
       if (!lastSeen || lastSeen < meta.lastUpdated) {
@@ -45,6 +55,8 @@ export function useDocsUpdateIndicator() {
     hasNewUpdates,
     lastUpdateDate,
     latestVersion,
+    docsBase,
+    changelogHref,
     markAsSeen,
   };
 }

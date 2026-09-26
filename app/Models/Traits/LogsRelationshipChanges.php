@@ -2,6 +2,7 @@
 
 namespace App\Models\Traits;
 
+use App\Events\SearchRelationChanged;
 use App\Support\AuditedRelations;
 use Closure;
 use InvalidArgumentException;
@@ -79,6 +80,8 @@ trait LogsRelationshipChanges
                 'detached' => $detachedIds->map(fn ($id) => ['id' => (string) $id, 'label' => (string) $before->get($id)])->values()->all(),
             ])
             ->log('relation_updated');
+
+        SearchRelationChanged::dispatch($this, $relation);
 
         return $result;
     }

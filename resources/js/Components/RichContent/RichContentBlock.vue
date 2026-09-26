@@ -7,7 +7,6 @@
     <Suspense>
       <template #default>
         <component :is="displayComponent" :element :html
-          :is-first-element
           :anchor-id="element.id"
           :resolved
           :band
@@ -32,7 +31,6 @@
        when it exists; fall back to live json_content so unsaved editor blocks still
        preview instead of rendering blank. -->
   <component :is="displayComponent" v-else-if="element.html !== undefined" :element :html
-    :is-first-element
     :class="blockClasses" />
   <component :is="RichContentTiptapHTML" v-else :json_content="element.json_content"
     :class="blockClasses" />
@@ -60,7 +58,6 @@ import type { NewsItem } from '@/Types/contentParts';
 const props = defineProps<{
   element: models.ContentPart;
   html?: boolean;
-  isFirstElement?: boolean;
   /** This block's already-looked-up server-resolved payload (see RichContentParser's `resolvedFor`). */
   resolved?: unknown;
   /** This block's already-looked-up band chrome (see RichContentParser's `bandFor`). */

@@ -88,7 +88,7 @@ return [
         'manager_role_description' => 'Pasirinkite, kuri rolė nurodo padalinio institucijų atstovus. Naudotojai su aktyviomis šios rolės pareigomis tame pačiame padalinyje laikomi institucijų atstovais ir gauna su institucijomis susijusius pranešimus, pvz., apie studentų atstovų registracijas.',
         'manager_role_label' => 'Atstovų rolė',
         'manager_role_placeholder' => 'Pasirinkti rolę',
-        'manager_role_note' => 'Pastaba: institucijų atstovai taip pat gauna pranešimus apie savo institucijų posėdžius. Tai nėra tas pats, kas institucijos administratoriai — jie nurodomi kadencijai pačios institucijos nustatymuose ir jiems tenka jos užduotys.',
+        'manager_role_note' => 'Pastaba: institucijų atstovai taip pat gauna pranešimus apie savo institucijų posėdžius. Tai nėra tas pats, kas institucijos sekretoriai — jie nurodomi kadencijai pačios institucijos nustatymuose ir jiems tenka jos užduotys.',
         'student_rep_type_title' => 'Studentų atstovų organų šakninis tipas',
         'student_rep_type_description' => 'Pasirinkite šakninį institucijos tipą, kuris (ir visi jo potipiai) laikomas studentų atstovų organu. Šio tipo institucijoms viešame kontaktų puslapyje bus rodoma studentų atstovų kortelė vietoje standartinės institucijos kortelės.',
         'student_rep_type_label' => 'Šakninis tipas',

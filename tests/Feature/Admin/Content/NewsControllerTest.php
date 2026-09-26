@@ -673,3 +673,42 @@ describe('auth: super admin', function (): void {
         ]);
     });
 });
+
+describe('bulk actions', function (): void {
+    beforeEach(function (): void {
+        $this->managerTenant = $this->newsManager->duties()->first()->institution->tenant;
+    });
+
+    test('bulk status maps published onto the draft flag of every selected article', function (): void {
+        $drafts = News::factory()->count(2)->for($this->managerTenant)->create(['draft' => true]);
+
+        asUser($this->newsManager)
+            ->patch(route('news.bulkStatus'), ['ids' => $drafts->pluck('id')->all(), 'published' => true])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        expect($drafts->map(fn (News $news) => (bool) $news->fresh()->draft)->all())->toBe([false, false]);
+    });
+
+    test('bulk status refuses the whole batch when one article is outside the actor\'s tenant', function (): void {
+        $own = News::factory()->for($this->managerTenant)->create(['draft' => false]);
+        $foreign = News::factory()->for(Tenant::query()->where('id', '!=', $this->managerTenant->id)->firstOrFail())->create(['draft' => false]);
+
+        asUser($this->newsManager)
+            ->patch(route('news.bulkStatus'), ['ids' => [$own->id, $foreign->id], 'published' => false])
+            ->assertStatus(403);
+
+        expect($own->fresh()->draft)->toBeFalsy();
+    });
+
+    test('bulk delete soft-deletes every selected article', function (): void {
+        $news = News::factory()->count(2)->for($this->managerTenant)->create();
+
+        asUser($this->newsManager)
+            ->delete(route('news.bulkDestroy'), ['ids' => $news->pluck('id')->all()])
+            ->assertRedirect()
+            ->assertSessionHas('info');
+
+        $news->each(fn (News $article) => $this->assertSoftDeleted('news', ['id' => $article->id]));
+    });
+});

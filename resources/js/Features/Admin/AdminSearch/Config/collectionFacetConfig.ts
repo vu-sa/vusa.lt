@@ -7,6 +7,8 @@
 
 import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
+import { meetingCompletionStatuses } from '@/Constants/statuses';
+
 /**
  * Meeting collection facet configuration
  */
@@ -56,6 +58,13 @@ export const MEETING_FACET_CONFIG: CollectionFacetConfig = {
       defaultOpen: false,
       maxValues: 15,
       sortBy: 'count',
+    },
+    {
+      // Not in facetBy, so it is never listed as a facet; it only carries the
+      // "Mano institucijos" quick filter through the URL and the filter string.
+      field: 'institution_ids',
+      label: 'Mano institucijos',
+      type: 'checkbox',
     },
   ],
 };
@@ -140,7 +149,7 @@ export const AGENDA_ITEM_FACET_CONFIG: CollectionFacetConfig = {
  * News collection facet configuration
  */
 export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'lang,tenant_name,draft',
+  facetBy: 'lang,tenant_shortname,draft',
   queryBy: 'title,short',
   defaultSortBy: 'publish_time:desc',
   fields: [
@@ -153,7 +162,7 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
     {
-      field: 'tenant_name',
+      field: 'tenant_shortname',
       label: 'Padalinys',
       type: 'checkbox',
       icon: 'Users',
@@ -176,7 +185,7 @@ export const NEWS_FACET_CONFIG: CollectionFacetConfig = {
  * Page collection facet configuration
  */
 export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'lang,tenant_name,is_active',
+  facetBy: 'lang,tenant_shortname,is_active',
   queryBy: 'title,meta_description',
   defaultSortBy: 'created_at:desc',
   fields: [
@@ -189,7 +198,7 @@ export const PAGE_FACET_CONFIG: CollectionFacetConfig = {
       sortBy: 'count',
     },
     {
-      field: 'tenant_name',
+      field: 'tenant_shortname',
       label: 'Padalinys',
       type: 'checkbox',
       icon: 'Users',
@@ -240,7 +249,7 @@ export const CALENDAR_FACET_CONFIG: CollectionFacetConfig = {
  * Institution collection facet configuration (for future use)
  */
 export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
-  facetBy: 'tenant_shortname,type_titles',
+  facetBy: 'tenant_shortname,type_titles,activity_status',
   queryBy: 'name_lt,name_en,short_name_lt,short_name_en,alias,email',
   defaultSortBy: 'created_at:desc',
   fields: [
@@ -260,6 +269,15 @@ export const INSTITUTION_FACET_CONFIG: CollectionFacetConfig = {
       icon: 'Building2',
       defaultOpen: false,
       maxValues: 15,
+      sortBy: 'count',
+    },
+    // The ViSAK overview numbers link here (`?activity_status=overdue`).
+    {
+      field: 'activity_status',
+      label: 'Aktyvumas',
+      type: 'checkbox',
+      icon: 'CalendarCheck',
+      defaultOpen: false,
       sortBy: 'count',
     },
   ],
@@ -594,14 +612,23 @@ export function getCollectionSortOptions(collection: string): SortOption[] {
  * Human-readable labels for facet values
  */
 export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
+  // One name per state everywhere (U10): the meeting map in Constants/statuses.ts is the source.
   completion_status: {
-    complete: 'Užbaigtas',
-    incomplete: 'Neužbaigtas',
-    partial: 'Dalinai užbaigtas',
-    no_items: 'Be punktų',
+    complete: meetingCompletionStatuses.complete.label,
+    incomplete: meetingCompletionStatuses.incomplete.label,
+    no_items: meetingCompletionStatuses.no_items.label,
+    partial: 'Iš dalies užpildyta',
   },
   // Meeting values: all_match, mixed, all_mismatch, neutral.
   // Agenda item values: match, mismatch, mixed, incomplete, neutral.
+  activity_status: {
+    overdue: 'Vėluoja',
+    approaching: 'Artėja terminas',
+    no_activity: 'Nėra duomenų',
+    healthy: 'Būklė tinkama',
+    covered_by_upcoming_meeting: 'Suplanuotas posėdis',
+    covered_by_check_in: 'Pranešta apie veiklą',
+  },
   vote_alignment_status: {
     all_match: 'Visi sutampa',
     match: 'Sutampa',

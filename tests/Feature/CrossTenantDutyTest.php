@@ -294,7 +294,7 @@ test('edit page exposes assignableTenantUsers map for cross-tenant admin', funct
         );
 });
 
-test('edit page assignableTenantUsers excludes users end-dated today', function (): void {
+test('edit page assignableTenantUsers keeps users whose last day is today', function (): void {
     $tenantUser = makeUser($this->assignableTenant);
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -308,7 +308,8 @@ test('edit page assignableTenantUsers excludes users end-dated today', function 
     asUser($this->crossAdmin)->get(route('duties.edit', $this->duty))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->where('assignableTenantUsers', fn ($map) => empty($map[$this->assignableTenant->id] ?? []))
+            // The end date is the last day in office.
+            ->where('assignableTenantUsers', fn ($map) => ! empty($map[$this->assignableTenant->id] ?? []))
         );
 });
 
@@ -711,4 +712,79 @@ test('removing assignable tenant end-dates all active reps including future end_
         ->first();
 
     expect($dutiable->end_date)->not->toBeNull();
+});
+
+describe('store (Priskirti sheet)', function (): void {
+    test('a cross-tenant admin assigns their own tenant member as a delegated seat', function (): void {
+        asUser($this->crossAdmin)->post(route('dutiables.store'), [
+            'duty_id' => $this->duty->id,
+            'user_id' => $this->tenantUser->id,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $created = Dutiable::query()->where('duty_id', $this->duty->id)
+            ->where('dutiable_id', $this->tenantUser->id)->sole();
+
+        expect($created->tenant_id)->toBe($this->assignableTenant->id);
+    });
+
+    test('an owning-tenant admin creates an ordinary seat with no delegated tenant', function (): void {
+        asUser($this->owningAdmin)->post(route('dutiables.store'), [
+            'duty_id' => $this->duty->id,
+            'user_id' => $this->tenantUser->id,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        expect(Dutiable::query()->where('duty_id', $this->duty->id)
+            ->where('dutiable_id', $this->tenantUser->id)->sole()->tenant_id)->toBeNull();
+    });
+
+    test('a cross-tenant admin cannot assign a member from another tenant', function (): void {
+        asUser($this->crossAdmin)->post(route('dutiables.store'), [
+            'duty_id' => $this->duty->id,
+            'user_id' => $this->outsideUser->id,
+        ])->assertForbidden();
+
+        expect(Dutiable::query()->where('dutiable_id', $this->outsideUser->id)->exists())->toBeFalse();
+    });
+
+    test('the tenant quota is enforced', function (): void {
+        // Quota is 2 (see beforeEach).
+        foreach ([1, 2] as $_) {
+            Dutiable::factory()->create([
+                'duty_id' => $this->duty->id,
+                'dutiable_id' => makeUser($this->assignableTenant)->id,
+                'dutiable_type' => MorphMap::alias(User::class),
+                'tenant_id' => $this->assignableTenant->id,
+                'start_date' => now()->subDay()->toDateString(),
+                'end_date' => null,
+            ]);
+        }
+
+        asUser($this->crossAdmin)->post(route('dutiables.store'), [
+            'duty_id' => $this->duty->id,
+            'user_id' => $this->tenantUser->id,
+        ])->assertSessionHasErrors('user_id');
+
+        expect(Dutiable::query()->where('dutiable_id', $this->tenantUser->id)
+            ->where('duty_id', $this->duty->id)->exists())->toBeFalse();
+    });
+});
+
+test('saving the duty without a member list keeps its current members', function (): void {
+    $dutiable = Dutiable::factory()->create([
+        'duty_id' => $this->duty->id,
+        'dutiable_id' => $this->tenantUser->id,
+        'dutiable_type' => MorphMap::alias(User::class),
+        'tenant_id' => null,
+        'start_date' => now()->subDay()->toDateString(),
+        'end_date' => null,
+    ]);
+
+    asUser($this->owningAdmin)->patch(route('duties.update', $this->duty), [
+        'name' => ['lt' => 'Atnaujinta', 'en' => 'Updated'],
+        'institution_id' => $this->duty->institution_id,
+        'places_to_occupy' => 1,
+        'contacts_grouping' => 'none',
+    ])->assertRedirect();
+
+    expect($dutiable->fresh()->end_date)->toBeNull();
 });

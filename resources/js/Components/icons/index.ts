@@ -8,6 +8,7 @@
 export * from './model-icons';
 export * from './form-icons';
 export * from './other-icons';
+export * from '@/Constants/entityTypes';
 
 // =============================================================================
 // DYNAMIC HELPERS - WARNING: These import ALL icons in their category
@@ -19,4 +20,4 @@ export * from './other-icons';
  * Get model icon dynamically (imports ALL model icons)
  * @warning This will bundle all model icons, use direct imports when possible
  */
-export { getModelIcon } from './model-icons';
+export { getModelIcon } from '@/Constants/entityTypes';

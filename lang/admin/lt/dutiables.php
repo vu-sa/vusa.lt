@@ -28,12 +28,6 @@ return [
             'save' => 'Pakeitimai',
         ],
 
-        'zoom' => [
-            'label' => 'Mastelis',
-            'in' => 'Priartinti',
-            'out' => 'Atitolinti',
-        ],
-
         'legend' => [
             'title' => 'Žymėjimai',
             'active' => 'Dabartinis',
@@ -190,9 +184,10 @@ return [
             'no_scope' => 'Pasirinkite instituciją, kad matytumėte laikotarpius.',
         ],
 
-        'spotlight' => [
-            'title' => 'Laikotarpius galima tvarkyti vienoje vietoje',
-            'description' => 'Vietoj to, kad kiekvieno nario laikotarpį redaguotumėte atskirai, atidarykite laiko juostą ir sutvarkykite visus iš karto.',
-        ],
+    ],
+
+    'assign' => [
+        'already_assigned' => 'Šis narys tuo laikotarpiu jau eina šias pareigas.',
+        'quota_exceeded' => 'Padalinio kvota (:quota) viršyta.',
     ],
 ];

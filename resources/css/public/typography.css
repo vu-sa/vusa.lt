@@ -206,12 +206,8 @@
     @apply my-0
   }
 
-  /* The default border colour comes from the base layer's `*` rule, which is
-     `gray-200` with no dark-mode counterpart — so the quote bar reads as a glaring
-     light-grey line on a dark background unless it is set explicitly, the same way
-     `h2`'s bottom border already is. `border-brand` rather than a neutral: the
-     brand-coloured vertical rule is the design's signature device, and a quote is
-     exactly the "hung off a rule" shape it names.
+  /* `border-brand` rather than a neutral: the brand-coloured vertical rule is the
+     design's signature device, and a quote is exactly the "hung off a rule" shape it names.
 
      No `leading-*` here on purpose: quotes are set at body size, so tightening them
      relative to the surrounding 1.7 makes them read as a different (smaller) size
@@ -403,6 +399,55 @@
 .rc-prose :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-none,
 .rc-prose-editing :is(h1, h2, h3, h4, h5, h6).rc-h-spacing-none {
   margin-block-start: 0;
+}
+
+/* Rich-text tables, in the admin table's language: one hairline box, a shaded uppercase header
+   row, hairline row rules, no zebra. Written for every surface a table is edited or shown on
+   (published prose, the prose editor, a plain Tiptap field, and bare stored HTML via `.rc-table`).
+   Older stored HTML has no `.rc-table` but baked `border-collapse table-auto` + zinc utilities;
+   `.border-collapse.table-auto` catches it, and being unlayered these rules outrank the utilities. */
+:is(.rc-prose, .rc-prose-editing, .tiptap) table,
+table:is(.rc-table, .border-collapse.table-auto) {
+  @apply my-0 w-full border-collapse border border-border text-sm tracking-normal;
+}
+
+:is(.rc-prose, .rc-prose-editing, .tiptap, .rc-table, .border-collapse.table-auto) tr {
+  @apply border-0 bg-transparent;
+}
+
+:is(.rc-prose, .rc-prose-editing, .tiptap, .rc-table, .border-collapse.table-auto) :is(th, td) {
+  @apply border-0 border-b border-border/60 px-4 py-2.5 text-left align-top tracking-normal;
+}
+
+:is(.rc-prose, .rc-prose-editing, .tiptap, .rc-table, .border-collapse.table-auto) th {
+  @apply border-border bg-secondary/50 align-bottom text-xs font-bold uppercase tracking-[0.12em];
+}
+
+:is(.rc-prose, .rc-prose-editing, .tiptap, .rc-table, .border-collapse.table-auto) :is(th, td)[align='center'] {
+  @apply text-center;
+}
+
+:is(.rc-prose, .rc-prose-editing, .tiptap, .rc-table, .border-collapse.table-auto) :is(th, td)[align='right'] {
+  @apply text-right;
+}
+
+:is(.rc-prose, .rc-prose-editing, .tiptap, .rc-table, .border-collapse.table-auto) :is(th, td) p {
+  @apply my-0;
+}
+
+/* Embedded YouTube and uploaded video: a square frame with a hairline, like the rest of the
+   design, instead of the old baked `rounded-xl shadow-lg`. Keyed on the element as well as
+   `.rc-embed`, because HtmlSanitizerService strips `class` from <iframe> and <video> in stored
+   HTML — and unlayered, so it outranks the utilities older JSON renders still carry. */
+:is(.rc-prose, .rc-prose-editing, .tiptap) :is([data-youtube-video] iframe, video),
+:is(iframe, video).rc-embed {
+  @apply block aspect-video h-auto w-full rounded-none border border-border bg-secondary shadow-none;
+}
+
+/* Images stay square like the rest of the design. Older stored HTML still carries a baked
+   `rounded-md`; unlayered, this outranks it. */
+:is(.rc-prose, .rc-prose-editing, .tiptap) img:is(.tiptap-image, .rounded-md) {
+  @apply rounded-none;
 }
 
 /* Authorable text alignment (App\Tiptap\TextAlign, TextAlign.ts) — a class, never

@@ -129,7 +129,7 @@ const alignmentDotClass = computed(() => {
     case 'all_match':
       return 'bg-status-success';
     case 'mixed':
-      return 'bg-status-warning';
+      return 'bg-status-attention';
     case 'all_mismatch':
       return 'bg-status-danger';
     case 'neutral':

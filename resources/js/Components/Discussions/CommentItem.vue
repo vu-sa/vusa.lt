@@ -9,14 +9,14 @@
         <span v-if="comment.edited_at" class="text-xs text-muted-foreground/70">({{ $t('redaguota') }})</span>
         <span
           v-if="votedOptionLabel"
-          class="inline-flex items-center gap-1 rounded-full bg-vusa-red/10 px-1.5 py-0.5 text-xs font-medium text-vusa-red"
+          class="inline-flex items-center gap-1 border border-border px-1.5 py-0.5 text-xs font-medium text-brand"
         >
           <CheckCircle2 class="h-3 w-3" />
           {{ $t('Balsavo: :option', { option: votedOptionLabel }) }}
         </span>
         <span
           v-if="comment.is_resolved"
-          class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs font-medium text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400"
+          class="inline-flex items-center gap-1 border border-status-success-border bg-status-success-surface px-1.5 py-0.5 text-xs font-medium text-status-success"
         >
           <CheckCircle2 class="h-3 w-3" />
           {{ $t('Išspręsta') }}
@@ -26,7 +26,7 @@
           <DropdownMenuTrigger as-child>
             <button
               type="button"
-              class="ml-auto flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-zinc-100 group-hover/comment:opacity-100 dark:hover:bg-zinc-800"
+              class="ml-auto flex size-7 items-center justify-center text-muted-foreground transition-opacity hover:bg-accent focus-visible:opacity-100 group-hover/comment:opacity-100 pointer-fine:opacity-0 pointer-coarse:size-11"
             >
               <MoreHorizontal class="h-4 w-4" />
             </button>
@@ -69,7 +69,7 @@
       <!-- Read mode -->
       <div
         v-else
-        class="mt-0.5 max-w-none text-sm text-foreground [&_.comment-mention]:rounded [&_.comment-mention]:bg-vusa-red/10 [&_.comment-mention]:px-1 [&_.comment-mention]:font-medium [&_.comment-mention]:text-vusa-red"
+        class="mt-0.5 max-w-none text-sm text-foreground [&_.comment-mention]:bg-brand/10 [&_.comment-mention]:px-1 [&_.comment-mention]:font-medium [&_.comment-mention]:text-brand"
         v-html="comment.body"
       />
 

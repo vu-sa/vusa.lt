@@ -1,5 +1,7 @@
 <template>
-  <div @click="handleOpenModal">
+  <!-- The slotted trigger is the real button; this only catches its click. -->
+  <!-- eslint-disable-next-line vuejs-accessibility/click-events-have-key-events, vuejs-accessibility/no-static-element-interactions -->
+  <div v-if="$slots.default" @click="open">
     <slot />
   </div>
 
@@ -7,9 +9,9 @@
     <DialogContent class="sm:max-w-4xl max-h-[90vh] !p-0 flex flex-col">
       <div class="px-8 pt-8">
         <DialogHeader>
-          <DialogTitle>Įkelti nuorodą</DialogTitle>
+          <DialogTitle>{{ $t('rich-content.link_dialog_title') }}</DialogTitle>
           <DialogDescription>
-            Pasirinkite nuorodos tipą ir nustatykite jos paskirtį.
+            {{ $t('rich-content.link_dialog_description') }}
           </DialogDescription>
         </DialogHeader>
       </div>
@@ -17,36 +19,37 @@
       <Tabs default-value="url" class="mt-4 px-8">
         <TabsList class="grid w-full grid-cols-3">
           <TabsTrigger value="url">
-            Paprasta nuoroda
+            {{ $t('rich-content.link_tab_url') }}
           </TabsTrigger>
           <TabsTrigger value="file">
-            Failas iš vusa.lt failų
+            {{ $t('rich-content.link_tab_file') }}
           </TabsTrigger>
           <TabsTrigger value="archiveDocument">
-            Archyvo dokumentas
+            {{ $t('rich-content.link_tab_document') }}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="url" class="space-y-4 pt-4">
           <div class="space-y-4">
             <div class="space-y-2">
-              <Label for="url-input">Nuoroda</Label>
+              <Label for="url-input">{{ $t('rich-content.link_url') }}</Label>
               <Input
                 id="url-input"
                 v-model="urlRef"
                 placeholder="https://..."
                 type="url"
+                @keydown.enter.prevent="addLink"
               />
             </div>
             <div class="space-y-2">
-              <Label for="link-text-input">Nuorodos tekstas</Label>
+              <Label for="link-text-input">{{ $t('rich-content.link_text') }}</Label>
               <Input
                 id="link-text-input"
                 v-model="linkTextRef"
-                :placeholder="urlRef || 'Nuorodos tekstas...'"
+                :placeholder="urlRef || $t('rich-content.link_text')"
               />
               <p class="text-xs text-muted-foreground">
-                {{ hasSelectedText ? 'Redaguojama esamo teksto nuoroda' : 'Jei paliksite tuščią, bus naudojamas URL' }}
+                {{ hasSelectedText ? $t('rich-content.link_text_editing') : $t('rich-content.link_text_fallback_url') }}
               </p>
             </div>
           </div>
@@ -54,14 +57,14 @@
 
         <TabsContent value="file" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
           <div class="space-y-2">
-            <Label for="file-link-text">Nuorodos tekstas</Label>
+            <Label for="file-link-text">{{ $t('rich-content.link_text') }}</Label>
             <Input
               id="file-link-text"
               v-model="linkTextRef"
-              placeholder="Nuorodos tekstas..."
+              :placeholder="$t('rich-content.link_text')"
             />
             <p class="text-xs text-muted-foreground">
-              {{ hasSelectedText ? 'Redaguojama esamo teksto nuoroda' : 'Jei paliksite tuščią, bus naudojamas failo pavadinimas' }}
+              {{ hasSelectedText ? $t('rich-content.link_text_editing') : $t('rich-content.link_text_fallback_file') }}
             </p>
           </div>
           <Suspense>
@@ -76,14 +79,14 @@
 
         <TabsContent value="archiveDocument" class="pt-4 max-h-[60vh] overflow-y-auto pr-1 space-y-4">
           <div class="space-y-2">
-            <Label for="archive-link-text">Nuorodos tekstas</Label>
+            <Label for="archive-link-text">{{ $t('rich-content.link_text') }}</Label>
             <Input
               id="archive-link-text"
               v-model="linkTextRef"
-              placeholder="Nuorodos tekstas..."
+              :placeholder="$t('rich-content.link_text')"
             />
             <p class="text-xs text-muted-foreground">
-              {{ hasSelectedText ? 'Redaguojama esamo teksto nuoroda' : 'Jei paliksite tuščią, bus naudojamas dokumento pavadinimas' }}
+              {{ hasSelectedText ? $t('rich-content.link_text_editing') : $t('rich-content.link_text_fallback_document') }}
             </p>
           </div>
           <Suspense>
@@ -105,11 +108,11 @@
       </Tabs>
 
       <DialogFooter class="px-8 pb-6">
-        <Button variant="outline" @click="showModal = false">
-          Atšaukti
+        <Button type="button" variant="outline" @click="showModal = false">
+          {{ $t('Atšaukti') }}
         </Button>
-        <Button :disabled="!(urlRef && urlRef.trim && urlRef.trim())" @click="addLink">
-          Įkelti
+        <Button type="button" :disabled="!urlRef.trim()" @click="addLink">
+          {{ $t('rich-content.link_apply') }}
         </Button>
       </DialogFooter>
     </DialogContent>
@@ -118,6 +121,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import type { Editor } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { Button } from '@/Components/ui/button';
@@ -131,7 +135,7 @@ import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/sea
 import { Spinner } from '@/Components/ui/spinner';
 
 const props = defineProps<{
-  editor?: any;
+  editor?: Editor | null;
 }>();
 
 const emit = defineEmits<{
@@ -150,7 +154,7 @@ const hasSelectedText = computed(() => {
   return from !== to;
 });
 
-function handleOpenModal() {
+function open() {
   // Optional chain on editor and attributes; default to empty string
   const linkAttrs = props.editor?.getAttributes?.('link');
   urlRef.value = linkAttrs?.href ?? '';
@@ -179,13 +183,16 @@ function handleOpenModal() {
 }
 
 function addLink() {
-  if (typeof urlRef.value === 'string') {
-    const linkText = linkTextRef.value.trim() || urlRef.value;
-    emit('submit', urlRef.value, linkText);
+  const url = urlRef.value.trim();
+  if (url) {
+    emit('submit', url, linkTextRef.value.trim() || url);
   }
 
   showModal.value = false;
 }
+
+// Lets a link bubble or a keyboard shortcut open the dialog without a slotted trigger.
+defineExpose({ open });
 
 function addFileLink(file: string) {
   let finalUrl = file;

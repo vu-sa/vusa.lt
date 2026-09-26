@@ -276,8 +276,9 @@
           </p>
           <div v-if="hasActiveFilters" class="mt-6">
             <Button
-              variant="brand-outline"
-              size="public-sm"
+              voice="brand"
+              variant="outline"
+              size="sm"
               @click="clearFilters"
             >
               {{ $t('Išvalyti filtrus') }}
@@ -314,8 +315,9 @@
             class="mt-12 flex justify-center"
           >
             <Button
-              variant="brand-outline"
-              size="public"
+              voice="brand"
+              variant="outline"
+              size="lg"
               :disabled="isLoadingMore"
               @click="loadMore"
             >
@@ -343,7 +345,7 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import { useNewsSearch, type NewsSearchSort, type FacetOption } from '@/Composables/useNewsSearch';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
-import TagChip from '@/Components/Public/Base/TagChip.vue';
+import TagChip from '@/Components/Brand/TagChip.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
 import NewsCard from '@/Components/Public/News/NewsCard.vue';
 import { Button } from '@/Components/ui/button';

@@ -115,12 +115,11 @@ describe('permission-based tenant visibility', function (): void {
         $duty->assignRole($role);
 
         asUser($this->user)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
-                ->where('availableTenants', function ($tenants) {
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->where('statsTenants', function ($tenants) {
                     $collection = collect($tenants);
 
                     // User with permission should have available tenants
@@ -149,9 +148,7 @@ describe('permission-based tenant visibility', function (): void {
                     return $collection->doesntContain(fn ($inst) => $inst['id'] == $extraInstitution->id) &&
                            $collection->contains(fn ($inst) => $inst['id'] == $userInstitutionId);
                 })
-                ->where('availableTenants',
-                    // Regular user should have no available tenants
-                    fn ($tenants) => collect($tenants)->isEmpty())
+                ->where('canViewTenantOverview', true)
             );
     });
 
@@ -168,11 +165,11 @@ describe('permission-based tenant visibility', function (): void {
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
 
         asUser($this->user)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('availableTenants', function ($tenants) use ($otherTenant) {
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->where('statsTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
 
                     // Should not include the other tenant

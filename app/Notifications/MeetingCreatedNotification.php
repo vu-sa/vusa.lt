@@ -2,23 +2,26 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use App\Models\Meeting;
+use App\Notifications\Concerns\ReachesFollowers;
 
 /**
  * Notification sent to administrators when a new meeting is created.
  */
 class MeetingCreatedNotification extends BaseNotification
 {
+    use ReachesFollowers;
+
+    public function type(): NotificationType
+    {
+        return $this->viaFollow ? NotificationType::FollowedInstitutionActivity : NotificationType::MeetingCreated;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Meeting $meeting) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Meeting;
-    }
 
     public function title(object $notifiable): string
     {
@@ -63,13 +66,11 @@ class MeetingCreatedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_meeting'),
-                'url' => $this->url(),
-            ],
+            'label' => __('notifications.action_view_meeting'),
+            'url' => $this->url(),
         ];
     }
 }

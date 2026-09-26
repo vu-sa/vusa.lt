@@ -36,7 +36,10 @@ class UpdateSharepointFolder
      */
     public function handle(FileableNameUpdated $event): void
     {
-        if (StagingProtection::sharepointIsReadOnly()) {
+        if (StagingProtection::sharepointIsReadOnly(
+            config('filesystems.sharepoint.site_id'),
+            config('filesystems.sharepoint.vusa_drive_id'),
+        )) {
             return;
         }
 

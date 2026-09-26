@@ -1,6 +1,6 @@
 /**
- * useUIPreferences - Single source of truth for admin sidebar customization
- * (section visibility + order) and recently visited pages.
+ * useUIPreferences - Single source of truth for the admin's pinned and recently
+ * visited pages.
  *
  * Server-backed (users.ui_preferences JSON column, shared via
  * HandleInertiaRequests as auth.user.ui_preferences). Provide/inject pattern,
@@ -15,32 +15,18 @@
  * const ui = createUIPreferencesProvider()
  *
  * // In any component (consumer):
- * const { isSectionVisible, recentPages } = useUIPreferences()
+ * const { pinnedPages, recentPages } = useUIPreferences()
  */
 
 import {
-  ref, reactive, computed, provide, inject,
-  type ComputedRef, type InjectionKey, type Ref,
+  ref, computed, provide, inject,
+  type ComputedRef, type InjectionKey,
 } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { resolveCatalogEntryByRoute } from '@/Composables/adminPageCatalog';
 import type { RecentItem } from '@/Composables/useCommandPalette';
-
-/** Toggleable section keys — must match HasUIPreferences::$toggleableSidebarSections */
-export const TOGGLEABLE_SECTIONS = [
-  'pinned',
-  'recently_visited',
-  'followed_institutions',
-  'spacer',
-  'start_fm',
-  'secondary',
-] as const;
-
-export type ToggleableSection = typeof TOGGLEABLE_SECTIONS[number];
-
-export type SidebarDensity = 'comfortable' | 'compact';
 
 interface StoredRecentPage {
   route: string;
@@ -58,13 +44,6 @@ interface StoredPinnedPage {
 }
 
 interface UIPreferencesContext {
-  sectionVisibility: Record<ToggleableSection, boolean>;
-  isSectionVisible: (key: ToggleableSection) => boolean;
-  setSectionVisibility: (key: ToggleableSection, value: boolean) => void;
-  /** Section keys in the user's chosen order */
-  orderedSections: ComputedRef<ToggleableSection[]>;
-  setSectionOrder: (keys: ToggleableSection[]) => void;
-  resetSections: () => void;
   recentPages: ComputedRef<RecentItem[]>;
   trackVisit: (routeName: string, params?: Record<string, unknown>, title?: string, url?: string) => void;
   clearRecent: () => void;
@@ -72,12 +51,6 @@ interface UIPreferencesContext {
   pinnedPages: ComputedRef<RecentItem[]>;
   isPinned: (item: { routeName?: string; href?: string }) => boolean;
   togglePin: (item: { routeName?: string; href?: string; title?: string }) => void;
-  /** Sidebar density preference */
-  density: Ref<SidebarDensity>;
-  setDensity: (value: SidebarDensity) => void;
-  /** Whether the sidebar is collapsed (icon-only) */
-  sidebarCollapsed: Ref<boolean>;
-  setSidebarCollapsed: (value: boolean) => void;
 }
 
 const UI_PREFERENCES_INJECTION_KEY: InjectionKey<UIPreferencesContext> = Symbol('ui-preferences');
@@ -86,10 +59,6 @@ const MAX_RECENT = 15;
 const MAX_PINNED = 10;
 
 interface ServerPrefs {
-  sections: Record<string, boolean>;
-  order: string[];
-  collapsed: boolean;
-  density: SidebarDensity;
   pinned: StoredPinnedPage[];
   recent: StoredRecentPage[];
 }
@@ -98,57 +67,15 @@ function readServerPrefs(): ServerPrefs {
   const page = usePage();
   const prefs = (page.props.auth as { user?: { ui_preferences?: unknown } })?.user?.ui_preferences as
     | {
-      sidebar?: { sections?: Record<string, boolean>; order?: string[]; collapsed?: boolean };
-      appearance?: { density?: string };
       pinned_pages?: StoredPinnedPage[];
       recent_pages?: StoredRecentPage[];
     }
     | undefined;
 
   return {
-    sections: prefs?.sidebar?.sections ?? {},
-    order: prefs?.sidebar?.order ?? [],
-    collapsed: prefs?.sidebar?.collapsed ?? false,
-    density: prefs?.appearance?.density === 'compact' ? 'compact' : 'comfortable',
     pinned: prefs?.pinned_pages ?? [],
     recent: prefs?.recent_pages ?? [],
   };
-}
-
-/**
- * Sanitize a stored order to the known toggleable sections (deduped), then weave
- * in any missing sections at their *canonical* position (the order in
- * TOGGLEABLE_SECTIONS) rather than appending them at the end. This way a newly
- * introduced section (e.g. `pinned`) lands where it belongs for existing users,
- * while the relative order the user actually chose for present sections is kept.
- */
-function sanitizeOrder(stored: string[]): ToggleableSection[] {
-  const seen = new Set<string>();
-  const result: ToggleableSection[] = [];
-
-  for (const k of stored) {
-    if ((TOGGLEABLE_SECTIONS as readonly string[]).includes(k) && !seen.has(k)) {
-      seen.add(k);
-      result.push(k as ToggleableSection);
-    }
-  }
-
-  const canonicalIndex = (s: ToggleableSection) => TOGGLEABLE_SECTIONS.indexOf(s);
-
-  for (const section of TOGGLEABLE_SECTIONS) {
-    if (seen.has(section)) {
-      continue;
-    }
-    // Insert before the first present item that sits later in canonical order.
-    let insertAt = result.findIndex(s => canonicalIndex(s) > canonicalIndex(section));
-    if (insertAt === -1) {
-      insertAt = result.length;
-    }
-    result.splice(insertAt, 0, section);
-    seen.add(section);
-  }
-
-  return result;
 }
 
 /** Last-resort human label from a route name, e.g. "users.edit" → "Users edit". */
@@ -240,59 +167,11 @@ function persist(routeName: string, body: Record<string, unknown>): void {
 export function createUIPreferencesProvider(): UIPreferencesContext {
   const server = readServerPrefs();
 
-  // Section visibility — default missing keys to visible.
-  const sectionVisibility = reactive(
-    Object.fromEntries(
-      TOGGLEABLE_SECTIONS.map(key => [key, server.sections[key] !== false]),
-    ) as Record<ToggleableSection, boolean>,
-  );
-
-  // Section order — sanitized, always contains every toggleable section.
-  const sectionOrder = ref<ToggleableSection[]>(sanitizeOrder(server.order));
-
   // Recently visited — local mirror, seeded from server, kept in sync optimistically.
   const recentRaw = ref<StoredRecentPage[]>([...server.recent]);
 
   // Pinned pages — local mirror, seeded from server, kept in sync optimistically.
   const pinnedRaw = ref<StoredPinnedPage[]>([...server.pinned]);
-
-  // Sidebar density + collapsed state.
-  const density = ref<SidebarDensity>(server.density);
-  const sidebarCollapsed = ref<boolean>(server.collapsed);
-
-  const isSectionVisible = (key: ToggleableSection) => sectionVisibility[key] !== false;
-
-  const persistSections = () => {
-    persist('api.v1.admin.user-preferences.update', {
-      sidebar: {
-        sections: { ...sectionVisibility },
-        order: [...sectionOrder.value],
-      },
-    });
-  };
-
-  const setSectionVisibility = (key: ToggleableSection, value: boolean) => {
-    if (!TOGGLEABLE_SECTIONS.includes(key)) {
-      return;
-    }
-    sectionVisibility[key] = value;
-    persistSections();
-  };
-
-  const orderedSections = computed<ToggleableSection[]>(() => sectionOrder.value);
-
-  const setSectionOrder = (keys: ToggleableSection[]) => {
-    sectionOrder.value = sanitizeOrder(keys);
-    persistSections();
-  };
-
-  const resetSections = () => {
-    TOGGLEABLE_SECTIONS.forEach((key) => {
-      sectionVisibility[key] = true;
-    });
-    sectionOrder.value = [...TOGGLEABLE_SECTIONS];
-    persistSections();
-  };
 
   const recentPages = computed<RecentItem[]>(() => mapStoredPages(recentRaw.value));
 
@@ -342,16 +221,6 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
     persistPinned();
   };
 
-  const setDensity = (value: SidebarDensity) => {
-    density.value = value;
-    persist('api.v1.admin.user-preferences.update', { appearance: { density: value } });
-  };
-
-  const setSidebarCollapsed = (value: boolean) => {
-    sidebarCollapsed.value = value;
-    persist('api.v1.admin.user-preferences.update', { sidebar: { collapsed: value } });
-  };
-
   const trackVisit = (
     routeName: string,
     params: Record<string, unknown> = {},
@@ -362,13 +231,18 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
       return;
     }
 
+    // Never record the public catch-all 'page' route for admin paths
+    if (routeName === 'page' && (url?.startsWith('/mano') || window.location.pathname.startsWith('/mano'))) {
+      return;
+    }
+
     // Identity is the path when known (query string excluded, so the same
     // page is never stored twice); otherwise route+params.
     const identity = (e: StoredRecentPage) =>
       e.url ?? `${e.route}|${JSON.stringify(e.params ?? {})}`;
     const newIdentity = url ?? `${routeName}|${JSON.stringify(params)}`;
 
-    // Optimistic local update (instant feedback in sidebar + palette).
+    // Optimistic local update (instant feedback in the palette).
     recentRaw.value = [
       { route: routeName, params, title, url, visited_at: new Date().toISOString() },
       ...recentRaw.value.filter(e => identity(e) !== newIdentity),
@@ -385,22 +259,12 @@ export function createUIPreferencesProvider(): UIPreferencesContext {
   };
 
   const context: UIPreferencesContext = {
-    sectionVisibility,
-    isSectionVisible,
-    setSectionVisibility,
-    orderedSections,
-    setSectionOrder,
-    resetSections,
     recentPages,
     trackVisit,
     clearRecent,
     pinnedPages,
     isPinned,
     togglePin,
-    density,
-    setDensity,
-    sidebarCollapsed,
-    setSidebarCollapsed,
   };
 
   provide(UI_PREFERENCES_INJECTION_KEY, context);
@@ -421,27 +285,14 @@ export function useUIPreferences(): UIPreferencesContext {
     }
 
     const noop = () => {};
-    const sectionVisibility = reactive(
-      Object.fromEntries(TOGGLEABLE_SECTIONS.map(key => [key, true])) as Record<ToggleableSection, boolean>,
-    );
 
     return {
-      sectionVisibility,
-      isSectionVisible: () => true,
-      setSectionVisibility: noop,
-      orderedSections: computed(() => [...TOGGLEABLE_SECTIONS]) as ComputedRef<ToggleableSection[]>,
-      setSectionOrder: noop,
-      resetSections: noop,
       recentPages: computed(() => []) as ComputedRef<RecentItem[]>,
       trackVisit: noop,
       clearRecent: noop,
       pinnedPages: computed(() => []) as ComputedRef<RecentItem[]>,
       isPinned: () => false,
       togglePin: noop,
-      density: ref<SidebarDensity>('comfortable'),
-      setDensity: noop,
-      sidebarCollapsed: ref(false),
-      setSidebarCollapsed: noop,
     };
   }
 

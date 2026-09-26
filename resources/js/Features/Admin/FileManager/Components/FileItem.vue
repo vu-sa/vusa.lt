@@ -1,199 +1,177 @@
 <template>
-  <div class="group relative">
+  <div
+    :class="[
+      'group relative flex flex-col border text-left transition-colors cursor-pointer select-none bg-background',
+      isSelected || isMultiSelected
+        ? 'border-brand bg-brand/5 ring-1 ring-brand'
+        : 'border-border hover:bg-secondary/60 hover:border-muted-foreground/30',
+    ]"
+    role="button"
+    tabindex="0"
+    :aria-selected="isSelected || isMultiSelected"
+    :aria-label="item.name"
+    @click="handleClick"
+    @dblclick="handleDoubleClick"
+    @keydown.enter="handleClick"
+    @keydown.space.prevent="handleClick"
+  >
+    <!-- Checkbox Selector (Top-Left) -->
     <button
+      v-if="!isFolder"
       type="button"
-      tabindex="0"
-      :class="buttonClasses"
-      class="w-full h-full aspect-square flex flex-col items-stretch p-2"
-      @click="handleClick"
-      @dblclick="handleDoubleClick"
-      @keydown.enter="selectionMode ? handleClick() : undefined"
-      @keydown.space.prevent="selectionMode ? handleClick() : undefined"
+      :class="[
+        'absolute left-2 top-2 z-10 flex size-5 cursor-pointer items-center justify-center border transition-all',
+        isMultiSelected || isSelected
+          ? 'border-brand bg-brand-fill text-brand-foreground opacity-100'
+          : 'border-border bg-background/90 text-foreground opacity-0 group-hover:opacity-100',
+      ]"
+      :title="isMultiSelected ? $t('Atžymėti') : $t('Pažymėti')"
+      :aria-label="isMultiSelected ? $t('Atžymėti') : $t('Pažymėti')"
+      @click.stop="$emit('toggleSelect', item)"
     >
-      <!-- File/Folder thumbnail or icon -->
-      <div class="flex-1 w-full flex items-center justify-center overflow-hidden rounded-sm">
-        <!-- Folder icon -->
-        <IFluentFolder24Filled
-          v-if="isFolder"
-          class="w-3/4 h-3/4 text-muted-foreground group-hover:text-vusa-red transition-colors"
-        />
-        <!-- Image thumbnail. The hover card is the only way to actually see what a
-             photo is at this tile size. -->
-        <HoverCard v-else-if="isImage" :open-delay="400" :close-delay="100">
-          <HoverCardTrigger as-child>
-            <img
-              :src="thumbnailSrc"
-              :alt="item.name"
-              loading="lazy"
-              decoding="async"
-              class="w-full h-full object-cover"
-              @error="handleThumbnailError"
-            >
-          </HoverCardTrigger>
-          <HoverCardContent side="right" class="w-auto max-w-sm p-2">
-            <img
-              :src="previewSrc"
-              :alt="item.name"
-              loading="lazy"
-              class="max-h-72 max-w-full rounded object-contain"
-              @error="handlePreviewError"
-            >
-            <p class="mt-1 max-w-72 truncate text-xs text-muted-foreground">
-              {{ item.name }}
-            </p>
-          </HoverCardContent>
-        </HoverCard>
-        <!-- File type icon -->
-        <component
-          :is="typeIcon"
-          v-else
-          class="h-12 w-12 text-muted-foreground group-hover:text-vusa-red transition-colors"
-        />
-      </div>
-      <div
-        class="mt-1 text-[10px] sm:text-xs text-center leading-tight px-1 overflow-hidden break-words line-clamp-2 h-8"
-        :class="isFolder ? 'text-foreground font-medium' : 'text-muted-foreground'"
-      >
-        {{ item.name }}
-      </div>
+      <Check v-if="isMultiSelected || isSelected" class="size-3.5" aria-hidden="true" />
     </button>
 
-    <!-- Selection indicators -->
-    <Transition name="selection-badge">
-      <div v-if="showSelectionBadge"
-        :class="selectionBadgeClasses">
-        {{ selectionBadgeText }}
+    <!-- Quick Preview Eye Button (Top-Right, Images only) -->
+    <button
+      v-if="isImage"
+      type="button"
+      class="absolute right-2 top-2 z-10 flex size-6 cursor-pointer items-center justify-center border border-border bg-background/90 text-muted-foreground opacity-0 transition-opacity hover:text-brand hover:border-brand group-hover:opacity-100"
+      :title="$t('Peržiūrėti')"
+      :aria-label="$t('Peržiūrėti')"
+      @click.stop="$emit('preview', item)"
+    >
+      <Eye class="size-3.5" aria-hidden="true" />
+    </button>
+
+    <!-- Media Frame (4:3 aspect ratio) -->
+    <div
+      class="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden border-b border-border bg-secondary/30"
+    >
+      <!-- Image Thumbnail -->
+      <img
+        v-if="isImage && !thumbnailFailed"
+        :src="thumbnailSrc"
+        :alt="item.name"
+        loading="lazy"
+        decoding="async"
+        class="size-full object-cover transition-transform duration-200 group-hover:scale-105"
+        @error="handleThumbnailError"
+      >
+
+      <!-- Folder Icon -->
+      <Folder
+        v-else-if="isFolder"
+        class="size-10 text-brand transition-colors"
+        aria-hidden="true"
+      />
+
+      <!-- Type Icon Fallback -->
+      <component
+        :is="typeIcon"
+        v-else
+        class="size-9 text-muted-foreground transition-colors group-hover:text-foreground"
+        aria-hidden="true"
+      />
+    </div>
+
+    <!-- Caption / Details -->
+    <div class="flex items-start justify-between gap-1.5 p-2.5 min-w-0">
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-xs font-semibold text-foreground leading-tight" :title="item.name">
+          {{ item.name }}
+        </p>
+        <p class="mt-1 text-[11px] text-muted-foreground leading-none">
+          <span v-if="isFolder">{{ $t('files.ui.folders') }}</span>
+          <span v-else>{{ formattedSize }}</span>
+        </p>
       </div>
-    </Transition>
+
+      <!-- Star Indicator -->
+      <button
+        v-if="!isFolder"
+        type="button"
+        :class="[
+          'p-0.5 shrink-0 transition-colors',
+          isStarred
+            ? 'text-status-attention fill-status-attention opacity-100'
+            : 'text-muted-foreground/40 hover:text-status-attention opacity-0 group-hover:opacity-100',
+        ]"
+        :title="isStarred ? $t('Pašalinti iš pažymėtų') : $t('Pažymėti žvaigždute')"
+        :aria-label="isStarred ? $t('Pašalinti iš pažymėtų') : $t('Pažymėti žvaigždute')"
+        @click.stop="$emit('toggleStar', item)"
+      >
+        <Star class="size-3.5" :class="{ 'fill-status-attention': isStarred }" aria-hidden="true" />
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { Check, Eye, Folder, Star } from 'lucide-vue-next';
 
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';
+import type { FileEntry } from '../types';
+import { formatBytes } from '../utils';
+
 import { getFileIcon } from '@/Utils/fileIcons';
-import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
 
-const props = defineProps<{
-  item: any;
-  isSelected: boolean;
-  isMultiSelected: boolean;
-  selectionMode?: boolean;
-  isMultiSelectMode: boolean;
-  isFolder?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    item: FileEntry;
+    isSelected: boolean;
+    isMultiSelected: boolean;
+    selectionMode?: boolean;
+    isMultiSelectMode?: boolean;
+    isFolder?: boolean;
+    isStarred?: boolean;
+  }>(),
+  {
+    selectionMode: false,
+    isMultiSelectMode: false,
+    isFolder: false,
+    isStarred: false,
+  },
+);
 
 const emit = defineEmits<{
-  click: [item: any, event?: MouseEvent];
-  doubleClick: [item: any];
+  click: [item: FileEntry, event?: MouseEvent];
+  doubleClick: [item: FileEntry];
+  toggleSelect: [item: FileEntry];
+  toggleStar: [item: FileEntry];
+  preview: [item: FileEntry];
 }>();
 
 const isFolder = computed(() => props.isFolder || false);
 
 const isImage = computed(() => {
   if (isFolder.value) return false;
-  // Only the rasterisable formats: the thumbnail endpoint cannot produce a derivative for
-  // SVG or GIF, so those fall through to their type icon.
-  return /\.(jpg|jpeg|png|webp)$/i.test(props.item?.name ?? '');
+  return /\.(jpg|jpeg|png|webp|gif|svg|avif)$/i.test(props.item?.name ?? '');
 });
 
 const typeIcon = computed(() => getFileIcon(props.item?.name ?? props.item?.path ?? ''));
 
-/** Storage path → public URL, the shape the originals are served under. */
-const originalSrc = computed(() => `/uploads/${props.item?.path?.replace('public/', '') || ''}`);
+const originalSrc = computed(() => `/uploads/${props.item?.path?.replace(/^public\//, '') || ''}`);
 
-// Falls back to the original if the derivative can't be produced — a SharePoint item,
-// say, whose path the local thumbnail endpoint knows nothing about.
 const thumbnailFailed = ref(false);
-const previewFailed = ref(false);
 
-const thumbnailSrc = computed(() => (thumbnailFailed.value
-  ? originalSrc.value
-  : route('api.v1.admin.files.thumbnail', { path: props.item?.path, w: 320 })));
-
-const previewSrc = computed(() => (previewFailed.value
-  ? originalSrc.value
-  : route('api.v1.admin.files.thumbnail', { path: props.item?.path, w: 640 })));
+const thumbnailSrc = computed(() => {
+  if (thumbnailFailed.value) return originalSrc.value;
+  return route('api.v1.admin.files.thumbnail', { path: props.item?.path, w: 320 });
+});
 
 function handleThumbnailError() {
   thumbnailFailed.value = true;
 }
 
-function handlePreviewError() {
-  previewFailed.value = true;
-}
+const formattedSize = computed(() => formatBytes(props.item?.size));
 
-const buttonClasses = computed(() => {
-  // Removed aspect-square to allow natural height: icon area (square) + text
-  const baseClasses = 'w-full overflow-hidden flex flex-col items-center justify-start rounded-md border border-border bg-background transition-all duration-200 hover:shadow-md focus:ring-2 focus:ring-vusa-red focus:ring-offset-2';
-
-  if (props.selectionMode && props.isSelected) {
-    return `${baseClasses} ring-2 ring-vusa-red ring-offset-2 bg-vusa-red/5`;
-  }
-  else if (props.isMultiSelectMode && props.isMultiSelected) {
-    return `${baseClasses} ring-2 ring-vusa-red ring-offset-2 bg-vusa-red/5`;
-  }
-  else if (props.isSelected) {
-    return `${baseClasses} ring-2 ring-muted-foreground ring-offset-2 bg-muted`;
-  }
-  else {
-    return `${baseClasses} hover:bg-muted`;
-  }
-});
-
-const showSelectionBadge = computed(() => {
-  return (props.selectionMode && props.isSelected)
-    || (props.isMultiSelectMode && props.isMultiSelected)
-    || (!props.selectionMode && !props.isMultiSelectMode && props.isSelected);
-});
-
-const selectionBadgeClasses = computed(() => {
-  const baseClasses = 'absolute top-1 right-1 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold z-20 shadow-lg';
-
-  if ((props.selectionMode && props.isSelected) || (props.isMultiSelectMode && props.isMultiSelected)) {
-    return `${baseClasses} bg-vusa-red text-white`;
-  }
-  else {
-    return `${baseClasses} bg-muted-foreground text-white`;
-  }
-});
-
-const selectionBadgeText = computed(() => {
-  if ((props.selectionMode && props.isSelected) || (props.isMultiSelectMode && props.isMultiSelected)) {
-    return '✓';
-  }
-  else {
-    return 'i';
-  }
-});
-
-function handleClick(event?: MouseEvent) {
-  emit('click', props.item, event);
+function handleClick(e: MouseEvent) {
+  emit('click', props.item, e);
 }
 
 function handleDoubleClick() {
   emit('doubleClick', props.item);
 }
 </script>
-
-<style scoped>
-/* Selection badge animation */
-.selection-badge-enter-active {
-  transition: all 0.3s ease-out;
-}
-
-.selection-badge-leave-active {
-  transition: all 0.2s ease-in;
-}
-
-.selection-badge-enter-from {
-  opacity: 0;
-  transform: scale(0.5) rotate(-180deg);
-}
-
-.selection-badge-leave-to {
-  opacity: 0;
-  transform: scale(0.5);
-}
-</style>

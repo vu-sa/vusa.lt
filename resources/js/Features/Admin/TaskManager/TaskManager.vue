@@ -1,89 +1,56 @@
 <template>
   <div class="space-y-4">
-    <!-- Header with filters and stats -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <!-- Filters -->
-      <div class="flex flex-wrap items-center gap-2">
-        <TaskFilter
-          v-model="currentFilter"
-          :disabled
-          :options="filterOptions"
-        />
-        <Badge v-if="visibleCount > 0" variant="secondary" class="tabular-nums">
-          {{ visibleCount }}
-        </Badge>
-      </div>
-
-      <!-- Stats summary (when stats provided) -->
-      <div v-if="taskStats" class="flex flex-wrap items-center gap-2">
-        <Badge
-          v-if="taskStats.overdue > 0"
-          variant="rose"
-          class="gap-1 text-xs"
-        >
+    <div class="flex flex-wrap items-center gap-2">
+      <template v-if="taskStats">
+        <Badge v-if="taskStats.overdue > 0" variant="rose" class="gap-1 text-xs">
           <AlertCircleIcon class="h-3 w-3" />
           {{ taskStats.overdue }} {{ $t('overdue') }}
         </Badge>
-        <Badge
-          v-if="taskStats.autoCompleting > 0"
-          variant="secondary"
-          class="gap-1 text-xs"
-        >
+        <Badge v-if="taskStats.autoCompleting > 0" variant="secondary" class="gap-1 text-xs">
           <RotateCwIcon class="h-3 w-3" />
           {{ taskStats.autoCompleting }} {{ $t('tasks.auto_completing') }}
         </Badge>
-        <Badge
-          v-if="taskStats.completed > 0"
-          variant="secondary"
-          class="gap-1 text-xs"
-        >
+        <Badge v-if="taskStats.completed > 0" variant="secondary" class="gap-1 text-xs">
           <CheckCircleIcon class="h-3 w-3" />
           {{ taskStats.completed }} {{ $t('completed') }}
         </Badge>
-      </div>
+      </template>
+
+      <!-- Open tasks by default; completed ones only on request. -->
+      <button
+        type="button"
+        :disabled
+        :aria-pressed="showAll"
+        :class="['ml-auto', controlVariants({ size: 'sm', active: showAll })]"
+        @click="showAll = !showAll"
+      >
+        {{ $t('tasks.filters.show_all') }}
+      </button>
     </div>
 
-    <!-- Task table (desktop) -->
-    <TaskTable
-      v-if="!isMobile"
-      :key="taskFilterKey"
-      :tasks="filteredTasks"
-      :loading-task-id
-      :enable-pagination="!serverPaginated"
-      :enable-filtering="!serverPaginated"
-      @open-meeting-modal="(task) => emit('openMeetingModal', task)"
-      @open-check-in-dialog="(task) => emit('openCheckInDialog', task)"
-      @open-task-detail="(task) => emit('openTaskDetail', task)"
-      @update:completed="handleTaskCompletion"
-      @delete="confirmDelete"
-    />
+    <ul v-if="filteredTasks.length > 0" class="divide-y divide-border border-y border-border">
+      <li v-for="task in filteredTasks" :key="task.id">
+        <TaskRow
+          :task
+          :loading="loadingTaskId === task.id"
+          @open="emit('openTaskDetail', task)"
+          @action="key => runAction(task, key)"
+        />
+      </li>
+    </ul>
 
-    <!-- Task cards (mobile) -->
-    <div v-else class="space-y-3">
-      <div v-if="filteredTasks.length === 0" class="flex flex-col items-center justify-center gap-3 py-8 text-center">
-        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-          <CheckCircleIcon class="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
-        </div>
-        <div>
-          <p class="font-medium text-zinc-900 dark:text-zinc-100">
-            {{ $t('Viskas atlikta!') }}
-          </p>
-          <p class="text-sm text-zinc-500 dark:text-zinc-400">
-            {{ $t('No tasks found.') }}
-          </p>
-        </div>
+    <div v-else class="flex flex-col items-center justify-center gap-3 py-8 text-center">
+      <div class="flex h-12 w-12 items-center justify-center border border-border bg-muted">
+        <CheckCircleIcon class="h-6 w-6 text-muted-foreground" />
       </div>
-      <TaskCard
-        v-for="task in filteredTasks"
-        :key="task.id"
-        :task
-        :is-loading="loadingTaskId === task.id"
-        @open-meeting-modal="(t) => emit('openMeetingModal', t)"
-        @open-check-in-dialog="(t) => emit('openCheckInDialog', t)"
-        @open-task-detail="(t) => emit('openTaskDetail', t)"
-        @update:completed="handleTaskCompletion"
-        @delete="confirmDelete"
-      />
+      <div>
+        <p class="font-medium text-foreground">
+          {{ $t('Viskas atlikta!') }}
+        </p>
+        <p class="text-sm text-muted-foreground">
+          {{ $t('No tasks found.') }}
+        </p>
+      </div>
     </div>
 
     <!-- Deleting a task is permanent, and for automatic tasks it is a super-admin escape
@@ -98,7 +65,7 @@
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
-          <AlertDialogAction :class="buttonVariants({ variant: 'destructive' })" @click="handleDelete">
+          <AlertDialogAction :class="buttonVariants({ variant: 'destructive', voice: 'brand' })" @click="handleDelete">
             {{ $t('forms.delete') }}
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -118,18 +85,18 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { useBreakpoints, breakpointsTailwind } from '@vueuse/core';
 import { AlertCircleIcon, RotateCwIcon, CheckCircleIcon } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 
-import TaskTable from './TaskTable.vue';
-import TaskCard from './TaskCard.vue';
+import type { TaskActionKey } from './taskActions';
+import TaskRow from './TaskRow.vue';
 
+import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
-import TaskFilter from '@/Components/Tasks/TaskFilter.vue';
 import { Badge } from '@/Components/ui/badge';
+import { controlVariants } from '@/Components/ui/control';
 import { buttonVariants } from '@/Components/ui/button';
 import {
   AlertDialog,
@@ -144,17 +111,6 @@ import {
 
 // Use async component for the dialog to improve initial load performance
 const CreateTaskDialog = defineAsyncComponent(() => import('./CreateTaskDialog.vue'));
-
-// Mobile detection
-const breakpoints = useBreakpoints(breakpointsTailwind);
-const isMobile = breakpoints.smaller('md');
-
-// Task filtering states
-enum FilterType {
-  ALL = 'all',
-  COMPLETED = 'completed',
-  INCOMPLETE = 'incomplete',
-}
 
 interface TaskStats {
   total: number;
@@ -171,28 +127,16 @@ const props = defineProps<{
     id: string | number;
     type: string;
   };
-  /** The page filters through the backend; the local filter only mirrors what it chose. */
-  serverSideFilter?: boolean;
-  /**
-   * The page paginates server-side, so the table must not paginate (or search) the single
-   * page it was handed — that produced a second set of page controls inside the first.
-   */
-  serverPaginated?: boolean;
-  currentFilter?: 'all' | 'completed' | 'incomplete';
-  /** Total across all pages; the local count is only the current page when paginating. */
-  totalCount?: number;
 }>();
 
 const emit = defineEmits<{
-  (e: 'openMeetingModal', task: TaskDisplayData): void;
-  (e: 'openCheckInDialog', task: TaskDisplayData): void;
-  (e: 'openTaskDetail', task: TaskDisplayData): void;
-  (e: 'filterChange', status: 'all' | 'completed' | 'incomplete'): void;
+  openTaskDetail: [task: TaskDisplayData];
 }>();
+
+const { openReportWindow } = useTaskActionDialogs();
 
 // Component state
 const showCreateTaskDialog = ref(false);
-const taskFilterKey = ref(0);
 const loadingTaskId = ref<string | null>(null);
 /**
  * The dialog's own open flag is deliberately separate from the task it is about. Deriving
@@ -203,55 +147,12 @@ const loadingTaskId = ref<string | null>(null);
 const deleteDialogOpen = ref(false);
 const taskPendingDeletion = ref<TaskDisplayData | null>(null);
 
-const filterOptions = [
-  { label: $t('tasks.filters.all'), value: FilterType.ALL },
-  { label: $t('tasks.filters.completed'), value: FilterType.COMPLETED },
-  { label: $t('tasks.filters.incomplete'), value: FilterType.INCOMPLETE },
-];
-
-// Task filtering - default to incomplete tasks
-const currentFilter = ref<FilterType>(
-  props.serverSideFilter && props.currentFilter
-    ? props.currentFilter as FilterType
-    : FilterType.INCOMPLETE,
-);
-
-// Keep the control in step when the backend answers a filter change with new props.
-watch(() => props.currentFilter, (filter) => {
-  if (props.serverSideFilter && filter) {
-    currentFilter.value = filter as FilterType;
-  }
-});
+const showAll = ref(false);
 
 const filteredTasks = computed(() => {
-  if (!props.tasks?.length) {
-    return [];
-  }
+  const tasks = props.tasks ?? [];
 
-  // Server-side filtering: backend already filtered, just return tasks
-  if (props.serverSideFilter) {
-    return props.tasks;
-  }
-
-  switch (currentFilter.value) {
-    case FilterType.COMPLETED:
-      return props.tasks.filter(task => task.completed_at !== null);
-    case FilterType.INCOMPLETE:
-      return props.tasks.filter(task => task.completed_at === null);
-    default:
-      return props.tasks;
-  }
-});
-
-const visibleCount = computed(() => props.totalCount ?? filteredTasks.value.length);
-
-// Force re-render of TaskTable when filter changes
-watch(currentFilter, (newFilter) => {
-  taskFilterKey.value++;
-
-  if (props.serverSideFilter) {
-    emit('filterChange', newFilter as 'all' | 'completed' | 'incomplete');
-  }
+  return showAll.value ? tasks : tasks.filter(task => !task.completed_at);
 });
 
 const handleTaskCompletion = (task: TaskDisplayData) => {
@@ -288,6 +189,20 @@ const handleTaskCompletion = (task: TaskDisplayData) => {
       },
     },
   );
+};
+
+const runAction = (task: TaskDisplayData, key: TaskActionKey) => {
+  switch (key) {
+    case 'report':
+      openReportWindow(task);
+      break;
+    case 'complete':
+      handleTaskCompletion(task);
+      break;
+    case 'delete':
+      confirmDelete(task);
+      break;
+  }
 };
 
 const confirmDelete = (task: TaskDisplayData) => {

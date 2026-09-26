@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildProblemIndexQuery;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexProblemRequest;
@@ -33,14 +34,7 @@ class ProblemController extends AdminController
     {
         $this->handleAuthorization('viewAny', Problem::class);
 
-        $query = Problem::query()->with(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions']);
-
-        $query = $this->tableService->applyPermissionFiltering(
-            $query,
-            'tenant',
-            'problems.read.padalinys',
-            $this->authorizer
-        );
+        $query = BuildProblemIndexQuery::execute($request, $this->authorizer, $this->tableService);
 
         $query = $this->applyTanstackFilters(
             $query,
@@ -49,22 +43,6 @@ class ProblemController extends AdminController
             ['title', 'description'],
             ['applySortBeforePagination' => true]
         );
-
-        $filters = $request->getFilters();
-
-        if (isset($filters['status']) && ! empty($filters['status'])) {
-            $query->whereIn('status', (array) $filters['status']);
-        }
-
-        if (isset($filters['category']) && ! empty($filters['category'])) {
-            $categoryValues = (array) $filters['category'];
-            $query->whereHas('categories', fn ($q) => $q->whereIn('problem_categories.id', $categoryValues));
-        }
-
-        if (isset($filters['institution']) && ! empty($filters['institution'])) {
-            $institutionValues = (array) $filters['institution'];
-            $query->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $institutionValues));
-        }
 
         $deletedCount = $this->getTrashedCount($query);
 
@@ -97,16 +75,11 @@ class ProblemController extends AdminController
         $this->handleAuthorization('create', Problem::class);
 
         $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
-        $tenantIds = collect($tenants)->pluck('id')->toArray();
 
         return $this->inertiaResponse('Admin/Problems/CreateProblem', [
             'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
-            'institutions' => Institution::select('id', 'name', 'tenant_id')
-                ->whereIn('tenant_id', $tenantIds)
-                ->orderBy('name')
-                ->get()
-                ->map(fn ($institution) => $institution->toArray()),
+            'institutions' => [],
         ]);
     }
 
@@ -172,7 +145,6 @@ class ProblemController extends AdminController
         $problemData['institutions'] = $problem->institutions->pluck('id')->toArray();
 
         $tenants = GetTenantsForUpserts::execute('problems.update.padalinys', $this->authorizer);
-        $tenantIds = collect($tenants)->pluck('id')->toArray();
 
         return $this->inertiaResponse('Admin/Problems/EditProblem', [
             'problem' => $problemData,
@@ -181,11 +153,8 @@ class ProblemController extends AdminController
             'initialResponsibleUser' => $problem->responsibleUser
                 ? ['id' => $problem->responsibleUser->id, 'name' => $problem->responsibleUser->name]
                 : null,
-            'institutions' => Institution::select('id', 'name', 'tenant_id')
-                ->whereIn('tenant_id', $tenantIds)
-                ->orderBy('name')
-                ->get()
-                ->map(fn ($institution) => $institution->toArray()),
+            'institutions' => $problem->institutions
+                ->map(fn (Institution $institution) => $institution->only(['id', 'name', 'tenant_id'])),
         ]);
     }
 

@@ -13,13 +13,17 @@ use App\Listeners\BlockExternalNotificationsOnStaging;
 use App\Listeners\HandleDutiableChange;
 use App\Listeners\HandleTaskCreated;
 use App\Listeners\NotifyUsersOfComment;
+use App\Listeners\PruneRejectedPushSubscription;
 use App\Listeners\QueueNotificationForDigest;
+use App\Listeners\RecordDeviceLogin;
 use App\Listeners\ReservationResource\HandleReservationResourceCreated;
 use App\Listeners\ReservationResource\HandleReservationResourceStateChanged;
 use App\Listeners\SendMemberRegistrationNotification;
 use App\Listeners\SendStudentRepRegistrationNotification;
 use App\Listeners\SyncContactSearchIndexes;
 use App\Listeners\SyncExOfficioDutiables;
+use App\Listeners\SyncInstitutionActivityIndex;
+use App\Listeners\SyncRelationSearchIndex;
 use App\Listeners\UpdateSharepointFolder;
 use App\Models\Calendar;
 use App\Models\Document;
@@ -44,8 +48,10 @@ use App\Tasks\Subscribers\ApprovalTaskSubscriber;
 use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use App\Tasks\Subscribers\MeetingTaskSubscriber;
 use App\Tasks\Subscribers\ReservationTaskSubscriber;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Notifications\Events\NotificationSending;
+use NotificationChannels\WebPush\Events\NotificationFailed;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
 use Spatie\ModelStates\Events\StateChanged;
@@ -96,6 +102,12 @@ class EventServiceProvider extends ServiceProvider
             BlockExternalNotificationsOnStaging::class,
             QueueNotificationForDigest::class,
         ],
+        Login::class => [
+            RecordDeviceLogin::class,
+        ],
+        NotificationFailed::class => [
+            PruneRejectedPushSubscription::class,
+        ],
     ];
 
     /**
@@ -112,6 +124,9 @@ class EventServiceProvider extends ServiceProvider
         InstitutionCheckInTaskSubscriber::class,
         // Notification subscribers
         ApprovalNotificationSubscriber::class,
+        // Search index subscribers
+        SyncInstitutionActivityIndex::class,
+        SyncRelationSearchIndex::class,
     ];
 
     /**

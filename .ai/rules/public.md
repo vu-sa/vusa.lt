@@ -27,3 +27,6 @@ A `dark:`-prefixed class inside a shared `ui/` primitive (e.g. the ghost button 
 
 ## Ink scrim on photo cards must stay strong past mid-height
 The default photo-card gradient (`navLinkStyles.ts`'s `gradientClass.bottom`) must not fade to fully transparent by the card's vertical midpoint, or it reads as "no scrim at all" next to the hero's stronger treatment — this happened once (`from-ink/60 via-ink/20 to-transparent`) and was invisible on real photos even though the code was "correct" (right token, right direction). Match the hero's own vertical layer for strength: `from-ink via-ink/70 to-transparent` (see `HeroCarouselDisplay.vue`). Verify any future change with a real screenshot (`.design-reference/menu-shot.mjs` pattern), not just by reading the class name — a weak gradient compiles fine and looks fine in isolation on a light background, but disappears against a real photo.
+
+## Use public controls and tokens
+Build public actions with shared ui/button and ui/control variants, using brand for the primary action and outline for secondary actions. Use Public/Base/CheckControl for public toggles; ui/switch keeps a pill shape even when the public radius scale is zero. Keep colours token based and verify both themes.

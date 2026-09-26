@@ -1,58 +1,17 @@
 <template>
-  <PageContent
-    :title="newEntityTitle('reservation')"
-    :heading-icon="ReservationIcon">
-    <UpsertModelLayout>
-      <ReservationForm remember-key="CreateReservation" model-route="reservations.store" :reservation :all-resources="resources" />
-    </UpsertModelLayout>
-  </PageContent>
+  <ReservationForm :cart="reservationCart" :default-period="defaultDateTimeRange" />
 </template>
 
-<script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+<script setup lang="ts">
+import { transChoice as $tChoice } from 'laravel-vue-i18n';
 import { capitalize } from 'vue';
 
-import { newEntityTitle } from '@/Utils/EntityMessages';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ReservationForm from '@/Components/AdminForms/ReservationForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { ReservationIcon } from '@/Components/icons';
+import type { ReservationCart } from '@/Components/Reservations/types';
 
-export type ReservationCreationTemplate = Omit<
-  App.Entities.Reservation,
-  | 'created_at'
-  | 'updated_at'
-  | 'deleted_at'
-  | 'id'
-  | 'completed_at'
-  | 'start_time'
-  | 'end_time'
-> & {
-  id: undefined;
-  start_time: number;
-  end_time: number;
-};
-
-const props = defineProps<{
-  resources: Array<App.Entities.Resource>;
-  dateTimeRange: { start: number; end: number };
+defineProps<{
+  reservationCart: ReservationCart | null;
+  defaultDateTimeRange: { start: number; end: number };
 }>();
 
-// Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs([
-  {
-    label: capitalize($tChoice('entities.reservation.model', 2)),
-    icon: ReservationIcon,
-  },
-]);
-
-const reservation: ReservationCreationTemplate = {
-  id: undefined,
-  name: '',
-  description: '',
-  start_time: props.dateTimeRange.start,
-  end_time: props.dateTimeRange.end,
-  resources: [],
-};
 </script>

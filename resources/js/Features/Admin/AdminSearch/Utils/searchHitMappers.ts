@@ -354,8 +354,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     subtitle: [r.location, r.category_name].filter(Boolean).join(' • ') || undefined,
     imageUrl: r.image_url || undefined,
     badge: r.tenant_shortname,
-    href: route('resources.edit', r.id),
-    // No view button: ResourceController@show is an unimplemented stub.
+    href: route('resources.show', r.id),
     editHref: route('resources.edit', r.id),
     statusBadge: {
       label: r.is_reservable ? $t('Skolinamas') : $t('Neskolinamas'),

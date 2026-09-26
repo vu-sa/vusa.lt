@@ -13,6 +13,6 @@ class StagingResourceReadOnlyException extends HttpException
 
     public static function sharepoint(): self
     {
-        return new self(403, 'SharePoint modifications are disabled in staging because SharePoint is shared with production.');
+        return new self(403, 'SharePoint modifications in staging are limited to the test site.');
     }
 }

@@ -1,377 +1,489 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <!-- Status Header -->
-    <template #status-header>
-      <FormStatusHeader :is-published="!form.is_draft" :server-is-published="!props.calendar.is_draft"
-        :links="statusLinks" :is-create @update:is-published="form.is_draft = !$event" />
+  <FormPage
+    :title="isCreate ? $t('Naujas renginys') : (calendarTitle || $t('Renginys'))"
+    :bar-title
+    entity-type="calendar"
+    :back-href="route('calendar.index')"
+    :back-label="$t('Kalendorius')"
+    :processing="form.processing"
+    :disabled="readOnly"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :field-ids
+    :mode="readOnly ? 'view' : isCreate ? 'create' : 'edit'"
+    :locale="activeLocale"
+    :available-locales="['lt', 'en']"
+    :missing-locale-counts
+    :public-url="publicCalendarUrl"
+    :activity-subject="calendar?.id ? { type: 'calendar', id: calendar.id } : undefined"
+    :created-at="isCreate ? undefined : calendar?.created_at"
+    :updated-at="isCreate ? undefined : calendar?.updated_at"
+    @update:locale="activeLocale = $event as 'lt' | 'en'"
+    @submit="!readOnly && emit('submit:form', form)"
+  >
+    <template v-if="!isCreate" #title-status>
+      <StatusBadge :status="calendar.is_draft ? contentStatuses.draft : contentStatuses.published" />
     </template>
 
-    <!-- This event stands for a meeting: publishing it opens that meeting's agenda to the public. -->
-    <Alert v-if="meeting" class="mb-6">
-      <CalendarClock class="size-4" />
-      <AlertTitle>{{ $t('meetings.announce.form_alert_title') }}</AlertTitle>
-      <AlertDescription>
-        <p>
-          {{ form.is_draft
-            ? $t('meetings.announce.form_alert_draft')
-            : $t('meetings.announce.form_alert_published') }}
-        </p>
-        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-          <a :href="route('meetings.show', { meeting: meeting.id })" class="inline-flex items-center gap-1 font-medium underline underline-offset-2">
-            {{ meeting.institution_name ?? $t('Posėdis') }}
-            <ArrowUpRight class="size-3" />
-          </a>
-          <span class="text-muted-foreground">
-            {{ meeting.agenda_items_count }} {{ $t('darbotvarkės punktai') }}
-          </span>
-          <span v-if="meeting.trashed" class="font-medium text-destructive">
-            {{ $t('meetings.announce.form_alert_trashed') }}
-          </span>
-        </div>
-      </AlertDescription>
-    </Alert>
+    <template v-if="!isCreate && (meeting || canCreateMeeting)" #locale-addon>
+      <a
+        v-if="meeting"
+        :href="route('meetings.show', { meeting: meeting.id })"
+        target="_blank"
+        rel="noopener noreferrer"
+        :class="[
+          'inline-flex h-11 items-center gap-1.5 border border-border bg-background px-3',
+          'text-xs font-semibold text-foreground transition-colors hover:border-brand hover:text-brand',
+        ]"
+        :title="$t('Peržiūrėti posėdį naujame lange')"
+      >
+        <CalendarClock class="size-3.5 text-brand" />
+        <span>{{ $t('Susietas su posėdžiu') }}</span>
+        <ArrowUpRight class="size-3 text-muted-foreground" />
+      </a>
+      <Button
+        v-if="!meeting && canCreateMeeting"
+        type="button"
+        variant="outline"
+        class="min-h-11"
+        @click="openMeetingCreation"
+      >
+        <CalendarClock class="size-4" />
+        {{ $t('meetings.announce.create_from_event') }}
+      </Button>
+    </template>
 
-    <!-- Section 1: Main Info -->
-    <FormElement :section-number="1" :is-complete="mainInfoComplete" required>
-      <template #title>
-        {{ $t("forms.context.main_info") }}
-      </template>
-      <template #subtitle>
-        {{ $t('Pagrindiniai renginio nustatymai') }}
-      </template>
-      <template #description>
-        <p>
-          <strong>{{ $t('Organizatorius') }}</strong>, {{ $t('jeigu neįrašytas, bus') }} <strong>{{ defaultOrganizer
-          }}</strong>
-        </p>
-      </template>
-
-      <div class="space-y-4">
-        <!-- Title -->
-        <FormFieldWrapper id="title" :label="$t('forms.fields.title')" required
-          :hint="$t('Renginio pavadinimas abiem kalbom')" :error="form.errors['title.lt']" :validating="form.validating"
-          :valid="form.valid('title.lt')" :invalid="form.invalid('title.lt')">
-          <MultiLocaleInput v-model:input="form.title" @blur="form.validate('title.lt')" />
-        </FormFieldWrapper>
-
-        <!-- Organizer & Location -->
-        <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="organizer" :label="$t('Organizatorius')" :hint="$t('Kas organizuoja renginį')">
-            <MultiLocaleInput v-model:input="form.organizer" />
-          </FormFieldWrapper>
-
-          <FormFieldWrapper id="location" :label="$t('Renginio vieta')"
-            :hint="form.is_remote ? $t('Nuotolinis renginys — nurodyta vieta nerodoma') : $t('Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis')">
-            <MultiLocaleInput v-model:input="form.location" :disabled="form.is_remote" />
-            <label class="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Switch id="is_remote" v-model="form.is_remote" />
-              {{ $t('Nuotolinis renginys') }}
-            </label>
-          </FormFieldWrapper>
-        </div>
-
-        <!-- Event type & Tenant -->
-        <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="event_type" :label="$t('Renginio tipas')" :error="form.errors.event_type_id"
-            :valid="form.valid('event_type_id')" :invalid="form.invalid('event_type_id')">
-            <Select v-model="eventTypeIdString" @update:model-value="form.validate('event_type_id')">
-              <SelectTrigger id="event_type">
-                <SelectValue :placeholder="$t('Pasirinkti renginio tipą...')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem :value="NO_EVENT_TYPE_VALUE">
-                  {{ $t('Nenurodyta') }}
-                </SelectItem>
-                <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
-                  {{ type.name }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </FormFieldWrapper>
-
-          <FormFieldWrapper id="tenant" :label="$t('Padalinys')" required :error="form.errors.tenant_id"
-            :valid="form.valid('tenant_id')" :invalid="form.invalid('tenant_id')">
-            <Select v-model="tenantIdString" @update:model-value="form.validate('tenant_id')">
-              <SelectTrigger id="tenant">
-                <SelectValue :placeholder="$t('VU SA ...')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
-                  {{ tenant.shortname }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </FormFieldWrapper>
-        </div>
-
-        <!-- Audience toggle -->
-        <FormFieldWrapper id="audience" :label="$t('Viešinimo auditorija')"
-          :hint="$t('Ar renginys skirtas tarptautiniams studentams')">
-          <div class="flex gap-2">
-            <Button type="button" :variant="form.is_international ? 'default' : 'outline'" class="flex-1 gap-2"
-              @click="form.is_international = true">
-              <IFluentGlobe20Regular class="h-4 w-4" />
-              {{ $t('Visi studentai') }}
-            </Button>
-            <Button type="button" :variant="form.is_international ? 'outline' : 'default'" class="flex-1"
-              @click="form.is_international = false">
-              {{ $t('Tik LT') }}
-            </Button>
-          </div>
-        </FormFieldWrapper>
-
-        <TagMultiSelect v-model="form.tags" :available-tags="props.availableTags" />
-
-        <!-- Hero style picker -->
-        <FormFieldWrapper id="hero_style" :label="$t('Renginio vaizdas')"
-          :hint="$t('Kaip renginio puslapio viršus atrodys lankytojams')">
-          <VisualOptionSelect v-model="heroStyle" :options="heroStyleOptions" :columns="3" icon-class="h-12 w-20" />
-        </FormFieldWrapper>
-      </div>
-    </FormElement>
-
-    <!-- Section 2: Date & Time -->
-    <FormElement :section-number="2" :is-complete="!!form.date" required>
-      <template #title>
-        {{ $t('Renginio laikas') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Kada vyks renginys') }}
-      </template>
-      <template #description>
-        <p>{{ $t('Jeigu nėra nurodytas pabaigos laikas, kalendoriuje renginys rodomas kaip 1 val. trukmės.') }}</p>
-      </template>
-
-      <div class="space-y-4">
-        <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="date" :label="$t('Renginio pradžia')" required :error="form.errors.date"
-            :hint="meeting ? $t('meetings.announce.timing_locked') : undefined"
-            :valid="form.valid('date')" :invalid="form.invalid('date')">
-            <DateTimePicker v-model="startDate" :disabled="Boolean(meeting)" @update:model-value="form.validate('date')" />
-          </FormFieldWrapper>
-
-          <FormFieldWrapper id="end_date" :label="$t('Renginio pabaiga')" :error="form.errors.end_date">
-            <DateTimePicker v-model="endDate" :disabled="Boolean(meeting)" />
-          </FormFieldWrapper>
-        </div>
-      </div>
-    </FormElement>
-
-    <!-- Section 3: Promotion -->
-    <FormElement :section-number="3" :is-complete="!!form.cto_url?.lt || !!form.facebook_url">
-      <template #title>
-        {{ $t('Viešinimas') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Nuorodos ir vaizdo turinys') }}
-      </template>
-
-      <div class="space-y-4">
-        <FormFieldWrapper id="cto_url" :label="$t('Renginio nuoroda')"
-          :hint="$t('Nuoroda į pagrindinį renginio puslapį arba registracijos formą')">
-          <MultiLocaleInput v-model:input="form.cto_url" />
-        </FormFieldWrapper>
-
-        <div class="grid gap-4 lg:grid-cols-2">
-          <FormFieldWrapper id="facebook_url" :label="$t('forms.fields.facebook_url')" :error="form.errors.facebook_url"
-            :valid="form.valid('facebook_url')" :invalid="form.invalid('facebook_url')">
-            <div class="flex items-center gap-2">
-              <ISimpleIconsFacebook class="h-4 w-4 shrink-0 text-[#1877F2]" />
-              <Input id="facebook_url" v-model="form.facebook_url" type="url"
-                placeholder="https://www.facebook.com/events/..." @change="form.validate('facebook_url')" />
-            </div>
-          </FormFieldWrapper>
-
-          <FormFieldWrapper id="video_url" :label="$t('Youtube video kodas')"
-            :hint="$t('Tik video kodas, ne pilna nuoroda')">
-            <div class="flex items-center gap-2">
-              <span class="shrink-0 text-sm text-muted-foreground">youtube.com/embed/</span>
-              <Input id="video_url" v-model="form.video_url" type="text" placeholder="dQw4w9WgXcQ" class="flex-1" />
-            </div>
-          </FormFieldWrapper>
-        </div>
-      </div>
-    </FormElement>
-
-    <!-- Section 4: Main Image -->
-    <FormElement :section-number="4" :is-complete="hasMainImage" required>
-      <template #title>
-        {{ $t('Pagrindinė nuotrauka') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Rodoma renginio kortelėje ir viršuje') }}
-      </template>
-
-      <FormFieldWrapper id="main_image" :label="$t('Pagrindinė nuotrauka')" required :error="form.errors.main_image">
-        <ImageUpload v-model:focal-point-value="form.main_image_focal_point" :max="1"
-          :existing-url="existingMainImageUrl" cropper compress focal-point folder="calendar"
-          @update:file="handleMainImageUpdate" />
-      </FormFieldWrapper>
-    </FormElement>
-
-    <!-- Section 5: Gallery Images -->
-    <FormElement :section-number="5" :is-complete="(form.images?.length ?? 0) > 0">
-      <template #title>
-        {{ $t('Galerijos nuotraukos') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Papildomos nuotraukos, rodomos galerijoje') }}
-      </template>
-      <template #description>
-        <p>{{ $t('Nuotraukos optimizuojamos automatiškai prieš įkėlimą.') }}</p>
-        <p class="text-amber-600 dark:text-amber-400">
-          {{ $t('Naujos nuotraukos bus įkeltos išsaugojus formą.') }}
-        </p>
-      </template>
-
-      <ImageUpload v-model:files="newGalleryImages" :max="20" :existing-urls="existingGalleryImages" cropper compress
-        folder="calendar" @remove:existing="removeExistingImage" />
-    </FormElement>
-
-    <!-- Section 6: Description -->
-    <FormElement :section-number="6" :is-complete="!!form.description?.lt">
-      <template #title>
-        {{ $t('Aprašymas') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Detali informacija apie renginį') }}
-      </template>
-
-      <div class="space-y-4">
-        <div class="flex items-center gap-2">
-          <Label class="font-medium">{{ $t('Aprašymo kalba') }}</Label>
-          <SimpleLocaleButton v-model:locale="locale" />
-        </div>
-
-        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
-        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
-      </div>
-    </FormElement>
-
-    <!-- Section 7: Advanced settings (Collapsible) -->
-    <FormElement :section-number="7">
-      <template #title>
-        {{ $t('Papildomi nustatymai') }}
-      </template>
-      <template #subtitle>
-        {{ $t('Retai keičiami nustatymai') }}
-      </template>
-
-      <Collapsible v-model:open="advancedSettingsOpen" class="w-full">
-        <CollapsibleTrigger as-child>
-          <Button type="button" variant="ghost" class="w-full justify-between p-0 h-auto hover:bg-transparent">
-            <span class="text-sm text-muted-foreground">
-              {{ advancedSettingsOpen ? $t('Slėpti papildomus nustatymus') : $t('Rodyti papildomus nustatymus') }}
-            </span>
-            <IFluentChevronDown24Regular class="h-4 w-4 text-muted-foreground transition-transform duration-200"
-              :class="{ 'rotate-180': advancedSettingsOpen }" />
-          </Button>
-        </CollapsibleTrigger>
-
-        <CollapsibleContent class="pt-4">
-          <div class="flex w-full items-center gap-3 rounded-lg border p-3">
-            <Switch id="is_all_day" v-model="form.is_all_day" @update:model-value="isAllDayTouched = true" />
-            <div class="flex-1 min-w-0 flex items-center gap-2">
-              <Label for="is_all_day" class="font-medium">
-                {{ $t('Visos dienos renginys') }}
-              </Label>
-              <InfoPopover>
-                {{ $t('Vietoj laiko bus rodoma „Visą dieną“ ar dienų skaičius. Kelių dienų renginiams parenkama automatiškai — čia galite pakeisti.') }}
-              </InfoPopover>
-            </div>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </FormElement>
-
-    <!-- Permalink (editable only once the event exists — see auto-fill watcher above for create) -->
-    <div v-if="!isCreate" class="mt-4 space-y-4">
-      <PermalinkField
-        :permalink="form.permalink?.lt ?? ''"
-        :base-url="`www.vusa.test/kalendorius/${eventYear}`"
-        :disabled="false"
-        :label="$t('Nuoroda (LT)')"
-        :validating="form.validating"
-        :valid="form.valid('permalink.lt')"
-        :invalid="form.invalid('permalink.lt')"
-        @update:permalink="form.permalink = { ...form.permalink, lt: $event }"
-        @change="form.validate('permalink.lt')"
+    <!-- Title -->
+    <FormFieldWrapper
+      id="title"
+      :label="`${$t('forms.fields.title')} (${activeLocale.toUpperCase()})`"
+      :required="activeLocale === 'lt'"
+      :char-count="form.title?.[activeLocale]?.length || 0"
+      :error="form.errors[`title.${activeLocale}`]"
+      :validating="form.validating"
+      :valid="form.valid(`title.${activeLocale}`)"
+      :invalid="form.invalid(`title.${activeLocale}`)"
+    >
+      <Input
+        id="title"
+        v-model="form.title[activeLocale]"
+        type="text"
+        :placeholder="$t('Įrašyti renginio pavadinimą...')"
+        :class="['h-11', fieldSurfaceClass]"
+        :disabled="readOnly"
+        @change="form.validate(`title.${activeLocale}`)"
       />
+    </FormFieldWrapper>
+
+    <!-- Permalink & URL history -->
+    <div v-if="!isCreate" class="flex flex-col gap-2">
       <PermalinkField
-        :permalink="form.permalink?.en ?? ''"
-        :base-url="`www.vusa.test/calendar/${eventYear}`"
-        :disabled="false"
-        :label="$t('Nuoroda (EN)')"
+        :permalink="form.permalink?.[activeLocale]"
+        :base-url="calendarBaseUrl"
+        :view-url="publicCalendarUrl"
+        :label="`${$t('Nuoroda')} (${activeLocale.toUpperCase()})`"
+        :disabled="readOnly"
+        :warning="permalinkChanged
+          ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.')
+          : undefined"
         :validating="form.validating"
-        :valid="form.valid('permalink.en')"
-        :invalid="form.invalid('permalink.en')"
-        @update:permalink="form.permalink = { ...form.permalink, en: $event }"
-        @change="form.validate('permalink.en')"
+        :valid="form.valid(`permalink.${activeLocale}`)"
+        :invalid="form.invalid(`permalink.${activeLocale}`)"
+        @update:permalink="form.permalink = { ...form.permalink, [activeLocale]: $event }"
+        @change="form.validate(`permalink.${activeLocale}`)"
+      />
+      <PublicUrlHistoryCard
+        :urls="combinedPublicUrls"
+        :destroy-route="destroyPublicUrl"
       />
     </div>
-
-    <PublicUrlHistoryCard
-      v-if="!isCreate"
-      :urls="props.calendar.public_urls ?? []"
-      :destroy-route="(id) => route('calendar.publicUrls.destroy', [props.calendar.id, id])"
+    <PermalinkPreviewHint
+      v-else
+      :preview="permalinkPreview"
     />
 
-    <Alert v-if="!isCreate && (legacyDateUrlLt || legacyDateUrlEn)" class="mt-4">
-      <Info class="size-4" />
-      <AlertTitle>{{ $t('Sena, data pagrįsta nuoroda') }}</AlertTitle>
-      <AlertDescription>
-        <p>{{ $t('Ši nuoroda vis dar veikia ir nukreipia į renginį, bet yra pasenusi ir niekur nerodoma.') }}</p>
-        <ul class="mt-1 space-y-0.5">
-          <li v-if="legacyDateUrlLt">
-            <a :href="legacyDateUrlLt" target="_blank" rel="noopener noreferrer" class="break-all underline">{{ legacyDateUrlLt }}</a>
-          </li>
-          <li v-if="legacyDateUrlEn">
-            <a :href="legacyDateUrlEn" target="_blank" rel="noopener noreferrer" class="break-all underline">{{ legacyDateUrlEn }}</a>
-          </li>
-        </ul>
-      </AlertDescription>
-    </Alert>
-  </AdminForm>
+    <!-- Date & Time + All-day toggle -->
+    <div class="flex flex-col gap-3">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <FormFieldWrapper
+          id="date"
+          :label="$t('Renginio pradžia')"
+          required
+          :error="form.errors.date"
+          :hint="meeting ? $t('meetings.announce.timing_locked') : undefined"
+          :valid="form.valid('date')"
+          :invalid="form.invalid('date')"
+        >
+          <DateTimePicker
+            v-model="startDate"
+            variant="popover"
+            :disabled="readOnly || Boolean(meeting)"
+            @update:model-value="form.validate('date')"
+          />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          id="end_date"
+          :label="$t('Renginio pabaiga')"
+          :error="form.errors.end_date"
+          :hint="$t('Jeigu nenurodytas, renginys rodomas kaip 1 val. trukmės.')"
+        >
+          <DateTimePicker
+            v-model="endDate"
+            variant="popover"
+            clearable
+            :disabled="readOnly || Boolean(meeting)"
+          />
+        </FormFieldWrapper>
+      </div>
+
+      <label class="flex items-center gap-2 text-sm text-muted-foreground select-none">
+        <Switch
+          id="is_all_day"
+          v-model="form.is_all_day"
+          :disabled="readOnly"
+          @update:model-value="isAllDayTouched = true"
+        />
+        <span>{{ $t('Visos dienos renginys') }}</span>
+      </label>
+    </div>
+
+    <!-- Location & Remote toggle -->
+    <FormFieldWrapper
+      id="location"
+      :label="`${$t('Renginio vieta')} (${activeLocale.toUpperCase()})`"
+      :hint="form.is_remote
+        ? $t('Nuotolinis renginys — nurodyta vieta nerodoma')
+        : $t('Kuo tikslesnis adresas, tuo tiksliau renginio puslapyje bus parodytas žemėlapis')"
+    >
+      <Input
+        id="location"
+        v-model="form.location[activeLocale]"
+        type="text"
+        :placeholder="$t('pvz. Universiteto g. 3, Vilnius arba Teatro salė')"
+        :class="['h-11', fieldSurfaceClass]"
+        :disabled="readOnly || form.is_remote"
+      />
+      <label class="mt-2 flex items-center gap-2 text-sm text-muted-foreground select-none">
+        <Switch id="is_remote" v-model="form.is_remote" :disabled="readOnly" />
+        <span>{{ $t('Nuotolinis renginys') }}</span>
+      </label>
+    </FormFieldWrapper>
+
+    <!-- Description -->
+    <FormFieldWrapper
+      id="description"
+      :label="`${$t('Aprašymas')} (${activeLocale.toUpperCase()})`"
+    >
+      <template v-if="readOnly">
+        <!-- eslint-disable-next-line vue/no-v-html -- calendar rich text is sanitized when written -->
+        <div class="rc-prose tracking-normal" v-html="form.description?.[activeLocale]" />
+      </template>
+      <TiptapEditor
+        v-else
+        :key="activeLocale"
+        v-model="form.description[activeLocale]"
+        tools="description"
+        html
+      />
+    </FormFieldWrapper>
+
+    <!-- Photos section -->
+    <FormPanel :title="$t('Nuotraukos')" :icon="Image" title-class="text-brand">
+      <!-- Main Image -->
+      <FormFieldWrapper
+        id="main_image"
+        :label="$t('Pagrindinė nuotrauka')"
+        required
+        :hint="$t('Rodoma renginio kortelėje ir viršuje')"
+        :error="form.errors.main_image"
+      >
+        <ImageUpload
+          v-if="!readOnly"
+          v-model:focal-point-value="form.main_image_focal_point"
+          :max="1"
+          :existing-url="existingMainImageUrl"
+          cropper
+          compress
+          focal-point
+          folder="calendar"
+          @update:file="handleMainImageUpdate"
+        />
+        <img
+          v-else-if="existingMainImageUrl"
+          :src="existingMainImageUrl"
+          :alt="$t('Pagrindinė nuotrauka')"
+          class="aspect-video w-full border border-border object-cover"
+        >
+      </FormFieldWrapper>
+
+      <!-- Gallery Images -->
+      <FormFieldWrapper
+        id="images"
+        :label="$t('Galerijos nuotraukos')"
+        :hint="`${$t('Papildomos nuotraukos, rodomos galerijoje')}. ${$t('Nuotraukos optimizuojamos automatiškai prieš įkėlimą.')}`"
+      >
+        <ImageUpload
+          v-if="!readOnly"
+          v-model:files="newGalleryImages"
+          :max="20"
+          :existing-urls="existingGalleryImages"
+          cropper
+          compress
+          folder="calendar"
+          @remove:existing="removeExistingImage"
+        />
+        <div v-else-if="existingGalleryImages.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <img
+            v-for="image in existingGalleryImages"
+            :key="image.id"
+            :src="image.url"
+            :alt="image.name"
+            class="aspect-video w-full border border-border object-cover"
+          >
+        </div>
+      </FormFieldWrapper>
+    </FormPanel>
+
+    <!-- Links and Promotion section -->
+    <FormPanel :title="$t('Nuorodos ir viešinimas')" :icon="Link2" title-class="text-brand">
+      <FormFieldWrapper
+        id="cto_url"
+        :label="`${$t('Renginio nuoroda')} (${activeLocale.toUpperCase()})`"
+        :hint="$t('Nuoroda į pagrindinį renginio puslapį arba registracijos formą')"
+      >
+        <Input
+          id="cto_url"
+          v-model="form.cto_url[activeLocale]"
+          type="url"
+          placeholder="https://..."
+          :class="['h-11', fieldSurfaceClass]"
+          :disabled="readOnly"
+        />
+      </FormFieldWrapper>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <FormFieldWrapper
+          id="facebook_url"
+          :label="$t('forms.fields.facebook_url')"
+          :error="form.errors.facebook_url"
+          :valid="form.valid('facebook_url')"
+          :invalid="form.invalid('facebook_url')"
+        >
+          <div class="flex items-center gap-2">
+            <ISimpleIconsFacebook class="h-4 w-4 shrink-0 text-[#1877F2]" />
+            <Input
+              id="facebook_url"
+              v-model="form.facebook_url"
+              type="url"
+              :disabled="readOnly"
+              placeholder="https://www.facebook.com/events/..."
+              :class="['h-11', fieldSurfaceClass]"
+              @change="form.validate('facebook_url')"
+            />
+          </div>
+        </FormFieldWrapper>
+      </div>
+    </FormPanel>
+
+    <!-- Aside column -->
+    <template #aside>
+      <ContentPublishPanel
+        :published="!form.is_draft"
+        hide-publish-time
+        :callout="statusCallout"
+        test-id-prefix="calendar"
+        @update:published="form.is_draft = !$event"
+      >
+        <TenantSelectField
+          v-if="isCreate || assignableTenants.length > 1"
+          v-model="form.tenant_id"
+          :tenants="assignableTenants"
+          :error="form.errors.tenant_id"
+          :valid="form.valid('tenant_id')"
+          :invalid="form.invalid('tenant_id')"
+          :disabled="readOnly"
+          @update:model-value="form.validate('tenant_id')"
+        />
+      </ContentPublishPanel>
+
+      <!-- Related meeting panel in modern admin style -->
+      <FormPanel v-if="meeting" :title="$t('Susietas posėdis')" :icon="CalendarClock" title-class="text-brand">
+        <div class="flex flex-col gap-3 text-xs">
+          <div class="flex items-start justify-between gap-2">
+            <a
+              :href="route('meetings.show', { meeting: meeting.id })"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group inline-flex items-center gap-1 font-semibold text-foreground hover:text-brand hover:underline"
+            >
+              <span>{{ meeting.institution_name ?? $t('Posėdis') }}</span>
+              <ArrowUpRight class="size-3.5 text-muted-foreground group-hover:text-brand" />
+            </a>
+            <span v-if="meeting.trashed" class="border border-destructive/30 bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-destructive">
+              {{ $t('meetings.announce.form_alert_trashed') }}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 text-muted-foreground">
+            <span>{{ meeting.agenda_items_count }} {{ $t('darbotvarkės punktai') }}</span>
+          </div>
+
+          <div class="border-t border-border pt-2 leading-relaxed text-muted-foreground">
+            {{ form.is_draft
+              ? $t('meetings.announce.form_alert_draft')
+              : $t('meetings.announce.form_alert_published') }}
+          </div>
+
+          <div class="text-[11px] italic text-muted-foreground/80">
+            {{ $t('meetings.announce.timing_locked') }}
+          </div>
+        </div>
+      </FormPanel>
+
+      <FormPanel :title="$t('Renginio nustatymai')" :icon="SlidersHorizontal" title-class="text-brand">
+        <FormFieldWrapper
+          id="event_type"
+          :label="$t('Renginio tipas')"
+          :error="form.errors.event_type_id"
+          :valid="form.valid('event_type_id')"
+          :invalid="form.invalid('event_type_id')"
+        >
+          <Select v-model="eventTypeIdString" :disabled="readOnly" @update:model-value="form.validate('event_type_id')">
+            <SelectTrigger id="event_type" :class="['h-11 w-full', fieldSurfaceClass]" :disabled="readOnly">
+              <SelectValue :placeholder="$t('Pasirinkti renginio tipą...')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem :value="NO_EVENT_TYPE_VALUE">
+                {{ $t('Nenurodyta') }}
+              </SelectItem>
+              <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
+                {{ type.name }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          id="organizer"
+          :label="`${$t('Organizatorius')} (${activeLocale.toUpperCase()})`"
+          :hint="`${$t('Organizatorius')}, ${$t('jeigu neįrašytas, bus')} ${defaultOrganizer}`"
+        >
+          <Input
+            id="organizer"
+            v-model="form.organizer[activeLocale]"
+            type="text"
+            :placeholder="defaultOrganizer"
+            :class="['h-11', fieldSurfaceClass]"
+            :disabled="readOnly"
+          />
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          id="audience"
+          :label="$t('Viešinimo auditorija')"
+          :hint="$t('Ar renginys skirtas tarptautiniams studentams')"
+        >
+          <FormSegmentedControl
+            v-model="form.is_international"
+            :options="audienceOptions"
+            :disabled="readOnly"
+            :aria-label="$t('Viešinimo auditorija')"
+            test-id-prefix="calendar-audience"
+          />
+        </FormFieldWrapper>
+      </FormPanel>
+
+      <FormPanel :title="$t('Temos')" :icon="Tags" title-class="text-brand">
+        <TagMultiSelect
+          v-model="form.tags"
+          :available-tags="props.availableTags"
+          :disabled="readOnly"
+        />
+      </FormPanel>
+
+      <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutTemplate" title-class="text-brand" flush>
+        <div class="flex flex-col gap-2 p-4" data-slot="form-field">
+          <Label class="text-sm font-bold text-foreground">{{ $t('Renginio vaizdas') }}</Label>
+          <VisualOptionSelect
+            v-model="heroStyle"
+            :options="heroStyleOptions"
+            :columns="3"
+            :disabled="readOnly"
+          />
+        </div>
+      </FormPanel>
+    </template>
+
+    <!-- Danger Zone Slot -->
+    <template v-if="!isCreate && enableDelete && !readOnly" #danger-zone>
+      <Button
+        type="button"
+        variant="outline"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
+        @click="deleteConfirmOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('Ištrinti renginį') }}
+      </Button>
+
+      <ConfirmDialog
+        v-model:open="deleteConfirmOpen"
+        :title="$t('Ištrinti renginį?')"
+        :description="$t('Renginys bus perkeltas į šiukšlinę.')"
+        :confirm-label="$t('Ištrinti')"
+        destructive
+        @confirm="emit('delete')"
+      />
+    </template>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { computed, h, ref, watch } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowUpRight, CalendarClock, Info } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
+import {
+  ArrowUpRight,
+  CalendarClock,
+  Globe,
+  Image,
+  LayoutTemplate,
+  Link2,
+  SlidersHorizontal,
+  Tags,
+  Trash2,
+} from 'lucide-vue-next';
 
-import InfoPopover from '../Buttons/InfoPopover.vue';
-import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
-import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
-
-import FormElement from './FormElement.vue';
+import ContentPublishPanel from './ContentPublishPanel.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
-import FormStatusHeader from './FormStatusHeader.vue';
 import PermalinkField from './PermalinkField.vue';
-import PublicUrlHistoryCard from './PublicUrlHistoryCard.vue';
+import PermalinkPreviewHint from './PermalinkPreviewHint.vue';
+import PublicUrlHistoryCard, { type PublicUrlRow } from './PublicUrlHistoryCard.vue';
 import TagMultiSelect from './TagMultiSelect.vue';
-import AdminForm from './AdminForm.vue';
+import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
 
+import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { ConfirmDialog, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import { isSameDay } from '@/Utils/IntlTime';
-import { localizedRoute } from '@/Utils/LocalizedRoutes';
+import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Button } from '@/Components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import { fieldSurfaceClass } from '@/Components/ui/control';
+import { DateTimePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
-import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
+import { contentStatuses } from '@/Constants/statuses';
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { resolveTenantPublicHost } from '@/Composables/useTenantSubdomain';
 
-defineEmits<{
-  (event: 'submit:form', form: unknown): void;
-  (event: 'delete'): void;
-}>();
-
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   calendar: CalendarEventForm;
   eventTypes: App.Entities.EventType[];
   availableTags?: App.Entities.Tag[];
@@ -388,10 +500,44 @@ const props = defineProps<{
   rememberKey?: string;
   submitUrl: string;
   submitMethod: 'post' | 'patch';
+  enableDelete?: boolean;
+  readOnly?: boolean;
+}>(), {
+  availableTags: () => [],
+  meeting: null,
+  rememberKey: undefined,
+});
+
+const emit = defineEmits<{
+  (event: 'submit:form', form: unknown): void;
+  (event: 'delete'): void;
 }>();
 
 const isCreate = computed(() => !!props.rememberKey);
-const locale = ref('lt');
+const canCreateMeeting = computed(() => Boolean(usePage().props.auth?.can?.create?.meeting));
+const { open: openActionWindow } = useActionWindow();
+
+function openMeetingCreation(): void {
+  openActionWindow({
+    flow: 'meeting.create',
+    calendarEvent: { id: Number(props.calendar.id), title: calendarTitle.value, date: String(props.calendar.date) },
+  });
+}
+
+const deleteConfirmOpen = ref(false);
+const activeLocale = ref<'lt' | 'en'>('lt');
+
+const fieldIds: Record<string, string> = {
+  'title.lt': 'title',
+  'title.en': 'title',
+  'tenant_id': 'tenant',
+  'date': 'date',
+  'end_date': 'end_date',
+  'event_type_id': 'event_type',
+  'facebook_url': 'facebook_url',
+  'permalink.lt': 'permalink',
+  'permalink.en': 'permalink',
+};
 
 // Store existing main_image URL for display in MediaUpload
 const existingMainImageUrl = ref<string | null>(props.calendar.main_image_url ?? null);
@@ -399,25 +545,44 @@ const existingMainImageUrl = ref<string | null>(props.calendar.main_image_url ??
 // Prepare form data - main_image will be File | null for submission
 const formData = {
   ...props.calendar,
-  main_image: null as File | null, // Reset to null, will be set if user uploads new image
+  title: {
+    lt: props.calendar.title?.lt ?? '',
+    en: props.calendar.title?.en ?? '',
+  },
+  location: {
+    lt: props.calendar.location?.lt ?? '',
+    en: props.calendar.location?.en ?? '',
+  },
+  organizer: {
+    lt: props.calendar.organizer?.lt ?? '',
+    en: props.calendar.organizer?.en ?? '',
+  },
+  cto_url: {
+    lt: props.calendar.cto_url?.lt ?? '',
+    en: props.calendar.cto_url?.en ?? '',
+  },
+  description: {
+    lt: props.calendar.description?.lt ?? '',
+    en: props.calendar.description?.en ?? '',
+  },
+  permalink: {
+    lt: props.calendar.permalink?.lt ?? '',
+    en: props.calendar.permalink?.en ?? '',
+  },
+  main_image: null as File | null,
   tags: props.calendar.tags ?? [],
-} as any;
+} as unknown as Record<string, unknown>;
 
 const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)
   : useForm(formData).withPrecognition(props.submitMethod, props.submitUrl);
 
 if (isCreate.value && form.tenant_id == null) {
-  form.tenant_id = props.assignableTenants.find(tenant => tenant.type === 'pagrindinis')?.id
-    ?? props.assignableTenants[0]?.id
-    ?? null;
+  form.tenant_id = pickDefaultTenantId(props.assignableTenants);
 }
 
 // Set validation timeout
 form.setValidationTimeout(500);
-
-// Advanced settings collapsed by default
-const advancedSettingsOpen = ref(false);
 
 // Auto-fill the permalink from the title as the user types, for a new event only.
 if (isCreate.value) {
@@ -443,18 +608,82 @@ watch([() => form.date, () => form.end_date], () => {
   form.is_all_day = !isSameDay(new Date(form.date), new Date(form.end_date));
 });
 
+const missingLocaleCounts = computed(() => ({
+  lt: !form.title?.lt ? 1 : 0,
+  en: !form.title?.en ? 1 : 0,
+}));
+
+const calendarTitle = computed(() =>
+  form.title?.[activeLocale.value] || form.title?.lt || form.title?.en || '',
+);
+
+const savedTitle = computed(() =>
+  props.calendar.title?.[activeLocale.value] || props.calendar.title?.lt || props.calendar.title?.en || '',
+);
+
+// The bar states what is saved; the heading and fields follow the edit. Props refresh after each save.
+const barTitle = computed(() => (isCreate.value ? $t('Naujas renginys') : (savedTitle.value || $t('Renginys'))));
+
+// The year the event's URL is nested under — same value the backend derives from `date`.
+const eventYear = computed(() => (form.date ? new Date(form.date).getFullYear() : new Date().getFullYear()));
+
+const calendarBaseUrl = computed(() => {
+  const lang = activeLocale.value;
+  return `${resolveTenantPublicHost(props.calendar?.tenant?.id)}/${lang}/${localizedSlug('calendarString', lang)}/${eventYear.value}`;
+});
+
+const publicCalendarUrl = computed(() => {
+  if (!props.calendar?.id || props.calendar.is_draft) return undefined;
+  const permalink = form.permalink?.[activeLocale.value];
+  if (!permalink) return undefined;
+
+  return localizedRoute('calendar.show', { year: eventYear.value, permalink }, activeLocale.value);
+});
+
+// The redirect note is a consequence of an edit, so it appears only once there is one.
+const permalinkChanged = computed(() => form.permalink?.[activeLocale.value] !== props.calendar?.permalink?.[activeLocale.value]);
+
+const permalinkPreview = computed(() => {
+  const slug = form.permalink?.[activeLocale.value];
+  if (!slug) return null;
+  return {
+    permalink: slug,
+    url: `${calendarBaseUrl.value}/${slug}`,
+  };
+});
+
+const legacyDateUrlLt = computed(() => props.calendar.legacy_date_urls?.lt ?? null);
+const legacyDateUrlEn = computed(() => props.calendar.legacy_date_urls?.en ?? null);
+
+const combinedPublicUrls = computed<PublicUrlRow[]>(() => {
+  const urls: PublicUrlRow[] = [
+    ...(props.calendar.public_urls ?? []),
+  ];
+  if (legacyDateUrlLt.value) {
+    urls.push({ url: legacyDateUrlLt.value, locale: 'lt' });
+  }
+  if (legacyDateUrlEn.value) {
+    urls.push({ url: legacyDateUrlEn.value, locale: 'en' });
+  }
+  return urls;
+});
+
+const destroyPublicUrl = (id: number) => (
+  props.calendar.id ? route('calendar.publicUrls.destroy', [props.calendar.id, id]) : ''
+);
+
+const statusCallout = computed(() => {
+  if (form.is_draft) {
+    return $t('Juodraštis matomas tik sistemoje — svetainės lankytojai jo nemato.');
+  }
+
+  return $t('Paskelbtas renginys matomas viešame kalendoriuje.');
+});
+
 // Handle main image update explicitly
 function handleMainImageUpdate(file: File | null) {
   form.main_image = file;
 }
-
-// Track if main image section is complete (either existing or new file selected)
-const hasMainImage = computed(() => !!form.main_image || !!existingMainImageUrl.value);
-
-// Section completion states
-const mainInfoComplete = computed(() =>
-  Boolean((form.title?.lt?.length || 0) >= 3 && form.tenant_id),
-);
 
 // Hero style icons as simple SVG representations
 const CardHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
@@ -481,20 +710,20 @@ const MinimalHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', str
 const heroStyleOptions = [
   {
     value: 'card',
-    label: 'Didelė kortelė',
-    description: 'Nuotrauka fone',
+    label: $t('Didelė kortelė'),
+    description: $t('Nuotrauka fone'),
     icon: CardHeroIcon,
   },
   {
     value: 'split',
-    label: 'Nuotrauka šalia',
-    description: 'Kortelė su nuotrauka',
+    label: $t('Nuotrauka šalia'),
+    description: $t('Kortelė su nuotrauka'),
     icon: SplitHeroIcon,
   },
   {
     value: 'minimal',
-    label: 'Minimalus',
-    description: 'Be nuotraukos',
+    label: $t('Minimalus'),
+    description: $t('Be nuotraukos'),
     icon: MinimalHeroIcon,
   },
 ];
@@ -505,23 +734,6 @@ const heroStyle = computed({
     form.hero_style = val as CalendarEventForm['hero_style'];
   },
 });
-
-// The year the event's URL is nested under — same value the backend derives from `date`.
-const eventYear = computed(() => (form.date ? new Date(form.date).getFullYear() : new Date().getFullYear()));
-
-// Status header links
-const statusLinks = computed(() => {
-  const permalink = form.permalink?.[locale.value];
-
-  if (!props.calendar.id || !permalink) return [];
-
-  const url = localizedRoute('calendar.show', { year: eventYear.value, permalink }, locale.value);
-
-  return [{ url, label: 'Public' }];
-});
-
-const legacyDateUrlLt = computed(() => props.calendar.legacy_date_urls?.lt ?? null);
-const legacyDateUrlEn = computed(() => props.calendar.legacy_date_urls?.en ?? null);
 
 const defaultOrganizer = computed(() => {
   return (
@@ -539,13 +751,10 @@ const eventTypeIdString = computed({
   },
 });
 
-// Handle tenant_id as string for Select component
-const tenantIdString = computed({
-  get: () => form.tenant_id ? String(form.tenant_id) : '',
-  set: (val: string) => {
-    form.tenant_id = val ? parseInt(val) : null;
-  },
-});
+const audienceOptions = computed<FormSegmentOption<boolean>[]>(() => [
+  { value: true, label: $t('Visi studentai'), icon: Globe, testId: 'audience-all' },
+  { value: false, label: $t('Tik LT'), testId: 'audience-lt' },
+]);
 
 // Date pickers compatibility - convert string to Date
 const startDate = computed({
@@ -589,10 +798,10 @@ interface ExistingImage {
 
 // Existing gallery images from the server
 const existingGalleryImages = ref<ExistingImage[]>(
-  (props.calendar.images ?? []).map((img: any) => ({
-    id: img.id,
-    url: img.url || img.original_url,
-    name: img.name || 'image.jpg',
+  (props.calendar.images ?? []).map((img: Record<string, unknown>) => ({
+    id: img.id as string | number,
+    url: (img.url ?? img.original_url ?? '') as string,
+    name: (img.name ?? 'image.jpg') as string,
   })),
 );
 
@@ -606,7 +815,7 @@ watch(newGalleryImages, (files) => {
 
 // Remove existing gallery image
 function removeExistingImage(img: { id: string | number; url: string }) {
-  if (props.calendar.id) {
+  if (!props.readOnly && props.calendar.id) {
     router.post(
       route('calendar.destroyMedia', {
         calendar: props.calendar.id,

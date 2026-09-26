@@ -1,4 +1,4 @@
-import type { AdministratorUser } from '@/Components/Institutions';
+import type { SecretaryUser } from '@/Components/Institutions';
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface InstitutionPageComment {
@@ -84,7 +84,7 @@ export interface InstitutionPageData {
   description?: string | null;
   types: InstitutionPageType[];
   managers: App.Entities.User[];
-  administrators: AdministratorUser[];
+  secretaries?: SecretaryUser[];
   sharepointPath: string | null;
   has_public_meetings?: boolean;
   meeting_periodicity_days?: number | null;
@@ -97,10 +97,13 @@ export interface InstitutionPageData {
 }
 
 export interface InstitutionOverviewData {
-  activity_status: InstitutionActivityStatus;
+  /** Null when withheld: the meetings it is read off are not public and the reader has no access. */
+  activity_status: InstitutionActivityStatus | null;
   current_users: App.Entities.User[];
   duties: InstitutionPageDuty[];
   recentMeetings: InstitutionPageMeeting[];
   meetings_count: number;
+  /** The institution has meetings, but they are not public and the reader has no access. */
+  meetings_hidden?: boolean;
   recentComments: InstitutionPageComment[];
 };

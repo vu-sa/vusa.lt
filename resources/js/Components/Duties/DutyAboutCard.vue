@@ -13,7 +13,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Info } from 'lucide-vue-next';
 
-import { SectionCard } from '@/Components/ui/section-card';
+import { SectionCard } from '@/Components/Patterns';
 
 defineProps<{
   description?: string | null;

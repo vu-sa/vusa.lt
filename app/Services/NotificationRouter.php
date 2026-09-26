@@ -8,20 +8,25 @@ use Illuminate\Notifications\Notification;
 class NotificationRouter
 {
     /**
-     * Determine the email address for a notification.
-     * If the user has a current duty with a @vusa.lt email, route there.
-     * Otherwise, fall back to the user's personal email.
+     * Immediate mail goes where the digest goes: the addresses chosen on Pranešimų nustatymai.
+     *
+     * @return array<int, string>
      */
-    public function routeForMail(User $user, Notification $notification): array|string
+    public function routeForMail(User $user, Notification $notification): array
     {
-        if ($user->current_duties()->count() > 0) {
-            foreach ($user->current_duties()->get() as $duty) {
-                if (str_ends_with($duty->email, 'vusa.lt')) {
-                    return $duty->email;
-                }
-            }
-        }
+        return $user->notificationEmails();
+    }
 
-        return $user->email;
+    /**
+     * The first current duty address — a vusa.lt one first — else the personal email. Reps expect
+     * mail at the role's inbox; it is also the address a signature shows, so a reply reaches the role.
+     */
+    public function preferredEmail(User $user): string
+    {
+        $dutyEmails = $user->current_duties()->pluck('duties.email')->filter()->values();
+
+        return $dutyEmails->first(fn (string $email): bool => str_ends_with($email, 'vusa.lt'))
+            ?? $dutyEmails->first()
+            ?? $user->email;
     }
 }

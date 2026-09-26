@@ -67,7 +67,7 @@
         <Button
           type="submit"
           variant="brand"
-          size="public"
+          size="lg"
           :disabled="editable || http.processing || !http.text.trim()"
         >
           <span v-if="http.processing" class="flex items-center gap-2">

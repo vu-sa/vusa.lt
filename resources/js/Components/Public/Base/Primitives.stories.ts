@@ -11,8 +11,8 @@ import ReadingSizeControl from './ReadingSizeControl.vue';
 import SectionBand from './SectionBand.vue';
 import ShareButton from './ShareButton.vue';
 import StatCell from './StatCell.vue';
-import TagChip from './TagChip.vue';
 
+import { TagChip } from '@/Components/Brand';
 import { Button } from '@/Components/ui/button';
 
 /**
@@ -55,8 +55,8 @@ export const Buttons: Story = {
       <SectionBand spacing="tight">
         <div class="flex flex-wrap items-center gap-3">
           <Button variant="brand">SUŽINOK DAUGIAU</Button>
-          <Button variant="outline">Rodyti daugiau</Button>
-          <Button variant="ghost">Atšaukti</Button>
+          <Button variant="outline" voice="brand">Rodyti daugiau</Button>
+          <Button variant="ghost" voice="brand">Atšaukti</Button>
         </div>
       </SectionBand>
     `,

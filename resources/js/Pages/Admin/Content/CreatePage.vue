@@ -1,26 +1,19 @@
 <template>
-  <PageContent title="Naujas puslapis" :back-url="route('pages.index')">
-    <UpsertModelLayout>
-      <template #card-header>
-        Puslapio informacija
-      </template>
-      <PageForm
-        remember-key="CreatePage"
-        :page
-        :available-tags
-        :assignable-tenants
-        :submit-url="route('pages.store')"
-        submit-method="post"
-        @submit:form="(form) => form.post(route('pages.store'))"
-      />
-    </UpsertModelLayout>
-  </PageContent>
+  <PageForm
+    remember-key="CreatePage"
+    :page
+    :available-tags
+    :assignable-tenants
+    :submit-url="route('pages.store')"
+    submit-method="post"
+    @submit:form="submitForm"
+  />
 </template>
 
 <script setup lang="ts">
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import type { InertiaForm } from '@inertiajs/vue3';
+
 import PageForm from '@/Components/AdminForms/PageForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 defineProps<{
   availableTags?: App.Entities.Tag[];
@@ -45,4 +38,8 @@ const page = {
     ],
   },
 };
+
+function submitForm(form: unknown): void {
+  (form as InertiaForm<Record<string, unknown>>).post(route('pages.store'));
+}
 </script>

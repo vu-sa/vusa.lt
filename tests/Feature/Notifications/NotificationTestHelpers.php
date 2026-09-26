@@ -2,8 +2,7 @@
 
 namespace Tests\Feature\Notifications;
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationChannel;
+use App\Enums\NotificationType;
 use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -48,13 +47,12 @@ trait NotificationTestHelpers
         ]);
     }
 
-    protected function createUserWithDisabledChannel(
-        NotificationCategory $category,
-        NotificationChannel $channel
-    ): User {
-        $preferences = $this->getDefaultPreferencesWithDisabledChannel($category, $channel);
-
-        return $this->createUserWithPreferences($preferences);
+    /**
+     * @param  array{email?: string, push?: bool}  $choice
+     */
+    protected function createUserWithTypePreference(NotificationType $type, array $choice): User
+    {
+        return $this->createUserWithPreferences(['types' => [$type->value => $choice]]);
     }
 
     protected function createUserWithDigestEnabled(int $frequencyHours = 4): User
@@ -64,26 +62,6 @@ trait NotificationTestHelpers
         ];
 
         return $this->createUserWithPreferences($preferences);
-    }
-
-    protected function getDefaultPreferencesWithDisabledChannel(
-        NotificationCategory $category,
-        NotificationChannel $channel
-    ): array {
-        $channels = [];
-
-        foreach (NotificationCategory::cases() as $cat) {
-            $channels[$cat->value] = [
-                NotificationChannel::InApp->value => true,
-                NotificationChannel::Push->value => true,
-                NotificationChannel::EmailDigest->value => true,
-            ];
-        }
-
-        // Disable the specific channel
-        $channels[$category->value][$channel->value] = false;
-
-        return ['channels' => $channels];
     }
 
     protected function createReservationWithResource(User $user): array

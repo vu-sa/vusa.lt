@@ -8,7 +8,7 @@
       >
         <span
           :class="[
-            'absolute -left-[1.5625rem] top-1 h-3 w-3 rounded-full ring-4 ring-background',
+            'absolute -left-[1.5625rem] top-1 h-3 w-3 ring-4 ring-background',
             group.isCurrent ? 'bg-primary' : 'bg-muted-foreground/40',
           ]"
         />
@@ -35,7 +35,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { GitBranch } from 'lucide-vue-next';
 
-import { SectionCard } from '@/Components/ui/section-card';
+import { SectionCard } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { academicYear, currentAcademicYear, formatAcademicYearLabel } from '@/Utils/IntlTime';

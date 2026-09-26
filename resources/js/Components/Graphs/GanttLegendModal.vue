@@ -20,13 +20,13 @@
           <div class="space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <component :is="MeetingIconFilled" class="h-4 w-4" />
-              {{ $t('Susitikimai') }}
+              {{ $t('Posėdžiai') }}
             </h4>
             <div class="grid gap-2 pl-6">
               <div class="flex items-center gap-3">
                 <IFluentPeopleTeam20Filled class="w-4 h-4 shrink-0 text-foreground dark:text-white" />
                 <div>
-                  <span class="text-sm font-medium">{{ $t('Užbaigtas susitikimas') }}</span>
+                  <span class="text-sm font-medium">{{ $t('Užpildytas posėdis') }}</span>
                   <p class="text-xs text-muted-foreground">
                     {{ $t('Su darbotvarkės punktais') }}
                   </p>
@@ -35,7 +35,7 @@
               <div class="flex items-center gap-3">
                 <IFluentPeopleTeam20Filled class="w-4 h-4 shrink-0 text-red-500" />
                 <div>
-                  <span class="text-sm font-medium">{{ $t('Neužbaigtas susitikimas') }}</span>
+                  <span class="text-sm font-medium">{{ $t('Neužpildytas posėdis') }}</span>
                   <p class="text-xs text-muted-foreground">
                     {{ $t('Trūksta informacijos') }}
                   </p>
@@ -63,7 +63,7 @@
               <div class="flex items-center gap-3">
                 <div class="flex items-center shrink-0">
                   <CalendarOff class="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                  <span class="w-4 h-3 relative overflow-hidden rounded-sm border border-amber-500/40">
+                  <span class="w-4 h-3 relative overflow-hidden border border-amber-500/40">
                     <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                       <pattern id="legend-checkin-stripes" patternUnits="userSpaceOnUse" width="3" height="3" patternTransform="rotate(-45)">
                         <rect width="3" height="3" fill="transparent" />
@@ -82,7 +82,7 @@
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <div class="w-6 h-3 rounded shrink-0 bg-emerald-500/15 border border-emerald-500/35" />
+                <div class="w-6 h-3 shrink-0 bg-emerald-500/15 border border-emerald-500/35" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Saugumo zona') }}</span>
                   <p class="text-xs text-muted-foreground">
@@ -101,11 +101,7 @@
             </h4>
             <div class="grid gap-2 pl-6">
               <div class="flex items-center gap-3">
-                <svg class="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-                  <path d="M2 12h20" />
-                </svg>
+                <Globe class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Vieši posėdžiai') }}</span>
                   <p class="text-xs text-muted-foreground">
@@ -114,10 +110,7 @@
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <svg class="h-4 w-4 text-blue-500 dark:text-blue-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                </svg>
+                <Link2 class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Susijusi institucija') }}</span>
                   <p class="text-xs text-muted-foreground">
@@ -150,7 +143,7 @@
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <div class="w-6 h-4 rounded shrink-0 relative overflow-hidden">
+                <div class="w-6 h-4 shrink-0 relative overflow-hidden">
                   <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
                     <pattern id="legend-stripes" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45)">
                       <rect width="4" height="4" fill="currentColor" class="text-zinc-100 dark:text-zinc-800" />
@@ -179,7 +172,7 @@
             </h4>
             <div class="grid gap-2 pl-6">
               <div class="flex items-center gap-3">
-                <span class="inline-block w-0.5 h-5 bg-blue-500 shrink-0" />
+                <span class="inline-block w-0.5 h-5 bg-brand shrink-0" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Šiandienos linija') }}</span>
                   <p class="text-xs text-muted-foreground">
@@ -209,19 +202,19 @@
             </h4>
             <div class="grid gap-2 pl-6 sm:grid-cols-3">
               <div class="flex items-center gap-3">
-                <span class="inline-block w-6 h-4 rounded bg-amber-400/20 border border-amber-400/25 shrink-0" />
+                <span class="inline-block w-6 h-4 bg-amber-400/20 border border-amber-400/25 shrink-0" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Vasara') }}</span>
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <span class="inline-block w-6 h-4 rounded bg-blue-300/20 border border-blue-300/25 shrink-0" />
+                <span class="inline-block w-6 h-4 bg-blue-300/20 border border-blue-300/25 shrink-0" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Žiema') }}</span>
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <span class="inline-block w-6 h-4 rounded bg-violet-300/20 border border-violet-300/25 shrink-0" />
+                <span class="inline-block w-6 h-4 bg-violet-300/20 border border-violet-300/25 shrink-0" />
                 <div>
                   <span class="text-sm font-medium">{{ $t('Velykos') }}</span>
                 </div>
@@ -231,7 +224,7 @@
         </div>
 
         <!-- Keyboard Shortcuts Section -->
-        <div class="p-4 bg-muted/50 rounded-lg space-y-3">
+        <div class="p-4 bg-muted/50 space-y-3">
           <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.293-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd" />
@@ -240,38 +233,38 @@
           </h4>
           <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             <div class="flex items-center gap-2 text-sm">
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">←</kbd>
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">→</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">←</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">→</kbd>
               <span class="text-muted-foreground">{{ $t('Slinkti savaitę') }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">Shift</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">Shift</kbd>
               <span class="text-muted-foreground">+</span>
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">←</kbd>
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">→</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">←</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">→</kbd>
               <span class="text-muted-foreground">{{ $t('Slinkti mėnesį') }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">↑</kbd>
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">↓</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">↑</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">↓</kbd>
               <span class="text-muted-foreground">{{ $t('Slinkti vertikaliai') }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">+</kbd>
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">-</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">+</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">-</kbd>
               <span class="text-muted-foreground">{{ $t('Keisti mastelį') }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">Home</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">Home</kbd>
               <span class="text-muted-foreground">{{ $t('Eiti į šiandien') }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">PgUp</kbd>
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">PgDn</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">PgUp</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">PgDn</kbd>
               <span class="text-muted-foreground">{{ $t('Slinkti 3 mėnesius') }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border rounded">Shift</kbd>
+              <kbd class="px-2 py-0.5 text-xs font-semibold bg-background border">Shift</kbd>
               <span class="text-muted-foreground">+</span>
               <span class="text-muted-foreground">{{ $t('vilkimas') }}</span>
               <span class="text-muted-foreground">{{ $t('Sukurti pranešimą apie nebuvimą') }}</span>
@@ -280,7 +273,7 @@
         </div>
 
         <!-- Interaction Tips -->
-        <div class="p-3 bg-muted/50 rounded-lg space-y-2">
+        <div class="p-3 bg-muted/50 space-y-2">
           <h4 class="text-sm font-semibold text-foreground">
             {{ $t('Patarimai') }}
           </h4>
@@ -304,7 +297,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarOff } from 'lucide-vue-next';
+import { Globe, Link2, CalendarOff } from 'lucide-vue-next';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';

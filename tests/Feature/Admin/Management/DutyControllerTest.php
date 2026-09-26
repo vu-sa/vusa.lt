@@ -804,7 +804,7 @@ describe('data quality filters', function (): void {
 });
 
 describe('show page', function (): void {
-    test('returns the dashboard payload with meetings and sibling duties', function (): void {
+    test('defers sibling duties and study programs out of the first visit', function (): void {
         $institution = $this->dutyManagerDuty->institution;
 
         // A sibling duty in the same institution.
@@ -817,7 +817,13 @@ describe('show page', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Admin/People/ShowDuty')
-                ->has('duty.other_duties', 1)
+                ->missing('otherDuties')
+                ->missing('studyPrograms')
+                ->missing('duty.next_meeting')
+                ->loadDeferredProps('dutyPanels', fn (AssertableInertia $page) => $page
+                    ->has('otherDuties', 1)
+                    ->has('studyPrograms')
+                )
             );
     });
 

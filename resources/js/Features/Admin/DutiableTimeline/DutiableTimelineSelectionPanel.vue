@@ -167,7 +167,7 @@
 
       <!-- Spelled out rather than left to the tooltip: on the selected row these are the
            details a merge or a delete would silently take with it. -->
-      <dl v-if="row.extras" class="space-y-0.5 rounded-md bg-muted/40 px-2 py-1.5">
+      <dl v-if="row.extras" class="space-y-0.5 bg-muted/40 px-2 py-1.5">
         <div v-if="row.extras.email" class="flex gap-1.5 text-[11px]">
           <dt class="shrink-0 text-muted-foreground">
             {{ $t('dutiables.timeline.extras.email') }}:
@@ -207,7 +207,7 @@
         <span class="text-muted-foreground">{{ cadence.label }}</span>
         <span
           class="ml-1"
-          :class="driftDays === 0 ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400'"
+          :class="driftDays === 0 ? 'text-muted-foreground' : 'text-status-attention'"
         >
           {{ driftDays === 0
             ? $t('dutiables.timeline.inspector.aligned')

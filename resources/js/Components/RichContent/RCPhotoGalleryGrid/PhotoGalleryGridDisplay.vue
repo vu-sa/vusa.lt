@@ -119,7 +119,7 @@ import RCSection from '../RCSection.vue';
 import type { BandResolution } from '../bandLayout';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 
-import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import type { PhotoGalleryGrid } from '@/Types/contentParts';
 
 // Lazy-loaded: only ever mounted while `editable` — a static import would bundle the

@@ -2,10 +2,9 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Str;
 
 /**
@@ -15,6 +14,11 @@ use Illuminate\Support\Str;
  */
 class AssignedToResourceNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::AssignedToResource;
+    }
+
     /**
      * Create a new notification instance.
      *
@@ -56,17 +60,6 @@ class AssignedToResourceNotification extends BaseNotification
         ];
 
         return new self($assignerData, $resource);
-    }
-
-    public function category(): NotificationCategory
-    {
-        // Determine category based on resource type
-        return match ($this->resource['modelClass']) {
-            'Reservation', 'ReservationResource' => NotificationCategory::Reservation,
-            'Task' => NotificationCategory::Task,
-            'Meeting' => NotificationCategory::Meeting,
-            default => NotificationCategory::User,
-        };
     }
 
     public function title(object $notifiable): string
@@ -118,27 +111,20 @@ class AssignedToResourceNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
     {
-        return [
-            [
-                'label' => __('notifications.action_view_resource'),
-                'url' => $this->url(),
-            ],
-        ];
+        return $this->contextRows([
+            'object' => $this->resource['name'],
+            'assigned_by' => $this->assigner['name'],
+        ]);
     }
 
-    /**
-     * Custom mail for better formatting.
-     */
     #[\Override]
-    public function toMail(object $notifiable): MailMessage
+    public function primaryAction(): ?array
     {
-        return (new MailMessage)
-            ->subject($this->icon().' '.__('notifications.assigned_to_resource_title', ['resource' => $this->resource['name']]))
-            ->markdown('emails.assigned-to-resource', [
-                'assigner' => $this->assigner,
-                'resource' => $this->resource,
-            ]);
+        return [
+            'label' => __('notifications.action_view_resource'),
+            'url' => $this->url(),
+        ];
     }
 }

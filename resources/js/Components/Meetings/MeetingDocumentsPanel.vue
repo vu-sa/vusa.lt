@@ -33,7 +33,7 @@
           @confirm="linkDocuments"
         >
           <template #trigger>
-            <Button type="button" variant="outline" size="sm">
+            <Button type="button" variant="outline" size="sm" voice="sentence">
               <Link2 class="mr-1.5 size-3.5" />
               {{ $t('Susieti dokumentą') }}
             </Button>
@@ -66,7 +66,7 @@
                  filed in both — so say which this one is. -->
             <span
               v-if="languageLabel(document)"
-              class="rounded border border-border px-1 py-px text-[10px] font-semibold uppercase tracking-wide"
+              class="border border-border px-1 py-px text-[11px] font-semibold uppercase tracking-wide"
             >{{ languageLabel(document) }}</span>
             <span>
               {{ document.content_type }}
@@ -77,8 +77,9 @@
         <button
           v-if="canUpdate"
           type="button"
-          class="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
+          class="flex size-8 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-destructive pointer-coarse:size-11"
           :title="$t('Atsieti dokumentą')"
+          :aria-label="$t('Atsieti dokumentą')"
           @click="unlink(document.id)"
         >
           <X class="size-4" />

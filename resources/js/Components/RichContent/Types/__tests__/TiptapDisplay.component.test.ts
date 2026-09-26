@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import TiptapDisplay from '../TiptapDisplay.vue';
+
 import TiptapLinkButton from '@/Components/TipTap/TiptapLinkButton.vue';
 
 function makeElement(html: string | null = '<p>Test paragraph</p>', json_content: Record<string, unknown> | null = {}) {

@@ -33,18 +33,18 @@
         @update:page="onPageChange"
       >
         <PaginationContent>
-          <PaginationFirst />
-          <PaginationPrevious />
+          <PaginationFirst voice="brand" />
+          <PaginationPrevious voice="brand" />
           <template v-for="(item, index) in paginationItems" :key="index">
             <PaginationEllipsis v-if="item.type === 'ellipsis'" :index />
             <PaginationItem v-else :value="item.value" :is-active="item.value === events.current_page" as-child>
-              <Button :variant="item.value === events.current_page ? 'default' : 'outline'" class="h-9 w-9 p-0">
+              <Button :variant="item.value === events.current_page ? 'default' : 'outline'" voice="brand" class="h-9 w-9 p-0">
                 {{ item.value }}
               </Button>
             </PaginationItem>
           </template>
-          <PaginationNext />
-          <PaginationLast />
+          <PaginationNext voice="brand" />
+          <PaginationLast voice="brand" />
         </PaginationContent>
       </Pagination>
     </div>
@@ -78,12 +78,14 @@ const props = defineProps<{
     per_page: number;
     total: number;
     path: string;
-    links: any[];
+    links: unknown[];
   };
   tab: string;
 }>();
 
-const emit = defineEmits(['pageChange']);
+const emit = defineEmits<{
+  pageChange: [page: number];
+}>();
 
 // Handle page change
 const onPageChange = (page: number) => {

@@ -1,10 +1,10 @@
 <template>
-  <Button v-if="iconOnly" variant="ghost" size="icon" as-child :class="socialIconButtonClass">
+  <Button v-if="iconOnly" voice="brand" variant="ghost" size="icon" as-child :class="socialIconButtonClass">
     <a :href="page.props.organization.social.facebook" target="_blank" rel="noopener noreferrer" :aria-label="$t('Facebook')">
       <ISimpleIconsFacebook class="size-4" />
     </a>
   </Button>
-  <Button v-else variant="ghost" size="sm" as-child>
+  <Button v-else voice="brand" variant="ghost" size="sm" as-child>
     <a :href="page.props.organization.social.facebook" target="_blank" rel="noopener noreferrer" title="Facebook">
       <ISimpleIconsFacebook class="w-4 h-4 mr-2" />
       <slot />

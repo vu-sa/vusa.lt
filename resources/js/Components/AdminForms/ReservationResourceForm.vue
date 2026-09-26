@@ -41,7 +41,7 @@
                 <Badge v-if="selectedResource?.tenant?.shortname" variant="outline" class="text-xs">
                   {{ selectedResource.tenant.shortname }}
                 </Badge>
-                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+                <ChevronDown class="size-4 opacity-50" />
               </span>
             </Button>
           </template>
@@ -77,6 +77,7 @@
 </template>
 
 <script setup lang="ts">
+import { ChevronDown } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 import { type InertiaForm, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
@@ -88,7 +89,7 @@ import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import { Spinner } from '@/Components/ui/spinner';
 import { NumberField } from '@/Components/ui/number-field';
-import { DateRangePicker } from '@/Components/ui/date-range-picker';
+import { DateRangePicker } from '@/Components/ui/date-picker';
 import { capitalize } from '@/Utils/String';
 import { ResourceIcon } from '@/Components/icons';
 import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';

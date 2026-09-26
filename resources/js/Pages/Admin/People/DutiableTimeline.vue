@@ -1,6 +1,12 @@
 <template>
-  <PageContent :title="$t('dutiables.timeline.page.title')" :heading-icon="CalendarRange">
-    <template #after-heading>
+  <div class="min-h-full" data-slot="workbench">
+    <Head :title="$t('dutiables.timeline.page.title')" />
+    <header class="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6 pt-6 sm:pt-10">
+      <div>
+        <p class="u-eyebrow">{{ $t('Pareigybės') }}</p>
+        <h1 class="u-display mt-3 text-4xl sm:text-5xl">{{ $t('dutiables.timeline.page.title') }}</h1>
+      </div>
+      <div>
       <!--
         The scope is the single most consequential thing on this page, so the control names
         the institution rather than the action: a button reading "change institution" left
@@ -54,7 +60,8 @@
         :confirm-label="$t('Pasirinkti')"
         @confirm="onInstitutionSelected"
       />
-    </template>
+      </div>
+    </header>
 
     <p class="mb-4 text-sm text-muted-foreground">
       {{ $t('dutiables.timeline.page.description') }}
@@ -80,17 +87,16 @@
         :scope-id="institution.id"
       />
     </div>
-  </PageContent>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, CalendarRange, Check, ChevronsUpDown, Search } from 'lucide-vue-next';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import {
@@ -104,10 +110,8 @@ import {
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { DutiableTimelineEditor } from '@/Features/Admin/DutiableTimeline';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useProductTour } from '@/Composables/useProductTour';
 import { provideTour } from '@/Composables/useTourProvider';
-import { InstitutionIconFilled } from '@/Components/icons';
 
 interface ScopeInstitution {
   id: string;
@@ -166,7 +170,7 @@ function onInstitutionSelected(hits: NormalizedSearchHit[]): void {
 }
 
 const { startTour, startTourIfNew } = useProductTour({
-  tourId: 'dutiable-timeline-v1',
+  tourId: 'dutiable-timeline-v2',
   // A function, so the strings resolve when the tour runs rather than at import time.
   steps: () => [
     {
@@ -242,7 +246,4 @@ onMounted(() => {
   setTimeout(() => startTourIfNew(), TOUR_START_DELAY_MS);
 });
 
-usePageBreadcrumbs(() => [
-  BreadcrumbHelpers.createBreadcrumbItem($t('dutiables.timeline.page.title'), undefined, InstitutionIconFilled),
-]);
 </script>

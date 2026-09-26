@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use App\Models\Task;
 
 /**
@@ -10,15 +10,15 @@ use App\Models\Task;
  */
 class TaskReminderNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::TaskReminder;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Task $task, protected int $daysLeft) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
 
     public function title(object $notifiable): string
     {
@@ -60,22 +60,20 @@ class TaskReminderNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
     {
-        return [
-            [
-                'label' => __('notifications.action_view_tasks'),
-                'url' => route('userTasks'),
-            ],
-        ];
+        return $this->contextRows([
+            'task' => $this->task->name,
+            'deadline' => $this->task->due_date?->format('Y-m-d'),
+        ]);
     }
 
-    /**
-     * Task reminders should not be batched - they are time-sensitive.
-     */
     #[\Override]
-    public function supportsEmailDigest(): bool
+    public function primaryAction(): ?array
     {
-        return false;
+        return [
+            'label' => __('notifications.action_view_tasks'),
+            'url' => route('userTasks'),
+        ];
     }
 }

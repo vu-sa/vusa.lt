@@ -1,43 +1,46 @@
 <template>
-  <Card>
-    <CardContent class="flex flex-wrap items-center gap-x-8 gap-y-3 p-4">
-      <div class="inline-flex items-center gap-2 text-sm font-medium">
-        <Eye class="size-4 text-zinc-500 dark:text-zinc-400" />
-        {{ $t('analytics.title') }}
+  <FormPanel :title="$t('analytics.title')" :icon="Eye" flush class="text-card-foreground">
+    <template v-if="isPartial" #action>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <button type="button" class="text-muted-foreground hover:text-foreground">
+              <Info class="size-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent class="max-w-xs">
+            {{ $t('analytics.partial_tooltip', { date: dataSinceLabel }) }}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </template>
 
-        <TooltipProvider v-if="isPartial">
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <Info class="size-4 cursor-help text-zinc-400 dark:text-zinc-500" />
-            </TooltipTrigger>
-            <TooltipContent class="max-w-xs">
-              {{ $t('analytics.partial_tooltip', { date: dataSinceLabel }) }}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+    <div v-if="isFetching" class="grid grid-cols-2 divide-x divide-border">
+      <div class="p-4">
+        <Skeleton class="mb-1 h-7 w-16" />
+        <Skeleton class="h-3 w-20" />
       </div>
-
-      <div v-if="isFetching" class="flex items-center gap-6">
-        <Skeleton class="h-8 w-16" />
-        <Skeleton class="h-8 w-16" />
+      <div class="p-4">
+        <Skeleton class="mb-1 h-7 w-16" />
+        <Skeleton class="h-3 w-20" />
       </div>
+    </div>
 
-      <p v-else-if="!data?.available || !data.totals" class="text-sm text-zinc-500 dark:text-zinc-400">
-        {{ $t('analytics.unavailable_title') }}
-      </p>
+    <div v-else-if="!data?.available || !data.totals" class="p-4 text-xs text-muted-foreground">
+      {{ $t('analytics.unavailable_title') }}
+    </div>
 
-      <div v-else class="flex items-center gap-8">
-        <div>
-          <span class="block text-2xl font-bold leading-tight">{{ data.totals.pageviews }}</span>
-          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('analytics.pageviews') }}</span>
-        </div>
-        <div>
-          <span class="block text-2xl font-bold leading-tight">{{ data.totals.visitors }}</span>
-          <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $t('analytics.visitors') }}</span>
-        </div>
+    <div v-else class="grid grid-cols-2 divide-x divide-border">
+      <div class="p-4">
+        <span class="block font-mono text-2xl font-bold tracking-tight text-foreground">{{ data.totals.pageviews }}</span>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{{ $t('analytics.pageviews') }}</span>
       </div>
-    </CardContent>
-  </Card>
+      <div class="p-4">
+        <span class="block font-mono text-2xl font-bold tracking-tight text-foreground">{{ data.totals.visitors }}</span>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{{ $t('analytics.visitors') }}</span>
+      </div>
+    </div>
+  </FormPanel>
 </template>
 
 <script setup lang="ts">
@@ -45,7 +48,7 @@ import { computed } from 'vue';
 import { Eye, Info } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { Card, CardContent } from '@/Components/ui/card';
+import { FormPanel } from '@/Components/Patterns';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { useApi } from '@/Composables/useApi';

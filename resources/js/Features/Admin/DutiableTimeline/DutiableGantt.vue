@@ -6,7 +6,7 @@
   -->
   <div
     data-slot="dutiable-gantt"
-    class="flex min-h-0 flex-auto overflow-hidden rounded-md border border-border"
+    class="flex min-h-0 flex-auto overflow-hidden border border-border"
     :style="{ maxHeight: `${maxHeightPx}px` }"
   >
     <!-- Label column. Scrolls vertically in lockstep with the chart, never horizontally. -->
@@ -74,7 +74,7 @@
             >
               <button
                 type="button"
-                class="shrink-0 rounded p-0.5 hover:bg-accent"
+                class="shrink-0 p-0.5 hover:bg-accent"
                 :aria-label="collapsed.has(lane.key)
                   ? $t('dutiables.timeline.expand_group')
                   : $t('dutiables.timeline.collapse_group')"

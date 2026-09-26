@@ -144,7 +144,18 @@ export function useProductTour(options: ProductTourOptions) {
    */
   function startTour(isVoluntary = false): void {
     // Resolve steps at tour start time (lazy evaluation for translations)
-    const steps = resolveSteps();
+    const rawSteps = resolveSteps();
+
+    // An anchor can exist in both the phone and the desktop chrome: target the copy that is actually
+    // rendered, and skip the step when none is (a hidden ancestor leaves no client rects).
+    const steps = rawSteps.flatMap((step) => {
+      if (!step.element || typeof window === 'undefined') return [step];
+      const candidates = typeof step.element === 'string'
+        ? [...document.querySelectorAll(step.element)]
+        : [step.element as Element];
+      const visible = candidates.find(el => el.getClientRects().length > 0);
+      return visible ? [{ ...step, element: visible }] : [];
+    });
 
     if (isActive.value || steps.length === 0) return;
 
@@ -177,7 +188,7 @@ export function useProductTour(options: ProductTourOptions) {
 
       // Highlighted element styling
       stagePadding: 12,
-      stageRadius: 8,
+      stageRadius: 0,
 
       // Popover positioning and styling
       popoverOffset: 16,

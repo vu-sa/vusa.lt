@@ -3,7 +3,7 @@
 
   <!-- split (default): two-column text + image, the original hero layout. -->
   <section v-if="variant === 'split'" :id="anchorElementId"
-    :class="[...(band?.classes ?? []), isFirstElement && '-mt-4 md:-mt-6 lg:-mt-8']">
+    :class="band?.classes">
     <div class="max-w-6xl mx-auto px-4 relative z-10">
       <div class="grid 2xl:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-14 2xl:gap-16 items-center">
         <div :class="['space-y-4 sm:space-y-5 md:space-y-6 2xl:space-y-8 2xl:pr-8', element.options?.textLeft ? 'order-first' : 'order-last 2xl:order-first']">
@@ -90,7 +90,7 @@
     </div>
   </section>
 
-  <!-- panel: the SummerCamps hero — a ruled panel and a square thumbnail, kept short so page
+  <!-- panel: a ruled panel and a square thumbnail, kept short so page
        content below stays reachable without scrolling. -->
   <section v-else :id="anchorElementId" class="relative scroll-mt-32">
     <div class="relative border border-border bg-secondary/40 p-5 sm:p-6">
@@ -148,7 +148,7 @@ import { withCompactPadding, type BandResolution } from '../bandLayout';
 import HeroButtons from './HeroButtons.vue';
 import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTitleClass } from './heroLayout';
 
-import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { Hero } from '@/Types/contentParts';
 import { hasHtmlText } from '@/Utils/String';
@@ -161,7 +161,6 @@ defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
   element: Hero;
-  isFirstElement: boolean;
   anchorId?: number | null;
   /** Undefined for `panel` — its `bandRole` resolves to `'flow'` (see Types/index.ts),
    *  so it never receives a chrome resolution and keeps its own fixed gradient-panel look. */

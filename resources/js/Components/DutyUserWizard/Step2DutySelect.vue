@@ -1,46 +1,46 @@
 <template>
   <div class="space-y-6">
     <!-- Selected institution header -->
-    <div class="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
-      <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-        <InstitutionIcon class="h-5 w-5 text-primary" />
+    <div class="flex items-center gap-3 p-3.5 sm:p-4 border border-border bg-muted/40">
+      <div class="flex size-9 items-center justify-center border border-border bg-background shrink-0">
+        <InstitutionIcon class="size-4 text-foreground" />
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-xs text-muted-foreground">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           {{ $t('Pasirinkta institucija') }}
         </p>
-        <p class="font-medium text-foreground truncate">
+        <p class="font-semibold text-sm text-foreground truncate">
           {{ wizard.state.institution?.name }}
         </p>
       </div>
-      <Button variant="ghost" size="sm" @click="wizard.previousStep()">
-        <Edit3 class="h-4 w-4 mr-1" />
+      <Button variant="outline" size="sm" @click="wizard.previousStep()">
+        <Edit3 class="size-3.5 mr-1.5" />
         {{ $t('Keisti') }}
       </Button>
     </div>
 
     <!-- Create Duty Form -->
-    <Card v-if="showCreateForm" class="border-primary/30">
-      <CardHeader class="pb-4">
-        <CardTitle class="text-lg flex items-center gap-2">
-          <Plus class="h-5 w-5" />
-          {{ $t('Nauja pareigybė') }}
-        </CardTitle>
-        <CardDescription>
-          {{ $t('Sukurti naują pareigybę institucijai') }}: {{ wizard.state.institution?.name }}
-        </CardDescription>
-      </CardHeader>
-      <CardContent class="space-y-4">
+    <SectionCard
+      v-if="showCreateForm"
+      :title="$t('Nauja pareigybė')"
+      :icon="Plus"
+      class="border-border"
+    >
+      <div class="space-y-4">
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Sukurti naują pareigybę institucijai') }}: <span class="font-medium text-foreground">{{ wizard.state.institution?.name }}</span>
+        </p>
+
         <!-- Duty Name -->
-        <div class="space-y-2">
-          <Label class="text-sm font-medium">{{ $t('Pavadinimas') }} *</Label>
+        <div class="space-y-1.5">
+          <Label class="text-xs font-semibold">{{ $t('Pavadinimas') }} *</Label>
           <Input
             v-model="http.name.lt"
             :placeholder="$t('Pareigybės pavadinimas lietuvių kalba')"
             :class="{ 'border-destructive': createErrors['name.lt'] }"
           />
-          <p v-if="createErrors['name.lt']" class="text-sm text-destructive">
-            {{ createErrors['name.lt'] }}
+          <p v-if="createErrors['name.lt']" class="text-xs text-destructive">
+            {{ createErrors['name.lt'][0] }}
           </p>
           <p class="text-xs text-muted-foreground">
             {{ $t('forms.helpers.duty_name_inflected_hint') }}
@@ -49,8 +49,8 @@
         </div>
 
         <!-- Places to Occupy -->
-        <div class="space-y-2">
-          <Label class="text-sm font-medium">{{ $t('Kiek vietų') }}</Label>
+        <div class="space-y-1.5">
+          <Label class="text-xs font-semibold">{{ $t('Kiek vietų') }}</Label>
           <Input
             v-model.number="http.places_to_occupy"
             type="number"
@@ -63,8 +63,8 @@
         </div>
 
         <!-- Contacts Grouping -->
-        <div class="space-y-2">
-          <Label class="text-sm font-medium">{{ $t('Kontaktų grupavimas') }} *</Label>
+        <div class="space-y-1.5">
+          <Label class="text-xs font-semibold">{{ $t('Kontaktų grupavimas') }} *</Label>
           <Select v-model="http.contacts_grouping">
             <SelectTrigger :class="{ 'border-destructive': createErrors['contacts_grouping'] }">
               <SelectValue :placeholder="$t('Pasirinkite grupavimą')" />
@@ -81,16 +81,16 @@
               </SelectItem>
             </SelectContent>
           </Select>
-          <p v-if="createErrors['contacts_grouping']" class="text-sm text-destructive">
-            {{ createErrors['contacts_grouping'] }}
+          <p v-if="createErrors['contacts_grouping']" class="text-xs text-destructive">
+            {{ createErrors['contacts_grouping'][0] }}
           </p>
         </div>
 
         <!-- Types (if available) -->
         <div class="space-y-2">
-          <Label class="text-sm font-medium">{{ $t('Tipai') }}</Label>
-          <div v-if="isDutyTypesLoading" class="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 class="h-4 w-4 animate-spin" />
+          <Label class="text-xs font-semibold">{{ $t('Tipai') }}</Label>
+          <div v-if="isDutyTypesLoading" class="flex items-center gap-2 text-xs text-muted-foreground">
+            <Loader2 class="size-3.5 animate-spin" />
             {{ $t('Kraunami tipai...') }}
           </div>
           <div v-else-if="dutyTypes.length > 0" class="flex flex-wrap gap-2">
@@ -98,30 +98,32 @@
               v-for="type in dutyTypes"
               :key="type.id"
               type="button"
-              class="inline-flex items-center px-3 py-1.5 rounded-full text-sm border transition-colors"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-semibold border transition-colors"
               :class="http.types.includes(String(type.id))
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background hover:bg-accent border-border'"
+                ? 'border-brand-fill bg-brand-fill text-brand-foreground'
+                : 'border-border bg-background hover:bg-accent text-foreground'"
               @click="toggleType(String(type.id))"
             >
               {{ type.title }}
             </button>
           </div>
-          <p v-else class="text-sm text-muted-foreground">
+          <p v-else class="text-xs text-muted-foreground">
             {{ $t('Nėra galimų tipų') }}
           </p>
         </div>
 
         <!-- Extra fields (collapsible) -->
-        <Collapsible v-model:open="showExtraFields">
-          <CollapsibleTrigger class="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronDown class="h-4 w-4 transition-transform" :class="{ 'rotate-180': showExtraFields }" />
-            {{ $t('Papildomi laukai') }}
+        <Collapsible v-model:open="showExtraFields" class="border border-border">
+          <CollapsibleTrigger as-child>
+            <Button variant="ghost" class="w-full justify-between h-10 px-3 font-medium">
+              <span class="text-xs">{{ $t('Papildomi laukai') }}</span>
+              <ChevronDown class="size-4 transition-transform" :class="{ 'rotate-180': showExtraFields }" />
+            </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent class="pt-4 space-y-4">
+          <CollapsibleContent class="p-3 pt-0 space-y-4 border-t border-border mt-1">
             <!-- English Name -->
-            <div class="space-y-2">
-              <Label class="text-sm font-medium">{{ $t('Pavadinimas anglų kalba') }}</Label>
+            <div class="space-y-1.5 pt-2">
+              <Label class="text-xs font-semibold">{{ $t('Pavadinimas anglų kalba') }}</Label>
               <Input
                 v-model="http.name.en"
                 :placeholder="$t('Duty name in English')"
@@ -129,22 +131,22 @@
             </div>
 
             <!-- Email -->
-            <div class="space-y-2">
-              <Label class="text-sm font-medium">{{ $t('El. paštas') }}</Label>
+            <div class="space-y-1.5">
+              <Label class="text-xs font-semibold">{{ $t('El. paštas') }}</Label>
               <Input
                 v-model="http.email"
                 type="email"
                 :placeholder="$t('pareigybe@vusa.lt')"
                 :class="{ 'border-destructive': createErrors['email'] }"
               />
-              <p v-if="createErrors['email']" class="text-sm text-destructive">
-                {{ createErrors['email'] }}
+              <p v-if="createErrors['email']" class="text-xs text-destructive">
+                {{ createErrors['email'][0] }}
               </p>
             </div>
 
             <!-- Description -->
-            <div class="space-y-2">
-              <Label class="text-sm font-medium">{{ $t('Aprašymas') }}</Label>
+            <div class="space-y-1.5">
+              <Label class="text-xs font-semibold">{{ $t('Aprašymas') }}</Label>
               <Input
                 v-model="http.description.lt"
                 :placeholder="$t('Pareigybės aprašymas')"
@@ -154,36 +156,37 @@
         </Collapsible>
 
         <!-- Form actions -->
-        <div class="flex justify-end gap-2 pt-2">
-          <Button variant="outline" :disabled="http.processing" @click="cancelCreate">
+        <div class="flex justify-end gap-2 pt-2 border-t border-border">
+          <Button variant="ghost" :disabled="http.processing" @click="cancelCreate">
             {{ $t('Atšaukti') }}
           </Button>
-          <Button :disabled="http.processing || !http.name.lt" @click="createDuty">
-            <Plus v-if="!http.processing" class="h-4 w-4 mr-1" />
+          <Button variant="brand" :disabled="http.processing || !http.name.lt" @click="createDuty">
+            <Plus v-if="!http.processing" class="size-4 mr-1.5" />
+            <Loader2 v-else class="size-4 mr-1.5 animate-spin" />
             {{ http.processing ? $t('Kuriama...') : $t('Sukurti pareigybę') }}
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </SectionCard>
 
     <!-- Regular duty selection view -->
     <template v-else>
       <!-- Search input -->
       <div class="relative">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
           v-model="searchQuery"
           :placeholder="$t('Ieškoti pareigybės...')"
-          class="pl-10 pr-10 h-11"
+          class="pl-9 pr-9 h-10"
         />
         <Button
           v-if="searchQuery"
           variant="ghost"
           size="icon"
-          class="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+          class="absolute right-1 top-1/2 -translate-y-1/2 size-8"
           @click="clearSearch"
         >
-          <X class="h-4 w-4" />
+          <X class="size-3.5" />
         </Button>
       </div>
 
@@ -194,80 +197,80 @@
         class="w-full border-dashed"
         @click="openCreateForm"
       >
-        <Plus class="h-4 w-4 mr-2" />
+        <Plus class="size-4 mr-2" />
         {{ $t('Sukurti naują pareigybę') }}
       </Button>
 
       <!-- Duties list -->
-      <ScrollArea class="h-[380px] pr-4">
+      <ScrollArea class="h-[320px] sm:h-[360px] pr-2">
         <div class="space-y-2">
           <button
             v-for="duty in sortedDuties"
             :key="duty.id"
             type="button"
-            class="group w-full text-left rounded-xl border border-border/50 bg-card p-4 transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:bg-accent/20"
+            class="group w-full text-left border border-border bg-card p-3.5 sm:p-4 transition-colors hover:border-foreground/30 hover:bg-muted/40 pointer-coarse:py-4"
             @click="selectDuty(duty)"
           >
-            <div class="flex items-start gap-4">
-              <!-- Icon -->
+            <div class="flex items-start gap-3.5">
+              <!-- Icon plate -->
               <div
-                class="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                class="size-10 flex items-center justify-center border shrink-0 transition-colors"
                 :class="{
-                  'bg-zinc-100 dark:bg-zinc-800': getDutyStatus(duty).type === 'unknown',
-                  'bg-amber-50 dark:bg-amber-950/30': getDutyStatus(duty).type === 'empty',
-                  'bg-blue-50 dark:bg-blue-950/30': getDutyStatus(duty).type === 'partial',
-                  'bg-green-50 dark:bg-green-950/30': getDutyStatus(duty).type === 'full',
-                  'bg-red-50 dark:bg-red-950/30': getDutyStatus(duty).type === 'over'
+                  'border-border bg-muted text-muted-foreground': getDutyStatus(duty).type === 'unknown',
+                  'border-status-attention-border bg-status-attention-surface text-status-attention': getDutyStatus(duty).type === 'empty',
+                  'border-border bg-muted text-foreground': getDutyStatus(duty).type === 'partial',
+                  'border-status-success-border bg-status-success-surface text-status-success': getDutyStatus(duty).type === 'full',
+                  'border-destructive/30 bg-destructive/10 text-destructive': getDutyStatus(duty).type === 'over'
                 }"
               >
-                <DutyIcon
-                  class="h-5 w-5"
-                  :class="{
-                    'text-zinc-500': getDutyStatus(duty).type === 'unknown',
-                    'text-amber-600 dark:text-amber-400': getDutyStatus(duty).type === 'empty',
-                    'text-blue-600 dark:text-blue-400': getDutyStatus(duty).type === 'partial',
-                    'text-green-600 dark:text-green-400': getDutyStatus(duty).type === 'full',
-                    'text-red-600 dark:text-red-400': getDutyStatus(duty).type === 'over'
-                  }"
-                />
+                <DutyIcon class="size-5" />
               </div>
 
               <!-- Content -->
               <div class="flex-1 min-w-0">
                 <div class="flex items-start justify-between gap-2">
-                  <p class="min-w-0 font-medium text-foreground group-hover:text-primary transition-colors">
+                  <p class="min-w-0 font-semibold text-sm sm:text-base text-foreground group-hover:text-brand transition-colors">
                     <InflectedDutyName :name="duty.name" />
                   </p>
-                  <Badge :variant="getDutyStatus(duty).color as any" class="shrink-0 text-xs">
+                  <span
+                    class="shrink-0 text-[11px] font-bold px-2 py-0.5 border"
+                    :class="{
+                      'border-border bg-muted text-muted-foreground': getDutyStatus(duty).type === 'unknown',
+                      'border-status-attention-border bg-status-attention-surface text-status-attention': getDutyStatus(duty).type === 'empty',
+                      'border-border bg-muted text-foreground': getDutyStatus(duty).type === 'partial',
+                      'border-status-success-border bg-status-success-surface text-status-success': getDutyStatus(duty).type === 'full',
+                      'border-destructive/30 bg-destructive/10 text-destructive': getDutyStatus(duty).type === 'over'
+                    }"
+                  >
                     {{ getDutyStatus(duty).label }}
-                  </Badge>
+                  </span>
                 </div>
 
                 <!-- Email -->
-                <p v-if="duty.email" class="text-sm text-muted-foreground mt-1 truncate">
+                <p v-if="duty.email" class="text-xs text-muted-foreground mt-0.5 truncate">
                   {{ duty.email }}
                 </p>
 
                 <!-- Capacity indicator -->
                 <div class="flex items-center gap-3 mt-2">
-                  <div class="flex items-center gap-1.5">
-                    <Users class="h-3.5 w-3.5 text-muted-foreground" />
-                    <span class="text-sm font-medium">
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <Users class="size-3.5 text-muted-foreground" />
+                    <span class="font-semibold text-foreground">
                       {{ duty.current_users?.length || 0 }}
                       <span class="text-muted-foreground font-normal">/ {{ duty.places_to_occupy || '?' }}</span>
                     </span>
                   </div>
 
                   <!-- Capacity bar -->
-                  <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden max-w-24">
+                  <div class="flex-1 h-1.5 bg-muted border border-border/50 overflow-hidden max-w-28">
                     <div
-                      class="h-full rounded-full transition-all"
+                      class="h-full transition-all"
                       :class="{
-                        'bg-zinc-400': getDutyStatus(duty).type === 'unknown',
-                        'bg-amber-500': getDutyStatus(duty).type === 'empty',
-                        'bg-blue-500': getDutyStatus(duty).type === 'partial',
-                        'bg-green-500': getDutyStatus(duty).type === 'full',
-                        'bg-red-500': getDutyStatus(duty).type === 'over'
+                        'bg-muted-foreground': getDutyStatus(duty).type === 'unknown',
+                        'bg-status-attention': getDutyStatus(duty).type === 'empty',
+                        'bg-foreground/70': getDutyStatus(duty).type === 'partial',
+                        'bg-status-success': getDutyStatus(duty).type === 'full',
+                        'bg-destructive': getDutyStatus(duty).type === 'over'
                       }"
                       :style="{
                         width: duty.places_to_occupy
@@ -278,24 +281,24 @@
                   </div>
 
                   <!-- Current users preview -->
-                  <div v-if="duty.current_users?.length" class="flex -space-x-2">
+                  <div v-if="duty.current_users?.length" class="flex -space-x-1.5">
                     <div
-                      v-for="(user, idx) in duty.current_users.slice(0, 3)"
+                      v-for="user in duty.current_users.slice(0, 3)"
                       :key="user.id"
-                      class="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium overflow-hidden"
+                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-bold overflow-hidden"
                       :title="user.name"
                     >
                       <img
                         v-if="user.profile_photo_path"
                         :src="user.profile_photo_path"
                         :alt="user.name"
-                        class="h-full w-full object-cover"
+                        class="size-full object-cover"
                       >
                       <span v-else>{{ user.name?.charAt(0) }}</span>
                     </div>
                     <div
                       v-if="duty.current_users.length > 3"
-                      class="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-medium"
+                      class="size-6 border border-background bg-muted flex items-center justify-center text-[10px] font-bold"
                     >
                       +{{ duty.current_users.length - 3 }}
                     </div>
@@ -304,29 +307,21 @@
               </div>
 
               <!-- Arrow -->
-              <ChevronRight class="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mt-1" />
+              <ChevronRight class="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
             </div>
           </button>
 
           <!-- Empty state -->
-          <div v-if="sortedDuties.length === 0" class="text-center py-12">
-            <div class="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center mb-4">
-              <DutyIcon class="h-8 w-8 text-muted-foreground" />
-            </div>
-            <p v-if="searchQuery" class="text-muted-foreground">
-              {{ $t('Nerasta pareigybių pagal paiešką') }}
-            </p>
-            <p v-else class="text-muted-foreground">
-              {{ $t('Ši institucija neturi pareigybių') }}
-            </p>
-            <Button v-if="searchQuery" variant="link" class="mt-2" @click="clearSearch">
-              {{ $t('Išvalyti paiešką') }}
-            </Button>
-            <Button v-else-if="canCreateDuty" variant="default" class="mt-4" @click="openCreateForm">
-              <Plus class="h-4 w-4 mr-2" />
-              {{ $t('Sukurti pirmą pareigybę') }}
-            </Button>
-          </div>
+          <EmptyState
+            v-if="sortedDuties.length === 0"
+            :mode="searchQuery ? 'no-results' : 'empty'"
+            :icon="DutyIcon"
+            :title="searchQuery ? $t('Nerasta pareigybių pagal paiešką') : $t('Ši institucija neturi pareigybių')"
+            :clear-label="searchQuery ? $t('Išvalyti paiešką') : undefined"
+            :action-label="!searchQuery && canCreateDuty ? $t('Sukurti pirmą pareigybę') : undefined"
+            @clear="clearSearch"
+            @action="openCreateForm"
+          />
         </div>
       </ScrollArea>
     </template>
@@ -342,8 +337,6 @@ import {
   Search,
   Users,
   ChevronRight,
-  AlertCircle,
-  CheckCircle,
   X,
   Edit3,
   Plus,
@@ -353,13 +346,11 @@ import {
 
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
 import { ScrollArea } from '@/Components/ui/scroll-area';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { Label } from '@/Components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import { SectionCard, EmptyState } from '@/Components/Patterns';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
 import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
 import { DutyIcon, InstitutionIcon } from '@/Components/icons';
@@ -369,30 +360,22 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 const dutyTypesRef = inject<ComputedRef<App.Entities.Type[]> | App.Entities.Type[]>('dutyTypes', []);
 
-// Unwrap computed ref or use array directly
 const dutyTypes = computed(() =>
   'value' in dutyTypesRef ? dutyTypesRef.value : dutyTypesRef,
 );
 
 const page = usePage();
 const auth = page.props.auth as any;
-// Cross-tenant ("external") institutions belong to another tenant — creating
-// duties there is not allowed (and the server rejects it anyway).
-const canCreateDuty = computed(() => !!auth?.can?.create?.duty && !(wizard.state.institution as { is_external?: boolean } | undefined)?.is_external);
+const canCreateDuty = computed(() => Boolean(auth?.can?.create?.duty) && !(wizard.state.institution as { is_external?: boolean } | undefined)?.is_external);
 
-// Check if duty types are loading
 const isDutyTypesLoading = computed(() => !dutyTypes.value || dutyTypes.value.length === 0);
 
-// Open create form and trigger lazy load of duty types
 const openCreateForm = () => {
   wizard.loadDutyTypes();
   showCreateForm.value = true;
 };
 
-// Search state
 const searchQuery = ref('');
-
-// Create duty form state
 const showCreateForm = ref(false);
 const showExtraFields = ref(false);
 
@@ -406,7 +389,6 @@ const http = useHttp({
   types: [] as string[],
 });
 
-// Normalize Inertia form errors to the array format expected by the template
 const createErrors = computed<Record<string, string[]>>(() => {
   const errs: Record<string, string[]> = {};
   for (const [key, val] of Object.entries(http.errors)) {
@@ -420,8 +402,6 @@ const resetForm = () => {
   showExtraFields.value = false;
 };
 
-// This inline create form is a second duty-creation path independent of
-// DutyForm.vue — it needs its own duplicate warning for the same reason.
 const { matches: duplicateMatches } = useDuplicateDutyCheck(
   () => http.name.lt,
   () => wizard.state.institution?.id ?? null,
@@ -435,14 +415,11 @@ const cancelCreate = () => {
 const createDuty = () => {
   if (!wizard.state.institution?.id) return;
 
-  const institutionId = wizard.state.institution.id;
-
   http.post(route('duties.store'), {
     onSuccess: (response: any) => {
       if (response?.duty) {
         const newDutyData = response.duty as App.Entities.Duty;
 
-        // Update the institution's duties list locally
         if (wizard.state.institution) {
           const updatedInstitution = {
             ...wizard.state.institution,
@@ -463,12 +440,10 @@ const createDuty = () => {
   });
 };
 
-// Get duties from selected institution
 const duties = computed(() => {
   return wizard.state.institution?.duties || [];
 });
 
-// Filtered duties
 const filteredDuties = computed(() => {
   if (!searchQuery.value) return duties.value;
   const query = searchQuery.value.toLowerCase();
@@ -478,37 +453,32 @@ const filteredDuties = computed(() => {
   );
 });
 
-// Compute status for each duty
 const getDutyStatus = (duty: any) => {
   const currentCount = duty.current_users?.length || 0;
   const maxCount = duty.places_to_occupy || 0;
 
-  if (maxCount === 0) return { type: 'unknown', label: $t('Nenurodyta'), color: 'secondary' };
-  if (currentCount === 0) return { type: 'empty', label: $t('Neužimta'), color: 'outline' };
-  if (currentCount < maxCount) return { type: 'partial', label: $t('Dalinai užimta'), color: 'secondary' };
-  if (currentCount === maxCount) return { type: 'full', label: $t('Pilnai užimta'), color: 'default' };
-  return { type: 'over', label: $t('Viršija limitą'), color: 'destructive' };
+  if (maxCount === 0) return { type: 'unknown', label: $t('Nenurodyta') };
+  if (currentCount === 0) return { type: 'empty', label: $t('Neužimta') };
+  if (currentCount < maxCount) return { type: 'partial', label: $t('Dalinai užimta') };
+  if (currentCount === maxCount) return { type: 'full', label: $t('Pilnai užimta') };
+  return { type: 'over', label: $t('Viršija limitą') };
 };
 
-// Sort duties: empty/partial first, then by name
 const sortedDuties = computed(() => {
   return [...filteredDuties.value].sort((a, b) => {
     const aStatus = getDutyStatus(a);
     const bStatus = getDutyStatus(b);
 
-    // Priority: empty > partial > unknown > full > over
     const priority: Record<string, number> = { empty: 0, partial: 1, unknown: 2, full: 3, over: 4 };
     const aPriority = priority[aStatus.type] ?? 5;
     const bPriority = priority[bStatus.type] ?? 5;
 
     if (aPriority !== bPriority) return aPriority - bPriority;
 
-    // Then by name
     return (a.name?.toString() || '').localeCompare(b.name?.toString() || '');
   });
 });
 
-// Handle duty selection
 const selectDuty = (duty: any) => {
   wizard.setDuty(duty as App.Entities.Duty);
   wizard.nextStep();

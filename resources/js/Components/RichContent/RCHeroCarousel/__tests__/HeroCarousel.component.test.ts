@@ -219,8 +219,7 @@ describe('HeroCarouselDisplay', () => {
   it('runs the band to the viewport edges with no inset panel', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
-    // `rc-viewport` escapes PublicLayout's `.container` column; without it the hero is
-    // clamped to the content measure and stops being a full-bleed band.
+    // Without `rc-viewport` a hero inside a narrower canvas is clamped to its measure.
     expect(wrapper.find('section').classes()).toContain('rc-viewport');
     expect(wrapper.find('.rounded-2xl').exists()).toBe(false);
   });
@@ -330,16 +329,6 @@ describe('HeroCarouselDisplay', () => {
     element.json_content = [];
     const wrapper = mount(HeroCarouselDisplay, { props: { element }, global: { stubs } });
     expect(wrapper.exists()).toBe(true);
-  });
-
-  it('applies the navbar pull-up margin only as the first element', () => {
-    // Mirrors PublicLayout's content wrapper padding (`pt-4 md:pt-6 lg:pt-8`) so the band
-    // sits flush under the fixed header. Change one, change the other.
-    const withMargin = mount(HeroCarouselDisplay, { props: { element: makeElement(), isFirstElement: true }, global: { stubs } });
-    expect(withMargin.find('section').classes()).toEqual(expect.arrayContaining(['-mt-4', 'md:-mt-6', 'lg:-mt-8']));
-
-    const withoutMargin = mount(HeroCarouselDisplay, { props: { element: makeElement(), isFirstElement: false }, global: { stubs } });
-    expect(withoutMargin.find('section').classes()).not.toContain('-mt-4');
   });
 
   it('anchors the section for ToC scroll targets', () => {

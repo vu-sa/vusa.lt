@@ -137,9 +137,7 @@ Echo.private(`orders.${orderId}`)
 
 ```bash
 vendor/bin/sail artisan queue:work    # Required for ShouldBroadcast events
-
 vendor/bin/sail artisan reverb:start  # Required for Reverb driver
-
 ```
 
 ## What's Possible

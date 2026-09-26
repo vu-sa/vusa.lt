@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import NewsForm from '@/Components/AdminForms/NewsForm.vue';
-import { commonStubs } from '@/tests/stubs';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
+import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
+import SEOPreview from '@/Components/AdminForms/SEOPreview.vue';
 
 // Use the real Inertia useForm (which has withPrecognition); only override usePage
 // with a minimal page object. The global inertia mock's useForm lacks withPrecognition.
@@ -12,13 +15,17 @@ vi.mock('@inertiajs/vue3', async () => {
     ...actual,
     usePage: () => ({
       props: {
-        app: { locale: 'lt', url: 'https://vusa.test' },
+        app: { locale: 'lt', url: 'https://www.vusa.test' },
       },
     }),
   };
 });
 
-describe('NewsForm.vue — show_breadcrumbs toggle', () => {
+interface NewsFormVm {
+  form: Record<string, unknown> & { validate: (field: string) => unknown };
+}
+
+describe('NewsForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
   const defaultNews = {
@@ -31,8 +38,7 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
     image: 'image.jpg',
     image_author: 'Autorius',
     draft: 0,
-    publish_time: null,
-    layout: 'modern',
+    publish_time: '2020-01-01T10:00:00Z',
     show_breadcrumbs: true,
     highlights: [],
     tenant_id: 1,
@@ -49,39 +55,36 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
       },
       global: {
         stubs: {
-          ...commonStubs,
-          AdminForm: {
-            template: '<form @submit.prevent><slot name="status-header" /><slot /></form>',
-            props: ['model'],
+          FormPage: {
+            template: '<div data-testid="form-page"><slot name="title-status" /><slot /><slot name="aside" /><slot name="danger-zone" /></div>',
+            props: ['title', 'headTitle', 'entityType', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode', 'availableLocales', 'barTitle', 'publicUrl', 'activitySubject', 'createdAt', 'updatedAt'],
           },
-          Alert: {
-            template: '<div data-testid="alert"><slot /></div>',
-          },
-          AlertTitle: { template: '<strong><slot /></strong>' },
-          AlertDescription: { template: '<div data-testid="alert-description"><slot /></div>' },
-          FormElement: {
-            props: ['sectionNumber'],
-            template: '<section :data-section="sectionNumber"><slot name="title" /><slot name="description" /><slot /></section>',
-          },
-          FormStatusHeader: { template: '<div />' },
-          RichContentFormElement: { template: '<div data-testid="rich-content-form-element" />' },
+          DateTimePicker: { template: '<div />' },
+          ContentAnalyticsCard: { template: '<div />' },
+          PublicUrlHistoryCard: { template: '<div />' },
+          TagMultiSelect: { template: '<div />' },
+          RichContentFormElement: { template: '<div />' },
+          TiptapEditor: { template: '<div />' },
           FormFieldWrapper: {
-            template: '<div><slot /></div>',
+            props: ['id', 'label'],
+            template: '<div :data-field="id"><slot /></div>',
           },
-          TiptapEditor: { template: '<div data-testid="tiptap-editor" />' },
-          MultiSelect: { template: '<div />' },
+          PermalinkField: {
+            props: ['permalink', 'baseUrl', 'viewUrl', 'warning', 'hint', 'validating', 'valid', 'invalid'],
+            template: '<div data-testid="permalink-field" />',
+          },
+          SEOPreview: { template: '<div />', props: ['description'] },
           OrderedListInput: { template: '<div />' },
-          Collapsible: { template: '<div><slot /></div>' },
-          CollapsibleContent: { template: '<div><slot /></div>' },
-          CollapsibleTrigger: { template: '<div><slot /></div>' },
           Input: { template: '<input />' },
-          Label: { template: '<label><slot /></label>' },
           Button: { template: '<button><slot /></button>' },
-          ToggleGroup: { template: '<div><slot /></div>' },
-          ToggleGroupItem: { template: '<div />' },
+          Select: { template: '<div />' },
+          SelectTrigger: { template: '<div />' },
+          SelectValue: { template: '<div />' },
+          SelectContent: { template: '<div />' },
+          SelectItem: { template: '<div />' },
           ImageUpload: { template: '<div />' },
           CollectionSelectDialog: { template: '<div />' },
-          IFluentWarning24Regular: { template: '<span class="icon-warning" />' },
+          ConfirmDialog: { template: '<div />' },
           // Mirrors the real reka-ui Switch: binds modelValue, emits update:modelValue.
           Switch: {
             template: '<button type="button" role="switch" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)" />',
@@ -100,59 +103,116 @@ describe('NewsForm.vue — show_breadcrumbs toggle', () => {
     wrapper?.unmount();
   });
 
+  function findBreadcrumbsSwitch() {
+    return wrapper.find('[data-testid="toggle-breadcrumbs"] [role="switch"]');
+  }
+
   it('defaults show_breadcrumbs to true when the news omits it', () => {
     wrapper = createWrapper({ news: { ...defaultNews, show_breadcrumbs: undefined } });
-    const vm = wrapper.vm as unknown as { form: { show_breadcrumbs: boolean } };
+    const vm = wrapper.vm as unknown as NewsFormVm;
 
     expect(vm.form.show_breadcrumbs).toBe(true);
   });
 
-  it('reflects the initial show_breadcrumbs state on the switch', () => {
+  it('toggles show_breadcrumbs with its display setting row', async () => {
     wrapper = createWrapper({ news: { ...defaultNews, show_breadcrumbs: false } });
-    const toggle = wrapper.find('[role="switch"]');
+    const vm = wrapper.vm as unknown as NewsFormVm;
+    expect(findBreadcrumbsSwitch().attributes('aria-checked')).toBe('false');
 
-    expect(toggle.attributes('aria-checked')).toBe('false');
-  });
+    await findBreadcrumbsSwitch().trigger('click');
 
-  it('toggles form.show_breadcrumbs when the switch is clicked (model-value binding)', async () => {
-    wrapper = createWrapper();
-    const vm = wrapper.vm as unknown as { form: { show_breadcrumbs: boolean } };
-    expect(vm.form.show_breadcrumbs).toBe(true);
-
-    await wrapper.find('[role="switch"]').trigger('click');
-    expect(vm.form.show_breadcrumbs).toBe(false);
-
-    await wrapper.find('[role="switch"]').trigger('click');
     expect(vm.form.show_breadcrumbs).toBe(true);
   });
 
-  it('renders a serious warning below the permalink field', () => {
+  it('stores the status segment as the inverse draft flag', async () => {
     wrapper = createWrapper();
+    const vm = wrapper.vm as unknown as NewsFormVm;
+    expect(wrapper.find('[data-testid="news-status-published"]').attributes('aria-pressed')).toBe('true');
+    expect(wrapper.find('[data-slot="status-badge"]').text()).toBe('Paskelbta');
+    expect(wrapper.find('[data-testid="news-status-published"]').classes()).toContain('bg-status-success-surface');
 
-    const alert = wrapper.find('[data-testid="alert"]');
-    expect(alert.exists()).toBe(true);
-    expect(alert.text()).toContain('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.');
+    await wrapper.find('[data-testid="news-status-draft"]').trigger('click');
+
+    expect(vm.form.draft).toBe(true);
+    expect(wrapper.find('[data-testid="news-status-draft"]').attributes('aria-pressed')).toBe('true');
+    // The bar keeps stating what is saved until the next save.
+    expect(wrapper.find('[data-slot="status-badge"]').text()).toBe('Paskelbta');
+    // Same grey/green as the status tags in the news list, not the brand fill.
+    expect(wrapper.find('[data-testid="news-status-draft"]').classes()).toContain('bg-status-neutral-surface');
+    expect(wrapper.find('[data-testid="news-status-draft"]').classes()).not.toContain('bg-brand-fill');
   });
 
-  it('renders intro text above rich content with updated description', () => {
+  it('follows the typed title in the heading but keeps the saved one in the bar', async () => {
+    wrapper = createWrapper();
+    const vm = wrapper.vm as unknown as NewsFormVm;
+
+    vm.form.title = 'Naujas pavadinimas';
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.findComponent(FormPage).props('title')).toBe('Naujas pavadinimas');
+    expect(wrapper.findComponent(FormPage).props('barTitle')).toBe('Testinė naujiena');
+  });
+
+  it('shows no saved status while creating', () => {
+    wrapper = createWrapper({ news: { ...defaultNews, id: undefined }, rememberKey: 'CreateNews', submitMethod: 'post' });
+
+    expect(wrapper.find('[data-slot="status-badge"]').exists()).toBe(false);
+  });
+
+  it('offers no public link for a saved draft, which visitors cannot open', () => {
+    wrapper = createWrapper({ news: { ...defaultNews, draft: 1 } });
+
+    expect(wrapper.find('[data-testid="news-status-callout"]').text()).toContain('svetainės lankytojai jo nemato');
+    expect(wrapper.findComponent(FormPage).props('publicUrl')).toBeUndefined();
+    expect(wrapper.findComponent(PermalinkField).props('viewUrl')).toBeUndefined();
+  });
+
+  it('warns about the redirect only once the permalink changes', async () => {
     wrapper = createWrapper();
 
-    const sections = wrapper.findAll('section[data-section]');
-    const section3 = sections.find(s => s.attributes('data-section') === '3');
-    const section4 = sections.find(s => s.attributes('data-section') === '4');
+    const field = wrapper.findComponent(PermalinkField);
+    expect(field.props('warning')).toBeUndefined();
+    expect(field.props('baseUrl')).toBe('www.vusa.test/lt/naujiena');
 
-    expect(section3).toBeDefined();
-    expect(section4).toBeDefined();
+    field.vm.$emit('update:permalink', 'naujas-adresas');
+    await wrapper.vm.$nextTick();
 
-    expect(section3!.text()).toContain('Įvadinis tekstas');
-    expect(section3!.text()).toContain('Naudojamas naujienos įvade ir paieškos rezultatuose (SEO)');
-    expect(section3!.find('[data-testid="tiptap-editor"]').exists()).toBe(true);
+    expect(field.props('warning')).toContain('Pakeitus nuorodą');
+  });
 
-    expect(section4!.text()).toContain('Turinys');
-    expect(section4!.find('[data-testid="rich-content-form-element"]').exists()).toBe(true);
+  it('shows plain text in the search preview even with nested markup', () => {
+    wrapper = createWrapper({ news: { ...defaultNews, short: '<p>Labas <scr<b>ipt>pasauli</scr<b>ipt></p>' } });
 
-    const html = wrapper.html();
-    expect(html.indexOf('data-section="3"')).toBeLessThan(html.indexOf('data-section="4"'));
+    expect(wrapper.findComponent(SEOPreview).props('description')).toBe('Labas pasauli');
+  });
+
+  it('sets the article language with the language segment', async () => {
+    wrapper = createWrapper();
+    const vm = wrapper.vm as unknown as NewsFormVm;
+    // Precognition would otherwise fire a real validation request.
+    vi.spyOn(vm.form, 'validate').mockImplementation(() => vm.form);
+
+    await wrapper.find('[data-testid="news-lang-en"]').trigger('click');
+
+    expect(vm.form.lang).toBe('en');
+  });
+
+  it('has no form-level LT | EN switch — an article is written in one language', () => {
+    wrapper = createWrapper();
+
+    expect(wrapper.findComponent(FormPage).props('availableLocales')).toEqual([]);
+  });
+
+  it('previews the permalink and asks for the unit only on create', () => {
+    wrapper = createWrapper();
+    expect(wrapper.find('[data-field="tenant"]').exists()).toBe(false);
+    wrapper.unmount();
+
+    wrapper = createWrapper({ news: { ...defaultNews, id: undefined }, rememberKey: 'CreateNews', submitMethod: 'post' });
+
+    expect(wrapper.find('[data-field="tenant"]').exists()).toBe(true);
+    expect(wrapper.findComponent(PermalinkField).exists()).toBe(false);
+    expect(wrapper.findComponent(PermalinkPreviewHint).exists()).toBe(true);
   });
 });
 

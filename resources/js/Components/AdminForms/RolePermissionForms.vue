@@ -10,12 +10,9 @@
         ></NTransfer> -->
     <section v-for="entity in entities" :key="entity.key">
       <Alert class="mb-4">
-        <AlertTitle class="mb-2 flex items-center gap-1 text-base">
+        <AlertTitle class="flex items-center gap-1 text-base">
           <component :is="entity.icon" width="16" /> <span>{{ entity.title }}</span>
         </AlertTitle>
-        <AlertDescription class="[&_p]:mb-2 [&_p]:leading-tight">
-          <MdSuspenseWrapper :directory="entity.key" :locale="$page.props.app.locale" file="description" />
-        </AlertDescription>
       </Alert>
       <PermissionTable :model-type="entity.key" :icon="entity.icon" :permissions="filterPermissionsFor(entity.key)"
         :available-permissions="(allAvailablePermissions && allAvailablePermissions[entity.key]) || []" :role />
@@ -27,8 +24,7 @@
 <script setup lang="tsx">
 import { Separator } from '../ui/separator';
 
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
-import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
+import { Alert, AlertTitle } from '@/Components/ui/alert';
 import PermissionTable from '@/Features/Admin/PermissionTable/PermissionTable.vue';
 import entities from '@/entities';
 

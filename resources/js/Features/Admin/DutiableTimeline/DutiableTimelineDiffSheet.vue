@@ -65,7 +65,7 @@
               <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px]">
                 <span class="text-muted-foreground">{{ formatPeriod(change.before) }}</span>
                 <ArrowRight class="size-3 text-muted-foreground" />
-                <span :class="change.blocked ? 'text-muted-foreground line-through' : 'text-amber-600 dark:text-amber-400'">
+                <span :class="change.blocked ? 'text-muted-foreground line-through' : 'text-status-attention'">
                   {{ formatPeriod(change.after) }}
                 </span>
               </div>

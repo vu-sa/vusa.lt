@@ -109,7 +109,7 @@
             "./vendor/bin/pest"
         ],
         "test:browser": [
-            "./vendor/bin/pest tests/Browser"
+            "./vendor/bin/pest tests/Browser --parallel"
         ],
         "lint": [
             "./vendor/bin/pint"

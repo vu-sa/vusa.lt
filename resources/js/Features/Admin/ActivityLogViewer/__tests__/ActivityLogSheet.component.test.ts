@@ -41,7 +41,6 @@ const sheetStubs = {
   SheetContent: SheetContentStub,
   SheetHeader: SheetHeaderStub,
   SheetTitle: SheetTitleStub,
-  SpotlightPopover: { template: '<div><slot /></div>' },
 };
 
 function activityLogCalls() {

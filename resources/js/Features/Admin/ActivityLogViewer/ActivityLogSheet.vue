@@ -1,27 +1,25 @@
 <template>
-  <Sheet @update:open="handleOpenChange">
-    <SpotlightPopover
-      :title="$t('activity.title')"
-      :description="$t('activity.spotlight_description')"
-      :is-dismissed="spotlight.isDismissed.value"
-      float
-      style="display: inline-flex;"
-      @dismiss="spotlight.dismiss"
+  <Sheet v-model:open="open">
+    <SheetTrigger v-if="!hideTrigger" as-child>
+      <Button size="icon" variant="outline" :title="$t('activity.title')" :aria-label="$t('activity.title')">
+        <History class="size-4" />
+      </Button>
+    </SheetTrigger>
+    <SheetContent
+      data-slot="activity-log-sheet"
+      :side="isMobile ? 'bottom' : 'right'"
+      :class="['flex flex-col gap-0 p-0', isMobile ? 'h-[92dvh] max-h-[92dvh]' : 'w-full sm:max-w-xl']"
     >
-      <SheetTrigger as-child>
-        <Button size="icon-sm" variant="ghost" class="rounded-full" :title="$t('activity.title')">
-          <History class="h-4 w-4" />
-        </Button>
-      </SheetTrigger>
-    </SpotlightPopover>
-    <SheetContent class="flex w-full flex-col sm:max-w-xl">
-      <SheetHeader>
-        <SheetTitle>{{ $t('activity.title') }}</SheetTitle>
+      <SheetHeader class="border-b border-border px-6 py-4">
+        <SheetTitle class="text-xl font-semibold tracking-tight text-foreground">
+          {{ $t('activity.title') }}
+        </SheetTitle>
       </SheetHeader>
 
-      <div class="flex flex-wrap items-center gap-2 border-b border-zinc-200 px-4 pb-3 dark:border-zinc-700">
+      <div class="flex flex-wrap items-center gap-2 border-b border-border px-6 py-3">
         <Button
           size="sm"
+          voice="sentence"
           :variant="scope === 'tree' ? 'secondary' : 'ghost'"
           @click="setScope('tree')"
         >
@@ -29,18 +27,14 @@
         </Button>
         <Button
           size="sm"
+          voice="sentence"
           :variant="scope === 'self' ? 'secondary' : 'ghost'"
           @click="setScope('self')"
         >
           {{ $t('activity.filter.scope_self') }}
         </Button>
 
-        <!--
-          Only shown once the feed has actually mixed subject types (see
-          useActivityLog's knownSubjectTypes) -- a roll-up feed that has only
-          ever contained one type (e.g. scope=self, or a root with no logged
-          descendants) has nothing to filter.
-        -->
+        <!-- Only once the feed has mixed subject types (useActivityLog's knownSubjectTypes). -->
         <Select
           v-if="availableSubjectTypeOptions.length > 1"
           :model-value="subjectTypeFilter"
@@ -60,8 +54,8 @@
         </Select>
       </div>
 
-      <ScrollArea class="min-h-0 flex-1 px-4">
-        <div class="py-4">
+      <ScrollArea class="min-h-0 flex-1 px-6">
+        <div class="py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <ActivityLogFeed
             :entries="activityLog.entries.value"
             :loading="activityLog.loading.value"
@@ -76,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { History } from 'lucide-vue-next';
 
@@ -86,24 +80,26 @@ import { Button } from '@/Components/ui/button';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useActivityLog } from '@/Composables/useActivityLog';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { useIsMobile } from '@/Composables/useIsMobile';
 
 const props = defineProps<{
   subjectType: string;
   subjectId: string;
+  /** Opened from elsewhere (a record's ⋯ menu) through `v-model:open`. */
+  hideTrigger?: boolean;
 }>();
 
+const open = defineModel<boolean>('open', { default: false });
+
+const isMobile = useIsMobile();
 const activityLog = useActivityLog(props.subjectType, props.subjectId);
-const spotlight = useFeatureSpotlight('activity-log-v1');
 
 const scope = computed(() => activityLog.filters.value.scope ?? 'tree');
 const subjectTypeFilter = computed(() => activityLog.filters.value.subject_type ?? 'all');
 
 // Backend subject.type values are camelCase aliases from App\Support\Auditables
-// (e.g. "agendaItem", "contentPart"), so a plain word-boundary split reads
-// naturally without a dedicated label per type.
+// (e.g. "agendaItem"), so a word-boundary split reads without a label per type.
 const availableSubjectTypeOptions = computed(() =>
   activityLog.availableSubjectTypes.value
     .map(type => ({ value: type, label: humanizeSubjectType(type) }))
@@ -124,13 +120,11 @@ function setSubjectType(value: string): void {
   activityLog.setFilters({ ...activityLog.filters.value, subject_type: value === 'all' ? undefined : value });
 }
 
-function handleOpenChange(open: boolean): void {
-  if (!open) return;
-
-  spotlight.dismiss();
+watch(open, (isOpen) => {
+  if (!isOpen) return;
 
   if (!activityLog.hasLoadedOnce.value) {
     void activityLog.load();
   }
-}
+});
 </script>

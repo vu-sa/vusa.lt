@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildCalendarIndexQuery;
 use App\Actions\DuplicateCalendarAction;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\HandleModelMediaUploads;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexCalendarRequest;
 use App\Http\Requests\StoreCalendarRequest;
+use App\Http\Requests\UpdateCalendarIndexRequest;
 use App\Http\Requests\UpdateCalendarRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
@@ -19,6 +21,7 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -36,53 +39,21 @@ class CalendarController extends AdminController
     {
         $this->handleAuthorization('viewAny', Calendar::class);
 
-        $query = Calendar::query()->with(['eventType', 'tenant:id,shortname']);
-
-        $searchableColumns = ['title'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'calendars.read.padalinys',
-            ]
-        );
-
-        if ($request->getUntyped()) {
-            $query->whereNull('event_type_id');
-        }
-
-        $deletedCount = $this->getTrashedCount($query);
-
-        $calendar = $query->paginate($request->getPerPage())
-            ->withQueryString();
+        $calendar = BuildCalendarIndexQuery::execute($request, $this->tableService)
+            ->paginate($request->getPerPage());
 
         return $this->inertiaResponse('Admin/Calendar/IndexCalendarEvents', [
             'calendar' => [
-                'data' => $calendar->getCollection()
-                    ->map(function ($event) {
-                        /** @var Calendar $event */
-                        return $event->toFullArray();
-                    }),
+                'data' => $calendar->getCollection()->map(fn (Calendar $event): array => $event->toFullArray())->values(),
                 'meta' => [
                     'total' => $calendar->total(),
                     'per_page' => $calendar->perPage(),
                     'current_page' => $calendar->currentPage(),
                     'last_page' => $calendar->lastPage(),
-                    'from' => $calendar->firstItem(),
-                    'to' => $calendar->lastItem(),
                 ],
             ],
             'eventTypes' => EventType::query()->orderBy('sort_order')->get(['id', 'slug', 'name']),
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
-            'untyped' => $request->getUntyped(),
+            'deletedCount' => $this->scopedTrashedCount(Calendar::query(), 'tenant', 'calendars.read.padalinys'),
         ]);
     }
 
@@ -129,23 +100,24 @@ class CalendarController extends AdminController
 
     /**
      * Display the specified resource.
+     * Content objects (Decision O4) have no separate record page; the editor is canonical.
      */
     public function show(Calendar $calendar)
     {
         $this->handleAuthorization('view', $calendar);
 
-        return $this->inertiaResponse('Admin/Calendar/ShowCalendarEvent', [
-            'calendar' => $calendar,
-            'images' => $calendar->getMedia('images'),
-        ]);
+        return redirect()->route('calendar.edit', $calendar);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Calendar $calendar)
+    public function edit(Request $request, Calendar $calendar)
     {
-        $this->handleAuthorization('update', $calendar);
+        $this->handleAuthorization('view', $calendar);
+
+        $canUpdate = $request->user()->can('update', $calendar);
+        $calendar->loadMissing('tenant:id,type,shortname');
 
         return $this->inertiaResponse('Admin/Calendar/EditCalendarEvent', [
             'calendar' => [
@@ -166,7 +138,10 @@ class CalendarController extends AdminController
             ],
             'eventTypes' => EventType::query()->orderBy('sort_order')->get(),
             'availableTags' => Tag::orderBy('alias')->get()->map->toFullArray(),
-            'assignableTenants' => GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer),
+            'assignableTenants' => $canUpdate
+                ? GetTenantsForUpserts::execute('calendars.update.padalinys', $this->authorizer)
+                : collect([$calendar->tenant]),
+            'canUpdate' => $canUpdate,
             // An event standing for a meeting is not an ordinary event: publishing it is what
             // opens that meeting's agenda to the public, so the form has to say so.
             'meeting' => $this->announcedMeeting($calendar),
@@ -251,6 +226,23 @@ class CalendarController extends AdminController
                 'images' => ['collection' => 'images', 'single' => false],
             ]);
         });
+
+        return back()->with('success', $this->entityMessage('updated', 'calendar'));
+    }
+
+    public function updateIndex(UpdateCalendarIndexRequest $request, Calendar $calendar): RedirectResponse
+    {
+        $data = $request->validated();
+
+        if (array_key_exists('is_draft', $data)) {
+            $calendar->is_draft = $data['is_draft'];
+        }
+
+        if (array_key_exists('event_type_id', $data)) {
+            $calendar->event_type_id = $data['event_type_id'];
+        }
+
+        $calendar->save();
 
         return back()->with('success', $this->entityMessage('updated', 'calendar'));
     }

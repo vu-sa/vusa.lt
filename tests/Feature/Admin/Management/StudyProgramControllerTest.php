@@ -79,11 +79,11 @@ describe('unauthorized access', function (): void {
         $response->assertStatus(403);
     });
 
-    test('cannot access merge study programs page', function (): void {
+    test('legacy merge study programs route redirects', function (): void {
         $this->actingAs($this->user);
 
         $response = $this->get(route('studyPrograms.merge'));
-        $response->assertStatus(403);
+        $response->assertRedirect(route('studyPrograms.index'));
     });
 
     test('cannot merge study programs', function (): void {
@@ -92,8 +92,8 @@ describe('unauthorized access', function (): void {
         $targetProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = $this->post(route('studyPrograms.merge'), [
-            'target_id' => $targetProgram->id,
-            'source_ids' => [$this->studyProgram->id],
+            'target_study_program_id' => $targetProgram->id,
+            'source_study_program_ids' => [$this->studyProgram->id],
         ]);
         $response->assertStatus(403);
     });
@@ -118,11 +118,9 @@ describe('authorized access', function (): void {
         $response->assertStatus(200);
 
         $studyPrograms = $response->viewData('page')['props']['studyPrograms'];
-        expect($studyPrograms)->toHaveKey('data')
-            ->and($studyPrograms['data'])->toBeArray();
 
         // Ensure we can see study programs (super admin sees all tenants)
-        expect(count($studyPrograms['data']))->toBeGreaterThan(0);
+        expect($studyPrograms)->toBeArray()->not->toBeEmpty();
     });
 
     test('can access study program create page', function (): void {
@@ -171,14 +169,11 @@ describe('authorized access', function (): void {
         $this->assertSoftDeleted('study_programs', ['id' => $programId]);
     });
 
-    test('can access merge study programs page', function (): void {
+    test('legacy merge study programs route redirects for an admin', function (): void {
         $this->actingAs($this->admin);
 
         $response = $this->get(route('studyPrograms.merge'));
-        $response->assertStatus(200);
-        $response->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/MergeStudyPrograms')
-        );
+        $response->assertRedirect(route('studyPrograms.index'));
     });
 });
 
@@ -304,6 +299,20 @@ describe('validation', function (): void {
 });
 
 describe('merge functionality', function (): void {
+    test('rejects duplicate source study program ids without deleting the source', function (): void {
+        $this->actingAs($this->admin);
+
+        $targetProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
+        $sourceProgram = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $this->post(route('studyPrograms.merge'), [
+            'target_study_program_id' => $targetProgram->id,
+            'source_study_program_ids' => [$sourceProgram->id, $sourceProgram->id],
+        ])->assertSessionHasErrors('source_study_program_ids.1');
+
+        expect($sourceProgram->fresh()->trashed())->toBeFalse();
+    });
+
     test('can merge study programs successfully', function (): void {
         $this->actingAs($this->admin);
 
@@ -384,40 +393,30 @@ describe('relationships', function (): void {
     });
 });
 
-describe('filtering and search', function (): void {
-    test('can filter study programs by search term', function (): void {
+describe('client-side collection', function (): void {
+    test('sends every study program so the browser can search, filter and page them', function (): void {
         $this->actingAs($this->admin);
 
-        $response = $this->get(route('studyPrograms.index', ['search' => 'Informatikos']));
-        $response->assertStatus(200);
-
-        $programs = $response->viewData('page')['props']['studyPrograms']['data'];
-        expect(count($programs))->toBeGreaterThan(0);
-    });
-
-    test('can filter study programs by degree', function (): void {
-        $this->actingAs($this->admin);
-
-        $response = $this->get(route('studyPrograms.index', ['degree' => 'BA']));
-        $response->assertStatus(200);
-
-        $programs = $response->viewData('page')['props']['studyPrograms']['data'];
-        foreach ($programs as $program) {
-            expect($program['degree'])->toBe('BA');
-        }
-    });
-
-    test('pagination works correctly', function (): void {
-        $this->actingAs($this->admin);
-
-        // Create enough programs to trigger pagination
         StudyProgram::factory()->count(20)->create(['tenant_id' => $this->tenant->id]);
 
-        $response = $this->get(route('studyPrograms.index', ['per_page' => 5]));
+        $response = $this->get(route('studyPrograms.index', ['search' => 'nieko', 'per_page' => 5]));
         $response->assertStatus(200);
 
-        $studyPrograms = $response->viewData('page')['props']['studyPrograms'];
-        expect($studyPrograms['meta']['per_page'])->toBe(5)
-            ->and(count($studyPrograms['data']))->toBeLessThanOrEqual(5);
+        expect($response->viewData('page')['props']['studyPrograms'])
+            ->toHaveCount(StudyProgram::query()->count());
+    });
+
+    test('the trash view sends only soft-deleted programs', function (): void {
+        $this->actingAs($this->admin);
+
+        $trashed = StudyProgram::factory()->create(['tenant_id' => $this->tenant->id]);
+        $trashed->delete();
+
+        $programs = collect($this->get(route('studyPrograms.index', ['showDeleted' => 'true']))
+            ->assertStatus(200)
+            ->viewData('page')['props']['studyPrograms']);
+
+        expect($programs->pluck('id'))->toContain($trashed->id)
+            ->and($programs->every(fn (array $program): bool => $program['deleted_at'] !== null))->toBeTrue();
     });
 });

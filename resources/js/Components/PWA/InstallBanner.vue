@@ -9,7 +9,7 @@
   >
     <div
       v-if="shouldShow"
-      class="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-xl border bg-background p-4 shadow-lg sm:left-auto sm:right-4 sm:w-96"
+      class="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md border bg-background p-4 shadow-none md:hidden"
     >
       <div class="flex items-start gap-3">
         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-vusa-red/10">
@@ -62,7 +62,6 @@ import IFluentArrowDownload24Regular from '~icons/fluent/arrow-download-24-regul
 import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 
 const STORAGE_KEY = 'pwa_install_prompt';
-const DISMISS_DURATION_DAYS = 7;
 const MIN_VISITS = 3;
 const MIN_SESSION_SECONDS = 120; // 2 minutes
 
@@ -96,9 +95,7 @@ const shouldShow = computed(() => {
 const dismiss = () => {
   dismissed.value = true;
 
-  // Store dismissal with expiration
-  const dismissedUntil = Date.now() + (DISMISS_DURATION_DAYS * 24 * 60 * 60 * 1000);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ dismissedUntil }));
+  localStorage.setItem(STORAGE_KEY, 'dismissed');
 };
 
 const install = async () => {
@@ -114,13 +111,8 @@ onMounted(() => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const { dismissedUntil } = JSON.parse(stored);
-      if (dismissedUntil && Date.now() < dismissedUntil) {
+      if (stored === 'dismissed') {
         dismissed.value = true;
-      }
-      else {
-        // Dismissal expired, clean up
-        localStorage.removeItem(STORAGE_KEY);
       }
     }
   }

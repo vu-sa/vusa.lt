@@ -66,7 +66,7 @@ class UpdateDutyRequest extends FormRequest
             ->whereNotNull('tenant_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
+                    ->orWhereDate('end_date', '>=', today());
             })
             ->get(['tenant_id', 'dutiable_id'])
             ->groupBy('tenant_id')

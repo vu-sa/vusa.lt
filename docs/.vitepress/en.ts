@@ -9,101 +9,20 @@ export default {
   description: 'VU SR information and internal system guide - all necessary information about the mano.vusa.lt platform',
   themeConfig: mergeObjects(shared, {
     // https://vitepress.dev/reference/default-theme-config
+    // The guide itself is Lithuanian-only; English keeps the changelog the admin "What's new" link opens.
     nav: [
-      { text: 'Home', link: '/en/' },
-      {
-        text: 'By Role',
-        items: [
-          { text: 'For Student Representatives', link: '/en/roles/student-representatives/faq' },
-          { text: 'For Administrators', link: '/en/roles/administrators/faq' },
-        ]
-      },
-      { text: 'Blog', link: '/en/blog/' },
-      { text: 'Updates', link: '/en/changelog/' },
-      { text: 'FAQ', link: '/en/faq' },
+      { text: 'Guide (LT)', link: '/ivadas' },
+      { text: 'Updates', link: '/en/changelog/v2', activeMatch: '/en/changelog/' },
     ],
 
-    sidebar: {
-      '/en/roles/student-representatives/': [
-        {
-          text: 'For Student Representatives',
-          items: [
-            { text: 'FAQ', link: '/en/roles/student-representatives/faq' },
-          ]
-        },
-        {
-          text: 'See Also',
-          collapsed: false,
-          items: [
-            { text: '← For Administrators', link: '/en/roles/administrators/faq' },
-          ]
-        },
-      ],
-      '/en/roles/administrators/': [
-        {
-          text: 'For Administrators',
-          items: [
-            { text: 'FAQ', link: '/en/roles/administrators/faq' },
-            { text: 'Reservation System', link: '/en/reservation-system' },
-            { text: 'Archive', link: '/en/archive' },
-          ]
-        },
-        {
-          text: 'See Also',
-          collapsed: false,
-          items: [
-            { text: '← For Student Representatives', link: '/en/roles/student-representatives/faq' },
-          ]
-        },
-      ],
-      '/en/blog/': [
-        {
-          text: 'Blog',
-          items: [
-            { text: 'All Posts', link: '/en/blog/' },
-          ]
-        },
-        {
-          text: 'See Also',
-          collapsed: false,
-          items: [
-            { text: '← Updates', link: '/en/changelog/' },
-            { text: '← Home', link: '/en/' },
-          ]
-        },
-      ],
-      '/en/changelog/': [
-        {
-          text: 'Platform Updates',
-          items: [
-            { text: 'All Updates', link: '/en/changelog/' },
-          ]
-        },
-        {
-          text: 'See Also',
-          collapsed: false,
-          items: [
-            { text: '← Blog', link: '/en/blog/' },
-            { text: '← Home', link: '/en/' },
-          ]
-        },
-      ],
-      '/en/': [
-        {
-          text: 'General Information',
-          items: [
-            { text: 'FAQ', link: '/en/faq' },
-          ]
-        },
-        {
-          text: 'By Role',
-          collapsed: false,
-          items: [
-            { text: 'For Student Representatives →', link: '/en/roles/student-representatives/faq' },
-            { text: 'For Administrators →', link: '/en/roles/administrators/faq' },
-          ]
-        },
-      ],
-    }
+    sidebar: [
+      {
+        text: 'Updates',
+        items: [
+          { text: 'v2', link: '/en/changelog/v2' },
+          { text: 'v1', link: '/en/changelog/v1' },
+        ]
+      },
+    ],
   })
 }

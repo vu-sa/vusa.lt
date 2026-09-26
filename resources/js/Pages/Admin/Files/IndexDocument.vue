@@ -1,400 +1,356 @@
 <template>
-  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
-    <template #headerActions>
-      <div class="flex items-center gap-2">
-        <FilePicker v-if="sharepointPickerAvailable" :loading round size="sm" @pick="handleDocumentPick">
-          <div class="flex items-center gap-2">
-            <ExternalLinkIcon class="h-4 w-4" />
-            {{ $t("Upload from SharePoint") }}
-          </div>
-        </FilePicker>
+  <CollectionPage
+    :source
+    collection="documents"
+    entity-type="document"
+    :eyebrow
+    :title="$t('Dokumentai')"
+    :lead="canCreate ? $t('VU SA dokumentų archyvas ir sinchronizacija su SharePoint.') : $t('VU SA ir padalinių dokumentų archyvas.')"
+    default-view="table"
+    :item-key="documentKey"
+    :quick-filters
+    :columns
+    :search-placeholder="$t('Ieškoti dokumentų...')"
+    @quick-filter="toggleQuickFilter"
+  >
+    <template #actions>
+      <FilePicker
+        v-if="sharepointPickerAvailable && canCreate"
+        :loading="uploadLoading"
+        @pick="handleDocumentPick"
+      >
+        <template #trigger>
+          <Button variant="brand">
+            <ExternalLink aria-hidden="true" />
+            {{ $t('Įkelti iš SharePoint') }}
+          </Button>
+        </template>
+      </FilePicker>
 
-        <Button variant="outline" size="sm" :loading="bulkSyncLoading" @click="handleBulkSync">
-          <div class="flex items-center gap-2">
-            <RefreshCwIcon class="h-4 w-4" />
-            {{ $t("Sync All") }}
+      <Button
+        v-if="canCreate"
+        variant="outline"
+        :disabled="bulkSyncLoading"
+        @click="handleBulkSync"
+      >
+        <RefreshCw :class="['size-4', bulkSyncLoading && 'animate-spin']" aria-hidden="true" />
+        {{ $t('Sinchronizuoti visus') }}
+      </Button>
+    </template>
+
+    <template #row="{ item }">
+      <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4" data-slot="document-collection-row">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+          <div class="flex size-10 shrink-0 items-center justify-center border border-border bg-muted text-muted-foreground">
+            <DocumentIcon class="size-5" />
           </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <a
+                v-if="item.anonymous_url"
+                :href="item.anonymous_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 truncate font-medium hover:text-brand"
+              >
+                <span class="truncate">{{ item.title || $t('Be pavadinimo') }}</span>
+                <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+              </a>
+              <span v-else class="truncate font-medium text-foreground">
+                {{ item.title || $t('Be pavadinimo') }}
+              </span>
+              <span
+                v-if="item.language"
+                class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+              >
+                {{ item.language === 'Lietuvių' ? 'LT' : item.language === 'Anglų' ? 'EN' : item.language }}
+              </span>
+            </div>
+            <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span v-if="item.content_type" class="border border-border bg-muted/60 px-1 py-0.5">
+                {{ item.content_type }}
+              </span>
+              <span v-if="institutionName(item)">
+                {{ institutionName(item) }}
+              </span>
+              <span v-if="item.document_date" class="tabular-nums">
+                {{ formatDocDate(item.document_date) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex shrink-0 items-center gap-2">
+          <StatusBadge
+            v-if="canCreate && item.sync_status && syncStatuses[item.sync_status]"
+            :status="syncStatuses[item.sync_status]"
+          />
+          <Button
+            v-if="canUpdate"
+            variant="ghost"
+            size="icon-sm"
+            :title="$t('Atnaujinti iš SharePoint')"
+            :disabled="refreshingId === item.id"
+            @click="refreshDocument(item)"
+          >
+            <RefreshCw :class="['size-4', refreshingId === item.id && 'animate-spin']" />
+          </Button>
+          <Button
+            v-if="canDelete"
+            variant="ghost"
+            size="icon-sm"
+            class="text-destructive hover:text-destructive"
+            :title="$t('Ištrinti')"
+            @click="confirmDelete(item)"
+          >
+            <Trash2 class="size-4" />
+          </Button>
+        </div>
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <span v-if="column.key === 'date'" class="tabular-nums text-xs">
+        {{ formatDocDate(item.document_date) }}
+      </span>
+
+      <div v-else-if="column.key === 'title'" class="min-w-0">
+        <a
+          v-if="item.anonymous_url"
+          :href="item.anonymous_url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 font-medium hover:text-brand"
+        >
+          <span class="line-clamp-2">{{ item.title || $t('Be pavadinimo') }}</span>
+          <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </a>
+        <span v-else class="line-clamp-2 font-medium">
+          {{ item.title || $t('Be pavadinimo') }}
+        </span>
+      </div>
+
+      <span v-else-if="column.key === 'content_type'" class="truncate text-xs">
+        <span v-if="item.content_type" class="border border-border bg-muted/60 px-1.5 py-0.5">
+          {{ item.content_type }}
+        </span>
+        <span v-else class="text-muted-foreground">—</span>
+      </span>
+
+      <span v-else-if="column.key === 'institution'" class="truncate text-xs">
+        {{ institutionName(item) || '—' }}
+      </span>
+
+      <span v-else-if="column.key === 'language'">
+        <span
+          v-if="item.language"
+          class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+        >
+          {{ item.language === 'Lietuvių' ? 'LT' : item.language === 'Anglų' ? 'EN' : item.language }}
+        </span>
+        <span v-else class="text-muted-foreground">—</span>
+      </span>
+
+      <div v-else-if="column.key === 'sync_status'">
+        <StatusBadge
+          v-if="item.sync_status && syncStatuses[item.sync_status]"
+          :status="syncStatuses[item.sync_status]"
+        />
+        <span v-else class="text-muted-foreground">—</span>
+      </div>
+
+      <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
+        <Button
+          v-if="canUpdate"
+          variant="ghost"
+          size="icon-sm"
+          :title="$t('Atnaujinti iš SharePoint')"
+          :disabled="refreshingId === item.id"
+          @click="refreshDocument(item)"
+        >
+          <RefreshCw :class="['size-4', refreshingId === item.id && 'animate-spin']" />
+        </Button>
+        <Button
+          v-if="canDelete"
+          variant="ghost"
+          size="icon-sm"
+          class="text-destructive hover:text-destructive"
+          :title="$t('Ištrinti')"
+          @click="confirmDelete(item)"
+        >
+          <Trash2 class="size-4" />
         </Button>
       </div>
     </template>
 
-    <template #filters>
-      <DataTableFilter v-if="contentTypeOptions.length > 0" v-model:value="selectedContentType"
-        :options="contentTypeOptions" @update:value="handleContentTypeFilterChange">
-        {{ $t("content_type") }}
-      </DataTableFilter>
-
-      <DataTableFilter v-if="languageOptions.length > 0" v-model:value="selectedLanguage" :options="languageOptions"
-        @update:value="handleLanguageFilterChange">
-        {{ $t("language") }}
-      </DataTableFilter>
-
-      <DataTableFilter v-if="institutionOptions.length > 0" v-model:value="selectedInstitutionId"
-        :options="institutionOptions" @update:value="handleInstitutionFilterChange">
-        {{ $t("institution") }}
-      </DataTableFilter>
+    <template #preview="{ item }">
+      <DocumentDetailPreview :key="item.id" :document="item" />
     </template>
 
-    <div class="hidden items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
-      <span>{{ $t("Environment") }}:</span>
-      <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
-        {{ appEnvironmentLabel }}
-      </Badge>
-      <span class="mx-1 text-muted-foreground/50">|</span>
-      <span>{{ $t("Work mode") }}:</span>
-      <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
-        {{ appWorkModeLabel }}
-      </Badge>
-    </div>
-  </IndexTablePage>
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="DocumentIcon"
+        :title="$t('Dokumentų dar nėra')"
+        :description="$t('Dokumentai automatiškai sinchronizuojami iš SharePoint archyvo.')"
+      />
+    </template>
+  </CollectionPage>
+
+  <ConfirmDialog
+    :open="documentToDelete !== null"
+    :title="$t('Ištrinti dokumentą?')"
+    :description="
+      $t(
+        'Ar tikrai norite pašalinti dokumentą „:title“? SharePoint failas nebus ištrintas, tačiau bus panaikinta vieša prieiga.',
+        { title: documentToDelete?.title ?? '' },
+      )
+    "
+    :confirm-label="$t('Ištrinti')"
+    destructive
+    @update:open="!$event && (documentToDelete = null)"
+    @confirm="handleDelete"
+  />
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, watch, capitalize } from 'vue';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { router, usePage } from '@inertiajs/vue3';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { ExternalLinkIcon, RefreshCwIcon } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
+import {
+  CircleCheck,
+  CircleX,
+  Clock3,
+  ExternalLink,
+  Inbox,
+  LoaderCircle,
+  RefreshCw,
+  Trash2,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
+import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import { DocumentIcon } from '@/Components/icons';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
+import { useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
+import type { StatusPresentation } from '@/Constants/statuses';
+import DocumentDetailPreview from '@/Features/Admin/AdminSearch/Components/Detail/DocumentDetailPreview.vue';
 import type { Item } from '@/Features/Admin/SharepointFilePicker/picker';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { DateCell, TruncatedBadge, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
-import { LocaleEnum } from '@/Types/enums';
-import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
-import {
-  createDateColumn,
-} from '@/Composables/useDataTableColumns';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import { DocumentIcon, TypeIcon } from '@/Components/icons';
+import type { DocumentSearchResult } from '@/Shared/Search/types';
+import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
-  data: App.Entities.Document[];
-  meta: {
-    total: number;
-    current_page: number;
-    per_page: number;
-    last_page: number;
-    from: number;
-    to: number;
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  filterOptions?: {
-    contentTypes: string[];
-    languages: string[];
-  };
+  importantContentTypes: string[];
+  abilities: { create: boolean; update: boolean; delete: boolean };
+  /** The user's padaliniai plus VU SA: a first visit starts filtered to them. */
+  defaultTenantShortnames: string[];
 }>();
 
-// Component constants
-const modelName = 'documents';
-const entityName = 'document';
-
-const loading = ref(false);
-const bulkSyncLoading = ref(false);
-const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
 const page = usePage();
+const { activeWorkspace } = useAdminNavigation();
 
-// Same guard as the meetings documents panel: MSAL needs a secure context, and app.url can
-// claim https while the page is actually opened over http (local dev).
+// Listed in both ViSAK and Svetainė; the eyebrow names whichever the user came through.
+const eyebrow = computed(() => `${$t(activeWorkspace.value?.label ?? 'shell.workspaces.svetaine.title')} · ${$t('shell.sections.dokumentai')}`);
+
+// Browsing is open to everyone; syncing and row actions are for those who manage documents.
+const canCreate = computed(() => props.abilities.create);
+const canUpdate = computed(() => canCreate.value && props.abilities.update);
+const canDelete = computed(() => canCreate.value && props.abilities.delete);
+
 const sharepointPickerAvailable = computed(() =>
-  typeof window !== 'undefined' && window.isSecureContext && String(page.props.app.url).startsWith('https'),
+  typeof window !== 'undefined' && window.isSecureContext && String(page.props.app?.url ?? '').startsWith('https'),
 );
 
-const appEnvironment = computed(() => String(page.props.app?.env ?? 'unknown').toLowerCase());
-const appEnvironmentLabel = computed(() => {
-  if (appEnvironment.value === 'production') return $t('Production');
-  if (appEnvironment.value === 'local') return $t('Local');
-
-  return appEnvironment.value;
-});
-const appWorkModeLabel = computed(() => {
-  return appEnvironment.value === 'production' ? $t('Production mode') : $t('Development mode');
+const source = useTypesenseCollectionSource<DocumentSearchResult>({
+  collection: 'documents',
+  preserveUrlKeys: ['view', 'item'],
+  defaultFilters: { tenant_shortname: props.defaultTenantShortnames },
 });
 
-// Initialize filter states
-const selectedContentType = ref<string | null>(props.filters?.['content_type'] || null);
-const selectedLanguage = ref<string | null>(props.filters?.['language'] || null);
-const selectedInstitutionId = ref<number | null>(props.filters?.['institution.id'] || null);
+const documentKey = (item: DocumentSearchResult) => String(item.id);
 
-// Filter options using complete data from backend instead of current page data
-const contentTypeOptions = computed(() => {
-  const types = props.filterOptions?.contentTypes || [];
-  return types.map(type => ({
+const syncStatuses: Record<string, StatusPresentation> = {
+  pending: { label: 'Laukiama', role: 'neutral', icon: Clock3 },
+  imported: { label: 'Importuota', role: 'info', icon: Inbox },
+  syncing: { label: 'Sinchronizuojama', role: 'progress', icon: LoaderCircle },
+  success: { label: 'Sinchronizuota', role: 'success', icon: CircleCheck },
+  failed: { label: 'Nepavyko', role: 'danger', icon: CircleX },
+};
+
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'date', label: $t('Data'), class: 'w-28' },
+  { key: 'title', label: $t('Pavadinimas') },
+  { key: 'content_type', label: $t('Rūšis'), class: 'w-44' },
+  { key: 'institution', label: $t('Institucija'), class: 'w-44' },
+  { key: 'language', label: $t('Kalba'), class: 'w-20' },
+  ...(canCreate.value
+    ? [
+        { key: 'sync_status', label: $t('Būsena'), class: 'w-36' },
+        { key: 'actions', label: '', class: 'w-20' },
+      ]
+    : []),
+]);
+
+function institutionName(item: DocumentSearchResult): string | undefined {
+  return item.institution_name_lt || item.institution_name_en || item.tenant_shortname;
+}
+
+function formatDocDate(timestamp?: number | null): string {
+  if (!timestamp) return '—';
+  return formatDate(new Date(timestamp * 1000));
+}
+
+// Quick filters
+const asList = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : []);
+
+const quickFilters = computed<CollectionQuickFilter[]>(() => {
+  const chosenCategories = asList(source.filters.value.content_type_category);
+  return (props.importantContentTypes || []).map(type => ({
+    id: `ct_${type}`,
     label: type,
-    value: type,
+    active: chosenCategories.includes(type),
   }));
 });
 
-const languageOptions = computed(() => {
-  const languages = props.filterOptions?.languages || [];
-  return languages.map(lang => ({
-    label: lang,
-    value: lang,
-  }));
-});
-
-const institutionOptions = computed(() => {
-  const institutions = page.props.institutions || [];
-  return institutions.map(institution => ({
-    label: institution.short_name || institution.name,
-    value: institution.id,
-  }));
-});
-
-// Column definitions using Tanstack Table format and standardized column helpers
-const columns = computed(() => [
-  {
-    accessorKey: 'title',
-    header: () => $t('forms.fields.title'),
-    cell: ({ row }) => {
-      const title = row.getValue('title') as string;
-      const hasUrl = row.original.anonymous_url;
-
-      if (hasUrl) {
-        return h('div', { class: 'flex items-start gap-1' }, [
-          h(TruncatedLink, {
-            href: row.original.anonymous_url,
-            text: title,
-            lines: 2,
-            external: true,
-            class: 'text-blue-600 hover:text-blue-800 text-sm leading-tight',
-          }),
-          h(ExternalLinkIcon, { class: 'h-3 w-3 mt-0.5 opacity-60 flex-shrink-0' }),
-        ]);
-      }
-
-      return h(TruncatedText, {
-        text: title,
-        lines: 2,
-        class: 'font-medium text-gray-600 text-sm leading-tight',
-      });
-    },
-    size: 300,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'language',
-    header: () => $t('lang'),
-    cell: ({ row }) => {
-      const language = row.getValue('language') as string;
-      if (!language) return h(TruncatedText, { text: null });
-      const display = language === 'Lietuvių' ? 'LT' : language === 'Anglų' ? 'EN' : language;
-      return h(TruncatedBadge, { text: display, variant: 'secondary', class: 'text-xs' });
-    },
-    size: 70,
-    enableSorting: true,
-  },
-  createDateColumn<App.Entities.Document>('document_date', {
-    title: $t('date'),
-    width: 100,
-    enableSorting: true,
-    format: { year: 'numeric', month: '2-digit', day: '2-digit' },
-  }),
-  {
-    accessorKey: 'content_type',
-    header: () => $t('content_type'),
-    cell: ({ row }) => {
-      const contentType = row.getValue('content_type') as string;
-      if (!contentType) return h(TruncatedText, { text: null });
-
-      const shortType = contentType
-        .replace('Parlamento ', 'Parl. ')
-        .replace(' sprendimas', ' spr.')
-        .replace(' protokolas', ' prot.')
-        .replace(' darbotvarkė', ' d.t.');
-
-      return h(TruncatedBadge, {
-        text: shortType,
-        variant: 'secondary',
-        class: 'text-xs',
-      }, {
-        default: () => h(TruncatedText, { text: contentType }),
-      });
-    },
-    size: 150,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'institution_name_lt',
-    header: () => $t('institution'),
-    cell: ({ row }) => {
-      const { institution } = row.original;
-      if (!institution) return h(TruncatedText, { text: null });
-
-      const shortName = institution.short_name || institution.name;
-      return h(TruncatedBadge, {
-        text: shortName,
-        variant: 'secondary',
-        class: 'text-xs font-medium text-indigo-600 bg-indigo-50',
-      });
-    },
-    size: 120,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'sync_status',
-    header: () => $t('Sync Status'),
-    cell: ({ row }) => {
-      const status = row.original.sync_status || 'pending';
-      const attempts = row.original.sync_attempts || 0;
-      const statusConfig = {
-        pending: {
-          color: 'text-gray-600',
-          bgColor: 'bg-gray-100',
-          dotColor: 'bg-gray-400',
-          label: 'Pending',
-          icon: '⏳',
-        },
-        imported: {
-          color: 'text-indigo-600',
-          bgColor: 'bg-indigo-50',
-          dotColor: 'bg-indigo-500',
-          label: 'Imported',
-          icon: '📥',
-        },
-        syncing: {
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          dotColor: 'bg-blue-500 animate-pulse',
-          label: 'Syncing...',
-          icon: '🔄',
-        },
-        success: {
-          color: 'text-green-600',
-          bgColor: 'bg-green-50',
-          dotColor: 'bg-green-500',
-          label: 'Success',
-          icon: '✅',
-        },
-        failed: {
-          color: 'text-red-600',
-          bgColor: 'bg-red-50',
-          dotColor: 'bg-red-500',
-          label: 'Failed',
-          icon: '❌',
-        },
-      };
-
-      const config = statusConfig[status] || statusConfig['pending'];
-
-      return h('div', {
-        class: `inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`,
-      }, [
-        h('div', { class: `w-2 h-2 rounded-full ${config.dotColor}` }),
-        h('span', {}, config.label),
-        attempts > 1 ? h('span', { class: 'bg-white/50 px-1 rounded text-xs' }, String(attempts)) : null,
-      ]);
-    },
-    size: 140,
-  },
-  {
-    accessorKey: 'checked_at',
-    header: () => $t('Last Check'),
-    cell: ({ row }) => {
-      const checkedAt = row.getValue('checked_at');
-
-      return h('div', { class: 'flex items-center gap-2' }, [
-        checkedAt
-          ? h(DateCell, { date: checkedAt as string | Date, mode: 'relative' })
-          : h(TruncatedText, { text: $t('Never') }),
-        h(Button, {
-          size: 'icon',
-          variant: 'ghost',
-          onClick: () => handleDocumentRefresh(row.original),
-          title: $t('refresh'),
-          class: 'h-6 w-6',
-        }, () => h(RefreshCwIcon, { class: 'h-3 w-3' })),
-      ]);
-    },
-    size: 130,
-    enableSorting: true,
-  },
-  createStandardActionsColumn<App.Entities.Document>('documents', {
-    canDelete: true,
-  }),
-]) as Array<ColumnDef<App.Entities.Document, any>>;
-
-// Simplified table configuration using the new interfaces
-const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
-  return {
-    modelName,
-    entityName,
-    data: props.data,
-    columns: columns.value,
-    totalCount: props.meta.total,
-    initialPage: props.meta.current_page,
-    pageSize: props.meta.per_page,
-
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: true,
-
-    headerTitle: $t('Documents'),
-    headerDescription: $t('Documents are automatically synchronized from SharePoint. Manual refresh is rarely needed - the system updates content intelligently in the background.'),
-    icon: DocumentIcon,
-    breadcrumbs: [
-      BreadcrumbHelpers.homeItem(),
-      BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), TypeIcon),
-      BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, DocumentIcon),
-    ],
-    canCreate: false,
-  };
-});
-
-// Filter handlers
-const handleContentTypeFilterChange = (contentType: string | null) => {
-  selectedContentType.value = contentType;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('content_type', contentType);
+function toggleQuickFilter(id: string): void {
+  if (id.startsWith('ct_')) {
+    const type = id.replace('ct_', '');
+    source.toggleFilter('content_type_category', type);
   }
-};
+}
 
-const handleLanguageFilterChange = (language: string | null) => {
-  selectedLanguage.value = language;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('language', language);
-  }
-};
+// Actions
+const refreshingId = ref<string | null>(null);
 
-const handleInstitutionFilterChange = (institutionId: number | null) => {
-  selectedInstitutionId.value = institutionId;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('institution.id', institutionId);
-  }
-};
+function refreshDocument(item: DocumentSearchResult): void {
+  refreshingId.value = item.id;
+  router.post(route('documents.refresh', item.id), {}, {
+    preserveScroll: true,
+    onFinish: () => {
+      refreshingId.value = null;
+    },
+  });
+}
 
-// Event handlers
-const onDataLoaded = (_data: unknown) => {};
+const bulkSyncLoading = ref(false);
 
-const handleSortingChange = (_sorting: unknown) => {};
+function handleBulkSync(): void {
+  bulkSyncLoading.value = true;
+  router.post(route('documents.bulk-sync'), {}, {
+    preserveScroll: true,
+    onFinish: () => {
+      bulkSyncLoading.value = false;
+    },
+  });
+}
 
-const handlePageChange = (_page: unknown) => {};
+const uploadLoading = ref(false);
 
-const handleFilterChange = (filterKey, value) => {
-  if (filterKey === 'content_type') {
-    selectedContentType.value = value;
-  }
-  else if (filterKey === 'language') {
-    selectedLanguage.value = value;
-  }
-  else if (filterKey === 'institution.id') {
-    selectedInstitutionId.value = value;
-  }
-};
-
-const handleDocumentPick = (items: Item[]) => {
-  loading.value = true;
-
+function handleDocumentPick(items: Item[]): void {
+  uploadLoading.value = true;
   const documents = items.map(item => ({
     name: item.name,
     site_id: item.sharepointIds?.siteId,
@@ -403,63 +359,30 @@ const handleDocumentPick = (items: Item[]) => {
   }));
 
   router.post(route('documents.store'), { documents }, {
+    preserveScroll: true,
     onSuccess: () => {
-      loading.value = false;
-      if (indexTablePageRef.value) {
-        indexTablePageRef.value.reloadData();
-      }
+      source.refresh();
     },
-    onError() {
-      loading.value = false;
+    onFinish: () => {
+      uploadLoading.value = false;
     },
   });
-};
+}
 
-const handleDocumentRefresh = (document: App.Entities.Document) => {
-  loading.value = true;
+const documentToDelete = ref<DocumentSearchResult | null>(null);
 
-  router.post(route('documents.refresh', document.id), {}, {
+function confirmDelete(item: DocumentSearchResult): void {
+  documentToDelete.value = item;
+}
+
+function handleDelete(): void {
+  if (!documentToDelete.value) return;
+  router.delete(route('documents.destroy', documentToDelete.value.id), {
+    preserveScroll: true,
     onSuccess: () => {
-      loading.value = false;
-      if (indexTablePageRef.value) {
-        indexTablePageRef.value.reloadData();
-      }
-    },
-    onError() {
-      loading.value = false;
+      documentToDelete.value = null;
+      source.refresh();
     },
   });
-};
-
-const handleBulkSync = () => {
-  bulkSyncLoading.value = true;
-
-  router.post(route('documents.bulk-sync'), {}, {
-    onSuccess: () => {
-      bulkSyncLoading.value = false;
-      if (indexTablePageRef.value) {
-        indexTablePageRef.value.reloadData();
-      }
-    },
-    onError() {
-      bulkSyncLoading.value = false;
-    },
-  });
-};
-
-// Sync filter values when changed externally
-watch(() => props.filters, (newFilters) => {
-  if (newFilters) {
-    if (newFilters['content_type'] !== undefined) {
-      selectedContentType.value = newFilters['content_type'];
-    }
-    if (newFilters['language'] !== undefined) {
-      selectedLanguage.value = newFilters['language'];
-    }
-    if (newFilters['institution.id'] !== undefined) {
-      selectedInstitutionId.value = newFilters['institution.id'];
-    }
-  }
-}, { deep: true });
-
+}
 </script>

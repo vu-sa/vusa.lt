@@ -28,20 +28,33 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('profile', [ProfileController::class, 'userSettings'])->name('profile');
-Route::inertia('administration', 'Admin/ShowAdministration')->name('administration')->middleware('can:access-administration');
+Route::get('profile/roles', [ProfileController::class, 'roles'])->name('profile.roles');
+Route::get('profile/notifications', [ProfileController::class, 'notificationSettings'])->name('profile.notifications');
+Route::inertia('administration', 'Admin/ShowAdministration')->name('administration');
 Route::get('dashboard/atstovavimas', [AtstovavimasDashboardController::class, 'atstovavimas'])->name('dashboard.atstovavimas');
+Route::get('dashboard/atstovavimas/padaliniai', [AtstovavimasDashboardController::class, 'padaliniai'])->name('dashboard.atstovavimas.padaliniai');
 Route::get('dashboard/svetaine', [SvetaineDashboardController::class, 'svetaine'])->name('dashboard.svetaine');
 Route::get('dashboard/reservations', [ReservationsDashboardController::class, 'reservations'])->name('dashboard.reservations');
+Route::get('dashboard/organizacija', [OrganizacijaDashboardController::class, 'index'])->name('dashboard.organizacija');
+Route::get('dashboard/sistema', [SistemaDashboardController::class, 'index'])->name('dashboard.sistema');
 
 Route::patch('profile', [ProfileController::class, 'updateUserSettings'])->name('profile.update');
 Route::patch('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
 Route::patch('profile/notification-preferences', [ProfileController::class, 'updateNotificationPreferences'])->name('profile.updateNotificationPreferences');
+Route::delete('profile/notification-preferences', [ProfileController::class, 'resetNotificationPreferences'])->name('profile.resetNotificationPreferences');
+Route::patch('profile/notification-preferences/mute', [ProfileController::class, 'muteNotifications'])->name('profile.muteNotifications');
 Route::post('profile/notification-preferences/test-email', [ProfileController::class, 'sendTestNotificationEmail'])->name('profile.sendTestNotificationEmail');
 Route::get('tasks', [TaskController::class, 'index'])->name('userTasks');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
 // System Status
 Route::get('system-status', [SystemStatusController::class, 'index'])->name('systemStatus');
+Route::post('system-status/maintenance', [SystemStatusController::class, 'runMaintenance'])
+    ->middleware('throttle:10,1')
+    ->name('systemStatus.maintenance');
+
+// Rep outcome metrics (U25)
+Route::get('rep-metrics', [RepMetricsController::class, 'index'])->name('repMetrics');
 
 // Mail queue — the pending notification digests behind the system status card
 Route::get('mail-queue', [MailQueueController::class, 'index'])->name('mailQueue');
@@ -66,10 +79,14 @@ Route::patch('meetings/{meeting}/restore', [MeetingController::class, 'restore']
 Route::delete('meetings/{meeting}/force-delete', [MeetingController::class, 'forceDelete'])->name('meetings.forceDelete')->withTrashed();
 Route::patch('navigation/{navigation}/restore', [NavigationController::class, 'restore'])->name('navigation.restore')->withTrashed();
 Route::delete('navigation/{navigation}/force-delete', [NavigationController::class, 'forceDelete'])->name('navigation.forceDelete')->withTrashed();
+Route::patch('news/bulk-status', [NewsController::class, 'bulkUpdateStatus'])->name('news.bulkStatus');
+Route::delete('news/bulk-delete', [NewsController::class, 'bulkDestroy'])->name('news.bulkDestroy');
 Route::patch('news/{news}/restore', [NewsController::class, 'restore'])->name('news.restore')->withTrashed();
 Route::delete('news/{news}/force-delete', [NewsController::class, 'forceDelete'])->name('news.forceDelete')->withTrashed();
 Route::post('news/{news}/duplicate', [NewsController::class, 'duplicate'])->name('news.duplicate');
 Route::delete('news/{news}/public-urls/{publicUrl}', [NewsController::class, 'destroyPublicUrl'])->name('news.publicUrls.destroy');
+Route::patch('pages/bulk-status', [PageController::class, 'bulkUpdateStatus'])->name('pages.bulkStatus');
+Route::delete('pages/bulk-delete', [PageController::class, 'bulkDestroy'])->name('pages.bulkDestroy');
 Route::patch('pages/{page}/restore', [PageController::class, 'restore'])->name('pages.restore')->withTrashed();
 Route::delete('pages/{page}/force-delete', [PageController::class, 'forceDelete'])->name('pages.forceDelete')->withTrashed();
 Route::delete('pages/{page}/public-urls/{publicUrl}', [PageController::class, 'destroyPublicUrl'])->name('pages.publicUrls.destroy');
@@ -105,19 +122,23 @@ Route::resource('pages', PageController::class)->except(['show'])
 Route::resource('news', NewsController::class)->except(['show'])
     ->middleware(HandlePrecognitiveRequests::class);
 Route::resource('tags', TagController::class)->except(['show']);
-Route::get('tags/merge', [TagController::class, 'mergeTags'])->name('tags.merge');
+/** @deprecated Merge records from the tags list instead. */
+Route::get('tags/merge', fn () => to_route('tags.index')->with('info', __('shell.merge.redirect')))->name('tags.merge');
 Route::post('tags/merge', [TagController::class, 'processMergeTags'])->name('tags.processMerge');
 
 Route::post('quickLinks/update-order', [QuickLinkController::class, 'updateOrder'])->name('quickLinks.update-order');
 Route::resource('quickLinks', QuickLinkController::class)->except(['show']);
 Route::resource('banners', BannerController::class)->except(['show']);
+Route::patch('banners/{banner}/status', [BannerController::class, 'updateStatus'])->name('banners.updateStatus');
 Route::resource('navigation', NavigationController::class)->except(['show']);
 Route::post('navigation/updateOrder', [NavigationController::class, 'updateOrder'])->name('navigation.updateOrder');
 
-Route::get('users/merge', [UserController::class, 'merge'])->name('users.merge');
+/** @deprecated Merge records from the users list instead. */
+Route::get('users/merge', fn () => to_route('users.index')->with('info', __('shell.merge.redirect')))->name('users.merge');
 Route::post('users/merge', [UserController::class, 'mergeUsers'])->name('users.mergeUsers');
 Route::resource('users', UserController::class);
 
+Route::put('users/{user}/roles', [UserController::class, 'updateRoles'])->name('users.roles.update');
 Route::post('users/{user}/generate-password', [UserController::class, 'generatePassword'])->name('users.generatePassword');
 Route::delete('users/{user}/delete-password', [UserController::class, 'deletePassword'])->name('users.deletePassword');
 Route::resource('users.comments', CommentController::class)->only(['store', 'update', 'destroy']);
@@ -135,19 +156,19 @@ Route::delete('push-subscription', [PushSubscriptionController::class, 'destroy'
 Route::delete('push-subscription/{id}', [PushSubscriptionController::class, 'destroyById'])->name('push-subscription.destroyById');
 Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
 
-Route::resource('eventTypes', EventTypeController::class)->except(['show']);
+Route::resource('eventTypes', EventTypeController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
     ->middleware(HandlePrecognitiveRequests::class);
+Route::patch('calendar/{calendar}/index', [CalendarController::class, 'updateIndex'])->name('calendar.updateIndex');
 Route::post('calendar/{calendar}/media/{media}', [CalendarController::class, 'destroyMedia'])->name('calendar.destroyMedia');
 Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplicate'])->name('calendar.duplicate');
 Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');
-Route::resource('agendaItems', AgendaItemController::class)->except(['index', 'create']);
+Route::resource('agendaItems', AgendaItemController::class)->except(['create']);
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
 Route::resource('votes', VoteController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('votes/{vote}/set-main', [VoteController::class, 'setMain'])->name('votes.setMain');
 Route::resource('meetings', MeetingController::class)->except(['create']);
-Route::get('meetings-search', [MeetingController::class, 'search'])->name('meetings.search');
 
 // Faceted search pages (uses scoped Typesense API keys for authorization)
 Route::prefix('search')->name('search.')->group(function (): void {
@@ -162,13 +183,20 @@ Route::prefix('search')->name('search.')->group(function (): void {
 Route::post('institutions/{institution}/check-ins', [InstitutionCheckInController::class, 'store'])->name('institutions.check-ins.store');
 Route::delete('institutions/{institution}/check-ins/active', [InstitutionCheckInController::class, 'destroyActive'])->name('institutions.check-ins.destroyActive');
 
-// One idempotent roster replacement per term; authorized by InstitutionPolicy::update.
-Route::put('institutions/{institution}/administrators', [InstitutionAdministratorController::class, 'update'])->name('institutions.administrators.update');
+// One idempotent roster replacement per term; authorized by InstitutionPolicy::update (O22).
+Route::put('institutions/{institution}/secretaries', [InstitutionSecretaryController::class, 'update'])->name('institutions.secretaries.update');
 
 Route::resource('resources', ResourceController::class);
-Route::resource('resourceCategories', ResourceCategoryController::class);
+Route::resource('resourceCategories', ResourceCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::put('reservations/{reservation}/add-users', [ReservationController::class, 'addUsers'])->name('reservations.add-users');
+
+// The acting user's reservation cart; no draft id in the URL — it is always their own.
+Route::put('reservationCart', [ReservationCartController::class, 'update'])->name('reservationCart.update');
+Route::delete('reservationCart', [ReservationCartController::class, 'destroy'])->name('reservationCart.destroy');
+Route::post('reservationCart/items', [ReservationCartController::class, 'storeItem'])->name('reservationCart.items.store');
+Route::patch('reservationCart/items/{resource}', [ReservationCartController::class, 'updateItem'])->name('reservationCart.items.update');
+Route::delete('reservationCart/items/{resource}', [ReservationCartController::class, 'destroyItem'])->name('reservationCart.items.destroy')->withTrashed();
 // Reservations are never updated directly — every mutation goes through the
 // reservationResources pivot below, so `edit`/`update` are not registered.
 Route::resource('reservations', ReservationController::class)->except(['edit', 'update']);
@@ -209,19 +237,20 @@ Route::resource('documents', DocumentController::class)->except('create', 'edit'
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
 Route::post('documents/bulk-sync', [DocumentController::class, 'bulkSync'])->name('documents.bulk-sync');
 
-Route::get('duties/merge', [DutyController::class, 'merge'])->name('duties.merge');
+/** @deprecated Merge records from the duties list instead. */
+Route::get('duties/merge', fn () => to_route('duties.index')->with('info', __('shell.merge.redirect')))->name('duties.merge');
 Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('duties.mergeDuties');
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
-// DutiableController has no create/store — dutiables are created through the duty and
-// user flows, not directly.
+// Dutiables (occupancies) created and managed through the unified Priskirti flow (Decision O21).
 // Declared before the resource so /dutiables/timeline can never be read as /dutiables/{dutiable}.
 Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->name('dutiables.timeline');
 Route::post('dutiables/timeline/apply', [DutiableTimelineController::class, 'apply'])->name('dutiables.timeline.apply');
 Route::post('dutiables/timeline/merge', [DutiableTimelineController::class, 'merge'])->name('dutiables.timeline.merge');
-Route::resource('dutiables', DutiableController::class)->only(['edit', 'update', 'destroy']);
-Route::get('studyPrograms/merge', [StudyProgramController::class, 'merge'])->name('studyPrograms.merge');
+Route::resource('dutiables', DutiableController::class)->only(['store', 'edit', 'update', 'destroy']);
+/** @deprecated Merge records from the study-program list instead. */
+Route::get('studyPrograms/merge', fn () => to_route('studyPrograms.index')->with('info', __('shell.merge.redirect')))->name('studyPrograms.merge');
 Route::post('studyPrograms/merge', [StudyProgramController::class, 'mergeStudyPrograms'])->name('studyPrograms.mergeStudyPrograms');
 Route::resource('studyPrograms', StudyProgramController::class)->except(['show']);
 Route::resource('studySets', StudySetController::class)->except(['show']);
@@ -242,6 +271,8 @@ Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStat
 Route::resource('problems', ProblemController::class);
 
 Route::resource('types', TypeController::class);
+Route::put('types/{type}/models', [TypeController::class, 'syncModels'])->name('types.models.sync');
+Route::put('types/{type}/roles', [TypeController::class, 'syncRoles'])->name('types.roles.sync');
 Route::resource('relationships', RelationshipController::class);
 Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
 Route::patch('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'updateModelRelationship'])->name('relationships.updateModelRelationship');
@@ -256,17 +287,18 @@ Route::get('tasks/summary', [TaskController::class, 'summary'])->name('tasks.sum
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 // GET tasks/indicator moved to API: route('api.v1.admin.tasks.indicator')
 
-Route::resource('sharepointFiles', SharepointFileController::class)->except('create', 'show', 'edit', 'update');
+Route::resource('sharepointFiles', SharepointFileController::class)->only('index', 'destroy');
 
-// FileableFiles - local metadata-based file management
-// GET endpoints moved to API: route('api.v1.admin.fileables.files'), route('api.v1.admin.fileables.inherited')
-Route::delete('fileableFiles/{fileableFile}', [SharepointFileController::class, 'destroyFileableFile'])->name('fileableFiles.destroy');
+// FileableFiles - a record's files kept in SharePoint
+Route::post('fileables/{type}/{id}/files', [FileableFileController::class, 'store'])->name('fileableFiles.store');
+Route::get('fileableFiles/{fileableFile}/open', [FileableFileController::class, 'open'])->name('fileableFiles.open');
+Route::post('fileableFiles/{fileableFile}/public-link', [FileableFileController::class, 'publicLink'])->name('fileableFiles.publicLink');
+Route::delete('fileableFiles/{fileableFile}', [FileableFileController::class, 'destroy'])->name('fileableFiles.destroy');
 
 // SharePoint integration
-// GET endpoints moved to API: route('api.v1.admin.sharepoint.potentialFileables'), route('api.v1.admin.sharepoint.driveItems')
+// GET endpoints moved to API: route('api.v1.admin.sharepoint.driveItems')
 Route::post('sharepoint/createFolder', [SharepointFileController::class, 'createFolder'])->name('sharepoint.createFolder');
 Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPublicLink'])->name('sharepoint.getDriveItemPublicLink');
-Route::get('sharepoint/{type}/{id}', [SharepointFileController::class, 'getTypesDriveItems'])->name('sharepoint.getTypesDriveItems');
 Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');
 
 // Settings routes
@@ -289,4 +321,5 @@ Route::delete('settings/cadences/{cadence}', [CadenceController::class, 'destroy
 Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');
 Route::post('settings/authorization', [SettingsController::class, 'updateAuthorization'])->name('settings.authorization.update');
 
+Route::post('/logout/microsoft', [AuthController::class, 'logoutFromMicrosoft'])->name('logout.microsoft');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

@@ -26,24 +26,12 @@ describe('unauthorized access', function (): void {
             ->assertStatus(403);
     });
 
-    test('cannot access create page', function (): void {
-        asUser($this->user)
-            ->get(route('eventTypes.create'))
-            ->assertStatus(403);
-    });
-
     test('cannot store event type', function (): void {
         asUser($this->user)
             ->post(route('eventTypes.store'), [
                 'name' => ['lt' => 'Naujas', 'en' => 'New'],
                 'slug' => 'naujas',
             ])
-            ->assertStatus(403);
-    });
-
-    test('cannot access edit page', function (): void {
-        asUser($this->user)
-            ->get(route('eventTypes.edit', $this->eventType))
             ->assertStatus(403);
     });
 
@@ -73,15 +61,6 @@ describe('authorized access', function (): void {
                 ->has('eventTypes')
                 ->has('filters')
                 ->has('sorting')
-            );
-    });
-
-    test('can access create page', function (): void {
-        asUser($this->globalCoordinator)
-            ->get(route('eventTypes.create'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Calendar/CreateEventType')
             );
     });
 
@@ -121,17 +100,6 @@ describe('authorized access', function (): void {
             ])
             ->assertStatus(302)
             ->assertSessionHasErrors('slug');
-    });
-
-    test('can access edit page', function (): void {
-        asUser($this->globalCoordinator)
-            ->get(route('eventTypes.edit', $this->eventType))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Calendar/EditEventType')
-                ->has('eventType')
-                ->where('eventType.id', $this->eventType->id)
-            );
     });
 
     test('can update event type with valid data', function (): void {
@@ -204,4 +172,3 @@ describe('authorized access', function (): void {
         $this->assertDatabaseMissing('event_types', ['id' => $this->eventType->id]);
     });
 });
-

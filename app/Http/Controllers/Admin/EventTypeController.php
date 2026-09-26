@@ -74,16 +74,6 @@ class EventTypeController extends AdminController
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create(): Response
-    {
-        $this->handleAuthorization('create', EventType::class);
-
-        return $this->inertiaResponse('Admin/Calendar/CreateEventType');
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreEventTypeRequest $request): RedirectResponse
@@ -91,18 +81,6 @@ class EventTypeController extends AdminController
         EventType::create($request->validated());
 
         return $this->redirectToIndexWithSuccess('eventTypes', $this->entityMessage('created', 'eventType'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(EventType $eventType): Response
-    {
-        $this->handleAuthorization('update', $eventType);
-
-        return $this->inertiaResponse('Admin/Calendar/EditEventType', [
-            'eventType' => $eventType->toFullArray(),
-        ]);
     }
 
     /**

@@ -27,6 +27,8 @@ return [
         'f' => ':Model sėkmingai atkurta.',
         'm' => ':Model sėkmingai atkurtas.',
     ],
+    'bulk_updated' => 'Atnaujinta įrašų: :count.',
+    'bulk_deleted' => 'Ištrinta įrašų: :count.',
     'users_attached_to_reservation' => 'Rezervacijos valdytojai pridėti!',
 
     'auth' => [
@@ -130,6 +132,12 @@ return [
         'status_updated' => 'Užduoties būsena sėkmingai atnaujinta.',
     ],
 
+    'system_maintenance' => [
+        'done' => 'Atlikta.',
+        'queued' => 'Užduotis įtraukta į eilę — ji bus įvykdyta per kelias minutes.',
+        'failed' => 'Nepavyko atlikti veiksmo. Patikrink žurnalą.',
+    ],
+
     'mail_queue' => [
         'item_deleted' => 'Laiško eilutė pašalinta iš eilės.',
         'recipient_cleared' => 'Pašalinta :count gavėjo laukiančių eilučių.',
@@ -163,5 +171,10 @@ return [
         'file_deleted' => 'Failas ištrintas.',
         'invalid_request' => 'Neteisinga užklausa. Praneškite administratoriui.',
         'deleted_locally_only' => 'Failas pažymėtas kaip ištrintas, bet SharePoint operacija nepavyko.',
+        'uploaded_many' => 'Įkelta failų: :count.',
+        'uploaded_partially' => 'Įkelta :uploaded iš :total. Nepavyko: :failed.',
+        'upload_failed' => 'Nepavyko įkelti failų: :failed.',
+        'link_failed' => 'Nepavyko atidaryti failo. Pabandyk dar kartą arba parašyk administratoriui.',
+        'file_missing' => 'Šio failo SharePoint nebėra.',
     ],
 ];

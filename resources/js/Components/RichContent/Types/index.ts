@@ -50,7 +50,7 @@ export interface ContentType {
   description?: string;
   isNew?: boolean;
 
-  /** Picker grouping (Phase 5). */
+  /** Picker grouping. */
   category: BlockCategory;
   /** Canvas column used when the block has no `options.width` of its own. */
   defaultWidth: BlockWidth;

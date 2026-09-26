@@ -3,17 +3,16 @@
     :title="$t('action_window.check_in.until.title')"
     :subtitle="$t('action_window.check_in.until.subtitle')"
   >
-    <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
-      <div class="flex gap-3">
-        <Info class="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-        <div class="text-sm">
-          <p class="font-medium text-amber-800 dark:text-amber-200">
-            {{ $t('action_window.check_in.explainer_title') }}
-          </p>
-          <p class="mt-1 text-amber-700 dark:text-amber-300">
-            {{ $t('action_window.check_in.explainer') }}
-          </p>
-        </div>
+    <!-- Explanation, not a warning: nothing is wrong, so it takes no status colour. -->
+    <div class="mb-4 flex gap-3 border border-border bg-secondary p-3">
+      <Info class="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <div class="text-sm">
+        <p class="font-medium text-foreground">
+          {{ $t('action_window.check_in.explainer_title') }}
+        </p>
+        <p class="mt-1 text-muted-foreground">
+          {{ $t('action_window.check_in.explainer') }}
+        </p>
       </div>
     </div>
 
@@ -49,16 +48,16 @@
       <p class="text-xs text-muted-foreground">
         {{ $t('action_window.check_in.until.max_hint') }}
       </p>
-      <Button variant="ghost" size="sm" @click="custom = false">
-        <ChevronLeft class="mr-1 size-4" />
+      <Button variant="ghost" size="sm" class="pointer-coarse:h-11" @click="custom = false">
+        <ChevronLeft class="size-4" />
         {{ $t('action_window.common.back') }}
       </Button>
     </div>
 
     <template v-if="custom" #footer>
-      <Button class="w-full" size="lg" :disabled="!isValidRange" @click="pick(endDate)">
+      <ActionWindowPrimaryButton :disabled="!isValidRange" @click="pick(endDate)">
         {{ $t('action_window.common.continue') }}
-      </Button>
+      </ActionWindowPrimaryButton>
     </template>
   </ActionWindowScreen>
 </template>
@@ -70,8 +69,9 @@ import { CalendarOff, CalendarSearch, ChevronLeft, Info } from 'lucide-vue-next'
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
-import { useWindowDates } from '../useWindowDates';
+import { toPickerDate, useWindowDates } from '../useWindowDates';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { Button } from '@/Components/ui/button';
@@ -84,8 +84,8 @@ const MAX_MONTHS_AHEAD = 3;
 const { advance, updateCheckIn } = useActionWindow();
 
 const custom = ref(false);
-const startDate = ref<Date>(new Date());
-const endDate = ref<Date>(daysFromNow(14));
+const startDate = ref<Date>(toPickerDate(new Date()));
+const endDate = ref<Date>(toPickerDate(daysFromNow(14)));
 
 function daysFromNow(days: number): Date {
   const date = new Date();

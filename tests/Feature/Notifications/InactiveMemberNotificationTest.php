@@ -3,7 +3,7 @@
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\InstitutionAdministrator;
+use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\User;
@@ -42,12 +42,12 @@ describe('meeting reminders', function (): void {
     beforeEach(function (): void {
         Notification::fake();
 
-        $this->current->setMeetingReminderHours([6]);
-        $this->departed->setMeetingReminderHours([6]);
+        $this->current->update(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [12]]]]);
+        $this->departed->update(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [12]]]]);
 
         $this->meeting = Meeting::factory()
             ->hasAttached($this->institution)
-            ->create(['start_time' => now()->addHours(6)]);
+            ->create(['start_time' => now()->addHours(12)]);
     });
 
     test('reach a member active at the meeting date', function (): void {
@@ -62,12 +62,12 @@ describe('meeting reminders', function (): void {
         Notification::assertNotSentTo($this->departed, MeetingReminderNotification::class);
     });
 
-    test('reach a nominated administrator who holds no duty at all', function (): void {
+    test('reach a nominated secretary who holds no duty at all', function (): void {
         $cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $this->institution->id]);
         $nominee = User::factory()->create(['notification_preferences' => []]);
-        $nominee->setMeetingReminderHours([6]);
+        $nominee->update(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [12]]]]);
 
-        InstitutionAdministrator::create([
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $cadence->id,
             'user_id' => $nominee->id,
@@ -89,11 +89,11 @@ describe('comment and mention audiences', function (): void {
             ->and($audience)->not->toContain($this->departed->id);
     });
 
-    test('include an administrator who holds no duty', function (): void {
+    test('include a secretary who holds no duty', function (): void {
         $cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $this->institution->id]);
         $nominee = User::factory()->create();
 
-        InstitutionAdministrator::create([
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $cadence->id,
             'user_id' => $nominee->id,
@@ -115,12 +115,12 @@ describe('comment and mention audiences', function (): void {
     });
 });
 
-describe('administrators are not members', function (): void {
+describe('secretaries are not members', function (): void {
     beforeEach(function (): void {
         $cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $this->institution->id]);
         $this->nominee = User::factory()->create();
 
-        InstitutionAdministrator::create([
+        InstitutionSecretary::create([
             'institution_id' => $this->institution->id,
             'cadence_id' => $cadence->id,
             'user_id' => $this->nominee->id,

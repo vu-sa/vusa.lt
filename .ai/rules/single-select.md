@@ -17,3 +17,11 @@ Three distinct picker patterns exist — pick by list size and whether records a
 **Small, non-searchable lookup lists (e.g. `EventType`, ~7 rows total, no `tenant_id`) get no dedicated API/search endpoint** — they are either shared globally via `HandleInertiaRequests::share()` (e.g. `eventTypes`, mirroring the `tenants` share) and read with `usePage().props.eventTypes`, or passed directly as a prop from whichever controller needs them. `EventType::name` is Spatie-translatable; serialized for inertia, translations resolve to the current-locale **string** server-side when requested in public contexts, or the full translation array in admin interfaces.
 
 For multi-tagging and topic assignment, use `TagMultiSelect.vue` with polymorphic `taggables`.
+
+## Pickers: native where the OS is better, one picker per data kind
+Extends the three-picker rule above.
+- Dates, times and ranges use the shared pickers. They go native (`<input type="date|time">`) on coarse pointers via `useCoarsePointer`; on desktop, typing always works alongside the calendar. A moment (date + time: publish time, reservation start/end) is one `DateTimePicker` with `variant="popover"` — calendar, time and „Dabar“ in one trigger, as in `ContentPublishPanel`; a date alone uses `DatePicker`, a time alone `TimePicker`. Calendars start on Monday (the `ui/calendar` and `ui/range-calendar` default).
+- Meeting dates near today offer preset chips first (Šiandien · Vakar · Kita data…), as in the ActionWindow `MeetingWhenScreen`. Reservation periods do not.
+- By option count: 2–5 → `ToggleGroup`/radio; 6–15 plain text → native `<select>`; options with icons or descriptions → shadcn `Select`; 16+ → `SingleSelect`; indexed records → `CollectionSelectDialog`; several of many → `MultiSelect` chips; tags → `TagMultiSelect`.
+- One picker per data kind, so never a second date picker. The trigger shows readable text plus context, never an id. Optional fields get "Išvalyti". Lithuanian locale: Monday first, 24h.
+- No dialog inside a dialog: on mobile, a picker opened from a sheet replaces the sheet's content, with a back action.

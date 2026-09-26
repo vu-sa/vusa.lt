@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'form' => [
+        'instructions' => 'Žvaigždute (*) pažymėti laukai yra privalomi; kitus gali praleisti.',
+    ],
     'hints' => [
         'title' => 'Trumpas, konkretus problemos pavadinimas, pvz. „Trūksta atsiskaitymo tvarkos aprašo“.',
         'description' => 'Aprašykite problemos esmę: kas, kur ir kada įvyko, ką tai paveikė.',

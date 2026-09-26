@@ -26,8 +26,63 @@ const ALL_PERMISSIONS = {
   manageSettings: true,
 };
 
+const createActionsForPermissions = (can: Record<string, unknown>) => {
+  const actions: Array<{
+    key: string;
+    label: string;
+    description: string | null;
+    entityType: null;
+    target: { kind: 'route'; routeName: string } | { kind: 'screen'; screen: string };
+  }> = [];
+
+  const create = (can.create ?? {}) as Record<string, boolean | undefined>;
+
+  if (create.meeting) {
+    actions.push(
+      { key: 'new_meeting', label: 'action_window.actions.new_meeting.title', description: null, entityType: null, target: { kind: 'screen', screen: 'meeting.institution' } },
+      { key: 'no_meeting', label: 'action_window.actions.no_meeting.title', description: null, entityType: null, target: { kind: 'screen', screen: 'checkin.institution' } },
+      { key: 'complete_meeting', label: 'action_window.actions.complete_meeting.title', description: null, entityType: null, target: { kind: 'screen', screen: 'meeting.pick' } },
+    );
+  }
+
+  if (create.problem) {
+    actions.push({ key: 'new_problem', label: 'action_window.actions.new_problem.title', description: null, entityType: null, target: { kind: 'route', routeName: 'problems.create' } });
+  }
+
+  if (create.reservation) {
+    actions.push({ key: 'new_reservation', label: 'action_window.actions.new_reservation.title', description: null, entityType: null, target: { kind: 'route', routeName: 'reservations.create' } });
+  }
+
+  if (create.news) {
+    actions.push({ key: 'new_news', label: 'action_window.actions.new_news.title', description: null, entityType: null, target: { kind: 'route', routeName: 'news.create' } });
+  }
+
+  if (create.duty) {
+    actions.push(
+      { key: 'duty_update', label: 'action_window.actions.duty_update.title', description: null, entityType: null, target: { kind: 'route', routeName: 'duties.updateUsersWizard' } },
+      { key: 'duty_periods', label: 'action_window.actions.cadences.title', description: null, entityType: null, target: { kind: 'route', routeName: 'dutiables.timeline' } },
+    );
+  }
+
+  return actions;
+};
+
 const mountWindow = (can: Record<string, unknown> = ALL_PERMISSIONS) => {
-  vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { can } }));
+  const actions = createActionsForPermissions(can);
+  vi.mocked(usePage).mockReturnValue(createMockPage({
+    auth: { can },
+    adminNavigation: {
+      workspaces: [
+        {
+          key: 'workspace',
+          label: 'Workspace',
+          description: '',
+          sections: [],
+          createActions: actions,
+        },
+      ],
+    },
+  }));
 
   let window!: ActionWindowContext;
 
@@ -142,13 +197,30 @@ describe('ActionWindow.vue', () => {
     expect(window.isOpen.value).toBe(false);
   });
 
+  describe('flow identity', () => {
+    it('names the job with the meeting mark on flow screens only', async () => {
+      const { wrapper, window } = mountWindow();
+      window.open();
+      await settle(wrapper);
+
+      expect(wrapper.find('[data-slot="entity-type-mark"]').exists()).toBe(false);
+
+      window.open({ flow: 'meeting.create', institution: { id: '1', name: 'MIF SPK' } });
+      await settle(wrapper);
+
+      const mark = wrapper.find('[data-slot="entity-type-mark"]');
+      expect(mark.exists()).toBe(true);
+      expect(mark.text()).toContain('action_window.flows.new_meeting');
+    });
+  });
+
   describe('flow progress', () => {
     it('is absent on the persona menu, which is navigation rather than progress', async () => {
       const { wrapper, window } = mountWindow();
       window.open();
       await settle(wrapper);
 
-      expect(wrapper.find('[data-slot="action-window-body"] header div.flex-1').exists()).toBe(false);
+      expect(wrapper.find('[data-slot="action-window-progress"]').exists()).toBe(false);
     });
 
     it('drops the institution step when the caller seeded one', async () => {
@@ -156,7 +228,7 @@ describe('ActionWindow.vue', () => {
       window.open({ flow: 'meeting.create', institution: { id: '1', name: 'MIF SPK' } });
       await settle(wrapper);
 
-      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(4);
+      expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(4);
     });
 
     it('counts the institution step when the user actually picked one', async () => {
@@ -166,11 +238,11 @@ describe('ActionWindow.vue', () => {
 
       // Reached through the picker, so it is part of this run's five steps — the
       // dots must not renumber just because the stack started elsewhere.
-      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(5);
+      expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(5);
 
       window.goTo('meeting.type');
       await settle(wrapper);
-      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(5);
+      expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(5);
     });
 
     /**
@@ -187,7 +259,7 @@ describe('ActionWindow.vue', () => {
       await settle(wrapper);
 
       // Type, agenda, review — the institution came from the caller, the date from the event.
-      expect(wrapper.findAll('header span.rounded-full')).toHaveLength(3);
+      expect(wrapper.findAll('[data-slot="action-window-progress"] > span')).toHaveLength(3);
     });
   });
 });

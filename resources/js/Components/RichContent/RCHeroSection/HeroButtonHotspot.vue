@@ -16,8 +16,9 @@
       />
       <SmartLink :href="button.link" class="w-fit">
         <Button
-          :variant="button.variant === 'outline' ? (onDark ? 'brand-outline-on-dark' : 'brand-outline') : 'brand'"
-          size="public"
+          :variant="button.variant === 'outline' ? (onDark ? 'brand-outline-on-dark' : 'outline') : 'brand'"
+          voice="brand"
+          size="lg"
           class="w-full sm:w-auto"
         >
           <RCIcon v-if="button.icon" :name="button.icon" class="size-4" />

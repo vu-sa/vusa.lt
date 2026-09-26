@@ -7,7 +7,7 @@
   <Tooltip v-if="entries.length > 0">
     <TooltipTrigger as-child>
       <span
-        class="inline-flex shrink-0 cursor-help items-center gap-0.5 rounded-sm px-0.5 text-muted-foreground hover:text-foreground"
+        class="inline-flex shrink-0 cursor-help items-center gap-0.5 px-0.5 text-muted-foreground hover:text-foreground"
         :aria-label="$t('dutiables.timeline.extras.title')"
       >
         <component :is="entry.icon" v-for="entry in entries" :key="entry.key" class="size-3" />
@@ -29,7 +29,7 @@
             <img
               v-if="entry.kind === 'image'"
               :src="entry.value"
-              class="size-20 rounded-sm object-cover"
+              class="size-20 object-cover"
               alt=""
             >
             <template v-else>

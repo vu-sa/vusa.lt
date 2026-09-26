@@ -2,16 +2,16 @@
   <div class="space-y-6">
     <!-- Create Institution Form -->
     <Transition name="fade" mode="out-in">
-      <div v-if="showCreateForm" class="space-y-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Building2 class="h-5 w-5 text-primary" />
+      <div v-if="showCreateForm" class="space-y-6 border border-border bg-card p-4 sm:p-6">
+        <div class="flex items-center gap-3 border-b border-border pb-4">
+          <div class="flex size-9 items-center justify-center border border-border bg-muted">
+            <Building2 class="size-4 text-foreground" />
           </div>
           <div>
-            <h3 class="font-semibold text-foreground">
+            <h3 class="text-sm font-bold text-foreground">
               {{ $t('Nauja institucija') }}
             </h3>
-            <p class="text-sm text-muted-foreground">
+            <p class="text-xs text-muted-foreground">
               {{ $t('Užpildykite informaciją apie naują instituciją') }}
             </p>
           </div>
@@ -19,27 +19,27 @@
 
         <div class="space-y-4">
           <!-- Name (required) -->
-          <div class="space-y-2">
-            <Label :class="{ 'text-vusa-red': createErrors['name.lt'] }">
+          <div class="space-y-1.5">
+            <Label :class="{ 'text-destructive': createErrors['name.lt'] }">
               {{ $t('Pavadinimas') }} *
             </Label>
             <Input
               v-model="http.name.lt"
               :placeholder="$t('Institucijos pavadinimas')"
-              :class="{ 'border-vusa-red focus-visible:ring-vusa-red': createErrors['name.lt'] }"
+              :class="{ 'border-destructive focus-visible:ring-destructive': createErrors['name.lt'] }"
             />
-            <p v-if="createErrors['name.lt']" class="text-xs text-vusa-red">
+            <p v-if="createErrors['name.lt']" class="text-xs text-destructive">
               {{ createErrors['name.lt'][0] }}
             </p>
           </div>
 
           <!-- Tenant (required) -->
-          <div class="space-y-2">
-            <Label :class="{ 'text-vusa-red': createErrors['tenant_id'] }">
+          <div class="space-y-1.5">
+            <Label :class="{ 'text-destructive': createErrors['tenant_id'] }">
               {{ $t('Padalinys') }} *
             </Label>
             <Select v-model="http.tenant_id">
-              <SelectTrigger :class="{ 'border-vusa-red focus-visible:ring-vusa-red': createErrors['tenant_id'] }">
+              <SelectTrigger :class="{ 'border-destructive focus-visible:ring-destructive': createErrors['tenant_id'] }">
                 <SelectValue :placeholder="$t('Pasirinkti padalinį...')" />
               </SelectTrigger>
               <SelectContent>
@@ -52,7 +52,7 @@
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p v-if="createErrors['tenant_id']" class="text-xs text-vusa-red">
+            <p v-if="createErrors['tenant_id']" class="text-xs text-destructive">
               {{ createErrors['tenant_id'][0] }}
             </p>
           </div>
@@ -65,10 +65,10 @@
                 v-for="type in institutionTypes"
                 :key="type.id"
                 type="button"
-                class="inline-flex items-center px-3 py-1.5 rounded-full text-sm border transition-colors"
+                class="inline-flex items-center px-3 py-1.5 text-xs font-semibold border transition-colors"
                 :class="http.types.includes(String(type.id))
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background hover:bg-accent border-border'"
+                  ? 'border-brand-fill bg-brand-fill text-brand-foreground'
+                  : 'border-border bg-background hover:bg-accent text-foreground'"
                 @click="toggleType(String(type.id))"
               >
                 {{ type.title }}
@@ -80,16 +80,16 @@
           </div>
 
           <!-- Additional fields (collapsible) -->
-          <Collapsible v-model:open="showAdditionalFields" class="border rounded-lg">
+          <Collapsible v-model:open="showAdditionalFields" class="border border-border">
             <CollapsibleTrigger as-child>
-              <Button variant="ghost" class="w-full justify-between h-10 px-3">
-                <span class="text-sm">{{ $t('Papildoma informacija') }}</span>
-                <ChevronDown class="h-4 w-4 transition-transform" :class="{ 'rotate-180': showAdditionalFields }" />
+              <Button variant="ghost" class="w-full justify-between h-10 px-3 font-medium">
+                <span class="text-xs">{{ $t('Papildoma informacija') }}</span>
+                <ChevronDown class="size-4 transition-transform" :class="{ 'rotate-180': showAdditionalFields }" />
               </Button>
             </CollapsibleTrigger>
-            <CollapsibleContent class="p-3 pt-0 space-y-4">
+            <CollapsibleContent class="p-3 pt-0 space-y-4 border-t border-border mt-1">
               <!-- Short name -->
-              <div class="space-y-2">
+              <div class="space-y-1.5 pt-2">
                 <Label>{{ $t('Trumpinys') }}</Label>
                 <Input
                   v-model="http.short_name.lt"
@@ -98,21 +98,21 @@
               </div>
 
               <!-- Email -->
-              <div class="space-y-2">
-                <Label :class="{ 'text-vusa-red': createErrors['email'] }">{{ $t('El. paštas') }}</Label>
+              <div class="space-y-1.5">
+                <Label :class="{ 'text-destructive': createErrors['email'] }">{{ $t('El. paštas') }}</Label>
                 <Input
                   v-model="http.email"
                   type="email"
                   placeholder="institucija@vusa.lt"
-                  :class="{ 'border-vusa-red': createErrors['email'] }"
+                  :class="{ 'border-destructive': createErrors['email'] }"
                 />
-                <p v-if="createErrors['email']" class="text-xs text-vusa-red">
+                <p v-if="createErrors['email']" class="text-xs text-destructive">
                   {{ createErrors['email'][0] }}
                 </p>
               </div>
 
               <!-- Phone -->
-              <div class="space-y-2">
+              <div class="space-y-1.5">
                 <Label>{{ $t('Telefonas') }}</Label>
                 <Input
                   v-model="http.phone"
@@ -124,51 +124,51 @@
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center justify-between pt-4 border-t">
+        <div class="flex items-center justify-between pt-4 border-t border-border">
           <Button variant="ghost" :disabled="http.processing" @click="cancelCreate">
             {{ $t('Atšaukti') }}
           </Button>
-          <Button :disabled="http.processing" @click="createInstitution">
-            <Loader2 v-if="http.processing" class="h-4 w-4 mr-2 animate-spin" />
+          <Button variant="brand" :disabled="http.processing" @click="createInstitution">
+            <Loader2 v-if="http.processing" class="size-4 mr-2 animate-spin" />
             {{ http.processing ? $t('Kuriama...') : $t('Sukurti ir tęsti') }}
           </Button>
         </div>
       </div>
 
       <!-- Institution List -->
-      <div v-else class="space-y-6">
+      <div v-else class="space-y-5">
         <!-- Search input -->
         <div class="relative">
-          <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
           <Input
             v-model="searchQuery"
             :placeholder="$t('Ieškoti institucijos...')"
-            class="pl-10 pr-10 h-11"
+            class="pl-9 pr-9 h-10"
           />
           <Button
             v-if="searchQuery"
             variant="ghost"
             size="icon"
-            class="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+            class="absolute right-1 top-1/2 -translate-y-1/2 size-8"
             @click="clearSearch"
           >
-            <X class="h-4 w-4" />
+            <X class="size-3.5" />
           </Button>
         </div>
 
-        <!-- Results -->
-        <ScrollArea class="h-[420px] pr-4">
+        <!-- Results list -->
+        <ScrollArea class="h-[360px] sm:h-[400px] pr-2">
           <div class="space-y-6">
             <!-- Institutions needing attention (prioritized) -->
-            <div v-if="filteredAttentionInstitutions.length > 0">
-              <div class="flex items-center gap-2 mb-3">
-                <AlertTriangle class="h-4 w-4 text-vusa-yellow-dark" />
-                <h3 class="text-sm font-medium text-foreground">
+            <div v-if="filteredAttentionInstitutions.length > 0" class="space-y-3">
+              <div class="flex items-center gap-2">
+                <AlertTriangle class="size-4 text-status-attention" />
+                <h3 class="text-xs font-bold uppercase tracking-wider text-status-attention">
                   {{ $t('Reikia dėmesio') }}
                 </h3>
-                <Badge variant="secondary" class="text-xs bg-vusa-yellow/20 text-vusa-yellow-dark">
+                <span class="inline-flex items-center border border-status-attention-border bg-status-attention-surface px-1.5 py-0.5 text-[10px] font-bold text-status-attention">
                   {{ filteredAttentionInstitutions.length }}
-                </Badge>
+                </span>
               </div>
 
               <div class="space-y-2">
@@ -176,48 +176,48 @@
                   v-for="institution in filteredAttentionInstitutions"
                   :key="institution.id"
                   type="button"
-                  class="group w-full text-left rounded-xl border border-vusa-yellow/30 bg-gradient-to-r from-vusa-yellow/10 to-amber-50/30 dark:from-vusa-yellow-dark/10 dark:to-amber-950/10 p-4 transition-all duration-200 hover:shadow-md hover:border-vusa-yellow/50 hover:scale-[1.01]"
+                  class="group w-full text-left border border-status-attention-border bg-status-attention-surface/30 p-3.5 sm:p-4 transition-colors hover:bg-status-attention-surface/60 pointer-coarse:py-4"
                   @click="selectInstitution(institution)"
                 >
-                  <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-xl bg-white dark:bg-zinc-800 border border-border/50 flex items-center justify-center shrink-0 shadow-sm">
+                  <div class="flex items-center gap-3.5">
+                    <div class="size-11 border border-status-attention-border bg-background flex items-center justify-center shrink-0">
                       <img
                         v-if="institution.logo_url"
                         :src="institution.logo_url"
                         :alt="String(institution.name)"
-                        class="h-10 w-10 object-contain rounded-lg"
+                        class="size-9 object-contain"
                       >
-                      <Building2 v-else class="h-5 w-5 text-muted-foreground" />
+                      <Building2 v-else class="size-5 text-status-attention" />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                      <p class="font-semibold text-sm sm:text-base text-foreground group-hover:text-brand transition-colors truncate">
                         {{ institution.name }}
                       </p>
                       <div class="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge v-if="institution.tenant?.shortname" variant="outline" class="text-xs">
+                        <Badge v-if="institution.tenant?.shortname" variant="outline" class="text-[11px]">
                           {{ institution.tenant.shortname }}
                         </Badge>
-                        <Badge variant="secondary" class="text-xs bg-vusa-yellow/20 text-vusa-yellow-dark dark:text-vusa-yellow">
+                        <span class="inline-flex items-center border border-status-attention-border bg-status-attention-surface px-1.5 py-0.5 text-[11px] font-medium text-status-attention">
                           {{ getInstitutionStatus(institution).label }}
-                        </Badge>
+                        </span>
                       </div>
                     </div>
-                    <ChevronRight class="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                    <ChevronRight class="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
                   </div>
                 </button>
               </div>
             </div>
 
             <!-- Other institutions -->
-            <div v-if="filteredOtherInstitutions.length > 0">
-              <div class="flex items-center gap-2 mb-3">
-                <Building2 class="h-4 w-4 text-muted-foreground" />
-                <h3 class="text-sm font-medium text-foreground">
+            <div v-if="filteredOtherInstitutions.length > 0" class="space-y-3">
+              <div class="flex items-center gap-2">
+                <Building2 class="size-4 text-muted-foreground" />
+                <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {{ $t('Visos institucijos') }}
                 </h3>
-                <Badge variant="secondary" class="text-xs">
+                <span class="inline-flex items-center border border-border bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground">
                   {{ filteredOtherInstitutions.length }}
-                </Badge>
+                </span>
               </div>
 
               <div class="space-y-2">
@@ -225,64 +225,60 @@
                   v-for="institution in filteredOtherInstitutions"
                   :key="institution.id"
                   type="button"
-                  class="group w-full text-left rounded-xl border border-border/50 bg-card p-4 transition-all duration-200 hover:shadow-md hover:border-primary/30 hover:bg-accent/30"
+                  class="group w-full text-left border border-border bg-card p-3.5 sm:p-4 transition-colors hover:border-foreground/30 hover:bg-muted/40 pointer-coarse:py-4"
                   @click="selectInstitution(institution)"
                 >
-                  <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-xl bg-muted/50 border border-border/50 flex items-center justify-center shrink-0">
+                  <div class="flex items-center gap-3.5">
+                    <div class="size-11 border border-border bg-muted flex items-center justify-center shrink-0">
                       <img
                         v-if="institution.logo_url"
                         :src="institution.logo_url"
                         :alt="String(institution.name)"
-                        class="h-10 w-10 object-contain rounded-lg"
+                        class="size-9 object-contain"
                       >
-                      <Building2 v-else class="h-5 w-5 text-muted-foreground" />
+                      <Building2 v-else class="size-5 text-muted-foreground" />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                      <p class="font-semibold text-sm sm:text-base text-foreground group-hover:text-brand transition-colors truncate">
                         {{ institution.name }}
                       </p>
                       <div class="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge v-if="institution.tenant?.shortname" variant="outline" class="text-xs">
+                        <Badge v-if="institution.tenant?.shortname" variant="outline" class="text-[11px]">
                           {{ institution.tenant.shortname }}
                         </Badge>
-                        <Badge v-if="(institution as { is_external?: boolean }).is_external" variant="secondary" class="text-xs">
+                        <Badge v-if="(institution as { is_external?: boolean }).is_external" variant="secondary" class="text-[11px]">
                           {{ $t('forms.fields.external_duty_badge') }}
                         </Badge>
                         <span v-if="institution.duties?.length" class="text-xs text-muted-foreground flex items-center gap-1">
-                          <Users class="h-3 w-3" />
+                          <Users class="size-3" />
                           {{ institution.duties.length }} {{ $t('pareigybės') }}
                         </span>
-                        <Badge v-if="getLongStayingUsersCount(institution) > 0" variant="secondary" class="text-xs">
+                        <span v-if="getLongStayingUsersCount(institution) > 0" class="text-xs text-muted-foreground">
                           {{ $t('Ilgai esančių:') }} {{ getLongStayingUsersCount(institution) }}
-                        </Badge>
+                        </span>
                       </div>
                     </div>
-                    <ChevronRight class="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                    <ChevronRight class="size-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
                   </div>
                 </button>
               </div>
             </div>
 
             <!-- Empty state -->
-            <div v-if="!hasResults" class="text-center py-12">
-              <div class="h-16 w-16 rounded-full bg-muted mx-auto flex items-center justify-center mb-4">
-                <Building2 class="h-8 w-8 text-muted-foreground" />
-              </div>
-              <p class="text-muted-foreground">
-                {{ $t('Nerasta institucijų pagal paiešką') }}
-              </p>
-              <Button variant="link" class="mt-2" @click="clearSearch">
-                {{ $t('Išvalyti paiešką') }}
-              </Button>
-            </div>
+            <EmptyState
+              v-if="!hasResults"
+              mode="no-results"
+              :title="$t('Nerasta institucijų pagal paiešką')"
+              :clear-label="$t('Išvalyti paiešką')"
+              @clear="clearSearch"
+            />
           </div>
         </ScrollArea>
 
         <!-- Create new institution button -->
-        <div v-if="canCreateInstitution" class="pt-4 border-t">
+        <div v-if="canCreateInstitution" class="pt-4 border-t border-border">
           <Button variant="outline" class="w-full" @click="openCreateForm">
-            <Plus class="h-4 w-4 mr-2" />
+            <Plus class="size-4 mr-2" />
             {{ $t('Sukurti naują instituciją') }}
           </Button>
         </div>
@@ -315,6 +311,7 @@ import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
+import EmptyState from '@/Components/Patterns/EmptyState.vue';
 import type { useDutyUserWizard } from '@/Composables/useDutyUserWizard';
 
 const props = defineProps<{
@@ -335,7 +332,7 @@ const searchQuery = ref('');
 // Creation mode
 const showCreateForm = ref(false);
 
-// Form state via useHttp (handles CSRF, processing state, and server errors)
+// Form state via useHttp
 const http = useHttp({
   name: { lt: '', en: '' },
   short_name: { lt: '', en: '' },
@@ -346,7 +343,7 @@ const http = useHttp({
   is_active: true,
 });
 
-// Normalize Inertia form errors to the array format expected by the template
+// Normalize form errors
 const createErrors = computed<Record<string, string[]>>(() => {
   const errs: Record<string, string[]> = {};
   for (const [key, val] of Object.entries(http.errors)) {
@@ -359,13 +356,8 @@ const createErrors = computed<Record<string, string[]>>(() => {
 const showAdditionalFields = ref(false);
 
 // Check permission for creating institutions
-const canCreateInstitution = computed(() => auth?.can?.create?.institution);
+const canCreateInstitution = computed(() => Boolean(auth?.can?.create?.institution));
 
-/**
- * Check if an institution needs attention:
- * - Has no duties at all
- * - Has duties with no active users
- */
 const getInstitutionStatus = (institution: App.Entities.Institution) => {
   const duties = institution.duties || [];
 
@@ -375,15 +367,12 @@ const getInstitutionStatus = (institution: App.Entities.Institution) => {
 
   const emptyDuties = duties.filter(d => !d.current_users?.length);
   if (emptyDuties.length > 0) {
-    return { needsAttention: true, reason: 'empty_duties', label: $t('Tuščių pareigybių: ') + emptyDuties.length };
+    return { needsAttention: true, reason: 'empty_duties', label: `${$t('Tuščių pareigybių: ')}${emptyDuties.length}` };
   }
 
   return { needsAttention: false, reason: null, label: null };
 };
 
-/**
- * Get count of users staying longer than 2 years (informational, not requiring attention)
- */
 const getLongStayingUsersCount = (institution: App.Entities.Institution): number => {
   const duties = institution.duties || [];
   const twoYearsAgo = new Date();
@@ -409,7 +398,6 @@ const institutionsNeedingAttention = computed(() => {
   return props.institutions
     .filter(i => getInstitutionStatus(i).needsAttention)
     .sort((a, b) => {
-      // Sort by severity: no_duties > empty_duties
       const priority: Record<string, number> = { no_duties: 0, empty_duties: 1 };
       const aStatus = getInstitutionStatus(a);
       const bStatus = getInstitutionStatus(b);
@@ -417,13 +405,11 @@ const institutionsNeedingAttention = computed(() => {
     });
 });
 
-// All other institutions (not needing attention)
 const otherInstitutions = computed(() => {
   const attentionIds = new Set(institutionsNeedingAttention.value.map(i => i.id));
   return props.institutions.filter(i => !attentionIds.has(i.id));
 });
 
-// Filtered institutions based on search
 const filterBySearch = (institutions: App.Entities.Institution[]) => {
   if (!searchQuery.value) return institutions;
   const query = searchQuery.value.toLowerCase();
@@ -441,7 +427,6 @@ const hasResults = computed(() =>
   || filteredOtherInstitutions.value.length > 0,
 );
 
-// Handle institution selection
 const selectInstitution = (institution: App.Entities.Institution) => {
   wizard.setInstitution(institution);
   wizard.nextStep();
@@ -451,7 +436,6 @@ const clearSearch = () => {
   searchQuery.value = '';
 };
 
-// Toggle type selection
 const toggleType = (typeId: string) => {
   const idx = http.types.indexOf(typeId);
   if (idx === -1) {
@@ -462,7 +446,6 @@ const toggleType = (typeId: string) => {
   }
 };
 
-// Create institution handlers
 const openCreateForm = () => {
   showCreateForm.value = true;
   http.clearErrors();
@@ -508,3 +491,20 @@ const createInstitution = () => {
   });
 };
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateX(8px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateX(-8px);
+}
+</style>

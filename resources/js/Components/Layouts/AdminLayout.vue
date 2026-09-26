@@ -1,298 +1,65 @@
 <template>
-  <div class="bg-background font-admin">
+  <div class="bg-background">
     <Head :title />
 
-    <SidebarProvider v-model:open="sidebarOpen">
-      <AppSidebar />
-      <SidebarInset class="flex flex-col">
-        <StagingBanner class="mx-2 mt-2" />
-        <ImpersonateBanner class="mx-2 mt-2" />
+    <!-- One provider for every tooltip in the admin; the old sidebar supplied it. -->
+    <TooltipProvider>
+      <AdminShell>
+        <slot />
+      </AdminShell>
 
-        <!-- Header with breadcrumbs and actions -->
-        <header class="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b bg-background px-4 md:h-16 md:px-6 md:rounded-t-xl">
-          <div class="flex items-center flex-1 gap-2 md:gap-3 min-w-0">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <SidebarTrigger class="h-9 w-9 shrink-0 border md:h-7 md:w-7" />
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <div class="flex items-center gap-2">
-                    <span>{{ $t('Perjungti šoninę juostą') }}</span>
-                    <kbd class="inline-flex h-5 items-center rounded bg-white/20 dark:bg-black/20 px-1.5 font-mono text-[10px] font-medium">
-                      {{ isMac ? '⌘B' : 'Ctrl+B' }}
-                    </kbd>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <Separator orientation="vertical" class="hidden md:block mr-2 h-4" />
-            <AdminBreadcrumbs />
-          </div>
-
-          <div class="flex items-center gap-1.5 md:gap-2">
-            <slot name="headerActions" />
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  class="rounded-full"
-                  :aria-label="$t('vusa.lt pagalba')"
-                  :title="$t('vusa.lt pagalba')"
-                  data-testid="support-requests-menu-trigger"
-                >
-                  <MessageSquare class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" data-testid="support-requests-menu">
-                <DropdownMenuItem as-child>
-                  <Link :href="route('mySupportRequests.create')" prefetch>
-                    <PlusIcon class="h-4 w-4" />
-                    {{ $t('Naujas pranešimas') }}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem as-child>
-                  <Link :href="route('mySupportRequests.index')" prefetch>
-                    <MessageSquare class="h-4 w-4" />
-                    {{ $t('vusa.lt pagalba') }}
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <CommandPaletteTrigger />
-            <PWAStatusButton />
-            <SpotlightPopover
-              v-if="hasTour"
-              :title="$t('tutorials.help_button_spotlight.title')"
-              :description="$t('tutorials.help_button_spotlight.description')"
-              :is-dismissed="helpButtonSpotlight.isDismissed.value"
-              position="bottom"
-              @dismiss="helpButtonSpotlight.dismiss"
-            >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      class="rounded-full"
-                      data-tour="help-button"
-                      @click="handleHelpClick"
-                    >
-                      <HelpCircle class="h-4 w-4" />
-                      <span class="sr-only">{{ $t('Kaip veikia?') }}</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{{ $t('Pradėti interaktyvų vadovą') }}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </SpotlightPopover>
-            <TasksIndicator />
-            <NotificationsIndicator />
-          </div>
-        </header>
-
-        <!-- Single scroll container -->
-        <main class="flex-1 min-w-0 overflow-auto" style="scroll-behavior: smooth;">
-          <!-- Centred, capped measure: on a wide monitor a full-bleed page stretches
-               prose and table rows past the point they are comfortable to scan. -->
-          <div class="mx-auto min-h-full w-full max-w-[100rem] p-6" :class="{ 'pb-24': isPWA && isMobile }">
-            <!-- System announcements banner -->
-            <div v-if="systemMessage"
-              class="mb-6 rounded-lg border p-4 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-50">
-              <div class="flex">
-                <InfoIcon class="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                <div>
-                  <h3 class="font-medium">
-                    {{ $t('System Announcement') }}
-                  </h3>
-                  <div class="mt-1 text-sm" v-html="systemMessage" />
-                </div>
-              </div>
-            </div>
-
-            <slot />
-          </div>
-        </main>
-
-        <!-- Bottom action bar for mobile screens -->
-        <div v-if="showMobileActionBar"
-          class="md:hidden fixed bottom-0 left-0 right-0 border-t bg-background p-2 flex items-center justify-around">
-          <slot name="mobileActions">
-            <!-- Default mobile actions -->
-            <Button variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="route('dashboard')">
-              <HomeIcon class="h-5 w-5" aria-hidden="true" />
-              <span class="text-xs mt-1">{{ $t('Home') }}</span>
-            </Button>
-
-            <Button v-if="createUrl" variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="createUrl">
-              <PlusIcon class="h-5 w-5" aria-hidden="true" />
-              <span class="text-xs mt-1">{{ $t('New') }}</span>
-            </Button>
-
-            <Button variant="ghost" size="sm" class="flex-col h-14 w-16" as="a" :href="route('profile')">
-              <UserIcon class="h-5 w-5" aria-hidden="true" />
-              <span class="text-xs mt-1">{{ $t('Profile') }}</span>
-            </Button>
-          </slot>
-        </div>
-      </SidebarInset>
-
-      <!-- Guided action window. Inside SidebarProvider so it can reuse the app's
-           single mobile media query; its content portals to <body> anyway. -->
+      <!-- Guided action window: outside the shell so any page can open it. -->
       <ActionWindow />
-    </SidebarProvider>
+      <StartFmDock />
 
-    <!-- Toast notifications -->
-    <Toaster rich-colors />
+      <!-- Toast notifications -->
+      <Toaster rich-colors />
 
-    <!-- PWA Install Banner (smart trigger) -->
-    <InstallBanner />
+      <!-- PWA Install Banner (smart trigger) -->
+      <InstallBanner />
 
-    <!-- PWA Update Available Banner (only shown in PWA mode) -->
-    <UpdateBanner />
+      <!-- PWA Update Available Banner (only shown in PWA mode) -->
+      <UpdateBanner />
 
-    <!-- PWA Bottom Navigation Bar (shown only when installed as PWA on mobile) -->
-    <nav
-      v-if="isPWA && isMobile"
-      class="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
-      :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
-    >
-      <div class="flex items-center justify-around h-16 px-2">
-        <Link
-          :href="route('dashboard')"
-          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
-          :class="{ 'text-primary': isCurrentRoute('dashboard') }"
-        >
-          <HomeIcon class="h-5 w-5" />
-          <span class="text-[10px] font-medium">{{ $t('Pradžia') }}</span>
-        </Link>
-
-        <Link
-          :href="route('dashboard.atstovavimas')"
-          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
-          :class="{ 'text-primary': isCurrentRoute('dashboard.atstovavimas') }"
-        >
-          <GraduationCapIcon class="h-5 w-5" />
-          <span class="text-[10px] font-medium">ViSAK</span>
-        </Link>
-
-        <button
-          type="button"
-          class="flex flex-col items-center justify-center flex-1 h-full gap-1 active:scale-90 transition-transform"
-          @click="actionWindow.open()"
-        >
-          <div class="flex items-center justify-center w-12 h-12 -mt-4 rounded-full bg-primary text-primary-foreground shadow-lg">
-            <PlusIcon class="h-6 w-6" />
-          </div>
-        </button>
-
-        <Link
-          :href="route('notifications.index')"
-          class="relative flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
-          :class="{ 'text-primary': isCurrentRoute('notifications.index') }"
-        >
-          <div class="relative">
-            <BellIcon class="h-5 w-5" />
-            <span
-              v-if="unreadNotificationsCount > 0"
-              class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground"
-            >
-              {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
-            </span>
-          </div>
-          <span class="text-[10px] font-medium">{{ $t('Pranešimai') }}</span>
-        </Link>
-
-        <Link
-          :href="route('profile')"
-          class="flex flex-col items-center justify-center flex-1 h-full gap-1 text-muted-foreground transition-colors active:scale-95 active:opacity-70"
-          :class="{ 'text-primary': isCurrentRoute('profile') }"
-        >
-          <UserIcon class="h-5 w-5" />
-          <span class="text-[10px] font-medium">{{ $t('Profilis') }}</span>
-        </Link>
-      </div>
-    </nav>
-
-    <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
-    <AdminCommandPalette />
+      <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
+      <AdminCommandPalette />
+      <KeyboardShortcutsDialog v-model:open="keyboardShortcutsOpen" />
+    </TooltipProvider>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { breakpointsTailwind, useBreakpoints, useOnline, useTimeoutFn, useDebounceFn } from '@vueuse/core';
-import { computed, onMounted, watch, onBeforeUnmount, ref, nextTick } from 'vue';
-import {
-  InfoIcon,
-  HomeIcon,
-  PlusIcon,
-  UserIcon,
-  HelpCircle,
-  MessageSquare,
-  BellIcon,
-  GraduationCapIcon,
-} from 'lucide-vue-next';
+import { Head, usePage } from '@inertiajs/vue3';
+import { useDebounceFn, useEventListener, useOnline } from '@vueuse/core';
+import { computed, onMounted, watch, ref, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { usePWA } from '@/Composables/usePWA';
 import { useToasts } from '@/Composables/useToasts';
 import 'vue-sonner/style.css';
 
-import AppSidebar from '@/Components/AppSidebar.vue';
-import ImpersonateBanner from '@/Components/ImpersonateBanner.vue';
-import StagingBanner from '@/Components/StagingBanner.vue';
 import InstallBanner from '@/Components/PWA/InstallBanner.vue';
 import UpdateBanner from '@/Components/PWA/UpdateBanner.vue';
-import PWAStatusButton from '@/Components/PWA/StatusButton.vue';
-import TasksIndicator from '@/Components/TasksIndicator.vue';
-import NotificationsIndicator from '@/Components/NotificationsIndicator.vue';
-import { Separator } from '@/Components/ui/separator';
-import { Button } from '@/Components/ui/button';
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/Components/ui/sidebar';
-import AdminBreadcrumbs from '@/Components/AdminBreadcrumbs.vue';
-import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
-import type { BreadcrumbItem } from '@/Composables/useBreadcrumbsUnified';
-import { createTourProvider } from '@/Composables/useTourProvider';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
 import { Toaster } from '@/Components/ui/sonner';
+import { TooltipProvider } from '@/Components/ui/tooltip';
+import AdminShell from '@/Components/Layouts/Shell/AdminShell.vue';
+import StartFmDock from '@/Components/Layouts/Shell/StartFmDock.vue';
+import { createTourProvider } from '@/Composables/useTourProvider';
 import { createActionWindowProvider } from '@/Composables/useActionWindow';
+import { createShellFocusProvider } from '@/Composables/useShellFocus';
 import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
 import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
+import { createStartFmProvider } from '@/Composables/useStartFm';
 import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette.vue';
 import ActionWindow from '@/Components/ActionWindow/ActionWindow.vue';
-import CommandPaletteTrigger from '@/Components/CommandPalette/CommandPaletteTrigger.vue';
+import KeyboardShortcutsDialog from '@/Components/KeyboardShortcutsDialog.vue';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   title?: string;
-  createUrl?: string | null;
-  breadcrumbs?: BreadcrumbItem[];
-  showMobileActionBar?: boolean;
-}>(), {
-  showMobileActionBar: false,
-});
-
-// System message (announcements)
-const systemMessage = computed(() => usePage().props.app?.systemMessage || null);
+}>();
 
 // PWA state
-const { isPWA, setAppBadge } = usePWA();
-
-// Permissions for quick create
+const { setAppBadge } = usePWA();
 
 // Unread notifications count
 const unreadNotificationsCount = computed(() => {
@@ -305,56 +72,58 @@ watch(unreadNotificationsCount, (count) => {
   setAppBadge(count);
 }, { immediate: true });
 
-// Check if current route matches
-function isCurrentRoute(routeName: string): boolean {
-  try {
-    return route().current(routeName);
-  }
-  catch {
-    return false;
-  }
-}
-
-// Initialize breadcrumb state for the entire admin application
-const breadcrumbState = createBreadcrumbState('admin');
-
 // Initialize tour provider - pages can register their tours via provideTour()
-const { hasTour, startTour: startPageTour, clearTour } = createTourProvider();
+const { clearTour } = createTourProvider();
 
-// Initialize UI preferences provider (sidebar customization + recently visited)
+// Initialize UI preferences provider (pinned + recently visited pages)
 const uiPreferences = createUIPreferencesProvider();
-
-// Sidebar expand/collapse, persisted per-user (cross-device) via ui_preferences.
-// SidebarProvider still writes its cookie for fast first paint; the server pref
-// is the authoritative source. Cmd+B / trigger / rail all flow through here.
-const sidebarOpen = computed({
-  get: () => !uiPreferences.sidebarCollapsed.value,
-  set: (value: boolean) => uiPreferences.setSidebarCollapsed(!value),
-});
-
-const isMac = computed(() => {
-  if (typeof navigator === 'undefined') {
-    return false;
-  }
-  return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-});
 
 // The action window is openable from any admin page, so its state is provided
 // here rather than owned by whichever page holds a trigger.
-const actionWindow = createActionWindowProvider();
+createActionWindowProvider();
+
+// Lets a form page swap the shell's navigation chrome for its own editor bar.
+createShellFocusProvider();
 
 // Initialize command palette provider for global Cmd+K / Ctrl+K search.
-// Share the recently-visited source so the palette and sidebar stay in sync.
+// Share the recently-visited source so the palette and the preferences stay in sync.
 createCommandPaletteProvider({
   recentPages: uiPreferences.recentPages,
   clearRecent: uiPreferences.clearRecent,
 });
+createStartFmProvider();
+
+const keyboardShortcutsOpen = ref(false);
+
+const isTypingTarget = (target: EventTarget | null): boolean => {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
+};
+
+useEventListener('keydown', (event: KeyboardEvent) => {
+  if (event.key === '?' && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget(event.target)) {
+    event.preventDefault();
+    keyboardShortcutsOpen.value = true;
+
+    return;
+  }
+
+  if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey || isTypingTarget(event.target)) {
+    return;
+  }
+
+  const search = document.querySelector<HTMLInputElement>('[data-admin-collection-search]:not(:disabled)');
+  if (search) {
+    event.preventDefault();
+    search.focus();
+  }
+});
 
 // Track every admin page the user visits. The page-specific title comes from
-// the breadcrumb trail (the last crumb), which every admin page registers —
-// document.title is unreliable (it's just the app name on pages without a
-// <Head>). The customization dialog is a Vue overlay (no component change) so
-// it is inherently excluded.
+// props.title or document.title set by the page shell (<Head>).
 const SITE_NAME = /^(mano\s+)?vu\s*sa$/i;
 
 // The admin landing page (/mano) is not worth keeping in history.
@@ -362,10 +131,8 @@ const EXCLUDED_ROUTES = new Set(['dashboard']);
 const ADMIN_HOME_PATH = /^\/mano\/?$/;
 
 function resolveVisitTitle(): string | undefined {
-  const crumbs = breadcrumbState.breadcrumbs.value;
-  const last = crumbs[crumbs.length - 1];
-  if (crumbs.length > 1 && last?.label && !SITE_NAME.test(last.label)) {
-    return last.label;
+  if (props.title && !SITE_NAME.test(props.title)) {
+    return props.title;
   }
 
   const docTitle = document.title.split(/\s[|–-]\s/)[0].trim();
@@ -408,15 +175,6 @@ const debouncedTrackVisit = useDebounceFn(
   { maxWait: 3000 },
 );
 
-// Spotlight for help button - shows once to draw attention to the help feature
-const helpButtonSpotlight = useFeatureSpotlight('help-button-v1');
-
-// Handle help button click: dismiss spotlight and start tour
-function handleHelpClick() {
-  helpButtonSpotlight.dismiss();
-  startPageTour(true); // true = voluntary tour
-}
-
 // Track the current page component to detect navigation
 const currentComponent = ref(usePage().component);
 
@@ -424,30 +182,12 @@ const currentComponent = ref(usePage().component);
 // Use flush: 'sync' to ensure this runs immediately when the prop changes,
 // before the new page component's setup runs and registers its tour
 watch(() => usePage().component, (component, oldComponent) => {
-  // Clear breadcrumbs when on home page
-  if (component === 'Admin/ShowAdminHome') {
-    breadcrumbState.clear();
-  }
-
   // Only clear tour when actually navigating (not on initial load)
   if (oldComponent && oldComponent !== component) {
     clearTour();
   }
   currentComponent.value = component;
 }, { flush: 'sync' });
-
-// Handle breadcrumb initialization for new pages with prop-provided breadcrumbs
-watch(() => props.breadcrumbs, (newBreadcrumbs) => {
-  if (newBreadcrumbs?.length) {
-    breadcrumbState.set(newBreadcrumbs);
-  }
-}, { immediate: true });
-
-// Listen for navigation events - don't clear breadcrumbs to avoid flashing
-onMounted(() => {
-  // Note: We no longer clear breadcrumbs on navigation start to prevent flashing
-  // Individual pages will set their own breadcrumbs using usePageBreadcrumbs()
-});
 
 const mounted = ref(false);
 const online = useOnline();
@@ -478,25 +218,10 @@ watch(online, (isOnline) => {
   handleOnlineStatus(isOnline);
 });
 
-// Detect mobile
-const isMobile = ref(false);
-
-const updateIsMobile = () => {
-  isMobile.value = window.innerWidth < 768;
-};
-
-// Initialize mobile detection
 onMounted(() => {
   mounted.value = true;
-  updateIsMobile();
-  window.addEventListener('resize', updateIsMobile);
 
   // Initialize flash message handling
   toasts.initializeToasts();
-});
-
-// Clean up event listeners
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateIsMobile);
 });
 </script>

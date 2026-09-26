@@ -3,6 +3,7 @@
   <Popover>
     <PopoverTrigger as-child>
       <Button
+        voice="brand"
         variant="ghost"
         :size="iconOnly ? 'icon' : 'sm'"
         :class="iconOnly ? socialIconButtonClass : undefined"
@@ -11,13 +12,13 @@
         @click="toggleAudio"
       >
         <template v-if="loading">
-          <Loader2 class="size-4 animate-spin" :class="[!iconOnly && 'mr-2']" />
+          <Spinner class="size-4" :class="[!iconOnly && 'mr-2']" />
         </template>
         <template v-else-if="!isPaused && audioPlaying">
-          <Pause class="size-4" :class="[!iconOnly && 'mr-2']" />
+          <IFluentPause24Regular class="size-4" :class="[!iconOnly && 'mr-2']" />
         </template>
         <template v-else>
-          <Radio class="size-4" :class="[!iconOnly && 'mr-2']" />
+          <IFluentMusicNote24Regular class="size-4" :class="[!iconOnly && 'mr-2']" />
         </template>
         <slot v-if="!iconOnly" />
         <audio v-show="false" ref="startFM" preload="none" @canplay="onCanPlay" @ended="onEnded" @play="onPlay" @pause="onPause">
@@ -29,7 +30,7 @@
     <PopoverContent class="w-80">
       <div class="text-sm">
         {{ $t("Klausykis studentiško") }}
-        <a class="font-bold transition hover:text-vusa-red" href="https://startfm.lt" target="_blank">START FM</a>
+        <a class="font-bold transition hover:text-brand" href="https://startfm.lt" target="_blank" rel="noopener noreferrer">START FM</a>
         {{ $t("radijo") }}!
       </div>
     </PopoverContent>
@@ -40,52 +41,52 @@
     <div
       v-if="audioPlaying"
       ref="playerRef"
-      class="fixed z-50 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3 flex items-center gap-3 min-w-[240px] select-none"
+      class="fixed z-50 flex min-w-[240px] select-none items-center gap-3 border border-border bg-popover p-3 text-popover-foreground"
       :class="{ 'cursor-grabbing': isDragging }"
       :style="{
         left: `${playerPosition.x}px`,
         top: `${playerPosition.y}px`,
-        transition: isDragging ? 'none' : 'box-shadow 0.2s'
+        transition: isDragging ? 'none' : 'background-color 0.2s'
       }"
     >
       <!-- Drag handle -->
       <div
-        class="cursor-grab active:cursor-grabbing px-2 py-3 -ml-2 -my-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-l-lg transition-colors"
+        class="-ml-2 -my-2 cursor-grab px-2 py-3 transition-colors hover:bg-accent active:cursor-grabbing"
         @mousedown="startDrag"
         @touchstart="startDrag"
       >
-        <GripVertical class="w-4 h-4 text-zinc-400" />
+        <IFluentReOrderDotsVertical24Regular class="size-4 text-muted-foreground" />
       </div>
 
       <div class="flex items-center gap-2">
-        <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="toggleAudio">
-          <Play v-if="isPaused" class="w-4 h-4" />
-          <Pause v-else class="w-4 h-4" />
+        <Button voice="brand" variant="ghost" size="sm" class="h-8 w-8 p-0" @click="toggleAudio">
+          <IFluentPlay24Regular v-if="isPaused" class="size-4" />
+          <IFluentPause24Regular v-else class="size-4" />
         </Button>
-        <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="stopAudio">
-          <Square class="w-4 h-4" />
+        <Button voice="brand" variant="ghost" size="sm" class="h-8 w-8 p-0" @click="stopAudio">
+          <IFluentStop24Regular class="size-4" />
         </Button>
       </div>
 
       <div class="flex-1 flex items-center gap-2">
-        <div class="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <div class="text-sm font-medium text-foreground">
           START FM
         </div>
         <div class="flex items-center gap-1">
-          <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(-0.1)">
-            <Volume1 class="w-3 h-3" />
+          <Button voice="brand" variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(-0.1)">
+            <IFluentSpeaker124Regular class="size-3" />
           </Button>
           <div
-            class="w-16 h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden cursor-pointer"
+            class="h-1.5 w-16 cursor-pointer overflow-hidden bg-secondary"
             @click="setVolumeFromClick"
           >
             <div
-              class="h-full bg-vusa-red transition-all duration-200"
+              class="h-full bg-brand-fill transition-all duration-200"
               :style="{ width: `${volume * 100}%` }"
             />
           </div>
-          <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(0.1)">
-            <Volume2 class="w-3 h-3" />
+          <Button voice="brand" variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(0.1)">
+            <IFluentSpeaker224Regular class="size-3" />
           </Button>
         </div>
       </div>
@@ -96,12 +97,19 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, useTemplateRef, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { Radio, Play, Pause, Square, Volume1, Volume2, GripVertical, Loader2 } from 'lucide-vue-next';
 
 import { socialIconButtonClass } from './socialIconButtonClass';
 
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+import { Spinner } from '@/Components/ui/spinner';
+import IFluentMusicNote24Regular from '~icons/fluent/music-note-24-regular';
+import IFluentPause24Regular from '~icons/fluent/pause-24-regular';
+import IFluentPlay24Regular from '~icons/fluent/play-24-regular';
+import IFluentReOrderDotsVertical24Regular from '~icons/fluent/re-order-dots-vertical-24-regular';
+import IFluentSpeaker124Regular from '~icons/fluent/speaker-1-24-regular';
+import IFluentSpeaker224Regular from '~icons/fluent/speaker-2-24-regular';
+import IFluentStop24Regular from '~icons/fluent/stop-24-regular';
 
 defineProps<{
   size?: 'sm' | 'default' | 'lg' | 'icon' | null;

@@ -114,6 +114,7 @@ declare global {
       activities_as_subject_count: number
       // exists
       user_exists: boolean
+      reverted_by_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -193,7 +194,6 @@ declare global {
       organizer?: Array<unknown> | null
       cto_url?: Array<unknown> | null
       facebook_url?: string | null
-      video_url?: string | null
       main_image_focal_point?: string | null
       is_draft: boolean
       is_all_day: boolean
@@ -353,6 +353,18 @@ declare global {
       content_exists: boolean
       text_box_submissions_exists: boolean
       activities_as_subject_exists: boolean
+    }
+
+    export interface DailyDeviceMetric {
+      // columns
+      id: number
+      date: string
+      phone_logins: number
+      tablet_logins: number
+      desktop_logins: number
+      pwa_launches: number
+      created_at?: string | null
+      updated_at?: string | null
     }
 
     export interface Document {
@@ -695,8 +707,10 @@ declare global {
       tasks_from_meetings?: Task
       users?: User
       followers?: User[]
+      secretaries?: User[]
+      secretary_assignments?: InstitutionSecretary[]
       administrators?: User[]
-      administrator_assignments?: InstitutionAdministrator[]
+      administrator_assignments?: InstitutionSecretary[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -714,6 +728,8 @@ declare global {
       meetings_count: number
       problems_count: number
       followers_count: number
+      secretaries_count: number
+      secretary_assignments_count: number
       administrators_count: number
       administrator_assignments_count: number
       comments_count: number
@@ -735,6 +751,8 @@ declare global {
       meetings_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
+      secretaries_exists: boolean
+      secretary_assignments_exists: boolean
       administrators_exists: boolean
       administrator_assignments_exists: boolean
       comments_exists: boolean
@@ -745,25 +763,6 @@ declare global {
       available_files_exists: boolean
       tasks_exists: boolean
       activities_as_subject_exists: boolean
-    }
-
-    export interface InstitutionAdministrator {
-      // columns
-      id: string
-      institution_id: string
-      cadence_id: string
-      user_id: string
-      created_at?: string | null
-      updated_at?: string | null
-      // relations
-      institution?: Institution
-      cadence?: Cadence
-      user?: User
-      // counts
-      // exists
-      institution_exists: boolean
-      cadence_exists: boolean
-      user_exists: boolean
     }
 
     export interface InstitutionCheckIn {
@@ -819,6 +818,25 @@ declare global {
       // exists
       user_exists: boolean
       institution_exists: boolean
+    }
+
+    export interface InstitutionSecretary {
+      // columns
+      id: string
+      institution_id: string
+      cadence_id: string
+      user_id: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      institution?: Institution
+      cadence?: Cadence
+      user?: User
+      // counts
+      // exists
+      institution_exists: boolean
+      cadence_exists: boolean
+      user_exists: boolean
     }
 
     export interface LecturerReview {
@@ -1005,7 +1023,6 @@ declare global {
       show_breadcrumbs: boolean
       featured_image?: string | null
       meta_description?: string | null
-      publish_time?: string | null
       tenant_id: number
       created_at: string
       updated_at: string
@@ -1016,7 +1033,6 @@ declare global {
       other_language_page?: Page
       parent?: Page
       children?: Page[]
-      ancestors?: Array<{ id: number; title: string; permalink: string; url?: string }>
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
@@ -1165,8 +1181,10 @@ declare global {
       tasks_from_meetings?: Task
       users?: User
       followers?: User[]
+      secretaries?: User[]
+      secretary_assignments?: InstitutionSecretary[]
       administrators?: User[]
-      administrator_assignments?: InstitutionAdministrator[]
+      administrator_assignments?: InstitutionSecretary[]
       comments?: Comment[]
       root_comments?: Comment[]
       outgoing_relationships?: Relationship[]
@@ -1184,6 +1202,8 @@ declare global {
       check_ins_count: number
       problems_count: number
       followers_count: number
+      secretaries_count: number
+      secretary_assignments_count: number
       administrators_count: number
       administrator_assignments_count: number
       comments_count: number
@@ -1205,6 +1225,8 @@ declare global {
       check_ins_exists: boolean
       problems_exists: boolean
       followers_exists: boolean
+      secretaries_exists: boolean
+      secretary_assignments_exists: boolean
       administrators_exists: boolean
       administrator_assignments_exists: boolean
       comments_exists: boolean
@@ -1342,7 +1364,6 @@ declare global {
       show_breadcrumbs: boolean
       featured_image?: string | null
       meta_description?: string | null
-      publish_time?: string | null
       tenant_id: number
       created_at: string
       updated_at: string
@@ -1504,6 +1525,43 @@ declare global {
       root_comments_exists: boolean
       tasks_exists: boolean
       activities_as_subject_exists: boolean
+    }
+
+    export interface ReservationDraft {
+      // columns
+      id: number
+      user_id: string
+      name?: string | null
+      description?: string | null
+      start_time?: string | null
+      end_time?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      user?: User
+      items?: ReservationDraftItem[]
+      // counts
+      items_count: number
+      // exists
+      user_exists: boolean
+      items_exists: boolean
+    }
+
+    export interface ReservationDraftItem {
+      // columns
+      id: number
+      reservation_draft_id: number
+      resource_id: string
+      quantity: number
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      draft?: ReservationDraft
+      resource?: Resource
+      // counts
+      // exists
+      draft_exists: boolean
+      resource_exists: boolean
     }
 
     export interface ReservationResource {
@@ -1778,6 +1836,7 @@ declare global {
       title: string
       description: string
       context_url?: string | null
+      context?: Array<unknown> | null
       selected_text?: string | null
       locale: string
       resolved_at?: string | null
@@ -2137,10 +2196,12 @@ declare global {
       tenants?: Tenant
       tasks?: Task[]
       institutions?: Institution
+      secretaried_institutions?: Institution[]
       administered_institutions?: Institution[]
       followed_institutions?: Institution[]
       muted_institutions?: Institution[]
       reservations?: Reservation[]
+      reservation_draft?: ReservationDraft
       push_subscriptions?: PushSubscription[]
       roles?: Role[]
       teams?: Permission[]
@@ -2153,6 +2214,7 @@ declare global {
       current_duties_count: number
       dutiables_count: number
       tasks_count: number
+      secretaried_institutions_count: number
       administered_institutions_count: number
       followed_institutions_count: number
       muted_institutions_count: number
@@ -2169,10 +2231,12 @@ declare global {
       current_duties_exists: boolean
       dutiables_exists: boolean
       tasks_exists: boolean
+      secretaried_institutions_exists: boolean
       administered_institutions_exists: boolean
       followed_institutions_exists: boolean
       muted_institutions_exists: boolean
       reservations_exists: boolean
+      reservation_draft_exists: boolean
       push_subscriptions_exists: boolean
       roles_exists: boolean
       teams_exists: boolean
@@ -2302,3 +2366,4 @@ declare global {
 
   }
 }
+

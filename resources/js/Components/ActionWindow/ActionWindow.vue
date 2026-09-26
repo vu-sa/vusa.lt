@@ -1,11 +1,12 @@
 <template>
   <!--
-    One window, two presentations. On a phone it takes over the screen so a single
-    decision fills the viewport; on a desktop it is a fixed-height dialog, so the
-    window does not resize under the pointer as screens swap.
+    One window, two presentations. On a phone it is a bottom sheet that rises to nearly
+    the full height, so a single decision fills the viewport and can be swiped away; on a
+    desktop it is a bounded dialog, so the window does not resize under the pointer as
+    screens swap.
   -->
   <Drawer v-if="isMobile" :open="isOpen" @update:open="onOpenChange">
-    <DrawerContent class="h-[92dvh] max-h-[92dvh] p-0">
+    <DrawerContent class="h-[92dvh] max-h-[92dvh] border-t border-border p-0">
       <VisuallyHidden>
         <DrawerTitle>{{ $t('action_window.personas.title') }}</DrawerTitle>
       </VisuallyHidden>
@@ -33,23 +34,19 @@
 
 <script setup lang="ts">
 import { VisuallyHidden } from 'reka-ui';
-import { computed } from 'vue';
 
 import ActionWindowBody from './ActionWindowBody.vue';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { useSidebar } from '@/Components/ui/sidebar/utils';
+import { useIsMobile } from '@/Composables/useIsMobile';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Drawer, DrawerContent, DrawerTitle } from '@/Components/ui/drawer';
 
 const { isOpen, close } = useActionWindow();
 
-// The app already owns exactly one media query, in SidebarProvider. Reuse it
-// rather than introducing a second source of truth that can disagree with it.
-// The null fallback keeps the component mountable outside the provider (tests,
-// Storybook), where the desktop dialog is the sensible default.
-const sidebar = useSidebar(null as never);
-const isMobile = computed(() => sidebar?.isMobile.value ?? false);
+// Inside the legacy shell this is SidebarProvider's own media query; the new shell has no
+// provider, so it falls back to the shell's `useIsMobile()`.
+const isMobile = useIsMobile();
 
 const onOpenChange = (open: boolean) => {
   if (!open) {

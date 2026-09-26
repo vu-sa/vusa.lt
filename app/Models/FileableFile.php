@@ -54,6 +54,8 @@ class FileableFile extends Model
 {
     use HasFactory, HasUlids;
 
+    protected $appends = ['formatted_size'];
+
     #[\Override]
     protected function casts(): array
     {

@@ -32,6 +32,8 @@ export interface TimelineFilters {
 
   // Tenant section filters
   selectedTenantForGantt: Ref<string[]>;
+  /** The padaliniai the statistics count — only ones the user manages, apart from the Gantt's. */
+  selectedStatsTenants: Ref<string[]>;
   showOnlyWithActivityTenant: Ref<boolean>;
   showOnlyWithPublicMeetingsTenant: Ref<boolean>;
   hideInternalInstitutionsTenant: Ref<boolean>;
@@ -49,6 +51,7 @@ export interface TimelineFilters {
 
   // Actions
   setSelectedTenants: (tenantIds: string[]) => void;
+  setSelectedStatsTenants: (tenantIds: string[]) => void;
   setUserTenantFilter: (tenantIds: string[]) => void;
   resetTenantFilters: () => void;
   resetUserFilters: () => void;
@@ -57,6 +60,7 @@ export interface TimelineFilters {
 
 interface StoredFilters {
   selectedTenantForGantt: string[];
+  selectedStatsTenants?: string[];
   userTenantFilter: string[];
   showOnlyWithActivityTenant: boolean;
   showOnlyWithPublicMeetingsTenant: boolean;
@@ -76,7 +80,7 @@ const TIMELINE_FILTERS_KEY: InjectionKey<TimelineFilters> = Symbol('timeline-fil
 export function normalizeTenantSelection(
   tenantIds: string[],
   availableTenants: AtstovavimasTenant[],
-  fallback: 'first' | 'all' = 'first',
+  fallback: 'first' | 'all' | string[] = 'first',
 ): string[] {
   const selectedIds = new Set(tenantIds.map(String));
   const availableIds = availableTenants.map(tenant => String(tenant.id));
@@ -88,6 +92,10 @@ export function normalizeTenantSelection(
 
   if (availableIds.length === 0) {
     return [];
+  }
+
+  if (Array.isArray(fallback)) {
+    return normalizeTenantSelection(fallback, availableTenants, 'first');
   }
 
   return fallback === 'all' ? availableIds : [availableIds[0]];
@@ -145,7 +153,10 @@ function saveStoredFilters(filters: StoredFilters) {
 export function provideTimelineFilters(
   institutions: AtstovavimasInstitution[],
   availableTenants: AtstovavimasTenant[],
+  options: { statsTenants?: AtstovavimasTenant[]; defaultGanttTenantIds?: string[] } = {},
 ): TimelineFilters {
+  const statsTenants = options.statsTenants ?? availableTenants;
+  const defaultGanttTenantIds = options.defaultGanttTenantIds ?? [];
   const stored = loadStoredFilters();
 
   // User section filters
@@ -168,7 +179,10 @@ export function provideTimelineFilters(
 
   // Tenant section filters
   const selectedTenantForGantt = ref<string[]>(
-    normalizeTenantSelection(stored.selectedTenantForGantt ?? [], availableTenants),
+    normalizeTenantSelection(stored.selectedTenantForGantt ?? [], availableTenants, defaultGanttTenantIds),
+  );
+  const selectedStatsTenants = ref<string[]>(
+    normalizeTenantSelection(stored.selectedStatsTenants ?? stored.selectedTenantForGantt ?? [], statsTenants),
   );
   const showOnlyWithActivityTenant = ref(stored.showOnlyWithActivityTenant ?? false);
   const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
@@ -194,6 +208,7 @@ export function provideTimelineFilters(
   function persistFilters() {
     saveStoredFilters({
       selectedTenantForGantt: selectedTenantForGantt.value,
+      selectedStatsTenants: selectedStatsTenants.value,
       userTenantFilter: userTenantFilter.value,
       showOnlyWithActivityTenant: showOnlyWithActivityTenant.value,
       showOnlyWithPublicMeetingsTenant: showOnlyWithPublicMeetingsTenant.value,
@@ -211,6 +226,7 @@ export function provideTimelineFilters(
 
   watch([
     selectedTenantForGantt,
+    selectedStatsTenants,
     userTenantFilter,
     showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsTenant,
@@ -228,7 +244,11 @@ export function provideTimelineFilters(
   }, { deep: true });
 
   function setSelectedTenants(tenantIds: string[]) {
-    selectedTenantForGantt.value = normalizeTenantSelection(tenantIds, availableTenants);
+    selectedTenantForGantt.value = normalizeTenantSelection(tenantIds, availableTenants, defaultGanttTenantIds);
+  }
+
+  function setSelectedStatsTenants(tenantIds: string[]) {
+    selectedStatsTenants.value = normalizeTenantSelection(tenantIds, statsTenants);
   }
 
   function setUserTenantFilter(tenantIds: string[]) {
@@ -287,6 +307,7 @@ export function provideTimelineFilters(
     relatedInstitutionsLoaded,
     // Tenant section filters
     selectedTenantForGantt,
+    selectedStatsTenants,
     showOnlyWithActivityTenant,
     showOnlyWithPublicMeetingsTenant,
     hideInternalInstitutionsTenant,
@@ -301,6 +322,7 @@ export function provideTimelineFilters(
     currentTenant: currentTenant as unknown as Ref<AtstovavimasTenant | undefined>,
     // Actions
     setSelectedTenants,
+    setSelectedStatsTenants,
     setUserTenantFilter,
     resetTenantFilters,
     resetUserFilters,

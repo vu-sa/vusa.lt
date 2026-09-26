@@ -86,8 +86,7 @@ import {
   ChevronRight,
 } from 'lucide-vue-next';
 
-import { SectionCard } from '@/Components/ui/section-card';
-import { DateBadge } from '@/Components/Patterns';
+import { DateBadge, SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import type { InstitutionPageMeeting } from '@/Types/InstitutionPage';

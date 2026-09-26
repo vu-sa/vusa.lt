@@ -1,5 +1,5 @@
 <template>
-  <Button variant="outline" @click="copyToClipboard(textToCopy)">
+  <Button variant="outline" :voice @click="copyToClipboard(textToCopy)">
     <IFluentClipboardLink24Regular v-if="showIcon" />
     <slot />
   </Button>
@@ -7,14 +7,20 @@
 
 <script setup lang="ts">
 import { Button } from '@/Components/ui/button';
+import type { ButtonVariants } from '@/Components/ui/button';
 import { useToasts } from '@/Composables/useToasts';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   textToCopy: string;
   showIcon?: boolean;
   successText?: string;
   errorText?: string;
-}>();
+  voice?: ButtonVariants['voice'];
+}>(), {
+  successText: undefined,
+  errorText: undefined,
+  voice: undefined,
+});
 
 const toasts = useToasts();
 

@@ -2,17 +2,17 @@
   <CalendarCellTrigger
     data-slot="calendar-cell-trigger"
     :class="cn(
-      buttonVariants({ variant: 'ghost' }),
+      buttonVariants({ variant: 'ghost', voice: 'plain' }),
       'size-8 p-0 font-normal aria-selected:opacity-100 cursor-default',
-      '[&[data-today]:not([data-selected])]:bg-zinc-100 [&[data-today]:not([data-selected])]:text-zinc-900 dark:[&[data-today]:not([data-selected])]:bg-zinc-800 dark:[&[data-today]:not([data-selected])]:text-zinc-50',
+      '[&[data-today]:not([data-selected])]:bg-secondary [&[data-today]:not([data-selected])]:text-foreground',
       // Selected
-      'data-[selected]:bg-zinc-900 data-[selected]:text-zinc-50 data-[selected]:opacity-100 data-[selected]:hover:bg-zinc-900 data-[selected]:hover:text-zinc-50 data-[selected]:focus:bg-zinc-900 data-[selected]:focus:text-zinc-50 dark:data-[selected]:bg-zinc-50 dark:data-[selected]:text-zinc-900 dark:data-[selected]:hover:bg-zinc-50 dark:data-[selected]:hover:text-zinc-900 dark:data-[selected]:focus:bg-zinc-50 dark:data-[selected]:focus:text-zinc-900',
+      'data-[selected]:bg-primary data-[selected]:text-primary-foreground data-[selected]:opacity-100 data-[selected]:hover:bg-primary data-[selected]:hover:text-primary-foreground data-[selected]:focus:bg-primary data-[selected]:focus:text-primary-foreground',
       // Disabled
-      'data-[disabled]:text-zinc-500 data-[disabled]:opacity-50 dark:data-[disabled]:text-zinc-400',
+      'data-[disabled]:text-muted-foreground data-[disabled]:opacity-50',
       // Unavailable
-      'data-[unavailable]:text-zinc-50 data-[unavailable]:line-through dark:data-[unavailable]:text-zinc-50',
+      'data-[unavailable]:text-muted-foreground data-[unavailable]:line-through',
       // Outside months
-      'data-[outside-view]:text-zinc-500 dark:data-[outside-view]:text-zinc-400',
+      'data-[outside-view]:text-muted-foreground',
       props.class,
     )"
     v-bind="forwardedProps"

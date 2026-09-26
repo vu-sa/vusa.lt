@@ -74,7 +74,7 @@ class DutiableTimelineController extends AdminController
      */
     private function ownInstitutions(User $user): Collection
     {
-        return $user->current_duties()
+        return $user->authorization_duties()
             ->with('institution')
             ->get()
             ->pluck('institution')

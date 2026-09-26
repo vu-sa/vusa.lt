@@ -6,6 +6,9 @@ interface User extends Omit<App.Entities.User, 'tenants'> {
   tenants: Pick<App.Entities.Tenant, 'id' | 'shortname'>[];
   isSuperAdmin: boolean;
   unreadNotifications: Record<string, any>[] | null;
+  /** Uncompleted tasks assigned to the user, and the subset already past its due date. */
+  tasks_count?: number;
+  overdue_tasks_count?: number;
   tutorial_progress?: Record<string, string>;
 }
 
@@ -47,14 +50,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
       description: string;
       date: string;
     }>;
-    /**
-     * Ids of the member / student rep registration forms, already filtered by the
-     * form policy — an id is only present when this user is allowed to open it.
-     */
-    registrationForms?: {
-      member: string | null;
-      studentRep: string | null;
-    };
     user: User;
   } | null;
   csrf_token: string;
@@ -74,6 +69,44 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   map: {
     cartoApiKey: string | null;
   };
+  /**
+   * The navigation catalog (O19): every workspace, section and create action this user may
+   * see, gated and cached server-side by `App\Services\AdminNavigation\AdminNavigationCatalog`.
+   * Null outside `/mano`. `label`/`description` are i18n keys — resolve with `$t()`, not printed
+   * directly.
+   */
+  adminNavigation?: {
+    workspaces: Array<{
+      key: string;
+      label: string;
+      description: string;
+      sections: Array<{
+        key: string;
+        label: string;
+        routeName: string;
+        routeParams: Record<string, unknown>;
+        entityType: ModelEnum | null;
+        /** One-line description on section tiles; null for overviews. */
+        description: string | null;
+        collectionActions: Array<{
+          key: string;
+          label: string;
+          target: string;
+        }>;
+        /** Route-name patterns (`meetings.*`) living inside this section — see `resolveActive()`. */
+        matches: string[];
+        /** Draw a separator before this section. */
+        startsGroup: boolean;
+      }>;
+      createActions: Array<{
+        key: string;
+        label: string;
+        description: string | null;
+        entityType: ModelEnum | null;
+        target: { kind: 'route'; routeName: string } | { kind: 'screen'; screen: string };
+      }>;
+    }>;
+  } | null;
   otherLangURL?: string | null;
   /** Destination used by the tenant selector: the selected tenant's home or this route. */
   tenantSwitchTarget?: 'home' | 'same-page';

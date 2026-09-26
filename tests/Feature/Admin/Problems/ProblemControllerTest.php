@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Institution;
 use App\Models\Problem;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,6 +57,25 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('problem forms only preload selected institutions', function (): void {
+        $selected = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $this->problem->institutions()->attach($selected);
+
+        asUser($this->coordinator)->get(route('problems.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Problems/CreateProblem')
+                ->where('institutions', []));
+
+        asUser($this->coordinator)->get(route('problems.edit', $this->problem))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Problems/EditProblem')
+                ->has('institutions', 1)
+                ->where('institutions.0.id', $selected->id));
+    });
+
     test('can filter problems by tenant', function (): void {
         asUser($this->admin)
             ->get(route('problems.index', ['filters' => json_encode(['tenant.id' => [$this->tenant->id]])]))
@@ -77,6 +97,35 @@ describe('authorized access', function (): void {
                     && collect($data)->every(fn ($problem) => $problem['created_by']['id'] === $this->coordinator->id))
             );
     });
+});
+
+test('problem activity loads its discussion and accepts comments', function (): void {
+    $indexUrl = route('api.v1.admin.comments.index', [
+        'commentableType' => 'problem',
+        'commentableId' => $this->problem->id,
+    ]);
+
+    asUser($this->coordinator)->getJson($indexUrl)
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+
+    asUser($this->coordinator)->getJson(route('api.v1.admin.comments.mentionables', [
+        'commentableType' => 'problem',
+        'commentableId' => $this->problem->id,
+    ]))->assertOk();
+
+    asUser($this->coordinator)->postJson(route('api.v1.admin.comments.store', [
+        'commentableType' => 'problem',
+        'commentableId' => $this->problem->id,
+    ]), ['body' => '<p>Follow-up</p>'])
+        ->assertCreated()
+        ->assertJsonPath('data.body', '<p>Follow-up</p>');
+
+    expect($this->problem->comments()->count())->toBe(1);
+
+    asUser($this->coordinator)->getJson($indexUrl)
+        ->assertOk()
+        ->assertJsonPath('data.0.body', '<p>Follow-up</p>');
 });
 
 describe('tenant isolation', function (): void {

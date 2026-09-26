@@ -1,29 +1,26 @@
 <template>
-  <PageContent title="Naujas padalinys" :heading-icon="TenantIcon">
-    <div class="mb-4">
-      <SmartLink :href="route('tenants.editMainPage', tenant.id)" class="text-sm text-gray-500">
-        <Button variant="secondary">
-          Redaguoti padalinio pagr. puslapį
-        </Button>
-      </SmartLink>
-    </div>
-    <UpsertModelLayout>
-      <TenantForm :tenant :assignable-institutions
-        @submit:form="(form) => form.patch(route('tenants.update', tenant.id), { preserveScroll: true })" />
-    </UpsertModelLayout>
-  </PageContent>
+  <TenantForm
+    :tenant
+    :assignable-institutions
+    enable-delete
+    @submit:form="submitForm"
+    @delete="() => router.delete(route('tenants.destroy', tenant.id))"
+  />
 </template>
 
 <script setup lang="ts">
-import { Button } from '@/Components/ui/button';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import TenantForm from '@/Components/AdminForms/TenantForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { TenantIcon } from '@/Components/icons';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
-defineProps<{
+import TenantForm from '@/Components/AdminForms/TenantForm.vue';
+
+const props = defineProps<{
   assignableInstitutions: Array<App.Entities.Institution>;
   tenant: App.Entities.Tenant;
 }>();
+
+function submitForm(form: unknown): void {
+  const inertiaForm = form as InertiaForm<Record<string, unknown>>;
+  inertiaForm.defaults();
+  inertiaForm.patch(route('tenants.update', props.tenant.id), { preserveScroll: true });
+}
 </script>

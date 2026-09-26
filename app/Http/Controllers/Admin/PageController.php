@@ -6,6 +6,8 @@ use App\Actions\GenerateUniqueSlug;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\Content\BulkDestroyPagesRequest;
+use App\Http\Requests\Content\BulkUpdatePageStatusRequest;
 use App\Http\Requests\IndexPageRequest;
 use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
@@ -17,14 +19,14 @@ use App\Models\PublicUrl;
 use App\Models\Tag;
 use App\Services\ContentService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class PageController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
@@ -33,43 +35,10 @@ class PageController extends AdminController
     {
         $this->handleAuthorization('viewAny', Page::class);
 
-        $query = Page::query()->with('tenant:id,shortname');
-
-        $searchableColumns = ['title', 'permalink'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'pages.read.padalinys',
-            ]
-        );
-
-        $deletedCount = $this->getTrashedCount($query);
-
-        $pages = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
+        // Live rows come from Typesense (the scoped key carries the authorization) and the trash
+        // from api.v1.admin.trash.index, so the page itself needs no rows.
         return $this->inertiaResponse('Admin/Content/IndexPages', [
-            'pages' => [
-                'data' => $pages->items(),
-                'meta' => [
-                    'total' => $pages->total(),
-                    'per_page' => $pages->perPage(),
-                    'current_page' => $pages->currentPage(),
-                    'last_page' => $pages->lastPage(),
-                    'from' => $pages->firstItem(),
-                    'to' => $pages->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
+            'deletedCount' => $this->scopedTrashedCount(Page::query(), 'tenant', 'pages.read.padalinys'),
         ]);
     }
 
@@ -199,6 +168,29 @@ class PageController extends AdminController
         $page->delete();
 
         return redirect()->route('pages.index')->with('info', $this->entityMessage('deleted', 'page'));
+    }
+
+    /**
+     * Publish or unpublish the pages picked in the collection (one id for the inline status menu).
+     * Saved one by one so Scout, the public index and the activity log see every change.
+     */
+    public function bulkUpdateStatus(BulkUpdatePageStatusRequest $request): RedirectResponse
+    {
+        $pages = $request->records();
+        $isActive = $request->boolean('published');
+
+        DB::transaction(fn () => $pages->each(fn (Page $page) => $page->update(['is_active' => $isActive])));
+
+        return back()->with('success', __('messages.bulk_updated', ['count' => $pages->count()]));
+    }
+
+    public function bulkDestroy(BulkDestroyPagesRequest $request): RedirectResponse
+    {
+        $pages = $request->records();
+
+        DB::transaction(fn () => $pages->each(fn (Page $page) => $page->delete()));
+
+        return back()->with('info', __('messages.bulk_deleted', ['count' => $pages->count()]));
     }
 
     public function restore(Page $page): RedirectResponse

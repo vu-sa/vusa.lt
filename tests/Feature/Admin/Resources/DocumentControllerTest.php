@@ -4,6 +4,7 @@ use App\Jobs\RevokeSharepointPermissionJob;
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Tenant;
+use Database\Seeders\RoleDocumentManagerSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -18,14 +19,27 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->documentManager = makeUser($this->tenant);
-    $this->documentManager->duties()->first()->assignRole('Resource Manager');
+    $this->documentManager->duties()->first()->assignRole(RoleDocumentManagerSeeder::NAME);
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });
 
 describe('unauthorized access', function (): void {
-    test('cannot access documents index', function (): void {
-        $response = asUser($this->regularUser)->get(route('documents.index'));
-        expect($response->status())->toBe(403);
+    test('browses documents without management abilities', function (): void {
+        asUser($this->regularUser)->get(route('documents.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Files/IndexDocument')
+                ->where('abilities', ['create' => false, 'update' => false, 'delete' => false])
+                ->where('defaultTenantShortnames', [$this->tenant->shortname, Tenant::main()->shortname])
+            );
+    });
+
+    test('cannot queue a bulk sync', function (): void {
+        Queue::fake();
+
+        asUser($this->regularUser)->post(route('documents.bulk-sync'))->assertForbidden();
+
+        Queue::assertNothingPushed();
     });
 
     test('cannot store sharepoint documents', function (): void {
@@ -59,31 +73,47 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     test('document manager can access documents index', function (): void {
-        // Create 3 documents for this institution
         Document::factory()->count(3)->create(['institution_id' => $this->institution->id]);
 
         $response = asUser($this->documentManager)->get(route('documents.index'));
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Files/IndexDocument')
-                ->has('data')
-                ->where('data',
-                    // Should have at least 3 documents (the ones we created)
-                    // but may have more from seeding
-                    fn ($data) => count($data) >= 3)
+                ->has('importantContentTypes')
+                ->where('abilities.create', true)
             );
     });
 
     test('admin can access documents index', function (): void {
-        $admin = makeTenantUserWithRole('Resource Manager', $this->tenant);
+        $admin = makeTenantUserWithRole(RoleDocumentManagerSeeder::NAME, $this->tenant);
         Document::factory()->count(2)->create(['institution_id' => $this->institution->id]);
 
         $response = asUser($admin)->get(route('documents.index'));
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Files/IndexDocument')
-                ->has('data')
+                ->has('importantContentTypes')
             );
+    });
+
+    test('show redirects to anonymous url if available', function (): void {
+        $document = Document::factory()->create([
+            'institution_id' => $this->institution->id,
+            'anonymous_url' => 'https://example.sharepoint.com/:b:/test',
+        ]);
+
+        $response = asUser($this->documentManager)->get(route('documents.show', $document));
+        $response->assertRedirect('https://example.sharepoint.com/:b:/test');
+    });
+
+    test('show redirects to index if anonymous url not available', function (): void {
+        $document = Document::factory()->create([
+            'institution_id' => $this->institution->id,
+            'anonymous_url' => null,
+        ]);
+
+        $response = asUser($this->documentManager)->get(route('documents.show', $document));
+        $response->assertRedirect(route('documents.index'));
     });
 
     test('document manager can store sharepoint documents with mocked API', function (): void {
@@ -301,23 +331,8 @@ describe('relationships', function (): void {
         // Create documents for other tenant
         $otherDocs = Document::factory()->count(3)->create(['institution_id' => $otherInstitution->id]);
 
-        $response = asUser($this->documentManager)->get(route('documents.index'));
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/Files/IndexDocument')
-                ->has('data')
-                ->where('data', function ($data) use ($ourDocs, $otherDocs) {
-                    $dataIds = collect($data)->pluck('id')->toArray();
-
-                    // Check that all our documents are present
-                    $ourDocsPresent = $ourDocs->every(fn ($doc) => in_array($doc->id, $dataIds));
-
-                    // Check that none of the other tenant's documents are present
-                    $otherDocsAbsent = $otherDocs->every(fn ($doc) => ! in_array($doc->id, $dataIds));
-
-                    return $ourDocsPresent && $otherDocsAbsent;
-                })
-            );
+        expect($ourDocs->first()->tenant()->first()->id)->toBe($this->tenant->id)
+            ->and($otherDocs->first()->tenant()->first()->id)->toBe($otherTenant->id);
     });
 
     test('document factory creates valid sharepoint document', function (): void {

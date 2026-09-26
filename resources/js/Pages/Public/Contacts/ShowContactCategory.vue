@@ -84,7 +84,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue';
+import NewInstitutionCard from '@/Components/Public/Institutions/NewInstitutionCard.vue';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { TypeIcon } from '@/Components/icons';
 import IFluentPeople16Regular from '~icons/fluent/people-16-regular';

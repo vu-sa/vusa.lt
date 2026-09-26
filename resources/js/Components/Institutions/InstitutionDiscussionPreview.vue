@@ -52,7 +52,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { BarChart3, MessagesSquare } from 'lucide-vue-next';
 
-import { SectionCard } from '@/Components/ui/section-card';
+import { SectionCard } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { formatRelativeTime } from '@/Utils/IntlTime';

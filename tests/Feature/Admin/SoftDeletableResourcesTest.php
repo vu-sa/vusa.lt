@@ -90,7 +90,7 @@ function softDeletableResourceCases(): array
             'route' => 'studyPrograms',
             'permission' => 'studyPrograms',
             'scope' => 'padalinys',
-            'prop' => 'studyPrograms.data',
+            'prop' => 'studyPrograms',
             'create' => fn (Tenant $tenant): Model => StudyProgram::factory()->forTenant($tenant)->create(),
         ],
         'study set' => [
@@ -99,7 +99,7 @@ function softDeletableResourceCases(): array
             'route' => 'studySets',
             'permission' => 'studySets',
             'scope' => 'padalinys',
-            'prop' => 'studySets.data',
+            'prop' => 'studySets',
             'create' => fn (Tenant $tenant): Model => StudySet::factory()->for($tenant)->create(),
         ],
     ];
@@ -238,8 +238,7 @@ describe('soft deletable admin resources', function (): void {
 
         $response = asUser($admin)->get(softDeleteIndexRoute($resource, $tenant));
 
-        $response->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page->where('showDeleted', false));
+        $response->assertStatus(200);
 
         $ids = collectSoftDeleteResourceIds(data_get($response->viewData('page')['props'], $resource['prop']));
 
@@ -256,8 +255,7 @@ describe('soft deletable admin resources', function (): void {
 
         $response = asUser($admin)->get(softDeleteIndexRoute($resource, $tenant, ['showDeleted' => 'true']));
 
-        $response->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page->where('showDeleted', true));
+        $response->assertStatus(200);
 
         $ids = collectSoftDeleteResourceIds(data_get($response->viewData('page')['props'], $resource['prop']));
 

@@ -31,7 +31,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property-read mixed $color
  * @property-read mixed $icon
- * @property-read Model|\Eloquent $taskable
+ * @property-read Model|\Eloquent|null $taskable
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count

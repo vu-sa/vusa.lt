@@ -12,7 +12,7 @@
     </p>
 
     <template v-else>
-      <p class="text-xs font-medium text-amber-700 dark:text-amber-300">
+      <p class="text-xs font-medium text-status-attention">
         <!--
           `dirty_count` is a trans_choice source string; `$t` on it printed the raw
           "{1} …|[2,9] …|[10,*] …" pipeline to the user.
@@ -35,7 +35,7 @@
       </div>
     </template>
 
-    <p v-if="syncPending" class="text-[10px] text-amber-600 dark:text-amber-400">
+    <p v-if="syncPending" class="text-[10px] text-status-attention">
       {{ $t('dutiables.timeline.staging.sync_pending') }}
     </p>
   </section>

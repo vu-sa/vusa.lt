@@ -1,6 +1,6 @@
 <template>
   <FormFieldWrapper id="tags" :label="label ?? $t('Žymos')" :hint="hint ?? $t('Pasirinkite temas')">
-    <MultiSelect v-model="selectedTags" :options="tagOptions" value-field="value"
+    <MultiSelect v-model="selectedTags" :options="tagOptions" value-field="value" :disabled
       :placeholder="$t('Pasirinkite žymas...')" />
   </FormFieldWrapper>
 </template>
@@ -19,10 +19,11 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
-const { availableTags = [], label = undefined, hint = undefined } = defineProps<{
+const { availableTags = [], label = undefined, hint = undefined, disabled } = defineProps<{
   availableTags?: App.Entities.Tag[];
   label?: string;
   hint?: string;
+  disabled?: boolean;
 }>();
 
 const modelValue = defineModel<number[]>({ default: () => [] });

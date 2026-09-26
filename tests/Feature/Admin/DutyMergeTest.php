@@ -55,6 +55,15 @@ describe('unauthorized access', function (): void {
 });
 
 describe('merging assignments', function (): void {
+    test('rejects duplicate source duty ids without deleting the source', function (): void {
+        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+            'target_duty_id' => $this->target->id,
+            'source_duty_ids' => [$this->source->id, $this->source->id],
+        ])->assertSessionHasErrors('source_duty_ids.1');
+
+        expect($this->source->fresh()->trashed())->toBeFalse();
+    });
+
     test('moves dutiables onto the kept duty and soft-deletes the source', function (): void {
         Dutiable::factory()->forDuty($this->source)->ended()->create();
         Dutiable::factory()->forDuty($this->source)->active()->create();
@@ -192,7 +201,7 @@ describe('merging related pivots', function (): void {
     });
 
     test('moves admin roles onto the kept duty', function (): void {
-        $extraRole = Role::firstOrCreate(['name' => 'Resource Manager', 'guard_name' => 'web']);
+        $extraRole = Role::firstOrCreate(['name' => 'Išteklių administratorius', 'guard_name' => 'web']);
         $this->source->assignRole($extraRole);
 
         asUser($this->dutyManager)->post(route('duties.mergeDuties'), [

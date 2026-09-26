@@ -26,6 +26,7 @@ import { isDateOnlyMeetingType } from '@/Types/MeetingType';
 export type ScreenId
   = | 'persona'
     | 'persona.actions'
+    | 'institution.report'
     | 'meeting.institution'
     | 'meeting.institution.search'
     | 'meeting.type'
@@ -70,7 +71,7 @@ export interface ActionWindowDraft {
 
 export interface OpenOptions {
   /** Jump straight into a flow instead of the persona screen. */
-  flow?: 'meeting.create' | 'check-in' | 'meeting.complete';
+  flow?: 'meeting.create' | 'check-in' | 'meeting.complete' | 'institution.report';
   institution?: ActionWindowInstitutionRef | null;
   suggestedAt?: Date | string | null;
   /**
@@ -138,6 +139,9 @@ function initialStack(options: OpenOptions | undefined, hasInstitution: boolean)
       return hasInstitution ? [{ id: 'checkin.until' }] : [{ id: 'checkin.institution' }];
     case 'meeting.complete':
       return [{ id: 'meeting.pick' }];
+    // Reporting on an institution's activity: record a meeting, or say there was none.
+    case 'institution.report':
+      return hasInstitution ? [{ id: 'institution.report' }] : [{ ...ROOT_FRAME }];
     default:
       return [{ ...ROOT_FRAME }];
   }

@@ -1,70 +1,105 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <FormElement>
-      <template #title>
-        {{ $t("forms.context.main_info") }}
-      </template>
-      <template #description>
-        <p class="mb-4">
-          Pagrindinė informacija apie naudotoją (dažniausiai, tai bus
-          studentas, VU SA narys).
-        </p>
-        <p>
-          Naudotojai iš vusa.lt/mano
-          <strong> netrinami bei negalima keisti jų vardų pavardžių. </strong>
-          Jeigu pasikeitė koordinatorius, studentų atstovas:
-        </p>
-        <ol>
-          <li>Pašalink pareigybes iš šio profilio</li>
-          <li>Sukurk naują naudotojo profilį</li>
-          <li>Priskirk jam jo pareigybes</li>
-        </ol>
-      </template>
-      <FormFieldWrapper id="name" :label="$t('forms.fields.name_and_surname')" required>
-        <Input v-model="form.name" :disabled="(user.name !== '' && !isSuperAdmin) || !canUpdateIdentity" type="text"
-          placeholder="Įrašyti vardą ir pavardę" />
+  <FormPage
+    :title="isCreating ? $t('Naujas narys (-ė)') : userTitle"
+    :bar-title="isCreating ? undefined : userTitle"
+    :head-title="isCreating ? $t('Naujas narys (-ė)') : userTitle"
+    :lead="isCreating ? $t('Sukurk profilį ir iškart priskirk bent vieną pareigybę — kitas galėsi pridėti asmens puslapyje.') : undefined"
+    :entity-type="ModelEnum.USER"
+    :back-href="isCreating ? route('users.index') : route('users.show', user.id)"
+    :back-label="isCreating ? $t('Nariai') : $t('Į profilį')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :field-ids
+    :mode="isCreating ? 'create' : 'edit'"
+    :available-locales="[]"
+    :activity-subject="user.id ? { type: 'user', id: user.id } : undefined"
+    :created-at="user?.created_at"
+    :updated-at="user?.updated_at"
+    @submit="emit('submit:form', form)"
+  >
+    <FormSection
+      :title="$t('Kas tai?')"
+      :description="$t('Dažniausiai tai studentas, VU SA narys. Naudotojai iš vusa.lt/mano netrinami, o esamų vardų pavardžių keisti negalima.')"
+    >
+      <FormFieldWrapper
+        id="user-name"
+        :label="$t('forms.fields.name_and_surname')"
+        required
+        :error="form.errors.name"
+      >
+        <Input
+          id="user-name"
+          v-model="form.name"
+          :disabled="(user.name !== '' && !isSuperAdmin) || !canUpdateIdentity"
+          type="text"
+          placeholder="Vardas Pavardė"
+        />
       </FormFieldWrapper>
 
-      <FormFieldWrapper id="email" label="El. paštas" required>
-        <div v-if="isUserEmailMaybeDutyEmail && canUpdateIdentity" class="mb-1 text-xs text-amber-600 dark:text-amber-400">
-          Jeigu <strong>{{ user.email }}</strong> nėra pareigybinis el.
-          paštas (<code>@vusa.lt</code> dažniausiai naudojami pareigybėms), pagal gerąsias praktikas jį reikėtų
-          pakeisti į studentinį arba kitą VU paštą.
-        </div>
-        <Input v-model="form.email" :disabled="!canUpdateIdentity"
-          placeholder="vardas.pavarde@stud.vu.lt" />
-        <div v-if="!canUpdateIdentity" class="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
-          <Lock class="mt-0.5 size-3 shrink-0" />
-          <span>{{ $t('users.identity_locked_hint') }}</span>
-        </div>
+      <FormFieldWrapper
+        id="user-email"
+        :label="$t('El. paštas')"
+        required
+        :error="form.errors.email"
+      >
+        <Input
+          id="user-email"
+          v-model="form.email"
+          :disabled="!canUpdateIdentity"
+          placeholder="vardas.pavarde@stud.vu.lt"
+        />
+        <p v-if="!canUpdateIdentity" class="flex items-start gap-1.5 text-xs text-muted-foreground">
+          <Lock class="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+          {{ $t('users.identity_locked_hint') }}
+        </p>
+        <p v-else-if="isUserEmailMaybeDutyEmail" class="text-xs text-status-attention" data-testid="duty-email-hint">
+          {{ $t('Šis el. paštas baigiasi @vusa.lt, kuris dažniausiai naudojamas pareigybėms. Geriau naudoti studentinį ar kitą VU paštą.') }}
+        </p>
         <DuplicateUserWarning v-if="isCreating" :matches="duplicateMatches" class="mt-2" />
-        <div v-if="currentDutiesWithVusaEmail.length > 0" class="mt-2 rounded-md bg-blue-50 p-2.5 text-xs dark:bg-blue-950">
-          <p class="mb-1.5 font-medium text-blue-800 dark:text-blue-200">
-            Šie pareigybiniai el. paštai taip pat leidžia prisijungti prie sistemos:
+        <div v-if="currentDutiesWithVusaEmail.length > 0" class="space-y-1 pt-1 text-xs text-muted-foreground">
+          <p class="font-medium text-foreground">
+            {{ $t('Šie pareigybiniai el. paštai taip pat leidžia prisijungti prie sistemos:') }}
           </p>
-          <ul class="space-y-1">
-            <li v-for="duty in currentDutiesWithVusaEmail" :key="duty.id" class="flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
-              <span class="truncate font-medium">{{ duty.name }}</span>
-              <span class="text-blue-400">→</span>
-              <code class="rounded bg-blue-100 px-1 py-0.5 text-[10px] dark:bg-blue-900">{{ duty.email }}</code>
+          <ul class="space-y-0.5">
+            <li v-for="duty in currentDutiesWithVusaEmail" :key="duty.id" class="flex items-center gap-1.5">
+              <span class="truncate font-medium text-foreground">{{ duty.name }}</span>
+              <span aria-hidden="true">→</span>
+              <code class="text-[12px]">{{ duty.email }}</code>
             </li>
           </ul>
         </div>
-        <div v-else-if="!user.current_duties?.some(d => d.email)" class="mt-2 text-xs text-muted-foreground">
-          Šis el. paštas yra vienintelis naudojamas prisijungimui.
-        </div>
       </FormFieldWrapper>
+    </FormSection>
 
-      <div class="grid gap-4 lg:grid-cols-2">
-        <FormFieldWrapper id="phone" :label="$t('forms.fields.phone')">
-          <Input v-model="form.phone" placeholder="+370 612 34 567" />
+    <FormSection
+      :title="$t('Kaip su juo susisiekti?')"
+      :description="$t('Nuotrauka ir kontaktai rodomi viešame vusa.lt puslapyje, kai asmuo turi pareigybę.')"
+      :badge="$t('Matoma vusa.lt')"
+      public-marker
+    >
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FormFieldWrapper
+          id="user-phone"
+          :label="`${$t('forms.fields.phone')} (${$t('neprivaloma')})`"
+          :error="form.errors.phone"
+        >
+          <Input id="user-phone" v-model="form.phone" placeholder="+370 612 34 567" />
         </FormFieldWrapper>
-        <FormFieldWrapper id="facebook_url" :label="$t('forms.fields.facebook_url')">
-          <Input v-model="form.facebook_url" placeholder="https://www.facebook.com/..." />
+
+        <FormFieldWrapper
+          id="user-facebook"
+          :label="`${$t('forms.fields.facebook_url')} (${$t('neprivaloma')})`"
+          :error="form.errors.facebook_url"
+        >
+          <Input id="user-facebook" v-model="form.facebook_url" placeholder="https://www.facebook.com/..." />
         </FormFieldWrapper>
       </div>
 
-      <FormFieldWrapper id="profile_photo_path" :label="$t('forms.fields.picture')">
+      <FormFieldWrapper
+        id="user-picture"
+        :label="`${$t('forms.fields.picture')} (${$t('neprivaloma')})`"
+      >
         <ImageUpload
           v-model:url="form.profile_photo_path"
           v-model:focal-point-value="form.profile_photo_focal_point"
@@ -76,301 +111,135 @@
           :existing-url="user?.profile_photo_path"
         />
       </FormFieldWrapper>
+    </FormSection>
 
-      <FormFieldWrapper v-if="isSuperAdmin" id="roles" :label="$t('forms.fields.admin_role')">
-        <MultiSelect
-          v-model="selectedRoles"
-          :options="rolesOptions"
-          label-field="label"
-          value-field="value"
-          placeholder="Be rolės..."
-        />
-      </FormFieldWrapper>
-    </FormElement>
-
-    <FormElement>
-      <template #title>
-        {{ $t("Įvardžiai") }}
-      </template>
-      <template #description>
-        <p>
-          Jei nurodytas įvardis, asmens pareigybių pavadinimo galūnė automatiškai bus pakeista (nebent tai išjungta
-          asmens-pareigybės įraše.
-        </p>
-        <p>
-          Taip pat, pasirinkus įvardžių rodymą viešai, jis bus rodomas prie asmens vardo, pavardės
-        </p>
-      </template>
-      <div class="grid gap-4 lg:grid-cols-2">
-        <FormFieldWrapper id="pronouns" :label="$t('forms.fields.pronouns')">
-          <MultiLocaleInput v-model:input="form.pronouns" :placeholder="{ lt: 'Jie/jų', en: 'They/them' }" />
+    <template #aside>
+      <FormPanel
+        v-if="isCreating"
+        :title="$t('Pareigybės ir rolės')"
+        :icon="Briefcase"
+        title-class="text-brand"
+      >
+        <FormFieldWrapper
+          id="user-duties"
+          :label="$t('Pareigybės')"
+          required
+          :hint="$t('Profilis be pareigybės niekam nematomas. Pareigybių sąrašą ir datas vėliau tvarkysi asmens puslapyje.')"
+          :error="form.errors.current_duties"
+        >
+          <MultiSelect
+            id="user-duties"
+            v-model="selectedDuties"
+            :options="dutyOptions"
+            label-field="label"
+            value-field="value"
+            :placeholder="$t('Pasirinkite pareigybes…')"
+          />
         </FormFieldWrapper>
-        <FormFieldWrapper id="show_pronouns" :label="$t('forms.fields.show_pronouns')">
-          <div class="flex items-center gap-2">
-            <Switch :model-value="form.show_pronouns" :disabled="!form.pronouns?.lt && !form.pronouns?.en" @update:model-value="form.show_pronouns = $event" />
-            <span class="text-sm text-muted-foreground">
-              {{ form.show_pronouns ? 'Įvardžiai rodomi viešai' : 'Įvardžiai nerodomi viešai' }}
-            </span>
-          </div>
+
+        <FormFieldWrapper
+          v-if="isSuperAdmin"
+          id="user-roles"
+          :label="`${$t('forms.fields.admin_role')} (superadmin)`"
+        >
+          <MultiSelect
+            id="user-roles"
+            v-model="selectedRoles"
+            :options="rolesOptions"
+            label-field="label"
+            value-field="value"
+            :placeholder="$t('Be rolės...')"
+          />
         </FormFieldWrapper>
-      </div>
-    </FormElement>
+      </FormPanel>
 
-    <FormElement>
-      <template #title>
-        {{ $t("forms.context.user_duties") }}
-      </template>
-      <template #description>
-        <p>
-          Kiekvienas asmuo gali turėti daugiau nei vieną pareigybę, pagal
-          kurią gali atlikti veiksmus platformoje, taip pat būti rodomas (-a)
-          viešame vusa.lt puslapyje.
-        </p>
-        <p class="mt-4">
-          Pareigybės turėtų būti kuriamos tik tada, jeigu institucijoje tokios
-          pareigybės nėra.
-        </p>
-      </template>
-      <div class="space-y-2">
-        <div class="flex items-center gap-2 mb-2">
-          <Label><strong>{{ $t("Pareigybės") }}</strong></Label>
-          <Button size="xs" variant="secondary" as="a" :href="route('duties.create')" target="_blank">
-            <IFluentAdd24Filled />
-            Sukurti naują pareigybę?
-          </Button>
-          <Button v-if="user.id" class="ml-auto" size="xs" variant="outline" @click="timelineOpen = true">
-            <CalendarRange class="size-3.5" />
-            {{ $t('dutiables.timeline.open') }}
-          </Button>
-          <Button :class="{ 'ml-auto': !user.id }" size="xs" variant="outline" @click="handleChangeDutyShowMode">
-            Pakeisti rodymo būdą
-          </Button>
-        </div>
-        <TransferList v-if="dutyShowMode === 'tree'" v-model="form.current_duties" :options="flattenDutyOptions">
-          <template #source="{ filter }">
-            <Tree
-              v-model="form.current_duties"
-              :items="dutyOptions"
-              :get-key="(item) => String(item.value)"
-              :get-label="(item) => item.label"
-              :is-item-disabled="(item) => item.checkboxDisabled ?? false"
-              :filter
-              multiple
-              class="p-1"
-            >
-              <template #item="{ item }">
-                <span class="inline-flex items-center gap-2">
-                  {{ item.label }}
-                  <Button
-                    v-if="typeof item.value !== 'number'"
-                    variant="ghost"
-                    size="icon-xs"
-                    as="a"
-                    :href="item.checkboxDisabled
-                      ? route('institutions.edit', item.value)
-                      : route('duties.edit', item.value)"
-                    target="_blank"
-                    @click.stop
-                  >
-                    <Eye16Regular />
-                  </Button>
-                </span>
-              </template>
-            </Tree>
-          </template>
-          <template #target-label="{ option }">
-            <span class="inline-flex min-w-0 items-center gap-2">
-              <DutyLabel :duty="targetDutyLabel(option)" :holder="dutyHolder" />
-              <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
-                <Eye16Regular />
-              </Button>
-            </span>
-          </template>
-        </TransferList>
-        <TransferList v-else v-model="form.current_duties" :options="flattenDutyOptions">
-          <template #target-label="{ option }">
-            <span class="inline-flex min-w-0 items-center gap-2">
-              <DutyLabel :duty="targetDutyLabel(option)" :holder="dutyHolder" />
-              <Button variant="ghost" size="icon-xs" as="a" :href="route('duties.edit', option.value)" target="_blank" @click.stop>
-                <Eye16Regular />
-              </Button>
-            </span>
-          </template>
-        </TransferList>
-      </div>
-      <Card class="mb-4 h-auto">
-        <CardHeader class="pb-2">
-          <CardTitle class="text-base">
-            Užimamos pareigos
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SimpleDataTable :data="user.current_duties ?? []" :columns="existingDutyColumns" :enable-pagination="false" :enable-filtering="false" />
-        </CardContent>
-      </Card>
-      <Card class="mb-4 h-auto">
-        <CardHeader class="pb-2">
-          <CardTitle class="text-base">
-            Buvusios pareigos
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SimpleDataTable :data="user.previous_duties ?? []" :columns="previousDutyColumns" :enable-pagination="false" :enable-filtering="false" />
-        </CardContent>
-      </Card>
-    </FormElement>
-    <FormElement>
-      <template #title>
-        {{ $t("forms.context.additional_info") }}
-      </template>
-      <template v-if="user.last_action">
-        <p>
-          Paskutinį kartą prisijungė {{ formatStaticTime(user.last_action) }}.
-        </p>
-      </template>
-      <!-- Password Management Section - Only for Super Admins -->
-      <template v-if="isSuperAdmin">
-        <div class="border-t border-gray-200 pt-4 mt-4">
-          <h4 class="font-semibold text-lg mb-2">
-            {{ $t("Slaptažodžio valdymas") }}
-          </h4>
-          <div class="flex items-center gap-4">
-            <div>
-              <span class="inline-flex items-center gap-2">
-                <span>{{ $t("Slaptažodžio būsena") }}:</span>
-                <Badge :variant="user.has_password ? 'success' : 'warning'" size="tiny">
-                  {{ user.has_password ? $t("Nustatytas") : $t("Nenustatytas") }}
-                </Badge>
-              </span>
-            </div>
-            <div class="flex gap-2">
-              <AlertDialog>
-                <AlertDialogTrigger as-child>
-                  <Button size="sm">
-                    {{ $t("Generuoti naują slaptažodį") }}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{{ $t("Ar tikrai norite sugeneruoti naują slaptažodį šiam naudotojui?") }}</AlertDialogTitle>
-                    <AlertDialogDescription v-if="user.has_password" class="text-orange-500">
-                      {{ $t("Dėmesio: Tai pakeis esamą naudotojo slaptažodį!") }}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{{ $t("Atšaukti") }}</AlertDialogCancel>
-                    <AlertDialogAction @click="generatePassword">
-                      {{ $t("Generuoti") }}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+      <FormPanel
+        :title="$t('Kreipinys ir įvardžiai')"
+        :icon="UserCheck"
+        title-class="text-brand"
+      >
+        <FormFieldWrapper
+          id="user-pronouns"
+          :label="`${$t('forms.fields.pronouns')} (${$t('neprivaloma')})`"
+          :hint="$t('Nurodžius įvardį, pareigybės pavadinimo galūnė keičiasi automatiškai.')"
+          :error="form.errors.pronouns || form.errors['pronouns.lt'] || form.errors['pronouns.en']"
+        >
+          <MultiLocaleInput
+            id="user-pronouns"
+            v-model:input="form.pronouns"
+            :placeholder="{ lt: 'Jie/jų', en: 'They/them' }"
+          />
+        </FormFieldWrapper>
 
-              <AlertDialog v-if="user.has_password">
-                <AlertDialogTrigger as-child>
-                  <Button size="sm" variant="destructive">
-                    {{ $t("Ištrinti slaptažodį") }}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{{ $t("Ar tikrai norite ištrinti šio naudotojo slaptažodį?") }}</AlertDialogTitle>
-                    <AlertDialogDescription class="text-orange-500">
-                      {{ $t("Dėmesio: Naudotojas nebegalės prisijungti su slaptažodžiu!") }}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{{ $t("Atšaukti") }}</AlertDialogCancel>
-                    <AlertDialogAction @click="deletePassword">
-                      {{ $t("Ištrinti") }}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-
-          <!-- Display generated password if available -->
-          <div v-if="$page.props.flash.data" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
-            <h5 class="font-semibold mb-2">
-              {{ $t("Sugeneruotas slaptažodis:") }}
-            </h5>
-            <div class="relative mb-2">
-              <Input
-                readonly
-                :model-value="$page.props.flash.data"
-                class="font-mono"
-              />
-              <Button
-                size="sm"
-                variant="outline"
-                class="absolute right-2 top-1/2 transform -translate-y-1/2"
-                @click="copyPasswordToClipboard"
-              >
-                <IFluentCopy16Regular />
-                {{ hasCopied ? $t("Nukopijuota!") : $t("Kopijuoti") }}
-              </Button>
-            </div>
-            <p class="text-sm text-orange-600">
-              {{ $t("Šis slaptažodis bus rodomas tik vieną kartą! Įsitikinkite, kad jį išsaugojote saugiai.") }}
+        <div class="flex items-start gap-2.5 pt-1">
+          <Checkbox
+            id="user-show-pronouns"
+            class="mt-0.5"
+            :model-value="Boolean(form.show_pronouns)"
+            :disabled="!hasPronouns"
+            @update:model-value="form.show_pronouns = $event === true"
+          />
+          <div class="space-y-0.5">
+            <Label for="user-show-pronouns" class="cursor-pointer text-sm font-normal">
+              {{ $t('forms.fields.show_pronouns') }}
+            </Label>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Matoma vusa.lt') }} · {{ $t('Įvardžiai rodomi prie asmens vardo ir pavardės.') }}
             </p>
           </div>
         </div>
-      </template>
-    </FormElement>
+      </FormPanel>
 
-    <AccessChangeWarningDialog :open="accessChangeOpen" :report="accessChangeReport"
-      @update:open="accessChangeOpen = $event" @confirm="confirmAccessChange" @cancel="cancelAccessChange" />
-  </AdminForm>
+      <FormPanel
+        v-if="!isCreating && user.last_action"
+        :title="$t('Paskutinis veiksmas')"
+        :icon="Clock"
+        title-class="text-brand"
+      >
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Paskutinį kartą prisijungė') }} {{ formatStaticTime(user.last_action) }}
+        </p>
+      </FormPanel>
+    </template>
 
-  <DutiableTimelineDialog v-if="user.id" v-model:open="timelineOpen" scope-type="user" :scope-id="user.id" />
+    <template v-if="!isCreating && user.last_action" #footer-extra>
+      <span class="text-xs text-muted-foreground">
+        {{ $t('Paskutinį kartą prisijungė') }} {{ formatStaticTime(user.last_action) }}
+      </span>
+    </template>
+  </FormPage>
 </template>
 
-<script setup lang="tsx">
-import type { ColumnDef } from '@tanstack/vue-table';
-import { computed, ref } from 'vue';
-import { router, useForm, usePage } from '@inertiajs/vue3';
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarRange, Lock, TriangleAlert } from 'lucide-vue-next';
+import { Briefcase, Clock, Lock, UserCheck } from 'lucide-vue-next';
 
-import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
-
-import AdminForm from './AdminForm.vue';
-import AccessChangeWarningDialog from './AccessChangeWarningDialog.vue';
 import DuplicateUserWarning from './DuplicateUserWarning.vue';
-import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
-import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
-import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-import { useApiMutation } from '@/Composables/useApi';
-import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
-import Delete24Regular from '~icons/fluent/delete24-regular';
-import Eye16Regular from '~icons/fluent/eye16-regular';
-import DutyLabel from '@/Components/Duties/DutyLabel.vue';
-// Lucide is the icon set for admin surfaces (AGENTS.md); the Fluent imports here
-// are legacy and stay until this form is migrated wholesale.
-import PersonEdit24Regular from '~icons/fluent/person-edit24-regular';
-import IFluentCopy16Regular from '~icons/fluent/copy16-regular';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/Components/ui/alert-dialog';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { FormPanel } from '@/Components/Patterns';
+import FormSection from '@/Components/Patterns/FormSection.vue';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { Switch } from '@/Components/ui/switch';
-import { TransferList } from '@/Components/ui/transfer-list';
-import { Tree } from '@/Components/ui/tree';
 import { ImageUpload } from '@/Components/ui/upload';
+import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
+import { ModelEnum } from '@/Types/enums';
 import { formatStaticTime } from '@/Utils/IntlTime';
-import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
 
 const props = withDefaults(defineProps<{
   user: App.Entities.User;
-  roles: App.Entities.Role[];
-  tenantsWithDuties: App.Entities.Tenant[];
-  permissableTenants: App.Entities.Tenant[];
+  /** Create only: a super admin may give the new person roles. */
+  roles?: App.Entities.Role[];
+  /** Create only: the duties a new person can start with. */
+  tenantsWithDuties?: App.Entities.Tenant[];
+  permissableTenants?: App.Entities.Tenant[];
+  /** Create mode when set: keeps the draft across a failed submit. */
   rememberKey?: 'CreateUser';
   /**
    * Whether the acting admin may change this person's login email. Existing names
@@ -378,385 +247,87 @@ const props = withDefaults(defineProps<{
    */
   canUpdateIdentity?: boolean;
 }>(), {
+  roles: () => [],
+  tenantsWithDuties: () => [],
+  permissableTenants: () => [],
   canUpdateIdentity: true,
 });
 
-const timelineOpen = ref(false);
-
-defineEmits<{
+const emit = defineEmits<{
   (event: 'submit:form', form: unknown): void;
-  (event: 'delete'): void;
 }>();
 
-const dutyShowMode = ref<'tree' | 'transfer'>('tree');
-
+const isCreating = computed(() => !props.user.id);
 const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? false);
-const handleChangeDutyShowMode = () => {
-  dutyShowMode.value = dutyShowMode.value === 'tree' ? 'transfer' : 'tree';
-};
 
-// Deleting a duty assignment may strip the acting user's own access; guard the
-// removal so the warning dialog surfaces instead of a silent no-op rollback.
-const {
-  report: accessChangeReport,
-  open: accessChangeOpen,
-  guardedSubmit: guardedDutiableDestroy,
-  confirm: confirmAccessChange,
-  cancel: cancelAccessChange,
-} = useAccessChangeGuard();
+const userTitle = computed(() => props.user.name);
 
-const deleteDutiable = (pivotId: string) => {
-  guardedDutiableDestroy(acknowledge =>
-    router.delete(route('dutiables.destroy', pivotId), {
-      data: { acknowledge_access_change: acknowledge },
-      preserveState: true,
-      preserveScroll: true,
-    }),
-  );
-};
-
-const form = props.rememberKey
-  ? useForm(props.rememberKey, props.user)
-  : useForm(props.user);
-
-form.roles = props.user.roles?.map(role => role.id);
-
-if (Array.isArray(form.pronouns)) {
-  form.pronouns = { lt: '', en: '' };
-}
-
-const rolesOptions = props.roles.map(role => ({
-  label: role.name,
-  value: role.id,
-}));
-
-// Bridge object array <-> id array for MultiSelect
-const selectedRoles = computed({
-  get: () => rolesOptions.filter(opt => form.roles?.includes(opt.value)),
-  set: (items) => { form.roles = items.map(item => item.value); },
+// Duties and roles of an existing person are edited on the record, so only the fields the form
+// owns are sent; a create adds the first duties (and, for a super admin, roles).
+const initial = () => ({
+  name: props.user.name ?? '',
+  email: props.user.email ?? '',
+  phone: (props.user.phone ?? null) as string | null,
+  facebook_url: (props.user.facebook_url ?? null) as string | null,
+  profile_photo_path: (props.user.profile_photo_path ?? null) as string | null,
+  profile_photo_focal_point: ((props.user as unknown as Record<string, unknown>).profile_photo_focal_point ?? null) as string | null,
+  pronouns: (Array.isArray(props.user.pronouns) || !props.user.pronouns
+    ? { lt: '', en: '' }
+    : { lt: '', en: '', ...(props.user.pronouns as Record<string, string>) }) as Record<'lt' | 'en', string>,
+  show_pronouns: Boolean(props.user.show_pronouns),
+  ...(isCreating.value ? { current_duties: [] as string[], roles: [] as number[] } : {}),
 });
 
-interface DutyTreeOption {
-  label: string;
-  value: string | number;
-  checkboxDisabled?: boolean;
-  children?: DutyTreeOption[];
-}
+const form = props.rememberKey ? useForm(props.rememberKey, initial()) : useForm(initial());
 
-const dutyOptions: DutyTreeOption[] = props.tenantsWithDuties.map(
-  (tenant) => {
-    return ({
-      label: tenant.shortname,
-      value: tenant.id,
-      checkboxDisabled: true,
-      children: tenant.institutions?.map(institution => ({
-        label: institution.name,
-        value: institution.id,
-        checkboxDisabled: true,
-        children: institution.duties?.map(duty => ({
-          label: duty.name,
-          value: duty.id,
-        })),
-      })),
-    });
+// Error keys that are not the id of the field they belong to.
+const fieldIds = {
+  name: 'user-name',
+  email: 'user-email',
+  phone: 'user-phone',
+  facebook_url: 'user-facebook',
+  current_duties: 'user-duties',
+  roles: 'user-roles',
+};
+
+const hasPronouns = computed(() => Boolean(form.pronouns?.lt || form.pronouns?.en));
+
+// --- Create only: the first duties and, for a super admin, roles -------------------------------
+
+const rolesOptions = computed(() => props.roles.map(role => ({ label: role.name, value: role.id })));
+
+const selectedRoles = computed({
+  get: () => rolesOptions.value.filter(option => (form as unknown as { roles: number[] }).roles?.includes(option.value)),
+  set: (items: { label: string; value: number }[]) => {
+    (form as unknown as { roles: number[] }).roles = items.map(item => item.value);
   },
-).filter(tenant => props.permissableTenants.some(permissable => permissable.id === tenant.value));
+});
+
+/** Only the tenants the actor may create people in, flattened so a duty is named with its institution. */
+const dutyOptions = computed(() => props.tenantsWithDuties
+  .filter(tenant => props.permissableTenants.some(permissable => permissable.id === tenant.id))
+  .flatMap(tenant => (tenant.institutions ?? []).flatMap(institution =>
+    (institution.duties ?? []).map(duty => ({
+      label: `${duty.name} · ${institution.name} (${tenant.shortname})`,
+      value: String(duty.id),
+    })))));
+
+const selectedDuties = computed({
+  get: () => dutyOptions.value.filter(option => (form as unknown as { current_duties: string[] }).current_duties?.includes(option.value)),
+  set: (items: { label: string; value: string }[]) => {
+    (form as unknown as { current_duties: string[] }).current_duties = items.map(item => item.value);
+  },
+});
 
 // Only the create form can produce a duplicate; on edit the record already exists.
-const isCreating = computed(() => !props.user.id);
-
 const { matches: duplicateMatches } = useDuplicateUserCheck(
   () => (isCreating.value ? String(form.name ?? '') : ''),
   () => (isCreating.value ? String(form.email ?? '') : ''),
 );
 
-// check if user email looks like a duty email (@vusa.lt)
-const isUserEmailMaybeDutyEmail = computed(() => {
-  return props.user.email.toLowerCase().endsWith('@vusa.lt');
-});
+// A @vusa.lt address usually belongs to a duty, not a person.
+const isUserEmailMaybeDutyEmail = computed(() => (props.user.email ?? '').toLowerCase().endsWith('@vusa.lt'));
 
-const currentDutiesWithVusaEmail = computed(() => {
-  return props.user.current_duties?.filter(duty => duty.email?.toLowerCase().endsWith('@vusa.lt')) ?? [];
-});
-
-/**
- * The person whose duties are being listed — drives the duty-name ending
- * inflection (e.g. "Koordinatorius" → "Koordinatorė") so a holder's duties read
- * in their gender, like on the public contacts page. Bound to the live form so
- * the preview updates as the admin edits pronouns or the name.
- */
-const dutyHolder = computed(() => {
-  const pronouns = form.pronouns as string | Record<string, string> | null | undefined;
-  const locale = usePage().props.app.locale as 'lt' | 'en';
-  const pronounString = typeof pronouns === 'string'
-    ? pronouns
-    : (pronouns?.[locale] ?? '');
-  return {
-    name: form.name,
-    pronouns: pronounString,
-  };
-});
-
-// Inline editing state for dutiable additional_email
-const editingDutiableId = ref<string | null>(null);
-const editingEmail = ref('');
-
-const startEditingEmail = (dutiableId: string | undefined, currentEmail: string | null) => {
-  if (!dutiableId) return;
-  editingDutiableId.value = dutiableId;
-  editingEmail.value = currentEmail ?? '';
-};
-
-const updateDutiableUrl = ref('');
-const updateDutiableBody = ref<{ additional_email: string | null }>({ additional_email: null });
-
-const { execute: executeDutiableUpdate, isFetching: isUpdatingEmail, isSuccess: emailUpdateSuccess, error: emailUpdateError } = useApiMutation(
-  updateDutiableUrl,
-  'PATCH',
-  updateDutiableBody,
-  { showSuccessToast: true, successMessage: 'Kontaktinis el. paštas atnaujintas' },
-);
-
-const finishEditingEmail = async (dutiableId: string) => {
-  if (!editingDutiableId.value || editingDutiableId.value !== dutiableId) return;
-
-  const duty = props.user.current_duties?.find(d => d.pivot?.id === dutiableId);
-  const currentValue = duty?.pivot?.additional_email ?? duty?.email ?? props.user.email;
-
-  if (editingEmail.value === currentValue) {
-    editingDutiableId.value = null;
-    return;
-  }
-
-  updateDutiableUrl.value = route('dutiables.update', dutiableId);
-  updateDutiableBody.value = { additional_email: editingEmail.value || null };
-  await executeDutiableUpdate();
-
-  if (emailUpdateSuccess.value) {
-    if (duty && duty.pivot) {
-      duty.pivot.additional_email = editingEmail.value || null;
-    }
-  }
-
-  editingDutiableId.value = null;
-};
-
-const existingDutyColumns: ColumnDef<any, any>[] = [
-  {
-    accessorKey: 'name',
-    header: () => 'Pavadinimas',
-    cell: ({ row }) => {
-      const missingStudyProgram = row.original.contacts_grouping === 'study_program' && !row.original.pivot?.study_program_id;
-      return (
-        <span class="inline-flex items-center gap-1.5">
-          <a
-            target="_blank"
-            href={route('duties.edit', { id: row.original.id })}
-            class="flex-inline gap-2 text-sm"
-          >
-            <DutyLabel
-              duty={{ name: row.original.name, institution: row.original.institution }}
-              holder={dutyHolder.value}
-              useOriginalDutyName={row.original.pivot?.use_original_duty_name}
-            />
-          </a>
-          {missingStudyProgram && (
-            <TriangleAlert
-              class="size-3.5 shrink-0 text-amber-500"
-              title="Ši pareigybė grupuoja kontaktus pagal studijų programą, bet priskyrimui ji nenurodyta"
-            />
-          )}
-        </span>
-      );
-    },
-  },
-  {
-    id: 'period',
-    header: () => 'Laikotarpis',
-    cell: ({ row }) => {
-      const start = formatStaticTime(row.original.pivot.start_date);
-      const end = row.original.pivot?.end_date ? formatStaticTime(row.original.pivot.end_date) : '—';
-      return (
-        <span class="text-xs text-muted-foreground">
-          {start}
- –
-          {end}
-        </span>
-      );
-    },
-  },
-  {
-    id: 'email',
-    header: () => 'El. paštai',
-    cell: ({ row }) => {
-      const pivot = row.original.pivot as App.Entities.Dutiable | undefined;
-      const dutyEmail = row.original.email as string | null;
-      const isCurrentDuty = props.user.current_duties?.some(d => d.pivot?.id === pivot?.id);
-
-      if (isCurrentDuty && editingDutiableId.value === pivot?.id) {
-        return (
-          <div class="flex items-center gap-1">
-            <Input
-              modelValue={editingEmail.value}
-              onUpdate:modelValue={(val: string) => { editingEmail.value = val; }}
-              onBlur={() => finishEditingEmail(pivot!.id)}
-              onKeydown={(e: KeyboardEvent) => {
-                if (e.key === 'Enter') finishEditingEmail(pivot!.id);
-                if (e.key === 'Escape') { editingDutiableId.value = null; }
-              }}
-              class="h-7 min-w-[160px] text-xs"
-              placeholder="Kontaktinis el. paštas"
-            />
-            {isUpdatingEmail.value && <span class="text-xs text-muted-foreground shrink-0">saugoma...</span>}
-            {emailUpdateError.value && !isUpdatingEmail.value && (
-              <span class="text-xs text-red-500 shrink-0" title={emailUpdateError.value}>!</span>
-            )}
-          </div>
-        );
-      }
-
-      return (
-        <div class="flex flex-col gap-0.5 text-xs">
-          {dutyEmail && (
-            <span class="text-muted-foreground">
-              Pareigybės:
-              {' '}
-              <span class="text-foreground">{dutyEmail}</span>
-              {dutyEmail.toLowerCase().endsWith('@vusa.lt') && (
-                <Badge variant="outline" class="ml-1 text-[10px] px-1 py-0 h-4 shrink-0">prisijungimas</Badge>
-              )}
-            </span>
-          )}
-          {pivot?.additional_email
-            ? (
-                <span
-                  class={['text-muted-foreground', isCurrentDuty ? 'cursor-pointer hover:text-primary' : '']}
-                  onClick={() => isCurrentDuty && startEditingEmail(pivot?.id, pivot.additional_email)}
-                  title={isCurrentDuty ? 'Spustelėkite redaguoti kontaktinį el. paštą' : ''}
-                >
-                  Kontaktinis:
-                  {' '}
-                  <span class="text-foreground">{pivot.additional_email}</span>
-                  <Badge variant="outline" class="ml-1 text-[10px] px-1 py-0 h-4 shrink-0">kontaktinis</Badge>
-                </span>
-              )
-            : isCurrentDuty
-              ? (
-                  <span
-                    class="cursor-pointer text-muted-foreground hover:text-primary"
-                    onClick={() => startEditingEmail(pivot?.id, '')}
-                    title="Spustelėkite, kad pridėtumėte papildomą kontaktinį el. paštą. Įprastai bus naudojamas jau esamas vartotojo prisijungimo el. paštas."
-                  >
-                    + Pridėti papildomą kontaktinį
-                  </span>
-                )
-              : null}
-
-        </div>
-      );
-    },
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        as="a"
-        href={route('dutiables.edit', row.original.pivot.id as string)}
-        target="_blank"
-        title="Redaguoti pareigybės laikotarpį"
-      >
-        <PersonEdit24Regular />
-      </Button>
-    ),
-  },
-];
-
-const previousDutyColumns: ColumnDef<any, any>[] = [
-  ...existingDutyColumns,
-  {
-    id: 'delete',
-    cell: ({ row }) => (
-      <Button
-        size="icon-xs"
-        variant="destructive"
-        onClick={() => deleteDutiable(row.original.pivot.id)}
-      >
-        <Delete24Regular />
-      </Button>
-    ),
-  },
-];
-
-const flattenDutyOptions = computed(() => {
-  return dutyOptions.flatMap(
-    tenant =>
-      tenant.children?.flatMap(
-        institution =>
-          institution.children?.map((duty) => {
-            return {
-              label:
-                dutyShowMode.value === 'tree'
-                  ? duty.label
-                  : `${duty.label} (${institution.label})`,
-              // Always the bare duty name — `label` above is concatenated with the
-              // institution in transfer mode for the plain source-list rendering,
-              // but the target-label slot below needs the name and institution
-              // as separate fields to render them as DutyLabel does elsewhere.
-              dutyName: duty.label,
-              value: duty.value,
-              tenantId: tenant.value,
-              institutionName: institution.label,
-              tenantShortname: tenant.label,
-            };
-          }),
-      ),
-  ).filter(duty => props.permissableTenants.some(permissable => permissable.id === duty?.tenantId));
-});
-
-/** Builds the DutyLabel prop from a flattened transfer-list option. */
-function targetDutyLabel(option: { dutyName?: string; label: string; institutionName?: string | null; tenantShortname?: string | null }) {
-  return {
-    name: option.dutyName ?? option.label,
-    institution: option.institutionName
-      ? { name: option.institutionName, tenant: option.tenantShortname ? { shortname: option.tenantShortname } : null }
-      : null,
-  };
-}
-
-form.current_duties = props.user.current_duties?.map(duty => duty.id);
-
-const hasCopied = ref(false);
-
-const generatePassword = () => {
-  router.post(
-    route('users.generatePassword', props.user.id as number),
-    {},
-    {
-      preserveState: true,
-      preserveScroll: true,
-    },
-  );
-};
-
-const deletePassword = () => {
-  router.delete(
-    route('users.deletePassword', props.user.id as number),
-    {
-      preserveState: true,
-      preserveScroll: true,
-    },
-  );
-};
-
-const copyPasswordToClipboard = () => {
-  const $page = usePage();
-  navigator.clipboard.writeText($page.props.flash.generated_password).then(() => {
-    hasCopied.value = true;
-    setTimeout(() => {
-      hasCopied.value = false;
-    }, 2000);
-  });
-};
+const currentDutiesWithVusaEmail = computed(() =>
+  props.user.current_duties?.filter(duty => duty.email?.toLowerCase().endsWith('@vusa.lt')) ?? []);
 </script>

@@ -12,11 +12,6 @@ const stubs = {
     emits: ['update:contents', 'close'],
     template: '<div class="fullscreen-editor-stub" />',
   },
-  SpotlightPopover: {
-    props: ['title', 'description', 'isDismissed', 'position'],
-    emits: ['dismiss'],
-    template: '<div class="spotlight-popover-stub" :data-dismissed="isDismissed"><slot /></div>',
-  },
 };
 
 function makeParts(count: number) {
@@ -50,13 +45,6 @@ describe('RichContentEditor', () => {
     expect(wrapper.text()).toContain('rich-content.content_empty');
     expect(wrapper.text()).toContain('rich-content.content_empty_description');
     expect(wrapper.findAll('.max-w-\\[14rem\\]')).toHaveLength(0);
-  });
-
-  it('renders SpotlightPopover wrapping the edit content button', () => {
-    const wrapper = mountEditor(makeParts(1));
-    const spotlight = wrapper.find('.spotlight-popover-stub');
-    expect(spotlight.exists()).toBe(true);
-    expect(spotlight.find('button').text()).toContain('rich-content.edit_content');
   });
 
   it('clicking the edit button opens RCFullscreenEditor', async () => {

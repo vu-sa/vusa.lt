@@ -39,7 +39,8 @@ test('assignment changes refresh names and contacts in the public institution in
     expect(indexedContactDocument(PublicInstitution::findOrFail($institution->id))['current_user_names'])
         ->toContain('Index Assignment Member');
 
-    $assignment->update(['end_date' => now()->toDateString()]);
+    // The end date is the last day in office, so yesterday's date has ended it.
+    $assignment->update(['end_date' => now()->subDay()->toDateString()]);
     app(SyncContactSearchIndexes::class)->handle(new DutiableChanged($assignment));
 
     $publicDocument = indexedContactDocument(PublicInstitution::findOrFail($institution->id));
@@ -161,4 +162,3 @@ test('synchronizer unsearches an institution from public index when it is inacti
     expect(fn () => $client->collections[(new PublicInstitution)->searchableAs()]->documents[(string) $institution->id]->retrieve())
         ->toThrow(ObjectNotFound::class);
 });
-

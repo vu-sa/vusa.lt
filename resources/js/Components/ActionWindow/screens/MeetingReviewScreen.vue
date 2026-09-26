@@ -3,11 +3,16 @@
     :title="$t('action_window.meeting.review.title')"
     :subtitle="$t('action_window.meeting.review.subtitle')"
   >
-    <Alert v-if="errors.general" variant="destructive" class="mb-4">
-      <AlertDescription>{{ errors.general }}</AlertDescription>
-    </Alert>
+    <div
+      v-if="errors.general"
+      role="alert"
+      class="mb-4 flex items-start gap-3 border border-status-danger-border bg-status-danger-surface p-3 text-sm text-status-danger"
+    >
+      <TriangleAlert class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      <span>{{ errors.general }}</span>
+    </div>
 
-    <dl class="divide-y divide-border overflow-hidden rounded-xl border border-border">
+    <dl class="divide-y divide-border border-y border-border">
       <ReviewRow
         :label="$t('action_window.meeting.review.institution')"
         :value="draft.institution?.name"
@@ -44,7 +49,7 @@
          delegates into the option is absent rather than offered and refused. -->
     <label
       v-if="canAnnounce"
-      class="mt-4 flex cursor-pointer select-none items-start gap-3 rounded-2xl border border-border/70 bg-card p-4"
+      class="mt-4 flex cursor-pointer select-none items-start gap-3 border border-border bg-card p-4"
     >
       <Checkbox
         :model-value="!!draft.meeting.announce_in_calendar"
@@ -62,10 +67,9 @@
     </label>
 
     <template #footer>
-      <Button class="w-full" size="lg" :disabled="submitting" @click="submit">
-        <Loader2 v-if="submitting" class="mr-2 size-4 animate-spin" />
+      <ActionWindowPrimaryButton :loading="submitting" @click="submit">
         {{ submitting ? $t('action_window.meeting.review.submitting') : $t('action_window.meeting.review.submit') }}
-      </Button>
+      </ActionWindowPrimaryButton>
     </template>
   </ActionWindowScreen>
 </template>
@@ -73,8 +77,9 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
-import { CalendarPlus, Loader2 } from 'lucide-vue-next';
+import { CalendarPlus, TriangleAlert } from 'lucide-vue-next';
 
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import { useWindowDates } from '../useWindowDates';
 import ReviewRow from '../ReviewRow.vue';
@@ -82,8 +87,6 @@ import ReviewRow from '../ReviewRow.vue';
 import { useActionWindow, type ScreenId } from '@/Composables/useActionWindow';
 import { useMeetingCreation } from '@/Composables/useMeetingCreation';
 import { invalidateActionWindowData, useActionWindowData } from '@/Composables/useActionWindowData';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
-import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { getMeetingTypeOptions, isDateOnlyMeetingType } from '@/Types/MeetingType';
 

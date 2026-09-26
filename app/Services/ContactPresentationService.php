@@ -89,7 +89,7 @@ class ContactPresentationService
                 // otherwise a member's ended row could win over their current one.
                 $query->where('duty_id', $duty->id)
                     ->where(function ($q): void {
-                        $q->whereNull('end_date')->orWhere('end_date', '>=', now());
+                        $q->whereNull('end_date')->orWhereDate('end_date', '>=', today());
                     })
                     ->with(['study_program.tenant', 'tenant']);
             },

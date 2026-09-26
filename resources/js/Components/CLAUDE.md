@@ -3,20 +3,22 @@
 How shared Vue components are organised, and which one to reach for. Read this
 **before creating a new component** — most of what you need already exists.
 
-Related: [Tables](Tables/CLAUDE.md) · [Breadcrumbs](../Composables/BREADCRUMBS_GUIDE.md) · [Frontend testing](../CLAUDE.md) · [Storybook](../../../.storybook/CLAUDE.md)
+Related: [Tables](Tables/CLAUDE.md) · [Breadcrumbs](../Composables/useBreadcrumbsUnified.ts) · [Frontend testing](../CLAUDE.md) · [Storybook](../../../.storybook/CLAUDE.md)
 
 ## Tiers
 
 Dependencies run one way — upward only. A tier never imports from a tier above it.
 
 ```
-ui/            shadcn-vue primitives. Never edited by hand (regenerated).
+ui/            shadcn-vue wrappers over reka-ui — ours to edit, styled only through tokens.
   ↑            Never imported directly by Pages/** — ESLint blocks ui/card there.
+Brand/         DisplayHeading, EyebrowLabel, TagChip — shared by admin and public.
+  ↑
 Patterns/      Generic, domain-free building blocks.
-  ↑            SectionCard, EmptyState, EntityLinkCard, DateBadge, ShowPageGrid
+  ↑            SectionCard, EmptyState, StatusBadge, SheetForm, FormSection, ConfirmDialog …
 <Entity>/      Duties/, Institutions/, Meetings/, Members/, Files/ …
   ↑            Compose Patterns + domain knowledge. One barrel index.ts per folder.
-Layouts/       Page shells: AdminContentPage, ShowPageLayout, IndexTablePage, FormUpsertLayout
+Layouts/       Page shells: OverviewPage, CollectionPage, RecordPage, FormPage
   ↑
 Pages/Admin/   Compose only. No raw <Card>, no hand-rolled hero or grid markup.
 ```
@@ -36,8 +38,9 @@ ui/  →  Public/Base/  →  Public/<area>/  →  Public/Layouts/  →  Pages/Pu
 ui/  →  Patterns/     →  <Entity>/       →  Layouts/         →  Pages/Admin/
 ```
 
-The two never import each other. Where both have a component for the same idea, that is
-deliberate — `Patterns/DateBadge` is a muted `rounded-lg` inline badge, `Public/Base/DatePlate`
+The two never import each other; what both need lives one tier down, in `Brand/` (the ruled
+display headline, the eyebrow, the tag chip) and in `ui/` (buttons and controls). Where both have a
+component for the same idea, that is deliberate — `Patterns/DateBadge` is a muted `rounded-lg` inline badge, `Public/Base/DatePlate`
 is a square plate with a brand rule sized to sit on a photograph.
 
 ### `Components/Public/Base/`
@@ -55,7 +58,7 @@ is a square plate with a brand rule sized to sit on a photograph.
 | One figure in a stats strip | `StatCell` |
 | Reader preferences (text size, contrast, underlines) | `AccessibilityMenu` |
 | The site mark | `HeaderWordmark` |
-| A primary call to action | `ui/button` with `variant="brand"` |
+| A primary call to action | `ui/button` with `variant="brand" size="lg"` |
 
 Rules for anything added there:
 
@@ -72,19 +75,52 @@ Rules for anything added there:
   'error' } }`. Storybook is the only place the rendered result can be checked in both themes —
   jsdom cannot resolve Tailwind's `dark:` variant.
 
+## Buttons and controls (both surfaces)
+
+- `ui/button` is the one button. Variants are token-only (`brand`, `outline`, `default` ink,
+  `ghost`, `secondary`, `destructive`, `link`); `brand` defaults to bold uppercase, `link` to plain,
+  and other variants to sentence case. An explicit `voice` wins on every variant. Public buttons that retain
+  uppercase use `voice="brand"`; in admin, uppercase is only for primary actions
+  (`.ai/rules/js-pages-admin.md`). `voice="sentence"` is the admin's sentence-case button for
+  outline, ghost, row actions, chips and Pradžia quick actions: at the default size it is 40px
+  (44px on touch) — don't pass `size="lg"` or a height class. `voice="plain"` is for calendar cells
+  and pagination numbers. Sizes: `lg` 48px for a page's primary,
+  `default` 44px, `sm` 36px in toolbars and row actions, `icon*` for squares.
+- `ui/control` holds the bordered control both sites build filters and toolbar triggers from:
+  `controlVariants({ size, active, voice })` (`voice="brand"` uppercase default for public/standard controls; `voice="sentence"` for admin quick filters, facet pills, and toolbar buttons),
+  `segmentGroupClass` + `segmentVariants({ active })` for view toggles, `searchFieldClass`,
+  `controlCountClass`. Don't hand-roll `border-brand bg-brand/5 …` again.
+- `ui/input` and `ui/textarea` are token-driven text controls: `inputVariants({ variant, size })` and `textareaVariants({ variant })`. Default size is `h-11` (44px touch) matching buttons and controls; use `size="sm"` (`h-9`) for compact toolbars. On form edit canvases, pass `variant="surface"` (`bg-secondary/50 border-border focus:border-brand`).
+- `ui/select` and `ui/single-select` share `selectTriggerVariants({ variant, size })`: `h-11` default height, `variant="surface"` for forms, square corners.
+- `ui/card` provides `cardVariants({ variant })` (`default`, `surface`, `interactive`, `ghost`). Hairline border, square corners, no shadows.
+- `ui/badge` defaults to sentence case / literal casing (`voice="sentence"`), with opt-in `voice="brand"` for uppercase.
+- `Brand/TagChip` provides square tag kickers with `tagChipVariants({ variant })` (`solid`, `outline`, `muted`).
+- `StatusBadge` renders sentence case by default, automatically keeping `contentStatuses` and `bannerStatuses` uppercase (or via explicit `voice="brand"`).
+- Tables style through `ui/table` (hairline box, shaded uppercase header, roomy rows).
+
 ## What do I reach for?
 
 | I need… | Use | From |
 |---|---|---|
-| An admin **Show** page | `ShowPageLayout` | `@/Components/Layouts/ShowPageLayout.vue` |
-| An admin **index** page (table) | `IndexTablePage` | `@/Components/Layouts/IndexTablePage.vue` |
-| A **create/edit** form page | `FormUpsertLayout` | `@/Components/Layouts/FormUpsertLayout.vue` |
-| Any other admin page shell | `AdminContentPage` | `@/Components/Layouts/AdminContentPage.vue` |
+| A workspace **overview** | `OverviewPage` | `@/Components/Layouts/OverviewPage.vue` |
+| An admin **collection** (rows / table / preview) | `CollectionPage` + a Typesense, database or local source | `@/Components/Layouts/CollectionPage.vue`, `@/Composables/useCollectionSource` ([Tables/CLAUDE.md](Tables/CLAUDE.md)) |
+| An admin **record** page | `RecordPage` | `@/Components/Layouts/RecordPage.vue` |
+| A **create/edit** form page | `FormPage` | `@/Components/Layouts/FormPage.vue` |
+| A titled group of fields inside a form | `FormSection` | `@/Components/Patterns` |
+| A settings box in a form's `#aside` (+ switch rows) | `FormPanel`, `FormToggleRow` | `@/Components/Patterns` |
+| A small create/edit over its collection or record | `SheetForm` | `@/Components/Patterns` |
+| "Are you sure?" before ending, discarding or deleting | `ConfirmDialog` | `@/Components/Patterns` |
+| A status (reservation, vote, task, content…) | `StatusBadge` + the enum's map in `Constants/statuses.ts` | `@/Components/Patterns` |
+| An entity type's icon + category colour | `EntityTypeMark` / `getEntityTypeDefinition` | `@/Components/EntityTypeMark.vue`, `@/Constants/entityTypes` |
+| A settings screen with several independent saves | `OverviewPage` + a `SectionCard` per block | `@/Components/Layouts/OverviewPage.vue`, `@/Components/Patterns` |
 | A titled panel (list, fields, anything) | `SectionCard` | `@/Components/Patterns` |
 | Main + sticky sidebar two-column body | `ShowPageGrid` | `@/Components/Patterns` |
 | A linked row for one entity (icon, label, chevron) | `EntityLinkCard` | `@/Components/Patterns` |
+| A ruled grid of destinations (icon, label, description) — Visi skyriai, overview sections, quick access | `NavigationTiles` (`WorkspaceSectionTiles` for a workspace's catalog sections) | `@/Components/Patterns`, `@/Components/Overview` |
 | A month/day date tile | `DateBadge` | `@/Components/Patterns` |
-| "Nothing here yet" | `EmptyState` | `@/Components/Patterns` |
+| "Nothing here yet" / Filter empty | `EmptyState` | `@/Components/Patterns` |
+| Loading placeholder shaped like content | `CollectionSkeleton`, `RecordSkeleton`, `FormSkeleton`, `SectionCardSkeleton` | `@/Components/Patterns` |
+| Hairline top loading bar for panels/tables | `TopProgressBar` | `@/Components/Patterns` |
 | Documents for any model | `FileablePreviewCard` | `@/Components/Files` |
 | A clickable card's hover styling | `interactiveCardClass` | `@/Utils/interactiveCard` |
 
@@ -125,56 +161,42 @@ things that truly cannot be reused. `Dashboard/` is the only folder doing this t
 - Comment *why* a non-obvious class or branch exists, not what it does.
 
 State belongs in the page; components communicate upward via typed emits or
-`defineModel`. `Pages/Admin/Dashboard/Partials/ReservationKpiStrip.vue` is a good
+`defineModel`. `Components/Overview/OverviewScopeSwitch.vue` is a good
 example of a component that is a control rather than a container.
 
-## ShowPageLayout
+## FormPage, SheetForm, FormSection
 
-Wraps `AdminContentPage` + `ShowPageHero` + `Tabs` + the activity log, and owns
-tab persistence. Each entry in `tabs` names the slot that fills it.
+`FormPage` is the shell for a form that edits one record's own attributes (`.ai/rules/admin-forms.md`), on the
+tinted edit canvas with a "Redaguoji" / "Kuri naują" eyebrow, a `u-display` title and lead. While it is mounted
+the shell is in **focus mode** (`useShellFocus`): the workspace picker, palette, section tabs, breadcrumbs and
+bottom nav give way to the form's own bar (back, save state, `#header-actions`, Išsaugoti), teleported into
+`ShellTopBar`; below `md` Išsaugoti sits in a bottom save bar instead. Pass an `#aside` slot for the two-column
+v0 shape: fields in the main column, settings in `FormPanel`s (`Patterns/`, with `FormToggleRow` for switch
+rows) — `PageForm.vue` and `NewsForm.vue` are the reference. The layout supplies the editor chrome from props:
+`public-url` (Peržiūrėti viešai), `activity-subject` (change history), `created-at` / `updated-at` (facts at the
+end of the aside); in the two-column shape `#danger-zone` closes the aside. Content editors share
+`AdminForms/ContentPublishPanel` (status, publish time, visibility callout), `ContentLanguagePanel` (language +
+other-language link) and `TenantSelectField`; choices of 2–5 options use `Patterns/FormSegmentedControl`, and
+fields on the tinted canvas take `fieldSurfaceClass` from `ui/control`. Without an aside the form stays one
+column (`#advanced` "Papildomi nustatymai", `#danger-zone`). It owns three behaviours callers should not re-implement: **⌘/Ctrl + Enter**
+submits and **Esc** cancels (listeners on the `<form>`, so a portaled Select never cancels it), and on a failed
+submit the error summary is scrolled into view and focused, each message focusing its field. Pass
+`mode="create"` for a new record (the bar never claims "all saved"), `field-ids` when an error key is not the
+field's id (`name.lt` → `duty-name`), and `:available-locales="[]"` for a single-language record. Field labels
+and hints come from `FormFieldWrapper` (uppercase micro-label, hint under the field — never a tooltip).
+Relations with their own lifecycle do **not** belong in it.
 
-```vue
-<ShowPageLayout
-  :title="duty.name"
-  :subtitle="duty.institution?.name"
-  :model="duty"
-  audit-subject-type="duty"
-  :tabs
-  tab-storage-key="show-duty-tab"
->
-  <template #icon>…</template>
-  <template #badge>…</template>
-  <template #actions>…</template>
-  <template #alert>…</template>
+`SheetForm` is the same idea over a collection or record: a right sheet, a bottom sheet below `md`, a
+`#danger-zone` in the body (never the footer), and a `dirty` prop that makes Esc, the overlay and
+Atšaukti ask before discarding. `FormSection` groups fields under a question heading with an optional
+"Matoma vusa.lt" marker. `ConfirmDialog` is the one confirmation: name the result on the button
+("Baigti kadenciją", "Ištrinti"), never a native `confirm()`.
 
-  <template #overview>
-    <ShowPageGrid>
-      <template #main>…</template>
-      <template #sidebar>…</template>
-    </ShowPageGrid>
-  </template>
-</ShowPageLayout>
-```
+## RecordPage
 
-Reserved slot names a tab `value` must not collide with: `icon`, `title`,
-`subtitle`, `badge`, `info`, `actions`, `alert`. Omit `tabs` entirely for a
-single-body page and use the default slot.
+`RecordPage` is the canonical shell for migrated records. It owns the identity/title band,
+status and action placement, key facts, desktop tabs/mobile stacked sections, collection-context
+navigation, and the final `activity` slot. Pass resolved URLs and permission-filtered actions;
+domain behavior stays in the page.
 
-Each tab may carry an optional `icon` (Lucide, rendered before the label) and a
-`count` (rendered as a muted suffix; `0` is hidden rather than shown).
-
-By default the layout remembers the open tab under `tabStorageKey`. A page that
-needs to *drive* the tab — URL `?tab=` sync, per-entity resets, or another
-component navigating to a tab — binds `v-model:tab` instead:
-
-```vue
-<ShowPageLayout v-model:tab="currentTab" :tabs>
-```
-
-In that controlled mode the layout never touches localStorage, so the page owns
-persistence and `tabStorageKey` is ignored. Supply a defined initial value —
-that is what marks the layout as controlled. `ShowInstitution.vue` (cross-tab
-navigation) and `ShowMeeting.vue` (URL sync) are the reference consumers.
-
-`Pages/Admin/People/ShowDuty.vue` and `ShowUser.vue` are the reference pages.
-`Layouts/ShowModel/ShowPageLayout.vue` is the deprecated predecessor — don't use it.
+Collections: see [Tables/CLAUDE.md](Tables/CLAUDE.md).

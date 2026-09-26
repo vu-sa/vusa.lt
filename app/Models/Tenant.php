@@ -69,9 +69,11 @@ class Tenant extends Model
     protected static function booted()
     {
         static::saved(function ($tenant): void {
-            // Clear homepage cache when tenant content changes
             Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
+            Cache::forget('all-tenants-for-inertia');
         });
+
+        static::deleted(fn () => Cache::forget('all-tenants-for-inertia'));
     }
 
     /**

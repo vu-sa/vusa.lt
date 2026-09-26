@@ -198,7 +198,12 @@ export function useDutiableDiagnostics(
     for (const row of rows.value) {
       const key = `${row.duty_id}|${row.holder_id}|${row.tenant_id ?? ''}`;
       const bucket = groups.get(key);
-      bucket ? bucket.push(row) : groups.set(key, [row]);
+      if (bucket) {
+        bucket.push(row);
+      }
+      else {
+        groups.set(key, [row]);
+      }
     }
 
     const result: TimelineDiagnostic[] = [];

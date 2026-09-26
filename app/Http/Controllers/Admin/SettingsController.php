@@ -91,7 +91,7 @@ class SettingsController extends AdminController
 
         // The sidebar links to these forms, so every user's cached ids are now stale.
         User::query()->pluck('id')->each(
-            fn ($userId) => Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($userId))
+            fn ($userId) => Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($userId))
         );
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));

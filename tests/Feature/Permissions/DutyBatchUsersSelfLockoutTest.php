@@ -35,7 +35,8 @@ function batchRemoveSelfPayload(User $admin, array $overrides = []): array
             [
                 'user_id' => (string) $admin->id,
                 'action' => 'remove',
-                'end_date' => now()->toDateString(),
+                // Yesterday: the end date is the last day in office, so this ends access now.
+                'end_date' => now()->subDay()->toDateString(),
             ],
         ],
     ], $overrides);

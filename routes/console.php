@@ -3,6 +3,8 @@
 use App\Actions\Schedulable\TaskNotifier;
 use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
+use App\Models\ReservationDraft;
+use App\Models\User;
 use App\Services\SystemMonitorService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -53,12 +55,11 @@ Schedule::command('notifications:send-digests')
     ->name('notification-digests')
     ->withoutOverlapping(10);
 
-// Task reminders - runs daily at 8 AM for tasks due in 7, 3, or 1 days
+// Task reminders: each user picks which of these intervals reach them
 Schedule::call(function (): void {
-    // These reminder days are defaults; users can customize in preferences
-    TaskNotifier::notifyDaysLeft(7);
-    TaskNotifier::notifyDaysLeft(3);
-    TaskNotifier::notifyDaysLeft(1);
+    foreach (User::TASK_REMINDER_DAY_OPTIONS as $days) {
+        TaskNotifier::notifyDaysLeft($days);
+    }
 })->dailyAt('08:00')
     ->name('task-reminders');
 
@@ -73,6 +74,11 @@ Schedule::command('notifications:duty-expiry-reminders')
     ->dailyAt('09:00')
     ->name('duty-expiry-reminders');
 
+// Access changes - the day a duty term begins or ends (U14)
+Schedule::command('notifications:access-changes')
+    ->dailyAt('09:05')
+    ->name('access-change-notices');
+
 // Task overdue reminders - runs weekly on Monday at 9 AM
 Schedule::command('notifications:task-overdue-reminders')
     ->weeklyOn(1, '09:00')
@@ -85,20 +91,6 @@ Schedule::command('tasks:repopulate institution --force')
     ->name('periodicity-gap-tasks')
     ->withoutOverlapping(15);
 
-// News notifications - runs every 15 minutes to check for newly published news
-// Notifications are opt-in (disabled by default)
-Schedule::command('notifications:send-news')
-    ->everyFifteenMinutes()
-    ->name('news-notifications')
-    ->withoutOverlapping(5);
-
-// Calendar reminders - runs every 30 minutes to catch all reminder windows
-// Notifications are opt-in (disabled by default)
-Schedule::command('notifications:calendar-reminders')
-    ->everyThirtyMinutes()
-    ->name('calendar-reminders')
-    ->withoutOverlapping(5);
-
 // =====================================================================
 // SEARCH INDEX SYNC
 // =====================================================================
@@ -110,6 +102,13 @@ Schedule::command('search:sync-public')
     ->everyFiveMinutes()
     ->name('sync-public-search-index')
     ->withoutOverlapping(5);
+
+// An institution's activity status drifts with the calendar alone, so the admin index is
+// refreshed nightly; meeting and check-in saves update it in between.
+Schedule::command('institutions:refresh-activity-status')
+    ->dailyAt('03:30')
+    ->name('refresh-institution-activity-status')
+    ->withoutOverlapping(30);
 
 // Prune stale digest items so a stalled mail pipeline cannot build an
 // unbounded backlog of notifications nobody will ever want to read.
@@ -167,3 +166,8 @@ if (config('app.env') === 'staging') {
 Schedule::call(fn () => Cache::forever(SystemMonitorService::HEARTBEAT_CACHE_KEY, now()->toIso8601String()))
     ->everyMinute()
     ->name('scheduler-heartbeat');
+
+// Unfinished reservation carts expire after config('vusa.reservation_draft_ttl_days') without changes.
+Schedule::command('model:prune', ['--model' => [ReservationDraft::class]])
+    ->dailyAt('03:30')
+    ->name('prune-reservation-drafts');

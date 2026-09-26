@@ -82,9 +82,10 @@ it('moves a bar by whole months and keeps the day of month', function (): void {
     $page = loginAsAdmin($this->admin);
 
     $page->navigate(route('duties.show', $this->duty, absolute: false));
-    waitForInertiaRender($page, 'button:has-text("Tvarkyti laikotarpius")');
+    waitForInertiaRender($page, '[data-testid=record-overflow-trigger]');
 
-    $page->click('button:has-text("Tvarkyti laikotarpius")');
+    $page->click('[data-testid=record-overflow-trigger]');
+    $page->click('[role=menuitem]:has-text("Tvarkyti laikotarpius")');
 
     // The chart mounts only once the dialog opens, and draws on the frame after that.
     // Waited on by row id: several bars share the class, and Playwright's strict mode
@@ -233,9 +234,10 @@ it('draws a notch for a start date that is not on a month boundary', function ()
     $page = loginAsAdmin($this->admin);
 
     $page->navigate(route('duties.show', $this->duty, absolute: false));
-    waitForInertiaRender($page, 'button:has-text("Tvarkyti laikotarpius")');
+    waitForInertiaRender($page, '[data-testid=record-overflow-trigger]');
 
-    $page->click('button:has-text("Tvarkyti laikotarpius")');
+    $page->click('[data-testid=record-overflow-trigger]');
+    $page->click('[role=menuitem]:has-text("Tvarkyti laikotarpius")');
     waitForInertiaRender($page, sprintf('g.dutiable-bar[data-row-id="%s"]', $this->row->id));
 
     // The off-boundary marks are how drift reads at a glance; a chart that renders bars

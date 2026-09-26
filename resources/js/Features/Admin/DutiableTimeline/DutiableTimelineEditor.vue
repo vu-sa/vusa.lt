@@ -346,7 +346,12 @@ const selectedRows = computed(() => rows.value.filter(row => selectedIds.value.h
 function onSelect(row: ParsedRow, event: MouseEvent): void {
   if (event.ctrlKey || event.metaKey) {
     const next = new Set(selectedIds.value);
-    next.has(row.id) ? next.delete(row.id) : next.add(row.id);
+    if (next.has(row.id)) {
+      next.delete(row.id);
+    }
+    else {
+      next.add(row.id);
+    }
     selectedIds.value = next;
     activeId.value = row.id;
 
@@ -367,7 +372,12 @@ function onSelect(row: ParsedRow, event: MouseEvent): void {
 /** The checkbox path. Ctrl/Cmd-click does the same thing for people who know about it. */
 function toggleSelection(rowId: string): void {
   const next = new Set(selectedIds.value);
-  next.has(rowId) ? next.delete(rowId) : next.add(rowId);
+  if (next.has(rowId)) {
+    next.delete(rowId);
+  }
+  else {
+    next.add(rowId);
+  }
   selectedIds.value = next;
 
   if (activeId.value === rowId && !next.has(rowId)) activeId.value = null;

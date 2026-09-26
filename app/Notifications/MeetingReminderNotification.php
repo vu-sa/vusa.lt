@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use App\Models\Meeting;
 
 /**
@@ -10,15 +10,15 @@ use App\Models\Meeting;
  */
 class MeetingReminderNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::MeetingReminder;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Meeting $meeting, protected int $hoursUntil) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Meeting;
-    }
 
     public function title(object $notifiable): string
     {
@@ -72,22 +72,30 @@ class MeetingReminderNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
     {
-        return [
-            [
-                'label' => __('notifications.action_view_meeting'),
-                'url' => $this->url(),
-            ],
-        ];
+        $institution = $this->meeting->institutions->first();
+        $type = $this->meeting->type;
+
+        return $this->contextRows([
+            'institution' => $institution?->name,
+            'date' => $this->meeting->start_time->format($type?->isDateOnly() ? 'Y-m-d' : 'Y-m-d H:i'),
+            'format' => $type?->label(app()->getLocale()),
+        ]);
     }
 
-    /**
-     * Meeting reminders are time-sensitive and should not be digested.
-     */
     #[\Override]
-    public function supportsEmailDigest(): bool
+    public function mailSignature(object $notifiable): ?array
     {
-        return false;
+        return $this->coordinatorSignature($notifiable, $this->meeting->institutions->first());
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
+    {
+        return [
+            'label' => __('notifications.action_view_meeting'),
+            'url' => $this->url(),
+        ];
     }
 }

@@ -9,6 +9,7 @@ import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
+import { VitePWA } from 'vite-plugin-pwa';
 
 import { generateI18nTranslationFiles } from './vite-plugins/i18n-split';
 
@@ -21,9 +22,8 @@ const alias = {
 };
 
 /**
- * Mirrors the SFC-handling half of `vite.config.mts`. Inline project configs do NOT inherit
- * root-level `plugins`, so every project must build its own list — and it has to stay in step
- * with the app config, or a module resolves differently under test than it does in a build.
+ * Mirrors the SFC-handling half of `vite.config.mts`. Each project builds its own plugin list,
+ * which must stay in step with the app config so modules resolve the same way in tests and builds.
  * The `unit` project previously had no plugins at all, which is why walking a spec's dependency
  * graph (what --changed does) died on the first `.vue` file it reached.
  */
@@ -58,13 +58,12 @@ const sfcPlugins = () => [
 const jsdomProject = (name: string, include: string[], exclude?: string[]) => ({
   plugins: sfcPlugins(),
   resolve: { alias },
-  // MdGetter.vue dynamic-imports docs/_parts/**/*.md. Tests never render it, but --changed walks
-  // every spec's dependency graph and would try to parse the markdown as JS; treating it as an
-  // opaque asset is far cheaper here than running the real unplugin-vue-markdown transform.
-  assetsInclude: ['**/*.md'],
   test: {
     name,
     environment: 'jsdom',
+    // One jsdom per worker instead of one per file (~38s → ~13s) while keeping per-file module
+    // isolation. Specs must not redefine `window.location` or leave dynamic imports pending.
+    pool: 'vmThreads' as const,
     setupFiles: ['tests/setup.ts'],
     include,
     ...(exclude ? { exclude } : {}),
@@ -73,8 +72,14 @@ const jsdomProject = (name: string, include: string[], exclude?: string[]) => ({
 
 export default defineConfig({
   resolve: { alias },
+  server: {
+    watch: {
+      ignored: ['**/vendor/**', '**/storage/**', '**/public/build/**'],
+    },
+  },
   test: {
     globals: true,
+    clearMocks: false,
     // Beyond the defaults (vitest config, package.json): files every spec depends on implicitly
     // through setupFiles, which the import graph therefore cannot attribute to any one test.
     forceRerunTriggers: [
@@ -105,6 +110,8 @@ export default defineConfig({
         plugins: [
           ...sfcPlugins(),
           storybookTest(),
+          // Stories can import the app shell, which dynamically imports this PWA virtual module.
+          VitePWA({ devOptions: { enabled: false } }),
         ],
         resolve: {
           alias: {
@@ -151,7 +158,6 @@ export default defineConfig({
         '**/*.test.ts',
         '**/*.component.test.ts',
         '**/*.stories.ts',
-        'resources/js/Components/NavMain.vue',
       ],
       // No thresholds are enforced. This previously read `thresholds: { global: { lines: 75, … } }`,
       // an Istanbul-style shape that Vitest interprets as a glob named "global" — it matched no

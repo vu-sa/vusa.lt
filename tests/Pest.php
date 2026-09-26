@@ -21,6 +21,7 @@ use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Api\PendingAwaitablePage;
 use Pest\Browser\Playwright\Page as PlaywrightPage;
 use Tests\TestCase;
+use Typesense\Client;
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser');
 
@@ -205,10 +206,14 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
 {
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
 
+    // An auto-started tour overlays the page and swallows clicks (and would land in docs frames).
+    $user->forceFill(['tutorial_progress' => array_fill_keys(productTourIds(), now()->toISOString())])->save();
+
     // `/up` creates the browser context without loading admin.ts, so its next document gets the
     // service-worker stub before the login app can attempt a registration.
     $page = visit('/up');
     disableServiceWorker($page);
+    ignoreResizeObserverLoopErrors($page);
 
     $page->navigate('/login');
     waitForInertiaRender($page);
@@ -221,9 +226,79 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
     $page->click('button[type="submit"]');
 
     // The dashboard is a different code-split chunk; without this the next visit() races it.
-    waitForInertiaRender($page, '[data-sidebar="sidebar"]');
+    waitForInertiaRender($page, '[data-slot="admin-shell"]');
 
     return $page;
+}
+
+/**
+ * Every product tour and feature spotlight id in the frontend, in `tutorial_progress` key form.
+ *
+ * @return list<string>
+ */
+function productTourIds(): array
+{
+    static $ids = null;
+
+    if ($ids !== null) {
+        return $ids;
+    }
+
+    $ids = [];
+
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(resource_path('js'), FilesystemIterator::SKIP_DOTS)) as $file) {
+        if (! preg_match('/\.(vue|ts)$/', $file->getFilename()) || str_contains($file->getPathname(), '__tests__')) {
+            continue;
+        }
+
+        $source = file_get_contents($file->getPathname());
+        preg_match_all("/tourId:\s*['\"]([\w-]+)['\"]/", $source, $tours);
+        preg_match_all("/useFeatureSpotlight\(\s*['\"]([\w-]+)['\"]/", $source, $spotlights);
+
+        array_push($ids, ...$tours[1], ...array_map(fn (string $id): string => "spotlight-{$id}", $spotlights[1]));
+    }
+
+    return $ids = array_values(array_unique($ids));
+}
+
+/**
+ * Save the docs' reference frame of the current page: light theme, at the page's current width.
+ *
+ * Only runs with DOCS_SCREENSHOTS set (CI's browser job). The name is the contract with
+ * `<DocScreenshot name="…">` in docs/ — see tests/Browser/README.md "Docs screenshots".
+ */
+function docsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, string $name, string $locale = 'lt', ?string $selector = null): void
+{
+    if (! env('DOCS_SCREENSHOTS')) {
+        return;
+    }
+
+    // A frame of loading skeletons documents nothing; wait out the deferred props.
+    $page->script(<<<'JS'
+        new Promise(resolve => {
+            const started = Date.now();
+            const poll = setInterval(() => {
+                if (!document.querySelector('[data-slot=collection-skeleton]') || Date.now() - started > 10000) {
+                    clearInterval(poll);
+                    resolve(true);
+                }
+            }, 100);
+        })
+        JS);
+
+    $wasDark = $page->script('document.documentElement.classList.contains("dark")');
+    $page->script('document.documentElement.classList.remove("dark")');
+
+    @mkdir(base_path("tests/Browser/Screenshots/docs/{$locale}"), 0755, true);
+    $filename = "docs/{$locale}/{$name}";
+
+    $selector === null
+        ? $page->screenshot(fullPage: false, filename: $filename)
+        : $page->screenshotElement($selector, $filename);
+
+    if ($wasDark) {
+        $page->script('document.documentElement.classList.add("dark")');
+    }
 }
 
 /**
@@ -274,6 +349,27 @@ function disableServiceWorker(PendingAwaitablePage|AwaitableWebpage $page): void
                 .catch(() => {});
         })()
         JS);
+}
+
+/**
+ * Keep Chromium's "ResizeObserver loop completed with undelivered notifications" out of
+ * assertNoJavaScriptErrors(): a benign layout-timing warning that users never see. Window listeners
+ * fire in registration order, so the plugin's collector has already pushed the entry and it is
+ * pruned in the same dispatch — a setTimeout prune raced javaScriptErrors() reads and flaked on CI.
+ */
+function ignoreResizeObserverLoopErrors(PendingAwaitablePage|AwaitableWebpage $page): void
+{
+    $filter = <<<'JS'
+        window.addEventListener('error', (event) => {
+            const collector = window.__pestBrowser;
+            if (collector && event.message?.startsWith('ResizeObserver loop')) {
+                collector.jsErrors = collector.jsErrors.filter((error) => !error.message?.startsWith('ResizeObserver loop'));
+            }
+        });
+        JS;
+
+    $page->script("(() => { {$filter} })()");
+    $page->page()->context()->addInitScript("(() => { {$filter} })()");
 }
 
 /**
@@ -371,6 +467,37 @@ function captureBrowserDiagnostics(PendingAwaitablePage|AwaitableWebpage $page):
 function usesTypesense(): void
 {
     app()->getProvider(TestingServiceProvider::class)->enableRealTypesense();
+}
+
+/**
+ * `usesTypesense()` for a page that searches Typesense from the browser (admin collections).
+ *
+ * The test browser runs inside the Sail network, where Typesense is `typesense`, not the
+ * host-published `localhost` the app hands browsers. And a search key bakes in its collection
+ * list, so the dev key cannot read the test's prefixed collections: this mints a throwaway
+ * search-only parent key for them and deletes it when the test ends.
+ */
+function usesTypesenseInBrowser(): void
+{
+    usesTypesense();
+
+    config(['scout.typesense.public-node' => ['host' => 'typesense', 'port' => 8108, 'protocol' => 'http']]);
+
+    $keys = app(Client::class)->keys;
+    $key = $keys->create([
+        'description' => 'browser test '.config('scout.prefix'),
+        'actions' => ['documents:search'],
+        'collections' => [config('scout.prefix').'.*'],
+        'expires_at' => now()->addHour()->timestamp,
+    ]);
+
+    // The search config endpoint answers 503 without a search-only key, and CI's .env has none.
+    config([
+        'scout.typesense.client-settings.admin_search_key' => $key['value'],
+        'scout.typesense.client-settings.search_only_key' => $key['value'],
+    ]);
+
+    test()->beforeApplicationDestroyed(fn () => $keys[$key['id']]->delete());
 }
 
 function makeUser(Tenant $tenant): User

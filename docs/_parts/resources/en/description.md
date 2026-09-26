@@ -1,1 +1,0 @@
-It is recommended that each resource have photos. They can be seen by people creating a reservation.

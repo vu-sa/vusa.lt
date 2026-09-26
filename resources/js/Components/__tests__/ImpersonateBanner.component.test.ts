@@ -31,7 +31,7 @@ describe('ImpersonateBanner', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.stubGlobal('route', vi.fn((name: string) => `/routes/${name}`));
-    jsonMock.mockResolvedValue({ data: ref(null) });
+    jsonMock.mockResolvedValue({ data: ref({ success: true }), error: ref(null) });
     useFetchMock.mockReturnValue({ json: jsonMock });
   });
 
@@ -40,7 +40,7 @@ describe('ImpersonateBanner', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders active impersonation as an in-flow amber status', () => {
+  it('renders active impersonation as an in-flow status', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: {
         user: {
@@ -61,8 +61,8 @@ describe('ImpersonateBanner', () => {
 
     expect(status.text()).toContain('Impersonated User');
     expect(status.text()).toContain('Original Admin');
-    expect(status.classes()).toContain('bg-amber-50');
-    expect(status.classes()).toContain('rounded-xl');
+    expect(status.classes()).toContain('bg-status-attention-surface');
+    expect(status.classes()).not.toContain('rounded-xl');
     expect(status.classes()).not.toContain('fixed');
     expect(document.body.querySelector('[data-slot="impersonation-launcher"]')).toBeNull();
   });
@@ -95,7 +95,7 @@ describe('ImpersonateBanner', () => {
     expect(router.reload).toHaveBeenCalledOnce();
   });
 
-  it('keeps the inactive super-admin launcher teleported to the page body', () => {
+  it('shows the super-admin launcher in the shell flow', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       app: {
         env: 'local',
@@ -114,6 +114,42 @@ describe('ImpersonateBanner', () => {
     });
 
     expect(wrapper.find('[data-slot="impersonation-status"]').exists()).toBe(false);
-    expect(document.body.querySelector('[data-slot="impersonation-launcher"]')).not.toBeNull();
+    expect(wrapper.get('[data-slot="impersonation-launcher"]').classes()).not.toContain('fixed');
+    expect(wrapper.get('[data-slot="impersonation-launcher"] button').text()).toContain('Apsimesti nariu');
+  });
+
+  it('closes the idle bar until the component remounts', async () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { env: 'local' },
+      auth: {
+        user: { name: 'Original Admin', isSuperAdmin: true },
+        impersonating: null,
+      },
+    }));
+
+    const wrapper = mount(ImpersonateBanner, { global: { stubs: popoverStubs } });
+    await wrapper.get('[data-slot="impersonation-bar-close"]').trigger('click');
+    expect(wrapper.find('[data-slot="impersonation-launcher"]').exists()).toBe(false);
+
+    wrapper.unmount();
+    const refreshed = mount(ImpersonateBanner, { global: { stubs: popoverStubs } });
+    expect(refreshed.find('[data-slot="impersonation-launcher"]').exists()).toBe(true);
+  });
+
+  it('shows an API failure without reloading', async () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: {
+        user: { name: 'Impersonated User', isSuperAdmin: true },
+        impersonating: { impersonator_name: 'Original Admin' },
+      },
+    }));
+    jsonMock.mockResolvedValue({ data: ref({ success: false, message: 'Could not return' }), error: ref(null) });
+
+    const wrapper = mount(ImpersonateBanner, { global: { stubs: popoverStubs } });
+    await wrapper.get('[data-slot="impersonation-status"] button').trigger('click');
+    await flushPromises();
+
+    expect(wrapper.get('[role="alert"]').text()).toBe('Could not return');
+    expect(router.reload).not.toHaveBeenCalled();
   });
 });

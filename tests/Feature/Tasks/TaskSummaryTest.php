@@ -2,6 +2,7 @@
 
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -59,7 +60,7 @@ describe('tasks.summary listing', function (): void {
         $response = asUser($superAdmin)->get(route('tasks.summary'));
 
         $response->assertOk();
-        expect(collect($response->viewData('page')['props']['tasks']['data'])->pluck('id'))
+        expect(collect($response->viewData('page')['props']['data'])->pluck('id'))
             ->toContain($orphan->id);
     });
 
@@ -69,18 +70,19 @@ describe('tasks.summary listing', function (): void {
 
         $response = asUser($superAdmin)->get(route('tasks.summary'));
 
-        expect($response->viewData('page')['props']['tasks']['data'][0]['can_delete'])->toBeTrue();
+        expect($response->viewData('page')['props']['data'][0]['can_delete'])->toBeTrue();
     });
 
     test('does not offer deletion to a user who merely holds the task', function (): void {
         // tasks.delete is seeded for no role, so offering the action in the table only ever
         // produced a 403 on click.
-        $manager = makeTenantUserWithRole('Resource Manager', $this->tenant);
+        Role::create(['name' => 'Task reader', 'guard_name' => 'web'])->givePermissionTo('tasks.read.padalinys');
+        $manager = makeTenantUserWithRole('Task reader', $this->tenant);
         orphanTaskFor($manager, ActionType::Manual);
 
         $response = asUser($manager)->get(route('tasks.summary'));
 
-        $tasks = $response->viewData('page')['props']['tasks']['data'];
+        $tasks = $response->viewData('page')['props']['data'];
         expect($tasks)->not->toBeEmpty()
             ->and($tasks[0]['can_delete'])->toBeFalse();
     });
@@ -94,8 +96,7 @@ describe('tasks.summary completion filter', function (): void {
 
         $response = asUser($superAdmin)->get(route('tasks.summary'));
 
-        expect($response->viewData('page')['props']['tasks']['data'])->toBeEmpty()
-            ->and($response->viewData('page')['props']['filters']['completion'])->toBe('pending');
+        expect($response->viewData('page')['props']['data'])->toBeEmpty();
     });
 
     test('shows both when the filter is set to all', function (): void {
@@ -106,7 +107,7 @@ describe('tasks.summary completion filter', function (): void {
 
         $response = asUser($superAdmin)->get(route('tasks.summary', ['completion' => 'all']));
 
-        expect($response->viewData('page')['props']['tasks']['data'])->toHaveCount(2);
+        expect($response->viewData('page')['props']['data'])->toHaveCount(2);
     });
 });
 
@@ -118,7 +119,7 @@ describe('tasks.summary taskable_type filter', function (): void {
 
         $response = asUser($superAdmin)->get(route('tasks.summary', ['taskable_type' => ['institution']]));
 
-        $ids = collect($response->viewData('page')['props']['tasks']['data'])->pluck('id');
+        $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
         expect($ids)->toContain($institutionTask->id)
             ->and($ids)->not->toContain($meetingTask->id);
     });
@@ -133,36 +134,39 @@ describe('tasks.summary taskable_type filter', function (): void {
 
         $response = asUser($superAdmin)->get(route('tasks.summary', ['taskable_type' => ['institution', 'meeting']]));
 
-        $ids = collect($response->viewData('page')['props']['tasks']['data'])->pluck('id');
+        $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
         expect($ids)->toContain($institutionTask->id)
             ->and($ids)->toContain($meetingTask->id);
     });
 
     test('accepts a single hand-typed value the same as an array', function (): void {
         // A bookmarked or hand-typed URL carries `?taskable_type=meeting`, not
-        // `taskable_type[]=meeting` — IndexTaskSummaryRequest::prepareForValidation() normalizes it.
+        // `taskable_type[]=meeting` — IndexTasksRequest::prepareForValidation() normalizes it.
         $superAdmin = makeAdminUser($this->tenant);
         $meetingTask = summaryMeetingTaskFor($superAdmin, $this->institution);
         orphanTaskFor($superAdmin);
 
         $response = asUser($superAdmin)->get(route('tasks.summary').'?taskable_type=meeting');
 
-        $tasks = $response->viewData('page')['props']['tasks']['data'];
+        $tasks = $response->viewData('page')['props']['data'];
         expect(collect($tasks)->pluck('id'))->toContain($meetingTask->id)
             ->and($tasks)->toHaveCount(1);
     });
 
-    test('reports separate counts per taskable type', function (): void {
+    test('counts pending, overdue and assigned tasks for the chips regardless of the active filter', function (): void {
         $superAdmin = makeAdminUser($this->tenant);
-        orphanTaskFor($superAdmin);
+        orphanTaskFor($superAdmin)->update(['due_date' => now()->subDay()]);
         summaryMeetingTaskFor($superAdmin, $this->institution);
+        orphanTaskFor($superAdmin)->update(['completed_at' => now()]);
 
-        $response = asUser($superAdmin)->get(route('tasks.summary'));
+        $response = asUser($superAdmin)->get(route('tasks.summary', ['taskable_type' => ['meeting']]));
 
-        $byType = $response->viewData('page')['props']['taskStats']['byType'];
-        expect($byType['institution'])->toBe(1)
-            ->and($byType['meeting'])->toBe(1)
-            ->and($byType['reservation'])->toBe(0);
+        expect($response->viewData('page')['props']['taskCounts'])->toMatchArray([
+            'pending' => 2,
+            'overdue' => 1,
+            'assigned' => 2,
+            'completed' => 1,
+        ]);
     });
 });
 

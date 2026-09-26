@@ -12,6 +12,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -65,6 +66,16 @@ test('catch-all fallback route 404s for an unrecognized host instead of crashing
     // their /lt/… form first, so request the localized URL the redirect produces.
     $this->get('/lt/some-unmatched-path', ['HTTP_HOST' => '127.0.0.1:12345'])
         ->assertNotFound();
+});
+
+test('page route is registered as fallback and does not match admin routes', function (): void {
+    $route = app('router')->getRoutes()->getByName('page');
+
+    expect($route)->not->toBeNull()
+        ->and($route->isFallback)->toBeTrue();
+
+    $match = app('router')->getRoutes()->match(Request::create('https://www.vusa.test/mano/users'));
+    expect($match->getName())->toBe('users.index');
 });
 
 test('can open news archive', function (): void {

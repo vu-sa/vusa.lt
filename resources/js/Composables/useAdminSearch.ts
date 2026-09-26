@@ -46,6 +46,14 @@ interface AdminSearchResult {
   [key: string]: any;
 }
 
+/** The part of a Typesense search result the admin search reads. */
+interface CollectionSearchResult {
+  hits?: { document: unknown }[];
+  found?: number;
+  page?: number;
+  facet_counts?: Array<{ field_name: string; counts: Array<{ value: string; count: number }> }>;
+}
+
 interface SearchState {
   results: AdminSearchResult[];
   isLoading: boolean;
@@ -279,7 +287,50 @@ export const useAdminSearch = () => {
     return config.value?.collections?.[collection]?.tenantIds ?? [];
   };
 
+  /** Own and authorized related institutions the scoped key grants for a collection. */
+  const getCollectionInstitutionIds = (collection: string): string[] => {
+    return config.value?.collections?.[collection]?.institutionIds ?? [];
+  };
+
   const isSuperAdmin = computed(() => config.value?.isSuperAdmin ?? false);
+
+  /**
+   * One collection search sent as POST /multi_search. A GET query string is capped at 4000
+   * characters, which a long `filter_by` (a "Sekamos" list of ~150+ ids) exceeds with a 400.
+   * The per-search key keeps the collection's scoped filter; the header key only opens the endpoint.
+   */
+  const postCollectionSearch = async (
+    baseUrl: string,
+    collectionName: string,
+    apiKey: string,
+    params: URLSearchParams,
+    signal?: AbortSignal,
+  ): Promise<{ status: number; data?: CollectionSearchResult; errorText?: string; retryAfter?: string | null }> => {
+    const response = await fetch(`${baseUrl}/multi_search`, {
+      method: 'POST',
+      headers: {
+        'X-TYPESENSE-API-KEY': config.value?.headerKey || apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        searches: [{ 'collection': collectionName, 'x-typesense-api-key': apiKey, ...Object.fromEntries(params) }],
+      }),
+      signal,
+    });
+
+    if (!response.ok) {
+      return { status: response.status, errorText: await response.text(), retryAfter: response.headers.get('retry-after') };
+    }
+
+    const result = (await response.json())?.results?.[0];
+
+    // multi_search answers 200 and reports each search's failure inside its result.
+    if (!result || result.error) {
+      return { status: result?.code ?? 500, errorText: result?.error ?? 'Empty search response' };
+    }
+
+    return { status: 200, data: result };
+  };
 
   /**
    * Perform a search against a collection
@@ -352,18 +403,9 @@ export const useAdminSearch = () => {
         searchParams.append('facet_by', options.facetBy);
       }
 
-      const response = await fetch(
-        `${baseUrl}/collections/${collectionName}/documents/search?${searchParams}`,
-        {
-          method: 'GET',
-          headers: {
-            'X-TYPESENSE-API-KEY': apiKey,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         // Handle 401 - expired or invalid key
         if (response.status === 401) {
           await refreshConfig();
@@ -373,13 +415,12 @@ export const useAdminSearch = () => {
           }
         }
 
-        const errorText = await response.text();
-        throw new Error(`Typesense error: ${response.status} - ${errorText}`);
+        throw new Error(`Typesense error: ${response.status} - ${response.errorText}`);
       }
 
-      const data = await response.json();
+      const data = response.data ?? {};
 
-      searchState.value.results = data.hits?.map((hit: any) => hit.document) || [];
+      searchState.value.results = (data.hits?.map(hit => hit.document) || []) as AdminSearchResult[];
       searchState.value.totalHits = data.found || 0;
     }
     catch (error: unknown) {
@@ -776,7 +817,7 @@ export const useAdminSearch = () => {
 
         const key = collectionKey as keyof Omit<MultiSearchResults, 'counts'>;
         // Attach the Typesense relevance score so the "All" tab can interleave
-        // results across collections by relevance (see SearchAllPanel.vue).
+        // results across collections by relevance.
         // Use the string `text_match_info.score`, not the numeric `text_match`:
         // the int64 score exceeds JS's safe-integer range, so the number form
         // loses precision and collapses distinct scores into ties. The string is
@@ -915,19 +956,9 @@ export const useAdminSearch = () => {
     }
 
     try {
-      const response = await fetch(
-        `${baseUrl}/collections/${collectionName}/documents/search?${searchParams}`,
-        {
-          method: 'GET',
-          headers: {
-            'X-TYPESENSE-API-KEY': apiKey,
-            'Content-Type': 'application/json',
-          },
-          signal,
-        },
-      );
+      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams, signal);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         // Handle 401 - expired or invalid key (retry once)
         if (response.status === 401 && _retryCount < 1) {
           console.warn('Search authentication failed, refreshing keys...');
@@ -942,19 +973,18 @@ export const useAdminSearch = () => {
         }
 
         if (response.status === 429) {
-          const retryAfter = parseInt(response.headers.get('retry-after') || '5', 10);
+          const retryAfter = parseInt(response.retryAfter || '5', 10);
           rateLimitedUntil.value = Date.now() + retryAfter * 1000;
           throw new Error('Too many requests. Please wait a moment.');
         }
 
-        const errorText = await response.text();
-        throw new Error(`Search failed: ${response.status} - ${errorText}`);
+        throw new Error(`Search failed: ${response.status} - ${response.errorText}`);
       }
 
-      const data = await response.json();
+      const data = response.data ?? {};
 
       return {
-        hits: (data.hits?.map((hit: { document: T }) => hit.document) || []) as T[],
+        hits: (data.hits?.map(hit => hit.document) || []) as T[],
         totalHits: data.found || 0,
         facets: data.facet_counts || [],
         page: data.page || page,
@@ -1039,18 +1069,9 @@ export const useAdminSearch = () => {
     }
 
     try {
-      const response = await fetch(
-        `${baseUrl}/collections/${collectionName}/documents/search?${searchParams}`,
-        {
-          method: 'GET',
-          headers: {
-            'X-TYPESENSE-API-KEY': apiKey,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         if (response.status === 401 && _retryCount < 1) {
           await refreshConfig();
           const refreshedKey = getCollectionApiKey(collection);
@@ -1059,12 +1080,10 @@ export const useAdminSearch = () => {
           }
         }
 
-        const errorText = await response.text();
-        throw new Error(`Failed to load facets: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to load facets: ${response.status} - ${response.errorText}`);
       }
 
-      const data = await response.json();
-      return data.facet_counts || [];
+      return response.data?.facet_counts || [];
     }
     catch (error) {
       console.error('Failed to load initial facets:', error);
@@ -1141,6 +1160,7 @@ export const useAdminSearch = () => {
     getCollectionApiKey,
     hasCollectionAccess,
     getCollectionTenantIds,
+    getCollectionInstitutionIds,
     isSuperAdmin,
 
     // Related institution helpers

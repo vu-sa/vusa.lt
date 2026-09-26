@@ -14,9 +14,9 @@ enum MeetingType: string
     public function label(string $locale = 'lt'): string
     {
         return match ($this) {
-            self::InPerson => $locale === 'en' ? 'In-person Meeting' : 'Gyvas susitikimas',
-            self::Remote => $locale === 'en' ? 'Remote Meeting' : 'Nuotolinis susitikimas',
-            self::Email => $locale === 'en' ? 'E-meeting (via email)' : 'Elektroninis posėdis (el. laišku)',
+            self::InPerson => $locale === 'en' ? 'In-person Meeting' : 'Gyvas posėdis',
+            self::Remote => $locale === 'en' ? 'Remote Meeting' : 'Nuotolinis posėdis',
+            self::Email => $locale === 'en' ? 'E-meeting (via email)' : 'Sprendimas el. paštu',
         };
     }
 

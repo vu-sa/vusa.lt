@@ -39,6 +39,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string $title
  * @property string $description
  * @property string|null $context_url
+ * @property array<array-key, mixed>|null $context
  * @property string|null $selected_text
  * @property string $locale
  * @property Carbon|null $resolved_at
@@ -81,6 +82,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
     'title',
     'description',
     'context_url',
+    'context',
     'selected_text',
     'locale',
     'resolved_at',
@@ -103,6 +105,7 @@ class SupportRequest extends Model implements Commentable, HasMedia
             'status' => SupportRequestStatus::class,
             'visibility' => SupportRequestVisibility::class,
             'resolved_at' => 'datetime',
+            'context' => 'array',
         ];
     }
 

@@ -15,7 +15,7 @@ import { ref, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
 const STORAGE_KEY = 'gantt-settings';
 
 export interface GanttSettings {
-  /** Day width in pixels (zoom level) - default: 24 */
+  /** Day width in pixels (zoom level) - default: 3 */
   dayWidthPx: Ref<number>;
   /** Label column width in pixels - default: 220 */
   labelWidth: Ref<number>;
@@ -57,9 +57,9 @@ const GANTT_SETTINGS_KEY: InjectionKey<GanttSettings> = Symbol('gantt-settings')
 
 // Matches useGanttInteractions and the toolbar slider. These three used to disagree
 // (4-96 here, 3-36 there), so a stored width could sit outside what the UI could express.
-const DEFAULT_DAY_WIDTH = 12;
-const MIN_DAY_WIDTH = 3;
-const MAX_DAY_WIDTH = 18;
+const DEFAULT_DAY_WIDTH = 3;
+const MIN_DAY_WIDTH = 1;
+const MAX_DAY_WIDTH = 9;
 
 /** A width persisted before MAX_DAY_WIDTH came down would restore a zoom the UI cannot set. */
 function clampDayWidth(width: number | undefined): number {

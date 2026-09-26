@@ -309,27 +309,43 @@ describe('student rep registration form access', function (): void {
     });
 });
 
-describe('shared registrationForms prop', function (): void {
-    test('carries only the ids the user may open', function (): void {
+describe('catalog registration sections', function (): void {
+    test('carries only the forms the user may open', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
 
         asUser($user)
             ->get(route('forms.show', $this->memberForm))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('auth.registrationForms.member', $this->memberForm->id)
-                ->where('auth.registrationForms.studentRep', null)
+                ->where('adminNavigation.workspaces', function ($workspaces): bool {
+                    $organization = collect($workspaces)->firstWhere('key', 'organizacija');
+                    if (! $organization) {
+                        return false;
+                    }
+
+                    $sectionKeys = collect($organization['sections'])->pluck('key');
+
+                    return $sectionKeys->contains('registracija_nariai') && ! $sectionKeys->contains('registracija_atstovai');
+                })
             );
     });
 
-    test('carries both ids for an institution manager who also handles member registrations', function (): void {
+    test('carries both forms for an institution manager who also handles member registrations', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
         $user->duties()->first()->assignRole($this->managerRole->name);
 
         asUser($user)
             ->get(route('forms.show', $this->memberForm))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('auth.registrationForms.member', $this->memberForm->id)
-                ->where('auth.registrationForms.studentRep', $this->studentRepForm->id)
+                ->where('adminNavigation.workspaces', function ($workspaces): bool {
+                    $organization = collect($workspaces)->firstWhere('key', 'organizacija');
+                    if (! $organization) {
+                        return false;
+                    }
+
+                    $sectionKeys = collect($organization['sections'])->pluck('key');
+
+                    return $sectionKeys->contains('registracija_nariai') && $sectionKeys->contains('registracija_atstovai');
+                })
             );
     });
 
@@ -339,8 +355,16 @@ describe('shared registrationForms prop', function (): void {
         asUser($user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('auth.registrationForms.member', null)
-                ->where('auth.registrationForms.studentRep', null)
+                ->where('adminNavigation.workspaces', function ($workspaces): bool {
+                    $organization = collect($workspaces)->firstWhere('key', 'organizacija');
+                    if (! $organization) {
+                        return true;
+                    }
+
+                    $sectionKeys = collect($organization['sections'])->pluck('key');
+
+                    return ! $sectionKeys->contains('registracija_nariai') && ! $sectionKeys->contains('registracija_atstovai');
+                })
             );
     });
 });

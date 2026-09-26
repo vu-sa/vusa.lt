@@ -1,4 +1,8 @@
 /**
+ * @deprecated Legacy admin destination catalog superseded by AdminNavigationCatalog
+ * (app/Services/AdminNavigation/AdminNavigationCatalog.php) and useAdminNavigation (PR 3.1 & 3.2).
+ * Kept only for the palette's icon lookup and recent-page titles; remove once those read the catalog.
+ *
  * adminPageCatalog - Curated catalog of admin destinations.
  *
  * Single source of truth for "all the admin pages a user can navigate to".
@@ -19,7 +23,6 @@ import { usePage } from '@inertiajs/vue3';
 import {
   CalendarRange,
   Home,
-  Search,
   Settings,
   Plus,
   LayoutDashboard,
@@ -75,6 +78,8 @@ export interface AdminPageEntry {
 }
 
 /**
+ * @deprecated Superseded by AdminNavigationCatalog.
+ *
  * The full catalog. Add new admin destinations here.
  */
 export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
@@ -103,14 +108,6 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     category: 'navigation',
     keywords: ['meetings', 'posedziai', 'susirinkimai'],
     can: c => !!c.index?.meeting,
-  },
-  {
-    id: 'nav-search',
-    routeName: 'search.index',
-    labelKey: 'Paieška',
-    icon: Search,
-    category: 'navigation',
-    keywords: ['search', 'paieska', 'ieskoti', 'viskas', 'posedziai', 'institucijos', 'istekliai'],
   },
   {
     id: 'nav-institutions',
@@ -301,6 +298,8 @@ export function resolveCatalogEntryByRoute(routeName: string | undefined): Admin
 }
 
 /**
+ * @deprecated Superseded by useAdminNavigation().
+ *
  * Returns the permission-filtered catalog for the current user.
  */
 export function useAdminPageCatalog() {

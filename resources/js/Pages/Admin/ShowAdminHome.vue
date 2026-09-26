@@ -1,333 +1,232 @@
 <template>
-  <PageContent>
-    <Head :title="$t('Mano VU SA')" />
+  <OverviewPage :title="$t('Mano VU SA')">
+    <template #hero>
+      <HomeHero :greeting :image="heroImage" :summary="taskSummary" />
+    </template>
 
-    <div class="space-y-6">
-      <!-- Simple greeting -->
-      <section
-        data-tour="greeting-section"
-        class="relative rounded-2xl bg-gradient-to-br from-primary/8 via-primary/4 to-background border border-zinc-200 dark:border-zinc-800 p-6 dark:from-primary/6 dark:via-primary/3">
-        <div class="absolute inset-0 overflow-hidden rounded-2xl">
-          <div class="absolute inset-0 bg-grid-pattern opacity-[0.03] dark:opacity-[0.015]" />
-        </div>
-        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">
-              {{ greeting }}, <span class="text-primary dark:text-primary/85">{{ userNameAddress }}</span>!
-            </h1>
-          </div>
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-primary-section">
+      <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
+        <AttentionQueue
+          :tasks="visibleTasks"
+          :stats="taskStats"
+          :remaining-count="Math.max(0, taskStats.total - visibleTasks.length)"
+          :more-href="route('userTasks')"
+        />
 
-          <!-- <ActionWindowTrigger variant="standalone" spotlight-position="bottom-right" class="shrink-0" /> -->
-        </div>
+        <Deferred v-if="hasAtstovavimas" :data="deferredProps">
+          <template #fallback>
+            <CollectionSkeleton :rows="3" />
+          </template>
+          <InstitutionsNeedingAttention
+            :institutions="institutionsNeedingAttention ?? []"
+            @record="recordActivityFor"
+          />
+        </Deferred>
 
-        <!-- Hero search: opens the command palette with the typed text -->
-        <div class="relative mt-5 w-full max-w-2xl">
-          <HomeSearchBar />
-        </div>
-      </section>
+        <ReservationDraftSummary v-if="reservationDraft" :draft="reservationDraft" variant="home" />
 
-      <!-- Main content grid - responsive layout -->
-      <div :class="[
-        'grid gap-6',
-        hasAtstovavimas ? 'lg:grid-cols-2' : 'lg:grid-cols-1'
-      ]">
-        <!-- Upcoming Meetings Card (first for atstovavimas users) -->
-        <UpcomingMeetingsCard v-if="hasAtstovavimas" :upcoming-meetings="formattedMeetings"
-          :institutions-insights="{ attention: institutionsNeedingAttention }"
-          data-tour="meetings-card"
-          @show-all-meetings="() => router.visit(route('dashboard.atstovavimas'))"
-          @create-meeting="actionWindow.open({ flow: 'meeting.create' })" />
-
-        <!-- Tasks Card -->
-        <TasksCard :task-stats :upcoming-tasks :class="{ 'lg:max-w-2xl': !hasAtstovavimas }" data-tour="tasks-card" />
+        <QuickAccess v-if="!hasPrimaryContent" :registration-forms :columns="2" data-slot="home-destinations-section" />
       </div>
 
-      <!-- Calendar Events Section -->
-      <CalendarEventsCard v-if="upcomingCalendarEvents.length > 0" :events-list="upcomingCalendarEvents" />
-
-      <!-- Latest News Section -->
-      <NewsListCard v-if="latestNews.length > 0" :news-list="latestNews" />
+      <aside class="min-w-0">
+        <CreateShortcuts />
+      </aside>
     </div>
 
-    <!-- New Meeting Modal -->
-  </PageContent>
+    <QuickAccess v-if="hasPrimaryContent" :registration-forms data-slot="home-destinations-section" />
+
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="home-secondary-section">
+      <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
+        <UpcomingMeetingsList
+          v-if="hasAtstovavimas"
+          :meetings="upcomingMeetings"
+          :total="upcomingMeetingsTotal"
+          :href="route('dashboard.atstovavimas')"
+        />
+        <OverviewStatusList />
+      </div>
+
+      <aside class="flex min-w-0 flex-col gap-10 lg:gap-14">
+        <Deferred :data="deferredProps">
+          <template #fallback>
+            <CollectionSkeleton :rows="3" />
+          </template>
+          <FollowedInstitutionsList
+            v-if="followedInstitutions?.total"
+            :followed="followedInstitutions"
+          />
+          <RecentlyEditedList :records="recentlyEdited ?? []" />
+          <SiteContentLists
+            :events="upcomingCalendarEvents ?? []"
+            :news="latestNews ?? []"
+          />
+        </Deferred>
+      </aside>
+    </div>
+  </OverviewPage>
 </template>
 
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Deferred, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref, onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
+import type { DriveStep } from 'driver.js';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import HomeSearchBar from '@/Pages/Admin/Dashboard/Components/HomeSearchBar.vue';
-import TasksCard from '@/Pages/Admin/Dashboard/Components/TasksCard.vue';
-import UpcomingMeetingsCard from '@/Pages/Admin/Dashboard/Components/UpcomingMeetingsCard.vue';
-import CalendarEventsCard from '@/Pages/Admin/Dashboard/Components/CalendarEventsCard.vue';
-import NewsListCard from '@/Pages/Admin/Dashboard/Components/NewsListCard.vue';
+import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
+import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
+import QuickAccess from '@/Components/Home/QuickAccess.vue';
+import FollowedInstitutionsList from '@/Components/Home/FollowedInstitutionsList.vue';
+import HomeHero from '@/Components/Home/HomeHero.vue';
+import InstitutionsNeedingAttention from '@/Components/Home/InstitutionsNeedingAttention.vue';
+import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';
+import SiteContentLists from '@/Components/Home/SiteContentLists.vue';
+import UpcomingMeetingsList from '@/Components/Home/UpcomingMeetingsList.vue';
+import type {
+  HomeAccessChange,
+  HomeFollowedInstitutions,
+  HomeHeroImage,
+  HomeMeeting,
+  HomeNewsPreview,
+  HomeRecentRecord,
+  HomeRegistrationForm,
+  HomeTask,
+  InstitutionActivityInsight,
+} from '@/Components/Home/types';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import type { ReservationDraftSummaryData } from '@/Components/Reservations/ReservationDraftRow.vue';
+import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
+import { CollectionSkeleton, OverviewStatusList } from '@/Components/Patterns';
 import { addressivize } from '@/Utils/String';
 import { useProductTour } from '@/Composables/useProductTour';
+import { useIsMobile } from '@/Composables/useIsMobile';
 import { provideTour } from '@/Composables/useTourProvider';
-import { useSidebar } from '@/Components/ui/sidebar/utils';
-import { useActionWindow } from '@/Composables/useActionWindow';
-// import ActionWindowTrigger from '@/Components/ActionWindow/ActionWindowTrigger.vue';
-import type { TaskProgress, TaskActionType } from '@/Types/TaskTypes';
-import type { InstitutionActivityInsight } from '@/Types/InstitutionActivity';
+import { useActionWindow, type ActionWindowInstitutionRef } from '@/Composables/useActionWindow';
 
-// Types
 interface TaskStats {
   total: number;
   overdue: number;
   dueSoon: number;
 }
 
-interface UpcomingTask {
-  id: string;
-  name: string;
-  due_date: string | null;
-  is_overdue: boolean;
-  taskable_type: string;
-  taskable_id: string;
-  action_type?: TaskActionType | string | null;
-  progress?: TaskProgress | null;
-  can_be_manually_completed?: boolean;
-}
-
-interface UpcomingMeeting {
-  id: string;
-  title: string;
-  start_time: string;
-  institution_name: string;
-}
-
-// Props - use full entity types for Calendar and News to enable component reuse
+// The first response carries the queue and upcoming meetings; the rest arrives as one deferred group.
 const props = defineProps<{
-  unreadNotificationsCount: number;
-  hasNotifications: boolean;
+  accessChanges: HomeAccessChange[];
+  /** Set when the URL asked for the ActionWindow (a reminder's answer buttons, U21). */
+  actionWindowLaunch: { flow: 'meeting.create' | 'check-in'; institution: ActionWindowInstitutionRef } | null;
   taskStats: TaskStats;
-  upcomingTasks: UpcomingTask[];
-  upcomingMeetings: UpcomingMeeting[];
-  institutionsNeedingAttention: InstitutionActivityInsight[];
-  upcomingCalendarEvents: App.Entities.Calendar[];
-  latestNews: App.Entities.News[];
+  upcomingTasks: HomeTask[];
+  upcomingMeetings: HomeMeeting[];
+  upcomingMeetingsTotal: number;
+  followedInstitutions?: HomeFollowedInstitutions;
+  heroImage: HomeHeroImage | null;
+  institutionsNeedingAttention?: InstitutionActivityInsight[];
+  upcomingCalendarEvents?: App.Entities.Calendar[];
+  latestNews?: HomeNewsPreview[];
+  recentlyEdited?: HomeRecentRecord[];
+  registrationForms: HomeRegistrationForm[];
+  /** The user's unfinished reservation, so a started one is one tap away. */
+  reservationDraft: ReservationDraftSummaryData | null;
 }>();
 
-// Meeting modal state
+const deferredProps = ['institutionsNeedingAttention', 'upcomingCalendarEvents', 'latestNews', 'recentlyEdited', 'followedInstitutions'];
+const visibleTasks = computed(() => props.upcomingTasks.slice(0, 3));
 
-// Check if user has atstovavimas permissions (can create meetings)
-const hasAtstovavimas = computed(() => usePage().props.auth?.can?.create?.meeting);
+const page = usePage<PageProps>();
 
-// Check if user can access administration
-const canAccessAdministration = computed(() => usePage().props.auth?.can?.accessAdministration);
+// Not `index.meeting`: every admin may browse public meetings, but only reps work on them.
+const hasAtstovavimas = computed(() => Boolean(
+  props.upcomingMeetings?.length
+  || page.props.auth?.can?.create?.meeting,
+));
 
-// Get sidebar controls for expanding during tour
-const { setOpen, setOpenMobile, isMobile } = useSidebar();
+const hasPrimaryContent = computed(() => Boolean(
+  visibleTasks.value.length
+  || props.reservationDraft
+  || (hasAtstovavimas.value && (props.institutionsNeedingAttention === undefined || props.institutionsNeedingAttention.length > 0)),
+));
+
 const actionWindow = useActionWindow();
 
-// Expand sidebar when highlighting sidebar elements
-const expandSidebar = () => {
-  if (isMobile.value) {
-    setOpenMobile(true);
-  }
-  else {
-    setOpen(true);
-  }
-};
+const isMobile = useIsMobile();
 
-// Build conditional tour steps
-const tourSteps = computed(() => {
-  const steps = [];
-
-  // 1. Welcome step (always)
-  steps.push({
-    popover: {
-      title: $t('tutorials.admin_home.welcome.title'),
-      description: $t('tutorials.admin_home.welcome.description'),
-    },
-  });
-
-  // 2. Hero search bar
-  steps.push({
-    element: '[data-tour="home-search"]',
-    popover: {
-      title: $t('tutorials.admin_home.home_search.title'),
-      description: $t('tutorials.admin_home.home_search.description'),
-    },
-  });
-
-  // 3. Upcoming meetings card (if atstovavimas)
-  if (hasAtstovavimas.value) {
-    steps.push({
-      element: '[data-tour="meetings-card"]',
-      popover: {
-        title: $t('tutorials.admin_home.meetings_card.title'),
-        description: $t('tutorials.admin_home.meetings_card.description'),
-      },
-    });
-  }
-
-  // 3. ViSAK in sidebar (if atstovavimas)
-  if (hasAtstovavimas.value) {
-    steps.push({
-      element: '[data-tour="nav-visak"]',
-      popover: {
-        title: $t('tutorials.admin_home.nav_visak.title'),
-        description: $t('tutorials.admin_home.nav_visak.description'),
-      },
-      onHighlightStarted: expandSidebar,
-    });
-  }
-
-  // 4. Administravimas button (if can manage administration)
-  if (canAccessAdministration.value) {
-    steps.push({
-      element: '[data-tour="nav-administravimas"]',
-      popover: {
-        title: $t('tutorials.admin_home.nav_administravimas.title'),
-        description: $t('tutorials.admin_home.nav_administravimas.description'),
-      },
-      onHighlightStarted: expandSidebar,
-    });
-  }
-
-  // 5. The action window, which replaced the old quick-actions list
-  steps.push({
-    element: '[data-tour="action-window"]',
-    popover: {
-      title: $t('tutorials.admin_home.action_window.title'),
-      description: $t('tutorials.admin_home.action_window.description'),
-    },
-    onHighlightStarted: expandSidebar,
-  });
-
-  // 6. Tasks card
-  steps.push({
-    element: '[data-tour="tasks-card"]',
-    popover: {
-      title: $t('tutorials.admin_home.tasks_card.title'),
-      description: $t('tutorials.admin_home.tasks_card.description'),
-    },
-  });
-
-  // 7. Tasks indicator in top bar
-  steps.push({
-    element: '[data-tour="tasks-indicator"]',
-    popover: {
-      title: $t('tutorials.admin_home.tasks_indicator.title'),
-      description: $t('tutorials.admin_home.tasks_indicator.description'),
-    },
-  });
-
-  // 8. Notifications indicator in top bar
-  steps.push({
-    element: '[data-tour="notifications-indicator"]',
-    popover: {
-      title: $t('tutorials.admin_home.notifications_indicator.title'),
-      description: $t('tutorials.admin_home.notifications_indicator.description'),
-    },
-  });
-
-  // 9. Help button in top bar
-  steps.push({
-    element: '[data-tour="help-button"]',
-    popover: {
-      title: $t('tutorials.admin_home.help_button.title'),
-      description: $t('tutorials.admin_home.help_button.description'),
-    },
-  });
-
-  // 10. Dokumentacija in sidebar
-  steps.push({
-    element: '[data-tour="nav-dokumentacija"]',
-    popover: {
-      title: $t('tutorials.admin_home.nav_dokumentacija.title'),
-      description: $t('tutorials.admin_home.nav_dokumentacija.description'),
-    },
-    onHighlightStarted: expandSidebar,
-  });
-
-  // 11. User menu (settings) in sidebar
-  steps.push({
-    element: '[data-tour="user-menu"]',
-    popover: {
-      title: $t('tutorials.admin_home.user_menu.title'),
-      description: $t('tutorials.admin_home.user_menu.description'),
-    },
-    onHighlightStarted: expandSidebar,
-  });
-
-  // 12. Leave feedback in sidebar (final step)
-  steps.push({
-    element: '[data-tour="nav-feedback"]',
-    popover: {
-      title: $t('tutorials.admin_home.nav_feedback.title'),
-      description: $t('tutorials.admin_home.nav_feedback.description'),
-    },
-    onHighlightStarted: expandSidebar,
-  });
-
-  return steps;
+const tourStep = (key: string, anchor?: string): DriveStep => ({
+  element: anchor ? `[data-tour="${anchor}"]` : undefined,
+  popover: {
+    title: $t(`tutorials.admin_home.${key}.title`),
+    description: $t(`tutorials.admin_home.${key}.description`),
+  },
 });
 
-// Setup product tour
+// Phones and desktops have different chrome, so each gets its own walk through it.
+const tourSteps = computed<DriveStep[]>(() => isMobile.value
+  ? [
+      tourStep('welcome'),
+      tourStep('section_switcher', 'section-switcher'),
+      tourStep('command_palette_mobile', 'command-palette-mobile'),
+      tourStep('action_create', 'action-create-mobile'),
+      tourStep('tasks_card', 'tasks-card'),
+      tourStep('mobile_menu', 'mobile-menu'),
+    ]
+  : [
+      tourStep('welcome'),
+      tourStep('workspaces', 'workspace-picker'),
+      tourStep('all_sections', 'all-sections'),
+      tourStep('command_palette', 'command-palette'),
+      tourStep('action_create', 'action-create'),
+      tourStep('tasks_card', 'tasks-card'),
+      tourStep('quick_actions', 'quick-actions'),
+      tourStep('account_menu', 'account-menu'),
+    ]);
+
 const { startTour, startTourIfNew } = useProductTour({
-  tourId: 'admin-home-v1',
-  // Use function to defer translation evaluation until tour starts
+  tourId: 'admin-welcome-v2',
   steps: () => tourSteps.value,
 });
 
-// Register tour with the layout's help button
 provideTour(startTour);
 
-// Auto-start tour for first-time users after component mounts
+/** Lets the shell and the first cards settle before driver.js measures them. */
+const TOUR_START_DELAY_MS = 1000;
+
+// A reminder's answer buttons open Pradžia with the window already on the right flow (U21).
 onMounted(() => {
-  // Wait 1.5 seconds to ensure DOM is ready
-  setTimeout(() => {
-    // A first-time user who reaches for the action window inside that window gets a
-    // tour popup over an open modal, and the two fight for the same click.
-    if (actionWindow.isOpen.value) {
-      return;
-    }
+  const launch = props.actionWindowLaunch;
 
-    startTourIfNew();
-  }, 1500);
+  if (!launch) {
+    setTimeout(() => startTourIfNew(), TOUR_START_DELAY_MS);
+    return;
+  }
+
+  actionWindow.open({ flow: launch.flow, institution: launch.institution });
+
+  // Strip the query so a refresh does not reopen a window the rep has already answered.
+  const url = new URL(window.location.href);
+  url.searchParams.delete('window');
+  url.searchParams.delete('institution');
+  window.history.replaceState(window.history.state, '', url);
 });
 
-// User name with addressivization for Lithuanian
-const userNameAddress = computed(() => {
-  const name = usePage().props.auth?.user?.name;
-  const split = name?.split(' ');
-  if (!split) return '';
-  const firstName = split[0];
-  return usePage().props.app.locale === 'lt' ? addressivize(firstName) : firstName;
-});
-
-// Time-based greeting (simplified - no "Geros nakties")
+// Lithuanian addresses the rep in the vocative: "Labas, Justinai".
 const greeting = computed(() => {
-  const hour = new Date().getHours();
-  if (hour < 12) return $t('Labas rytas');
-  if (hour < 18) return $t('Laba diena');
-  return $t('Labas vakaras');
+  const firstName = page.props.auth?.user?.name?.split(' ')[0];
+  if (!firstName) return $t('Labas');
+  return `${$t('Labas')}, ${page.props.app.locale === 'lt' ? addressivize(firstName) : firstName}`;
 });
 
-// Format meetings to match UpcomingMeetingsCard expected structure
-const formattedMeetings = computed(() => {
-  return props.upcomingMeetings.map(meeting => ({
-    id: meeting.id,
-    start_time: meeting.start_time,
-    institutions: meeting.institution_name
-      ? [{
-          id: '0',
-          name: meeting.institution_name,
-          has_public_meetings: false,
-        }]
-      : [],
-  }));
+const taskSummary = computed(() => {
+  if (props.taskStats.total === 0) {
+    return null;
+  }
+
+  const waiting = $t('home.summary.waiting', { count: String(props.taskStats.total) });
+
+  return props.taskStats.overdue > 0
+    ? `${waiting} · ${$t('home.summary.overdue', { count: String(props.taskStats.overdue) })}`
+    : waiting;
 });
+
+const recordActivityFor = (institution: InstitutionActivityInsight) => {
+  actionWindow.open({ flow: 'institution.report', institution: { id: institution.id, name: institution.name } });
+};
+
 </script>
-
-<style scoped>
-.bg-grid-pattern {
-  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-</style>

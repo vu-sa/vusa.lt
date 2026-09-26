@@ -6,7 +6,7 @@
       'focus:bg-accent focus:text-accent-foreground',
       '[&_svg:not([class*=\'text-\'])]:text-muted-foreground',
       'relative flex w-full cursor-default items-center gap-2',
-      'rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none',
+      'py-1.5 pr-8 pl-2 text-sm outline-hidden select-none',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       '[&_svg]:pointer-events-none',
       '[&_svg]:shrink-0',
@@ -27,9 +27,11 @@
       <SelectItemText class="sr-only">
         {{ label }}
       </SelectItemText>
+      <component :is="icon" v-if="icon" aria-hidden="true" />
       <slot />
     </template>
     <SelectItemText v-else>
+      <component :is="icon" v-if="icon" aria-hidden="true" />
       <slot />
     </SelectItemText>
   </SelectItem>
@@ -44,14 +46,14 @@ import {
   SelectItemText,
   useForwardProps,
 } from 'reka-ui';
-import { computed, type HTMLAttributes } from 'vue';
+import { computed, type Component, type HTMLAttributes } from 'vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
 
-const props = defineProps<SelectItemProps & { class?: HTMLAttributes['class']; label?: string }>();
+const props = defineProps<SelectItemProps & { class?: HTMLAttributes['class']; label?: string; icon?: Component }>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props;
+  const { class: _, icon: __, ...delegated } = props;
 
   return delegated;
 });

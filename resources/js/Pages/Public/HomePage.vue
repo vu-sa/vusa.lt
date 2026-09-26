@@ -1,5 +1,4 @@
 <template>
-  <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
   <Head v-if="firstNewsImageUrl">
     <link rel="preload" as="image" :href="firstNewsImageUrl" fetchpriority="high">
   </Head>
@@ -33,9 +32,4 @@ defineProps<{
 }>();
 
 // Home page doesn't need breadcrumbs - they're cleared by PublicLayout
-
-// const SummerCamps = defineAsyncComponent(
-//  // eslint-disable-next-line no-secrets/no-secrets
-//  () => import("@/Components/Public/FullWidth/SummerCamps.vue"),
-// );
 </script>

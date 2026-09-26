@@ -23,4 +23,6 @@ export interface InstitutionActivityStatus {
 export interface InstitutionActivityInsight extends InstitutionActivityStatus {
   id: string;
   name: string;
+  /** Named only where several padaliniai share one list. */
+  tenant_name?: string | null;
 }

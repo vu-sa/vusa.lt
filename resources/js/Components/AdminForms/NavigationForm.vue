@@ -1,13 +1,34 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <!-- §1 Basics -->
-    <FormElement :section-number="1">
-      <template #title>
-        {{ $t('navigation.form.section_basics') }}
-      </template>
+  <FormPage
+    :title="isCreate ? $t('navigation.form.new_link') : (form.name || form.url || $t('navigation.form.edit_link'))"
+    :bar-title
+    entity-type="navigation"
+    :back-href="route('navigation.index')"
+    :back-label="$t('navigation.title')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :field-ids
+    :mode="isCreate ? 'create' : 'edit'"
+    :activity-subject="navigation?.id ? { type: 'navigation', id: navigation.id } : undefined"
+    :created-at="isCreate ? undefined : (navigation?.created_at as string | undefined)"
+    :updated-at="isCreate ? undefined : (navigation?.updated_at as string | undefined)"
+    @submit="emit('submit:form', form)"
+  >
+    <template v-if="!isCreate" #title-status>
+      <StatusBadge :status="form.is_active ? bannerStatuses.active : bannerStatuses.inactive" />
+    </template>
 
+    <template v-if="!isCreate" #header-actions>
+      <slot name="aside-header" />
+    </template>
+
+    <!-- §1 Basics -->
+    <FormSection
+      :title="$t('navigation.form.section_basics')"
+    >
       <FormFieldWrapper id="name" :label="$t('navigation.form.name')" :required="!isNameless" :error="form.errors.name">
-        <Input id="name" v-model="form.name" type="text" :disabled="isNameless" />
+        <Input id="name" v-model="form.name" type="text" :disabled="isNameless" :class="['h-11', fieldSurfaceClass]" />
       </FormFieldWrapper>
 
       <template v-if="!isNameless">
@@ -26,7 +47,7 @@
                   <span class="truncate" :class="{ 'text-muted-foreground': !lastPickedLabel }">
                     {{ lastPickedLabel ?? $t('navigation.form.link_target_placeholder') }}
                   </span>
-                  <IFluentChevronDown24Regular class="ml-2 size-4 opacity-50" />
+                  <ChevronDown class="ml-2 size-4 opacity-50" />
                 </Button>
               </template>
             </MultiCollectionSelectDialog>
@@ -50,73 +71,32 @@
 
         <FormFieldWrapper id="url" :label="$t('navigation.form.url')" :required="!isFooterRoot" :error="form.errors.url"
           :helper-text="isFooterRoot ? $t('navigation.form.footer_category_url_hint') : $t('navigation.form.link_target_manual')">
-          <div class="flex gap-1">
-            <Input id="url" v-model="form.url" type="text" />
-            <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank">
-              <IFluentOpen24Regular />
+          <div class="flex gap-1.5">
+            <Input id="url" v-model="form.url" type="text" :class="['h-11', fieldSurfaceClass]" />
+            <Button variant="outline" size="icon" as="a" :href="form.url" target="_blank" rel="noopener noreferrer" class="size-11 shrink-0">
+              <ExternalLink class="size-4" />
             </Button>
           </div>
         </FormFieldWrapper>
       </template>
-    </FormElement>
+    </FormSection>
 
-    <!-- §2 Appearance — footer links have exactly one look, so there is nothing to pick -->
-    <FormElement v-if="!isDivider && !isFooter" :section-number="2">
-      <template #title>
-        {{ $t('navigation.form.section_appearance') }}
-      </template>
-
-      <FormFieldWrapper id="type" :label="$t('navigation.form.type')" required>
-        <VisualOptionSelect v-model="linkType" :options="linkStyleOptions" :columns="3" icon-class="h-8 w-14" />
-      </FormFieldWrapper>
-
-      <template v-if="!isHeading">
-        <FormFieldWrapper id="icon" :label="$t('navigation.form.icon')">
-          <FluentIconSelect :icon="form.extra_attributes.icon ?? null"
-            @update:icon="(value) => form.extra_attributes.icon = value" />
-        </FormFieldWrapper>
-
-        <FormFieldWrapper id="description" :label="$t('navigation.form.description')">
-          <Textarea id="description" v-model="form.extra_attributes.description" />
-        </FormFieldWrapper>
-
-        <div class="grid gap-3 lg:grid-cols-2">
-          <FormFieldWrapper id="small_text" :label="$t('navigation.form.small_text')">
-            <Input id="small_text" v-model="form.extra_attributes.small_text" type="text" />
-          </FormFieldWrapper>
-          <FormFieldWrapper id="badge_variant" :label="$t('navigation.form.badge_variant')">
-            <ToggleGroup v-model="badgeVariant" type="single" class="justify-start">
-              <ToggleGroupItem v-for="variant in badgeVariantOptions" :key="variant" :value="variant">
-                <Badge :variant size="tiny">
-                  {{ form.extra_attributes.small_text || variant }}
-                </Badge>
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </FormFieldWrapper>
-        </div>
-      </template>
-    </FormElement>
-
-    <!-- §3 Image (collapsible, auto-open when an image is already set) — not supported on
+    <!-- §2 Image (collapsible, auto-open when an image is already set) — not supported on
          footer links, which are text-only by design (see AGENTS.md) -->
-    <FormElement v-if="!isNameless && !isFooter" :section-number="3">
-      <template #title>
-        {{ $t('navigation.form.section_image') }}
-      </template>
-
+    <FormSection v-if="!isNameless && !isFooter" :title="$t('navigation.form.section_image')">
       <Collapsible v-model:open="imageSectionOpen" class="w-full">
         <CollapsibleTrigger as-child>
           <Button variant="ghost" class="h-auto w-full justify-between p-0 hover:bg-transparent">
             <span class="text-sm text-muted-foreground">
               {{ imageSectionOpen ? $t('navigation.form.hide_image') : $t('navigation.form.show_image') }}
             </span>
-            <IFluentChevronDown24Regular class="size-4 shrink-0 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': imageSectionOpen }" />
+            <ChevronDown class="size-4 shrink-0 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': imageSectionOpen }" />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent class="space-y-4 pt-4">
           <FormFieldWrapper id="image" :label="$t('navigation.form.image')">
             <div class="flex items-start gap-4">
-              <img v-if="form.extra_attributes.image" class="size-24 shrink-0 rounded-md object-cover" :src="form.extra_attributes.image" alt="">
+              <img v-if="form.extra_attributes.image" class="size-24 shrink-0 object-cover" :src="form.extra_attributes.image" alt="">
               <div class="flex flex-col gap-2">
                 <ButtonGroup>
                   <TiptapImageButton as-child @submit="form.extra_attributes.image = $event">
@@ -141,11 +121,11 @@
                  eyebrow or a call to action, and a link with no image has no card at all. -->
             <template v-if="imageRender === 'card'">
               <FormFieldWrapper id="eyebrow" :label="$t('navigation.form.eyebrow')" :hint="$t('navigation.form.eyebrow_hint')">
-                <Input id="eyebrow" v-model="form.extra_attributes.eyebrow" type="text" />
+                <Input id="eyebrow" v-model="form.extra_attributes.eyebrow" type="text" :class="['h-11', fieldSurfaceClass]" />
               </FormFieldWrapper>
 
               <FormFieldWrapper id="cta" :label="$t('navigation.form.cta')" :hint="$t('navigation.form.cta_hint')">
-                <Input id="cta" v-model="form.extra_attributes.cta" type="text" />
+                <Input id="cta" v-model="form.extra_attributes.cta" type="text" :class="['h-11', fieldSurfaceClass]" />
               </FormFieldWrapper>
 
               <FormFieldWrapper id="image_height" :label="$t('navigation.form.image_height')" :hint="$t('navigation.form.image_height_hint')">
@@ -212,121 +192,177 @@
           </template>
         </CollapsibleContent>
       </Collapsible>
-    </FormElement>
+    </FormSection>
 
-    <!-- §4 Advanced (collapsible, closed by default) -->
-    <FormElement :section-number="4" no-divider>
-      <template #title>
-        {{ $t('navigation.form.section_advanced') }}
-      </template>
+    <template #aside>
+      <!-- §3 Appearance — footer links have exactly one look, so there is nothing to pick -->
+      <FormPanel v-if="!isDivider && !isFooter" :title="$t('navigation.form.section_appearance')" :icon="Palette" title-class="text-brand">
+        <FormFieldWrapper id="type" :label="$t('navigation.form.type')" required>
+          <VisualOptionSelect v-model="linkType" :options="linkStyleOptions" :columns="3" icon-class="h-8 w-14" />
+        </FormFieldWrapper>
 
-      <Collapsible v-model:open="advancedOpen" class="w-full">
-        <CollapsibleTrigger as-child>
-          <Button variant="ghost" class="h-auto w-full justify-between p-0 hover:bg-transparent">
-            <span class="text-sm text-muted-foreground">
-              {{ advancedOpen ? $t('navigation.form.hide_advanced') : $t('navigation.form.show_advanced') }}
-            </span>
-            <IFluentChevronDown24Regular class="size-4 shrink-0 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': advancedOpen }" />
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent class="space-y-4 pt-4">
-          <div class="flex items-center justify-between rounded-md border p-3">
-            <Label for="is_active" class="cursor-pointer">{{ $t('navigation.form.is_active') }}</Label>
-            <Switch id="is_active" :model-value="form.is_active" @update:model-value="val => form.is_active = val" />
-          </div>
-
-          <div v-if="!isNameless && !isFooter" class="flex items-center justify-between rounded-md border p-3">
-            <Label for="featured" class="cursor-pointer">{{ $t('navigation.form.featured') }}</Label>
-            <Switch id="featured" :model-value="!!form.extra_attributes.featured"
-              @update:model-value="val => form.extra_attributes.featured = val" />
-          </div>
-
-          <div v-if="!isNameless && !isFooterRoot" class="flex items-center justify-between rounded-md border p-3">
-            <Label for="new_tab" class="cursor-pointer">{{ $t('navigation.form.new_tab') }}</Label>
-            <Switch id="new_tab" :model-value="!!form.extra_attributes.new_tab"
-              @update:model-value="val => form.extra_attributes.new_tab = val" />
-          </div>
-
-          <!-- Column/col-span pick a header link's spot inside its dropdown; a footer column
-               IS a root, so neither concept applies there (see FooterNavigationManager.vue). -->
-          <div v-if="!isFooter" class="grid gap-3 lg:grid-cols-2">
-            <FormFieldWrapper id="column" :label="$t('navigation.form.column')">
-              <Select
-                :model-value="form.extra_attributes.column != null ? String(form.extra_attributes.column) : undefined"
-                @update:model-value="val => form.extra_attributes.column = Number(val)"
-              >
-                <SelectTrigger id="column">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">
-                    {{ opt }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </FormFieldWrapper>
-
-            <FormFieldWrapper v-if="!isNameless" id="col_span" :label="$t('navigation.form.col_span')">
-              <Select
-                :model-value="form.extra_attributes.col_span != null ? String(form.extra_attributes.col_span) : '1'"
-                @update:model-value="val => form.extra_attributes.col_span = Number(val)"
-              >
-                <SelectTrigger id="col_span">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">
-                    {{ opt }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </FormFieldWrapper>
-          </div>
-
-          <!-- A footer column is itself a root — it has no parent to reassign. -->
-          <FormFieldWrapper v-if="!isFooterRoot" id="parent_id" :label="$t('navigation.form.parent')">
-            <SingleSelect
-              v-model="selectedParent"
-              :options="parentOptions"
-              label-field="label"
-              value-field="value"
-            />
+        <template v-if="!isHeading">
+          <FormFieldWrapper id="icon" :label="$t('navigation.form.icon')">
+            <FluentIconSelect :icon="form.extra_attributes.icon ?? null"
+              @update:icon="(value) => form.extra_attributes.icon = value" />
           </FormFieldWrapper>
-        </CollapsibleContent>
-      </Collapsible>
-    </FormElement>
-  </AdminForm>
+
+          <FormFieldWrapper id="description" :label="$t('navigation.form.description')">
+            <Textarea id="description" v-model="form.extra_attributes.description" :class="fieldSurfaceClass" />
+          </FormFieldWrapper>
+
+          <div class="grid gap-3 lg:grid-cols-2">
+            <FormFieldWrapper id="small_text" :label="$t('navigation.form.small_text')">
+              <Input id="small_text" v-model="form.extra_attributes.small_text" type="text" :class="['h-11', fieldSurfaceClass]" />
+            </FormFieldWrapper>
+            <FormFieldWrapper id="badge_variant" :label="$t('navigation.form.badge_variant')">
+              <ToggleGroup v-model="badgeVariant" type="single" class="justify-start">
+                <ToggleGroupItem v-for="variant in badgeVariantOptions" :key="variant" :value="variant">
+                  <Badge :variant size="tiny">
+                    {{ form.extra_attributes.small_text || variant }}
+                  </Badge>
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </FormFieldWrapper>
+          </div>
+        </template>
+      </FormPanel>
+
+      <!-- §4 Advanced (collapsible, closed by default) -->
+      <FormPanel :title="$t('navigation.form.section_advanced')" :icon="SlidersHorizontal" title-class="text-brand">
+        <Collapsible v-model:open="advancedOpen" class="w-full">
+          <CollapsibleTrigger as-child>
+            <Button variant="ghost" class="h-auto w-full justify-between p-0 hover:bg-transparent">
+              <span class="text-sm text-muted-foreground">
+                {{ advancedOpen ? $t('navigation.form.hide_advanced') : $t('navigation.form.show_advanced') }}
+              </span>
+              <ChevronDown class="size-4 shrink-0 text-muted-foreground transition-transform duration-200" :class="{ 'rotate-180': advancedOpen }" />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent class="space-y-4 pt-4">
+            <FormToggleRow
+              v-model="form.is_active"
+              :label="$t('navigation.form.is_active')"
+            />
+
+            <FormToggleRow
+              v-if="!isNameless && !isFooter"
+              v-model="form.extra_attributes.featured"
+              :label="$t('navigation.form.featured')"
+            />
+
+            <FormToggleRow
+              v-if="!isNameless && !isFooterRoot"
+              v-model="form.extra_attributes.new_tab"
+              :label="$t('navigation.form.new_tab')"
+            />
+
+            <!-- Column/col-span pick a header link's spot inside its dropdown; a footer column
+                 IS a root, so neither concept applies there (see FooterNavigationManager.vue). -->
+            <div v-if="!isFooter" class="grid gap-3 lg:grid-cols-2">
+              <FormFieldWrapper id="column" :label="$t('navigation.form.column')">
+                <Select
+                  :model-value="form.extra_attributes.column != null ? String(form.extra_attributes.column) : undefined"
+                  @update:model-value="val => form.extra_attributes.column = Number(val)"
+                >
+                  <SelectTrigger id="column">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">
+                      {{ opt }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormFieldWrapper>
+
+              <FormFieldWrapper v-if="!isNameless" id="col_span" :label="$t('navigation.form.col_span')">
+                <Select
+                  :model-value="form.extra_attributes.col_span != null ? String(form.extra_attributes.col_span) : '1'"
+                  @update:model-value="val => form.extra_attributes.col_span = Number(val)"
+                >
+                  <SelectTrigger id="col_span">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">
+                      {{ opt }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormFieldWrapper>
+            </div>
+
+            <!-- A footer column is itself a root — it has no parent to reassign. -->
+            <FormFieldWrapper v-if="!isFooterRoot" id="parent_id" :label="$t('navigation.form.parent')">
+              <SingleSelect
+                v-model="selectedParent"
+                :options="parentOptions"
+                label-field="label"
+                value-field="value"
+              />
+            </FormFieldWrapper>
+          </CollapsibleContent>
+        </Collapsible>
+      </FormPanel>
+    </template>
+
+    <template v-if="enableDelete && !isCreate" #danger-zone>
+      <Button
+        type="button"
+        variant="outline"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+        @click="isDeleteDialogOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('navigation.form.delete_link') }}
+      </Button>
+    </template>
+  </FormPage>
+
+  <ConfirmDialog
+    v-model:open="isDeleteDialogOpen"
+    :title="$t('Ištrinti navigacijos elementą?')"
+    :description="$t('Ar tikrai norite perkelti šį elementą į šiukšliadėžę?')"
+    :confirm-label="$t('Ištrinti')"
+    destructive
+    @confirm="emit('delete')"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, h, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2 } from 'lucide-vue-next';
+import { ChevronDown, ExternalLink, Loader2, Palette, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
 
-import FluentIconSelect from '../FormItems/FluentIconSelect.vue';
-import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
-
-import FormElement from './FormElement.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import AdminForm from './AdminForm.vue';
-
-import { useApiMutation } from '@/Composables/useApi';
-import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
-import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
+import VisualOptionSelect from '@/Components/FormItems/VisualOptionSelect.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { ConfirmDialog } from '@/Components/Patterns';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
+import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
-import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
-import { Input } from '@/Components/ui/input';
-import { Textarea } from '@/Components/ui/textarea';
-import { Label } from '@/Components/ui/label';
-import { Switch } from '@/Components/ui/switch';
-import { Badge } from '@/Components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
-import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
-import { SingleSelect } from '@/Components/ui/single-select';
+import { fieldSurfaceClass } from '@/Components/ui/control';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { SingleSelect } from '@/Components/ui/single-select';
+import { Switch } from '@/Components/ui/switch';
+import { Textarea } from '@/Components/ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
+import { useApiMutation } from '@/Composables/useApi';
+import { bannerStatuses } from '@/Constants/statuses';
+import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
+import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 
 interface TopicOption {
   id: number;
@@ -334,14 +370,18 @@ interface TopicOption {
   alias: string | null;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   navigation: App.Entities.Navigation;
   parentElements: App.Entities.Navigation[];
   topicOptions?: TopicOption[];
   rememberKey?: 'CreateNavigation';
-}>();
+  enableDelete?: boolean;
+}>(), {
+  topicOptions: () => [],
+  rememberKey: undefined,
+});
 
-defineEmits<{
+const emit = defineEmits<{
   (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
@@ -353,6 +393,15 @@ const form = props.rememberKey
 if (!form.extra_attributes) {
   form.extra_attributes = {};
 }
+
+const isCreate = computed(() => !form.id);
+const isDeleteDialogOpen = ref(false);
+
+const fieldIds = ['name', 'url', 'parent_id', 'is_active'];
+
+const barTitle = computed(() =>
+  form.name?.trim() || form.url?.trim() || (isCreate.value ? $t('navigation.form.new_link') : $t('navigation.form.edit_link')),
+);
 
 // Footer links only ever take two fixed shapes — see NavigationRequest, which is the
 // authoritative source for this. Forced here too so the rest of the form (icons, type
@@ -429,58 +478,6 @@ const isDivider = computed(() => linkType.value === 'divider');
 const isHeading = computed(() => linkType.value === 'heading');
 const isNameless = computed(() => isDivider.value || isHeading.value);
 
-const badgeVariantOptions = ['rose', 'emerald', 'amber', 'sky', 'zinc'] as const;
-const badgeVariant = computed({
-  get: () => form.extra_attributes.badge_variant ?? 'rose',
-  set: (val: string) => { form.extra_attributes.badge_variant = val; },
-});
-
-const imageSectionOpen = ref(!!form.extra_attributes.image);
-const imageRender = computed({
-  get: () => form.extra_attributes.image_render ?? 'card',
-  set: (val: string) => { form.extra_attributes.image_render = val; },
-});
-const imageOverlay = computed({
-  get: () => form.extra_attributes.image_overlay ?? 'medium',
-  set: (val: string) => { form.extra_attributes.image_overlay = val; },
-});
-const imageBlur = computed({
-  get: () => String(form.extra_attributes.image_blur ?? 0),
-  set: (val: string) => { form.extra_attributes.image_blur = Number(val); },
-});
-const imageHeight = computed({
-  get: () => form.extra_attributes.image_height ?? 'short',
-  set: (val: string) => { form.extra_attributes.image_height = val; },
-});
-
-const imageGradient = computed({
-  get: () => form.extra_attributes.image_gradient ?? 'bottom',
-  set: (val: string) => { form.extra_attributes.image_gradient = val; },
-});
-const focalPoint = computed({
-  get: () => form.extra_attributes.image_focal ?? '50% 50%',
-  set: (val: string) => { form.extra_attributes.image_focal = val; },
-});
-
-const advancedOpen = ref(false);
-
-const parentOptions = computed(() => [
-  { value: '__none__', label: '-- Nėra --' },
-  ...props.parentElements.map(e => ({ value: String(e.id), label: e.name })),
-]);
-
-const selectedParent = computed({
-  get: () => parentOptions.value.find(p => p.value === String(form.parent_id ?? '__none__')) ?? parentOptions.value[0],
-  set: (val: { value: string; label: string } | null) => {
-    form.parent_id = val?.value === '__none__' ? null : val?.value ?? null;
-  },
-});
-
-// --- Link target picker -----------------------------------------------------
-// The picker (and topic select) are convenience fillers for `url` — the field
-// itself always stays editable as a manual override. Neither the collection nor the
-// record id is persisted, so on edit there is nothing to pre-select the picker with.
-
 const pickerOpen = ref(false);
 const lastPickedLabel = ref<string | null>(null);
 
@@ -518,4 +515,71 @@ const onTopicSelected = (val: unknown) => {
     resolveAndFillUrl('topics', topic.id, topic.name);
   }
 };
+
+const badgeVariantOptions = ['default', 'secondary', 'outline', 'destructive'];
+
+const badgeVariant = computed({
+  get: () => form.extra_attributes.badge_variant ?? 'default',
+  set: (val: string) => { form.extra_attributes.badge_variant = val; },
+});
+
+const imageSectionOpen = ref(Boolean(form.extra_attributes?.image));
+const advancedOpen = ref(false);
+
+const focalPoint = computed({
+  get: () => {
+    const raw = form.extra_attributes.image_focal;
+    if (!raw) return { x: 50, y: 50 };
+    const [x, y] = String(raw).split(' ').map(s => parseFloat(s));
+    return { x: Number.isFinite(x) ? x : 50, y: Number.isFinite(y) ? y : 50 };
+  },
+  set: (pt: { x: number; y: number }) => {
+    form.extra_attributes.image_focal = `${Math.round(pt.x)}% ${Math.round(pt.y)}%`;
+  },
+});
+
+const imageRender = computed({
+  get: () => form.extra_attributes.image_render ?? 'card',
+  set: (val: string) => { form.extra_attributes.image_render = val; },
+});
+
+const imageHeight = computed({
+  get: () => form.extra_attributes.image_height ?? 'short',
+  set: (val: string) => { form.extra_attributes.image_height = val; },
+});
+
+const imageOverlay = computed({
+  get: () => form.extra_attributes.image_overlay ?? 'medium',
+  set: (val: string) => { form.extra_attributes.image_overlay = val; },
+});
+
+const imageBlur = computed({
+  get: () => String(form.extra_attributes.image_blur ?? '0'),
+  set: (val: string) => { form.extra_attributes.image_blur = Number(val); },
+});
+
+const imageGradient = computed({
+  get: () => form.extra_attributes.image_gradient ?? 'bottom',
+  set: (val: string) => { form.extra_attributes.image_gradient = val; },
+});
+
+const parentOptions = computed(() => {
+  return props.parentElements
+    .filter(p => p.id !== form.id)
+    .map(p => ({ label: p.name || `#${p.id}`, value: p.id }));
+});
+
+const selectedParent = computed({
+  get: () => {
+    const parent = props.parentElements.find(p => p.id === form.parent_id);
+    return parent ? { label: parent.name || `#${parent.id}`, value: parent.id } : null;
+  },
+  set: (val: { label: string; value: number } | null) => {
+    form.parent_id = val?.value ?? 0;
+  },
+});
+
+defineExpose({
+  form,
+});
 </script>

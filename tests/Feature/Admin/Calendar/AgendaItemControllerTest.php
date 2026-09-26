@@ -272,38 +272,89 @@ describe('agenda items controller', function (): void {
         $response = asUser($this->admin)
             ->delete(route('agendaItems.destroy', $agendaItem->id));
 
-        $response->assertStatus(302);
+        // Deleted from its own record, `back()` would be a 404; the meeting is where it lived.
+        $response->assertRedirect(route('meetings.show', $this->meeting->id));
         $response->assertSessionHas('success');
 
         expect(AgendaItem::count())->toEqual($this->initialAgendaItemCount);
     });
 
-    test('admin can open the agenda item edit page', function (): void {
+    test('keeps the times recognised in a pasted timetable', function (): void {
+        asUser($this->admin)
+            ->post(route('agendaItems.store'), [
+                'meeting_id' => $this->meeting->id,
+                'agendaItemTitles' => ['Studijų tvarka', 'Kiti klausimai'],
+                'startTimes' => ['10:00', null],
+                'endTimes' => ['10:30', null],
+            ])
+            ->assertSessionHasNoErrors();
+
+        $items = $this->meeting->agendaItems()->orderBy('order')->get();
+
+        expect(substr((string) $items[0]->start_time, 0, 5))->toBe('10:00')
+            ->and(substr((string) $items[0]->end_time, 0, 5))->toBe('10:30')
+            ->and($items[1]->start_time)->toBeNull();
+    });
+
+    test('rejects a pasted time that is not a clock time', function (): void {
+        asUser($this->admin)
+            ->post(route('agendaItems.store'), [
+                'meeting_id' => $this->meeting->id,
+                'agendaItemTitles' => ['Studijų tvarka'],
+                'startTimes' => ['25:00'],
+            ])
+            ->assertSessionHasErrors('startTimes.0');
+    });
+
+    test('admin can open the agenda item record', function (): void {
         $agendaItem = AgendaItem::factory()->create([
             'meeting_id' => $this->meeting->id,
         ]);
 
         $response = asUser($this->admin)
-            ->get(route('agendaItems.edit', $agendaItem->id));
+            ->get(route('agendaItems.show', $agendaItem->id));
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
-            ->component('Admin/Representation/EditAgendaItem')
+            ->component('Admin/Representation/ShowAgendaItem')
             ->where('agendaItem.id', $agendaItem->id)
+            ->where('abilities.update', true)
+            ->where('abilities.delete', true)
         );
     });
 
-    test('edit page returns ordered sibling agenda items for navigation', function (): void {
+    /** Emails and notifications still carry the old editor URL. */
+    test('the old edit URL redirects to the record, keeping the focus', function (): void {
+        $agendaItem = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id]);
+
+        asUser($this->admin)
+            ->get(route('agendaItems.edit', ['agendaItem' => $agendaItem->id, 'focus' => 'votes', 'walk' => 'missing']))
+            ->assertRedirect(route('agendaItems.show', ['agendaItem' => $agendaItem->id, 'focus' => 'votes']));
+    });
+
+    test('tells each sibling what it still lacks', function (): void {
+        $untyped = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 1, 'type' => null]);
+        $informational = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 2, 'type' => 'informational']);
+
+        asUser($this->admin)
+            ->get(route('agendaItems.show', $untyped->id))
+            ->assertInertia(fn ($page) => $page
+                ->where('siblingAgendaItems.0.missing.type', 'agenda_item_type_missing')
+                ->where('siblingAgendaItems.1.missing', null)
+            );
+    });
+
+    test('record returns ordered sibling agenda items for navigation', function (): void {
         $first = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 1, 'title' => 'First']);
         $second = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 2, 'title' => 'Second']);
         $third = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 3, 'title' => 'Third']);
 
         $response = asUser($this->admin)
-            ->get(route('agendaItems.edit', $second->id));
+            ->get(route('agendaItems.show', $second->id));
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
-            ->component('Admin/Representation/EditAgendaItem')
+            ->component('Admin/Representation/ShowAgendaItem')
             ->where('agendaItem.id', $second->id)
             ->has('siblingAgendaItems', 3)
             ->where('siblingAgendaItems.0.id', $first->id)
@@ -324,7 +375,7 @@ describe('agenda items controller', function (): void {
         $written->note()->create(['yjs_state' => base64_encode('state'), 'notes_html' => '<p>Pastaba</p>']);
 
         asUser($this->admin)
-            ->get(route('agendaItems.edit', $blank->id))
+            ->get(route('agendaItems.show', $blank->id))
             ->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->where('siblingAgendaItems.0.has_notes', false)
@@ -332,7 +383,7 @@ describe('agenda items controller', function (): void {
             );
     });
 
-    test('unauthorized user cannot open the agenda item edit page', function (): void {
+    test('unauthorized user cannot open the agenda item record', function (): void {
         $agendaItem = AgendaItem::factory()->create([
             'meeting_id' => $this->meeting->id,
         ]);
@@ -340,7 +391,7 @@ describe('agenda items controller', function (): void {
         $outsider = makeUser(Tenant::query()->where('id', '!=', $this->tenant->id)->first() ?? $this->tenant);
 
         $response = asUser($outsider)
-            ->get(route('agendaItems.edit', $agendaItem->id));
+            ->get(route('agendaItems.show', $agendaItem->id));
 
         $response->assertStatus(403);
     });

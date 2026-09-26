@@ -43,8 +43,8 @@ use Laravel\Scout\Searchable;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Collection<int, InstitutionAdministrator> $administratorAssignments
- * @property-read Relationshipable|InstitutionFollow|InstitutionAdministrator|null $pivot
+ * @property-read Collection<int, InstitutionSecretary> $administratorAssignments
+ * @property-read Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
  * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences
@@ -67,6 +67,8 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, Problem> $problems
  * @property-read mixed $related_institutions
  * @property-read Collection<int, Comment> $rootComments
+ * @property-read Collection<int, User> $secretaries
+ * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant

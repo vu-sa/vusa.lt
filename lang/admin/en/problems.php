@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'form' => [
+        'instructions' => 'Fields marked with an asterisk (*) are required; you can skip the rest.',
+    ],
     'hints' => [
         'title' => 'A short, specific problem title, e.g. "Missing assessment procedure description".',
         'description' => 'Describe the essence of the problem: what happened, where, when, and who was affected.',

@@ -36,6 +36,7 @@
                   <Tooltip>
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -50,6 +51,7 @@
                   <Tooltip v-if="downloadUrl">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -64,6 +66,7 @@
                   <Tooltip v-if="document.link_url || document.share_url">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -78,6 +81,7 @@
                   <Tooltip v-if="calendarEventUrl">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         :aria-label="$t('Peržiūrėti posėdį')"

@@ -1,8 +1,14 @@
 <?php
 
+use App\Enums\SystemMaintenanceAction;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Activity;
 use App\Models\Tenant;
+use App\Services\SystemMonitorService;
+use Illuminate\Foundation\Console\QueuedCommand;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 
 pest()->use(RefreshDatabase::class);
 
@@ -51,8 +57,9 @@ describe('SystemStatus: Page Content', function (): void {
         $response->assertStatus(200);
         $props = $response->getOriginalContent()->getData()['page']['props'];
 
-        expect($props)->toHaveKeys(['status', 'lastUpdated'])
-            ->and($props['status'])->toHaveKeys(['redis', 'database', 'cache', 'integrations', 'system']);
+        expect($props)->toHaveKeys(['status', 'lastUpdated', 'deviceMetrics'])
+            ->and($props['status'])->toHaveKeys(['redis', 'database', 'cache', 'integrations', 'system'])
+            ->and($props['deviceMetrics'])->toHaveKeys(['records', 'summary']);
     });
 
     test('redis status includes essential information', function (): void {
@@ -281,5 +288,64 @@ describe('SystemStatus: Error Handling', function (): void {
         // Other services should still respond regardless of Redis status
         expect($props['status']['cache'])->toHaveKey('working');
         expect($props['status']['system']['php_version'])->not()->toBeEmpty();
+    });
+});
+
+describe('SystemStatus: Maintenance actions', function (): void {
+    test('only super admins are offered or may run maintenance actions', function (): void {
+        $admin = makeUser($this->tenant);
+
+        asUser($admin)->post(route('systemStatus.maintenance'), ['action' => 'refresh-public-content'])
+            ->assertForbidden();
+
+        $props = asUser($this->user)->get('/mano/system-status')
+            ->getOriginalContent()->getData()['page']['props'];
+
+        expect(collect($props['maintenanceActions'])->pluck('action')->all())
+            ->toBe(array_column(SystemMaintenanceAction::cases(), 'value'));
+    });
+
+    test('rejects an action outside the allowlist', function (): void {
+        asUser($this->user)->post(route('systemStatus.maintenance'), ['action' => 'migrate:fresh'])
+            ->assertSessionHasErrors('action');
+    });
+
+    test('refreshing public content clears tagged content and shared Inertia caches', function (): void {
+        Cache::tags(['homepage', 'tenant_1'])->put('home', 'stale');
+        Cache::tags(['navigation', 'locale_lt'])->put('nav', 'stale');
+        Cache::forever(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY, 'stale');
+        Cache::forever('unrelated', 'kept');
+
+        asUser($this->user)->post(route('systemStatus.maintenance'), ['action' => 'refresh-public-content'])
+            ->assertSessionHas('success');
+
+        expect(Cache::tags(['homepage', 'tenant_1'])->get('home'))->toBeNull()
+            ->and(Cache::tags(['navigation', 'locale_lt'])->get('nav'))->toBeNull()
+            ->and(Cache::get(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY))->toBeNull()
+            ->and(Cache::get('unrelated'))->toBe('kept');
+
+        expect(Activity::query()->where('event', 'system_maintenance')->latest('id')->first())
+            ->causer_id->toBe($this->user->id)
+            ->properties->get('action')->toBe('refresh-public-content');
+    });
+
+    test('clearing the application cache keeps the scheduler heartbeat', function (): void {
+        Cache::forever(SystemMonitorService::HEARTBEAT_CACHE_KEY, '2026-09-26T10:00:00+00:00');
+        Cache::forever('unrelated', 'gone');
+
+        asUser($this->user)->post(route('systemStatus.maintenance'), ['action' => 'clear-application-cache'])
+            ->assertSessionHas('success');
+
+        expect(Cache::get('unrelated'))->toBeNull()
+            ->and(Cache::get(SystemMonitorService::HEARTBEAT_CACHE_KEY))->toBe('2026-09-26T10:00:00+00:00');
+    });
+
+    test('long-running actions are queued instead of run in the request', function (): void {
+        Queue::fake();
+
+        asUser($this->user)->post(route('systemStatus.maintenance'), ['action' => 'reindex-search'])
+            ->assertSessionHas('success', __('messages.system_maintenance.queued'));
+
+        Queue::assertPushed(QueuedCommand::class, fn (QueuedCommand $job) => $job->displayName() === 'search:reindex');
     });
 });

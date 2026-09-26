@@ -85,24 +85,13 @@ test('vote statistics report no alignment for an internal body', function (): vo
         ->and($calculator->alignmentStatus($votes, requiresStudentPerspective: false))->toBe('neutral');
 });
 
-test('the completion filter finds VU SA meetings that only recorded an outcome', function (): void {
-    $tenant = Tenant::query()->first();
-    $admin = makeAdminUser($tenant);
-
+test('the completion facet counts VU SA meetings that only recorded an outcome as complete', function (): void {
     $complete = meetingWithDecisionOnlyVote(InstitutionScope::Vusa);
     $incomplete = meetingWithDecisionOnlyVote(InstitutionScope::University);
 
-    // BaseIndexRequest takes `filters` as a JSON string.
-    $response = asUser($admin)->get(route('meetings.index', [
-        'filters' => json_encode(['completion_status' => ['complete']]),
-    ]));
-
-    $response->assertOk();
-
-    $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
-
-    expect($ids)->toContain($complete->id)
-        ->and($ids)->not->toContain($incomplete->id);
+    // The collection filters on the search document, not on SQL.
+    expect($complete->toSearchableArray()['completion_status'])->toBe('complete')
+        ->and($incomplete->toSearchableArray()['completion_status'])->toBe('incomplete');
 });
 
 test('the public institution page carries the meeting scope for agenda statuses', function (): void {

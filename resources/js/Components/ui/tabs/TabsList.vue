@@ -3,7 +3,7 @@
     data-slot="tabs-list"
     v-bind="delegatedProps"
     :class="cn(
-      'bg-zinc-100/80 text-zinc-500 inline-flex h-10 w-full sm:w-fit items-center justify-start sm:justify-center gap-1 rounded-xl p-1 dark:bg-zinc-800/60 dark:text-zinc-400 overflow-x-auto scrollbar-none',
+      'bg-secondary/80 text-muted-foreground inline-flex h-10 w-full sm:w-fit items-center justify-start sm:justify-center gap-1 border border-border p-1 overflow-x-auto scrollbar-none',
       props.class,
     )"
   >

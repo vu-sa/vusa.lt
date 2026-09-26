@@ -1,0 +1,105 @@
+/* ==================================================================================
+   Surface palette — shared by admin and public
+   ==================================================================================
+
+   `data-surface="admin|public"` is stamped on <html> server-side by app.blade.php (via
+   App\Support\DesignSurface). Both surfaces speak one visual language, so they share one
+   palette; surface-specific behaviour (toasts, progress bar, a11y menu) stays in
+   admin/surface.css and public/surface.css. `--accent` keeps its shadcn meaning — the
+   hover/muted surface, never the brand (`--brand`).
+   ================================================================================== */
+
+[data-surface] {
+  color-scheme: light;
+
+  /* The typeface is part of the surface, not something each shell remembers to apply. Setting it
+     here means anything the surface contains gets it — including content teleported out of the
+     Vue tree into <body> (popovers, dropdowns, dialogs), which is what used to render the
+     accessibility menu in the browser default while the page around it was Atkinson. */
+  font-family: var(--font-public);
+
+  /* Warm paper canvas, near-black ink. No blue anywhere. */
+  --background: oklch(0.965 0.006 85);
+  --foreground: oklch(0.17 0.008 70);
+  --card: oklch(0.995 0.003 85);
+  --card-foreground: oklch(0.17 0.008 70);
+  --popover: oklch(0.995 0.003 85);
+  --popover-foreground: oklch(0.17 0.008 70);
+  --primary: oklch(0.19 0.008 70);
+  --primary-foreground: oklch(0.97 0.006 85);
+  --secondary: oklch(0.925 0.006 85);
+  --secondary-foreground: oklch(0.2 0.008 70);
+  --muted: oklch(0.93 0.006 85);
+  --muted-foreground: oklch(0.46 0.01 75);
+  /* Long-form body copy: one step back from `--foreground`, but not as far back as
+     `--muted-foreground`, which is sized for labels and metadata. At 0.46 on the 0.965 canvas it
+     passes AA comfortably and still reads as too light across a full article — a paragraph is
+     read for minutes, a timestamp for a second. */
+  --prose-foreground: oklch(0.315 0.012 75);
+  /* shadcn semantics: the hover/lifted surface, NOT the brand. Matches --secondary. */
+  --accent: oklch(0.925 0.006 85);
+  --accent-foreground: oklch(0.2 0.008 70);
+  --destructive: oklch(0.55 0.19 27);
+  --border: oklch(0.855 0.008 80);
+  --input: oklch(0.76 0.01 78);
+  --ring: oklch(0.48 0.18 25);
+
+  /* Light mode's `--border` is already fully opaque, so it renders identically regardless of
+     what's behind it — no flattening needed. Defined anyway so `.u-hairline` (below) can use one
+     token in both themes without a `dark:` variant. See the dark block for why dark mode's
+     version differs. */
+  --border-opaque: var(--border);
+
+  /* Cornery, not round — a hard rule of the design. `rounded-full` is unaffected by this and
+     has to be removed per component. */
+  --radius: 0rem;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+}
+
+/* Two selectors, because the surface is stamped in two places: on `<html>` (where `.dark` lands on
+   the same element), and on a *nested* wrapper for the admin editor's block previews (where
+   `.dark` is still up on `<html>`). Without the descendant form a nested surface inside a dark
+   page would resolve the light palette. */
+.dark[data-surface],
+.dark [data-surface] {
+  color-scheme: dark;
+  /* True near-black. Off-white ink. Amber brand (set globally on .dark). */
+  --background: oklch(0.135 0.004 70);
+  --foreground: oklch(0.955 0.004 85);
+  --card: oklch(0.175 0.005 70);
+  --card-foreground: oklch(0.955 0.004 85);
+  --popover: oklch(0.165 0.005 70);
+  --popover-foreground: oklch(0.955 0.004 85);
+  --primary: oklch(0.955 0.004 85);
+  --primary-foreground: oklch(0.15 0.005 70);
+  --secondary: oklch(0.225 0.006 70);
+  --secondary-foreground: oklch(0.955 0.004 85);
+  --muted: oklch(0.225 0.006 70);
+  --muted-foreground: oklch(0.68 0.008 78);
+  /* Dark mode needs no separate step: on near-black, 0.68 already reads as body copy rather than
+     as metadata. Defined anyway so the token exists in both themes. */
+  --prose-foreground: oklch(0.74 0.008 78);
+  --accent: oklch(0.225 0.006 70);
+  --accent-foreground: oklch(0.955 0.004 85);
+  --destructive: oklch(0.62 0.2 27);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.82 0.152 72);
+
+  /* An opaque flattening of `--border`'s 12%-white-over-background recipe. `--border` itself is
+     translucent so it reads correctly against the many different surfaces it sits on (cards,
+     popovers, images) — but that means the *same* `--border` renders as a visibly different RGB
+     depending on what's directly behind it. Two elements that must look identically weighted
+     regardless of their own local background (e.g. the header's `border-b` and the section
+     directly below it, which sit on differently-tinted, differently-transparent backgrounds)
+     should use this instead. */
+  --border-opaque: color-mix(in oklab, white 12%, var(--background));
+}
+

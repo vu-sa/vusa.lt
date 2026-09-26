@@ -12,17 +12,8 @@ import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('vue-sonner', () => ({ toast: { info: vi.fn(), success: vi.fn(), error: vi.fn() } }));
 
-// TaskTable renders through TanStack + reka-ui portals, which jsdom cannot drive; the delete
-// path is exercised through TaskCard (the mobile branch) instead. What is asserted here is
-// TaskManager's own wiring: the confirmation gate and the request it finally sends.
-vi.mock('../TaskTable.vue', () => ({
-  default: {
-    name: 'TaskTable',
-    props: ['tasks', 'loadingTaskId', 'enablePagination', 'enableFiltering', 'pageSize'],
-    template: '<div data-testid="task-table" />',
-  },
-}));
-
+// What is asserted here is TaskManager's own wiring: the rows it draws, the confirmation gate
+// and the request it finally sends.
 const task: TaskDisplayData = {
   id: 'task-1',
   name: 'Sutvarkyti dokumentus',
@@ -41,7 +32,7 @@ let wrapper: ReturnType<typeof mount>;
 const mountManager = (props: Record<string, unknown> = {}) => {
   wrapper = mount(TaskManager, {
     props: { tasks: [task], ...props },
-    global: { stubs: { ...commonStubs, TaskFilter: true } },
+    global: { stubs: { ...commonStubs } },
   });
 
   return wrapper;
@@ -68,7 +59,7 @@ describe('deleting a task', () => {
   it('asks for confirmation before sending the request', async () => {
     const wrapper = mountManager();
 
-    wrapper.findComponent({ name: 'TaskTable' }).vm.$emit('delete', task);
+    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
     await wrapper.vm.$nextTick();
 
     expect(router.delete).not.toHaveBeenCalled();
@@ -78,7 +69,7 @@ describe('deleting a task', () => {
   it('sends the delete once the confirmation is accepted', async () => {
     const wrapper = mountManager();
 
-    wrapper.findComponent({ name: 'TaskTable' }).vm.$emit('delete', task);
+    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
     await wrapper.vm.$nextTick();
 
     dialogButton('forms.delete')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -95,7 +86,7 @@ describe('deleting a task', () => {
     // here as well meant every deletion announced itself twice.
     const wrapper = mountManager();
 
-    wrapper.findComponent({ name: 'TaskTable' }).vm.$emit('delete', task);
+    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
     await wrapper.vm.$nextTick();
     dialogButton('forms.delete')!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await wrapper.vm.$nextTick();
@@ -108,30 +99,37 @@ describe('deleting a task', () => {
   });
 });
 
-describe('server-driven pages', () => {
-  it('turns off the table\'s own pagination and search so it does not paginate one page again', () => {
-    const wrapper = mountManager({ serverPaginated: true, serverSideFilter: true, currentFilter: 'all' });
-    const table = wrapper.findComponent({ name: 'TaskTable' });
+describe('the list', () => {
+  it('draws one task row per open task, and leaves completed ones behind the filter', () => {
+    const done: TaskDisplayData = { ...task, id: 'task-2', completed_at: '2026-01-01T00:00:00Z' };
+    const rows = mountManager({ tasks: [task, done] }).findAllComponents({ name: 'TaskRow' });
 
-    expect(table.props('enablePagination')).toBe(false);
-    expect(table.props('enableFiltering')).toBe(false);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].props('task')).toEqual(task);
   });
 
-  it('leaves the table paginating when the page hands over the whole list', () => {
-    const table = mountManager().findComponent({ name: 'TaskTable' });
+  it('opens the task details from the row', () => {
+    const wrapper = mountManager();
 
-    expect(table.props('enablePagination')).toBe(true);
+    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('open');
+
+    expect(wrapper.emitted('openTaskDetail')?.[0]).toEqual([task]);
   });
+});
 
-  it('does not re-filter a list the backend already filtered', () => {
-    const completed: TaskDisplayData = { ...task, id: 'task-2', completed_at: '2026-01-01T00:00:00Z' };
-    const wrapper = mountManager({
-      tasks: [completed],
-      serverSideFilter: true,
-      serverPaginated: true,
-      currentFilter: 'completed',
-    });
+describe('show all', () => {
+  it('lists open tasks by default and adds the completed ones when switched on', async () => {
+    const done: TaskDisplayData = { ...task, id: 'task-2', completed_at: '2026-01-01T00:00:00Z' };
+    const wrapper = mountManager({ tasks: [task, done] });
+    const rowIds = () => wrapper.findAllComponents({ name: 'TaskRow' }).map(row => row.props('task').id);
+    const toggle = wrapper.get('button[aria-pressed]');
 
-    expect(wrapper.findComponent({ name: 'TaskTable' }).props('tasks')).toEqual([completed]);
+    expect(rowIds()).toEqual(['task-1']);
+    expect(toggle.attributes('aria-pressed')).toBe('false');
+
+    await toggle.trigger('click');
+
+    expect(rowIds()).toEqual(['task-1', 'task-2']);
+    expect(toggle.attributes('aria-pressed')).toBe('true');
   });
 });

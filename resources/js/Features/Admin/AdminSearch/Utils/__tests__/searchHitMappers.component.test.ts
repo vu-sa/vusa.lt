@@ -69,7 +69,7 @@ describe('normalizeHit', () => {
     expect(hit.href).toContain('meetings.show');
     expect(hit.icon).toBe(COLLECTION_META.meetings.icon);
     expect(hit.raw).toBe(doc);
-    expect(hit.statusBadge).toEqual({ label: 'Užbaigtas', tone: 'success' });
+    expect(hit.statusBadge).toEqual({ label: 'Užpildyta', tone: 'success' });
   });
 
   it('links an agenda item to its edit page and uses institution as subtitle', () => {

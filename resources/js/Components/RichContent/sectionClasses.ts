@@ -40,7 +40,7 @@ export const PLAIN_PADDING_CLASS: Record<PlainPadding, string> = {
 
 /**
  * Two calm tints alternating down the page, plus one loud one. `tint` is exactly what
- * `EventCalendarElement.vue` has hardcoded since Phase 4 — this generalises it to every
+ * `EventCalendarElement.vue` has long hardcoded — this generalises it to every
  * band-capable block. Token-driven, not fixed zinc, so it follows whichever surface the
  * block is rendered on.
  */

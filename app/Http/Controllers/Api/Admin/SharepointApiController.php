@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\GetTypeFiles;
 use App\Contracts\SharepointFileableContract;
 use App\Enums\AllowedFileablesEnum;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\FileableFile;
-use App\Models\Institution;
 use App\Models\SharepointFile;
-use App\Models\Type;
 use App\Services\SharepointGraphService;
 use App\Support\MorphMap;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class SharepointApiController extends ApiController
 {
@@ -75,46 +74,9 @@ class SharepointApiController extends ApiController
 
         $this->authorizeApi('view', $fileable);
 
-        // Check if fileable has types relationship
-        if (! method_exists($fileable, 'types')) {
-            return $this->jsonSuccess([]);
-        }
-
-        // Get all types including parents
-        /** @var Collection<int, Type> $types */
-        $types = $fileable->types()
-            ->get()
-            ->map(fn (Type $type) => $type->getParentsAndSelf())
-            ->flatten()
-            ->unique('id')
-            ->values();
-
-        $typeIds = $types->pluck('id');
-
-        $files = FileableFile::where('fileable_type', MorphMap::alias(Type::class))
-            ->whereIn('fileable_id', $typeIds)
-            ->available()
-            ->orderBy('file_date', 'desc')
-            ->get();
+        $files = GetTypeFiles::forFileable($fileable);
 
         return $this->jsonSuccess($files);
-    }
-
-    /**
-     * Get potential fileables (institutions and types).
-     */
-    public function potentialFileables(Request $request): JsonResponse
-    {
-        $this->requireAuth($request);
-
-        return $this->jsonSuccess([
-            'institutions' => Institution::with('meetings:meetings.id,start_time')
-                ->whereHas('tenant')
-                ->get()
-                ->map
-                ->only('id'),
-            'types' => Type::all()->map->only('id'),
-        ]);
     }
 
     /**
@@ -146,10 +108,10 @@ class SharepointApiController extends ApiController
     /**
      * Attach FileableFile records to drive items when fileable context is provided.
      *
-     * @param  \Illuminate\Support\Collection<int, array>  $driveItems
-     * @return \Illuminate\Support\Collection<int, array>
+     * @param  Collection<int, array>  $driveItems
+     * @return Collection<int, array>
      */
-    protected function attachFileableFilesToDriveItems(\Illuminate\Support\Collection $driveItems, ?string $fileableType, ?string $fileableId): \Illuminate\Support\Collection
+    protected function attachFileableFilesToDriveItems(Collection $driveItems, ?string $fileableType, ?string $fileableId): Collection
     {
         if (! $fileableType || ! $fileableId || AllowedFileablesEnum::classFor($fileableType) === null) {
             return $driveItems;

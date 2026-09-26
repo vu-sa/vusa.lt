@@ -14,7 +14,6 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +21,7 @@ class StudyProgramController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
@@ -31,59 +30,17 @@ class StudyProgramController extends AdminController
     {
         $this->handleAuthorization('viewAny', StudyProgram::class);
 
-        // Build base query with eager loading
-        $query = StudyProgram::query()->with('tenant');
-
-        // Apply simple filters
-        if ($request->has('degree') && ! empty($request->degree)) {
-            $query->where('degree', $request->degree);
-        }
-
-        // Define searchable columns
-        $searchableColumns = ['name', 'degree'];
-
-        // Apply Tanstack Table filters
-        $query = $this->applyTanstackFilters(
-            $query,
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
+        $query = StudyProgram::query()->with('tenant:id,shortname')->orderBy('name');
+        $query = $this->withForceDeleteBlockers(
+            $request->getShowDeleted() ? $query->onlyTrashed() : $query,
             $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
+            ['dutiables'],
         );
 
-        // Paginate results
-        $deletedCount = $this->getTrashedCount($query);
-
-        // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request, ['dutiables']);
-
-        $studyPrograms = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        $this->appendForceDeleteBlockedReason($studyPrograms->getCollection(), $request);
-
-        // Get the sorting state using the custom method to ensure consistent parsing
-        $sorting = $request->getSorting();
-
         return $this->inertiaResponse('Admin/People/IndexStudyProgram', [
-            'studyPrograms' => [
-                'data' => $studyPrograms->getCollection()->map->toArray(),
-                'meta' => [
-                    'total' => $studyPrograms->total(),
-                    'per_page' => $studyPrograms->perPage(),
-                    'current_page' => $studyPrograms->currentPage(),
-                    'last_page' => $studyPrograms->lastPage(),
-                    'from' => $studyPrograms->firstItem(),
-                    'to' => $studyPrograms->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting,
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
-            'initialSorting' => $sorting,
+            'studyPrograms' => $this->appendForceDeleteBlockedReason($query->get(), $request)->values(),
+            'deletedCount' => StudyProgram::onlyTrashed()->count(),
             'degreeOptions' => DegreeEnum::getFormOptions(),
         ]);
     }
@@ -162,24 +119,10 @@ class StudyProgramController extends AdminController
     }
 
     /**
-     * Show the form for merging study programs.
-     */
-    public function merge()
-    {
-        $this->handleAuthorization('viewAny', StudyProgram::class);
-
-        return $this->inertiaResponse('Admin/People/MergeStudyPrograms', [
-            'studyPrograms' => StudyProgram::with('tenant')->get()->map->toArray(),
-        ]);
-    }
-
-    /**
      * Merge multiple study programs into one.
      */
     public function mergeStudyPrograms(MergeStudyProgramsRequest $request)
     {
-        $this->handleAuthorization('create', StudyProgram::class);
-
         $targetId = $request->validated()['target_study_program_id'];
         $sourceIds = $request->validated()['source_study_program_ids'];
 

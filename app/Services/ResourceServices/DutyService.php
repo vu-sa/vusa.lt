@@ -9,6 +9,8 @@ use App\Models\Meeting;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use App\Settings\AtstovavimasSettings;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
 class DutyService
@@ -102,7 +104,7 @@ class DutyService
         $user = request()->user();
         $atstovavimasSettings = app(AtstovavimasSettings::class);
         $visibleTenantIds = $atstovavimasSettings->getVisibleTenantIds($user);
-        $userInstitutionIds = $user->current_duties()
+        $userInstitutionIds = $user->authorization_duties()
             ->pluck('institution_id')
             ->filter()
             ->unique();
@@ -153,7 +155,7 @@ class DutyService
      * Get only user's directly assigned institutions for the dashboard.
      *
      * This is a lightweight version that only includes institutions where the user
-     * has active duties, plus the ones they have been nominated to administer. Each
+     * has non-ended duties, plus the ones they have been nominated to administer. Each
      * result carries `is_administered` so the UI can say which is which — an
      * administrator is not a member and must not be drawn as one.
      *
@@ -164,7 +166,7 @@ class DutyService
         $user = request()->user();
 
         // Get user's directly assigned institution IDs
-        $dutyInstitutionIds = $user->current_duties()
+        $dutyInstitutionIds = $user->authorization_duties()
             ->pluck('institution_id')
             ->filter()
             ->unique();
@@ -257,8 +259,35 @@ class DutyService
             return collect();
         }
 
-        return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
+        return self::timelineInstitutionsQuery()
             ->whereIn('tenant_id', $accessibleTenantIds)
+            ->get();
+    }
+
+    /**
+     * The timeline rows for explicit institution ids — the Gantt's own set, which mixes whole
+     * padaliniai with single public, own and related institutions.
+     *
+     * @param  Collection<int, string>  $institutionIds
+     * @return EloquentCollection<int, Institution>
+     */
+    public static function getTimelineInstitutions(Collection $institutionIds)
+    {
+        if ($institutionIds->isEmpty()) {
+            return new EloquentCollection;
+        }
+
+        return self::timelineInstitutionsQuery()
+            ->whereIn('institutions.id', $institutionIds)
+            ->get();
+    }
+
+    /**
+     * @return Builder<Institution>
+     */
+    private static function timelineInstitutionsQuery()
+    {
+        return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
             ->whereHas('tenant', function ($query): void {
                 $query->whereIn('type', TenantType::representationalValues());
             })
@@ -282,8 +311,7 @@ class DutyService
                     ->whereColumn('institution_meeting.institution_id', 'institutions.id')
                     ->orderBy('start_time', 'desc')
                     ->limit(1),
-            ])
-            ->get();
+            ]);
     }
 
     /**

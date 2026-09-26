@@ -15,14 +15,6 @@ export const modelTypes = {
   relationshipable: Object.values(AllowedRelationshipablesEnum).map(
     value => value.toLowerCase(),
   ),
-  sharepointFile: [
-    'Ataskaitos',
-    'Metodinė medžiaga',
-    'Protokolai',
-    'Pristatymai',
-    'Šablonai',
-    'Veiklą reglamentuojantys dokumentai',
-  ],
   // Must match Type::TYPEABLE_RELATIONS. Meeting used to be offered here but is rejected by
   // Store/UpdateTypeRequest, so picking it produced a validation error with no explanation.
   type: [

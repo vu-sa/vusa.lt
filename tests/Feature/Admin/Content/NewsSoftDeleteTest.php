@@ -42,32 +42,25 @@ function grantNewsPermission(string $permission): void
 }
 
 describe('trashed index view', function (): void {
-    test('index hides soft-deleted records by default', function (): void {
-        $response = asUser($this->admin)->get(route('news.index'));
+    // Live news come from Typesense (it never indexes trashed rows); the trash from the database.
+    test('the trash lists only soft-deleted news', function (): void {
+        $ids = collect(asUser($this->admin)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'news']))
+            ->assertOk()
+            ->json('data.items'))->pluck('id');
 
-        $response->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('showDeleted', false)
-                ->has('news.data')
-            );
-
-        $ids = collect($response->viewData('page')['props']['news']['data'])->pluck('id');
-
-        expect($ids)->toContain($this->live->id)
-            ->and($ids)->not->toContain($this->trashed->id);
+        expect($ids)->toContain((string) $this->trashed->id)
+            ->and($ids)->not->toContain((string) $this->live->id);
     });
 
-    // Regression for the withTrashed()/method_exists() bug that made this toggle a no-op.
-    test('index returns only soft-deleted records when showDeleted is true', function (): void {
-        $response = asUser($this->admin)->get(route('news.index', ['showDeleted' => 'true']));
-
-        $response->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page->where('showDeleted', true));
-
-        $ids = collect($response->viewData('page')['props']['news']['data'])->pluck('id');
-
-        expect($ids)->toContain($this->trashed->id)
-            ->and($ids)->not->toContain($this->live->id);
+    test('the index page ships no rows of its own', function (): void {
+        asUser($this->admin)
+            ->get(route('news.index', ['showDeleted' => 'true']))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Content/IndexNews')
+                ->missing('news')
+            );
     });
 
     test('index exposes the deleted record count', function (): void {
@@ -77,15 +70,13 @@ describe('trashed index view', function (): void {
             ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
     });
 
-    // The row actions decide whether to offer Restore / Delete permanently purely from
-    // deleted_at, so it must survive serialization into the Inertia payload.
+    // The row actions decide whether to offer Restore / Delete permanently from deleted_at.
     test('trashed rows carry deleted_at so the row actions can render', function (): void {
-        $response = asUser($this->admin)->get(route('news.index', ['showDeleted' => 'true']));
-
-        $rows = collect($response->viewData('page')['props']['news']['data']);
+        $rows = collect(asUser($this->admin)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'news']))
+            ->json('data.items'));
 
         expect($rows)->toHaveCount(1)
-            ->and($rows->first())->toHaveKey('deleted_at')
             ->and($rows->first()['deleted_at'])->not->toBeNull();
     });
 

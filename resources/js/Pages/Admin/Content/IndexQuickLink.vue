@@ -1,313 +1,292 @@
 <template>
-  <div>
-    <PageContent :title="$t('Greitosios nuorodos')" :create-url="showDeleted ? undefined : route('quickLinks.create')">
-      <!-- Tenant & Language Controls -->
-      <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div class="flex flex-wrap items-end gap-4">
-          <FormFieldWrapper v-if="tenantOptions.length > 1" id="tenant" :label="$t('Padalinys')"
-            class="min-w-[16rem]">
-            <SingleSelect v-model="selectedTenant" :options="tenantOptions" value-field="id" label-field="shortname"
-              :placeholder="$t('Pasirinkti padalinį...')" @update:model-value="handleTenantChange" />
-          </FormFieldWrapper>
-
-          <FormFieldWrapper id="lang" :label="$t('Kalba')">
-            <ToggleGroup :model-value="currentLang" type="single" class="justify-start"
-              @update:model-value="handleLangChange">
-              <ToggleGroupItem value="lt" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-4 w-4 rounded-full">
-                Lietuvių
-              </ToggleGroupItem>
-              <ToggleGroupItem value="en" class="gap-2">
-                <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-4 w-4 rounded-full">
-                English
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </FormFieldWrapper>
-        </div>
-
-        <TrashViewToggle
-          v-if="shouldShowDeletedToggle"
-          :show-deleted
-          :deleted-count
-          @update:show-deleted="handleShowDeletedChange"
+  <CollectionPage
+    :source
+    collection="quickLinks"
+    entity-type="quickLink"
+    :eyebrow="`${$t('shell.workspaces.website.title')} · ${$t('Greitosios nuorodos')}`"
+    :title="isTrash ? $t('Ištrintos greitosios nuorodos') : $t('Greitosios nuorodos')"
+    :lead="isTrash
+      ? $t('Peržiūrėk ištrintas greitąsias nuorodas arba atkurk jas.')
+      : $t('Nuorodos ir mygtukai, rodomi pradiniame svetainės puslapyje.')"
+    default-view="rows"
+    :available-views="['rows', 'table']"
+    :item-key="link => String(link.id)"
+    :columns
+    :quick-filters="languageFilters"
+    :trash="{ count: deletedCount ?? 0, active: isTrash }"
+    :keep-params="['tenant', 'lang']"
+    :search-placeholder="$t('Ieškoti nuorodų')"
+    @quick-filter="changeScope({ lang: $event })"
+  >
+    <template #actions>
+      <div v-if="tenants.length > 1" class="w-full sm:w-56">
+        <SingleSelect
+          :model-value="selectedTenant"
+          :options="tenants"
+          value-field="id"
+          label-field="shortname"
+          :aria-label="$t('Padalinys')"
+          :placeholder="$t('Pasirinkti padalinį...')"
+          @update:model-value="tenant => tenant && changeScope({ tenant: tenant.id })"
         />
       </div>
-
-      <Alert
-        v-if="showDeleted"
-        class="mb-4 flex flex-col gap-3 border-amber-200 bg-amber-50 text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100"
+      <Button
+        v-if="!isTrash && quickLinks.length > 1"
+        variant="outline"
+        size="lg"
+        data-testid="reorder-button"
+        @click="openReorder"
       >
-        <div class="flex items-start gap-2.5">
-          <Trash2 class="mt-0.5 size-4 shrink-0" />
-          <div class="space-y-0.5">
-            <AlertTitle class="font-medium">
-              {{ $t('trash.showing_deleted_only') }}
-            </AlertTitle>
-            <AlertDescription class="text-sm text-amber-900 dark:text-amber-100">
-              {{ $t('trash.showing_deleted_only_description') }}
-            </AlertDescription>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          class="shrink-0 border-amber-300 bg-white text-amber-950 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-100 dark:hover:bg-amber-900/40"
-          @click="handleShowDeletedChange(false)"
-        >
-          {{ $t('trash.exit_trash_view') }}
-        </Button>
-      </Alert>
+        <ArrowUpDown aria-hidden="true" />
+        {{ $t('Keisti tvarką') }}
+      </Button>
+      <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg" data-testid="inline-create-button">
+        <Link :href="route('quickLinks.create')">
+          <Plus aria-hidden="true" />
+          {{ $t('Nauja nuoroda') }}
+        </Link>
+      </Button>
+    </template>
 
-      <!-- Empty State -->
-      <div v-if="quickLinkList.length === 0" class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-        <IFluentLink24Regular class="mb-4 h-10 w-10 text-muted-foreground" />
-        <p class="text-muted-foreground">
-          {{ showDeleted ? $t('trash.no_deleted_records') : $t('Dar nėra greitųjų nuorodų') }}
-        </p>
-        <Button v-if="!showDeleted" :as="Link" :href="route('quickLinks.create')" variant="secondary" class="mt-4" data-testid="empty-create-button">
-          <IFluentAdd24Regular class="h-4 w-4" />
-          {{ $t('Sukurti pirmą nuorodą') }}
-        </Button>
+    <template #row="{ item }">
+      <article class="flex min-h-14 items-center gap-3 px-3 py-2.5 sm:px-4">
+        <QuickLinkIconMark :icon="item.icon" />
+        <div class="min-w-0 flex-1">
+          <CollectionPrimaryCell
+            :title="item.text"
+            :href="isTrash ? undefined : route('quickLinks.edit', item.id)"
+            :sub="item.link"
+            mono
+          />
+        </div>
+        <StatusBadge v-if="item.is_important" :status="importantStatus" class="shrink-0" />
+        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key)" />
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <div v-if="column.key === 'text'" class="flex items-center gap-3">
+        <QuickLinkIconMark :icon="item.icon" />
+        <CollectionPrimaryCell :title="item.text" :href="isTrash ? undefined : route('quickLinks.edit', item.id)" />
       </div>
+      <span v-else-if="column.key === 'link'" class="font-mono text-xs text-muted-foreground">{{ item.link }}</span>
+      <StatusBadge v-else-if="column.key === 'important' && item.is_important" :status="importantStatus" />
+      <span v-else-if="column.key === 'order'" class="tabular-nums text-muted-foreground">{{ item.order ?? '—' }}</span>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key)" />
+    </template>
 
-      <!-- Sortable List -->
-      <template v-else>
-        <div v-if="!showDeleted" class="mb-4 flex items-center justify-end">
-          <Button :as="Link" :href="route('quickLinks.create')" variant="secondary" data-testid="inline-create-button">
-            <IFluentAdd24Regular class="h-4 w-4" />
-            {{ $t('forms.add') }}
-          </Button>
-        </div>
+    <template v-if="!isTrash" #empty>
+      <EmptyState
+        :title="$t('Dar nėra greitųjų nuorodų')"
+        :description="$t('Nuorodos ir mygtukai, rodomi pradiniame svetainės puslapyje.')"
+        :action-label="canCreate ? $t('Sukurti pirmą nuorodą') : undefined"
+        :action-href="canCreate ? route('quickLinks.create') : undefined"
+      />
+    </template>
+  </CollectionPage>
 
-        <TransitionGroup ref="el" tag="div" class="mb-4 flex flex-col gap-2">
-          <div v-for="item in quickLinkList" :key="item.id"
-            class="group relative flex items-center gap-3 rounded-lg border bg-background p-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-            <Button v-if="!showDeleted" variant="ghost" class="handle shrink-0 cursor-grab active:cursor-grabbing" size="icon-sm">
-              <IFluentReOrderDotsVertical24Regular />
-            </Button>
+  <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
 
-            <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-5 shrink-0 text-muted-foreground" />
-            <IFluentLink24Regular v-else class="size-5 shrink-0 text-muted-foreground" />
-
-            <div class="min-w-0 flex-1">
-              <div class="font-medium">
-                {{ item.text }}
-              </div>
-              <div class="truncate text-xs text-muted-foreground">
-                {{ item.link }}
-              </div>
-            </div>
-
-            <div class="flex items-center gap-1" :class="showDeleted ? '' : 'opacity-0 transition-opacity group-hover:opacity-100'">
-              <Button v-if="!showDeleted" :as="Link" :href="route('quickLinks.edit', item.id)" variant="ghost" size="icon-sm">
-                <IFluentEdit24Regular />
-              </Button>
-
-              <Button v-if="!showDeleted" variant="ghost" size="icon-sm" class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                @click="confirmDelete(() => handleDelete(item.id))">
-                <IFluentDelete24Regular />
-              </Button>
-              <template v-else>
-                <Button variant="ghost" size="sm" class="gap-1.5" data-testid="restore-button" @click="handleRestore(item.id)">
-                  <RotateCcw class="size-4" />
-                  {{ $t('trash.restore') }}
-                </Button>
-                <Button
-                  v-if="canForceDelete"
-                  variant="ghost"
-                  size="sm"
-                  class="gap-1.5 text-destructive hover:text-destructive"
-                  data-testid="force-delete-button"
-                  @click="openForceDeleteDialog(item)"
-                >
-                  <Trash2 class="size-4" />
-                  {{ $t('trash.permanently_delete') }}
-                </Button>
-              </template>
-            </div>
-          </div>
-        </TransitionGroup>
-
-        <Button v-if="!showDeleted" variant="secondary" :disabled="!hasChanges" @click="handleOrderUpdate">
-          <IFluentSave24Regular class="h-4 w-4" />
-          {{ $t('Išsaugoti tvarką') }}
+  <SheetForm
+    v-model:open="reorderOpen"
+    :title="$t('Keisti tvarką')"
+    :description="$t('Vilki elementus arba naudok rodyklių mygtukus eiliškumui keisti.')"
+    :save-label="$t('Išsaugoti tvarką')"
+    :processing="savingOrder"
+    :dirty="orderChanged"
+    :disabled="!orderChanged"
+    @submit="saveOrder"
+  >
+    <p class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      {{ $t('Matoma vusa.lt') }} · {{ tenant?.shortname }} · {{ currentLang.toUpperCase() }}
+    </p>
+    <ol ref="reorderList" class="divide-y divide-border border-y border-border" data-testid="reorder-list">
+      <li
+        v-for="(item, index) in orderedLinks"
+        :key="item.id"
+        class="flex items-center gap-2 bg-background py-2"
+        data-testid="reorder-item"
+      >
+        <span
+          class="handle flex size-9 shrink-0 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing pointer-coarse:size-11"
+          :aria-label="$t('Vilkti')"
+        >
+          <GripVertical class="size-4" aria-hidden="true" />
+        </span>
+        <span class="w-6 shrink-0 text-right text-xs tabular-nums text-muted-foreground">{{ index + 1 }}</span>
+        <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ item.text }}</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          class="pointer-coarse:size-11"
+          :disabled="index === 0"
+          :aria-label="$t('Pakelti aukštyn')"
+          data-testid="move-up"
+          @click="moveItem(index, -1)"
+        >
+          <ArrowUp class="size-4" />
         </Button>
-      </template>
-    </PageContent>
-
-    <DeleteConfirmationDialog
-      v-model:is-open="isOpen"
-      :title="deleteTitle"
-      :message="deleteMessage"
-      :is-deleting
-      @confirm="executeDelete"
-      @cancel="cancelDelete"
-    />
-
-    <ConfirmDangerousActionDialog
-      v-model:open="isForceDeleteDialogOpen"
-      :title="$t('trash.permanently_delete')"
-      :description="$t('trash.permanently_delete_description')"
-      :confirmation-text="forceDeleteConfirmationText"
-      :confirm-label="$t('trash.permanently_delete')"
-      @confirm="handleForceDelete"
-    />
-  </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          class="pointer-coarse:size-11"
+          :disabled="index === orderedLinks.length - 1"
+          :aria-label="$t('Nuleisti žemyn')"
+          data-testid="move-down"
+          @click="moveItem(index, 1)"
+        >
+          <ArrowDown class="size-4" />
+        </Button>
+      </li>
+    </ol>
+  </SheetForm>
 </template>
 
 <script setup lang="ts">
 import { Icon } from '@iconify/vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical, Link as LinkIcon, Plus, Star } from 'lucide-vue-next';
 import { useSortable } from '@vueuse/integrations/useSortable';
-import { RotateCcw, Trash2 } from 'lucide-vue-next';
+import { computed, h, ref, toRef, type FunctionalComponent } from 'vue';
 
-import DeleteConfirmationDialog from '@/Components/Dialogs/DeleteConfirmationDialog.vue';
-import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { EmptyState, SheetForm, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { SingleSelect } from '@/Components/ui/single-select';
-import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
-import TrashViewToggle from '@/Components/Tables/TrashViewToggle.vue';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import { useDeleteConfirmation } from '@/Composables/useDeleteConfirmation';
-import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
-import ConfirmDangerousActionDialog from '@/Components/ui/data-table/ConfirmDangerousActionDialog.vue';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
+import type { StatusPresentation } from '@/Constants/statuses';
 
-interface QuickLinkListItem {
-  id: number;
-  text: string;
-  link: string;
-  icon?: string | null;
-  order?: number | null;
-}
+type QuickLinkRow = App.Entities.QuickLink;
+interface TenantOption { id: number; shortname: string; type: string }
 
 const props = defineProps<{
-  quickLinks: App.Entities.QuickLink[];
+  quickLinks: QuickLinkRow[];
   tenant: App.Entities.Tenant | null;
-  tenants: Array<{ id: number; shortname: string; type: string }>;
+  tenants: TenantOption[];
   currentLang: string;
   showDeleted?: boolean;
   deletedCount?: number;
 }>();
 
-const el = ref<HTMLElement | null>(null);
-const itemPendingForceDelete = ref<QuickLinkListItem | null>(null);
-const isForceDeleteDialogOpen = ref(false);
 const page = usePage();
+const isTrash = isTrashView();
+const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.quickLink ?? true));
+const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.quickLink));
 
-const quickLinkList = ref<QuickLinkListItem[]>(
-  props.quickLinks.map(quickLink => ({
-    id: quickLink.id,
-    text: quickLink.text,
-    link: quickLink.link,
-    icon: quickLink.icon,
-    order: quickLink.order,
-  })),
-);
+const importantStatus: StatusPresentation = { label: $t('Svarbi'), role: 'attention', icon: Star };
 
-const showDeleted = computed(() => props.showDeleted ?? false);
-const deletedCount = computed(() => props.deletedCount ?? 0);
-const hasDeletedCount = computed(() => deletedCount.value > 0);
-const shouldShowDeletedToggle = computed(() => showDeleted.value || hasDeletedCount.value);
-const canForceDelete = computed(() => (page.props.auth?.can as { forceDelete?: Record<string, boolean> } | undefined)?.forceDelete?.quickLink ?? false);
-const forceDeleteConfirmationText = computed(() => itemPendingForceDelete.value?.text?.trim() || String(itemPendingForceDelete.value?.id ?? ''));
+/** The icon is CMS data (a Fluent name), so it resolves at runtime. */
+const QuickLinkIconMark: FunctionalComponent<{ icon?: string | null }> = ({ icon }) => icon
+  ? h(Icon, { 'icon': `fluent:${icon}`, 'class': 'size-5 shrink-0 text-muted-foreground', 'aria-hidden': 'true' })
+  : h(LinkIcon, { 'class': 'size-5 shrink-0 text-muted-foreground', 'aria-hidden': 'true' });
 
-const initialOrder = props.quickLinks.map(q => q.id);
+// --- Scope: tenant and language decide what the server sends, and what order means --------
 
-const hasChanges = computed(() => {
-  const currentOrder = quickLinkList.value.map(q => q.id);
-  return JSON.stringify(currentOrder) !== JSON.stringify(initialOrder);
+const selectedTenant = computed(() => props.tenants.find(t => t.id === props.tenant?.id) ?? null);
+
+const languageFilters = computed<CollectionQuickFilter[]>(() => [
+  { id: 'lt', label: 'LT', active: props.currentLang === 'lt' },
+  { id: 'en', label: 'EN', active: props.currentLang === 'en' },
+]);
+
+function changeScope(scope: { tenant?: number; lang?: string }): void {
+  router.get(route('quickLinks.index'), {
+    tenant: scope.tenant ?? props.tenant?.id,
+    lang: scope.lang ?? props.currentLang,
+    ...(isTrash ? { showDeleted: true } : {}),
+  }, { preserveState: false });
+}
+
+// --- Collection ------------------------------------------------------------------------------
+
+const source = useLocalCollectionSource<QuickLinkRow>({
+  items: toRef(props, 'quickLinks'),
+  searchText: link => [link.text, link.link],
+  defaultSort: 'order:asc',
+  sortOptions: [
+    { value: 'order:asc', label: $t('Pagal tvarką'), by: link => link.order ?? 0 },
+    { value: 'text:asc', label: $t('Pagal pavadinimą (A–Z)'), by: link => link.text },
+    { value: 'text:desc', label: $t('Pagal pavadinimą (Z–A)'), by: link => link.text },
+  ],
 });
 
-useSortable(el, quickLinkList, {
+const actions = useCollectionRecordActions({
+  routePrefix: 'quickLinks',
+  canForceDelete: () => canForceDelete.value,
+});
+const actionsFor = (link: QuickLinkRow) => actions.rowActions(link, link.text, isTrash);
+
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'text', label: $t('Nuoroda'), sortField: 'text' },
+  { key: 'link', label: $t('Adresas') },
+  { key: 'important', label: $t('Svarbi'), class: 'w-28' },
+  { key: 'order', label: $t('Eilė'), class: 'w-20', sortField: 'order' },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
+]);
+
+// --- Order is a mode (.ai/rules/admin-forms.md) ---------------------------------------------
+
+const reorderOpen = ref(false);
+const reorderList = ref<HTMLElement | null>(null);
+const orderedLinks = ref<QuickLinkRow[]>([]);
+const savingOrder = ref(false);
+
+const savedOrder = computed(() => [...props.quickLinks]
+  .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  .map(link => link.id));
+
+const orderChanged = computed(() => orderedLinks.value.map(link => link.id).join() !== savedOrder.value.join());
+
+useSortable(reorderList, orderedLinks, {
   handle: '.handle',
   forceFallback: true,
+  // The list only exists while the sheet is open.
+  watchElement: true,
   animation: 150,
 });
 
-watch(() => quickLinkList.value, () => {
-  quickLinkList.value.forEach((item, index) => {
-    item.order = index + 1;
-  });
-}, { deep: true });
-
-const tenantOptions = computed(() => props.tenants);
-
-const selectedTenant = computed({
-  get: () => props.tenant ? tenantOptions.value.find(t => t.id === props.tenant.id) ?? null : null,
-  set: () => {},
-});
-
-function handleTenantChange(tenant: { id: number; shortname: string; type: string } | null) {
-  if (tenant) {
-    router.get(route('quickLinks.index'), { tenant: tenant.id, lang: props.currentLang, showDeleted: showDeleted.value }, { preserveState: false });
-  }
+function openReorder(): void {
+  orderedLinks.value = savedOrder.value
+    .map(id => props.quickLinks.find(link => link.id === id))
+    .filter((link): link is QuickLinkRow => link !== undefined);
+  reorderOpen.value = true;
 }
 
-function handleLangChange(lang: string) {
-  router.get(route('quickLinks.index'), { tenant: props.tenant?.id, lang, showDeleted: showDeleted.value }, { preserveState: false });
-}
+function moveItem(index: number, direction: -1 | 1): void {
+  const target = index + direction;
 
-function handleShowDeletedChange(checked: boolean) {
-  router.get(route('quickLinks.index'), { tenant: props.tenant?.id, lang: props.currentLang, showDeleted: checked }, {
-    preserveScroll: true,
-    preserveState: false,
-  });
-}
-
-function handleOrderUpdate() {
-  const orderList = quickLinkList.value.map((item, index) => ({
-    id: item.id,
-    order: index + 1,
-  }));
-
-  router.post(route('quickLinks.update-order'), {
-    orderList,
-    tenant_id: props.tenant?.id,
-    lang: props.currentLang,
-  });
-}
-
-function handleDelete(id: number) {
-  router.delete(route('quickLinks.destroy', id), {
-    preserveScroll: true,
-    preserveState: true,
-  });
-}
-
-function handleRestore(id: number) {
-  router.patch(route('quickLinks.restore', id), {}, {
-    preserveScroll: true,
-  });
-}
-
-function openForceDeleteDialog(item: QuickLinkListItem) {
-  itemPendingForceDelete.value = item;
-  isForceDeleteDialogOpen.value = true;
-}
-
-function handleForceDelete() {
-  if (!itemPendingForceDelete.value) {
+  if (target < 0 || target >= orderedLinks.value.length) {
     return;
   }
 
-  router.delete(route('quickLinks.forceDelete', itemPendingForceDelete.value.id), {
-    preserveScroll: true,
-  });
+  const [item] = orderedLinks.value.splice(index, 1);
+  orderedLinks.value.splice(target, 0, item);
 }
 
-const {
-  isOpen,
-  isDeleting,
-  title: deleteTitle,
-  message: deleteMessage,
-  confirmDelete,
-  executeDelete,
-  cancelDelete,
-} = useDeleteConfirmation({
-  title: 'Ištrinti greitąją nuorodą?',
-  message: 'Ar tikrai norite ištrinti šią greitąją nuorodą? Šis veiksmas neatšaukiamas.',
-  preserveScroll: true,
-  preserveState: true,
-});
+function saveOrder(): void {
+  router.post(route('quickLinks.update-order'), {
+    orderList: orderedLinks.value.map((link, index) => ({ id: link.id, order: index + 1 })),
+    tenant_id: props.tenant?.id,
+    lang: props.currentLang,
+  }, {
+    preserveScroll: true,
+    onStart: () => {
+      savingOrder.value = true;
+    },
+    onSuccess: () => {
+      reorderOpen.value = false;
+    },
+    onFinish: () => {
+      savingOrder.value = false;
+    },
+  });
+}
 </script>

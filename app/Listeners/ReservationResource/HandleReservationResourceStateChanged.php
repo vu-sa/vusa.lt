@@ -4,15 +4,16 @@ namespace App\Listeners\ReservationResource;
 
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
+use App\Models\User;
 use App\Notifications\ReservationStatusChangedNotification;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 use Spatie\ModelStates\Events\StateChanged;
 
 /**
- * Listener to notify users when a reservation resource state changes.
+ * Notifies a reservation's users when one of its resources changes state. Runs in the request, not
+ * the queue, because spatie's StateChanged carries no actor and auth() is empty in a worker.
  */
-class HandleReservationResourceStateChanged implements ShouldQueue
+class HandleReservationResourceStateChanged
 {
     /**
      * Handle the event.
@@ -43,8 +44,7 @@ class HandleReservationResourceStateChanged implements ShouldQueue
             return;
         }
 
-        // Get the current user who made the change
-        $changedBy = auth()->user();
+        $changedBy = auth()->user() instanceof User ? auth()->user() : null;
 
         $notification = new ReservationStatusChangedNotification(
             $model,
@@ -53,6 +53,6 @@ class HandleReservationResourceStateChanged implements ShouldQueue
             $changedBy
         );
 
-        Notification::send($reservation->users, $notification);
+        Notification::send($reservation->users->reject(fn (User $user): bool => $user->is($changedBy)), $notification);
     }
 }

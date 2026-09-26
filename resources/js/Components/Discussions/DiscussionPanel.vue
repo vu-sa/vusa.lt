@@ -18,8 +18,8 @@
         <button
           type="button"
           :class="[
-            'rounded-md px-2 py-1 text-xs transition-colors',
-            showResolved ? 'text-muted-foreground hover:text-foreground' : 'bg-zinc-100 font-medium text-foreground dark:bg-zinc-800',
+            'px-2 py-1 text-xs transition-colors pointer-coarse:min-h-11',
+            showResolved ? 'text-muted-foreground hover:text-foreground' : 'bg-accent font-medium text-foreground',
           ]"
           @click="showResolved = !showResolved"
         >
@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div :class="framed ? 'flex flex-col gap-4 rounded-xl border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 p-4 dark:border-zinc-800' : 'contents'">
+    <div :class="framed ? 'flex flex-col gap-4 border-y border-border py-4' : 'contents'">
       <!-- Root composer, attributed like every comment below it -->
       <div class="flex items-center gap-3">
         <UserAvatar v-if="currentUser" :user="currentUser" :size="32" class="shrink-0" />
@@ -45,7 +45,7 @@
               <DialogTrigger as-child>
                 <button
                   type="button"
-                  class="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-foreground dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                  class="inline-flex items-center gap-1 border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 >
                   <BarChart3 class="h-3.5 w-3.5" />
                   {{ $t('Apklausa') }}
@@ -72,19 +72,20 @@
 
       <!-- Loading skeleton -->
       <div v-if="loading" class="space-y-3">
-        <div v-for="n in 2" :key="n" class="animate-pulse rounded-lg border border-zinc-100 p-3 dark:border-zinc-800">
+        <div v-for="n in 2" :key="n" class="animate-pulse border-b border-border py-3">
           <div class="flex gap-2.5">
-            <div class="h-8 w-8 rounded-full bg-zinc-200 dark:bg-zinc-700" />
+            <!-- eslint-disable-next-line admin-redesign/no-legacy-utility -- avatars stay circular -->
+            <div class="size-8 rounded-full bg-muted" />
             <div class="flex-1 space-y-2">
-              <div class="h-3 w-24 rounded bg-zinc-200 dark:bg-zinc-700" />
-              <div class="h-3 w-full rounded bg-zinc-100 dark:bg-zinc-800" />
+              <div class="h-3 w-24 bg-muted" />
+              <div class="h-3 w-full bg-muted/60" />
             </div>
           </div>
         </div>
       </div>
 
       <!-- Threads -->
-      <div v-else class="space-y-3">
+      <div v-else class="divide-y divide-border">
         <CommentThread
           v-for="comment in visibleComments"
           :key="comment.id"
@@ -122,10 +123,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/Components/ui/dialog';
-import { useDiscussionApi } from '@/Composables/useDiscussionApi';
-import { useDiscussionChannel } from '@/Composables/useDiscussionChannel';
-import { useToasts } from '@/Composables/useToasts';
-import type { CommentData, MentionableUser, PollDraft } from '@/Types/discussions';
+import { useDiscussionThread } from '@/Composables/useDiscussionThread';
+import type { PollDraft } from '@/Types/discussions';
 
 const props = withDefaults(defineProps<{
   commentableType: string;
@@ -136,16 +135,14 @@ const props = withDefaults(defineProps<{
   framed: false,
 });
 
-const api = useDiscussionApi(props.commentableType, props.commentableId);
-const toasts = useToasts();
-
 const currentUser = computed(() => (usePage().props.auth as { user?: App.Entities.User } | undefined)?.user ?? null);
-
-const comments = ref<CommentData[]>([]);
-const mentionables = ref<MentionableUser[]>([]);
-const loading = ref(true);
-const posting = ref(false);
-const mutating = ref(false);
+const discussion = useDiscussionThread(props.commentableType, props.commentableId);
+const { comments } = discussion;
+const { mentionables } = discussion;
+const { loading } = discussion;
+const { posting } = discussion;
+const { mutating } = discussion;
+const { members } = discussion;
 const showResolved = ref(true);
 const pollDialogOpen = ref(false);
 
@@ -156,174 +153,50 @@ const visibleComments = computed(() =>
   showResolved.value ? comments.value : comments.value.filter(comment => !comment.is_resolved),
 );
 
-// --- Real-time merge (idempotent upserts; the actor also receives its own event) ---
-
-function upsertComment(incoming: CommentData) {
-  if (!incoming.parent_id) {
-    const index = comments.value.findIndex(comment => comment.id === incoming.id);
-    if (index === -1) {
-      comments.value.push(incoming);
-    }
-    else {
-      // Preserve already-loaded replies when patching a root.
-      comments.value[index] = { ...incoming, replies: incoming.replies ?? comments.value[index].replies };
-    }
-    return;
-  }
-
-  const root = comments.value.find(comment => comment.id === (incoming.thread_root_id ?? incoming.parent_id));
-  if (!root) {
-    return;
-  }
-  root.replies = root.replies ?? [];
-  const replyIndex = root.replies.findIndex(reply => reply.id === incoming.id);
-  if (replyIndex === -1) {
-    root.replies.push(incoming);
-  }
-  else {
-    root.replies[replyIndex] = incoming;
-  }
-}
-
-function removeComment(id: string) {
-  const rootIndex = comments.value.findIndex(comment => comment.id === id);
-  if (rootIndex !== -1) {
-    comments.value.splice(rootIndex, 1);
-    return;
-  }
-  for (const root of comments.value) {
-    if (root.replies?.some(reply => reply.id === id)) {
-      root.replies = root.replies.filter(reply => reply.id !== id);
-      return;
-    }
-  }
-}
-
-const { members, connect } = useDiscussionChannel(props.commentableType, props.commentableId, {
-  onCreated: upsertComment,
-  onUpdated: upsertComment,
-  onResolved: upsertComment,
-  onReaction: upsertComment,
-  onPoll: upsertComment,
-  onDeleted: ({ id }) => removeComment(id),
-});
-
 // --- Actions ---
 
 async function onPost(html: string) {
-  posting.value = true;
-  try {
-    const comment = await api.postComment(html);
-    upsertComment(comment);
-    rootComposer.value?.reset();
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    posting.value = false;
+  const comment = await discussion.post(html);
+  if (comment) {
+    rootComposer.value?.reset?.();
   }
 }
 
 async function onCreatePoll(html: string, poll: PollDraft) {
-  posting.value = true;
-  try {
-    upsertComment(await api.createPoll(html, poll));
+  if (await discussion.createPoll(html, poll)) {
     pollDialogOpen.value = false;
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    posting.value = false;
   }
 }
 
 async function onPollVote(id: string, optionId: string) {
-  try {
-    upsertComment(await api.togglePollVote(id, optionId));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.vote(id, optionId);
 }
 
 async function onReply(parentId: string, html: string) {
-  mutating.value = true;
-  try {
-    upsertComment(await api.postComment(html, parentId));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    mutating.value = false;
-  }
+  await discussion.post(html, parentId);
 }
 
 async function onUpdate(id: string, html: string) {
-  mutating.value = true;
-  try {
-    upsertComment(await api.updateComment(id, html));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    mutating.value = false;
-  }
+  await discussion.update(id, html);
 }
 
 async function onDelete(id: string) {
-  try {
-    await api.deleteComment(id);
-    removeComment(id);
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.remove(id);
 }
 
 async function onResolve(id: string) {
-  try {
-    upsertComment(await api.resolveComment(id));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.resolve(id);
 }
 
 async function onUnresolve(id: string) {
-  try {
-    upsertComment(await api.unresolveComment(id));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.unresolve(id);
 }
 
 async function onToggleReaction(id: string, emoji: string) {
-  try {
-    upsertComment(await api.toggleReaction(id, emoji));
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
+  await discussion.toggleReaction(id, emoji);
 }
 
-onMounted(async () => {
-  try {
-    const [thread, mentions] = await Promise.all([api.fetchThread(), api.fetchMentionables()]);
-    comments.value = thread;
-    mentionables.value = mentions;
-  }
-  catch (error) {
-    toasts.error((error as Error).message);
-  }
-  finally {
-    loading.value = false;
-  }
-
-  connect();
+onMounted(() => {
+  void discussion.load();
 });
 </script>

@@ -16,7 +16,6 @@
       <RichContentBlock
         v-for="(child, childIndex) in group.children" :key="child.id ?? childIndex"
         :element="child" :html
-        :is-first-element="false"
         :resolved="resolvedFor(child)"
         :band="bandFor(child)"
         :news="child.type === 'news' ? news : undefined"
@@ -27,7 +26,6 @@
     <RichContentBlock
       v-else
       :element="group.element" :html
-      :is-first-element="index === 0"
       :resolved="resolvedFor(group.element)"
       :band="bandFor(group.element)"
       :news="group.element.type === 'news' ? news : undefined"

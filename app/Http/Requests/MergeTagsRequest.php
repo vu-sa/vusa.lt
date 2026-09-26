@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Tag;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,7 +13,21 @@ class MergeTagsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Authorization is handled in the controller
+        $target = Tag::find($this->input('target_tag_id'));
+        $sourceIds = (array) $this->input('source_tag_ids', []);
+
+        if (! $target) {
+            return true;
+        }
+
+        if (! $this->user()->can('update', $target)) {
+            return false;
+        }
+
+        $sources = Tag::query()->whereIn('id', $sourceIds)->get();
+
+        return $sources->count() !== count($sourceIds)
+            || $sources->every(fn (Tag $source): bool => $this->user()->can('delete', $source));
     }
 
     /**
@@ -23,7 +38,7 @@ class MergeTagsRequest extends FormRequest
         return [
             'target_tag_id' => ['required', 'integer', SoftDeleteRules::existsLive('tags')],
             'source_tag_ids' => 'required|array|min:1',
-            'source_tag_ids.*' => ['integer', SoftDeleteRules::existsLive('tags')],
+            'source_tag_ids.*' => ['required', 'integer', 'distinct', SoftDeleteRules::existsLive('tags')],
         ];
     }
 

@@ -1,10 +1,7 @@
 name: CI
 
-# `push` is deliberately limited to the two branches that need a run of their own: main and dev are
-# what deploy.yml / deploy-staging.yml hang their `workflow_run` triggers off. Every other branch is
-# covered by `pull_request` — listing them under `push` as well made each push to a branch with an
-# open PR start CI twice, and the two runs never cancel each other because their concurrency keys
-# differ (`refs/heads/<branch>` vs `refs/pull/<n>/merge`).
+# main and dev need push runs for deployment. A same-repository PR from dev mirrors its push run's
+# result below instead of repeating the build and tests; all other PRs run CI normally.
 on:
   push:
     branches:
@@ -18,6 +15,7 @@ concurrency:
 
 jobs:
   changes:
+    if: ${{ github.event_name != 'pull_request' || github.head_ref != 'dev' || github.event.pull_request.head.repo.full_name != github.repository }}
     runs-on: ubuntu-latest
     outputs:
       php: ${{ steps.filter.outputs.php }}
@@ -172,18 +170,29 @@ jobs:
     # actually read it — one sticky comment on the PR, rewritten each push. The
     # report and the "docs to re-check" list are rebuilt into a temp file
     # ($GITHUB_STEP_SUMMARY is per-step, so a later step cannot read the gate
-    # step's summary) and posted as the current author.
+    # step's summary). Push runs look up the open PR, because the dev PR run
+    # only mirrors the push run and never reaches this job.
     - name: Comment documentation coverage on the PR
-      if: always() && github.event_name == 'pull_request'
+      if: always()
       continue-on-error: true
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ github.event.number }}
+        BASE_REF: ${{ github.base_ref }}
       run: |
+        if [ -z "$PR_NUMBER" ]; then
+          read -r PR_NUMBER BASE_REF < <(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq '[.[] | select(.state == "open")][0] // empty | "\(.number) \(.base.ref)"') || true
+        fi
+        if [ -z "$PR_NUMBER" ]; then
+          echo "No open pull request for $GITHUB_SHA; skipping the comment."
+          exit 0
+        fi
         tmp="$(mktemp)"
         GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --summary
-        GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --changed=origin/${{ github.base_ref }} --summary
+        GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --changed="origin/$BASE_REF" --summary
         { echo "<!-- docs-coverage -->"; cat "$tmp"; } > pr-comment.md
-        gh pr comment "${{ github.event.number }}" --edit-last --create-if-none --body-file pr-comment.md
+        gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body-file pr-comment.md
 
     - name: Upload test results to Codecov
       if: always()
@@ -222,7 +231,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
 
     - name: Install npm dependencies
@@ -320,10 +329,6 @@ jobs:
     needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    # Non-blocking for now — this is the first Pest browser-test job in the repo, and Playwright
-    # setup (browser binary download, system deps) can fail for reasons unrelated to the code
-    # under test. Drop `continue-on-error` once 2-3 consecutive runs are green.
-    continue-on-error: true
     name: Browser Tests
     steps:
     - uses: actions/checkout@v7
@@ -376,8 +381,34 @@ jobs:
     - name: Add local domain to /etc/hosts
       run: echo "127.0.0.1 www.vusa.test" | sudo tee -a /etc/hosts
 
+    # Admin collections search Typesense from the browser; usesTypesenseInBrowser() (tests/Pest.php)
+    # addresses it as `typesense:8108`, the Sail hostname, so the runner maps that name to itself too.
+    - name: Start Typesense
+      run: |
+        docker run -d --name typesense \
+          -p 8108:8108 \
+          -v /tmp/typesense-data:/data \
+          typesense/typesense:30.2 \
+          --data-dir /data \
+          --api-key=xyz \
+          --enable-cors
+        echo "127.0.0.1 typesense" | sudo tee -a /etc/hosts
+        until curl -s http://typesense:8108/health | grep -q '"ok"'; do sleep 1; done
+
+    # DOCS_SCREENSHOTS also saves the docs' reference frames (tests/Browser/README.md "Docs screenshots").
     - name: Run browser tests
-      run: vendor/bin/pest tests/Browser --compact
+      run: vendor/bin/pest tests/Browser --parallel --compact
+      env:
+        DOCS_SCREENSHOTS: '1'
+
+    - name: Upload docs screenshots
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: docs-screenshots
+        path: tests/Browser/Screenshots/docs
+        retention-days: 30
+        if-no-files-found: ignore
 
     # A bare Playwright timeout says nothing about *why* the page never rendered. The screenshot
     # and captured HTML (see captureBrowserDiagnostics() in tests/Pest.php) separate "still
@@ -448,8 +479,34 @@ jobs:
     needs: [changes, php-static-analysis, php-tests, js-tests, js-quality, browser-tests, storybook-tests]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      actions: read
     steps:
+      - name: Mirror dev push CI on its pull request
+        if: ${{ github.event_name == 'pull_request' && github.head_ref == 'dev' && github.event.pull_request.head.repo.full_name == github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          DEV_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          for attempt in {1..90}; do
+            result=$(gh api -X GET "repos/$GH_REPO/actions/workflows/ci.yml/runs" \
+              -f branch=dev -f event=push -f head_sha="$DEV_SHA" -f per_page=1 \
+              --jq '.workflow_runs[0] | if . == null then "missing" else (.conclusion // .status) end')
+
+            case "$result" in
+              success) exit 0 ;;
+              missing|queued|in_progress|requested|waiting|pending) sleep 20 ;;
+              *) echo "::error::Dev push CI for $DEV_SHA finished with $result"; exit 1 ;;
+            esac
+          done
+
+          echo "::error::No completed dev push CI found for $DEV_SHA within 30 minutes"
+          exit 1
+
       - name: Set status
+        if: ${{ github.event_name != 'pull_request' || github.head_ref != 'dev' || github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
           STATIC_ANALYSIS_RESULT="${{ needs.php-static-analysis.result }}"
           PHP_TESTS_RESULT="${{ needs.php-tests.result }}"
@@ -460,8 +517,8 @@ jobs:
 
           echo "Results: Static Analysis=$STATIC_ANALYSIS_RESULT, PHP Tests=$PHP_TESTS_RESULT, JS Tests=$JS_TESTS_RESULT, JS Quality=$JS_QUALITY_RESULT, Browser Tests=$BROWSER_TESTS_RESULT, Storybook Tests=$STORYBOOK_TESTS_RESULT"
 
-          # Check if any required job failed (js-quality, browser-tests and storybook-tests are non-blocking)
-          if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]]; then
+          # Check if any required job failed (js-quality and storybook-tests are non-blocking)
+          if [[ "$STATIC_ANALYSIS_RESULT" == "failure" ]] || [[ "$PHP_TESTS_RESULT" == "failure" ]] || [[ "$JS_TESTS_RESULT" == "failure" ]] || [[ "$BROWSER_TESTS_RESULT" == "failure" ]]; then
             echo "❌ Some checks failed"
             exit 1
           fi
@@ -469,10 +526,6 @@ jobs:
           # Report non-blocking job status (informational only)
           if [[ "$JS_QUALITY_RESULT" == "failure" ]]; then
             echo "⚠️ TypeScript/ESLint check has issues (non-blocking)"
-          fi
-
-          if [[ "$BROWSER_TESTS_RESULT" == "failure" ]]; then
-            echo "⚠️ Browser tests have issues (non-blocking)"
           fi
 
           if [[ "$STORYBOOK_TESTS_RESULT" == "failure" ]]; then

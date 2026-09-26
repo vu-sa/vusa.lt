@@ -1,266 +1,250 @@
 <template>
-  <section class="space-y-4">
-    <!-- Section header -->
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ $t('Balsavimo klausimai') }}</span>
-      <span v-if="form.votes.length" class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ form.votes.length }}</span>
-      <AdminVotingHelpButton class="ml-auto" />
-    </div>
-
-    <p v-if="form.votes.length === 0" class="text-sm italic text-muted-foreground">
-      {{ editing ? $t('Balsavimų dar nėra.') : $t('Neaptarta') }}
+  <div data-slot="agenda-item-votes" class="space-y-3">
+    <p v-if="form.votes.length === 0" class="border-y border-border py-3 text-sm text-muted-foreground">
+      {{ $t('Neaptarta') }}
     </p>
 
-    <div ref="listContainer" class="space-y-3">
-      <div
+    <ol v-else class="space-y-3">
+      <li
         v-for="(vote, index) in form.votes"
         :key="keyFor(vote)"
-        class="flex items-start gap-2 sm:gap-3"
+        class="space-y-4 border border-border bg-card p-4"
+        data-slot="agenda-item-vote"
       >
-        <!-- Gutter: which vote counts as the item's outcome, and the drag grip -->
-        <div class="flex w-5 shrink-0 flex-col items-center gap-2 pt-4">
-          <button
-            type="button"
-            :disabled="!editing || vote.is_main"
-            :class="[
-              'flex h-5 w-5 items-center justify-center text-xs font-semibold transition-colors',
-              vote.is_main ? 'text-amber-500' : 'text-muted-foreground',
-              editing && !vote.is_main ? 'hover:text-amber-500' : '',
-            ]"
-            :title="vote.is_main ? $t('Pagrindinis balsavimas') : $t('Žymėti pagrindiniu')"
-            @click="setMain(index)"
-          >
-            <Star v-if="vote.is_main" class="h-4 w-4 fill-amber-400" />
-            <span v-else>{{ index + 1 }}</span>
-          </button>
-          <span
-            v-if="editing && form.votes.length > 1"
-            class="vote-drag-handle cursor-grab text-zinc-300 transition-colors hover:text-zinc-500 dark:text-zinc-600 dark:hover:text-zinc-400"
-            :aria-label="$t('Tempti')"
-          >
-            <GripVertical class="h-4 w-4" />
-          </span>
+        <div v-if="form.votes.length > 1 || voteTitle(vote)" class="space-y-1.5">
+          <p v-if="form.votes.length > 1" class="flex items-center gap-2 text-sm font-semibold text-foreground">
+            {{ $t('Balsavimas') }} {{ index + 1 }}
+            <span
+              v-if="vote.is_main"
+              class="inline-flex items-center gap-1 border border-border px-1.5 py-0.5 text-xs font-medium text-brand"
+            >
+              <Star class="size-3.5 fill-current" aria-hidden="true" />
+              {{ $t('meetings.item.main_vote') }}
+            </span>
+          </p>
+
+          <!-- Titles are rare, so they are edited in "Tvarkyti balsavimus" rather than on every card. -->
+          <p v-if="voteTitle(vote)" class="text-sm text-foreground">
+            {{ voteTitle(vote) }}
+          </p>
         </div>
 
-        <!-- Vote card. The main vote is marked by its gold star alone; tinting the whole
-             card gold competed with the outcome colours inside it. -->
-        <div class="min-w-0 flex-1 rounded-lg border border-zinc-200 bg-zinc-50/70 dark:bg-zinc-900/40 dark:border-zinc-800">
-          <div class="flex flex-wrap items-start gap-x-3 gap-y-2 p-3.5">
-            <button
-              type="button"
-              class="flex min-w-0 flex-1 basis-48 items-start gap-2.5 text-left"
-              :aria-expanded="isExpanded(vote)"
-              @click="toggle(vote)"
-            >
-              <component :is="isExpanded(vote) ? ChevronUp : ChevronDown" class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <span class="min-w-0 flex-1">
-                <span class="flex flex-wrap items-center gap-2">
-                  <span class="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                    {{ $t('Balsavimas') }} {{ index + 1 }}
-                  </span>
-                  <span
-                    v-if="vote.is_consensus"
-                    class="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-[11px] font-medium text-teal-700 dark:bg-teal-900/20 dark:text-teal-300"
-                  >
-                    <Handshake class="h-3 w-3" />
-                    {{ $t('Bendru sutarimu') }}
-                  </span>
-                </span>
-                <span
-                  class="mt-1 block truncate text-sm"
-                  :class="voteLabel(vote) ? 'text-zinc-700 dark:text-zinc-300' : 'italic text-muted-foreground'"
-                >
-                  {{ voteLabel(vote) || $t('Be pavadinimo') }}
-                </span>
-              </span>
-            </button>
+        <label v-if="editable" class="flex w-fit cursor-pointer items-center gap-3 text-sm text-foreground pointer-coarse:min-h-11">
+          <Switch
+            :model-value="vote.is_consensus ?? false"
+            @update:model-value="(value: boolean) => setConsensus(vote, value)"
+          />
+          <Handshake class="size-4 text-muted-foreground" aria-hidden="true" />
+          {{ $t('meetings.item.consensus') }}
+        </label>
+        <p v-else-if="vote.is_consensus" class="flex items-center gap-2 text-sm text-foreground">
+          <Handshake class="size-4 text-muted-foreground" aria-hidden="true" />
+          {{ $t('meetings.item.consensus') }}
+        </p>
 
-            <!-- Recorded values, so a collapsed vote still reads at a glance. Too narrow
-                 to sit beside the title, they take a row of their own rather than vanish. -->
-            <div
-              v-if="!isExpanded(vote)"
-              class="order-last flex w-full flex-wrap items-center gap-1.5 sm:order-none sm:ml-auto sm:w-auto sm:justify-end"
-            >
-              <span
-                v-for="summary in summaryOf(vote)"
-                :key="summary.key"
-                :class="['inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium', summary.pillClass]"
-                :title="summary.rowLabel"
-              >
-                <span :class="['h-1.5 w-1.5 rounded-full', summary.dotClass]" />
-                {{ summary.label }}
-              </span>
-            </div>
+        <div class="space-y-3">
+          <div
+            v-for="row in voteRows"
+            :key="row.key"
+            class="grid gap-2 sm:grid-cols-[10rem_1fr] sm:items-start sm:gap-x-4"
+            :data-testid="`vote-row-${row.key}`"
+          >
+            <span class="text-sm font-medium text-muted-foreground sm:pt-3">{{ row.label }}</span>
 
-            <div v-if="editing" class="flex shrink-0 items-center gap-0.5">
+            <template v-if="editable">
+              <!-- An answered row collapses to its answer; tapping it brings the choices back. -->
               <button
-                v-if="!vote.is_main"
+                v-if="!isOpen(vote, row.key)"
                 type="button"
-                class="rounded-md p-1.5 text-zinc-400 transition-colors hover:text-amber-500"
-                :title="$t('Žymėti pagrindiniu')"
-                @click="setMain(index)"
+                :class="[
+                  'flex min-h-11 min-w-0 items-center gap-2 border px-3 py-2 text-left text-sm font-medium transition-colors pointer-coarse:min-h-12',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
+                  statusRoleClasses[chosen(row, vote[row.key])!.role],
+                ]"
+                :aria-label="`${row.label}: ${chosen(row, vote[row.key])!.label}. ${$t('meetings.item.change_answer')}`"
+                :data-testid="`vote-${row.key}-answer`"
+                @click="open(vote, row.key)"
               >
-                <Star class="h-4 w-4" />
+                <component :is="chosen(row, vote[row.key])!.icon" class="size-4 shrink-0" aria-hidden="true" />
+                <span class="min-w-0 flex-1 truncate">{{ chosen(row, vote[row.key])!.label }}</span>
+                <span class="flex shrink-0 items-center gap-1 text-xs font-normal opacity-70">
+                  {{ $t('meetings.item.change_answer') }}
+                  <ChevronDown class="size-3.5" aria-hidden="true" />
+                </span>
               </button>
-              <button
-                type="button"
-                class="rounded-md p-1.5 text-zinc-400 transition-colors hover:text-destructive"
-                :title="$t('Šalinti balsavimą')"
-                @click="removeVote(index)"
-              >
-                <Trash2 class="h-4 w-4" />
-              </button>
-            </div>
-          </div>
 
-          <div v-if="isExpanded(vote)" class="space-y-4 border-t border-zinc-200 px-3.5 pb-4 pt-4 dark:border-zinc-800">
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
-              <Input
-                v-model="vote.title[locale]"
-                class="h-9 min-w-0 flex-1 basis-48 bg-white dark:bg-zinc-950/40 text-sm"
-                maxlength="200"
-                :readonly="!editing"
-                :placeholder="$t('Pridėti pavadinimą (nebūtina)')"
-              />
-              <label class="flex shrink-0 items-center gap-2.5 text-sm text-zinc-600 dark:text-zinc-400" :class="editing ? 'cursor-pointer' : ''">
-                <Switch
-                  :model-value="vote.is_consensus ?? false"
-                  :disabled="!editing"
-                  @update:model-value="(v: boolean) => setConsensus(index, v)"
-                />
-                {{ $t('Bendru sutarimu') }}
-              </label>
-            </div>
-
-            <div class="space-y-3">
-              <!-- The label sits above its options until there is room for a column. -->
-              <div
-                v-for="row in voteRows"
-                :key="row.key"
-                class="grid gap-1.5 sm:grid-cols-[7rem_1fr] sm:items-center sm:gap-x-4"
-              >
-                <span class="text-xs font-medium text-muted-foreground">{{ row.label }}</span>
-                <div class="grid grid-cols-3 gap-1.5">
+              <div v-else class="space-y-1.5">
+                <div class="grid grid-cols-3 gap-1.5" role="group" :aria-label="row.label">
                   <button
-                    v-for="opt in row.options"
-                    :key="opt.value"
+                    v-for="option in row.options"
+                    :key="String(option.value)"
                     type="button"
-                    :disabled="!editing"
-                    class="flex min-w-0 items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs font-medium transition-colors disabled:cursor-default"
-                    :class="vote[row.key] === opt.value ? opt.activeClass : INACTIVE_OPTION_CLASS"
-                    @click="vote[row.key] = opt.value"
+                    :aria-pressed="vote[row.key] === option.value"
+                    :data-testid="`vote-${row.key}-${option.value}`"
+                    :class="[
+                      'flex min-h-11 min-w-0 items-center justify-center gap-1.5 border px-2 py-2 text-sm font-medium transition-colors pointer-coarse:min-h-12',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
+                      vote[row.key] === option.value ? statusRoleClasses[option.role] : INACTIVE_OPTION_CLASS,
+                    ]"
+                    @click="answer(vote, row.key, option.value)"
                   >
-                    <component :is="opt.icon" v-if="opt.icon" class="h-3.5 w-3.5 shrink-0" />
-                    <span class="truncate">{{ opt.label }}</span>
+                    <component :is="option.icon" class="size-4 shrink-0" aria-hidden="true" />
+                    <span class="truncate">{{ option.label }}</span>
                   </button>
                 </div>
+                <button
+                  v-if="vote[row.key] !== null && vote[row.key] !== undefined"
+                  type="button"
+                  class="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground pointer-coarse:min-h-11"
+                  :data-testid="`vote-${row.key}-clear`"
+                  @click="answer(vote, row.key, null)"
+                >
+                  {{ $t('meetings.item.clear_answer') }}
+                </button>
               </div>
-            </div>
+            </template>
+            <StatusBadge v-else :status="readStatus(row, vote[row.key])" class="sm:mt-2.5" />
           </div>
         </div>
-      </div>
-    </div>
 
-    <Button v-if="editing" type="button" variant="outline" size="sm" @click="addVote">
-      <Plus class="mr-1 h-4 w-4" />
-      {{ $t('Pridėti balsavimo klausimą') }}
-    </Button>
-  </section>
+        <p v-if="voteNote(vote)" class="whitespace-pre-line text-sm text-muted-foreground">
+          {{ voteNote(vote) }}
+        </p>
+      </li>
+    </ol>
+
+    <div v-if="editable" class="flex flex-wrap items-center gap-2">
+      <Button variant="outline" size="sm" voice="sentence" class="pointer-coarse:h-11" @click="addVote">
+        <Plus class="size-4" />
+        {{ $t('meetings.item.add_vote') }}
+      </Button>
+      <Button
+        v-if="form.votes.length"
+        variant="ghost"
+        size="sm"
+        voice="sentence"
+        class="text-muted-foreground pointer-coarse:h-11"
+        @click="emit('manage')"
+      >
+        <Settings2 class="size-4" />
+        {{ $t('meetings.item.manage_votes') }}
+      </Button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, type Component } from 'vue';
+import { computed, ref, type Component } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
-import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, ChevronUp, GripVertical, Handshake, Minus, Plus, Star, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-vue-next';
+import {
+  ChevronDown,
+  CircleCheck,
+  CircleDashed,
+  CircleMinus,
+  CircleX,
+  Handshake,
+  Plus,
+  Settings2,
+  Star,
+  ThumbsDown,
+  ThumbsUp,
+} from 'lucide-vue-next';
 
-import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
+import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
 import { Switch } from '@/Components/ui/switch';
-import type { VoteValue } from '@/Composables/useAgendaItemStyling';
-import type { AgendaItemFormData, EditableVote } from '@/Composables/useAgendaItemAutosave';
+import { statusRoleClasses, type StatusPresentation, type StatusRole } from '@/Constants/statuses';
+import { createVote, type AgendaItemFormData, type EditableVote, type VoteValue } from '@/Composables/useAgendaItemAutosave';
 
 const props = withDefaults(defineProps<{
   form: InertiaForm<AgendaItemFormData>;
-  editing?: boolean;
-  /** Which translation the inputs write. See EditAgendaItem.vue. */
-  locale?: 'lt' | 'en';
-  /**
-   * False for VU SA's own bodies: the representatives *are* the organisation, so there is no
-   * separate student position or student benefit to record — only the outcome.
-   */
+  /** Big tap choices that autosave; otherwise each answer reads as a status badge. */
+  editable?: boolean;
+  /** False for VU SA's own bodies: they record only the outcome, not a student position. */
   requiresStudentPerspective?: boolean;
 }>(), {
-  editing: false,
-  locale: 'lt',
+  editable: false,
   requiresStudentPerspective: true,
 });
 
-/** The collapsed row falls back to Lithuanian, so an untranslated vote still reads as named. */
-const voteLabel = (vote: EditableVote): string =>
-  (props.locale === 'en' ? vote.title.en : '') || vote.title.lt;
+const emit = defineEmits<{
+  manage: [];
+}>();
 
 type VoteField = 'decision' | 'student_vote' | 'student_benefit';
+
 interface VoteOption {
-  value: Exclude<VoteValue, null | undefined>;
+  value: VoteValue;
   label: string;
-  icon?: Component;
-  activeClass: string;
+  icon: Component;
+  role: StatusRole;
 }
+
 interface VoteRow {
   key: VoteField;
   label: string;
+  /** The recordable answers; an empty row already means "not recorded". */
   options: VoteOption[];
+  unanswered: VoteOption;
 }
 
-/** Unchosen options are outlined, not filled, so only the recorded answer carries weight. */
-const INACTIVE_OPTION_CLASS
-  = 'border-zinc-200 bg-white dark:bg-zinc-950/40 text-zinc-500 enabled:hover:border-zinc-400 enabled:hover:text-foreground '
-    + 'disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-400 dark:enabled:hover:border-zinc-500';
+/** Unchosen options are outlined, so only the recorded answer carries colour. */
+const INACTIVE_OPTION_CLASS = 'border-border bg-background text-muted-foreground hover:border-foreground/30 hover:text-foreground';
 
-const POSITIVE_CLASS = 'border-emerald-600 bg-emerald-600 text-white';
-const NEGATIVE_CLASS = 'border-red-600 bg-red-600 text-white';
-const NEUTRAL_CLASS = 'border-zinc-500 bg-zinc-500 text-white';
+const option = (value: VoteValue, label: string, icon: Component, role: StatusRole): VoteOption => ({ value, label, icon, role });
 
-const decisionOptions: VoteOption[] = [
-  { value: 'positive', label: $t('Priimtas'), activeClass: POSITIVE_CLASS },
-  { value: 'negative', label: $t('Atmestas'), activeClass: NEGATIVE_CLASS },
-  { value: 'neutral', label: $t('Susilaikyta'), activeClass: NEUTRAL_CLASS },
-];
+const decisionRow: VoteRow = {
+  key: 'decision',
+  label: $t('Sprendimas'),
+  options: [
+    option('positive', $t('Priimtas'), CircleCheck, 'success'),
+    option('negative', $t('Atmestas'), CircleX, 'danger'),
+    option('neutral', $t('Susilaikyta'), CircleMinus, 'neutral'),
+  ],
+  unanswered: option(null, $t('Nefiksuota'), CircleDashed, 'attention'),
+};
 
-const studentVoteOptions: VoteOption[] = [
-  { value: 'positive', label: $t('Pritarė'), activeClass: POSITIVE_CLASS },
-  { value: 'negative', label: $t('Nepritarė'), activeClass: NEGATIVE_CLASS },
-  { value: 'neutral', label: $t('Susilaikyta'), activeClass: NEUTRAL_CLASS },
-];
+const studentVoteRow: VoteRow = {
+  key: 'student_vote',
+  label: $t('Studentų balsas'),
+  options: [
+    option('positive', $t('Pritarė'), CircleCheck, 'success'),
+    option('negative', $t('Nepritarė'), CircleX, 'danger'),
+    option('neutral', $t('Susilaikyta'), CircleMinus, 'neutral'),
+  ],
+  unanswered: option(null, $t('Nebalsuota'), CircleDashed, 'attention'),
+};
 
-const benefitOptions: VoteOption[] = [
-  { value: 'positive', label: $t('Palanku'), icon: ThumbsUp, activeClass: POSITIVE_CLASS },
-  { value: 'negative', label: $t('Nepalanku'), icon: ThumbsDown, activeClass: NEGATIVE_CLASS },
-  { value: 'neutral', label: $t('Neutralu'), icon: Minus, activeClass: NEUTRAL_CLASS },
-];
+const benefitRow: VoteRow = {
+  key: 'student_benefit',
+  label: $t('Nauda studentams'),
+  options: [
+    option('positive', $t('Palanku'), ThumbsUp, 'success'),
+    option('negative', $t('Nepalanku'), ThumbsDown, 'danger'),
+    option('neutral', $t('Neutralu'), CircleMinus, 'neutral'),
+  ],
+  unanswered: option(null, $t('Nežinoma'), CircleDashed, 'attention'),
+};
 
-const voteRows = computed<VoteRow[]>(() => {
-  const rows: VoteRow[] = [
-    { key: 'decision', label: $t('Rezultatas'), options: decisionOptions },
-  ];
+const voteRows = computed<VoteRow[]>(() => (props.requiresStudentPerspective
+  ? [decisionRow, studentVoteRow, benefitRow]
+  : [decisionRow]));
 
-  if (props.requiresStudentPerspective) {
-    rows.push(
-      { key: 'student_vote', label: $t('Studentai'), options: studentVoteOptions },
-      { key: 'student_benefit', label: $t('Nauda'), options: benefitOptions },
-    );
-  }
+const chosen = (row: VoteRow, value: VoteValue | undefined): VoteOption | undefined =>
+  row.options.find(candidate => candidate.value === value);
 
-  return rows;
-});
+const readStatus = (row: VoteRow, value: VoteValue | undefined): StatusPresentation => {
+  const picked = chosen(row, value) ?? row.unanswered;
 
-/**
- * Identity that survives reordering. A vote's array index cannot be the key (drag
- * would reuse the wrong card) and a new vote has no id until it is saved.
- */
+  return { label: picked.label, role: picked.role, icon: picked.icon as StatusPresentation['icon'] };
+};
+
+// The read view is Lithuanian-first; English only fills a vote that has no Lithuanian text.
+const voteTitle = (vote: EditableVote) => vote.title.lt || vote.title.en;
+const voteNote = (vote: EditableVote) => vote.note.lt || vote.note.en;
+
+/** Identity that survives reordering; a new vote has no id until it is saved. */
 const keys = new WeakMap<object, string>();
 let keySeq = 0;
 const keyFor = (vote: EditableVote): string => {
@@ -272,105 +256,32 @@ const keyFor = (vote: EditableVote): string => {
   return key;
 };
 
-const expandedKeys = ref(new Set<string>());
+/** One answered row reopened at a time, so the card never shows every choice at once. */
+const openRow = ref<string | null>(null);
+const rowKey = (vote: EditableVote, field: VoteField) => `${keyFor(vote)}:${field}`;
 
-const isExpanded = (vote: EditableVote) => expandedKeys.value.has(keyFor(vote));
+const isOpen = (vote: EditableVote, field: VoteField) =>
+  vote[field] === null || vote[field] === undefined || openRow.value === rowKey(vote, field);
 
-const toggle = (vote: EditableVote) => {
-  const key = keyFor(vote);
-  const next = new Set(expandedKeys.value);
-  if (next.has(key)) {
-    next.delete(key);
-  }
-  else {
-    next.add(key);
-  }
-  expandedKeys.value = next;
+const open = (vote: EditableVote, field: VoteField) => {
+  openRow.value = rowKey(vote, field);
 };
 
-/** A vote still missing an answer opens on its own; a recorded one reads from its summary. */
-const isIncomplete = (vote: EditableVote) => voteRows.value.some(row => !vote[row.key]);
+/** Consensus means adopted with the students for it; benefit is a separate judgement. */
+const matchesConsensus = (vote: EditableVote) =>
+  vote.decision === 'positive' && (!props.requiresStudentPerspective || vote.student_vote === 'positive');
 
-watch(() => props.form.votes.length, () => {
-  const next = new Set(expandedKeys.value);
-  props.form.votes.forEach((vote) => {
-    if (isIncomplete(vote)) {
-      next.add(keyFor(vote));
-    }
-  });
-  expandedKeys.value = next;
-}, { immediate: true });
-
-const readLabel = (row: VoteRow, value: VoteValue): string =>
-  row.options.find(opt => opt.value === value)?.label ?? '—';
-
-const PILL_CLASSES: Record<string, { pill: string; dot: string }> = {
-  positive: {
-    pill: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/25 dark:text-emerald-300',
-    dot: 'bg-emerald-500',
-  },
-  negative: {
-    pill: 'bg-red-50 text-red-700 dark:bg-red-900/25 dark:text-red-300',
-    dot: 'bg-red-500',
-  },
-  neutral: {
-    pill: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300',
-    dot: 'bg-zinc-400',
-  },
-};
-
-const summaryOf = (vote: EditableVote) =>
-  voteRows.value
-    .filter(row => Boolean(vote[row.key]))
-    .map((row) => {
-      const styling = PILL_CLASSES[String(vote[row.key])] ?? PILL_CLASSES.neutral;
-      return {
-        key: row.key,
-        rowLabel: row.label,
-        label: readLabel(row, vote[row.key]),
-        pillClass: styling.pill,
-        dotClass: styling.dot,
-      };
-    });
-
-const addVote = () => {
-  const vote: EditableVote = {
-    id: null,
-    is_main: props.form.votes.length === 0,
-    is_consensus: false,
-    title: { lt: '', en: '' },
-    note: { lt: '', en: '' },
-    student_vote: null,
-    decision: null,
-    student_benefit: null,
-    order: props.form.votes.length,
-  };
-  props.form.votes.push(vote);
-};
-
-const removeVote = (index: number) => {
-  const removed = props.form.votes[index];
-  props.form.votes.splice(index, 1);
-
-  // Promote a remaining vote to main if we removed the main one
-  if (removed?.is_main && props.form.votes.length > 0) {
-    props.form.votes[0].is_main = true;
+const answer = (vote: EditableVote, field: VoteField, value: VoteValue) => {
+  vote[field] = value;
+  openRow.value = null;
+  if (vote.is_consensus && !matchesConsensus(vote)) {
+    vote.is_consensus = false;
   }
 };
 
-/** Exactly one vote is the item's outcome — the backend enforces the same invariant. */
-const setMain = (index: number) => {
-  if (!props.editing) {
-    return;
-  }
-  props.form.votes.forEach((vote, position) => {
-    vote.is_main = position === index;
-  });
-};
-
-const setConsensus = (index: number, value: boolean) => {
-  const vote = props.form.votes[index];
+const setConsensus = (vote: EditableVote, value: boolean) => {
   vote.is_consensus = value;
+  openRow.value = null;
   if (!value) {
     return;
   }
@@ -382,17 +293,7 @@ const setConsensus = (index: number, value: boolean) => {
   }
 };
 
-// Drag reordering. `order` is derived from array position on submit
-// (useAgendaItemAutosave), so moving an element is all that has to happen here.
-const listContainer = ref<HTMLElement | null>(null);
-
-const sortable = useSortable(listContainer, () => props.form.votes, {
-  handle: '.vote-drag-handle',
-  animation: 200,
-  disabled: !props.editing,
-});
-
-watch(() => props.editing, (editing) => {
-  sortable.option('disabled', !editing);
-});
+const addVote = () => {
+  props.form.votes.push(createVote(props.form.votes.length === 0));
+};
 </script>

@@ -45,6 +45,11 @@ return [
     'direction_incoming' => 'Įeinantis',
     'direction_sibling' => 'Lygiagretus',
     'related' => 'Susijusi',
+    // Section headings on an institution's record: who this body oversees and who oversees it.
+    'group_outgoing' => 'Prižiūri',
+    'group_incoming' => 'Prižiūrima',
+    'group_sibling' => 'Lygiagrečios',
+    'group_other' => 'Susijusios',
 
     // Authorization
     'authorized' => 'Su prieiga',

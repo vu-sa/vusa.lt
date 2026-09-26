@@ -3,10 +3,6 @@
 return [
     'trigger' => 'Quick actions',
     'trigger_short' => 'Actions',
-    'spotlight' => [
-        'title' => 'Not sure where to start?',
-        'description' => 'Click here for the most common actions — report a meeting, note that there will be no meetings, or fill in a meeting that already happened.',
-    ],
     'personas' => [
         'title' => 'What would you like to do?',
         'representative' => [
@@ -41,7 +37,7 @@ return [
         ],
         'new_reservation' => [
             'title' => 'Reserve equipment',
-            'description' => 'Borrow a VU SR item or room.',
+            'description' => 'Borrow VU SR equipment or an item.',
         ],
         'duty_update' => [
             'title' => 'Update duties',
@@ -51,6 +47,22 @@ return [
             'title' => 'Manage duty periods',
             'description' => 'Set when people hold their duties, on a timeline.',
         ],
+    ],
+    'report' => [
+        'title' => 'Report activity',
+        'meeting' => [
+            'title' => 'Record a meeting',
+            'description' => 'A meeting took place or is coming up — record it and its agenda.',
+        ],
+        'no_meeting' => [
+            'title' => 'There was / will be no meeting',
+            'description' => 'Mark a period without meetings so you do not get needless reminders.',
+        ],
+    ],
+    'flows' => [
+        'new_meeting' => 'New meeting',
+        'no_meeting' => 'No meetings',
+        'complete_meeting' => 'Complete a meeting',
     ],
     'institution' => [
         'title' => 'Which institution?',
@@ -76,8 +88,10 @@ return [
             'other' => 'None of these fit.',
         ],
         'when' => [
-            'title' => 'When will the meeting happen?',
-            'subtitle' => 'Suggested from when this institution has met so far.',
+            'title' => 'When was or will the meeting be?',
+            'subtitle' => 'Today, yesterday, or suggested from when this institution has met so far.',
+            'today' => 'Today',
+            'yesterday' => 'Yesterday',
             'usual_hint' => 'The next usual slot',
             'week_after_hint' => 'A week later',
             'custom' => 'Pick another date…',
@@ -85,6 +99,7 @@ return [
         'date' => [
             'title' => 'Which day?',
             'subtitle' => 'You can pick a past day too, if the meeting already happened.',
+            'label' => 'Date',
         ],
         'time' => [
             'title' => 'At what time?',
@@ -115,8 +130,8 @@ return [
             'agenda' => 'Agenda',
             'agenda_count' => '{0} No questions|{1} :count question|[2,*] :count questions',
             'agenda_bulk' => 'Adding them right after creating',
-            'submit' => 'Create meeting',
-            'submitting' => 'Creating…',
+            'submit' => 'Record meeting',
+            'submitting' => 'Recording…',
         ],
     ],
     'check_in' => [
@@ -155,6 +170,8 @@ return [
         'close' => 'Close',
         'change' => 'Change',
         'continue' => 'Continue',
+        'step' => 'Step',
+        'review' => 'Review',
         'loading' => 'Loading…',
         'error' => 'Could not load the data. Please try again.',
     ],

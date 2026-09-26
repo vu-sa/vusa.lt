@@ -1,274 +1,210 @@
 <template>
-  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
-    <template #filters>
-      <DataTableFilter v-model:value="selectedCompletionStatuses" :options="completionStatusOptions" multiple
-        @update:value="handleCompletionStatusFilterChange">
-        {{ $t('Completion Status') }}
-      </DataTableFilter>
+  <CollectionPage
+    :source
+    collection="meetings"
+    entity-type="meeting"
+    :eyebrow
+    :title="$t('Posėdžiai')"
+    :lead="$t('Fiksuok posėdžius, jų darbotvarkę ir balsavimus vienoje vietoje.')"
+    default-view="rows"
+    :item-key="meetingKey"
+    :quick-filters
+    :columns
+    :pinned-items="pinnedMeetings"
+    :search-placeholder="$t('Ieškoti posėdžių')"
+    :trash="{ count: deletedCount, active: isTrash }"
+    @quick-filter="toggleQuickFilter"
+  >
+    <template #actions>
+      <Button v-if="canCreate && !isTrash" variant="brand" size="lg" @click="actionWindow.open({ flow: 'meeting.create' })">
+        <Plus aria-hidden="true" />
+        {{ $t('Fiksuoti posėdį') }}
+      </Button>
     </template>
-  </IndexTablePage>
+
+    <template #row="{ item, pinned }">
+      <div v-if="isTrash" class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+        <div class="min-w-0 flex-1">
+          <CollectionPrimaryCell :title="item.title" :sub="item.institution_name_lt || item.institution_name_en" />
+          <p class="mt-2 text-xs tabular-nums text-muted-foreground">
+            {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
+          </p>
+        </div>
+        <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key)" />
+      </div>
+      <MeetingCollectionRow v-else :meeting="item" :pinned />
+    </template>
+
+    <template #cell="{ item, column }">
+      <template v-if="column.key === 'date'">
+        <span class="tabular-nums">{{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}</span>
+      </template>
+      <CollectionPrimaryCell
+        v-else-if="column.key === 'title'"
+        :title="item.title"
+        :href="isTrash ? undefined : route('meetings.show', item.id)"
+      />
+      <template v-else-if="column.key === 'institution'">
+        {{ item.institution_name_lt || item.institution_name_en || '—' }}
+      </template>
+      <template v-else-if="column.key === 'agenda'">
+        <span class="tabular-nums">{{ item.agenda_items_count ?? '—' }}</span>
+      </template>
+      <template v-else-if="column.key === 'status'">
+        <StatusBadge
+          v-if="item.completion_status && item.completion_status !== 'complete'"
+          :status="meetingCompletionStatuses[item.completion_status as MeetingCompletionStatus]"
+        />
+      </template>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="actionsFor(item)" @select="key => actions.select(key)" />
+    </template>
+
+    <template v-if="!isTrash" #preview="{ item }">
+      <MeetingDetailPreview :key="item.id" :meeting="item" />
+    </template>
+
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="MeetingIcon"
+        :title="isTrash ? $t('Ištrintų posėdžių nėra') : $t('Posėdžių dar nėra')"
+        :description="isTrash ? undefined : $t('Čia atsiras institucijų posėdžiai. Užfiksuok pirmąjį — užtenka institucijos ir datos, likusį gali papildyti vėliau.')"
+        :action-label="canCreate && !isTrash ? $t('Fiksuoti posėdį') : undefined"
+        @action="actionWindow.open({ flow: 'meeting.create' })"
+      />
+    </template>
+  </CollectionPage>
+
+  <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
 </template>
 
-<script setup lang="tsx">
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed, watch, capitalize } from 'vue';
+<script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { CalendarIcon, CheckCircle2Icon, AlertCircleIcon, CircleSlashIcon } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ArrowUpRight, Plus } from 'lucide-vue-next';
+import { computed } from 'vue';
 
-import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
-import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { Badge } from '@/Components/ui/badge';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
+import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
+import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
+import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { MeetingIcon } from '@/Components/icons';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import MeetingCollectionRow from '@/Components/Meetings/MeetingCollectionRow.vue';
+import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
+import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
+import { useActionWindow } from '@/Composables/useActionWindow';
+import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
+import {
+  isTrashView,
+  useTrashCollectionSource,
+  useTypesenseCollectionSource,
+  type CollectionSource,
+} from '@/Composables/useCollectionSource';
+import MeetingDetailPreview from '@/Features/Admin/AdminSearch/Components/Detail/MeetingDetailPreview.vue';
+import type { MeetingSearchResult } from '@/Shared/Search/types';
+import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
-  data: App.Entities.Meeting[];
-  meta: {
-    total: number;
-    current_page: number;
-    per_page: number;
-    last_page: number;
-    from: number;
-    to: number;
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  showDeleted?: boolean;
-  deletedCount?: number;
+  /** Soft-deleted meetings the viewer could restore. */
+  deletedCount: number;
+  /** Meetings the user changed moments ago, until the search index reflects them (O1). */
+  recentlyChanged: MeetingSearchResult[];
+  /** The user's own padaliniai: a first visit starts filtered to them. */
+  defaultTenantShortnames: string[];
 }>();
 
-// Component constants
-const modelName = 'meetings';
-const entityName = 'meeting';
+const page = usePage();
+const actionWindow = useActionWindow();
+const isTrash = isTrashView();
+const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.meeting));
+const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.meeting));
 
-// Component refs
-const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
+const eyebrow = computed(() => `${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.posedziai')}`);
 
-// Permission checks
-const canCreate = computed(() => usePage().props.auth?.can?.create?.meeting || false);
-const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.meeting ?? false);
+// Built directly rather than through useTrashAwareSource: the quick filters need the scoped
+// key's own institutions, which only the live source knows.
+const liveSource = isTrash
+  ? null
+  : useTypesenseCollectionSource<MeetingSearchResult>({
+      collection: 'meetings',
+      preserveUrlKeys: ['view', 'item'],
+      defaultFilters: { tenant_shortnames: props.defaultTenantShortnames },
+      collapsedChips: { institution_ids: $t('Mano institucijos') },
+      // The filter popover and chips name a status exactly as the row badge does (U10).
+      valueLabel: (field, value) => (
+        field === 'completion_status' && value in meetingCompletionStatuses
+          ? $t(meetingCompletionStatuses[value as MeetingCompletionStatus].label)
+          : undefined
+      ),
+    });
+const source: CollectionSource<MeetingSearchResult> = liveSource ?? useTrashCollectionSource<MeetingSearchResult>('meetings');
 
-// Filter states
-const selectedCompletionStatuses = ref<string[]>(props.filters?.['completion_status'] || []);
+const actions = useCollectionRecordActions({
+  routePrefix: 'meetings',
+  canRestore: () => canCreate.value,
+  canForceDelete: () => canForceDelete.value,
+});
+const actionsFor = (meeting: MeetingSearchResult) => isTrash
+  ? actions.rowActions(meeting, meeting.title, true)
+  : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), labelled: true }];
 
-// Completion status options
-const completionStatusOptions = computed(() => [
-  { label: $t('Užpildyta'), value: 'complete' },
-  { label: $t('Neužpildyta'), value: 'incomplete' },
-  { label: $t('Nėra darbotvarkės'), value: 'no_items' },
+const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);
+
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'date', label: $t('Data'), class: 'w-32' },
+  { key: 'title', label: $t('Posėdis') },
+  { key: 'institution', label: $t('Institucija') },
+  { key: 'agenda', label: $t('Punktai'), class: 'w-24' },
+  { key: 'status', label: $t('Būsena'), class: 'w-48' },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 
-// Custom row ID function to ensure stable IDs across pagination/sorting
-const getRowId = (row: App.Entities.Meeting) => {
-  return `meeting-${row.id}`;
-};
+// --- Quick filters (.ai/rules/js-pages-admin.md) ---------------------------------------------
 
-// Get completion status badge variant
-const getCompletionVariant = (status: string) => {
-  return {
-    complete: 'success',
-    incomplete: 'warning',
-    no_items: 'secondary',
-  }[status] || 'secondary';
-};
+const currentYear = new Date().getFullYear();
 
-// Get completion status label
-const getCompletionLabel = (status: string) => {
-  return {
-    complete: $t('Užpildyta'),
-    incomplete: $t('Neužpildyta'),
-    no_items: $t('Nėra darbotvarkės'),
-  }[status] || status;
-};
+const asList = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : []);
 
-// Get completion status icon
-const getCompletionIcon = (status: string) => {
-  const icons = {
-    complete: CheckCircle2Icon,
-    incomplete: AlertCircleIcon,
-    no_items: CircleSlashIcon,
-  };
-  return icons[status] || CircleSlashIcon;
-};
+const quickFilters = computed<CollectionQuickFilter[]>(() => {
+  if (!liveSource) {
+    return [];
+  }
 
-// Table columns
-const columns = computed<ColumnDef<App.Entities.Meeting, any>[]>(() => [
-  {
-    accessorKey: 'start_time',
-    header: () => $t('Start Time'),
-    cell: ({ row }) => {
-      return (
-        <div class="flex items-center gap-2">
-          <CalendarIcon class="h-4 w-4 text-muted-foreground" />
-          <span class="font-medium">
-            {formatMeetingDateTime(row.original, {
-              year: 'numeric',
-              month: 'long',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </span>
-        </div>
-      );
-    },
-    size: 250,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'institutions',
-    header: () => $t('Institution'),
-    cell: ({ row }) => {
-      const institutions = row.original.institutions || [];
-      if (institutions.length === 0) {
-        return <span class="text-muted-foreground italic">{$t('No institution')}</span>;
-      }
-      return (
-        <div class="flex flex-wrap gap-1">
-          {institutions.map((institution: App.Entities.Institution) => (
-            <Badge key={institution.id} variant="outline">
-              {institution.name}
-            </Badge>
-          ))}
-        </div>
-      );
-    },
-    size: 250,
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'agenda_items',
-    header: () => $t('Agenda Items'),
-    cell: ({ row }) => {
-      const agendaItems = row.original.agenda_items || [];
-      if (agendaItems.length === 0) {
-        return <span class="text-muted-foreground italic">—</span>;
-      }
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span class="text-sm">
-                {agendaItems.length}
-                {' '}
-                {agendaItems.length === 1 ? $t('item') : $t('items')}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="top" class="max-w-xs">
-              <ul class="list-disc list-inside text-sm">
-                {agendaItems.slice(0, 5).map((item: App.Entities.AgendaItem) => (
-                  <li key={item.id} class="truncate">{item.title}</li>
-                ))}
-                {agendaItems.length > 5 && (
-                  <li class="text-muted-foreground">
-                    ...
-                    {$t('and {count} more', { count: agendaItems.length - 5 })}
-                  </li>
-                )}
-              </ul>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    },
-    size: 150,
-    enableSorting: false,
-  },
-  {
-    id: 'completion_status',
-    header: () => $t('Completion Status'),
-    cell: ({ row }) => {
-      const status = row.original.completion_status;
-      const Icon = getCompletionIcon(status);
-      return (
-        <Badge variant={getCompletionVariant(status)} class="gap-1">
-          <Icon class="h-3 w-3" />
-          {getCompletionLabel(status)}
-        </Badge>
-      );
-    },
-    size: 180,
-    enableSorting: false,
-  },
-  createStandardActionsColumn<App.Entities.Meeting>('meetings', {
-    canView: true,
-    canEdit: false,
-    canDelete: true,
-    canRestore: true,
-    canForceDelete: canForceDelete.value,
-  }),
-]);
+  const filters = liveSource.filters.value;
+  const mine = liveSource.directInstitutionIds.value;
+  const chosenInstitutions = asList(filters.institution_ids);
 
-// Simplified table configuration using the new interfaces
-const tableConfig = computed<IndexTablePageProps<App.Entities.Meeting>>(() => {
-  return {
-    // Essential table configuration
-    modelName,
-    entityName,
-    data: props.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.meta.total,
-    initialPage: props.meta.current_page,
-    pageSize: props.meta.per_page,
-
-    // Advanced features
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'start_time', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: true,
-    allowToggleDeleted: true,
-    showDeleted: props.showDeleted,
-    deletedCount: props.deletedCount,
-
-    // Page layout
-    headerTitle: capitalize($tChoice('entities.meeting.model', 2)),
-    icon: MeetingIcon,
-    createRoute: undefined, // Meetings are created from institution pages
-    canCreate: false,
-  };
+  return [
+    ...(mine.length > 0
+      ? [{
+          id: 'mine',
+          label: $t('Mano institucijos'),
+          active: chosenInstitutions.length === mine.length && mine.every(id => chosenInstitutions.includes(id)),
+        }]
+      : []),
+    { id: 'no_votes', label: $t('Be balsavimų'), active: asList(filters.completion_status).includes('incomplete') },
+    { id: 'this_year', label: $t('Šie metai'), active: asList(filters.year).includes(String(currentYear)) },
+  ];
 });
 
-// Event handlers
-const handleCompletionStatusFilterChange = (statuses: string[]) => {
-  selectedCompletionStatuses.value = statuses;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('completion_status', statuses);
+function toggleQuickFilter(id: string): void {
+  const active = quickFilters.value.find(filter => filter.id === id)?.active ?? false;
+
+  if (id === 'mine') {
+    source.setFilter('institution_ids', active ? undefined : liveSource?.directInstitutionIds.value);
   }
-};
-
-// Event handlers for IndexTablePage
-const handleFilterChange = (filterKey, value) => {
-  if (filterKey === 'completion_status') {
-    selectedCompletionStatuses.value = value;
+  else if (id === 'no_votes') {
+    source.toggleFilter('completion_status', 'incomplete');
   }
-};
-
-const handleSortingChange = (sorting) => {
-  // Handle sorting changes - data will be reloaded automatically
-};
-
-const handlePageChange = (page) => {
-  // Handle page changes - data will be reloaded automatically
-};
-
-const onDataLoaded = (data) => {
-  // Handle data loaded event if needed
-};
-
-// Sync filter values when changed externally
-watch(() => props.filters, (newFilters) => {
-  if (newFilters) {
-    if (newFilters['completion_status'] !== undefined) {
-      selectedCompletionStatuses.value = newFilters['completion_status'];
-    }
+  else if (id === 'this_year') {
+    source.toggleFilter('year', String(currentYear));
   }
-}, { deep: true });
+}
+
+// A pinned change would contradict an active search or filter, so it only shows on the plain list.
+const pinnedMeetings = computed(() =>
+  !isTrash && source.query.value.trim() === '' && source.activeFilterCount.value === 0 ? props.recentlyChanged : [],
+);
 </script>

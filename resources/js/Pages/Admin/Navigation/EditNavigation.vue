@@ -1,31 +1,37 @@
 <template>
-  <PageContent :title="navigationElement.name" :back-url="route('navigation.index')" :heading-icon="NavigationIcon">
+  <Suspense v-if="navigationElement.parent_id !== 0 || navigationElement.extra_attributes?.location === 'footer'">
+    <NavigationForm
+      enable-delete
+      :navigation="navigationElement"
+      :parent-elements
+      :topic-options
+      @submit:form="submitForm"
+      @delete="deleteElement"
+    >
+      <template #aside-header>
+        <ActivityLogSheet subject-type="navigation" :subject-id="String(navigationElement.id)" />
+      </template>
+    </NavigationForm>
+  </Suspense>
+  <NavigationParentForm
+    v-else
+    enable-delete
+    :navigation="navigationElement"
+    @submit:form="submitForm"
+    @delete="deleteElement"
+  >
     <template #aside-header>
-      <ActivityLogSheet subject-type="navigation" :subject-id="navigationElement.id" />
+      <ActivityLogSheet subject-type="navigation" :subject-id="String(navigationElement.id)" />
     </template>
-    <UpsertModelLayout>
-      <Suspense v-if="navigationElement.parent_id !== 0 || navigationElement.extra_attributes?.location === 'footer'">
-        <NavigationForm enable-delete :navigation="navigationElement" :parent-elements :topic-options
-          @submit:form="(form) => form.patch(route('navigation.update', navigationElement.id), { preserveScroll: true })"
-          @delete="() => router.delete(route('navigation.destroy', navigationElement.id))" />
-      </Suspense>
-      <NavigationParentForm v-else
-        :navigation="navigationElement"
-        @submit:form="(form) => form.patch(route('navigation.update', navigationElement.id), { preserveScroll: true })"
-        @delete="() => router.delete(route('navigation.destroy', navigationElement.id))" />
-    </UpsertModelLayout>
-  </PageContent>
+  </NavigationParentForm>
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 import NavigationParentForm from '@/Components/AdminForms/NavigationParentForm.vue';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import { NavigationIcon } from '@/Components/icons';
 
 interface TopicOption {
   id: number;
@@ -43,4 +49,14 @@ const navigationElement = {
   ...props.navigationElement,
   extra_attributes: props.navigationElement.extra_attributes || {},
 };
+
+function submitForm(form: unknown): void {
+  (form as InertiaForm<Record<string, unknown>>).patch(route('navigation.update', navigationElement.id), {
+    preserveScroll: true,
+  });
+}
+
+function deleteElement(): void {
+  router.delete(route('navigation.destroy', navigationElement.id));
+}
 </script>

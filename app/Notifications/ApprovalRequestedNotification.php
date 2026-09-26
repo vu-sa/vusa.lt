@@ -3,7 +3,7 @@
 namespace App\Notifications;
 
 use App\Contracts\Approvable;
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -11,12 +11,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ApprovalRequestedNotification extends BaseNotification
 {
-    public function __construct(protected Model $approvable, protected int $step = 1) {}
-
-    public function category(): NotificationCategory
+    public function type(): NotificationType
     {
-        return NotificationCategory::Reservation;
+        return NotificationType::ApprovalRequested;
     }
+
+    public function __construct(protected Model $approvable, protected int $step = 1) {}
 
     public function title(object $notifiable): string
     {
@@ -68,13 +68,20 @@ class ApprovalRequestedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        return $this->contextRows([
+            'object' => $this->object()['name'] ?? null,
+            'step' => $this->step > 1 ? $this->step : null,
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view'),
-                'url' => $this->url(),
-            ],
+            'label' => __('notifications.action_view'),
+            'url' => $this->url(),
         ];
     }
 }

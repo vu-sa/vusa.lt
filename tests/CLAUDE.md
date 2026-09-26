@@ -10,7 +10,7 @@ For test commands, environment setup, the directory tree, and authorization-stat
   - `i18n.ts` — `trans`, `wTrans`, `$t` (uses real generated translations)
   - `route.ts` — `route()` (predictable mock URLs)
 - Component tests live in `resources/js/Components/**/__tests__/`, composable tests in `resources/js/Composables/__tests__/`, service tests in `resources/js/Services/__tests__/`.
-- **Real browser tests** (Playwright via `pestphp/pest-plugin-browser`) live in `tests/Browser/` — run explicitly with `vendor/bin/sail pest tests/Browser` (not part of the default suite). See [Browser/README.md](Browser/README.md) before writing one, especially the subdomain-routing/SmartLink gotcha and the `visitPublicSubdomain()` helper.
+- **Real browser tests** (Playwright via `pestphp/pest-plugin-browser`) live in `tests/Browser/` — run explicitly with `vendor/bin/sail pest tests/Browser --parallel` after `sail npm run build` (not part of the default suite). Read `.ai/rules/browser.md` and [Browser/README.md](Browser/README.md) before writing one, especially the subdomain-routing/SmartLink gotcha and the `visitPublicSubdomain()` helper.
 
 ## Controller test pattern
 
@@ -56,7 +56,7 @@ Every controller test file should cover **unauthorized access**, **authorized ac
 ## Helpers
 
 - `makeUser($tenant)` — plain user attached to a tenant.
-- `makeTenantUserWithRole($role, $tenant)` — pick a role aligned with the feature: `'Communication Coordinator'` for content/duties, `'Resource Manager'` for resources, etc. Use `config('permission.super_admin_role_name')` only when comprehensive coverage is needed.
+- `makeTenantUserWithRole($role, $tenant)` — pick a role aligned with the feature: `'Communication Coordinator'` for content/duties, `'Išteklių administratorius'` for resources, etc. Use `config('permission.super_admin_role_name')` only when comprehensive coverage is needed.
 - `asUser($user)` — direct request, no Inertia headers (expect **403** for forbidden).
 - `asUserWithInertia($user)` — Inertia-style request (expect **302** redirect with flash for forbidden).
 
@@ -197,8 +197,11 @@ full run, or hard-fails on a 403/404.
 | Command | When |
 |---|---|
 | `sail artisan test --parallel` | Default. TIA reruns affected tests, replays the rest. |
-| `sail artisan test --parallel --no-tia` | Full run, no replay — when you distrust the graph. |
-| `sail artisan test --parallel --fresh` | Discard the graph and re-record (after a large refactor). |
+| `sail bin pest --parallel --no-tia` | Full run, no replay — when you distrust the graph. |
+| `sail bin pest --parallel --tia --fresh` | Discard the graph and re-record (after a large refactor). |
+
+The escape hatches are Pest options: `artisan test` rejects them (`The "--no-tia" option does not
+exist`), so call Pest directly for these two.
 
 Use `--filter=testName` when iterating on one failing test, not as the default.
 
@@ -232,4 +235,3 @@ $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds
 **Fixture cost, post-null-engine** (use the smallest fixture that exercises the branch under test): `makeUser()` ≈ 6ms, a bare `News`/`Page`/`Institution` create ≈ 3-4ms. Reuse a seeded tenant (`Tenant::query()->first()` — `TestSeeder` already inserts all 16) rather than `Tenant::factory()->create()`, create the fewest users the assertion needs, and never `->count(N)` a factory past the smallest N that actually exercises the code path (e.g. a pagination test only needs one page-size boundary crossed, not an arbitrary round number).
 
 **Scout queueing** is globally disabled in `phpunit.xml` (`SCOUT_QUEUE=false`) — inert while the null engine is active, and only takes effect once a test calls `usesTypesense()`, at which point indexing happens synchronously instead of through the sync queue connection. A handful of files still set `config(['scout.queue' => false])` in their own `beforeEach`; that's now redundant but harmless, so no need to remove it on sight.
-

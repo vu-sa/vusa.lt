@@ -38,11 +38,11 @@ beforeEach(function (): void {
     $this->authorizer = app(ModelAuthorizer::class);
 });
 
-describe('Resource Manager', function (): void {
+describe('Išteklių administratorius', function (): void {
     beforeEach(function (): void {
-        // 'Resource Manager' holds resources.read.* and reservations.read.* at global
-        // scope, but resources.update.padalinys only within its own tenant.
-        $this->manager = makeTenantUserWithRole('Resource Manager', $this->tenantA);
+        // 'Išteklių administratorius' holds resources.read.* at global scope, but
+        // resources.update.padalinys only within its own tenant.
+        $this->manager = makeTenantUserWithRole('Išteklių administratorius', $this->tenantA);
 
         $resource = Resource::factory()->create([
             'tenant_id' => $this->tenantB->id,
@@ -68,7 +68,7 @@ describe('Resource Manager', function (): void {
 
     test('a global read scope does not grant approval rights in another tenant', function (): void {
         // The `*`-scoped check a ReservationPolicy::view would have made first.
-        expect($this->authorizer->allows($this->manager, 'reservations.read.*'))->toBeTrue();
+        expect($this->authorizer->allows($this->manager, 'resources.read.*'))->toBeTrue();
 
         expect($this->foreignReservationResource->canBeApprovedBy($this->manager))->toBeFalse();
     });
@@ -95,7 +95,7 @@ describe('Resource Manager', function (): void {
             ->where('resource_id', $ownResource->id)
             ->first();
 
-        expect($this->authorizer->allows($this->manager, 'reservations.read.*'))->toBeTrue()
+        expect($this->authorizer->allows($this->manager, 'resources.read.*'))->toBeTrue()
             ->and($own->canBeApprovedBy($this->manager))->toBeTrue();
     });
 });

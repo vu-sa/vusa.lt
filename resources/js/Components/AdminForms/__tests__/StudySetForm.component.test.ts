@@ -17,6 +17,31 @@ vi.mock('@inertiajs/vue3', async () => {
   };
 });
 
+interface StudySetFormVm {
+  form: {
+    name: { lt: string; en: string };
+    description: { lt: string; en: string };
+    tenant_id: number | null;
+    courses: Array<{
+      semester: string;
+      credits: number;
+      is_visible: boolean;
+      [key: string]: unknown;
+    }>;
+    reviews: Array<{
+      study_set_course_id: string;
+      is_visible: boolean;
+      [key: string]: unknown;
+    }>;
+  };
+  tenantIdString: string;
+  activeLocale: 'lt' | 'en';
+  addCourse: () => void;
+  removeCourse: (index: number) => void;
+  addReview: () => void;
+  removeReview: (index: number) => void;
+}
+
 describe('StudySetForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
@@ -45,21 +70,25 @@ describe('StudySetForm.vue', () => {
       global: {
         stubs: {
           ...commonStubs,
-          AdminForm: {
-            template: '<form @submit.prevent><slot /></form>',
-            props: ['model'],
+          FormPage: {
+            template: '<form @submit.prevent><slot /><slot name="aside" /><slot name="danger-zone" /></form>',
+            props: ['title', 'locale', 'barTitle', 'activitySubject', 'timestamps'],
           },
-          FormElement: {
+          ConfirmDialog: {
+            props: ['open'],
+            template: '<div v-if="open"><button data-testid="confirm-delete" @click="$emit(\'confirm\')">Confirm</button></div>',
+          },
+          FormSection: {
             template: '<section><slot /></section>',
-            props: ['sectionNumber'],
+            props: ['title'],
           },
           FormFieldWrapper: {
             template: '<div><label>{{ label }}</label><slot /></div>',
-            props: ['id', 'label', 'required'],
+            props: ['id', 'label', 'required', 'error'],
           },
-          MultiLocaleInput: {
-            template: '<input data-testid="multi-locale" />',
-            props: ['modelValue', 'inputType'],
+          Textarea: {
+            template: '<textarea data-testid="textarea" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+            props: ['modelValue'],
           },
           Select: {
             template: '<select data-testid="select" :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
@@ -73,8 +102,8 @@ describe('StudySetForm.vue', () => {
             props: ['value'],
           },
           Input: {
-            template: '<input data-testid="input" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
-            props: ['modelValue', 'type', 'min', 'step'],
+            template: '<input data-testid="input" :id="id" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+            props: ['modelValue', 'type', 'min', 'step', 'id'],
           },
           Switch: {
             template: '<button type="button" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)"><slot /></button>',
@@ -121,13 +150,13 @@ describe('StudySetForm.vue', () => {
   describe('courses', () => {
     it('has empty courses initially', () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as StudySetFormVm;
       expect(vm.form.courses).toHaveLength(0);
     });
 
     it('adds a course via addCourse method', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as StudySetFormVm;
 
       vm.addCourse();
       await nextTick();
@@ -146,7 +175,7 @@ describe('StudySetForm.vue', () => {
         ],
       };
       wrapper = createWrapper({ studySet: studySetWithCourse });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as StudySetFormVm;
 
       expect(vm.form.courses).toHaveLength(1);
 
@@ -186,7 +215,7 @@ describe('StudySetForm.vue', () => {
         ],
       };
       wrapper = createWrapper({ studySet: studySetWithCourse });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as StudySetFormVm;
 
       expect(vm.form.reviews).toHaveLength(0);
 
@@ -209,7 +238,7 @@ describe('StudySetForm.vue', () => {
         ],
       };
       wrapper = createWrapper({ studySet: studySetWithReview });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as StudySetFormVm;
 
       expect(vm.form.reviews).toHaveLength(1);
 
@@ -220,10 +249,30 @@ describe('StudySetForm.vue', () => {
     });
   });
 
+  describe('locale', () => {
+    it('binds translatable fields to the form-level locale', async () => {
+      wrapper = createWrapper();
+      const vm = wrapper.vm as unknown as StudySetFormVm;
+
+      vm.activeLocale = 'en';
+      await nextTick();
+      await wrapper.find('#name').setValue('Renamed set');
+
+      expect(vm.form.name).toEqual({ lt: 'Testinis komplektas', en: 'Renamed set' });
+    });
+
+    it('fills null translatable columns so both locales can be edited', () => {
+      wrapper = createWrapper({ studySet: { ...defaultStudySet, description: null } });
+      const vm = wrapper.vm as unknown as StudySetFormVm;
+
+      expect(vm.form.description).toEqual({ lt: '', en: '' });
+    });
+  });
+
   describe('tenant select', () => {
     it('converts tenant_id to string for select and back to number', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as StudySetFormVm;
 
       expect(vm.tenantIdString).toBe('1');
 
@@ -235,7 +284,7 @@ describe('StudySetForm.vue', () => {
 
     it('handles null tenant_id', async () => {
       wrapper = createWrapper({ studySet: { ...defaultStudySet, tenant_id: null } });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as StudySetFormVm;
 
       expect(vm.tenantIdString).toBe('');
 
@@ -243,6 +292,35 @@ describe('StudySetForm.vue', () => {
       await nextTick();
 
       expect(vm.form.tenant_id).toBeNull();
+    });
+  });
+
+  describe('danger zone', () => {
+    it('shows danger zone when editing and enableDelete is true', () => {
+      wrapper = createWrapper({
+        studySet: { ...defaultStudySet, id: '1' },
+        enableDelete: true,
+      });
+
+      const dangerButton = wrapper.findAll('button').find(b => b.text().includes('Ištrinti'));
+      expect(dangerButton).toBeDefined();
+    });
+
+    it('emits delete event when confirmed in dialog', async () => {
+      wrapper = createWrapper({
+        studySet: { ...defaultStudySet, id: '1' },
+        enableDelete: true,
+      });
+
+      const deleteBtn = wrapper.find('button.border-destructive\\/40');
+      expect(deleteBtn.exists()).toBe(true);
+      await deleteBtn.trigger('click');
+
+      const confirmBtn = wrapper.find('[data-testid="confirm-delete"]');
+      expect(confirmBtn.exists()).toBe(true);
+      await confirmBtn.trigger('click');
+
+      expect(wrapper.emitted('delete')).toHaveLength(1);
     });
   });
 });

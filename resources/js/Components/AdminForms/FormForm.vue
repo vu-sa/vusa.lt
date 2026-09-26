@@ -1,171 +1,366 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <FormElement>
-      <template #title>
-        {{ $t("forms.context.main_info") }}
-      </template>
-      <template #description>
-        {{ $t("forms.helpers.form_main_info") }}
-      </template>
-      <FormFieldWrapper id="name" :label="$t('forms.fields.name')" required>
-        <MultiLocaleInput v-model:input="form.name" />
-      </FormFieldWrapper>
+  <FormPage
+    :title="isEditing ? formTitle : $t('Nauja registracijos forma')"
+    :bar-title="isEditing ? formTitle : undefined"
+    :head-title="isEditing ? formTitle : $t('Nauja registracijos forma')"
+    :lead="isEditing ? undefined : $t('Kurk naują registracijos formą studentams ir nariams.')"
+    :entity-type="ModelEnum.FORM"
+    :activity-subject="isEditing && form.id ? { type: 'form', id: String(form.id) } : undefined"
+    :public-url="publicUrl('lt')"
+    :created-at="(form.created_at as string | undefined)"
+    :updated-at="(form.updated_at as string | undefined)"
+    :back-href="isEditing && form.id ? route('forms.show', form.id) : route('forms.index')"
+    :back-label="isEditing ? $t('Į formą') : $t('Formos')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :field-ids
+    :mode="isEditing ? 'edit' : 'create'"
+    :locale="activeLocale"
+    :available-locales="['lt', 'en']"
+    :missing-locale-counts
+    @update:locale="activeLocale = $event"
+    @submit="emit('submit:form', form)"
+  >
+    <FormFieldWrapper
+      id="form-name"
+      :label="`${$t('forms.fields.name')} (${activeLocale.toUpperCase()})`"
+      required
+      :error="form.errors[`name.${activeLocale}`]"
+    >
+      <Input
+        id="form-name"
+        v-model="form.name[activeLocale]"
+        :placeholder="$t('forms.fields.name')"
+      />
+    </FormFieldWrapper>
 
-      <div class="space-y-2">
-        <Label class="inline-flex items-center gap-2">
-          {{ $t("forms.fields.description") }}
-          <SimpleLocaleButton v-model:locale="locale" />
-        </Label>
-        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
-        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
+    <FormFieldWrapper
+      id="form-description"
+      :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+      :error="form.errors[`description.${activeLocale}`]"
+    >
+      <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
+    </FormFieldWrapper>
+
+    <FormSection
+      :title="$t('forms.sections.form_fields')"
+      :description="$t('forms.helpers.registrations_count', { count: form.registrations_count ?? 0 })"
+    >
+      <div v-if="form.registrations_count > 0" class="mb-2">
+        <Link :href="route('forms.show', form.id)" class="text-xs font-medium text-primary underline underline-offset-2">
+          {{ $t('forms.helpers.view_registrations') }}
+        </Link>
       </div>
 
-      <div class="space-y-3">
-        <PermalinkField
-          :permalink="form.path.lt" :base-url="registrationBaseUrl('lt')" label="LT"
-          :view-url="publicUrl('lt')"
-          @update:permalink="onPathInput('lt', $event)" />
-        <PermalinkField
-          :permalink="form.path.en" :base-url="registrationBaseUrl('en')" label="EN"
-          :view-url="publicUrl('en')"
-          @update:permalink="onPathInput('en', $event)" />
-        <p v-if="pathChangedOnExistingForm" class="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-500">
-          <IFluentWarning24Regular class="h-3.5 w-3.5 shrink-0" />
-          {{ $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') }}
-        </p>
+      <div
+        v-if="hasRegistrations"
+        class="flex items-center gap-2 border border-border bg-muted/40 p-2.5 text-xs text-muted-foreground"
+      >
+        <Info class="size-4 shrink-0" />
+        <span>{{ $t('Formos laukelių pridėti ar ištrinti nebegalima, nes forma jau turi registracijų.') }}</span>
       </div>
 
-      <FormFieldWrapper v-if="assignableTenants && assignableTenants.length > 0" id="tenant_id" :label="$t('forms.fields.tenant')">
-        <Select v-model="tenantIdString">
-          <SelectTrigger>
-            <SelectValue placeholder="VU SA ..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
-              {{ tenant.shortname }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
+      <div class="flex items-center justify-between pt-1">
+        <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {{ $t('Laukai') }} ({{ form.form_fields.length }})
+        </span>
+        <Button
+          v-if="form.form_fields.length > 1"
+          type="button"
+          variant="outline"
+          size="sm"
+          class="u-touch"
+          @click="isReordering = !isReordering"
+        >
+          <ArrowUpDown class="mr-1.5 size-3.5" />
+          {{ isReordering ? $t('Baigti tvarkymą') : $t('Keisti tvarką') }}
+        </Button>
+      </div>
 
-      <FormFieldWrapper id="publish_time" :label="$t('forms.fields.form_publish_time')">
-        <DateTimePicker v-model="publishTimeDate" :placeholder="$t('forms.placeholders.date')" @change="onPublishTimeChange" />
-      </FormFieldWrapper>
-    </FormElement>
-
-    <FormElement>
-      <template #title>
-        {{ $t("forms.sections.form_fields") }}
-      </template>
-      <template #description>
-        <p>{{ $t("forms.helpers.registrations_count", { count: form.registrations_count ?? 0 }) }}</p>
-        <p v-if="form.registrations_count > 0">
-          <Link :href="route('forms.show', form.id)">
-            {{ $t("forms.helpers.view_registrations") }}
-          </Link>
-        </p>
-      </template>
-      <p v-if="hasRegistrations" class="flex items-center gap-1 text-xs text-muted-foreground">
-        <IFluentInfo16Regular class="h-3.5 w-3.5 shrink-0" />
-        {{ $t('Formos laukelių pridėti ar ištrinti nebegalima, nes forma jau turi registracijų.') }}
-      </p>
-      <SortableFormFieldsTable v-model="form.form_fields" class="mt-2">
+      <SortableFormFieldsTable v-model="form.form_fields" class="mt-2 sortable-table">
         <template #default="{ model }">
-          <div class="grid grid-cols-[20px__22px__1fr__80px] items-center gap-1 pr-2 text-zinc-700 dark:text-zinc-200">
-            <div class="flex flex-row items-center gap-2 pr-1.5">
-              <IFluentTextT24Regular v-if="model.type === 'string'" />
-              <IFluentCheckboxChecked24Regular v-if="model.type === 'boolean'" />
-              <IFluentTextBulletListLtr24Filled v-if="model.type === 'enum'" />
-              <IFluentNumberSymbol24Filled v-if="model.type === 'number'" />
-              <IFluentCalendarLtr24Regular v-if="model.type === 'date'" />
+          <div class="flex w-full items-center justify-between gap-3 py-1 text-sm text-foreground">
+            <div class="flex min-w-0 items-center gap-2.5">
+              <span class="text-muted-foreground">
+                <Type v-if="model.type === 'string'" class="size-4" />
+                <CheckSquare v-else-if="model.type === 'boolean'" class="size-4" />
+                <List v-else-if="model.type === 'enum'" class="size-4" />
+                <Hash v-else-if="model.type === 'number'" class="size-4" />
+                <Calendar v-else-if="model.type === 'date'" class="size-4" />
+                <Type v-else class="size-4" />
+              </span>
+
+              <span v-if="model.is_required" class="text-destructive font-bold" :title="$t('Privalomas laukas')">*</span>
+
+              <span class="truncate font-medium">
+                {{ model.label?.lt || model.label?.en || model.label || '—' }}
+              </span>
             </div>
-            <div class="flex flex-row pr-3">
-              <IFluentTextAsterisk20Filled v-if="model.is_required" color="red" />
-            </div>
-            <span class="my-1">{{ model.label?.lt }}</span>
-            <div class="flex justify-end gap-2">
-              <Button size="icon-xs" variant="ghost" @click="handleEditFormField(model)">
-                <IFluentEdit24Filled />
-              </Button>
-              <Button size="icon-xs" variant="ghost" :disabled="hasRegistrations" @click="handleDeleteFormField(model)">
-                <IFluentDelete24Filled class="text-red-500" />
-              </Button>
+
+            <div class="flex shrink-0 items-center gap-1">
+              <template v-if="isReordering">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  :disabled="isFirstField(model)"
+                  :aria-label="$t('Kelti aukštyn')"
+                  @click="moveFieldUp(model)"
+                >
+                  <ArrowUp class="size-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  :disabled="isLastField(model)"
+                  :aria-label="$t('Nuleisti žemyn')"
+                  @click="moveFieldDown(model)"
+                >
+                  <ArrowDown class="size-3.5" />
+                </Button>
+              </template>
+              <template v-else>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  :aria-label="$t('Redaguoti')"
+                  @click="handleEditFormField(model)"
+                >
+                  <Pencil class="size-3.5" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  class="text-destructive hover:text-destructive"
+                  :disabled="hasRegistrations"
+                  :aria-label="$t('Ištrinti')"
+                  @click="handleDeleteFormField(model)"
+                >
+                  <Trash2 class="size-3.5" />
+                </Button>
+              </template>
             </div>
           </div>
         </template>
       </SortableFormFieldsTable>
+
       <div class="mt-4">
-        <Button :disabled="hasRegistrations" @click="handleNewFormFieldCreate">
-          <IFluentAdd24Filled />
-          {{ $t("forms.add") }}
+        <Button
+          type="button"
+          variant="outline"
+          :disabled="hasRegistrations"
+          class="u-touch"
+          @click="handleNewFormFieldCreate"
+        >
+          <Plus class="mr-1.5 size-4" />
+          {{ $t('forms.add') }}
         </Button>
       </div>
-    </FormElement>
-    <CardModal v-model:show="showFormFieldModal" :title="$t('forms.sections.form_field')" @close="showFormFieldModal = false">
-      <FormFieldForm :field-models="fieldModelOptions" :has-registrations
-        :form-field="selectedFormField" @submit="handleFormFieldSubmitted" />
-    </CardModal>
-  </AdminForm>
+    </FormSection>
+
+    <template #aside>
+      <FormPanel :title="$t('Paskelbimas ir nuoroda')" :icon="Send" title-class="text-brand">
+        <div class="space-y-3">
+          <PermalinkField
+            :permalink="form.path.lt"
+            :base-url="registrationBaseUrl('lt')"
+            label="LT"
+            :view-url="publicUrl('lt')"
+            @update:permalink="onPathInput('lt', $event)"
+          />
+          <PermalinkField
+            :permalink="form.path.en"
+            :base-url="registrationBaseUrl('en')"
+            label="EN"
+            :view-url="publicUrl('en')"
+            @update:permalink="onPathInput('en', $event)"
+          />
+          <div
+            v-if="pathChangedOnExistingForm"
+            :class="[
+              'flex items-center gap-2 border p-2.5 text-xs font-medium',
+              'border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]',
+            ]"
+          >
+            <AlertTriangle class="size-4 shrink-0" />
+            <span>{{ $t('Atsargiai: pakeitus nuorodą, sena nuoroda nebeveiks!') }}</span>
+          </div>
+        </div>
+
+        <TenantSelectField
+          v-if="assignableTenants && assignableTenants.length > 0"
+          id="form-tenant"
+          v-model="form.tenant_id"
+          :tenants="assignableTenants"
+          :error="form.errors.tenant_id"
+        />
+
+        <FormFieldWrapper
+          id="form-publish-time"
+          :label="$t('forms.fields.form_publish_time')"
+        >
+          <DateTimePicker
+            id="form-publish-time"
+            v-model="publishTimeDate"
+            :placeholder="$t('forms.placeholders.date')"
+            @change="onPublishTimeChange"
+          />
+        </FormFieldWrapper>
+      </FormPanel>
+    </template>
+
+    <template v-if="isEditing && enableDelete" #danger-zone>
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h4 class="text-sm font-semibold text-destructive">
+            {{ $t('Ištrinti formą') }}
+          </h4>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('Forma bus perkelta į šiukšlinę; visi jos atsakymai bus išsaugoti.') }}
+          </p>
+        </div>
+        <Button type="button" variant="destructive" size="sm" class="u-touch shrink-0" @click="deleteConfirmOpen = true">
+          <Trash2 class="mr-1.5 size-4" />
+          {{ $t('Ištrinti') }}
+        </Button>
+      </div>
+
+      <ConfirmDialog
+        v-model:open="deleteConfirmOpen"
+        :title="$t('Ištrinti formą?')"
+        :description="$t('Forma bus perkelta į šiukšlinę.')"
+        :confirm-label="$t('Ištrinti')"
+        destructive
+        @confirm="emit('delete')"
+      />
+    </template>
+
+    <Sheet v-model:open="showFormFieldModal">
+      <SheetContent class="flex w-full flex-col overflow-y-auto sm:max-w-xl">
+        <SheetHeader>
+          <SheetTitle>{{ $t('forms.sections.form_field') }}</SheetTitle>
+          <SheetDescription class="sr-only">
+            {{ $t('forms.sections.form_field') }}
+          </SheetDescription>
+        </SheetHeader>
+        <div class="mt-4">
+          <FormFieldForm
+            :field-models="fieldModelOptions"
+            :has-registrations
+            :form-field="selectedFormField"
+            @submit="handleFormFieldSubmitted"
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
-import { Link, usePage, useForm } from '@inertiajs/vue3';
 import { computed, ref, toRaw, watch } from 'vue';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import {
+  AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Calendar,
+  CheckSquare,
+  Hash,
+  Info,
+  List,
+  Pencil,
+  Plus,
+  Send,
+  Trash2,
+  Type,
+} from 'lucide-vue-next';
 
-import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
-import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
-import TiptapEditor from '../TipTap/TiptapEditor.vue';
-import SortableFormFieldsTable from '../Tables/SortableFormFieldsTable.vue';
-import CardModal from '../Dialogs/CardModal.vue';
-
-import AdminForm from './AdminForm.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
-import FormElement from './FormElement.vue';
 import FormFieldForm from './FormFieldForm.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
 import PermalinkField from './PermalinkField.vue';
+import TenantSelectField from './TenantSelectField.vue';
 
-import { localizedSlug } from '@/Utils/LocalizedRoutes';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Label } from '@/Components/ui/label';
-import { DateTimePicker } from '@/Components/ui/date-picker';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
+import FormSection from '@/Components/Patterns/FormSection.vue';
+import SortableFormFieldsTable from '@/Components/Tables/SortableFormFieldsTable.vue';
+import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
+import { DateTimePicker } from '@/Components/ui/date-picker';
+import { Input } from '@/Components/ui/input';
 import { formFieldTemplate } from '@/Types/formTemplates';
+import { ModelEnum } from '@/Types/enums';
+import { localizedSlug } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';
 
-defineEmits<{
+type Locale = 'lt' | 'en';
+
+interface FormFieldItem {
+  id: string | number;
+  type?: string;
+  label?: Record<string, string> | string;
+  order?: number;
+  is_required?: boolean;
+  [key: string]: unknown;
+}
+
+const props = defineProps<{
+  form: Record<string, unknown>;
+  assignableTenants?: Array<App.Entities.Tenant>;
+  fieldModelOptions?: Array<{ value: string; label: string }>;
+  fieldModelFields?: Array<{ value: string; label: string }>;
+  enableDelete?: boolean;
+}>();
+
+const emit = defineEmits<{
   (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
 
-const props = defineProps<{
-  form: any;
-  assignableTenants: any[];
-  fieldModelOptions?: { value: string; label: string }[];
-}>();
-
-const locale = ref('lt');
+const activeLocale = ref<Locale>('lt');
+const isReordering = ref(false);
+const deleteConfirmOpen = ref(false);
 
 const showFormFieldModal = ref(false);
 const selectedFormField = ref(formFieldTemplate);
 
-// Translatable columns come back as null when never filled in, but the editor binds
-// straight into .lt / .en, so normalise them up front.
+// Translatable columns normalisation
 const form = useForm({
   ...props.form,
-  description: props.form.description ?? { lt: '', en: '' },
-  path: props.form.path ?? { lt: '', en: '' },
+  name: (props.form.name ?? { lt: '', en: '' }) as Record<string, string>,
+  description: (props.form.description ?? { lt: '', en: '' }) as Record<string, string>,
+  path: (props.form.path ?? { lt: '', en: '' }) as Record<string, string>,
+  form_fields: (props.form.form_fields ?? []) as FormFieldItem[],
 });
 
-const hasRegistrations = computed(() => form?.registrations_count > 0);
+const isEditing = computed(() => Boolean(form.id));
+const formTitle = computed(() => form.name?.lt || form.name?.en || '');
 
-type Locale = 'lt' | 'en';
+const hasRegistrations = computed(() => (Number(form?.registrations_count) || 0) > 0);
 
-const originalPath: Record<Locale, string> = {
-  lt: props.form.path?.lt ?? '',
-  en: props.form.path?.en ?? '',
+const fieldIds = {
+  'name.lt': 'form-name',
+  'name.en': 'form-name',
+  'tenant_id': 'form-tenant',
 };
 
-// A path that already has a value was authored deliberately — never regenerate over it.
+const missingLocaleCounts = computed(() => ({
+  lt: (form.name?.lt ?? '').trim() === '' ? 1 : 0,
+  en: (form.name?.en ?? '').trim() === '' ? 1 : 0,
+}));
+
+const originalPath: Record<Locale, string> = {
+  lt: (props.form.path as Record<string, string> | undefined)?.lt ?? '',
+  en: (props.form.path as Record<string, string> | undefined)?.en ?? '',
+};
+
 const pathTouched = ref<Record<Locale, boolean>>({
   lt: originalPath.lt !== '',
   en: originalPath.en !== '',
@@ -176,8 +371,6 @@ const pathChangedOnExistingForm = computed(() =>
   || (originalPath.en !== '' && form.path.en !== originalPath.en),
 );
 
-// The registration path segment is a localized route slug, not a literal — see
-// App\Support\LocalizedRouteSlugs.
 const registrationBaseUrl = (locale: Locale) =>
   `${usePage().props.app.url}/${locale}/${localizedSlug('registrationString', locale)}`;
 
@@ -189,7 +382,7 @@ const onPathInput = (locale: Locale, value: string) => {
   form.path[locale] = value;
 };
 
-// Keep the URL in step with the name until the user takes the field over.
+// Keep URL in sync with name until manually edited
 (['lt', 'en'] as Locale[]).forEach((locale) => {
   watch(() => form.name?.[locale], (name) => {
     if (pathTouched.value[locale]) {
@@ -200,57 +393,89 @@ const onPathInput = (locale: Locale, value: string) => {
   });
 });
 
-// Shadcn Select requires string values
-const tenantIdString = computed({
-  get: () => form.tenant_id != null ? String(form.tenant_id) : '',
-  set: (val: string) => { form.tenant_id = val ? Number(val) : null; },
-});
-
-// DateTimePicker works with Date objects; form.publish_time is an ISO string
 const publishTimeDate = ref<Date | null>(
-  form.publish_time ? new Date(form.publish_time) : null,
+  form.publish_time ? new Date(form.publish_time as string) : null,
 );
 
 const onPublishTimeChange = (date: Date | null) => {
   form.publish_time = date ? date.toISOString() : null;
 };
 
+function isFirstField(model: FormFieldItem): boolean {
+  return form.form_fields.findIndex((f: FormFieldItem) => f.id === model.id) === 0;
+}
+
+function isLastField(model: FormFieldItem): boolean {
+  return form.form_fields.findIndex((f: FormFieldItem) => f.id === model.id) === form.form_fields.length - 1;
+}
+
+function moveFieldUp(model: FormFieldItem): void {
+  const index = form.form_fields.findIndex((f: FormFieldItem) => f.id === model.id);
+  if (index <= 0) return;
+  const current = form.form_fields[index];
+  form.form_fields[index] = form.form_fields[index - 1];
+  form.form_fields[index - 1] = current;
+  updateFieldOrders();
+}
+
+function moveFieldDown(model: FormFieldItem): void {
+  const index = form.form_fields.findIndex((f: FormFieldItem) => f.id === model.id);
+  if (index < 0 || index >= form.form_fields.length - 1) return;
+  const current = form.form_fields[index];
+  form.form_fields[index] = form.form_fields[index + 1];
+  form.form_fields[index + 1] = current;
+  updateFieldOrders();
+}
+
+function updateFieldOrders(): void {
+  form.form_fields.forEach((field: FormFieldItem, idx: number) => {
+    field.order = idx + 1;
+  });
+}
+
 function handleNewFormFieldCreate() {
-  // Clone: formFieldTemplate is a shared module-level object, mutating it would leak
-  // the previous field's values into every subsequent one.
   selectedFormField.value = structuredClone(formFieldTemplate);
-  // NOTE: the backend treats a 'new-' prefixed id as a field that isn't persisted yet.
   selectedFormField.value.id = `new-${crypto.randomUUID()}`;
   selectedFormField.value.order = form.form_fields.length + 1;
   showFormFieldModal.value = true;
 }
 
-function handleEditFormField(model) {
-  // Clone so dismissing the modal discards the edits instead of applying them.
-  selectedFormField.value = structuredClone(toRaw(model));
+function handleEditFormField(model: unknown) {
+  selectedFormField.value = structuredClone(toRaw(model) as typeof formFieldTemplate);
   showFormFieldModal.value = true;
 }
 
-function handleDeleteFormField(model) {
-  // Find ID of the form field
-  const formFieldIndex = form.form_fields.findIndex(field => field.id === model.id);
+function handleDeleteFormField(model: FormFieldItem) {
+  const formFieldIndex = form.form_fields.findIndex((field: FormFieldItem) => field.id === model.id);
   if (formFieldIndex !== -1) {
     form.form_fields.splice(formFieldIndex, 1);
+    updateFieldOrders();
   }
 }
 
-function handleFormFieldSubmitted(formField: any) {
-  // Find ID of the form field
-  const formFieldIndex = form.form_fields.findIndex(field => field.id === formField.id);
+function handleFormFieldSubmitted(formField: unknown) {
+  const fieldItem = formField as FormFieldItem;
+  const formFieldIndex = form.form_fields.findIndex((field: FormFieldItem) => field.id === fieldItem.id);
 
   if (formFieldIndex !== -1) {
-    form.form_fields[formFieldIndex] = formField;
+    form.form_fields[formFieldIndex] = fieldItem;
   }
   else {
-    form.form_fields.push(formField);
+    form.form_fields.push(fieldItem);
   }
 
+  updateFieldOrders();
   showFormFieldModal.value = false;
 }
 
+defineExpose({
+  form,
+  showFormFieldModal,
+  selectedFormField,
+  handleDeleteFormField,
+  handleEditFormField,
+  handleNewFormFieldCreate,
+  onPathInput,
+  pathChangedOnExistingForm,
+});
 </script>

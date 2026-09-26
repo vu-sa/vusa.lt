@@ -15,11 +15,11 @@ import type { Locale } from 'date-fns';
 import { TaskActionType, type TaskProgress } from '@/Types/TaskTypes';
 
 /**
- * Shared presentation rules for a task. TaskTable (desktop) and TaskCard (mobile) render the
+ * Shared presentation rules for a task. TaskRow and the task collection render the
  * same task in two shapes, so every action-type switch lives here rather than in both.
  */
 
-/** The shape both TaskTable and TaskCard receive from the task endpoints. */
+/** The shape every task list receives from the task endpoints. */
 export interface TaskDisplayData {
   id: string;
   name: string;
@@ -58,7 +58,7 @@ export interface TaskStats {
 
 type ActionType = TaskActionType | string | null | undefined;
 
-/** Colour family each action type is drawn in. */
+/** Category colour for each action type; urgency uses status roles separately. */
 type ActionPalette = 'blue' | 'amber' | 'emerald' | 'orange' | 'violet' | 'green' | 'zinc';
 
 interface ActionTypePresentation {
@@ -86,46 +86,46 @@ const FALLBACK_PRESENTATION: ActionTypePresentation = {
 
 const PALETTE_CLASSES: Record<ActionPalette, { badge: string; background: string; text: string; stroke: string }> = {
   blue: {
-    badge: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-    background: 'bg-blue-100 dark:bg-blue-900/40',
-    text: 'text-blue-600 dark:text-blue-400',
-    stroke: 'text-blue-500 dark:text-blue-400',
+    badge: 'bg-cat-2-surface text-cat-2',
+    background: 'bg-cat-2-surface',
+    text: 'text-cat-2',
+    stroke: 'text-cat-2',
   },
   amber: {
-    badge: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-    background: 'bg-amber-100 dark:bg-amber-900/40',
-    text: 'text-amber-600 dark:text-amber-400',
-    stroke: 'text-amber-500 dark:text-amber-400',
+    badge: 'bg-cat-7-surface text-cat-7',
+    background: 'bg-cat-7-surface',
+    text: 'text-cat-7',
+    stroke: 'text-cat-7',
   },
   emerald: {
-    badge: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
-    background: 'bg-emerald-100 dark:bg-emerald-900/40',
-    text: 'text-emerald-600 dark:text-emerald-400',
-    stroke: 'text-emerald-500 dark:text-emerald-400',
+    badge: 'bg-cat-8-surface text-cat-8',
+    background: 'bg-cat-8-surface',
+    text: 'text-cat-8',
+    stroke: 'text-cat-8',
   },
   orange: {
-    badge: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
-    background: 'bg-orange-100 dark:bg-orange-900/40',
-    text: 'text-orange-600 dark:text-orange-400',
-    stroke: 'text-orange-500 dark:text-orange-400',
+    badge: 'bg-cat-6-surface text-cat-6',
+    background: 'bg-cat-6-surface',
+    text: 'text-cat-6',
+    stroke: 'text-cat-6',
   },
   violet: {
-    badge: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400',
-    background: 'bg-violet-100 dark:bg-violet-900/40',
-    text: 'text-violet-600 dark:text-violet-400',
-    stroke: 'text-violet-500 dark:text-violet-400',
+    badge: 'bg-cat-4-surface text-cat-4',
+    background: 'bg-cat-4-surface',
+    text: 'text-cat-4',
+    stroke: 'text-cat-4',
   },
   green: {
-    badge: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-    background: 'bg-green-100 dark:bg-green-900/40',
-    text: 'text-green-600 dark:text-green-400',
-    stroke: 'text-green-500 dark:text-green-400',
+    badge: 'bg-cat-1-surface text-cat-1',
+    background: 'bg-cat-1-surface',
+    text: 'text-cat-1',
+    stroke: 'text-cat-1',
   },
   zinc: {
-    badge: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
-    background: 'bg-zinc-100 dark:bg-zinc-800',
-    text: 'text-zinc-600 dark:text-zinc-400',
-    stroke: 'text-primary',
+    badge: 'bg-secondary text-muted-foreground',
+    background: 'bg-secondary',
+    text: 'text-muted-foreground',
+    stroke: 'text-muted-foreground',
   },
 };
 
@@ -256,7 +256,7 @@ export function formatTaskDueDate(dueDate: string | null | undefined, locale: Lo
   }
 }
 
-/** Amber warning for a due date landing within three days; nothing once it is already overdue. */
+/** Attention status for a due date landing within three days; nothing once it is already overdue. */
 export function getDueDateUrgencyClasses(task: Pick<TaskDisplayData, 'due_date' | 'is_overdue'>): string {
   if (!task.due_date || task.is_overdue) {
     return '';
@@ -265,7 +265,7 @@ export function getDueDateUrgencyClasses(task: Pick<TaskDisplayData, 'due_date' 
   const daysUntil = differenceInDays(parseISO(task.due_date), new Date());
 
   return daysUntil >= 0 && daysUntil <= 3
-    ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+    ? 'bg-status-attention-surface text-status-attention'
     : '';
 }
 

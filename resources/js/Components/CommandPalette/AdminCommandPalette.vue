@@ -1,90 +1,73 @@
 <template>
-  <CommandDialog v-model:open="isOpen" :title="$t('Komandų paletė')"
+  <PaletteDialog v-model:open="isOpen" :title="$t('Komandų paletė')"
     :description="$t('Ieškokite veiksmų, posėdžių ir darbotvarkės punktų')">
     <!-- Custom search input (not CommandInput to avoid internal filtering) -->
-    <div class="flex h-12 items-center gap-2 border-b px-3">
-      <div class="relative flex items-center justify-center size-4">
-        <Search v-if="!isSearching" class="size-4 shrink-0 text-muted-foreground/50" />
-        <div v-else class="size-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+    <div class="flex h-12 items-center gap-2 border-b border-border px-3 pr-12">
+      <div class="relative flex size-4 items-center justify-center">
+        <Search v-if="!isSearching" class="size-4 shrink-0 text-muted-foreground" />
+        <div v-else class="size-4 animate-spin border-2 border-border border-t-foreground" />
       </div>
-      <input ref="searchInputRef" v-model="query" type="text" :placeholder="$t('Ieškoti veiksmų, posėdžių...')"
-        class="flex-1 h-12 bg-transparent text-base outline-none placeholder:text-muted-foreground/50 sm:text-sm"
+      <input ref="searchInputRef" v-model="query" type="text" :placeholder="$t('shell.chrome.search_field')"
+        class="h-12 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
         @keydown.escape="close"
         @keydown.down.prevent="focusFirstResult"
-        @keydown.enter="query.trim() && goToUnifiedSearch()">
+        @keydown.enter.prevent="focusFirstResult">
     </div>
 
-    <CommandList class="max-h-[50vh] sm:max-h-[60vh] scroll-py-2">
+    <CommandList class="max-h-[50vh] scroll-py-2 max-sm:max-h-none max-sm:flex-1 sm:max-h-[60vh]">
       <!-- Loading skeleton -->
-      <div v-if="isSearching && query" class="p-2 space-y-1">
-        <div v-for="i in 3" :key="i" class="flex items-center gap-3 px-3 py-3 rounded-lg">
-          <div class="size-9 rounded-lg bg-muted/50 animate-pulse" />
+      <div v-if="isSearching && query" class="space-y-1 p-2">
+        <div v-for="i in 3" :key="i" class="flex items-center gap-3 px-3 py-3">
+          <div class="size-8 animate-pulse bg-secondary" />
           <div class="flex-1 space-y-2">
-            <div class="h-4 w-3/4 rounded bg-muted/50 animate-pulse" />
-            <div class="h-3 w-1/2 rounded bg-muted/30 animate-pulse" />
+            <div class="h-4 w-3/4 animate-pulse bg-secondary" />
+            <div class="h-3 w-1/2 animate-pulse bg-secondary/70" />
           </div>
         </div>
       </div>
 
       <template v-else>
-        <!-- Search everything on the unified search page -->
-        <CommandGroup v-if="query.trim()" class="px-2">
-          <CommandItem
-            value="search-everywhere"
-            class="group cursor-pointer rounded-lg px-3 py-2.5 transition-colors hover:bg-accent data-[highlighted]:bg-accent"
-            @select="goToUnifiedSearch"
+        <!-- Pinned pages, then recents: both empty-state only (O20, O15) -->
+        <CommandGroup v-if="!query && pinnedItems.length > 0" :heading="$t('shell.palette.pinned')" class="px-2">
+          <PaletteRow
+            v-for="item in pinnedItems" :key="`pinned-${item.id}`"
+            :value="`pinned-${item.id}`"
+            :icon="resolvePageIcon(item.routeName, item.href)"
+            :title="item.title"
+            @select="handleRecentSelect(item)"
           >
-            <div class="flex w-full items-center gap-3">
-              <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
-                <Search class="size-4" />
-              </div>
-              <span class="flex-1 truncate text-sm font-medium">
-                {{ $t('Ieškoti visur') }} „{{ query.trim() }}“
-              </span>
-              <ChevronRight class="size-4 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover:opacity-100" />
-            </div>
-          </CommandItem>
+            <template #trailing>
+              <PinButton pinned @toggle="togglePin({ routeName: item.routeName, href: item.href, title: item.title })" />
+            </template>
+          </PaletteRow>
         </CommandGroup>
 
-        <!-- Recent items (when query is empty) -->
-        <CommandGroup v-if="!query && topRecentItems.length > 0" :heading="$t('Neseniai')" class="px-2">
-          <CommandItem v-for="item in topRecentItems" :key="`recent-${item.type}-${item.id}`"
+        <CommandGroup v-if="!query && topRecentItems.length > 0" :heading="$t('shell.palette.recent')" class="px-2">
+          <PaletteRow
+            v-for="item in topRecentItems" :key="`recent-${item.type}-${item.id}`"
             :value="`recent-${item.type}-${item.id}`"
-            class="group cursor-pointer rounded-lg px-3 py-2.5 transition-colors hover:bg-accent"
-            @select="handleRecentSelect(item)">
-            <div class="flex items-center gap-3 w-full">
-              <div
-                class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/50 text-muted-foreground group-hover:bg-background group-hover:shadow-sm transition-all">
-                <component :is="resolveRecentIcon(item)" class="size-4" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <span class="block font-medium truncate text-sm">{{ item.title }}</span>
-                <span class="text-xs text-muted-foreground">
-                  {{ getRecentTypeBadge(item.type) }}
-                </span>
-              </div>
-              <button
-                v-if="item.type === 'page' && item.routeName"
-                type="button"
-                class="shrink-0 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
-                :class="isPinned({ routeName: item.routeName, href: item.href })
-                  ? 'text-amber-500 hover:text-amber-500 opacity-100'
-                  : 'opacity-0 group-hover:opacity-100'"
-                :title="isPinned({ routeName: item.routeName, href: item.href }) ? $t('Atsegti') : $t('Prisegti puslapį')"
-                :aria-label="isPinned({ routeName: item.routeName, href: item.href }) ? $t('Atsegti') : $t('Prisegti puslapį')"
-                @click.stop="togglePin({ routeName: item.routeName, href: item.href, title: item.title })"
-              >
-                <Star class="size-4" :fill="isPinned({ routeName: item.routeName, href: item.href }) ? 'currentColor' : 'none'" />
-              </button>
-              <ChevronRight
-                class="size-4 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </CommandItem>
+            :icon="resolvePageIcon(item.routeName, item.href)"
+            :title="item.title"
+            :subtitle="getRecentTypeBadge(item.type)"
+            @select="handleRecentSelect(item)"
+          >
+            <template v-if="item.type === 'page' && item.routeName" #trailing>
+              <PinButton
+                :pinned="isPinned({ routeName: item.routeName, href: item.href })"
+                @toggle="togglePin({ routeName: item.routeName, href: item.href, title: item.title })"
+              />
+            </template>
+          </PaletteRow>
         </CommandGroup>
 
-        <!-- Quick Actions -->
-        <CommandGroup v-if="filteredActions.length > 0" :heading="$t('Veiksmai')" class="px-2">
-          <ActionResult v-for="action in filteredActions" :key="action.id" :action />
+        <!-- Create -->
+        <CommandGroup v-if="createActions.length > 0" :heading="$t('shell.palette.create')" class="px-2">
+          <ActionResult v-for="action in createActions" :key="action.id" :action />
+        </CommandGroup>
+
+        <!-- Go to: the current workspace first -->
+        <CommandGroup v-if="goToActions.length > 0" :heading="$t('shell.palette.go_to')" class="px-2">
+          <ActionResult v-for="action in goToActions" :key="action.id" :action />
         </CommandGroup>
 
         <!-- Flat interleaved search results -->
@@ -93,7 +76,7 @@
             v-for="hit in flatHits"
             :key="hit.id"
             :value="hit.id"
-            class="group cursor-pointer rounded-lg px-3 py-2.5 transition-colors hover:bg-accent data-[highlighted]:bg-accent"
+            class="group cursor-pointer px-3 py-2.5 data-[highlighted]:bg-secondary"
             @select="handleHitSelect(hit)"
           >
             <SearchHitRow
@@ -106,8 +89,8 @@
         </CommandGroup>
 
         <!-- Rate limit warning -->
-        <div v-if="searchError && searchError.includes('užklausų')" class="mx-4 my-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-          <p class="text-sm text-amber-700 dark:text-amber-400 flex items-center gap-2">
+        <div v-if="searchError && searchError.includes('užklausų')" class="mx-4 my-2 border border-status-attention-border bg-status-attention-surface p-3">
+          <p class="flex items-center gap-2 text-sm text-status-attention">
             <Clock class="size-4" />
             {{ searchError }}
           </p>
@@ -115,75 +98,42 @@
 
         <!-- Empty state -->
         <div v-if="query && !hasResults && !isSearching && !searchError" class="py-14 text-center">
-          <div class="mx-auto w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-            <SearchX class="size-6 text-muted-foreground/50" />
+          <div class="mx-auto mb-4 flex size-12 items-center justify-center border border-border bg-secondary">
+            <SearchX class="size-6 text-muted-foreground" />
           </div>
           <p class="text-sm font-medium text-foreground">
             {{ $t('Rezultatų nerasta') }}
           </p>
-          <p class="text-xs text-muted-foreground mt-1">
+          <p class="mt-1 text-xs text-muted-foreground">
             {{ $t('Pabandykite kitą paieškos frazę') }}
-          </p>
-        </div>
-
-        <!-- Initial state hint -->
-        <div v-if="!query && recentItems.length === 0" class="py-10 text-center">
-          <div class="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Sparkles class="size-5 text-primary" />
-          </div>
-          <p class="text-sm font-medium text-foreground">
-            {{ $t('Pradėkite rašyti') }}
-          </p>
-          <p class="text-xs text-muted-foreground mt-1">
-            {{ $t('arba naršykite veiksmus žemiau') }}
           </p>
         </div>
       </template>
     </CommandList>
 
     <!-- Footer with keyboard hints -->
-    <div class="flex items-center justify-between border-t bg-muted/30 px-3 sm:px-4 py-2 sm:py-2.5">
-      <div class="hidden sm:flex items-center gap-5 text-xs text-muted-foreground">
-        <span class="flex items-center gap-1.5">
-          <span class="flex gap-0.5">
-            <kbd
-              class="inline-flex size-5 items-center justify-center rounded border bg-background font-mono text-[10px] shadow-sm">
-              <ArrowUp class="size-3" />
-            </kbd>
-            <kbd
-              class="inline-flex size-5 items-center justify-center rounded border bg-background font-mono text-[10px] shadow-sm">
-              <ArrowDown class="size-3" />
-            </kbd>
-          </span>
-          <span class="text-muted-foreground/70">{{ $t('naršyti') }}</span>
+    <div class="hidden items-center gap-5 border-t border-border bg-secondary/50 px-4 py-2.5 text-xs text-muted-foreground sm:flex">
+      <span class="flex items-center gap-1.5">
+        <span class="flex gap-0.5">
+          <kbd class="inline-flex size-5 items-center justify-center border border-border bg-background"><ArrowUp class="size-3" /></kbd>
+          <kbd class="inline-flex size-5 items-center justify-center border border-border bg-background"><ArrowDown class="size-3" /></kbd>
         </span>
-        <span class="flex items-center gap-1.5">
-          <kbd
-            class="inline-flex h-5 items-center justify-center rounded border bg-background px-1.5 font-mono text-[10px] shadow-sm">
-            ↵
-          </kbd>
-          <span class="text-muted-foreground/70">{{ $t('pasirinkti') }}</span>
-        </span>
-        <span class="flex items-center gap-1.5">
-          <kbd
-            class="inline-flex h-5 items-center justify-center rounded border bg-background px-1.5 font-mono text-[10px] shadow-sm">
-            esc
-          </kbd>
-          <span class="text-muted-foreground/70">{{ $t('uždaryti') }}</span>
-        </span>
-      </div>
-      <div class="sm:hidden text-xs text-muted-foreground">
-        {{ $t('Paspauskite, kad pasirinktumėte') }}
-      </div>
-      <div class="text-[10px] text-muted-foreground/50 font-medium tracking-wide uppercase">
-        VU SA
-      </div>
+        {{ $t('naršyti') }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <kbd class="inline-flex h-5 items-center justify-center border border-border bg-background px-1.5 font-mono">↵</kbd>
+        {{ $t('pasirinkti') }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <kbd class="inline-flex h-5 items-center justify-center border border-border bg-background px-1.5 font-mono">esc</kbd>
+        {{ $t('uždaryti') }}
+      </span>
     </div>
-  </CommandDialog>
+  </PaletteDialog>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, type Component } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
@@ -192,46 +142,57 @@ import {
   Clock,
   ArrowUp,
   ArrowDown,
-  ChevronRight,
   SearchX,
-  Sparkles,
-  Star,
 } from 'lucide-vue-next';
 
+import PaletteDialog from './PaletteDialog.vue';
 import { useCommandActions } from './useCommandActions';
 import ActionResult from './results/ActionResult.vue';
+import PaletteRow from './results/PaletteRow.vue';
+import PinButton from './results/PinButton.vue';
 
 import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
 import { useCommandPalette, type RecentItem } from '@/Composables/useCommandPalette';
 import { resolvePageIcon } from '@/Composables/adminPageCatalog';
 import { useUIPreferences } from '@/Composables/useUIPreferences';
-import { useAvailableQuickActions } from '@/Composables/useQuickActions';
 import {
   collectAllTabHits,
   type MapperContext,
   type NormalizedSearchHit,
+  type SearchCollectionKey,
 } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.vue';
 import {
-  CommandDialog,
   CommandList,
   CommandGroup,
   CommandItem,
 } from '@/Components/ui/command';
 
+/** Search collection → the catalog `entityType` whose section owns it, for workspace ranking. */
+const collectionEntityType: Record<SearchCollectionKey, string> = {
+  meetings: 'meeting',
+  agendaItems: 'agenda_item',
+  institutions: 'institution',
+  resources: 'resource',
+  duties: 'duty',
+  documents: 'document',
+  news: 'news',
+  pages: 'page',
+  calendar: 'calendar',
+  users: 'user',
+};
+
 // Command palette state
 const { isOpen, query, recentItems, close } = useCommandPalette();
 
-// UI preferences (for quick-action visibility in the palette)
-const { isPinned, togglePin } = useUIPreferences();
-const { available: availableQuickActions } = useAvailableQuickActions();
+const { isPinned, togglePin, pinnedPages } = useUIPreferences();
 
 // Admin search
 const { multiSearch, initialize: initializeSearch, isRateLimited, getDirectInstitutionIds } = useAdminSearch();
 
 // Command actions
-const { filterActions, actions: allCommandActions } = useCommandActions();
+const { filterActions, workspaceKeyForEntity, activeWorkspace } = useCommandActions();
 
 // Local state
 const isSearching = ref(false);
@@ -239,12 +200,14 @@ const searchError = ref<string | null>(null);
 const searchResults = ref<MultiSearchResults>(createEmptyMultiSearchResults());
 const searchInputRef = ref<HTMLInputElement | null>(null);
 
-// Show only the top 5 recent items in the palette
-const topRecentItems = computed<RecentItem[]>(() => recentItems.value.slice(0, 5));
+const pinnedItems = computed<RecentItem[]>(() => pinnedPages.value);
 
-function resolveRecentIcon(item: RecentItem): Component {
-  return resolvePageIcon(item.routeName, item.href);
-}
+// Top 5 recents, minus anything already listed as pinned
+const topRecentItems = computed<RecentItem[]>(() => {
+  const pinnedHrefs = new Set(pinnedItems.value.map(item => item.href));
+
+  return recentItems.value.filter(item => !pinnedHrefs.has(item.href)).slice(0, 5);
+});
 
 // Context for mappers that need user-relative state (isRelated badges).
 const mapperCtx = computed<MapperContext>(() => ({
@@ -254,48 +217,35 @@ const mapperCtx = computed<MapperContext>(() => ({
   ],
 }));
 
-// Flat, interleaved hits (relevance-sorted when a query is present).
-const flatHits = computed<NormalizedSearchHit[]>(() =>
-  collectAllTabHits(searchResults.value, { query: query.value, dutyCtx: mapperCtx.value }),
-);
+// Flat, interleaved hits (relevance-sorted when a query is present); hits belonging to the
+// workspace the user is standing in come first, keeping relevance order within each group.
+const flatHits = computed<NormalizedSearchHit[]>(() => {
+  const hits = collectAllTabHits(searchResults.value, { query: query.value, dutyCtx: mapperCtx.value });
+  const current = activeWorkspace.value?.key;
 
-// Filtered actions based on query — hide quick actions the user turned off
-// or lacks permission for.
-const filteredActions = computed(() => {
-  let result = filterActions(query.value);
+  return [...hits].sort((a, b) => {
+    const inCurrent = (hit: NormalizedSearchHit) => Number(workspaceKeyForEntity(collectionEntityType[hit.collection]) === current);
 
-  const permittedKeys = new Set(availableQuickActions.value.map(m => m.key));
-
-  result = result.filter((action) => {
-    if (action.category !== 'create') {
-      return true;
-    }
-    const map: Record<string, string> = {
-      'create-meeting': 'new_meeting',
-      'create-news': 'new_news',
-      'create-reservation': 'new_reservation',
-      'create-institution': 'new_institution',
-      'create-duty': 'duty_update',
-    };
-    const qaKey = map[action.id];
-    if (!qaKey) {
-      return true;
-    }
-    // Permission is the only filter left: the per-action visibility preference went
-    // with the sidebar list the action window replaced.
-    return permittedKeys.has(qaKey);
+    return inCurrent(b) - inCurrent(a);
   });
+});
 
-  return result.slice(0, 6); // Limit to 6 actions
+// The catalog already gates every entry by permission, so there is nothing left to filter here.
+const matchingActions = computed(() => filterActions(query.value));
+const createActions = computed(() => matchingActions.value.filter(action => action.category === 'create').slice(0, query.value ? 5 : 6));
+const goToActions = computed(() => {
+  const navigation = matchingActions.value.filter(action => action.category === 'navigation');
+
+  // With nothing typed, stay useful without being a wall: only the current workspace's pages.
+  return (query.value ? navigation : navigation.filter(action => action.workspaceKey === activeWorkspace.value?.key)).slice(0, 8);
 });
 
 // Check if we have any results
-const hasResults = computed(() => {
-  return (
-    filteredActions.value.length > 0
-    || flatHits.value.length > 0
-  );
-});
+const hasResults = computed(() => (
+  createActions.value.length > 0
+  || goToActions.value.length > 0
+  || flatHits.value.length > 0
+));
 
 // Debounced search function - 300ms debounce to reduce request frequency
 const performSearch = useDebounceFn(async (searchQuery: string) => {
@@ -382,13 +332,6 @@ const focusFirstResult = () => {
   }
 };
 
-// Navigate to the unified search page with the current query (All tab)
-const goToUnifiedSearch = () => {
-  const trimmed = query.value.trim();
-  close();
-  router.visit(route('search.index', trimmed ? { q: trimmed } : {}));
-};
-
 // Handle a flat search hit selection
 const handleHitSelect = (hit: NormalizedSearchHit) => {
   if (hit.href) {
@@ -405,20 +348,12 @@ const navigateToHref = (href?: string) => {
   }
 };
 
-// Handle recent item selection
+// Handle a pinned or recent item selection
 const handleRecentSelect = (item: RecentItem) => {
   close();
 
   if (item.href) {
     router.visit(item.href);
-  }
-  else if (item.type === 'action') {
-    // For actions, find the action and execute it
-    const actions = filterActions('');
-    const action = actions.find(a => a.id === item.id);
-    if (action) {
-      action.action();
-    }
   }
 };
 
@@ -436,7 +371,7 @@ const getRecentTypeBadge = (type: RecentItem['type']): string => {
     case 'page':
       return $t('Puslapis');
     case 'calendar':
-      return $t('Įvykis');
+      return $t('Renginys');
     case 'institution':
       return $t('Institucija');
     case 'document':

@@ -31,12 +31,14 @@ vi.mock('@observablehq/plot', () => ({
   ruleY: vi.fn(),
 }));
 
-vi.stubGlobal('route', (name?: string) => {
+vi.stubGlobal('route', (name?: string, params: Record<string, unknown> = {}) => {
   if (name === undefined) {
     return { current: () => false };
   }
 
-  return `/mocked/${name}`;
+  const query = Object.entries(params).map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`).join('&');
+
+  return `/mocked/${name}${query ? `?${query}` : ''}`;
 });
 
 const providedTenant = {
@@ -49,14 +51,21 @@ const availableOverview: AnalyticsOverviewData = {
   period: '30d',
   hostname: 'mif.vusa.lt',
   totals: { pageviews: 120, visitors: 45, visits: 60, bounces: 12 },
-  series: [{ date: '2026-07-25 00:00:00', pageviews: 70, visitors: 25 }],
+  series: [
+    { date: '2026-07-25 00:00:00', pageviews: 30, visitors: 10 },
+    { date: '2026-07-26 00:00:00', pageviews: 90, visitors: 35 },
+  ],
   topPages: [{ path: '/lt', views: 80 }],
 };
 
-const mountPage = () => mount(ShowSvetaine, {
+const counts = { newsDrafts: 2, calendarDrafts: 0, news: 14, pages: 9 };
+
+const mountPage = (overrides: Partial<{ counts: typeof counts }> = {}) => mount(ShowSvetaine, {
   props: {
     tenants: [{ id: 1, shortname: 'VU SA MIF' }] as unknown as App.Entities.Tenant[],
     providedTenant,
+    counts,
+    ...overrides,
   },
   global: { stubs: commonStubs },
 });
@@ -75,13 +84,13 @@ describe('ShowSvetaine traffic section', () => {
     expect(wrapper.findAll('[data-slot="skeleton"], .animate-pulse').length).toBeGreaterThan(0);
   });
 
-  it('renders totals and top pages once data arrives', () => {
+  it('renders a text summary of the chart and the top pages once data arrives', () => {
     mockController.data.value = availableOverview;
 
     const wrapper = mountPage();
 
-    expect(wrapper.text()).toContain('120');
-    expect(wrapper.text()).toContain('45');
+    expect(wrapper.find('[data-testid="chart-summary"]').text()).toContain('svetaine.overview.traffic.summary');
+    expect(wrapper.find('[data-testid="chart-summary"]').text()).toContain('svetaine.overview.traffic.up');
     expect(wrapper.text()).toContain('/lt');
     expect(wrapper.text()).toContain('80');
     // The hostname hint is only rendered once a hostname came back. Its placeholder is not
@@ -113,7 +122,7 @@ describe('ShowSvetaine traffic section', () => {
 
     expect(wrapper.text()).toContain('analytics.unavailable_title');
     // The rest of the page must still render.
-    expect(wrapper.text()).toContain('Pasirinkti padalinį');
+    expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(true);
   });
 
   it('shows an empty state when the tenant has no page views yet', () => {
@@ -127,5 +136,31 @@ describe('ShowSvetaine traffic section', () => {
     const wrapper = mountPage();
 
     expect(wrapper.text()).toContain('analytics.empty_title');
+  });
+});
+
+describe('ShowSvetaine numbers', () => {
+  beforeEach(() => {
+    mockController.data.value = null;
+    mockController.isFetching.value = false;
+  });
+
+  it('links every number to the list it counts, narrowed to the selected unit', () => {
+    const wrapper = mountPage();
+    const link = (key: string) => decodeURIComponent(wrapper.find(`[data-number="${key}"]`).attributes('href') ?? '');
+
+    expect(link('news_drafts')).toContain('news.index');
+    expect(link('news_drafts')).toContain('"draft":true');
+    expect(link('news_drafts')).toContain('"tenant_id":1');
+    expect(link('calendar_drafts')).toContain('"is_draft":true');
+    expect(link('pages')).toContain('pages.index');
+  });
+
+  it('leaves out a number the user may not open', () => {
+    const wrapper = mountPage({ counts: { ...counts, newsDrafts: null, news: null } });
+
+    expect(wrapper.find('[data-number="news_drafts"]').exists()).toBe(false);
+    expect(wrapper.find('[data-number="news"]').exists()).toBe(false);
+    expect(wrapper.find('[data-number="pages"]').exists()).toBe(true);
   });
 });

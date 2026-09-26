@@ -25,15 +25,26 @@ class DocClaimScanner
     /**
      * Only root-locale pages are read. `docs/en/**` is a translation, not an
      * independent claim — reading both would duplicate every claim and guarantee
-     * drift. `maintainers` holds the generated coverage dashboard, not prose.
-     * Matched against the top-level directory, never as a substring.
+     * drift. `maintainers` holds the generated coverage dashboard, not prose, and
+     * `pdf` the PDF build's generated copies of the pages. Matched against the
+     * top-level directory, never as a substring.
      *
      * @var list<string>
      */
-    private const array EXCLUDED = ['en', '_parts', '.vitepress', 'public', 'maintainers'];
+    private const array EXCLUDED = ['en', '.vitepress', 'public', 'maintainers', 'pdf'];
 
     /** @var list<string> */
     private array $warnings = [];
+
+    /**
+     * A file a page may cite: a Pest test proves what the server enforces, a Vitest spec what
+     * the screen shows and allows.
+     */
+    public static function isTestPath(string $path): bool
+    {
+        return (str_starts_with($path, 'tests/') && str_ends_with($path, '.php'))
+            || (str_starts_with($path, 'resources/js/') && str_ends_with($path, '.test.ts'));
+    }
 
     public function scan(string $docsDirectory): DocClaims
     {
@@ -130,8 +141,8 @@ class DocClaimScanner
         $valid = [];
 
         foreach ($paths as $path) {
-            if (! str_starts_with($path, 'tests/')) {
-                $this->warnings[] = "{$page}: cited path is not under tests/ — {$path}";
+            if (! self::isTestPath($path)) {
+                $this->warnings[] = "{$page}: cited path is not a Pest test under tests/ or a Vitest spec under resources/js/ — {$path}";
 
                 continue;
             }

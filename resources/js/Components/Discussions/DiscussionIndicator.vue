@@ -6,7 +6,7 @@
         <span v-if="count" class="tabular-nums">{{ count }}</span>
         <span
           v-if="hasNotes"
-          class="h-1.5 w-1.5 rounded-full bg-amber-400"
+          class="size-1.5 bg-status-attention"
           :title="$t('Yra pastabų')"
         />
       </button>
@@ -24,7 +24,7 @@
   <button v-else type="button" :class="triggerClass" :title="$t('Diskusija')" @click="$emit('open')">
     <MessageSquare class="h-3.5 w-3.5" />
     <span v-if="count" class="tabular-nums">{{ count }}</span>
-    <span v-if="hasNotes" class="h-1.5 w-1.5 rounded-full bg-amber-400" :title="$t('Yra pastabų')" />
+    <span v-if="hasNotes" class="size-1.5 bg-status-attention" :title="$t('Yra pastabų')" />
   </button>
 </template>
 
@@ -50,9 +50,9 @@ const props = withDefaults(defineProps<{
 defineEmits<{ open: [] }>();
 
 const triggerClass = computed(() => [
-  'inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs transition-colors',
+  'inline-flex items-center gap-1 px-1.5 py-0.5 text-xs transition-colors',
   props.count || props.hasNotes
-    ? 'text-muted-foreground hover:bg-zinc-100 hover:text-foreground dark:hover:bg-zinc-800'
-    : 'text-muted-foreground/50 hover:bg-zinc-100 hover:text-muted-foreground dark:hover:bg-zinc-800',
+    ? 'text-muted-foreground hover:bg-accent hover:text-foreground'
+    : 'text-muted-foreground/60 hover:bg-accent hover:text-muted-foreground',
 ]);
 </script>

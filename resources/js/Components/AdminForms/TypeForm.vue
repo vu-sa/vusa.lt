@@ -1,176 +1,181 @@
 <template>
-  <AdminForm :model="form" label-placement="top" @submit:form="$emit('submit:form', form)" @delete="$emit('delete')">
-    <FormElement>
-      <template #title>
-        {{ $t("forms.context.main_info") }}
-      </template>
-      <template #description>
-        {{ $t('forms.helpers.type_main_info') }}
-      </template>
-      <FormFieldWrapper id="title" :label="$t('forms.fields.name')" required>
-        <MultiLocaleInput v-model:input="form.title"
-          :placeholder="{ lt: 'Studentų atstovų organas', en: 'Student representative body' }" />
+  <FormPage
+    :title="isCreate ? $t('Naujas turinio tipas') : (localizedTitle || $t('Tipas'))"
+    :bar-title="isCreate ? $t('Naujas turinio tipas') : (localizedTitle || undefined)"
+    :entity-type="ModelEnum.TYPE"
+    :back-href="route('types.index')"
+    :back-label="$t('Tipai')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :field-ids
+    :mode="isCreate ? 'create' : 'edit'"
+    :locale="activeLocale"
+    :available-locales="['lt', 'en']"
+    :missing-locale-counts
+    :created-at="!isCreate ? (type?.created_at as string | undefined) : undefined"
+    :updated-at="!isCreate ? (type?.updated_at as string | undefined) : undefined"
+    :activity-subject="!isCreate && form.id ? { type: 'type', id: String(form.id) } : undefined"
+    @update:locale="activeLocale = $event"
+    @submit="$emit('submit:form', form)"
+  >
+    <FormSection :title="$t('forms.context.main_info')" :description="$t('forms.helpers.type_main_info')">
+      <FormFieldWrapper
+        id="title"
+        :label="`${$t('forms.fields.name')} (${activeLocale.toUpperCase()})`"
+        required
+        :error="form.errors[`title.${activeLocale}`]"
+      >
+        <Input
+          id="title"
+          v-model="form.title[activeLocale]"
+          :placeholder="activeLocale === 'lt' ? 'Studentų atstovų organas' : 'Student representative body'"
+          :class="['h-11', fieldSurfaceClass]"
+        />
       </FormFieldWrapper>
 
-      <div class="space-y-2">
-        <div class="flex items-center gap-2">
-          <Label>{{ $t('forms.fields.description') }}</Label>
-          <SimpleLocaleButton v-model:locale="locale" />
+      <FormFieldWrapper
+        id="description"
+        :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
+        :error="form.errors[`description.${activeLocale}`]"
+      >
+        <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
+      </FormFieldWrapper>
+    </FormSection>
+
+    <template #aside>
+      <FormPanel :title="$t('forms.sections.type_parameters')" :icon="SlidersHorizontal" title-class="text-brand">
+        <FormFieldWrapper id="model_type" :label="$t('forms.fields.model_type')" required :error="form.errors.model_type">
+          <Select v-model="modelTypeString">
+            <SelectTrigger id="model_type">
+              <SelectValue placeholder="Institucija" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="opt in modelDefaults" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')" :error="form.errors.parent_id">
+          <Select v-model="parentIdString">
+            <SelectTrigger id="parent_id">
+              <SelectValue placeholder="Studentų atstovybė" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">
+                {{ $t('Nėra') }}
+              </SelectItem>
+              <SelectItem v-for="opt in parentTypeOptions" :key="opt.id" :value="String(opt.id)">
+                {{ getTranslatedValue(opt.title) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+      </FormPanel>
+
+      <FormPanel
+        v-if="form.model_type === ModelEnum.INSTITUTION"
+        :title="$t('forms.sections.institution_settings')"
+        :icon="Building2"
+        title-class="text-brand"
+      >
+        <FormFieldWrapper
+          id="governance_scope"
+          :label="$t('forms.fields.governance_scope')"
+          :hint="$t('forms.helpers.governance_scope_hint')"
+        >
+          <Select v-model="governanceScope">
+            <SelectTrigger id="governance_scope">
+              <SelectValue :placeholder="$t('forms.options.governance_scope_inherit')" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="option in governanceScopeOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </FormFieldWrapper>
+
+        <FormFieldWrapper
+          id="meeting_periodicity_days"
+          :label="$t('forms.fields.meeting_periodicity_days')"
+          :hint="$t('forms.helpers.meeting_periodicity_hint')"
+        >
+          <NumberField v-model="extraAttributesPeriodicityDays" :min="1" :max="365" />
+        </FormFieldWrapper>
+
+        <div class="border border-border">
+          <FormToggleRow
+            v-model="enableSiblingRelationships"
+            :label="$t('forms.fields.enable_sibling_relationships')"
+            :hint="$t('forms.helpers.enable_sibling_hint')"
+          />
+          <FormToggleRow
+            v-model="enableCrossTenantSiblingRelationships"
+            :label="$t('forms.fields.enable_cross_tenant')"
+            :hint="$t('forms.helpers.enable_cross_tenant_hint')"
+          />
         </div>
-        <TiptapEditor v-if="locale === 'lt'" v-model="form.description.lt" preset="full" :html="true" />
-        <TiptapEditor v-else v-model="form.description.en" preset="full" :html="true" />
-      </div>
-    </FormElement>
-    <FormElement>
-      <template #title>
-        {{ $t('forms.sections.type_parameters') }}
-      </template>
-      <template #description>
-        {{ $t('forms.helpers.type_parameters_desc') }}
-      </template>
-      <FormFieldWrapper id="model_type" :label="$t('forms.fields.model_type')" required>
-        <Select v-model="modelTypeString">
-          <SelectTrigger>
-            <SelectValue placeholder="Institucija" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="opt in modelDefaults" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+      </FormPanel>
+    </template>
+
+    <template #advanced>
+      <FormFieldWrapper
+        id="slug"
+        :label="$t('forms.fields.technical_slug')"
+        :hint="$t('forms.helpers.technical_slug_hint')"
+        :error="form.errors.slug"
+      >
+        <Input id="slug" v-model="form.slug" type="text" placeholder="pvz.: turinio-tipas" :class="fieldSurfaceClass" />
       </FormFieldWrapper>
-      <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')">
-        <Select v-model="parentIdString">
-          <SelectTrigger>
-            <SelectValue placeholder="Studentų atstovybė" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">
-              {{ $t('Nėra') }}
-            </SelectItem>
-            <SelectItem v-for="opt in parentTypeOptions" :key="opt.id" :value="String(opt.id)">
-              {{ opt.title }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
-    </FormElement>
-    <FormElement v-if="sharepointPath">
-      <template #title>
-        {{ $t('forms.sections.files') }}
-      </template>
-      <template #description>
-        {{ $t('forms.helpers.type_files_desc') }}
-      </template>
-      <FileManager :starting-path="sharepointPath" :fileable="{ id: form.id, type: 'Type' }" />
-    </FormElement>
-    <FormElement>
-      <template #title>
-        {{ $t('forms.sections.type_models') }}
-      </template>
-      <template #description>
-        {{ $t('forms.helpers.type_models_desc') }}
-      </template>
-      <div class="col-span-6">
-        <Label class="mb-2">{{ $t('forms.fields.models') }}</Label>
-        <TransferList v-model="form[props.modelType]" :options="modelOptions ?? []">
-          <template #source-label="{ option }">
-            <span class="inline-flex items-center gap-2">
-              {{ option.label }} ({{ option.model?.tenants?.[0]?.shortname ?? option.model?.tenants?.shortname }})
-              <a target="_blank" :href="route(`${props.modelType}.edit`, option.value)">
-                <Button variant="ghost" size="icon-xs" @click.stop>
-                  <Edit16Filled class="ml-2 align-middle" />
-                </Button>
-              </a>
-            </span>
-          </template>
-        </TransferList>
-      </div>
-    </FormElement>
-    <FormElement v-if="form.model_type === ModelEnum.DUTY">
-      <template #title>
-        {{ $t('forms.sections.type_duty_roles') }}
-      </template>
-      <template #description>
-        {{ $t('forms.helpers.type_duty_roles_desc') }}
-      </template>
-      <div class="col-span-6">
-        <Label class="mb-2">{{ $t('forms.fields.roles') }}</Label>
-        <TransferList v-model="form.roles" :options="roles?.map((role) => ({
-          value: role.id,
-          label: role.name,
-        })) ?? []" />
-      </div>
-    </FormElement>
-    <FormElement v-if="form.model_type === ModelEnum.INSTITUTION">
-      <template #title>
-        {{ $t('forms.sections.institution_settings') }}
-      </template>
-      <template #description>
-        {{ $t('forms.helpers.institution_settings_desc') }}
-      </template>
-      <FormFieldWrapper id="governance_scope" :label="$t('forms.fields.governance_scope')"
-        :hint="$t('forms.helpers.governance_scope_hint')">
-        <Select v-model="governanceScope">
-          <SelectTrigger>
-            <SelectValue :placeholder="$t('forms.options.governance_scope_inherit')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="option in governanceScopeOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
-      <FormFieldWrapper id="meeting_periodicity_days" :label="$t('forms.fields.meeting_periodicity_days')"
-        :hint="$t('forms.helpers.meeting_periodicity_hint')">
-        <NumberField v-model="extraAttributesPeriodicityDays" :min="1" :max="365" />
-      </FormFieldWrapper>
-      <FormFieldWrapper id="enable_sibling_relationships" :label="$t('forms.fields.enable_sibling_relationships')"
-        :hint="$t('forms.helpers.enable_sibling_hint')">
-        <Switch :model-value="enableSiblingRelationships" @update:model-value="enableSiblingRelationships = $event" />
-      </FormFieldWrapper>
-      <FormFieldWrapper id="enable_cross_tenant" :label="$t('forms.fields.enable_cross_tenant')"
-        :hint="$t('forms.helpers.enable_cross_tenant_hint')">
-        <Switch :model-value="enableCrossTenantSiblingRelationships" @update:model-value="enableCrossTenantSiblingRelationships = $event" />
-      </FormFieldWrapper>
-    </FormElement>
-    <FormElement no-divider>
-      <template #title>
-        {{ $t('forms.sections.other_settings') }}
-      </template>
-      <FormFieldWrapper id="slug" :label="$t('forms.fields.technical_slug')"
-        :hint="$t('forms.helpers.technical_slug_hint')">
-        <Input v-model="form.slug" type="text" placeholder="pvz.: turinio-tipas" />
-      </FormFieldWrapper>
-    </FormElement>
-  </AdminForm>
+    </template>
+
+    <template v-if="enableDelete && !isCreate" #danger-zone>
+      <Button
+        variant="outline"
+        type="button"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
+        @click="isDeleteDialogOpen = true"
+      >
+        <Trash2 class="size-4" />
+        {{ $t('Šalinti tipą') }}
+      </Button>
+    </template>
+  </FormPage>
+
+  <ConfirmDialog
+    v-model:open="isDeleteDialogOpen"
+    :title="$t('Šalinti tipą?')"
+    :description="$t('Tipas bus perkeltas į šiukšlinę.')"
+    :confirm-label="$t('Šalinti')"
+    destructive
+    @confirm="$emit('delete')"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Building2, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
-import MultiLocaleInput from '../FormItems/MultiLocaleInput.vue';
-import SimpleLocaleButton from '../Buttons/SimpleLocaleButton.vue';
 import TiptapEditor from '../TipTap/TiptapEditor.vue';
 
-import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
-import AdminForm from './AdminForm.vue';
 
-import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import Edit16Filled from '~icons/fluent/edit16-filled';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { ConfirmDialog, FormToggleRow } from '@/Components/Patterns';
+import FormPanel from '@/Components/Patterns/FormPanel.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Button } from '@/Components/ui/button';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
 import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { Switch } from '@/Components/ui/switch';
-import { TransferList } from '@/Components/ui/transfer-list';
-import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { modelTypeLabel, modelTypes } from '@/Types/formOptions';
 
 defineEmits<{
@@ -180,25 +185,42 @@ defineEmits<{
 
 const props = defineProps<{
   type: App.Entities.Type;
-  modelType?: string;
-  contentTypes: Record<string, any>[];
-  sharepointPath?: string;
-  allModelsFromModelType?: Record<string, any>[];
-  roles?: App.Entities.Role[];
+  contentTypes: Array<{ id: string; title: string | { lt?: string; en?: string }; model_type: string }>;
   rememberKey?: 'CreateType';
+  enableDelete?: boolean;
 }>();
 
-const locale = ref('lt');
+const isCreate = computed(() => props.rememberKey === 'CreateType');
+const isDeleteDialogOpen = ref(false);
+const activeLocale = ref<'lt' | 'en'>('lt');
 
-const form = props.rememberKey
-  ? useForm(props.rememberKey, {
-      ...props.type,
-      extra_attributes: props.type.extra_attributes ?? {},
-    })
-  : useForm({
-      ...props.type,
-      extra_attributes: props.type.extra_attributes ?? {},
-    });
+const fieldIds = {
+  'title.lt': 'title',
+  'title.en': 'title',
+  'description.lt': 'description',
+  'description.en': 'description',
+  'model_type': 'model_type',
+  'parent_id': 'parent_id',
+  'slug': 'slug',
+};
+
+interface Translations { lt: string; en: string }
+
+/** `description` may be null or missing a locale; the editor binds `.lt` / `.en` directly. */
+const asTranslations = (value: unknown): Translations => ({
+  lt: '',
+  en: '',
+  ...(value && typeof value === 'object' ? value as Partial<Translations> : {}),
+});
+
+const initialData = {
+  ...props.type,
+  title: asTranslations(props.type.title),
+  description: asTranslations(props.type.description),
+  extra_attributes: props.type.extra_attributes ?? {},
+};
+
+const form = props.rememberKey ? useForm(props.rememberKey, initialData) : useForm(initialData);
 
 // Bridge string <-> model for Select
 const modelTypeString = computed({
@@ -277,26 +299,17 @@ const enableCrossTenantSiblingRelationships = computed({
   },
 });
 
-// map e.g. form.institutions to id only, so it's used in transfer values
+const localizedTitle = computed(() => getTranslatedValue(form.title));
 
-if (props.modelType) {
-  form[props.modelType] = props.type[props.modelType]?.map(model => model.id);
-}
+const missingLocaleCounts = computed(() => ({
+  lt: [form.title?.lt].filter(value => !value).length,
+  en: [form.title?.en].filter(value => !value).length,
+}));
 
 const modelDefaults = modelTypes.type.map(alias => ({
   value: alias,
   label: modelTypeLabel(alias),
 }));
-
-const modelOptions = computed(() => {
-  return props.allModelsFromModelType?.map((model) => {
-    return {
-      value: model.id,
-      label: model.title ?? model.name,
-      model,
-    };
-  });
-});
 
 const parentTypeOptions = computed(() => {
   return props.contentTypes.filter(

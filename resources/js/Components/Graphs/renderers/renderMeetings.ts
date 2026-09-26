@@ -160,9 +160,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     .attr('height', d => getRectHeight(d.institution_id))
     .attr('fill', colors.safetyBandFlat ?? colors.safetyBandMid)
     .attr('stroke', colors.safetyBandStroke ?? 'transparent')
-    .attr('stroke-width', 1)
-    .attr('rx', 4)
-    .attr('ry', 4);
+    .attr('stroke-width', 1);
 
   // Meeting icons group
   const dotGroup = g.append('g').attr('class', 'meeting-icons');
@@ -195,7 +193,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
         window.open(url, '_blank');
       }
       else {
-        router.visit(url, { preserveScroll: false });
+        router.visit(url);
       }
     })
     .on('auxclick', (event: MouseEvent, d: any) => {
@@ -223,7 +221,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
 
         const routeFn = (window as any)?.route;
         const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`;
-        router.visit(url, { preserveScroll: false });
+        router.visit(url);
       }
     });
 

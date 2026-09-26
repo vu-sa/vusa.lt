@@ -2,10 +2,9 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Str;
 
 /**
@@ -15,6 +14,11 @@ use Illuminate\Support\Str;
  */
 class CommentPostedNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return $this->isMention ? NotificationType::CommentMention : NotificationType::CommentActivity;
+    }
+
     /**
      * Create a new notification instance.
      *
@@ -33,7 +37,11 @@ class CommentPostedNotification extends BaseNotification
         /**
          * The user who posted the comment.
          */
-        protected array $commenter
+        protected array $commenter,
+        /**
+         * Whether the recipient was @-mentioned (asks for a reply) rather than following the thread.
+         */
+        protected bool $isMention = false
     ) {}
 
     /**
@@ -57,11 +65,6 @@ class CommentPostedNotification extends BaseNotification
         ];
 
         return new self($text, $object, $subject);
-    }
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Comment;
     }
 
     public function title(object $notifiable): string
@@ -109,42 +112,20 @@ class CommentPostedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        return $this->contextRows([
+            'object' => $this->commentedObject['name'],
+            'author' => $this->commenter['name'],
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_comment'),
-                'url' => $this->url(),
-            ],
+            'label' => __('notifications.action_view_comment'),
+            'url' => $this->url(),
         ];
-    }
-
-    /**
-     * Override via to also handle Duty notifiable (mail only).
-     */
-    #[\Override]
-    public function via(object $notifiable): array
-    {
-        // If notifiable is a Duty, only send mail
-        if (class_basename($notifiable::class) === 'Duty') {
-            return ['mail'];
-        }
-
-        return parent::via($notifiable);
-    }
-
-    /**
-     * Custom mail for better formatting.
-     */
-    #[\Override]
-    public function toMail(object $notifiable): MailMessage
-    {
-        return (new MailMessage)
-            ->subject($this->icon().' '.__('notifications.comment_posted_title', ['name' => $this->commentedObject['name']]))
-            ->markdown('emails.comment-posted', [
-                'commentText' => $this->commentText,
-                'object' => $this->commentedObject,
-                'commenter' => $this->commenter,
-            ]);
     }
 }

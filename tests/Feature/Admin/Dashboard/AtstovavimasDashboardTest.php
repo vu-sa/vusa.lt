@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
@@ -12,6 +13,7 @@ use App\Models\QuickLink;
 use App\Models\Relationship;
 use App\Models\Resource;
 use App\Models\Role;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
@@ -43,10 +45,67 @@ describe('atstovavimas dashboard', function (): void {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
                 ->has('userInstitutions')
-                ->has('availableTenants')
+                ->has('canViewTenantOverview')
+                ->missing('statsTenants')
                 ->missing('tenantInstitutions')
                 ->missing('representativeActivity')
             );
+    });
+
+    test('followed institutions load with the secondary group, upcoming meetings on first paint', function (): void {
+        $followed = Institution::factory()->for($this->tenant)->create();
+        $this->admin->followedInstitutions()->attach($followed);
+        Meeting::factory()->hasAttached($followed)->create(['start_time' => now()->addDay()]);
+
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingMeetings.total', 1)
+                ->where('upcomingMeetings.items.0.is_followed', true)
+                ->missing('followedInstitutions')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('followedInstitutions.total', 1)
+                    ->where('followedInstitutions.items.0.id', $followed->id)
+                )
+            );
+    });
+
+    test('reference documents of the user\'s duty types, parents included, load with the secondary group', function (): void {
+        $parentType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+        $dutyType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class), 'parent_id' => $parentType->id]);
+        $this->user->current_duties()->first()->types()->attach($dutyType);
+        $unrelatedType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+
+        $fileOn = fn (Type $type, array $attributes = []) => FileableFile::factory()->create([
+            'fileable_type' => MorphMap::alias(Type::class),
+            'fileable_id' => $type->id,
+            ...$attributes,
+        ]);
+        $regulation = $fileOn($parentType);
+        $fileOn($unrelatedType);
+        $fileOn($dutyType, ['deleted_externally_at' => now()]);
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('referenceDocuments')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('referenceDocuments', 1)
+                    ->where('referenceDocuments.0.id', $regulation->id)
+                )
+            );
+    });
+
+    test('the overview number counts only the user\'s own open tasks', function (): void {
+        $open = Task::factory()->create(['completed_at' => null]);
+        $done = Task::factory()->create(['completed_at' => now()]);
+        $someoneElses = Task::factory()->create(['completed_at' => null]);
+        $this->user->tasks()->attach([$open->id, $done->id]);
+        $this->admin->tasks()->attach($someoneElses->id);
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page->where('openTasksCount', 1));
     });
 
     test('regular user can access atstovavimas dashboard', function (): void {
@@ -57,18 +116,28 @@ describe('atstovavimas dashboard', function (): void {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
                 ->has('userInstitutions')
-                ->has('availableTenants')
+                ->where('canViewTenantOverview', true)
             );
     });
 
     test('atstovavimas filters PKP tenants', function (): void {
         asUser($this->admin)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('availableTenants', fn ($tenants) => collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp'))
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->where('statsTenants', fn ($tenants) => collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp'))
             );
+    });
+
+    test('the padaliniai task number counts padalinys tasks, not the viewer\'s own', function (): void {
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas.padaliniai'))
+            ->assertInertia(fn (Assert $page) => $page->missing('openTasksCount'));
+
+        asUser(makeAdminUser($this->tenant))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
+            ->assertInertia(fn (Assert $page) => $page->where('canViewTenantTasks', true));
     });
 
     test('atstovavimas provides accessible institutions and available tenants', function (): void {
@@ -81,14 +150,13 @@ describe('atstovavimas dashboard', function (): void {
             $duty->assignRole($role);
         }
 
-        $response = asUser($this->admin)->get(route('dashboard.atstovavimas'));
+        $response = asUser($this->admin)->get(route('dashboard.atstovavimas.padaliniai'));
 
         $response->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
-                ->has('availableTenants')
-                ->where('availableTenants', function ($tenants) {
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->has('statsTenants')
+                ->where('statsTenants', function ($tenants) {
                     // Convert to collection if it's an array, or keep as collection
                     $collection = collect($tenants);
 
@@ -124,20 +192,33 @@ describe('atstovavimas dashboard authorization', function (): void {
             );
     });
 
-    test('regular user has no available tenants for tenant tab', function (): void {
-        // Regular user without coordinator role should not see the tenant tab
-        asUser($this->user)
-            ->get(route('dashboard.atstovavimas'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('availableTenants', function ($tenants) {
-                    $collection = collect($tenants);
+    test('a rep who manages no padalinys opens the overview for its Gantt only', function (): void {
+        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+        $pkpTenant = Tenant::factory()->create(['type' => 'pkp']);
+        $ownTenantId = $this->user->current_duties->first()->institution->tenant_id;
 
-                    // Regular users should have empty availableTenants
-                    return $collection->isEmpty();
-                })
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas.padaliniai'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->where('statsTenants', [])
+                ->where('ganttTenants', fn ($tenants) => collect($tenants)->contains('id', $otherTenant->id)
+                    && collect($tenants)->doesntContain('id', $pkpTenant->id))
+                ->where('defaultGanttTenantIds', [(string) $ownTenantId])
             );
+    });
+
+    test('the old tenant-scope bookmark opens the padalinys overview', function (): void {
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas', ['scope' => 'tenant']))
+            ->assertRedirect(route('dashboard.atstovavimas.padaliniai'));
+    });
+
+    test('the old tenant-tab bookmark opens the padalinys overview for a rep too', function (): void {
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas', ['tab' => 'tenant']))
+            ->assertRedirect(route('dashboard.atstovavimas.padaliniai'));
     });
 
     test('user with global read permission sees all tenants', function (): void {
@@ -155,11 +236,11 @@ describe('atstovavimas dashboard authorization', function (): void {
         $globalUser = makeTenantUserWithRole($globalRole->name, $mainTenant);
 
         asUser($globalUser)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->where('availableTenants', function ($tenants) use ($mainTenant, $otherTenant) {
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->where('statsTenants', function ($tenants) use ($mainTenant, $otherTenant) {
                     $collection = collect($tenants);
 
                     return $collection->contains(fn ($tenant) => $tenant['id'] == $mainTenant->id)
@@ -180,12 +261,11 @@ describe('atstovavimas dashboard authorization', function (): void {
 
         // The admin should have available tenants for the tenant tab
         asUser($this->admin)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
-                ->where('availableTenants', function ($tenants) {
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->where('statsTenants', function ($tenants) {
                     $collection = collect($tenants);
 
                     // User with permission should have available tenants for the tenant tab
@@ -201,14 +281,13 @@ describe('atstovavimas dashboard authorization', function (): void {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
 
-        // Verify super admin has access to all tenants via availableTenants
+        // Verify super admin has access to all tenants via statsTenants
         asUser($superAdmin)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
-                ->where('availableTenants', function ($tenants) use ($otherTenant) {
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->where('statsTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
 
                     // Super admin should see all non-PKP tenants including the other tenant
@@ -331,13 +410,12 @@ describe('atstovavimas tenant isolation', function (): void {
 
     test('user sees institutions and tenants based on their permissions', function (): void {
         asUser($this->admin)
-            ->get(route('dashboard.atstovavimas'))
+            ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Dashboard/ShowAtstovavimas')
-                ->has('userInstitutions')
-                ->has('availableTenants')
-                ->where('availableTenants',
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->has('statsTenants')
+                ->where('statsTenants',
                     // User should see tenants they have permissions for
                     fn ($tenants) => collect($tenants)->count() > 0)
             );
@@ -411,7 +489,8 @@ describe('atstovavimas related institutions', function (): void {
                         // Should be marked as related with correct metadata
                         return $found['is_related'] === true &&
                                $found['authorized'] === true &&
-                               $found['relationship_direction'] === 'outgoing';
+                               $found['relationship_direction'] === 'outgoing' &&
+                               $found['is_internal'] === false;
                     })
                 )
             );

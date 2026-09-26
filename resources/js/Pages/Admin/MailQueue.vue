@@ -1,20 +1,24 @@
 <template>
-  <AdminContentPage :title="$t('Laiškų eilė')">
-    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
-      <div class="flex gap-3">
-        <StatTile :label="$t('Laukiančios eilutės')" :value="totals.items" />
-        <StatTile :label="$t('Gavėjai')" :value="totals.recipients" />
-      </div>
-
+  <CollectionPage
+    :source
+    collection="mailQueue"
+    :eyebrow="$t('Sistemos būsena')"
+    :title="$t('Laiškų eilė')"
+    :lead="$t('mail_queue.explanation')"
+    default-view="rows"
+    :available-views="['rows']"
+    :item-key="recipient => recipient.user_id"
+  >
+    <template #actions>
       <div class="flex items-center gap-2">
-        <Button variant="outline" size="sm" @click="router.reload()">
+        <Button variant="outline" size="lg" @click="source.refresh()">
           <RefreshCwIcon class="mr-2 h-4 w-4" />
           {{ $t('Atnaujinti') }}
         </Button>
 
         <AlertDialog v-if="canManage && totals.items > 0">
           <AlertDialogTrigger as-child>
-            <Button variant="destructive" size="sm">
+            <Button variant="destructive" size="lg">
               <Trash2Icon class="mr-2 h-4 w-4" />
               {{ $t('Išvalyti eilę') }}
             </Button>
@@ -38,22 +42,9 @@
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </div>
-
-    <p class="mb-6 max-w-2xl text-sm text-muted-foreground">
-      {{ $t('mail_queue.explanation') }}
-    </p>
-
-    <EmptyState
-      v-if="recipients.length === 0"
-      :title="$t('Laiškų eilė tuščia')"
-      :description="$t('mail_queue.empty_description')"
-    />
-
-    <div v-else class="space-y-3">
+    </template>
+    <template #row="{ item: recipient }">
       <SectionCard
-        v-for="recipient in recipients"
-        :key="recipient.user_id"
         :title="recipient.user?.name ?? $t('Ištrintas naudotojas')"
         :icon="MailIcon"
       >
@@ -116,19 +107,22 @@
           </li>
         </ul>
       </SectionCard>
-    </div>
-  </AdminContentPage>
+    </template>
+    <template #empty>
+      <EmptyState :title="$t('Laiškų eilė tuščia')" :description="$t('mail_queue.empty_description')" />
+    </template>
+  </CollectionPage>
 </template>
-
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from 'lucide-vue-next';
 
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import { EmptyState, SectionCard, StatTile } from '@/Components/Patterns';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
+import { EmptyState, SectionCard } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import {
@@ -142,7 +136,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/Components/ui/alert-dialog';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useDateLocale } from '@/Composables/useDateLocale';
 
 interface QueuedItem {
@@ -164,16 +157,35 @@ interface Recipient {
   items: QueuedItem[];
 }
 
-// Browser-tested manually; a Pest browser test (tests/Browser/MailQueueTest.php) was removed
-// because the click chain into this page consistently timed out at 15s, likely something
-// elsewhere on the page polling and starving the click — not a bug in this component.
-defineProps<{
-  recipients: Recipient[];
+const props = defineProps<{
+  recipients: {
+    data: Recipient[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    per_page: number;
+  };
   canManage: boolean;
   totals: { items: number; recipients: number };
 }>();
 
 const dateLocale = useDateLocale();
+const source = useDatabaseCollectionSource<Recipient>({
+  endpoint: route('api.v1.admin.mailQueue.index'),
+  initial: {
+    items: props.recipients.data,
+    total: props.recipients.total,
+    perPage: props.recipients.per_page,
+    currentPage: props.recipients.current_page,
+    lastPage: props.recipients.last_page,
+  },
+  defaultSort: 'items_count:desc',
+  sortOptions: [
+    { value: 'items_count:desc', label: $t('Daugiausia eilučių') },
+    { value: 'oldest_at:asc', label: $t('Seniausi pirmiau') },
+  ],
+});
+watch(() => props.recipients, () => source.refresh());
 
 // One request at a time, keyed by whatever row triggered it.
 const busyKey = ref<string | number | null>(null);
@@ -202,7 +214,4 @@ const clearRecipient = (recipient: Recipient) =>
 
 const clearAll = () => submit(route('mailQueue.destroyAll'), 'all');
 
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm($t('Sistemos būsena'), 'systemStatus', $t('Laiškų eilė')),
-);
 </script>

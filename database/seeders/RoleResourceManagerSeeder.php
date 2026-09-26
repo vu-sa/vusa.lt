@@ -5,21 +5,21 @@ namespace Database\Seeders;
 use App\Models\Role;
 use Illuminate\Database\Seeder;
 
+/**
+ * Mirrors the production role that padalinio pirmininkai and administratoriai hold. Its
+ * `resources.update.padalinys` is what makes someone a resource manager
+ * (`permission.resource_managership_indicating_permission`); see docs/rezervacijos/.
+ */
 class RoleResourceManagerSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+    public const NAME = 'Išteklių administratorius';
+
+    public function run(): void
     {
-        $role = new Role;
-
-        $role->name = 'Resource Manager';
-        $role->guard_name = 'web';
-
-        $role->save();
+        $role = Role::firstOrCreate([
+            'name' => self::NAME,
+            'guard_name' => 'web',
+        ]);
 
         $role->syncPermissions([
             'resources.create.padalinys',
@@ -27,14 +27,9 @@ class RoleResourceManagerSeeder extends Seeder
             'resources.update.padalinys',
             'resources.delete.padalinys',
             'reservations.create.padalinys',
-            'reservations.read.*',
+            'reservations.read.padalinys',
             'reservations.update.padalinys',
             'reservations.delete.padalinys',
-            'documents.create.padalinys',
-            'documents.read.padalinys',
-            'documents.update.padalinys',
-            'documents.delete.padalinys',
-            'tasks.read.padalinys',
         ]);
     }
 }

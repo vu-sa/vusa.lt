@@ -1,93 +1,70 @@
 <template>
-  <IndexTablePage
-    ref="indexTablePageRef"
-    v-bind="tableConfig"
-    @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange"
-    @page-changed="handlePageChange"
-    @filter-changed="handleFilterChange"
-  />
+  <CollectionPage
+    :source
+    collection="permissions"
+    entity-type="permission"
+    :eyebrow="`${$t('shell.workspaces.sistema.title')} · ${$t('shell.sections.leidimai')}`"
+    :title="$t('Leidimai')"
+    :lead="$t('Leidimo pavadinimas sako, ką jis leidžia: išteklius.veiksmas.apimtis. Leidimus priskiri per roles.')"
+    default-view="table"
+    :item-key="permission => String(permission.id)"
+    :columns
+    :search-placeholder="$t('Ieškoti leidimų')"
+  >
+    <template #row="{ item }">
+      <article class="px-4 py-4">
+        <CollectionPrimaryCell :title="item.name" :sub="scopeLabel(item)" />
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <span v-if="column.key === 'name'" class="font-mono text-sm font-bold">{{ item.name }}</span>
+      <span v-else-if="column.key === 'resource'" class="text-muted-foreground">{{ part(item, 0) }}</span>
+      <span v-else-if="column.key === 'action'" class="text-muted-foreground">{{ part(item, 1) }}</span>
+      <span v-else-if="column.key === 'scope'" class="text-muted-foreground">{{ scopeLabel(item) }}</span>
+    </template>
+  </CollectionPage>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { ref, computed } from 'vue';
+import { computed, toRef } from 'vue';
 
-import type { IndexTablePageInstance,
-  IndexTablePageProps } from '@/Types/TableConfigTypes';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import { PermissionIcon } from '@/Components/icons';
-import {
-  createTextColumn,
-  createTimestampColumn,
-} from '@/Composables/useDataTableColumns';
+import type { CollectionColumn } from '@/Components/Collection/types';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
+
+interface PermissionRow { id: string | number; name: string }
 
 const props = defineProps<{
-  permissions: {
-    data: App.Entities.Permission[];
-    meta: {
-      total: number;
-      current_page: number;
-      per_page: number;
-      last_page: number;
-      from: number;
-      to: number;
-    };
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
+  permissions: PermissionRow[];
 }>();
 
-const modelName = 'permissions';
-const entityName = 'permission';
+/** `news.update.padalinys` → ['news', 'update', 'padalinys']. */
+const part = (permission: PermissionRow, index: number) => permission.name.split('.')[index] ?? '—';
 
-const indexTablePageRef = ref<IndexTablePageInstance | null>(null);
+const SCOPES: Record<string, string> = { '*': 'Visi', 'padalinys': 'Padalinys', 'own': 'Savi' };
+const scopeLabel = (permission: PermissionRow) => $t(SCOPES[part(permission, 2)] ?? part(permission, 2));
 
-const getRowId = (row: App.Entities.Permission) => {
-  return `permission-${row.id}`;
-};
-
-const columns = computed(() => [
-  createTextColumn<App.Entities.Permission>('name', {
-    title: $t('forms.fields.name'),
-    width: 300,
-  }),
-  createTimestampColumn<App.Entities.Permission>('created_at', {
-    title: $t('forms.fields.created_at'),
-    width: 180,
-  }),
-  createTimestampColumn<App.Entities.Permission>('updated_at', {
-    title: $t('Atnaujintas'),
-    width: 180,
-  }),
-]);
-
-const tableConfig = computed<IndexTablePageProps<App.Entities.Permission>>(() => {
-  return {
-    modelName,
-    entityName,
-    data: props.permissions.data,
-    columns: columns.value,
-    getRowId,
-    totalCount: props.permissions.meta.total,
-    initialPage: props.permissions.meta.current_page,
-    pageSize: props.permissions.meta.per_page,
-
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: false,
-    enableRowSelection: false,
-
-    headerTitle: 'Leidimai',
-    icon: PermissionIcon,
-    canCreate: false,
-  };
+const source = useLocalCollectionSource<PermissionRow>({
+  items: toRef(props, 'permissions'),
+  searchText: permission => [permission.name],
+  defaultSort: 'name:asc',
+  sortOptions: [
+    { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: permission => permission.name },
+    { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: permission => permission.name },
+  ],
+  facets: [
+    { field: 'resource', label: $t('Išteklius'), get: permission => part(permission, 0) },
+    { field: 'action', label: $t('Veiksmas'), get: permission => part(permission, 1) },
+    { field: 'scope', label: $t('Apimtis'), get: permission => part(permission, 2), valueLabel: value => $t(SCOPES[value] ?? value) },
+  ],
 });
 
-const onDataLoaded = (data: any) => {};
-const handleSortingChange = (sorting: any) => {};
-const handlePageChange = (page: any) => {};
-const handleFilterChange = (filterKey: any, value: any) => {};
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'name', label: $t('Leidimas'), sortField: 'name' },
+  { key: 'resource', label: $t('Išteklius'), class: 'w-40' },
+  { key: 'action', label: $t('Veiksmas'), class: 'w-32' },
+  { key: 'scope', label: $t('Apimtis'), class: 'w-32' },
+]);
 </script>

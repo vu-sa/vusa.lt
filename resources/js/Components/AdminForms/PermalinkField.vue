@@ -1,57 +1,68 @@
 <template>
-  <div class="space-y-2">
-    <Label class="flex items-center gap-1.5">
-      <IFluentLink24Regular class="h-4 w-4" />
+  <div class="flex flex-col gap-2" data-slot="form-field">
+    <Label :for="id" :class="cn('text-sm font-bold text-foreground', labelClass)">
       {{ label ?? $t('Nuoroda') }}
     </Label>
 
-    <div class="flex items-stretch gap-2">
-      <div class="flex flex-1 items-center gap-0 overflow-hidden rounded-md border bg-muted/50">
-        <span class="shrink-0 rounded-l-md border-r bg-muted px-3 py-2 text-sm text-muted-foreground">
-          {{ baseUrl }}/
-        </span>
-        <Input
-          :model-value="permalink"
-          :disabled
-          class="rounded-l-none border-0 bg-transparent focus-visible:ring-0"
-          :class="inputValidationClass"
-          :placeholder="$t('nuorodos-fragmentas')"
-          @update:model-value="$emit('update:permalink', $event)"
-          @change="$emit('change', $event)"
-        />
-      </div>
-
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <Button variant="outline" size="icon" @click="copyUrl">
-              <IFluentCopy24Regular v-if="!copied" class="h-4 w-4" />
-              <IFluentCheckmark24Regular v-else class="h-4 w-4 text-green-600" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{{ $t('Kopijuoti nuorodą') }}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <TooltipProvider v-if="viewUrl">
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <Button variant="outline" size="icon" as="a" :href="viewUrl" target="_blank">
-              <IFluentOpen24Regular class="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{{ $t('Atidaryti puslapį') }}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+    <div
+      :class="[
+        'flex min-h-11 items-stretch border border-border bg-secondary/50 text-sm transition-colors',
+        'focus-within:bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20',
+        inputValidationClass,
+      ]"
+    >
+      <span class="flex min-w-0 shrink items-center gap-2 pl-3 font-mono text-muted-foreground">
+        <Link2 class="size-4 shrink-0" aria-hidden="true" />
+        <span class="truncate">{{ baseUrl }}/</span>
+      </span>
+      <Input
+        :id
+        :model-value="permalink"
+        :disabled
+        class="min-w-24 flex-1 border-0 bg-transparent px-1 font-mono focus-visible:ring-0"
+        :placeholder="$t('nuorodos-fragmentas')"
+        @update:model-value="$emit('update:permalink', $event)"
+        @change="$emit('change', $event)"
+      />
+      <Button
+        variant="ghost"
+        size="icon"
+        type="button"
+        class="h-auto w-11 shrink-0 border-l border-border"
+        :aria-label="$t('Kopijuoti nuorodą')"
+        :title="$t('Kopijuoti nuorodą')"
+        @click="copyUrl"
+      >
+        <Copy v-if="!copied" class="size-4" />
+        <Check v-else class="size-4 text-[var(--status-success)]" />
+      </Button>
+      <Button
+        v-if="viewUrl"
+        variant="ghost"
+        size="icon"
+        as="a"
+        :href="viewUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="h-auto w-11 shrink-0 border-l border-border"
+        :aria-label="$t('Atidaryti puslapį')"
+        :title="$t('Atidaryti puslapį')"
+      >
+        <ExternalLink class="size-4" />
+      </Button>
     </div>
 
+    <p v-if="hint" class="text-xs leading-relaxed text-muted-foreground">
+      {{ hint }}
+    </p>
+
     <p v-if="disabled && explanation" class="flex items-center gap-1 text-xs text-muted-foreground">
-      <IFluentInfo16Regular class="h-3.5 w-3.5 shrink-0" />
+      <Info class="h-3.5 w-3.5 shrink-0" />
       {{ explanation }}
     </p>
 
-    <Alert v-if="warning" class="border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-      <IFluentWarning24Regular />
+    <Alert v-if="warning" class="border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] text-[var(--status-attention)]">
+      <AlertTriangle class="h-4 w-4" />
       <AlertTitle>{{ $t('Dėmesio') }}</AlertTitle>
       <AlertDescription>
         {{ warning }}
@@ -64,15 +75,16 @@
 import { computed, ref } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
+import { AlertTriangle, Check, Copy, ExternalLink, Info, Link2 } from 'lucide-vue-next';
 
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Label } from '@/Components/ui/label';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import IFluentWarning24Regular from '~icons/fluent/warning24-regular';
+import { cn } from '@/Utils/Shadcn/utils';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
+  id?: string;
   permalink?: string;
   baseUrl: string;
   disabled?: boolean;
@@ -80,13 +92,24 @@ const props = defineProps<{
   explanation?: string;
   /** Overrides the default "Nuoroda" label — useful when several fields sit side by side. */
   label?: string;
+  labelClass?: string;
   /** A serious warning shown below the field, e.g. when editing the permalink breaks the old URL. */
   warning?: string;
   /** Mirrors FormFieldWrapper validation wiring. */
   validating?: boolean;
   valid?: boolean;
   invalid?: boolean;
-}>();
+  hint?: string;
+}>(), {
+  id: 'permalink',
+  permalink: undefined,
+  viewUrl: undefined,
+  explanation: undefined,
+  label: undefined,
+  labelClass: undefined,
+  warning: undefined,
+  hint: undefined,
+});
 
 const emit = defineEmits<{
   (e: 'update:permalink', value: string): void;
@@ -97,16 +120,13 @@ const copied = ref(false);
 const { copy } = useClipboard();
 
 const inputValidationClass = computed(() => {
-  if (props.validating) {
-    return '';
+  if (!props.validating && props.invalid) {
+    return 'border-destructive focus-within:border-destructive';
   }
-  if (props.valid) {
-    return 'border-green-300 focus:border-green-500 dark:border-green-700';
+  if (!props.validating && props.valid) {
+    return 'border-[var(--status-success-border)]';
   }
-  if (props.invalid) {
-    return 'border-red-300 focus:border-red-500 dark:border-red-700';
-  }
-  return '';
+  return 'border-border';
 });
 
 const fullUrl = computed(() => {

@@ -71,10 +71,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarLegacy'])->name('calendar.event.legacy')->whereNumber('year')->whereNumber('month')->whereNumber('day');
 
-        Route::get('{summerCampsString}/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')
-            ->whereIn('summerCampsString', LocalizedRouteSlugs::accepted('summerCampsString'))
-            ->whereNumber('year');
-
         Route::get('{pkpString}', [Public\PublicPageController::class, 'pkp'])->name('pkp')
             ->whereIn('pkpString', LocalizedRouteSlugs::accepted('pkpString'));
 
@@ -152,8 +148,13 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             ->name('news');
 
         Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
-        Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*')->name('page');
+        Route::get('{permalink}', [Public\PublicPageController::class, 'page'])
+            ->where('permalink', '.*')
+            ->fallback()
+            ->name('page');
     });
 });
 
-Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*');
+Route::get('{permalink}', [Public\PublicPageController::class, 'page'])
+    ->where('permalink', '.*')
+    ->fallback();

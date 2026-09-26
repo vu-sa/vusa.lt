@@ -3,6 +3,7 @@
 use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Tenant;
+use Database\Seeders\RoleDocumentManagerSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
@@ -13,7 +14,7 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
 
     $this->documentManager = makeUser($this->tenant);
-    $this->documentManager->duties()->first()->assignRole('Resource Manager');
+    $this->documentManager->duties()->first()->assignRole(RoleDocumentManagerSeeder::NAME);
 
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 });

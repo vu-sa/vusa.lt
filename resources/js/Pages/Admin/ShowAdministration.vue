@@ -1,462 +1,91 @@
 <template>
-  <AdminContentPage :title="$t('Administravimas')">
-    <!-- Search bar -->
-    <div class="mb-6">
-      <div class="relative w-full max-w-md">
+  <OverviewPage
+    :eyebrow="$t('shell.chrome.product')"
+    :title="$t('shell.chrome.all_sections')"
+    :lead="$t('shell.chrome.all_sections_lead')"
+  >
+    <template #actions>
+      <div class="relative w-full sm:w-64">
+        <SearchIcon aria-hidden="true" class="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           v-model="searchQuery"
-          :placeholder="$t('Ieškoti įrankių...')"
-          class="w-full"
-        >
-          <template #prefix>
-            <SearchIcon class="h-4 w-4 text-muted-foreground" />
-          </template>
-          <template v-if="searchQuery" #suffix>
-            <Button variant="ghost" size="icon" @click="searchQuery = ''">
-              <XIcon class="h-4 w-4" />
-            </Button>
-          </template>
-        </Input>
+          type="search"
+          class="pl-8 pointer-coarse:h-11"
+          :aria-label="$t('shell.chrome.find_section')"
+          :placeholder="$t('shell.chrome.find_section')"
+        />
       </div>
-    </div>
-
-    <!-- Categories (tools first) -->
-    <template v-for="category in filteredMenuItems" :key="category.category">
-      <section v-if="category.show" class="my-8">
-        <h2 class="mb-4 text-xl font-semibold">
-          {{ category.category }}
-        </h2>
-        <div
-          class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        >
-          <div
-            v-for="item in category.visibleItems"
-            :key="item.title + item.href"
-            class="group relative rounded-lg transition-all duration-200 hover:scale-[1.01]"
-          >
-            <Link :href="item.href" class="block h-full w-full">
-              <div
-                class="relative flex w-full flex-col gap-3 rounded-md border border-zinc-100 bg-linear-to-br from-white to-white p-4 text-left text-sm leading-4 text-zinc-700 transition-all duration-300 group-hover:ring-1 group-hover:ring-primary/20 dark:border-0 dark:from-zinc-900 dark:to-neutral-800 dark:text-zinc-300"
-              >
-                <span
-                  v-if="category.isTools"
-                  :class="cn(
-                    'inline-flex self-start shrink-0 items-center justify-center rounded-md bg-gradient-to-br p-1.5',
-                    item.gradient ?? 'from-muted to-muted',
-                  )"
-                >
-                  <component :is="item.icon" width="20" height="20" />
-                </span>
-                <component :is="item.icon" v-else width="28" height="28" />
-                {{ item.title }}
-              </div>
-            </Link>
-            <Button
-              v-if="item.searchTab"
-              variant="ghost"
-              size="icon"
-              class="absolute right-2 top-2 z-10 bg-background/80 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-              as-child
-              @click.stop
-            >
-              <Link :href="route('search.index', { tab: item.searchTab })">
-                <Search class="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
     </template>
 
-    <!-- Empty state when no items match filter -->
-    <Alert v-if="!hasVisibleItems" variant="default" class="mt-8">
-      <AlertCircleIcon class="h-4 w-4" />
-      <AlertTitle>{{ $t("Nerasta rezultatų") }}</AlertTitle>
-      <AlertDescription>
-        {{ $t("Bandykite pakeisti paieškos kriterijus arba filtrus.") }}
-      </AlertDescription>
-    </Alert>
-  </AdminContentPage>
+    <!-- The Organizacija shortcuts that are tools rather than sections (duty_update, duty_periods). -->
+    <OverviewSection v-if="filteredTools.length" :title="$t('shell.chrome.tools')">
+      <NavigationTiles :items="filteredTools" data-workspace="tools" />
+    </OverviewSection>
+
+    <OverviewSection v-for="workspace in filteredWorkspaces" :key="workspace.key" :title="$t(workspace.label)">
+      <p class="-mt-1 text-sm text-muted-foreground">
+        {{ $t(workspace.description) }}
+      </p>
+      <NavigationTiles :items="workspace.tiles" :data-workspace="workspace.key" />
+    </OverviewSection>
+
+    <EmptyState
+      v-if="!hasVisibleItems"
+      mode="no-results"
+      :title="$t('shell.chrome.no_sections')"
+      :description="$t('Bandykite pakeisti paieškos kriterijus arba filtrus.')"
+    />
+  </OverviewPage>
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { computed, ref, type Component } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, ref } from 'vue';
+import { FileStack, SearchIcon } from 'lucide-vue-next';
 
-// Icons
-import {
-  SearchIcon,
-  Search,
-  XIcon,
-  AlertCircleIcon,
-  CalendarRange,
-  UserCog,
-} from 'lucide-vue-next';
-
-import IconFlowchart from '~icons/fluent/flowchart20-regular';
-import { capitalize } from '@/Utils/String';
-import { cn } from '@/Utils/Shadcn/utils';
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-
-// UI components
-import { Button } from '@/Components/ui/button';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import { EmptyState, NavigationTiles, OverviewSection, type NavigationTileItem } from '@/Components/Patterns';
 import { Input } from '@/Components/ui/input';
-import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
-import { BannerIcon, CalendarIcon, CategoryIcon, DocumentIcon, DutyIcon, FormIcon, InstitutionIcon, MeetingIcon, NavigationIcon, NewsIcon, NotificationIcon, PageIcon, PermissionIcon, ProblemIcon, QuickLinkIcon, RelationshipIcon, ReservationIcon, ResourceIcon, RoleIcon, SettingIcon, SharepointFileIcon, StudyProgramIcon, TagIcon, TenantIcon, TypeIcon, UserIcon } from '@/Components/icons';
-import { quickActionGradient } from '@/Composables/useQuickActions';
-import {
-  usePageBreadcrumbs,
-  BreadcrumbHelpers,
-} from '@/Composables/useBreadcrumbsUnified';
+import { sectionTile } from '@/Constants/adminSections';
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 
-const { auth } = usePage().props;
+const adminNavigation = computed(() => usePage().props.adminNavigation);
 
-// Set up breadcrumbs
-usePageBreadcrumbs([{ label: $t('Administravimas'), icon: TypeIcon }]);
-
-interface MenuItemType {
-  title: string;
-  icon: Component;
-  href: string;
-  show: boolean | undefined;
-  /** Unified search tab name (e.g. 'institutions') for the dedicated search button */
-  searchTab?: string;
-  /** Icon-tile gradient — only rendered for the tools category. */
-  gradient?: string;
-}
-
-interface MenuItemsType {
-  category: string;
-  items: MenuItemType[];
-  visibleItems: MenuItemType[];
-  show: boolean | undefined;
-  /** Renders icons in colored gradient tiles, matching the action window's coordinator tools. */
-  isTools?: boolean;
-}
-
-// Search state
 const searchQuery = ref('');
 
-// Filter items that match search query
-const matchesSearch = (item: MenuItemType): boolean => {
-  if (!searchQuery.value) return true;
-  const query = searchQuery.value.toLowerCase();
-  return item.title.toLowerCase().includes(query);
+const matchesQuery = (tile: NavigationTileItem): boolean => {
+  const query = searchQuery.value.trim().toLowerCase();
+
+  return query === '' || [tile.label, tile.description ?? ''].some(text => text.toLowerCase().includes(query));
 };
 
-// Menu items definition - Reorganized to avoid duplications
-const menuItems = computed(() => [
-  {
-    category: $t('Įrankiai'),
-    isTools: true,
-    items: [
-      {
-        title: $t('Pareigybių atnaujinimas'),
-        icon: UserCog,
-        href: route('duties.updateUsersWizard'),
-        show: auth?.can.create.duty,
-        gradient: quickActionGradient('duty_update'),
-      },
-      {
-        title: $t('dutiables.timeline.page.title'),
-        icon: CalendarRange,
-        href: route('dutiables.timeline'),
-        show: auth?.can.create.duty,
-        gradient: quickActionGradient('duty_periods'),
-      },
-    ],
-    show: auth?.can.create.duty,
-    visibleItems: [] as MenuItemType[],
-  },
-  {
-    category: $t('Žmonės'),
-    items: [
-      {
-        title: $t('Vartotojai'),
-        icon: UserIcon,
-        href: route('users.index'),
-        show: auth?.can.create.user,
-        searchTab: 'users',
-      },
-      {
-        title: $t('Pareigybės'),
-        icon: DutyIcon,
-        href: route('duties.index'),
-        show: auth?.can.create.duty,
-        searchTab: 'duties',
-      },
-      {
-        title: $t('Studijų programos'),
-        icon: StudyProgramIcon,
-        href: route('studyPrograms.index'),
-        show: auth?.can.create.studyProgram,
-      },
-    ],
-    show:
-      auth?.can.create.user
-      || auth?.can.create.duty
-      || auth?.can.create.studyProgram,
-    visibleItems: [] as MenuItemType[],
-  },
-  {
-    category: $t('Organizacijos'),
-    items: [
-      {
-        title: $t('Institucijos'),
-        icon: InstitutionIcon,
-        href: route('institutions.index'),
-        show: auth?.can.create.institution,
-        searchTab: 'institutions',
-      },
-      {
-        title: $t('Padaliniai'),
-        icon: TenantIcon,
-        href: route('tenants.index'),
-        show: auth?.can.create.tenant,
-      },
-      {
-        title: $t('Institucijų grafa'),
-        icon: IconFlowchart,
-        href: route('institutionGraph'),
-        show: auth?.can.create.institution,
-      },
-    ],
-    show: auth?.can.create.institution || auth?.can.create.tenant,
-    visibleItems: [] as MenuItemType[],
-  },
-  {
-    category: $t('Svetainė'),
-    items: [
-      {
-        title: $t('Puslapiai'),
-        icon: PageIcon,
-        href: route('pages.index'),
-        show: auth?.can.create.page,
-        searchTab: 'pages',
-      },
-      {
-        title: $t('Naujienos'),
-        icon: NewsIcon,
-        href: route('news.index'),
-        show: auth?.can.create.news,
-        searchTab: 'news',
-      },
-      {
-        title: $t('Greitosios nuorodos'),
-        icon: QuickLinkIcon,
-        href: route('quickLinks.index'),
-        show: auth?.can.create.quickLink,
-      },
-      {
-        title: $t('Baneriai'),
-        icon: BannerIcon,
-        href: route('banners.index'),
-        show: auth?.can.create.banner,
-      },
-      {
-        title: $t('Navigacija'),
-        icon: NavigationIcon,
-        href: route('navigation.index'),
-        show: auth?.can.create.navigation,
-      },
-      {
-        title: $t('Kalendorius'),
-        icon: CalendarIcon,
-        href: route('calendar.index'),
-        show: auth?.can.create.calendar,
-        searchTab: 'calendar',
-      },
-      {
-        title: $t('Renginių tipai'),
-        icon: CalendarIcon,
-        href: route('eventTypes.index'),
-        show: auth?.can.create.calendar || auth?.can.create.eventType,
-      },
-      {
-        title: $t('Žymos'),
-        icon: TagIcon,
-        href: route('tags.index'),
-        show: auth?.can.create.tag,
-      },
-    ],
-    show:
-      auth?.can.create.page
-      || auth?.can.create.news
-      || auth?.can.create.quickLink
-      || auth?.can.create.banner
-      || auth?.can.create.navigation
-      || auth?.can.create.calendar
-      || auth?.can.create.eventType
-      || auth?.can.create.tag,
-    visibleItems: [] as MenuItemType[],
-  },
-  {
-    category: $t('Failai ir dokumentai'),
-    items: [
-      {
-        title: $t('Svetainės failai'),
-        icon: SharepointFileIcon,
-        href: route('files.index'),
-        show: auth?.can.create.news || auth?.can.create.page,
-      },
-      {
-        title: $t('Dokumentai'),
-        icon: DocumentIcon,
-        href: route('documents.index'),
-        show: auth?.can.create.document,
-        searchTab: 'documents',
-      },
-      {
-        title: $t('Sharepoint failai'),
-        icon: SharepointFileIcon,
-        href: route('sharepointFiles.index'),
-        show: auth?.can.create.sharepointFile,
-      },
-    ],
-    show:
-      auth?.can.create.news
-      || auth?.can.create.page
-      || auth?.can.create.document
-      || auth?.can.create.sharepointFile,
-    visibleItems: [] as MenuItemType[],
-  },
-  {
-    category: $t('Atstovavimas'),
-    items: [
-      {
-        title: $t('Susitikimai'),
-        icon: MeetingIcon,
-        href: route('meetings.index'),
-        show: auth?.can.create.meeting,
-        searchTab: 'meetings',
-      },
-      {
-        title: capitalize($tChoice('entities.problem.model', 2)),
-        icon: ProblemIcon,
-        href: route('problems.index'),
-        show: auth?.can.create.problem,
-      },
-    ],
-    show: auth?.can.create.meeting || auth?.can.create.problem,
-    visibleItems: [] as MenuItemType[],
-  },
-  {
-    category: $t('Rezervacijos'),
-    items: [
-      {
-        title: capitalize($tChoice('entities.reservation.model', 2)),
-        icon: ReservationIcon,
-        href: route('reservations.index'),
-        show: auth?.can.create.reservation,
-      },
-      {
-        title: capitalize($tChoice('entities.resource.model', 2)),
-        icon: ResourceIcon,
-        href: route('resources.index'),
-        show: auth?.can.create.resource,
-        searchTab: 'resources',
-      },
-      {
-        title: capitalize($tChoice('entities.resourceCategory.model', 2)),
-        icon: CategoryIcon,
-        href: route('resourceCategories.index'),
-        show: auth?.can.create.resource,
-      },
-    ],
-    show: auth?.can.create.reservation || auth?.can.create.resource,
-    visibleItems: [] as MenuItemType[],
-  },
-  {
-    category: $t('Formos'),
-    items: [
-      {
-        title: $t('Formos'),
-        href: route('forms.index'),
-        icon: FormIcon,
-        show: auth?.can.create.form,
-      },
-    ],
-    show: auth?.can.create.form,
-    visibleItems: [] as MenuItemType[],
-  },
-  {
-    category: $t('Sistema'),
-    items: [
-      {
-        title: $t('Rolės'),
-        icon: RoleIcon,
-        href: route('roles.index'),
-        show: auth?.can.create.role,
-      },
-      {
-        title: $t('Leidimai'),
-        icon: PermissionIcon,
-        href: route('permissions.index'),
-        show: auth?.can.create.permission,
-      },
-      {
-        title: $t('Tipai'),
-        icon: TypeIcon,
-        href: route('types.index'),
-        show: auth?.can.create.type,
-      },
-      {
-        title: $t('Ryšiai'),
-        icon: RelationshipIcon,
-        href: route('relationships.index'),
-        show: auth?.can.create.relationship,
-      },
-      {
-        title: $t('Sistemos būsena'),
-        icon: NotificationIcon,
-        href: route('systemStatus'),
-        show: auth?.can.create.role || auth?.can.create.permission,
-      },
-      {
-        title: $t('settings.title'),
-        icon: SettingIcon,
-        href: route('settings.index'),
-        show: auth?.can.manageSettings,
-      },
-    ],
-    show:
-      auth?.can.create.role
-      || auth?.can.create.permission
-      || auth?.can.create.type
-      || auth?.can.create.relationship
-      || auth?.can.manageSettings,
-    visibleItems: [] as MenuItemType[],
-  },
-]);
+const filteredTools = computed<NavigationTileItem[]>(() => {
+  const organizacija = adminNavigation.value?.workspaces.find(workspace => workspace.key === 'organizacija');
 
-// Filter menu items based on search
-const filteredMenuItems = computed(() => {
-  return menuItems.value
-    .map((category) => {
-      // Clone the category to avoid modifying the original
-      const filteredCategory = { ...category };
-
-      // Filter items based on search and visibility
-      const filteredItems = category.items.filter(
-        item => item.show === true && matchesSearch(item),
-      );
-
-      // Store filtered items for display
-      filteredCategory.visibleItems = filteredItems;
-
-      return filteredCategory;
-    })
-    .filter((category) => {
-      // Keep category if it's visible and has visible items
-      return category.show === true && category.visibleItems.length > 0;
-    });
+  return (organizacija?.createActions ?? [])
+    .flatMap(action => action.target.kind === 'route'
+      ? [{
+          key: action.key,
+          label: $t(action.label),
+          description: action.description ? $t(action.description) : null,
+          icon: (action.entityType ? getEntityTypeDefinition(action.entityType)?.icon : undefined) ?? FileStack,
+          href: route(action.target.routeName),
+        }]
+      : [])
+    .filter(matchesQuery);
 });
 
-// Check if any items are visible after filtering
-const hasVisibleItems = computed(() => {
-  return filteredMenuItems.value.some(
-    category => category.visibleItems.length > 0,
-  );
-});
+const filteredWorkspaces = computed(() =>
+  (adminNavigation.value?.workspaces ?? [])
+    .map(workspace => ({
+      key: workspace.key,
+      label: workspace.label,
+      description: workspace.description,
+      tiles: workspace.sections.map(sectionTile).filter(matchesQuery),
+    }))
+    .filter(workspace => workspace.tiles.length > 0),
+);
+
+const hasVisibleItems = computed(() => filteredTools.value.length > 0 || filteredWorkspaces.value.length > 0);
 </script>

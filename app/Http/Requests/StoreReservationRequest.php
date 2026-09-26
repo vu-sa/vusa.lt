@@ -39,7 +39,7 @@ class StoreReservationRequest extends FormRequest
             'name' => 'required|string',
             'description' => 'required|string',
             'resources' => 'required|array',
-            'resources.*.id' => ['required', 'string', SoftDeleteRules::existsLive('resources')],
+            'resources.*.id' => ['required', 'string', 'distinct', SoftDeleteRules::existsLive('resources')],
             'resources.*.quantity' => 'required|integer|min:1',
             'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',

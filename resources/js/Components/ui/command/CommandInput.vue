@@ -9,7 +9,7 @@
       v-model="filterState.search"
       data-slot="command-input"
       auto-focus
-      :class="cn('placeholder:text-zinc-500 flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-zinc-400', props.class)"
+      :class="cn('placeholder:text-muted-foreground flex h-12 w-full bg-transparent py-3 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50', props.class)"
     />
   </div>
 </template>

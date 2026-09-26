@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -62,8 +63,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionAdministrator|null $pivot
+ * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
  * @property-read Collection<int, Institution> $administeredInstitutions
+ * @property-read Collection<int, Duty> $authorization_duties
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -77,9 +79,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Duty> $previous_duties
  * @property-read Collection<int, PushSubscription> $pushSubscriptions
+ * @property-read ReservationDraft|null $reservationDraft
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Institution> $secretariedInstitutions
  * @property-read Collection<int, Task> $tasks
+ * @property-read Collection<int, Duty> $upcoming_duties
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
@@ -213,10 +218,6 @@ class User extends Authenticatable implements GuardsForceDelete
         return Attribute::make(get: fn () => ! empty($this->getAttributeValue('password')));
     }
 
-    /**
-     * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
-     * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
-     */
     public function routeNotificationForMail(Notification $notification): array|string
     {
         return app(NotificationRouter::class)->routeForMail($this, $notification);
@@ -235,7 +236,7 @@ class User extends Authenticatable implements GuardsForceDelete
         return $this->duties()
             ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
-                    ->where('dutiables.end_date', '<', now());
+                    ->whereDate('dutiables.end_date', '<', today());
             })
             ->withTimestamps();
     }
@@ -250,10 +251,25 @@ class User extends Authenticatable implements GuardsForceDelete
                 $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
                     ->where(function ($q): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', now());
+                            ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             })
             ->withTimestamps();
+    }
+
+    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
+    public function authorization_duties(): MorphToMany
+    {
+        return $this->duties()
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                ->orWhereDate('dutiables.end_date', '>=', today()));
+    }
+
+    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
+    public function upcoming_duties(): MorphToMany
+    {
+        return $this->authorization_duties()
+            ->whereDate('dutiables.start_date', '>', now()->toDateString());
     }
 
     #[\Override]
@@ -296,19 +312,29 @@ class User extends Authenticatable implements GuardsForceDelete
     }
 
     /**
-     * Institutions this user has been nominated to look after for a term.
+     * Institutions this user is nominated to look after as secretary (O22).
      *
      * Grants the tasks, the notifications and `.own` visibility — never membership,
      * so this must not be merged into institutions()/duties() anywhere.
      *
-     * @return BelongsToMany<Institution, $this, InstitutionAdministrator, 'pivot'>
+     * @return BelongsToMany<Institution, $this, InstitutionSecretary, 'pivot'>
+     */
+    public function secretariedInstitutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_secretaries')
+            ->using(InstitutionSecretary::class)
+            ->withPivot('cadence_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Backwards-compatibility alias for secretariedInstitutions().
+     *
+     * @return BelongsToMany<Institution, $this, InstitutionSecretary, 'pivot'>
      */
     public function administeredInstitutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class, 'institution_administrators')
-            ->using(InstitutionAdministrator::class)
-            ->withPivot('cadence_id')
-            ->withTimestamps();
+        return $this->secretariedInstitutions();
     }
 
     /**
@@ -373,6 +399,12 @@ class User extends Authenticatable implements GuardsForceDelete
     public function reservations()
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
+    }
+
+    /** @return HasOne<ReservationDraft, $this> */
+    public function reservationDraft(): HasOne
+    {
+        return $this->hasOne(ReservationDraft::class);
     }
 
     public function isSuperAdmin(): bool

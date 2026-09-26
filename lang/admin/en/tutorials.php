@@ -8,46 +8,32 @@ return [
     'skip' => 'Skip',
     'step_of' => '{{current}} of {{total}}',
 
-    // Atstovavimas Overview Tour
+    // ViSAK overview (/mano/dashboard/atstovavimas)
     'atstovavimas_overview' => [
         'welcome' => [
-            'title' => 'Welcome to Representation!',
-            'description' => 'This area helps you <strong>track and manage</strong> your representation activities in institutions. Let us briefly introduce you to the main features.',
+            'title' => 'ViSAK overview',
+            'description' => 'Your representation work in institutions at a glance: where <strong>attention is needed</strong>, what is coming up and how it has gone so far.',
         ],
         'institutions_card' => [
-            'title' => 'Your Institutions',
-            'description' => 'Here you can see all institutions where you represent. The card shows which institutions <strong>need attention</strong> – whether meetings are missing or it\'s time to plan new activities.',
-        ],
-        'institution_item' => [
-            'title' => 'Institution Row',
-            'description' => 'Each institution has a <strong>status indicator</strong> and action buttons. You can schedule a meeting or report an absence (vacation, exams, etc.).',
+            'title' => 'Needs attention',
+            'description' => 'Institutions with no recent meeting or activity recorded. From here you can <strong>record a meeting</strong> straight away or mark that there was none (holidays, exam session, etc.).',
         ],
         'meetings_card' => [
-            'title' => 'Upcoming Meetings',
-            'description' => 'Here you can see your <strong>nearest scheduled meetings</strong>. The number at the top shows how many meetings are waiting. Click on a meeting to view details.',
+            'title' => 'Upcoming meetings',
+            'description' => 'The nearest scheduled meetings. Tap a meeting to see its agenda and details.',
         ],
         'create_meeting' => [
-            'title' => 'Create New Meeting',
-            'description' => 'Use this button to <strong>create a new meeting</strong>. You can select the institution and set the date and agenda.',
-        ],
-        'all_meetings' => [
-            'title' => 'View All Meetings',
-            'description' => 'This button opens the <strong>full meeting list</strong> with advanced search and filters. Here you\'ll also find past meetings.',
+            'title' => 'New meeting',
+            'description' => 'Use <strong>+ Create</strong> to register a new meeting: pick the institution, date and agenda.',
         ],
         'timeline' => [
             'title' => 'Timeline',
-            'description' => 'Here you can see your institutions\' <strong>activity timeline</strong> – meetings, gaps, and activity periods. This helps you visually plan your representation activities.',
+            'description' => 'An <strong>activity timeline</strong> of your institutions – meetings, gaps and active periods. It helps you plan ahead.',
         ],
         'complete' => [
-            'title' => 'You\'re Ready!',
-            'description' => 'Now you know the main Representation features. If you have questions, contact your unit coordinator.',
+            'title' => 'All set!',
+            'description' => 'Questions? Reach out to your unit coordinator. You can replay this tour any time from <strong>Help</strong>.',
         ],
-    ],
-
-    // Tenant Tab Spotlight
-    'tenant_tab_spotlight' => [
-        'title' => 'Unit View',
-        'description' => 'As a manager, you can view the entire unit\'s institution timeline. Click here to see the overall picture.',
     ],
 
     // Gantt Chart Tour
@@ -90,59 +76,51 @@ return [
         ],
     ],
 
-    // Admin Home Tour
+    // Admin Home / Welcome Tour (≤ 5 steps)
     'admin_home' => [
         'welcome' => [
             'title' => 'Welcome to Mano VU SA!',
-            'description' => 'This is your <strong>main dashboard</strong> where you\'ll find the most important tools and information. Let us briefly introduce you to the main features.',
+            'description' => 'A quick look at where things are: moving between workspaces, finding and creating what you need, and where your tasks wait for you. It takes less than a minute.',
         ],
-        'home_search' => [
-            'title' => 'Search everywhere',
-            'description' => 'Use this search to find <strong>meetings, institutions, documents and other records</strong>. You can open it anywhere by pressing <strong>Ctrl+K</strong>.',
+        'all_sections' => [
+            'title' => 'All sections',
+            'description' => 'Everything you can open with your account, in one place. Handy when you are not sure which workspace something lives in.',
         ],
-        'meetings_card' => [
-            'title' => 'Upcoming Meetings',
-            'description' => 'This card shows your <strong>nearest scheduled meetings</strong>. You can quickly create a new meeting or view all of them.',
-        ],
-        'nav_visak' => [
-            'title' => 'ViSAK – Representation',
-            'description' => 'This button opens <strong>ViSAK</strong> – the Virtual Student Representatives Coordinator page where you can manage all your representation activities.',
-        ],
-        'nav_administravimas' => [
-            'title' => 'Administration',
-            'description' => 'This button opens the <strong>administration section</strong> where you can manage users, units, institutions, and other settings.',
-        ],
-        'action_window' => [
+        'quick_actions' => [
             'title' => 'Quick actions',
-            'description' => 'Not sure where to start? This opens the <strong>most common actions</strong> – report a meeting, note that there will be no meetings, or fill in one that already happened. It asks one thing at a time, so there is nothing to remember in advance.',
+            'description' => 'Create actions from the workspaces you can work in – the same as <strong>+ Create</strong>, one click closer.',
+        ],
+        'section_switcher' => [
+            'title' => 'Where you are',
+            'description' => 'Shows the workspace and section you are in. Tap it to jump to another section.',
+        ],
+        'command_palette_mobile' => [
+            'title' => 'Search',
+            'description' => 'Find pages, documents, contacts or recently edited records.',
+        ],
+        'mobile_menu' => [
+            'title' => 'Menu',
+            'description' => 'Other workspaces, your account, settings and help – you can replay this tour from here too.',
+        ],
+        'workspaces' => [
+            'title' => 'Workspaces',
+            'description' => 'Mano VU SA is organized into workspaces based on your duties and permissions (Home, ViSAK, Reservations, etc.). Switch between them here.',
+        ],
+        'command_palette' => [
+            'title' => 'Quick search',
+            'description' => 'Press <strong>Ctrl+K</strong> (or <strong>⌘K</strong>) or click the search box to find pages, documents, contacts, or recently edited records.',
+        ],
+        'action_create' => [
+            'title' => 'Quick create',
+            'description' => 'A single door for creation – start a new meeting, request a reservation, or create a registration.',
         ],
         'tasks_card' => [
-            'title' => 'Tasks',
-            'description' => 'This card shows your <strong>personal tasks</strong> and their status. You\'ll see how many tasks are pending and which are due soon.',
+            'title' => 'Tasks & attention queue',
+            'description' => 'Your personal tasks and upcoming reminders stay visible on Home – nothing gets lost.',
         ],
-        'tasks_indicator' => [
-            'title' => 'Tasks Indicator',
-            'description' => 'This button shows your <strong>pending tasks count</strong>. Click to review tasks or mark them as complete.',
-        ],
-        'notifications_indicator' => [
-            'title' => 'Notifications',
-            'description' => 'This button shows your <strong>unread notifications</strong>. Click to view the latest notifications.',
-        ],
-        'help_button' => [
-            'title' => 'Help Button',
-            'description' => 'This button allows you to <strong>restart this guide</strong> at any time. Each page with a guide has this button.',
-        ],
-        'nav_dokumentacija' => [
-            'title' => 'Documentation',
-            'description' => 'Click here to open the <strong>detailed platform documentation</strong> with all explanations and instructions.',
-        ],
-        'user_menu' => [
-            'title' => 'Your Profile',
-            'description' => 'In this menu you\'ll find <strong>profile settings</strong>, language and theme options, and the logout button.',
-        ],
-        'nav_feedback' => [
-            'title' => 'Leave Feedback',
-            'description' => 'Have observations or suggestions? <strong>Write to us!</strong> We constantly improve the platform based on your feedback. Good luck! ✨',
+        'account_menu' => [
+            'title' => 'Account & help',
+            'description' => 'Access your profile, appearance and language settings, documentation, and the help menu here.',
         ],
     ],
 
@@ -180,11 +158,5 @@ return [
             'title' => 'Preview and save',
             'description' => 'Nothing is written until you save, and you can <strong>preview</strong> exactly how the records will look first.',
         ],
-    ],
-
-    // Help Button Spotlight
-    'help_button_spotlight' => [
-        'title' => 'Need help?',
-        'description' => 'Click this button to start an interactive page tour and learn how to use the features.',
     ],
 ];

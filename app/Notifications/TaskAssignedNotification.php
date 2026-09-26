@@ -2,7 +2,8 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
+use App\Models\Institution;
 use App\Models\Task;
 use App\Models\User;
 
@@ -13,15 +14,15 @@ use App\Models\User;
  */
 class TaskAssignedNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::TaskAssigned;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Task $task, protected ?User $assigner = null) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
 
     public function title(object $notifiable): string
     {
@@ -76,13 +77,28 @@ class TaskAssignedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        $taskable = $this->task->taskable;
+
+        return $this->contextRows([
+            'institution' => $taskable instanceof Institution ? $taskable->name : null,
+            'deadline' => $this->task->due_date?->format('Y-m-d'),
+        ]);
+    }
+
+    #[\Override]
+    public function mailSignature(object $notifiable): ?array
+    {
+        return $this->coordinatorSignature($notifiable, $this->task->taskable instanceof Institution ? $this->task->taskable : null);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_tasks'),
-                'url' => route('userTasks'),
-            ],
+            'label' => __('notifications.action_view_tasks'),
+            'url' => route('userTasks'),
         ];
     }
 }

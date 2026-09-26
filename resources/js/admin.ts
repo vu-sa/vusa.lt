@@ -1,6 +1,6 @@
 import '../css/app.css';
 import '../css/admin.css';
-import '../css/driver-tour.css';
+import '../css/admin/tour.css';
 
 import { type DefineComponent, createApp, h } from 'vue';
 
@@ -14,6 +14,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 import { initPWA } from './Composables/usePWA';
 import { initProgress } from './Composables/useTutorialProgress';
+import { useAccessibilityPreferences } from './Composables/useAccessibilityPreferences';
 
 const AdminLayout = defineAsyncComponent(
   () => import('./Components/Layouts/AdminLayout.vue'),
@@ -59,6 +60,9 @@ createInertiaApp({
     return page;
   },
   setup({ App, props, el, plugin }) {
+    // The settings dialog only mounts on open, so stored preferences must be applied at boot.
+    useAccessibilityPreferences();
+
     // https://github.com/inertiajs/inertia/discussions/372#discussioncomment-6052940
     const application = createApp({ render: () => h(App, props) })
       .use(plugin)

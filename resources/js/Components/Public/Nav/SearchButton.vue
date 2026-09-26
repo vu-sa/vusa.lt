@@ -2,7 +2,7 @@
   <SmartLink
     :href="searchUrl"
     :title="$t('Paieška')"
-    :class="cn(buttonVariants({ variant: 'ghost', size }), 'gap-2', props.class)"
+    :class="cn(buttonVariants({ variant: 'ghost', voice: 'brand', size }), 'gap-2', props.class)"
   >
     <IFluentSearch20Regular class="h-4 w-4" aria-hidden="true" />
     <slot />

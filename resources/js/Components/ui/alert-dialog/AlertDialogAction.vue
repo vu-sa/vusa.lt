@@ -1,5 +1,5 @@
 <template>
-  <AlertDialogAction v-bind="delegatedProps" :class="cn(buttonVariants(), props.class)">
+  <AlertDialogAction v-bind="delegatedProps" :class="cn(buttonVariants({ voice: 'brand' }), props.class)">
     <slot />
   </AlertDialogAction>
 </template>

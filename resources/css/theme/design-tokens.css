@@ -19,31 +19,51 @@
   --color-vusa-yellow: oklch(0.82 0.17 75);
   --color-vusa-yellow-dark: oklch(0.55 0.14 65);
 
-  /* Semantic Status Colors - OKLCH for consistency */
-  /* Success - Emerald tones */
-  --color-status-success: oklch(0.696 0.17 162.48);
-  --color-status-success-muted: oklch(0.95 0.052 163.051);
-  --color-status-success-foreground: oklch(0.378 0.077 168.94);
+  /* Colour system (.ai/rules/css.md) — six status roles
+     + eight categories. var()-indirected (not literal, unlike the rest of this block being
+     `inline`) so the underlying --status-… and --cat-… tokens in theme/base-tokens.css stay the
+     single source of truth and a surface COULD re-scope them later if a surface ever needed to;
+     today both [data-surface="public"] and [data-surface="admin"] read the same :root/.dark
+     values, deliberately, since a status must mean the same thing everywhere (U10). Replaces the
+     previous literal success/warning/danger/info/neutral block one-for-one — `warning` becomes
+     `attention` (the role .ai/rules/css.md's picking list actually maps "needs action" to) and
+     `progress` is new; the old `-muted`/`-foreground` suffixes had zero consumers and are
+     dropped in favour of `-surface`/`-border`. */
+  --color-status-neutral: var(--status-neutral);
+  --color-status-neutral-surface: var(--status-neutral-surface);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-info: var(--status-info);
+  --color-status-info-surface: var(--status-info-surface);
+  --color-status-info-border: var(--status-info-border);
+  --color-status-progress: var(--status-progress);
+  --color-status-progress-surface: var(--status-progress-surface);
+  --color-status-progress-border: var(--status-progress-border);
+  --color-status-attention: var(--status-attention);
+  --color-status-attention-surface: var(--status-attention-surface);
+  --color-status-attention-border: var(--status-attention-border);
+  --color-status-success: var(--status-success);
+  --color-status-success-surface: var(--status-success-surface);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-surface: var(--status-danger-surface);
+  --color-status-danger-border: var(--status-danger-border);
 
-  /* Warning - Amber tones (unified, no orange) */
-  --color-status-warning: oklch(0.769 0.188 70.08);
-  --color-status-warning-muted: oklch(0.962 0.059 95.617);
-  --color-status-warning-foreground: oklch(0.414 0.112 45.904);
-
-  /* Danger - Red/Rose tones */
-  --color-status-danger: oklch(0.637 0.237 25.331);
-  --color-status-danger-muted: oklch(0.936 0.032 17.717);
-  --color-status-danger-foreground: oklch(0.396 0.141 25.723);
-
-  /* Info - Blue tones */
-  --color-status-info: oklch(0.623 0.214 259.815);
-  --color-status-info-muted: oklch(0.932 0.032 255.585);
-  --color-status-info-foreground: oklch(0.379 0.146 265.522);
-
-  /* Neutral - Slate tones */
-  --color-status-neutral: oklch(0.554 0.046 257.417);
-  --color-status-neutral-muted: oklch(0.968 0.007 247.896);
-  --color-status-neutral-foreground: oklch(0.372 0.044 257.287);
+  --color-cat-1: var(--cat-1);
+  --color-cat-1-surface: var(--cat-1-surface);
+  --color-cat-2: var(--cat-2);
+  --color-cat-2-surface: var(--cat-2-surface);
+  --color-cat-3: var(--cat-3);
+  --color-cat-3-surface: var(--cat-3-surface);
+  --color-cat-4: var(--cat-4);
+  --color-cat-4-surface: var(--cat-4-surface);
+  --color-cat-5: var(--cat-5);
+  --color-cat-5-surface: var(--cat-5-surface);
+  --color-cat-6: var(--cat-6);
+  --color-cat-6-surface: var(--cat-6-surface);
+  --color-cat-7: var(--cat-7);
+  --color-cat-7-surface: var(--cat-7-surface);
+  --color-cat-8: var(--cat-8);
+  --color-cat-8-surface: var(--cat-8-surface);
 
   /* UI Theme Colors */
   --color-background: var(--background);
@@ -65,16 +85,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-
-  /* Sidebar Colors */
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 
   /* Chart Colors */
   --color-chart-1: var(--chart-1);

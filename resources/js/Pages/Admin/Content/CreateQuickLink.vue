@@ -1,16 +1,17 @@
 <template>
-  <PageContent title="Naujas pradinio puslapio mygtukas" :back-url="route('quickLinks.index')">
-    <UpsertModelLayout>
-      <QuickLinkForm remember-key="CreateQuickLink" :tenant-options :topic-options :quick-link
-        @submit:form="(form) => form.post(route('quickLinks.store'))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <QuickLinkForm
+    remember-key="CreateQuickLink"
+    :tenant-options
+    :topic-options
+    :quick-link
+    @submit:form="submitForm"
+  />
 </template>
 
 <script setup lang="ts">
+import type { InertiaForm } from '@inertiajs/vue3';
+
 import QuickLinkForm from '@/Components/AdminForms/QuickLinkForm.vue';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 
 interface TopicOption {
   id: number;
@@ -19,7 +20,7 @@ interface TopicOption {
 }
 
 defineProps<{
-  tenantOptions: Record<string, any>[];
+  tenantOptions: Record<string, unknown>[];
   topicOptions: TopicOption[];
 }>();
 
@@ -30,4 +31,8 @@ const quickLink = {
   icon: '',
   is_important: false,
 };
+
+function submitForm(form: unknown): void {
+  (form as InertiaForm<Record<string, unknown>>).post(route('quickLinks.store'));
+}
 </script>

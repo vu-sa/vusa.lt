@@ -4,30 +4,30 @@
       v-for="option in options"
       :key="option.value"
       type="button"
-      :disabled="option.disabled"
-      class="group relative overflow-visible rounded-lg border-2 p-3 text-left transition-all duration-200"
+      :disabled="disabled || option.disabled"
+      class="group relative overflow-visible border p-3 text-left transition-all duration-150"
       :class="[
         option.value === modelValue
-          ? 'border-vusa-red bg-red-50/50 ring-2 ring-vusa-red/20 dark:bg-red-950/20'
-          : 'border-border hover:border-zinc-300 dark:hover:border-zinc-600',
-        option.disabled && 'cursor-not-allowed opacity-40 hover:border-border',
+          ? 'border-brand bg-brand/5 ring-1 ring-brand text-foreground'
+          : 'border-border bg-background hover:border-foreground/30 hover:bg-secondary/40 text-foreground',
+        (disabled || option.disabled) && 'cursor-not-allowed opacity-40 hover:border-border hover:bg-background',
       ]"
-      @click="!option.disabled && $emit('update:modelValue', option.value)"
+      @click="!disabled && !option.disabled && $emit('update:modelValue', option.value)"
     >
       <div
-        class="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-vusa-red text-white shadow-md transition-all"
+        class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center bg-brand text-brand-foreground transition-all"
         :class="option.value === modelValue ? 'scale-100 opacity-100' : 'scale-75 opacity-0'"
       >
-        <IFluentCheckmark12Regular class="h-2.5 w-2.5" />
+        <Check class="h-2.5 w-2.5 stroke-[3]" />
       </div>
       <div
         class="mb-2 flex justify-center transition-opacity"
-        :class="option.value === modelValue ? 'opacity-100' : 'opacity-50 group-hover:opacity-75'"
+        :class="option.value === modelValue ? 'opacity-100 text-brand' : 'opacity-50 group-hover:opacity-75 text-muted-foreground'"
       >
         <component :is="option.icon" :class="iconClass" />
       </div>
       <div class="text-center">
-        <span class="text-xs font-medium">{{ option.label }}</span>
+        <span class="text-xs font-semibold">{{ option.label }}</span>
         <p v-if="option.description" class="mt-0.5 text-xs text-muted-foreground">
           {{ option.description }}
         </p>
@@ -38,8 +38,7 @@
 
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
-
-import IFluentCheckmark12Regular from '~icons/fluent/checkmark12-regular';
+import { Check } from 'lucide-vue-next';
 
 export interface VisualOption {
   value: string;
@@ -55,6 +54,7 @@ const props = withDefaults(defineProps<{
   /** Grid columns from `md:` breakpoint up. Below that it's always 2 columns. */
   columns?: number;
   iconClass?: string;
+  disabled?: boolean;
 }>(), {
   columns: 3,
   iconClass: 'h-10 w-16',

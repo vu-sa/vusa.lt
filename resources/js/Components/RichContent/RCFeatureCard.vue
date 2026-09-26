@@ -1,6 +1,5 @@
 <template>
-  <!-- The card aesthetic used across the site (SummerCampCard is the origin) — extracted
-       here so link-list's photo style, the content-grid `card` cell and event-list's
+  <!-- The card aesthetic used across the site — extracted here so link-list's photo style, the content-grid `card` cell and event-list's
        `cards` style all render identically instead of three near-copies drifting apart. -->
   <article class="group relative flex h-full flex-col overflow-hidden border border-border bg-card transition-colors duration-300 hover:border-brand">
     <!-- Stretched link: the whole card is clickable, but content underneath (e.g. a
@@ -59,7 +58,7 @@ withDefaults(defineProps<{
   href?: string | null;
   /** Reserve the cover slot (rendering the fallback icon) even when `coverImage` is
    *  unset — for grids where every card is expected to carry a photo. Default true to
-   *  preserve existing callers (SummerCampCard, link-list, event-list); content-grid's
+   *  preserve existing callers (link-list, event-list); content-grid's
    *  plain `card` cell opts out since a text-only card shouldn't show an empty photo box. */
   showCoverFallback?: boolean;
 }>(), {

@@ -48,18 +48,18 @@ class MeetingRepresentativeResolver
         return User::query()
             ->whereHas('duties', function ($query) use ($dutyIds, $meetingDate): void {
                 $query->whereIn('duties.id', $dutyIds)
-                    ->where('dutiables.start_date', '<=', $meetingDate)
+                    ->whereDate('dutiables.start_date', '<=', $meetingDate)
                     ->where(function ($q) use ($meetingDate): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', $meetingDate);
+                            ->orWhereDate('dutiables.end_date', '>=', $meetingDate);
                     });
             })
             ->with(['duties' => function ($query) use ($dutyIds, $meetingDate): void {
                 $query->whereIn('duties.id', $dutyIds)
-                    ->where('dutiables.start_date', '<=', $meetingDate)
+                    ->whereDate('dutiables.start_date', '<=', $meetingDate)
                     ->where(function ($q) use ($meetingDate): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', $meetingDate);
+                            ->orWhereDate('dutiables.end_date', '>=', $meetingDate);
                     });
             }])
             ->get()

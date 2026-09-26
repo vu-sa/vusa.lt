@@ -1,41 +1,34 @@
 <template>
-  <PageContent :title="userName" :back-url="route('users.index')" :heading-icon="UserIcon">
-    <UpsertModelLayout>
-      <UserForm :user :roles :tenants-with-duties :permissable-tenants :can-update-identity
-        @submit:form="onSubmit"
-        @delete="() => router.delete(route('users.destroy', user.id))" />
-    </UpsertModelLayout>
-    <AccessChangeWarningDialog :open :report
-      @update:open="open = $event" @confirm="confirm" @cancel="cancel" />
-  </PageContent>
+  <div>
+    <UserForm :user :can-update-identity @submit:form="onSubmit" />
+    <AccessChangeWarningDialog
+      :open
+      :report
+      @update:open="open = $event"
+      @confirm="confirm"
+      @cancel="cancel"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { usePage, router } from '@inertiajs/vue3';
+import { usePage, type InertiaForm } from '@inertiajs/vue3';
 
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import UserForm from '@/Components/AdminForms/UserForm.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
-import { UserIcon } from '@/Components/icons';
+import UserForm from '@/Components/AdminForms/UserForm.vue';
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 
 const props = defineProps<{
   user: App.Entities.User;
-  roles: App.Entities.Role[];
-  // TODO: don't return all duties from the controller immedixxately
-  tenantsWithDuties: App.Entities.Tenant[];
-  permissableTenants: App.Entities.Tenant[];
   canUpdateIdentity: boolean;
 }>();
 
 const { report, open, guardedSubmit, confirm, cancel } = useAccessChangeGuard();
 
-const onSubmit = (form: any) =>
+const onSubmit = (form: unknown) =>
   guardedSubmit(acknowledge =>
-    form
+    (form as InertiaForm<Record<string, unknown>>)
       .transform((data: Record<string, unknown>) => ({ ...data, acknowledge_access_change: acknowledge }))
       .patch(route('users.update', props.user.id), { preserveScroll: true, preserveState: true }),
   );
@@ -44,13 +37,8 @@ const userName = computed(() => {
   if (props.user.show_pronouns) {
     return `${props.user.name} (${props.user.pronouns[usePage().props.app.locale]})`;
   }
-  else {
-    return props.user.name;
-  }
+
+  return props.user.name;
 });
 
-// Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(() =>
-  BreadcrumbHelpers.adminForm('Nariai', 'users.index', userName.value, UserIcon),
-);
 </script>

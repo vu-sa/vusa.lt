@@ -1,188 +1,222 @@
 <template>
-  <Popover @close="onClose">
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :class="cn(
-          'w-full justify-start text-left font-normal',
-          !calendarValue && 'text-muted-foreground',
-        )"
-        :disabled
-      >
-        <CalendarIcon class="mr-2 h-4 w-4 shrink-0" />
-        <span class="truncate min-w-0">{{ displayText }}</span>
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-auto p-0" align="start">
-      <Calendar
-        :model-value="calendarValue as any"
-        initial-focus
-        :min-date
-        :max-date
-        @update:model-value="onCalendarChange"
-      />
-      <div class="border-t p-3">
-        <TimePicker
-          :model-value="timeValue"
-          :hour-range
-          :minute-step
-          class="w-full"
-          @update:model-value="onTimeChange"
+  <!-- Single trigger Popover mode (ideal for sidebars and compact forms) -->
+  <div v-if="variant === 'popover'" :class="cn('relative w-full', props.class)">
+    <Popover v-model:open="isOpen" @close="emit('blur')">
+      <PopoverTrigger as-child>
+        <button
+          type="button"
+          :disabled
+          :class="[
+            'flex min-h-11 w-full items-center justify-between border border-border bg-secondary/50 px-3 text-sm text-left transition-colors',
+            'focus:bg-background focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none',
+            disabled && 'cursor-not-allowed opacity-50',
+            !modelDate && 'text-muted-foreground',
+          ]"
+        >
+          <span class="flex items-center gap-2 truncate">
+            <CalendarIcon class="size-4 shrink-0 text-brand" />
+            <span v-if="formattedDisplay" class="font-medium text-foreground">{{ formattedDisplay }}</span>
+            <span v-else>{{ placeholder || $t('Pasirinkti datą ir laiką...') }}</span>
+          </span>
+          <span
+            v-if="clearable && modelDate && !disabled"
+            role="button"
+            tabindex="0"
+            class="ml-2 text-muted-foreground hover:text-foreground p-0.5"
+            :aria-label="$t('Išvalyti')"
+            @click.stop="clear"
+            @keydown.enter.stop="clear"
+          >
+            <X class="size-4" />
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent class="w-auto p-0" align="start">
+        <Calendar
+          :model-value="calendarValue"
+          initial-focus
+          :min-date
+          :max-date
+          @update:model-value="updateFromCalendar"
         />
-      </div>
-    </PopoverContent>
-  </Popover>
+        <div class="flex flex-col border-t border-border bg-secondary/20">
+          <div class="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
+            <span class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <Clock class="size-3.5 text-brand" />
+              {{ $t('Laikas') }}
+            </span>
+            <div class="w-28">
+              <TimePicker
+                :model-value="timeValue"
+                :minute-step
+                :hour-range
+                :disabled
+                size="sm"
+                @update:model-value="updateTime"
+              />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 divide-x divide-border">
+            <button
+              type="button"
+              class="h-9 text-xs font-bold uppercase tracking-wide text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
+              @click="setNow"
+            >
+              {{ $t('Dabar') }}
+            </button>
+            <button
+              type="button"
+              class="h-9 text-xs font-bold uppercase tracking-wide text-brand transition-colors hover:bg-secondary/60"
+              @click="isOpen = false"
+            >
+              {{ $t('Gerai') }}
+            </button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  </div>
+
+  <!-- Inline 2-column mode (traditional wide form layout) -->
+  <div v-else :class="cn('grid gap-2 sm:grid-cols-2', props.class)">
+    <DatePicker
+      :model-value="dateValue"
+      :min-date
+      :max-date
+      :disabled
+      :placeholder
+      clearable
+      :aria-label="$t('Pasirinkti datą')"
+      @update:model-value="updateDate"
+      @blur="emit('blur')"
+    />
+    <TimePicker
+      :model-value="timeValue"
+      :hour-range
+      :minute-step
+      :disabled
+      clearable
+      :aria-label="$t('Pasirinkti laiką')"
+      @update:model-value="updateTime"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-import {
-  DateFormatter,
-  type DateValue,
-  getLocalTimeZone,
-  CalendarDate,
-} from '@internationalized/date';
-import { Calendar as CalendarIcon } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
+import { CalendarDate, type DateValue } from '@internationalized/date';
+import { Calendar as CalendarIcon, Clock, X } from 'lucide-vue-next';
+import { computed, ref, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { cn } from '@/Utils/Shadcn/utils';
+import DatePicker from './DatePicker.vue';
+
 import { Button } from '@/Components/ui/button';
 import { Calendar } from '@/Components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
+import { formatDateTime } from '@/Utils/dateTime';
+import { cn } from '@/Utils/Shadcn/utils';
 
-// Define component props
 const props = withDefaults(defineProps<{
   modelValue?: Date | string | null;
   minDate?: DateValue;
   maxDate?: DateValue;
   placeholder?: string;
   disabled?: boolean;
+  clearable?: boolean;
+  variant?: 'inline' | 'popover';
   hourRange?: [number, number];
   minuteStep?: number;
+  class?: HTMLAttributes['class'];
 }>(), {
   hourRange: () => [0, 23],
   minuteStep: 5,
+  variant: 'inline',
+  clearable: false,
 });
 
-// Define component events
 const emit = defineEmits<{
   (e: 'update:modelValue', value: Date | null): void;
   (e: 'change', value: Date | null): void;
   (e: 'blur', event?: Event): void;
 }>();
 
-// Format dates based on current locale
-const dateFormatter = new DateFormatter(document.documentElement.lang || 'lt', {
-  dateStyle: 'long',
+const isOpen = ref(false);
+
+const modelDate = computed(() => {
+  if (props.modelValue instanceof Date) {
+    return props.modelValue;
+  }
+
+  if (typeof props.modelValue === 'string') {
+    const value = new Date(props.modelValue);
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  return null;
 });
 
-const timeFormatter = new DateFormatter(document.documentElement.lang || 'lt', {
-  timeStyle: 'short',
+const formattedDisplay = computed(() => {
+  if (!modelDate.value) return '';
+  return formatDateTime(modelDate.value, { format: 'iso' });
 });
 
-// Internal state for time
-const timeValue = ref<TimeValue>({ hour: 12, minute: 0 });
+const calendarValue = computed<CalendarDate | undefined>(() => {
+  const { value } = modelDate;
+  return value ? new CalendarDate(value.getFullYear(), value.getMonth() + 1, value.getDate()) : undefined;
+});
 
-// Parse the model value into date and time components
-const parseModelValue = (value: Date | string | null | undefined): { date: CalendarDate | undefined; time: TimeValue } => {
+const dateValue = computed(() => calendarValue.value);
+
+const timeValue = computed<TimeValue | undefined>(() => {
+  const { value } = modelDate;
+  return value ? { hour: value.getHours(), minute: value.getMinutes() } : undefined;
+});
+
+function emitValue(date: Date | null): void {
+  emit('update:modelValue', date);
+  emit('change', date);
+}
+
+function updateDate(value: Date | undefined): void {
   if (!value) {
-    return { date: undefined, time: { hour: 12, minute: 0 } };
+    emitValue(null);
+    return;
   }
 
-  let dateObj: Date;
-  if (value instanceof Date) {
-    dateObj = value;
-  }
-  else if (typeof value === 'string') {
-    dateObj = new Date(value);
-    if (isNaN(dateObj.getTime())) {
-      return { date: undefined, time: { hour: 12, minute: 0 } };
-    }
-  }
-  else {
-    return { date: undefined, time: { hour: 12, minute: 0 } };
+  const current = modelDate.value;
+  const date = new Date(value.getFullYear(), value.getMonth(), value.getDate(), current?.getHours() ?? 12, current?.getMinutes() ?? 0);
+  emitValue(date);
+}
+
+function updateFromCalendar(date: DateValue | undefined): void {
+  if (!date) {
+    emitValue(null);
+    return;
   }
 
-  return {
-    date: new CalendarDate(
-      dateObj.getFullYear(),
-      dateObj.getMonth() + 1,
-      dateObj.getDate(),
-    ),
-    time: {
-      hour: dateObj.getHours(),
-      minute: dateObj.getMinutes(),
-    },
-  };
-};
+  const current = modelDate.value;
+  const jsDate = new Date(date.year, date.month - 1, date.day, current?.getHours() ?? 12, current?.getMinutes() ?? 0);
+  emitValue(jsDate);
+}
 
-// Initialize from model value
-const initialParsed = parseModelValue(props.modelValue);
-const calendarValue = ref<CalendarDate | undefined>(initialParsed.date);
-timeValue.value = initialParsed.time;
-
-// Build the combined Date from calendar + time inputs
-const buildDateTime = (): Date | null => {
-  if (!calendarValue.value) return null;
-
-  const date = calendarValue.value.toDate(getLocalTimeZone());
-  date.setHours(timeValue.value.hour);
-  date.setMinutes(timeValue.value.minute);
-  date.setSeconds(0);
-  date.setMilliseconds(0);
-
-  return date;
-};
-
-// Emit combined value when calendar or time changes
-const emitValue = () => {
-  const dateTime = buildDateTime();
-  emit('update:modelValue', dateTime);
-  emit('change', dateTime);
-};
-
-// Handle calendar value change
-const onCalendarChange = (value: any) => {
-  if (value) {
-    calendarValue.value = new CalendarDate(value.year, value.month, value.day);
+function updateTime(value: TimeValue | undefined): void {
+  if (!value) {
+    emitValue(null);
+    return;
   }
-  else {
-    calendarValue.value = undefined;
-  }
-  emitValue();
-};
 
-// Handle time change
-const onTimeChange = (value: TimeValue | undefined) => {
-  // A date always has a time here, so a cleared value is not a state this picker can enter.
-  if (!value) return;
+  const current = modelDate.value ?? new Date();
+  const date = new Date(current);
+  date.setHours(value.hour, value.minute, 0, 0);
+  emitValue(date);
+}
 
-  timeValue.value = value;
-  emitValue();
-};
+function setNow(): void {
+  emitValue(new Date());
+}
 
-// Watch for external model value changes
-watch(() => props.modelValue, (newValue) => {
-  const parsed = parseModelValue(newValue);
-  calendarValue.value = parsed.date;
-  timeValue.value = parsed.time;
-}, { immediate: false });
-
-// Display text for the button
-const displayText = computed(() => {
-  if (calendarValue.value) {
-    const date = buildDateTime();
-    if (date) {
-      return `${dateFormatter.format(date)} ${timeFormatter.format(date)}`;
-    }
-    return dateFormatter.format(calendarValue.value.toDate(getLocalTimeZone()));
-  }
-  return props.placeholder || $t('Pick a date and time');
-});
-
-// Handle closing popover (for blur event)
-const onClose = () => {
-  emit('blur');
-};
+function clear(): void {
+  emitValue(null);
+}
 </script>

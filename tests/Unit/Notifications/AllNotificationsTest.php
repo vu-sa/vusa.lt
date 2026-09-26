@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EmailDelivery;
 use App\Enums\NotificationCategory;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -13,13 +14,11 @@ use App\Notifications\MeetingReminderNotification;
 use App\Notifications\MemberRegistrationNotification;
 use App\Notifications\StudentRepRegistrationNotification;
 use App\Notifications\TaskAssignedNotification;
-use App\Notifications\TaskCompletedNotification;
 use App\Notifications\TaskOverdueNotification;
 use App\Notifications\TaskReminderNotification;
 use App\Notifications\TestPushNotification;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use NotificationChannels\WebPush\WebPushChannel;
 
 pest()->use(RefreshDatabase::class);
 
@@ -112,90 +111,21 @@ describe('TaskAssignedNotification', function (): void {
         expect($actions)->toBeArray()->not->toBeEmpty();
     });
 
-    test('supports email digest by default', function (): void {
-        $task = Task::factory()->create();
-        $notification = new TaskAssignedNotification($task);
-
-        expect($notification->supportsEmailDigest())->toBeTrue();
-    });
-
-    test('uses default via channels without mail', function (): void {
-        $task = Task::factory()->create();
+    test('goes to the digest by default, whatever the deadline', function (): void {
+        $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
         $user = User::factory()->create();
         $notification = new TaskAssignedNotification($task);
 
-        $channels = $notification->via($user);
-        expect($channels)->toContain('database')
-            ->toContain('broadcast')
-            ->toContain(WebPushChannel::class)->not->toContain('mail');
-    });
-});
-
-/*
-|--------------------------------------------------------------------------
-| TaskCompletedNotification Tests
-|--------------------------------------------------------------------------
-*/
-
-describe('TaskCompletedNotification', function (): void {
-    test('has correct category', function (): void {
-        $task = Task::factory()->create();
-        $completedBy = User::factory()->create();
-        $notification = new TaskCompletedNotification($task, $completedBy);
-
-        expect($notification->category())->toBe(NotificationCategory::Task);
+        expect($user->emailDeliveryFor($notification->type()))->toBe(EmailDelivery::Digest)
+            ->and($notification->via($user))->toBe(['database', 'broadcast']);
     });
 
-    test('returns correct title', function (): void {
-        $task = Task::factory()->create();
-        $completedBy = User::factory()->create();
+    test('a distant deadline stays in the app', function (): void {
+        $task = Task::factory()->create(['due_date' => now()->addDays(30)]);
         $user = User::factory()->create();
-        $notification = new TaskCompletedNotification($task, $completedBy);
+        $notification = new TaskAssignedNotification($task);
 
-        expect($notification->title($user))->toBeString();
-    });
-
-    test('body mentions task name and completer', function (): void {
-        $task = Task::factory()->create(['name' => 'Important Task']);
-        $completedBy = User::factory()->create(['name' => 'Completer User']);
-        $user = User::factory()->create();
-        $notification = new TaskCompletedNotification($task, $completedBy);
-
-        $body = $notification->body($user);
-        expect($body)->toBeString();
-    });
-
-    test('returns correct url', function (): void {
-        $task = Task::factory()->create();
-        $completedBy = User::factory()->create();
-        $notification = new TaskCompletedNotification($task, $completedBy);
-
-        expect($notification->url())->toBe(route('userTasks'));
-    });
-
-    test('uses checkmark icon', function (): void {
-        $task = Task::factory()->create();
-        $completedBy = User::factory()->create();
-        $notification = new TaskCompletedNotification($task, $completedBy);
-
-        expect($notification->icon())->toBe('✅');
-    });
-
-    test('returns subject with completer info', function (): void {
-        $task = Task::factory()->create();
-        $completedBy = User::factory()->create(['name' => 'Completer']);
-        $notification = new TaskCompletedNotification($task, $completedBy);
-
-        $subject = $notification->subject();
-        expect($subject)->toMatchArray(['name' => 'Completer', 'modelClass' => 'User']);
-    });
-
-    test('supports email digest', function (): void {
-        $task = Task::factory()->create();
-        $completedBy = User::factory()->create();
-        $notification = new TaskCompletedNotification($task, $completedBy);
-
-        expect($notification->supportsEmailDigest())->toBeTrue();
+        expect($notification->via($user))->toBe(['database', 'broadcast']);
     });
 });
 
@@ -248,7 +178,7 @@ describe('TaskReminderNotification', function (): void {
         $task = Task::factory()->create();
         $notification = new TaskReminderNotification($task, 3);
 
-        expect($notification->supportsEmailDigest())->toBeFalse();
+        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
     });
 
     test('returns correct object structure', function (): void {
@@ -319,7 +249,7 @@ describe('TaskOverdueNotification', function (): void {
         $tasks = collect([Task::factory()->create()]);
         $notification = new TaskOverdueNotification($tasks);
 
-        expect($notification->supportsEmailDigest())->toBeFalse();
+        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
     });
 });
 
@@ -407,7 +337,7 @@ describe('DutyExpiringNotification', function (): void {
         ]);
         $notification = new DutyExpiringNotification($duty, $dutiable, 30);
 
-        expect($notification->supportsEmailDigest())->toBeFalse();
+        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
     });
 
     test('returns correct object structure', function (): void {
@@ -480,7 +410,7 @@ describe('MeetingReminderNotification', function (): void {
         $meeting = Meeting::factory()->create();
         $notification = new MeetingReminderNotification($meeting, 24);
 
-        expect($notification->supportsEmailDigest())->toBeFalse();
+        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
     });
 
     test('has action buttons', function (): void {
@@ -679,7 +609,7 @@ describe('WelcomeNotification', function (): void {
     test('does not support email digest', function (): void {
         $notification = new WelcomeNotification;
 
-        expect($notification->supportsEmailDigest())->toBeFalse();
+        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
     });
 
     test('has empty actions', function (): void {
@@ -721,7 +651,7 @@ describe('TestPushNotification', function (): void {
     test('returns profile url', function (): void {
         $notification = new TestPushNotification;
 
-        expect($notification->url())->toBe(route('profile'));
+        expect($notification->url())->toBe(route('profile.notifications'));
     });
 
     test('uses bell icon', function (): void {
@@ -733,7 +663,7 @@ describe('TestPushNotification', function (): void {
     test('does not support email digest', function (): void {
         $notification = new TestPushNotification;
 
-        expect($notification->supportsEmailDigest())->toBeFalse();
+        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
     });
 });
 
@@ -744,36 +674,12 @@ describe('TestPushNotification', function (): void {
 */
 
 describe('AssignedToResourceNotification', function (): void {
-    test('determines category based on resource type - Reservation', function (): void {
+    test('is sent only for reservations, so it sits in the reservation section', function (): void {
         $assigner = ['modelClass' => 'User', 'name' => 'Test'];
         $resource = ['modelClass' => 'Reservation', 'name' => 'Test Res', 'url' => '/test'];
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
         expect($notification->category())->toBe(NotificationCategory::Reservation);
-    });
-
-    test('determines category based on resource type - Task', function (): void {
-        $assigner = ['modelClass' => 'User', 'name' => 'Test'];
-        $resource = ['modelClass' => 'Task', 'name' => 'Test Task', 'url' => '/test'];
-        $notification = new AssignedToResourceNotification($assigner, $resource);
-
-        expect($notification->category())->toBe(NotificationCategory::Task);
-    });
-
-    test('determines category based on resource type - Meeting', function (): void {
-        $assigner = ['modelClass' => 'User', 'name' => 'Test'];
-        $resource = ['modelClass' => 'Meeting', 'name' => 'Test Meeting', 'url' => '/test'];
-        $notification = new AssignedToResourceNotification($assigner, $resource);
-
-        expect($notification->category())->toBe(NotificationCategory::Meeting);
-    });
-
-    test('defaults to User category for unknown resource types', function (): void {
-        $assigner = ['modelClass' => 'User', 'name' => 'Test'];
-        $resource = ['modelClass' => 'Unknown', 'name' => 'Test', 'url' => '/test'];
-        $notification = new AssignedToResourceNotification($assigner, $resource);
-
-        expect($notification->category())->toBe(NotificationCategory::User);
     });
 
     test('returns correct title with resource name', function (): void {
@@ -835,22 +741,21 @@ describe('AssignedToResourceNotification', function (): void {
         expect($notification3->modelClass())->toBe('MEETING');
     });
 
-    test('supports email digest', function (): void {
+    test('is mailed at once, so it is not digested', function (): void {
         $assigner = ['modelClass' => 'User', 'name' => 'Test'];
         $resource = ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test'];
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
-        expect($notification->supportsEmailDigest())->toBeTrue();
+        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
     });
 
-    test('does not include mail in via channels', function (): void {
+    test('includes mail but does not push', function (): void {
         $assigner = ['modelClass' => 'User', 'name' => 'Test'];
         $resource = ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test'];
         $user = User::factory()->create();
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
-        $channels = $notification->via($user);
-        expect($channels)->not->toContain('mail');
+        expect($notification->via($user))->toBe(['database', 'broadcast', 'mail']);
     });
 
     test('renders its email with assignment details', function (): void {

@@ -1,49 +1,49 @@
 <template>
-  <PageContent :title="$t('settings.pages.site.title')" :back-url="route('settings.index')">
-    <UpsertModelLayout>
-      <AdminForm :model="form" @submit:form="handleFormSubmit">
-        <FormElement>
-          <template #title>
-            {{ $t('settings.site_settings.privacy_page_title') }}
+  <FormPage
+    :title="$t('settings.pages.site.title')"
+    :back-href="route('settings.index')"
+    :back-label="$t('settings.title')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :available-locales="[]"
+    @submit="handleFormSubmit"
+  >
+    <FormSection
+      :title="$t('settings.site_settings.privacy_page_title')"
+      :description="$t('settings.site_settings.privacy_page_description')"
+    >
+      <FormFieldWrapper
+        v-for="locale in LOCALES"
+        :id="`privacy_page_id_${locale}`"
+        :key="locale"
+        :label="`${$t('settings.site_settings.privacy_page_label')} · ${locale.toUpperCase()}`"
+        :error="form.errors[`privacy_page_id_${locale}`]"
+      >
+        <CollectionSelectDialog
+          v-model:open="dialogOpen[locale]"
+          collection="pages"
+          allow-empty
+          :base-filter-by="baseFilterBy(locale)"
+          :initial-hits="initialHits(selected[locale])"
+          :title="$t('settings.site_settings.privacy_page_label')"
+          :confirm-label="$t('Pasirinkti')"
+          :search-placeholder="$t('settings.site_settings.privacy_page_search_placeholder')"
+          :empty-message="$t('settings.site_settings.privacy_page_empty')"
+          @confirm="hits => onConfirm(locale, hits)"
+        >
+          <template #trigger>
+            <Button :id="`privacy_page_id_${locale}`" type="button" variant="outline" class="w-full justify-between font-normal">
+              <span class="truncate" :class="{ 'text-muted-foreground': !selected[locale] }">
+                {{ triggerLabel(selected[locale]) }}
+              </span>
+              <ChevronDown class="size-4 opacity-50" />
+            </Button>
           </template>
-          <template #description>
-            {{ $t('settings.site_settings.privacy_page_description') }}
-          </template>
-
-          <div class="space-y-4">
-            <div v-for="locale in LOCALES" :key="locale.code" class="space-y-2">
-              <Label class="inline-flex items-center gap-2">
-                <img :src="locale.flag" :alt="locale.name" class="h-4 w-4 rounded-full">
-                {{ $t('settings.site_settings.privacy_page_label') }} — {{ locale.name }}
-              </Label>
-
-              <CollectionSelectDialog
-                v-model:open="dialogOpen[locale.code]"
-                collection="pages"
-                allow-empty
-                :base-filter-by="baseFilterBy(locale.code)"
-                :initial-hits="initialHits(selected[locale.code])"
-                :title="$t('settings.site_settings.privacy_page_label')"
-                :confirm-label="$t('Pasirinkti')"
-                :search-placeholder="$t('settings.site_settings.privacy_page_search_placeholder')"
-                :empty-message="$t('settings.site_settings.privacy_page_empty')"
-                @confirm="hits => onConfirm(locale.code, hits)"
-              >
-                <template #trigger>
-                  <Button type="button" variant="outline" class="w-full justify-between font-normal">
-                    <span class="truncate" :class="{ 'text-muted-foreground': !selected[locale.code] }">
-                      {{ triggerLabel(selected[locale.code]) }}
-                    </span>
-                    <ChevronDown class="size-4 opacity-50" />
-                  </Button>
-                </template>
-              </CollectionSelectDialog>
-            </div>
-          </div>
-        </FormElement>
-      </AdminForm>
-    </UpsertModelLayout>
-  </PageContent>
+        </CollectionSelectDialog>
+      </FormFieldWrapper>
+    </FormSection>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
@@ -52,11 +52,9 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown } from 'lucide-vue-next';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import AdminForm from '@/Components/AdminForms/AdminForm.vue';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
-import { Label } from '@/Components/ui/label';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Button } from '@/Components/ui/button';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
@@ -74,10 +72,7 @@ const props = defineProps<{
   selectedPages: { lt: SelectedPage | null; en: SelectedPage | null };
 }>();
 
-const LOCALES = [
-  { code: 'lt' as const, flag: 'https://hatscripts.github.io/circle-flags/flags/lt.svg', name: 'Lietuvių' },
-  { code: 'en' as const, flag: 'https://hatscripts.github.io/circle-flags/flags/gb.svg', name: 'English' },
-];
+const LOCALES: LocaleCode[] = ['lt', 'en'];
 
 const selected = reactive<{ lt: SelectedPage | null; en: SelectedPage | null }>({
   lt: props.selectedPages.lt,

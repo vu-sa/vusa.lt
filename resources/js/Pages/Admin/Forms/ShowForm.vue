@@ -1,148 +1,160 @@
 <template>
-  <ShowPageLayout :model="form" :title="form.name">
-    <template #more-options>
-      <MoreOptionsButton v-if="can.update" edit @edit-click="router.visit(route('forms.edit', form.id))" />
-    </template>
-    <div class="space-y-4">
-      <!-- Summary + actions -->
-      <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/20 p-4">
-        <div class="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
-          <div>
-            <span class="text-muted-foreground">{{ $t('Registracijos') }}:</span>
-            <span class="ml-1 font-medium">{{ registrations.length }}</span>
-          </div>
-          <div v-if="latestRegistrationDate">
-            <span class="text-muted-foreground">{{ $t('Paskutinė registracija') }}:</span>
-            <span class="ml-1 font-medium">{{ latestRegistrationDate }}</span>
-          </div>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <Button v-if="publicUrl" as="a" :href="publicUrl" target="_blank" variant="outline" size="sm">
-            <ExternalLinkIcon class="mr-1.5 h-4 w-4" />
-            {{ $t('Atidaryti viešą formą') }}
-          </Button>
-          <Button v-if="can.export && exportUrl" as="a" :href="exportUrl" target="_blank" variant="outline" size="sm">
-            <DownloadIcon class="mr-1.5 h-4 w-4" />
-            {{ $t('Atsisiųsti Excel') }}
-          </Button>
-        </div>
+  <RecordPage
+    v-model:section="currentSection"
+    :history-subject="{ type: 'form', id: form.id }"
+    :title="localizedTitle"
+    :entity-type="ModelEnum.FORM"
+    :facts="recordFacts"
+    :sections="tabs"
+    :primary-action
+    :overflow-actions
+    @action="handleRecordAction"
+  >
+    <template #subtitle>
+      <div v-if="form.tenant?.shortname" class="text-xs text-muted-foreground">
+        {{ form.tenant.shortname }}
       </div>
+    </template>
 
-      <SimpleDataTable
-        :data="tableData"
-        :columns="registrationColumns"
-        :enable-pagination="true"
-        :page-size="15"
-        :enable-filtering="true"
-        :enable-column-visibility="false"
-        :empty-message="$t('forms.registrations.none')"
-        :row-class-name="() => ''"
-      >
-        <template #empty>
-          <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
-            <InboxIcon class="h-10 w-10 text-muted-foreground" />
-            <h3 class="text-lg font-medium">
-              {{ $t('forms.registrations.none') }}
-            </h3>
-            <p class="max-w-sm text-sm text-muted-foreground">
-              {{ $t('forms.registrations.none_hint') }}
-            </p>
-            <Button v-if="publicUrl" as="a" :href="publicUrl" target="_blank" variant="outline" size="sm" class="mt-2">
-              <ExternalLinkIcon class="mr-1.5 h-4 w-4" />
-              {{ $t('Atidaryti viešą formą') }}
-            </Button>
+    <template #registracijos>
+      <div class="space-y-4">
+        <SimpleDataTable
+          :data="tableData"
+          :columns="registrationColumns"
+          enable-pagination
+          :page-size="15"
+          enable-filtering
+          :enable-column-visibility="false"
+          :empty-message="$t('forms.registrations.none')"
+          :row-class-name="() => ''"
+        >
+          <template #empty>
+            <EmptyState
+              :icon="Inbox"
+              :title="$t('forms.registrations.none')"
+              :description="$t('forms.registrations.none_hint')"
+              :action-label="publicUrl ? $t('Atidaryti viešą formą') : undefined"
+              @action="publicUrl && openPublicForm()"
+            />
+          </template>
+
+          <template #filters>
+            <DataTableFilter
+              v-for="field in enumFields"
+              :key="field.id"
+              v-model:value="enumFilters[String(field.id)]"
+              :options="getFieldOptions({ key: String(field.id) })"
+              multiple
+              @update:value="enumFilters[String(field.id)] = $event"
+            >
+              {{ field.label }}
+            </DataTableFilter>
+          </template>
+        </SimpleDataTable>
+      </div>
+    </template>
+
+    <template #laukai>
+      <div class="max-w-3xl space-y-3">
+        <div
+          v-for="(field, index) in form.form_fields"
+          :key="field.id"
+          class="border border-border bg-card p-4"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono text-muted-foreground">{{ index + 1 }}.</span>
+                <h4 class="text-sm font-semibold text-foreground">
+                  {{ field.label }}
+                </h4>
+                <Badge v-if="field.is_required" variant="destructive" class="text-[10px]">
+                  {{ $t('Privalomas') }}
+                </Badge>
+              </div>
+              <p v-if="field.description" class="text-xs text-muted-foreground">
+                {{ field.description }}
+              </p>
+            </div>
+            <Badge variant="outline" class="shrink-0 text-xs">
+              {{ fieldTypeLabel(field.type) }}
+            </Badge>
           </div>
-        </template>
 
-        <template #filters>
-          <DataTableFilter
-            v-for="field in enumFields"
-            :key="field.id"
-            v-model:value="enumFilters[String(field.id)]"
-            :options="getFieldOptions({ key: String(field.id) })"
-            multiple
-            @update:value="enumFilters[String(field.id)] = $event"
-          >
-            {{ field.label }}
-          </DataTableFilter>
-        </template>
-      </SimpleDataTable>
-    </div>
-
-    <!-- Registration Details Dialog -->
-    <Dialog v-model:open="showModal">
-      <DialogContent class="sm:max-w-[95vw] w-full max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{{ $t('forms.registrations.details') }}</DialogTitle>
-          <DialogDescription>
-            {{ $t('forms.registrations.details_hint') }}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div v-if="selectedRegistration" class="space-y-4">
-          <!-- Registration Info - Two column layout to use full dialog width -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div v-for="field in displayFields" :key="field.key" class="border rounded-lg p-4 bg-muted/10">
-              <!-- Field header with value in a flex layout -->
-              <div class="flex flex-col gap-3">
-                <div class="flex-shrink-0">
-                  <div class="text-sm font-medium text-muted-foreground mb-1">
-                    {{ field.title }}
-                  </div>
-                  <!-- Show field options button for enum fields -->
-                  <Button
-                    v-if="getFieldOptions(field)"
-                    variant="outline"
-                    size="sm"
-                    class="h-8 px-3 text-xs border-dashed hover:border-solid transition-all"
-                    @click="toggleFieldOptions(field.key)"
-                  >
-                    <span class="mr-1" v-html="showOptionsFor === field.key ? '&#9660;' : '&#9654;'" />
-                    {{ showOptionsFor === field.key ? $t('forms.registrations.hide_options') : $t('forms.registrations.show_options') }}
-                  </Button>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="text-base p-3 bg-background border rounded-md min-h-[44px] flex items-center break-words">
-                    {{ formatFieldValue(field, selectedRegistration[field.key]) }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Collapsible field options for enum fields -->
-              <div v-if="getFieldOptions(field) && showOptionsFor === field.key" class="mt-3 pt-3 border-t">
-                <div class="text-xs font-medium text-muted-foreground mb-2">
-                  {{ $t('forms.registrations.available_options') }}:
-                </div>
-                <div class="flex flex-wrap gap-1">
-                  <Badge
-                    v-for="option in getFieldOptions(field)"
-                    :key="option.value"
-                    :variant="String(option.value) === String(selectedRegistration[field.key]) ? 'default' : 'outline'"
-                    class="text-xs"
-                  >
-                    {{ option.label }}
-                  </Badge>
-                </div>
-              </div>
+          <div v-if="field.options && field.options.length > 0" class="mt-3 border-t border-border pt-3">
+            <span class="text-xs font-medium text-muted-foreground">{{ $t('Galimos reikšmės') }}:</span>
+            <div class="mt-1.5 flex flex-wrap gap-1.5">
+              <span
+                v-for="opt in field.options"
+                :key="opt.value"
+                class="border border-border bg-secondary px-2 py-0.5 text-xs text-foreground"
+              >
+                {{ typeof opt.label === 'object' ? opt.label[$page.props.app.locale] : opt.label }}
+              </span>
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
-  </ShowPageLayout>
+      </div>
+    </template>
+
+    <template #veikla>
+      <RecordActivity commentable-type="form" :commentable-id="form.id" />
+    </template>
+  </RecordPage>
+
+  <!-- Registration Details Dialog -->
+  <Dialog v-model:open="showModal">
+    <DialogContent class="max-h-[85vh] w-full max-w-4xl overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>{{ $t('forms.registrations.details') }}</DialogTitle>
+        <DialogDescription>
+          {{ $t('forms.registrations.details_hint') }}
+        </DialogDescription>
+      </DialogHeader>
+
+      <div v-if="selectedRegistration" class="space-y-4 pt-2">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div
+            v-for="field in displayFields"
+            :key="field.key"
+            class="border border-border bg-secondary/40 p-3"
+          >
+            <div class="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {{ field.title }}
+            </div>
+            <div class="mt-1 text-sm font-medium text-foreground break-words">
+              {{ formatFieldValue(field, selectedRegistration[field.key]) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+
+  <ConfirmDialog
+    v-model:open="showDeleteDialog"
+    :title="$t('Šalinti formą?')"
+    :description="$t('Ar tikrai norite ištrinti šią formą? Forma bus perkelta į šiukšlinę.')"
+    :confirm-label="$t('Šalinti')"
+    destructive
+    @confirm="handleDelete"
+  />
 </template>
 
 <script setup lang="tsx">
 import { router, usePage } from '@inertiajs/vue3';
-import { ref, computed, watch } from 'vue';
-import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { Download as DownloadIcon, ExternalLink as ExternalLinkIcon, EyeIcon, Inbox as InboxIcon } from 'lucide-vue-next';
+import type { CellContext, ColumnDef, HeaderContext, TableFeatures } from '@tanstack/vue-table';
+import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { Copy, Download, Edit, ExternalLink, Eye, Inbox, Trash2 } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
+import { toast } from 'vue-sonner';
 
-import ShowPageLayout from '@/Components/Layouts/ShowModel/ShowPageLayout.vue';
-import MoreOptionsButton from '@/Components/Buttons/MoreOptionsButton.vue';
+import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
+import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import SimpleDataTable from '@/Components/Tables/SimpleDataTable.vue';
+import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
 import {
   Dialog,
   DialogContent,
@@ -151,9 +163,15 @@ import {
   DialogTitle,
 } from '@/Components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { Badge } from '@/Components/ui/badge';
-import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { createIdColumn, createTimestampColumn, createTextColumn } from '@/Composables/useDataTableColumns';
+import { createIdColumn, createTimestampColumn } from '@/Composables/useDataTableColumns';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import { ModelEnum } from '@/Types/enums';
+
+interface FieldOption {
+  value: string | number;
+  label: string;
+}
 
 const props = defineProps<{
   form: App.Entities.Form;
@@ -164,72 +182,154 @@ const props = defineProps<{
   can: {
     update: boolean;
     export: boolean;
+    delete?: boolean;
   };
 }>();
 
-// Registrations arrive newest-first from the server.
+const currentSection = ref('registracijos');
+const showModal = ref(false);
+const showDeleteDialog = ref(false);
+const selectedRegistration = ref<Record<string, unknown> | null>(null);
+
+const enumFilters = ref<Record<string, unknown[]>>({});
+
+const localizedTitle = computed(() => {
+  if (!props.form.name) return '';
+  if (typeof props.form.name === 'object') {
+    const locale = getActiveLanguage() as 'lt' | 'en';
+    return getTranslatedValue(props.form.name as unknown as Record<string, string>, locale);
+  }
+  return String(props.form.name);
+});
+
 const latestRegistrationDate = computed(() => {
   const latest = props.registrations[0]?.created_at;
-
   return latest ? new Date(latest).toLocaleString() : null;
 });
 
-const showModal = ref(false);
-const selectedRegistration = ref<any>(null);
-const showOptionsFor = ref<string | null>(null);
+const recordFacts = computed<RecordFact[]>(() => [
+  { key: 'registrations', label: $t('Registracijos'), value: String(props.registrations.length) },
+  { key: 'latest', label: $t('Paskutinė registracija'), value: latestRegistrationDate.value ?? '—' },
+  ...(props.form.tenant ? [{ key: 'tenant', label: $tChoice('entities.tenant.model', 1), value: props.form.tenant.shortname }] : []),
+  ...(props.publicUrl ? [{ key: 'public', label: $t('Nuoroda'), value: $t('Vieša forma'), href: props.publicUrl }] : []),
+]);
 
-// Filter state for enum fields
-const enumFilters = ref<Record<string, any[]>>({});
+const tabs = computed<RecordPageSection[]>(() => [
+  { value: 'registracijos', label: $t('Registracijos'), count: props.registrations.length },
+  { value: 'laukai', label: $t('Formos laukai'), count: props.form.form_fields?.length ?? 0 },
+]);
 
-const toggleFieldOptions = (fieldKey: string) => {
-  showOptionsFor.value = showOptionsFor.value === fieldKey ? null : fieldKey;
-};
+const primaryAction = computed<RecordAction | undefined>(() => {
+  if (props.can.export && props.exportUrl) {
+    return {
+      key: 'export',
+      label: $t('Atsisiųsti Excel'),
+      icon: Download,
+      href: props.exportUrl,
+      external: true,
+    };
+  }
+  return undefined;
+});
 
-// Helper function to get field options for enum fields - moved up for computed usage
-const getFieldOptions = (field: any) => {
-  const formField = props.form.form_fields.find(f => String(f.id) === field.key);
+const overflowActions = computed<RecordAction[]>(() => {
+  const actions: RecordAction[] = [];
 
-  if (!formField || formField.type !== 'enum') {
-    return null;
+  if (props.can.update) {
+    actions.push({
+      key: 'edit',
+      label: $t('Redaguoti formą'),
+      icon: Edit,
+      href: route('forms.edit', props.form.id),
+    });
   }
 
-  // Handle tenant model options
+  if (props.publicUrl) {
+    actions.push({
+      key: 'view-public',
+      label: $t('Atidaryti viešą formą'),
+      icon: ExternalLink,
+      href: props.publicUrl,
+      external: true,
+    });
+    actions.push({
+      key: 'copy-link',
+      label: $t('Kopijuoti nuorodą'),
+      icon: Copy,
+    });
+  }
+
+  actions.push({
+    key: 'delete',
+    label: $t('Šalinti formą'),
+    icon: Trash2,
+    destructive: true,
+  });
+
+  return actions;
+});
+
+function handleRecordAction(key: string): void {
+  if (key === 'copy-link') {
+    copyPublicLink();
+  }
+  else if (key === 'delete') {
+    showDeleteDialog.value = true;
+  }
+}
+
+function copyPublicLink(): void {
+  if (!props.publicUrl) return;
+  navigator.clipboard.writeText(props.publicUrl);
+  toast.success($t('Nuoroda nukopijuota į iškarpinę.'));
+}
+
+function openPublicForm(): void {
+  if (!props.publicUrl) return;
+  window.open(props.publicUrl, '_blank');
+}
+
+function fieldTypeLabel(type: string): string {
+  const map: Record<string, string> = {
+    string: $t('Tekstas'),
+    boolean: $t('Taip / Ne'),
+    enum: $t('Pasirinkimas'),
+    number: $t('Skaičius'),
+    date: $t('Data'),
+  };
+  return map[type] ?? type;
+}
+
+const getFieldOptions = (field: { key: string }): FieldOption[] | null => {
+  const formField = props.form.form_fields.find(f => String(f.id) === field.key);
+  if (!formField || formField.type !== 'enum') return null;
+
   if (formField.use_model_options && formField.options_model === 'App\\Models\\Tenant') {
     const tenants = usePage().props.tenants || [];
-    return tenants.map((tenant: any) => ({
+    return tenants.map((tenant: { id: number; shortname: string }) => ({
       value: tenant.id,
       label: tenant.shortname,
     }));
   }
 
-  // Handle institution model options
   if (formField.use_model_options && formField.options_model === 'App\\Models\\Institution') {
     const institutions = props.institutions || [];
-    return institutions.map((institution: any) => ({
+    return institutions.map(institution => ({
       value: institution.id,
       label: institution.name,
     }));
   }
 
-  // Handle regular options
   if (formField.options && Array.isArray(formField.options)) {
-    return formField.options.map((option: any) => ({
+    return formField.options.map((option: { value: string | number; label: string | Record<string, string> }) => ({
       value: option.value,
-      label: typeof option.label === 'object' ? option.label[usePage().props.app.locale] : option.label,
+      label: typeof option.label === 'object' ? option.label[usePage().props.app.locale] : String(option.label),
     }));
   }
 
   return null;
 };
 
-// Reset options state when dialog closes
-watch(showModal, (isOpen) => {
-  if (!isOpen) {
-    showOptionsFor.value = null;
-  }
-});
-
-// Get enum fields that can have filters
 const enumFields = computed(() => {
   return props.form.form_fields.filter((field) => {
     if (field.type !== 'enum') return false;
@@ -238,7 +338,6 @@ const enumFields = computed(() => {
   });
 });
 
-// Initialize filters for enum fields
 watch(enumFields, (fields) => {
   fields.forEach((field) => {
     if (!enumFilters.value[String(field.id)]) {
@@ -247,11 +346,9 @@ watch(enumFields, (fields) => {
   });
 }, { immediate: true });
 
-// Transform registration data for table
 const tableData = computed(() => {
   let filteredRegistrations = props.registrations;
 
-  // Apply enum filters
   Object.entries(enumFilters.value).forEach(([fieldId, selectedValues]) => {
     if (selectedValues.length > 0) {
       filteredRegistrations = filteredRegistrations.filter((registration) => {
@@ -265,60 +362,52 @@ const tableData = computed(() => {
   });
 
   return filteredRegistrations.map((registration) => {
-    const row = { ...registration };
+    const row: Record<string, unknown> = { ...registration };
     registration.field_responses.forEach((fieldResponse) => {
-      // Check if response exists and has a value property
       if (fieldResponse.response && fieldResponse.response.value !== undefined) {
-        row[fieldResponse.form_field.id] = fieldResponse.response.value;
+        row[String(fieldResponse.form_field.id)] = fieldResponse.response.value;
       }
       else {
-        // Set empty string as fallback for missing responses
-        row[fieldResponse.form_field.id] = '';
+        row[String(fieldResponse.form_field.id)] = '';
       }
     });
     return row;
   });
 });
 
-// Helper function to format field values for display with labels
-const formatFieldValue = (field: any, value: any) => {
+const formatFieldValue = (field: { key?: string; id?: string | number; type?: string }, value: unknown): string => {
   if (value === null || value === undefined || value === '') {
-    return '-';
+    return '—';
   }
 
   if (field.type === 'boolean') {
-    return value ? $t('Yes') : $t('No');
+    return value ? $t('Taip') : $t('Ne');
   }
 
   if (field.type === 'enum') {
-    // Handle both table context (field = original form field) and dialog context (field = simplified)
     const formField = field.id
-      ? field // Already the full form field (from table)
-      : props.form.form_fields.find(f => String(f.id) === field.key); // Lookup needed (from dialog)
+      ? props.form.form_fields.find(f => String(f.id) === String(field.id))
+      : props.form.form_fields.find(f => String(f.id) === field.key);
 
     if (!formField) return String(value);
 
-    // Handle tenant model options
     if (formField.use_model_options && formField.options_model === 'App\\Models\\Tenant') {
       const tenants = usePage().props.tenants || [];
-      // Handle both string and number value types for tenant ID comparison
-      const tenant = tenants.find((tenant: any) => String(tenant.id) === String(value) || tenant.id === value);
-      return tenant ? `${tenant.shortname} (ID: ${value})` : `ID: ${value}`;
+      const tenant = tenants.find((t: { id: number; shortname: string }) => String(t.id) === String(value) || t.id === value);
+      return tenant ? `${tenant.shortname} (ID: ${String(value)})` : `ID: ${String(value)}`;
     }
 
-    // Handle institution model options
     if (formField.use_model_options && formField.options_model === 'App\\Models\\Institution') {
       const institutions = props.institutions || [];
-      const institution = institutions.find((inst: any) => String(inst.id) === String(value) || inst.id === value);
-      return institution ? institution.name : `ID: ${value}`;
+      const institution = institutions.find(i => String(i.id) === String(value) || i.id === value);
+      return institution ? institution.name : `ID: ${String(value)}`;
     }
 
-    // Handle regular options - show both label and value
     if (formField.options && Array.isArray(formField.options)) {
-      const option = formField.options.find((opt: any) => String(opt.value) === String(value));
+      const option = formField.options.find((opt: { value: string | number; label?: string | Record<string, string> }) => String(opt.value) === String(value));
       if (option) {
-        const label = typeof option.label === 'object' ? option.label[usePage().props.app.locale] : option.label;
-        return `${label} (${value})`;
+        const label = typeof option.label === 'object' ? option.label[usePage().props.app.locale] : String(option.label ?? '');
+        return `${label} (${String(value)})`;
       }
     }
 
@@ -327,9 +416,9 @@ const formatFieldValue = (field: any, value: any) => {
 
   if (field.type === 'timestamp' || field.key === 'created_at') {
     try {
-      return new Date(value).toLocaleString();
+      return new Date(value as string).toLocaleString();
     }
-    catch (e) {
+    catch {
       return String(value);
     }
   }
@@ -337,14 +426,12 @@ const formatFieldValue = (field: any, value: any) => {
   return String(value);
 };
 
-// Create modern TanStack columns
-const registrationColumns = computed<ColumnDef<any, any>[]>(() => {
-  const columns = [
-    // Actions column - moved to beginning
+const registrationColumns = computed<ColumnDef<TableFeatures, Record<string, unknown>, unknown>[]>(() => {
+  const columns: ColumnDef<TableFeatures, Record<string, unknown>, unknown>[] = [
     {
       id: 'actions',
       header: () => '',
-      cell: ({ row }) => (
+      cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => (
         <div class="flex justify-center">
           <Button
             variant="ghost"
@@ -354,41 +441,33 @@ const registrationColumns = computed<ColumnDef<any, any>[]>(() => {
               showModal.value = true;
             }}
           >
-            <EyeIcon class="h-4 w-4" />
+            <Eye class="h-4 w-4" />
           </Button>
         </div>
       ),
-      size: 60,
+      size: 50,
       enableSorting: false,
     },
-
-    // Created at column - moved to beginning
     createTimestampColumn('created_at', {
-      title: $t('Created'),
+      title: $t('Sukūrimo laikas'),
       width: 160,
     }),
-
-    // ID column
     createIdColumn({ width: 60 }),
-
-    // Dynamic form field columns with smarter sizing
     ...props.form.form_fields.map((field) => {
-      // Give enum fields more space for formatted labels
-      const columnWidth = field.type === 'enum' ? 180 : 120;
+      const columnWidth = field.type === 'enum' ? 180 : 130;
 
       return {
         accessorKey: String(field.id),
         id: String(field.id),
         size: columnWidth,
         enableSorting: true,
-        // Proper TanStack header function - receives header context
-        header: (info) => {
+        header: (info: HeaderContext<TableFeatures, Record<string, unknown>, unknown>) => {
           return (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    class="cursor-help text-left inline-flex w-full items-center gap-1 text-sm font-medium hover:bg-muted/50 px-1 py-1 rounded transition-colors"
+                    class="cursor-help text-left inline-flex w-full items-center gap-1 text-sm font-medium hover:bg-muted/50 px-1 py-1 transition-colors"
                     onClick={() => info.column.toggleSorting()}
                   >
                     <span class="truncate">{field.label}</span>
@@ -403,17 +482,16 @@ const registrationColumns = computed<ColumnDef<any, any>[]>(() => {
             </TooltipProvider>
           );
         },
-        cell: ({ row }) => {
+        cell: ({ row }: CellContext<TableFeatures, Record<string, unknown>, unknown>) => {
           const value = row.getValue(String(field.id));
           const formattedValue = formatFieldValue(field, value);
 
-          // Use tooltip for long values
           if (String(formattedValue).length > 20) {
             return (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div class="max-w-[140px] truncate cursor-help">
+                    <div class="max-w-[150px] truncate cursor-help">
                       {formattedValue}
                     </div>
                   </TooltipTrigger>
@@ -434,18 +512,24 @@ const registrationColumns = computed<ColumnDef<any, any>[]>(() => {
   return columns;
 });
 
-// Display fields for dialog - exclude actions and reorder for better UX
 const displayFields = computed(() => {
-  const fields = [
+  return [
     { key: 'id', title: 'ID', type: 'text' },
     ...props.form.form_fields.map(field => ({
       key: String(field.id),
       title: field.label,
       type: field.type,
     })),
-    { key: 'created_at', title: $t('Created'), type: 'timestamp' },
+    { key: 'created_at', title: $t('Sukūrimo laikas'), type: 'timestamp' },
   ];
-
-  return fields;
 });
+
+const handleDelete = () => {
+  router.delete(route('forms.destroy', props.form.id), {
+    onSuccess: () => {
+      showDeleteDialog.value = false;
+    },
+  });
+};
+
 </script>

@@ -111,7 +111,7 @@ trait HasCommonChecks
             return false;
         }
 
-        // Scoped by current_duties only. Never resolve this from $user->tenants(), a
+        // Scoped by non-ended duties only. Never resolve this from $user->tenants(), a
         // HasManyDeep relation that includes every duty the user has ever held — an ended
         // duty would grant padalinys-scope access through this branch.
         $padalinysScope = $authorizer->scope($user, $permissionBase.PermissionScopeEnum::PADALINYS->label());

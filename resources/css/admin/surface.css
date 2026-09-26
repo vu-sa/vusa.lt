@@ -1,0 +1,108 @@
+/* ==================================================================================
+   Admin surface
+   ==================================================================================
+
+   `data-surface="admin"` is stamped on <html> server-side by app.blade.php, via
+   App\Support\DesignSurface — Public/* pages get `public`, Admin/* pages get `admin`.
+
+   The palette itself is shared with the public site: theme/surface-palette.css.
+   ================================================================================== */
+
+/* Numbers line up in tables without every component remembering `tabular-nums` (D10). */
+[data-surface="admin"] :is(table, [data-slot="table"]) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Touch targets (.ai/rules/js-pages-admin.md): 44px on coarse pointers,
+   dense on desktop. Unused until PR 4.1 (the shell) becomes its first consumer. */
+@utility u-touch {
+  @media (pointer: coarse) {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface="admin"] *,
+  [data-surface="admin"] *::before,
+  [data-surface="admin"] *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Sonner ships its own fixed white/black palette and rounded, shadowed chrome — tokenise it here
+   the same way public/surface.css does, so a toast on either opted-in surface stays square and
+   themed rather than falling back to Sonner's defaults. */
+[data-surface="admin"] [data-sonner-toaster] {
+  --normal-bg: var(--popover);
+  --normal-border: var(--border);
+  --normal-text: var(--popover-foreground);
+  --border-radius: 0px;
+}
+
+[data-surface="admin"] [data-sonner-toast][data-styled='true'] {
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--font-public);
+}
+
+[data-surface="admin"] [data-sonner-toast][data-styled='true'] [data-description] {
+  color: var(--muted-foreground);
+}
+
+[data-surface="admin"] [data-sonner-toast][data-styled='true'] [data-button] {
+  border-radius: 0;
+  background: var(--brand-fill);
+  color: var(--brand-foreground);
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+[data-surface="admin"] [data-sonner-toast][data-styled='true'] [data-close-button] {
+  border-color: var(--border);
+  border-radius: 0;
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+
+[data-surface="admin"] [data-sonner-toast][data-styled='true']:hover [data-close-button]:hover {
+  background: var(--secondary);
+  border-color: var(--brand);
+}
+
+/* Navigation progress bar under admin surface: crisp, 2px hairline in brand colour
+   with zero shadows, glow or peg blur (.ai/rules/js-pages-admin.md, O16, O3). */
+html[data-surface="admin"] #nprogress .bar {
+  background: var(--brand-fill, var(--brand));
+  height: 2px;
+}
+
+html[data-surface="admin"] #nprogress .peg {
+  box-shadow: none;
+  display: none;
+}
+
+
+/* Fields on the editing canvas (FormPage): paper on the tinted canvas, 44px, and a brand
+   hairline on focus instead of a ring. Unlayered on purpose — it must beat the ui/* utilities
+   (`bg-transparent`, `data-[size=default]:h-9`) — and scoped so dialogs and filters keep density. */
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"], [data-slot="textarea"]) {
+  background-color: var(--background);
+  box-shadow: none;
+}
+
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"][data-size="default"]) {
+  min-block-size: 2.75rem;
+}
+
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"], [data-slot="textarea"]):focus-visible:not([aria-invalid="true"]) {
+  border-color: var(--brand);
+}
+
+[data-slot="form-page"] [data-slot="select-trigger"]:focus-within:not([aria-invalid="true"]) {
+  border-color: var(--brand);
+}

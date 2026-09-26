@@ -1,147 +1,76 @@
 <template>
-  <ShowPageLayout
-    v-model:tab="currentTab"
+  <RecordPage
+    v-model:section="currentTab"
     :title="meetingTitle"
-    :badge="meetingBadge"
-    :model="meeting"
-    audit-subject-type="meeting"
-    :tabs
+    :entity-type="ModelEnum.MEETING"
+    :eyebrow-suffix="meeting.type_label"
+    :facts="recordFacts"
+    :sections="tabs"
+    :primary-action
+    :overflow-actions
+    :navigation="recordNavigation"
+    actions-beside-title
+    @action="handleRecordAction"
   >
-    <template #icon>
-      <div class="flex flex-col items-center justify-center leading-none">
-        <span class="text-lg sm:text-xl font-semibold text-zinc-700 dark:text-zinc-200">
-          {{ formatStaticTime(new Date(meeting.start_time), { day: "numeric" }) }}
-        </span>
-        <span class="mt-0.5 text-[10px] font-medium tracking-wide text-zinc-400 dark:text-zinc-500">
-          {{ formatMonthShort(new Date(meeting.start_time)) }}
-        </span>
-      </div>
+    <template #identity>
+      <MeetingDatePlate :value="meeting.start_time" />
     </template>
-    <template #subtitle>
-      <!-- Joint meeting institution management (unobtrusive) -->
-      <div v-if="meeting.institutions && meeting.institutions.length > 0" class="flex flex-wrap mt-1 items-center gap-2">
-        <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ $t('Institucijos') }}:</span>
-        <div v-for="institution in meeting.institutions" :key="institution.id" class="flex items-center gap-0.5">
-          <Badge variant="outline" class="text-xs">
-            {{ institution.name }}
-          </Badge>
-          <button
-            v-if="(meeting.institutions?.length ?? 0) > 1"
-            type="button"
-            class="flex items-center justify-center h-4 w-4 rounded text-zinc-400 hover:text-destructive hover:bg-destructive/10 transition-colors"
-            :title="$t('Pašalinti instituciją')"
-            @click="handleDetachInstitution(institution.id)"
-          >
-            <X class="h-2.5 w-2.5" />
-          </button>
-        </div>
-      </div>
-    </template>
-    <template #info>
-      <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-sm">
-        <div v-if="meetingTimeLabel" class="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
-          <Clock class="h-4 w-4 text-green-500 shrink-0" />
-          <span>{{ meetingTimeLabel }}</span>
-          <span class="text-zinc-400 dark:text-zinc-500">· {{ meetingRelativeTime }}</span>
-        </div>
-        <Badge v-if="meeting.type_label" variant="secondary" class="text-xs">
-          {{ meeting.type_label }}
-        </Badge>
-        <Badge v-if="meeting.is_public" variant="outline" class="text-xs gap-1 text-green-600 border-green-300 dark:text-green-400 dark:border-green-700">
-          <Globe class="h-3 w-3" />
-          <span class="hidden sm:inline">{{ $t('Rodomas viešai') }}</span>
-          <span class="sm:hidden">{{ $t('Viešas') }}</span>
-        </Badge>
-        <a
-          v-if="calendarEvent"
-          :href="route('calendar.edit', { calendar: calendarEvent.id })"
-          class="inline-flex items-center gap-1.5 text-xs transition-colors"
-          :class="calendarEvent.is_draft
-            ? 'text-amber-600 hover:text-amber-700 dark:text-amber-400'
-            : 'text-green-600 hover:text-green-700 dark:text-green-400'"
-          :title="calendarEvent.is_draft ? $t('meetings.announce.draft_hint') : $t('meetings.announce.published_hint')"
-        >
-          <CalendarDays class="h-3.5 w-3.5" />
-          {{ calendarEvent.is_draft ? $t('Kalendoriuje (juodraštis)') : $t('Kalendoriuje') }}
-        </a>
-      </div>
-      <div v-if="representatives && representatives.length > 0" class="flex items-center gap-2">
-        <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('Atstovai') }}:</span>
-        <UsersAvatarGroup :users="representatives" :max="4" :size="24" expandable />
-      </div>
-      <!-- Nominated for the term this sitting fell in. Shown apart from the
-           representatives because they are who the agenda tasks actually went to. -->
-      <div v-if="administrators && administrators.length > 0" class="flex items-center gap-2">
-        <span class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:inline">{{ $t('administrators.label') }}:</span>
-        <UsersAvatarGroup :users="(administrators as unknown as App.Entities.User[])" :max="4" :size="24" expandable />
-      </div>
 
-      <!-- Protocol / report status (past meetings only). This is meeting metadata,
-           so it belongs with the rest of the hero info rather than beside the tabs. -->
-      <div v-if="isPastMeeting" class="hidden sm:flex items-center gap-3">
-        <span
-          class="inline-flex items-center gap-1.5 text-xs"
-          :class="hasProtocol ? 'text-green-600 dark:text-green-400' : 'text-zinc-400 dark:text-zinc-500'"
-          :title="hasProtocol ? $t('Protokolas įkeltas') : $t('Protokolas neįkeltas')"
-        >
-          <FileText class="h-4 w-4 shrink-0" />
-          {{ $t('Protokolas') }}
-          <Check v-if="hasProtocol" class="h-3.5 w-3.5" />
-        </span>
-        <span
-          class="inline-flex items-center gap-1.5 text-xs"
-          :class="hasReport ? 'text-green-600 dark:text-green-400' : 'text-zinc-400 dark:text-zinc-500'"
-          :title="hasReport ? $t('Ataskaita įkelta') : $t('Ataskaita neįkelta')"
-        >
-          <FileBarChart class="h-4 w-4 shrink-0" />
-          {{ $t('Ataskaita') }}
-          <Check v-if="hasReport" class="h-3.5 w-3.5" />
-        </span>
+    <template #fact-institution>
+      <div v-if="meeting.institutions?.length" class="flex flex-wrap gap-x-1">
+        <template v-for="(institution, index) in meeting.institutions" :key="institution.id">
+          <span v-if="index" aria-hidden="true">·</span>
+          <span v-if="readOnly">{{ institution.name }}</span>
+          <Link v-else :href="route('institutions.show', institution.id)" class="text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand">
+            {{ institution.name }}
+          </Link>
+        </template>
       </div>
+      <span v-else>{{ $t('Be institucijos') }}</span>
     </template>
-    <template #actions>
-      <Button variant="outline" size="sm" class="h-9" @click="showMeetingModal = true">
-        <Edit class="h-4 w-4 sm:mr-2" />
-        <span class="hidden sm:inline">{{ $t('Redaguoti posėdį') }}</span>
-      </Button>
-      <SpotlightPopover
-        :title="$t('meetings.announce.spotlight_title')"
-        :description="$t('meetings.announce.spotlight_description')"
-        :is-dismissed="!announceSpotlight.isVisible.value"
-        position="bottom"
-        float
-        @dismiss="announceSpotlight.dismiss"
-      >
-        <DropdownMenu @update:open="(isOpen: boolean) => { if (isOpen) { announceSpotlight.dismiss(); } }">
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" size="icon" class="h-9 w-9">
-              <MoreHorizontal class="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem @click="showAddInstitutionDialog = true">
-              <Link2 class="h-4 w-4 mr-2" />
-              {{ $t('Pridėti instituciją') }}
-            </DropdownMenuItem>
-            <DropdownMenuItem v-if="isInternalBody && !calendarEvent" @click="openAnnounceDialog">
-              <CalendarPlus class="h-4 w-4 mr-2" />
-              {{ $t('Paskelbti kalendoriuje') }}
-            </DropdownMenuItem>
-            <!-- Gated on the event itself, not on "not announceable": a body VU SA only
-                 delegates into has nothing to announce *and* nothing to unlink. Any body
-                 can end up with an event, though, so scope is not part of this test. -->
-            <DropdownMenuItem v-else-if="calendarEvent" @click="handleUnlinkCalendarEvent">
-              <CalendarX class="h-4 w-4 mr-2" />
-              {{ $t('Atsieti nuo kalendoriaus') }}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem class="text-destructive focus:text-destructive" @click="showDeleteDialog = true">
-              <Trash2 class="h-4 w-4 mr-2" />
-              {{ $t('Šalinti posėdį') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SpotlightPopover>
+
+    <template #fact-people>
+      <UsersFactList :users="representatives" :inline-limit="1" />
+    </template>
+
+    <template #fact-visibility>
+      <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-status-success underline underline-offset-4">
+        {{ $t('Matoma vusa.lt') }}
+      </a>
+      <span v-else>{{ $t('Tik viduje') }}</span>
+    </template>
+
+    <template #fact-after-meeting>
+      <div v-if="isPastMeeting" class="space-y-0.5 text-xs font-normal">
+        <component
+          :is="canUploadFiles && !document.uploaded ? 'button' : 'p'"
+          v-for="document in documentStatuses"
+          :key="document.key"
+          :type="canUploadFiles && !document.uploaded ? 'button' : undefined"
+          :class="[
+            'flex items-start gap-1.5 text-left',
+            canUploadFiles && !document.uploaded && 'underline decoration-border underline-offset-4 hover:decoration-foreground pointer-coarse:min-h-11 pointer-coarse:items-center',
+          ]"
+          :data-status-role="document.uploaded ? 'success' : 'attention'"
+          @click="canUploadFiles && !document.uploaded && openFilesUpload(document.fileType)"
+        >
+          <component
+            :is="document.uploaded ? CircleCheck : CircleDashed"
+            :class="['size-3.5 shrink-0', document.uploaded ? 'text-status-success' : 'text-status-attention']"
+            aria-hidden="true"
+          />
+          <span>{{ document.label }}</span>
+          <span class="sr-only">{{ document.state }}</span>
+        </component>
+      </div>
+      <span v-else>{{ $t('meetings.record.not_yet') }}</span>
+    </template>
+
+    <template #alert>
+      <MeetingCompletionChecklist
+        :actions="completion.missingActions"
+        @select="handleMissingAction"
+      />
     </template>
 
     <template #agenda>
@@ -150,21 +79,12 @@
           v-model:editing="agendaEditing"
           :agenda-items="meeting.agenda_items ?? []"
           :meeting-id="meeting.id"
+          :can-add="abilities.createAgendaItems"
+          :can-reorder="abilities.reorderAgendaItems"
           :requires-student-perspective="!isInternalBody"
-          @add="showSingleAgendaItemModal = true"
-          @add-bulk="openBulkAgendaModal"
+          @add="openAgendaSheet"
           @delete="requestAgendaItemDelete"
         />
-        <MeetingNavigationCards
-          v-if="previousMeeting || nextMeeting"
-          :previous-meeting
-          :next-meeting
-        />
-
-        <!-- Meeting-level discussion lives directly under the agenda. -->
-        <section class="border-t pt-6 dark:border-zinc-800">
-          <DiscussionPanel commentable-type="meeting" :commentable-id="meeting.id" />
-        </section>
       </div>
     </template>
 
@@ -187,7 +107,15 @@
     </template>
 
     <template #files>
-      <FileManager :starting-path="meeting.sharepointPath" :fileable="{ id: meeting.id, type: 'Meeting' }" />
+      <FileableFilesPanel
+        ref="filesPanel"
+        :fileable="{ id: meeting.id, type: 'Meeting' }"
+        :files
+        :can-upload="canUploadFiles"
+        :can-delete="abilities.update"
+        :primary-types="MEETING_PRIMARY_FILE_TYPES"
+        :default-date="meeting.start_time"
+      />
     </template>
 
     <template #tasks>
@@ -201,11 +129,13 @@
         <TaskManager
           :taskable="{ id: meeting.id, type: ModelEnum.MEETING }"
           :tasks="tasks ?? []"
-          @open-meeting-modal="openMeetingModal"
-          @open-check-in-dialog="openCheckInDialog"
           @open-task-detail="openTaskDetail"
         />
       </Deferred>
+    </template>
+
+    <template v-if="!readOnly" #activity>
+      <RecordActivity subject-type="meeting" :subject-id="meeting.id" commentable-type="meeting" :commentable-id="meeting.id" />
     </template>
 
     <!-- Modals -->
@@ -220,42 +150,12 @@
       </DialogContent>
     </Dialog>
 
-    <Dialog v-model:open="showSingleAgendaItemModal">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle class="flex items-center gap-2">
-            <Plus class="h-5 w-5" />
-            {{ $t("Pridėti darbotvarkės punktą") }}
-          </DialogTitle>
-        </DialogHeader>
-        <AddAgendaItemForm :meeting-id="meeting.id" :loading @submit="handleSingleAgendaItemSubmit" />
-        <div class="mt-4 pt-4 border-t">
-          <Button variant="outline" size="sm" class="w-full" @click="showSingleAgendaItemModal = false; openBulkAgendaModal();">
-            {{ $t("Pridėti kelis punktus iš karto") }}...
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-
-    <Dialog v-model:open="showAgendaItemStoreModal">
-      <DialogContent class="max-h-[85vh] sm:max-w-3xl flex flex-col">
-        <DialogHeader class="flex-none">
-          <DialogTitle>{{ $t("Pridėti darbotvarkės punktus") }}</DialogTitle>
-        </DialogHeader>
-        <div class="flex-1 overflow-y-auto -mx-6 px-6">
-          <AgendaItemsForm
-            :key="bulkAgendaInitialInput"
-            class="w-full"
-            :loading
-            mode="add"
-            :initial-input="bulkAgendaInitialInput"
-            :submit-label="$t('Pridėti punktus')"
-            :show-skip-button="false"
-            @submit="handleAgendaItemsFormSubmit"
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+    <AddAgendaItemsSheet
+      v-model:open="showAgendaSheet"
+      :meeting-id="meeting.id"
+      :initial-mode="agendaSheetMode"
+      :recent-agendas
+    />
 
     <!-- Add Institution Dialog -->
     <Dialog v-model:open="showAddInstitutionDialog">
@@ -265,7 +165,7 @@
             <Link2 class="h-4 w-4" />
             {{ $t('Pridėti instituciją') }}
           </DialogTitle>
-          <DialogDescription class="text-sm text-zinc-500 mt-2">
+          <DialogDescription class="text-sm text-muted-foreground mt-2">
             Retais atvejais, atstovavimo organai gali turėti bendrų posėdžių. Jei šis posėdis yra bendras su kitomis institucijomis, pasirinkite jas.
             Galite pasirinkti tik iš susijusių institucijų.
           </DialogDescription>
@@ -285,7 +185,7 @@
               </SelectItem>
             </SelectContent>
           </Select>
-          <p v-if="availableInstitutionsToAdd.length === 0" class="text-sm text-zinc-500">
+          <p v-if="availableInstitutionsToAdd.length === 0" class="text-sm text-muted-foreground">
             {{ $t('Nėra galimų institucijų pridėti.') }}
           </p>
           <div class="flex justify-end gap-2">
@@ -310,10 +210,10 @@
           </DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
-          <p class="text-sm text-zinc-600 dark:text-zinc-400">
+          <p class="text-sm text-muted-foreground">
             {{ $t("Ar tikrai norite ištrinti šį darbotvarkės punktą? Šis veiksmas negrįžtamas.") }}
           </p>
-          <p v-if="agendaItemPendingDelete" class="rounded-lg bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <p v-if="agendaItemPendingDelete" class="border border-border bg-secondary/60 px-3 py-2 text-sm font-medium text-foreground">
             {{ agendaItemPendingDelete.title }}
           </p>
           <div class="flex justify-end gap-3">
@@ -340,15 +240,15 @@
         </DialogHeader>
 
         <div class="space-y-4">
-          <p class="text-sm text-zinc-600 dark:text-zinc-400">
+          <p class="text-sm text-muted-foreground">
             {{ $t("Ar tikrai norite ištrinti šį posėdį? Šis veiksmas negrįžtamas ir bus pašalinti visi su posėdžiu susiję duomenys, įskaitant darbotvarkės punktus.") }}
           </p>
 
-          <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/50 rounded-lg p-3">
-            <p class="text-sm text-red-800 dark:text-red-300 font-medium">
+          <div class="border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-3 text-[var(--status-danger)]">
+            <p class="text-sm font-medium">
               {{ $t("Bus ištrinta:") }}
             </p>
-            <ul class="text-xs text-red-700 dark:text-red-400 mt-1 space-y-1">
+            <ul class="mt-1 space-y-1 text-xs">
               <li>• {{ meeting.agenda_items?.length ?? 0 }} {{ $t("darbotvarkės punktai") }}</li>
               <li v-if="tasks?.length">
                 • {{ tasks.length }} {{ $t("užduotys") }}
@@ -378,92 +278,97 @@
       :tenant-ids
     />
 
-    <!-- Task detail dialog: the meeting's own tasks are always meeting-taskable (agenda
-         creation/completion), so the check-in flow below is unreachable in practice — wired
-         anyway so "View details" never silently does nothing. -->
     <TaskDetailDialog
       v-if="selectedDetailTask"
       :open="showTaskDetail"
       :task="selectedDetailTask"
       @close="closeTaskDetail"
-      @schedule-meeting="scheduleMeetingFromDetail"
-      @report-no-meeting="reportNoMeetingFromDetail"
+      @report="reportFromDetail"
     />
-    <AddCheckInDialog
-      v-if="selectedCheckInTask"
-      :open="showCheckInDialog"
-      :institution-id="selectedCheckInTask.taskable_id"
-      :institution-name="selectedCheckInTask.taskable?.name"
-      :initial-start-date="checkInStartDate"
-      :initial-end-date="checkInEndDate"
-      @close="closeCheckInDialog"
-    />
-  </ShowPageLayout>
+  </RecordPage>
 </template>
 
 <script setup lang="tsx">
-import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue';
-import { Deferred, router, useForm } from '@inertiajs/vue3';
+import { ref, computed, watch, onMounted, defineAsyncComponent, nextTick } from 'vue';
+import { Deferred, Link, router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, Plus, Trash2, X, Clock, Globe, Edit, MoreHorizontal, Video, Link2, Check, FileText, FileBarChart, CalendarDays, CalendarPlus, CalendarX } from 'lucide-vue-next';
+import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from 'lucide-vue-next';
 import { DialogDescription } from 'reka-ui';
 
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import { formatStaticTime, formatMonthShort, formatRelativeTime } from '@/Utils/IntlTime';
+import { formatRelativeTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
 import { genitivizeEveryWord } from '@/Utils/String';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useMeetingUrgency } from '@/Composables/useMeetingUrgency';
-
-// Layout
-import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
-
-// UI Components
+import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
+import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
-
-// Custom Components
-import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import MeetingAgendaList from '@/Components/Meetings/MeetingAgendaList.vue';
-import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
-import MeetingNavigationCards from '@/Components/Meetings/MeetingNavigationCards.vue';
-import AddAgendaItemForm from '@/Components/AdminForms/AddAgendaItemForm.vue';
-import AgendaItemsForm from '@/Components/AdminForms/Special/AgendaItemsForm.vue';
+import MeetingCompletionChecklist, { type MeetingMissingAction } from '@/Components/Meetings/MeetingCompletionChecklist.vue';
+import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';
+import AddAgendaItemsSheet, { type AddAgendaMode, type RecentAgenda } from '@/Components/Meetings/AddAgendaItemsSheet.vue';
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import type { AdministratorUser } from '@/Components/Institutions';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import FileManager from '@/Features/Admin/SharepointFileManager/SharepointFileManager.vue';
+import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
+import { MEETING_PRIMARY_FILE_TYPES, type FileableFileType } from '@/Constants/fileTypes';
+import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
-import { InstitutionIconFilled, MeetingIconFilled } from '@/Components/icons';
+import { enterMeeting } from '@/Composables/useRecordTrail';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 
-const props = defineProps<{
+interface MeetingAbilities {
+  update: boolean;
+  delete: boolean;
+  createAgendaItems: boolean;
+  reorderAgendaItems: boolean;
+  attachInstitution: boolean;
+}
+
+interface MeetingCompletion {
+  status: MeetingCompletionStatus;
+  missingActions: MeetingMissingAction[];
+}
+
+const props = withDefaults(defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
-  /** Institution administrators resolved at the meeting's own date. */
-  administrators: AdministratorUser[];
-  previousMeeting?: { id: string; start_time: string; type?: string | null } | null;
-  nextMeeting?: { id: string; start_time: string; type?: string | null } | null;
   availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
   governanceScope?: string;
+  abilities?: MeetingAbilities;
+  completion?: MeetingCompletion;
+  publicUrl?: string | null;
+  recordNavigation?: RecordNavigationContext;
   tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
   documents?: NonNullable<App.Entities.Meeting['documents']>;
-}>();
+  recentAgendas?: RecentAgenda[] | null;
+  files?: FileableFileItem[];
+  /** A public meeting outside the user's reach: its agenda only (MeetingPolicy::viewSummary). */
+  readOnly?: boolean;
+}>(), {
+  availableInstitutionsForAttach: () => [],
+  governanceScope: undefined,
+  abilities: () => ({
+    update: false,
+    delete: false,
+    createAgendaItems: false,
+    reorderAgendaItems: false,
+    attachInstitution: false,
+  }),
+  completion: () => ({ status: 'no_items', missingActions: [] }),
+  publicUrl: null,
+  recordNavigation: undefined,
+  tasks: undefined,
+  documents: undefined,
+  recentAgendas: undefined,
+  files: () => [],
+});
 
 const institutionIds = computed(() => props.meeting.institutions?.map(institution => institution.id) ?? []);
 const tenantIds = computed(() =>
@@ -492,28 +397,14 @@ const isInternalBody = computed(() => props.governanceScope === InstitutionScope
  */
 const calendarEvent = computed(() => props.meeting.calendar_event ?? null);
 
-// Nothing to point at on a body VU SA only delegates into: its meetings are not VU SA's
-// to announce, so the menu item is absent too.
-const announceSpotlight = useFeatureSpotlight('meeting-calendar-announce-v1', {
-  enabled: props.governanceScope === InstitutionScope.Vusa,
-});
-const AddCheckInDialog = defineAsyncComponent(() => import('@/Components/Institutions/AddCheckInDialog.vue'));
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
 
 const {
-  showCheckInDialog,
   showTaskDetail,
-  selectedCheckInTask,
   selectedDetailTask,
-  checkInStartDate,
-  checkInEndDate,
-  openMeetingModal,
-  openCheckInDialog,
-  closeCheckInDialog,
   openTaskDetail,
   closeTaskDetail,
-  scheduleMeetingFromDetail,
-  reportNoMeetingFromDetail,
+  reportFromDetail,
 } = useTaskActionDialogs();
 
 const showAnnounceDialog = ref(false);
@@ -528,32 +419,71 @@ const handleUnlinkCalendarEvent = () => {
   });
 };
 
-// Urgency calculations for hero badge
+// File availability is shown as facts, not completion requirements.
 const { hasProtocol, hasReport, isPastMeeting } = useMeetingUrgency(() => props.meeting);
 
 // Hide HH:MM for email/electronic meetings (start_time is forced to 23:59 as a deadline marker)
 const meetingTimeLabel = computed(() => formatMeetingTimeOnly(props.meeting));
 const meetingRelativeTime = computed(() => formatRelativeTime(new Date(props.meeting.start_time)));
+const meetingStatus = computed(() => meetingCompletionStatuses[props.completion.status]);
+const documentStatuses = computed(() => [
+  {
+    key: 'protocol',
+    fileType: 'Protokolai' as FileableFileType,
+    label: $t('meetings.record.protocol'),
+    uploaded: hasProtocol.value,
+    state: hasProtocol.value ? $t('Įkeltas') : $t('Neįkeltas'),
+  },
+  {
+    key: 'report',
+    fileType: 'Ataskaitos' as FileableFileType,
+    label: $t('meetings.record.report'),
+    uploaded: hasReport.value,
+    state: hasReport.value ? $t('Įkelta') : $t('Neįkelta'),
+  },
+]);
+
+// The folder needs an institution with a padalinys; without one there is nowhere to upload.
+const canUploadFiles = computed(() => props.abilities.update && !!props.meeting.sharepointPath);
+const filesPanel = ref<InstanceType<typeof FileableFilesPanel> | null>(null);
+
+const openFilesUpload = async (type: FileableFileType) => {
+  currentTab.value = 'files';
+  await nextTick();
+  filesPanel.value?.openUpload(type);
+};
 
 // Component state
 const showMeetingModal = ref(false);
-const showAgendaItemStoreModal = ref(false);
-
-// The action window's "paste the whole agenda" choice promises the paste box, not the
-// one-by-one editor the menu's own bulk entry opens on.
-const bulkAgendaInitialInput = ref<'one-by-one' | 'text'>('one-by-one');
-const showSingleAgendaItemModal = ref(false);
+const showAgendaSheet = ref(false);
+const agendaSheetMode = ref<AddAgendaMode>('lines');
 const showDeleteDialog = ref(false);
-const loading = ref(false);
+
+const openAgendaSheet = (mode: AddAgendaMode) => {
+  agendaSheetMode.value = mode;
+  showAgendaSheet.value = true;
+};
 
 // Read-only by default; toggled on to add/reorder/delete agenda items
 const agendaEditing = ref(false);
 
+const tabs = computed(() => [
+  { value: 'agenda', label: $t('Darbotvarkė'), count: props.meeting.agenda_items?.length },
+  ...(props.readOnly ? [] : panelTabs.value),
+]);
+
+const panelTabs = computed(() => [
+  ...(isInternalBody.value
+    ? [{ value: 'documents', label: $t('Dokumentai'), count: props.documents?.length }]
+    : []),
+  { value: 'files', label: $t('Failai') },
+  // Outstanding only: a finished task is not something the reader still has to act on.
+  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
+]);
+
 // Tab state with smart defaults (agenda is the landing tab)
-// Kept in step with `tabs` below; guards the `?tab=` URL param.
-const TAB_NAMES = computed(() => (isInternalBody.value
-  ? ['agenda', 'documents', 'files', 'tasks']
-  : ['agenda', 'files', 'tasks']));
+// Guards the `?tab=` URL param.
+const TAB_NAMES = computed(() => tabs.value.map(tab => tab.value));
 const storedTab = useStorage('show-meeting-tab', 'agenda');
 
 // Check URL for tab parameter (priority over localStorage)
@@ -587,15 +517,84 @@ watch(currentTab, (newTab) => {
   }
 });
 
-const tabs = computed(() => [
-  { value: 'agenda', label: $t('Darbotvarkė'), count: props.meeting.agenda_items?.length },
-  ...(isInternalBody.value
-    ? [{ value: 'documents', label: $t('Dokumentai'), count: props.documents?.length }]
-    : []),
-  { value: 'files', label: $t('Failai') },
-  // Outstanding only: a finished task is not something the reader still has to act on.
-  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
+const recordFacts = computed<RecordFact[]>(() => [
+  {
+    key: 'status',
+    label: $t('Būsena'),
+    status: meetingStatus.value,
+  },
+  {
+    key: 'visibility',
+    label: $t('Matomumas'),
+    labelIcon: Globe,
+    surfaceClass: props.publicUrl ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
+    value: props.publicUrl ? $t('Matoma vusa.lt') : $t('Tik viduje'),
+  },
+  {
+    key: 'time',
+    label: $t('Laikas'),
+    value: [meetingRelativeTime.value, meetingTimeLabel.value].filter(Boolean).join(' · '),
+  },
+  {
+    key: 'institution',
+    label: $t('Institucija'),
+  },
+  { key: 'people', label: $t('Atstovai') },
+  {
+    key: 'after-meeting',
+    label: $t('meetings.record.after_meeting'),
+  },
 ]);
+
+const primaryAction = computed<RecordAction | undefined>(() => {
+  if (props.completion.missingActions.length && props.abilities.createAgendaItems) {
+    return { key: 'complete', label: $t('Papildyti'), icon: Plus };
+  }
+
+  if (props.abilities.update) {
+    return { key: 'edit', label: $t('Redaguoti posėdį'), icon: Edit };
+  }
+
+  return undefined;
+});
+
+const overflowActions = computed<RecordAction[]>(() => {
+  const actions: RecordAction[] = [];
+
+  if (props.abilities.update && primaryAction.value?.key !== 'edit') {
+    actions.push({ key: 'edit', label: $t('Redaguoti posėdį'), icon: Edit });
+  }
+
+  if (props.abilities.attachInstitution && availableInstitutionsToAdd.value.length) {
+    actions.push({ key: 'attach-institution', label: $t('Pridėti instituciją'), icon: Link2 });
+  }
+
+  if (props.abilities.update && (props.meeting.institutions?.length ?? 0) > 1) {
+    props.meeting.institutions?.forEach((institution) => {
+      actions.push({
+        key: `detach-institution:${institution.id}`,
+        label: `${$t('Pašalinti instituciją')}: ${institution.name}`,
+        icon: Link2,
+        destructive: true,
+      });
+    });
+  }
+
+  if (props.abilities.update && isInternalBody.value && !calendarEvent.value) {
+    actions.push({ key: 'announce', label: $t('Paskelbti kalendoriuje'), icon: CalendarPlus });
+  }
+  else if (props.abilities.update && calendarEvent.value) {
+    actions.push({ key: 'unlink-calendar', label: $t('Atsieti nuo kalendoriaus'), icon: CalendarX });
+  }
+
+  actions.push({ key: 'copy-link', label: $t('Kopijuoti nuorodą'), icon: Copy });
+
+  if (props.abilities.delete) {
+    actions.push({ key: 'delete', label: $t('Šalinti posėdį'), icon: Trash2, destructive: true });
+  }
+
+  return actions;
+});
 
 onMounted(() => {
   const lastVisitedMeetingId = useStorage('last-visited-meeting-id', '');
@@ -615,13 +614,7 @@ onMounted(() => {
     currentTab.value = 'agenda';
     setTimeout(() => {
       agendaEditing.value = true;
-      if (urlAction === 'add-bulk') {
-        bulkAgendaInitialInput.value = 'text';
-        showAgendaItemStoreModal.value = true;
-      }
-      else {
-        showSingleAgendaItemModal.value = true;
-      }
+      openAgendaSheet(urlAction === 'add-bulk' ? 'paste' : 'lines');
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('action');
@@ -631,18 +624,13 @@ onMounted(() => {
   }
 });
 
-// Form handling
-const meetingAgendaForm = useForm({
-  meeting: props.meeting.id,
-  agendaItems: [],
-});
-
 // Computed values
 const mainInstitution: App.Entities.Institution | string
   = props.meeting.institutions?.[0] ?? 'Be institucijos';
 
 const isJoint = computed(
-  () => (props.meeting as any).is_joint ?? (props.meeting.institutions?.length ?? 0) > 1,
+  () => (props.meeting as App.Entities.Meeting & { is_joint?: boolean }).is_joint
+    ?? (props.meeting.institutions?.length ?? 0) > 1,
 );
 
 // Always derive the displayed title from start_time + institution.
@@ -654,8 +642,6 @@ const meetingTitle = computed(() => {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   });
 
   if (isJoint.value) {
@@ -669,42 +655,7 @@ const meetingTitle = computed(() => {
   return `${datePart} ${genitivizeEveryWord(institutionName)} posėdis`;
 });
 
-// Hero subtitle - institution name(s) with link
-const heroSubtitle = computed(() => {
-  if (isJoint.value) {
-    return props.meeting.institutions?.map((i: App.Entities.Institution) => i.name).join(' · ') ?? '';
-  }
-  if (typeof mainInstitution === 'string') {
-    return mainInstitution;
-  }
-  return mainInstitution.name;
-});
-
-// Badge for meeting type
-const meetingBadge = computed(() => ({
-  label: $t('Posėdis'),
-  variant: 'secondary' as const,
-  icon: Video,
-}));
-
-// Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(() => {
-  if (typeof mainInstitution === 'string') {
-    return [
-      { label: mainInstitution, icon: InstitutionIconFilled },
-      { label: meetingTitle.value, icon: MeetingIconFilled },
-    ];
-  }
-
-  return BreadcrumbHelpers.adminShow(
-    mainInstitution.name,
-    'institutions.show',
-    { institution: mainInstitution.id },
-    meetingTitle.value,
-    InstitutionIconFilled,
-    MeetingIconFilled,
-  );
-});
+watch(() => props.meeting.id, () => enterMeeting(props.meeting), { immediate: true });
 
 // Joint meeting — institution management
 const showAddInstitutionDialog = ref(false);
@@ -721,7 +672,9 @@ const availableInstitutionsToAdd = computed(() => {
 });
 
 const handleAttachInstitution = () => {
-  if (!addInstitutionId.value) { return; }
+  if (!addInstitutionId.value) {
+    return;
+  }
   router.post(route('meetings.institutions.attach', props.meeting.id), {
     institution_id: addInstitutionId.value,
   }, {
@@ -734,6 +687,59 @@ const handleAttachInstitution = () => {
 
 const handleDetachInstitution = (institutionId: string) => {
   router.delete(route('meetings.institutions.detach', { meeting: props.meeting.id, institution: institutionId }));
+};
+
+const handleMissingAction = (action: MeetingMissingAction) => {
+  if (action.type === 'agenda_missing') {
+    currentTab.value = 'agenda';
+    agendaEditing.value = true;
+    openAgendaSheet('paste');
+    return;
+  }
+
+  router.visit(route('agendaItems.edit', {
+    agendaItem: action.agenda_item_id,
+    mode: 'edit',
+    focus: action.type === 'agenda_item_type_missing' ? 'type' : 'votes',
+  }));
+};
+
+const handleRecordAction = (action: string) => {
+  if (action === 'complete') {
+    if (props.completion.missingActions[0]?.type === 'agenda_missing') {
+      handleMissingAction(props.completion.missingActions[0]);
+      return;
+    }
+    document.getElementById('meeting-completion')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  if (action === 'edit') {
+    showMeetingModal.value = true;
+    return;
+  }
+  if (action === 'attach-institution') {
+    showAddInstitutionDialog.value = true;
+    return;
+  }
+  if (action === 'announce') {
+    openAnnounceDialog();
+    return;
+  }
+  if (action === 'unlink-calendar') {
+    handleUnlinkCalendarEvent();
+    return;
+  }
+  if (action === 'copy-link') {
+    void navigator.clipboard?.writeText(window.location.href);
+    return;
+  }
+  if (action === 'delete') {
+    showDeleteDialog.value = true;
+    return;
+  }
+  if (action.startsWith('detach-institution:')) {
+    handleDetachInstitution(action.slice('detach-institution:'.length));
+  }
 };
 
 // Event handlers
@@ -755,7 +761,9 @@ const requestAgendaItemDelete = (agendaItem: App.Entities.AgendaItem) => {
 };
 
 const confirmAgendaItemDelete = () => {
-  if (!agendaItemPendingDelete.value) { return; }
+  if (!agendaItemPendingDelete.value) {
+    return;
+  }
   router.delete(route('agendaItems.destroy', agendaItemPendingDelete.value.id), {
     preserveScroll: true,
     onSuccess: () => {
@@ -763,48 +771,6 @@ const confirmAgendaItemDelete = () => {
       agendaItemPendingDelete.value = null;
     },
   });
-};
-
-const handleSingleAgendaItemSubmit = (data: { meeting_id: string; title: string; description?: string; brought_by_students?: boolean }) => {
-  loading.value = true;
-
-  router.post(route('agendaItems.store'), {
-    meeting_id: data.meeting_id,
-    agendaItemTitles: [data.title],
-    agendaItemDescriptions: data.description ? [data.description] : [],
-    broughtByStudentsFlags: [data.brought_by_students || false],
-  }, {
-    onSuccess: () => {
-      showSingleAgendaItemModal.value = false;
-    },
-    onFinish: () => {
-      loading.value = false;
-    },
-  });
-};
-
-const openBulkAgendaModal = () => {
-  bulkAgendaInitialInput.value = 'one-by-one';
-  showAgendaItemStoreModal.value = true;
-};
-
-const handleAgendaItemsFormSubmit = (agendaItems: Record<string, any>) => {
-  loading.value = true;
-
-  meetingAgendaForm
-    .transform(data => ({
-      meeting_id: props.meeting.id,
-      ...agendaItems,
-    }))
-    .post(route('agendaItems.store'), {
-      onSuccess: () => {
-        meetingAgendaForm.reset();
-        showAgendaItemStoreModal.value = false;
-      },
-      onFinish: () => {
-        loading.value = false;
-      },
-    });
 };
 
 const handleMeetingDelete = () => {

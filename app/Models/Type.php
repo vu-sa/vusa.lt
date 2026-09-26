@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -98,7 +99,10 @@ class Type extends Model implements GuardsForceDelete, SharepointFileableContrac
         });
 
         // The scope map is keyed on the whole type tree, so any structural change invalidates it.
-        $flushScopes = fn () => app(InstitutionScopeResolver::class)->flush();
+        $flushScopes = function (): void {
+            app(InstitutionScopeResolver::class)->flush();
+            Cache::forget('all-institution-types-for-inertia');
+        };
 
         static::saved($flushScopes);
         static::deleted($flushScopes);

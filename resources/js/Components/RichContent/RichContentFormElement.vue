@@ -3,18 +3,16 @@
     <Suspense>
       <RichContentEditor v-model:contents="contentParts" :tenant-id @save="$emit('save')" />
       <template #fallback>
-        <div class="space-y-6">
-          <div class="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-            <div
-              class="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-r-transparent dark:border-zinc-600" />
-            Loading rich content editor...
+        <div class="space-y-4 border border-border bg-background p-4">
+          <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <Loader2 class="size-4 animate-spin text-brand" />
+            {{ $t('Užkraunamas turinio redaktorius...') }}
           </div>
-          <div class="space-y-4">
-            <Skeleton class="h-32 w-full rounded-lg" />
+          <div class="space-y-3">
+            <Skeleton class="h-24 w-full" />
             <div class="flex gap-2">
-              <Skeleton class="h-10 w-32 rounded" />
-              <Skeleton class="h-10 w-32 rounded" />
-              <Skeleton class="h-10 w-32 rounded" />
+              <Skeleton class="h-9 w-28" />
+              <Skeleton class="h-9 w-28" />
             </div>
           </div>
         </div>
@@ -33,6 +31,9 @@
  * entirely in favor of the one preview surface inside `RichContentEditor`, which
  * does pass `:resolved` (see `useContentPartPreview`).
  */
+import { trans as $t } from 'laravel-vue-i18n';
+import { Loader2 } from 'lucide-vue-next';
+
 import RichContentEditor from './RichContentEditor.vue';
 import type { ContentPart } from './Types';
 

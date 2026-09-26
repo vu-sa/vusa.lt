@@ -9,8 +9,6 @@ return [
     'showing_deleted_only_description' => 'Šie įrašai yra ištrinti. Juos galima atkurti arba ištrinti negrįžtamai.',
     'exit_trash_view' => 'Išeiti iš ištrintų įrašų rodinio',
     'no_deleted_records' => 'Ištrintų įrašų nėra',
-    'spotlight_title' => 'Ištrintų įrašų rodinys jau veikia',
-    'spotlight_description' => 'Šiuo jungikliu peržiūrėk ištrintus įrašus, atkurk juos arba prireikus ištrink negrįžtamai.',
 
     'restore' => 'Atkurti',
     'restore_conflict' => 'Įrašo atkurti nepavyko — kol jis buvo ištrintas, jo reikšmę užėmė kitas įrašas.',

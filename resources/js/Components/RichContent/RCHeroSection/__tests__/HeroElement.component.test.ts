@@ -28,14 +28,14 @@ const stubs = {
 
 describe('HeroElement', () => {
   it('defaults to the split variant when options.variant is unset', () => {
-    const wrapper = mount(HeroElement, { props: { element: makeElement(), isFirstElement: true }, global: { stubs } });
+    const wrapper = mount(HeroElement, { props: { element: makeElement() }, global: { stubs } });
     expect(wrapper.find('.image-with-decorations').exists()).toBe(true);
     expect(wrapper.find('[role="heading"][aria-level="1"]').exists()).toBe(true);
   });
 
   it('centered variant renders no image', () => {
     const wrapper = mount(HeroElement, {
-      props: { element: makeElement({ variant: 'centered' }), isFirstElement: true },
+      props: { element: makeElement({ variant: 'centered' }) },
       global: { stubs },
     });
     expect(wrapper.find('.image-with-decorations').exists()).toBe(false);
@@ -44,7 +44,7 @@ describe('HeroElement', () => {
 
   it('keeps a TipTap paragraph inside the static heading container', () => {
     const wrapper = mount(HeroElement, {
-      props: { element: makeElement({}, { title: '<p>Prisijunk</p>' }), isFirstElement: true },
+      props: { element: makeElement({}, { title: '<p>Prisijunk</p>' }) },
       global: { stubs },
     });
 
@@ -55,7 +55,6 @@ describe('HeroElement', () => {
     const wrapper = mount(HeroElement, {
       props: {
         element: makeElement({ variant: 'banner' }, { buttons: [{ text: 'A', link: '#a' }, { text: 'B', link: '#b' }] }),
-        isFirstElement: true,
       },
       global: { stubs },
     });
@@ -67,7 +66,6 @@ describe('HeroElement', () => {
     const wrapper = mount(HeroElement, {
       props: {
         element: makeElement({ variant: 'panel' }, { eyebrow: 'VU SA organizuoja' }),
-        isFirstElement: true,
       },
       global: { stubs },
     });
@@ -78,14 +76,14 @@ describe('HeroElement', () => {
 
   it('applies the anchor id from anchorId for ToC scroll targets', () => {
     const wrapper = mount(HeroElement, {
-      props: { element: makeElement(), isFirstElement: true, anchorId: 42 },
+      props: { element: makeElement(), anchorId: 42 },
       global: { stubs },
     });
     expect(wrapper.find('#rc-42').exists()).toBe(true);
   });
 
   it('renders no editing affordances — that machinery lives entirely in HeroEditableElement.vue', () => {
-    const wrapper = mount(HeroElement, { props: { element: makeElement(), isFirstElement: true }, global: { stubs } });
+    const wrapper = mount(HeroElement, { props: { element: makeElement() }, global: { stubs } });
     expect(wrapper.find('[data-rc-interactive]').exists()).toBe(false);
     expect(wrapper.find('[contenteditable]').exists()).toBe(false);
   });

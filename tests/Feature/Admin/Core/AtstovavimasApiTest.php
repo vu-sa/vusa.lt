@@ -311,7 +311,9 @@ test('meetings requires an authenticated user', function (): void {
     ]))->assertUnauthorized();
 });
 
-test('meetings rejects tenants outside the visible scope', function (): void {
+test('meetings in a padalinys the user does not manage leave out its non-public bodies', function (): void {
+    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(5)]);
+    $meeting->institutions()->attach($this->institution->id);
     $user = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
 
     asUser($user)
@@ -320,7 +322,8 @@ test('meetings rejects tenants outside the visible scope', function (): void {
             'from' => now()->subMonth()->toDateString(),
             'until' => now()->addMonth()->toDateString(),
         ]))
-        ->assertForbidden();
+        ->assertSuccessful()
+        ->assertJsonCount(0, 'data');
 });
 
 test('meetings validates the date window', function (): void {
@@ -489,5 +492,96 @@ describe('internal bodies', function (): void {
 
         expect($rows->get((string) $this->internalInstitution->id)['is_internal'])->toBeTrue()
             ->and($rows->get((string) $this->institution->id)['is_internal'])->toBeFalse();
+    });
+});
+
+/**
+ * The padaliniai Gantt is open to every admin: public meetings anywhere, the user's own bodies,
+ * and whole padaliniai only where they manage them.
+ */
+describe('padaliniai gantt', function (): void {
+    beforeEach(function (): void {
+        $this->publicType = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+
+        $settings = app(MeetingSettings::class);
+        $settings->public_meeting_institution_type_ids = [$this->publicType->id];
+        $settings->save();
+
+        $this->publicInstitution = Institution::factory()->for($this->tenant)->create();
+        $this->publicInstitution->types()->attach($this->publicType);
+
+        $this->rep = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $this->ownInstitution = $this->rep->current_duties->first()->institution;
+
+        InstitutionCheckIn::factory()->for($this->publicInstitution)->create();
+        $this->publicInstitution->duties()->save(Duty::factory()->make())->users()->attach(User::factory()->create()->id, ['start_date' => now()->subYear()]);
+    });
+
+    test('a rep gets public bodies of other padaliniai and their own, trimmed to what they may read', function (): void {
+        $rows = collect(
+            asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', [
+                'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+            ]))->assertSuccessful()->json('data')
+        )->keyBy('id');
+
+        expect($rows->keys()->sort()->values()->all())
+            ->toEqual(collect([(string) $this->publicInstitution->id, (string) $this->ownInstitution->id])->sort()->values()->all());
+
+        $public = $rows->get((string) $this->publicInstitution->id);
+        expect($public['authorized'])->toBeFalse()
+            ->and($public['activity_status'])->toBeNull()
+            ->and($public['check_ins'])->toHaveCount(1)
+            ->and($public['duties'][0]['users'][0])->toHaveKeys(['id', 'name'])->not->toHaveKey('last_action');
+
+        expect($rows->get((string) $this->ownInstitution->id))->not->toHaveKey('authorized')
+            ->and($rows->get((string) $this->ownInstitution->id)['activity_status'])->not->toBeNull();
+    });
+
+    test('a padalinys reader gets their padalinys in full and only public bodies elsewhere', function (): void {
+        $coordinator = makeTenantUserWithRole('Student Representative', $this->ownInstitution->tenant);
+        $otherInstitution = Institution::factory()->for($this->ownInstitution->tenant)->create();
+
+        $rows = collect(
+            asUser($coordinator)->getJson(route('api.v1.admin.visak.gantt', [
+                'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+            ]))->assertSuccessful()->json('data')
+        )->keyBy('id');
+
+        expect($rows->has((string) $otherInstitution->id))->toBeTrue()
+            ->and($rows->get((string) $otherInstitution->id))->not->toHaveKey('authorized')
+            ->and($rows->has((string) $this->institution->id))->toBeFalse()
+            ->and($rows->get((string) $this->publicInstitution->id)['authorized'])->toBeFalse();
+    });
+
+    test('a rep sees public meetings without their recording state, and no meetings of closed bodies', function (): void {
+        $public = Meeting::factory()->create(['title' => 'Viešas', 'start_time' => now()->subDays(5)]);
+        $public->institutions()->attach($this->publicInstitution->id);
+        AgendaItem::factory()->for($public)->create();
+
+        $closed = Meeting::factory()->create(['title' => 'Uždaras', 'start_time' => now()->subDays(5)]);
+        $closed->institutions()->attach($this->institution->id);
+
+        $own = Meeting::factory()->create(['title' => 'Savas', 'start_time' => now()->subDays(5)]);
+        $own->institutions()->attach($this->ownInstitution->id);
+
+        $meetings = collect(
+            asUser($this->rep)->getJson(route('api.v1.admin.visak.meetings', [
+                'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+                'from' => now()->subMonth()->toDateString(),
+                'until' => now()->addMonth()->toDateString(),
+            ]))->assertSuccessful()->json('data')
+        )->keyBy('title');
+
+        expect($meetings->keys()->sort()->values()->all())->toEqual(['Savas', 'Viešas'])
+            ->and($meetings['Viešas']['completion_status'])->toBeNull()
+            ->and($meetings['Viešas']['has_report'])->toBeFalse()
+            ->and($meetings['Viešas']['agenda_items_count'])->toBe(1)
+            ->and($meetings['Savas']['completion_status'])->not->toBeNull();
+    });
+
+    test('the stats timeline stays closed to padaliniai the user does not manage', function (): void {
+        asUser($this->rep)
+            ->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))
+            ->assertForbidden();
     });
 });

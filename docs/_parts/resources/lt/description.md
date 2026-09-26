@@ -1,1 +1,0 @@
-Rekomenduojama, kad kiekvienas išteklius turėtų nuotraukų. Jas gali matyti ir rezervaciją kuriantys asmenys.

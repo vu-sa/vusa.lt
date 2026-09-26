@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Authorization\PermissionScope;
+use App\Support\AuthorityCacheExpiry;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
@@ -15,7 +16,7 @@ use Spatie\Permission\PermissionRegistrar;
  *
  * Permissions are `{resource}.{action}.{scope}`, resolved in this order: super admin,
  * then a permission granted directly to the user, then permissions granted through the
- * user's *current* duties. `*` scope means every tenant.
+ * user's non-ended duties. `*` scope means every tenant.
  *
  * Every public method takes the user and the permission explicitly and returns an
  * immutable {@see PermissionScope}. The service holds no notion of a "current user" or
@@ -37,7 +38,7 @@ class ModelAuthorizer
     private array $scopes = [];
 
     /**
-     * Current duties per user, keyed by user id.
+     * Authorization duties per user, keyed by user id.
      *
      * @var array<string, Collection<int, Duty>>
      */
@@ -70,7 +71,7 @@ class ModelAuthorizer
     }
 
     /**
-     * The current duties that granted this permission.
+     * The non-ended duties that granted this permission.
      *
      * @return Collection<int, Duty>
      */
@@ -123,7 +124,7 @@ class ModelAuthorizer
         }
 
         // A permission granted directly to the user, rather than through a duty. It is
-        // genuinely held, so it scopes to the tenants of that user's current duties —
+        // genuinely held, so it scopes to the tenants of that user's non-ended duties —
         // narrowing it further is a separate policy decision that would lock out anyone
         // holding a directly-assigned role today.
         if ($user->hasPermissionTo($permission)) {
@@ -173,7 +174,7 @@ class ModelAuthorizer
     {
         /** @var \Illuminate\Support\Collection<int, Tenant> $tenants */
         $tenants = $duties
-            // loadMissing, not load: loadDuties() already eager-loads current_duties.institution,
+            // loadMissing, not load: loadDuties() already eager-loads authorization_duties.institution,
             // and a second resolution in the same request will already have the .tenant leg
             // loaded too — load() re-queried both unconditionally.
             ->loadMissing('institution.tenant')
@@ -186,7 +187,7 @@ class ModelAuthorizer
     }
 
     /**
-     * Load the user's current duties with the relations every resolution needs.
+     * Load the user's non-ended duties with the relations every resolution needs.
      *
      * @return Collection<int, Duty>
      */
@@ -194,17 +195,17 @@ class ModelAuthorizer
     {
         return $this->duties[(string) $user->id] ??= Cache::remember(
             "auth:duties:{$user->id}",
-            static::CACHE_TTL,
+            fn () => AuthorityCacheExpiry::for($user, static::CACHE_TTL),
             fn () => $user->load([
-                'current_duties:id,name,institution_id',
+                'authorization_duties:id,name,institution_id',
                 // tenant_id (not just id) so tenantsOf()'s loadMissing('institution.tenant')
                 // can resolve the nested tenant relation without re-fetching institution.
-                'current_duties.institution:id,tenant_id',
-                'current_duties.roles.permissions',
+                'authorization_duties.institution:id,tenant_id',
+                'authorization_duties.roles.permissions',
                 // Without this, the duty loop lazy-loads $duty->permissions (direct, not via
                 // role) once per duty — an N+1 on every permission check.
-                'current_duties.permissions',
-            ])->current_duties
+                'authorization_duties.permissions',
+            ])->authorization_duties
         );
     }
 

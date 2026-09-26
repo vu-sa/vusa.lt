@@ -2,17 +2,23 @@
 
 use App\Models\Calendar;
 use App\Models\Duty;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\QuickLink;
+use App\Models\ReservationDraft;
+use App\Models\ReservationDraftItem;
 use App\Models\Resource;
+use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
+use App\Settings\AtstovavimasSettings;
+use App\Settings\FormSettings;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -39,13 +45,20 @@ describe('dashboard access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
                 ->has('taskStats')
-                ->has('unreadNotificationsCount')
-                ->has('hasNotifications')
                 ->has('upcomingTasks')
                 ->has('upcomingMeetings')
-                ->has('institutionsNeedingAttention')
-                ->has('upcomingCalendarEvents')
-                ->has('latestNews')
+                ->missing('institutionsNeedingAttention')
+                ->missing('upcomingCalendarEvents')
+                ->missing('latestNews')
+                ->missing('followedInstitutions')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('institutionsNeedingAttention')
+                    ->has('upcomingCalendarEvents')
+                    ->has('latestNews')
+                    ->has('recentlyEdited')
+                    ->has('coordinator')
+                    ->has('followedInstitutions')
+                )
             );
     });
 
@@ -59,13 +72,13 @@ describe('dashboard access', function (): void {
                 ->has('taskStats.total')
                 ->has('taskStats.overdue')
                 ->has('taskStats.dueSoon')
-                ->has('unreadNotificationsCount')
-                ->has('hasNotifications')
                 ->has('upcomingTasks')
                 ->has('upcomingMeetings')
-                ->has('institutionsNeedingAttention')
-                ->has('upcomingCalendarEvents')
-                ->has('latestNews')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('institutionsNeedingAttention')
+                    ->has('upcomingCalendarEvents')
+                    ->has('latestNews')
+                )
             );
     });
 
@@ -89,19 +102,6 @@ describe('dashboard data structure', function (): void {
             );
     });
 
-    test('notification data is correctly structured', function (): void {
-        asUser($this->admin)
-            ->get(route('dashboard'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowAdminHome')
-                ->has('unreadNotificationsCount')
-                ->has('hasNotifications')
-                ->where('unreadNotificationsCount', fn ($count) => is_numeric($count) && $count >= 0)
-                ->where('hasNotifications', fn ($hasNotifications) => is_bool($hasNotifications))
-            );
-    });
-
     test('upcoming data is included', function (): void {
         asUser($this->admin)
             ->get(route('dashboard'))
@@ -110,7 +110,42 @@ describe('dashboard data structure', function (): void {
                 ->component('Admin/ShowAdminHome')
                 ->has('upcomingTasks')
                 ->has('upcomingMeetings')
-                ->has('institutionsNeedingAttention')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('institutionsNeedingAttention'))
+            );
+    });
+});
+
+describe('followed institutions', function (): void {
+    test('upcoming meetings include followed institutions, marked as followed', function (): void {
+        $followed = Institution::factory()->for($this->tenant)->create();
+        $ownInstitutionId = $this->user->current_duties->first()->institution_id;
+
+        Meeting::factory()->hasAttached($followed)->create(['start_time' => now()->addDays(2)]);
+        Meeting::factory()->hasAttached(Institution::find($ownInstitutionId))->create(['start_time' => now()->addDay()]);
+        Meeting::factory()->hasAttached(Institution::factory()->for($this->tenant))->create(['start_time' => now()->addDays(3)]);
+        $this->user->followedInstitutions()->attach($followed);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingMeetingsTotal', 2)
+                ->where('upcomingMeetings.0.is_followed', false)
+                ->where('upcomingMeetings.1.is_followed', true)
+                ->where('upcomingMeetings.1.institution_id', $followed->id)
+            );
+    });
+
+    test('the followed list is capped but counts every follow', function (): void {
+        $institutions = Institution::factory()->for($this->tenant)->count(7)->create();
+        $this->user->followedInstitutions()->attach($institutions);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('followedInstitutions.items', 5)
+                    ->where('followedInstitutions.total', 7)
+                )
             );
     });
 });
@@ -138,6 +173,29 @@ describe('dashboard performance', function (): void {
 });
 
 describe('dashboard tasks with due dates', function (): void {
+    test('shows later due dates before older and overdue tasks', function (): void {
+        foreach ([
+            'Overdue' => now()->subDays(2),
+            'Soon' => now()->addDay(),
+            'Later' => now()->addDays(12),
+        ] as $name => $dueDate) {
+            $task = Task::factory()->create([
+                'name' => $name,
+                'due_date' => $dueDate,
+                'completed_at' => null,
+            ]);
+            $task->users()->attach($this->admin->id);
+        }
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingTasks.0.name', 'Later')
+                ->where('upcomingTasks.1.name', 'Soon')
+                ->where('upcomingTasks.2.name', 'Overdue')
+            );
+    });
+
     test('tasks with due dates are properly formatted', function (): void {
         // Create a task with a due date for the admin user
         $task = Task::factory()->create([
@@ -156,6 +214,25 @@ describe('dashboard tasks with due dates', function (): void {
                 ->where('upcomingTasks.0.name', 'Test Task')
                 ->where('upcomingTasks.0.is_overdue', false)
                 ->has('upcomingTasks.0.due_date')
+            );
+    });
+
+    test('a task names the subject it is about so the queue can link to it', function (): void {
+        $meeting = Meeting::factory()->create(['title' => 'Senato posėdis']);
+        $task = Task::factory()->create([
+            'name' => 'Užpildyti darbotvarkę',
+            'due_date' => now()->addDays(2),
+            'completed_at' => null,
+            'taskable_type' => 'meeting',
+            'taskable_id' => $meeting->id,
+        ]);
+        $task->users()->attach($this->admin->id);
+
+        asUser($this->admin)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingTasks.0.taskable.name', 'Senato posėdis')
+                ->where('upcomingTasks.0.taskable.id', (string) $meeting->id)
             );
     });
 
@@ -228,7 +305,7 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('upcomingCalendarEvents')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('upcomingCalendarEvents'))
             );
     });
 
@@ -248,7 +325,7 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('upcomingCalendarEvents', 0)
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('upcomingCalendarEvents', 0))
             );
     });
 
@@ -268,7 +345,7 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('upcomingCalendarEvents', 0)
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('upcomingCalendarEvents', 0))
             );
     });
 
@@ -286,7 +363,7 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('latestNews')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('latestNews'))
             );
     });
 
@@ -307,7 +384,7 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('latestNews', 0)
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('latestNews', 0))
             );
     });
 
@@ -328,7 +405,7 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('latestNews', 0)
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->has('latestNews', 0))
             );
     });
 
@@ -337,7 +414,7 @@ describe('dashboard calendar and news', function (): void {
         News::query()->delete();
 
         // Create news without an image
-        News::factory()->for($this->tenant)->create([
+        $news = News::factory()->for($this->tenant)->create([
             'title' => 'News Without Image',
             'lang' => 'lt',
             'image' => null,
@@ -350,8 +427,11 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('latestNews', 1)
-                ->where('latestNews.0.image', null)
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('latestNews', 1)
+                    ->where('latestNews.0.image', null)
+                    ->where('latestNews.0.public_url', $news->publicUrl())
+                )
             );
     });
 
@@ -373,9 +453,37 @@ describe('dashboard calendar and news', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowAdminHome')
-                ->has('latestNews', 1)
-                ->where('latestNews.0.image', 'https://example.com/news-image.jpg')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('latestNews', 1)
+                    ->where('latestNews.0.image', 'https://example.com/news-image.jpg')
+                )
             );
+    });
+});
+
+describe('hero image', function (): void {
+    test('uses the primary institution image of a tenant from the user\'s current duties', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create([
+            'image_url' => 'https://example.com/institution.jpg',
+            'image_focal_point' => '40% 30%',
+        ]);
+        $this->tenant->update(['primary_institution_id' => $institution->id]);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('heroImage.url', 'https://example.com/institution.jpg')
+                ->where('heroImage.focalPoint', '40% 30%')
+                ->missing('heroNews')
+            );
+    });
+
+    test('uses the community fallback when the duty tenant has no primary institution image', function (): void {
+        $this->tenant->update(['primary_institution_id' => null]);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page->where('heroImage', null));
     });
 });
 
@@ -422,14 +530,16 @@ describe('institutions needing attention', function (): void {
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->where('institutionsNeedingAttention', function ($institutions) use ($institution) {
-                    $entry = collect($institutions)->firstWhere('id', $institution->id);
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('institutionsNeedingAttention', function ($institutions) use ($institution) {
+                        $entry = collect($institutions)->firstWhere('id', $institution->id);
 
-                    return $entry !== null
-                        && $entry['status'] === 'overdue'
-                        && $entry['effective_days_since_activity'] === 45
-                        && $entry['requires_action'] === true;
-                })
+                        return $entry !== null
+                            && $entry['status'] === 'overdue'
+                            && $entry['effective_days_since_activity'] === 45
+                            && $entry['requires_action'] === true;
+                    })
+                )
             );
     });
 
@@ -443,7 +553,9 @@ describe('institutions needing attention', function (): void {
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
+                )
             );
     });
 
@@ -467,8 +579,150 @@ describe('institutions needing attention', function (): void {
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
+                )
             );
+    });
+});
+
+describe('Pradžia secondary panels', function (): void {
+    test('the queue is served first and the secondary group is held back', function (): void {
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('upcomingTasks')
+                ->has('upcomingMeetings')
+                ->missing('recentlyEdited')
+                ->missing('coordinator')
+            );
+    });
+
+    test('recently edited lists only records the user changed and can still view, newest first', function (): void {
+        $institution = $this->user->duties()->first()->institution;
+        $mine = Meeting::factory()->hasAttached($institution)->create(['title' => 'Mano posėdis']);
+        $older = Meeting::factory()->hasAttached($institution)->create(['title' => 'Senesnis posėdis']);
+        $notMine = Meeting::factory()->hasAttached($institution)->create(['title' => 'Svetimas posėdis']);
+        $noAccess = Meeting::factory()->create(['title' => 'Nematomas posėdis']);
+
+        activity()->performedOn($older)->causedBy($this->user)->log('updated');
+        activity()->performedOn($noAccess)->causedBy($this->user)->log('updated');
+        activity()->performedOn($notMine)->causedBy($this->admin)->log('updated');
+        $this->travel(1)->minute();
+        activity()->performedOn($mine)->causedBy($this->user)->log('updated');
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('recentlyEdited', fn ($records) => collect($records)->pluck('title')->all() === ['Mano posėdis', 'Senesnis posėdis'])
+                    ->where('recentlyEdited.0.href', route('meetings.show', $mine))
+                )
+            );
+    });
+
+    test('recently edited collapses many edits of one record into one row', function (): void {
+        $institution = $this->user->duties()->first()->institution;
+        $meeting = Meeting::factory()->hasAttached($institution)->create(['title' => 'Vienas posėdis']);
+
+        foreach (range(1, 4) as $ignored) {
+            activity()->performedOn($meeting)->causedBy($this->user)->log('updated');
+        }
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('recentlyEdited', 1)
+                )
+            );
+    });
+
+    test('the coordinator is the institution manager of the user\'s tenant, never the user', function (): void {
+        $role = Role::factory()->create(['name' => 'Institution Manager']);
+        $settings = app(AtstovavimasSettings::class);
+        $settings->institution_manager_role_id = $role->id;
+        $settings->save();
+
+        $manager = makeUser($this->tenant);
+        $duty = $manager->duties()->first();
+        $duty->pivot->end_date = null;
+        $duty->pivot->save();
+        $duty->assignRole($role->name);
+
+        $rep = makeUser($this->tenant);
+        $rep->duties()->first()->pivot->update(['end_date' => null]);
+
+        asUser($rep)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('coordinator.name', $manager->name)
+                )
+            );
+
+        // A manager is not their own coordinator.
+        asUser($manager)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinator', null))
+            );
+    });
+
+    test('the coordinator is absent when no manager role is configured', function (): void {
+        $settings = app(AtstovavimasSettings::class);
+        $settings->institution_manager_role_id = null;
+        $settings->save();
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinator', null))
+            );
+    });
+
+    test('site content is only assembled for users who can see it', function (): void {
+        News::factory()->for($this->tenant)->create([
+            'lang' => 'lt',
+            'publish_time' => now()->subHour(),
+            'draft' => false,
+        ]);
+
+        asUser($this->user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('latestNews', 0)
+                    ->has('upcomingCalendarEvents', 0)
+                )
+            );
+    });
+});
+
+describe('Sparčioji prieiga registration forms', function (): void {
+    beforeEach(function (): void {
+        $this->memberForm = Form::factory()->for($this->tenant)->create();
+        $this->recipientRole = Role::factory()->create(['name' => 'Member Registration Recipient']);
+
+        $formSettings = app(FormSettings::class);
+        $formSettings->member_registration_form_id = $this->memberForm->id;
+        $formSettings->member_registration_notification_recipient_role_id = $this->recipientRole->id;
+        $formSettings->save();
+    });
+
+    test('a registration recipient gets a link to the member registration form', function (): void {
+        $recipient = makeUser($this->tenant);
+        $recipient->assignRole($this->recipientRole->name);
+
+        asUser($recipient)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+            ->where('registrationForms', [['key' => 'member', 'href' => route('forms.show', $this->memberForm)]])
+        );
+    });
+
+    test('a user who cannot view the form gets no link', function (): void {
+        asUser($this->user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+            ->where('registrationForms', [])
+        );
     });
 });
 
@@ -491,6 +745,33 @@ describe('institution graph', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowInstitutionGraph')
                 ->where('institutions', fn ($institutions) => collect($institutions)->every(fn ($institution) => isset($institution['users_count']) && is_numeric($institution['users_count'])))
+            );
+    });
+});
+
+describe('unfinished reservation', function (): void {
+    test('home points back to a started reservation', function (): void {
+        asUser($this->user)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page->where('reservationDraft', null));
+
+        $draft = ReservationDraft::factory()->for($this->user)->withPeriod()->create();
+        ReservationDraftItem::factory()->for($draft, 'draft')->for($this->resource)->create();
+
+        asUser($this->user)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reservationDraft.count', 1)
+                ->where('reservationDraft.name', null)
+                ->where('reservationDraft.start_time', $draft->start_time->getTimestampMs())
+            );
+    });
+
+    test('a named draft with nothing picked yet still shows', function (): void {
+        ReservationDraft::factory()->for($this->user)->create(['name' => 'Stovykla']);
+
+        asUser($this->user)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reservationDraft.name', 'Stovykla')
+                ->where('reservationDraft.count', 0)
             );
     });
 });

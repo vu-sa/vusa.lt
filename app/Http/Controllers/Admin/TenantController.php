@@ -8,22 +8,16 @@ use App\Http\Requests\IndexTenantRequest;
 use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateContentRequest;
 use App\Http\Requests\UpdateTenantRequest;
-use App\Http\Traits\HasTanstackTables;
 use App\Models\Content;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ContentService;
-use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Response;
 
 class TenantController extends AdminController
 {
-    use HasTanstackTables;
-
-    public function __construct(private TanstackTableService $tableService) {}
-
     /**
      * Display a listing of the resource.
      */
@@ -31,39 +25,10 @@ class TenantController extends AdminController
     {
         $this->handleAuthorization('viewAny', Tenant::class);
 
-        $query = Tenant::query();
-
-        $searchableColumns = ['fullname', 'shortname', 'alias'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
-        );
-
-        $tenants = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        $sorting = $request->getSorting();
-
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return $this->inertiaResponse('Admin/People/IndexTenant', [
-            'tenants' => [
-                'data' => $tenants->items(),
-                'meta' => [
-                    'total' => $tenants->total(),
-                    'per_page' => $tenants->perPage(),
-                    'current_page' => $tenants->currentPage(),
-                    'last_page' => $tenants->lastPage(),
-                    'from' => $tenants->firstItem(),
-                    'to' => $tenants->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting,
+            'tenants' => Tenant::query()->orderBy('fullname')->get(['id', 'fullname', 'shortname', 'alias', 'type']),
+            'assignableInstitutions' => Institution::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

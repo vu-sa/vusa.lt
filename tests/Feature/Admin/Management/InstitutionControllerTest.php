@@ -69,8 +69,55 @@ describe('unauthorized access', function (): void {
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('cannot index institutions', function (): void {
-        asUser($this->user)->get(route('institutions.index'))->assertStatus(403);
+    test('browses institutions — active ones are public — starting on their padalinys', function (): void {
+        asUser($this->user)->get(route('institutions.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitution')
+                ->where('defaultTenantShortnames', [$this->tenant->shortname])
+            );
+    });
+
+    test('reads an active institution outside their reach as its public face only', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
+        $institution->tasks()->create(['name' => 'Internal task']);
+
+        asUser($this->user)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('readOnly', true)
+                ->where('can.update', false)
+                ->where('can.recordMeeting', false)
+                ->where('can.reportActivity', false)
+                ->where('files', [])
+                ->where('tasks', [])
+                ->where('relatedInstitutions', [])
+                ->where('institution.secretaries', [])
+                ->where('institution.sharepointPath', null)
+                ->where('overview.recentComments', [])
+            );
+    });
+
+    test('says the meetings exist but are hidden when they are not public', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
+        Meeting::factory()->hasAttached($institution)->create();
+
+        asUser($this->user)->get(route('institutions.show', $institution))
+            ->assertInertia(fn ($page) => $page
+                ->where('overview.meetings_hidden', true)
+                ->where('overview.recentMeetings', [])
+                ->where('overview.activity_status', null)
+                ->where('meetings', [])
+                // Nothing to hear about, so nothing to follow
+                ->where('subscription', null)
+            );
+    });
+
+    test('cannot open an inactive institution outside their reach', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 0]);
+
+        asUser($this->user)->get(route('institutions.show', $institution))->assertForbidden();
     });
 
     test('cannot access institution create page', function (): void {
@@ -113,6 +160,48 @@ describe('unauthorized access', function (): void {
 describe('authorized access', function (): void {
     beforeEach(function (): void {
         $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    });
+
+    // Terms, secretary rosters and the sheet's programme picker are edited on the record, so they
+    // ride a deferred group: absent on the first paint, and only ever sent to someone who may update.
+    test('the record carries per-record permissions and defers the management group', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('can.update', true)
+                ->where('can.recordMeeting', true)
+                ->missing('management')
+                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels
+                    ->has('management.cadences')
+                    ->has('management.globalCadences')
+                    ->has('management.secretaryRosters')
+                    ->has('management.suggestedSecretaries')
+                    ->has('management.studyPrograms')));
+    });
+
+    test('someone who may only view the institution is never sent the management group', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $viewer = makeUser($this->tenant);
+        $viewer->duties()->first()->assignRole('Student Representative');
+        $viewer->duties()->first()->update(['institution_id' => $institution->id]);
+
+        asUser($viewer)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('can.update', false)
+                ->where('can.recordMeeting', true)
+                ->where('can.reportActivity', true)
+                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels->where('management', null)));
+    });
+
+    test('the record no longer sends the retired administrators alias', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn ($page) => $page->has('institution.secretaries')->missing('institution.administrators'));
     });
 
     test('can show institution with tasks', function (): void {
@@ -216,31 +305,39 @@ describe('authorized access', function (): void {
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexInstitution'));
     });
 
-    // The index cell shows only the first few meetings, so they must arrive
-    // newest first — an administrator is looking for what just happened.
-    test('indexes institution meetings newest first', function (): void {
-        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-
-        Meeting::factory()->create(['start_time' => '2024-01-01 10:00:00'])
-            ->institutions()->attach($institution);
-        Meeting::factory()->create(['start_time' => '2026-01-01 10:00:00'])
-            ->institutions()->attach($institution);
-        Meeting::factory()->create(['start_time' => '2025-01-01 10:00:00'])
-            ->institutions()->attach($institution);
+    // The live list reads from Typesense; only what the user could restore is counted here.
+    test('the live index carries no rows, only the trash count', function (): void {
+        Institution::factory()->create(['tenant_id' => $this->tenant->id])->delete();
 
         asUser($this->admin)->get(route('institutions.index'))
             ->assertOk()
-            ->assertInertia(function ($page) use ($institution): void {
-                $meetings = collect($page->toArray()['props']['data'])
-                    ->firstWhere('id', $institution->id)['meetings'];
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitution')
+                ->where('deletedCount', 1)
+                ->missing('data'));
+    });
 
-                $years = array_map(
-                    fn (array $meeting): int => (int) substr((string) $meeting['start_time'], 0, 4),
-                    $meetings,
-                );
+    test('the index carries the ids the user follows, since Typesense cannot know them', function (): void {
+        $followed = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $this->admin->followedInstitutions()->attach($followed);
 
-                expect($years)->toBe([2026, 2025, 2024]);
-            });
+        asUser($this->admin)->get(route('institutions.index'))
+            ->assertInertia(fn ($page) => $page->where('followedInstitutionIds', [$followed->id]));
+    });
+
+    test('the trash is the same collection, fed from the database', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $institution->delete();
+
+        asUser($this->admin)->get(route('institutions.index', ['showDeleted' => 'true']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitution')
+                ->where('deletedCount', 1));
+
+        asUser($this->admin)->getJson(route('api.v1.admin.trash.index', ['collection' => 'institutions']))
+            ->assertOk()
+            ->assertJsonPath('data.items.0.id', (string) $institution->id);
     });
 
     test('can access institution create page', function (): void {
@@ -679,5 +776,15 @@ describe('institution search indexing', function (): void {
         expect($searchable)->toHaveKeys(['name_lt', 'duty_names', 'current_user_names'])
             ->and($searchable['duty_names'])->toContain('Pirmininkas')
             ->and($searchable['current_user_names'])->toContain('Jonas Jonaitis');
+    });
+
+    test('searchable array carries the activity status the ViSAK numbers filter by', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+
+        expect($institution->fresh()->toSearchableArray()['activity_status'])->toBe('no_activity');
+
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->addWeek()]);
+
+        expect($institution->fresh()->toSearchableArray()['activity_status'])->toBe('covered_by_upcoming_meeting');
     });
 });

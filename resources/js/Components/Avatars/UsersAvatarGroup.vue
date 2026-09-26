@@ -1,8 +1,8 @@
 <template>
-  <div class="inline-flex flex-row items-center p-1" role="group" aria-label="Group of users">
+  <div data-slot="users-avatar-group" class="inline-flex flex-row items-center py-1" role="group" :aria-label="$t('Naudotojai')">
     <!-- Display avatars up to the maximum allowed -->
     <div v-for="(user, index) in visibleUsers" :key="user.id || index" class="relative flex items-center"
-      :class="[avatarWrapperClass, { '-ml-2': index > 0 }]" :style="{ zIndex: visibleUsers.length - index }">
+      :class="[avatarWrapperClass, index > 0 ? '-ml-2 [&_[data-slot=avatar]]:ring-2 [&_[data-slot=avatar]]:ring-background' : '']" :style="{ zIndex: visibleUsers.length - index }">
       <Link v-if="isClickable && user.id" :href="route('users.show', user.id)" class="contents">
         <UserPopover :user :size="avatarSize" :clickable="false">
           <template #additional-info>
@@ -26,13 +26,13 @@
             :interactive="true"
           >
             <AvatarFallback
-              class="text-foreground font-medium"
+              class="font-medium"
               :class="textSizeClass">
               +{{ remainingCount }}
             </AvatarFallback>
           </Avatar>
         </HoverCardTrigger>
-        <HoverCardContent class="p-3 w-auto min-w-48 max-h-[280px] overflow-y-auto">
+        <HoverCardContent class="w-auto min-w-48 max-h-[280px] overflow-y-auto p-3">
           <div class="space-y-3">
             <h4 class="text-sm font-medium text-muted-foreground">
               {{ $t('Other users') }}
@@ -63,7 +63,7 @@
       <PopoverTrigger as-child>
         <button
           type="button"
-          class="ml-1 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          class="ml-1 flex size-7 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground pointer-coarse:size-11"
           :aria-label="$t('Rodyti visus')"
         >
           <ChevronDown class="h-4 w-4" />

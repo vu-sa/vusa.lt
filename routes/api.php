@@ -6,26 +6,40 @@ use App\Http\Controllers\Api\Admin\ActivityLogApiController;
 use App\Http\Controllers\Api\Admin\AgendaItemNoteApiController;
 use App\Http\Controllers\Api\Admin\AnalyticsApiController;
 use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
+use App\Http\Controllers\Api\Admin\BannerApiController;
+use App\Http\Controllers\Api\Admin\CalendarApiController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
 use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
 use App\Http\Controllers\Api\Admin\DutiableTimelineApiController;
+use App\Http\Controllers\Api\Admin\DutyApiController;
 use App\Http\Controllers\Api\Admin\DutySearchApiController;
+use App\Http\Controllers\Api\Admin\EventTypeApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
+use App\Http\Controllers\Api\Admin\FormApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
+use App\Http\Controllers\Api\Admin\MailQueueApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
+use App\Http\Controllers\Api\Admin\MergeCandidateApiController;
 use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
+use App\Http\Controllers\Api\Admin\ProblemApiController;
+use App\Http\Controllers\Api\Admin\ReservationApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
+use App\Http\Controllers\Api\Admin\ResourceCategoryApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
 use App\Http\Controllers\Api\Admin\SharepointApiController;
+use App\Http\Controllers\Api\Admin\SupportRequestCollectionApiController;
+use App\Http\Controllers\Api\Admin\TagApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
 use App\Http\Controllers\Api\Admin\TextBoxSubmissionApiController;
+use App\Http\Controllers\Api\Admin\TrashApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
+use App\Http\Controllers\Api\Admin\UserApiController;
 use App\Http\Controllers\Api\Admin\UserAttributionApiController;
 use App\Http\Controllers\Api\Admin\UserPreferencesApiController;
 use App\Http\Controllers\Api\Admin\UserSearchApiController;
@@ -107,7 +121,25 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
     |
     */
     Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(function (): void {
+        // Database-backed collection pages refresh these records without an Inertia visit.
+        Route::get('reservations', [ReservationApiController::class, 'index'])->name('reservations.index');
+        Route::get('tags', [TagApiController::class, 'index'])->name('tags.index');
+        Route::get('resourceCategories', [ResourceCategoryApiController::class, 'index'])->name('resourceCategories.index');
+        Route::get('duties', [DutyApiController::class, 'index'])->name('duties.index');
+        Route::get('problems', [ProblemApiController::class, 'index'])->name('problems.index');
+        Route::get('forms', [FormApiController::class, 'index'])->name('forms.index');
+        Route::get('banners', [BannerApiController::class, 'index'])->name('banners.index');
+        Route::get('eventTypes', [EventTypeApiController::class, 'index'])->name('eventTypes.index');
+        Route::get('calendar', [CalendarApiController::class, 'index'])->name('calendar.index');
+        // Trash of the Typesense-backed collections: the index holds no deleted rows.
+        Route::get('trash/{collection}', [TrashApiController::class, 'index'])
+            ->whereIn('collection', array_keys(TrashApiController::COLLECTIONS))
+            ->name('trash.index');
+
         // Tasks
+        Route::get('tasks', [TaskApiController::class, 'index'])->name('tasks.index');
+        Route::get('mail-queue', [MailQueueApiController::class, 'index'])->name('mailQueue.index');
+        Route::get('support-requests', [SupportRequestCollectionApiController::class, 'index'])->name('supportRequests.index');
         Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
 
         // Tenant-scoped page-view statistics (Umami) for the Svetainė dashboard
@@ -117,14 +149,16 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Academic vacation periods (shaded in the meetings Gantt chart)
         Route::get('academic-calendar/vacations', [AcademicCalendarApiController::class, 'vacations'])->name('academicCalendar.vacations');
 
-        // ViSAK tenant timeline, windowed Gantt meetings and paginated representative activity
+        // ViSAK tenant timeline, Gantt rows and windowed meetings, and paginated representative activity
         Route::get('visak/timeline', [AtstovavimasApiController::class, 'timeline'])->name('visak.timeline');
         Route::get('visak/timeline/history', [AtstovavimasApiController::class, 'statusHistory'])->name('visak.timeline.history');
+        Route::get('visak/gantt', [AtstovavimasApiController::class, 'gantt'])->name('visak.gantt');
         Route::get('visak/meetings', [AtstovavimasApiController::class, 'meetings'])->name('visak.meetings');
         Route::get('visak/representatives', [AtstovavimasApiController::class, 'representatives'])->name('visak.representatives');
 
         // Guided action window ("Veiksmų langas") personalised choices
         Route::get('action-window/context', [ActionWindowApiController::class, 'context'])->name('actionWindow.context');
+        Route::get('merge-candidates/{type}', [MergeCandidateApiController::class, 'index'])->name('mergeCandidates.index');
 
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');
@@ -176,7 +210,6 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Sharepoint / FileableFiles
         Route::get('fileables/{type}/{id}/files', [SharepointApiController::class, 'fileableFiles'])->name('fileables.files');
         Route::get('fileables/{type}/{id}/inherited', [SharepointApiController::class, 'inheritedFiles'])->name('fileables.inherited');
-        Route::get('sharepoint/potential-fileables', [SharepointApiController::class, 'potentialFileables'])->name('sharepoint.potentialFileables');
         Route::get('sharepoint/drive-items', [SharepointApiController::class, 'driveItems'])->name('sharepoint.driveItems');
 
         // Tutorials
@@ -196,7 +229,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Institution subscription (follow/mute) management
         Route::prefix('institutions')->name('institutions.')->group(function (): void {
-            Route::get('followed', [InstitutionSubscriptionApiController::class, 'followed'])->name('followed');
+            Route::post('follows', [InstitutionSubscriptionApiController::class, 'followMany'])->name('follows.store');
+            Route::delete('follows', [InstitutionSubscriptionApiController::class, 'unfollowMany'])->name('follows.destroy');
             Route::get('{institution}/subscription-status', [InstitutionSubscriptionApiController::class, 'status'])->name('subscription.status');
             Route::post('{institution}/follow', [InstitutionSubscriptionApiController::class, 'follow'])->name('follow');
             Route::delete('{institution}/follow', [InstitutionSubscriptionApiController::class, 'unfollow'])->name('unfollow');
@@ -210,6 +244,9 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // User preferences (sidebar customization, recent pages)
         Route::patch('user-preferences', [UserPreferencesApiController::class, 'updateUIPreferences'])->name('user-preferences.update');
         Route::patch('user-preferences/recent-page', [UserPreferencesApiController::class, 'trackRecentPage'])->name('user-preferences.trackRecentPage');
+
+        // The member list's database twin (page 2+ and every filter change of the collection page).
+        Route::get('users', [UserApiController::class, 'index'])->name('users.index');
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');

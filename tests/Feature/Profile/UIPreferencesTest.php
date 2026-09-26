@@ -14,45 +14,9 @@ beforeEach(function (): void {
 
 describe('HasUIPreferences trait', function (): void {
     test('applies defaults when column is null', function (): void {
-        expect($this->user->ui_preferences)->toBeArray();
-
-        $visibility = $this->user->getSidebarSectionVisibility();
-        expect($visibility['pinned'])->toBeTrue()
-            ->and($visibility['recently_visited'])->toBeTrue()
-            ->and($visibility['followed_institutions'])->toBeFalse()
-            ->and($visibility['spacer'])->toBeTrue()
+        expect($this->user->ui_preferences)->toBeArray()
+            ->and($this->user->getPinnedPages())->toBe([])
             ->and($this->user->getRecentPages())->toBe([]);
-    });
-
-    test('default section order contains every toggleable section once', function (): void {
-        $order = $this->user->getSidebarSectionOrder();
-        expect($order)->toContain('pinned')
-            ->toContain('recently_visited')
-            ->toContain('spacer')
-            ->and($order)->toHaveSameSize(array_unique($order));
-    });
-
-    test('setSidebarSectionOrder sanitizes and appends missing sections', function (): void {
-        $this->user->setSidebarSectionOrder(['start_fm', 'pinned', 'unknown']);
-        $this->user->refresh();
-
-        $order = $this->user->getSidebarSectionOrder();
-        expect($order)->toMatchArray([0 => 'start_fm', 1 => 'pinned'])->not->toContain('unknown')
-            ->toContain('secondary')
-            ->toContain('spacer');
-    });
-
-    test('setSidebarSectionVisibility persists and ignores unknown keys', function (): void {
-        $this->user->setSidebarSectionVisibility([
-            'pinned' => false,
-            'bogus_section' => false,
-        ]);
-
-        $this->user->refresh();
-
-        $visibility = $this->user->getSidebarSectionVisibility();
-        expect($visibility['pinned'])->toBeFalse()
-            ->and($visibility)->not->toHaveKey('bogus_section');
     });
 
     test('pushRecentPage dedupes and caps the list', function (): void {
@@ -80,14 +44,14 @@ describe('HasUIPreferences trait', function (): void {
             ->and(collect($recent)->pluck('url')->toArray())->toBe(['/mano/news', '/mano/users']);
     });
 
-    test('clearRecentPages empties the list but keeps section visibility', function (): void {
-        $this->user->setSidebarSectionVisibility(['start_fm' => false]);
+    test('clearRecentPages empties the list but keeps pinned pages', function (): void {
+        $this->user->setPinnedPages([['route' => 'users.index', 'url' => '/mano/users']]);
         $this->user->pushRecentPage('route.a', []);
         $this->user->clearRecentPages();
         $this->user->refresh();
 
         expect($this->user->getRecentPages())->toBe([])
-            ->and($this->user->getSidebarSectionVisibility()['start_fm'])->toBeFalse();
+            ->and($this->user->getPinnedPages())->toHaveCount(1);
     });
 });
 
@@ -127,79 +91,17 @@ describe('pinned pages', function (): void {
     });
 });
 
-describe('density', function (): void {
-    test('defaults to comfortable', function (): void {
-        expect($this->user->getDensity())->toBe('comfortable');
-    });
-
-    test('setDensity persists a valid value and ignores unknown ones', function (): void {
-        $this->user->setDensity('compact');
-        $this->user->refresh();
-        expect($this->user->getDensity())->toBe('compact');
-
-        $this->user->setDensity('bogus');
-        $this->user->refresh();
-        expect($this->user->getDensity())->toBe('compact');
-    });
-
-    test('endpoint rejects an invalid density', function (): void {
-        asUser($this->user)->patchJson(route('api.v1.admin.user-preferences.update'), [
-            'appearance' => ['density' => 'bogus'],
-        ])->assertStatus(422);
-    });
-
-    test('endpoint stores a valid density', function (): void {
-        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
-            'appearance' => ['density' => 'compact'],
-        ])->assertNoContent();
-
-        $this->user->refresh();
-        expect($this->user->getDensity())->toBe('compact');
-    });
-});
-
-describe('sidebar collapsed', function (): void {
-    test('defaults to false', function (): void {
-        expect($this->user->getSidebarCollapsed())->toBeFalse();
-    });
-
-    test('endpoint persists the collapsed flag', function (): void {
-        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
-            'sidebar' => ['collapsed' => true],
-        ])->assertNoContent();
-
-        $this->user->refresh();
-        expect($this->user->getSidebarCollapsed())->toBeTrue();
-    });
-});
-
 describe('api.v1.admin.user-preferences.update endpoint', function (): void {
     test('guests are not authorized', function (): void {
         $this->patch(route('api.v1.admin.user-preferences.update'), [
-            'sidebar' => ['sections' => ['pinned' => false]],
+            'pinned_pages' => [['route' => 'users.index']],
         ])->assertStatus(302); // redirected to login
     });
 
-    test('an authenticated user can toggle a section and gets 204', function (): void {
-        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
-            'sidebar' => ['sections' => ['pinned' => false]],
-        ])->assertNoContent();
-
-        $this->user->refresh();
-        expect($this->user->getSidebarSectionVisibility()['pinned'])->toBeFalse();
-    });
-
-    test('an authenticated user can reorder sections', function (): void {
-        asUser($this->user)->patch(route('api.v1.admin.user-preferences.update'), [
-            'sidebar' => ['order' => ['recently_visited', 'secondary', 'bogus']],
-        ])->assertNoContent();
-
-        $this->user->refresh();
-        $order = $this->user->getSidebarSectionOrder();
-        expect($order)->toMatchArray([0 => 'recently_visited', 1 => 'secondary'])->not->toContain('bogus');
-        // Missing toggleable sections are appended.
-        expect($order)->toContain('pinned');
-        expect($order)->toContain('start_fm');
+    test('a pinned page without a route is rejected', function (): void {
+        asUser($this->user)->patchJson(route('api.v1.admin.user-preferences.update'), [
+            'pinned_pages' => [['title' => 'No route']],
+        ])->assertStatus(422);
     });
 });
 
@@ -230,15 +132,11 @@ describe('api.v1.admin.user-preferences.trackRecentPage endpoint', function (): 
 
 describe('Inertia payload', function (): void {
     test('ui_preferences is shared on auth.user', function (): void {
-        $this->user->setSidebarSectionVisibility(['secondary' => false]);
-        $this->user->setDensity('compact');
-        $this->user->setSidebarCollapsed(true);
+        $this->user->setPinnedPages([['route' => 'users.index', 'url' => '/mano/users']]);
 
         asUser($this->user)->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('auth.user.ui_preferences.sidebar.sections.secondary', false)
-                ->where('auth.user.ui_preferences.appearance.density', 'compact')
-                ->where('auth.user.ui_preferences.sidebar.collapsed', true)
+                ->where('auth.user.ui_preferences.pinned_pages.0.url', '/mano/users')
             );
     });
 });

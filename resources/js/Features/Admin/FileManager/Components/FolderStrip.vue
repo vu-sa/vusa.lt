@@ -1,14 +1,14 @@
 <template>
   <Collapsible v-if="directories.length > 0" v-model:open="isOpen" data-slot="folder-strip">
-    <div class="rounded-md border border-border shadow-xs">
+    <div class="border border-border">
       <div class="flex flex-col gap-3 border-b border-border bg-muted/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <CollapsibleTrigger as-child>
           <Button variant="ghost" size="sm" class="h-8 justify-start gap-2 px-2 font-medium">
-            <IFluentChevronRight24Regular
+            <ChevronRight
               class="h-4 w-4 transition-transform duration-200"
               :class="{ 'rotate-90': isOpen }"
             />
-            <IFluentFolder24Filled class="h-4 w-4 text-muted-foreground" />
+            <Folder class="h-4 w-4 text-muted-foreground" />
             {{ $t('files.ui.folders') }} ({{ directories.length }})
           </Button>
         </CollapsibleTrigger>
@@ -32,10 +32,10 @@
               v-for="directory in filteredDirectories"
               :key="directory.path"
               type="button"
-              class="flex max-w-full items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm transition-colors hover:border-vusa-red hover:bg-muted/50"
+              class="flex max-w-full items-center gap-2 border border-border bg-background px-3 py-2 text-sm transition-colors hover:border-brand hover:bg-muted/50"
               @click="$emit('open', directory)"
             >
-              <IFluentFolder24Filled class="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              <Folder class="h-4 w-4 flex-shrink-0 text-muted-foreground" />
               <span class="truncate">{{ directory.name }}</span>
             </button>
           </div>
@@ -48,12 +48,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useStorage } from '@vueuse/core';
+import { ChevronRight, Folder } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
-import IFluentFolder24Filled from '~icons/fluent/folder-24-filled';
-import IFluentChevronRight24Regular from '~icons/fluent/chevron-right-24-regular';
 
 interface DirectoryEntry {
   path: string;
@@ -100,9 +99,8 @@ watch(() => props.directories, () => {
 });
 
 const filteredDirectories = computed(() => {
-  const needle = filter.value.trim().toLowerCase();
-  if (!needle) return props.directories;
-
-  return props.directories.filter(directory => directory.name.toLowerCase().includes(needle));
+  if (!filter.value.trim()) return props.directories;
+  const needle = filter.value.toLowerCase();
+  return props.directories.filter(d => d.name.toLowerCase().includes(needle));
 });
 </script>

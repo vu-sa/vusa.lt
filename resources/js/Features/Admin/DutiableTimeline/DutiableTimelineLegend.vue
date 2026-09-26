@@ -15,7 +15,7 @@
         <ul class="space-y-1.5">
           <li v-for="entry in entries" :key="entry.key" class="flex items-center gap-2 text-[11px]">
             <span
-              class="h-2.5 w-5 shrink-0 rounded-sm"
+              class="h-2.5 w-5 shrink-0"
               :style="{
                 backgroundColor: entry.fill,
                 border: entry.stroke ? `1.5px ${entry.dashed ? 'dashed' : 'solid'} ${entry.stroke}` : undefined,

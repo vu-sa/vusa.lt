@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { nextTick } from 'vue';
 import { router } from '@inertiajs/vue3';
 
 import ShowSupportRequests from '@/Pages/Admin/Dashboard/ShowSupportRequests.vue';
@@ -25,6 +24,13 @@ const request = {
   area: { id: 1, name: 'Svetainė' },
 };
 
+const CollectionPageStub = {
+  name: 'CollectionPage',
+  props: ['source', 'quickFilters', 'title'],
+  emits: ['quickFilter'],
+  template: '<div><div v-for="item in source.items.value" :key="item.id" data-testid="row"><slot name="row" :item="item" /></div></div>',
+};
+
 const createWrapper = () => mount(ShowSupportRequests, {
   props: {
     requests: {
@@ -47,7 +53,7 @@ const createWrapper = () => mount(ShowSupportRequests, {
       { value: 'declined', label: 'Atmesta', badgeVariant: 'destructive' },
     ],
   },
-  global: { stubs: { ...commonStubs } },
+  global: { stubs: { ...commonStubs, CollectionPage: CollectionPageStub } },
 });
 
 beforeEach(() => {
@@ -55,25 +61,22 @@ beforeEach(() => {
 });
 
 describe('support request dashboard', () => {
-  it('starts on all and renders the request table', () => {
+  it('starts on all and renders the request rows', () => {
     const wrapper = createWrapper();
 
-    expect(wrapper.find('[role="tab"][data-state="active"]').text()).toContain('Visi');
+    expect(wrapper.findComponent(CollectionPageStub).props('quickFilters')[0]).toEqual({ id: 'all', label: 'Visi · 4', active: true });
     expect(wrapper.text()).toContain('Prisijungimo klaida');
     expect(wrapper.text()).toContain('Justinas Kavoliūnas');
   });
 
-  it('applies a status KPI as a server-side filter', async () => {
+  it('changes tabs through the collection quick filters', async () => {
     const wrapper = createWrapper();
-    const newTile = wrapper.findAll('button').find(button => button.text().includes('Naujas'));
-
-    await newTile!.trigger('click');
-    await nextTick();
+    wrapper.findComponent(CollectionPageStub).vm.$emit('quickFilter', 'mine');
 
     expect(router.get).toHaveBeenCalledWith(
       '/mocked/mySupportRequests.index',
-      expect.objectContaining({ tab: 'all', page: 1, filters: JSON.stringify({ status: 'new' }) }),
-      expect.any(Object),
+      { tab: 'mine' },
+      { preserveState: false },
     );
   });
 });

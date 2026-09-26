@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Actions\GetAliasSubdomainForPublic;
 use App\Actions\GetPublicEditLink;
 use App\Http\Traits\ResolvesPublicContent;
-use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
@@ -114,20 +113,6 @@ class PublicController extends Controller
                 ->get(['id', 'link', 'text', 'icon', 'is_important']));
 
         Inertia::share('tenant.links', $quickLinks);
-    }
-
-    protected function getNavigation()
-    {
-        $locale = app()->getLocale();
-        $cacheKey = "navigation_{$locale}";
-
-        $navigation = Cache::tags(['navigation', "locale_{$locale}"])
-            ->remember($cacheKey, 7200, fn () => Navigation::query()
-                ->where('lang', $locale)
-                ->orderBy('order')
-                ->get());
-
-        Inertia::share('navigation', $navigation);
     }
 
     /**

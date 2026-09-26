@@ -120,10 +120,6 @@ class AppServiceProvider extends ServiceProvider
             ? Limit::perMinute(1000)->by($request->user()->id)
             : Limit::perMinute(60)->by($request->ip()));
 
-        RateLimiter::for('summerCamps', fn (Request $request) => $request->user()
-            ? Limit::perMinute(100)->by($request->user()->id)
-            : Limit::perMinute(15)->by($request->ip()));
-
         RateLimiter::for('formRegistrations', fn (Request $request) => $request->user()
             ? Limit::perMinute(100)->by($request->user()->id)
             : Limit::perHour(5)->by($request->ip()));

@@ -5,21 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\StoreTypeRequest;
+use App\Http\Requests\SyncTypeModelsRequest;
+use App\Http\Requests\SyncTypeRolesRequest;
 use App\Http\Requests\UpdateTypeRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Duty;
 use App\Models\Role;
 use App\Models\Type;
-use App\Services\TanstackTableService;
-use App\Support\MorphMap;
+use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 
 class TypeController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
-
-    public function __construct(private TanstackTableService $tableService) {}
 
     /**
      * Display a listing of the resource.
@@ -28,52 +27,15 @@ class TypeController extends AdminController
     {
         $this->handleAuthorization('viewAny', Type::class);
 
-        // Build base query with eager loading
-        $query = Type::query();
-
-        // Define searchable columns
-        $searchableColumns = ['title', 'model_type', 'slug'];
-
-        // Apply Tanstack Table filters
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
-        );
-
-        // Paginate results
-        $deletedCount = $this->getTrashedCount($query);
-
-        // Trash view only: lets the table say why permanent deletion is refused.
-        $query = $this->withForceDeleteBlockers($query, $request, []);
-
-        $types = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        $this->appendForceDeleteBlockedReason($types->getCollection(), $request);
-
-        // Get the sorting state using the custom method to ensure consistent parsing
-        $sorting = $request->getSorting();
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
+        $types = Type::query()
+            ->when($request->getShowDeleted(), fn ($query) => $query->onlyTrashed())
+            ->orderBy('model_type')
+            ->get();
 
         return $this->inertiaResponse('Admin/ModelMeta/IndexTypes', [
-            'data' => $types->items(),
-            'meta' => [
-                'total' => $types->total(),
-                'per_page' => $types->perPage(),
-                'current_page' => $types->currentPage(),
-                'last_page' => $types->lastPage(),
-                'from' => $types->firstItem(),
-                'to' => $types->lastItem(),
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting,
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
-            'initialSorting' => $sorting,
+            'types' => $this->appendForceDeleteBlockedReason($types, $request)->values(),
+            'deletedCount' => Type::onlyTrashed()->count(),
         ]);
     }
 
@@ -86,7 +48,6 @@ class TypeController extends AdminController
 
         return $this->inertiaResponse('Admin/ModelMeta/CreateType', [
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
-            'roles' => Role::all(),
         ]);
     }
 
@@ -95,17 +56,11 @@ class TypeController extends AdminController
      */
     public function store(StoreTypeRequest $request)
     {
-        $validated = $request->validated();
-
         $type = Type::query()->create(
             $request->safe()->only('title', 'model_type', 'description', 'parent_id', 'slug', 'extra_attributes')
         );
 
-        if ($validated['model_type'] === MorphMap::alias(Duty::class)) {
-            $type->roles()->sync($request->input('roles', []));
-        }
-
-        return redirect()->route('types.index')
+        return redirect()->route('types.show', $type)
             ->with('success', $this->entityMessage('created', 'type'));
     }
 
@@ -116,8 +71,27 @@ class TypeController extends AdminController
     {
         $this->handleAuthorization('view', $type);
 
+        $relation = $type->typeableRelation();
+        $type->load([
+            'parent:id,title',
+            'roles:id,name',
+            ...($relation === null ? [] : [$relation => fn ($query) => $query->select('id', 'name')]),
+        ]);
+
         return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
-            'contentType' => $type->toArray(),
+            'contentType' => $type->toFullArray(),
+            'attachedModels' => $relation === null ? [] : $type->{$relation}->map(fn ($model): array => [
+                'id' => $model->id,
+                'name' => $model->name,
+            ])->values(),
+            'modelOptions' => Inertia::optional(fn () => $type->allModelsFromModelType()),
+            'roleOptions' => Inertia::optional(fn () => Role::query()->orderBy('name')->get(['id', 'name'])),
+            'sharepointPath' => SharepointFileService::pathOrNull($type),
+            'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
+            'can' => [
+                'update' => auth()->user()?->can('update', $type) ?? false,
+                'delete' => auth()->user()?->can('delete', $type) ?? false,
+            ],
         ]);
     }
 
@@ -128,20 +102,9 @@ class TypeController extends AdminController
     {
         $this->handleAuthorization('update', $type);
 
-        // A type persisted before the allowlist existed may carry an unsupported
-        // model_type; fall back to loading nothing rather than blowing up.
-        $modelType = $type->typeableRelation();
-
         return $this->inertiaResponse('Admin/ModelMeta/EditType', [
-            'contentType' => [
-                ...($modelType === null ? $type : $type->load($modelType))->toFullArray(),
-                'roles' => $type->roles->pluck('id')->toArray(),
-            ],
+            'contentType' => $type->toFullArray(),
             'contentTypes' => Type::select('id', 'title', 'model_type')->get(),
-            'sharepointPath' => $type->sharepoint_path(),
-            'allModelsFromModelType' => $type->allModelsFromModelType()->toArray(),
-            'modelType' => $modelType,
-            'roles' => Role::all(),
         ]);
     }
 
@@ -150,19 +113,24 @@ class TypeController extends AdminController
      */
     public function update(UpdateTypeRequest $request, Type $type)
     {
-        $validated = $request->validated();
-
         $type->update($request->safe()->only('title', 'model_type', 'description', 'parent_id', 'extra_attributes'));
 
-        // Resolved through the allowlist rather than built from the request, so
-        // only `institutions` and `duties` are ever reachable.
-        $relation = Type::TYPEABLE_RELATIONS[$validated['model_type']];
+        return back()->with('success', $this->entityMessage('updated', 'type'));
+    }
 
-        $type->{$relation}()->sync($request->input($relation, []));
+    public function syncModels(SyncTypeModelsRequest $request, Type $type): RedirectResponse
+    {
+        $relation = $type->typeableRelation();
+        abort_if($relation === null, 403);
 
-        if ($validated['model_type'] === MorphMap::alias(Duty::class)) {
-            $type->roles()->sync($request->input('roles', []));
-        }
+        $type->{$relation}()->sync($request->validated('models'));
+
+        return back()->with('success', $this->entityMessage('updated', 'type'));
+    }
+
+    public function syncRoles(SyncTypeRolesRequest $request, Type $type): RedirectResponse
+    {
+        $type->roles()->sync($request->validated('roles'));
 
         return back()->with('success', $this->entityMessage('updated', 'type'));
     }

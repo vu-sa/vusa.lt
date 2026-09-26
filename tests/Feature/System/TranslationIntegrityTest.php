@@ -24,6 +24,9 @@
 const DYNAMIC_TRANSLATION_KEY_PREFIXES = [
     // App\Enums\InstitutionActivityStatus — the case name is appended at call time.
     'visak.activity.activity_status.',
+    // App\Notifications\BaseNotification::contextRows() — the row key is appended at call time;
+    // NotificationContractTest asserts every act-tier label resolves.
+    'notifications.context.',
 ];
 
 /**

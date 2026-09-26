@@ -20,6 +20,7 @@ import {
   CalendarOff,
   CalendarPlus,
   CalendarRange,
+  FileText,
   GraduationCap,
   Landmark,
   MessageSquareWarning,
@@ -29,7 +30,6 @@ import {
   type LucideIcon,
 } from 'lucide-vue-next';
 
-import { quickActionGradient } from '@/Composables/useQuickActions';
 import type { ScreenId } from '@/Composables/useActionWindow';
 
 /** The subset of `auth.can` the catalogue reads. */
@@ -45,8 +45,6 @@ export interface ActionWindowAction {
   /** Omitted when the title already says everything. */
   description?: string;
   icon: LucideIcon;
-  /** Icon-tile tint, shared with the sidebar quick actions where the key matches. */
-  gradient: string;
   requiresPermission: (can: ActionWindowPermissions) => boolean;
   /** Either push a screen inside the window, or leave for a page. */
   target: { kind: 'screen'; screen: ScreenId } | { kind: 'route'; route: string };
@@ -59,25 +57,8 @@ export interface ActionWindowPersona {
   title: string;
   description: string;
   icon: LucideIcon;
-  gradient: string;
   actions: ActionWindowAction[];
 }
-
-/**
- * Tints for actions the sidebar never had, written in the same idiom as
- * QUICK_ACTION_META so the two sets read as one palette.
- */
-const GRADIENTS = {
-  representative: 'from-amber-500/15 to-orange-500/15 dark:from-amber-400/12 dark:to-orange-400/12',
-  member: 'from-emerald-500/15 to-teal-500/15 dark:from-emerald-400/12 dark:to-teal-400/12',
-  coordinator: 'from-violet-500/15 to-purple-500/15 dark:from-violet-400/12 dark:to-purple-400/12',
-  no_meeting: 'from-amber-500/20 to-yellow-500/15 dark:from-amber-400/15 dark:to-yellow-400/12',
-  complete_meeting: 'from-sky-500/15 to-indigo-500/15 dark:from-sky-400/12 dark:to-indigo-400/12',
-  cadences: 'from-fuchsia-500/15 to-violet-500/15 dark:from-fuchsia-400/12 dark:to-violet-400/12',
-} as const;
-
-/** Falls back to the local palette for keys the sidebar never carried. */
-const tint = (key: string, fallback: string): string => quickActionGradient(key) ?? fallback;
 
 /**
  * Reporting a problem sits under both the representative and the member persona
@@ -89,7 +70,6 @@ const reportProblem = (): ActionWindowAction => ({
   title: $t('action_window.actions.new_problem.title'),
   description: $t('action_window.actions.new_problem.description'),
   icon: MessageSquareWarning,
-  gradient: tint('new_problem', GRADIENTS.member),
   requiresPermission: can => !!can.create.problem,
   target: { kind: 'route', route: 'problems.create' },
 });
@@ -101,14 +81,12 @@ export function buildPersonas(): ActionWindowPersona[] {
       title: $t('action_window.personas.representative.title'),
       description: $t('action_window.personas.representative.description'),
       icon: GraduationCap,
-      gradient: GRADIENTS.representative,
       actions: [
         {
           key: 'new_meeting',
           title: $t('action_window.actions.new_meeting.title'),
           description: $t('action_window.actions.new_meeting.description'),
           icon: CalendarPlus,
-          gradient: tint('new_meeting', GRADIENTS.representative),
           requiresPermission: can => !!can.create.meeting,
           target: { kind: 'screen', screen: 'meeting.institution' },
         },
@@ -117,7 +95,6 @@ export function buildPersonas(): ActionWindowPersona[] {
           title: $t('action_window.actions.no_meeting.title'),
           description: $t('action_window.actions.no_meeting.description'),
           icon: CalendarOff,
-          gradient: GRADIENTS.no_meeting,
           requiresPermission: can => !!can.create.meeting,
           target: { kind: 'screen', screen: 'checkin.institution' },
         },
@@ -126,7 +103,6 @@ export function buildPersonas(): ActionWindowPersona[] {
           title: $t('action_window.actions.complete_meeting.title'),
           description: $t('action_window.actions.complete_meeting.description'),
           icon: PencilLine,
-          gradient: GRADIENTS.complete_meeting,
           requiresPermission: can => !!can.create.meeting,
           target: { kind: 'screen', screen: 'meeting.pick' },
         },
@@ -138,14 +114,12 @@ export function buildPersonas(): ActionWindowPersona[] {
       title: $t('action_window.personas.member.title'),
       description: $t('action_window.personas.member.description'),
       icon: Landmark,
-      gradient: GRADIENTS.member,
       actions: [
         {
           key: 'new_reservation',
           title: $t('action_window.actions.new_reservation.title'),
           description: $t('action_window.actions.new_reservation.description'),
           icon: Building2,
-          gradient: tint('new_reservation', GRADIENTS.member),
           requiresPermission: can => !!can.create.reservation,
           target: { kind: 'route', route: 'reservations.create' },
         },
@@ -157,23 +131,28 @@ export function buildPersonas(): ActionWindowPersona[] {
       title: $t('action_window.personas.coordinator.title'),
       description: $t('action_window.personas.coordinator.description'),
       icon: Settings2,
-      gradient: GRADIENTS.coordinator,
       actions: [
+        {
+          key: 'new_news',
+          title: $t('action_window.actions.new_news.title'),
+          description: $t('action_window.actions.new_news.description'),
+          icon: FileText,
+          requiresPermission: can => !!can.create.news,
+          target: { kind: 'route', route: 'news.create' },
+        },
         {
           key: 'duty_update',
           title: $t('action_window.actions.duty_update.title'),
           description: $t('action_window.actions.duty_update.description'),
           icon: UserCog,
-          gradient: tint('duty_update', GRADIENTS.coordinator),
           requiresPermission: can => !!can.create.duty,
           target: { kind: 'route', route: 'duties.updateUsersWizard' },
         },
         {
-          key: 'cadences',
+          key: 'duty_periods',
           title: $t('action_window.actions.cadences.title'),
           description: $t('action_window.actions.cadences.description'),
           icon: CalendarRange,
-          gradient: GRADIENTS.cadences,
           // Mirrors DutiableTimelineController::index, which authorizes viewAny(Duty) —
           // gating on `dutiables.read` instead would lock out the coordinators the page
           // exists for, and gating on manage-settings would offer it to nobody else.
@@ -189,19 +168,30 @@ export function buildPersonas(): ActionWindowPersona[] {
 export function useActionWindowCatalog() {
   const page = usePage();
 
-  const permissions = computed<ActionWindowPermissions>(() => {
-    const can = (page.props.auth as {
-      can?: { create?: Record<string, boolean | undefined>; index?: Record<string, boolean | undefined> };
-    } | null)?.can;
-
-    return { create: can?.create ?? {}, index: can?.index ?? {} };
-  });
+  const catalogActions = computed(() => new Map((page.props.adminNavigation?.workspaces ?? [])
+    .flatMap(workspace => workspace.createActions)
+    .map(action => [action.key, action])));
 
   const personas = computed<ActionWindowPersona[]>(() =>
     buildPersonas()
       .map(persona => ({
         ...persona,
-        actions: persona.actions.filter(action => action.requiresPermission(permissions.value)),
+        actions: persona.actions.flatMap((action) => {
+          const catalogAction = catalogActions.value.get(action.key);
+
+          if (!catalogAction) {
+            return [];
+          }
+
+          return [{
+            ...action,
+            title: $t(catalogAction.label),
+            description: catalogAction.description ? $t(catalogAction.description) : undefined,
+            target: catalogAction.target.kind === 'route'
+              ? { kind: 'route' as const, route: catalogAction.target.routeName }
+              : { kind: 'screen' as const, screen: catalogAction.target.screen as ScreenId },
+          }];
+        }),
       }))
       .filter(persona => persona.actions.length > 0),
   );

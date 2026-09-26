@@ -1,7 +1,6 @@
 <template>
-  <div ref="wrap" class="relative w-full max-w-full outline-none" tabindex="0"
+  <div ref="wrap" class="relative isolate w-full max-w-full outline-none" tabindex="0"
     :class="{ 'h-full flex flex-col': props.height === '100%' }">
-    <!-- Header: Legend + Controls (VDOM child — keeps reka-ui Slider/Tooltip out of the vapor tree) -->
     <MeetingsGanttToolbar :show-legend :institution-count="layoutRows.filter(r => r.type === 'institution').length"
       :tenant-filter :tenant-names="mergedTenantNames" :show-only-with-activity :show-only-with-public-meetings
       :details-expanded :day-width="dayWidthPx || dayWidth" :hide-fullscreen-button :meetings-loading
@@ -9,94 +8,71 @@
       @update:details-expanded="emit('update:detailsExpanded', $event)" @update:day-width="onScaleChange([$event])"
       @fullscreen="emit('fullscreen', true)" />
 
-    <div class="flex w-full max-w-full border border-zinc-200 dark:border-zinc-700 rounded-md"
+    <div ref="chartArea" class="relative isolate flex w-full min-w-0 max-w-full border border-border" data-slot="meetings-gantt"
       :style="containerHeight ? { height: containerHeight } : {}"
-      :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }" style="min-width: 0;">
+      :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }">
       <!-- Left: sticky labels -->
-      <div ref="leftLabels" class="shrink-0 bg-white dark:bg-zinc-900 z-[35] overflow-hidden"
-        :style="{ width: `${labelWidthPx}px` }" style="isolation: isolate;">
+      <div ref="leftLabels" class="relative isolate z-[35] shrink-0 overflow-hidden border-r border-border bg-card"
+        :style="{ width: `${labelWidthPx}px` }">
         <div class="grid" :style="{ gridTemplateRows: `22px ${layoutRows.map(r => r.height + 'px').join(' ')}` }">
           <!-- header spacer (align with axis height) -->
-          <div class="border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 sticky top-0 z-20" />
+          <div class="sticky top-0 z-20 border-b border-border bg-muted/40" />
           <template v-for="(row, idx) in layoutRows" :key="`label-${row.key}`">
             <div v-if="row.type === 'tenant'"
-              class="px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 sticky top-[22px] z-[30]">
+              class="sticky top-[22px] z-[30] truncate border-b border-border bg-muted px-3 py-1 text-xs font-semibold text-foreground">
               {{ mergedTenantNames[row.tenantId!] ?? row.tenantId }}
             </div>
-            <div v-else class="px-3 py-1 text-sm border-b flex items-start gap-2 truncate" :class="[
-              idx % 2 === 0 ? 'bg-zinc-50/40 dark:bg-zinc-800/30' : '',
-              row.isRelated && row.authorized !== false
-                ? 'text-zinc-500 dark:text-zinc-400 border-zinc-100 dark:border-zinc-800 border-dashed bg-blue-50/30 dark:bg-blue-900/10'
-                : row.isRelated && row.authorized === false
-                  ? 'text-zinc-400 dark:text-zinc-500 border-zinc-100 dark:border-zinc-800 border-dashed bg-amber-50/30 dark:bg-amber-900/10'
-                  : 'text-zinc-700 dark:text-zinc-300 border-zinc-100 dark:border-zinc-800'
+            <div v-else class="flex items-start gap-2 truncate border-b px-3 py-1 text-sm" :class="[
+              row.isRelated
+                ? 'border-dashed border-border text-muted-foreground'
+                : 'border-border/60 text-foreground',
             ]" :title="labelFor(row.institutionId!)">
-              <div class="flex-1 min-w-0">
+              <div class="min-w-0 flex-1">
                 <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-1.5 min-w-0">
-                    <!-- Related institution indicator - authorized (blue) or unauthorized (amber) -->
-                    <div v-if="row.isRelated" class="relative group shrink-0" :title="getRelationshipTooltip(row)">
-                      <svg
-                        :class="['h-3 w-3', row.authorized !== false ? 'text-blue-500 dark:text-blue-400' : 'text-amber-500 dark:text-amber-400']"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round"
-                        :aria-label="row.authorized !== false ? $t('Susijusi institucija') : $t('relationships.not_authorized')">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                      </svg>
-                    </div>
+                  <div class="flex min-w-0 items-center gap-1.5">
+                    <!-- A related institution is marked by what it is; one the rep may not open, by a lock. -->
+                    <span v-if="row.isRelated" class="shrink-0" :title="getRelationshipTooltip(row)">
+                      <Link2 v-if="row.authorized !== false" class="size-3.5" :aria-label="$t('Susijusi institucija')" />
+                      <Lock v-else class="size-3.5" :aria-label="$t('relationships.not_authorized')" />
+                    </span>
                     <button type="button" :data-tour="idx === 1 ? 'gantt-institution-row' : undefined"
-                      class="truncate text-left hover:underline cursor-pointer focus:underline focus:outline-none"
-                      :class="[row.isRelated ? 'opacity-80' : '']"
+                      class="cursor-pointer truncate text-left hover:underline focus-visible:underline focus-visible:outline-none"
                       :aria-label="$t('Atidaryti instituciją') + ': ' + (labelFor(row.institutionId!) || row.institutionId)"
                       @click="visitInstitution(row.institutionId!, $event)"
                       @auxclick.middle.prevent="visitInstitution(row.institutionId!, $event)"
                       @keydown.enter.prevent="visitInstitution(row.institutionId!, $event)">
                       {{ labelFor(row.institutionId!) }}
                     </button>
-                    <!-- Public meetings indicator -->
-                    <svg v-if="props.institutionHasPublicMeetings?.[row.institutionId!]"
-                      class="h-3 w-3 text-green-600 dark:text-green-500/70 shrink-0" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                      :aria-label="$t('Vieši posėdžiai')">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-                      <path d="M2 12h20" />
-                    </svg>
+                    <span v-if="props.institutionHasPublicMeetings?.[row.institutionId!]" class="shrink-0 text-muted-foreground"
+                      :title="$t('Vieši posėdžiai')">
+                      <Globe class="size-3.5" :aria-label="$t('Vieši posėdžiai')" />
+                    </span>
                   </div>
                   <span v-if="lastMeetingByInstitution.get(row.institutionId!)"
-                    class="text-[11px] text-zinc-500 dark:text-zinc-500 shrink-0">{{
+                    class="shrink-0 text-xs tabular-nums text-muted-foreground">{{
                     labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
                 </div>
-                <div v-if="detailsExpanded" class="mt-1 text-[11px] text-zinc-600 dark:text-zinc-500 leading-snug">
-                  <div class="truncate">
-                    <span class="opacity-70">{{ $t('Susitikimų') }}:</span>
-                    <span class="ml-1">{{ meetings.filter(m => m.institution_id === row.institutionId).length }}</span>
-                  </div>
+                <div v-if="detailsExpanded" class="mt-1 truncate text-xs leading-snug text-muted-foreground">
+                  {{ $t('Posėdžių') }}: {{ meetings.filter(m => m.institution_id === row.institutionId).length }}
                 </div>
               </div>
             </div>
           </template>
         </div>
+
+        <!-- Drag handle for the label column width, as on the duty timeline. -->
+        <div
+          class="absolute right-0 top-0 z-[40] h-full w-1.5 cursor-col-resize hover:bg-border"
+          :class="{ 'bg-ring/40': isResizing }" role="separator" :aria-label="$t('Keisti stulpelio plotį')"
+          aria-orientation="vertical" @pointerdown.prevent="startLabelResize" />
       </div>
 
-      <!-- Resize handle for label column -->
-      <div
-        class="w-1 shrink-0 cursor-col-resize bg-transparent hover:bg-blue-500/30 active:bg-blue-500/50 transition-colors z-[40]"
-        :class="{ 'bg-blue-500/50': isResizing }" role="separator" :aria-label="$t('Keisti stulpelio plotį')"
-        aria-orientation="vertical" @mousedown.prevent="startLabelResize" />
-
       <!-- Right: scrollable timeline with sticky header -->
-      <div ref="rightScroll" class="flex-1 overflow-auto min-w-0 h-full bg-white dark:bg-zinc-900"
-        style="width: 0; min-width: 0;">
-        <!-- Sticky x-axis header - uses isolate to create new stacking context -->
-        <div ref="axisScroll"
-          class="sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-700"
-          style="isolation: isolate;">
-          <svg ref="axisEl" role="img" aria-label="Timeline axis" class="block" style="height: 22px;" />
+      <div ref="rightScroll" class="h-full w-0 min-w-0 flex-1 overflow-auto bg-background">
+        <div ref="axisScroll" class="sticky top-0 isolate z-30 border-b border-border bg-background">
+          <svg ref="axisEl" role="img" :aria-label="$t('Laiko ašis')" class="block" style="height: 22px;" />
         </div>
-        <!-- Chart content -->
-        <svg ref="svgEl" role="img" aria-label="Meetings timeline" class="block" />
+        <svg ref="svgEl" role="img" :aria-label="$t('visak.overview.timeline.title')" class="block" />
       </div>
     </div>
   </div>
@@ -107,6 +83,7 @@ import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import * as d3 from 'd3';
+import { Globe, Link2, Lock } from 'lucide-vue-next';
 
 import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors';
 import MeetingsGanttToolbar from './MeetingsGanttToolbar.vue';
@@ -203,7 +180,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   daysBefore: 60,
   daysAfter: 60,
-  dayWidth: 24,
+  dayWidth: 3,
   rowHeight: 28,
   labelWidth: 220,
   showLegend: true,
@@ -223,6 +200,7 @@ const props = withDefaults(defineProps<{
 });
 
 const wrap = ref<HTMLElement | null>(null);
+const chartArea = ref<HTMLElement | null>(null);
 const rightScroll = ref<HTMLElement | null>(null);
 const axisScroll = ref<HTMLElement | null>(null);
 const leftLabels = ref<HTMLElement | null>(null);
@@ -500,6 +478,15 @@ const groupedVisibleDutyMembers = computed<Map<string, ParsedDutyMember[]>>(() =
   return groups;
 });
 
+// Rows marked `authorized: false` are read-only: someone else's padalinys or an unauthorized relation.
+const readOnlyInstitutionIds = computed(() => new Set(
+  (props.institutions ?? []).filter(institution => institution.authorized === false).map(institution => String(institution.id)),
+));
+
+function canCreateOn(institutionId: string | number): boolean {
+  return !readOnlyInstitutionIds.value.has(String(institutionId));
+}
+
 // Initialize drag selection composable for Shift+drag check-in creation
 const dragSelection = useDragSelection(
   rightScroll,
@@ -508,7 +495,9 @@ const dragSelection = useDragSelection(
   layoutRows,
   {
     onDragComplete: (payload) => {
-      emit('create-check-in', payload);
+      if (canCreateOn(payload.institution_id)) {
+        emit('create-check-in', payload);
+      }
     },
   },
 );
@@ -590,10 +579,10 @@ const render = () => {
   if (centerLineManager) {
     centerLineManager.destroy();
   }
-  if (rightScroll.value) {
+  if (rightScroll.value && chartArea.value) {
     const currentLocale = (page.props.app as any)?.locale ?? 'lt';
     centerLineManager = createCenterLine({
-      container: container as HTMLElement,
+      container: chartArea.value,
       rightScroll: rightScroll.value,
       x: d3.scaleTime().domain([minTime.value, maxTime.value]).range([0, innerWidth]),
       colors,
@@ -739,6 +728,9 @@ const render = () => {
     rowTop,
     rowHeightFor,
     onCreateMeeting: (payload: { institution_id: string | number; suggestedAt: Date }) => {
+      if (!canCreateOn(payload.institution_id)) {
+        return;
+      }
       // Include institution name in the payload for external institutions
       const name = labelFor(payload.institution_id);
       emit('create-meeting', { ...payload, institutionName: name });
@@ -824,6 +816,7 @@ const render = () => {
     fmtDateWithYear,
     fmtDate,
     interactive: props.interactive,
+    canCreateOn,
     tooltipManager,
     onCreateMeeting: (payload) => {
       // Include institution name in the payload for external institutions
@@ -981,35 +974,18 @@ watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, ins
 
 <style scoped>
 svg :global(text) {
-  font-size: 10px;
-  fill: rgb(113, 113, 122);
-}
-
-:global(.dark) svg :global(text) {
-  fill: rgb(161, 161, 170);
-}
-
-.row-hover:hover {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-:global(.dark) .row-hover:hover {
-  background: rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+  fill: var(--muted-foreground);
 }
 
 /* Pulsing skeleton pill per row whose meetings are being fetched */
 svg :global(.gantt-loading-range) {
-  fill: rgb(113, 113, 122);
+  fill: var(--muted-foreground);
   animation: gantt-loading-pulse 1.6s ease-in-out infinite;
   pointer-events: none;
 }
 
-:global(.dark) svg :global(.gantt-loading-range) {
-  fill: rgb(161, 161, 170);
-}
-
 @keyframes gantt-loading-pulse {
-
   0%,
   100% {
     opacity: 0.1;
@@ -1020,21 +996,15 @@ svg :global(.gantt-loading-range) {
   }
 }
 
-/* Placeholder bar for rows outside the rendered viewport+buffer — subtler and
-   slower than the meetings-loading pulse, since it means "not rendered yet",
-   not "actively fetching". */
+/* Rows outside the rendered viewport: subtler and slower than the loading pulse, since it
+   means "not rendered yet", not "fetching". */
 svg :global(.gantt-row-skeleton) {
-  fill: rgb(113, 113, 122);
+  fill: var(--muted-foreground);
   animation: gantt-row-skeleton-pulse 2s ease-in-out infinite;
   pointer-events: none;
 }
 
-:global(.dark) svg :global(.gantt-row-skeleton) {
-  fill: rgb(161, 161, 170);
-}
-
 @keyframes gantt-row-skeleton-pulse {
-
   0%,
   100% {
     opacity: 0.06;

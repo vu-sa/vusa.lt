@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use Illuminate\Support\Str;
 
 /**
- * `ServerDataTable` resolves its empty-state heading through
- * `entities.{entityName}.model`, so a missing key leaks the raw key string into the
- * admin UI ("entities.news.model") instead of a model name. These keys also feed
- * breadcrumb and sidebar helpers, so a gap is never merely cosmetic.
+ * Admin index pages resolve model names through `entities.{entityName}.model`, so a
+ * missing key leaks the raw key string into the admin UI ("entities.news.model") instead
+ * of a model name. These keys also feed breadcrumb and sidebar helpers, so a gap is never
+ * merely cosmetic.
  *
  * The scan runs while Pest collects the file, before the application is booted, so it
  * uses plain filesystem calls rather than the `base_path()` / `File` helpers.
@@ -17,15 +18,15 @@ $entityNames = collect(glob($projectRoot.'/resources/js/Pages/Admin/*/Index*.vue
     ->map(function (string $path): ?string {
         $source = (string) file_get_contents($path);
 
-        // Pages declare the key they will look up as a top-level constant; those that
-        // declare none do not render a ServerDataTable empty state.
-        if (preg_match('/^const entityName\s*=\s*\'([^\']+)\'/m', $source, $matches) === 1) {
-            return $matches[1];
+        // CollectionPage entity types may use snake_case while translation keys use camelCase.
+        if (preg_match('/(?:^const entityName\s*=\s*\'([^\']+)\'|entity-type="([^"]+)")/m', $source, $matches) === 1) {
+            return ! empty($matches[1]) ? $matches[1] : $matches[2];
         }
 
         return null;
     })
     ->filter()
+    ->map(fn (string $entityName): string => Str::camel($entityName))
     ->unique()
     ->sort()
     ->values()
@@ -39,7 +40,7 @@ dataset('admin index entity names', array_map(
 test('the entity name scan finds every admin index page', function () use ($entityNames): void {
     // Guards the regex above: a rename that silently matches nothing would make
     // every dataset case vanish and the suite pass while covering nothing.
-    expect($entityNames)->toHaveCount(22);
+    expect($entityNames)->toHaveCount(25);
 });
 
 test('every admin index entity name has a Lithuanian model translation', function (string $entityName): void {

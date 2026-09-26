@@ -8,32 +8,8 @@
         :container-ref
       />
 
-      <!-- Context Bubble Menu on text selection -->
-      <BubbleMenu
-        v-if="editor"
-        class="flex items-center gap-0.5 rounded-lg border border-border bg-card p-1 shadow-md text-foreground"
-        :editor
-        plugin-key="tiptapDisplayBubbleMenu"
-        :should-show="shouldShowTextBubbleMenu"
-        :options="{ placement: 'top', offset: 8 }"
-        @mousedown.prevent
-      >
-        <TiptapFormattingButtons :editor bubble />
-        <Separator orientation="vertical" class="mx-0.5 h-5" />
-        <TiptapLinkButton :editor @submit="handleLinkSubmit" @document:submit="handleDocumentLinkSubmit">
-          <Button size="icon-sm" :variant="editor.isActive('link') ? 'secondary' : 'ghost'">
-            <IFluentLink24Regular class="size-4" />
-          </Button>
-        </TiptapLinkButton>
-        <Button
-          v-if="editor.isActive('link')"
-          variant="ghost"
-          size="icon-sm"
-          @click="editor?.chain().focus().unsetLink().run()"
-        >
-          <IFluentLinkDismiss20Filled class="size-4" />
-        </Button>
-      </BubbleMenu>
+      <!-- Selection, link, table and image menus — the same ones a form field gets. -->
+      <TiptapContextMenus v-if="editor" :editor image-menu />
 
       <!-- Live prose editing canvas. `rc-prose-editing` goes on the ProseMirror root
            itself (via editorProps below), not on a wrapper: the shared prose block's
@@ -57,20 +33,13 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { Editor, EditorContent } from '@tiptap/vue-3';
-import { BubbleMenu } from '@tiptap/vue-3/menus';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentTiptapHTML from '../RichContentTiptapHTML.vue';
 
 import RCSmartTiptapToolbar from '@/Components/TipTap/RCSmartTiptapToolbar.vue';
-import TiptapFormattingButtons from '@/Components/TipTap/TiptapFormattingButtons.vue';
-import TiptapLinkButton from '@/Components/TipTap/TiptapLinkButton.vue';
-import { shouldShowTextBubbleMenu } from '@/Components/TipTap/bubbleMenuVisibility';
+import TiptapContextMenus from '@/Components/TipTap/TiptapContextMenus.vue';
 import { createFullExtensions } from '@/Components/TipTap/extensions/presets';
-import { Button } from '@/Components/ui/button';
-import { Separator } from '@/Components/ui/separator';
-import IFluentLink24Regular from '~icons/fluent/link-24-regular';
-import IFluentLinkDismiss20Filled from '~icons/fluent/link-dismiss-20-filled';
 import '@/Components/TipTap/tiptap-base.css';
 
 const props = defineProps<{
@@ -111,24 +80,6 @@ function initEditor(): void {
       });
     },
   });
-}
-
-function handleLinkSubmit(url: string, text?: string): void {
-  if (!url) {
-    editor.value?.chain().focus().unsetLink().run();
-    return;
-  }
-  editor.value?.chain().focus().extendMarkRange('link').setLink({
-    href: url,
-    target: '_blank',
-  }).run();
-}
-
-function handleDocumentLinkSubmit(url: string, text?: string): void {
-  editor.value?.chain().focus().extendMarkRange('link').setLink({
-    href: url,
-    target: '_blank',
-  }).insertContent(text ?? url).run();
 }
 
 onMounted(() => {

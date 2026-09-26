@@ -3,9 +3,9 @@
 namespace App\Listeners;
 
 use App\Events\DutiableChanged;
-use App\Facades\Permission;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
+use App\Observers\UserPermissionObserver;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Support\MorphMap;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -38,8 +38,8 @@ class HandleDutiableChange implements ShouldQueue
 
         // resetCache() deliberately leaves these two maps alone, so forget them here.
         PermissionMapBuilder::forgetCachedMaps($event->modelId);
-        Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($event->modelId));
+        Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($event->modelId));
 
-        Permission::resetCache($event->modelId);
+        app(UserPermissionObserver::class)->invalidateUserCache($event->modelId);
     }
 }

@@ -20,8 +20,8 @@ beforeEach(function (): void {
     $this->representative->duties()->first()->assignRole('Student Representative');
 });
 
-/** Both the sidebar and the dashboard hero carry a trigger; this is the sidebar's. */
-const SIDEBAR_TRIGGER = '[data-sidebar="sidebar"] [data-testid="action-window-trigger"]';
+/** The shell's "+ Sukurti" button in the top bar. */
+const CREATE_TRIGGER = '[data-slot="shell-top-bar"] [data-tour="action-create"]';
 
 /** The visible title of every choice on the current screen. */
 function actionWindowChoices($page): array
@@ -32,13 +32,14 @@ function actionWindowChoices($page): array
     );
 }
 
-it('opens from the sidebar and offers only the actions the user may take', function (): void {
+it('opens from the create button and offers only the actions the user may take', function (): void {
     $page = loginAsAdmin($this->representative);
 
-    waitForInertiaRender($page, SIDEBAR_TRIGGER);
-    $page->click(SIDEBAR_TRIGGER);
+    waitForInertiaRender($page, CREATE_TRIGGER);
+    $page->click(CREATE_TRIGGER);
 
     waitForInertiaRender($page, '[data-slot="action-window-screen"]');
+    docsScreenshot($page, 'action-window', selector: '[role="dialog"]');
 
     // No coordinator persona: a representative can manage neither duties nor settings.
     expect(actionWindowChoices($page))->toBe([
@@ -47,13 +48,13 @@ it('opens from the sidebar and offers only the actions the user may take', funct
     ]);
 
     $page->click('[data-slot="action-choice-button"]:has-text("Kaip studentų atstovas")');
-    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Pranešti apie posėdį")');
+    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Fiksuoti posėdį")');
 
     expect(actionWindowChoices($page))->toBe([
-        'Pranešti apie posėdį',
-        'Posėdžio kurį laiką nebus',
-        'Papildyti posėdį',
-        'Pranešti apie problemą',
+        'Fiksuoti posėdį',
+        'Posėdžio nebuvo',
+        'Užbaigti posėdį',
+        'Nauja problema',
     ]);
 });
 
@@ -62,25 +63,25 @@ it('walks from the institution to the meeting type', function (): void {
 
     $page = loginAsAdmin($this->representative);
 
-    waitForInertiaRender($page, SIDEBAR_TRIGGER);
-    $page->click(SIDEBAR_TRIGGER);
+    waitForInertiaRender($page, CREATE_TRIGGER);
+    $page->click(CREATE_TRIGGER);
     waitForInertiaRender($page, '[data-slot="action-window-screen"]');
 
     $page->click('[data-slot="action-choice-button"]:has-text("Kaip studentų atstovas")');
-    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Pranešti apie posėdį")');
-    $page->click('[data-slot="action-choice-button"]:has-text("Pranešti apie posėdį")');
+    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Fiksuoti posėdį")');
+    $page->click('[data-slot="action-choice-button"]:has-text("Fiksuoti posėdį")');
 
     // The picker is fed by the action-window API, so this also proves the endpoint
     // answers with the caller's own institutions.
     waitForInertiaRender($page, sprintf('[data-slot="action-choice-button"]:has-text("%s")', $institution->name));
     $page->click(sprintf('[data-slot="action-choice-button"]:has-text("%s")', $institution->name));
 
-    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Gyvas susitikimas")');
+    waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Gyvas posėdis")');
 
     expect(actionWindowChoices($page))->toBe([
-        'Gyvas susitikimas',
-        'Nuotolinis susitikimas',
-        'Elektroninis posėdis (el. laišku)',
+        'Gyvas posėdis',
+        'Nuotolinis posėdis',
+        'Sprendimas el. paštu',
         'Kita',
     ]);
 });

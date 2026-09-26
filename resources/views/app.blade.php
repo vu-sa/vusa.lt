@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 
 {{-- TODO: Enable class="scroll-smooth" when Inertia scroll reset is fixed --}}
-{{-- `data-surface="public"` switches the design-token scope in resources/css/app.css: the
-     public site takes the editorial palette (warm paper / near-black, zero radius), admin keeps
-     its own. Emitted server-side, from the same component check that gates @head and Umami
-     below, so it is correct before the first paint. --}}
+{{-- `data-surface` switches the design-token scope in resources/css/app.css: public pages take the
+     editorial palette (warm paper / near-black, zero radius), admin pages the working-density one.
+     Resolved once server-side via App\Support\DesignSurface, so it is correct before the first paint
+     and the three checks below (this attribute, @head/Umami further down, and the <body> classes) agree. --}}
+@php($designSurface = \App\Support\DesignSurface::for($page['component'] ?? null))
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark-mode-init"
-    @if (str_starts_with($page['component'] ?? '', 'Public/')) data-surface="public" @endif>
+    @if ($designSurface) data-surface="{{ $designSurface }}" @endif>
 
 <head>
     <meta charset="utf-8">
@@ -61,21 +62,14 @@
     {{-- Dark mode initialization script - MUST be before any CSS to prevent flash --}}
     <script>
         (function() {
-            // Check localStorage for saved theme preference
-            const savedTheme = localStorage.getItem('vueuse-color-scheme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let savedTheme = localStorage.getItem('vueuse-color-scheme');
 
-            // Determine if dark mode should be active
-            let isDark = false;
-
-            if (savedTheme === 'dark') {
-                isDark = true;
-            } else if (savedTheme === 'light') {
-                isDark = false;
-            } else {
-                // savedTheme is 'auto' or null - use system preference
-                isDark = prefersDark;
+            if (savedTheme === null) {
+                savedTheme = 'light';
+                localStorage.setItem('vueuse-color-scheme', savedTheme);
             }
+
+            const isDark = savedTheme === 'dark' || (savedTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
             if (isDark) {
                 document.documentElement.classList.add('dark');
@@ -143,11 +137,11 @@
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}
-{{-- The public surface paints from its own tokens; admin keeps the zinc canvas it has today
-     until its own revamp. The font is set here rather than only on PublicLayout's root div
-     because Reka teleports popovers, dialogs and dropdowns to <body> — outside that div, they
-     otherwise fall back to the default sans instead of Atkinson. --}}
-<body class="antialiased @if (str_starts_with($page['component'] ?? '', 'Public/')) font-public bg-background text-foreground @else font-sans bg-zinc-50 dark:bg-zinc-900 @endif" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
+{{-- Public and admin paint from their surface tokens; pages on neither keep the zinc canvas.
+     The font is set here rather than only on the layout's root div because
+     Reka teleports popovers, dialogs and dropdowns to <body> — outside that div, they otherwise
+     fall back to the default sans instead of the surface's typeface. --}}
+<body class="antialiased @if ($designSurface) font-public bg-background text-foreground @else font-sans bg-zinc-50 dark:bg-zinc-900 @endif" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
     @inertia
 
     @include('turtle-loader')

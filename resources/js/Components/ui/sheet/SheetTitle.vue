@@ -1,7 +1,7 @@
 <template>
   <DialogTitle
     data-slot="sheet-title"
-    :class="cn('text-zinc-950 font-semibold dark:text-zinc-50', props.class)"
+    :class="cn('text-foreground font-semibold', props.class)"
     v-bind="delegatedProps"
   >
     <slot />

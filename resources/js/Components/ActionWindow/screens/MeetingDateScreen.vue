@@ -3,38 +3,40 @@
     :title="$t('action_window.meeting.date.title')"
     :subtitle="$t('action_window.meeting.date.subtitle')"
   >
-    <div class="flex justify-center">
-      <Calendar v-model="picked" class="rounded-2xl border border-border/70 p-2" />
+    <div class="space-y-2">
+      <Label :for="fieldId">{{ $t('action_window.meeting.date.label') }}</Label>
+      <DatePicker :id="fieldId" v-model="picked" class="w-full" />
     </div>
 
     <template #footer>
-      <Button class="w-full" size="lg" :disabled="!picked" @click="confirm">
+      <ActionWindowPrimaryButton :disabled="!picked" @click="confirm">
         {{ $t('action_window.common.continue') }}
-      </Button>
+      </ActionWindowPrimaryButton>
     </template>
   </ActionWindowScreen>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
+import { computed, ref, useId } from 'vue';
 
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
+import { toPickerDate } from '../useWindowDates';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
-import { Button } from '@/Components/ui/button';
-import { Calendar } from '@/Components/ui/calendar';
+import { DatePicker } from '@/Components/ui/date-picker';
+import { Label } from '@/Components/ui/label';
 import { toLocalDateTime } from '@/Composables/useMeetingCreation';
 import { isDateOnlyMeetingType } from '@/Types/MeetingType';
 
-const { draft, advance, goTo, updateMeeting } = useActionWindow();
+const { draft, current, advance, goTo, updateMeeting } = useActionWindow();
+
+const fieldId = useId();
 
 const existing = draft.meeting.start_time ? new Date(draft.meeting.start_time) : null;
 
-const picked = ref<CalendarDate | undefined>(
-  existing && !Number.isNaN(existing.getTime())
-    ? new CalendarDate(existing.getFullYear(), existing.getMonth() + 1, existing.getDate())
-    : today(getLocalTimeZone()),
+const picked = ref<Date | undefined>(
+  toPickerDate(existing && !Number.isNaN(existing.getTime()) ? existing : new Date()),
 );
 
 // An email meeting is a deadline: the day is the whole answer, so there is no clock step.
@@ -45,7 +47,8 @@ const confirm = () => {
     return;
   }
 
-  const date = picked.value.toDate(getLocalTimeZone());
+  // The picker's UTC-noon date, read back as the local day it stands for.
+  const date = new Date(picked.value.getUTCFullYear(), picked.value.getUTCMonth(), picked.value.getUTCDate());
 
   if (isDateOnly.value) {
     date.setHours(23, 59, 59, 0);
@@ -57,6 +60,6 @@ const confirm = () => {
   // Carry the day over; the clock screen fills in the rest.
   date.setHours(existing?.getHours() ?? 18, existing?.getMinutes() ?? 0, 0, 0);
   updateMeeting({ start_time: toLocalDateTime(date) });
-  goTo('meeting.time');
+  goTo('meeting.time', { returnTo: current.value.params?.returnTo });
 };
 </script>

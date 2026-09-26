@@ -12,7 +12,7 @@
     </div>
 
     <div v-if="controller.isSearching.value && hits.length === 0" class="flex flex-col gap-2">
-      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full rounded-xl" />
+      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full" />
     </div>
 
     <EmptyState
@@ -33,7 +33,6 @@
           :title="hit.title"
           :description="hit.subtitle"
           :icon="Landmark"
-          gradient="from-indigo-500/15 to-violet-500/15 dark:from-indigo-400/12 dark:to-violet-400/12"
           @click="pick(hit)"
         />
       </ActionChoiceList>
@@ -41,7 +40,7 @@
       <Button
         v-if="controller.hasMoreResults.value"
         variant="ghost"
-        class="mt-2 w-full"
+        class="mt-2 w-full pointer-coarse:h-11"
         :disabled="controller.isLoadingMore.value"
         @click="controller.loadMore"
       >

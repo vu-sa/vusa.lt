@@ -320,14 +320,7 @@ class ContentPart extends Model
      */
     public function isValidType(): bool
     {
-        try {
-            // Attempt to create an enum from the type string
-            ContentPartEnum::from($this->type);
-
-            return true;
-        } catch (\Throwable) {
-            return false;
-        }
+        return ContentPartEnum::tryFrom($this->type) !== null;
     }
 
     /**

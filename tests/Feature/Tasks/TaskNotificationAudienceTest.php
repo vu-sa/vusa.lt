@@ -1,15 +1,21 @@
 <?php
 
 use App\Actions\Schedulable\TaskNotifier;
+use App\Actions\ResolveTaskAssignees;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
+use App\Notifications\TaskAutoCompletedNotification;
 use App\Notifications\TaskReminderNotification;
+use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\Handlers\ApprovalTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
@@ -27,7 +33,7 @@ beforeEach(function (): void {
 /**
  * Attach a user to the institution for the given term. A null end date means still serving.
  */
-function attachDuty(Institution $institution, User $user, ?string $start, ?string $end): void
+function attachDuty(Institution $institution, User $user, ?string $start, ?string $end): Duty
 {
     $duty = Duty::factory()->for($institution)->create();
 
@@ -35,6 +41,8 @@ function attachDuty(Institution $institution, User $user, ?string $start, ?strin
         'start_date' => $start,
         'end_date' => $end,
     ]);
+
+    return $duty;
 }
 
 function meetingTaskFor(Institution $institution, array $users, ?string $meetingDate = null): Task
@@ -50,6 +58,19 @@ function meetingTaskFor(Institution $institution, array $users, ?string $meeting
 }
 
 describe('ResolveTaskAudience', function (): void {
+    test('a future holder carries a future meeting task but receives no notification before the term starts', function (): void {
+        $futureHolder = User::factory()->create();
+        $duty = attachDuty($this->institution, $futureHolder, now()->addMonth()->toDateString(), null);
+        $duty->types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+
+        $meetingDate = now()->addMonths(2)->toDateTimeString();
+        $task = meetingTaskFor($this->institution, [$futureHolder], $meetingDate);
+
+        expect(ResolveTaskAssignees::forMeeting($task->taskable)->pluck('id')->all())->toBe([$futureHolder->id])
+            ->and($task->users->pluck('id')->all())->toBe([$futureHolder->id])
+            ->and($task->notifiableUsers())->toBeEmpty();
+    });
+
     test('drops an assignee whose duty in the institution has ended', function (): void {
         $former = User::factory()->create();
         attachDuty($this->institution, $former, now()->subYears(3)->toDateString(), now()->subYear()->toDateString());
@@ -89,19 +110,19 @@ describe('ResolveTaskAudience', function (): void {
         expect($task->notifiableUsers())->toBeEmpty();
     });
 
-    test('keeps an administrator nominated for the term the meeting falls in', function (): void {
-        $administrator = User::factory()->create();
+    test('keeps a secretary nominated for the term the meeting falls in', function (): void {
+        $secretary = User::factory()->create();
 
         $cadence = Cadence::factory()->create([
             'start_date' => now()->subYears(2),
             'end_date' => now()->addMonths(2),
         ]);
 
-        $this->institution->administrators()->attach($administrator, ['cadence_id' => $cadence->id]);
+        $this->institution->secretaries()->attach($secretary, ['cadence_id' => $cadence->id]);
 
-        $task = meetingTaskFor($this->institution, [$administrator]);
+        $task = meetingTaskFor($this->institution, [$secretary]);
 
-        expect($task->notifiableUsers()->pluck('id')->all())->toBe([$administrator->id]);
+        expect($task->notifiableUsers()->pluck('id')->all())->toBe([$secretary->id]);
     });
 
     test('a manual task keeps assignees a person picked by hand', function (): void {
@@ -139,5 +160,53 @@ describe('task reminders', function (): void {
 
         Notification::assertSentTo($current, TaskReminderNotification::class);
         Notification::assertNotSentTo($former, TaskReminderNotification::class);
+    });
+});
+
+describe('task reminder intervals', function (): void {
+    test('a reminder skips users who deselected that interval', function (): void {
+        $wantsIt = User::factory()->create();
+        $optedOut = User::factory()->create(['notification_preferences' => ['reminder_settings' => ['task_reminder_days' => [7, 1]]]]);
+
+        $task = Task::factory()->create(['taskable_type' => 'user', 'taskable_id' => $wantsIt->id, 'due_date' => now()->addDays(3)]);
+        $task->users()->sync([$wantsIt->id, $optedOut->id]);
+
+        TaskNotifier::notifyDaysLeft(3);
+
+        Notification::assertSentTo($wantsIt, TaskReminderNotification::class);
+        Notification::assertNotSentTo($optedOut, TaskReminderNotification::class);
+    });
+});
+
+describe('manual tasks', function (): void {
+    test('creating a task by hand tells its assignees, and names who assigned it', function (): void {
+        $admin = makeTenantUserWithRole('Student Representative Coordinator', $this->institution->tenant);
+        $assignee = User::factory()->create();
+
+        asUser($admin)->post(route('tasks.store'), [
+            'name' => 'Sutvarkyti dokumentus',
+            'taskable_type' => MorphMap::alias(User::class),
+            'taskable_id' => $admin->id,
+            'due_date' => now()->addWeek()->getTimestampMs(),
+            'responsible_people' => [$assignee->id],
+            'separate_tasks' => false,
+        ])->assertRedirect();
+
+        Notification::assertSentTo($assignee, TaskAssignedNotification::class, fn (TaskAssignedNotification $notification): bool => str_contains($notification->body($assignee), $admin->name));
+    });
+});
+
+describe('automatic completion', function (): void {
+    test('the person whose action completed the task is not told about it', function (): void {
+        $completer = User::factory()->create();
+        $other = User::factory()->create();
+
+        $task = Task::factory()->create(['taskable_type' => 'user', 'taskable_id' => $completer->id]);
+        $task->users()->sync([$completer->id, $other->id]);
+
+        app(ApprovalTaskHandler::class)->complete($task->fresh(), 'Patvirtinta', $completer);
+
+        Notification::assertSentTo($other, TaskAutoCompletedNotification::class);
+        Notification::assertNotSentTo($completer, TaskAutoCompletedNotification::class);
     });
 });

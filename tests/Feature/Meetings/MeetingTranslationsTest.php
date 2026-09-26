@@ -286,10 +286,10 @@ describe('admin editor payload', function (): void {
         ]);
 
         asUser($this->admin)
-            ->get(route('agendaItems.edit', $agendaItem->id))
+            ->get(route('agendaItems.show', $agendaItem->id))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Representation/EditAgendaItem')
+                ->component('Admin/Representation/ShowAgendaItem')
                 ->where('agendaItem.title.lt', 'Lietuviškas')
                 ->where('agendaItem.title.en', 'English')
                 ->where('agendaItem.votes.0.title.en', 'Vote')

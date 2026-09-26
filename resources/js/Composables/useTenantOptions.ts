@@ -56,8 +56,8 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
 
   const isActive = (key: string): boolean => page.props.tenant?.alias === key;
 
-  /** Navigates to another tenant subdomain using the destination declared by the current page. */
-  const switchTenant = (key: string | string[]) => {
+  /** The other tenant's subdomain URL, at the destination declared by the current page. */
+  const tenantSwitchUrl = (key: string | string[]): string => {
     let alias: string = Array.isArray(key) ? key[0] ?? '' : key;
 
     const hostWithoutSubdomain = window.location.host
@@ -73,7 +73,11 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
       ? page.url
       : `/${page.props.app.locale}`;
 
-    window.location.href = `${window.location.protocol}//${alias}.${hostWithoutSubdomain}${path}`;
+    return `${window.location.protocol}//${alias}.${hostWithoutSubdomain}${path}`;
+  };
+
+  const switchTenant = (key: string | string[]) => {
+    window.location.href = tenantSwitchUrl(key);
   };
 
   const currentLabel = (mainTenantLabel?: string) => computed(() => {
@@ -86,6 +90,7 @@ export function useTenantOptions(prependOptions?: TenantOption[]) {
   return {
     options,
     isActive,
+    tenantSwitchUrl,
     switchTenant,
     currentLabel,
   };
