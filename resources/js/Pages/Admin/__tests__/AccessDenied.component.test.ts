@@ -41,9 +41,9 @@ describe('AccessDenied', () => {
     expect(wrapper.find('a[href$="/mocked-route/profile"]').exists()).toBe(false);
   });
 
-  it('links to the help pages in the current language', () => {
+  it('links to the permissions guide', () => {
     const wrapper = createWrapper();
 
-    expect(wrapper.find('a[href="/docs"]').exists()).toBe(true);
+    expect(wrapper.find('a[href="/docs/pagrindai/teises"]').exists()).toBe(true);
   });
 });

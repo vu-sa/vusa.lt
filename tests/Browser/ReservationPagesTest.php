@@ -16,7 +16,15 @@ beforeEach(function (): void {
 /** No `$t()` call fell through to its raw key. Rendered text only (not the page-data script), lower-cased since CSS uppercases headings. */
 function expectNoRawReservationKeys($page): void
 {
-    expect($page->script('document.body.innerText.toLowerCase().includes("reservations.")'))->toBeFalse();
+    // admin.ts mounts before the translation JSON arrives, so a slow runner can read keys that are about to swap out.
+    $script = 'document.body.innerText.toLowerCase().includes("reservations.")';
+    $deadline = microtime(true) + 5;
+
+    while ($page->script($script) && microtime(true) < $deadline) {
+        usleep(100_000);
+    }
+
+    expect($page->script($script))->toBeFalse();
 }
 
 /** The page fits the viewport at a phone and a desktop width. */

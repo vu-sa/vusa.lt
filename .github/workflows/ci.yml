@@ -370,6 +370,20 @@ jobs:
     - name: Add local domain to /etc/hosts
       run: echo "127.0.0.1 www.vusa.test" | sudo tee -a /etc/hosts
 
+    # Admin collections search Typesense from the browser; usesTypesenseInBrowser() (tests/Pest.php)
+    # addresses it as `typesense:8108`, the Sail hostname, so the runner maps that name to itself too.
+    - name: Start Typesense
+      run: |
+        docker run -d --name typesense \
+          -p 8108:8108 \
+          -v /tmp/typesense-data:/data \
+          typesense/typesense:30.2 \
+          --data-dir /data \
+          --api-key=xyz \
+          --enable-cors
+        echo "127.0.0.1 typesense" | sudo tee -a /etc/hosts
+        until curl -s http://typesense:8108/health | grep -q '"ok"'; do sleep 1; done
+
     # DOCS_SCREENSHOTS also saves the docs' reference frames (tests/Browser/README.md "Docs screenshots").
     - name: Run browser tests
       run: vendor/bin/pest tests/Browser --parallel --compact
