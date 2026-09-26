@@ -7,6 +7,7 @@
     the menu behind a back button and read as a different surface from the site around it.
   -->
   <Button
+    voice="brand"
     variant="ghost"
     size="icon"
     :class="props.class"
@@ -42,6 +43,7 @@
 
         <Button
           ref="closeButtonRef"
+          voice="brand"
           variant="ghost"
           size="icon"
           class="border border-border text-foreground/70 transition-colors hover:border-brand hover:bg-transparent hover:text-brand dark:hover:bg-transparent dark:hover:text-brand"
@@ -65,7 +67,7 @@
         </div>
 
         <div class="border-t border-border p-4">
-          <Button as-child variant="outline" size="sm" class="h-11 w-full text-foreground/70">
+          <Button voice="brand" as-child variant="outline" size="sm" class="h-11 w-full text-foreground/70">
             <a
               :href="page.props.auth?.user ? route('dashboard') : route('login')"
               :title="page.props.auth?.user ? page.props.auth.user?.name : $t('auth.login')"

@@ -3,6 +3,7 @@
   <Popover>
     <PopoverTrigger as-child>
       <Button
+        voice="brand"
         variant="ghost"
         :size="iconOnly ? 'icon' : 'sm'"
         :class="iconOnly ? socialIconButtonClass : undefined"
@@ -58,11 +59,11 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="toggleAudio">
+        <Button voice="brand" variant="ghost" size="sm" class="h-8 w-8 p-0" @click="toggleAudio">
           <IFluentPlay24Regular v-if="isPaused" class="size-4" />
           <IFluentPause24Regular v-else class="size-4" />
         </Button>
-        <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="stopAudio">
+        <Button voice="brand" variant="ghost" size="sm" class="h-8 w-8 p-0" @click="stopAudio">
           <IFluentStop24Regular class="size-4" />
         </Button>
       </div>
@@ -72,7 +73,7 @@
           START FM
         </div>
         <div class="flex items-center gap-1">
-          <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(-0.1)">
+          <Button voice="brand" variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(-0.1)">
             <IFluentSpeaker124Regular class="size-3" />
           </Button>
           <div
@@ -84,7 +85,7 @@
               :style="{ width: `${volume * 100}%` }"
             />
           </div>
-          <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(0.1)">
+          <Button voice="brand" variant="ghost" size="sm" class="h-6 w-6 p-0" @click="adjustVolume(0.1)">
             <IFluentSpeaker224Regular class="size-3" />
           </Button>
         </div>

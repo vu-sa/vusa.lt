@@ -119,6 +119,7 @@
               {{ $t('Visi renginiai') }}
             </Link>
             <Button
+              voice="brand"
               variant="outline"
               size="lg"
               @click="handleShare"

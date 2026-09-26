@@ -11,6 +11,7 @@
       @blur="scheduleClose"
     >
       <Button
+        voice="brand"
         variant="ghost"
         :size="size === 'tiny' ? 'sm' : 'default'"
         class="flex w-auto items-center justify-between gap-2 border border-border
@@ -56,6 +57,7 @@
         <Button
           v-for="view in (['list', 'map'] as const)"
           :key="view"
+          voice="brand"
           :variant="viewMode === view ? 'brand' : 'ghost'"
           size="sm"
           class="flex-1"

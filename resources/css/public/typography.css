@@ -206,12 +206,8 @@
     @apply my-0
   }
 
-  /* The default border colour comes from the base layer's `*` rule, which is
-     `gray-200` with no dark-mode counterpart — so the quote bar reads as a glaring
-     light-grey line on a dark background unless it is set explicitly, the same way
-     `h2`'s bottom border already is. `border-brand` rather than a neutral: the
-     brand-coloured vertical rule is the design's signature device, and a quote is
-     exactly the "hung off a rule" shape it names.
+  /* `border-brand` rather than a neutral: the brand-coloured vertical rule is the
+     design's signature device, and a quote is exactly the "hung off a rule" shape it names.
 
      No `leading-*` here on purpose: quotes are set at body size, so tightening them
      relative to the surrounding 1.7 makes them read as a different (smaller) size

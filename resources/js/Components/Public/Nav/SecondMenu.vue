@@ -41,6 +41,7 @@
           <DropdownMenu :modal="false">
             <DropdownMenuTrigger as-child>
               <Button
+                voice="brand"
                 variant="ghost"
                 size="sm"
                 class="h-7 px-1.5 text-muted-foreground transition-colors
@@ -71,6 +72,7 @@
           <LocaleButton :locale="$page.props.app.locale" size="sm" class="h-7 px-2 text-xs" />
           <span class="h-4 w-px bg-border" aria-hidden="true" />
           <Button
+            voice="brand"
             as-child
             variant="outline"
             size="sm"

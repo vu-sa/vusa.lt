@@ -1,5 +1,6 @@
 <template>
   <Button
+    voice="brand"
     :variant
     :size
     type="button"

@@ -7,11 +7,11 @@ export { default as Button } from './Button.vue';
  * One button for both surfaces. Colour comes only from tokens, so the same variant is VU SA red
  * on the light canvas and amber on near-black, admin and public alike.
  *
- * `voice` carries the type: bold uppercase is the default across the design system.
- * `sentence` is for admin action buttons that read as phrases (quick actions, quick access) and
- * brings its own 40px height at the default size; `plain` is for controls such as calendar cells.
+ * `voice` carries the type: brand actions are uppercase, links are plain, and other actions
+ * default to sentence case. Public callers that need uppercase opt into `brand` explicitly.
+ * `sentence` brings its own 40px height at the default size; `plain` is for calendar cells.
  */
-export const buttonVariants = cva(
+const buttonVariantClasses = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*=\'size-\'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
   {
     variants: {
@@ -21,7 +21,7 @@ export const buttonVariants = cva(
         'outline': 'border border-border bg-transparent text-foreground hover:border-brand hover:text-brand aria-expanded:border-brand aria-expanded:text-brand',
         'secondary': 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         'ghost': 'text-foreground hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent',
-        'link': 'text-brand underline-offset-4 hover:underline',
+        'link': 'h-auto px-0 text-brand underline-offset-4 hover:underline',
         'destructive': 'bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/30',
         'success': 'border border-status-success-border bg-status-success-surface text-status-success hover:border-status-success',
         'warning': 'border border-status-attention-border bg-status-attention-surface text-status-attention hover:border-status-attention',
@@ -45,15 +45,29 @@ export const buttonVariants = cva(
       },
     },
     compoundVariants: [
-      { variant: 'link', class: 'h-auto px-0 font-medium normal-case tracking-normal' },
       // Grows past 40px only when a label wraps (e.g. two-column grids on phones).
       { voice: 'sentence', size: 'default', class: 'h-auto min-h-10 py-2 text-sm pointer-coarse:min-h-11' },
     ],
     defaultVariants: {
       variant: 'default',
-      voice: 'brand',
+      voice: 'sentence',
       size: 'default',
     },
   },
 );
-export type ButtonVariants = VariantProps<typeof buttonVariants>;
+export type ButtonVariants = VariantProps<typeof buttonVariantClasses>;
+
+export function buttonVariants(options: ButtonVariants = {}): string {
+  let defaultVoice: ButtonVariants['voice'] = 'sentence';
+  if (options.variant === 'brand') {
+    defaultVoice = 'brand';
+  }
+  else if (options.variant === 'link') {
+    defaultVoice = 'plain';
+  }
+
+  return buttonVariantClasses({
+    ...options,
+    voice: options.voice ?? defaultVoice,
+  });
+}

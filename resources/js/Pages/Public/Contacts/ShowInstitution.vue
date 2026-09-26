@@ -197,6 +197,7 @@
               <Tooltip>
                 <TooltipTrigger as-child>
                   <Button
+                    voice="brand"
                     variant="ghost"
                     size="sm"
                     class="size-7 p-0 text-muted-foreground hover:text-foreground"
@@ -211,7 +212,7 @@
           </div>
 
           <CollapsibleTrigger as-child>
-            <Button variant="ghost" size="sm" class="size-8 p-0">
+            <Button voice="brand" variant="ghost" size="sm" class="size-8 p-0">
               <IFluentChevronDown16Regular
                 class="size-4 transition-transform duration-200"
                 :class="{ 'rotate-180': !showMeetings }"
@@ -244,6 +245,7 @@
           <!-- Previous years toggle -->
           <Button
             v-if="previousYearsMeetings && previousYearsMeetings.length > 0 && !showPreviousYears"
+            voice="brand"
             variant="outline"
             size="sm"
             class="mb-4 w-full"

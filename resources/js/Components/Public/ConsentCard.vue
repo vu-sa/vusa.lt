@@ -14,7 +14,7 @@
 
       <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div v-if="privacyPageUrl" class="flex items-center justify-center sm:justify-start">
-          <Button as="a" :href="privacyPageUrl" target="_blank" rel="noopener noreferrer" size="sm" variant="outline">
+          <Button voice="brand" as="a" :href="privacyPageUrl" target="_blank" rel="noopener noreferrer" size="sm" variant="outline">
             {{ $t("Privatumo politika") }}
           </Button>
         </div>

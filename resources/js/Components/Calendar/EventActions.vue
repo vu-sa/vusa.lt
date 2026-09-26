@@ -18,6 +18,7 @@
     <Button
       v-if="facebookUrl"
       variant="outline"
+      voice="brand"
       size="lg"
       as="a"
       :href="facebookUrl"
@@ -30,6 +31,7 @@
 
     <Button
       variant="outline"
+      voice="brand"
       size="lg"
       @click="handleShare"
     >

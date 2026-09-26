@@ -10,7 +10,7 @@
         </InertiaLink>
       </template>
       <template v-if="requiresStudentPerspective" #actions>
-        <Button variant="outline" size="sm" @click="showInfoModal = true">
+        <Button voice="brand" variant="outline" size="sm" @click="showInfoModal = true">
           <IFluentInfo16Regular class="size-4" />
           {{ $t('Apie balsavimo skaidrumą') }}
         </Button>

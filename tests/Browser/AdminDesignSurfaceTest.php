@@ -64,3 +64,25 @@ it('resolves the admin token scope in the browser', function (): void {
 
     $page->assertNoJavaScriptErrors();
 });
+
+it('shows a focus outline on admin links', function (): void {
+    $page = loginAsAdmin(makeUser(Tenant::query()->first()));
+    $page->navigate('/mano');
+    waitForInertiaRender($page);
+
+    $focus = $page->script(<<<'JS'
+        (() => {
+          const link = document.querySelector('[data-slot="shell-top-bar"] a');
+          link.focus();
+          const style = getComputedStyle(link);
+          return {
+            visible: link.matches(':focus-visible'),
+            width: style.outlineWidth,
+            style: style.outlineStyle,
+          };
+        })()
+    JS);
+
+    expect($focus)->toMatchArray(['visible' => true, 'width' => '2px', 'style' => 'solid']);
+    $page->assertNoJavaScriptErrors();
+});

@@ -2,6 +2,7 @@
   <Popover>
     <PopoverTrigger as-child>
       <Button
+        voice="brand"
         variant="ghost"
         size="icon"
         :class="cn('border border-transparent', !isDefault && 'border-brand text-brand', props.class)"

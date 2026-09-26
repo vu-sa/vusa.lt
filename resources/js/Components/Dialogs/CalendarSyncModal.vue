@@ -34,6 +34,7 @@
                 </div>
                 <CopyToClipboardButton
                   show-icon
+                  voice="brand"
                   :text-to-copy="route('calendar.ics')"
                   :error-text="$t('Nepavyko nukopijuoti nuorodos...')"
                   :success-text="$t('Nuoroda nukopijuota!')"
@@ -55,6 +56,7 @@
                   </div>
                   <CopyToClipboardButton
                     show-icon
+                    voice="brand"
                     :text-to-copy="route('calendar.ics', { lang: 'en' })"
                     :error-text="$t('Nepavyko nukopijuoti nuorodos...')"
                     :success-text="$t('Nuoroda nukopijuota!')"

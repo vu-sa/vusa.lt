@@ -54,7 +54,7 @@
         <p class="mb-2 font-medium text-destructive">
           {{ $t("Nepavyko užkrauti kalendoriaus įvykių") }}
         </p>
-        <Button variant="outline" size="sm" @click="refresh">
+        <Button voice="brand" variant="outline" size="sm" @click="refresh">
           <IFluentArrowSync16Regular class="size-4" />
           {{ $t("Bandyti dar kartą") }}
         </Button>
@@ -117,7 +117,7 @@
           <IFluentCalendarLtr20Regular class="size-4" />
           {{ $t('Visi renginiai') }}
         </Button>
-        <Button variant="outline" size="lg" @click="showModal = true">
+        <Button voice="brand" variant="outline" size="lg" @click="showModal = true">
           <IFluentArrowSync16Regular class="size-4" />
           {{ $t('Sinchronizuoti kalendorių') }}
         </Button>

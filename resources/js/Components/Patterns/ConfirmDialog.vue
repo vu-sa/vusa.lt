@@ -16,7 +16,7 @@
         <button
           type="button"
           data-slot="confirm-dialog-action"
-          :class="cn(buttonVariants(), [
+          :class="cn(buttonVariants({ voice: 'brand' }), [
             'u-touch',
             // The default variant carries `dark:` twins, which beat unprefixed overrides.
             destructive && 'bg-destructive text-white hover:bg-destructive/90 dark:bg-destructive dark:text-white dark:hover:bg-destructive/90',

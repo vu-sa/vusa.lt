@@ -12,6 +12,7 @@
 
       <template #actions>
         <Button
+          voice="brand"
           variant="outline"
           size="lg"
           @click="showModal = true"
@@ -347,6 +348,7 @@
           </p>
           <div v-if="hasActiveFilters" class="mt-6">
             <Button
+              voice="brand"
               variant="outline"
               size="sm"
               @click="clearFilters"
@@ -375,6 +377,7 @@
           class="mt-12 flex justify-center"
         >
           <Button
+            voice="brand"
             variant="outline"
             size="lg"
             :disabled="isLoadingMore"

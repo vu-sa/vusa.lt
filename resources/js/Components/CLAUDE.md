@@ -78,10 +78,13 @@ Rules for anything added there:
 ## Buttons and controls (both surfaces)
 
 - `ui/button` is the one button. Variants are token-only (`brand`, `outline`, `default` ink,
-  `ghost`, `secondary`, `destructive`, `link`); the `voice` is bold uppercase by default, which in the admin
-  is only for primary actions (`.ai/rules/js-pages-admin.md`). `voice="sentence"` is the admin's sentence-case
-  button for everything else — outline, ghost, row actions, chips, Pradžia quick actions: at the default size it is 40px (44px on touch) — don't pass `size="lg"` or a height
-  class. `voice="plain"` is for calendar cells and pagination numbers. Sizes: `lg` 48px for a page's primary,
+  `ghost`, `secondary`, `destructive`, `link`); `brand` defaults to bold uppercase, `link` to plain,
+  and other variants to sentence case. An explicit `voice` wins on every variant. Public buttons that retain
+  uppercase use `voice="brand"`; in admin, uppercase is only for primary actions
+  (`.ai/rules/js-pages-admin.md`). `voice="sentence"` is the admin's sentence-case button for
+  outline, ghost, row actions, chips and Pradžia quick actions: at the default size it is 40px
+  (44px on touch) — don't pass `size="lg"` or a height class. `voice="plain"` is for calendar cells
+  and pagination numbers. Sizes: `lg` 48px for a page's primary,
   `default` 44px, `sm` 36px in toolbars and row actions, `icon*` for squares.
 - `ui/control` holds the bordered control both sites build filters and toolbar triggers from:
   `controlVariants({ size, active, voice })` (`voice="brand"` uppercase default for public/standard controls; `voice="sentence"` for admin quick filters, facet pills, and toolbar buttons),

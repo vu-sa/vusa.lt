@@ -65,7 +65,7 @@
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{{ $t('forms.cancel') }}</AlertDialogCancel>
-          <AlertDialogAction :class="buttonVariants({ variant: 'destructive' })" @click="handleDelete">
+          <AlertDialogAction :class="buttonVariants({ variant: 'destructive', voice: 'brand' })" @click="handleDelete">
             {{ $t('forms.delete') }}
           </AlertDialogAction>
         </AlertDialogFooter>

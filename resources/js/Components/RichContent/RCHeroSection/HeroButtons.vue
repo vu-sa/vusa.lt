@@ -13,6 +13,7 @@
              on top is what made the icon-to-label spacing differ between controls. -->
         <Button
           :variant="button.variant === 'outline' ? (resolvedOnDark ? 'brand-outline-on-dark' : 'outline') : 'brand'"
+          voice="brand"
           size="lg"
           class="w-full sm:w-auto"
         >

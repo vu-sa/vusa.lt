@@ -104,7 +104,7 @@
             {{ $t('search.no_results_criteria') }}
           </p>
           <div v-if="hasCollectionFilter" class="mt-6">
-            <Button variant="outline" size="sm" @click="controller.resetCollections">
+            <Button voice="brand" variant="outline" size="sm" @click="controller.resetCollections">
               {{ $t('search.clear_all') }}
             </Button>
           </div>

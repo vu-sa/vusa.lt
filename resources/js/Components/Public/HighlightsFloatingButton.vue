@@ -31,6 +31,7 @@
     <Sheet v-model:open="isSheetOpen">
       <SheetTrigger as-child>
         <Button
+          voice="brand"
           variant="default"
           size="icon"
           class="size-12 border border-brand bg-brand-fill text-brand-foreground hover:bg-brand-fill/90 dark:hover:bg-brand-fill/90"

@@ -120,6 +120,7 @@
         target="_blank"
         rel="noopener noreferrer"
         variant="outline"
+        voice="brand"
         size="lg"
         class="w-full justify-center"
       >
@@ -134,6 +135,7 @@
         target="_blank"
         rel="noopener noreferrer"
         variant="outline"
+        voice="brand"
         size="lg"
         class="w-full justify-center"
       >
