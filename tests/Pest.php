@@ -495,7 +495,11 @@ function usesTypesenseInBrowser(): void
         'expires_at' => now()->addHour()->timestamp,
     ]);
 
-    config(['scout.typesense.client-settings.admin_search_key' => $key['value']]);
+    // The search config endpoint answers 503 without a search-only key, and CI's .env has none.
+    config([
+        'scout.typesense.client-settings.admin_search_key' => $key['value'],
+        'scout.typesense.client-settings.search_only_key' => $key['value'],
+    ]);
 
     test()->beforeApplicationDestroyed(fn () => $keys[$key['id']]->delete());
 }
