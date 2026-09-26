@@ -12,5 +12,5 @@ kurio padalinio duomenis tu gali matyti ir tvarkyti.
 
 ::: warning Rašoma
 Šis puslapis dar rašomas. Kai bus baigtas, jame bus skyriai **Kaip tai veikia**, **Veiksmai**,
-**Kas ką gali** ir **Pranešimai ir automatika**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
+**Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
 :::

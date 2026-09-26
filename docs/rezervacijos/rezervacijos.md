@@ -171,7 +171,7 @@ pranešimus ir užduotis apie CB daiktus, o kitų padalinių užklausas mato ap�
 :::
 
 
-## Pranešimai ir automatika
+## Pranešimai ir automatizavimas
 
 | Kada | Kas gauna | Ką |
 |---|---|---|

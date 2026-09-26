@@ -6,6 +6,6 @@
 #let muted = rgb("#6b6b6b")
 #let hairline = rgb("#dcd8d2")
 
-// Typst falls back through the list, so the build works without Inter installed (e.g. in CI).
+// Typst falls back through the list, so the build still works where Noto Sans is missing.
 #let sans = ("Noto Sans", "Liberation Sans")
 #let mono = "DejaVu Sans Mono"

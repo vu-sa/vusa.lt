@@ -11,7 +11,7 @@ atveria langą su visais tau leidžiamais kūrimo veiksmais.
 
 ::: warning Rašoma
 Šis puslapis dar rašomas. Kai bus baigtas, jame bus skyriai **Kaip tai veikia**, **Veiksmai**,
-**Kas ką gali** ir **Pranešimai ir automatika**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
+**Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
 :::
 
 <DocScreenshot name="action-window" narrow alt="Langas „Ką norėtum padaryti?“, atidaromas mygtuku „+ Sukurti“" caption="Mygtukas „+ Sukurti“ viršutinėje juostoje atveria šį langą." />

@@ -31,7 +31,7 @@ Kiekvieno baigto puslapio struktūra vienoda:
 | **Kaip tai veikia** | Sąvokos, būsenos, taisyklės, kurias taiko sistema |
 | **Veiksmai** | Ką ir kaip galima padaryti |
 | **Kas ką gali** | Kurios rolės ką leidžia |
-| **Pranešimai ir automatika** | Kokius pranešimus ir užduotis sukuria sistema |
+| **Pranešimai ir automatizavimas** | Kokius pranešimus ir užduotis sukuria sistema |
 | **Susitarimai** | Organizaciniai susitarimai, kurių sistema neužtikrina, bet kurių laikomės |
 | **Techninė informacija** | Tikslios teisės, įgyvendinimo detalės ir testai, kurie tai tikrina |
 

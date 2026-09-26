@@ -11,5 +11,5 @@ viršutinėje juostoje), gali būti siunčiami el. paštu (iškart arba suvestin
 
 ::: warning Rašoma
 Šis puslapis dar rašomas. Kai bus baigtas, jame bus skyriai **Kaip tai veikia**, **Veiksmai**,
-**Kas ką gali** ir **Pranešimai ir automatika**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
+**Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
 :::
