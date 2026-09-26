@@ -170,18 +170,29 @@ jobs:
     # actually read it — one sticky comment on the PR, rewritten each push. The
     # report and the "docs to re-check" list are rebuilt into a temp file
     # ($GITHUB_STEP_SUMMARY is per-step, so a later step cannot read the gate
-    # step's summary) and posted as the current author.
+    # step's summary). Push runs look up the open PR, because the dev PR run
+    # only mirrors the push run and never reaches this job.
     - name: Comment documentation coverage on the PR
-      if: always() && github.event_name == 'pull_request'
+      if: always()
       continue-on-error: true
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_NUMBER: ${{ github.event.number }}
+        BASE_REF: ${{ github.base_ref }}
       run: |
+        if [ -z "$PR_NUMBER" ]; then
+          read -r PR_NUMBER BASE_REF < <(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq '[.[] | select(.state == "open")][0] // empty | "\(.number) \(.base.ref)"') || true
+        fi
+        if [ -z "$PR_NUMBER" ]; then
+          echo "No open pull request for $GITHUB_SHA; skipping the comment."
+          exit 0
+        fi
         tmp="$(mktemp)"
         GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --summary
-        GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --changed=origin/${{ github.base_ref }} --summary
+        GITHUB_STEP_SUMMARY="$tmp" php artisan docs:coverage --changed="origin/$BASE_REF" --summary
         { echo "<!-- docs-coverage -->"; cat "$tmp"; } > pr-comment.md
-        gh pr comment "${{ github.event.number }}" --edit-last --create-if-none --body-file pr-comment.md
+        gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body-file pr-comment.md
 
     - name: Upload test results to Codecov
       if: always()

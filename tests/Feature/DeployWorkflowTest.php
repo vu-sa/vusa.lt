@@ -176,6 +176,16 @@ describe('the deploy workflows', function () use ($shared, $source): void {
             ->and($status['steps'][1]['if'])->toBe($ci['jobs']['changes']['if']);
     });
 
+    it('comments documentation coverage from push runs, since the dev pull request run only mirrors them', function () use ($source): void {
+        $ci = Yaml::parse($source('.github/workflows/ci.yml'));
+        $comment = collect($ci['jobs']['php-tests']['steps'])
+            ->firstWhere('name', 'Comment documentation coverage on the PR');
+
+        expect($comment['if'])->toBe('always()')
+            ->and($comment['run'])->toContain('commits/$GITHUB_SHA/pulls')
+            ->and($comment['run'])->toContain('gh pr comment "$PR_NUMBER"');
+    });
+
     it('only starts automatic deployments after push CI succeeds', function () use ($source): void {
         $staging = Yaml::parse($source('.github/workflows/deploy-staging.yml'));
         $production = Yaml::parse($source('.github/workflows/deploy.yml'));
