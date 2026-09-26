@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrap" class="relative w-full max-w-full outline-none" tabindex="0"
+  <div ref="wrap" class="relative isolate w-full max-w-full outline-none" tabindex="0"
     :class="{ 'h-full flex flex-col': props.height === '100%' }">
     <MeetingsGanttToolbar :show-legend :institution-count="layoutRows.filter(r => r.type === 'institution').length"
       :tenant-filter :tenant-names="mergedTenantNames" :show-only-with-activity :show-only-with-public-meetings
@@ -8,7 +8,7 @@
       @update:details-expanded="emit('update:detailsExpanded', $event)" @update:day-width="onScaleChange([$event])"
       @fullscreen="emit('fullscreen', true)" />
 
-    <div class="flex w-full min-w-0 max-w-full border border-border" data-slot="meetings-gantt"
+    <div ref="chartArea" class="relative isolate flex w-full min-w-0 max-w-full border border-border" data-slot="meetings-gantt"
       :style="containerHeight ? { height: containerHeight } : {}"
       :class="{ 'flex-1 min-h-0 h-full': props.height === '100%' }">
       <!-- Left: sticky labels -->
@@ -180,7 +180,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   daysBefore: 60,
   daysAfter: 60,
-  dayWidth: 24,
+  dayWidth: 3,
   rowHeight: 28,
   labelWidth: 220,
   showLegend: true,
@@ -200,6 +200,7 @@ const props = withDefaults(defineProps<{
 });
 
 const wrap = ref<HTMLElement | null>(null);
+const chartArea = ref<HTMLElement | null>(null);
 const rightScroll = ref<HTMLElement | null>(null);
 const axisScroll = ref<HTMLElement | null>(null);
 const leftLabels = ref<HTMLElement | null>(null);
@@ -578,10 +579,10 @@ const render = () => {
   if (centerLineManager) {
     centerLineManager.destroy();
   }
-  if (rightScroll.value) {
+  if (rightScroll.value && chartArea.value) {
     const currentLocale = (page.props.app as any)?.locale ?? 'lt';
     centerLineManager = createCenterLine({
-      container: container as HTMLElement,
+      container: chartArea.value,
       rightScroll: rightScroll.value,
       x: d3.scaleTime().domain([minTime.value, maxTime.value]).range([0, innerWidth]),
       colors,

@@ -71,7 +71,7 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
   outerWrapper.className = 'gantt-center-date';
   outerWrapper.style.cssText = `
     position: absolute;
-    top: -6px;
+    top: 0;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
