@@ -32,7 +32,7 @@ describe('CollectionResults', () => {
   it('lays the items out as cards in the cards view', () => {
     const wrapper = mountResults('cards');
 
-    expect(wrapper.find('[data-slot="collection-cards"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="collection-cards"]').classes()).toContain('xl:grid-cols-4');
     expect(wrapper.findAll('.card').map(card => card.text())).toEqual(['Projektorius', 'Palapinė']);
     expect(wrapper.find('.row').exists()).toBe(false);
   });

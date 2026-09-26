@@ -160,3 +160,24 @@ describe('InstitutionOverviewSection', () => {
     expect(wrapper.text()).not.toContain('Koordinatoriai');
   });
 });
+
+describe('InstitutionOverviewSection — non-public meetings', () => {
+  it('tells a reader without access that the meetings exist but are not public', () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: { institution: makeInstitution(), overview: makeOverview({ meetings_hidden: true }) },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[data-testid="institution-meetings-hidden"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Posėdžiai nėra vieši');
+  });
+
+  it('keeps the plain empty state when there simply are no meetings', () => {
+    const wrapper = mount(InstitutionOverviewSection, {
+      props: { institution: makeInstitution(), overview: makeOverview() },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[data-testid="institution-meetings-hidden"]').exists()).toBe(false);
+  });
+});

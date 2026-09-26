@@ -130,6 +130,12 @@ return [
         'status_updated' => 'Task status updated successfully.',
     ],
 
+    'system_maintenance' => [
+        'done' => 'Done.',
+        'queued' => 'The task is queued and will run within a few minutes.',
+        'failed' => 'The action failed. Check the log.',
+    ],
+
     'mail_queue' => [
         'item_deleted' => 'The line was removed from the queued email.',
         'recipient_cleared' => 'Removed :count pending line(s) for this recipient.',

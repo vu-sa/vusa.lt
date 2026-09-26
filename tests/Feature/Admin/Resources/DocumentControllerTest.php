@@ -23,9 +23,22 @@ beforeEach(function (): void {
 });
 
 describe('unauthorized access', function (): void {
-    test('cannot access documents index', function (): void {
-        $response = asUser($this->regularUser)->get(route('documents.index'));
-        expect($response->status())->toBe(403);
+    test('browses documents without management abilities', function (): void {
+        asUser($this->regularUser)->get(route('documents.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Files/IndexDocument')
+                ->where('abilities', ['create' => false, 'update' => false, 'delete' => false])
+                ->where('defaultTenantShortnames', [$this->tenant->shortname, Tenant::main()->shortname])
+            );
+    });
+
+    test('cannot queue a bulk sync', function (): void {
+        Queue::fake();
+
+        asUser($this->regularUser)->post(route('documents.bulk-sync'))->assertForbidden();
+
+        Queue::assertNothingPushed();
     });
 
     test('cannot store sharepoint documents', function (): void {
@@ -66,6 +79,7 @@ describe('authorized access', function (): void {
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Files/IndexDocument')
                 ->has('importantContentTypes')
+                ->where('abilities.create', true)
             );
     });
 

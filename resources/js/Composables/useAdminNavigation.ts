@@ -27,12 +27,14 @@ const patternMatches = (pattern: string, routeName: string): boolean =>
  * Which workspace and section a route belongs to, so a record page keeps its tab lit. A section
  * carrying `routeParams` claims a route only when every param agrees (that is what tells the
  * registration forms from Formos on `forms.show`), and an exact route name beats a wildcard.
- * Mirrors `catalogCandidates()` in AdminNavigationCatalogTest.
+ * Mirrors `catalogCandidates()` in AdminNavigationCatalogTest. A section listed in two
+ * workspaces (Dokumentai) resolves to `preferredWorkspaceKey` on a tie, so it never jumps.
  */
 export function resolveActive(
   workspaces: AdminWorkspace[],
   routeName: string | undefined,
   params: Record<string, unknown> = {},
+  preferredWorkspaceKey?: string,
 ): ActiveNavigation {
   if (!routeName) {
     return { workspace: undefined, section: undefined };
@@ -52,7 +54,8 @@ export function resolveActive(
       return candidate;
     }
 
-    const rank = (item: typeof candidate) => Number(item.withParams) * 2 + Number(item.exact);
+    const rank = (item: typeof candidate) => Number(item.withParams) * 4 + Number(item.exact) * 2
+      + Number(item.workspace.key === preferredWorkspaceKey);
 
     return rank(candidate) > rank(winner) ? candidate : winner;
   }, undefined);
@@ -72,8 +75,6 @@ const pathOf = (href: string | undefined): string | undefined => {
     return undefined;
   }
 };
-
-
 
 // Pages outside every section (profile, Visi skyriai) keep the last workspace instead of
 // snapping back to Pradžia mid-task.
@@ -104,7 +105,7 @@ export function useAdminNavigation() {
     void page.url;
     const { name, params } = currentRoute();
 
-    return resolveActive(workspaces.value, name, params);
+    return resolveActive(workspaces.value, name, params, lastWorkspaceKey.value);
   });
 
   watch(resolved, (active) => {

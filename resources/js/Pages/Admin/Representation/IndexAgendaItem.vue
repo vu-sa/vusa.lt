@@ -70,7 +70,16 @@ import { Button } from '@/Components/ui/button';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import type { AgendaItemSearchResult } from '@/Shared/Search/types';
 
-const source = useTypesenseCollectionSource<AgendaItemSearchResult>({ collection: 'agenda_items', preserveUrlKeys: ['view', 'item'] });
+const props = defineProps<{
+  /** The user's own padaliniai: a first visit starts filtered to them. */
+  defaultTenantShortnames: string[];
+}>();
+
+const source = useTypesenseCollectionSource<AgendaItemSearchResult>({
+  collection: 'agenda_items',
+  preserveUrlKeys: ['view', 'item'],
+  defaultFilters: { tenant_shortnames: props.defaultTenantShortnames },
+});
 
 const columns: CollectionColumn[] = [
   { key: 'title', label: $t('Darbotvarkės klausimas') },

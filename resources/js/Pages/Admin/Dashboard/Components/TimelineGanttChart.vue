@@ -116,6 +116,7 @@ const formattedInstitutions = computed(() => {
     id: i.id,
     name: i.name,
     tenant_id: i.tenant_id,
+    is_internal: i.is_internal,
     is_related: i.is_related,
     relationship_direction: i.relationship_direction,
     source_institution_id: i.source_institution_id,

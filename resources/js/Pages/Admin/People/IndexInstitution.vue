@@ -92,7 +92,7 @@
 
     <template #bulk-actions="{ selected, clear }">
       <Button
-        v-if="selected.some(item => !isFollowed(item))"
+        v-if="selected.some(item => !isFollowed(item) && canFollow(item))"
         variant="outline"
         voice="sentence"
         :disabled="subscriptions.bulkLoading.value"
@@ -157,9 +157,9 @@ import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscrip
 import { escapeFilterValue } from '@/Features/Admin/AdminSearch/Services/AdminSearchService';
 import {
   isTrashView,
-  useTrashAwareSource,
   useTrashCollectionSource,
   useTypesenseCollectionSource,
+  type CollectionSource,
 } from '@/Composables/useCollectionSource';
 import type { InstitutionSearchResult } from '@/Shared/Search/types';
 
@@ -170,6 +170,10 @@ const props = defineProps<{
   deletedCount: number;
   /** Following is per user, so Typesense cannot filter on it; the ids become a filter instead. */
   followedInstitutionIds: string[];
+  /** The user's own padaliniai: a first visit starts filtered to them. */
+  defaultTenantShortnames: string[];
+  /** Institution types whose meetings are public (MeetingSettings). */
+  publicMeetingTypeIds: number[];
 }>();
 
 const page = usePage();
@@ -231,7 +235,9 @@ async function toggleFollow(institution: InstitutionRow): Promise<void> {
 }
 
 async function setFollowed(institutions: InstitutionRow[], followed: boolean, clear: () => void): Promise<void> {
-  const ids = institutions.filter(institution => isFollowed(institution) !== followed).map(institution => String(institution.id));
+  const ids = institutions
+    .filter(institution => isFollowed(institution) !== followed && (!followed || canFollow(institution)))
+    .map(institution => String(institution.id));
 
   if (await subscriptions.setFollowedMany(ids, followed)) {
     markFollowed(ids, followed);
@@ -239,14 +245,31 @@ async function setFollowed(institutions: InstitutionRow[], followed: boolean, cl
   }
 }
 
-const source = useTrashAwareSource<InstitutionRow>(
-  () => useTypesenseCollectionSource<InstitutionRow>({
-    collection: 'institutions',
-    preserveUrlKeys: ['view', 'item', 'followed'],
-    baseFilterBy: followedFilter,
-  }),
-  () => useTrashCollectionSource<InstitutionRow>('institutions'),
-);
+// Built directly rather than through useTrashAwareSource: following needs the key's access scope.
+const liveSource = isTrash
+  ? null
+  : useTypesenseCollectionSource<InstitutionRow>({
+      collection: 'institutions',
+      preserveUrlKeys: ['view', 'item', 'followed'],
+      baseFilterBy: followedFilter,
+      defaultFilters: { tenant_shortname: props.defaultTenantShortnames },
+    });
+const source: CollectionSource<InstitutionRow> = liveSource ?? useTrashCollectionSource<InstitutionRow>('institutions');
+
+/**
+ * Following means hearing about the meetings, so it is offered where they are public or the user
+ * reaches the institution in full — the client side of InstitutionPolicy::follow().
+ */
+function canFollow(institution: InstitutionRow): boolean {
+  const scope = liveSource?.accessScope.value;
+
+  return Boolean(scope && (
+    scope.isSuperAdmin
+    || (institution.type_ids ?? []).some(typeId => props.publicMeetingTypeIds.includes(typeId))
+    || (institution.tenant_id !== undefined && scope.tenantIds.includes(Number(institution.tenant_id)))
+    || scope.institutionIds.includes(String(institution.id))
+  ));
+}
 
 // Live institutions are edited on their record page; the list only acts on the trash.
 const actions = useCollectionRecordActions({
@@ -261,9 +284,9 @@ const actionsFor = (institution: InstitutionRow): CollectionRowAction[] => isTra
   ? actions.rowActions(institution, nameOf(institution), true)
   : [
       { key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('institutions.show', institution.id), labelled: true },
-      isFollowed(institution)
-        ? { key: 'follow', label: $t('Nebesekti'), icon: EyeOff }
-        : { key: 'follow', label: $t('Sekti'), icon: Eye },
+      ...(isFollowed(institution)
+        ? [{ key: 'follow', label: $t('Nebesekti'), icon: EyeOff }]
+        : canFollow(institution) ? [{ key: 'follow', label: $t('Sekti'), icon: Eye }] : []),
     ];
 
 function onRowAction(key: string, institution: InstitutionRow): void {

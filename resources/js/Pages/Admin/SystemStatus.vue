@@ -38,6 +38,64 @@
       </p>
     </template>
 
+    <section v-if="maintenanceActions?.length" data-testid="maintenance-actions" class="space-y-4">
+      <div>
+        <h2 class="text-lg font-semibold text-foreground">
+          {{ $t('sistema.maintenance.title') }}
+        </h2>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ $t('sistema.maintenance.lead') }}
+        </p>
+      </div>
+      <ul class="divide-y divide-border border-y border-border">
+        <li
+          v-for="item in maintenanceActions"
+          :key="item.action"
+          :data-action="item.action"
+          class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div class="min-w-0">
+            <p class="font-medium text-foreground">
+              {{ maintenanceLabel(item.action) }}
+            </p>
+            <p class="mt-1 text-sm text-muted-foreground">
+              {{ $t(`sistema.maintenance.actions.${item.action}.description`) }}
+            </p>
+            <p v-if="item.queued || item.disruptive" class="mt-1 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+              <span v-if="item.queued" class="inline-flex items-center gap-1">
+                <Clock class="size-3.5" />
+                {{ $t('sistema.maintenance.queued_hint') }}
+              </span>
+              <span v-if="item.disruptive" class="inline-flex items-center gap-1 text-status-attention">
+                <TriangleAlert class="size-3.5" />
+                {{ $t('sistema.maintenance.disruptive_hint') }}
+              </span>
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            voice="sentence"
+            class="u-touch shrink-0 self-start sm:self-center"
+            :disabled="runningAction !== null"
+            @click="pendingAction = item"
+          >
+            <LoaderCircle v-if="runningAction === item.action" class="size-4 animate-spin" />
+            <Play v-else class="size-4" />
+            {{ $t('sistema.maintenance.run') }}
+          </Button>
+        </li>
+      </ul>
+      <ConfirmDialog
+        :open="pendingAction !== null"
+        :title="pendingAction ? $t('sistema.maintenance.confirm_title', { action: maintenanceLabel(pendingAction.action) }) : ''"
+        :description="pendingAction ? $t(`sistema.maintenance.actions.${pendingAction.action}.description`) : undefined"
+        :confirm-label="$t('sistema.maintenance.run')"
+        :destructive="pendingAction?.disruptive ?? false"
+        @update:open="(open) => { if (!open) pendingAction = null; }"
+        @confirm="runMaintenance"
+      />
+    </section>
+
     <section v-if="deviceMetrics" data-testid="device-metrics" class="space-y-4">
       <div class="flex flex-wrap items-baseline justify-between gap-2">
         <h2 class="text-lg font-semibold text-foreground">
@@ -101,13 +159,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CircleCheck, CircleDashed, CircleX, RefreshCw, TriangleAlert } from 'lucide-vue-next';
+import { CircleCheck, CircleDashed, CircleX, Clock, LoaderCircle, Play, RefreshCw, TriangleAlert } from 'lucide-vue-next';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
-import { StatusBadge } from '@/Components/Patterns';
+import { ConfirmDialog, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/Components/ui/table';
 import type { StatusPresentation } from '@/Constants/statuses';
@@ -122,7 +180,13 @@ interface DeviceMetrics {
     phone_percentage: number; tablet_percentage: number; desktop_percentage: number;
   };
 }
-const props = defineProps<{ status?: Record<string, ServiceStatus>; lastUpdated: string; deviceMetrics?: DeviceMetrics }>();
+interface MaintenanceAction { action: string; queued: boolean; disruptive: boolean }
+const props = defineProps<{
+  status?: Record<string, ServiceStatus>;
+  lastUpdated: string;
+  deviceMetrics?: DeviceMetrics;
+  maintenanceActions?: MaintenanceAction[];
+}>();
 const labels: Record<string, string> = { redis: 'Redis', database: 'Duomenų bazė', cache: 'Talpykla', typesense: 'Typesense', scheduler: 'Planuoklė', digest: 'Laiškų eilė', mail: 'El. paštas', system: 'Sistema', integrations: 'Integracijos' };
 const present = (status?: string): StatusPresentation => {
   if (['healthy', 'connected', 'working', 'configured'].includes(status ?? '')) return { label: $t('Veikia'), role: 'success', icon: CircleCheck };
@@ -152,4 +216,17 @@ const deviceStats = computed(() => {
     { label: $t('PWA paleidimai'), value: summary.total_pwa_launches },
   ];
 });
+
+const pendingAction = ref<MaintenanceAction | null>(null);
+const runningAction = ref<string | null>(null);
+const maintenanceLabel = (action: string) => $t(`sistema.maintenance.actions.${action}.label`);
+const runMaintenance = () => {
+  const action = pendingAction.value?.action;
+  if (!action) return;
+  runningAction.value = action;
+  router.post(route('systemStatus.maintenance'), { action }, {
+    preserveScroll: true,
+    onFinish: () => { runningAction.value = null; },
+  });
+};
 </script>

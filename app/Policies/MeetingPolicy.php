@@ -26,14 +26,24 @@ class MeetingPolicy extends ModelPolicy
     }
 
     /**
-     * A rep holding only `meetings.read.own` may open the collection; which rows they get is
-     * decided by the scoped search key, not here.
+     * Every admin may open the collection: the scoped search key always carries public meetings,
+     * and adds their padalinys and own institutions when their permissions allow.
      */
     #[\Override]
     public function viewAny(User $user): bool
     {
-        return $this->authorizer->allows($user, 'meetings.read.padalinys')
-            || $this->authorizer->allows($user, 'meetings.read.own');
+        return true;
+    }
+
+    /**
+     * The read-only record: anyone may read a public meeting's agenda, while files, tasks and
+     * discussion stay behind `view()`.
+     *
+     * @param  Meeting  $meeting
+     */
+    public function viewSummary(User $user, Model $meeting): bool
+    {
+        return $meeting->is_public || $this->view($user, $meeting);
     }
 
     /**
@@ -44,8 +54,7 @@ class MeetingPolicy extends ModelPolicy
     #[\Override]
     public function view(User $user, Model $meeting): bool
     {
-        // Check if user is a participant in the meeting
-        if ($meeting->users->contains('id', $user->id)) {
+        if ($meeting->hadMemberAtTheTime($user)) {
             return true;
         }
 
@@ -67,8 +76,7 @@ class MeetingPolicy extends ModelPolicy
     public function update(User $user, Model $meeting): bool
     {
         // Note: Meeting model doesn't have organizer_id field
-        // Check if user is a participant in the meeting
-        if ($meeting->users->contains('id', $user->id)) {
+        if ($meeting->hadMemberAtTheTime($user)) {
             return true;
         }
 
@@ -82,9 +90,7 @@ class MeetingPolicy extends ModelPolicy
      */
     public function addParticipants(User $user, Model $meeting): bool
     {
-        // Note: Meeting model doesn't have organizer_id field
-        // Check if user is a participant in the meeting (can manage participants)
-        if ($meeting->users->contains('id', $user->id)) {
+        if ($meeting->hadMemberAtTheTime($user)) {
             return true;
         }
 

@@ -97,10 +97,13 @@ export interface InstitutionPageData {
 }
 
 export interface InstitutionOverviewData {
-  activity_status: InstitutionActivityStatus;
+  /** Null when withheld: the meetings it is read off are not public and the reader has no access. */
+  activity_status: InstitutionActivityStatus | null;
   current_users: App.Entities.User[];
   duties: InstitutionPageDuty[];
   recentMeetings: InstitutionPageMeeting[];
   meetings_count: number;
+  /** The institution has meetings, but they are not public and the reader has no access. */
+  meetings_hidden?: boolean;
   recentComments: InstitutionPageComment[];
 };

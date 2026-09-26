@@ -7,12 +7,26 @@ lastUpdated: true
 
 ## v2.23 — Easier navigation on phones (2026-09-26) {#v2-23}
 
+- ✨ **Wider meeting timeline** — the maximum zoom-in level is halved, and zooming all the way out fits a longer period in one view.
+- ⭐ **System maintenance without a server shell** — on the System status page, super admins can refresh the public content cache, clear the whole cache, restart queue workers, send a test email, and sync search or SharePoint documents. Each action is recorded in the activity log.
+- 🔧 **Unit and institution type changes show up immediately** — a renamed unit or institution type no longer waits for the next deploy to appear in filters and pickers.
+- 🔧 **Meeting agenda actions work** — “Complete” opens the agenda paste sheet when the agenda is empty, and “Paste agenda” opens directly to the paste field.
+- ✨ **Lists remember their filters** — come back to meetings, institutions or any other list and find the filters and sorting you left it with.
+- ✨ **Meetings and agenda items for everyone** — ViSAK lists show public meetings plus those of your own and related institutions, starting filtered to your unit. A public meeting you have no access to opens read-only: the agenda, without files, tasks, or activity.
+- ✨ **Institutions for everyone** — the ViSAK institution list shows every active institution, starting filtered to your unit. One you have no access to opens read-only: overview, duties and, where public, meetings, with nothing to edit. If its meetings are not public, the page says so, points you to its members or coordinators, and does not show its status. You can follow your own institutions and those whose meetings are public; you are notified only about meetings you can see.
+- 🔧 **Former members no longer see later meetings** — once a duty ends, you keep the meetings from your term but no longer see, or get notified about, the institution's later meetings. A duty's end date now means its last day everywhere: access still works that day and ends as soon as it is over, not up to an hour later.
+- ✨ **Units timeline for everyone** — ViSAK “Units” now opens for everyone: the timeline shows meetings of institutions that meet publicly across every unit, plus those of your own and related institutions. For institutions you do not manage, you see meetings, members and check-ins, but not their status, and you cannot record meetings for them there. The numbers, attention list and indicators stay limited to the units you manage: change their scope with the “Indicators” selector at the top, and the timeline's units in its own filters.
+- ✨ **Documents in ViSAK** — the document archive is reachable from ViSAK for everyone, starting filtered to your unit and VU SA; syncing and management buttons stay with those who manage documents.
+- ✨ **Clearer ViSAK overview** — when no institutions need attention and no meetings are coming up, the status counts appear two per row beside the coordinator; without a coordinator, they span the page. Overview sections and rows of counts have more space between them on phones.
+- ✨ **Clearer Home links** — ViSAK appears first when you can access it, followed by reservations, replacing the Administration link.
+- ✨ **More resources in each row** — the resource list fits four cards per row on the widest screen layout.
 - ✨ **Access before a duty starts** — members assigned an upcoming duty can prepare in the system immediately; they appear in public contacts only when their term begins. The System overview shows their count and links to their list.
 - ✨ **Clearer member list** — phone numbers are no longer shown in the list.
 - ✨ **Fewer Home prompts** — removed the notification-settings highlight by the bell and the access-change band on Home; settings remain available from the bell menu.
 - ✨ **“Go to” beside quick actions** — when Home has no tasks, institutions, or reservation draft in its left column, the links appear two per row beside “Quick actions”.
 - ✨ **More compact list controls on phones** — search and filters share a row, quick filters are at the top of the filter sheet, and active filters scroll sideways so records appear sooner.
 - ✨ **Clearer required fields in problem forms** — one note explains the asterisk, and the missing-fields notice now matches the language switcher’s height.
+- 🔧 **“Hide VU SR's own bodies” works** — the ViSAK institution timeline filter hides VU SR's own bodies again, including among related institutions
 - 🔧 **Problem comments work again** — you can read and post comments on a problem without the “Commentable not found” error
 - 🔧 **Responsible member search works** — the problem form shows matches found by email and saves the selected member
 - ✨ **Easier institution selection for problems** — find institutions through search and filters when creating or editing a problem

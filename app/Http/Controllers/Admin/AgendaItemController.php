@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetUserTenantShortnames;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\ReorderAgendaItemsRequest;
 use App\Http\Requests\StoreAgendaItemsRequest;
@@ -19,11 +20,13 @@ use Inertia\Response as InertiaResponse;
 
 class AgendaItemController extends AdminController
 {
-    public function index(): InertiaResponse
+    public function index(Request $request): InertiaResponse
     {
         $this->handleAuthorization('viewAny', Meeting::class);
 
-        return $this->inertiaResponse('Admin/Representation/IndexAgendaItem');
+        return $this->inertiaResponse('Admin/Representation/IndexAgendaItem', [
+            'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
+        ]);
     }
 
     /**
@@ -67,9 +70,16 @@ class AgendaItemController extends AdminController
      */
     public function show(AgendaItem $agendaItem, MeetingCompletionService $meetingCompletionService)
     {
-        $this->handleAuthorization('view', $agendaItem);
+        $this->handleAuthorization('viewSummary', $agendaItem);
 
-        $agendaItem->load(['votes', 'note', 'meeting.institutions.types', 'meeting.institutions.tenant', 'meeting.agendaItems' => function ($query): void {
+        // A public meeting's item outside the user's reach: the item itself, without notes or discussion.
+        $readOnly = ! Gate::allows('view', $agendaItem);
+
+        if (! $readOnly) {
+            $agendaItem->load('note');
+        }
+
+        $agendaItem->load(['votes', 'meeting.institutions.types', 'meeting.institutions.tenant', 'meeting.agendaItems' => function ($query): void {
             $query->orderBy('order')->with(['mainVote', 'votes'])->withCount('comments')
                 ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')]);
         }]);
@@ -114,9 +124,10 @@ class AgendaItemController extends AdminController
             ],
             'siblingAgendaItems' => $siblingAgendaItems,
             'publicUrl' => $publicUrl,
+            'readOnly' => $readOnly,
             'abilities' => [
-                'update' => Gate::allows('update', $agendaItem),
-                'delete' => Gate::allows('delete', $agendaItem),
+                'update' => ! $readOnly && Gate::allows('update', $agendaItem),
+                'delete' => ! $readOnly && Gate::allows('delete', $agendaItem),
             ],
             // VU SA's own bodies have no separate student position to record.
             'requiresStudentPerspective' => $meeting->requiresStudentPerspective(),
@@ -128,7 +139,7 @@ class AgendaItemController extends AdminController
      */
     public function edit(Request $request, AgendaItem $agendaItem): RedirectResponse
     {
-        $this->handleAuthorization('view', $agendaItem);
+        $this->handleAuthorization('viewSummary', $agendaItem);
 
         return redirect()->route('agendaItems.show', [
             'agendaItem' => $agendaItem,

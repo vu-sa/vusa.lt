@@ -54,7 +54,7 @@ final class BuildUserIndexQuery
         return $query->whereHas('duties', function (Builder $dutyQuery) use ($tenantIds): void {
             $dutyQuery->whereDate('dutiables.start_date', '>', now()->toDateString())
                 ->where(fn (Builder $dates) => $dates->whereNull('dutiables.end_date')
-                    ->orWhere('dutiables.end_date', '>=', now()));
+                    ->orWhereDate('dutiables.end_date', '>=', today()));
 
             if ($tenantIds !== null) {
                 $dutyQuery->whereHas('institution', fn (Builder $institution) => $institution->whereIn('tenant_id', $tenantIds));

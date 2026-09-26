@@ -36,6 +36,7 @@ async function mountController(options: Partial<Parameters<typeof useAdminCollec
 const pagesCalled = () => search.searchWithFacets.mock.calls.map(call => call[2].page);
 
 beforeEach(() => {
+  localStorage.clear();
   search.totalPages = 20;
   search.searchWithFacets.mockReset();
   search.searchWithFacets.mockImplementation(async (_collection: string, _query: string, options: { page: number }) => ({
@@ -129,5 +130,54 @@ describe('useAdminCollectionSearch — reactive base filter', () => {
 
     const filters = search.searchWithFacets.mock.calls.map(call => call[2].filterBy);
     expect(filters).toEqual([undefined, 'id:=[a,b]']);
+  });
+});
+
+describe('useAdminCollectionSearch — default filters', () => {
+  it('starts a visit without URL filters on the defaults', async () => {
+    const controller = await mountController({ defaultFilters: { tenant_shortnames: ['VU SA MIF'] } });
+
+    expect(controller.filters.value.tenant_shortnames).toEqual(['VU SA MIF']);
+  });
+
+  it('lets the URL win over the defaults', async () => {
+    window.history.replaceState({}, '', '/mano/meetings?year=2025');
+    const controller = await mountController({ defaultFilters: { tenant_shortnames: ['VU SA MIF'] } });
+
+    expect(controller.filters.value.tenant_shortnames).toBeUndefined();
+    expect(controller.filters.value.year).toEqual([2025]);
+  });
+
+  it('skips an empty default, e.g. a user with no current duties', async () => {
+    const controller = await mountController({ defaultFilters: { tenant_shortnames: [] } });
+
+    expect(controller.filters.value.tenant_shortnames).toBeUndefined();
+  });
+});
+
+describe('useAdminCollectionSearch — remembered filters', () => {
+  it('comes back to the filters the list was left with, over the defaults', async () => {
+    const first = await mountController({ defaultFilters: { tenant_shortnames: ['VU SA MIF'] } });
+    first.setFilter('year', [2024]);
+    // Skip the debounce: an immediate search syncs (and remembers) the same state.
+    first.search('', true);
+    await flushPromises();
+
+    window.history.replaceState({}, '', '/mano/meetings');
+    const second = await mountController({ defaultFilters: { tenant_shortnames: ['VU SA MIF'] } });
+
+    expect(second.filters.value.year).toEqual([2024]);
+  });
+
+  it('keeps a list the user cleared cleared, instead of reapplying the defaults', async () => {
+    const first = await mountController({ defaultFilters: { tenant_shortnames: ['VU SA MIF'] } });
+    first.clearFilters();
+    first.search('', true);
+    await flushPromises();
+
+    window.history.replaceState({}, '', '/mano/meetings');
+    const second = await mountController({ defaultFilters: { tenant_shortnames: ['VU SA MIF'] } });
+
+    expect(second.filters.value.tenant_shortnames).toBeUndefined();
   });
 });

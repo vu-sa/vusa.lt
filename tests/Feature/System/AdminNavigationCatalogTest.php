@@ -146,15 +146,17 @@ beforeEach(function (): void {
 });
 
 describe('per-persona visibility', function (): void {
-    test('a plain member sees only Pradžia and the always-visible reservation entries', function (): void {
+    test('a plain member sees Pradžia, the public ViSAK collections and the always-visible reservation entries', function (): void {
         $user = makeUser($this->tenant);
 
         // Rezervacijos' Apžvalga is deliberately "always" (.ai/rules/shell.md); ResourcePolicy::viewAny()
         // and ReservationPolicy::create() are unconditional, and ReservationPolicy::viewList() opens the
         // list to anyone who can reserve (holding only their own) — so a member with no role at all
-        // still gets a foothold in Rezervacijos.
+        // still gets a foothold in Rezervacijos. Active institutions, public meetings, their agenda items
+        // and documents are open to every admin too (the viewAny() of each policy).
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
 
@@ -170,7 +172,7 @@ describe('per-persona visibility', function (): void {
             ],
             'createActions' => [],
         ])
-            ->and($payload['workspaces'][1]['createActions'])->toEqual([
+            ->and($payload['workspaces'][2]['createActions'])->toEqual([
                 ['key' => 'new_reservation', 'label' => 'shell.actions.new_reservation.title', 'description' => 'shell.actions.new_reservation.description', 'entityType' => 'reservation', 'target' => ['kind' => 'route', 'routeName' => 'reservations.create']],
             ]);
     });
@@ -178,12 +180,10 @@ describe('per-persona visibility', function (): void {
     test('a plain Student Representative sees no Sistema or Organizacija workspace', function (): void {
         $user = makeTenantUserWithRole('Student Representative', $this->tenant);
 
-        // MeetingPolicy::viewAny() accepts `meetings.read.own`, which is all this role holds, so
-        // the rep sees Posėdžiai, the ViSAK overview and Darbotvarkės klausimai. Which rows they
-        // get is the scoped search key's job (own_permission), not the catalog's.
+        // Which meetings and institutions the rep gets is the scoped search key's job, not the catalog's.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
     });
@@ -198,7 +198,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'greitosios_nuorodos', 'failai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'studiju_programos', 'formos'],
@@ -215,10 +215,24 @@ describe('per-persona visibility', function (): void {
         // paper over by inventing a narrower gate the controller does not itself enforce.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['uzduociu_suvestine'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'svetaine' => ['dokumentai'],
         ]);
+    });
+
+    test('institutions.read.own does not open the organisation-wide graph', function (): void {
+        $user = makeUser($this->tenant);
+        $duty = $user->duties()->first();
+        $duty->pivot->end_date = null;
+        $duty->pivot->save();
+        $duty->givePermissionTo('institutions.read.own');
+
+        $sections = collect($this->catalog->for($user)['workspaces'])->firstWhere('key', 'atstovavimas')['sections'];
+
+        expect(collect($sections)->pluck('key')->all())
+            ->toContain('institucijos')
+            ->not->toContain('institucijos_grafas');
     });
 
     test('a super admin sees every workspace and every section', function (): void {
@@ -226,7 +240,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'formos'],
@@ -330,7 +344,11 @@ describe('route resolution', function (): void {
     test('no admin route resolves into two workspaces', function (): void {
         $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
 
+        // Listed in ViSAK (everyone) and Svetainė (managers); the shell keeps the active workspace.
+        $sharedRoutes = ['documents.index', 'documents.show'];
+
         $ambiguous = adminGetRouteNames()
+            ->reject(fn (string $name) => in_array($name, $sharedRoutes, true))
             ->filter(fn (string $name) => collect(catalogCandidates($workspaces, $name))->pluck('workspace')->unique()->count() > 1)
             ->values()
             ->all();

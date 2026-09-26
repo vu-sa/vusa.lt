@@ -347,7 +347,7 @@ export interface MeetingSearchResult {
   votes_count?: number;
   /** MeetingType value: `in-person`, `remote` or `email`. */
   type?: string;
-  is_public?: boolean;
+  institution_type_ids?: number[];
   year?: number;
   user_names?: string[];
 }
@@ -440,6 +440,7 @@ export interface InstitutionSearchResult {
   type_titles?: string[];
   current_user_names?: string[];
   duty_names?: string[];
+  type_ids?: number[];
 }
 
 /**

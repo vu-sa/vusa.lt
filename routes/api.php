@@ -149,9 +149,10 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Academic vacation periods (shaded in the meetings Gantt chart)
         Route::get('academic-calendar/vacations', [AcademicCalendarApiController::class, 'vacations'])->name('academicCalendar.vacations');
 
-        // ViSAK tenant timeline, windowed Gantt meetings and paginated representative activity
+        // ViSAK tenant timeline, Gantt rows and windowed meetings, and paginated representative activity
         Route::get('visak/timeline', [AtstovavimasApiController::class, 'timeline'])->name('visak.timeline');
         Route::get('visak/timeline/history', [AtstovavimasApiController::class, 'statusHistory'])->name('visak.timeline.history');
+        Route::get('visak/gantt', [AtstovavimasApiController::class, 'gantt'])->name('visak.gantt');
         Route::get('visak/meetings', [AtstovavimasApiController::class, 'meetings'])->name('visak.meetings');
         Route::get('visak/representatives', [AtstovavimasApiController::class, 'representatives'])->name('visak.representatives');
 

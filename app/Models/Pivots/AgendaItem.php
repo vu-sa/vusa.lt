@@ -174,6 +174,7 @@ class AgendaItem extends Pivot implements Commentable
         // Load required relationships
         $this->loadMissing([
             'meeting.institutions.tenant',
+            'meeting.institutions.types',
             'votes',
         ]);
 
@@ -242,6 +243,7 @@ class AgendaItem extends Pivot implements Commentable
             'institution_name_lt' => null,
             'institution_name_en' => null,
             'institution_ids' => [],
+            'institution_type_ids' => [],
 
             'created_at' => $this->created_at->timestamp,
             'updated_at' => $this->updated_at->timestamp,
@@ -281,6 +283,14 @@ class AgendaItem extends Pivot implements Commentable
 
                 // All institutions (for .own scope filtering)
                 'institution_ids' => $meeting->institutions->pluck('id')->toArray(),
+
+                // Compared with the public meeting types when a scoped key is made (TypesenseScopedKeyService)
+                'institution_type_ids' => $meeting->institutions
+                    ->flatMap(fn ($institution) => $institution->types->pluck('id'))
+                    ->map(fn ($id) => (int) $id)
+                    ->unique()
+                    ->values()
+                    ->all(),
             ]);
         }
 

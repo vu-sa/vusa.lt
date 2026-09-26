@@ -157,7 +157,7 @@
 
         <ul
           v-else-if="view === 'cards'"
-          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           data-slot="collection-cards"
         >
           <li

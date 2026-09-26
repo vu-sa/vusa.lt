@@ -156,7 +156,7 @@ class StoreDutiableRequest extends FormRequest
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->where('tenant_id', $tenantId)
             ->where(function ($query): void {
-                $query->whereNull('end_date')->orWhere('end_date', '>=', now());
+                $query->whereNull('end_date')->orWhereDate('end_date', '>=', today());
             })
             ->count();
 

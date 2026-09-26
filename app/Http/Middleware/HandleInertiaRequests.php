@@ -13,6 +13,7 @@ use App\Services\DeviceMetricService;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\SiteSettings;
+use App\Support\AuthorityCacheExpiry;
 use App\Support\MorphMap;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,6 +24,24 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
+    public const TENANTS_CACHE_KEY = 'all-tenants-for-inertia';
+
+    public const EVENT_TYPES_CACHE_KEY = 'all-event-types-for-inertia';
+
+    public const TAGS_CACHE_KEY = 'all-tags-for-inertia';
+
+    public const INSTITUTION_TYPES_CACHE_KEY = 'all-institution-types-for-inertia';
+
+    /**
+     * Cached forever; each owning model forgets its key on write.
+     */
+    public const SHARED_CACHE_KEYS = [
+        self::TENANTS_CACHE_KEY,
+        self::EVENT_TYPES_CACHE_KEY,
+        self::TAGS_CACHE_KEY,
+        self::INSTITUTION_TYPES_CACHE_KEY,
+    ];
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -174,7 +193,7 @@ class HandleInertiaRequests extends Middleware
     private function getTenantsForInertia(): Collection
     {
         // TODO: maybe should return all tenants, even pagrindinis
-        $tenants = Cache::rememberForever('all-tenants-for-inertia',
+        $tenants = Cache::rememberForever(self::TENANTS_CACHE_KEY,
             fn () => Tenant::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
         );
 
@@ -188,7 +207,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getEventTypesForInertia(): Collection
     {
-        return Cache::rememberForever('all-event-types-for-inertia',
+        return Cache::rememberForever(self::EVENT_TYPES_CACHE_KEY,
             fn () => EventType::orderBy('sort_order')->get(['id', 'name', 'slug'])
         );
     }
@@ -198,7 +217,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getTagsForInertia(): Collection
     {
-        return Cache::rememberForever('all-tags-for-inertia',
+        return Cache::rememberForever(self::TAGS_CACHE_KEY,
             fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias', 'is_topic'])
         );
     }
@@ -208,7 +227,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getInstitutionTypesForInertia(): Collection
     {
-        return Cache::rememberForever('all-institution-types-for-inertia',
+        return Cache::rememberForever(self::INSTITUTION_TYPES_CACHE_KEY,
             fn () => Type::where('model_type', MorphMap::alias(Institution::class))->get(['id', 'title', 'slug'])
         );
     }
@@ -234,7 +253,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getIndexPermissions(User $user): array
     {
-        return Cache::remember(PermissionMapBuilder::INDEX_CACHE_PREFIX.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::INDEX_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
             fn () => app(PermissionMapBuilder::class)->indexMap($user)
         );
     }
@@ -244,7 +263,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getCreatePermissions(User $user): array
     {
-        return Cache::remember(PermissionMapBuilder::CREATE_CACHE_PREFIX.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::CREATE_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
             fn () => app(PermissionMapBuilder::class)->createMap($user)
         );
     }
@@ -254,7 +273,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getForceDeletePermissions(User $user): array
     {
-        return Cache::remember(PermissionMapBuilder::FORCE_DELETE_CACHE_PREFIX.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::FORCE_DELETE_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
             fn () => app(PermissionMapBuilder::class)->forceDeleteMap($user)
         );
     }

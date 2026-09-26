@@ -58,6 +58,18 @@ describe('resolveActive', () => {
     expect(resolveActive(catalog, 'agendaItems.index').section?.key).toBe('darbotvarkes_klausimai');
   });
 
+  it('keeps a section listed in two workspaces in the preferred one', () => {
+    const shared = [
+      workspace('atstovavimas', [section('dokumentai', 'documents.index')]),
+      workspace('svetaine', [section('dokumentai', 'documents.index')]),
+    ];
+
+    expect(resolveActive(shared, 'documents.index').workspace?.key).toBe('atstovavimas');
+    expect(resolveActive(shared, 'documents.index', {}, 'svetaine').workspace?.key).toBe('svetaine');
+    // A preference never outranks a better match elsewhere.
+    expect(resolveActive(catalog, 'duties.updateUsersWizard', {}, 'atstovavimas').section?.key).toBe('pareigybiu_atnaujinimas');
+  });
+
   it('resolves nothing for an unknown or missing route', () => {
     expect(resolveActive(catalog, 'profile')).toEqual({ workspace: undefined, section: undefined });
     expect(resolveActive(catalog, undefined)).toEqual({ workspace: undefined, section: undefined });

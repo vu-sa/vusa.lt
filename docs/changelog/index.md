@@ -7,12 +7,26 @@ lastUpdated: true
 
 ## v2.23 — Patogesnis naršymas telefone (2026-09-26) {#v2-23}
 
+- ✨ **Platesnė posėdžių laiko juosta** — didžiausias priartinimas sumažintas perpus, o atitolinus iki galo viename vaizde telpa dar ilgesnis laikotarpis.
+- ⭐ **Sistemos priežiūra be serverio** — sistemos būsenos puslapyje super administratorius gali atnaujinti viešo turinio talpyklą, išvalyti visą talpyklą, perkrauti eilės procesus, išsiųsti bandomąjį laišką, sinchronizuoti paiešką ar SharePoint dokumentus. Kiekvienas veiksmas įrašomas į veiklos žurnalą.
+- 🔧 **Padalinių ir institucijų tipų pakeitimai matomi iš karto** — pervadintas padalinys ar institucijos tipas nebelaukia kito sistemos atnaujinimo, kad pasirodytų filtruose ir pasirinkimuose.
+- 🔧 **Posėdžio darbotvarkės papildymas veikia** — „Papildyti“ atveria darbotvarkės įklijavimo langą, kai ji tuščia, o „Įklijuoti darbotvarkę“ iškart parodo įklijavimo lauką.
+- ✨ **Sąrašai prisimena filtrus** — grįžęs į posėdžių, institucijų ar kitą sąrašą, rasi jį su tais pačiais filtrais ir rikiavimu, kuriuos palikai.
+- ✨ **Posėdžiai ir darbotvarkės klausimai visiems** — ViSAK sąrašuose matai viešus posėdžius, savo ir susijusių institucijų posėdžius, o pagal nutylėjimą – savo padalinio. Viešą posėdį, prie kurio neturi prieigos, atversi peržiūrai: matysi darbotvarkę be failų, užduočių ir veiklos.
+- ✨ **Institucijos visiems** — ViSAK institucijų sąraše matai visas veikiančias institucijas, pagal nutylėjimą – savo padalinio. Institucija, prie kurios neturi prieigos, atsidaro peržiūrai: apžvalga, pareigybės ir, jei jie vieši, posėdžiai, be redagavimo. Jei institucijos posėdžiai nevieši, tai ir parašoma, kad prireikus susisiektum su jos nariais ar koordinatoriais, o jos būsena nerodoma. Sekti gali savo institucijas ir tas, kurių posėdžiai vieši; pranešimus gausi tik apie posėdžius, kuriuos gali matyti.
+- 🔧 **Buvę nariai nebemato vėlesnių posėdžių** — pasibaigus pareigoms, matysi savo kadencijos posėdžius, bet nebe vėlesnius tos institucijos posėdžius ir nebegausi apie juos pranešimų. Pareigų pabaigos data dabar visur reiškia paskutinę pareigų dieną: tą dieną prieiga dar veikia, o baigiasi iš karto jai pasibaigus, ne iki valandos vėliau.
+- ✨ **Padalinių laiko juosta visiems** — ViSAK „Padaliniai“ atsidaro kiekvienam: laiko juostoje matai viešai posėdžiaujančių institucijų posėdžius visuose padaliniuose ir savo bei susijusių institucijų posėdžius. Institucijų, kurių netvarkai, posėdžius, narius ir pertraukas matysi, bet ne jų būseną, ir posėdžių jose čia fiksuoti negalėsi. Skaičiai, dėmesio sąrašas ir rodikliai lieka tik tavo tvarkomiems padaliniams: jų apimtį keiti viršuje esančiu „Rodikliai“ pasirinkimu, o laiko juostos padalinius – jos filtruose.
+- ✨ **Dokumentai ViSAK** — dokumentų archyvas pasiekiamas iš ViSAK visiems, pagal nutylėjimą rodomi tavo padalinio ir VU SA dokumentai; sinchronizacija ir valdymo mygtukai lieka tik dokumentus tvarkantiems.
+- ✨ **Aiškesnė ViSAK apžvalga** — kai nėra dėmesio reikalaujančių institucijų ar artimiausių posėdžių, būsenų skaičiai rodomi po du šalia koordinatoriaus; be koordinatoriaus jie užima visą plotį. Telefone daugiau erdvės tarp apžvalgos dalių ir skaičių eilučių.
+- ✨ **Aiškesnės Pradžios nuorodos** — vietoje „Administravimas“ pirmiausia matysi ViSAK, jei turi prieigą, o po jo – rezervacijas.
+- ✨ **Daugiau išteklių vienoje eilėje** — plačiausiame ekrano išdėstyme išteklių sąraše telpa keturios kortelės vienoje eilėje.
 - ✨ **Prieiga prieš pareigų pradžią** — būsimas pareigas gavęs narys gali ruoštis darbui sistemoje iš karto; viešuose kontaktuose atsiras tik pradėjęs eiti pareigas. Sistemos apžvalgoje matysi tokių narių skaičių ir atversi jų sąrašą.
 - ✨ **Aiškesnis narių sąrašas** — sąraše neberodomi telefono numeriai.
 - ✨ **Mažiau Pradžios užuominų** — pašalinti pranešimų nustatymų akcentas prie varpelio ir pareigų pokyčių juosta Pradžioje; nustatymai tebepasiekiami per varpelį.
 - ✨ **„Eiti į“ arčiau greitų veiksmų** — kai Pradžios kairėje nėra užduočių, institucijų ar rezervacijos juodraščio, nuorodos rodomos po dvi eilutėje šalia „Greiti veiksmai“.
 - ✨ **Kompaktiškesni sąrašų valdikliai telefone** — paieška ir filtrai telpa vienoje eilutėje, greiti filtrai yra filtrų lange, o aktyvius filtrus gali slinkti į šoną, todėl įrašus pamatai anksčiau.
 - ✨ **Aiškesni privalomi problemos laukai** — viena pastaba paaiškina žvaigždutę, o kalbos perspėjimas dabar tokio pat aukščio kaip perjungiklis.
+- 🔧 **Veikia „Slėpti VU SA darinius“** — ViSAK institucijų laiko juostoje šis filtras vėl paslepia VU SA darinius (ir susijusiose institucijose)
 - 🔧 **Problemų komentarai vėl veikia** — problemos puslapyje galima matyti ir rašyti komentarus be klaidos „Commentable not found“
 - 🔧 **Atsakingo nario paieška veikia** — problemos formoje paieškos rezultatai matomi ir ieškant pagal el. paštą, o pasirinktas narys išsaugomas
 - ✨ **Patogesnis institucijų pasirinkimas problemose** — kuriant ar redaguojant problemą institucijas galima rasti per paiešką ir filtrus

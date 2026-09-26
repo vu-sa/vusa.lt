@@ -8,7 +8,7 @@ import QuickAccess from '../QuickAccess.vue';
 
 import type { CommandAction } from '@/Components/CommandPalette/useCommandActions';
 import { createMockPage } from '@/tests/helpers/createMockPage';
-import { pradzia, rezervacijos } from '@/Components/Layouts/Shell/__tests__/fixtures';
+import { atstovavimas, pradzia, rezervacijos } from '@/Components/Layouts/Shell/__tests__/fixtures';
 
 const state = vi.hoisted(() => ({ actions: [] as CommandAction[] }));
 
@@ -66,17 +66,18 @@ describe('home actions', () => {
     expect(mount(CreateShortcuts).find('[data-slot="create-shortcuts"]').exists()).toBe(false);
   });
 
-  it('shows quick access only for the permitted administration and reservations areas', () => {
+  it('shows ViSAK first, then reservations, when both workspaces are accessible', () => {
     expect(mount(QuickAccess).find('[data-slot="home-quick-access"]').exists()).toBe(false);
 
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: { can: { accessAdministration: true } },
-      adminNavigation: { workspaces: [pradzia, rezervacijos] },
+      adminNavigation: { workspaces: [pradzia, atstovavimas, rezervacijos] },
     }) as ReturnType<typeof usePage>);
 
     const links = mount(QuickAccess).findAll('a');
     expect(links).toHaveLength(2);
-    expect(links[0].attributes('href')).toBe('/mocked-route/administration');
+    expect(links[0].attributes('href')).toBe('/mocked-route/dashboard.atstovavimas');
+    expect(links[0].text()).toContain('shell.workspaces.atstovavimas.title');
     expect(links[1].attributes('href')).toBe('/mocked-route/dashboard.reservations');
     expect(links[1].text()).toContain('home.quick_access.manage_reservations_description');
   });
@@ -84,10 +85,10 @@ describe('home actions', () => {
   it('shows each quick access link independently when only that area is available', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: { can: { accessAdministration: true } },
-      adminNavigation: { workspaces: [pradzia] },
+      adminNavigation: { workspaces: [pradzia, atstovavimas] },
     }) as ReturnType<typeof usePage>);
     expect(mount(QuickAccess).findAll('a').map(link => link.attributes('href')))
-      .toEqual(['/mocked-route/administration']);
+      .toEqual(['/mocked-route/dashboard.atstovavimas']);
 
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: { can: { accessAdministration: false } },
@@ -95,6 +96,12 @@ describe('home actions', () => {
     }) as ReturnType<typeof usePage>);
     expect(mount(QuickAccess).findAll('a').map(link => link.attributes('href')))
       .toEqual(['/mocked-route/dashboard.reservations']);
+
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { can: { accessAdministration: true } },
+      adminNavigation: { workspaces: [pradzia] },
+    }) as ReturnType<typeof usePage>);
+    expect(mount(QuickAccess).findAll('a')).toHaveLength(0);
   });
 
   it('adds a link per registration form the server allows, even without other areas', () => {
@@ -116,7 +123,7 @@ describe('home actions', () => {
   it('lays out four permitted destinations in one desktop row', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: { can: { accessAdministration: true } },
-      adminNavigation: { workspaces: [pradzia, rezervacijos] },
+      adminNavigation: { workspaces: [pradzia, atstovavimas, rezervacijos] },
     }) as ReturnType<typeof usePage>);
 
     const wrapper = mount(QuickAccess, {

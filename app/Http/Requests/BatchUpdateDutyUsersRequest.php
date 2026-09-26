@@ -115,20 +115,20 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                         ->where('tenant_id', $tenant->id)
                         ->where(function ($query): void {
                             $query->whereNull('end_date')
-                                ->orWhere('end_date', '>=', now());
+                                ->orWhereDate('end_date', '>=', today());
                         })
                         ->count();
                 }
 
                 // Count by tenant_id column — explicit and accurate.
-                // Must match Duty::current_users() semantics (end_date >= now()) so a
-                // rep end-dated today is no longer counted toward the quota.
+                // Must match Duty::current_users() semantics (the end date is the last day
+                // in office), so a rep end-dated today still counts toward the quota.
                 $currentCount = Dutiable::where('duty_id', $duty->id)
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('tenant_id', $tenant->id)
                     ->where(function ($query): void {
                         $query->whereNull('end_date')
-                            ->orWhere('end_date', '>=', now());
+                            ->orWhereDate('end_date', '>=', today());
                     })
                     ->count();
 

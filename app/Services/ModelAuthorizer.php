@@ -6,6 +6,7 @@ use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Authorization\PermissionScope;
+use App\Support\AuthorityCacheExpiry;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
@@ -194,7 +195,7 @@ class ModelAuthorizer
     {
         return $this->duties[(string) $user->id] ??= Cache::remember(
             "auth:duties:{$user->id}",
-            static::CACHE_TTL,
+            fn () => AuthorityCacheExpiry::for($user, static::CACHE_TTL),
             fn () => $user->load([
                 'authorization_duties:id,name,institution_id',
                 // tenant_id (not just id) so tenantsOf()'s loadMissing('institution.tenant')

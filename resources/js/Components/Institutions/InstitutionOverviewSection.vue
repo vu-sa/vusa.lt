@@ -31,6 +31,13 @@
         @select="(meeting) => $emit('view-meeting', meeting)"
       />
       <EmptyState
+        v-else-if="overview.meetings_hidden"
+        :title="$t('Posėdžiai nėra vieši')"
+        :description="hiddenMeetingsDescription"
+        :icon="Lock"
+        data-testid="institution-meetings-hidden"
+      />
+      <EmptyState
         v-else
         :title="$t('Nėra susitikimų')"
         :description="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
@@ -52,7 +59,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Calendar as CalendarIcon, ChevronRight } from 'lucide-vue-next';
+import { Calendar as CalendarIcon, ChevronRight, Lock } from 'lucide-vue-next';
 
 import InstitutionMeetingsList from './InstitutionMeetingsList.vue';
 
@@ -78,6 +85,9 @@ const description = computed(() => {
 });
 
 const secretaries = computed(() => props.institution.secretaries ?? []);
+const hiddenMeetingsDescription = computed(() => $t(
+  'Šios institucijos posėdžiai nėra vieši, todėl jų čia nematai. Jei reikia informacijos apie posėdžius, susisiek su institucijos nariais ar koordinatoriais – jie nurodyti viršuje.',
+));
 
 const recentMeetings = computed(() => [...props.overview.recentMeetings]
   .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())

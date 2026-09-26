@@ -5,7 +5,7 @@
     entity-type="document"
     :eyebrow
     :title="$t('Dokumentai')"
-    :lead="$t('VU SA dokumentų archyvas ir sinchronizacija su SharePoint.')"
+    :lead="canCreate ? $t('VU SA dokumentų archyvas ir sinchronizacija su SharePoint.') : $t('VU SA ir padalinių dokumentų archyvas.')"
     default-view="table"
     :item-key="documentKey"
     :quick-filters
@@ -28,7 +28,7 @@
       </FilePicker>
 
       <Button
-        v-if="canUpdate"
+        v-if="canCreate"
         variant="outline"
         :disabled="bulkSyncLoading"
         @click="handleBulkSync"
@@ -82,7 +82,7 @@
 
         <div class="flex shrink-0 items-center gap-2">
           <StatusBadge
-            v-if="item.sync_status && syncStatuses[item.sync_status]"
+            v-if="canCreate && item.sync_status && syncStatuses[item.sync_status]"
             :status="syncStatuses[item.sync_status]"
           />
           <Button
@@ -233,6 +233,7 @@ import { DocumentIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statuses';
 import DocumentDetailPreview from '@/Features/Admin/AdminSearch/Components/Detail/DocumentDetailPreview.vue';
@@ -243,15 +244,21 @@ import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   importantContentTypes: string[];
+  abilities: { create: boolean; update: boolean; delete: boolean };
+  /** The user's padaliniai plus VU SA: a first visit starts filtered to them. */
+  defaultTenantShortnames: string[];
 }>();
 
 const page = usePage();
+const { activeWorkspace } = useAdminNavigation();
 
-const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.dokumentai')}`);
+// Listed in both ViSAK and Svetainė; the eyebrow names whichever the user came through.
+const eyebrow = computed(() => `${$t(activeWorkspace.value?.label ?? 'shell.workspaces.svetaine.title')} · ${$t('shell.sections.dokumentai')}`);
 
-const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.document ?? true));
-const canUpdate = computed(() => Boolean(page.props.auth?.can?.update?.document ?? true));
-const canDelete = computed(() => Boolean(page.props.auth?.can?.delete?.document ?? true));
+// Browsing is open to everyone; syncing and row actions are for those who manage documents.
+const canCreate = computed(() => props.abilities.create);
+const canUpdate = computed(() => canCreate.value && props.abilities.update);
+const canDelete = computed(() => canCreate.value && props.abilities.delete);
 
 const sharepointPickerAvailable = computed(() =>
   typeof window !== 'undefined' && window.isSecureContext && String(page.props.app?.url ?? '').startsWith('https'),
@@ -260,6 +267,7 @@ const sharepointPickerAvailable = computed(() =>
 const source = useTypesenseCollectionSource<DocumentSearchResult>({
   collection: 'documents',
   preserveUrlKeys: ['view', 'item'],
+  defaultFilters: { tenant_shortname: props.defaultTenantShortnames },
 });
 
 const documentKey = (item: DocumentSearchResult) => String(item.id);
@@ -278,8 +286,12 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'content_type', label: $t('Rūšis'), class: 'w-44' },
   { key: 'institution', label: $t('Institucija'), class: 'w-44' },
   { key: 'language', label: $t('Kalba'), class: 'w-20' },
-  { key: 'sync_status', label: $t('Būsena'), class: 'w-36' },
-  { key: 'actions', label: '', class: 'w-20' },
+  ...(canCreate.value
+    ? [
+        { key: 'sync_status', label: $t('Būsena'), class: 'w-36' },
+        { key: 'actions', label: '', class: 'w-20' },
+      ]
+    : []),
 ]);
 
 function institutionName(item: DocumentSearchResult): string | undefined {

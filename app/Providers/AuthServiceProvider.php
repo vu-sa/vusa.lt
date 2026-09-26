@@ -9,7 +9,6 @@ use App\Models\InstitutionCheckIn;
 use App\Models\User;
 use App\Policies\FileableFilePolicy;
 use App\Policies\InstitutionCheckInPolicy;
-use App\Settings\AtstovavimasSettings;
 use App\Settings\SettingsSettings;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -57,8 +56,6 @@ class AuthServiceProvider extends ServiceProvider
 
         // Define gate for settings management access
         Gate::define('manage-settings', fn (User $user) => app(SettingsSettings::class)->canUserManageSettings($user));
-
-        Gate::define('view-tenant-representation-overview', fn (User $user) => app(AtstovavimasSettings::class)->getVisibleTenantIds($user)->isNotEmpty());
 
         // Define gate for administration page access
         // User can access if they have viewAny permission on any administrative model

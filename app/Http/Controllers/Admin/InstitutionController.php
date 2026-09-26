@@ -6,6 +6,7 @@ use App\Actions\GetInstitutionMembers;
 use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
+use App\Actions\GetUserTenantShortnames;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
@@ -28,8 +29,10 @@ use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Settings\CadenceSettings;
+use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -55,6 +58,9 @@ class InstitutionController extends AdminController
             'deletedCount' => $this->scopedTrashedCount(Institution::query(), 'tenant', 'institutions.read.padalinys'),
             // Following is per user, so the index cannot carry it; the page filters Typesense by these ids.
             'followedInstitutionIds' => $request->user()->followedInstitutions()->pluck('institutions.id')->map(fn ($id): string => (string) $id)->values(),
+            'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
+            // Compared with each row's type_ids to offer "Sekti" (InstitutionPolicy::follow).
+            'publicMeetingTypeIds' => app(MeetingSettings::class)->getPublicMeetingInstitutionTypeIds()->values(),
         ]);
     }
 
@@ -104,16 +110,21 @@ class InstitutionController extends AdminController
      */
     public function show(Institution $institution)
     {
-        $this->handleAuthorization('view', $institution);
+        $this->handleAuthorization('viewSummary', $institution);
+
+        // An active institution outside the user's reach opens as its public face: overview,
+        // members and (public) meetings — no discussion, files, tasks, relations or management.
+        $readOnly = ! Gate::allows('view', $institution);
 
         $institution->load('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns')
             ->loadCount(['comments', 'duties', 'meetings', 'tasks', 'tasksFromMeetings']);
+        $showsMeetings = ! $readOnly || $institution->has_public_meetings;
 
         $institution->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
         $activityStatus = $this->activityStatusService->resolve($institution)->toArray();
         $tasksCount = (int) $institution->getAttribute('tasks_count');
         $tasksFromMeetingsCount = (int) $institution->getAttribute('tasks_from_meetings_count');
-        $recentComments = $institution->comments()
+        $recentComments = $readOnly ? collect() : $institution->comments()
             ->roots()
             ->with('user:id,name,profile_photo_path')
             ->withCount('replies')
@@ -133,7 +144,7 @@ class InstitutionController extends AdminController
                 ] : null,
             ]);
 
-        $overviewMeetings = $institution->meetings()
+        $overviewMeetings = ! $showsMeetings ? collect() : $institution->meetings()
             ->withCount('agendaItems')
             ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
             ->orderByDesc('start_time')
@@ -154,7 +165,8 @@ class InstitutionController extends AdminController
 
         // Get subscription status for the current user
         $user = request()->user();
-        $subscriptionStatus = $user ? [
+        // Offered where following is allowed, or to let an existing follower stop.
+        $subscriptionStatus = $user && ($user->can('follow', $institution) || $user->follows($institution)) ? [
             'is_followed' => $user->follows($institution),
             'is_muted' => $user->isInstitutionMuted($institution),
             'is_duty_based' => $user->hasInstitution($institution),
@@ -179,27 +191,31 @@ class InstitutionController extends AdminController
                 'tasks_count' => $tasksCount + $tasksFromMeetingsCount,
                 'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
                 'managers' => $institution->managers(),
-                'secretaries' => InstitutionSecretaryController::usersPayload(
+                'secretaries' => $readOnly ? [] : InstitutionSecretaryController::usersPayload(
                     GetInstitutionSecretaries::execute($institution)
                 ),
-                'sharepointPath' => SharepointFileService::pathOrNull($institution),
+                'sharepointPath' => $readOnly ? null : SharepointFileService::pathOrNull($institution),
             ],
+            'readOnly' => $readOnly,
             'overview' => [
-                'activity_status' => $activityStatus,
+                // The status is read off the meetings, so it is withheld with them.
+                'activity_status' => $showsMeetings ? $activityStatus : null,
                 'current_users' => $institution->duties->pluck('current_users')->flatten()->unique('id')->values(),
                 'duties' => $overviewDuties,
                 'recentMeetings' => InstitutionMeetingResource::collection($overviewMeetings)->resolve(),
-                'meetings_count' => $institution->meetings_count,
+                'meetings_count' => $showsMeetings ? $institution->meetings_count : 0,
+                // Say that meetings exist but are not public, rather than an empty "no meetings".
+                'meetings_hidden' => ! $showsMeetings && $institution->meetings_count > 0,
                 'recentComments' => $recentComments,
             ],
-            'files' => Inertia::defer(fn () => $institution->availableFiles()->orderByDesc('file_date')->get(), 'files'),
-            'typeFiles' => Inertia::defer(fn () => GetTypeFiles::forFileable($institution), 'files'),
+            'files' => $readOnly ? [] : Inertia::defer(fn () => $institution->availableFiles()->orderByDesc('file_date')->get(), 'files'),
+            'typeFiles' => $readOnly ? [] : Inertia::defer(fn () => GetTypeFiles::forFileable($institution), 'files'),
             'duties' => Inertia::defer(fn () => $institution->duties()
                 ->with('current_users')
                 ->orderBy('order')
                 ->get()
                 ->toArray(), 'institutionPanels'),
-            'meetings' => Inertia::defer(fn () => InstitutionMeetingResource::collection(
+            'meetings' => ! $showsMeetings ? [] : Inertia::defer(fn () => InstitutionMeetingResource::collection(
                 $institution->meetings()
                     ->withCount('agendaItems')
                     ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
@@ -207,7 +223,7 @@ class InstitutionController extends AdminController
                     ->get()
                     ->each->append(['has_report', 'has_protocol'])
             )->resolve(), 'institutionPanels'),
-            'tasks' => Inertia::defer(fn () => TaskResource::collection(
+            'tasks' => $readOnly ? [] : Inertia::defer(fn () => TaskResource::collection(
                 $institution->tasks()
                     ->with('users:id,name,email,profile_photo_path', 'taskable')
                     ->get()
@@ -219,7 +235,7 @@ class InstitutionController extends AdminController
                     ->sortByDesc('created_at')
                     ->values()
             )->resolve(), 'institutionPanels'),
-            'relatedInstitutions' => Inertia::defer(fn () => RelationshipService::getRelatedInstitutionsCached($institution)
+            'relatedInstitutions' => $readOnly ? [] : Inertia::defer(fn () => RelationshipService::getRelatedInstitutionsCached($institution)
                 ->map(fn (array $item) => [
                     'id' => $item['institution']->id,
                     'name' => $item['institution']->name,
@@ -233,9 +249,9 @@ class InstitutionController extends AdminController
             'can' => [
                 'update' => $user?->can('update', $institution) ?? false,
                 'delete' => $user?->can('delete', $institution) ?? false,
-                'recordMeeting' => $user !== null && $user->can('create', Meeting::class)
+                'recordMeeting' => ! $readOnly && $user !== null && $user->can('create', Meeting::class)
                     && $this->authorizer->tenants($user, 'meetings.create.padalinys')->contains('id', $institution->tenant_id),
-                'reportActivity' => $user?->can('create', [InstitutionCheckIn::class, $institution]) ?? false,
+                'reportActivity' => ! $readOnly && ($user?->can('create', [InstitutionCheckIn::class, $institution]) ?? false),
             ],
             // Terms and secretary rosters are associations, edited on the record rather than in the
             // form (O22, Forms rule 15). Only someone who may update the institution needs them.

@@ -362,6 +362,10 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
                 ->all(),
             // Self-referential institution_ids for .own permission filtering
             'institution_ids' => [(string) $this->id],
+            // Facts the scoped key and the list's follow check read: active institutions are public,
+            // and the types decide against the current settings whether its meetings are.
+            'is_active' => (bool) $this->is_active,
+            'type_ids' => $this->types->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
             'activity_status' => app(InstitutionActivityStatusService::class)->resolve($this)->status->value,
             'current_user_names' => $currentUserNames,
             'duty_names' => $dutyNames,

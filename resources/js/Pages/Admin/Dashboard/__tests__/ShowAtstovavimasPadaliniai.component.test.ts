@@ -7,7 +7,8 @@ import { commonStubs } from '@/tests/stubs';
 
 // Data composables are stable refs and the heavy children are stubbed: this test is about the
 // padalinys overview's contract — numbers from the tenant summary, never a wrong zero while it
-// loads, a capped attention list and the trend chart with its text summary.
+// loads, a capped attention list, the trend chart with its text summary, and none of it for a
+// viewer who manages no padalinys (they get the Gantt alone).
 
 const tenantInstitution = (id: string, priority: number) => ({
   id,
@@ -21,8 +22,10 @@ const selectedTenants = ref(['1']);
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useTimelineFilters', () => ({
   provideTimelineFilters: () => ({
-    selectedTenantForGantt: selectedTenants,
+    selectedTenantForGantt: ref(['1']),
+    selectedStatsTenants: selectedTenants,
     setSelectedTenants: vi.fn(),
+    setSelectedStatsTenants: vi.fn(),
     tenantInstitutionsLoading: ref(false),
     tenantInstitutionsLoaded: ref(false),
   }),
@@ -56,8 +59,12 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useGanttSettings', () => ({
   provideGanttSettings: vi.fn(),
 }));
 
+const ganttRowsLoad = vi.fn();
+
 vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
-  useTenantTimelineData: () => ({
+  useTenantTimelineData: (routeName?: string) => routeName === 'api.v1.admin.visak.gantt'
+    ? { data: ref([]), isFetching: ref(false), loaded: ref(true), load: ganttRowsLoad }
+    : ({
     data: ref({
       institutions: Array.from({ length: 7 }, (_, i) => tenantInstitution(String(i + 1), i)),
       institution_summary: { all: 5, needs_attention: 3, overdue: 2, approaching: 1, no_activity: 0, current: 2 },
@@ -109,17 +116,22 @@ const stubs = {
   RepresentativeActivitySection: marker('representatives'),
   TenantTimelineSection: marker('tenant-timeline'),
   TimelineGanttSkeleton: marker('timeline-skeleton'),
-  TenantScopeSelector: marker('tenant-scope-selector'),
+  TenantScopeSelector: { name: 'TenantScopeSelector', props: ['tenants', 'label'], template: '<div data-testid="tenant-scope-selector" />' },
   InstitutionStatusTrendChart: marker('trend-chart'),
   FullscreenGanttModal: marker('fullscreen'),
   AddCheckInDialog: marker('check-in'),
   WorkspaceSectionTiles: marker('section-tiles'),
 };
 
-function createWrapper(canViewTenantTasks = true) {
+const managed = [{ id: '1', shortname: 'VU SA 1', type: 'padalinys' }, { id: '2', shortname: 'VU SA 2', type: 'padalinys' }];
+const everyPadalinys = [...managed, { id: '3', shortname: 'VU SA 3', type: 'padalinys' }];
+
+function createWrapper(canViewTenantTasks = true, statsTenants = managed) {
   return mount(ShowAtstovavimasPadaliniai, {
     props: {
-      availableTenants: [{ id: '1', shortname: 'VU SA 1', type: 'padalinys' }, { id: '2', shortname: 'VU SA 2', type: 'padalinys' }],
+      statsTenants,
+      ganttTenants: everyPadalinys,
+      defaultGanttTenantIds: ['1'],
       canViewTenantTasks,
     },
     global: { stubs },
@@ -224,5 +236,26 @@ describe('aside tabs', () => {
 
     const triggers = wrapper.findAll('[data-slot="tenant-insights-tabs"] [role="tab"]');
     expect(triggers.map(trigger => trigger.text())).toEqual(['visak.overview.trend.title', 'visak.tenant_overview.representatives']);
+  });
+});
+
+describe('scopes', () => {
+  it('scopes the header selector to the managed padaliniai and names it as the statistics scope', () => {
+    wrapper = createWrapper();
+
+    const selector = wrapper.getComponent({ name: 'TenantScopeSelector' });
+    expect(selector.props('tenants')).toEqual(managed);
+    expect(selector.props('label')).toBe('visak.tenant_scope.stats_label');
+  });
+
+  it('gives a viewer who manages no padalinys only the timeline', () => {
+    wrapper = createWrapper(true, []);
+
+    expect(wrapper.find('[data-testid="tenant-scope-selector"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="atstovavimas-tenant-primary-section"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="section-tiles"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('visak.tenant_overview.lead_public');
+    expect(ganttRowsLoad).toHaveBeenCalledWith(['1']);
   });
 });

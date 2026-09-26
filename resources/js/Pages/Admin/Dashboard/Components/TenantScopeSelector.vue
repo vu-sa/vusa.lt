@@ -29,7 +29,10 @@
             @click="$emit('engage')"
           >
             <Building2 class="size-4 shrink-0 text-brand" aria-hidden="true" />
-            <span class="truncate">{{ triggerLabel }}</span>
+            <span class="truncate">
+              <span v-if="label" class="font-normal text-muted-foreground">{{ label }}:</span>
+              {{ triggerLabel }}
+            </span>
             <span class="ml-auto shrink-0 text-xs font-normal tabular-nums text-muted-foreground">
               {{ selectedTenants.length }}/{{ tenants.length }}
             </span>
@@ -63,6 +66,9 @@
               </Button>
             </div>
           </DropdownMenuLabel>
+          <p v-if="compact && description" class="px-2 pb-2 text-xs text-muted-foreground">
+            {{ description }}
+          </p>
           <DropdownMenuSeparator />
           <div class="max-h-64 overflow-y-auto">
             <DropdownMenuCheckboxItem
@@ -105,6 +111,8 @@ const props = defineProps<{
   title?: string;
   description?: string;
   compact?: boolean;
+  /** Names what the selection drives, e.g. "Rodikliai", when the page has more than one scope. */
+  label?: string;
 }>();
 
 const emit = defineEmits<{

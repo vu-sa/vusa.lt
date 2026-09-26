@@ -20,7 +20,8 @@
       <div v-if="meeting.institutions?.length" class="flex flex-wrap gap-x-1">
         <template v-for="(institution, index) in meeting.institutions" :key="institution.id">
           <span v-if="index" aria-hidden="true">·</span>
-          <Link :href="route('institutions.show', institution.id)" class="text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand">
+          <span v-if="readOnly">{{ institution.name }}</span>
+          <Link v-else :href="route('institutions.show', institution.id)" class="text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand">
             {{ institution.name }}
           </Link>
         </template>
@@ -81,8 +82,7 @@
           :can-add="abilities.createAgendaItems"
           :can-reorder="abilities.reorderAgendaItems"
           :requires-student-perspective="!isInternalBody"
-          @add="openAgendaSheet('lines')"
-          @add-bulk="openBulkAgendaModal"
+          @add="openAgendaSheet"
           @delete="requestAgendaItemDelete"
         />
       </div>
@@ -134,7 +134,7 @@
       </Deferred>
     </template>
 
-    <template #activity>
+    <template v-if="!readOnly" #activity>
       <RecordActivity subject-type="meeting" :subject-id="meeting.id" commentable-type="meeting" :commentable-id="meeting.id" />
     </template>
 
@@ -349,6 +349,8 @@ const props = withDefaults(defineProps<{
   documents?: NonNullable<App.Entities.Meeting['documents']>;
   recentAgendas?: RecentAgenda[] | null;
   files?: FileableFileItem[];
+  /** A public meeting outside the user's reach: its agenda only (MeetingPolicy::viewSummary). */
+  readOnly?: boolean;
 }>(), {
   availableInstitutionsForAttach: () => [],
   governanceScope: undefined,
@@ -465,11 +467,23 @@ const openAgendaSheet = (mode: AddAgendaMode) => {
 // Read-only by default; toggled on to add/reorder/delete agenda items
 const agendaEditing = ref(false);
 
+const tabs = computed(() => [
+  { value: 'agenda', label: $t('Darbotvarkė'), count: props.meeting.agenda_items?.length },
+  ...(props.readOnly ? [] : panelTabs.value),
+]);
+
+const panelTabs = computed(() => [
+  ...(isInternalBody.value
+    ? [{ value: 'documents', label: $t('Dokumentai'), count: props.documents?.length }]
+    : []),
+  { value: 'files', label: $t('Failai') },
+  // Outstanding only: a finished task is not something the reader still has to act on.
+  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
+]);
+
 // Tab state with smart defaults (agenda is the landing tab)
-// Kept in step with `tabs` below; guards the `?tab=` URL param.
-const TAB_NAMES = computed(() => (isInternalBody.value
-  ? ['agenda', 'documents', 'files', 'tasks']
-  : ['agenda', 'files', 'tasks']));
+// Guards the `?tab=` URL param.
+const TAB_NAMES = computed(() => tabs.value.map(tab => tab.value));
 const storedTab = useStorage('show-meeting-tab', 'agenda');
 
 // Check URL for tab parameter (priority over localStorage)
@@ -502,16 +516,6 @@ watch(currentTab, (newTab) => {
     window.history.replaceState({}, '', url.toString());
   }
 });
-
-const tabs = computed(() => [
-  { value: 'agenda', label: $t('Darbotvarkė'), count: props.meeting.agenda_items?.length },
-  ...(isInternalBody.value
-    ? [{ value: 'documents', label: $t('Dokumentai'), count: props.documents?.length }]
-    : []),
-  { value: 'files', label: $t('Failai') },
-  // Outstanding only: a finished task is not something the reader still has to act on.
-  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
-]);
 
 const recordFacts = computed<RecordFact[]>(() => [
   {
@@ -702,6 +706,10 @@ const handleMissingAction = (action: MeetingMissingAction) => {
 
 const handleRecordAction = (action: string) => {
   if (action === 'complete') {
+    if (props.completion.missingActions[0]?.type === 'agenda_missing') {
+      handleMissingAction(props.completion.missingActions[0]);
+      return;
+    }
     document.getElementById('meeting-completion')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
@@ -763,10 +771,6 @@ const confirmAgendaItemDelete = () => {
       agendaItemPendingDelete.value = null;
     },
   });
-};
-
-const openBulkAgendaModal = () => {
-  openAgendaSheet('lines');
 };
 
 const handleMeetingDelete = () => {

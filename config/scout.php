@@ -527,6 +527,8 @@ return [
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
                         // Refreshed nightly (institutions:refresh-activity-status) and on meeting/check-in changes
                         ['name' => 'activity_status', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'type_ids', 'type' => 'int32[]', 'optional' => true],
                         // Linked members and duties for discoverability
                         ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'duty_names', 'type' => 'string[]', 'optional' => true],
@@ -593,7 +595,7 @@ return [
 
                         // Status fields
                         ['name' => 'completion_status', 'type' => 'string', 'facet' => true],
-                        ['name' => 'is_public', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
                         ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
 
                         // Representatives attending the meeting
@@ -647,6 +649,7 @@ return [
                         ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true], // ULIDs for .own scope filtering
+                        ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
 
                         // Completion indicators
                         ['name' => 'has_student_vote', 'type' => 'bool', 'facet' => true],

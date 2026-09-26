@@ -54,7 +54,7 @@ final class BuildDutyIndexQuery
                     ->whereColumn('dup.duty_id', 'duties.id')
                     ->where('dup.dutiable_type', MorphMap::alias(User::class))
                     ->where(function ($query): void {
-                        $query->whereNull('dup.end_date')->orWhere('dup.end_date', '>=', now());
+                        $query->whereNull('dup.end_date')->orWhereDate('dup.end_date', '>=', today());
                     })
                     ->groupBy('dup.dutiable_id')
                     ->havingRaw('COUNT(*) > 1');

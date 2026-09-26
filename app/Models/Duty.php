@@ -236,7 +236,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
                 $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
                     ->where(function ($q): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', now());
+                            ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             })
             ->withTimestamps();
@@ -247,7 +247,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
         return $this->users()
             ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
-                    ->where('dutiables.end_date', '<', now());
+                    ->whereDate('dutiables.end_date', '<', today());
             })
             ->withTimestamps();
     }

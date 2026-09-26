@@ -6,8 +6,10 @@ use App\Models\Meeting;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Services\InstitutionSubscriptionService;
+use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -208,8 +210,29 @@ describe('bulk follow API', function (): void {
             ->toBe($this->others->pluck('id')->sort()->values()->all());
     });
 
+    test('follows an active institution of another padalinys whose meetings are public', function (): void {
+        $foreign = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
+        $publicType = Type::factory()->create();
+        app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$publicType->id]])->save();
+        $foreign->types()->attach($publicType);
+
+        asUser($this->reader)
+            ->postJson(route('api.v1.admin.institutions.follows.store'), ['institution_ids' => [$foreign->id]])
+            ->assertSuccessful();
+
+        expect($this->reader->followedInstitutions()->pluck('institutions.id')->all())->toBe([$foreign->id]);
+    });
+
+    test('cannot follow another padalinys\' active institution whose meetings are not public', function (): void {
+        $foreign = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
+
+        asUser($this->reader)->postJson(route('api.v1.admin.institutions.follow', $foreign))->assertForbidden();
+
+        expect($this->reader->followedInstitutions()->count())->toBe(0);
+    });
+
     test('refuses the whole batch when one institution is not viewable', function (): void {
-        $foreign = Institution::factory()->for(Tenant::factory())->create();
+        $foreign = Institution::factory()->for(Tenant::factory())->create(['is_active' => 0]);
 
         asUser($this->reader)
             ->postJson(route('api.v1.admin.institutions.follows.store'), [

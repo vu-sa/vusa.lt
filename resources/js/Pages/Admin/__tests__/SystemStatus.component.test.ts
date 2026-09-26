@@ -1,6 +1,9 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 
+import { router } from '@inertiajs/vue3';
+
+import { ConfirmDialog } from '@/Components/Patterns';
 import SystemStatus from '@/Pages/Admin/SystemStatus.vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -44,5 +47,39 @@ describe('SystemStatus', () => {
 
     expect(section.text()).toContain('60%');
     expect(section.findAll('tbody tr')).toHaveLength(1);
+  });
+
+  it('hides maintenance when the user may not run it', () => {
+    const wrapper = mount(SystemStatus, { props: { ...props, maintenanceActions: [] } });
+
+    expect(wrapper.find('[data-testid="maintenance-actions"]').exists()).toBe(false);
+  });
+
+  it('posts the confirmed maintenance action', async () => {
+    const wrapper = mount(SystemStatus, {
+      props: {
+        ...props,
+        maintenanceActions: [
+          { action: 'refresh-public-content', queued: false, disruptive: false },
+          { action: 'reindex-search', queued: true, disruptive: true },
+        ],
+      },
+    });
+
+    const rows = wrapper.findAll('[data-testid="maintenance-actions"] li');
+    expect(rows).toHaveLength(2);
+
+    await rows[1].get('button').trigger('click');
+    const dialog = wrapper.findComponent(ConfirmDialog);
+    expect(dialog.props('open')).toBe(true);
+    expect(dialog.props('destructive')).toBe(true);
+
+    dialog.vm.$emit('confirm');
+
+    expect(router.post).toHaveBeenCalledWith(
+      expect.anything(),
+      { action: 'reindex-search' },
+      expect.objectContaining({ preserveScroll: true }),
+    );
   });
 });

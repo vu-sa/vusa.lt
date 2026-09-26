@@ -119,7 +119,7 @@ describe('permission-based tenant visibility', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->where('availableTenants', function ($tenants) {
+                ->where('statsTenants', function ($tenants) {
                     $collection = collect($tenants);
 
                     // User with permission should have available tenants
@@ -148,7 +148,7 @@ describe('permission-based tenant visibility', function (): void {
                     return $collection->doesntContain(fn ($inst) => $inst['id'] == $extraInstitution->id) &&
                            $collection->contains(fn ($inst) => $inst['id'] == $userInstitutionId);
                 })
-                ->where('canViewTenantOverview', false)
+                ->where('canViewTenantOverview', true)
             );
     });
 
@@ -169,7 +169,7 @@ describe('permission-based tenant visibility', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->where('availableTenants', function ($tenants) use ($otherTenant) {
+                ->where('statsTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
 
                     // Should not include the other tenant

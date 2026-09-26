@@ -40,10 +40,11 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page->component('Admin/Representation/IndexAgendaItem'));
     });
 
-    test('agenda item collection requires meeting read access', function (): void {
+    test('agenda item collection opens without meeting permissions and starts on the user\'s padalinys', function (): void {
         asUser(makeUser($this->tenant))
             ->get(route('agendaItems.index'))
-            ->assertForbidden();
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('defaultTenantShortnames', [$this->tenant->shortname]));
     });
 
     test('the resources tab goes to the resources collection', function (): void {

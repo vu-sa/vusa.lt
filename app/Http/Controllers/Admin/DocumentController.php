@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\GetUserTenantShortnames;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexDocumentRequest;
 use App\Http\Requests\StoreDocumentRequest;
@@ -25,8 +26,17 @@ class DocumentController extends AdminController
     {
         $this->handleAuthorization('viewAny', Document::class);
 
+        $user = $request->user();
+
         return $this->inertiaResponse('Admin/Files/IndexDocument', [
             'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
+            'abilities' => [
+                'create' => $user->can('create', Document::class),
+                'update' => $this->authorizer->allows($user, 'documents.update.padalinys'),
+                'delete' => $this->authorizer->allows($user, 'documents.delete.padalinys'),
+            ],
+            // Central office documents matter to everyone, so VU SA joins the user's own padaliniai.
+            'defaultTenantShortnames' => GetUserTenantShortnames::execute($user, withMainTenant: true),
         ]);
     }
 
@@ -77,7 +87,8 @@ class DocumentController extends AdminController
      */
     public function bulkSync()
     {
-        $this->authorize('viewAny', Document::class);
+        // Not `viewAny`: every admin may browse documents, only managers queue syncs.
+        $this->authorize('create', Document::class);
 
         // Get all documents that need syncing (failed, pending, or outdated)
         $documents = Document::where(function ($query): void {

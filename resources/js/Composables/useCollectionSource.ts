@@ -2,6 +2,7 @@ import { computed, isRef, ref, shallowReactive, watch, type ComputedRef, type Ma
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
 import { useAdminCollectionSearch } from '@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch';
 import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
 import type { AdminCollection } from '@/Features/Admin/AdminSearch/Types/AdminSearchTypes';
@@ -78,6 +79,11 @@ export interface CollectionSource<T> {
 export interface TypesenseCollectionSource<T> extends CollectionSource<T> {
   /** Institutions where the user has a duty of their own, per the scoped search key. */
   directInstitutionIds: ComputedRef<string[]>;
+  /**
+   * What the user reaches beyond public rows, per the scoped key: their padaliniai (the
+   * collection's `.padalinys` permission) and own/related institutions (its `.own` permission).
+   */
+  accessScope: ComputedRef<{ isSuperAdmin: boolean; tenantIds: number[]; institutionIds: string[] }>;
 }
 
 interface DatabaseCollectionSourceOptions<T> {
@@ -138,6 +144,8 @@ interface TypesenseSourceOptions {
   valueLabel?: (field: string, value: string) => string | undefined;
   /** An always-on Typesense filter the page owns, e.g. a quick filter over per-user state. */
   baseFilterBy?: MaybeRefOrGetter<string | undefined>;
+  /** Clearable filters a visit without URL filters starts with, e.g. the user's padaliniai. */
+  defaultFilters?: Record<string, string[]>;
 }
 
 /**
@@ -192,6 +200,7 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
     preserveUrlKeys: options.preserveUrlKeys,
     perPage: options.perPage ?? PAGE_SIZE,
     baseFilterBy: options.baseFilterBy,
+    defaultFilters: options.defaultFilters,
   });
 
   const labelOf = (field: string, value: string) => options.valueLabel?.(field, value) ?? getFacetValueLabel(field, value);
@@ -269,6 +278,11 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
 
   return {
     directInstitutionIds: computed(() => controller.adminSearch.getDirectInstitutionIds(options.collection)),
+    accessScope: computed(() => ({
+      isSuperAdmin: controller.adminSearch.isSuperAdmin.value,
+      tenantIds: controller.adminSearch.getCollectionTenantIds(options.collection),
+      institutionIds: controller.adminSearch.getCollectionInstitutionIds(options.collection),
+    })),
     items: computed(() => overlay.apply(controller.results.value as T[])),
     total: controller.totalHits,
     isLoading: controller.isSearching,
@@ -319,13 +333,16 @@ function readFiltersFromUrl(facets: DatabaseFacetDefinition[], params: URLSearch
  * sorting and "Rodyti daugiau" without replacing the page's history state.
  */
 export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSourceOptions<T>): CollectionSource<T> {
+  const filterMemory = useCollectionFilterMemory([...(options.facets ?? []).map(facet => facet.field), 'sort']);
+  // The server rendered the first page for the URL as it arrived; remembered filters make it stale.
+  const fetchOnMount = options.fetchOnMount || filterMemory.restore().restored;
   const initialParams = new URLSearchParams(window.location.search);
   const items = ref<T[]>([...options.initial.items]);
   const total = ref(options.initial.total);
   const isLoading = ref(false);
   const isLoadingMore = ref(false);
   const hasMore = computed(() => currentPage.value < lastPage.value);
-  const hasSearched = ref(!options.fetchOnMount);
+  const hasSearched = ref(!fetchOnMount);
   const error = ref<string | null>(null);
   const query = ref(initialParams.get('search') ?? '');
   const facetDefinitions = options.facets ?? [];
@@ -416,6 +433,7 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     }
 
     window.history.replaceState(window.history.state, '', url.toString());
+    filterMemory.remember();
   }
 
   function buildRequestUrl(page: number, perPage: number): URL {
@@ -540,7 +558,7 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
   async function restorePages(): Promise<void> {
     const wanted = Math.min(Number(initialParams.get('pages')) || 1, MAX_RESTORED_PAGES);
 
-    if (options.fetchOnMount) {
+    if (fetchOnMount) {
       await fetchPage(1, false);
     }
     while (currentPage.value < wanted && currentPage.value < lastPage.value && !error.value) {
@@ -645,6 +663,8 @@ function normalise(value: string): string {
  * and still looks and behaves like every other collection.
  */
 export function useLocalCollectionSource<T>(options: LocalCollectionSourceOptions<T>): CollectionSource<T> {
+  const filterMemory = useCollectionFilterMemory([...(options.facets ?? []).map(facet => facet.field), 'sort']);
+  filterMemory.restore();
   const initialParams = new URLSearchParams(window.location.search);
   const source = computed<readonly T[]>(() => (isRef(options.items) ? options.items.value : options.items));
   const facetDefinitions = options.facets ?? [];
@@ -770,6 +790,7 @@ export function useLocalCollectionSource<T>(options: LocalCollectionSourceOption
     }
 
     window.history.replaceState(window.history.state, '', url.toString());
+    filterMemory.remember();
   }
 
   function setFilter(field: string, value: unknown): void {

@@ -1,6 +1,6 @@
 <template>
   <ul
-    class="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-border pt-4 lg:grid-cols-4"
+    :class="['grid grid-cols-2 gap-x-6 gap-y-4 border-t border-border pt-4', twoColumns ? 'lg:grid-cols-2' : 'lg:grid-cols-4']"
     data-slot="overview-numbers"
   >
     <li v-for="number in numbers" :key="number.key">
@@ -40,6 +40,7 @@ export interface OverviewNumberItem {
 
 defineProps<{
   numbers: OverviewNumberItem[];
+  twoColumns?: boolean;
 }>();
 
 const toneClasses: Record<StatusRole, string> = {

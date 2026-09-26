@@ -11,6 +11,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Policies\Traits\HasCommonChecks;
 use App\Services\ModelAuthorizer;
+use App\Support\AuthorityCacheExpiry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Spatie\LaravelSettings\Settings;
@@ -137,7 +138,7 @@ class AtstovavimasSettings extends Settings
 
         $cacheKey = self::getManagerTenantsCacheKey($user->id);
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $roleId) {
+        return Cache::remember($cacheKey, fn () => AuthorityCacheExpiry::for($user, self::CACHE_TTL), function () use ($user, $roleId) {
             $directRoleTenantIds = $user->roles()
                 ->where('id', $roleId)
                 ->exists()

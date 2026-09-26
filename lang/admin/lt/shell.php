@@ -141,7 +141,7 @@ return [
         'posedziai' => 'Užfiksuoti ir būsimi posėdžiai',
         'darbotvarkes_klausimai' => 'Klausimai ir balsavimai iš visų posėdžių',
         'problemos' => 'Atstovų keliamos problemos ir jų eiga',
-        'padaliniu_apzvalga' => 'Padalinių institucijų ir atstovų būklė',
+        'padaliniu_apzvalga' => 'Padalinių posėdžių laiko juosta ir institucijų būklė',
         'pareigybiu_laikotarpiai' => 'Kas kada ėjo kokias pareigas',
         'uzduociu_suvestine' => 'Padalinių užduotys ir terminai',
         'institucijos_grafas' => 'Institucijų ryšiai viename grafe',

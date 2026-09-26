@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import MeetingsGanttToolbar from '../MeetingsGanttToolbar.vue';
+import GanttZoomControl from '../GanttZoomControl.vue';
 
 import { commonStubs } from '@/tests/stubs';
 
@@ -40,6 +41,22 @@ describe('MeetingsGanttToolbar', () => {
     wrapper = mountToolbar({ institutionCount: 7 });
 
     expect(wrapper.text()).toContain('7');
+  });
+
+  it('caps zoom-in at half its prior width and reaches one pixel per day', async () => {
+    wrapper = mountToolbar({ dayWidth: 1 });
+
+    const zoom = wrapper.getComponent(GanttZoomControl);
+    expect(zoom.props()).toMatchObject({ min: 1, max: 9, step: 2 });
+
+    const [zoomOut, zoomIn] = zoom.findAll('button');
+    expect(zoomOut!.attributes('disabled')).toBeDefined();
+
+    await zoomIn!.trigger('click');
+    expect(wrapper.emitted('update:dayWidth')).toEqual([[3]]);
+
+    await wrapper.setProps({ dayWidth: 9 });
+    expect(zoom.findAll('button')[1]!.attributes('disabled')).toBeDefined();
   });
 
   it('renders a chip per tenant filter and emits scroll-to-tenant on click', async () => {

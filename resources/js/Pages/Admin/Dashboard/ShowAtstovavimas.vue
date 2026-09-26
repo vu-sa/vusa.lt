@@ -1,5 +1,6 @@
 <template>
   <OverviewPage
+    class="max-md:gap-12"
     eyebrow="ViSAK"
     :title="$t('visak.overview.title')"
     :head-title="`ViSAK · ${$t('visak.overview.title')}`"
@@ -21,15 +22,16 @@
       </Button>
     </template>
 
-    <OverviewNumbers :numbers />
+    <OverviewNumbers v-if="!showNumbersBesideCoordinators" :numbers class="max-md:gap-y-6" />
 
-    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-primary-section">
-      <div class="flex min-w-0 flex-col gap-10 lg:gap-14">
+    <div v-show="!isPrimarySectionEmpty" class="grid gap-12 md:gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-primary-section">
+      <div class="flex min-w-0 flex-col gap-12 md:gap-10 lg:gap-14">
+        <OverviewNumbers v-if="showNumbersBesideCoordinators" :numbers two-columns class="max-md:gap-y-6 lg:mt-8" />
         <InstitutionsNeedingAttention data-tour="attention-card" :institutions="attention" @record="recordActivityFor" />
         <UpcomingMeetingsList :meetings="scopedUpcoming" :total="scopedUpcomingTotal" :href="route('meetings.index')" />
       </div>
 
-      <aside class="flex min-w-0 flex-col gap-10 lg:gap-14">
+      <aside class="flex min-w-0 flex-col gap-12 md:gap-10 lg:gap-14">
         <Deferred data="coordinators">
           <template #fallback>
             <CoordinatorSkeleton />
@@ -258,6 +260,17 @@ const attention = computed<InstitutionActivityInsight[]>(() =>
     .filter(institution => institution.activity_status?.requires_action)
     .sort((a, b) => b.activity_status.priority - a.activity_status.priority)
     .map(institution => ({ id: String(institution.id), name: String(institution.name ?? ''), ...institution.activity_status })),
+);
+
+const showNumbersBesideCoordinators = computed(() =>
+  attention.value.length === 0 && scopedUpcoming.value.length === 0 && (props.coordinators?.length ?? 0) > 0,
+);
+
+const isPrimarySectionEmpty = computed(() =>
+  attention.value.length === 0
+  && scopedUpcoming.value.length === 0
+  && props.coordinators?.length === 0
+  && !props.referenceDocuments?.length,
 );
 
 function countByStatus(status: 'overdue' | 'approaching'): number {

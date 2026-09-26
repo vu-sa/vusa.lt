@@ -58,3 +58,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/**, tests/Feature/System/** | .ai/rules/system.md |
 | app/Tasks/**,app/Services/MeetingCompletionService.php | .ai/rules/tasks-services.md |
 | tests/** | .ai/rules/tests.md |
+| app/Services/Typesense/** | .ai/rules/typesense.md |

@@ -111,6 +111,8 @@ const props = defineProps<{
   deletedCount: number;
   /** Meetings the user changed moments ago, until the search index reflects them (O1). */
   recentlyChanged: MeetingSearchResult[];
+  /** The user's own padaliniai: a first visit starts filtered to them. */
+  defaultTenantShortnames: string[];
 }>();
 
 const page = usePage();
@@ -128,6 +130,7 @@ const liveSource = isTrash
   : useTypesenseCollectionSource<MeetingSearchResult>({
       collection: 'meetings',
       preserveUrlKeys: ['view', 'item'],
+      defaultFilters: { tenant_shortnames: props.defaultTenantShortnames },
       collapsedChips: { institution_ids: $t('Mano institucijos') },
       // The filter popover and chips name a status exactly as the row badge does (U10).
       valueLabel: (field, value) => (

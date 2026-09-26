@@ -89,14 +89,12 @@
     <template #fact-institution>
       <span v-if="!institutions.length">—</span>
       <span v-else class="flex flex-col gap-1">
-        <Link
-          v-for="institution in institutions"
-          :key="institution.id"
-          :href="route('institutions.show', institution.id)"
-          :class="LINK_CLASS"
-        >
-          {{ institution.name }}
-        </Link>
+        <template v-for="institution in institutions" :key="institution.id">
+          <span v-if="readOnly">{{ institution.name }}</span>
+          <Link v-else :href="route('institutions.show', institution.id)" :class="LINK_CLASS">
+            {{ institution.name }}
+          </Link>
+        </template>
       </span>
     </template>
 
@@ -167,7 +165,7 @@
       <AgendaItemNotesSidebar :agenda-item-id="agendaItem.id" />
     </template>
 
-    <template #activity>
+    <template v-if="!readOnly" #activity>
       <RecordActivity commentable-type="agendaItem" :commentable-id="agendaItem.id" />
     </template>
 
@@ -271,6 +269,8 @@ const props = withDefaults(defineProps<{
   publicUrl?: string | null;
   abilities?: { update: boolean; delete: boolean };
   requiresStudentPerspective?: boolean;
+  /** A public meeting's item outside the user's reach: no notes or discussion (AgendaItemPolicy::viewSummary). */
+  readOnly?: boolean;
 }>(), {
   abilities: () => ({ update: false, delete: false }),
   publicUrl: null,

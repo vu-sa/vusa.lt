@@ -1,7 +1,7 @@
 <template>
   <RecordPage
     v-model:section="currentSection"
-    :history-subject="{ type: 'institution', id: institution.id }"
+    :history-subject="readOnly ? undefined : { type: 'institution', id: institution.id }"
     :title="institution.name"
     :entity-type="ModelEnum.INSTITUTION"
     :facts="recordFacts"
@@ -12,7 +12,7 @@
     @action="handleRecordAction"
   >
     <template #fact-members>
-      <UsersFactList :users="overview.current_users" />
+      <UsersFactList :users="overview.current_users" :inline-limit="2" class="mt-1" />
     </template>
 
     <template #fact-managers>
@@ -151,7 +151,7 @@
       </Deferred>
     </template>
 
-    <template #activity>
+    <template v-if="!readOnly" #activity>
       <RecordActivity commentable-type="institution" :commentable-id="institution.id" />
     </template>
   </RecordPage>
@@ -271,6 +271,8 @@ const props = defineProps<{
     is_muted: boolean;
     is_duty_based: boolean;
   } | null;
+  /** An active institution outside the user's reach: its public face only (InstitutionPolicy::viewSummary). */
+  readOnly?: boolean;
 }>();
 
 watch(() => props.institution.id, () => enterInstitution(props.institution), { immediate: true });
@@ -287,17 +289,37 @@ const { currentTab: currentSection } = useShowPageData({
 });
 
 /** Dropped rather than disabled when there is nothing to show — a tab that cannot be opened is worse than none. */
-const tabs = computed<RecordPageSection[]>(() => [
-  { value: 'overview', label: $t('Apžvalga') },
-  { value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count },
-  { value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count },
-  ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai') }] : []),
-  ...(props.institution.related_institutions_count > 0
-    ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count }]
-    : []),
-  { value: 'files', label: $t('Failai') },
-  { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
-]);
+const tabs = computed<RecordPageSection[]>(() => {
+  // A reader outside the institution gets its public face; meetings only where they are public.
+  if (props.readOnly) {
+    return [
+      { value: 'overview', label: $t('Apžvalga') },
+      { value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count },
+      ...(props.institution.has_public_meetings
+        ? [{ value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count }]
+        : []),
+    ];
+  }
+
+  return [
+    { value: 'overview', label: $t('Apžvalga') },
+    { value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count },
+    { value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count },
+    ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai') }] : []),
+    ...(props.institution.related_institutions_count > 0
+      ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count }]
+      : []),
+    { value: 'files', label: $t('Failai') },
+    { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
+  ];
+});
+
+// A tab remembered from a fuller visit may not exist here.
+watch([tabs, currentSection], () => {
+  if (!tabs.value.some(tab => tab.value === currentSection.value)) {
+    currentSection.value = 'overview';
+  }
+}, { immediate: true });
 
 // --- Title band -------------------------------------------------------------------------------
 
@@ -307,8 +329,10 @@ const primaryType = computed(() => {
   return typeof type?.title === 'string' ? type.title : null;
 });
 
-const activityStatus = computed<StatusPresentation>(() =>
-  institutionActivityStatuses[props.overview.activity_status.status as InstitutionActivityStatus]);
+// Withheld with the meetings when they are not public and the reader has no access.
+const activityStatus = computed<StatusPresentation>(() => props.overview.activity_status
+  ? institutionActivityStatuses[props.overview.activity_status.status as InstitutionActivityStatus]
+  : { label: 'Nerodoma', role: 'neutral', icon: EyeOff });
 
 const filledPositions = computed(() => props.overview.current_users.length);
 const totalPositions = computed(() => props.overview.duties.reduce((sum, duty) => sum + Number(duty.places_to_occupy ?? 0), 0));
@@ -320,10 +344,12 @@ const recordFacts = computed<RecordFact[]>(() => {
     key: 'status',
     label: $t('visak.institution_summary.status'),
     status: activityStatus.value,
-    detail: describeInstitutionActivity(props.overview.activity_status, {
-      day: value => formatDate(value, { format: 'short' }),
-      fullDay: value => formatDate(value, { format: 'full' }),
-    }),
+    detail: props.overview.activity_status
+      ? describeInstitutionActivity(props.overview.activity_status, {
+          day: value => formatDate(value, { format: 'short' }),
+          fullDay: value => formatDate(value, { format: 'full' }),
+        })
+      : null,
   }];
 
   const scope = props.institution.governance_scope;
@@ -429,7 +455,9 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
     actions.push({ key: 'check-in', label: $t('Pridėti pažymą'), icon: Clock });
   }
 
-  actions.push({ key: 'timeline', label: $t('dutiables.timeline.open'), icon: CalendarRange });
+  if (!props.readOnly) {
+    actions.push({ key: 'timeline', label: $t('dutiables.timeline.open'), icon: CalendarRange });
+  }
   actions.push({ key: 'public', label: $t('Atidaryti vusa.lt'), icon: ExternalLink, href: publicUrl.value, external: true });
 
   if (props.subscription) {

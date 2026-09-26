@@ -31,9 +31,9 @@
       <GanttZoomControl
         data-tour="gantt-scale"
         :model-value="dayWidth"
-        :min="3"
-        :max="18"
-        :step="1"
+        :min="1"
+        :max="9"
+        :step="2"
         @update:model-value="emit('update:dayWidth', $event)"
       />
       <Tooltip>

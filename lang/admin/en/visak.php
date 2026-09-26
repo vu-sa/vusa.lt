@@ -22,6 +22,8 @@ return [
         'selected_count' => 'Selected: :count',
         'keep_one' => 'Keep one',
         'keep_one_hint' => 'Keep only the first selected unit checked — at least one must stay selected',
+        'stats_label' => 'Indicators',
+        'stats_description' => 'Applies to the numbers, the attention list and the indicators — only for the units you manage. Pick the timeline\'s units in its filters.',
     ],
     'user_tenant_scope' => [
         'title' => 'Your institutions by unit',
@@ -144,6 +146,7 @@ return [
     'tenant_overview' => [
         'title' => 'Units',
         'lead' => 'Which of the unit\'s institutions need attention, how their status is changing and how active the representatives are.',
+        'lead_public' => 'Meetings of institutions that meet publicly, and of your own institutions, across every unit.',
         'representatives' => 'Representative activity',
         'insights' => 'Unit indicators',
     ],

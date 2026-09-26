@@ -258,6 +258,16 @@ export enum SupportRequestVisibility {
     Roles = 'roles',
     Public = 'public',
 }
+export enum SystemMaintenanceAction {
+    RefreshPublicContent = 'refresh-public-content',
+    ClearApplicationCache = 'clear-application-cache',
+    RestartQueueWorkers = 'restart-queue-workers',
+    SendTestMail = 'send-test-mail',
+    SyncPublicSearch = 'sync-public-search',
+    RefreshInstitutionActivity = 'refresh-institution-activity',
+    SyncSharepointDocuments = 'sync-sharepoint-documents',
+    ReindexSearch = 'reindex-search',
+}
 export enum TenantType {
     Pagrindinis = 'pagrindinis',
     Padalinys = 'padalinys',

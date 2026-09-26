@@ -132,6 +132,12 @@ return [
         'status_updated' => 'Užduoties būsena sėkmingai atnaujinta.',
     ],
 
+    'system_maintenance' => [
+        'done' => 'Atlikta.',
+        'queued' => 'Užduotis įtraukta į eilę — ji bus įvykdyta per kelias minutes.',
+        'failed' => 'Nepavyko atlikti veiksmo. Patikrink žurnalą.',
+    ],
+
     'mail_queue' => [
         'item_deleted' => 'Laiško eilutė pašalinta iš eilės.',
         'recipient_cleared' => 'Pašalinta :count gavėjo laukiančių eilučių.',

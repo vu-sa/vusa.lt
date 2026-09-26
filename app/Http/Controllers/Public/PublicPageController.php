@@ -61,7 +61,6 @@ class PublicPageController extends PublicController
         // Get shared data (these are cached internally)
         $this->getBanners();
         $this->getTenantLinks();
-        $this->getNavigation();
 
         // Share other language URL for locale switching
         $this->shareOtherLangURL('home', $this->subdomain);

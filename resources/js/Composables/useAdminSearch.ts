@@ -287,6 +287,11 @@ export const useAdminSearch = () => {
     return config.value?.collections?.[collection]?.tenantIds ?? [];
   };
 
+  /** Own and authorized related institutions the scoped key grants for a collection. */
+  const getCollectionInstitutionIds = (collection: string): string[] => {
+    return config.value?.collections?.[collection]?.institutionIds ?? [];
+  };
+
   const isSuperAdmin = computed(() => config.value?.isSuperAdmin ?? false);
 
   /**
@@ -1155,6 +1160,7 @@ export const useAdminSearch = () => {
     getCollectionApiKey,
     hasCollectionAccess,
     getCollectionTenantIds,
+    getCollectionInstitutionIds,
     isSuperAdmin,
 
     // Related institution helpers

@@ -29,7 +29,10 @@ function makeSource(items: Row[] = rows) {
 }
 
 describe('useLocalCollectionSource', () => {
-  beforeEach(() => window.history.replaceState({}, '', '/mano/study-programs'));
+  beforeEach(() => {
+    localStorage.clear();
+    window.history.replaceState({}, '', '/mano/study-programs');
+  });
 
   it('searches without caring about Lithuanian diacritics or case', () => {
     const source = makeSource();

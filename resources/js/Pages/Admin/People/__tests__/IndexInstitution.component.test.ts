@@ -8,17 +8,20 @@ import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-const typesense = vi.hoisted(() => ({ baseFilterBy: undefined as unknown }));
+const typesense = vi.hoisted(() => ({
+  baseFilterBy: undefined as unknown,
+  rows: [] as Record<string, unknown>[],
+  scope: { isSuperAdmin: false, tenantIds: [1], institutionIds: [] as string[] },
+}));
 const subscription = vi.hoisted(() => ({ setFollowedMany: vi.fn(), toggleFollow: vi.fn() }));
 
 vi.mock('@/Composables/useCollectionSource', () => ({
   isTrashView: () => false,
-  useTrashAwareSource: (live: () => unknown) => live(),
   useTrashCollectionSource: vi.fn(),
   useTypesenseCollectionSource: (options: { baseFilterBy?: unknown }) => {
     typesense.baseFilterBy = options.baseFilterBy;
 
-    return { items: ref([{ id: 'i1', name_lt: 'Senatas' }, { id: 'i2', name_lt: 'Taryba' }]) };
+    return { items: ref(typesense.rows), accessScope: ref(typesense.scope) };
   },
 }));
 
@@ -40,7 +43,7 @@ const CollectionPageStub = {
 };
 
 const mountPage = (followedInstitutionIds: string[] = ['i1']) => mount(IndexInstitution, {
-  props: { deletedCount: 0, followedInstitutionIds },
+  props: { deletedCount: 0, followedInstitutionIds, defaultTenantShortnames: [], publicMeetingTypeIds: [7] },
   global: { stubs: { ...commonStubs, CollectionPage: CollectionPageStub, CollectionConfirmAction: true } },
 });
 
@@ -48,6 +51,7 @@ const baseFilter = () => toValue(typesense.baseFilterBy as MaybeRefOrGetter<stri
 
 describe('IndexInstitution following', () => {
   beforeEach(() => {
+    typesense.rows = [{ id: 'i1', name_lt: 'Senatas', tenant_id: 1 }, { id: 'i2', name_lt: 'Taryba', tenant_id: 1 }];
     subscription.setFollowedMany.mockReset().mockResolvedValue(true);
     window.history.replaceState({}, '', '/mano/institutions');
   });
@@ -84,5 +88,21 @@ describe('IndexInstitution following', () => {
 
     expect(subscription.setFollowedMany).toHaveBeenCalledWith(['i2'], true);
     await vi.waitFor(() => expect(wrapper.findAll('[data-slot="institution-followed"]')).toHaveLength(2));
+  });
+
+  it('offers following only where the meetings are public or the user reaches the institution', async () => {
+    typesense.rows = [
+      { id: 'mine', name_lt: 'Mano', tenant_id: 1 },
+      { id: 'public', name_lt: 'Vieša', tenant_id: 2, type_ids: [7] },
+      { id: 'closed', name_lt: 'Uždara', tenant_id: 2 },
+    ];
+    const wrapper = mountPage([]);
+
+    const offersFollow = wrapper.findAllComponents({ name: 'CollectionRowActions' })
+      .map(actions => (actions.props('actions') as { key: string }[]).some(action => action.key === 'follow'));
+    expect(offersFollow).toEqual([true, true, false]);
+
+    await wrapper.find('[data-testid="bulk"] button').trigger('click');
+    expect(subscription.setFollowedMany).toHaveBeenCalledWith(['mine', 'public'], true);
   });
 });

@@ -95,6 +95,32 @@ describe('provideTimelineFilters', () => {
     wrapper.unmount();
   });
 
+  it('keeps the statistics scope to managed padaliniai apart from the Gantt\'s', async () => {
+    const everyTenant: AtstovavimasTenant[] = [...tenants, { id: 9, shortname: 'VU SA MIF', type: 'padalinys' }];
+    let filters: TimelineFilters | undefined;
+    const Harness = defineComponent({
+      setup() {
+        filters = provideTimelineFilters([], everyTenant, { statsTenants: [tenants[1]!], defaultGanttTenantIds: ['9'] });
+        return () => null;
+      },
+    });
+
+    const wrapper = mount(Harness);
+
+    expect(filters?.selectedTenantForGantt.value).toEqual(['9']);
+    expect(filters?.selectedStatsTenants.value).toEqual(['6']);
+
+    filters?.setSelectedTenants(['3', '9']);
+    filters?.setSelectedStatsTenants(['3']);
+    await nextTick();
+
+    expect(filters?.selectedTenantForGantt.value).toEqual(['3', '9']);
+    // Not a managed padalinys: the statistics fall back to the one they may read.
+    expect(filters?.selectedStatsTenants.value).toEqual(['6']);
+
+    wrapper.unmount();
+  });
+
   /**
    * The chart used to have internal bodies removed server-side with no way to ask for them.
    * They are drawn by default now, so this flag has to start off and stay off.

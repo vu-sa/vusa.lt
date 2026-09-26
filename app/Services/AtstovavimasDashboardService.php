@@ -10,22 +10,34 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use App\Services\ResourceServices\DutyService;
+use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection as SupportCollection;
 
 class AtstovavimasDashboardService
 {
     private const int REPRESENTATIVE_PREVIEW_LIMIT = 4;
+
+    public const string PROJECTION_FULL = 'full';
+
+    public const string PROJECTION_PUBLIC = 'public';
+
+    public const string PROJECTION_RESTRICTED = 'restricted';
+
+    private const array PROJECTION_RANK = [self::PROJECTION_RESTRICTED => 0, self::PROJECTION_PUBLIC => 1, self::PROJECTION_FULL => 2];
 
     public function __construct(
         private readonly InstitutionActivityStatusService $activityStatusService,
         private readonly AcademicCalendarService $academicCalendar,
         private readonly ModelAuthorizer $authorizer,
         private readonly MeetingSettings $meetingSettings,
+        private readonly AtstovavimasSettings $atstovavimasSettings,
         private readonly InstitutionScopeResolver $scopeResolver,
     ) {}
 
@@ -33,7 +45,7 @@ class AtstovavimasDashboardService
      * Tenant timeline for the ViSAK dashboard: direct institutions of the given
      * tenants only (relationships are intentionally not resolved — the tenant
      * Gantt shows each tenant's own institutions), with server-computed activity
-     * statuses and summaries. Meetings are served separately via tenantMeetings().
+     * statuses and summaries. Meetings are served separately via ganttMeetings().
      *
      * @param  list<int>  $tenantIds
      * @return array{
@@ -242,24 +254,123 @@ class AtstovavimasDashboardService
     }
 
     /**
-     * Meetings of the given tenants' direct institutions inside a date window,
-     * trimmed to exactly what the Gantt chart renders (server-side DTO mapping
-     * keeps the payload small).
+     * Which institutions the padaliniai Gantt draws for the user, and how much of each: every body
+     * of a padalinys they manage, their own and authorized related bodies in full; bodies whose
+     * meetings are public as `public`; other related bodies as `restricted` (no agendas).
      *
      * @param  list<int>  $tenantIds
+     * @return SupportCollection<string, string> institution id => projection
+     */
+    public function ganttInstitutionAccess(User $user, array $tenantIds): SupportCollection
+    {
+        $inSelection = fn () => Institution::query()
+            ->whereIn('tenant_id', $tenantIds)
+            ->whereHas('tenant', fn (Builder $query) => $query->whereIn('type', TenantType::representationalValues()));
+
+        $access = [];
+        $grant = function (iterable $institutionIds, string $projection) use (&$access): void {
+            foreach ($institutionIds as $institutionId) {
+                $current = $access[(string) $institutionId] ?? null;
+
+                if ($current === null || self::PROJECTION_RANK[$current] < self::PROJECTION_RANK[$projection]) {
+                    $access[(string) $institutionId] = $projection;
+                }
+            }
+        };
+
+        $publicTypeIds = $this->meetingSettings->getPublicMeetingInstitutionTypeIds();
+        if ($publicTypeIds->isNotEmpty()) {
+            $grant($inSelection()
+                ->whereHas('types', fn (Builder $query) => $query->whereIn('types.id', $publicTypeIds))
+                ->pluck('institutions.id'), self::PROJECTION_PUBLIC);
+        }
+
+        $managedTenantIds = $this->atstovavimasSettings->getVisibleTenantIds($user)->map(fn ($id) => (int) $id);
+        if ($managedTenantIds->intersect($tenantIds)->isNotEmpty()) {
+            $grant($inSelection()->whereIn('tenant_id', $managedTenantIds)->pluck('institutions.id'), self::PROJECTION_FULL);
+        }
+
+        $ownInstitutions = Institution::query()
+            ->whereIn('id', $user->authorization_duties()->pluck('institution_id')
+                ->merge($user->administeredInstitutions()->pluck('institutions.id'))
+                ->filter()
+                ->unique())
+            ->get();
+
+        $candidates = $ownInstitutions->mapWithKeys(fn (Institution $institution) => [(string) $institution->id => self::PROJECTION_FULL])->all();
+        foreach ($ownInstitutions as $institution) {
+            foreach (RelationshipService::getRelatedInstitutionsCached($institution) as $related) {
+                $relatedId = (string) $related['institution']->getKey();
+
+                if (($candidates[$relatedId] ?? null) !== self::PROJECTION_FULL) {
+                    $candidates[$relatedId] = $related['authorized'] ? self::PROJECTION_FULL : self::PROJECTION_RESTRICTED;
+                }
+            }
+        }
+
+        if ($candidates !== []) {
+            foreach ($inSelection()->whereIn('institutions.id', array_keys($candidates))->pluck('institutions.id') as $institutionId) {
+                $grant([$institutionId], $candidates[(string) $institutionId]);
+            }
+        }
+
+        return collect($access);
+    }
+
+    /**
+     * The padaliniai Gantt rows. Rows outside full access keep meetings' anchors, members and
+     * check-ins, but not the health status or members' activity.
+     *
+     * @param  SupportCollection<string, string>  $access  from ganttInstitutionAccess()
      * @return list<array<string, mixed>>
      */
-    public function tenantMeetings(array $tenantIds, CarbonInterface $from, CarbonInterface $until): array
+    public function ganttInstitutions(SupportCollection $access): array
     {
-        $institutionIds = $this->accessibleInstitutionIds($tenantIds);
+        $institutions = DutyService::getTimelineInstitutions($access->keys());
+        $this->decorateInstitutions($institutions);
 
-        if ($institutionIds->isEmpty()) {
+        return $institutions
+            ->map(function (Institution $institution) use ($access): array {
+                $row = $this->mapInstitution($institution);
+
+                if ($access[(string) $institution->id] === self::PROJECTION_FULL) {
+                    return $row;
+                }
+
+                return [
+                    ...$row,
+                    'authorized' => false,
+                    'activity_status' => null,
+                    'duties' => array_map(fn (array $duty) => [
+                        ...$duty,
+                        'users' => array_map(
+                            fn (array $representative) => Arr::except($representative, ['last_action', 'activity_category']),
+                            $duty['users'],
+                        ),
+                    ], $row['duties']),
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Meetings of the Gantt's institutions inside a date window, trimmed to exactly what the chart
+     * renders. Outside full access the recording state is left out; `restricted` rows also lose
+     * their agendas.
+     *
+     * @param  SupportCollection<string, string>  $access  from ganttInstitutionAccess()
+     * @return list<array<string, mixed>>
+     */
+    public function ganttMeetings(SupportCollection $access, CarbonInterface $from, CarbonInterface $until): array
+    {
+        if ($access->isEmpty()) {
             return [];
         }
 
         $institutions = Institution::query()
             ->select(['institutions.id', 'institutions.name'])
-            ->whereIn('institutions.id', $institutionIds)
+            ->whereIn('institutions.id', $access->keys())
             ->with([
                 'meetings' => fn ($query) => $query
                     ->select('meetings.id', 'meetings.title', 'meetings.start_time', 'meetings.type')
@@ -276,25 +387,9 @@ class AtstovavimasDashboardService
 
         return $institutions
             ->flatMap(fn (Institution $institution) => $institution->meetings
-                ->map(fn (Meeting $meeting) => $this->mapMeeting($meeting, $institution)))
+                ->map(fn (Meeting $meeting) => $this->mapMeeting($meeting, $institution, $access[(string) $institution->id])))
             ->values()
             ->all();
-    }
-
-    /**
-     * @param  list<int>  $tenantIds
-     * @return \Illuminate\Support\Collection<int, string>
-     */
-    private function accessibleInstitutionIds(array $tenantIds): \Illuminate\Support\Collection
-    {
-        // Deliberately unfiltered by `excluded_institution_type_ids`: VU SA's own bodies do
-        // meet, and hiding them server-side left the chart quietly incomplete with no way to
-        // ask for the rest. The chart hides them behind a toggle instead — see `is_internal`
-        // on the timeline rows. The setting still governs the health statistics.
-        return Institution::query()
-            ->whereIn('tenant_id', $tenantIds)
-            ->whereHas('tenant', fn (Builder $query) => $query->whereIn('type', TenantType::representationalValues()))
-            ->pluck('institutions.id');
     }
 
     /**
@@ -462,9 +557,10 @@ class AtstovavimasDashboardService
     /**
      * @return array<string, mixed>
      */
-    private function mapMeeting(Meeting $meeting, Institution $institution): array
+    private function mapMeeting(Meeting $meeting, Institution $institution, string $projection = self::PROJECTION_FULL): array
     {
-        $agendaItems = $meeting->agendaItems;
+        $isFull = $projection === self::PROJECTION_FULL;
+        $agendaItems = $projection === self::PROJECTION_RESTRICTED ? new Collection : $meeting->agendaItems;
         $calendarEvent = $meeting->calendarEvent;
 
         return [
@@ -474,13 +570,14 @@ class AtstovavimasDashboardService
             'start_time' => $meeting->start_time->toISOString(),
             'title' => $meeting->title,
             'type_slug' => $meeting->type?->value,
-            'completion_status' => $meeting->completion_status,
-            'has_report' => $meeting->has_report,
-            'has_protocol' => $meeting->has_protocol,
+            'completion_status' => $isFull ? $meeting->completion_status : null,
+            'has_report' => $isFull && $meeting->has_report,
+            'has_protocol' => $isFull && $meeting->has_protocol,
             // Announced in the public calendar, and whether that announcement is still a
             // draft — a drafted event is invisible to everyone but the admins.
-            'has_calendar_event' => $calendarEvent !== null,
-            'calendar_event_is_draft' => $calendarEvent !== null && $calendarEvent->is_draft,
+            'has_calendar_event' => $isFull && $calendarEvent !== null,
+            'calendar_event_is_draft' => $isFull && $calendarEvent !== null && $calendarEvent->is_draft,
+            ...($projection === self::PROJECTION_RESTRICTED ? ['authorized' => false] : []),
             'agenda_items' => $agendaItems
                 ->take(4)
                 ->map(fn (AgendaItem $item) => $this->mapAgendaItem($item))

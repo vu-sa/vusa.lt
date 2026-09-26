@@ -69,8 +69,55 @@ describe('unauthorized access', function (): void {
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('cannot index institutions', function (): void {
-        asUser($this->user)->get(route('institutions.index'))->assertStatus(403);
+    test('browses institutions — active ones are public — starting on their padalinys', function (): void {
+        asUser($this->user)->get(route('institutions.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitution')
+                ->where('defaultTenantShortnames', [$this->tenant->shortname])
+            );
+    });
+
+    test('reads an active institution outside their reach as its public face only', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
+        $institution->tasks()->create(['name' => 'Internal task']);
+
+        asUser($this->user)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('readOnly', true)
+                ->where('can.update', false)
+                ->where('can.recordMeeting', false)
+                ->where('can.reportActivity', false)
+                ->where('files', [])
+                ->where('tasks', [])
+                ->where('relatedInstitutions', [])
+                ->where('institution.secretaries', [])
+                ->where('institution.sharepointPath', null)
+                ->where('overview.recentComments', [])
+            );
+    });
+
+    test('says the meetings exist but are hidden when they are not public', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
+        Meeting::factory()->hasAttached($institution)->create();
+
+        asUser($this->user)->get(route('institutions.show', $institution))
+            ->assertInertia(fn ($page) => $page
+                ->where('overview.meetings_hidden', true)
+                ->where('overview.recentMeetings', [])
+                ->where('overview.activity_status', null)
+                ->where('meetings', [])
+                // Nothing to hear about, so nothing to follow
+                ->where('subscription', null)
+            );
+    });
+
+    test('cannot open an inactive institution outside their reach', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 0]);
+
+        asUser($this->user)->get(route('institutions.show', $institution))->assertForbidden();
     });
 
     test('cannot access institution create page', function (): void {

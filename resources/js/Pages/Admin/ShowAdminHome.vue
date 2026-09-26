@@ -133,10 +133,10 @@ const visibleTasks = computed(() => props.upcomingTasks.slice(0, 3));
 
 const page = usePage<PageProps>();
 
+// Not `index.meeting`: every admin may browse public meetings, but only reps work on them.
 const hasAtstovavimas = computed(() => Boolean(
   props.upcomingMeetings?.length
-  || page.props.auth?.can?.create?.meeting
-  || page.props.auth?.can?.index?.meeting,
+  || page.props.auth?.can?.create?.meeting,
 ));
 
 const hasPrimaryContent = computed(() => Boolean(

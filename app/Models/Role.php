@@ -58,7 +58,7 @@ class Role extends SpatieRole
                 $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
                     ->where(function ($q): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', now());
+                            ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             });
     }

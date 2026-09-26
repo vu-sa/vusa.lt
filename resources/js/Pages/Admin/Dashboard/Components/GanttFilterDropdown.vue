@@ -13,7 +13,6 @@
           <span>{{ $t('Padaliniai') }} ({{ selectedTenants.length }}/{{ tenants.length }})</span>
           <div class="flex gap-1">
             <Button
-              v-if="!requireTenantSelection"
               size="xs"
               variant="ghost"
               class="h-5 px-1.5 text-xs"
@@ -23,6 +22,7 @@
               {{ $t('Visi') }}
             </Button>
             <Button
+              v-if="!requireTenantSelection"
               size="xs"
               variant="ghost"
               class="h-5 px-1.5 text-xs"

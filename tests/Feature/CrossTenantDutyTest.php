@@ -294,7 +294,7 @@ test('edit page exposes assignableTenantUsers map for cross-tenant admin', funct
         );
 });
 
-test('edit page assignableTenantUsers excludes users end-dated today', function (): void {
+test('edit page assignableTenantUsers keeps users whose last day is today', function (): void {
     $tenantUser = makeUser($this->assignableTenant);
     Dutiable::factory()->create([
         'duty_id' => $this->duty->id,
@@ -308,7 +308,8 @@ test('edit page assignableTenantUsers excludes users end-dated today', function 
     asUser($this->crossAdmin)->get(route('duties.edit', $this->duty))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->where('assignableTenantUsers', fn ($map) => empty($map[$this->assignableTenant->id] ?? []))
+            // The end date is the last day in office.
+            ->where('assignableTenantUsers', fn ($map) => ! empty($map[$this->assignableTenant->id] ?? []))
         );
 });
 

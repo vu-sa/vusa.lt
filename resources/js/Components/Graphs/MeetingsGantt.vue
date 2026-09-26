@@ -477,6 +477,15 @@ const groupedVisibleDutyMembers = computed<Map<string, ParsedDutyMember[]>>(() =
   return groups;
 });
 
+// Rows marked `authorized: false` are read-only: someone else's padalinys or an unauthorized relation.
+const readOnlyInstitutionIds = computed(() => new Set(
+  (props.institutions ?? []).filter(institution => institution.authorized === false).map(institution => String(institution.id)),
+));
+
+function canCreateOn(institutionId: string | number): boolean {
+  return !readOnlyInstitutionIds.value.has(String(institutionId));
+}
+
 // Initialize drag selection composable for Shift+drag check-in creation
 const dragSelection = useDragSelection(
   rightScroll,
@@ -485,7 +494,9 @@ const dragSelection = useDragSelection(
   layoutRows,
   {
     onDragComplete: (payload) => {
-      emit('create-check-in', payload);
+      if (canCreateOn(payload.institution_id)) {
+        emit('create-check-in', payload);
+      }
     },
   },
 );
@@ -716,6 +727,9 @@ const render = () => {
     rowTop,
     rowHeightFor,
     onCreateMeeting: (payload: { institution_id: string | number; suggestedAt: Date }) => {
+      if (!canCreateOn(payload.institution_id)) {
+        return;
+      }
       // Include institution name in the payload for external institutions
       const name = labelFor(payload.institution_id);
       emit('create-meeting', { ...payload, institutionName: name });
@@ -801,6 +815,7 @@ const render = () => {
     fmtDateWithYear,
     fmtDate,
     interactive: props.interactive,
+    canCreateOn,
     tooltipManager,
     onCreateMeeting: (payload) => {
       // Include institution name in the payload for external institutions

@@ -61,10 +61,11 @@ describe('authorization tests', function (): void {
             expect(Meeting::count())->toEqual($this->initialMeetingCount);
         });
 
-        test('cannot view meetings index without permission', function (): void {
+        test('browses the meetings index without permission — the search key limits it to public ones', function (): void {
             asUser($this->user)
                 ->get(route('meetings.index'))
-                ->assertStatus(403);
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page->has('defaultTenantShortnames'));
         });
     });
 
@@ -430,6 +431,74 @@ describe('meeting show payload', function (): void {
     });
 });
 
+describe('read-only public meeting record', function (): void {
+    beforeEach(function (): void {
+        $publicType = Type::factory()->create();
+        app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$publicType->id]])->save();
+
+        $this->publicInstitution = Institution::factory()->for($this->tenant)->create();
+        $this->publicInstitution->types()->attach($publicType);
+
+        $this->publicMeeting = Meeting::factory()->create(['start_time' => now()->subDay()]);
+        $this->publicMeeting->institutions()->attach($this->publicInstitution);
+        $this->agendaItem = AgendaItem::factory()->for($this->publicMeeting)->create();
+        $this->publicMeeting->tasks()->create(['name' => 'Internal task']);
+    });
+
+    test('a member without meeting access reads the agenda of a public meeting only', function (): void {
+        asUser($this->user)->get(route('meetings.show', $this->publicMeeting))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/ShowMeeting')
+                ->where('readOnly', true)
+                ->has('meeting.agenda_items', 1)
+                ->where('files', [])
+                ->where('tasks', [])
+                ->where('documents', [])
+                ->where('secretaries', [])
+                ->where('recordNavigation', null)
+                ->where('abilities.update', false)
+                ->where('meeting.agenda_items.0.can.update', false)
+                ->missing('meeting.comments')
+                ->missing('meeting.fileable_files')
+            );
+    });
+
+    test('a member without meeting access cannot open a non-public meeting', function (): void {
+        $meeting = Meeting::factory()->create();
+        $meeting->institutions()->attach($this->institution);
+
+        asUser($this->user)->get(route('meetings.show', $meeting))->assertForbidden();
+    });
+
+    test('a member with meeting access gets the full record', function (): void {
+        asUser(makeAdminUser($this->tenant))->get(route('meetings.show', $this->publicMeeting))
+            ->assertInertia(fn ($page) => $page->where('readOnly', false));
+    });
+
+    test('a public agenda item opens read-only, without its notes', function (): void {
+        $this->agendaItem->note()->create(['notes_html' => '<p>Private</p>']);
+
+        asUser($this->user)->get(route('agendaItems.show', $this->agendaItem))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/ShowAgendaItem')
+                ->where('readOnly', true)
+                ->where('abilities.update', false)
+                ->missing('agendaItem.note')
+            );
+    });
+
+    test('a private agenda item stays forbidden', function (): void {
+        $meeting = Meeting::factory()->create();
+        $meeting->institutions()->attach($this->institution);
+        $item = AgendaItem::factory()->for($meeting)->create();
+
+        asUser($this->user)->get(route('agendaItems.show', $item))->assertForbidden();
+        asUser($this->user)->get(route('agendaItems.edit', $item))->assertForbidden();
+    });
+});
+
 describe('joint meeting institution management', function (): void {
     beforeEach(function (): void {
         $this->meeting = Meeting::factory()->create(['start_time' => Carbon::now()->addDays(1)]);
@@ -497,6 +566,22 @@ describe('joint meeting institution management', function (): void {
             ->assertSessionHas('error');
 
         expect($this->meeting->fresh()->institutions()->count())->toBe(1);
+    });
+});
+
+describe('meeting participants', function (): void {
+    test('a former member keeps the meetings of their term, not the ones after it', function (): void {
+        $member = makeUser($this->tenant);
+        $duty = $member->duties()->first();
+        $duty->pivot->start_date = now()->subYear();
+        $duty->pivot->end_date = now()->subMonth();
+        $duty->pivot->save();
+
+        $during = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->subMonths(6)]);
+        $after = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->subWeek()]);
+
+        asUser($member)->get(route('meetings.show', $during))->assertOk();
+        asUser($member)->get(route('meetings.show', $after))->assertForbidden();
     });
 });
 

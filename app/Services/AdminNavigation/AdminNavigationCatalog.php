@@ -31,6 +31,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Settings\FormSettings;
+use App\Support\AuthorityCacheExpiry;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -42,7 +43,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v5-';
+    public const string CACHE_PREFIX = 'admin-navigation-v6-';
 
     private const int CACHE_TTL = 1800;
 
@@ -54,7 +55,7 @@ class AdminNavigationCatalog
      */
     public function for(User $user): array
     {
-        return Cache::remember(self::CACHE_PREFIX.$user->id, self::CACHE_TTL, fn () => $this->resolve($user));
+        return Cache::remember(self::CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, self::CACHE_TTL), fn () => $this->resolve($user));
     }
 
     /**
@@ -172,14 +173,17 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.atstovavimas.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.atstovavimas', [], null, Visibility::can('viewAny', Meeting::class)),
-                new Section('padaliniu_apzvalga', 'shell.sections.padaliniu_apzvalga', 'dashboard.atstovavimas.padaliniai', [], null, Visibility::gate('view-tenant-representation-overview'), descriptionKey: 'shell.section_descriptions.padaliniu_apzvalga'),
+                new Section('padaliniu_apzvalga', 'shell.sections.padaliniu_apzvalga', 'dashboard.atstovavimas.padaliniai', [], null, Visibility::can('viewAny', Meeting::class), descriptionKey: 'shell.section_descriptions.padaliniu_apzvalga'),
                 new Section('uzduociu_suvestine', 'shell.sections.uzduociu_suvestine', 'tasks.summary', [], 'task', Visibility::can('viewAny', Task::class), descriptionKey: 'shell.section_descriptions.uzduociu_suvestine'),
                 new Section('institucijos', 'shell.sections.institucijos', 'institutions.index', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos', startsGroup: true),
                 new Section('posedziai', 'shell.sections.posedziai', 'meetings.index', [], 'meeting', Visibility::can('viewAny', Meeting::class), descriptionKey: 'shell.section_descriptions.posedziai'),
                 new Section('darbotvarkes_klausimai', 'shell.sections.darbotvarkes_klausimai', 'agendaItems.index', [], 'agenda_item', Visibility::can('viewAny', Meeting::class), matches: ['agendaItems.*'], descriptionKey: 'shell.section_descriptions.darbotvarkes_klausimai'),
+                // Also in Svetainė for its managers; the shell keeps whichever workspace is active.
+                new Section('dokumentai', 'shell.sections.dokumentai', 'documents.index', [], 'document', Visibility::can('viewAny', Document::class), descriptionKey: 'shell.section_descriptions.dokumentai'),
                 new Section('problemos', 'shell.sections.problemos', 'problems.index', [], 'problem', Visibility::can('viewAny', Problem::class), descriptionKey: 'shell.section_descriptions.problemos'),
                 new Section('pareigybiu_laikotarpiai', 'shell.sections.pareigybiu_laikotarpiai', 'dutiables.timeline', [], 'dutiable', Visibility::can('viewAny', Duty::class), descriptionKey: 'shell.section_descriptions.pareigybiu_laikotarpiai'),
-                new Section('institucijos_grafas', 'shell.sections.institucijos_grafas', 'institutionGraph', [], 'institution', Visibility::can('viewAny', Institution::class), descriptionKey: 'shell.section_descriptions.institucijos_grafas'),
+                // The whole organisation's graph: not widened with the `.own` index (InstitutionPolicy::viewAny).
+                new Section('institucijos_grafas', 'shell.sections.institucijos_grafas', 'institutionGraph', [], 'institution', Visibility::permission('institutions.read.padalinys'), descriptionKey: 'shell.section_descriptions.institucijos_grafas'),
             ],
             createActions: [
                 CreateAction::screen('new_meeting', 'shell.actions.new_meeting.title', 'shell.actions.new_meeting.description', 'meeting', 'meeting.institution', Visibility::can('create', Meeting::class)),
@@ -231,7 +235,8 @@ class AdminNavigationCatalog
                 // for generating file permissions") and has no `viewAny` policy method — gate on
                 // the raw permission the controller itself checks (`FilesController::index()`).
                 new Section('failai', 'shell.sections.failai', 'files.index', [], null, Visibility::permission('files.read.padalinys'), descriptionKey: 'shell.section_descriptions.failai'),
-                new Section('dokumentai', 'shell.sections.dokumentai', 'documents.index', [], 'document', Visibility::can('viewAny', Document::class), descriptionKey: 'shell.section_descriptions.dokumentai'),
+                // The managing view; everyone else reaches documents through ViSAK.
+                new Section('dokumentai', 'shell.sections.dokumentai', 'documents.index', [], 'document', Visibility::permission('documents.read.padalinys'), descriptionKey: 'shell.section_descriptions.dokumentai'),
                 new Section('studiju_rinkiniai', 'shell.sections.studiju_rinkiniai', 'studySets.index', [], 'study_set', Visibility::can('viewAny', StudySet::class), descriptionKey: 'shell.section_descriptions.studiju_rinkiniai'),
             ],
             createActions: [

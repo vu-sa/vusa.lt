@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
 import ShowAtstovavimas from '@/Pages/Admin/Dashboard/ShowAtstovavimas.vue';
 import type { AtstovavimasUser } from '@/Pages/Admin/Dashboard/types';
@@ -20,9 +20,11 @@ const institution = (id: string, status: string) => ({
   meetings: [],
 });
 
+const institutions = ref([institution('1', 'overdue'), institution('2', 'healthy'), institution('3', 'approaching')]);
+
 vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasData', () => ({
   useAtstovavimasData: () => ({
-    institutions: ref([institution('1', 'overdue'), institution('2', 'healthy'), institution('3', 'approaching')]),
+    institutions,
     sortedMeetings: ref([
       { id: 'm1', start_time: '2026-09-01T10:00:00', institution_id: '1', completion_status: 'incomplete' },
       { id: 'm2', start_time: '2026-09-02T10:00:00', institution_id: '2', completion_status: 'complete' },
@@ -83,14 +85,14 @@ const stubs = {
 
 const baseUser = { id: '1', name: 'Lina Žilinskaitė' } as unknown as AtstovavimasUser;
 
-function createWrapper(canViewTenantOverview: boolean, followedInstitutions?: HomeFollowedInstitutions) {
+function createWrapper(canViewTenantOverview: boolean, followedInstitutions?: HomeFollowedInstitutions, coordinators: { id: string; name: string }[] = []) {
   return mount(ShowAtstovavimas, {
     props: {
       user: baseUser,
       userInstitutions: [],
       canViewTenantOverview,
       openTasksCount: 4,
-      coordinators: [],
+      coordinators,
       upcomingMeetings: { items: [], total: 0 },
       followedInstitutions,
     },
@@ -101,6 +103,7 @@ function createWrapper(canViewTenantOverview: boolean, followedInstitutions?: Ho
 let wrapper: ReturnType<typeof mount>;
 
 beforeEach(() => {
+  institutions.value = [institution('1', 'overdue'), institution('2', 'healthy'), institution('3', 'approaching')];
   vi.stubGlobal('route', (name: string, params?: Record<string, string>) =>
     `/mano/${name}${params ? `?${new URLSearchParams(params).toString()}` : ''}`);
 });
@@ -136,6 +139,45 @@ describe('numbers', () => {
 });
 
 describe('layout', () => {
+  it('places the KPI strips beside coordinators in two columns when both primary lists are empty', async () => {
+    institutions.value = [institution('2', 'healthy')];
+    wrapper = createWrapper(false, { total: 0, items: [] }, [{ id: '1', name: 'Koordinatorė' }]);
+    await nextTick();
+
+    const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
+    const numbers = primary.get('[data-slot="overview-numbers"]');
+    expect(primary.isVisible()).toBe(true);
+    expect(primary.classes()).toContain('gap-12');
+    expect(primary.find('aside [data-testid="coordinators"]').exists()).toBe(true);
+    expect(numbers.classes()).toContain('lg:grid-cols-2');
+    expect(numbers.classes()).toContain('max-md:gap-y-6');
+    expect(numbers.classes()).toContain('lg:mt-8');
+    expect(numbers.findAll('li')).toHaveLength(4);
+    expect(wrapper.findAll('[data-slot="overview-numbers"]')).toHaveLength(1);
+  });
+
+  it('lets the KPI strips span the page when no coordinator is shown', async () => {
+    institutions.value = [institution('2', 'healthy')];
+    wrapper = createWrapper(false, { total: 0, items: [] });
+    await nextTick();
+
+    const numbers = wrapper.get('[data-slot="overview-numbers"]');
+    const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
+    expect(primary.isVisible()).toBe(false);
+    expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(false);
+    expect(wrapper.get('[data-slot="overview-page"]').classes()).toContain('max-md:gap-12');
+    expect(numbers.classes()).toContain('lg:grid-cols-4');
+    expect(numbers.findAll('li')).toHaveLength(4);
+  });
+
+  it('keeps the KPI strips full width when the left column has content', () => {
+    wrapper = createWrapper(false, undefined, [{ id: '1', name: 'Koordinatorė' }]);
+
+    const primary = wrapper.get('[data-slot="atstovavimas-primary-section"]');
+    expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(false);
+    expect(wrapper.get('[data-slot="overview-numbers"]').classes()).toContain('lg:grid-cols-4');
+  });
+
   it('puts the numbers across the page above the two-column content', () => {
     wrapper = createWrapper(false, { total: 0, items: [] });
 

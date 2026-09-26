@@ -222,8 +222,8 @@ class DutyController extends AdminController
 
         // Build a map { tenantId => [userId, ...] } for active cross-tenant reps so the
         // UI can pre-populate each assignable-tenant's user picker.
-        // Must match Duty::current_users() semantics: end_date >= now() (datetime) so
-        // a rep whose end_date is today is already considered inactive.
+        // Must match Duty::current_users() semantics: the end date is the last day in
+        // office, so a rep whose end_date is today is still active.
         // Ex-officio rows are left out — they are not the picker's to grant or revoke.
         $crossTenantRepsQuery = Dutiable::where('duty_id', $duty->id)
             ->where('dutiable_type', MorphMap::alias(User::class))
@@ -231,7 +231,7 @@ class DutyController extends AdminController
             ->whereNull('via_dutiable_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
+                    ->orWhereDate('end_date', '>=', today());
             });
 
         if (! $canEditDuty) {
@@ -280,7 +280,7 @@ class DutyController extends AdminController
                 ->whereNull('via_dutiable_id')
                 ->where(function ($query): void {
                     $query->whereNull('end_date')
-                        ->orWhere('end_date', '>=', now());
+                        ->orWhereDate('end_date', '>=', today());
                 })
                 ->pluck('dutiable_id');
             if ($request->exists('current_users') && ! is_null($request->current_users)) {
@@ -343,7 +343,7 @@ class DutyController extends AdminController
                         ->where('tenant_id', $tenantId)
                         ->where(function ($query): void {
                             $query->whereNull('end_date')
-                                ->orWhere('end_date', '>=', now());
+                                ->orWhereDate('end_date', '>=', today());
                         }),
                     now()->subDay()
                 );
@@ -370,7 +370,7 @@ class DutyController extends AdminController
                 ->where('dutiable_type', MorphMap::alias(User::class))
                 ->where('dutiable_id', $actor->id)
                 ->where(function ($query): void {
-                    $query->whereNull('end_date')->orWhere('end_date', '>=', now());
+                    $query->whereNull('end_date')->orWhereDate('end_date', '>=', today());
                 })
                 ->exists();
 
@@ -436,7 +436,7 @@ class DutyController extends AdminController
             ->whereNotNull('via_dutiable_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
+                    ->orWhereDate('end_date', '>=', today());
             });
 
         if ($limitToTenantIds !== null) {
@@ -513,7 +513,7 @@ class DutyController extends AdminController
                     ->whereNull('via_dutiable_id')
                     ->where(function ($query): void {
                         $query->whereNull('end_date')
-                            ->orWhere('end_date', '>=', now());
+                            ->orWhereDate('end_date', '>=', today());
                     }),
                 now()->subDay()
             );
@@ -547,7 +547,7 @@ class DutyController extends AdminController
             ->whereNull('via_dutiable_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
+                    ->orWhereDate('end_date', '>=', today());
             })
             ->pluck('dutiable_id')
             ->all();
@@ -564,7 +564,7 @@ class DutyController extends AdminController
                     ->whereIn('dutiable_id', $toRemove)
                     ->where(function ($query): void {
                         $query->whereNull('end_date')
-                            ->orWhere('end_date', '>=', now());
+                            ->orWhereDate('end_date', '>=', today());
                     }),
                 now()->subDay()
             );
@@ -776,7 +776,7 @@ class DutyController extends AdminController
                             ->whereNull('via_dutiable_id')
                             ->where(function ($query): void {
                                 $query->whereNull('end_date')
-                                    ->orWhere('end_date', '>=', now());
+                                    ->orWhereDate('end_date', '>=', today());
                             });
 
                         if ($actingTenantId !== null) {

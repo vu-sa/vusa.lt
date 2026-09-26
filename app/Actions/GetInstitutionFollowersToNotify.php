@@ -31,8 +31,10 @@ class GetInstitutionFollowersToNotify
             $followers = $followers->merge($institutionFollowers);
         }
 
-        // Return unique users by ID
-        return $followers->unique('id')->values();
+        // Anyone may follow an active institution, but only hears about meetings they may read.
+        return $followers->unique('id')
+            ->filter(fn (User $follower): bool => $follower->can('viewSummary', $meeting))
+            ->values();
     }
 
     /**

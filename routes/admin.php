@@ -49,6 +49,9 @@ Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])
 
 // System Status
 Route::get('system-status', [SystemStatusController::class, 'index'])->name('systemStatus');
+Route::post('system-status/maintenance', [SystemStatusController::class, 'runMaintenance'])
+    ->middleware('throttle:10,1')
+    ->name('systemStatus.maintenance');
 
 // Rep outcome metrics (U25)
 Route::get('rep-metrics', [RepMetricsController::class, 'index'])->name('repMetrics');

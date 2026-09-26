@@ -78,6 +78,7 @@ const createWrapper = (props: Record<string, unknown> = {}) => {
     can = { update: true, delete: true, recordMeeting: true, reportActivity: true },
     overview = {},
     management = null,
+    readOnly = false,
     ...institution
   } = props;
 
@@ -99,6 +100,7 @@ const createWrapper = (props: Record<string, unknown> = {}) => {
       tasks: [],
       relatedInstitutions: [],
       management,
+      readOnly,
     },
     global: { stubs },
   });
@@ -125,6 +127,12 @@ describe('ShowInstitution.vue', () => {
     expect(statusFact(wrapper)).toMatchObject({ key: 'status', status: { label: 'Aktyvi', role: 'success' } });
   });
 
+  it('shows the status as not shown when it is withheld with non-public meetings', () => {
+    const wrapper = createWrapper({ overview: { activity_status: null } });
+
+    expect(statusFact(wrapper)).toMatchObject({ key: 'status', status: { label: 'Nerodoma', role: 'neutral' }, detail: null });
+  });
+
   it('says under the status what it rests on, as the institution picker does', () => {
     const wrapper = createWrapper({ overview: { activity_status: { status: 'healthy', next_meeting_at: '2026-10-15T10:00:00Z' } } });
 
@@ -140,6 +148,14 @@ describe('ShowInstitution.vue', () => {
   it('offers the sections an editor can act on, and only those', () => {
     expect(tabs(createWrapper())).toEqual(['overview', 'duties', 'meetings', 'terms', 'files', 'tasks']);
     expect(tabs(createWrapper({ can: { update: false, delete: false } }))).toEqual(['overview', 'duties', 'meetings', 'files', 'tasks']);
+  });
+
+  it('shows a reader outside the institution its public face: meetings only where they are public', () => {
+    const readOnly = { readOnly: true, can: { update: false, delete: false, recordMeeting: false, reportActivity: false }, related_institutions_count: 2 };
+
+    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: true }))).toEqual(['overview', 'duties', 'meetings']);
+    expect(tabs(createWrapper({ ...readOnly, has_public_meetings: false }))).toEqual(['overview', 'duties']);
+    expect(createWrapper(readOnly).find('[data-testid="overflow-timeline"]').exists()).toBe(false);
   });
 
   it('offers the relations section only when there are related institutions', () => {

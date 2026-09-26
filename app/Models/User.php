@@ -236,7 +236,7 @@ class User extends Authenticatable implements GuardsForceDelete
         return $this->duties()
             ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
-                    ->where('dutiables.end_date', '<', now());
+                    ->whereDate('dutiables.end_date', '<', today());
             })
             ->withTimestamps();
     }
@@ -251,7 +251,7 @@ class User extends Authenticatable implements GuardsForceDelete
                 $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
                     ->where(function ($q): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', now());
+                            ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             })
             ->withTimestamps();
@@ -262,7 +262,7 @@ class User extends Authenticatable implements GuardsForceDelete
     {
         return $this->duties()
             ->where(fn ($query) => $query->whereNull('dutiables.end_date')
-                ->orWhere('dutiables.end_date', '>=', now()));
+                ->orWhereDate('dutiables.end_date', '>=', today()));
     }
 
     /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */

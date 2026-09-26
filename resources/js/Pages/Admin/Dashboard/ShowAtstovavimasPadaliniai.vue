@@ -3,22 +3,26 @@
     eyebrow="ViSAK"
     :title="$t('visak.tenant_overview.title')"
     :head-title="`ViSAK · ${$t('visak.tenant_overview.title')}`"
-    :lead="$t('visak.tenant_overview.lead')"
+    :lead="$t(hasStats ? 'visak.tenant_overview.lead' : 'visak.tenant_overview.lead_public')"
   >
-    <template #actions>
+    <template v-if="hasStats" #actions>
       <TenantScopeSelector
         compact
-        :tenants="props.availableTenants"
-        :selected-tenants="timelineFilters.selectedTenantForGantt.value"
-        @update:selected-tenants="timelineFilters.setSelectedTenants"
+        :label="$t('visak.tenant_scope.stats_label')"
+        :description="$t('visak.tenant_scope.stats_description')"
+        :tenants="props.statsTenants"
+        :selected-tenants="timelineFilters.selectedStatsTenants.value"
+        @update:selected-tenants="timelineFilters.setSelectedStatsTenants"
       />
     </template>
 
     <!-- Tenant numbers arrive with the timeline request; until then a placeholder, not a wrong zero. -->
-    <OverviewNumbers v-if="tenantTimelineData.loaded.value" :numbers />
-    <OverviewNumbersSkeleton v-else :count="canViewTenantTasks ? 4 : 3" />
+    <template v-if="hasStats">
+      <OverviewNumbers v-if="tenantTimelineData.loaded.value" :numbers />
+      <OverviewNumbersSkeleton v-else :count="canViewTenantTasks ? 4 : 3" />
+    </template>
 
-    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-tenant-primary-section">
+    <div v-if="hasStats" class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-tenant-primary-section">
       <div class="min-w-0">
         <InstitutionAttentionSkeleton v-if="!tenantTimelineData.loaded.value" />
         <InstitutionsNeedingAttention
@@ -38,7 +42,7 @@
           :days="historyDays"
           :representative-activity
           :representatives-loading="tenantTimelineData.isFetching.value"
-          :tenant-ids="timelineFilters.selectedTenantForGantt.value"
+          :tenant-ids="timelineFilters.selectedStatsTenants.value"
           @update:days="historyDays = $event"
         />
       </aside>
@@ -47,10 +51,10 @@
     <!-- The timeline is a workbench: it renders only once it is near the viewport, and never on a phone. -->
     <section v-if="isAtLeastMd" :aria-label="$t('visak.overview.timeline.title')">
       <div ref="timelineAnchor" class="min-h-64">
-        <TimelineGanttSkeleton v-if="!timelineVisible || !tenantTimelineData.loaded.value" />
+        <TimelineGanttSkeleton v-if="!timelineVisible || !ganttRows.loaded.value" />
         <TenantTimelineSection
           v-else
-          :available-tenants="props.availableTenants"
+          :available-tenants="props.ganttTenants"
           :tenant-institutions="ganttData.formattedTenantInstitutions.value"
           :meetings="ganttData.tenantMeetings.value"
           :gaps="ganttData.tenantGaps.value"
@@ -66,7 +70,6 @@
           :loading-range="meetingsLoadingRange"
           :meetings-loading="meetingsLoadingVisible"
           :representative-activity
-          :show-tenant-selector="false"
           @create-meeting="onCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
           @fullscreen="actions.onGanttFullscreen('tenant')"
@@ -81,13 +84,13 @@
       </Link>
     </p>
 
-    <WorkspaceSectionTiles workspace-key="atstovavimas" variant="home" />
+    <WorkspaceSectionTiles v-if="hasStats" workspace-key="atstovavimas" variant="home" />
 
     <!-- FullscreenGanttModal first so dialogs opened from within it appear on top -->
     <FullscreenGanttModal
       :is-open="actions.showFullscreenGantt.value"
       gantt-type="tenant"
-      :available-tenants="props.availableTenants"
+      :available-tenants="props.ganttTenants"
       :user-institutions="[]"
       :user-meetings="[]"
       :user-gaps="[]"
@@ -157,7 +160,11 @@ import { useActionWindow } from '@/Composables/useActionWindow';
 import { useApi } from '@/Composables/useApi';
 
 const props = defineProps<{
-  availableTenants: AtstovavimasTenant[];
+  /** The padaliniai the user manages: the statistics are theirs alone. Empty for a rep. */
+  statsTenants: AtstovavimasTenant[];
+  /** Every padalinys: the Gantt shows public meetings anywhere, plus the user's own bodies. */
+  ganttTenants: AtstovavimasTenant[];
+  defaultGanttTenantIds: string[];
   /** May read ViSAK → Užduotys; the open-task number counts the selected padaliniai's tasks. */
   canViewTenantTasks: boolean;
 }>();
@@ -167,13 +174,20 @@ const ATTENTION_LIMIT = 5;
 const actionWindow = useActionWindow();
 const isAtLeastMd = useMediaQuery('(min-width: 768px)');
 
-const timelineFilters = provideTimelineFilters([], props.availableTenants);
+const hasStats = computed(() => props.statsTenants.length > 0);
+
+const timelineFilters = provideTimelineFilters([], props.ganttTenants, {
+  statsTenants: props.statsTenants,
+  defaultGanttTenantIds: props.defaultGanttTenantIds,
+});
 const actions = useAtstovavimasActions([]);
 const tenantTimelineData = useTenantTimelineData();
+const ganttRows = useTenantTimelineData<AtstovavimasInstitution[]>('api.v1.admin.visak.gantt');
 const tenantMeetings = useTenantMeetings(() => timelineFilters.selectedTenantForGantt.value);
 const tenantInstitutionsData = computed(() => tenantTimelineData.data.value?.institutions ?? []);
+const ganttInstitutionsData = computed(() => ganttRows.data.value ?? []);
 const representativeActivity = computed(() => tenantTimelineData.data.value?.representative_activity);
-const ganttData = useGanttChartData(tenantInstitutionsData, props.availableTenants, tenantMeetings.meetings);
+const ganttData = useGanttChartData(ganttInstitutionsData, props.ganttTenants, tenantMeetings.meetings);
 
 provideGanttSettings();
 
@@ -194,7 +208,7 @@ const tenantNames = computed(() => ganttData.getTenantNames());
 
 const attention = computed<InstitutionActivityInsight[]>(() => {
   // Name the padalinys only when the list mixes several.
-  const showTenant = timelineFilters.selectedTenantForGantt.value.length > 1;
+  const showTenant = timelineFilters.selectedStatsTenants.value.length > 1;
 
   return tenantInstitutionsData.value
     .filter((institution: AtstovavimasInstitution) => institution.activity_status?.requires_action)
@@ -207,13 +221,13 @@ const attention = computed<InstitutionActivityInsight[]>(() => {
     }));
 });
 
-const selectedTenantParam = computed(() => timelineFilters.selectedTenantForGantt.value.join(','));
+const selectedTenantParam = computed(() => timelineFilters.selectedStatsTenants.value.join(','));
 
 // Institucijos filters by padalinys name, so the selection travels as short names.
 const institutionsWith = (activityStatus: string) => route('institutions.index', {
   activity_status: activityStatus,
-  tenant_shortname: timelineFilters.selectedTenantForGantt.value
-    .map(id => props.availableTenants.find(tenant => String(tenant.id) === String(id))?.shortname)
+  tenant_shortname: timelineFilters.selectedStatsTenants.value
+    .map(id => props.statsTenants.find(tenant => String(tenant.id) === String(id))?.shortname)
     .filter(Boolean)
     .join(','),
 });
@@ -221,7 +235,7 @@ const institutionsWith = (activityStatus: string) => route('institutions.index',
 // Only the total is read, so one row per request is enough.
 const tenantOpenTasks = useApi<{ total: number }>(
   computed(() => route('api.v1.admin.tasks.index', { scope: 'tenant', per_page: 1, tenant: selectedTenantParam.value })),
-  { immediate: props.canViewTenantTasks, refetch: props.canViewTenantTasks, showErrorToast: false },
+  { immediate: hasStats.value && props.canViewTenantTasks, refetch: hasStats.value && props.canViewTenantTasks, showErrorToast: false },
 );
 
 const numbers = computed<OverviewNumberItem[]>(() => [
@@ -253,10 +267,10 @@ const historyDays = ref(90);
 const statusHistory = useTenantStatusHistory();
 
 watch(
-  () => [timelineFilters.selectedTenantForGantt.value.join(','), historyDays.value] as const,
+  () => [timelineFilters.selectedStatsTenants.value.join(','), historyDays.value] as const,
   () => {
-    if (timelineFilters.selectedTenantForGantt.value.length > 0) {
-      statusHistory.load(timelineFilters.selectedTenantForGantt.value, historyDays.value);
+    if (timelineFilters.selectedStatsTenants.value.length > 0) {
+      statusHistory.load(timelineFilters.selectedStatsTenants.value, historyDays.value);
     }
   },
   { immediate: true },
@@ -303,11 +317,11 @@ watch(tenantMeetings.isFetching, (loading) => {
   }
 });
 
-watch(tenantTimelineData.isFetching, (loading) => {
+watch(ganttRows.isFetching, (loading) => {
   timelineFilters.tenantInstitutionsLoading.value = loading;
 }, { immediate: true });
 
-watch(tenantTimelineData.loaded, (loaded) => {
+watch(ganttRows.loaded, (loaded) => {
   timelineFilters.tenantInstitutionsLoaded.value = loaded;
 }, { immediate: true });
 
@@ -325,13 +339,18 @@ function onTenantRangeChanged(min: Date, max: Date): void {
 }
 
 onMounted(() => {
-  tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value);
+  tenantTimelineData.load(timelineFilters.selectedStatsTenants.value);
+  ganttRows.load(timelineFilters.selectedTenantForGantt.value);
   loadInitialMeetingWindow();
 });
 
+watch(() => timelineFilters.selectedStatsTenants.value, (tenantIds) => {
+  tenantTimelineData.load(tenantIds);
+}, { deep: true });
+
 watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants, oldTenants) => {
   if (newTenants.length > 0) {
-    tenantTimelineData.load(newTenants);
+    ganttRows.load(newTenants);
     if (newTenants.join(',') !== (oldTenants ?? []).join(',')) {
       tenantMeetings.reset();
       loadInitialMeetingWindow();
@@ -377,10 +396,11 @@ const checkInInstitutionName = computed(() => {
 
 function handleCheckInDialogClose(): void {
   actions.showCreateCheckIn.value = null;
-  if (props.canViewTenantTasks) {
+  if (hasStats.value && props.canViewTenantTasks) {
     void tenantOpenTasks.execute();
   }
-  tenantTimelineData.load(timelineFilters.selectedTenantForGantt.value, true);
+  tenantTimelineData.load(timelineFilters.selectedStatsTenants.value, true);
+  ganttRows.load(timelineFilters.selectedTenantForGantt.value, true);
   void tenantMeetings.refresh();
 }
 </script>

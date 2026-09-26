@@ -21,7 +21,7 @@ class InstitutionSubscriptionApiController extends ApiController
     public function status(Request $request, Institution $institution): JsonResponse
     {
         $user = $this->requireAuth($request);
-        $this->authorizeApi('view', $institution);
+        $this->authorizeApi('viewSummary', $institution);
 
         return $this->jsonSuccess(
             $this->subscriptionService->getStatus($user, $institution)
@@ -34,7 +34,7 @@ class InstitutionSubscriptionApiController extends ApiController
     public function follow(Request $request, Institution $institution): JsonResponse
     {
         $user = $this->requireAuth($request);
-        $this->authorizeApi('view', $institution);
+        $this->authorizeApi('follow', $institution);
 
         $this->subscriptionService->follow($user, $institution);
 
@@ -62,7 +62,8 @@ class InstitutionSubscriptionApiController extends ApiController
     }
 
     /**
-     * Follow several institutions; refused as a whole when any one is not viewable.
+     * Follow several institutions; refused as a whole when any one may not be followed
+     * (InstitutionPolicy::follow).
      */
     public function followMany(BulkInstitutionFollowRequest $request): JsonResponse
     {
@@ -70,7 +71,7 @@ class InstitutionSubscriptionApiController extends ApiController
         $institutions = Institution::query()->whereIn('id', $request->institutionIds())->get();
 
         foreach ($institutions as $institution) {
-            $this->authorizeApi('view', $institution);
+            $this->authorizeApi('follow', $institution);
         }
 
         $this->subscriptionService->followMany($user, $institutions);
@@ -103,7 +104,7 @@ class InstitutionSubscriptionApiController extends ApiController
     public function mute(Request $request, Institution $institution): JsonResponse
     {
         $user = $this->requireAuth($request);
-        $this->authorizeApi('view', $institution);
+        $this->authorizeApi('follow', $institution);
 
         $this->subscriptionService->mute($user, $institution);
 

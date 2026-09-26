@@ -141,7 +141,7 @@ return [
         'posedziai' => 'Recorded and upcoming meetings',
         'darbotvarkes_klausimai' => 'Agenda items and votes across meetings',
         'problemos' => 'Problems raised by reps and their progress',
-        'padaliniu_apzvalga' => 'Institution and representative health across units',
+        'padaliniu_apzvalga' => 'Meeting timeline and institution health across units',
         'pareigybiu_laikotarpiai' => 'Who held which duty and when',
         'uzduociu_suvestine' => 'Tasks and deadlines across units',
         'institucijos_grafas' => 'Institution relations in one graph',

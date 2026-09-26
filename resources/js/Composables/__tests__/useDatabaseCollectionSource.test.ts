@@ -25,7 +25,10 @@ function makeSource() {
 const lastUrl = (fetchMock: ReturnType<typeof vi.fn>) => new URL(String(fetchMock.mock.calls.at(-1)?.[0]));
 
 describe('useDatabaseCollectionSource filters', () => {
-  beforeEach(() => window.history.replaceState({}, '', '/mano/reservations'));
+  beforeEach(() => {
+    localStorage.clear();
+    window.history.replaceState({}, '', '/mano/reservations');
+  });
   afterEach(() => vi.unstubAllGlobals());
 
   it('reads its filters from the page URL and ignores unknown values', () => {
@@ -60,6 +63,21 @@ describe('useDatabaseCollectionSource filters', () => {
     source.toggleFilter('state', 'lent');
 
     expect(source.filters.value).toEqual({});
+  });
+
+  it('comes back to the remembered filters and refetches the stale server-rendered page', async () => {
+    const fetchMock = respond();
+    vi.stubGlobal('fetch', fetchMock);
+    makeSource().setFilter('state', ['lent']);
+    await vi.waitFor(() => expect(window.location.search).toContain('state=lent'));
+
+    window.history.replaceState({}, '', '/mano/reservations');
+    fetchMock.mockClear();
+    const source = makeSource();
+
+    expect(source.filters.value).toEqual({ state: ['lent'] });
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(lastUrl(fetchMock).searchParams.getAll('state[]')).toEqual(['lent']);
   });
 
   it('carries the filters in the URL after a fetch', async () => {
@@ -137,7 +155,10 @@ describe('useDatabaseCollectionSource without a first page', () => {
 });
 
 describe('useDatabaseCollectionSource facet counts', () => {
-  beforeEach(() => window.history.replaceState({}, '', '/mano/reservations'));
+  beforeEach(() => {
+    localStorage.clear();
+    window.history.replaceState({}, '', '/mano/reservations');
+  });
   afterEach(() => vi.unstubAllGlobals());
 
   it('shows no count until the filters ask for one', () => {

@@ -18,7 +18,8 @@ const stubs = {
   MeetingAgendaList: {
     name: 'MeetingAgendaList',
     props: ['agendaItems', 'meetingId', 'missingActions'],
-    template: '<div data-testid="agenda-list" />',
+    emits: ['add'],
+    template: '<div data-testid="agenda-list"><button data-testid="paste-agenda" @click="$emit(\'add\', \'paste\')">Įklijuoti darbotvarkę</button></div>',
   },
   MeetingNavigationCards: { template: '<div />' },
   DiscussionPanel: { template: '<div />' },
@@ -174,6 +175,29 @@ describe('ShowMeeting.vue', () => {
       expect(sheet.attributes('data-open')).toBe('true');
       expect(sheet.attributes('data-mode')).toBe('lines');
     });
+  });
+
+  it('opens the paste mode when the agenda paste action is clicked', async () => {
+    const wrapper = createWrapper({ meeting: { ...baseMeeting, agenda_items: [] } });
+
+    await wrapper.find('[data-testid="paste-agenda"]').trigger('click');
+
+    const sheet = wrapper.find('[data-testid="add-agenda-sheet"]');
+    expect(sheet.attributes('data-open')).toBe('true');
+    expect(sheet.attributes('data-mode')).toBe('paste');
+  });
+
+  it('opens the agenda sheet when Papildyti points to a missing agenda', async () => {
+    const wrapper = createWrapper({
+      meeting: { ...baseMeeting, agenda_items: [] },
+      completion: { status: 'incomplete', missingActions: [{ type: 'agenda_missing' }] },
+    });
+
+    await wrapper.findAll('button').find(button => button.text() === 'Papildyti')!.trigger('click');
+
+    const sheet = wrapper.find('[data-testid="add-agenda-sheet"]');
+    expect(sheet.attributes('data-open')).toBe('true');
+    expect(sheet.attributes('data-mode')).toBe('paste');
   });
 
   it('leads the facts with the completion status, toned in its role, instead of a title badge', () => {

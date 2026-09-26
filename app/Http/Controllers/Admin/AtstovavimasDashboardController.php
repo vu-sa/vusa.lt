@@ -9,6 +9,7 @@ use App\Actions\GetUserCoordinators;
 use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
 use App\Models\Institution;
+use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -41,7 +42,7 @@ class AtstovavimasDashboardController extends AdminController
         // `?scope=tenant` and `?tab=tenant` are bookmarks from when both views shared this page.
         $requestedScope = $request->query('scope', $request->query('tab'));
 
-        if ($requestedScope === 'tenant' && Gate::allows('view-tenant-representation-overview')) {
+        if ($requestedScope === 'tenant' && Gate::allows('viewAny', Meeting::class)) {
             return redirect()->route('dashboard.atstovavimas.padaliniai');
         }
 
@@ -126,6 +127,7 @@ class AtstovavimasDashboardController extends AdminController
                             $meeting->append(['has_report', 'has_protocol']);
                         }
                     });
+                    $institution->setAttribute('is_internal', $institution->governance_scope->isInternal());
                     $institution->append('has_public_meetings');
                     $institution->append('meeting_periodicity_days');
                     $institution->setAttribute(
@@ -136,7 +138,7 @@ class AtstovavimasDashboardController extends AdminController
 
                 return $relatedInstitutions->values();
             })->once(),
-            'canViewTenantOverview' => Gate::allows('view-tenant-representation-overview'),
+            'canViewTenantOverview' => Gate::allows('viewAny', Meeting::class),
             'openTasksCount' => $user->tasks()->whereNull('completed_at')->count(),
             // Duty and followed institutions alike; the page narrows it by the tenant selector.
             'upcomingMeetings' => GetUpcomingMeetingsForUser::execute($user),
@@ -155,31 +157,56 @@ class AtstovavimasDashboardController extends AdminController
     }
 
     /**
-     * The padalinys overview for coordinators: its institutions, meetings and status history
-     * load through the admin API once the tenant selection is known.
+     * The padaliniai overview: every admin gets the Gantt of public meetings and their own bodies;
+     * the statistics are only for the padaliniai the user manages. Data loads through the admin API.
      */
     public function padaliniai(Request $request): Response
     {
-        $this->authorize('view-tenant-representation-overview');
+        $this->authorize('viewAny', Meeting::class);
 
         /** @var User $user */
         $user = $request->user();
 
+        $statsTenants = $this->tenantOptions(app(AtstovavimasSettings::class)->getVisibleTenantIds($user));
+        $ganttTenants = $this->tenantOptions(Tenant::query()->representational()->pluck('id'));
+
         return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimasPadaliniai', [
-            'availableTenants' => $this->availableTenants($user),
+            'statsTenants' => $statsTenants,
+            'ganttTenants' => $ganttTenants,
+            'defaultGanttTenantIds' => $this->defaultGanttTenantIds($user, $statsTenants, $ganttTenants),
             'canViewTenantTasks' => $user->can('viewAny', Task::class),
         ]);
     }
 
     /**
+     * A coordinator starts on the padaliniai they manage, a rep on those of their own bodies.
+     *
+     * @param  SupportCollection<int, array{id: int, shortname: string, type: TenantType|null}>  $statsTenants
+     * @param  SupportCollection<int, array{id: int, shortname: string, type: TenantType|null}>  $ganttTenants
+     * @return list<string>
+     */
+    private function defaultGanttTenantIds(User $user, SupportCollection $statsTenants, SupportCollection $ganttTenants): array
+    {
+        $tenantIds = $statsTenants->isNotEmpty()
+            ? $statsTenants->pluck('id')
+            : Institution::query()->whereIn('id', $user->authorization_duties()->pluck('institution_id'))->pluck('tenant_id');
+
+        return $tenantIds
+            ->intersect($ganttTenants->pluck('id'))
+            ->unique()
+            ->map(fn ($tenantId) => (string) $tenantId)
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  SupportCollection<int, int>  $tenantIds
      * @return SupportCollection<int, array{id: int, shortname: string, type: TenantType|null}>
      */
-    private function availableTenants(User $user): SupportCollection
+    private function tenantOptions(SupportCollection $tenantIds): SupportCollection
     {
-        $visibleTenantIds = app(AtstovavimasSettings::class)->getVisibleTenantIds($user);
-
         return Tenant::query()
-            ->whereIn('id', $visibleTenantIds)
+            ->whereIn('id', $tenantIds)
             ->representational()
             ->orderBy('shortname_vu')
             ->get(['id', 'shortname', 'type'])

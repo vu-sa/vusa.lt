@@ -22,6 +22,8 @@ return [
         'selected_count' => 'Pasirinkta: :count',
         'keep_one' => 'Palikti vieną',
         'keep_one_hint' => 'Pažymėti tik pirmą pasirinktą padalinį — bent vienas turi likti pasirinktas',
+        'stats_label' => 'Rodikliai',
+        'stats_description' => 'Taikoma skaičiams, dėmesio sąrašui ir rodikliams — tik tavo tvarkomiems padaliniams. Laiko juostos padalinius rinkis jos filtruose.',
     ],
     'user_tenant_scope' => [
         'title' => 'Tavo institucijų padaliniai',
@@ -144,6 +146,7 @@ return [
     'tenant_overview' => [
         'title' => 'Padaliniai',
         'lead' => 'Kurioms padalinio institucijoms reikia dėmesio, kaip keičiasi jų būklė ir kaip aktyvūs atstovai.',
+        'lead_public' => 'Viešai posėdžiaujančių institucijų ir tavo institucijų posėdžiai visuose padaliniuose.',
         'representatives' => 'Atstovų aktyvumas',
         'insights' => 'Padalinio rodikliai',
     ],

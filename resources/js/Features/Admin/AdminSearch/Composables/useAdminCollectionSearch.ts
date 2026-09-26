@@ -33,6 +33,7 @@ import { mergeFacets, sortFacetsByConfig } from '../Services/AdminFacetMerger';
 import { getCollectionFacetConfig, getCollectionSortOptions, resolveSortValue, RELEVANCE_SORT_VALUE } from '../Config/collectionFacetConfig';
 
 import { useAdminSearch } from '@/Composables/useAdminSearch';
+import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
 
 /** Bounds the replay of `?pages=`, so a hand-edited URL cannot fan out into hundreds of requests. */
 const MAX_RESTORED_PAGES = 10;
@@ -61,6 +62,11 @@ export interface UseAdminCollectionSearchOptions {
    * A ref or getter re-runs the search when it changes (IndexInstitution's "Sekamos").
    */
   baseFilterBy?: MaybeRefOrGetter<string | undefined>;
+  /**
+   * Filters a first visit starts with (e.g. the user's own padaliniai). Ordinary, clearable
+   * filters — applied only when the URL carries no query or filter of its own.
+   */
+  defaultFilters?: Record<string, string[]>;
 }
 
 export function useAdminCollectionSearch(options: UseAdminCollectionSearchOptions) {
@@ -87,6 +93,9 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
   // URL params for state persistence
   const urlParams = syncToUrl ? useUrlSearchParams('history') : ref({});
+  const filterMemory = syncToUrl
+    ? useCollectionFilterMemory([...facetConfig.fields.map(field => field.field), 'sort'], ['q'])
+    : null;
 
   // State
   const status = ref<AdminSearchStatus>('idle');
@@ -428,6 +437,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     const newUrl = new URL(window.location.href);
     newUrl.search = params.toString();
     window.history.replaceState({}, '', newUrl.toString());
+    filterMemory?.remember();
   };
 
   /**
@@ -440,17 +450,25 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     window.history.replaceState({}, '', newUrl.toString());
   };
 
+  const withDefaultFilters = (base: AdminSearchFilters): AdminSearchFilters => {
+    const defaults = Object.entries(options.defaultFilters ?? {}).filter(([, values]) => values.length > 0);
+
+    return { ...base, ...Object.fromEntries(defaults) };
+  };
+
   /**
    * Load state from URL
    */
   const loadFromUrl = () => {
     if (!syncToUrl) return;
 
+    // Remembered filters first, so a returning visit is not reset to the defaults.
+    const isDecided = filterMemory?.restore().decided ?? true;
     const params = new URLSearchParams(window.location.search);
 
     // Parse filters from URL
     const urlFilters = urlParamsToFilters(params, facetConfig);
-    filters.value = urlFilters;
+    filters.value = isDecided ? urlFilters : withDefaultFilters(urlFilters);
     query.value = urlFilters.query || '';
 
     // Parse sort from URL

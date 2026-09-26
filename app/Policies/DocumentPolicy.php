@@ -31,6 +31,16 @@ class DocumentPolicy extends ModelPolicy
     }
 
     /**
+     * Documents are public, so every admin may browse the collection; managing them is gated
+     * by `create` / `update` / `delete`.
+     */
+    #[\Override]
+    public function viewAny(User $user): bool
+    {
+        return true;
+    }
+
+    /**
      * Standard view method that most models will use.
      * Override in child classes when needed.
      *

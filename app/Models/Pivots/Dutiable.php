@@ -208,7 +208,7 @@ class Dutiable extends MorphPivot
     /**
      * Rows that have not ended yet, matching what `Duty::current_users()` and every
      * quota check mean by "current" — a future-dated start still counts, because the
-     * seat is already allocated.
+     * seat is already allocated. The end date is the last day in office.
      */
     public function scopeCurrent($query)
     {

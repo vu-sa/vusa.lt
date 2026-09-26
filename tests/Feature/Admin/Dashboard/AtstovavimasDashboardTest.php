@@ -46,7 +46,7 @@ describe('atstovavimas dashboard', function (): void {
                 ->has('user')
                 ->has('userInstitutions')
                 ->has('canViewTenantOverview')
-                ->missing('availableTenants')
+                ->missing('statsTenants')
                 ->missing('tenantInstitutions')
                 ->missing('representativeActivity')
             );
@@ -116,7 +116,7 @@ describe('atstovavimas dashboard', function (): void {
                 ->component('Admin/Dashboard/ShowAtstovavimas')
                 ->has('user')
                 ->has('userInstitutions')
-                ->where('canViewTenantOverview', false)
+                ->where('canViewTenantOverview', true)
             );
     });
 
@@ -126,7 +126,7 @@ describe('atstovavimas dashboard', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->where('availableTenants', fn ($tenants) => collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp'))
+                ->where('statsTenants', fn ($tenants) => collect($tenants)->every(fn ($tenant) => $tenant['type'] !== 'pkp'))
             );
     });
 
@@ -155,8 +155,8 @@ describe('atstovavimas dashboard', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->has('availableTenants')
-                ->where('availableTenants', function ($tenants) {
+                ->has('statsTenants')
+                ->where('statsTenants', function ($tenants) {
                     // Convert to collection if it's an array, or keep as collection
                     $collection = collect($tenants);
 
@@ -192,10 +192,21 @@ describe('atstovavimas dashboard authorization', function (): void {
             );
     });
 
-    test('a user who sees no padalinys cannot open the padalinys overview', function (): void {
+    test('a rep who manages no padalinys opens the overview for its Gantt only', function (): void {
+        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+        $pkpTenant = Tenant::factory()->create(['type' => 'pkp']);
+        $ownTenantId = $this->user->current_duties->first()->institution->tenant_id;
+
         asUser($this->user)
             ->get(route('dashboard.atstovavimas.padaliniai'))
-            ->assertForbidden();
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
+                ->where('statsTenants', [])
+                ->where('ganttTenants', fn ($tenants) => collect($tenants)->contains('id', $otherTenant->id)
+                    && collect($tenants)->doesntContain('id', $pkpTenant->id))
+                ->where('defaultGanttTenantIds', [(string) $ownTenantId])
+            );
     });
 
     test('the old tenant-scope bookmark opens the padalinys overview', function (): void {
@@ -204,11 +215,10 @@ describe('atstovavimas dashboard authorization', function (): void {
             ->assertRedirect(route('dashboard.atstovavimas.padaliniai'));
     });
 
-    test('the old tenant-scope bookmark stays on the personal overview without access', function (): void {
+    test('the old tenant-tab bookmark opens the padalinys overview for a rep too', function (): void {
         asUser($this->user)
             ->get(route('dashboard.atstovavimas', ['tab' => 'tenant']))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('Admin/Dashboard/ShowAtstovavimas'));
+            ->assertRedirect(route('dashboard.atstovavimas.padaliniai'));
     });
 
     test('user with global read permission sees all tenants', function (): void {
@@ -230,7 +240,7 @@ describe('atstovavimas dashboard authorization', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->where('availableTenants', function ($tenants) use ($mainTenant, $otherTenant) {
+                ->where('statsTenants', function ($tenants) use ($mainTenant, $otherTenant) {
                     $collection = collect($tenants);
 
                     return $collection->contains(fn ($tenant) => $tenant['id'] == $mainTenant->id)
@@ -255,7 +265,7 @@ describe('atstovavimas dashboard authorization', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->where('availableTenants', function ($tenants) {
+                ->where('statsTenants', function ($tenants) {
                     $collection = collect($tenants);
 
                     // User with permission should have available tenants for the tenant tab
@@ -271,13 +281,13 @@ describe('atstovavimas dashboard authorization', function (): void {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
 
-        // Verify super admin has access to all tenants via availableTenants
+        // Verify super admin has access to all tenants via statsTenants
         asUser($superAdmin)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->where('availableTenants', function ($tenants) use ($otherTenant) {
+                ->where('statsTenants', function ($tenants) use ($otherTenant) {
                     $collection = collect($tenants);
 
                     // Super admin should see all non-PKP tenants including the other tenant
@@ -404,8 +414,8 @@ describe('atstovavimas tenant isolation', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowAtstovavimasPadaliniai')
-                ->has('availableTenants')
-                ->where('availableTenants',
+                ->has('statsTenants')
+                ->where('statsTenants',
                     // User should see tenants they have permissions for
                     fn ($tenants) => collect($tenants)->count() > 0)
             );
@@ -479,7 +489,8 @@ describe('atstovavimas related institutions', function (): void {
                         // Should be marked as related with correct metadata
                         return $found['is_related'] === true &&
                                $found['authorized'] === true &&
-                               $found['relationship_direction'] === 'outgoing';
+                               $found['relationship_direction'] === 'outgoing' &&
+                               $found['is_internal'] === false;
                     })
                 )
             );

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\AnnounceMeetingInCalendar;
 use App\Actions\GetRecentlyChangedMeetings;
+use App\Actions\GetUserTenantShortnames;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
 use App\Http\Controllers\AdminController;
@@ -54,6 +55,7 @@ class MeetingController extends AdminController
         return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
             'deletedCount' => $this->scopedTrashedCount(Meeting::query(), 'tenants', 'meetings.read.padalinys'),
             'recentlyChanged' => $request->getShowDeleted() ? [] : GetRecentlyChangedMeetings::execute($request->user())->all(),
+            'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
         ]);
     }
 
@@ -156,15 +158,26 @@ class MeetingController extends AdminController
      */
     public function show(Meeting $meeting)
     {
-        $this->handleAuthorization('view', $meeting);
+        $this->handleAuthorization('viewSummary', $meeting);
 
-        $meeting->load('institutions.types', 'institutions.tenant', 'fileableFiles', 'comments', 'calendarEvent')->load([
+        // A public meeting outside the user's reach opens as its agenda only: no files, tasks,
+        // documents or discussion, and nothing that would lead to non-public siblings.
+        $readOnly = ! Gate::allows('view', $meeting);
+
+        $meeting->load($readOnly
+            ? ['institutions.types', 'institutions.tenant', 'calendarEvent']
+            : ['institutions.types', 'institutions.tenant', 'fileableFiles', 'comments', 'calendarEvent']
+        )->load([
             'agendaItems' => function ($query): void {
                 $query->with('votes')->withCount('comments')
                     ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')])
                     ->orderBy('order');
             },
-        ])->loadCount(['comments', 'tasks', 'documents']);
+        ]);
+
+        if (! $readOnly) {
+            $meeting->loadCount(['comments', 'tasks', 'documents']);
+        }
 
         // Append is_public, is_joint and file status now that relations are loaded (avoids N+1)
         $meeting->append(['is_public', 'is_joint', 'has_protocol', 'has_report']);
@@ -175,12 +188,12 @@ class MeetingController extends AdminController
         // The primary institution determines the canonical public host.
         $primaryInstitution = $meeting->institutions->first();
 
-        $canUpdate = Gate::allows('update', $meeting);
+        $canUpdate = ! $readOnly && Gate::allows('update', $meeting);
         $canCreateAgendaItems = $canUpdate && Gate::allows('create', AgendaItem::class);
         $agendaItemAbilities = $meeting->agendaItems->mapWithKeys(fn (AgendaItem $item): array => [
             (string) $item->getKey() => [
-                'update' => Gate::allows('update', $item),
-                'delete' => Gate::allows('delete', $item),
+                'update' => ! $readOnly && Gate::allows('update', $item),
+                'delete' => ! $readOnly && Gate::allows('delete', $item),
             ],
         ]);
         $missingActions = collect($this->meetingCompletionService->missingActions($meeting))
@@ -212,16 +225,17 @@ class MeetingController extends AdminController
                 // The edit dialog writes the description, so it needs every locale rather
                 // than the current one — the rest of the page reads the localized array above.
                 'description' => $meeting->getTranslations('description'),
-                'sharepointPath' => SharepointFileService::pathOrNull($meeting),
+                'sharepointPath' => $readOnly ? null : SharepointFileService::pathOrNull($meeting),
             ],
-            'files' => $meeting->fileableFiles->whereNull('deleted_externally_at')->sortByDesc('file_date')->values(),
+            'readOnly' => $readOnly,
+            'files' => $readOnly ? [] : $meeting->fileableFiles->whereNull('deleted_externally_at')->sortByDesc('file_date')->values(),
             'representatives' => $representatives,
             // Nominated for the term the meeting fell in (O22). When present, these are the
             // people the agenda tasks went to instead of the whole membership.
-            'secretaries' => InstitutionSecretaryController::forMeetingPayload($meeting),
+            'secretaries' => $readOnly ? [] : InstitutionSecretaryController::forMeetingPayload($meeting),
             'abilities' => [
                 'update' => $canUpdate,
-                'delete' => Gate::allows('delete', $meeting),
+                'delete' => ! $readOnly && Gate::allows('delete', $meeting),
                 'createAgendaItems' => $canCreateAgendaItems,
                 'reorderAgendaItems' => $canUpdate,
                 'attachInstitution' => $canUpdate,
@@ -235,18 +249,18 @@ class MeetingController extends AdminController
                 ? $this->getAvailableInstitutionsForAttach($meeting)
                 : [],
             'governanceScope' => $this->governanceScopeFor($meeting),
-            'recordNavigation' => $primaryInstitution === null ? null : $this->institutionMeetingNavigation($meeting, $primaryInstitution),
-            'tasks' => Inertia::defer(fn () => TaskResource::collection(
+            'recordNavigation' => $readOnly || $primaryInstitution === null ? null : $this->institutionMeetingNavigation($meeting, $primaryInstitution),
+            'tasks' => $readOnly ? [] : Inertia::defer(fn () => TaskResource::collection(
                 $meeting->tasks()->with('users:id,name,email,profile_photo_path', 'taskable')->get()
             )->resolve(), 'meetingPanels'),
-            'documents' => Inertia::defer(fn () => $meeting->documents()
+            'documents' => $readOnly ? [] : Inertia::defer(fn () => $meeting->documents()
                 ->orderBy('document_date')
                 ->orderBy('title')
                 ->get()
                 ->each->append('language_code')
                 ->toArray(), 'meetingPanels'),
             // Loaded only when "Iš ankstesnio posėdžio" is opened in the add-items sheet.
-            'recentAgendas' => Inertia::optional(fn () => $this->recentAgendasFor($meeting)),
+            'recentAgendas' => Inertia::optional(fn () => $readOnly ? [] : $this->recentAgendasFor($meeting)),
         ]);
     }
 
