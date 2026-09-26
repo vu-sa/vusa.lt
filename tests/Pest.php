@@ -353,22 +353,18 @@ function disableServiceWorker(PendingAwaitablePage|AwaitableWebpage $page): void
 
 /**
  * Keep Chromium's "ResizeObserver loop completed with undelivered notifications" out of
- * assertNoJavaScriptErrors(): a benign layout-timing warning that users never see. The plugin's
- * collector listens first, so the entry is pruned from its array afterwards rather than blocked.
+ * assertNoJavaScriptErrors(): a benign layout-timing warning that users never see. Window listeners
+ * fire in registration order, so the plugin's collector has already pushed the entry and it is
+ * pruned in the same dispatch — a setTimeout prune raced javaScriptErrors() reads and flaked on CI.
  */
 function ignoreResizeObserverLoopErrors(PendingAwaitablePage|AwaitableWebpage $page): void
 {
     $filter = <<<'JS'
         window.addEventListener('error', (event) => {
-            if (!event.message?.startsWith('ResizeObserver loop')) {
-                return;
+            const collector = window.__pestBrowser;
+            if (collector && event.message?.startsWith('ResizeObserver loop')) {
+                collector.jsErrors = collector.jsErrors.filter((error) => !error.message?.startsWith('ResizeObserver loop'));
             }
-            setTimeout(() => {
-                const collector = window.__pestBrowser;
-                if (collector) {
-                    collector.jsErrors = collector.jsErrors.filter((error) => !error.message?.startsWith('ResizeObserver loop'));
-                }
-            });
         });
         JS;
 
