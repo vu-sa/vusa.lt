@@ -23,14 +23,14 @@ it('keeps the floating Gantt date below the shell topbar', function (): void {
         const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + 2);
         return {
             chartIsolated: getComputedStyle(chart).isolation === "isolate",
-            badgeBelowChartTop: rect.top >= chart.getBoundingClientRect().top,
+            badgeAboveAxis: rect.bottom <= chart.getBoundingClientRect().top + 1,
             shellOnTop: shell.contains(hit),
         };
     })()');
 
     expect($stacking)->toBe([
         'chartIsolated' => true,
-        'badgeBelowChartTop' => true,
+        'badgeAboveAxis' => true,
         'shellOnTop' => true,
     ]);
 });

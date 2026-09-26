@@ -11,6 +11,7 @@ the deploy went years without restarting them.
 | `laravel-sharepoint-worker` | 1 | production `queue:work --queue=sharepoint-sync` |
 | `staging-laravel-worker` | 1 | staging `queue:work` |
 | `reverb` | 1 | production `reverb:start` (WebSockets) |
+| `staging-reverb` | 1 | staging `reverb:start` on `127.0.0.1:6002`, only with `STAGING_BROADCASTING_ENABLED=true` |
 
 `typesense.conf` and `umami.conf` also live on the server but are not Laravel processes, so they are
 not mirrored here.

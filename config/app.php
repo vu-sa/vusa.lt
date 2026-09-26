@@ -110,6 +110,11 @@ return [
     // StagingIsolationService confirms a separate app and test site (see filesystems.sharepoint).
     'sharepoint_read_only' => (bool) env('SHAREPOINT_READ_ONLY', env('APP_ENV') === 'staging'),
 
+    // Staging opt-ins, both off by default. StagingIsolationService then requires staging's own
+    // Reverb process (never production's port) and a complete set of VAPID keys.
+    'staging_broadcasting_enabled' => (bool) env('STAGING_BROADCASTING_ENABLED', false),
+    'staging_push_enabled' => (bool) env('STAGING_PUSH_ENABLED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

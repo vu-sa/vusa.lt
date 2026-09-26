@@ -26,9 +26,8 @@ class StagingIsolationService
             config('app.files_read_only') !== true ? 'FILES_READ_ONLY must be true.' : null,
             ...$this->sharepointErrors(),
             config('mail.default') !== 'log' ? 'The staging mailer must be log.' : null,
-            config('broadcasting.default') !== 'null' ? 'The staging broadcaster must be null.' : null,
-            ! $this->missing(config('webpush.vapid.public_key')) ? 'VAPID_PUBLIC_KEY must be empty.' : null,
-            ! $this->missing(config('webpush.vapid.private_key')) ? 'VAPID_PRIVATE_KEY must be empty.' : null,
+            ...$this->broadcastingErrors(),
+            ...$this->pushErrors(),
             ! $this->missing(config('services.umami.website_id')) ? 'UMAMI_WEBSITE_ID must be empty.' : null,
         ]));
     }
@@ -90,6 +89,65 @@ class StagingIsolationService
                 ? 'SHAREPOINT_VUSA_DRIVE_ID must not be a production drive.'
                 : null,
         ]));
+    }
+
+    /**
+     * Staging broadcasts only to its own Reverb process on loopback; production's would relay staging
+     * events to real users' open tabs.
+     *
+     * @return list<string>
+     */
+    public function broadcastingErrors(): array
+    {
+        if (config('app.env') !== 'staging') {
+            return [];
+        }
+
+        if (config('app.staging_broadcasting_enabled') !== true) {
+            return config('broadcasting.default') !== 'null' ? ['The staging broadcaster must be null.'] : [];
+        }
+
+        $options = config('broadcasting.connections.reverb.options');
+        $port = (int) $options['port'];
+
+        return array_values(array_filter([
+            config('broadcasting.default') !== 'reverb' ? 'BROADCAST_CONNECTION must be reverb.' : null,
+            ! in_array($options['host'], ['127.0.0.1', 'localhost'], true)
+                ? 'REVERB_HOST must be 127.0.0.1, staging\'s own Reverb process.'
+                : null,
+            $port === (int) config('broadcasting.production.reverb_port')
+                ? 'REVERB_PORT must not be production Reverb\'s port.'
+                : null,
+            (int) config('reverb.servers.reverb.port') !== $port ? 'REVERB_SERVER_PORT must match REVERB_PORT.' : null,
+        ]));
+    }
+
+    /**
+     * Staging may only push to subscriptions made on staging, which holds because
+     * staging:refresh-database empties push_subscriptions.
+     *
+     * @return list<string>
+     */
+    public function pushErrors(): array
+    {
+        if (config('app.env') !== 'staging') {
+            return [];
+        }
+
+        $pushEnabled = config('app.staging_push_enabled') === true;
+        $errors = [];
+
+        foreach (['VAPID_SUBJECT' => 'subject', 'VAPID_PUBLIC_KEY' => 'public_key', 'VAPID_PRIVATE_KEY' => 'private_key'] as $name => $key) {
+            $missing = $this->missing(config("webpush.vapid.{$key}"));
+
+            if ($pushEnabled && $missing) {
+                $errors[] = "{$name} must be set when STAGING_PUSH_ENABLED=true.";
+            } elseif (! $pushEnabled && ! $missing) {
+                $errors[] = "{$name} must be empty.";
+            }
+        }
+
+        return $errors;
     }
 
     private function missing(mixed $value): bool

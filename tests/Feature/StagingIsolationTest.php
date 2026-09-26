@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Storage;
+use NotificationChannels\WebPush\WebPushChannel;
 
 pest()->use(RefreshDatabase::class);
 
@@ -36,7 +37,13 @@ beforeEach(function (): void {
         'queue.connections.redis.queue',
         'scout.prefix',
         'mail.default',
+        'app.staging_broadcasting_enabled',
+        'app.staging_push_enabled',
         'broadcasting.default',
+        'broadcasting.connections.reverb.options.host',
+        'broadcasting.connections.reverb.options.port',
+        'reverb.servers.reverb.port',
+        'webpush.vapid.subject',
         'webpush.vapid.public_key',
         'webpush.vapid.private_key',
         'services.umami.website_id',
@@ -73,7 +80,10 @@ function configureSafeStagingIsolation(): void
         'queue.connections.redis.queue' => 'staging',
         'scout.prefix' => 'staging_',
         'mail.default' => 'log',
+        'app.staging_broadcasting_enabled' => false,
+        'app.staging_push_enabled' => false,
         'broadcasting.default' => 'null',
+        'webpush.vapid.subject' => null,
         'webpush.vapid.public_key' => null,
         'webpush.vapid.private_key' => null,
         'services.umami.website_id' => null,
@@ -141,6 +151,48 @@ test('a writable staging SharePoint refuses production identifiers', function ()
         ->expectsOutputToContain('SHAREPOINT_WRITABLE_SITE_IDS must not contain a production site')
         ->expectsOutputToContain('SHAREPOINT_SITE_ID must be listed in SHAREPOINT_WRITABLE_SITE_IDS')
         ->expectsOutputToContain('SHAREPOINT_VUSA_DRIVE_ID must not be a production drive')
+        ->assertExitCode(1);
+});
+
+test('staging broadcasting and push accept their own Reverb process and VAPID keys', function (): void {
+    configureSafeStagingIsolation();
+
+    config([
+        'app.staging_broadcasting_enabled' => true,
+        'app.staging_push_enabled' => true,
+        'broadcasting.default' => 'reverb',
+        'broadcasting.connections.reverb.options.host' => '127.0.0.1',
+        'broadcasting.connections.reverb.options.port' => '6002',
+        'reverb.servers.reverb.port' => '6002',
+        'webpush.vapid.subject' => 'mailto:it@vusa.lt',
+        'webpush.vapid.public_key' => 'staging-public',
+        'webpush.vapid.private_key' => 'staging-private',
+    ]);
+
+    $this->artisan('staging:verify-isolation')
+        ->expectsOutputToContain('configuration is safe')
+        ->assertExitCode(0);
+});
+
+test('staging broadcasting refuses production Reverb and push refuses missing keys', function (): void {
+    configureSafeStagingIsolation();
+
+    config([
+        'app.staging_broadcasting_enabled' => true,
+        'app.staging_push_enabled' => true,
+        'broadcasting.default' => 'reverb',
+        'broadcasting.connections.reverb.options.host' => 'www.vusa.lt',
+        'broadcasting.connections.reverb.options.port' => config('broadcasting.production.reverb_port'),
+        'reverb.servers.reverb.port' => '6002',
+        'webpush.vapid.public_key' => 'staging-public',
+    ]);
+
+    $this->artisan('staging:verify-isolation')
+        ->expectsOutputToContain('REVERB_HOST must be 127.0.0.1')
+        ->expectsOutputToContain('REVERB_PORT must not be production Reverb\'s port')
+        ->expectsOutputToContain('REVERB_SERVER_PORT must match REVERB_PORT')
+        ->expectsOutputToContain('VAPID_SUBJECT must be set when STAGING_PUSH_ENABLED=true')
+        ->expectsOutputToContain('VAPID_PRIVATE_KEY must be set when STAGING_PUSH_ENABLED=true')
         ->assertExitCode(1);
 });
 
@@ -213,15 +265,22 @@ test('read only middleware blocks the real file and SharePoint mutation route na
     'SharePoint file deletion' => 'fileableFiles.destroy',
 ]);
 
-test('only database notification channels are allowed in staging', function (): void {
+test('only database notification channels are allowed in staging by default', function (): void {
     $listener = new BlockExternalNotificationsOnStaging;
     $notification = new WelcomeNotification;
 
-    config(['app.env' => 'staging']);
+    config(['app.env' => 'staging', 'app.staging_broadcasting_enabled' => false, 'app.staging_push_enabled' => false]);
 
     expect($listener->handle(new NotificationSending(new stdClass, $notification, 'database')))->toBeNull()
         ->and($listener->handle(new NotificationSending(new stdClass, $notification, 'mail')))->toBeFalse()
-        ->and($listener->handle(new NotificationSending(new stdClass, $notification, 'broadcast')))->toBeFalse();
+        ->and($listener->handle(new NotificationSending(new stdClass, $notification, 'broadcast')))->toBeFalse()
+        ->and($listener->handle(new NotificationSending(new stdClass, $notification, WebPushChannel::class)))->toBeFalse();
+
+    config(['app.staging_broadcasting_enabled' => true, 'app.staging_push_enabled' => true]);
+
+    expect($listener->handle(new NotificationSending(new stdClass, $notification, 'broadcast')))->toBeNull()
+        ->and($listener->handle(new NotificationSending(new stdClass, $notification, WebPushChannel::class)))->toBeNull()
+        ->and($listener->handle(new NotificationSending(new stdClass, $notification, 'mail')))->toBeFalse();
 
     config(['app.env' => 'production']);
 

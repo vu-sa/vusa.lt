@@ -66,13 +66,13 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
   `;
   container.appendChild(lineEl);
 
-  // Create the outer wrapper (contains week offset label + date badge)
+  // Sits above the chart's top edge; the container's isolation keeps it under the shell topbar.
   const outerWrapper = document.createElement('div');
   outerWrapper.className = 'gantt-center-date';
   outerWrapper.style.cssText = `
     position: absolute;
-    top: 0;
-    transform: translateX(-50%);
+    top: -4px;
+    transform: translate(-50%, -100%);
     display: flex;
     flex-direction: column;
     align-items: center;
