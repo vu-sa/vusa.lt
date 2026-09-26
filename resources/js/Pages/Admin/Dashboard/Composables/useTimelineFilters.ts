@@ -2,7 +2,7 @@
  * useTimelineFilters - Shared timeline filter state with Provide/Inject
  *
  * This composable provides centralized filter state management for Gantt charts
- * across UserTimelineSection, TenantTimelineSection, and FullscreenGanttModal.
+ * across UserTimelineSection and TenantTimelineSection.
  *
  * Uses the same pattern as useGanttSettings for consistency.
  *

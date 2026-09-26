@@ -182,7 +182,7 @@ describe('AssignDutyUserSheet.vue', () => {
     it('shows the member and no search, and reads the description as translations', () => {
       const wrapper = mountSheet({ dutiable, duty: null });
 
-      expect(wrapper.text()).toContain('Redaguoti kadenciją');
+      expect(wrapper.text()).toContain('Redaguoti pareigybės laikotarpį');
       expect(wrapper.text()).toContain('Jonas Jonaitis');
       expect(wrapper.text()).toContain('Sekretorius');
       expect(wrapper.find('[data-testid="member-search"]').exists()).toBe(false);
@@ -206,7 +206,7 @@ describe('AssignDutyUserSheet.vue', () => {
 
       expect(wrapper.findAll('[data-testid="confirm"]')).toHaveLength(0);
 
-      const endButton = wrapper.findAll('button').find(b => b.text().includes('Baigti kadenciją'));
+      const endButton = wrapper.findAll('button').find(b => b.text().includes('Užbaigti pareigas'));
       await endButton!.trigger('click');
       await wrapper.find('[data-testid="confirm-yes"]').trigger('click');
 
@@ -226,7 +226,7 @@ describe('AssignDutyUserSheet.vue', () => {
     it('cannot end a term that has not started', () => {
       const wrapper = mountSheet({ dutiable: { ...dutiable, start_date: '2027-01-01' }, duty: null });
 
-      expect(wrapper.findAll('button').some(b => b.text().includes('Baigti kadenciją'))).toBe(false);
+      expect(wrapper.findAll('button').some(b => b.text().includes('Užbaigti pareigas'))).toBe(false);
       expect(wrapper.findAll('button').some(b => b.text() === 'Ištrinti')).toBe(true);
     });
 

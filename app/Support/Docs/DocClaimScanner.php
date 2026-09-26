@@ -37,8 +37,8 @@ class DocClaimScanner
     private array $warnings = [];
 
     /**
-     * A file a page may cite: a Pest test proves what the server enforces, a Vitest spec what
-     * the screen shows and allows.
+     * A file a page may cite: a Pest test proves what the server enforces (a browser test under
+     * tests/Browser what only a real layout shows), a Vitest spec what the screen shows and allows.
      */
     public static function isTestPath(string $path): bool
     {

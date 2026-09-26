@@ -99,7 +99,7 @@ describe('member registration form access', function (): void {
     });
 
     test('a user who can read forms for a tenant can still view it', function (): void {
-        $user = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
         asUser($user)
             ->get(route('forms.show', $this->memberForm))
@@ -136,7 +136,7 @@ describe('member registration form access', function (): void {
     });
 
     test('a tenant form reader sees tenant forms and the shared member form', function (): void {
-        $user = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $tenantForm = Form::factory()->for($this->tenant)->create();
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         Form::factory()->for($otherTenant)->create();

@@ -41,6 +41,7 @@
             <span v-if="item.types?.length">{{ item.types.map(type => titleOf(type.title)).join(', ') }}</span>
           </div>
         </div>
+        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -49,6 +50,7 @@
       <span v-else-if="column.key === 'institution'" class="text-muted-foreground">{{ institutionTitle(item) || '—' }}</span>
       <span v-else-if="column.key === 'email'" class="text-muted-foreground">{{ item.email || '—' }}</span>
       <span v-else-if="column.key === 'occupancy'" :class="item.dutiables_count === 0 ? 'text-status-attention' : 'text-muted-foreground'">{{ item.dutiables_count === 0 ? $t('Neužimta') : $tChoice('Narys|Nariai|Narių', item.dutiables_count, { count: item.dutiables_count }) }}</span>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #preview="{ item }">
@@ -84,7 +86,7 @@
           <Button variant="outline" @click="restore(item)">
             <RotateCcw aria-hidden="true" />{{ $t('Atkurti') }}
           </Button>
-          <Button variant="ghost" class="text-destructive hover:text-destructive" @click="forceDeleteTarget = item">
+          <Button v-if="canForceDelete" variant="ghost" class="text-destructive hover:text-destructive" @click="forceDeleteTarget = item">
             <Trash2 aria-hidden="true" />{{ $t('Ištrinti visam laikui') }}
           </Button>
         </template>
@@ -121,10 +123,11 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { CircleAlert, Merge, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { DutyIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
@@ -141,11 +144,26 @@ const props = defineProps<{ duties: { data: Duty[]; meta: { total: number; per_p
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.duty));
 const canUpdate = computed(() => Boolean(usePage().props.auth?.can?.update?.duty));
+const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.duty));
 const { hasCollectionAction } = useAdminNavigation();
 const canMerge = computed(() => hasCollectionAction('duties.index', 'merge'));
 const mergeMode = ref(false);
 const mergeRecords = ref<MergeRecord[]>([]);
 const forceDeleteTarget = ref<Duty | null>(null);
+
+const rowActions = (item: Duty): CollectionRowAction[] => isDeleted.value
+  ? [
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
+    ]
+  : canUpdate.value
+    ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true, href: route('duties.edit', item.id) }]
+    : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowRight, labelled: true, href: route('duties.show', item.id) }];
+
+function selectRowAction(key: string, item: Duty): void {
+  if (key === 'restore') restore(item);
+  if (key === 'forceDelete') forceDeleteTarget.value = item;
+}
 
 const source = useDatabaseCollectionSource<Duty>({
   endpoint: route('api.v1.admin.duties.index'),
@@ -159,7 +177,11 @@ const source = useDatabaseCollectionSource<Duty>({
   ] }],
 });
 const columns = computed<CollectionColumn[]>(() => [
-  { key: 'name', label: $t('Pareigybė'), sortField: 'name' }, { key: 'institution', label: $t('Institucija') }, { key: 'email', label: $t('El. paštas') }, { key: 'occupancy', label: $t('Nariai'), class: 'w-32' },
+  { key: 'name', label: $t('Pareigybė'), sortField: 'name' },
+  { key: 'institution', label: $t('Institucija') },
+  { key: 'email', label: $t('El. paštas') },
+  { key: 'occupancy', label: $t('Nariai'), class: 'w-32' },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 const dutyKey = (duty: Duty) => String(duty.id);
 const titleOf = (value: Translation | string | null | undefined) => typeof value === 'string' ? value : value?.lt || value?.en || '—';

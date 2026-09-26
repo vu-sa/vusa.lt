@@ -27,7 +27,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     // Create related test data
     $this->page = Page::factory()->for($this->tenant)->create();
@@ -402,7 +402,7 @@ describe('atstovavimas tenant isolation', function (): void {
         // Give Communication Coordinators the institutions.read.padalinys permission
         // This replaces the old role-based visibility settings
         $permission = Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']);
-        $coordinatorRole = Role::where('name', 'Communication Coordinator')->first();
+        $coordinatorRole = Role::where('name', 'Komunikacijos koordinatorius')->first();
         if ($coordinatorRole && ! $coordinatorRole->hasPermissionTo($permission)) {
             $coordinatorRole->givePermissionTo($permission);
         }

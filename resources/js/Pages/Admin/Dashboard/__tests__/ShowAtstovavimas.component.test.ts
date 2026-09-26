@@ -44,11 +44,9 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTimelineFilters', () => ({
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasActions', () => ({
   useAtstovavimasActions: () => ({
-    showFullscreenGantt: ref(false),
     showCreateCheckIn: ref(null),
     onGapCreateMeeting: vi.fn(),
     onGapCreateCheckIn: vi.fn(),
-    onGanttFullscreen: vi.fn(),
   }),
 }));
 
@@ -79,7 +77,6 @@ const stubs = {
   UserTimelineSection: marker('user-timeline'),
   TimelineGanttSkeleton: marker('timeline-skeleton'),
   TenantScopeSelector: marker('tenant-scope-selector'),
-  FullscreenGanttModal: marker('fullscreen'),
   AddCheckInDialog: marker('check-in'),
 };
 

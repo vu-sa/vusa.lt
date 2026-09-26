@@ -47,12 +47,14 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <Link
+                v-if="!isDeleted"
                 :href="route('banners.edit', item.id)"
                 data-collection-open
                 class="truncate font-medium hover:text-brand"
               >
                 {{ item.title }}
               </Link>
+              <span v-else class="truncate font-medium text-muted-foreground">{{ item.title }}</span>
             </div>
             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span v-if="item.tenant?.shortname" class="font-medium">{{ item.tenant.shortname }}</span>
@@ -77,13 +79,7 @@
           :editable="canCreate && !isDeleted"
           @update:model-value="value => updateStatus(item, value === 'active')"
         />
-        <div class="flex shrink-0 items-center gap-1">
-          <Button as-child variant="outline" size="icon">
-            <Link :href="route('banners.edit', item.id)">
-              <ChevronRight class="size-4" />
-            </Link>
-          </Button>
-        </div>
+        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -107,12 +103,14 @@
           <ImageIcon class="size-4" />
         </div>
         <Link
+          v-if="!isDeleted"
           :href="route('banners.edit', item.id)"
           data-collection-open
           class="block truncate font-medium hover:text-brand"
         >
           {{ item.title }}
         </Link>
+        <span v-else class="block truncate font-medium text-muted-foreground">{{ item.title }}</span>
       </div>
 
       <div v-else-if="column.key === 'link_url'" class="truncate">
@@ -142,30 +140,7 @@
         @update:model-value="value => updateStatus(item, value === 'active')"
       />
 
-      <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
-        <template v-if="isDeleted">
-          <Button variant="outline" size="icon" :title="$t('Atkurti')" @click="restoreBanner(item)">
-            <RotateCcw class="size-4" />
-          </Button>
-          <Button
-            v-if="canForceDelete"
-            variant="outline"
-            size="icon"
-            class="text-destructive hover:text-destructive"
-            :title="$t('Ištrinti visam laikui')"
-            @click="targetBannerToForceDelete = item"
-          >
-            <Trash2 class="size-4" />
-          </Button>
-        </template>
-        <template v-else>
-          <Button as-child variant="outline" size="icon" :title="$t('Redaguoti')">
-            <Link :href="route('banners.edit', item.id)">
-              <Edit class="size-4" />
-            </Link>
-          </Button>
-        </template>
-      </div>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -194,11 +169,12 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, Edit, ExternalLink, Image as ImageIcon, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { ExternalLink, Image as ImageIcon, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -233,6 +209,18 @@ const props = defineProps<{
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.banner));
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.banner));
+
+const rowActions = (item: BannerRow): CollectionRowAction[] => isDeleted.value
+  ? [
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
+    ]
+  : [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true, href: route('banners.edit', item.id) }];
+
+function selectRowAction(key: string, item: BannerRow): void {
+  if (key === 'restore') restoreBanner(item);
+  if (key === 'forceDelete') targetBannerToForceDelete.value = item;
+}
 
 const targetBannerToForceDelete = ref<BannerRow | null>(null);
 

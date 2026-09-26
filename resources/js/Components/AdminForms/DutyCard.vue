@@ -38,7 +38,7 @@
           variant="ghost"
           size="sm"
           class="size-7 p-0 pointer-coarse:size-11"
-          :aria-label="$t('Redaguoti kadenciją')"
+          :aria-label="$t('Redaguoti pareigybės laikotarpį')"
           @click="$emit('edit-term', duty, user)"
         >
           <CalendarCog class="size-3.5 text-muted-foreground" aria-hidden="true" />

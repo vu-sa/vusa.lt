@@ -1,7 +1,13 @@
 <template>
   <Popover>
     <PopoverTrigger as-child>
-      <Button type="button" size="xs" variant="ghost" :aria-label="$t('dutiables.timeline.legend.title')">
+      <Button
+        type="button"
+        size="icon-sm"
+        variant="outline"
+        :aria-label="$t('dutiables.timeline.legend.title')"
+        :title="$t('dutiables.timeline.legend.title')"
+      >
         <Info class="size-3.5" />
       </Button>
     </PopoverTrigger>
@@ -13,7 +19,7 @@
         </p>
 
         <ul class="space-y-1.5">
-          <li v-for="entry in entries" :key="entry.key" class="flex items-center gap-2 text-[11px]">
+          <li v-for="entry in entries" :key="entry.key" class="flex items-center gap-2 text-xs">
             <span
               class="h-2.5 w-5 shrink-0"
               :style="{
@@ -35,7 +41,7 @@
           {{ $t('dutiables.timeline.help.title') }}
         </p>
 
-        <ul class="space-y-1 text-[11px] text-muted-foreground">
+        <ul class="space-y-1 text-xs text-muted-foreground">
           <li v-for="key in HELP_KEYS" :key>
             {{ $t(`dutiables.timeline.help.${key}`) }}
           </li>
@@ -58,7 +64,7 @@ const props = defineProps<{
   colors: TimelineColors;
 }>();
 
-const HELP_KEYS = ['drag_body', 'drag_edges', 'precise', 'cancel'] as const;
+const HELP_KEYS = ['drag_body', 'drag_edges', 'precise', 'cancel', 'fullscreen'] as const;
 
 /**
  * `former` sits second because it outranks ex-officio: an ended seat is muted whether or
@@ -67,7 +73,7 @@ const HELP_KEYS = ['drag_body', 'drag_edges', 'precise', 'cancel'] as const;
 const entries = computed(() => [
   { key: 'active', fill: props.colors.active, stroke: undefined, dashed: false },
   { key: 'former', fill: props.colors.former, stroke: undefined, dashed: false },
-  { key: 'derived', fill: props.colors.derived, stroke: props.colors.derived, dashed: true },
+  { key: 'derived', fill: props.colors.derived, stroke: props.colors.derivedStroke, dashed: true },
   { key: 'staged', fill: props.colors.staged, stroke: undefined, dashed: false },
   { key: 'cross_tenant', fill: props.colors.active, stroke: props.colors.crossTenantStroke, dashed: false },
 ]);

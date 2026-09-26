@@ -11,12 +11,12 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo(['duties.read.padalinys', 'duties.update.padalinys', 'users.read.padalinys']);
 
     $this->manager = makeUser($this->tenant);
     $this->duty = $this->manager->duties()->first();
-    $this->duty->assignRole('Communication Coordinator');
+    $this->duty->assignRole('Komunikacijos koordinatorius');
 
     $this->holder = makeUser($this->tenant);
 

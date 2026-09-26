@@ -29,7 +29,7 @@ beforeEach(function (): void {
     $this->meeting = Meeting::factory()->create(['start_time' => '2026-05-14 10:00:00']);
     $this->meeting->institutions()->attach($this->institution);
 
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 });
 
 /** The published announcement, which is what opens the agenda to the public. */

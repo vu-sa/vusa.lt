@@ -21,8 +21,8 @@ const stubs = {
   },
   DutiableTimelineEditor: {
     name: 'DutiableTimelineEditor',
-    props: ['scopeType', 'scopeId', 'height'],
-    template: '<div class="editor-stub" />',
+    props: ['scopeType', 'scopeId', 'showScope'],
+    template: '<div class="editor-stub"><slot name="toolbar-end" /></div>',
   },
 };
 
@@ -100,5 +100,26 @@ describe('Admin/People/DutiableTimeline', () => {
     await wrapper.vm.$nextTick();
 
     expect(wrapper.findComponent({ name: 'DutiableTimelineEditor' }).props('scopeId')).toBe('inst-1');
+  });
+
+  it('names the institution in the title band instead of the chart toolbar', () => {
+    const wrapper = mountPage({ id: 'inst-1', name: 'Parlamentas' });
+
+    expect(wrapper.get('h1').text()).toBe('Parlamentas');
+    expect(wrapper.findComponent({ name: 'DutiableTimelineEditor' }).props('showScope')).toBe(false);
+  });
+
+  it('takes the chart full screen from the toolbar and back', async () => {
+    const wrapper = mountPage({ id: 'inst-1', name: 'Parlamentas' });
+    const toggle = wrapper.get('[data-tour="timeline-fullscreen"]');
+
+    await toggle.trigger('click');
+
+    expect(wrapper.get('[data-slot="focus-mode-frame"]').attributes('data-active')).toBe('true');
+    expect(toggle.attributes('aria-label')).toBe('dutiables.timeline.fullscreen.exit');
+
+    await toggle.trigger('click');
+
+    expect(wrapper.get('[data-slot="focus-mode-frame"]').attributes('data-active')).toBeUndefined();
   });
 });

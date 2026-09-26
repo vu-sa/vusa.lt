@@ -70,7 +70,6 @@
           :may-have-related-institutions="props.mayHaveRelatedInstitutions"
           @create-meeting="actions.onGapCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
-          @fullscreen="actions.onGanttFullscreen('user')"
         />
       </div>
     </section>
@@ -95,33 +94,6 @@
 
     <OverviewStatusList />
 
-    <!-- FullscreenGanttModal first so dialogs opened from within it appear on top -->
-    <FullscreenGanttModal
-      :is-open="actions.showFullscreenGantt.value"
-      gantt-type="user"
-      :available-tenants="[]"
-      :user-institutions="userScopedInstitutions"
-      :user-meetings="userScopedGanttMeetings"
-      :user-gaps="userScopedGaps"
-      :user-institution-names
-      :user-institution-tenant
-      :user-institution-has-public-meetings
-      :user-institution-periodicity
-      :user-duty-members
-      :user-inactive-periods
-      :user-related-institutions="relatedInstitutions"
-      :may-have-related-institutions="props.mayHaveRelatedInstitutions"
-      :tenant-institutions="[]"
-      :tenant-meetings="[]"
-      :tenant-gaps="[]"
-      :tenant-institution-names="{}"
-      :tenant-institution-tenant="{}"
-      :tenant-names
-      @update:is-open="actions.showFullscreenGantt.value = $event"
-      @create-meeting="actions.onGapCreateMeeting"
-      @create-check-in="actions.onGapCreateCheckIn"
-    />
-
     <AddCheckInDialog
       v-if="actions.showCreateCheckIn.value"
       :open="!!actions.showCreateCheckIn.value"
@@ -142,7 +114,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Eye } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
-import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
 import CoordinatorSkeleton from './Components/CoordinatorSkeleton.vue';
 import TenantScopeSelector from './Components/TenantScopeSelector.vue';
 import TimelineGanttSkeleton from './Components/TimelineGanttSkeleton.vue';

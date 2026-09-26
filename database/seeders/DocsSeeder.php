@@ -4,10 +4,12 @@ namespace Database\Seeders;
 
 use App\Enums\MeetingType;
 use App\Events\MeetingFullyCreated;
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Pivots\Dutiable;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -17,6 +19,7 @@ use App\Support\MeetingTitle;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * A small, hand-written world for the screenshots shown in the docs (tests/Browser README,
@@ -29,6 +32,8 @@ class DocsSeeder extends Seeder
     public const RESOURCE_MANAGER_EMAIL = 'tomas.kazlauskas@vusa.test';
 
     public const MIXED_RESERVATION_NAME = 'Studentų dienų stendas';
+
+    public const TIMELINE_INSTITUTION = 'VU SA parlamentas';
 
     public function run(): void
     {
@@ -53,7 +58,7 @@ class DocsSeeder extends Seeder
             ]);
             $representative->duties()->attach($duty, ['start_date' => now()->subYear()]);
             $duty->types()->attach($representativeType);
-            $duty->assignRole('Student Representative');
+            $duty->assignRole('Studentų atstovas');
         }
 
         // Tasks come from the app's own subscribers, so each frame shows what a rep really gets:
@@ -74,6 +79,7 @@ class DocsSeeder extends Seeder
         app(PeriodicityGapTaskHandler::class)->findOrCreate($committee, collect([$representative]), now()->addDays(5));
 
         $this->reservations($tenant, $representative);
+        $this->dutyTimeline($tenant);
     }
 
     /**
@@ -146,6 +152,69 @@ class DocsSeeder extends Seeder
                 'start_time' => $reservation->start_time,
                 'end_time' => $reservation->end_time,
                 'state' => $state,
+            ]);
+        }
+    }
+
+    /**
+     * Three terms of a parliament: ended seats, current ones, a re-election and one date off
+     * the month grid, so the Pareigybių laikotarpiai frame shows every mark the guide explains.
+     */
+    private function dutyTimeline(Tenant $tenant): void
+    {
+        $parliament = $this->institution($tenant, self::TIMELINE_INSTITUTION, 'VU SR Parliament', 'Parlamentas');
+
+        // Terms run July to June; `$current` is the start year of the one in progress.
+        $current = now()->month >= 7 ? now()->year : now()->year - 1;
+
+        foreach ([$current - 2, $current - 1, $current] as $year) {
+            Cadence::factory()->create([
+                'institution_id' => null,
+                'start_date' => sprintf('%d-07-01', $year),
+                'end_date' => sprintf('%d-06-30', $year + 1),
+            ]);
+        }
+
+        $chair = Duty::factory()->for($parliament)->create([
+            'name' => ['lt' => 'Pirmininkas (-ė)', 'en' => 'Chair'],
+            'description' => ['lt' => '', 'en' => ''],
+            'places_to_occupy' => 1,
+        ]);
+        $member = Duty::factory()->for($parliament)->create([
+            'name' => ['lt' => 'Parlamento narys (-ė)', 'en' => 'Member of Parliament'],
+            'description' => ['lt' => '', 'en' => ''],
+            'places_to_occupy' => 5,
+        ]);
+
+        $term = fn (int $year): array => [sprintf('%d-07-01', $year), sprintf('%d-06-30', $year + 1)];
+
+        $seats = [
+            [$chair, 'Rūta Vaitkutė', $term($current - 2)],
+            [$chair, 'Mantas Jonaitis', [$term($current - 1)[0], null]],
+            [$member, 'Mantas Jonaitis', $term($current - 2)],
+            [$member, 'Gabija Stankevičiūtė', [$term($current - 2)[0], $term($current - 1)[1]]],
+            [$member, 'Lukas Žukauskas', $term($current - 1)],
+            [$member, 'Austėja Kazlauskaitė', [sprintf('%d-09-15', $current - 1), null]],
+            [$member, 'Dovydas Paulauskas', [$term($current)[0], null]],
+            [$member, 'Emilija Petrauskaitė', [$term($current)[0], null]],
+        ];
+
+        $people = [];
+
+        foreach ($seats as [$duty, $name, [$start, $end]]) {
+            $people[$name] ??= User::factory()->create(['name' => $name, 'email' => Str::slug($name, '.').'@vusa.test']);
+
+            Dutiable::factory()->create([
+                'duty_id' => $duty->id,
+                'dutiable_id' => $people[$name]->id,
+                'study_program_id' => null,
+                'additional_email' => null,
+                'additional_photo' => null,
+                'additional_photo_focal_point' => null,
+                'description' => null,
+                'use_original_duty_name' => false,
+                'start_date' => $start,
+                'end_date' => $end,
             ]);
         }
     }

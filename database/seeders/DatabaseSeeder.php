@@ -122,6 +122,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleStudentRepresentativeCoordinatorSeeder::class);
         $this->call(RoleCommunicationCoordinatorSeeder::class);
         $this->call(RoleGlobalCommunicationCoordinatorSeeder::class);
+        $this->call(RoleCentralStudentRepresentativeCoordinatorSeeder::class);
         $this->call(RoleResourceManagerSeeder::class);
         $this->call(RoleCentralResourceManagerSeeder::class);
         $this->call(RolePageEditorSeeder::class);

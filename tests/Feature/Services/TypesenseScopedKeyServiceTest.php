@@ -147,7 +147,7 @@ describe('TypesenseScopedKeyService', function (): void {
     test('user with tenant permission gets scoped keys with tenant filter', function (): void {
         $this->markTestSkipped('Requires running Typesense server');
         $tenant = Tenant::factory()->create(['type' => 'padalinys']);
-        $user = makeTenantUserWithRole('Communication Coordinator', $tenant);
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
 
         // Give the role the necessary permission
         $duty = $user->duties()->first();
@@ -281,7 +281,7 @@ describe('TypesenseScopedKeyService', function (): void {
     test('skip_tenant_filter collections get keys without filter_by', function (): void {
         $this->markTestSkipped('Requires running Typesense server');
         $tenant = Tenant::factory()->create(['type' => 'padalinys']);
-        $user = makeTenantUserWithRole('Communication Coordinator', $tenant);
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
 
         // User doesn't need any specific permission for documents since permission is null
         // Documents are accessible to all authenticated users
@@ -356,7 +356,7 @@ describe('TypesenseManager', function (): void {
     test('getAdminFrontendConfig includes accessible collections for permitted user', function (): void {
         $this->markTestSkipped('Requires running Typesense server');
         $tenant = Tenant::factory()->create(['type' => 'padalinys']);
-        $user = makeTenantUserWithRole('Communication Coordinator', $tenant);
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
 
         $this->mock(TypesenseScopedKeyService::class, function (MockInterface $mock) use ($tenant): void {
             $mock->shouldReceive('generateScopedKeysForUser')
@@ -488,7 +488,7 @@ describe('public records in every scoped key', function (): void {
     });
 
     test('a rep holding meetings.read.own also gets their own institutions', function (): void {
-        $user = makeTenantUserWithRole('Student Representative', Tenant::query()->first());
+        $user = makeTenantUserWithRole('Studentų atstovas', Tenant::query()->first());
         $institutionId = $user->duties()->first()->institution_id;
 
         $filter = scopedKeyFilter(keysFor($user)['meetings']['key']);
@@ -527,7 +527,7 @@ describe('public records in every scoped key', function (): void {
     });
 
     test('a key expires when one of the user\'s duties ends, not an hour later', function (): void {
-        $user = makeTenantUserWithRole('Student Representative', Tenant::query()->first());
+        $user = makeTenantUserWithRole('Studentų atstovas', Tenant::query()->first());
         $duty = $user->duties()->first();
         // The end date is the last day in office, so today's date ends access at midnight.
         $duty->pivot->end_date = now()->toDateString();

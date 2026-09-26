@@ -16,7 +16,7 @@ class RoleStudentRepresentativeSeeder extends Seeder
     public function run()
     {
         $role = Role::firstOrCreate([
-            'name' => 'Student Representative',
+            'name' => 'Studentų atstovas',
             'guard_name' => 'web',
         ]);
 

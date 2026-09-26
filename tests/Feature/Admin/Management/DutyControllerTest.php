@@ -19,7 +19,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create role if it doesn't exist and give it permissions
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.create.padalinys',
@@ -31,7 +31,7 @@ beforeEach(function (): void {
     $this->regularUser = makeUser($this->tenant);
     $this->dutyManager = makeUser($this->tenant);
     $this->dutyManagerDuty = $this->dutyManager->duties()->first();
-    $this->dutyManagerDuty->assignRole('Communication Coordinator');
+    $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 });
 
 describe('unauthorized access', function (): void {
@@ -69,7 +69,7 @@ describe('authorized access', function (): void {
     });
 
     test('super admin can access duties index', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $response = asUser($admin)->get(route('duties.index'));
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexDuty'));
@@ -97,7 +97,7 @@ describe('authorized access', function (): void {
     });
 
     test('super admin can create new duty', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($admin)->post(route('duties.store'), [
@@ -212,7 +212,7 @@ describe('authorized access', function (): void {
         $user2 = makeUser($this->tenant);
         // Use a separate actor not assigned to this duty to avoid their own dutiable
         // being removed when current_users is updated, which would break authorization.
-        $actor = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $roleIds = $this->dutyManagerDuty->roles()->pluck('id')->toArray();
 
         // First add both users
@@ -267,7 +267,7 @@ describe('authorized access', function (): void {
         $user3 = makeUser($this->tenant);
         // Use a separate actor not assigned to this duty to avoid their own dutiable
         // being removed when current_users is updated, which would break authorization.
-        $actor = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $roleIds = $this->dutyManagerDuty->roles()->pluck('id')->toArray();
 
         // First add user1 and user2
@@ -312,7 +312,7 @@ describe('authorized access', function (): void {
 
 describe('validation', function (): void {
     test('requires name for store', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($admin)->post(route('duties.store'), [
@@ -326,7 +326,7 @@ describe('validation', function (): void {
     });
 
     test('requires institution_id for store', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
         $response = asUser($admin)->post(route('duties.store'), [
             'name' => ['lt' => 'Test Duty', 'en' => 'Test Duty'],
@@ -339,7 +339,7 @@ describe('validation', function (): void {
     });
 
     test('requires contacts_grouping for store', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($admin)->post(route('duties.store'), [
@@ -353,7 +353,7 @@ describe('validation', function (): void {
     });
 
     test('requires valid email format for store', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         $response = asUser($admin)->post(route('duties.store'), [
@@ -368,7 +368,7 @@ describe('validation', function (): void {
     });
 
     test('requires name for update', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
         $response = asUser($admin)->put(route('duties.update', $this->dutyManagerDuty), [
             'institution_id' => $this->dutyManagerDuty->institution_id,
@@ -386,7 +386,7 @@ describe('validation', function (): void {
     });
 
     test('can add places_to_occupy validation for store', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
         // Test that places_to_occupy accepts valid integer
@@ -405,13 +405,13 @@ describe('validation', function (): void {
 
 describe('duty role management', function (): void {
     test('can assign roles to duties', function (): void {
-        $this->dutyManagerDuty->assignRole('Communication Coordinator');
+        $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
-        expect($this->dutyManagerDuty->hasRole('Communication Coordinator'))->toBeTrue();
+        expect($this->dutyManagerDuty->hasRole('Komunikacijos koordinatorius'))->toBeTrue();
     });
 
     test('duty permissions are inherited by assigned users', function (): void {
-        $this->dutyManagerDuty->assignRole('Communication Coordinator');
+        $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
         // Refresh user permissions cache
         $this->dutyManager->refresh();
@@ -421,7 +421,7 @@ describe('duty role management', function (): void {
     })->todo('Permission inheritance through duties needs investigation');
 
     test('duty permissions are tenant-scoped', function (): void {
-        $this->dutyManagerDuty->assignRole('Communication Coordinator');
+        $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
         $otherTenant = Tenant::factory()->create();
         $otherNews = News::factory()->create([

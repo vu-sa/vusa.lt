@@ -17,7 +17,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create role if it doesn't exist and sync permissions (replaces existing permissions)
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->syncPermissions([
         'duties.read.padalinys',
         'duties.create.padalinys',
@@ -30,7 +30,7 @@ beforeEach(function (): void {
     $this->regularUser = makeUser($this->tenant);
     $this->dutyManager = makeUser($this->tenant);
     $this->dutyManagerDuty = $this->dutyManager->duties()->first();
-    $this->dutyManagerDuty->assignRole('Communication Coordinator');
+    $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     // Create institution with duty for testing
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);

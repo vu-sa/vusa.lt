@@ -96,6 +96,6 @@ export const Sheet: StoryObj = {
 export const Confirm: StoryObj = {
   render: () => ({
     components: { ConfirmDialog },
-    template: `<ConfirmDialog :open="true" title="Ištrinti priskyrimą?" description="Kadencijos įrašas bus pašalintas." confirm-label="Ištrinti" destructive />`,
+    template: `<ConfirmDialog :open="true" title="Ištrinti priskyrimą?" description="Pareigybės laikotarpis bus pašalintas." confirm-label="Ištrinti" destructive />`,
   }),
 };

@@ -8,7 +8,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->user = makeTenantUserWithRole('Communication Coordinator', Tenant::query()->first());
+    $this->user = makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::query()->first());
 });
 
 test('the shell badges get the pending and overdue task counts of the signed-in user', function (): void {

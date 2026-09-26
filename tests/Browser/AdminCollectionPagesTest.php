@@ -4,6 +4,7 @@ use App\Models\Page;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,6 +76,27 @@ const ADMIN_PAGES = [
     '/mano/profile/roles',
     '/mano/search?q=senatas',
 ];
+
+it('keeps collection actions reachable across widths and themes', function (): void {
+    $page = openAdminPage('/mano/tags', 1440, 900, function (): void {
+        Tag::factory()->create(['name' => ['lt' => 'Ilga studentų atstovybės veiklos žyma', 'en' => 'Long student representation tag']]);
+    });
+
+    foreach ([390, 820, 1180, 1440] as $width) {
+        $page->resize($width, 900);
+        $page->assertPresent('[data-slot=collection-row-actions] button[aria-label="Ištrinti"]');
+        expect(settlesWithoutSidewaysScroll($page))->toBeTrue();
+
+        $page->script('document.documentElement.classList.add("dark")');
+        expect(settlesWithoutSidewaysScroll($page))->toBeTrue();
+        $page->script('document.documentElement.classList.remove("dark")');
+    }
+
+    $page->navigate('/mano/tenants');
+    waitForInertiaRender($page, '[data-slot=collection-row-actions]');
+    $page->assertPresent('[data-slot=collection-row-actions] button[aria-label="Ištrinti"]');
+    $page->assertNoJavaScriptErrors();
+});
 
 it('keeps reservation actions visible beside a two-line title at table widths', function (): void {
     $page = openAdminPage('/mano/reservations', 1440, 900, function ($user): void {

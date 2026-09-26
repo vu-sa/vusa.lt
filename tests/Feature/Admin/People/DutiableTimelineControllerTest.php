@@ -15,7 +15,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.update.padalinys',
@@ -27,7 +27,7 @@ beforeEach(function (): void {
 
     $this->manager = makeUser($this->tenant);
     $this->duty = $this->manager->duties()->first();
-    $this->duty->assignRole('Communication Coordinator');
+    $this->duty->assignRole('Komunikacijos koordinatorius');
 
     $this->holder = makeUser($this->tenant);
 
@@ -70,6 +70,50 @@ describe('authorization', function (): void {
 
         expect($this->row->fresh()->start_date->toDateString())->toBe('2024-05-18')
             ->and($strangerRow->fresh()->start_date->toDateString())->toBe('2024-07-01');
+    });
+});
+
+/**
+ * The roles the guide's "Kas ką gali" names, as seeded — so the page and this test cannot
+ * drift apart.
+ */
+describe('the roles the guide names', function (): void {
+    test('opens the tool and moves a period in their padalinys', function (string $role, bool $canOpen, bool $canEdit): void {
+        $actor = makeUser($this->tenant);
+        $actor->duties()->first()->syncRoles([$role]);
+
+        asUser($actor)->get(route('dutiables.timeline'))->assertStatus($canOpen ? 200 : 403);
+
+        asUser($actor)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$this->row->id], 'start_date' => '2024-07-01',
+        ]]))->assertStatus($canEdit ? 302 : 403);
+
+        expect($this->row->fresh()->start_date->toDateString())->toBe($canEdit ? '2024-07-01' : '2024-05-18');
+    })->with([
+        'Komunikacijos koordinatorius' => ['Komunikacijos koordinatorius', true, true],
+        'Studentų atstovų koordinatorius' => ['Studentų atstovų koordinatorius', true, true],
+        'Centrinio biuro komunikacijos koordinatorius' => ['Centrinio biuro komunikacijos koordinatorius', true, true],
+        'Centrinio biuro studentų atstovų koordinatorius' => ['Centrinio biuro studentų atstovų koordinatorius', true, true],
+        'Studentų atstovas' => ['Studentų atstovas', false, false],
+    ]);
+
+    test('a central office coordinator also moves periods in another padalinys', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $stranger = makeUser($otherTenant);
+        $strangerRow = Dutiable::factory()->create([
+            'duty_id' => $stranger->duties()->first()->id,
+            'dutiable_id' => $stranger->id,
+            'start_date' => '2024-05-18',
+        ]);
+
+        $central = makeUser($this->tenant);
+        $central->duties()->first()->syncRoles(['Centrinio biuro studentų atstovų koordinatorius']);
+
+        asUser($central)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$strangerRow->id], 'start_date' => '2024-07-01',
+        ]]))->assertRedirect();
+
+        expect($strangerRow->fresh()->start_date->toDateString())->toBe('2024-07-01');
     });
 });
 

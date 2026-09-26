@@ -10,7 +10,7 @@ beforeEach(function (): void {
     [$this->tenant, $this->otherTenant] = Tenant::query()->inRandomOrder()->take(2)->get();
 
     $this->plainUser = makeUser($this->tenant);
-    $this->coordinator = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
 
     $this->problem = Problem::factory()->create([
         'tenant_id' => $this->tenant->id,

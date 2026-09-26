@@ -15,11 +15,11 @@
     </TooltipTrigger>
 
     <TooltipContent side="right" class="max-w-72 space-y-1">
-      <p class="text-[11px] font-semibold">
+      <p class="text-xs font-semibold">
         {{ $t('dutiables.timeline.extras.title') }}
       </p>
       <dl class="space-y-0.5">
-        <div v-for="entry in entries" :key="entry.key" class="flex gap-1.5 text-[11px]">
+        <div v-for="entry in entries" :key="entry.key" class="flex gap-1.5 text-xs">
           <dt class="shrink-0 text-muted-foreground">
             {{ $t(`dutiables.timeline.extras.${entry.key}`) }}:
           </dt>

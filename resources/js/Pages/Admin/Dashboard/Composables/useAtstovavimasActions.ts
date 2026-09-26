@@ -19,8 +19,6 @@ export function useAtstovavimasActions(
   const showAllMeetingModal = ref(false);
   const showAllInstitutionModal = ref(false);
   const showCreateCheckIn = ref<{ open: boolean; institutionId?: string; startDate?: Date; endDate?: Date } | null>(null);
-  const showFullscreenGantt = ref(false);
-  const fullscreenGanttType = ref<'user' | 'tenant'>('user');
 
   // Check-in actions
   const handleAddCheckIn = (institutionId: string) => {
@@ -67,11 +65,6 @@ export function useAtstovavimasActions(
     });
   };
 
-  const onGanttFullscreen = (type: 'user' | 'tenant') => {
-    fullscreenGanttType.value = type;
-    showFullscreenGantt.value = true;
-  };
-
   // Navigation and refresh
   const handleRefresh = (tenantIds: string[] = []) => {
     router.reload({
@@ -90,8 +83,6 @@ export function useAtstovavimasActions(
     showAllMeetingModal,
     showAllInstitutionModal,
     showCreateCheckIn,
-    showFullscreenGantt,
-    fullscreenGanttType,
 
     // Check-in actions
     handleAddCheckIn,
@@ -102,7 +93,6 @@ export function useAtstovavimasActions(
 
     // Gantt actions
     onGapCreateMeeting,
-    onGanttFullscreen,
 
     // General actions
     handleRefresh,

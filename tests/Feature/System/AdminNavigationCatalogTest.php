@@ -178,7 +178,7 @@ describe('per-persona visibility', function (): void {
     });
 
     test('a plain Student Representative sees no Sistema or Organizacija workspace', function (): void {
-        $user = makeTenantUserWithRole('Student Representative', $this->tenant);
+        $user = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
 
         // Which meetings and institutions the rep gets is the scoped search key's job, not the catalog's.
         expect(catalogSummary($this->catalog, $user))->toEqual([
@@ -193,8 +193,8 @@ describe('per-persona visibility', function (): void {
         $duty = $user->duties()->first();
         $duty->pivot->end_date = null;
         $duty->pivot->save();
-        $duty->assignRole('Student Representative');
-        $duty->assignRole('Communication Coordinator');
+        $duty->assignRole('Studentų atstovas');
+        $duty->assignRole('Komunikacijos koordinatorius');
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
@@ -378,7 +378,7 @@ describe('access parity', function (): void {
         /** @var User $user */
         $user = match ($factory) {
             'plain' => makeUser($this->tenant),
-            'rep' => makeTenantUserWithRole('Student Representative', $this->tenant),
+            'rep' => makeTenantUserWithRole('Studentų atstovas', $this->tenant),
             'resources' => makeTenantUserWithRole('Išteklių administratorius', $this->tenant),
             'superAdmin' => makeAdminUser($this->tenant),
         };
@@ -413,7 +413,7 @@ describe('caching', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->not->toHaveKey('organizacija');
 
-        $duty->assignRole('Communication Coordinator');
+        $duty->assignRole('Komunikacijos koordinatorius');
 
         // Assigning a role straight to a duty (the test fixture's shortcut, not a flow the app
         // itself exposes) invalidates neither cache on its own: `PermissionMapBuilder`'s own

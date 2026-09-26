@@ -19,7 +19,7 @@ pest()->use(RefreshDatabase::class);
  */
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->coordinator = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
 });
 
 /** Give the user an additional duty in a newly created, unrelated tenant. */

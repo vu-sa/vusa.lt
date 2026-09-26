@@ -23,7 +23,7 @@ beforeEach(function (): void {
     $this->meeting = Meeting::factory()->create();
     $this->meeting->institutions()->attach($this->institution);
 
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 });
 
 test('break is an accepted agenda item type', function (): void {

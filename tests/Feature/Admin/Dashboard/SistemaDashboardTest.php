@@ -24,7 +24,7 @@ describe('access', function (): void {
     });
 
     test('a coordinator without system access is refused', function (): void {
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
         asUser($coordinator)->get(route('dashboard.sistema'))->assertStatus(403);
     });
@@ -46,7 +46,7 @@ describe('access', function (): void {
 
 describe('what it counts', function (): void {
     test('the scheduled member filter only sees duties in the reader’s tenant', function (): void {
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
         $localDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
         $otherDuty = Duty::factory()->for(Institution::factory()->for($otherTenant))->create();

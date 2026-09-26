@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->plainUser = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Global Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
 
     $this->eventType = EventType::factory()->create([
         'name' => ['lt' => 'Test Mokymai', 'en' => 'Test Trainings'],

@@ -21,27 +21,12 @@
     <template #row="{ item }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :title="item.fullname" clickable :sub="item.alias" mono @open="openSheet(item)" />
+          <CollectionPrimaryCell :title="item.fullname" :clickable="item.can.update" :sub="item.alias" mono @open="openSheet(item)" />
           <p class="mt-2 text-xs text-muted-foreground">
             {{ item.shortname }} · {{ item.type }}
           </p>
         </div>
-        <div class="flex items-center gap-1">
-          <Button variant="outline" size="sm" @click="openSheet(item)">
-            <Pencil aria-hidden="true" class="size-4" />
-            {{ $t('Redaguoti') }}
-          </Button>
-          <Button
-            v-if="canCreate"
-            variant="outline"
-            size="sm"
-            class="text-destructive hover:text-destructive"
-            @click="targetToDelete = item"
-          >
-            <Trash2 aria-hidden="true" class="size-4" />
-            {{ $t('Ištrinti') }}
-          </Button>
-        </div>
+        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
@@ -49,29 +34,14 @@
       <CollectionPrimaryCell
         v-if="column.key === 'fullname'"
         :title="item.fullname"
-        clickable
+        :clickable="item.can.update"
         :sub="item.alias"
         mono
         @open="openSheet(item)"
       />
       <span v-else-if="column.key === 'shortname'">{{ item.shortname }}</span>
       <span v-else-if="column.key === 'type'" class="text-muted-foreground">{{ item.type }}</span>
-      <div v-else-if="column.key === 'actions'" class="flex justify-end gap-1">
-        <Button variant="outline" size="sm" @click="openSheet(item)">
-          <Pencil aria-hidden="true" class="size-4" />
-          {{ $t('Redaguoti') }}
-        </Button>
-        <Button
-          v-if="canCreate"
-          variant="outline"
-          size="sm"
-          class="text-destructive hover:text-destructive"
-          @click="targetToDelete = item"
-        >
-          <Trash2 aria-hidden="true" class="size-4" />
-          {{ $t('Ištrinti') }}
-        </Button>
-      </div>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
   </CollectionPage>
 
@@ -100,6 +70,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref, toRef } from 'vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
@@ -108,6 +79,7 @@ import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import TenantSheetForm, { type TenantInput } from '@/Features/Admin/Tenants/TenantSheetForm.vue';
 
 type TenantRow = Pick<App.Entities.Tenant, 'id' | 'fullname' | 'shortname' | 'alias' | 'type'> & {
+  can: { update: boolean; delete: boolean };
   shortname_vu?: string;
   primary_institution_id?: number | string | null;
 };
@@ -118,6 +90,15 @@ const props = defineProps<{
 }>();
 
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.tenant));
+const rowActions = (item: TenantRow): CollectionRowAction[] => [
+  ...(item.can.update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true }] : []),
+  ...(item.can.delete ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+];
+
+function selectRowAction(key: string, item: TenantRow): void {
+  if (key === 'edit') openSheet(item);
+  if (key === 'delete') targetToDelete.value = item;
+}
 
 const sheetOpen = ref(false);
 const editingTenant = ref<TenantInput | null>(null);
@@ -138,7 +119,9 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'fullname', label: $t('Padalinys'), sortField: 'fullname' },
   { key: 'shortname', label: $t('Trumpinys'), class: 'w-40' },
   { key: 'type', label: $t('Tipas'), class: 'w-40' },
-  { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
+  ...(props.tenants.some(tenant => tenant.can.update || tenant.can.delete)
+    ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }]
+    : []),
 ]);
 
 function openSheet(item: TenantRow | null = null): void {

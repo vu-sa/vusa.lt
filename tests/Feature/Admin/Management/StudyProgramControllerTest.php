@@ -18,7 +18,7 @@ beforeEach(function (): void {
     $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     $this->superAdmin = makeAdminUser();
 
     $this->studyProgram = StudyProgram::factory()->create([

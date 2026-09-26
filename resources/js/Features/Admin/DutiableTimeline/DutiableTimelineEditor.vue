@@ -2,7 +2,7 @@
   <div data-slot="dutiable-timeline-editor" class="flex min-h-0 flex-col gap-3">
     <DutiableTimelineToolbar
       :scope
-      :visible-count="visibleRows.length"
+      :show-scope
       :include-ended
       :month-width-px
       :timeline-colors
@@ -14,7 +14,38 @@
       @update:month-width-px="monthWidthPx = $event"
       @update:cadence-ids="cadenceFilter = $event"
       @update:tenant-keys="tenantFilter = $event"
-    />
+    >
+      <template #view>
+        <slot name="toolbar-end" />
+      </template>
+
+      <template #actions>
+        <!-- Below lg the panel is a sheet, so it needs a way in that is not a bar tap. -->
+        <Button
+          v-if="rows.length > 0"
+          type="button"
+          size="xs"
+          variant="outline"
+          class="mr-auto pointer-coarse:min-h-11 lg:hidden"
+          @click="panelOpen = true"
+        >
+          <PanelRight class="size-3.5" />
+          {{ $t('dutiables.timeline.dock.open_panel') }}
+          <span v-if="findings.length > 0" class="tabular-nums text-muted-foreground">({{ findings.length }})</span>
+        </Button>
+
+        <DutiableTimelineDirtyBar
+          data-tour="timeline-save"
+          :dirty-count
+          :is-dirty
+          :processing
+          :sync-pending="pending.size > 0"
+          @preview="onPreview"
+          @discard="revertAll"
+          @save="onSave"
+        />
+      </template>
+    </DutiableTimelineToolbar>
 
     <Alert v-if="meta?.truncated" variant="destructive">
       <AlertDescription class="text-xs">
@@ -32,7 +63,15 @@
       :description="$t('dutiables.timeline.empty.description')"
     />
 
-    <template v-else>
+    <!--
+      One row that takes whatever height the page gives the editor: the chart scrolls inside
+      it and the panel beside it scrolls on its own, so nothing is pushed below the fold.
+    -->
+    <div
+      v-else
+      data-slot="dutiable-timeline-body"
+      class="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]"
+    >
       <EmptyState
         v-if="visibleRows.length === 0"
         :title="$t('dutiables.timeline.filters.empty_title')"
@@ -41,7 +80,7 @@
 
       <DutiableGantt
         v-else
-        class="min-h-0 flex-auto"
+        class="self-start"
         data-tour="timeline-chart"
         :layout-rows
         :rows="visibleRows"
@@ -71,7 +110,7 @@
         @stage="stageMany"
       />
 
-      <DutiableTimelineDock>
+      <DutiableTimelineSidePanel v-model:open="panelOpen">
         <template #selection>
           <DutiableTimelineSelectionPanel
             data-tour="timeline-selection"
@@ -100,21 +139,8 @@
             @apply="onApplySuggestions"
           />
         </template>
-
-        <template #save>
-          <DutiableTimelineDirtyBar
-            data-tour="timeline-save"
-            :dirty-count
-            :is-dirty
-            :processing
-            :sync-pending="pending.size > 0"
-            @preview="onPreview"
-            @discard="revertAll"
-            @save="onSave"
-          />
-        </template>
-      </DutiableTimelineDock>
-    </template>
+      </DutiableTimelineSidePanel>
+    </div>
 
     <DutiableTimelineDiffSheet
       :open="preview.isOpen.value"
@@ -140,13 +166,14 @@ import { computed, onMounted, onUnmounted, ref, shallowRef, toRef, watch } from 
 import { router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
+import { PanelRight } from 'lucide-vue-next';
 
 import { bandLadder } from './cadencePools';
 import DutiableGantt from './DutiableGantt.vue';
 import DutiableTimelineDiffSheet from './DutiableTimelineDiffSheet.vue';
 import DutiableTimelineDirtyBar from './DutiableTimelineDirtyBar.vue';
-import DutiableTimelineDock from './DutiableTimelineDock.vue';
 import DutiableTimelineSelectionPanel from './DutiableTimelineSelectionPanel.vue';
+import DutiableTimelineSidePanel from './DutiableTimelineSidePanel.vue';
 import DutiableTimelineSuggestions from './DutiableTimelineSuggestions.vue';
 import DutiableTimelineToolbar from './DutiableTimelineToolbar.vue';
 import { getTimelineColors } from './timelineColors';
@@ -162,16 +189,21 @@ import {
 import type { ParsedRow, StagedDates, TimelineOperation, TimelineScopeType } from './types';
 
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
+import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { EmptyState } from '@/Components/Patterns';
 import { isDarkModeActive } from '@/Components/Graphs/ganttColors';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   scopeType: TimelineScopeType;
   scopeId: string;
-}>();
+  /** Off where the page's title band already names the scope. */
+  showScope?: boolean;
+}>(), {
+  showScope: true,
+});
 
 /**
  * Zoom and "show ended" survive a reload, the way the meetings chart's do — re-picking
@@ -198,6 +230,8 @@ const includeEnded = computed({
 const selectedIds = ref(new Set<string>());
 const activeId = ref<string | null>(null);
 const processing = ref(false);
+/** The phone sheet only; the desktop panel is always open. */
+const panelOpen = ref(false);
 const cadenceFilter = ref<string[]>([]);
 const tenantFilter = ref<string[]>([]);
 
@@ -399,6 +433,11 @@ function toggleGroupSelection(key: string): void {
   selectedIds.value = next;
   activeId.value = [...next][0] ?? null;
 }
+
+// On a phone the panel is a closed sheet, so picking a bar has to bring it up.
+watch(activeId, (id) => {
+  if (id !== null) panelOpen.value = true;
+});
 
 function selectRow(rowId: string): void {
   selectedIds.value = new Set([rowId]);

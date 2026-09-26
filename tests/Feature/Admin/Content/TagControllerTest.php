@@ -24,7 +24,7 @@ beforeEach(function (): void {
 function makeTagAdmin($tenant): User
 {
     $user = makeUser($tenant);
-    $user->duties()->first()->assignRole('Global Communication Coordinator');
+    $user->duties()->first()->assignRole('Centrinio biuro komunikacijos koordinatorius');
 
     return $user;
 }
@@ -94,6 +94,8 @@ describe('auth: admin user with permissions', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexTag')
+                ->where('abilities.update', true)
+                ->where('abilities.delete', true)
                 ->has('tags.data')
                 ->has('tags.meta')
             );

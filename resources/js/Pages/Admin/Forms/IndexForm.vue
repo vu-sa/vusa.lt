@@ -27,12 +27,14 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <Link
+              v-if="!isDeleted"
               :href="route('forms.show', item.id)"
               data-collection-open
               class="truncate font-medium hover:text-brand"
             >
               {{ localizedName(item) }}
             </Link>
+            <span v-else class="truncate font-medium text-muted-foreground">{{ localizedName(item) }}</span>
             <span v-if="localizedPath(item)" class="bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
               /{{ localizedPath(item) }}
             </span>
@@ -45,25 +47,21 @@
             <span>{{ $t('Atnaujinta') }}: {{ formatDate(new Date(item.updated_at)) }}</span>
           </div>
         </div>
-        <div class="flex shrink-0 items-center gap-1">
-          <Button as-child variant="outline" size="icon">
-            <Link :href="route('forms.show', item.id)">
-              <ChevronRight class="size-4" />
-            </Link>
-          </Button>
-        </div>
+        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
     <template #cell="{ item, column }">
       <div v-if="column.key === 'name'" class="min-w-0">
         <Link
+          v-if="!isDeleted"
           :href="route('forms.show', item.id)"
           data-collection-open
           class="block truncate font-medium hover:text-brand"
         >
           {{ localizedName(item) }}
         </Link>
+        <span v-else class="block truncate font-medium text-muted-foreground">{{ localizedName(item) }}</span>
       </div>
 
       <div v-else-if="column.key === 'path'" class="truncate">
@@ -85,35 +83,7 @@
         {{ formatDate(new Date(item.updated_at)) }}
       </span>
 
-      <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
-        <template v-if="isDeleted">
-          <Button variant="outline" size="icon" :title="$t('Atkurti')" @click="restoreForm(item)">
-            <RotateCcw class="size-4" />
-          </Button>
-          <Button
-            v-if="canForceDelete"
-            variant="outline"
-            size="icon"
-            class="text-destructive hover:text-destructive"
-            :title="$t('Ištrinti visam laikui')"
-            @click="targetFormToForceDelete = item"
-          >
-            <Trash2 class="size-4" />
-          </Button>
-        </template>
-        <template v-else>
-          <Button v-if="item.can?.update" as-child variant="outline" size="icon" :title="$t('Redaguoti')">
-            <Link :href="route('forms.edit', item.id)">
-              <Edit class="size-4" />
-            </Link>
-          </Button>
-          <Button as-child variant="outline" size="icon" :title="$t('Atidaryti')">
-            <Link :href="route('forms.show', item.id)">
-              <ChevronRight class="size-4" />
-            </Link>
-          </Button>
-        </template>
-      </div>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -142,11 +112,12 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ChevronRight, Edit, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -186,6 +157,21 @@ const props = defineProps<{
 
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.form));
+
+const rowActions = (item: FormRow): CollectionRowAction[] => isDeleted.value
+  ? [
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
+    ]
+  : [
+      ...(item.can?.update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('forms.edit', item.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, labelled: true, href: route('forms.show', item.id) },
+    ];
+
+function selectRowAction(key: string, item: FormRow): void {
+  if (key === 'restore') restoreForm(item);
+  if (key === 'forceDelete') targetFormToForceDelete.value = item;
+}
 
 const targetFormToForceDelete = ref<FormRow | null>(null);
 

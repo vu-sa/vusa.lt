@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'quickLinks.read.padalinys',
         'quickLinks.create.padalinys',
@@ -20,7 +20,7 @@ beforeEach(function (): void {
     ]);
 
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->quickLink = QuickLink::factory()->for($this->tenant)->create([
         'text' => 'Test Quick Link',

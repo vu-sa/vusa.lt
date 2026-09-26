@@ -2,7 +2,7 @@
 title: Kategorijos
 area: resourceCategories
 models: [ResourceCategory]
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-27
 tests:
   - tests/Feature/Admin/Reservations/ResourceCategoryControllerTest.php
 ---
@@ -19,6 +19,8 @@ išteklių. Išteklių sąraše pagal ją galima filtruoti.
   kategorija matoma ir FSF.
 - Kategorijai galima parinkti **ikonėlę**. Ji rodoma šalia išteklių visų išteklių sąraše.
 - Kategorija neturi atskiro puslapio: ji kuriama ir redaguojama tiesiai sąraše, šoniniame lange.
+- Sąrašo eilutėje ir lentelėje galima atverti redagavimą arba ištrynimo patvirtinimą, jei turi
+  atitinkamą teisę.
 
 ## Kas ką gali
 
@@ -35,4 +37,3 @@ Prieš trindamas kategoriją, pasitark su kitais padaliniais.
   atitinkamą išteklių teisę (`resources.read|create|update|delete`, `padalinys` arba `*` apimtimi).
 - `resourceCategories.*` teisės nesukurtos – jas tikrinant kategorijas galėtų tvarkyti tik super
   administratoriai.
-

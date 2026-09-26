@@ -1,6 +1,6 @@
 <template>
   <section data-slot="dutiable-timeline-selection" class="flex h-full min-h-0 flex-col gap-2 overflow-y-auto p-3">
-    <p class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+    <p class="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
       {{ $t('dutiables.timeline.dock.selection') }}
       <span v-if="selectedCount > 1">({{ selectedCount }})</span>
     </p>
@@ -21,7 +21,7 @@
 
       <div class="grid gap-2 sm:grid-cols-2">
         <div class="space-y-1">
-          <Label for="bulk-start" class="text-[11px] text-muted-foreground">
+          <Label for="bulk-start" class="text-xs text-muted-foreground">
             {{ $t('dutiables.timeline.inspector.start_date') }}
           </Label>
           <TimelineDateField
@@ -34,7 +34,7 @@
         </div>
 
         <div class="space-y-1">
-          <Label for="bulk-end" class="text-[11px] text-muted-foreground">
+          <Label for="bulk-end" class="text-xs text-muted-foreground">
             {{ $t('dutiables.timeline.inspector.end_date') }}
           </Label>
           <TimelineDateField
@@ -93,7 +93,7 @@
           </AlertDialogContent>
         </AlertDialog>
 
-        <p v-else class="text-[10px] text-muted-foreground">
+        <p v-else class="text-xs text-muted-foreground">
           {{ $t('dutiables.timeline.actions.merge_hint') }}
         </p>
       </div>
@@ -105,10 +105,10 @@
           <Link :href="route('users.show', row.holder_id)" class="truncate text-sm font-semibold hover:underline">
             {{ row.holder_name }}
           </Link>
-          <Badge v-if="row.tenant_shortname" variant="secondary" class="shrink-0 text-[10px]">
+          <Badge v-if="row.tenant_shortname" variant="secondary" class="shrink-0 text-xs">
             {{ row.tenant_shortname }}
           </Badge>
-          <Badge v-if="row.is_derived" variant="outline" class="shrink-0 text-[10px]">
+          <Badge v-if="row.is_derived" variant="outline" class="shrink-0 text-xs">
             {{ $t('dutiables.timeline.inspector.ex_officio') }}
           </Badge>
           <DutiableExtrasBadge v-if="row.extras" :extras="row.extras" />
@@ -119,7 +119,7 @@
       </div>
 
       <Alert v-if="row.is_derived" class="py-2">
-        <AlertDescription class="space-y-1.5 text-[11px]">
+        <AlertDescription class="space-y-1.5 text-xs">
           <p>{{ $t('dutiables.timeline.inspector.ex_officio_managed', { duty: row.source?.duty_name ?? '—' }) }}</p>
           <Button v-if="row.source" size="xs" variant="outline" @click="emit('select-source', row.source.id)">
             {{ $t('dutiables.timeline.inspector.select_source') }}
@@ -128,14 +128,14 @@
       </Alert>
 
       <Alert v-else-if="!row.editable" variant="destructive" class="py-2">
-        <AlertDescription class="text-[11px]">
+        <AlertDescription class="text-xs">
           {{ $t('dutiables.timeline.inspector.not_editable') }}
         </AlertDescription>
       </Alert>
 
       <div class="grid gap-2 sm:grid-cols-2">
         <div class="space-y-1">
-          <Label for="selection-start" class="text-[11px] text-muted-foreground">
+          <Label for="selection-start" class="text-xs text-muted-foreground">
             {{ $t('dutiables.timeline.inspector.start_date') }}
           </Label>
           <TimelineDateField
@@ -148,7 +148,7 @@
         </div>
 
         <div class="space-y-1">
-          <Label for="selection-end" class="text-[11px] text-muted-foreground">
+          <Label for="selection-end" class="text-xs text-muted-foreground">
             {{ $t('dutiables.timeline.inspector.end_date') }}
           </Label>
           <TimelineDateField
@@ -158,7 +158,7 @@
             :disabled="!canEdit"
             @update:model-value="onEnd"
           />
-          <label class="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <label class="flex items-center gap-2 text-xs text-muted-foreground">
             <Switch :model-value="openEnded" :disabled="!canEdit" @update:model-value="onOpenEnded" />
             {{ $t('dutiables.timeline.inspector.open_ended_toggle') }}
           </label>
@@ -168,7 +168,7 @@
       <!-- Spelled out rather than left to the tooltip: on the selected row these are the
            details a merge or a delete would silently take with it. -->
       <dl v-if="row.extras" class="space-y-0.5 bg-muted/40 px-2 py-1.5">
-        <div v-if="row.extras.email" class="flex gap-1.5 text-[11px]">
+        <div v-if="row.extras.email" class="flex gap-1.5 text-xs">
           <dt class="shrink-0 text-muted-foreground">
             {{ $t('dutiables.timeline.extras.email') }}:
           </dt>
@@ -176,7 +176,7 @@
             {{ row.extras.email }}
           </dd>
         </div>
-        <div v-if="row.extras.study_program" class="flex gap-1.5 text-[11px]">
+        <div v-if="row.extras.study_program" class="flex gap-1.5 text-xs">
           <dt class="shrink-0 text-muted-foreground">
             {{ $t('dutiables.timeline.extras.study_program') }}:
           </dt>
@@ -184,7 +184,7 @@
             {{ row.extras.study_program }}
           </dd>
         </div>
-        <div v-if="row.extras.description" class="flex gap-1.5 text-[11px]">
+        <div v-if="row.extras.description" class="flex gap-1.5 text-xs">
           <dt class="shrink-0 text-muted-foreground">
             {{ $t('dutiables.timeline.extras.description') }}:
           </dt>
@@ -192,30 +192,13 @@
             {{ row.extras.description }}
           </dd>
         </div>
-        <div v-if="row.extras.photo || row.extras.original_duty_name" class="flex gap-1.5 text-[11px] text-muted-foreground">
+        <div v-if="row.extras.photo || row.extras.original_duty_name" class="flex gap-1.5 text-xs text-muted-foreground">
           <span v-if="row.extras.photo">{{ $t('dutiables.timeline.extras.photo_set') }}</span>
           <span v-if="row.extras.original_duty_name">{{ $t('dutiables.timeline.extras.original_duty_name_set') }}</span>
         </div>
       </dl>
 
-      <p class="text-[11px]">
-        <span class="text-muted-foreground">{{ $t('dutiables.timeline.duration.label') }}:</span>
-        <span class="ml-1 tabular-nums">{{ duration }}</span>
-      </p>
-
-      <p v-if="cadence" class="text-[11px]">
-        <span class="text-muted-foreground">{{ cadence.label }}</span>
-        <span
-          class="ml-1"
-          :class="driftDays === 0 ? 'text-muted-foreground' : 'text-status-attention'"
-        >
-          {{ driftDays === 0
-            ? $t('dutiables.timeline.inspector.aligned')
-            : $t('dutiables.timeline.inspector.off_by', { days: Math.abs(driftDays ?? 0) }) }}
-        </span>
-      </p>
-
-      <div class="mt-auto flex flex-wrap items-center gap-1.5 pt-1">
+      <div class="mt-auto flex items-center gap-1.5 pt-1">
         <Button v-if="canEdit" size="xs" variant="outline" @click="emit('align')">
           <CalendarCheck class="size-3.5" />
           {{ $t('dutiables.timeline.actions.align') }}
@@ -229,7 +212,7 @@
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" class="w-60 space-y-2 p-3">
-            <Label class="text-[11px] text-muted-foreground">
+            <Label class="text-xs text-muted-foreground">
               {{ $t('dutiables.timeline.actions.close_end_date') }}
             </Label>
             <TimelineDateField
@@ -240,7 +223,7 @@
             <Button size="xs" variant="ghost" class="w-full" @click="closeEndDate = yesterday">
               {{ $t('dutiables.timeline.actions.close_yesterday', { date: yesterday }) }}
             </Button>
-            <p class="text-[10px] text-muted-foreground">
+            <p class="text-xs text-muted-foreground">
               {{ $t('dutiables.timeline.actions.close_hint') }}
             </p>
             <Button size="xs" class="w-full" :disabled="closeEndDate === null" @click="runClose">
@@ -249,15 +232,30 @@
           </PopoverContent>
         </Popover>
 
-        <Button as="a" :href="row.edit_url" target="_blank" size="xs" variant="ghost">
+        <!-- Icon-only so the row stays one line in the 20rem panel; the label is the tooltip. -->
+        <Button
+          as="a"
+          :href="row.edit_url"
+          target="_blank"
+          size="icon-sm"
+          variant="outline"
+          class="ml-auto"
+          :aria-label="$t('Redaguoti pareigybės laikotarpį')"
+          :title="$t('Redaguoti pareigybės laikotarpį')"
+        >
           <ExternalLink class="size-3.5" />
         </Button>
 
         <AlertDialog v-if="canEdit">
           <AlertDialogTrigger as-child>
-            <Button size="xs" variant="ghost" class="text-destructive hover:text-destructive">
+            <Button
+              size="icon-sm"
+              variant="outline"
+              class="text-destructive hover:border-destructive hover:text-destructive"
+              :aria-label="$t('dutiables.timeline.actions.remove')"
+              :title="$t('dutiables.timeline.actions.remove')"
+            >
               <Trash2 class="size-3.5" />
-              {{ $t('dutiables.timeline.actions.remove') }}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -293,9 +291,7 @@ import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from 'lucide-vu
 
 import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
 import TimelineDateField from './TimelineDateField.vue';
-import { formatDuration } from './duration';
 import { resolveCadenceFor } from './composables/useDutiableDiagnostics';
-import { parseTimelineDate } from './composables/useDutiableTimelineData';
 import type { ParsedCadence, ParsedRow, StagedDates } from './types';
 
 import {
@@ -413,29 +409,10 @@ const dates = computed<StagedDates>(() => {
 
 const openEnded = computed(() => dates.value.end_date === null);
 
-/**
- * The term to measure this row against, resolved by the same rule the server uses. The
- * fallback matters: a row starting a month and a half before its term is exactly the
- * drift Align exists for, and "no cadence contains it" would hide the reading.
- */
-/** Reads off the staged dates, so a drag updates it before anything is saved. */
-const duration = computed(() => formatDuration(
-  parseTimelineDate(dates.value.start_date),
-  dates.value.end_date ? parseTimelineDate(dates.value.end_date) : null,
-));
-
+/** The term that closing an open-ended row defaults to, by the same rule the server uses. */
 const cadence = computed<ParsedCadence | null>(
   () => (props.row ? resolveCadenceFor(props.cadences, props.row, dates.value.start_date) : null),
 );
-
-const driftDays = computed<number | null>(() => {
-  if (!props.row || !cadence.value) return null;
-
-  const [year, month, day] = (dates.value.start_date || '1970-01-01').split('-').map(Number);
-  const start = new Date(year, month - 1, day, 12, 0, 0);
-
-  return Math.round((start.getTime() - cadence.value.startDate.getTime()) / 86_400_000);
-});
 
 function stage(next: Partial<StagedDates>): void {
   if (!props.row || !canEdit.value) return;

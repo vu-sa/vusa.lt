@@ -70,18 +70,18 @@ class CommentRecipientResolver
     }
 
     /**
-     * The audience for a root comment: the curated mention pool (representatives)
-     * for meetings / agenda items / institutions, falling back to the
-     * commentable's own `users` relation for everything else (reservations, …).
+     * The audience for a root comment: the curated mention pool where one exists, else the
+     * commentable's own `users` relation (legacy reservation-resource comments, …).
+     *
+     * A curated pool that is empty stays empty: falling back there reached everyone who ever
+     * held a seat in the institution or duty.
      *
      * @return Collection<int, User>
      */
     protected function audienceFor(Model $commentable): Collection
     {
-        $pool = $this->mentionResolver->audienceUsers($commentable);
-
-        if ($pool->isNotEmpty()) {
-            return $pool;
+        if ($this->mentionResolver->hasCuratedAudience($commentable)) {
+            return $this->mentionResolver->audienceUsers($commentable);
         }
 
         if (method_exists($commentable, 'users')) {

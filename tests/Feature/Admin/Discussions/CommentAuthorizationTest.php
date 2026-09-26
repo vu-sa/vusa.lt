@@ -17,7 +17,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
 
     // A coordinator with read + update on agenda items within the tenant.
-    $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->institution = Institution::factory()->for($this->tenant)->create();
 

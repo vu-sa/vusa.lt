@@ -51,7 +51,7 @@ beforeEach(function (): void {
     }
 
     // Create roles
-    $this->communicationCoordinatorRole = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $this->communicationCoordinatorRole = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $this->superAdminRole = Role::firstOrCreate(['name' => config('permission.super_admin_role_name'), 'guard_name' => 'web']);
 
     $this->communicationCoordinatorRole->givePermissionTo([
@@ -80,7 +80,7 @@ beforeEach(function (): void {
     ]);
 
     // Assign role to the duty
-    $fileManagerDuty->assignRole('Communication Coordinator');
+    $fileManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->superAdmin = User::factory()->create();
     $this->superAdmin->assignRole(config('permission.super_admin_role_name'));

@@ -10,7 +10,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->banner = Banner::factory()->for($this->tenant)->create([
         'title' => 'Test baneris',
@@ -340,7 +340,7 @@ describe('tenant isolation', function (): void {
     beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherBanner = Banner::factory()->for($this->otherTenant)->create();
-        $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
+        $this->otherAdmin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->otherTenant);
     });
 
     test('user only sees banners from their tenant', function (): void {

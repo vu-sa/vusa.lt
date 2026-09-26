@@ -29,12 +29,14 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <Link
+              v-if="!isDeleted"
               :href="route('problems.show', item.id)"
               data-collection-open
               class="truncate font-medium hover:text-brand"
             >
               {{ localizedTitle(item) }}
             </Link>
+            <span v-else class="truncate font-medium text-muted-foreground">{{ localizedTitle(item) }}</span>
             <StatusBadge
               v-if="item.status && problemStatuses[item.status as ProblemStatus]"
               :status="problemStatuses[item.status as ProblemStatus]"
@@ -51,25 +53,21 @@
             </template>
           </div>
         </div>
-        <div class="flex shrink-0 items-center gap-1">
-          <Button as-child variant="outline" size="icon">
-            <Link :href="route('problems.show', item.id)">
-              <ChevronRight class="size-4" />
-            </Link>
-          </Button>
-        </div>
+        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
     <template #cell="{ item, column }">
       <div v-if="column.key === 'title'" class="min-w-0">
         <Link
+          v-if="!isDeleted"
           :href="route('problems.show', item.id)"
           data-collection-open
           class="block truncate font-medium hover:text-brand"
         >
           {{ localizedTitle(item) }}
         </Link>
+        <span v-else class="block truncate font-medium text-muted-foreground">{{ localizedTitle(item) }}</span>
       </div>
 
       <div v-else-if="column.key === 'status'">
@@ -107,35 +105,7 @@
         {{ item.tenant?.shortname ?? '—' }}
       </span>
 
-      <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
-        <template v-if="isDeleted">
-          <Button variant="outline" size="icon" :title="$t('Atkurti')" @click="restoreProblem(item)">
-            <RotateCcw class="size-4" />
-          </Button>
-          <Button
-            v-if="canForceDelete"
-            variant="outline"
-            size="icon"
-            class="text-destructive hover:text-destructive"
-            :title="$t('Ištrinti visam laikui')"
-            @click="targetProblemToForceDelete = item"
-          >
-            <Trash2 class="size-4" />
-          </Button>
-        </template>
-        <template v-else>
-          <Button v-if="canUpdate" as-child variant="outline" size="icon" :title="$t('Redaguoti')">
-            <Link :href="route('problems.edit', item.id)">
-              <Edit class="size-4" />
-            </Link>
-          </Button>
-          <Button as-child variant="outline" size="icon" :title="$t('Atidaryti')">
-            <Link :href="route('problems.show', item.id)">
-              <ChevronRight class="size-4" />
-            </Link>
-          </Button>
-        </template>
-      </div>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #preview="{ item }">
@@ -151,11 +121,15 @@
             />
           </div>
           <Link
+            v-if="!isDeleted"
             :href="route('problems.show', item.id)"
             class="mt-1.5 block text-lg font-semibold leading-snug hover:text-brand"
           >
             {{ localizedTitle(item) }}
           </Link>
+          <h2 v-else class="mt-1.5 text-lg font-semibold leading-snug text-muted-foreground">
+            {{ localizedTitle(item) }}
+          </h2>
           <div v-if="item.tenant?.shortname" class="mt-1 text-xs text-muted-foreground">
             {{ item.tenant.shortname }}
           </div>
@@ -276,11 +250,12 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ArrowRight, ChevronRight, Edit, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { ArrowRight, ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
@@ -313,6 +288,21 @@ const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.problem));
 const canUpdate = computed(() => Boolean(usePage().props.auth?.can?.update?.problem));
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.problem));
+
+const rowActions = (item: App.Entities.Problem): CollectionRowAction[] => isDeleted.value
+  ? [
+      { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+      ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
+    ]
+  : [
+      ...(canUpdate.value ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
+      { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, labelled: true, href: route('problems.show', item.id) },
+    ];
+
+function selectRowAction(key: string, item: App.Entities.Problem): void {
+  if (key === 'restore') restoreProblem(item);
+  if (key === 'forceDelete') targetProblemToForceDelete.value = item;
+}
 
 const targetProblemToForceDelete = ref<App.Entities.Problem | null>(null);
 

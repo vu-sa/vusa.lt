@@ -22,7 +22,7 @@ function makeContactManager($tenant): User
 {
     $user = makeUser($tenant);
 
-    $user->duties()->first()->assignRole('Student Representative Coordinator');
+    $user->duties()->first()->assignRole('Studentų atstovų koordinatorius');
 
     return $user;
 }
@@ -222,7 +222,7 @@ test('contact manager can add type to duty', function (): void {
     $userDuty = $this->user->current_duties->first();
 
     $this->assertDatabaseHas('roles', [
-        'name' => 'Student Representative',
+        'name' => 'Studentų atstovas',
     ]);
 
     $this->assertDatabaseHas('types', [
@@ -274,7 +274,7 @@ test('contact manager can add type to duty', function (): void {
     ]);
 
     $this->assertDatabaseHas('model_has_roles', [
-        'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
+        'role_id' => Role::query()->where('name', 'Studentų atstovas')->first()->id,
         'model_type' => $userDuty->getMorphClass(),
         'model_id' => $userDuty->id,
     ]);
@@ -303,7 +303,7 @@ test('contact manager can add type to duty', function (): void {
     ]);
 
     $this->assertDatabaseMissing('model_has_roles', [
-        'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
+        'role_id' => Role::query()->where('name', 'Studentų atstovas')->first()->id,
         'model_type' => $userDuty->getMorphClass(),
         'model_id' => $userDuty->id,
     ]);

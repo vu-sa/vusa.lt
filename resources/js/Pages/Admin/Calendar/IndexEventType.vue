@@ -24,12 +24,14 @@
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
             <button
+              v-if="canUpdate && !isDeleted"
               type="button"
               class="truncate text-left font-medium hover:text-brand"
               @click="openSheet(item)"
             >
               {{ title(item) }}
             </button>
+            <span v-else class="truncate font-medium">{{ title(item) }}</span>
             <span
               v-if="!item.is_active"
               class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
@@ -41,26 +43,14 @@
             {{ item.slug }}
           </p>
         </div>
-        <div class="flex shrink-0 items-center gap-1">
-          <Button
-            v-if="!isDeleted"
-            variant="outline"
-            size="icon"
-
-            :title="$t('Redaguoti')"
-            :aria-label="$t('Redaguoti')"
-            @click="openSheet(item)"
-          >
-            <Pencil aria-hidden="true" />
-          </Button>
-        </div>
+        <CollectionRowActions :actions="rowActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
     <template #cell="{ item, column }">
       <div v-if="column.key === 'name'" class="flex min-w-0 items-center gap-2">
         <button
-          v-if="!isDeleted"
+          v-if="canUpdate && !isDeleted"
           type="button"
           class="block truncate text-left font-medium hover:text-brand"
           @click="openSheet(item)"
@@ -91,56 +81,7 @@
         </span>
       </span>
 
-      <div v-else-if="column.key === 'actions'" class="flex justify-end gap-1">
-        <template v-if="isDeleted">
-          <Button
-            v-if="canRestore"
-            variant="outline"
-            size="icon"
-
-            :title="$t('Atkurti')"
-            :aria-label="$t('Atkurti')"
-            @click="restoreEventType(item)"
-          >
-            <RotateCcw aria-hidden="true" />
-          </Button>
-          <Button
-            v-if="canForceDelete"
-            variant="outline"
-            size="icon"
-            class="text-destructive hover:text-destructive pointer-coarse:size-11"
-            :title="$t('Ištrinti visam laikui')"
-            :aria-label="$t('Ištrinti visam laikui')"
-            @click="targetToForceDelete = item"
-          >
-            <Trash2 aria-hidden="true" />
-          </Button>
-        </template>
-        <template v-else>
-          <Button
-            v-if="canUpdate"
-            variant="outline"
-            size="icon"
-
-            :title="$t('Redaguoti')"
-            :aria-label="$t('Redaguoti')"
-            @click="openSheet(item)"
-          >
-            <Pencil aria-hidden="true" />
-          </Button>
-          <Button
-            v-if="canDelete"
-            variant="outline"
-            size="icon"
-            class="text-destructive hover:text-destructive pointer-coarse:size-11"
-            :title="$t('Ištrinti')"
-            :aria-label="$t('Ištrinti')"
-            @click="targetToDelete = item"
-          >
-            <Trash2 aria-hidden="true" />
-          </Button>
-        </template>
-      </div>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -190,6 +131,7 @@ import { Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { CalendarIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -208,6 +150,7 @@ type EventTypeRow = App.Entities.EventType & {
 };
 
 const props = defineProps<{
+  abilities: { update: boolean; delete: boolean; restore: boolean };
   eventTypes: {
     data: EventTypeRow[];
     meta: {
@@ -229,10 +172,26 @@ const isDeleted = computed(() => Boolean(props.showDeleted));
 const deletedCount = computed(() => props.deletedCount ?? 0);
 
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.eventType));
-const canUpdate = computed(() => Boolean(usePage().props.auth?.can?.update?.eventType));
-const canDelete = computed(() => Boolean(usePage().props.auth?.can?.delete?.eventType));
-const canRestore = computed(() => Boolean(usePage().props.auth?.can?.restore?.eventType));
+const canUpdate = computed(() => props.abilities.update);
+const canDelete = computed(() => props.abilities.delete);
+const canRestore = computed(() => props.abilities.restore);
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.eventType));
+const rowActions = computed<CollectionRowAction[]>(() => isDeleted.value
+  ? [
+      ...(canRestore.value ? [{ key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true }] : []),
+      ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
+    ]
+  : [
+      ...(canUpdate.value ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true }] : []),
+      ...(canDelete.value ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+    ]);
+
+function selectRowAction(key: string, item: EventTypeRow): void {
+  if (key === 'edit') openSheet(item);
+  if (key === 'delete') targetToDelete.value = item;
+  if (key === 'restore') restoreEventType(item);
+  if (key === 'forceDelete') targetToForceDelete.value = item;
+}
 
 const sheetOpen = ref(false);
 const editing = ref<EventTypeRow | null>(null);
@@ -270,7 +229,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('forms.fields.title') },
   { key: 'slug', label: 'Slug', class: 'w-48' },
   { key: 'is_active', label: $t('forms.fields.is_active'), class: 'w-28' },
-  { key: 'actions', label: '', class: 'w-28' },
+  ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 function openSheet(item: EventTypeRow | null = null): void {

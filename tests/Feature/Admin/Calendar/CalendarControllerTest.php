@@ -24,7 +24,7 @@ beforeEach(function (): void {
 function makeCalendarManager($tenant): User
 {
     $user = makeUser($tenant);
-    $user->duties()->first()->assignRole('Communication Coordinator');
+    $user->duties()->first()->assignRole('Komunikacijos koordinatorius');
 
     return $user;
 }
@@ -367,7 +367,7 @@ describe('authorized access', function (): void {
     });
 
     test('super admin can access all calendar functions', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $calendar = Calendar::factory()->for($this->tenant)->create();
 
         // Test index access

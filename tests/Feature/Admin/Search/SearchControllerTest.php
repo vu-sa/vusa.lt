@@ -19,7 +19,7 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('old search URL leads to a collection page', function (): void {
@@ -68,7 +68,7 @@ describe('authorized access', function (): void {
 
 describe('tabs that have a page of their own', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('a Typesense collection page receives the query as q', function (string $tab, string $routeName): void {
@@ -104,7 +104,7 @@ describe('tabs that have a page of their own', function (): void {
 
 describe('legacy redirects', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('search.meetings goes straight to the meetings page', function (): void {

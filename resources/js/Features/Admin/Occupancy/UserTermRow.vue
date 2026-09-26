@@ -32,7 +32,7 @@
       </Button>
       <Button v-if="canEnd" variant="ghost" size="sm" class="u-touch" @click="emit('end')">
         <CalendarCheck class="size-3.5" aria-hidden="true" />
-        {{ $t('Baigti kadenciją') }}
+        {{ $t('Užbaigti pareigas') }}
       </Button>
     </div>
   </div>

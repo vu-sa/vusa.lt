@@ -1,6 +1,10 @@
 ---
 title: Mano
 area: dashboard
+last_reviewed: 2026-09-27
+tests:
+  - resources/js/Pages/Admin/__tests__/ShowAdminHome.component.test.ts
+  - tests/Browser/AdminHomeLayoutTest.php
 ---
 
 # Mano
@@ -19,3 +23,10 @@ Sritis rodoma **visiems** naudotojams.
 
 Pradžios puslapio turinys priklauso nuo tavo pareigybių: studentų atstovas mato savo institucijų
 posėdžius ir jų užduotis, išteklių valdytojas – tvirtinimo laukiančias rezervacijas.
+
+## Techninė informacija {#technine-informacija}
+
+- Pradžios puslapis – `ShowAdminHome.vue`; skyriai, kurių tau nereikia (pvz., institucijos, kai jų
+  neturi), nerodomi, o likę užima jų vietą.
+- Kad puslapis telpa telefone, planšetėje ir kompiuteryje (390, 820, 1180 ir 1440 px pločio ekranuose,
+  šviesia ir tamsia tema), tikrina `AdminHomeLayoutTest`.

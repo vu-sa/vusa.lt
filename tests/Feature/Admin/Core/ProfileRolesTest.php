@@ -70,13 +70,13 @@ test('a term that ends today is still current', function (): void {
 });
 
 test('roles come from the duty and from direct assignment', function (): void {
-    $this->user->assignRole('Communication Coordinator');
+    $this->user->assignRole('Komunikacijos koordinatorius');
     $this->user->current_duties()->first()->assignRole('Išteklių administratorius');
 
     asUser($this->user)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('access.directRoles', ['Communication Coordinator'])
+            ->where('access.directRoles', ['Komunikacijos koordinatorius'])
             ->where('access.current.0.roles', ['Išteklių administratorius'])
         );
 });

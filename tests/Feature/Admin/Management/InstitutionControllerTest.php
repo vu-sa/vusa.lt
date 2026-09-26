@@ -18,7 +18,7 @@ beforeEach(function (): void {
 
 describe('reorderDuties', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('persists the new order for each duty in a single batch', function (): void {
@@ -159,7 +159,7 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     // Terms, secretary rosters and the sheet's programme picker are edited on the record, so they
@@ -185,7 +185,7 @@ describe('authorized access', function (): void {
     test('someone who may only view the institution is never sent the management group', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $viewer = makeUser($this->tenant);
-        $viewer->duties()->first()->assignRole('Student Representative');
+        $viewer->duties()->first()->assignRole('Studentų atstovas');
         $viewer->duties()->first()->update(['institution_id' => $institution->id]);
 
         asUser($viewer)->get(route('institutions.show', $institution))
@@ -418,7 +418,7 @@ describe('authorized access', function (): void {
 
 describe('validation', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('requires name for store', function (): void {
@@ -500,7 +500,7 @@ describe('validation', function (): void {
 
 describe('relationships', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('institution belongs to tenant', function (): void {
@@ -532,7 +532,7 @@ describe('relationships', function (): void {
 
 describe('meeting_periodicity_days', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('can store institution with meeting_periodicity_days', function (): void {

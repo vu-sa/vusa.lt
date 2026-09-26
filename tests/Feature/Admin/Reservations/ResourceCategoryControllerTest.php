@@ -22,6 +22,8 @@ describe('the collection replaces the standalone pages', function (): void {
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Reservations/IndexResourceCategory')
+                ->where('abilities.update', true)
+                ->where('abilities.delete', true)
                 ->where('resourceCategories.data.0.id', $this->category->id)
                 ->has('resourceCategories.meta.total'));
     });

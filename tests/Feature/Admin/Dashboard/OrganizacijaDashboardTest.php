@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
-    $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     $this->member = makeUser($this->tenant);
 });
 

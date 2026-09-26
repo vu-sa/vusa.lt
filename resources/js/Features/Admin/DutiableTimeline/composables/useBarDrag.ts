@@ -276,9 +276,29 @@ export function useBarDrag(options: BarDragOptions) {
 
     teardown();
 
+    if (finished) swallowNextClick();
+
     if (finished && finished.entries.length > 0) {
       onCommit(finished.entries);
     }
+  }
+
+  /**
+   * The browser still fires `click` on the bar after a drag, and a click on the selected
+   * bar deselects it — so every drag used to drop the selection it had just edited.
+   * Cleared on the next task in case the pointer was released off the chart.
+   */
+  function swallowNextClick(): void {
+    const target = svg.value;
+    if (!target) return;
+
+    const swallow = (event: Event) => {
+      event.stopPropagation();
+      event.preventDefault();
+    };
+
+    target.addEventListener('click', swallow, { capture: true, once: true });
+    setTimeout(() => target.removeEventListener('click', swallow, { capture: true }), 0);
   }
 
   function cancel(): void {

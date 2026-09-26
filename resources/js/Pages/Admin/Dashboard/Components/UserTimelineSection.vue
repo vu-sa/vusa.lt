@@ -1,44 +1,48 @@
 <template>
-  <OverviewSection
-    :title="$t('visak.overview.timeline.title')"
-    :icon="CalendarRange"
-    variant="home"
-    data-tour="timeline-section"
-  >
-    <template #actions>
-      <GanttFilterDropdown
+  <FocusModeFrame v-slot="{ active, toggle }" v-model:active="fullscreen" :label="$t('visak.overview.timeline.title')">
+    <OverviewSection
+      :class="active && 'h-full'"
+      :title="$t('visak.overview.timeline.title')"
+      :icon="CalendarRange"
+      variant="home"
+      data-tour="timeline-section"
+    >
+      <template #actions>
+        <GanttFilterDropdown
+          :show-only-with-activity="filters.showOnlyWithActivityUser.value"
+          :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
+          :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
+          :show-duty-members="filters.showDutyMembersUser.value"
+          :show-tenant-headers="ganttSettings.showTenantHeaders.value"
+          :show-related-institutions="filters.showRelatedInstitutionsUser.value"
+          :has-related-institutions
+          :trigger-label-override="$t('Rodymo nustatymai')"
+          @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
+          @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
+          @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsUser.value = val"
+          @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
+          @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
+          @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
+          @reset="filters.resetUserFilters()"
+        />
+      </template>
+
+      <TimelineGanttSkeleton v-if="!isReady" />
+      <TimelineGanttChart v-else :class="active && 'min-h-0 flex-1'" :height="active ? '100%' : undefined" :fullscreen-active="active"
+        :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
+        :tenant-filter="[]"
         :show-only-with-activity="filters.showOnlyWithActivityUser.value"
         :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
         :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
-        :show-duty-members="filters.showDutyMembersUser.value"
-        :show-tenant-headers="ganttSettings.showTenantHeaders.value"
-        :show-related-institutions="filters.showRelatedInstitutionsUser.value"
-        :has-related-institutions
-        :trigger-label-override="$t('Rodymo nustatymai')"
-        @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
-        @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
-        @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsUser.value = val"
-        @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
-        @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
-        @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
-        @reset="filters.resetUserFilters()"
-      />
-    </template>
-
-    <TimelineGanttSkeleton v-if="!isReady" />
-    <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
-      :tenant-filter="[]"
-      :show-only-with-activity="filters.showOnlyWithActivityUser.value"
-      :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
-      :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
-      :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
-      :institution-periodicity="allInstitutionPeriodicity"
-      :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
-      :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
-      :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
-      @create-check-in="$emit('create-check-in', $event)"
-      @fullscreen="$emit('fullscreen')" @update:day-width="emit('update:dayWidth', $event)" />
-  </OverviewSection>
+        :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
+        :institution-periodicity="allInstitutionPeriodicity"
+        :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
+        :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
+        :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
+        @create-check-in="$emit('create-check-in', $event)"
+        @fullscreen="toggle" @update:day-width="emit('update:dayWidth', $event)" />
+    </OverviewSection>
+  </FocusModeFrame>
 </template>
 
 <script setup lang="ts">
@@ -61,6 +65,7 @@ import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 
+import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 interface Props {
@@ -109,8 +114,10 @@ const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'update:dayWidth': [value: number];
-  'fullscreen': [];
 }>();
+
+// In place rather than a modal, so dialogs opened from the chart stack above it.
+const fullscreen = ref(false);
 
 // Check if we have any related institutions (or might have when lazy-loaded)
 const hasRelatedInstitutions = computed(() => {

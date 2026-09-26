@@ -27,6 +27,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/css/app.css, resources/css/**/*.css | .ai/rules/css.md |
 | resources/js/Components/Tables/**,resources/js/Components/ui/data-table/** | .ai/rules/data-table.md |
 | resources/js/Components/ui/alert-dialog/**,resources/js/Components/ui/dialog/** | .ai/rules/dialog.md |
+| docs/** | .ai/rules/docs.md |
 | app/Enums/** | .ai/rules/enums.md |
 | tests/Feature/** | .ai/rules/feature.md |
 | CLAUDE.md | .ai/rules/general.md |

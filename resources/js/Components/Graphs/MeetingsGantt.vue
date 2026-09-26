@@ -3,7 +3,7 @@
     :class="{ 'h-full flex flex-col': props.height === '100%' }">
     <MeetingsGanttToolbar :show-legend :institution-count="layoutRows.filter(r => r.type === 'institution').length"
       :tenant-filter :tenant-names="mergedTenantNames" :show-only-with-activity :show-only-with-public-meetings
-      :details-expanded :day-width="dayWidthPx || dayWidth" :hide-fullscreen-button :meetings-loading
+      :details-expanded :day-width="dayWidthPx || dayWidth" :fullscreen-active :meetings-loading
       @show-legend-modal="emit('show-legend-modal')" @scroll-to-tenant="scrollToTenant"
       @update:details-expanded="emit('update:detailsExpanded', $event)" @update:day-width="onScaleChange([$event])"
       @fullscreen="emit('fullscreen', true)" />
@@ -175,8 +175,8 @@ const props = withDefaults(defineProps<{
   loadingRange?: { from: Date; until: Date } | null;
   // Whether meetings are currently being fetched (shown as a toolbar indicator)
   meetingsLoading?: boolean;
-  // Hide fullscreen button (when already in fullscreen modal)
-  hideFullscreenButton?: boolean;
+  // In focus mode: the toolbar's full-screen button reads as "exit"
+  fullscreenActive?: boolean;
 }>(), {
   daysBefore: 60,
   daysAfter: 60,

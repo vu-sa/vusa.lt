@@ -14,7 +14,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
 
-    $this->role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $this->role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $this->role->givePermissionTo([
         'news.read.padalinys',
         'news.create.padalinys',
@@ -23,7 +23,7 @@ beforeEach(function (): void {
     ]);
 
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->live = News::factory()->for($this->tenant)->create(['title' => 'Live article']);
     $this->trashed = News::factory()->for($this->tenant)->create(['title' => 'Trashed article']);

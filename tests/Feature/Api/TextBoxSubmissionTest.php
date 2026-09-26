@@ -41,7 +41,7 @@ function makeTiptapContentPart(): ContentPart
  */
 function makeSubmissionsManager(): User
 {
-    return makeTenantUserWithRole('Communication Coordinator', Tenant::query()->first());
+    return makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::query()->first());
 }
 
 // Public store endpoint

@@ -4,6 +4,7 @@ use App\Enums\MeetingType;
 use App\Events\CommentBroadcast;
 use App\Http\Resources\CommentResource;
 use App\Models\Duty;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -19,7 +20,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
-    $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
@@ -337,5 +338,64 @@ describe('support request', function (): void {
 
         Event::assertDispatched(CommentBroadcast::class, fn ($event) => $event->action === 'created'
             && $event->channelName === "comments.supportRequest.{$supportRequest->id}");
+    });
+});
+
+/**
+ * Duty and form records mount the same Veikla panel as every other record; before these
+ * were allowlisted, every visit to either page answered 404 with a "Commentable not found" toast.
+ */
+describe('duty', function (): void {
+    beforeEach(function (): void {
+        $this->duty = Duty::factory()->for($this->institution)->create();
+        $this->dutyIndexUrl = route('api.v1.admin.comments.index', ['commentableType' => 'duty', 'commentableId' => $this->duty->id]);
+        $this->dutyStoreUrl = route('api.v1.admin.comments.store', ['commentableType' => 'duty', 'commentableId' => $this->duty->id]);
+    });
+
+    test('a coordinator reads and posts on a duty in their padalinys', function (): void {
+        asUser($this->coordinator)->getJson($this->dutyIndexUrl)->assertOk()->assertJsonCount(0, 'data');
+
+        asUser($this->coordinator)->postJson($this->dutyStoreUrl, ['body' => '<p>Vietos rudeniui</p>'])
+            ->assertCreated()
+            ->assertJsonPath('data.body', '<p>Vietos rudeniui</p>');
+    });
+
+    test('an outsider is forbidden (403)', function (): void {
+        asUser($this->outsider)->getJson($this->dutyIndexUrl)->assertStatus(403);
+        asUser($this->outsider)->postJson($this->dutyStoreUrl, ['body' => '<p>x</p>'])->assertStatus(403);
+    });
+
+    /** `$duty->users` is every person who ever held the seat; only current holders are offered. */
+    test('mentionables are the current holders, never former ones', function (): void {
+        $current = User::factory()->create(['name' => 'Dabartinė narė']);
+        $current->duties()->attach($this->duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
+
+        $former = User::factory()->create(['name' => 'Buvęs narys']);
+        $former->duties()->attach($this->duty, ['start_date' => now()->subYears(3), 'end_date' => now()->subYears(2)]);
+
+        asUser($this->coordinator)
+            ->getJson(route('api.v1.admin.comments.mentionables', ['commentableType' => 'duty', 'commentableId' => $this->duty->id]))
+            ->assertOk()
+            ->assertJsonFragment(['id' => (string) $current->id])
+            ->assertJsonMissing(['id' => (string) $former->id]);
+    });
+});
+
+describe('form', function (): void {
+    beforeEach(function (): void {
+        $this->form = Form::factory()->for($this->tenant)->create();
+        $this->formIndexUrl = route('api.v1.admin.comments.index', ['commentableType' => 'form', 'commentableId' => $this->form->id]);
+        $this->formStoreUrl = route('api.v1.admin.comments.store', ['commentableType' => 'form', 'commentableId' => $this->form->id]);
+    });
+
+    test('a coordinator reads and posts on a form in their padalinys', function (): void {
+        asUser($this->coordinator)->getJson($this->formIndexUrl)->assertOk();
+
+        asUser($this->coordinator)->postJson($this->formStoreUrl, ['body' => '<p>Pataisyk klausimą</p>'])
+            ->assertCreated();
+    });
+
+    test('an outsider is forbidden (403)', function (): void {
+        asUser($this->outsider)->getJson($this->formIndexUrl)->assertStatus(403);
     });
 });

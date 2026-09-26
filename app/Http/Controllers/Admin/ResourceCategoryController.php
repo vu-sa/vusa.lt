@@ -38,6 +38,10 @@ class ResourceCategoryController extends AdminController
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/Reservations/IndexResourceCategory', [
+            'abilities' => [
+                'update' => $request->user()->can('update', new ResourceCategory),
+                'delete' => $request->user()->can('delete', new ResourceCategory),
+            ],
             'resourceCategories' => [
                 'data' => $resourceCategories->getCollection()->map(function ($category) {
                     /** @var ResourceCategory $category */

@@ -1,7 +1,7 @@
 <?php
 
-use App\Actions\Schedulable\TaskNotifier;
 use App\Actions\ResolveTaskAssignees;
+use App\Actions\Schedulable\TaskNotifier;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -180,7 +180,7 @@ describe('task reminder intervals', function (): void {
 
 describe('manual tasks', function (): void {
     test('creating a task by hand tells its assignees, and names who assigned it', function (): void {
-        $admin = makeTenantUserWithRole('Student Representative Coordinator', $this->institution->tenant);
+        $admin = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->institution->tenant);
         $assignee = User::factory()->create();
 
         asUser($admin)->post(route('tasks.store'), [

@@ -17,7 +17,7 @@ beforeEach(function (): void {
     // The seeded role, not a hand-built one: what the window offers is decided by real
     // permissions, so the test should be wrong if that grant ever changes.
     $this->representative = makeUser(Tenant::query()->first());
-    $this->representative->duties()->first()->assignRole('Student Representative');
+    $this->representative->duties()->first()->assignRole('Studentų atstovas');
 });
 
 /** The shell's "+ Sukurti" button in the top bar. */

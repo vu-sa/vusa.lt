@@ -177,7 +177,7 @@ permission the actor does not hold resolves to **zero** tenants — never a wide
 
 Always either call `$this->authorize(...)` in controllers or apply the `tenant.permission` middleware. Validate inputs through Form Requests. Return **403** for forbidden, never 302 for direct hits — see "Authorization responses" below.
 
-For tests, prefer the smallest role that covers the case (`'Communication Coordinator'`, `'Resource Manager'`, etc.). Use `config('permission.super_admin_role_name')` only when comprehensive coverage is genuinely needed. See [tests/CLAUDE.md](tests/CLAUDE.md).
+For tests, prefer the smallest role that covers the case (`'Komunikacijos koordinatorius'`, `'Išteklių administratorius'`, etc.). Use `config('permission.super_admin_role_name')` only when comprehensive coverage is genuinely needed. See [tests/CLAUDE.md](tests/CLAUDE.md).
 
 ### Translatable models (Spatie)
 

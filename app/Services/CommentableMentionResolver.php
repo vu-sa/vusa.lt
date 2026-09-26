@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Actions\GetInstitutionMembers;
 use App\Actions\GetInstitutionSecretaries;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -36,6 +37,20 @@ class CommentableMentionResolver
     }
 
     /**
+     * Whether audienceUsers() knows who this commentable's audience is. When it does, an
+     * empty result means "nobody right now", not "fall back to the model's `users` relation",
+     * which for an institution or a duty is everyone who ever held a seat.
+     */
+    public function hasCuratedAudience(Model $commentable): bool
+    {
+        return $commentable instanceof Meeting
+            || $commentable instanceof AgendaItem
+            || $commentable instanceof Institution
+            || $commentable instanceof Reservation
+            || $commentable instanceof Duty;
+    }
+
+    /**
      * The User models who can already view the commentable — the audience that
      * may be @mentioned and that the notification pipeline targets. Empty for
      * commentables without a known audience (e.g. an orphaned agenda item).
@@ -50,6 +65,8 @@ class CommentableMentionResolver
                 ? $this->meetingUsers($commentable->meeting)
                 : collect(),
             $commentable instanceof Institution => $this->institutionUsers($commentable),
+            // Current holders only: `$duty->users` is every person who ever held the seat.
+            $commentable instanceof Duty => $commentable->current_users()->get(),
             $commentable instanceof Reservation => $commentable->users()->get(),
             default => collect(),
         };

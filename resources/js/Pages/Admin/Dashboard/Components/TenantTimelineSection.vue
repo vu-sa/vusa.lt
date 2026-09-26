@@ -1,58 +1,66 @@
 <template>
-  <OverviewSection
+  <FocusModeFrame
     v-if="availableTenants.length > 0"
-    :title="$t('visak.overview.timeline.title')"
-    :icon="CalendarRange"
-    variant="home"
-    data-tour="tenant-gantt-section"
+    v-slot="{ active, toggle }"
+    v-model:active="fullscreen"
+    :label="$t('visak.overview.timeline.title')"
   >
-    <template #actions>
-      <div data-tour="gantt-filters">
-        <GanttFilterDropdown
-          :tenants="showTenantSelector ? availableTenants : undefined"
-          :selected-tenants="filters.selectedTenantForGantt.value"
+    <OverviewSection
+      :class="active && 'h-full'"
+      :title="$t('visak.overview.timeline.title')"
+      :icon="CalendarRange"
+      variant="home"
+      data-tour="tenant-gantt-section"
+    >
+      <template #actions>
+        <div data-tour="gantt-filters">
+          <GanttFilterDropdown
+            :tenants="showTenantSelector ? availableTenants : undefined"
+            :selected-tenants="filters.selectedTenantForGantt.value"
+            :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
+            :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
+            :hide-internal-institutions="filters.hideInternalInstitutionsTenant.value"
+            :show-duty-members="filters.showDutyMembersTenant.value"
+            :show-activity-status="filters.showActivityStatusTenant.value"
+            :show-activity-status-option="!!representativeActivity"
+            :show-tenant-headers="ganttSettings.showTenantHeaders.value"
+            :require-tenant-selection="showTenantSelector"
+            @update:selected-tenants="filters.setSelectedTenants"
+            @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
+            @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
+            @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsTenant.value = val"
+            @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
+            @update:show-activity-status="(val: boolean) => filters.showActivityStatusTenant.value = val"
+            @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
+            @reset="filters.resetTenantFilters()"
+          />
+        </div>
+      </template>
+
+      <TimelineGanttSkeleton v-if="!isReady || filters.tenantInstitutionsLoading.value" />
+      <p v-else-if="!filters.tenantInstitutionsLoaded.value && !hasData" class="py-12 text-center text-sm text-muted-foreground">
+        {{ $t('Pasirinkite padalinį norėdami matyti institucijų laiko juostą') }}
+      </p>
+      <div v-else data-tour="gantt-chart" :class="active && 'min-h-0 flex-1'">
+        <TimelineGanttChart :class="active && 'h-full'" :height="active ? '100%' : undefined" :fullscreen-active="active"
+          :institutions="formattedInstitutions" :meetings :gaps
+          :tenant-filter="[]"
           :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
           :hide-internal-institutions="filters.hideInternalInstitutionsTenant.value"
-          :show-duty-members="filters.showDutyMembersTenant.value"
+          :institution-names :tenant-names :institution-tenant :institution-has-public-meetings
+          :institution-has-activity
+          :institution-periodicity
+          :duty-members="enrichedDutyMembers" :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
           :show-activity-status="filters.showActivityStatusTenant.value"
-          :show-activity-status-option="!!representativeActivity"
-          :show-tenant-headers="ganttSettings.showTenantHeaders.value"
-          :require-tenant-selection="showTenantSelector"
-          @update:selected-tenants="filters.setSelectedTenants"
-          @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
-          @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
-          @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsTenant.value = val"
-          @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
-          @update:show-activity-status="(val: boolean) => filters.showActivityStatusTenant.value = val"
-          @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
-          @reset="filters.resetTenantFilters()"
-        />
+          :loading-range :meetings-loading
+          :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
+          @create-check-in="$emit('create-check-in', $event)"
+          @fullscreen="toggle"
+          @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
       </div>
-    </template>
-
-    <TimelineGanttSkeleton v-if="!isReady || isHidden || filters.tenantInstitutionsLoading.value" />
-    <p v-else-if="!filters.tenantInstitutionsLoaded.value && !hasData" class="py-12 text-center text-sm text-muted-foreground">
-      {{ $t('Pasirinkite padalinį norėdami matyti institucijų laiko juostą') }}
-    </p>
-    <div v-else-if="!isHidden" data-tour="gantt-chart">
-      <TimelineGanttChart :institutions="formattedInstitutions" :meetings :gaps
-        :tenant-filter="[]"
-        :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
-        :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
-        :hide-internal-institutions="filters.hideInternalInstitutionsTenant.value"
-        :institution-names :tenant-names :institution-tenant :institution-has-public-meetings
-        :institution-has-activity
-        :institution-periodicity
-        :duty-members="enrichedDutyMembers" :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
-        :show-activity-status="filters.showActivityStatusTenant.value"
-        :loading-range :meetings-loading
-        :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
-        @create-check-in="$emit('create-check-in', $event)"
-        @fullscreen="$emit('fullscreen')"
-        @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)" />
-    </div>
-  </OverviewSection>
+    </OverviewSection>
+  </FocusModeFrame>
 </template>
 
 <script setup lang="ts">
@@ -76,6 +84,7 @@ import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
 
+import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 interface Props {
@@ -92,8 +101,6 @@ interface Props {
   // Duty members display
   dutyMembers?: GanttDutyMember[];
   inactivePeriods?: InactivePeriod[];
-  // When true, hide the Gantt chart to save rendering resources (e.g., when fullscreen modal is open)
-  isHidden?: boolean;
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
   // Date range currently being loaded (rendered as a shimmer band in the Gantt)
@@ -127,9 +134,11 @@ const hasData = computed(() => props.tenantInstitutions?.length > 0);
 const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
-  'fullscreen': [];
   'range-changed': [min: Date, max: Date];
 }>();
+
+// In place rather than a modal, so dialogs opened from the chart stack above it.
+const fullscreen = ref(false);
 
 // Format institutions for Gantt component
 const formattedInstitutions = computed(() => {

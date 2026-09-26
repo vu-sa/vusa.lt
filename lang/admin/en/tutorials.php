@@ -127,7 +127,7 @@ return [
     // Dutiable timeline editor (/mano/dutiables/timeline)
     'dutiable_timeline' => [
         'welcome' => [
-            'title' => 'Duty periods',
+            'title' => 'Period manager',
             'description' => 'This is <strong>every duty period in one institution</strong> on a single timeline. Instead of editing each member on their own page, you can fix them all at once.',
         ],
         'institution' => [
@@ -136,7 +136,7 @@ return [
         ],
         'chart' => [
             'title' => 'The timeline',
-            'description' => 'Each bar is one duty period. The green bands are <strong>cadences</strong>: a bar that does not line up with a band edge is exactly what this page exists to fix. Bars can be dragged; the "i" button on the right says how.',
+            'description' => 'Each bar is one duty period: dark is current, grey has ended, amber is an unsaved change. The bands behind them are <strong>cadences</strong>. Bars can be dragged; the "i" button says how.',
         ],
         'controls' => [
             'title' => 'Collapsing and sorting',
@@ -146,9 +146,13 @@ return [
             'title' => 'Filters',
             'description' => 'Filter by cadence or unit. The same menu is where you choose whether <strong>ended</strong> periods are listed at all.',
         ],
+        'fullscreen' => [
+            'title' => 'Full screen',
+            'description' => 'Give the chart the whole screen when you need room. The same button or Esc brings you back.',
+        ],
         'selection' => [
             'title' => 'The selected row',
-            'description' => 'Select a bar to see its exact dates and what you can do with it: align to the cadence, close it, merge or remove it.',
+            'description' => 'The side panel shows the selected bar\'s exact dates and what you can do with it: align to the cadence, close it, merge or remove it.',
         ],
         'suggestions' => [
             'title' => 'Suggested fixes',
@@ -156,7 +160,7 @@ return [
         ],
         'save' => [
             'title' => 'Preview and save',
-            'description' => 'Nothing is written until you save, and you can <strong>preview</strong> exactly how the records will look first.',
+            'description' => 'Nothing is written until you press <strong>Save</strong> at the top, and you can <strong>preview</strong> exactly how the records will look first.',
         ],
     ],
 ];

@@ -97,7 +97,7 @@ return [
         'posedziai' => 'Meetings',
         'darbotvarkes_klausimai' => 'Agenda items',
         'problemos' => 'Problems',
-        'pareigybiu_laikotarpiai' => 'Duty terms',
+        'pareigybiu_laikotarpiai' => 'Period manager',
         'uzduociu_suvestine' => 'Tasks',
         'institucijos_grafas' => 'Institution graph',
         'rezervacijos' => 'Reservations',
@@ -142,7 +142,7 @@ return [
         'darbotvarkes_klausimai' => 'Agenda items and votes across meetings',
         'problemos' => 'Problems raised by reps and their progress',
         'padaliniu_apzvalga' => 'Meeting timeline and institution health across units',
-        'pareigybiu_laikotarpiai' => 'Who held which duty and when',
+        'pareigybiu_laikotarpiai' => 'Who held which duty and when – fix them all at once',
         'uzduociu_suvestine' => 'Tasks and deadlines across units',
         'institucijos_grafas' => 'Institution relations in one graph',
         'rezervacijos' => 'Equipment and item reservations',
@@ -212,8 +212,8 @@ return [
             'description' => 'Update members across several duties at once',
         ],
         'duty_periods' => [
-            'title' => 'Duty terms',
-            'description' => 'Review and manage terms',
+            'title' => 'Period manager',
+            'description' => 'Fix an institution’s duty periods',
         ],
     ],
 ];

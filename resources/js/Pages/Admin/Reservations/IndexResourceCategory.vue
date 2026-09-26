@@ -23,38 +23,26 @@
         <!-- The icon name is stored as data, so it can only be resolved at runtime. -->
         <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
         <div class="min-w-0 flex-1">
-          <button type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
+          <button v-if="canUpdate" type="button" class="block max-w-full text-left font-medium hover:text-brand" @click="openSheet(item)">
             {{ title(item) }}
           </button>
+          <span v-else class="block font-medium">{{ title(item) }}</span>
           <p v-if="description(item)" class="mt-0.5 truncate text-sm text-muted-foreground">
             {{ description(item) }}
           </p>
         </div>
+        <CollectionRowActions :actions="rowActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
     <template #cell="{ item, column }">
-      <button v-if="column.key === 'name'" type="button" class="inline-flex items-center gap-2 font-medium hover:text-brand" @click="openSheet(item)">
+      <button v-if="column.key === 'name' && canUpdate" type="button" class="inline-flex items-center gap-2 font-medium hover:text-brand" @click="openSheet(item)">
         <Icon v-if="item.icon" :icon="`fluent:${item.icon}`" class="size-4 text-muted-foreground" aria-hidden="true" />
         {{ title(item) }}
       </button>
+      <span v-else-if="column.key === 'name'" class="font-medium">{{ title(item) }}</span>
       <span v-else-if="column.key === 'description'" class="text-muted-foreground">{{ description(item) || '—' }}</span>
-      <div v-else-if="column.key === 'actions'" class="flex justify-end gap-1">
-        <Button variant="ghost" size="icon-sm" class="pointer-coarse:size-11" :title="$t('Redaguoti')" :aria-label="$t('Redaguoti')" @click="openSheet(item)">
-          <Pencil aria-hidden="true" />
-        </Button>
-        <Button
-          v-if="canDelete"
-          variant="ghost"
-          size="icon-sm"
-          class="text-destructive hover:text-destructive pointer-coarse:size-11"
-          :title="$t('Ištrinti')"
-          :aria-label="$t('Ištrinti')"
-          @click="toDelete = item"
-        >
-          <Trash2 aria-hidden="true" />
-        </Button>
-      </div>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #empty>
@@ -90,6 +78,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { CategoryIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -101,11 +90,22 @@ interface Translation { lt?: string; en?: string }
 type Category = App.Entities.ResourceCategory & { name: Translation; description?: Translation | null; icon?: string | null };
 
 const props = defineProps<{
+  abilities: { update: boolean; delete: boolean };
   resourceCategories: { data: Category[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
 }>();
 
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.resource));
-const canDelete = computed(() => Boolean(usePage().props.auth?.can?.delete?.resource));
+const canUpdate = computed(() => props.abilities.update);
+const canDelete = computed(() => props.abilities.delete);
+const rowActions = computed<CollectionRowAction[]>(() => [
+  ...(canUpdate.value ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true }] : []),
+  ...(canDelete.value ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+]);
+
+function selectRowAction(key: string, item: Category): void {
+  if (key === 'edit') openSheet(item);
+  if (key === 'delete') toDelete.value = item;
+}
 
 const sheetOpen = ref(false);
 const editing = ref<Category | null>(null);
@@ -130,7 +130,7 @@ const source = useDatabaseCollectionSource<Category>({
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Kategorija') },
   { key: 'description', label: $t('Aprašymas') },
-  { key: 'actions', label: '', class: 'w-28' },
+  ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 const categoryKey = (category: Category) => String(category.id);

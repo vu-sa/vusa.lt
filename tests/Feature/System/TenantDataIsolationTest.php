@@ -20,10 +20,10 @@ beforeEach(function (): void {
 
     // Create admin users with appropriate roles for news management
     $this->adminA = makeUser($this->tenantA);
-    $this->adminA->duties()->first()->assignRole('Communication Coordinator');
+    $this->adminA->duties()->first()->assignRole('Komunikacijos koordinatorius');
 
     $this->adminB = makeUser($this->tenantB);
-    $this->adminB->duties()->first()->assignRole('Communication Coordinator');
+    $this->adminB->duties()->first()->assignRole('Komunikacijos koordinatorius');
 });
 
 describe('tenant data isolation', function (): void {

@@ -25,7 +25,7 @@ beforeEach(function (): void {
         ['tenant_id' => $this->tenant->id]
     ))->hasAttached($this->newsManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
 
-    $communicationCoordinatorDuty->assignRole('Communication Coordinator');
+    $communicationCoordinatorDuty->assignRole('Komunikacijos koordinatorius');
 });
 
 describe('auth: simple user', function (): void {
@@ -162,7 +162,7 @@ describe('auth: news manager', function (): void {
         $duty = Duty::factory()->for($institution)
             ->hasAttached($orphanManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])
             ->create();
-        $duty->assignRole('Communication Coordinator');
+        $duty->assignRole('Komunikacijos koordinatorius');
 
         asUser($orphanManager)->get(route('news.create'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -424,7 +424,7 @@ describe('auth: news manager', function (): void {
         $duty = Duty::factory()->for($institution)
             ->hasAttached($orphanManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])
             ->create();
-        $duty->assignRole('Communication Coordinator');
+        $duty->assignRole('Komunikacijos koordinatorius');
 
         $initialCount = News::count();
 

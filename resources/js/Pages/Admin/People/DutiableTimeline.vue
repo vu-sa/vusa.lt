@@ -1,57 +1,79 @@
 <template>
-  <div class="min-h-full" data-slot="workbench">
+  <!--
+    A workbench fills the screen instead of scrolling: the chart scrolls inside, so the
+    toolbar with the save controls never leaves view. The negative margin hands back the
+    page measure's bottom padding, which only exists for pages that do scroll.
+  -->
+  <div
+    class="-mb-24 flex min-h-[32rem] flex-col md:-mb-32"
+    data-slot="workbench"
+    :style="{ height: 'calc(var(--shell-scroll-height, 100svh) - var(--shell-chrome-height, 0px) - var(--shell-bottom-bar, 0px) - 2.5rem)' }"
+  >
     <Head :title="$t('dutiables.timeline.page.title')" />
-    <header class="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-border pb-6 pt-6 sm:pt-10">
-      <div>
-        <p class="u-eyebrow">{{ $t('Pareigybės') }}</p>
-        <h1 class="u-display mt-3 text-4xl sm:text-5xl">{{ $t('dutiables.timeline.page.title') }}</h1>
-      </div>
-      <div>
-      <!--
-        The scope is the single most consequential thing on this page, so the control names
-        the institution rather than the action: a button reading "change institution" left
-        the current one legible only in the chart's own toolbar.
-      -->
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
+    <header class="flex shrink-0 flex-wrap items-end justify-between gap-3 border-b border-border pb-4">
+      <div class="min-w-0">
+        <p class="u-eyebrow">{{ $t('dutiables.timeline.page.eyebrow') }}</p>
+        <div class="mt-2 flex min-w-0 items-center gap-1">
+          <!--
+            The scope is the single most consequential thing on this page, so the title is the
+            switcher: a separate "change institution" button left the current one legible only
+            in the chart's own toolbar.
+          -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button
+                type="button"
+                class="-ml-1 flex min-w-0 items-center gap-2 px-1 py-0.5 text-left hover:bg-accent pointer-coarse:min-h-11"
+                data-tour="timeline-institution"
+              >
+                <h1 class="u-display truncate text-2xl sm:text-3xl">
+                  {{ institution?.name ?? $t('dutiables.timeline.page.pick_institution') }}
+                </h1>
+                <ChevronsUpDown class="size-5 shrink-0 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="start" class="w-72">
+              <template v-if="userInstitutions.length > 0">
+                <DropdownMenuLabel class="text-xs">
+                  {{ $t('dutiables.timeline.page.your_institutions') }}
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  v-for="own in userInstitutions"
+                  :key="own.id"
+                  class="text-xs"
+                  @select="selectInstitution(own)"
+                >
+                  <Check :class="['size-3.5', own.id === institution?.id ? 'opacity-100' : 'opacity-0']" />
+                  <span class="truncate">{{ own.name }}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </template>
+
+              <DropdownMenuItem class="text-xs" @select="pickerOpen = true">
+                <Search class="size-3.5" />
+                {{ $t('dutiables.timeline.page.search_all') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            class="max-w-72 gap-2 font-semibold"
-            data-tour="timeline-institution"
+            v-if="institution"
+            as-child
+            size="icon-sm"
+            variant="ghost"
+            :aria-label="$t('dutiables.timeline.page.open_institution')"
+            :title="$t('dutiables.timeline.page.open_institution')"
           >
-            <Building2 class="size-4 shrink-0 text-muted-foreground" />
-            <span class="truncate">
-              {{ institution?.name ?? $t('dutiables.timeline.page.pick_institution') }}
-            </span>
-            <ChevronsUpDown class="size-3.5 shrink-0 text-muted-foreground" />
+            <Link :href="route('institutions.show', institution.id)">
+              <ArrowUpRight class="size-4" />
+            </Link>
           </Button>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="start" class="w-72">
-          <template v-if="userInstitutions.length > 0">
-            <DropdownMenuLabel class="text-xs">
-              {{ $t('dutiables.timeline.page.your_institutions') }}
-            </DropdownMenuLabel>
-            <DropdownMenuItem
-              v-for="own in userInstitutions"
-              :key="own.id"
-              class="text-xs"
-              @select="selectInstitution(own)"
-            >
-              <Check :class="['size-3.5', own.id === institution?.id ? 'opacity-100' : 'opacity-0']" />
-              <span class="truncate">{{ own.name }}</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </template>
-
-          <DropdownMenuItem class="text-xs" @select="pickerOpen = true">
-            <Search class="size-3.5" />
-            {{ $t('dutiables.timeline.page.search_all') }}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </div>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ $t('dutiables.timeline.page.description') }}
+        </p>
+      </div>
 
       <CollectionSelectDialog
         v-model:open="pickerOpen"
@@ -60,44 +82,59 @@
         :confirm-label="$t('Pasirinkti')"
         @confirm="onInstitutionSelected"
       />
-      </div>
     </header>
-
-    <p class="mb-4 text-sm text-muted-foreground">
-      {{ $t('dutiables.timeline.page.description') }}
-    </p>
 
     <EmptyState
       v-if="!institution"
+      class="mt-4"
       :title="$t('dutiables.timeline.page.pick_institution')"
       :description="$t('dutiables.timeline.page.no_scope')"
     />
 
-    <!--
-      `max-h`, not `h`: a four-row institution should end after four rows rather than
-      reserve a screen, while a forty-row one caps here and scrolls inside the chart.
-      Keyed on the institution so switching scope remounts rather than leaving the
-      previous chart's staged edits attached to the new one.
-    -->
-    <div v-else class="flex max-h-[calc(100vh-13rem)] flex-col">
+    <!-- Keyed on the institution so switching scope remounts rather than leaving the
+         previous chart's staged edits attached to the new one. -->
+    <FocusModeFrame
+      v-else
+      v-slot="{ active, toggle }"
+      v-model:active="fullscreen"
+      class="mt-4 flex min-h-0 flex-1 flex-col"
+      :label="$t('dutiables.timeline.fullscreen.region')"
+    >
       <DutiableTimelineEditor
         :key="institution.id"
-        class="min-h-0 flex-auto"
+        class="min-h-0 flex-1"
         scope-type="institution"
         :scope-id="institution.id"
-      />
-    </div>
+        :show-scope="false"
+      >
+        <template #toolbar-end>
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="outline"
+            data-tour="timeline-fullscreen"
+            :aria-pressed="active"
+            :aria-label="active ? $t('dutiables.timeline.fullscreen.exit') : $t('dutiables.timeline.fullscreen.enter')"
+            :title="active ? $t('dutiables.timeline.fullscreen.exit') : $t('dutiables.timeline.fullscreen.enter')"
+            @click="toggle"
+          >
+            <Minimize2 v-if="active" class="size-4" />
+            <Maximize2 v-else class="size-4" />
+          </Button>
+        </template>
+      </DutiableTimelineEditor>
+    </FocusModeFrame>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, CalendarRange, Check, ChevronsUpDown, Search } from 'lucide-vue-next';
+import { ArrowUpRight, Check, ChevronsUpDown, Maximize2, Minimize2, Search } from 'lucide-vue-next';
 
-import { EmptyState } from '@/Components/Patterns';
+import { EmptyState, FocusModeFrame } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import {
   DropdownMenu,
@@ -129,6 +166,7 @@ const props = withDefaults(defineProps<{
 
 const institution = ref<ScopeInstitution | null>(props.initialInstitution);
 const pickerOpen = ref(false);
+const fullscreen = ref(false);
 
 /**
  * The server guesses from the actor's own duties, which is right on a first visit and wrong
@@ -170,7 +208,7 @@ function onInstitutionSelected(hits: NormalizedSearchHit[]): void {
 }
 
 const { startTour, startTourIfNew } = useProductTour({
-  tourId: 'dutiable-timeline-v2',
+  tourId: 'dutiable-timeline-v3',
   // A function, so the strings resolve when the tour runs rather than at import time.
   steps: () => [
     {
@@ -205,6 +243,13 @@ const { startTour, startTourIfNew } = useProductTour({
       popover: {
         title: $t('tutorials.dutiable_timeline.filters.title'),
         description: $t('tutorials.dutiable_timeline.filters.description'),
+      },
+    },
+    {
+      element: '[data-tour="timeline-fullscreen"]',
+      popover: {
+        title: $t('tutorials.dutiable_timeline.fullscreen.title'),
+        description: $t('tutorials.dutiable_timeline.fullscreen.description'),
       },
     },
     {

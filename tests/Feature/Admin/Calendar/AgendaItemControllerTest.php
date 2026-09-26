@@ -17,7 +17,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create an admin user with Communication Coordinator role
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();

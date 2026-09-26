@@ -61,7 +61,7 @@ beforeEach(function (): void {
 
     $this->tenantAdminRole = Role::firstOrCreate(['name' => 'Tenant Admin', 'guard_name' => 'web']);
     $this->contentEditorRole = Role::firstOrCreate(['name' => 'Content Editor', 'guard_name' => 'web']);
-    $this->communicationCoordinatorRole = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $this->communicationCoordinatorRole = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
 
     $this->tenantAdminRole->givePermissionTo([
         'news.read.padalinys',
@@ -146,7 +146,7 @@ test('permission cache is cleared when roles change', function (): void {
     // Check if the duty actually received the role
     $dutyRoles = $duty->roles()->get();
     expect($dutyRoles)->toHaveCount(1)
-        ->and($dutyRoles->first()->name)->toBe('Communication Coordinator');
+        ->and($dutyRoles->first()->name)->toBe('Komunikacijos koordinatorius');
 
     // Debug: Check if the duty has the role and permission with explicit guard
     expect($duty->hasRole($this->communicationCoordinatorRole))->toBeTrue('Duty should have Communication Coordinator role');

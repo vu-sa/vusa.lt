@@ -26,24 +26,18 @@
 
     <template #row="{ item }">
       <article class="flex min-h-16 items-center gap-3 px-4 py-4">
-        <CollectionPrimaryCell class="flex-1" :title="title(item)" :clickable="!isDeleted" :sub="item.alias" mono @open="openSheet(item)" />
+        <CollectionPrimaryCell class="flex-1" :title="title(item)" :clickable="!isDeleted && canUpdate" :sub="item.alias" mono @open="openSheet(item)" />
         <span v-if="item.is_topic" class="text-xs text-muted-foreground">{{ $t('Teminė') }}</span>
-        <Button v-if="!isDeleted" variant="outline" size="sm" class="shrink-0" @click="openSheet(item)">
-          <Pencil aria-hidden="true" class="size-4" />
-          {{ $t('Redaguoti') }}
-        </Button>
+        <CollectionRowActions :actions="rowActions" @select="key => selectRowAction(key, item)" />
       </article>
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell v-if="column.key === 'name'" :title="title(item)" :clickable="!isDeleted" @open="openSheet(item)" />
+      <CollectionPrimaryCell v-if="column.key === 'name'" :title="title(item)" :clickable="!isDeleted && canUpdate" @open="openSheet(item)" />
       <span v-else-if="column.key === 'alias'">{{ item.alias || '—' }}</span>
       <span v-else-if="column.key === 'topic'">{{ item.is_topic ? $t('Taip') : '—' }}</span>
       <span v-else-if="column.key === 'created'" class="tabular-nums">{{ formatDate(new Date(item.created_at)) }}</span>
-      <Button v-else-if="column.key === 'actions'" variant="outline" size="sm" @click="openSheet(item)">
-        <Pencil aria-hidden="true" class="size-4" />
-        {{ $t('Redaguoti') }}
-      </Button>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #preview="{ item }">
@@ -64,18 +58,18 @@
         </p>
         <template v-if="isDeleted">
           <div class="flex flex-col gap-2 pt-2">
-            <Button variant="outline" @click="restoreTag(item)">
+            <Button v-if="canDelete" variant="outline" @click="restoreTag(item)">
               <RotateCcw aria-hidden="true" class="size-4" />
               {{ $t('Atkurti') }}
             </Button>
-            <Button variant="ghost" class="text-destructive hover:text-destructive" @click="targetTagToForceDelete = item">
+            <Button v-if="canForceDelete" variant="ghost" class="text-destructive hover:text-destructive" @click="targetTagToForceDelete = item">
               <Trash2 aria-hidden="true" class="size-4" />
               {{ $t('Ištrinti visam laikui') }}
             </Button>
           </div>
         </template>
         <template v-else>
-          <Button variant="brand" @click="openSheet(item)">
+          <Button v-if="canUpdate" variant="brand" @click="openSheet(item)">
             {{ $t('Redaguoti') }}
           </Button>
           <Button v-if="canDelete" variant="ghost" @click="remove(item)">
@@ -135,6 +129,7 @@ import { toast } from 'vue-sonner';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -151,6 +146,7 @@ interface Translation { lt?: string; en?: string }
 type Tag = App.Entities.Tag & { name: Translation; description?: Translation | null };
 
 const props = defineProps<{
+  abilities: { update: boolean; delete: boolean };
   tags: { data: Tag[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
   deletedCount: number;
   showDeleted?: boolean;
@@ -159,8 +155,26 @@ const props = defineProps<{
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const { hasCollectionAction } = useAdminNavigation();
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.tag));
-const canDelete = computed(() => Boolean(usePage().props.auth?.can?.delete?.tag));
+const canUpdate = computed(() => props.abilities.update);
+const canDelete = computed(() => props.abilities.delete);
+const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.tag));
 const canMerge = computed(() => hasCollectionAction('tags.index', 'merge'));
+const rowActions = computed<CollectionRowAction[]>(() => isDeleted.value
+  ? [
+      ...(canDelete.value ? [{ key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true }] : []),
+      ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
+    ]
+  : [
+      ...(canUpdate.value ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, labelled: true }] : []),
+      ...(canDelete.value ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+    ]);
+
+function selectRowAction(key: string, item: Tag): void {
+  if (key === 'edit') openSheet(item);
+  if (key === 'delete') remove(item);
+  if (key === 'restore') restoreTag(item);
+  if (key === 'forceDelete') targetTagToForceDelete.value = item;
+}
 const sheetOpen = ref(false);
 const editingTag = ref<Tag | null>(null);
 const mergeMode = ref(false);
@@ -190,7 +204,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'alias', label: $t('Alias'), class: 'w-48' },
   { key: 'topic', label: $t('Tema'), class: 'w-28' },
   { key: 'created', label: $t('Sukurta'), class: 'w-32' },
-  ...(!isDeleted.value ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-36 text-right', pinned: true }] : []),
+  ...(rowActions.value.length ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 const tagKey = (tag: Tag) => String(tag.id);

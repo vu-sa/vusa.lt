@@ -599,7 +599,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
     describe('GetInstitutionFollowersToNotify', function (): void {
         test('stops notifying a follower whose duty was ended', function (): void {
-            $follower = makeTenantUserWithRole('Student Representative');
+            $follower = makeTenantUserWithRole('Studentų atstovas');
             $duty = $follower->duties()->first();
             $follower->followedInstitutions()->attach($duty->institution_id);
 

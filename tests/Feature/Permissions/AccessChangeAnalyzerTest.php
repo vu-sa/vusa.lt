@@ -13,7 +13,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.update.padalinys',
@@ -21,7 +21,7 @@ beforeEach(function (): void {
 
     $this->admin = makeUser($this->tenant);
     $this->adminDuty = $this->admin->duties()->first();
-    $this->adminDuty->assignRole('Communication Coordinator');
+    $this->adminDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->analyzer = app(AccessChangeAnalyzer::class);
 });
@@ -32,7 +32,7 @@ test('end-dating the actor\'s only role-granting duty reports the lost role and 
     });
 
     expect($report->isCritical())->toBeTrue()
-        ->and($report->lostRoles)->toContain('Communication Coordinator');
+        ->and($report->lostRoles)->toContain('Komunikacijos koordinatorius');
 
     // Rolled back: the duty is still active for the user.
     $stillActive = Dutiable::where('duty_id', $this->adminDuty->id)
@@ -57,7 +57,7 @@ test('a change that removes no role is committed', function (): void {
 test('a role retained through another current duty is not reported lost', function (): void {
     // A second current duty carrying the same role.
     $secondDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
-    $secondDuty->assignRole('Communication Coordinator');
+    $secondDuty->assignRole('Komunikacijos koordinatorius');
     $this->admin->duties()->attach($secondDuty->id, ['start_date' => now()->subDay()]);
 
     $report = $this->analyzer->apply($this->admin, function (): void {

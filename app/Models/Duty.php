@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
+use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
@@ -106,9 +108,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
 ])]
 #[Unguarded]
-class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
+class Duty extends Model implements AuthorizableContract, Commentable, GuardsForceDelete, SharepointFileableContract
 {
-    use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
+    use Authorizable, HasComments, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
     // Load explicitly where needed: ->with('duties.types') or ->load('types').

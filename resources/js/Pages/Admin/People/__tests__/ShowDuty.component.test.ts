@@ -142,7 +142,7 @@ describe('ShowDuty.vue', () => {
 
     const text = wrapper.text();
     expect(text).toContain('Būsimi nariai');
-    expect(text).toContain('Kadencijų istorija');
+    expect(text).toContain('Laikotarpių istorija');
     expect(wrapper.findAll('[data-slot="member-term-row"]')).toHaveLength(3);
     // The tab and the places fact count only who serves today.
     expect(wrapper.find('[data-testid="tabs"]').text()).toContain('Nariai:1');
@@ -176,17 +176,17 @@ describe('ShowDuty.vue', () => {
 
     expect(wrapper.find('[data-testid="primary"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="overflow-edit"]').exists()).toBe(false);
-    expect(wrapper.findAll('button').some(b => b.text().includes('Baigti kadenciją'))).toBe(false);
+    expect(wrapper.findAll('button').some(b => b.text().includes('Užbaigti pareigas'))).toBe(false);
     expect(wrapper.findAll('button').some(b => b.text().includes('Redaguoti'))).toBe(false);
   });
 
   it('ends a tenure only after a confirmation, with the Vilnius date', async () => {
     const wrapper = mountPage();
 
-    await wrapper.findAll('button').find(b => b.text().includes('Baigti kadenciją'))!.trigger('click');
+    await wrapper.findAll('button').find(b => b.text().includes('Užbaigti pareigas'))!.trigger('click');
     expect(router.patch).not.toHaveBeenCalled();
 
-    await wrapper.find('[data-testid="confirm-Baigti kadenciją"] [data-testid="confirm-yes"]').trigger('click');
+    await wrapper.find('[data-testid="confirm-Užbaigti pareigas"] [data-testid="confirm-yes"]').trigger('click');
 
     expect(router.patch).toHaveBeenCalledTimes(1);
     const [url, payload] = vi.mocked(router.patch).mock.calls[0];
@@ -199,7 +199,7 @@ describe('ShowDuty.vue', () => {
       duty: { ...baseDuty, users: [holder('derived', 'Ex Officio', { start_date: '2026-01-01', via_dutiable_id: 'src' })] },
     });
 
-    expect(wrapper.findAll('button').some(b => b.text().includes('Baigti kadenciją'))).toBe(false);
+    expect(wrapper.findAll('button').some(b => b.text().includes('Užbaigti pareigas'))).toBe(false);
     expect(wrapper.text()).toContain('Ex-officio');
   });
 

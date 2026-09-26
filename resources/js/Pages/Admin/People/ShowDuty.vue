@@ -102,7 +102,7 @@
         <section v-if="historicalHolders.length > 0">
           <div class="flex items-center gap-2 border-b border-border pb-3">
             <h3 class="text-base font-semibold text-foreground">
-              {{ $t('Kadencijų istorija') }}
+              {{ $t('Laikotarpių istorija') }}
             </h3>
             <span :class="countChipClass">{{ historicalHolders.length }}</span>
           </div>
@@ -202,9 +202,9 @@
 
   <ConfirmDialog
     :open="endTenureTarget !== null"
-    :title="$t('Baigti kadenciją šiandien?')"
+    :title="$t('Užbaigti pareigas šiandien?')"
     :description="endTenureTarget ? $t(':name nebebus laikomas šių pareigų nariu, bet įrašas liks istorijoje.', { name: endTenureTarget.name }) : undefined"
-    :confirm-label="$t('Baigti kadenciją')"
+    :confirm-label="$t('Užbaigti pareigas')"
     @update:open="!$event && (endTenureTarget = null)"
     @confirm="endTenure"
   />

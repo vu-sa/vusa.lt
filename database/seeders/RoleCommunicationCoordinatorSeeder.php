@@ -16,7 +16,7 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
     public function run()
     {
         $role = Role::firstOrCreate([
-            'name' => 'Communication Coordinator',
+            'name' => 'Komunikacijos koordinatorius',
             'guard_name' => 'web',
         ]);
 

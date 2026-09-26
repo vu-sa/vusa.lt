@@ -97,7 +97,7 @@ return [
         'posedziai' => 'Posėdžiai',
         'darbotvarkes_klausimai' => 'Darbotvarkės klausimai',
         'problemos' => 'Problemos',
-        'pareigybiu_laikotarpiai' => 'Pareigybių laikotarpiai',
+        'pareigybiu_laikotarpiai' => 'Laikotarpių tvarkyklė',
         'uzduociu_suvestine' => 'Užduotys',
         'institucijos_grafas' => 'Institucijų grafas',
         'rezervacijos' => 'Rezervacijos',
@@ -142,7 +142,7 @@ return [
         'darbotvarkes_klausimai' => 'Klausimai ir balsavimai iš visų posėdžių',
         'problemos' => 'Atstovų keliamos problemos ir jų eiga',
         'padaliniu_apzvalga' => 'Padalinių posėdžių laiko juosta ir institucijų būklė',
-        'pareigybiu_laikotarpiai' => 'Kas kada ėjo kokias pareigas',
+        'pareigybiu_laikotarpiai' => 'Kas kada ėjo kokias pareigas – sutvarkyk visus iš karto',
         'uzduociu_suvestine' => 'Padalinių užduotys ir terminai',
         'institucijos_grafas' => 'Institucijų ryšiai viename grafe',
         'rezervacijos' => 'Įrangos ir daiktų rezervacijos',
@@ -212,8 +212,8 @@ return [
             'description' => 'Atnaujink narius keliose pareigybėse iš karto',
         ],
         'duty_periods' => [
-            'title' => 'Pareigybių laikotarpiai',
-            'description' => 'Peržiūrėk ir tvarkyk kadencijas',
+            'title' => 'Laikotarpių tvarkyklė',
+            'description' => 'Sutvarkyk institucijos pareigybių laikotarpius',
         ],
     ],
 ];

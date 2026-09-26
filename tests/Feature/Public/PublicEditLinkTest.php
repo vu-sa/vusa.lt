@@ -24,7 +24,7 @@ beforeEach(function (): void {
     Http::fake();
 
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
-    $this->editor = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->editor = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     $this->plainUser = makeUser($this->tenant);
 });
 
@@ -111,7 +111,7 @@ describe('content pages', function (): void {
 
     test('a padalinys editor does not get an edit link for another tenant page', function (): void {
         $otherTenant = Tenant::factory()->create(['alias' => 'edit-link-other']);
-        $otherEditor = makeTenantUserWithRole('Communication Coordinator', $otherTenant);
+        $otherEditor = makeTenantUserWithRole('Komunikacijos koordinatorius', $otherTenant);
 
         $page = Page::factory()->for($otherTenant)->create([
             'permalink' => 'edit-link-other-page',
@@ -178,7 +178,7 @@ describe('calendar events', function (): void {
 
     test('a padalinys editor does not get an edit link for another tenant event', function (): void {
         $otherTenant = Tenant::factory()->create(['alias' => 'edit-link-other']);
-        $otherEditor = makeTenantUserWithRole('Communication Coordinator', $otherTenant);
+        $otherEditor = makeTenantUserWithRole('Komunikacijos koordinatorius', $otherTenant);
 
         $event = Calendar::factory()->for($otherTenant)->create(['is_draft' => false]);
 
@@ -219,7 +219,7 @@ describe('homepage', function (): void {
         $this->tenant->homepageContents()->create(['content_id' => $mainContent->id, 'locale' => 'lt']);
 
         $otherTenant = Tenant::factory()->create(['alias' => 'edit-link-tenant']);
-        $tenantEditor = makeTenantUserWithRole('Communication Coordinator', $otherTenant);
+        $tenantEditor = makeTenantUserWithRole('Komunikacijos koordinatorius', $otherTenant);
 
         asUser($tenantEditor)
             ->get(route('home', ['subdomain' => $otherTenant->alias, 'lang' => 'lt']))

@@ -22,7 +22,7 @@ beforeEach(function (): void {
     $this->manager = makeTenantUser('Išteklių administratorius', $this->tenant);
 
     // Holds a duty in the tenant, but no resources.update.padalinys — administers nothing.
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->myResource = Resource::factory()->for($this->tenant)->create();
     $this->foreignResource = Resource::factory()->for($this->otherTenant)->create();

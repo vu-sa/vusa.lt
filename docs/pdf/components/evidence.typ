@@ -7,8 +7,13 @@
     #text(weight: "bold", size: 9pt)[Įrodyta testais]
     #if reviewed != none { text(size: 9pt, fill: muted)[ · peržiūrėta #reviewed] }
     #v(0.3em)
-    #for (label, prefix) in (("Serveris – taisyklės ir teisės", "tests/"), ("Sąsaja – ką rodo ir leidžia ekranas", "resources/js/")) {
-      let group = tests.filter(test => test.starts-with(prefix))
+    #let browser = test => test.starts-with("tests/Browser/")
+    #for (label, belongs) in (
+      ("Serveris – taisyklės ir teisės", test => test.starts-with("tests/") and not browser(test)),
+      ("Sąsaja – ką rodo ir leidžia ekranas", test => test.starts-with("resources/js/")),
+      ("Naršyklė – kaip veikia tikrame ekrane", browser),
+    ) {
+      let group = tests.filter(belongs)
       if group.len() > 0 {
         v(0.4em)
         text(size: 8.5pt, fill: muted, label)

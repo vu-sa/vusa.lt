@@ -2,8 +2,8 @@
   <div class="flex items-center gap-1" data-slot="gantt-zoom">
     <Button
       type="button"
-      size="icon-xs"
-      variant="ghost"
+      :size="bordered ? 'icon-sm' : 'icon-xs'"
+      :variant="bordered ? 'outline' : 'ghost'"
       class="pointer-coarse:size-11"
       :disabled="modelValue <= min"
       :aria-label="$t('Atitolinti')"
@@ -16,14 +16,14 @@
       :min
       :max
       :step
-      class="w-24"
+      class="w-24 max-sm:hidden"
       :aria-label="$t('Mastelis')"
       @update:model-value="value => value?.[0] !== undefined && emit('update:modelValue', value[0])"
     />
     <Button
       type="button"
-      size="icon-xs"
-      variant="ghost"
+      :size="bordered ? 'icon-sm' : 'icon-xs'"
+      :variant="bordered ? 'outline' : 'ghost'"
       class="pointer-coarse:size-11"
       :disabled="modelValue >= max"
       :aria-label="$t('Priartinti')"
@@ -47,6 +47,8 @@ const props = defineProps<{
   min: number;
   max: number;
   step: number;
+  /** Outlined steps, for toolbars whose other controls are bordered too. */
+  bordered?: boolean;
 }>();
 
 const emit = defineEmits<{

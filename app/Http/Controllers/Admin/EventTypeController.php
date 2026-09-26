@@ -51,6 +51,11 @@ class EventTypeController extends AdminController
         $this->appendForceDeleteBlockedReason($eventTypes->getCollection(), $request);
 
         return $this->inertiaResponse('Admin/Calendar/IndexEventType', [
+            'abilities' => [
+                'update' => $request->user()->can('update', new EventType),
+                'delete' => $request->user()->can('delete', new EventType),
+                'restore' => $request->user()->can('restore', new EventType),
+            ],
             'eventTypes' => [
                 'data' => $eventTypes->getCollection()
                     ->map(function ($eventType) {

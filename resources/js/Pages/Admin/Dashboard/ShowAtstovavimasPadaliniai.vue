@@ -66,13 +66,11 @@
           :institution-periodicity="tenantInstitutionPeriodicity"
           :duty-members="ganttData.tenantDutyMembers.value"
           :inactive-periods="ganttData.tenantInactivePeriods.value"
-          :is-hidden="actions.showFullscreenGantt.value"
           :loading-range="meetingsLoadingRange"
           :meetings-loading="meetingsLoadingVisible"
           :representative-activity
           @create-meeting="onCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
-          @fullscreen="actions.onGanttFullscreen('tenant')"
           @range-changed="onTenantRangeChanged"
         />
       </div>
@@ -85,35 +83,6 @@
     </p>
 
     <WorkspaceSectionTiles v-if="hasStats" workspace-key="atstovavimas" variant="home" />
-
-    <!-- FullscreenGanttModal first so dialogs opened from within it appear on top -->
-    <FullscreenGanttModal
-      :is-open="actions.showFullscreenGantt.value"
-      gantt-type="tenant"
-      :available-tenants="props.ganttTenants"
-      :user-institutions="[]"
-      :user-meetings="[]"
-      :user-gaps="[]"
-      :user-institution-names="{}"
-      :user-institution-tenant="{}"
-      :tenant-institutions="ganttData.formattedTenantInstitutions.value"
-      :tenant-meetings="ganttData.tenantMeetings.value"
-      :tenant-gaps="ganttData.tenantGaps.value"
-      :tenant-institution-names
-      :tenant-institution-tenant
-      :tenant-institution-has-public-meetings
-      :tenant-institution-has-activity="ganttData.tenantInstitutionHasActivity.value"
-      :tenant-institution-periodicity
-      :tenant-duty-members="ganttData.tenantDutyMembers.value"
-      :tenant-inactive-periods="ganttData.tenantInactivePeriods.value"
-      :tenant-names
-      :tenant-loading-range="meetingsLoadingRange"
-      :tenant-meetings-loading="meetingsLoadingVisible"
-      @update:is-open="actions.showFullscreenGantt.value = $event"
-      @create-meeting="onCreateMeeting"
-      @create-check-in="actions.onGapCreateCheckIn"
-      @range-changed="onTenantRangeChanged"
-    />
 
     <AddCheckInDialog
       v-if="actions.showCreateCheckIn.value"
@@ -133,7 +102,6 @@ import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted, ref, watch } from 'vue';
 
-import FullscreenGanttModal from './Components/FullscreenGanttModal.vue';
 import InstitutionAttentionSkeleton from './Components/InstitutionAttentionSkeleton.vue';
 import OverviewNumbersSkeleton from './Components/OverviewNumbersSkeleton.vue';
 import TenantInsightsTabs from './Components/TenantInsightsTabs.vue';

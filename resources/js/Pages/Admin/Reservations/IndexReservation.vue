@@ -43,6 +43,7 @@
           </p>
           <ReservationRowActions v-if="!isDeleted" class="mt-2 flex-wrap" :reservation="item" @decide="openDecision" />
         </div>
+        <CollectionRowActions v-if="isDeleted" :actions="trashActions" @select="key => selectTrashAction(key, item)" />
       </article>
     </template>
 
@@ -76,6 +77,7 @@
         :reservation="item"
         @decide="openDecision"
       />
+      <CollectionRowActions v-else-if="column.key === 'actions' && isDeleted" :actions="trashActions" @select="key => selectTrashAction(key, item)" />
     </template>
 
     <template #preview="{ item }">
@@ -84,9 +86,12 @@
           <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {{ $t('Rezervacija') }}
           </p>
-          <Link :href="route('reservations.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
+          <Link v-if="!isDeleted" :href="route('reservations.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
             {{ item.name }}
           </Link>
+          <h2 v-else class="mt-1 text-lg font-semibold text-muted-foreground">
+            {{ item.name }}
+          </h2>
           <p v-if="item.description" class="mt-2 text-sm text-muted-foreground">
             {{ item.description }}
           </p>
@@ -123,7 +128,7 @@
               <RotateCcw aria-hidden="true" class="size-4" />
               {{ $t('Atkurti') }}
             </Button>
-            <Button variant="ghost" voice="sentence" class="text-destructive hover:text-destructive" @click="targetReservationToForceDelete = item">
+            <Button v-if="canForceDelete" variant="ghost" voice="sentence" class="text-destructive hover:text-destructive" @click="targetReservationToForceDelete = item">
               <Trash2 aria-hidden="true" class="size-4" />
               {{ $t('Ištrinti visam laikui') }}
             </Button>
@@ -192,6 +197,7 @@ import { toast } from 'vue-sonner';
 
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -228,6 +234,16 @@ const props = defineProps<{
 
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.reservation));
+const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.reservation));
+const trashActions = computed<CollectionRowAction[]>(() => [
+  { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
+  ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
+]);
+
+function selectTrashAction(key: string, item: DashboardReservation): void {
+  if (key === 'restore') restoreReservation(item);
+  if (key === 'forceDelete') targetReservationToForceDelete.value = item;
+}
 
 const { items: cartItems } = useReservationCart();
 const selectedIds = ref<string[]>([]);
@@ -280,7 +296,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'resources', label: $t('Ištekliai') },
   { key: 'period', label: $t('Laikas'), class: 'w-36' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
-  ...(!isDeleted.value ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-52', pinned: true }] : []),
+  { key: 'actions', label: $t('Veiksmai'), class: isDeleted.value ? 'w-px text-right' : 'w-52', pinned: true },
 ]);
 
 // --- Quick filters: the URL state an overview number links to ---------------------------------

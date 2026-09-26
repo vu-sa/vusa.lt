@@ -27,7 +27,7 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
 
     // Create an admin user with Communication Coordinator role
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();
@@ -888,7 +888,7 @@ describe('Posėdžiai collection', function (): void {
     });
 
     test('a student representative holding only meetings.read.own can open it', function (): void {
-        $rep = makeTenantUserWithRole('Student Representative', $this->tenant);
+        $rep = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
 
         asUser($rep)
             ->get(route('meetings.index'))

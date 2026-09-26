@@ -85,26 +85,7 @@
             v-if="canCreate && item.sync_status && syncStatuses[item.sync_status]"
             :status="syncStatuses[item.sync_status]"
           />
-          <Button
-            v-if="canUpdate"
-            variant="ghost"
-            size="icon-sm"
-            :title="$t('Atnaujinti iš SharePoint')"
-            :disabled="refreshingId === item.id"
-            @click="refreshDocument(item)"
-          >
-            <RefreshCw :class="['size-4', refreshingId === item.id && 'animate-spin']" />
-          </Button>
-          <Button
-            v-if="canDelete"
-            variant="ghost"
-            size="icon-sm"
-            class="text-destructive hover:text-destructive"
-            :title="$t('Ištrinti')"
-            @click="confirmDelete(item)"
-          >
-            <Trash2 class="size-4" />
-          </Button>
+          <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
         </div>
       </article>
     </template>
@@ -159,28 +140,7 @@
         <span v-else class="text-muted-foreground">—</span>
       </div>
 
-      <div v-else-if="column.key === 'actions'" class="flex items-center justify-end gap-1">
-        <Button
-          v-if="canUpdate"
-          variant="ghost"
-          size="icon-sm"
-          :title="$t('Atnaujinti iš SharePoint')"
-          :disabled="refreshingId === item.id"
-          @click="refreshDocument(item)"
-        >
-          <RefreshCw :class="['size-4', refreshingId === item.id && 'animate-spin']" />
-        </Button>
-        <Button
-          v-if="canDelete"
-          variant="ghost"
-          size="icon-sm"
-          class="text-destructive hover:text-destructive"
-          :title="$t('Ištrinti')"
-          @click="confirmDelete(item)"
-        >
-          <Trash2 class="size-4" />
-        </Button>
-      </div>
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
     <template #preview="{ item }">
@@ -229,6 +189,7 @@ import {
 import { computed, ref } from 'vue';
 
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { DocumentIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
@@ -260,6 +221,16 @@ const canCreate = computed(() => props.abilities.create);
 const canUpdate = computed(() => canCreate.value && props.abilities.update);
 const canDelete = computed(() => canCreate.value && props.abilities.delete);
 
+const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => [
+  ...(canUpdate.value ? [{ key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) }] : []),
+  ...(canDelete.value ? [{ key: 'delete', label: $t('Ištrinti'), icon: Trash2, destructive: true }] : []),
+];
+
+function selectRowAction(key: string, item: DocumentSearchResult): void {
+  if (key === 'refresh') refreshDocument(item);
+  if (key === 'delete') confirmDelete(item);
+}
+
 const sharepointPickerAvailable = computed(() =>
   typeof window !== 'undefined' && window.isSecureContext && String(page.props.app?.url ?? '').startsWith('https'),
 );
@@ -289,9 +260,9 @@ const columns = computed<CollectionColumn[]>(() => [
   ...(canCreate.value
     ? [
         { key: 'sync_status', label: $t('Būsena'), class: 'w-36' },
-        { key: 'actions', label: '', class: 'w-20' },
       ]
     : []),
+  ...(canUpdate.value || canDelete.value ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
 
 function institutionName(item: DocumentSearchResult): string | undefined {

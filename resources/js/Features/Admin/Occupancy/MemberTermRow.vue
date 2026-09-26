@@ -24,13 +24,13 @@
     </div>
 
     <div v-if="canManage" class="flex shrink-0 items-center gap-2">
-      <Button variant="ghost" size="sm" class="u-touch" @click="emit('edit')">
+      <Button variant="ghost" size="sm" class="u-touch" data-testid="member-term-edit" @click="emit('edit')">
         <Edit3 class="size-3.5" />
         {{ $t('Redaguoti') }}
       </Button>
       <Button v-if="canEnd" variant="ghost" size="sm" class="u-touch" @click="emit('end')">
         <CalendarCheck class="size-3.5" />
-        {{ $t('Baigti kadenciją') }}
+        {{ $t('Užbaigti pareigas') }}
       </Button>
     </div>
   </div>

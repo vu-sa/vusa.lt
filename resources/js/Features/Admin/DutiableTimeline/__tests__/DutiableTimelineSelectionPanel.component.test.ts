@@ -114,11 +114,12 @@ describe('DutiableTimelineSelectionPanel', () => {
     expect((wrapper.find('#selection-start').element as HTMLInputElement).value).toBe('2025-07-01');
   });
 
-  it('measures drift against the cadence the staged start falls in', () => {
-    const aligned = mountPanel(makeRow(), new Map([['row-1', { start_date: '2025-07-01', end_date: '2026-06-30' }]]));
-    expect(aligned.text()).toContain('dutiables.timeline.inspector.aligned');
+  /** Duration is already in the label column and drift in the suggestions; the panel keeps to dates and actions. */
+  it('leaves duration and cadence drift to the chart and the suggestions', () => {
+    const text = mountPanel(makeRow()).text();
 
-    expect(mountPanel(makeRow()).text()).toContain('dutiables.timeline.inspector.off_by');
+    expect(text).not.toContain('dutiables.timeline.duration.label');
+    expect(text).not.toContain('dutiables.timeline.inspector.off_by');
   });
 
   it('locks a derived row and offers its source instead', async () => {

@@ -2,17 +2,16 @@
 
 return [
     'timeline' => [
-        'title' => 'Pareigybių laikotarpiai',
-        'description' => 'Peržiūrėkite ir tvarkykite pareigybių laikotarpius vienoje vietoje.',
+        'title' => 'Laikotarpių tvarkyklė',
+        'description' => 'Peržiūrėk ir tvarkyk pareigybių laikotarpius vienoje vietoje.',
         'open' => 'Tvarkyti laikotarpius',
-        'row_count' => 'Įrašų: :count',
         'show_ended' => 'Rodyti pasibaigusius',
         'ended_hidden' => 'Pasibaigę laikotarpiai paslėpti',
         'collapse_all' => 'Suskleisti visus',
         'expand_all' => 'Išskleisti visus',
         'collapse_group' => 'Suskleisti pareigybę',
         'expand_group' => 'Išskleisti pareigybę',
-        'truncated' => 'Rodomi tik pirmi :max įrašai. Pasirinkite konkrečias pareigybes.',
+        'truncated' => 'Rodomi tik pirmi :max įrašai. Pasirink konkrečias pareigybes.',
         'blocked_summary' => '{1} :count įrašas praleistas|[2,9] :count įrašai praleisti|[10,*] :count įrašų praleista',
         'select_group' => 'Pažymėti visus grupėje',
 
@@ -26,6 +25,8 @@ return [
             'suggestions' => 'Siūlomi taisymai',
             'multi_hint' => 'Keisti galima :editable iš :total pažymėtų įrašų.',
             'save' => 'Pakeitimai',
+            'open_panel' => 'Pažymėta ir pasiūlymai',
+            'selection_hint' => 'Pažymėk juostą grafike arba varnelę šalia vardo.',
         ],
 
         'legend' => [
@@ -52,10 +53,11 @@ return [
 
         'help' => [
             'title' => 'Kaip keisti',
-            'drag_body' => 'Tempkite juostą – ji slenka mėnesiais, mėnesio diena išlieka.',
-            'drag_edges' => 'Tempkite juostos kraštą, kad keistumėte pradžią ar pabaigą; kraštas pritraukiamas prie kadencijos ribos.',
+            'drag_body' => 'Tempk juostą – ji slenka mėnesiais, mėnesio diena išlieka.',
+            'drag_edges' => 'Tempk juostos kraštą, kad pakeistum pradžią ar pabaigą; kraštas pritraukiamas prie kadencijos ribos.',
             'precise' => 'Alt – be pritraukimo, tiksliai dienai. Ctrl (⌘) – kartu visiems pažymėtiems.',
             'cancel' => 'Esc – atšaukti tempimą.',
+            'fullscreen' => 'Visas ekranas – daugiau vietos grafikui; Esc grąžina atgal.',
         ],
 
         'filters' => [
@@ -66,7 +68,7 @@ return [
             'no_cadence' => 'Be kadencijos',
             'no_tenant' => 'Be padalinio',
             'empty_title' => 'Pagal filtrą nieko nerasta',
-            'empty_description' => 'Išvalykite kadencijos arba padalinio filtrą, kad matytumėte daugiau įrašų.',
+            'empty_description' => 'Išvalyk kadencijos arba padalinio filtrą, kad matytum daugiau įrašų.',
         ],
 
         'extras' => [
@@ -82,16 +84,14 @@ return [
         ],
 
         'inspector' => [
-            'empty' => 'Pasirinkite juostą, kad matytumėte tikslias datas.',
+            'empty' => 'Pasirink juostą, kad matytum tikslias datas.',
             'start_date' => 'Pradžia',
             'end_date' => 'Pabaiga',
             'open_ended_toggle' => 'Palikti neterminuotą',
             'ex_officio' => 'Ex officio',
             'ex_officio_managed' => 'Šios datos sekamos iš pareigybės „:duty“ ir keičiamos tik ten.',
             'select_source' => 'Pažymėti šaltinio įrašą',
-            'aligned' => 'Sutampa su kadencijos pradžia.',
-            'off_by' => 'Nuo kadencijos pradžios skiriasi :days d.',
-            'not_editable' => 'Šio įrašo keisti negalite.',
+            'not_editable' => 'Šio įrašo keisti negali.',
         ],
 
         'actions' => [
@@ -135,7 +135,7 @@ return [
             'unchanged' => 'Nesikeis: :count',
             'derived' => 'Ex officio įrašų seks: :count',
             'no_changes' => 'Pakeitimų nėra.',
-            'self_affecting' => 'Tarp keičiamų įrašų yra jūsų pačių pareigybė. Išsaugojus gali tekti patvirtinti prieigos pakeitimą.',
+            'self_affecting' => 'Tarp keičiamų įrašų yra tavo paties pareigybė. Išsaugojus gali tekti patvirtinti prieigos pakeitimą.',
             'diagnostics_delta' => 'Problemos: :before → :after',
             'confirm' => 'Išsaugoti',
             'cancel' => 'Grįžti',
@@ -154,34 +154,42 @@ return [
                 'inverted' => 'Pabaiga anksčiau už pradžią',
                 'overlap' => 'Persidengiantys laikotarpiai',
                 'boundary_shared' => 'Vienas laikotarpis baigiasi kito pradžios dieną',
-                'open_ended_stale' => 'Neterminuota, nors kadencija jau baigėsi',
+                'open_ended_stale' => 'Neterminuota nuo ankstesnės kadencijos',
                 'ex_officio_drift' => 'Ex officio datos nesutampa su šaltiniu',
                 'off_cadence' => 'Data nesutampa su kadencijos riba',
-                'spans_cadences' => 'Apima daugiau nei vieną kadenciją',
+                'spans_cadences' => 'Perrinkta kelioms kadencijoms',
                 'understaffed' => 'Užimta mažiau vietų, nei numatyta',
                 'orphan_derived_suspect' => 'Įtartinas ex officio įrašas be šaltinio',
             ],
             'detail' => [
                 'end_move' => 'pabaiga :from → :to',
                 'clear_end' => 'pabaiga bus išvalyta',
-                'close_at' => 'užbaigti :date',
+                'close_at' => 'jei pareigų nebeeina – užbaigti :date',
                 'drift_start' => 'pradžia nutolusi :days d.',
                 'drift_end' => 'pabaiga nutolusi :days d.',
-                'spans' => 'kadencijų: :count · taps :start → :end',
+                'spans' => 'kadencijų: :count',
                 'understaffed' => 'užimta :active iš :places vietų',
                 'ex_officio_drift' => 'Tvarkoma perkeliant šaltinio įrašą.',
             ],
-            'orphan_note' => 'Šie įrašai suteikia realias teises, o nuoroda į šaltinį jau ištrinta, todėl automatiškai jų liesti negalima. Paleiskite „duties:audit-ex-officio“.',
+            'orphan_note' => 'Šie įrašai suteikia realias teises, o nuoroda į šaltinį jau ištrinta, todėl automatiškai jų liesti negalima. Paleisk „duties:audit-ex-officio“.',
+        ],
+
+        'fullscreen' => [
+            'enter' => 'Visas ekranas',
+            'exit' => 'Išeiti iš viso ekrano',
+            'region' => 'Pareigybių laikotarpių grafikas',
         ],
 
         'page' => [
-            'title' => 'Pareigybių laikotarpiai',
-            'description' => 'Institucijos mastu peržiūrėkite ir sutvarkykite visų pareigybių laikotarpius.',
+            'title' => 'Laikotarpių tvarkyklė',
+            'eyebrow' => 'ViSAK · Laikotarpių tvarkyklė',
+            'open_institution' => 'Atidaryti instituciją',
+            'description' => 'Visų institucijos pareigybių laikotarpiai vienoje laiko juostoje: kas, kada ir kiek laiko ėjo pareigas.',
             'pick_institution' => 'Pasirinkti instituciją',
             'change_institution' => 'Keisti instituciją',
-            'your_institutions' => 'Jūsų institucijos',
+            'your_institutions' => 'Tavo institucijos',
             'search_all' => 'Ieškoti tarp visų institucijų…',
-            'no_scope' => 'Pasirinkite instituciją, kad matytumėte laikotarpius.',
+            'no_scope' => 'Pasirink instituciją, kad matytum laikotarpius.',
         ],
 
     ],

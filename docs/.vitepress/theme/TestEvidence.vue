@@ -30,10 +30,14 @@ const tests = computed<string[]>(() => {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 })
 
-// Pest tests prove what the server enforces; Vitest specs what the screen shows and allows.
+// Pest tests prove what the server enforces, Vitest specs what the screen shows and allows,
+// browser tests what only a real layout can show.
+const isBrowserTest = (test: string) => test.startsWith('tests/Browser/')
+
 const groups = computed(() => [
-  { label: 'Serveris – taisyklės ir teisės', tests: tests.value.filter(test => test.startsWith('tests/')) },
+  { label: 'Serveris – taisyklės ir teisės', tests: tests.value.filter(test => test.startsWith('tests/') && !isBrowserTest(test)) },
   { label: 'Sąsaja – ką rodo ir leidžia ekranas', tests: tests.value.filter(test => test.startsWith('resources/js/')) },
+  { label: 'Naršyklė – kaip veikia tikrame ekrane', tests: tests.value.filter(isBrowserTest) },
 ])
 
 const reviewed = computed(() => {

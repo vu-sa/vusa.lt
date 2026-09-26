@@ -93,7 +93,7 @@ test('a Duty <-> users sync appears on the parent Institution activity feed via 
 
 describe('duty grants made through the user form', function (): void {
     beforeEach(function (): void {
-        $this->coordinator = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
+        $this->coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
         $this->member = makeUser($this->tenant);
         $this->member->update(['name' => 'Rasa Rasaitė']);
         $this->existingDuty = $this->member->current_duties()->first();

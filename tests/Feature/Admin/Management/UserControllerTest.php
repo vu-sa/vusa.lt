@@ -69,7 +69,7 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('can index users', function (): void {
@@ -220,7 +220,7 @@ describe('authorized access', function (): void {
 
 describe('validation', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('requires name for store', function (): void {
@@ -292,7 +292,7 @@ describe('validation', function (): void {
 
 describe('relationships', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('user has proper model structure', function (): void {
@@ -486,7 +486,7 @@ describe('roles are edited on the record', function (): void {
     });
 
     test('anyone else is refused, even with permission to edit the person', function (): void {
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
         asUser($coordinator)->put(route('users.roles.update', $this->person), ['roles' => [$this->role->id]])
             ->assertForbidden();
@@ -525,7 +525,7 @@ describe('the record hands the assignment sheets their options', function (): vo
     });
 
     test('a coordinator gets the programmes but no role list', function (): void {
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $person = makeUser($this->tenant);
 
         asUser($coordinator)->get(route('users.show', $person))

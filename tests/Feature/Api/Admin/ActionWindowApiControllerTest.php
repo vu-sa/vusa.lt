@@ -173,7 +173,7 @@ describe('wider institution search', function (): void {
     });
 
     test('it opens, scoped to their tenants, for a tenant-wide coordinator', function (): void {
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
         $response = asUser($coordinator)
             ->getJson(route('api.v1.admin.actionWindow.context'))

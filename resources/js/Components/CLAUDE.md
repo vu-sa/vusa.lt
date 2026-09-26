@@ -190,7 +190,7 @@ Relations with their own lifecycle do **not** belong in it.
 `#danger-zone` in the body (never the footer), and a `dirty` prop that makes Esc, the overlay and
 Atšaukti ask before discarding. `FormSection` groups fields under a question heading with an optional
 "Matoma vusa.lt" marker. `ConfirmDialog` is the one confirmation: name the result on the button
-("Baigti kadenciją", "Ištrinti"), never a native `confirm()`.
+("Užbaigti pareigas", "Ištrinti"), never a native `confirm()`.
 
 ## RecordPage
 

@@ -105,7 +105,7 @@ describe('GetUserCoordinators', function (): void {
 
 describe('the coordinator is one tap away on rep screens (R-g)', function (): void {
     test('the ViSAK overview carries it, deferred', function (): void {
-        $rep = makeTenantUserWithRole('Student Representative', $this->tenant);
+        $rep = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
 
         asUser($rep)->get(route('dashboard.atstovavimas'))->assertInertia(fn (Assert $page) => $page
             ->missing('coordinators')

@@ -28,7 +28,7 @@
         :show-duty-members
         :show-activity-status
         :height="effectiveHeight"
-        :hide-fullscreen-button
+        :fullscreen-active
         :loading-range :meetings-loading
         @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
@@ -91,8 +91,8 @@ interface Props {
   loadingRange?: { from: Date; until: Date } | null;
   // Whether meetings are currently being fetched (delayed ~300ms by the caller)
   meetingsLoading?: boolean;
-  // Hide fullscreen button (when already in fullscreen modal)
-  hideFullscreenButton?: boolean;
+  // In focus mode: the toolbar's full-screen button reads as "exit"
+  fullscreenActive?: boolean;
 }
 
 const props = defineProps<Props>();

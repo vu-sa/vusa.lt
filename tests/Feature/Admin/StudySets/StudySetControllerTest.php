@@ -13,7 +13,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'studySets.read.padalinys',
         'studySets.create.padalinys',
@@ -22,7 +22,7 @@ beforeEach(function (): void {
     ]);
 
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->studySet = StudySet::factory()->for($this->tenant)->create([
         'name' => ['lt' => 'Testinis komplektas', 'en' => 'Test Set'],

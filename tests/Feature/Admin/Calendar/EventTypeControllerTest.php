@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->globalCoordinator = makeTenantUserWithRole('Global Communication Coordinator', $this->tenant);
+    $this->globalCoordinator = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
 
     $this->eventType = EventType::factory()->create([
         'name' => ['lt' => 'Testinis tipas', 'en' => 'Test type'],
@@ -58,6 +58,9 @@ describe('authorized access', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Calendar/IndexEventType')
+                ->where('abilities.update', true)
+                ->where('abilities.delete', true)
+                ->where('abilities.restore', true)
                 ->has('eventTypes')
                 ->has('filters')
                 ->has('sorting')

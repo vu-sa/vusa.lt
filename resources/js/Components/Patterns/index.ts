@@ -22,6 +22,7 @@ export { default as StatCard } from './StatCard.vue';
 export { default as StatTile } from './StatTile.vue';
 export { default as StatusBadge } from './StatusBadge.vue';
 export { default as EmptyState } from './EmptyState.vue';
+export { default as FocusModeFrame } from './FocusModeFrame.vue';
 export { default as CollectionSkeleton } from './Skeletons/CollectionSkeleton.vue';
 export { default as RecordSkeleton } from './Skeletons/RecordSkeleton.vue';
 export { default as FormSkeleton } from './Skeletons/FormSkeleton.vue';

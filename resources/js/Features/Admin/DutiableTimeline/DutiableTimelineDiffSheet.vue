@@ -12,16 +12,16 @@
 
       <template v-else-if="plan">
         <div class="flex flex-wrap gap-1 border-b border-border px-4 pb-3">
-          <Badge variant="secondary" class="text-[10px]">
+          <Badge variant="secondary" class="text-xs">
             {{ $t('dutiables.timeline.diff.changed', { count: plan.summary.changed }) }}
           </Badge>
-          <Badge v-if="plan.summary.blocked > 0" variant="destructive" class="text-[10px]">
+          <Badge v-if="plan.summary.blocked > 0" variant="destructive" class="text-xs">
             {{ $t('dutiables.timeline.diff.blocked', { count: plan.summary.blocked }) }}
           </Badge>
-          <Badge variant="outline" class="text-[10px]">
+          <Badge variant="outline" class="text-xs">
             {{ $t('dutiables.timeline.diff.unchanged', { count: plan.summary.unchanged }) }}
           </Badge>
-          <Badge v-if="plan.summary.derived > 0" variant="outline" class="text-[10px]">
+          <Badge v-if="plan.summary.derived > 0" variant="outline" class="text-xs">
             {{ $t('dutiables.timeline.diff.derived', { count: plan.summary.derived }) }}
           </Badge>
         </div>
@@ -57,12 +57,12 @@
                     {{ change.duty_name ?? '—' }}
                   </p>
                 </div>
-                <Badge v-if="change.blocked" variant="destructive" class="shrink-0 text-[10px]">
+                <Badge v-if="change.blocked" variant="destructive" class="shrink-0 text-xs">
                   {{ $t(`dutiables.timeline.blocked.${change.blocked}`) }}
                 </Badge>
               </div>
 
-              <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+              <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs">
                 <span class="text-muted-foreground">{{ formatPeriod(change.before) }}</span>
                 <ArrowRight class="size-3 text-muted-foreground" />
                 <span :class="change.blocked ? 'text-muted-foreground line-through' : 'text-status-attention'">
@@ -71,7 +71,7 @@
               </div>
 
               <ul v-if="change.derived.length > 0" class="mt-1 space-y-0.5 pl-4">
-                <li v-for="derived in change.derived" :key="derived.id" class="text-[11px] text-muted-foreground">
+                <li v-for="derived in change.derived" :key="derived.id" class="text-xs text-muted-foreground">
                   ↳ {{ derived.duty_name ?? '—' }} · {{ formatPeriod(derived) }}
                 </li>
               </ul>

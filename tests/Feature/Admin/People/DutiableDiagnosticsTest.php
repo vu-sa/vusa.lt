@@ -114,7 +114,10 @@ test('an open-ended row whose term is long over is stale, and carries the date t
 
     $finding = collect(analyze())->firstWhere('code', 'open_ended_stale');
 
+    // Informational: a re-elected member keeps one open row across terms, so this is
+    // usually a seat still held rather than one someone forgot to close.
     expect($finding)->not->toBeNull()
+        ->and($finding['severity'])->toBe('info')
         ->and($finding['detail']['suggested_end'])->toBe('2025-06-30');
 });
 

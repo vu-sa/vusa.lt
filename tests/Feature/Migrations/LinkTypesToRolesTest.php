@@ -28,7 +28,7 @@ function typedDutyUser(string $typeSlug): User
 beforeEach(function (): void {
     Type::query()->whereIn('slug', ['koordinatoriai', 'studentu-atstovai'])->each(fn (Type $type) => $type->roles()->detach());
     Role::query()->whereIn('name', ['Problemų redaktorius', 'Padalinio puslapių redaktorius'])->delete();
-    Role::create(['name' => 'Studentų atstovas', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Studentų atstovas', 'guard_name' => 'web']);
 });
 
 test('hands the representative role to every duty already typed as a student representative', function (): void {

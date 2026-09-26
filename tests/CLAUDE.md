@@ -29,7 +29,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
     $this->user   = makeUser($this->tenant);
-    $this->admin  = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin  = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     $this->model  = ModelName::factory()->for($this->tenant)->create();
 });
 
@@ -56,7 +56,7 @@ Every controller test file should cover **unauthorized access**, **authorized ac
 ## Helpers
 
 - `makeUser($tenant)` — plain user attached to a tenant.
-- `makeTenantUserWithRole($role, $tenant)` — pick a role aligned with the feature: `'Communication Coordinator'` for content/duties, `'Išteklių administratorius'` for resources, etc. Use `config('permission.super_admin_role_name')` only when comprehensive coverage is needed.
+- `makeTenantUserWithRole($role, $tenant)` — pick a role aligned with the feature: `'Komunikacijos koordinatorius'` for content/duties, `'Išteklių administratorius'` for resources, etc. Use `config('permission.super_admin_role_name')` only when comprehensive coverage is needed.
 - `asUser($user)` — direct request, no Inertia headers (expect **403** for forbidden).
 - `asUserWithInertia($user)` — Inertia-style request (expect **302** redirect with flash for forbidden).
 

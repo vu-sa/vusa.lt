@@ -52,7 +52,7 @@ describe('access-change band (U14)', function (): void {
 describe('launching the action window from the URL (U21)', function (): void {
     beforeEach(function (): void {
         // A rep may open their own institution; that is the whole point of the reminder's link.
-        $this->user = makeTenantUserWithRole('Student Representative', $this->tenant);
+        $this->user = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
         $this->institution = $this->user->current_duties()->first()->institution;
     });
 

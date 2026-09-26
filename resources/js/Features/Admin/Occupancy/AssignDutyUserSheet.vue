@@ -80,7 +80,7 @@
             {{ $t('Pareigos pagal pareigas (ex-officio)') }}
           </p>
           <p class="mt-0.5">
-            {{ $t('Šios kadencijos laikotarpį valdo pagrindinės pareigos.') }}
+            {{ $t('Šio laikotarpio datas valdo pagrindinės pareigos.') }}
           </p>
         </div>
       </div>
@@ -274,7 +274,7 @@
           <div v-if="canEndTerm" class="flex items-start justify-between gap-3">
             <div>
               <p class="text-sm font-semibold text-foreground">
-                {{ $t('Baigti kadenciją šiandien') }}
+                {{ $t('Užbaigti pareigas šiandien') }}
               </p>
               <p class="text-xs text-muted-foreground">
                 {{ $t('Narys nebebus laikomas šių pareigų nariu, bet įrašas liks istorijoje.') }}
@@ -282,7 +282,7 @@
             </div>
             <Button type="button" variant="outline" size="sm" class="u-touch shrink-0" :disabled="form.processing" @click="endTermOpen = true">
               <CalendarCheck class="size-4" />
-              {{ $t('Baigti kadenciją') }}
+              {{ $t('Užbaigti pareigas') }}
             </Button>
           </div>
 
@@ -292,7 +292,7 @@
                 {{ $t('Ištrinti priskyrimą') }}
               </p>
               <p class="text-xs text-muted-foreground">
-                {{ $t('Kadencijos įrašas bus pašalintas. Jei tik baigėsi kadencija, verčiau ją pabaik.') }}
+                {{ $t('Pareigybės laikotarpis bus pašalintas. Jei narys tik baigė eiti pareigas, verčiau jas užbaik.') }}
               </p>
             </div>
             <Button
@@ -313,15 +313,15 @@
 
     <ConfirmDialog
       v-model:open="endTermOpen"
-      :title="$t('Baigti kadenciją šiandien?')"
+      :title="$t('Užbaigti pareigas šiandien?')"
       :description="$t('Narys nebebus laikomas šių pareigų nariu, bet įrašas liks istorijoje.')"
-      :confirm-label="$t('Baigti kadenciją')"
+      :confirm-label="$t('Užbaigti pareigas')"
       @confirm="endTerm"
     />
     <ConfirmDialog
       v-model:open="deleteOpen"
       :title="$t('Ištrinti priskyrimą?')"
-      :description="$t('Kadencijos įrašas bus pašalintas.')"
+      :description="$t('Pareigybės laikotarpis bus pašalintas.')"
       :confirm-label="$t('Ištrinti')"
       destructive
       @confirm="deleteOccupancy"
@@ -416,7 +416,7 @@ const canEndTerm = computed(() => !!props.dutiable && termStatus(props.dutiable 
 
 const sheetTitle = computed(() => {
   if (isEditing.value) {
-    return $t('Redaguoti kadenciją');
+    return $t('Redaguoti pareigybės laikotarpį');
   }
 
   return pickDuty.value ? $t('Pridėti pareigybę') : $t('Priskirti narį');

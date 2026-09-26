@@ -49,7 +49,7 @@ withDefaults(defineProps<{
   open: boolean;
   title: string;
   description?: string;
-  /** A verb naming the result ("Ištrinti", "Baigti kadenciją"), not "Taip". */
+  /** A verb naming the result ("Ištrinti", "Užbaigti pareigas"), not "Taip". */
   confirmLabel: string;
   cancelLabel?: string;
   destructive?: boolean;

@@ -84,14 +84,16 @@ describe('MeetingsGanttToolbar', () => {
     expect(wrapper.emitted('update:detailsExpanded')).toEqual([[true]]);
   });
 
-  it('hides the fullscreen button when hideFullscreenButton is true', () => {
-    wrapper = mountToolbar({ hideFullscreenButton: true });
+  it('turns the full-screen button into the way back out while in focus mode', () => {
+    wrapper = mountToolbar({ fullscreenActive: true });
 
-    expect(wrapper.find('[data-tour="gantt-fullscreen"]').exists()).toBe(false);
+    const button = wrapper.get('[data-tour="gantt-fullscreen"]');
+    expect(button.attributes('aria-pressed')).toBe('true');
+    expect(button.attributes('aria-label')).toBe('Išeiti iš viso ekrano');
   });
 
   it('shows the fullscreen button and emits fullscreen when clicked', async () => {
-    wrapper = mountToolbar({ hideFullscreenButton: false });
+    wrapper = mountToolbar();
 
     const fullscreenButton = wrapper.get('[data-tour="gantt-fullscreen"]');
     await fullscreenButton.trigger('click');

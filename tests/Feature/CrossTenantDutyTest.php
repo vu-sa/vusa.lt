@@ -30,7 +30,7 @@ beforeEach(function (): void {
     $this->duty->assignableTenants()->attach($this->assignableTenant->id, ['quota' => 2]);
 
     // Role that gives duties.update.padalinys.
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.update.padalinys',
@@ -38,11 +38,11 @@ beforeEach(function (): void {
 
     // Owning-tenant admin.
     $this->owningAdmin = makeUser($this->owningTenant);
-    $this->owningAdmin->duties()->first()?->assignRole('Communication Coordinator');
+    $this->owningAdmin->duties()->first()?->assignRole('Komunikacijos koordinatorius');
 
     // Assignable-tenant admin.
     $this->crossAdmin = makeUser($this->assignableTenant);
-    $this->crossAdmin->duties()->first()?->assignRole('Communication Coordinator');
+    $this->crossAdmin->duties()->first()?->assignRole('Komunikacijos koordinatorius');
 
     // A user belonging to the assignable tenant.
     $this->tenantUser = makeUser($this->assignableTenant);

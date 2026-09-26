@@ -1,21 +1,21 @@
 <?php
 
 use App\Models\Cadence;
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\DocsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
 /**
- * The one part of the timeline editor no Vitest run can reach.
- *
- * A bar's geometry only exists once a real layout engine has given the chart a width and
- * d3 has drawn into it, so "drag two columns right and the day of month survives" — the
- * rule the whole editing model rests on — is unobservable in jsdom. Everything around it
- * (staging, the operation list, the planner) is covered there; this covers the gesture.
+ * The parts of the timeline editor no Vitest run can reach: the drag gesture, the page's
+ * height against a real viewport, and full screen over the real shell. What the renderers
+ * draw (notches, bands, collapsed summaries) is asserted in `timelineRenderers.test.ts`.
  *
  * Pointer events are dispatched from inside the page rather than driven through
  * Playwright's mouse API: the plugin exposes no raw mouse, and `dragTo()` wants a target
@@ -25,12 +25,12 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo(['duties.read.padalinys', 'duties.update.padalinys', 'users.read.padalinys']);
 
     $this->admin = makeUser($tenant);
     $this->duty = $this->admin->duties()->first();
-    $this->duty->assignRole('Communication Coordinator');
+    $this->duty->assignRole('Komunikacijos koordinatorius');
 
     $this->holder = User::factory()->create(['name' => 'Timeline Drag Subject']);
 
@@ -49,7 +49,8 @@ beforeEach(function (): void {
 });
 
 /**
- * Selects the drag subject's bar, then drags its body horizontally by `$dx` pixels.
+ * Selects the drag subject's bar, then drags its body horizontally by `$dx` pixels, ending
+ * with the click a real release produces.
  */
 function dragSubjectBar(string $rowId, int $dx): string
 {
@@ -72,6 +73,8 @@ function dragSubjectBar(string $rowId, int $dx): string
       pointer('pointerdown', x, bar);
       pointer('pointermove', x + {$dx}, document);
       pointer('pointerup', x + {$dx}, document);
+      // A real pointer's release also clicks whatever is under it: the dragged bar.
+      bar.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x + {$dx}, clientY: y }));
 
       return 'ok';
     })()
@@ -96,19 +99,21 @@ it('moves a bar by whole months and keeps the day of month', function (): void {
     // not required, only that it lands nearer two columns than one or three.
     expect($page->script(dragSubjectBar($this->row->id, 128)))->toBe('ok');
 
-    waitForInertiaRender($page, '[data-slot="dutiable-timeline-dirty-bar"]');
+    waitForInertiaRender($page, '[data-slot="dutiable-timeline-dirty-bar"][data-dirty]');
 
     // 2024-05-18 moved two columns right is the 18th of July, never the 1st. This is the
     // guarantee that an unrelated drag cannot destroy a deliberately off-boundary date.
+    // Read from the side panel, which also proves the drag kept the bar selected.
     expect($page->script('document.querySelector("#selection-start")?.value ?? null'))
         ->toBe('2024-07-18');
 });
 
 /**
- * A collapsed group draws a merged bar in place of the rows it hides — d3 geometry again,
- * and the whole point of collapsing is that the rows are gone, so nothing else can assert it.
+ * The editor takes the screen's height and scrolls inside, so the toolbar holding the save
+ * controls never leaves view — and a short chart ends after its last lane. Both are sums a
+ * real scrollbar takes part in, which jsdom reports as 0.
  */
-it('summarises a collapsed duty instead of leaving an empty lane', function (): void {
+it('fits the page to the screen and scrolls long charts inside it', function (): void {
     foreach (range(1, 3) as $index) {
         Dutiable::factory()->create([
             'duty_id' => $this->duty->id,
@@ -119,88 +124,41 @@ it('summarises a collapsed duty instead of leaving an empty lane', function (): 
     }
 
     $page = loginAsAdmin($this->admin);
+    $page->resize(1180, 800);
 
-    $page->navigate(route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false));
-
-    // The collapse-all control lives above the label column, not out in the toolbar.
-    // By label, not by position: the strip also holds the sort menu.
-    $collapseAll = '[data-tour="timeline-controls"] button[aria-label="Suskleisti visus"]';
-    waitForInertiaRender($page, $collapseAll);
-    $page->click($collapseAll);
-
-    waitForInertiaRender($page, 'rect.collapsed-group-bar');
-
-    $summary = $page->script(<<<'JS'
-    (() => {
-      const bar = document.querySelector('rect.collapsed-group-bar');
-      const count = document.querySelector('[data-slot="group-row-count"]');
-
-      return {
-        width: bar ? Number(bar.getAttribute('width')) : null,
-        count: count ? count.textContent.trim() : null,
-        duration: count?.nextElementSibling?.textContent.trim() ?? null,
-      };
-    })()
-    JS);
-
-    expect($summary['width'])->toBeGreaterThan(2)
-        // Every row and every collapsed header says how long it ran, in at most two units.
-        ->and($summary['duration'])->toMatch('/^\d+ (m\.|mėn\.|d\.)/')
-        // Five rows on this duty: the three above, the drag subject, and the admin's own
-        // seat — makeUser() attaches them to the duty it creates.
-        ->and($summary['count'])->toBe('5');
-});
-
-/**
- * The chart caps itself at `header + rows`, so whether that arithmetic is right is only
- * observable once a real scrollbar has taken its strip out of the container. jsdom lays
- * nothing out and reports every dimension as 0, which is precisely the case that hid the
- * missing allowance for months.
- */
-it('fits a short chart without a vertical scrollbar', function (): void {
-    // Three rows: nowhere near enough to need scrolling, which was true before the fix too.
-    foreach (range(1, 3) as $index) {
-        Dutiable::factory()->create([
-            'duty_id' => $this->duty->id,
-            'dutiable_id' => User::factory()->create()->id,
-            'start_date' => '2024-07-01',
-            'end_date' => '2025-06-30',
-        ]);
-    }
-
-    $page = loginAsAdmin($this->admin);
-
-    $page->navigate(route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false));
+    $timeline = route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false);
+    $page->navigate($timeline);
     waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
-    $overflow = $page->script(<<<'JS'
+    $measure = <<<'JS'
     (() => {
-      const chart = document.querySelector('[data-slot="dutiable-gantt"]');
-      // The scroller is the only element in the chart that scrolls on both axes.
-      const scroller = chart?.querySelector('.overflow-auto');
-      if (!scroller) return null;
+      const scroller = document.querySelector('[data-slot="dutiable-gantt"] .overflow-auto');
+      const area = document.querySelector('[data-slot="admin-scroll-area"]');
+      const inView = selector => {
+        const box = document.querySelector(selector)?.getBoundingClientRect();
+        return !!box && box.top >= 0 && box.bottom <= window.innerHeight;
+      };
 
       return {
-        vertical: scroller.scrollHeight - scroller.clientHeight,
-        horizontal: scroller.scrollWidth > scroller.clientWidth,
+        chartVertical: scroller.scrollHeight - scroller.clientHeight,
+        chartHorizontal: scroller.scrollWidth > scroller.clientWidth,
+        pageScrolls: area.scrollHeight - area.clientHeight > 1,
+        saveInView: inView('[data-slot="dutiable-timeline-dirty-bar"]'),
+        panelInView: inView('[data-slot="dutiable-timeline-side-panel"]'),
       };
     })()
-    JS);
+    JS;
 
-    expect($overflow)->not->toBeNull()
-        // The horizontal scrollbar is the whole point of the chart and must still be there;
-        // it is what used to eat the last lane.
-        ->and($overflow['horizontal'])->toBeTrue()
-        ->and($overflow['vertical'])->toBe(0);
-});
+    // A short chart ends after its last lane: the horizontal scrollbar, which is the whole
+    // point of the chart, must not eat that lane and summon a vertical one.
+    expect($page->script($measure))->toMatchArray([
+        'chartVertical' => 0,
+        'chartHorizontal' => true,
+        'pageScrolls' => false,
+        'saveInView' => true,
+        'panelInView' => true,
+    ]);
 
-/**
- * The dock is `sticky bottom-0`, which only means anything once the page can scroll past
- * it — exactly the case jsdom cannot model, and exactly the case the old non-sticky bar
- * failed in.
- */
-it('keeps the save controls on screen when the chart is taller than the viewport', function (): void {
-    // Enough rows to push the chart well past one screen.
     foreach (range(1, 40) as $index) {
         Dutiable::factory()->create([
             'duty_id' => $this->duty->id,
@@ -210,38 +168,124 @@ it('keeps the save controls on screen when the chart is taller than the viewport
         ]);
     }
 
-    $page = loginAsAdmin($this->admin);
+    $page->navigate($timeline);
+    waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
-    $page->navigate(route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false));
-    waitForInertiaRender($page, '[data-slot="dutiable-timeline-dock"]');
+    $tall = $page->script($measure);
 
-    $visible = $page->script(<<<'JS'
-    (() => {
-      const dock = document.querySelector('[data-slot="dutiable-timeline-dock"]');
-      if (!dock) return false;
-
-      window.scrollTo(0, document.body.scrollHeight);
-      const box = dock.getBoundingClientRect();
-
-      return box.top < window.innerHeight && box.bottom > 0;
-    })()
-    JS);
-
-    expect($visible)->toBeTrue();
+    expect($tall['chartVertical'])->toBeGreaterThan(0)
+        ->and($tall['pageScrolls'])->toBeFalse()
+        ->and($tall['saveInView'])->toBeTrue()
+        ->and($tall['panelInView'])->toBeTrue();
 });
 
-it('draws a notch for a start date that is not on a month boundary', function (): void {
-    $page = loginAsAdmin($this->admin);
+/**
+ * Full screen is the chart's own container pinned over the shell, not a modal: popovers
+ * and dialogs opened from inside must land above it, and Escape closes them first.
+ */
+it('takes the chart full screen over the shell and keeps its popovers on top', function (): void {
+    $this->seed(DocsSeeder::class);
 
-    $page->navigate(route('duties.show', $this->duty, absolute: false));
-    waitForInertiaRender($page, '[data-testid=record-overflow-trigger]');
+    $parliament = Institution::query()->where('name->lt', DocsSeeder::TIMELINE_INSTITUTION)->firstOrFail();
 
-    $page->click('[data-testid=record-overflow-trigger]');
-    $page->click('[role=menuitem]:has-text("Tvarkyti laikotarpius")');
-    waitForInertiaRender($page, sprintf('g.dutiable-bar[data-row-id="%s"]', $this->row->id));
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
+    $page->resize(1440, 900);
 
-    // The off-boundary marks are how drift reads at a glance; a chart that renders bars
-    // but silently drops them would still pass every jsdom test.
-    expect($page->script('document.querySelectorAll("g.off-boundary").length'))->toBeGreaterThan(0);
-    expect($page->script('document.querySelectorAll("g.cadence-bands rect.cadence-band").length'))->toBeGreaterThan(0);
+    // Zoomed out so the docs frame shows all three terms rather than the current months only.
+    $page->script('localStorage.setItem("dutiable-timeline-view", JSON.stringify({ monthWidthPx: 28, includeEnded: true }))');
+    $page->navigate(route('dutiables.timeline', ['institution' => $parliament->id], absolute: false));
+    waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
+
+    docsScreenshot($page, 'dutiable-timeline');
+
+    $page->click('[data-tour="timeline-fullscreen"]');
+    waitForInertiaRender($page, '[data-slot="focus-mode-frame"][data-active]');
+
+    $covers = <<<'JS'
+    (() => {
+      const frame = document.querySelector('[data-slot="focus-mode-frame"]');
+      const corners = [[4, 4], [window.innerWidth - 4, 4], [4, window.innerHeight - 4], [window.innerWidth - 4, window.innerHeight - 4]];
+
+      return corners.every(([x, y]) => frame.contains(document.elementFromPoint(x, y)));
+    })()
+    JS;
+
+    // Every corner, the shell's top bar included, now belongs to the chart.
+    expect($page->script($covers))->toBeTrue();
+
+    $page->click('[data-slot="focus-mode-frame"] [aria-label="Žymėjimai"]');
+    waitForInertiaRender($page, '[data-slot="popover-content"]');
+
+    expect($page->script(<<<'JS'
+    (() => {
+      const popover = document.querySelector('[data-slot="popover-content"]');
+      const box = popover.getBoundingClientRect();
+
+      return popover.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2));
+    })()
+    JS))->toBeTrue();
+
+    $escape = 'document.activeElement.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }))';
+
+    // The first Escape closes the popover and leaves full screen alone; the second leaves it.
+    $page->script($escape);
+    $page->page()->waitForSelector('[data-slot="popover-content"]', ['state' => 'detached', 'timeout' => 3_000]);
+    expect($page->script('!!document.querySelector("[data-slot=focus-mode-frame][data-active]")'))->toBeTrue();
+
+    $page->script($escape);
+    expect($page->script('!!document.querySelector("[data-slot=focus-mode-frame][data-active]")'))->toBeFalse();
+
+    $page->assertNoJavaScriptErrors();
+});
+
+/**
+ * The same sheet is a side panel on a desktop and a bottom sheet on a phone, chosen by a
+ * live media query — which jsdom does not evaluate.
+ */
+it('edits a duty period in a side sheet on desktop and a bottom sheet on a phone', function (): void {
+    $this->seed(DocsSeeder::class);
+
+    $chair = Duty::query()->where('name->lt', 'Pirmininkas (-ė)')->firstOrFail();
+
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
+    $page->resize(1440, 900);
+    $page->navigate(route('duties.show', $chair, absolute: false));
+    waitForInertiaRender($page, '[data-testid="member-term-edit"]');
+
+    $page->click('[data-testid="member-term-edit"] >> nth=0');
+    waitForInertiaRender($page, '[data-slot="sheet-form"]');
+
+    // Measured once the slide-in has finished; mid-animation the sheet is still off screen.
+    $placement = <<<'JS'
+    (async () => {
+      const sheet = document.querySelector('[data-slot="sheet-form"]');
+      await Promise.all(sheet.getAnimations({ subtree: true }).map(animation => animation.finished));
+      const box = sheet.getBoundingClientRect();
+      return {
+        right: Math.round(box.right) === window.innerWidth,
+        bottom: Math.round(box.bottom) === window.innerHeight,
+        fullWidth: Math.round(box.width) === window.innerWidth,
+        title: document.querySelector('[data-slot="sheet-form"] h2')?.textContent.trim() ?? null,
+      };
+    })()
+    JS;
+
+    expect($page->script($placement))->toMatchArray([
+        'right' => true,
+        'fullWidth' => false,
+        'title' => 'Redaguoti pareigybės laikotarpį',
+    ]);
+
+    // The duty's discussion panel loads without an error toast (Duty used to be missing
+    // from the commentables allowlist, so every duty page 404'd here).
+    expect($page->script('document.querySelectorAll("[data-sonner-toast][data-type=error]").length'))->toBe(0);
+
+    // The sheet opens with its first date focused, which reads as an error in a still frame.
+    $page->script('document.activeElement?.blur()');
+    docsScreenshot($page, 'dutiable-sheet', selector: '[data-slot="sheet-form"]');
+
+    $page->resize(390, 844);
+
+    expect($page->script($placement))->toMatchArray(['bottom' => true, 'fullWidth' => true])
+        ->and($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
 });

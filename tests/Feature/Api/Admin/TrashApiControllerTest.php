@@ -9,7 +9,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->first();
-    $this->editor = makeTenantUser('Communication Coordinator', $this->tenant);
+    $this->editor = makeTenantUser('Komunikacijos koordinatorius', $this->tenant);
 });
 
 test('lists only soft-deleted records of the viewer\'s tenants, shaped like the search document', function (): void {

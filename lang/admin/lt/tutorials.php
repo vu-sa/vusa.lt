@@ -127,36 +127,40 @@ return [
     // Dutiable timeline editor (/mano/dutiables/timeline)
     'dutiable_timeline' => [
         'welcome' => [
-            'title' => 'Pareigybių laikotarpiai',
-            'description' => 'Čia vienoje juostoje matote <strong>visus institucijos pareigybių laikotarpius</strong>. Vietoj to, kad kiekvieną narį redaguotumėte atskirai, viską galite sutvarkyti iš karto.',
+            'title' => 'Laikotarpių tvarkyklė',
+            'description' => 'Čia vienoje juostoje matai <strong>visus institucijos pareigybių laikotarpius</strong>. Užuot redagavęs kiekvieną narį atskirai, viską gali sutvarkyti iš karto.',
         ],
         'institution' => [
             'title' => 'Institucija',
-            'description' => 'Rodoma institucija. Spustelėję pasirinksite kitą – pirmiausia siūlomos tos, kuriose einate pareigas.',
+            'description' => 'Rodoma institucija. Spustelėjęs pasirinksi kitą – pirmiausia siūlomos tos, kuriose eini pareigas.',
         ],
         'chart' => [
             'title' => 'Laiko juosta',
-            'description' => 'Kiekviena juostelė – vienas pareigybės laikotarpis. Žalias fonas rodo <strong>kadenciją</strong>: juostelė, kuri nesutampa su jos kraštu, ir yra tai, ką čia taisome. Juostelę galima tempti; kaip – parašyta prie „i“ ženklo dešinėje.',
+            'description' => 'Kiekviena juosta – vienas pareigybės laikotarpis: tamsi – dabartinis, pilka – pasibaigęs, gintarinė – neišsaugotas pakeitimas. Fone matomos <strong>kadencijos</strong>. Juostą gali tempti; kaip – parašyta prie „i“ ženklo.',
         ],
         'controls' => [
             'title' => 'Suskleidimas ir rikiavimas',
-            'description' => 'Suskleiskite visas pareigybes, kad matytumėte bendrą vaizdą. Kur nurodytos studijų programos, įrašus galima surikiuoti pagal jas.',
+            'description' => 'Suskleisk visas pareigybes, kad matytum bendrą vaizdą. Kur nurodytos studijų programos, įrašus gali surikiuoti pagal jas.',
         ],
         'filters' => [
             'title' => 'Filtrai',
-            'description' => 'Filtruokite pagal kadenciją ar padalinį. Ten pat pasirinksite, ar rodyti <strong>pasibaigusius</strong> laikotarpius.',
+            'description' => 'Filtruok pagal kadenciją ar padalinį. Ten pat pasirinksi, ar rodyti <strong>pasibaigusius</strong> laikotarpius.',
+        ],
+        'fullscreen' => [
+            'title' => 'Visas ekranas',
+            'description' => 'Grafikas užima visą ekraną, kai reikia daugiau vietos. Grįžti gali tuo pačiu mygtuku arba Esc.',
         ],
         'selection' => [
             'title' => 'Pažymėtas įrašas',
-            'description' => 'Pažymėjus juostelę čia matysite tikslias datas ir veiksmus: sulygiuoti su kadencija, užbaigti, sujungti ar pašalinti.',
+            'description' => 'Šoniniame skydelyje matai pažymėtos juostos tikslias datas ir veiksmus: sulygiuoti su kadencija, užbaigti, sujungti ar pašalinti.',
         ],
         'suggestions' => [
             'title' => 'Siūlomi taisymai',
-            'description' => 'Sistema pati randa neatitikimus – persidengiančius laikotarpius, neterminuotas pareigas po pasibaigusios kadencijos. Galite pritaikyti juos vienu paspaudimu.',
+            'description' => 'Sistema pati randa neatitikimus – persidengiančius laikotarpius, neterminuotas pareigas po pasibaigusios kadencijos. Gali juos pritaikyti vienu paspaudimu.',
         ],
         'save' => [
             'title' => 'Peržiūra ir išsaugojimas',
-            'description' => 'Niekas neišsaugoma, kol nepaspaudžiate. Prieš tai galite <strong>peržiūrėti</strong>, kaip įrašai atrodys po pakeitimų.',
+            'description' => 'Niekas neišsaugoma, kol nepaspaudi <strong>Išsaugoti</strong> viršuje. Prieš tai gali <strong>peržiūrėti</strong>, kaip įrašai atrodys po pakeitimų.',
         ],
     ],
 ];

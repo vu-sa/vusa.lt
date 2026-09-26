@@ -116,7 +116,7 @@ describe('store', function (): void {
     test('a coordinator uploads to a meeting of their own padalinys', function (): void {
         $this->graph->shouldReceive('uploadDriveItem')->once()->andReturn(fakeDriveItem('item-a', 'Protokolas.pdf'));
 
-        asUser(makeTenantUserWithRole('Communication Coordinator', $this->tenant))
+        asUser(makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant))
             ->post(route('fileableFiles.store', ['type' => 'Meeting', 'id' => $this->meeting->id]), [
                 'files' => [['file' => UploadedFile::fake()->create('Protokolas.pdf', 10, 'application/pdf'), 'type' => 'Protokolai', 'date' => '2026-09-12']],
             ])
@@ -128,7 +128,7 @@ describe('store', function (): void {
         $otherMeeting = Meeting::factory()->create();
         $otherMeeting->institutions()->attach($otherInstitution);
 
-        asUser(makeTenantUserWithRole('Communication Coordinator', $this->tenant))
+        asUser(makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant))
             ->post(route('fileableFiles.store', ['type' => 'Meeting', 'id' => $otherMeeting->id]), [
                 'files' => [['file' => UploadedFile::fake()->create('x.pdf', 10, 'application/pdf'), 'type' => 'Protokolai', 'date' => '2026-09-12']],
             ])

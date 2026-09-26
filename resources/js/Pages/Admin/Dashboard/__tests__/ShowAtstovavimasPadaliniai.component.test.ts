@@ -33,11 +33,9 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTimelineFilters', () => ({
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useAtstovavimasActions', () => ({
   useAtstovavimasActions: () => ({
-    showFullscreenGantt: ref(false),
     showCreateCheckIn: ref(null),
     onGapCreateMeeting: vi.fn(),
     onGapCreateCheckIn: vi.fn(),
-    onGanttFullscreen: vi.fn(),
   }),
 }));
 
@@ -118,7 +116,6 @@ const stubs = {
   TimelineGanttSkeleton: marker('timeline-skeleton'),
   TenantScopeSelector: { name: 'TenantScopeSelector', props: ['tenants', 'label'], template: '<div data-testid="tenant-scope-selector" />' },
   InstitutionStatusTrendChart: marker('trend-chart'),
-  FullscreenGanttModal: marker('fullscreen'),
   AddCheckInDialog: marker('check-in'),
   WorkspaceSectionTiles: marker('section-tiles'),
 };

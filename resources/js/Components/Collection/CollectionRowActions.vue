@@ -1,5 +1,5 @@
 <template>
-  <div class="flex shrink-0 items-center justify-end gap-2" data-slot="collection-row-actions">
+  <div v-if="actions.length" class="flex shrink-0 items-center justify-end gap-2" data-slot="collection-row-actions">
     <template v-for="action in actions" :key="action.key">
       <component
         :is="action.href && !action.external ? Link : action.href ? 'a' : 'button'"
@@ -7,6 +7,8 @@
         :type="action.href ? undefined : 'button'"
         :target="action.external ? '_blank' : undefined"
         :rel="action.external ? 'noopener noreferrer' : undefined"
+        :disabled="!action.href && (action.disabled || action.loading) ? true : undefined"
+        :aria-busy="action.loading || undefined"
         :aria-label="action.labelled ? undefined : action.label"
         :title="action.labelled ? undefined : action.label"
         :class="[
@@ -15,7 +17,7 @@
         ]"
         @click="action.href ? undefined : emit('select', action.key)"
       >
-        <component :is="action.icon" v-if="action.icon" class="size-4 shrink-0" aria-hidden="true" />
+        <component :is="action.icon" v-if="action.icon" :class="['size-4 shrink-0', action.loading && 'animate-spin']" aria-hidden="true" />
         <span v-if="action.labelled">{{ action.label }}</span>
       </component>
     </template>
@@ -36,6 +38,9 @@ export interface CollectionRowAction {
   /** Shows the label beside the icon ("Redaguoti"). One per row at most — the rest are icons. */
   labelled?: boolean;
   destructive?: boolean;
+  /** Command actions only; links remain navigable. */
+  disabled?: boolean;
+  loading?: boolean;
 }
 
 defineProps<{
@@ -49,11 +54,11 @@ const emit = defineEmits<{
 // Always visible, never hover-revealed: nothing may be hover-only (.ai/rules/js-pages-admin.md).
 const iconClass = [
   'flex size-9 items-center justify-center border border-border text-muted-foreground transition-colors',
-  'pointer-coarse:size-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+  'pointer-coarse:size-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
 ].join(' ');
 
 const labelledClass = [
   'inline-flex min-h-9 items-center gap-1.5 border border-border px-3 text-xs font-bold normal-case tracking-normal text-foreground transition-colors',
-  'pointer-coarse:min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+  'pointer-coarse:min-h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50',
 ].join(' ');
 </script>

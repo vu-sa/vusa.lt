@@ -2,13 +2,14 @@
 title: Ištekliai
 area: resources
 models: [Resource]
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-27
 tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
   - tests/Feature/Api/Admin/ResourceApiControllerTest.php
   - tests/Unit/Models/ResourceTest.php
   - resources/js/Pages/Admin/Reservations/__tests__/ShowResource.component.test.ts
+  - tests/Browser/ReservationPagesTest.php
 ---
 
 # Ištekliai

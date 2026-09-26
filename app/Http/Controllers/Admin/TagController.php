@@ -55,6 +55,10 @@ class TagController extends AdminController
         $sorting = $request->getSorting();
 
         return $this->inertiaResponse('Admin/Content/IndexTag', [
+            'abilities' => [
+                'update' => $request->user()->can('update', new Tag),
+                'delete' => $request->user()->can('delete', new Tag),
+            ],
             'tags' => [
                 'data' => $tags->getCollection()
                     ->map(function ($tag) {

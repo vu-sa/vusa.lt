@@ -36,9 +36,9 @@ test('every coordinator duty, including earlier ones, gets the problem editor ro
 });
 
 test('every student representative duty, including earlier ones, gets the representative role', function (): void {
-    $representative = userWithDutyTypedBeforeLink('studentu-atstovai', 'Student Representative');
+    $representative = userWithDutyTypedBeforeLink('studentu-atstovai', 'Studentų atstovas');
 
     $this->seed(RoleStudentRepresentativeSeeder::class);
 
-    expect($representative->duties()->first()->hasRole('Student Representative'))->toBeTrue();
+    expect($representative->duties()->first()->hasRole('Studentų atstovas'))->toBeTrue();
 });

@@ -66,7 +66,7 @@
       >
         <Info class="size-3.5" />
       </Button>
-      <Tooltip v-if="!hideFullscreenButton">
+      <Tooltip>
         <TooltipTrigger as-child>
           <Button
             type="button"
@@ -74,13 +74,15 @@
             variant="ghost"
             class="pointer-coarse:size-11"
             data-tour="gantt-fullscreen"
-            :aria-label="$t('Visas ekranas')"
+            :aria-pressed="fullscreenActive"
+            :aria-label="fullscreenActive ? $t('Išeiti iš viso ekrano') : $t('Visas ekranas')"
             @click="emit('fullscreen')"
           >
-            <Maximize2 class="size-3.5" />
+            <Minimize2 v-if="fullscreenActive" class="size-3.5" />
+            <Maximize2 v-else class="size-3.5" />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{{ $t('Visas ekranas') }}</TooltipContent>
+        <TooltipContent>{{ fullscreenActive ? $t('Išeiti iš viso ekrano') : $t('Visas ekranas') }}</TooltipContent>
       </Tooltip>
     </div>
   </div>
@@ -88,7 +90,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Globe, Info, LoaderCircle, Maximize2, Rows3 } from 'lucide-vue-next';
+import { Globe, Info, LoaderCircle, Maximize2, Minimize2, Rows3 } from 'lucide-vue-next';
 
 import GanttZoomControl from './GanttZoomControl.vue';
 
@@ -110,7 +112,8 @@ withDefaults(defineProps<{
   showOnlyWithPublicMeetings?: boolean;
   detailsExpanded?: boolean;
   dayWidth: number;
-  hideFullscreenButton?: boolean;
+  /** The chart is in focus mode, so the same button leads back out. */
+  fullscreenActive?: boolean;
   meetingsLoading?: boolean;
 }>(), {
   showLegend: true,

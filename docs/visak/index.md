@@ -24,7 +24,7 @@ posėdžius (`meetings.read`).
 | Darbotvarkės klausimai | `/mano/agendaItems` | Turintys teisę matyti posėdžius |
 | Dokumentai | `/mano/documents` | Turintys teisę matyti dokumentus |
 | Problemos | `/mano/problems` | Turintys teisę matyti problemas |
-| Pareigybių laikotarpiai | `/mano/dutiables/timeline` | Turintys teisę matyti pareigybes |
+| Laikotarpių tvarkyklė | `/mano/dutiables/timeline` | Komunikacijos ir studentų atstovų koordinatoriai |
 | Institucijų grafas | `/mano/institutionGraph` | Turintys `institutions.read.padalinys` |
 
 Mygtukas **+ Sukurti** šioje srityje siūlo: **Fiksuoti posėdį**, **Posėdžio nebuvo**, **Užbaigti

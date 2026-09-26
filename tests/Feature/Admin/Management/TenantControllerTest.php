@@ -71,6 +71,8 @@ describe('authorized access', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/IndexTenant')
+                ->where('tenants.0.can.update', true)
+                ->where('tenants.0.can.delete', true)
                 ->has('tenants')
             );
     });

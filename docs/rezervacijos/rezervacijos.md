@@ -2,7 +2,7 @@
 title: Rezervacijos
 area: reservations
 models: [Reservation, ReservationResource, Approval]
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-27
 tests:
   - tests/Feature/Admin/Reservations/ReservationControllerTest.php
   - tests/Feature/Admin/Reservations/ReservationCartTest.php
@@ -16,6 +16,7 @@ tests:
   - resources/js/Components/Reservations/__tests__/ReservationResourceList.component.test.ts
   - resources/js/Pages/Admin/Reservations/__tests__/ShowReservation.component.test.ts
   - resources/js/Utils/__tests__/ReservationStatus.test.ts
+  - tests/Browser/ReservationPagesTest.php
 ---
 
 # Rezervacijos
@@ -138,6 +139,9 @@ ir su keliais pasirinktais ištekliais iš karto.
   mato rezervaciją, gali ją keisti ir atšaukti.
 - **Ištrinti** rezervaciją. Ji perkeliama į šiukšlinę ir gali būti atkurta.
 
+Ištrintų rezervacijų sąrašo eilutėse ir lentelėje gali jas atkurti, o turint atskirą teisę –
+ištrinti visam laikui. Sprendimai dėl pateiktų rezervacijų lieka atskirame veiksmų meniu.
+
 Pačios rezervacijos (pavadinimo, laikotarpio) po pateikimo tiesiogiai redaguoti negalima. Keičiami
 tik jos ištekliai.
 
@@ -246,4 +250,3 @@ atlyginti nuostolius.
 - Užduotis ir pranešimus apie naujas užklausas gauna `GetResourceManagers` grąžinami žmonės:
   dabartiniai išteklio padalinio pareigybių nariai, kurių rolė turi `resources.update.padalinys`
   arba `resources.update.*`.
-

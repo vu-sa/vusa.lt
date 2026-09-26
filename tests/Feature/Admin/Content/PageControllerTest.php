@@ -12,7 +12,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->page = Page::factory()->for($this->tenant)->create([
         'title' => 'Test puslapis',
@@ -693,7 +693,7 @@ describe('tenant isolation', function (): void {
     beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherPage = Page::factory()->for($this->otherTenant)->create();
-        $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
+        $this->otherAdmin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->otherTenant);
     });
 
     test('user only counts and sees trashed pages from their tenant', function (): void {

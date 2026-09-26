@@ -1,10 +1,16 @@
 <template>
+  <!--
+    In the toolbar rather than a dock under the chart: "you have unsaved changes" has to be
+    visible wherever the chart is scrolled, and the toolbar never scrolls away.
+  -->
   <section
     data-slot="dutiable-timeline-dirty-bar"
-    class="flex h-full min-w-48 flex-col justify-center gap-2 overflow-y-auto p-3"
+    :data-dirty="isDirty || undefined"
+    class="flex flex-wrap items-center gap-2"
+    :aria-label="$t('dutiables.timeline.dock.save')"
   >
-    <p class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      {{ $t('dutiables.timeline.dock.save') }}
+    <p v-if="syncPending" class="text-xs text-status-attention">
+      {{ $t('dutiables.timeline.staging.sync_pending') }}
     </p>
 
     <p v-if="!isDirty" class="text-xs text-muted-foreground">
@@ -12,32 +18,26 @@
     </p>
 
     <template v-else>
+      <!--
+        `dirty_count` is a trans_choice source string; `$t` on it printed the raw
+        "{1} …|[2,9] …|[10,*] …" pipeline to the user.
+      -->
       <p class="text-xs font-medium text-status-attention">
-        <!--
-          `dirty_count` is a trans_choice source string; `$t` on it printed the raw
-          "{1} …|[2,9] …|[10,*] …" pipeline to the user.
-        -->
         {{ $tChoice('dutiables.timeline.staging.dirty_count', dirtyCount, { count: dirtyCount }) }}
       </p>
 
-      <div class="flex flex-col gap-1.5">
-        <Button size="xs" :disabled="processing" @click="emit('save')">
-          <Save class="size-3.5" />
-          {{ processing ? $t('dutiables.timeline.staging.saving') : $t('dutiables.timeline.staging.save') }}
-        </Button>
-        <Button size="xs" variant="outline" :disabled="processing" @click="emit('preview')">
-          <ListChecks class="size-3.5" />
-          {{ $t('dutiables.timeline.staging.preview') }}
-        </Button>
-        <Button size="xs" variant="ghost" :disabled="processing" @click="emit('discard')">
-          {{ $t('dutiables.timeline.staging.discard') }}
-        </Button>
-      </div>
+      <Button size="xs" variant="ghost" class="pointer-coarse:min-h-11" :disabled="processing" @click="emit('discard')">
+        {{ $t('dutiables.timeline.staging.discard') }}
+      </Button>
+      <Button size="xs" variant="outline" class="pointer-coarse:min-h-11" :disabled="processing" @click="emit('preview')">
+        <ListChecks class="size-3.5" />
+        {{ $t('dutiables.timeline.staging.preview') }}
+      </Button>
+      <Button size="xs" variant="brand" class="pointer-coarse:min-h-11" :disabled="processing" @click="emit('save')">
+        <Save class="size-3.5" />
+        {{ processing ? $t('dutiables.timeline.staging.saving') : $t('dutiables.timeline.staging.save') }}
+      </Button>
     </template>
-
-    <p v-if="syncPending" class="text-[10px] text-status-attention">
-      {{ $t('dutiables.timeline.staging.sync_pending') }}
-    </p>
   </section>
 </template>
 

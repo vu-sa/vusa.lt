@@ -23,6 +23,7 @@ use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
 use App\Services\ResourceServices\UserDutyService;
@@ -100,13 +101,17 @@ describe('Išteklių administratorius', function (): void {
     });
 });
 
-describe('Global Communication Coordinator', function (): void {
+describe('a global tag role beside a tenant-scoped content role', function (): void {
     beforeEach(function (): void {
-        // The real production shape: one person holding the global tag/category role
-        // *and* the tenant-scoped content role. The global role is what used to latch
-        // all-scope on for everything the tenant-scoped role granted.
-        $this->coordinator = makeTenantUserWithRole('Global Communication Coordinator', $this->tenantA);
-        $this->coordinator->duties()->first()->assignRole('Communication Coordinator');
+        // One person holding a role whose only global grant is tags *and* the tenant-scoped
+        // content role. The global grant is what used to latch all-scope on for everything the
+        // tenant-scoped role granted. Built here rather than borrowed from a seeded role, since
+        // the production CB roles now carry real all-tenant content grants of their own.
+        Role::firstOrCreate(['name' => 'Tik žymos visuose padaliniuose', 'guard_name' => 'web'])
+            ->syncPermissions(['tags.create.*', 'tags.read.*', 'tags.update.*', 'tags.delete.*']);
+
+        $this->coordinator = makeTenantUserWithRole('Tik žymos visuose padaliniuose', $this->tenantA);
+        $this->coordinator->duties()->first()->assignRole('Komunikacijos koordinatorius');
         $this->authorizer->resetCache($this->coordinator);
 
         $this->actingAs($this->coordinator);
