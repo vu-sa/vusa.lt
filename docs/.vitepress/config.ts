@@ -2,8 +2,8 @@ import { defineConfig } from 'vitepress'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
-import lt from './lt'
-import en from './en'
+import lt from './lt.ts'
+import en from './en.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

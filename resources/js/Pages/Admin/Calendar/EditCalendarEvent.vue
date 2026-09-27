@@ -19,7 +19,7 @@ import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
 
 import CalendarForm from '@/Components/AdminForms/CalendarForm.vue';
 
-const { calendar, canUpdate } = withDefaults(defineProps<{
+const { calendar, canUpdate, availableTags = [], meeting = null } = defineProps<{
   calendar: App.Entities.Calendar;
   canUpdate: boolean;
   eventTypes: App.Entities.EventType[];
@@ -34,10 +34,7 @@ const { calendar, canUpdate } = withDefaults(defineProps<{
     agenda_items_count: number;
     institution_name: string | null;
   } | null;
-}>(), {
-  availableTags: () => [],
-  meeting: null,
-});
+}>();
 
 function handleUpdateCalendar(form: unknown) {
   const inertiaForm = form as InertiaForm<CalendarEventForm>;

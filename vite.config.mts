@@ -195,22 +195,14 @@ export default defineConfig(({ command }) => {
         'assets/app-*.css',
         'assets/admin-*.js',
         'assets/admin-*.css',
-        // Vue core (shared by all pages)
-        'assets/index-*.js',
         // Admin home page and layout
         'assets/ShowAdminHome-*.js',
         'assets/AdminLayout*.js',
-        // Dashboard components
-        'assets/TasksCard*.js',
-        'assets/UpcomingMeetingsCard*.js',
-        'assets/CalendarEventsCard*.js',
-        'assets/NewsListCard*.js',
         // UI primitives heavily used by admin home
         'assets/Card*.js',
         'assets/Separator*.js',
         // date-fns locales for greeting/date formatting
         'assets/lt-*.js',
-        'assets/en-US-*.js',
         'assets/format-*.js',
         // Translation bundles
         'assets/php_admin_lt-*.js',

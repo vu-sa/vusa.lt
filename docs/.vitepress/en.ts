@@ -1,5 +1,5 @@
-import { shared } from './shared'
-import { mergeObjects } from './utils'
+import { shared } from './shared.ts'
+import { mergeObjects } from './utils.ts'
 
 export default {
   label: 'English',

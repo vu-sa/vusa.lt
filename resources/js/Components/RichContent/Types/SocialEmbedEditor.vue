@@ -1,54 +1,53 @@
 <template>
   <div v-if="modelValue && options" class="flex flex-col gap-4">
     <div class="space-y-2">
-      <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <label for="social-embed-url" class="text-sm font-medium text-foreground">
         {{ $t('Facebook arba Instagram įrašo nuoroda') }}
       </label>
-      <input
+      <Input
+        id="social-embed-url"
         v-model="modelValue.url"
         type="url"
-        class="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+        variant="surface"
         placeholder="https://www.facebook.com/... arba https://www.instagram.com/p/..."
         @input="detectPlatform"
-      >
-      <p class="text-xs text-zinc-500 dark:text-zinc-400">
+      />
+      <p class="text-xs text-muted-foreground">
         {{ $t('Įklijuokite Facebook arba Instagram įrašo nuorodą') }}
       </p>
     </div>
 
     <!-- Platform detection indicator -->
     <div v-if="detectedPlatform" class="flex items-center gap-2 text-sm">
-      <div class="flex items-center gap-1.5 rounded-full px-2.5 py-1" :class="platformBadgeClass">
+      <div class="flex items-center gap-1.5 border border-border bg-secondary px-2.5 py-1 text-foreground">
         <component :is="platformIcon" class="h-4 w-4" />
         <span class="font-medium">{{ platformLabel }}</span>
       </div>
-      <span v-if="isValidUrl" class="text-emerald-600 dark:text-emerald-400">
-        ✓ {{ $t('Nuoroda atpažinta') }}
+      <span v-if="isValidUrl" class="inline-flex items-center gap-1 text-status-success">
+        <CircleCheck class="size-4" /> {{ $t('Nuoroda atpažinta') }}
       </span>
-      <span v-else class="text-amber-600 dark:text-amber-400">
-        {{ $t('Patikrinkite nuorodą') }}
+      <span v-else class="inline-flex items-center gap-1 text-status-attention">
+        <TriangleAlert class="size-4" /> {{ $t('Patikrinkite nuorodą') }}
       </span>
     </div>
 
     <!-- Options -->
-    <div class="flex items-center gap-2">
-      <input
+    <div class="flex min-h-11 items-center gap-2">
+      <Checkbox
         id="showCaption"
         v-model="options.showCaption"
-        type="checkbox"
-        class="h-4 w-4 rounded border-zinc-300 text-zinc-600 focus:ring-zinc-500 dark:border-zinc-600 dark:bg-zinc-800"
-      >
-      <label for="showCaption" class="text-sm text-zinc-700 dark:text-zinc-300">
+      />
+      <label for="showCaption" class="text-sm text-foreground">
         {{ $t('Rodyti įrašo aprašymą') }}
       </label>
     </div>
 
     <!-- Live preview -->
     <div v-if="isValidUrl && detectedPlatform" class="mt-4 space-y-2">
-      <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <p class="text-sm font-medium text-foreground">
         {{ $t('Peržiūra') }}
-      </label>
-      <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+      </p>
+      <div class="border border-border bg-secondary/50 p-4">
         <SocialEmbedPreview
           :url="modelValue.url"
           :platform="detectedPlatform"
@@ -58,8 +57,8 @@
     </div>
 
     <!-- Help text -->
-    <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/50">
-      <p class="text-xs text-zinc-600 dark:text-zinc-400">
+    <div class="border-l border-border bg-secondary/50 p-3">
+      <p class="text-xs text-muted-foreground">
         <strong>{{ $t('Kaip gauti nuorodą') }}:</strong><br>
         <span class="mt-1 block">
           <strong>Facebook:</strong> {{ $t('Paspauskite ant įrašo datos arba "..." → "Embed" → kopijuokite nuorodą') }}
@@ -74,7 +73,10 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
+import { CircleCheck, TriangleAlert } from 'lucide-vue-next';
 
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Input } from '@/Components/ui/input';
 import type { SocialEmbed } from '@/Types/contentParts';
 import FacebookIcon from '~icons/simple-icons/facebook';
 import InstagramIcon from '~icons/simple-icons/instagram';
@@ -143,17 +145,6 @@ const isValidUrl = computed(() => {
   catch {
     return false;
   }
-});
-
-// Platform-specific styling
-const platformBadgeClass = computed(() => {
-  if (detectedPlatform.value === 'facebook') {
-    return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-  }
-  if (detectedPlatform.value === 'instagram') {
-    return 'bg-gradient-to-r from-purple-100 to-pink-100 text-pink-700 dark:from-purple-900/30 dark:to-pink-900/30 dark:text-pink-400';
-  }
-  return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400';
 });
 
 const platformIcon = computed(() => {
