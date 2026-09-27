@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\Responsibility;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Registration;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -17,7 +17,7 @@ class FormRegistrationVisibilityService
     public function __construct(
         private readonly FormAccessService $formAccess,
         private readonly FormSettings $formSettings,
-        private readonly AtstovavimasSettings $atstovavimasSettings,
+        private readonly ResponsibilityResolver $responsibilities,
     ) {}
 
     /**
@@ -77,17 +77,17 @@ class FormRegistrationVisibilityService
      */
     private function scopeStudentRepRegistrations(Builder $query, Form $form, User $user): Builder
     {
-        $tenantIds = $this->formAccess->visibleTenantIds($user)
-            ->merge($this->atstovavimasSettings->getManagerTenantIds($user))
+        $institutionIds = Institution::query()
+            ->whereIn('tenant_id', $this->formAccess->visibleTenantIds($user))
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->merge($this->responsibilities->institutionIdsFor($user, Responsibility::StudentRepCoordination))
             ->unique()
             ->values();
 
-        abort_if($tenantIds->isEmpty(), 403, 'No student representative registration tenants to show.');
+        abort_if($institutionIds->isEmpty(), 403, 'No student representative registrations to show.');
 
         $institutionField = $this->modelOptionsField($form, Institution::class);
-        $institutionIds = Institution::query()
-            ->whereIn('tenant_id', $tenantIds)
-            ->pluck('id');
 
         return $this->scopeByFieldValues($query, $institutionField, $institutionIds);
     }

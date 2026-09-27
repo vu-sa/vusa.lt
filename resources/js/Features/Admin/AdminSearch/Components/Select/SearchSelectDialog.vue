@@ -4,7 +4,13 @@
       <slot name="trigger" />
     </DialogTrigger>
     <DialogContent
-      class="flex h-[85vh] w-[95vw] max-w-5xl flex-col gap-0 overflow-hidden p-0 sm:max-w-5xl"
+      :show-close-button="false"
+      :class="[
+        'fixed bottom-0 top-auto left-0 flex h-[90dvh] w-full max-w-none',
+        'translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden p-0',
+        'md:bottom-auto md:top-1/2 md:left-1/2 md:h-[85dvh] md:w-[calc(100%-2rem)]',
+        'md:max-w-5xl md:-translate-x-1/2 md:-translate-y-1/2',
+      ]"
       @open-auto-focus.prevent
     >
       <DialogHeader class="border-b px-5 py-4 text-left">
@@ -14,8 +20,7 @@
         </DialogDescription>
       </DialogHeader>
 
-      <div class="flex min-h-0 flex-1 flex-col p-5">
-        <!-- Body builds the search controller; only mounts while open. -->
+      <div class="flex min-h-0 flex-1 flex-col p-3 sm:p-5">
         <slot
           v-if="open"
           :selected-ids
@@ -25,15 +30,15 @@
         />
       </div>
 
-      <DialogFooter class="items-center justify-between gap-3 border-t px-5 py-3 sm:justify-between">
+      <DialogFooter class="flex-row flex-wrap items-center justify-between gap-3 border-t px-3 py-3 sm:px-5">
         <span class="text-sm text-muted-foreground">
           {{ $t(':count pasirinkta', { count: String(selectedHits.length) }) }}
         </span>
         <div class="flex items-center gap-2">
-          <Button variant="outline" @click="cancel">
+          <Button variant="outline" voice="sentence" @click="cancel">
             {{ $t('Atšaukti') }}
           </Button>
-          <Button :disabled="!allowEmpty && selectedHits.length === 0" @click="confirm">
+          <Button variant="brand" :disabled="!allowEmpty && selectedHits.length === 0" @click="confirm">
             {{ confirmLabel ?? $t('Pridėti pasirinktus') }}
           </Button>
         </div>

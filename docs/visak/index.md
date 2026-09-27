@@ -3,6 +3,7 @@ title: ViSAK
 last_reviewed: 2026-09-27
 tests:
   - tests/Feature/Admin/Core/CoordinatorOnRepScreensTest.php
+  - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Notifications/MailTemplateRenderTest.php
   - tests/Feature/System/AdminNavigationCatalogTest.php
@@ -37,15 +38,16 @@ institucija turi kelis tipus ir bent vienas jų – išorinis organas, ji laikom
 atstovaujant. Koordinatorius priskiriamas tik **VU organams**: VU SA darinių, nacionalinių ir
 tarptautinių organų atstovams koordinatorius nerodomas.
 
-- Koordinatoriumi laikomas žmogus, einantis to paties padalinio pareigybę su
-  **koordinatoriaus role**. Ši rolė pasirenkama **Sistema → Nustatymai → Atstovavimo nustatymai**
-  (laukas „Koordinatorių rolė“). Jei rolė nepasirinkta, koordinatorių nėra.
+- Koordinatoriumi laikomas žmogus, einantis pareigybę su [studentų atstovų koordinavimo
+  atsakomybe](/pagrindai/atsakomybes). Atsakomybė gali būti skirta konkrečiam VU organui, jo
+  tipui arba visam padaliniui. Jei tokios pareigybės dabar niekas neina, koordinatorius nerodomas.
 - Atstovas mato savo koordinatorių [Apžvalgoje](/visak/apzvalga#tavo-koordinatorius) ir pradžios
   puslapyje. Jei jo VU organai yra keliuose padaliniuose, Apžvalgoje rodomas kiekvieno padalinio
   koordinatorius ir kurias institucijas jis kuruoja.
 - Laiškas koordinatoriui rašomas jo pareigybės el. paštu, todėl pasikeitus žmogui adresas lieka
   tas pats. Tuo pačiu adresu pasirašomi ir sistemos laiškai apie VU organus.
-- Koordinatorius sau pačiam nerodomas.
+- Koordinatorius sau pačiam nerodomas. Apie VU SA darinių posėdžius padalinio koordinatorius
+  pranešimų negauna.
 
 ::: info Koordinatorius ir sekretorius – ne tas pats
 **Sekretorius** paskiriamas konkrečios institucijos kadencijai ir tvarko jos posėdžius: jam tenka

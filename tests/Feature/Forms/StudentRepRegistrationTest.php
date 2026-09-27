@@ -3,15 +3,14 @@
 use App\Events\StudentRepRegistrationCreated;
 use App\Mail\ConfirmStudentRepRegistration;
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Registration;
-use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\StudentRepRegistrationNotification;
-use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -239,21 +238,9 @@ function createStudentRepForm(Tenant $tenant, Institution $institution): Form
     return $form->fresh(['formFields']);
 }
 
-// Helper function to create an institution manager
+/** A current holder of a duty that coordinates the padalinys' student representatives. */
 function createInstitutionManager(Tenant $tenant, Institution $institution): User
 {
-    // Create role for institution managers
-    $role = Role::firstOrCreate(
-        ['name' => 'Institution Manager Test', 'guard_name' => 'web']
-    );
-
-    // Configure this role as the institution manager role in settings
-    $settings = app(AtstovavimasSettings::class);
-    $settings->institution_manager_role_id = $role->id;
-    $settings->save();
-    app()->forgetInstance(AtstovavimasSettings::class);
-
-    // Create user with duty in the institution
     $user = User::factory()->create();
 
     $duty = Duty::factory()
@@ -261,7 +248,7 @@ function createInstitutionManager(Tenant $tenant, Institution $institution): Use
         ->hasAttached($user, ['start_date' => now()->subDay(), 'end_date' => now()->addDay()])
         ->create();
 
-    $duty->assignRole($role);
+    DutyResponsibility::factory()->for($duty)->forTenant($tenant)->create();
 
     return $user;
 }

@@ -9,6 +9,9 @@ Darbo sritis **Organizacija** skirta žmonėms ir struktūrai: nariams, pareigyb
 studijų programoms, formoms ir registracijoms. Čia keičiasi, **kas** eina kokias pareigas, o nuo to
 priklauso ir jų teisės platformoje.
 
+**Organizacijos apžvalga** taip pat parodo padalinius, kuriems trūksta dabar dirbančio
+[studentų atstovų koordinatoriaus](/pagrindai/atsakomybes).
+
 ## Kas mato šią sritį
 
 | Skiltis | Adresas | Kas mato |

@@ -1,16 +1,15 @@
 <?php
 
-use App\Actions\GetInstitutionCoordinator;
+use App\Actions\GetInstitutionCoordinators;
 use App\Actions\GetUserCoordinators;
 use App\Enums\InstitutionScope;
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Meeting;
-use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
-use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -20,23 +19,24 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
-    $role = Role::factory()->create(['guard_name' => 'web']);
-    $settings = app(AtstovavimasSettings::class);
-    $settings->setInstitutionManagerRoleId($role->id);
-    $settings->save();
-
     $this->managerDuty = Duty::factory()->for($this->institution)->create([
         'name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator'],
         'email' => 'koordinatorius@vusa.lt',
     ]);
-    $this->managerDuty->roles()->attach($role);
+    DutyResponsibility::factory()->for($this->managerDuty)->forTenant($this->tenant)->create();
     $this->coordinator = User::factory()->create(['name' => 'Ona Koordinatorė', 'email' => 'ona@gmail.com']);
     $this->coordinator->duties()->attach($this->managerDuty, ['start_date' => now()->subMonth(), 'end_date' => null]);
 });
 
-describe('GetInstitutionCoordinator', function (): void {
+/** The card a rep sees for one institution, or null. */
+function coordinatorCardFor(Institution $institution, ?User $except = null): ?array
+{
+    return GetInstitutionCoordinators::execute([$institution], $except)[0] ?? null;
+}
+
+describe('GetInstitutionCoordinators', function (): void {
     test('names the koordinatorius with their duty', function (): void {
-        expect(GetInstitutionCoordinator::execute($this->institution))
+        expect(coordinatorCardFor($this->institution))
             ->toMatchArray(['name' => 'Ona Koordinatorė', 'duty' => 'Koordinatorius']);
     });
 
@@ -46,7 +46,7 @@ describe('GetInstitutionCoordinator', function (): void {
             ['start_date' => now()->subYear(), 'end_date' => null],
         );
 
-        expect(GetInstitutionCoordinator::execute($this->institution))
+        expect(coordinatorCardFor($this->institution))
             ->toMatchArray(['email' => 'koordinatorius@vusa.lt', 'duty' => 'Koordinatorius']);
     });
 
@@ -57,21 +57,31 @@ describe('GetInstitutionCoordinator', function (): void {
             ['start_date' => now()->subYear(), 'end_date' => null],
         );
 
-        expect(GetInstitutionCoordinator::execute($this->institution)['email'])->toBe('ona@vusa.lt');
+        expect(coordinatorCardFor($this->institution)['email'])->toBe('ona@vusa.lt');
     });
 
     test('is never the person asking', function (): void {
-        expect(GetInstitutionCoordinator::execute($this->institution, $this->coordinator))->toBeNull();
+        expect(coordinatorCardFor($this->institution, $this->coordinator))->toBeNull();
     });
 
     test('is null for a body that is not a VU body', function (InstitutionScope $scope): void {
         $this->institution->types()->attach(Type::factory()->forInstitutions($scope)->create());
 
-        expect(GetInstitutionCoordinator::execute($this->institution->fresh()))->toBeNull();
+        expect(coordinatorCardFor($this->institution->fresh()))->toBeNull();
     })->with(['VU SA body' => InstitutionScope::Vusa, 'national body' => InstitutionScope::National, 'international body' => InstitutionScope::International]);
 
+    test('names whoever coordinates the institution\'s type instead of the padalinys coordinator', function (): void {
+        $senate = Type::factory()->forInstitutions()->create();
+        $this->institution->types()->attach($senate);
+        $centralDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create(['name' => ['lt' => 'CB koordinatorius', 'en' => 'CB coordinator']]);
+        DutyResponsibility::factory()->for($centralDuty)->forType($senate)->create();
+        User::factory()->create(['name' => 'Jonas Centras'])->duties()->attach($centralDuty, ['start_date' => now()->subMonth()]);
+
+        expect(coordinatorCardFor($this->institution->fresh()))->toMatchArray(['name' => 'Jonas Centras', 'duty' => 'CB koordinatorius']);
+    });
+
     test('is null when the tenant has no coordinator', function (): void {
-        expect(GetInstitutionCoordinator::execute(Institution::factory()->for(Tenant::factory()->create())->create()))->toBeNull();
+        expect(coordinatorCardFor(Institution::factory()->for(Tenant::factory()->create())->create()))->toBeNull();
     });
 });
 
@@ -87,7 +97,7 @@ describe('GetUserCoordinators', function (): void {
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
         $otherDuty = Duty::factory()->for($otherInstitution)->create();
-        $otherDuty->roles()->attach(app(AtstovavimasSettings::class)->institution_manager_role_id);
+        DutyResponsibility::factory()->for($otherDuty)->forTenant($otherTenant)->create();
         User::factory()->create(['name' => 'Petras Koordinatorius'])
             ->duties()->attach($otherDuty, ['start_date' => now()->subMonth(), 'end_date' => null]);
 
@@ -137,10 +147,8 @@ describe('GetUserCoordinators', function (): void {
         expect(GetUserCoordinators::execute($this->coordinator->fresh()))->toBe([]);
     });
 
-    test('names nobody while no coordinator role is set', function (): void {
-        $settings = app(AtstovavimasSettings::class);
-        $settings->setInstitutionManagerRoleId(null);
-        $settings->save();
+    test('names nobody while the padalinys has no coordinator', function (): void {
+        $this->managerDuty->responsibilities()->each(fn (DutyResponsibility $assignment) => $assignment->delete());
         ($this->seatIn)($this->institution);
 
         expect(GetUserCoordinators::execute($this->rep->fresh()))->toBe([]);

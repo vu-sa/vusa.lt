@@ -10,29 +10,6 @@
     @submit="handleFormSubmit"
   >
     <FormSection
-      :title="$t('settings.atstovavimas_settings.manager_role_title')"
-      :description="$t('settings.atstovavimas_settings.manager_role_description')"
-    >
-      <FormFieldWrapper
-        id="institution_manager_role_id"
-        :label="$t('settings.atstovavimas_settings.manager_role_label')"
-        :hint="$t('settings.atstovavimas_settings.manager_role_note')"
-        :error="form.errors.institution_manager_role_id"
-      >
-        <Select v-model="form.institution_manager_role_id">
-          <SelectTrigger id="institution_manager_role_id">
-            <SelectValue :placeholder="$t('settings.atstovavimas_settings.manager_role_placeholder')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="option in roleOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
-    </FormSection>
-
-    <FormSection
       :title="$t('settings.atstovavimas_settings.student_rep_type_title')"
       :description="$t('settings.atstovavimas_settings.student_rep_type_description')"
     >
@@ -69,11 +46,6 @@ import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
-interface Role {
-  id: string;
-  name: string;
-}
-
 interface InstitutionType {
   id: number;
   title: string;
@@ -81,21 +53,12 @@ interface InstitutionType {
 }
 
 const props = withDefaults(defineProps<{
-  institution_manager_role_id: string | null;
   student_rep_root_type_id?: number | null;
-  roles: Role[];
   institution_types?: InstitutionType[];
 }>(), {
   student_rep_root_type_id: null,
   institution_types: () => [],
 });
-
-const roleOptions = computed(() =>
-  props.roles.map(role => ({
-    label: role.name,
-    value: role.id,
-  })),
-);
 
 const typeOptions = computed(() =>
   props.institution_types.map(type => ({
@@ -105,7 +68,6 @@ const typeOptions = computed(() =>
 );
 
 const form = useForm({
-  institution_manager_role_id: props.institution_manager_role_id,
   student_rep_root_type_id: props.student_rep_root_type_id,
 });
 

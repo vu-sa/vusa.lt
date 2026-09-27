@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetRecentlyEditedRecords;
+use App\Enums\Responsibility;
 use App\Http\Controllers\AdminController;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\ResponsibilityResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -48,6 +50,14 @@ class OrganizacijaDashboardController extends AdminController
                 'members' => $canSeeUsers ? $this->members($tenantIds)->count() : null,
             ],
             'endingTerms' => $canSeeDuties ? $this->serializeEnding($ending) : [],
+            // A padalinys nobody coordinates silently drops its reps' notifications; name it.
+            'coordinatorGaps' => $canSeeDuties
+                ? app(ResponsibilityResolver::class)->gaps(Responsibility::StudentRepCoordination)
+                    ->whereIn('id', $tenantIds)
+                    ->map(fn ($tenant) => ['id' => $tenant->id, 'shortname' => (string) __($tenant->shortname)])
+                    ->values()
+                    ->all()
+                : [],
             'recentlyEdited' => Inertia::defer(
                 fn (): array => GetRecentlyEditedRecords::execute($user, 5, ['duty', 'user', 'form'])->all(),
                 'secondary',

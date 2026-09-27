@@ -7,11 +7,11 @@ use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
-use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
@@ -20,7 +20,6 @@ use App\Models\Vote;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
 use App\Notifications\TaskAssignedNotification;
-use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
@@ -302,15 +301,9 @@ describe('MeetingTaskSubscriber', function (): void {
 
             $institution = Institution::factory()->for($tenant)->create();
 
-            // Create and configure institution manager role via settings
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->setInstitutionManagerRoleId($managerRole->id);
-            $settings->save();
-
-            // Create admin with institution manager role
+            // Create an admin who coordinates the padalinys
             $duty = Duty::factory()->for($institution)->create();
-            $duty->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty)->forTenant($duty->institution->tenant)->create();
 
             $admin = User::factory()->create();
             $admin->duties()->attach($duty, [
@@ -335,15 +328,9 @@ describe('MeetingTaskSubscriber', function (): void {
 
             $institution = Institution::factory()->for($tenant)->create();
 
-            // Create and configure institution manager role via settings
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->setInstitutionManagerRoleId($managerRole->id);
-            $settings->save();
-
-            // Create coordinator with institution manager role
+            // Create a coordinator of the padalinys
             $coordinatorDuty = Duty::factory()->for($institution)->create();
-            $coordinatorDuty->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($coordinatorDuty)->forTenant($coordinatorDuty->institution->tenant)->create();
 
             $coordinator = User::factory()->create();
             $coordinator->duties()->attach($coordinatorDuty, [
@@ -403,18 +390,12 @@ describe('MeetingTaskSubscriber', function (): void {
             $institution1 = Institution::factory()->for($tenant)->create();
             $institution2 = Institution::factory()->for($tenant)->create();
 
-            // Create and configure institution manager role via settings
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->setInstitutionManagerRoleId($managerRole->id);
-            $settings->save();
-
-            // Create user with manager role in both institutions
+            // Create a user who coordinates the padalinys of both institutions
             $duty1 = Duty::factory()->for($institution1)->create();
-            $duty1->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty1)->forTenant($duty1->institution->tenant)->create();
 
             $duty2 = Duty::factory()->for($institution2)->create();
-            $duty2->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty2)->forTenant($duty2->institution->tenant)->create();
 
             $admin = User::factory()->create();
             $admin->duties()->attach([$duty1->id, $duty2->id], [
@@ -552,15 +533,9 @@ describe('MeetingTaskSubscriber', function (): void {
             $institution = Institution::factory()->for($tenant)->create();
             publishInstitutionMeetings($institution);
 
-            // GetInstitutionManagers reads the manager role from AtstovavimasSettings.
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->institution_manager_role_id = $managerRole->id;
-            $settings->save();
-
-            // Create duty with the manager role
+            // Create a duty coordinating the padalinys
             $duty = Duty::factory()->for($institution)->create();
-            $duty->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty)->forTenant($duty->institution->tenant)->create();
 
             $manager = User::factory()->create();
             $manager->duties()->attach($duty, [
@@ -711,15 +686,9 @@ describe('MeetingTaskSubscriber', function (): void {
             $institution1 = Institution::factory()->for($tenant)->create();
             $institution2 = Institution::factory()->for($tenant)->create();
 
-            // Create and configure institution manager role via settings
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->setInstitutionManagerRoleId($managerRole->id);
-            $settings->save();
-
             // Create manager for first institution
             $duty1 = Duty::factory()->for($institution1)->create();
-            $duty1->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty1)->forTenant($duty1->institution->tenant)->create();
             $manager1 = User::factory()->create();
             $manager1->duties()->attach($duty1, [
                 'start_date' => now()->subMonth(),
@@ -728,7 +697,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create manager for second institution
             $duty2 = Duty::factory()->for($institution2)->create();
-            $duty2->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty2)->forTenant($duty2->institution->tenant)->create();
             $manager2 = User::factory()->create();
             $manager2->duties()->attach($duty2, [
                 'start_date' => now()->subMonth(),

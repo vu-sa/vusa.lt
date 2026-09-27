@@ -2,6 +2,7 @@
 
 use App\Models\Calendar;
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
@@ -17,7 +18,6 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
-use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -638,17 +638,12 @@ describe('Pradžia secondary panels', function (): void {
             );
     });
 
-    test('the coordinator is the institution manager of the user\'s tenant, never the user', function (): void {
-        $role = Role::factory()->create(['name' => 'Institution Manager']);
-        $settings = app(AtstovavimasSettings::class);
-        $settings->institution_manager_role_id = $role->id;
-        $settings->save();
-
+    test('the coordinator is whoever coordinates the user\'s padalinys, never the user', function (): void {
         $manager = makeUser($this->tenant);
         $duty = $manager->duties()->first();
         $duty->pivot->end_date = null;
         $duty->pivot->save();
-        $duty->assignRole($role->name);
+        DutyResponsibility::factory()->for($duty)->forTenant($this->tenant)->create();
 
         $rep = makeUser($this->tenant);
         $rep->duties()->first()->pivot->update(['end_date' => null]);
@@ -669,11 +664,7 @@ describe('Pradžia secondary panels', function (): void {
             );
     });
 
-    test('the coordinator is absent when no manager role is configured', function (): void {
-        $settings = app(AtstovavimasSettings::class);
-        $settings->institution_manager_role_id = null;
-        $settings->save();
-
+    test('the coordinator is absent when nobody coordinates the padalinys', function (): void {
         asUser($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page

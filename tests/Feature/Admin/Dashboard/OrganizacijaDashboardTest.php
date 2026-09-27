@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -41,8 +42,28 @@ describe('access', function (): void {
                 ->component('Admin/Dashboard/ShowOrganizacija')
                 ->has('counts')
                 ->has('endingTerms')
+                ->has('coordinatorGaps')
                 ->missing('recentlyEdited')
             );
+    });
+
+    test('coordinator gaps include only authorized padaliniai without a current coordinator', function (): void {
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+        $holder = makeUser($this->tenant);
+        $holder->duties()->attach($duty, ['start_date' => now()->subMonth()->toDateString()]);
+        DutyResponsibility::factory()->for($duty)->forTenant($this->tenant)->create();
+
+        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('coordinatorGaps', fn ($gaps) => collect($gaps)->pluck('id')
+                    ->doesntContain($this->tenant->id)
+                    && collect($gaps)->pluck('id')->doesntContain($this->otherTenant->id)));
+
+        $duty->current_users()->detach($holder);
+
+        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('coordinatorGaps', fn ($gaps) => collect($gaps)->pluck('id')->contains($this->tenant->id)));
     });
 
     test('guests are redirected', function (): void {

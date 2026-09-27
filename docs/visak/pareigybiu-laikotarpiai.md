@@ -7,8 +7,11 @@ tests:
   - tests/Feature/Admin/People/DutiableTimelineControllerTest.php
   - tests/Feature/Admin/People/DutiableDiagnosticsTest.php
   - tests/Feature/Admin/Management/DutiableControllerTest.php
+  - tests/Feature/Api/Admin/DutiableTimelineApiControllerTest.php
+  - tests/Feature/Api/Admin/DutiableTimelinePreviewTest.php
   - tests/Feature/CrossTenantDutyTest.php
   - tests/Feature/Admin/People/CadenceResolutionTest.php
+  - tests/Feature/Admin/People/ResolveCadenceForInstitutionTest.php
   - tests/Feature/ExOfficioSyncTest.php
   - resources/js/Features/Admin/Occupancy/__tests__/AssignDutyUserSheet.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/DutiableTimeline.component.test.ts
@@ -19,9 +22,14 @@ tests:
   - resources/js/Features/Admin/DutiableTimeline/__tests__/DutiableTimelineSuggestions.component.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/barDragMath.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/barFill.test.ts
+  - resources/js/Features/Admin/DutiableTimeline/__tests__/cadencePools.test.ts
+  - resources/js/Features/Admin/DutiableTimeline/__tests__/duration.test.ts
+  - resources/js/Features/Admin/DutiableTimeline/__tests__/timelineDates.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/timelineRenderers.test.ts
+  - resources/js/Features/Admin/DutiableTimeline/__tests__/useDutiableLayout.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/useDutiableStaging.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/useDutiableDiagnostics.test.ts
+  - resources/js/Features/Admin/DutiableTimeline/__tests__/DutiableExtrasBadge.component.test.ts
   - resources/js/Components/Patterns/__tests__/FocusModeFrame.component.test.ts
   - tests/Browser/DutiableTimelineTest.php
 ---
@@ -86,7 +94,8 @@ matyti. Rodyklė šalia pavadinimo atveria institucijos puslapį.
 ### Kaip skaityti juostas {#juostos}
 
 Kairėje – pareigybės, po kiekviena – ją ėję ar einantys žmonės ir kiek laiko jie ėjo pareigas.
-Kiekviena juosta – vienas laikotarpis.
+Kiekviena juosta – vienas laikotarpis. Prie nario rodoma žyma, jei priskyrimas turi papildomų
+duomenų (kontaktinę nuotrauką, el. paštą, studijų programą ar viešą aprašymą).
 
 | Juosta | Reikšmė |
 |---|---|
@@ -155,7 +164,8 @@ paspaudus **Išsaugoti**.
 
 - **Visa juosta** slenka mėnesiais, o **mėnesio diena išlieka**: gegužės 18 d. pradžia, patempta dviem
   mėnesiais, taps liepos 18 d., ne liepos 1 d. Pažymėta juosta po tempimo lieka pažymėta.
-- **Juostos kraštas** keičia tik pradžią arba pabaigą ir pritraukiamas prie kadencijos ribos.
+- **Juostos kraštas** keičia tik pradžią arba pabaigą ir pritraukiamas prie artimiausios ribos:
+  kadencijos, mėnesio pradžios (1 d.), šiandienos arba gretimo to paties žmogaus laikotarpio.
   Neterminuoto laikotarpio pabaigą rasi prie rodyklės.
 - **Alt** – be pritraukimo, tikslia diena. **Ctrl (⌘)** – tempti visus pažymėtus kartu.
 - **Esc** – atšaukti tempimą.
@@ -167,11 +177,15 @@ Pažymėk juostą grafike arba varnelę prie vardo (su **Ctrl / ⌘** – kelias
 - **Pradžia** ir **Pabaiga** – tikslios datos; **Palikti neterminuotą** išvalo pabaigą;
 - **Lygiuoti** – pradžią ir pabaigą perkelia į jų kadencijų ribas. Data, nutolusi nuo ribos daugiau
   nei 45 dienas, laikoma sąmoninga ir nekeičiama;
-- **Užbaigti** – nustato pabaigos datą neterminuotam laikotarpiui;
+- **Užbaigti** – nustato pabaigos datą neterminuotam laikotarpiui (galima pasirinkti datą arba
+  greitąją parinktį „Vakar“);
 - **↗** – atveria [vieno laikotarpio formą](#laikotarpis); **šiukšlinė** – pašalina laikotarpį
   (atkurti nebus galima);
 - pažymėjus kelis: **Taikyti datas** visiems iš karto, o to paties žmogaus tos pačios pareigybės
-  laikotarpius – **Sujungti** į vieną (nuo ankstyviausios pradžios iki vėliausios pabaigos).
+  laikotarpius – **Sujungti** į vieną (nuo ankstyviausios pradžios iki vėliausios pabaigos). Išsaugomas
+  ankstesnysis įrašas, perimantis vėlesnių įrašų papildomus duomenis (el. paštą, nuotrauką, programą);
+  jei bent vienas laikotarpis neterminuotas, sujungtas įrašas taip pat lieka neterminuotas (*ex officio*
+  laikotarpių sujungti negalima).
 
 ### Siūlomi taisymai {#pasiulymai}
 
@@ -189,6 +203,7 @@ pažymėk pats ir spausk **Taikyti pažymėtus**. Paspaudus pasiūlymą, pažymi
 | Neterminuota nuo ankstesnės kadencijos | Neterminuotas laikotarpis prasidėjo jau pasibaigusioje kadencijoje. Dažniausiai tai **perrinktas narys**, todėl pasiūlymai suskleisti į vieną eilutę. | Jei žmogus pareigų nebeeina – užbaigti tos kadencijos pabaiga. |
 | Perrinkta kelioms kadencijoms | Laikotarpis apima kelias kadencijas. Tai ne klaida, rodoma tik informacijai, suskleista. | Nėra. |
 | Užimta mažiau vietų, nei numatyta | Pareigybėje yra laisvų vietų. | Nėra – tai sprendimas apie žmones. |
+| Įtartinas *ex officio* įrašas be šaltinio | Žmogus turi pareigas pagal kitas pareigas (*ex officio*), bet pačių šaltinio pareigų nebeeina, o ryšys nutrūkęs. | Nėra – šie įrašai suteikia realias teises, todėl automatiškai neliesti. Paleisk komandą `duties:audit-ex-officio`. |
 
 ### Peržiūra ir išsaugojimas
 
@@ -234,8 +249,11 @@ parodo peržiūrą.
 ### Teisės
 
 - Tvarkyklę atveria `viewAny` pareigybėms (`duties.read`), rodomą instituciją – `view`
-  (`institutions.read`). Duomenis teikia `DutiableTimelineApiController`, kuris tikrina `view`
-  rodomai institucijai, pareigybei ar naudotojui.
+  (`institutions.read`). Duomenis teikia `DutiableTimelineApiController` (`GET api.v1.admin.dutiableTimeline.index`),
+  kuris tikrina `view` rodomai institucijai, pareigybei ar naudotojui. Didelėms institucijoms taikoma
+  1500 įrašų riba (`MAX_ROWS`) – ją pasiekus, siūloma filtruoti pareigybes.
+- Sausa pakeitimų peržiūra atliekama per `POST api.v1.admin.dutiableTimeline.preview`, kuri taip pat
+  įvertina, ar pakeitimai palies paties administratoriaus pareigas (`self_affecting`).
 - Keitimas ir sujungimas (`ApplyDutiableTimelineRequest`, `MergeDutiablesRequest`) reikalauja
   `DutiablePolicy::manageDutiable` **kiekvienam** įrašui; jis remiasi `DutyPolicy::managePeople`
   (`duties.update` pareigybės padalinyje arba jos `assignableTenants` padalinyje).

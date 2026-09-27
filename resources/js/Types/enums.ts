@@ -195,6 +195,14 @@ export enum PermissionScopeEnum {
     PADALINYS = 'PADALINYS',
     ALL = 'ALL',
 }
+export enum Responsibility {
+    StudentRepCoordination = 'student_rep_coordination',
+}
+export enum ResponsibilityScope {
+    Institution = 'institution',
+    Type = 'type',
+    Tenant = 'tenant',
+}
 export enum SearchableModelEnum {
     NEWS = 'NEWS',
     PAGE = 'PAGE',

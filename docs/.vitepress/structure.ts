@@ -35,6 +35,7 @@ export const guide: GuideChapter[] = [
       { text: 'Platforma', link: '/pagrindai/platforma' },
       { text: 'Padaliniai ir pareigybės', link: '/pagrindai/padaliniai-ir-pareigybes' },
       { text: 'Teisės ir rolės', link: '/pagrindai/teises' },
+      { text: 'Atsakomybės', link: '/pagrindai/atsakomybes' },
       { text: 'Pranešimai', link: '/pagrindai/pranesimai' },
     ],
   },

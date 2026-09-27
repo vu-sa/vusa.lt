@@ -1,13 +1,14 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <div class="mb-3 flex h-10 shrink-0 items-center gap-2 rounded-lg border bg-background px-3">
+    <div class="mb-3 flex h-11 shrink-0 items-center gap-2 border border-border bg-background px-3 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
       <Search v-if="!isSearching" class="size-4 shrink-0 text-muted-foreground/60" />
-      <div v-else class="size-4 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+      <LoaderCircle v-else class="size-4 shrink-0 animate-spin text-brand" aria-hidden="true" />
       <input
         :value="query"
         type="text"
         :placeholder="searchPlaceholder"
-        class="h-full flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
+        :aria-label="searchPlaceholder"
+        class="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
         @input="onQueryInput"
       >
     </div>
@@ -37,7 +38,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
-import { Search } from 'lucide-vue-next';
+import { LoaderCircle, Search } from 'lucide-vue-next';
 
 import SearchSplitView from '../SearchSplitView.vue';
 import { collectAllTabHits, type NormalizedSearchHit } from '../../Utils/searchHitMappers';

@@ -180,9 +180,7 @@ class SettingsController extends AdminController
         $this->authorizeSettingsAccess($settingsSettings);
 
         return $this->inertiaResponse('Admin/Settings/EditAtstovavimasSettings', [
-            'institution_manager_role_id' => $atstovavimasSettings->getInstitutionManagerRoleId(),
             'student_rep_root_type_id' => $atstovavimasSettings->student_rep_root_type_id,
-            'roles' => Role::all(['id', 'name']),
             'institution_types' => Type::query()
                 ->where('model_type', MorphMap::alias(Institution::class))
                 ->get(['id', 'title', 'slug'])
@@ -197,20 +195,11 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
-        $oldRoleId = $atstovavimasSettings->getInstitutionManagerRoleId();
-        $newRoleId = $request->input('institution_manager_role_id');
         $oldRootTypeId = $atstovavimasSettings->student_rep_root_type_id;
-        $newRootTypeId = $request->input('student_rep_root_type_id') ? (int) $request->input('student_rep_root_type_id') : null;
+        $newRootTypeId = $request->validated('student_rep_root_type_id') ? (int) $request->validated('student_rep_root_type_id') : null;
 
-        $atstovavimasSettings->institution_manager_role_id = $newRoleId;
         $atstovavimasSettings->student_rep_root_type_id = $newRootTypeId;
         $atstovavimasSettings->save();
-
-        // Clear cache if role changed
-        if ($oldRoleId !== $newRoleId) {
-            AtstovavimasSettings::clearManagerRoleCache($oldRoleId);
-            AtstovavimasSettings::clearManagerRoleCache($newRoleId);
-        }
 
         if ($oldRootTypeId !== $newRootTypeId) {
             AtstovavimasSettings::clearStudentRepTypeCache();

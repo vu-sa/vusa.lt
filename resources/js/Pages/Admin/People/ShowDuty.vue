@@ -169,6 +169,28 @@
       </div>
     </template>
 
+    <template #responsibilities>
+      <Deferred data="responsibilities">
+        <template #fallback>
+          <div class="grid max-w-4xl gap-10 lg:grid-cols-2" data-testid="responsibilities-skeleton">
+            <div v-for="n in 2" :key="n" class="space-y-2">
+              <div class="h-5 w-40 animate-pulse bg-secondary" />
+              <div class="h-11 animate-pulse border-y border-border bg-secondary/60" />
+            </div>
+          </div>
+        </template>
+
+        <DutyResponsibilitiesSection
+          :duty-id="duty.id"
+          :tenant-id="duty.institution?.tenant_id ?? null"
+          :items="responsibilities?.items ?? []"
+          :roles="responsibilities?.roles ?? []"
+          :can-update="canManageDuty"
+          :options="responsibilityOptions"
+        />
+      </Deferred>
+    </template>
+
     <template #files>
       <FileableFilesPanel
         :fileable="{ id: duty.id, type: 'Duty' }"
@@ -251,6 +273,8 @@ import type { StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, MemberTermRow, termStatus } from '@/Features/Admin/Occupancy';
+import DutyResponsibilitiesSection from '@/Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue';
+import type { DutyResponsibilitiesPayload, DutyResponsibilityOptions } from '@/Features/Admin/Responsibilities/types';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { ModelEnum } from '@/Types/enums';
 import { todayIso } from '@/Utils/dateTime';
@@ -269,6 +293,10 @@ const props = defineProps<{
   otherDuties?: App.Entities.Duty[];
   /** Deferred (`dutyPanels`): only the assignment sheet's picker needs them. */
   studyPrograms?: App.Entities.StudyProgram[];
+  /** Deferred (`dutyPanels`): what the duty must handle, beside its roles. */
+  responsibilities?: DutyResponsibilitiesPayload;
+  /** Optional: only the add-responsibility sheet needs these. */
+  responsibilityOptions?: DutyResponsibilityOptions;
   /** Deferred (`files`). */
   files?: FileableFileItem[];
   typeFiles?: FileableFileItem[];
@@ -362,6 +390,7 @@ const tabs = computed<RecordPageSection[]>(() => {
   const sections: RecordPageSection[] = [
     { value: 'members', label: $t('Nariai'), count: currentHolders.value.length },
     { value: 'about', label: $t('Apie pareigybę') },
+    { value: 'responsibilities', label: $t('responsibilities.duty.title'), count: props.responsibilities?.items.length },
   ];
 
   if (hasFiles.value) {

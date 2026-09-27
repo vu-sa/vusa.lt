@@ -4,8 +4,10 @@ namespace App\Services\Notifications;
 
 use App\Actions\GetResourceManagers;
 use App\Enums\NotificationType;
+use App\Enums\Responsibility;
 use App\Models\InstitutionSecretary;
 use App\Models\User;
+use App\Services\ResponsibilityResolver;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,7 +48,7 @@ class NotificationAudience
             NotificationType::MeetingCreated, NotificationType::MeetingAgendaCompleted => $this->isMeetingOverseer($user),
             NotificationType::ApprovalRequested => $this->isResourceManager($user),
             NotificationType::MemberRegistration => $this->holdsRole($user, app(FormSettings::class)->member_registration_notification_recipient_role_id),
-            NotificationType::StudentRepRegistration => $this->holdsRole($user, app(AtstovavimasSettings::class)->getInstitutionManagerRoleId()),
+            NotificationType::StudentRepRegistration => $this->coordinates($user),
             default => true,
         };
     }
@@ -74,12 +76,20 @@ class NotificationAudience
             ->exists();
     }
 
+    private function coordinates(User $user): bool
+    {
+        return app(ResponsibilityResolver::class)->holdsAnywhere($user, Responsibility::StudentRepCoordination);
+    }
+
     private function isMeetingOverseer(User $user): bool
     {
+        if ($this->coordinates($user)) {
+            return true;
+        }
+
         $settings = app(AtstovavimasSettings::class);
         $roleIds = $settings->getTenantVisibilityRoleIds()
             ->merge($settings->getGlobalVisibilityRoleIds())
-            ->push($settings->getInstitutionManagerRoleId())
             ->filter()
             ->values();
 

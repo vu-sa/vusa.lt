@@ -6,6 +6,7 @@ tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/CoordinatorOnRepScreensTest.php
   - tests/Feature/Admin/Core/AtstovavimasSettingsTest.php
+  - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
   - tests/Feature/InstitutionSubscriptionTest.php
   - tests/Unit/InstitutionActivityStatusServiceTest.php
   - tests/Unit/Enums/InstitutionActivityStatusTest.php
@@ -95,7 +96,8 @@ Sekamos institucijos posėdis pažymėtas **Seki**.
 rodomas tik jei eini pareigas bent viename **VU organe**. Jei tavo VU organai yra keliuose
 padaliniuose, rodomas kiekvieno padalinio koordinatorius ir kurias tavo institucijas jis kuruoja
 (VU SA dariniai į šį sąrašą neįtraukiami). Laiškas rašomas koordinatoriaus pareigybės el. paštu, o
-jei jos nėra – jo paties el. paštu. Jei koordinatoriaus rolė nepasirinkta, kortelė nerodoma. Pats sau
+jei jos nėra – jo paties el. paštu. Jei institucijai nėra dabar pareigas einančio [atsakingo
+koordinatoriaus](/pagrindai/atsakomybes), kortelė nerodoma. Pats sau
 koordinatoriumi niekas nerodomas.
 
 ### Dokumentai
@@ -153,4 +155,4 @@ Viso padalinio duomenys (visų institucijų būsenos, atstovų aktyvumas) yra
 - Koordinatoriai (`GetUserCoordinators`), dokumentai (`GetTypeFiles`, riba
   `REFERENCE_DOCUMENTS_LIMIT` = 8) ir sekamos institucijos kraunami atidėtai (`secondary` grupė).
   Susijusios institucijos kraunamos tik įjungus jų rodymą (`relatedInstitutions`).
-- Koordinatoriaus rolė – `AtstovavimasSettings::institution_manager_role_id`.
+- Koordinavimo šaltinį ir dabartinius pareigybės narius nustato `ResponsibilityResolver`.

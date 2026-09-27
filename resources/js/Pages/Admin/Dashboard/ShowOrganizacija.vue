@@ -31,6 +31,21 @@
           </li>
         </ul>
       </OverviewSection>
+
+      <OverviewSection
+        :title="$t('responsibilities.attention.no_coordinator')"
+        :empty="coordinatorGaps.length === 0"
+        :empty-text="$t('responsibilities.attention.no_coordinator_empty')"
+      >
+        <p class="text-sm text-muted-foreground">
+          {{ $t('responsibilities.attention.no_coordinator_hint') }}
+        </p>
+        <ul class="mt-3 flex flex-wrap gap-2" data-slot="coordinator-gaps">
+          <li v-for="tenant in coordinatorGaps" :key="tenant.id" class="border border-border px-2 py-1 text-sm">
+            {{ tenant.shortname }}
+          </li>
+        </ul>
+      </OverviewSection>
     </template>
 
     <WorkspaceSectionTiles workspace-key="organizacija" />
@@ -62,6 +77,7 @@ import { formatNearDate } from '@/Utils/dateTime';
 const props = defineProps<{
   counts: { endingSoon: number | null; emptyDuties: number | null; duties: number | null; members: number | null };
   endingTerms: { id: string; duty_id: string; duty: string; user: string | null; ends_on: string | null }[];
+  coordinatorGaps: { id: number; shortname: string }[];
   recentlyEdited?: HomeRecentRecord[];
 }>();
 

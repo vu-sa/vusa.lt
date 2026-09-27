@@ -241,6 +241,8 @@ Route::post('duties/merge', [DutyController::class, 'mergeDuties'])->name('dutie
 Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
+Route::post('duties/{duty}/responsibilities', [DutyResponsibilityController::class, 'store'])->name('duties.responsibilities.store');
+Route::delete('duties/{duty}/responsibilities/{responsibility}', [DutyResponsibilityController::class, 'destroy'])->name('duties.responsibilities.destroy');
 // Dutiables (occupancies) created and managed through the unified Priskirti flow (Decision O21).
 // Declared before the resource so /dutiables/timeline can never be read as /dutiables/{dutiable}.
 Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->name('dutiables.timeline');

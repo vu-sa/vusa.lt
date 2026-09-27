@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ResponsibilityScope;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\StoreTypeRequest;
@@ -10,6 +11,7 @@ use App\Http\Requests\SyncTypeRolesRequest;
 use App\Http\Requests\UpdateTypeRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
+use App\Models\DutyResponsibility;
 use App\Models\Role;
 use App\Models\Type;
 use App\Services\ResourceServices\SharepointFileService;
@@ -86,6 +88,20 @@ class TypeController extends AdminController
             ])->values(),
             'modelOptions' => Inertia::optional(fn () => $type->allModelsFromModelType()),
             'roleOptions' => Inertia::optional(fn () => Role::query()->orderBy('name')->get(['id', 'name'])),
+            // Duties responsible for every institution of this type (e.g. VU Senatas → CB coordinator).
+            'responsibleDuties' => DutyResponsibility::query()
+                ->where('scope_type', ResponsibilityScope::Type)
+                ->where('scope_id', (string) $type->id)
+                ->with('duty:id,name')
+                ->get()
+                ->filter(fn (DutyResponsibility $assignment) => $assignment->duty !== null)
+                ->map(fn (DutyResponsibility $assignment) => [
+                    'id' => $assignment->id,
+                    'duty_id' => $assignment->duty_id,
+                    'duty' => (string) $assignment->duty->name,
+                    'label' => (string) __($assignment->responsibility->labelKey()),
+                ])
+                ->values(),
             'sharepointPath' => SharepointFileService::pathOrNull($type),
             'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'can' => [

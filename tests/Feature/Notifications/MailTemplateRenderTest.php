@@ -3,8 +3,8 @@
 use App\Enums\NotificationType;
 use App\Mail\NotificationDigest;
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
 use App\Models\Institution;
-use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -13,7 +13,6 @@ use App\Notifications\CommentPostedNotification;
 use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
-use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Markdown;
 
@@ -39,13 +38,8 @@ function renderNotificationMail(BaseNotification $notification, User $user): arr
  */
 function coordinatorFor(Institution $institution, string $email): User
 {
-    $role = Role::factory()->create(['guard_name' => 'web']);
-    $settings = app(AtstovavimasSettings::class);
-    $settings->setInstitutionManagerRoleId($role->id);
-    $settings->save();
-
     $duty = Duty::factory()->for($institution)->create(['email' => $email]);
-    $duty->roles()->attach($role);
+    DutyResponsibility::factory()->for($duty)->forTenant($institution->tenant)->create();
 
     $coordinator = User::factory()->create(['name' => 'Ona Koordinatorė']);
     $coordinator->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);

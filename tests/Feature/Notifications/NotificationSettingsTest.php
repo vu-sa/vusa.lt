@@ -2,6 +2,7 @@
 
 use App\Enums\EmailDelivery;
 use App\Enums\NotificationType;
+use App\Models\DutyResponsibility;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Notifications\NotificationAudience;
@@ -32,6 +33,13 @@ describe('which notifications a user sees', function (): void {
         $manager = makeTenantUserWithRole('Išteklių administratorius');
 
         expect(settingsTypesFor($manager))->toContain('approval_requested');
+    });
+
+    test('a current coordinator sees student representative registration and meeting notifications', function (): void {
+        $duty = $this->user->duties()->firstOrFail();
+        DutyResponsibility::factory()->for($duty)->forTenant($duty->institution->tenant)->create();
+
+        expect(settingsTypesFor($this->user))->toContain('student_rep_registration', 'meeting_created');
     });
 
     test('a super admin sees every configurable notification', function (): void {

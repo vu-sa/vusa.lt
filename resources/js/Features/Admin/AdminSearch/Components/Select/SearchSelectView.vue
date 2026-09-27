@@ -1,14 +1,14 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col gap-3">
-    <!-- Search input -->
-    <div class="flex h-10 shrink-0 items-center gap-2 rounded-lg border bg-background px-3">
+    <div class="flex h-11 shrink-0 items-center gap-2 border border-border bg-background px-3 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
       <Search v-if="!controller.isSearching.value" class="size-4 shrink-0 text-muted-foreground/60" />
-      <div v-else class="size-4 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+      <LoaderCircle v-else class="size-4 shrink-0 animate-spin text-brand" aria-hidden="true" />
       <input
         :value="controller.query.value"
         type="text"
         :placeholder="searchPlaceholder"
-        class="h-full flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
+        :aria-label="searchPlaceholder"
+        class="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
         @input="onQueryInput"
       >
     </div>
@@ -39,10 +39,15 @@
             </span>
 
             <template v-for="(values, field) in activeFilterPills" :key="field">
-              <Badge variant="secondary" class="gap-1">
+              <Badge variant="secondary" class="gap-1 text-xs">
                 {{ getFieldLabel(field) }}: {{ formatFilterValues(field, values) }}
-                <button type="button" class="ml-0.5 hover:text-destructive" @click="clearFieldFilter(field)">
-                  <X class="size-3" />
+                <button
+                  type="button"
+                  class="ml-0.5 flex size-6 items-center justify-center hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:size-11"
+                  :aria-label="`${$t('Išvalyti')} ${getFieldLabel(field)}`"
+                  @click="clearFieldFilter(field)"
+                >
+                  <X class="size-3.5" />
                 </button>
               </Badge>
             </template>
@@ -50,7 +55,7 @@
               v-if="controller.activeFilterCount.value > 0"
               variant="ghost"
               size="sm"
-              class="h-6 px-2 text-xs"
+              voice="sentence"
               @click="controller.clearFilters"
             >
               {{ $t('Išvalyti visus') }}
@@ -75,7 +80,7 @@
               :model-value="controller.sortBy.value"
               @update:model-value="(v) => controller.setSortBy(v as string)"
             >
-              <SelectTrigger class="h-8 w-[170px]">
+              <SelectTrigger class="w-[170px] pointer-coarse:min-h-11" size="sm" :aria-label="$t('Rikiuoti')">
                 <SelectValue :placeholder="$t('Rikiuoti')" />
               </SelectTrigger>
               <SelectContent>
@@ -100,7 +105,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { X, Search } from 'lucide-vue-next';
+import { LoaderCircle, X, Search } from 'lucide-vue-next';
 
 import SearchSplitView from '../SearchSplitView.vue';
 import SearchDetailPane from '../SearchDetailPane.vue';

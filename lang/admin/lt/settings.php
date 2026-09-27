@@ -84,11 +84,6 @@ return [
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
-        'manager_role_title' => 'Koordinatorių rolė',
-        'manager_role_description' => 'Pasirinkite rolę, kuri žymi padalinio koordinatorius. Šios rolės pareigas einantys žmonės laikomi to padalinio VU organų koordinatoriais: atstovai juos mato kaip savo koordinatorių, jų vardu pasirašomi laiškai apie VU organus, o jie patys gauna su institucijomis susijusius pranešimus, pvz., apie studentų atstovų registracijas.',
-        'manager_role_label' => 'Koordinatorių rolė',
-        'manager_role_placeholder' => 'Pasirinkti rolę',
-        'manager_role_note' => 'Pastaba: koordinatoriai taip pat gauna pranešimus apie savo institucijų posėdžius. Tai nėra tas pats, kas institucijos sekretoriai — jie nurodomi kadencijai pačios institucijos nustatymuose ir jiems tenka jos užduotys.',
         'student_rep_type_title' => 'Studentų atstovų organų šakninis tipas',
         'student_rep_type_description' => 'Pasirinkite šakninį institucijos tipą, kuris (ir visi jo potipiai) laikomas studentų atstovų organu. Šio tipo institucijoms viešame kontaktų puslapyje bus rodoma studentų atstovų kortelė vietoje standartinės institucijos kortelės.',
         'student_rep_type_label' => 'Šakninis tipas',

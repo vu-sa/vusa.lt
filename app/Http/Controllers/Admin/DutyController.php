@@ -167,6 +167,13 @@ class DutyController extends AdminController
                     ->all()
                 : [], 'dutyPanels'),
             'studyPrograms' => Inertia::defer(fn () => $this->studyProgramsFor($duty), 'dutyPanels'),
+            'responsibilities' => Inertia::defer(fn () => DutyResponsibilityController::payload($duty), 'dutyPanels'),
+            // Only the add sheet needs these; loaded when it opens.
+            'responsibilityOptions' => Inertia::optional(function () use ($user, $duty): array {
+                abort_unless($user->can('update', $duty), 403);
+
+                return DutyResponsibilityController::options($user);
+            }),
         ]);
     }
 

@@ -1,8 +1,10 @@
 <?php
 
+use App\Enums\Responsibility;
 use App\Events\DutiableChanged;
 use App\Listeners\HandleDutiableChange;
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Permission;
@@ -13,12 +15,13 @@ use App\Models\User;
 use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
 use App\Services\Permissions\CapabilitySnapshot;
-use App\Settings\AtstovavimasSettings;
+use App\Services\ResponsibilityResolver;
 use App\Settings\FormSettings;
 use App\Settings\SettingsSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Testing\AssertableInertia;
 
 pest()->use(RefreshDatabase::class);
 
@@ -58,7 +61,7 @@ test('a scheduled duty grants its role and own and tenant scopes without making 
 
     asUser($this->actor)->get(route('dashboard.atstovavimas'))
         ->assertOk()
-        ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page
+        ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('user.authorization_duties.0.id', $this->duty->id)
             ->where('userInstitutions.0.id', $this->institution->id)
             ->where('upcomingMeetings.total', 1)
@@ -71,25 +74,20 @@ test('ending the only scheduled duty revokes access and clears every per-user ac
 
     Cache::put(InstitutionAccessService::getAccessCacheKey($this->actor->id), collect([$this->institution->id]));
     Cache::put('typesense_scoped_keys:'.$this->actor->id, ['stale' => true]);
-    Cache::put(AtstovavimasSettings::getManagerTenantsCacheKey($this->actor->id), collect([$this->tenant->id]));
 
     $this->term->update(['end_date' => now()->subDay()->toDateString()]);
     app(HandleDutiableChange::class)->handle(new DutiableChanged($this->term));
 
     expect($authorizer->allows($this->actor, 'news.update.padalinys'))->toBeFalse()
         ->and(Cache::get(InstitutionAccessService::getAccessCacheKey($this->actor->id)))->toBeNull()
-        ->and(Cache::get('typesense_scoped_keys:'.$this->actor->id))->toBeNull()
-        ->and(Cache::get(AtstovavimasSettings::getManagerTenantsCacheKey($this->actor->id)))->toBeNull();
+        ->and(Cache::get('typesense_scoped_keys:'.$this->actor->id))->toBeNull();
 });
 
 test('scheduled duty roles work in internal role-based access checks', function (): void {
+    DutyResponsibility::factory()->for($this->duty)->forTenant($this->tenant)->create();
     $formSettings = app(FormSettings::class);
     $formSettings->member_registration_notification_recipient_role_id = (string) $this->role->id;
     $formSettings->save();
-
-    $representationSettings = app(AtstovavimasSettings::class);
-    $representationSettings->institution_manager_role_id = (string) $this->role->id;
-    $representationSettings->save();
 
     $settings = app(SettingsSettings::class);
     $settings->settings_manager_role_id = (string) $this->role->id;
@@ -97,7 +95,6 @@ test('scheduled duty roles work in internal role-based access checks', function 
 
     expect($formSettings->userIsMemberRegistrationRecipient($this->actor))->toBeTrue()
         ->and($formSettings->getMemberRegistrationTenantIds($this->actor))->toContain($this->tenant->id)
-        ->and($representationSettings->userIsInstitutionManager($this->actor))->toBeTrue()
-        ->and($representationSettings->getManagerTenantIds($this->actor))->toContain($this->tenant->id)
+        ->and(app(ResponsibilityResolver::class)->holdsAnywhere($this->actor, Responsibility::StudentRepCoordination))->toBeFalse()
         ->and($settings->canUserManageSettings($this->actor))->toBeTrue();
 });

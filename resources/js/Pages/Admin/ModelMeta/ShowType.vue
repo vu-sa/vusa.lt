@@ -19,6 +19,19 @@
             {{ description || $t('Aprašymo nėra.') }}
           </p>
         </div>
+        <div v-if="responsibleDuties?.length" data-slot="type-responsible-duties">
+          <h2 class="mb-2 text-base font-semibold">
+            {{ $t('responsibilities.label') }}
+          </h2>
+          <ul class="divide-y divide-border border-y border-border">
+            <li v-for="item in responsibleDuties" :key="item.id">
+              <Link :href="route('duties.show', item.duty_id)" class="flex min-h-11 flex-col justify-center py-2 hover:bg-secondary">
+                <span class="text-sm font-medium">{{ item.duty }}</span>
+                <span class="text-xs text-muted-foreground">{{ item.label }}</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
         <dl class="grid border border-border sm:grid-cols-2">
           <div class="border-b border-border p-4 sm:border-b-0 sm:border-r">
             <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -106,7 +119,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Edit, Trash2 } from 'lucide-vue-next';
 
@@ -124,6 +137,7 @@ const props = defineProps<{
   attachedModels: Array<{ id: string; name: string }>;
   modelOptions?: Array<{ id: string; name?: string; title?: Translation }>;
   roleOptions?: Array<{ id: string; name: string }>;
+  responsibleDuties?: Array<{ id: string; duty_id: string; duty: string; label: string }>;
   sharepointPath?: string | null;
   /** Deferred (`files`). */
   files?: FileableFileItem[];

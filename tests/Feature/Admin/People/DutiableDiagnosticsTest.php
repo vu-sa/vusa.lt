@@ -236,3 +236,27 @@ describe('rows covering more than one term', function (): void {
             ->and($finding['detail']['cadence_ids']['end'])->toBe($this->second->id);
     });
 });
+
+test('an active row on an ex-officio target duty without its source is flagged as a suspect orphan', function (): void {
+    $sourceDuty = Duty::factory()->for($this->institution)->create();
+    $targetDuty = Duty::factory()->for($this->institution)->create();
+    $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+
+    $orphanRow = Dutiable::factory()->create([
+        'duty_id' => $targetDuty->id,
+        'dutiable_id' => $this->holder->id,
+        'start_date' => now()->subMonth()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+    ]);
+
+    $findings = analyze();
+
+    expect(codes($findings))->toContain('orphan_derived_suspect');
+
+    $diagnostic = collect($findings)->firstWhere('code', 'orphan_derived_suspect');
+    expect($diagnostic)->not->toBeNull()
+        ->and($diagnostic['severity'])->toBe('info')
+        ->and($diagnostic['row_ids'])->toBe([$orphanRow->id]);
+});
+

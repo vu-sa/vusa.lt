@@ -5,8 +5,14 @@ last_reviewed: 2026-09-27
 tests:
   - resources/js/__tests__/designTokens.test.ts
   - resources/js/Components/Patterns/__tests__/StatusBadge.component.test.ts
+  - resources/js/Components/AdminForms/__tests__/DuplicateDutyWarning.component.test.ts
+  - resources/js/Components/AdminForms/__tests__/DuplicateUserWarning.component.test.ts
+  - resources/js/Features/Admin/AdminSearch/Components/Select/__tests__/SearchSelectDialog.component.test.ts
+  - resources/js/Features/Admin/AdminSearch/Components/__tests__/SearchHitRow.component.test.ts
+  - resources/js/Features/Admin/AdminSearch/Components/__tests__/SearchSplitView.component.test.ts
   - tests/Browser/ActionWindowTest.php
   - tests/Browser/AdminDesignSurfaceTest.php
+  - tests/Browser/AdminSearchPickerLayoutTest.php
   - tests/Browser/AdminAccessibilityTest.php
   - tests/Browser/AdminShellTest.php
   - tests/Browser/DefaultThemeTest.php
@@ -43,6 +49,12 @@ matomą apvadą.
 Sąrašuose įrašo veiksmai matomi tiek eilutėse, tiek lentelėje. Vien piktograma pažymėti mygtukai
 turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra bent 44 × 44 taškai.
 Ištrintų įrašų sąraše galima juos atkurti arba, turint teisę, ištrinti visam laikui.
+
+## Paieška ir įrašų pasirinkimas {#paieska-ir-pasirinkimas}
+
+Kai forma prašo susieti kitą įrašą, pasirinkimo lange gali ieškoti, filtruoti ir peržiūrėti radinį prieš jį pridėdamas. Pažymėtus įrašus patvirtini lango apačioje; jei laukas neprivalomas, pasirinkimą gali išvalyti. Telefone peržiūrėjęs radinį mygtuku „Atgal į sąrašą“ grįši prie rezultatų. Nepasiekiamą išteklių gali peržiūrėti, bet negali pasirinkti.
+
+Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapimus ir galimus veiksmus. Tai patarimas: sutampantys vardai savaime neuždraudžia išsaugoti įrašo. Atverti ar sujungti kitą įrašą siūloma tik tada, kai turi teisę jį tvarkyti.
 
 ## Bendrosios platformos galimybės {#bendrosios-galimybes}
 

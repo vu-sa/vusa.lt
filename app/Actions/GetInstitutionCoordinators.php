@@ -2,19 +2,16 @@
 
 namespace App\Actions;
 
-use App\Enums\InstitutionScope;
+use App\Enums\Responsibility;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\User;
-use App\Services\InstitutionScopeResolver;
 use App\Services\NotificationRouter;
-use App\Settings\AtstovavimasSettings;
-use Illuminate\Database\Eloquent\Builder;
+use App\Services\ResponsibilityResolver;
 
 /**
- * The koordinatoriai (O22) of one or more institutions, each named by and reachable through the
- * coordinator duty itself — not whichever duty or personal address the user happens to have first.
- * Only a VU body has one: VU SA's own, national and international bodies are coordinated elsewhere.
+ * The koordinatoriai (O22) of one or more institutions: whoever holds the studentų atstovų
+ * koordinavimas responsibility for them, named by and reachable through that duty.
  */
 class GetInstitutionCoordinators
 {
@@ -24,30 +21,17 @@ class GetInstitutionCoordinators
      */
     public static function execute(iterable $institutions, ?User $except = null): array
     {
-        $managerRoleId = app(AtstovavimasSettings::class)->getInstitutionManagerRoleId();
-
-        if (! $managerRoleId) {
-            return [];
-        }
+        $resolver = app(ResponsibilityResolver::class);
 
         /** @var array<string, array{id: string, name: string, email: string|null, profile_photo_path: string|null, duty: string|null, institutions: list<string>}> $coordinators */
         $coordinators = [];
 
         foreach ($institutions as $institution) {
-            if (! self::isCoordinated($institution)) {
-                continue;
-            }
-
             $institutionName = (string) $institution->getTranslation('name', app()->getLocale());
 
-            $managerDuties = Duty::query()
-                ->whereHas('institution', fn (Builder $query) => $query->where('tenant_id', $institution->tenant_id))
-                ->whereHas('roles', fn (Builder $query) => $query->where('id', $managerRoleId))
-                ->with('current_users')
-                ->orderBy('order')
-                ->get();
+            $duties = $resolver->dutiesFor(Responsibility::StudentRepCoordination, $institution)->loadMissing('current_users');
 
-            foreach ($managerDuties as $duty) {
+            foreach ($duties as $duty) {
                 /** @var User $user */
                 foreach ($duty->current_users as $user) {
                     if ($user->id === $except?->id) {
@@ -73,11 +57,6 @@ class GetInstitutionCoordinators
         }
 
         return array_values($coordinators);
-    }
-
-    public static function isCoordinated(Institution $institution): bool
-    {
-        return app(InstitutionScopeResolver::class)->forInstitution($institution) === InstitutionScope::University;
     }
 
     /**

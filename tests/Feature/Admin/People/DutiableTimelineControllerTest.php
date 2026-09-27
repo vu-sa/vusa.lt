@@ -115,6 +115,42 @@ describe('the roles the guide names', function (): void {
 
         expect($strangerRow->fresh()->start_date->toDateString())->toBe('2024-07-01');
     });
+
+    test('an assignable tenant coordinator moves periods of their own tenant member on a cross-tenant duty', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $this->duty->assignableTenants()->attach($otherTenant->id);
+
+        $crossAdmin = makeUser($otherTenant);
+        $crossAdmin->duties()->first()->syncRoles(['Komunikacijos koordinatorius']);
+
+        $crossMember = makeUser($otherTenant);
+        $crossRow = Dutiable::factory()->create([
+            'duty_id' => $this->duty->id,
+            'dutiable_id' => $crossMember->id,
+            'start_date' => '2024-05-18',
+        ]);
+
+        asUser($crossAdmin)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$crossRow->id], 'start_date' => '2024-07-01',
+        ]]))->assertRedirect();
+
+        expect($crossRow->fresh()->start_date->toDateString())->toBe('2024-07-01');
+    });
+
+    test('an assignable tenant coordinator cannot move an owning-tenant member on that duty', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $this->duty->assignableTenants()->attach($otherTenant->id);
+
+        $crossAdmin = makeUser($otherTenant);
+        $crossAdmin->duties()->first()->syncRoles(['Komunikacijos koordinatorius']);
+
+        // $this->row belongs to $this->holder who sits in $this->tenant (the owning tenant).
+        asUser($crossAdmin)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$this->row->id], 'start_date' => '2024-07-01',
+        ]]))->assertForbidden();
+
+        expect($this->row->fresh()->start_date->toDateString())->toBe('2024-05-18');
+    });
 });
 
 describe('the standalone page', function (): void {

@@ -123,7 +123,8 @@ describe('normalizeHit', () => {
       const hit = normalizeHit('duties', baseDuty, { ownTenantIds: [1], isSuperAdmin: false });
 
       expect(hit.isExternal).toBe(true);
-      expect(hit.statusBadge).toEqual({ label: 'MIF', tone: 'info' });
+      expect(hit.contextBadge).toBe('MIF');
+      expect(hit.statusBadge).toBeUndefined();
     });
 
     it('does not flag a duty within the user tenants', () => {

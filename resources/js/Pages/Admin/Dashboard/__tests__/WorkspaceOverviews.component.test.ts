@@ -25,7 +25,7 @@ describe('ShowOrganizacija overview', () => {
   const ending = { id: 'a', duty_id: 'd1', duty: 'Pirmininkas', user: 'Jonas', ends_on: '2026-10-01' };
 
   it('links every number to the page that lists what it counts', () => {
-    expect(numbers(mountPage(ShowOrganizacija, { counts, endingTerms: [ending], recentlyEdited: [] }))).toEqual({
+    expect(numbers(mountPage(ShowOrganizacija, { counts, endingTerms: [ending], coordinatorGaps: [], recentlyEdited: [] }))).toEqual({
       ending: '/mocked/dutiables.timeline',
       empty: '/mocked/duties.index',
       duties: '/mocked/duties.index',
@@ -34,7 +34,7 @@ describe('ShowOrganizacija overview', () => {
   });
 
   it('lists the terms that end soon, each opening its duty', () => {
-    const wrapper = mountPage(ShowOrganizacija, { counts, endingTerms: [ending], recentlyEdited: [] });
+    const wrapper = mountPage(ShowOrganizacija, { counts, endingTerms: [ending], coordinatorGaps: [], recentlyEdited: [] });
 
     expect(wrapper.find('[data-slot="ending-terms"] a').attributes('href')).toContain('duties.show');
     expect(wrapper.text()).toContain('Pirmininkas');
@@ -42,7 +42,7 @@ describe('ShowOrganizacija overview', () => {
   });
 
   it('moves the attention band to the status list when no term ends', async () => {
-    const wrapper = mountPage(ShowOrganizacija, { counts, endingTerms: [], recentlyEdited: [] });
+    const wrapper = mountPage(ShowOrganizacija, { counts, endingTerms: [], coordinatorGaps: [], recentlyEdited: [] });
     await nextTick();
 
     expect(wrapper.find('[data-slot="ending-terms"]').exists()).toBe(false);
@@ -53,11 +53,23 @@ describe('ShowOrganizacija overview', () => {
     const wrapper = mountPage(ShowOrganizacija, {
       counts: { endingSoon: null, emptyDuties: null, duties: null, members: 120 },
       endingTerms: [],
+      coordinatorGaps: [],
       recentlyEdited: [],
     });
 
     expect(Object.keys(numbers(wrapper))).toEqual(['members']);
     expect(wrapper.text()).not.toContain('organizacija.overview.ending');
+  });
+
+  it('names padaliniai that have no current coordinator', () => {
+    const wrapper = mountPage(ShowOrganizacija, {
+      counts,
+      endingTerms: [],
+      coordinatorGaps: [{ id: 1, shortname: 'VU SA MIF' }],
+      recentlyEdited: [],
+    });
+
+    expect(wrapper.get('[data-slot="coordinator-gaps"]').text()).toContain('VU SA MIF');
   });
 });
 

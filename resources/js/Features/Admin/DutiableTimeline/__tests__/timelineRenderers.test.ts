@@ -105,6 +105,22 @@ describe('renderDutiableBars', () => {
     expect(body.getAttribute('stroke')).toBe(timelineColors.derivedStroke);
     expect(body.getAttribute('stroke-dasharray')).toBe('4,3');
   });
+
+  it('outlines a cross-tenant representative with the cross-tenant stroke', () => {
+    const node = drawBars([makeRow({ tenant_id: 2 })]);
+    const body = node.querySelector('rect.bar-body')!;
+
+    expect(body.getAttribute('stroke')).toBe(timelineColors.crossTenantStroke);
+    expect(body.getAttribute('stroke-width')).toBe('1.5');
+  });
+
+  it('renders an open-ended arrow cap for an assignment without an end date', () => {
+    const node = drawBars([makeRow({ end_date: null, endDate: null })]);
+    const cap = node.querySelector('polygon.open-ended-cap');
+
+    expect(cap).not.toBeNull();
+    expect(cap?.getAttribute('points')).toBeTruthy();
+  });
 });
 
 describe('renderCollapsedGroupBars', () => {

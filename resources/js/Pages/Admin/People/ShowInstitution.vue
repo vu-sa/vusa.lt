@@ -17,6 +17,9 @@
 
     <template #fact-managers>
       <UsersFactList :users="institution.managers ?? []" :inline-limit="2" class="mt-1" />
+      <span v-if="institution.managers_source" class="block text-xs text-muted-foreground" data-slot="institution-managers-source">
+        {{ $t(`responsibilities.sources.${institution.managers_source}`) }}
+      </span>
     </template>
 
     <template #overview>

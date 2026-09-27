@@ -2,13 +2,15 @@
 
 namespace App\Actions;
 
+use App\Models\Institution;
 use App\Models\User;
 
 /**
- * "Tavo koordinatoriai" (R-g, O22): the institution managers a rep asks when stuck.
+ * "Tavo koordinatoriai" (R-g, O22): the people a rep asks when stuck.
  *
- * A rep seated in institutions of several tenants has one coordinator per tenant, so every
- * distinct one is returned, each with the rep's institutions they cover.
+ * Each of the rep's institutions may be coordinated by someone different (its padalinys, its
+ * type or the institution itself decides), so every distinct coordinator is returned with the
+ * rep's institutions they cover. Bodies nobody coordinates (VU SA's own) are left out.
  */
 class GetUserCoordinators
 {
@@ -20,24 +22,21 @@ class GetUserCoordinators
         $institutions = $user->authorization_duties
             ->loadMissing('institution')
             ->pluck('institution')
-            ->filter(fn ($institution) => $institution !== null && GetInstitutionCoordinators::isCoordinated($institution))
+            ->filter(fn ($institution) => $institution instanceof Institution)
             ->unique('id');
 
-        // One coordinator per tenant: the first a rep would be pointed to, as before.
         $coordinators = [];
 
-        foreach ($institutions->groupBy('tenant_id') as $tenantInstitutions) {
-            $coordinator = GetInstitutionCoordinators::execute([$tenantInstitutions->first()], $user)[0] ?? null;
+        foreach ($institutions as $institution) {
+            // The first a rep would be pointed to, as before.
+            $coordinator = GetInstitutionCoordinators::execute([$institution], $user)[0] ?? null;
 
             if ($coordinator === null) {
                 continue;
             }
 
             $coordinators[$coordinator['id']] ??= [...$coordinator, 'institutions' => []];
-
-            foreach ($tenantInstitutions as $institution) {
-                $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->name;
-            }
+            $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->name;
         }
 
         return array_values($coordinators);

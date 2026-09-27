@@ -7,6 +7,7 @@ use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUserTenantShortnames;
+use App\Enums\Responsibility;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
@@ -28,6 +29,7 @@ use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
+use App\Services\ResponsibilityResolver;
 use App\Settings\CadenceSettings;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
@@ -174,6 +176,8 @@ class InstitutionController extends AdminController
 
         // Inertia::share('layout.navBackground', $institution->image_url ?? null);
 
+        $managers = $institution->managers();
+
         return $this->inertiaResponse('Admin/People/ShowInstitution', [
             'institution' => [
                 'id' => $institution->id,
@@ -190,7 +194,10 @@ class InstitutionController extends AdminController
                 'meetings_count' => $institution->meetings_count,
                 'tasks_count' => $tasksCount + $tasksFromMeetingsCount,
                 'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
-                'managers' => $institution->managers(),
+                'managers' => $managers,
+                'managers_source' => $managers->isNotEmpty()
+                    ? app(ResponsibilityResolver::class)->sourceFor(Responsibility::StudentRepCoordination, $institution)?->value
+                    : null,
                 'secretaries' => $readOnly ? [] : InstitutionSecretaryController::usersPayload(
                     GetInstitutionSecretaries::execute($institution)
                 ),

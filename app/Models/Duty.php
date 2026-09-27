@@ -254,6 +254,16 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             ->withTimestamps();
     }
 
+    /**
+     * What this duty must handle, as opposed to what its roles allow it to do.
+     *
+     * @return HasMany<DutyResponsibility, $this>
+     */
+    public function responsibilities(): HasMany
+    {
+        return $this->hasMany(DutyResponsibility::class);
+    }
+
     public function types(): MorphToMany
     {
         return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);

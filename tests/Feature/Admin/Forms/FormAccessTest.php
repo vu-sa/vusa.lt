@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\DutyResponsibility;
 use App\Models\FieldResponse;
 use App\Models\Form;
 use App\Models\FormField;
@@ -8,7 +9,6 @@ use App\Models\Registration;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -41,17 +41,12 @@ beforeEach(function (): void {
     ]);
 
     $this->recipientRole = Role::factory()->create(['name' => 'Member Registration Recipient']);
-    $this->managerRole = Role::factory()->create(['name' => 'Institution Manager']);
 
     $formSettings = app(FormSettings::class);
     $formSettings->member_registration_form_id = $this->memberForm->id;
     $formSettings->member_registration_notification_recipient_role_id = $this->recipientRole->id;
     $formSettings->student_rep_registration_form_id = $this->studentRepForm->id;
     $formSettings->save();
-
-    $atstovavimasSettings = app(AtstovavimasSettings::class);
-    $atstovavimasSettings->institution_manager_role_id = $this->managerRole->id;
-    $atstovavimasSettings->save();
 });
 
 /**
@@ -64,6 +59,18 @@ function makeUserWithDutyRole(Tenant $tenant, Role $role): User
     $duty->pivot->end_date = null;
     $duty->pivot->save();
     $duty->assignRole($role->name);
+
+    return $user;
+}
+
+/** A user whose current duty coordinates the padalinys' student representatives. */
+function makeCoordinator(Tenant $tenant): User
+{
+    $user = makeUser($tenant);
+    $duty = $user->duties()->first();
+    $duty->pivot->end_date = null;
+    $duty->pivot->save();
+    DutyResponsibility::factory()->for($duty)->forTenant($tenant)->create();
 
     return $user;
 }
@@ -135,7 +142,7 @@ describe('member registration form access', function (): void {
             );
     });
 
-    test('a tenant form reader sees tenant forms and the shared member form', function (): void {
+    test('a tenant form reader sees tenant forms and both shared registration forms', function (): void {
         $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $tenantForm = Form::factory()->for($this->tenant)->create();
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
@@ -150,16 +157,16 @@ describe('member registration form access', function (): void {
 
                     return $ids->contains($tenantForm->id)
                         && $ids->contains($this->memberForm->id)
-                        && ! $ids->contains($this->studentRepForm->id)
-                        && $ids->count() === 2;
+                        && $ids->contains($this->studentRepForm->id)
+                        && $ids->count() === 3;
                 })
             );
     });
 });
 
 describe('student rep registration form access', function (): void {
-    test('the configured institution manager role can view it', function (): void {
-        $user = makeUserWithDutyRole($this->tenant, $this->managerRole);
+    test('a coordinator of the padalinys can view it', function (): void {
+        $user = makeCoordinator($this->tenant);
 
         asUser($user)
             ->get(route('forms.show', $this->studentRepForm))
@@ -174,8 +181,8 @@ describe('student rep registration form access', function (): void {
             ->assertStatus(403);
     });
 
-    test('the configured manager can open the forms index without form permissions', function (): void {
-        $user = makeUserWithDutyRole($this->tenant, $this->managerRole);
+    test('a coordinator can open the forms index without form permissions', function (): void {
+        $user = makeCoordinator($this->tenant);
         Form::factory()->for($this->centralTenant)->create();
         Form::factory()->for($this->tenant)->create();
 
@@ -191,7 +198,7 @@ describe('student rep registration form access', function (): void {
     });
 
     test('shows registrations only for institutions in the managed tenant', function (): void {
-        $user = makeUserWithDutyRole($this->tenant, $this->managerRole);
+        $user = makeCoordinator($this->tenant);
         $managedInstitution = $user->current_duties()->first()->institution;
         $sameTenantInstitution = Institution::factory()->for($this->tenant)->create();
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
@@ -244,37 +251,27 @@ describe('student rep registration form access', function (): void {
             );
     });
 
-    test('a directly assigned manager role is limited to the users tenants', function (): void {
-        $user = makeUser($this->tenant);
-        $user->assignRole($this->managerRole->name);
-        AtstovavimasSettings::clearManagerCache($user->id);
+    test('leaves out an institution whose type another duty coordinates', function (): void {
+        $user = makeCoordinator($this->tenant);
+        $ownInstitution = Institution::factory()->for($this->tenant)->create();
+        $senate = Institution::factory()->for($this->tenant)->create();
+        $senateType = \App\Models\Type::factory()->forInstitutions()->create();
+        $senate->types()->attach($senateType);
+        DutyResponsibility::factory()->forType($senateType)->create();
 
-        $managedInstitution = $user->current_duties()->first()->institution;
-        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
-        $otherInstitution = Institution::factory()->for($otherTenant)->create();
-
-        $visibleRegistration = createInstitutionRegistration(
-            $this->studentRepForm,
-            $this->studentInstitutionField,
-            $managedInstitution,
-        );
-        createInstitutionRegistration(
-            $this->studentRepForm,
-            $this->studentInstitutionField,
-            $otherInstitution,
-        );
+        $visible = createInstitutionRegistration($this->studentRepForm, $this->studentInstitutionField, $ownInstitution);
+        createInstitutionRegistration($this->studentRepForm, $this->studentInstitutionField, $senate);
 
         asUser($user)
             ->get(route('forms.show', $this->studentRepForm))
-            ->assertSuccessful()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('registrations', 1)
-                ->where('registrations.0.id', $visibleRegistration->id)
+                ->where('registrations.0.id', $visible->id)
             );
     });
 
     test('fails closed when the student representative form has no institution field', function (): void {
-        $user = makeUserWithDutyRole($this->tenant, $this->managerRole);
+        $user = makeCoordinator($this->tenant);
         $this->studentInstitutionField->delete();
 
         asUser($user)
@@ -329,9 +326,9 @@ describe('catalog registration sections', function (): void {
             );
     });
 
-    test('carries both forms for an institution manager who also handles member registrations', function (): void {
+    test('carries both forms for a coordinator who also handles member registrations', function (): void {
         $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
-        $user->duties()->first()->assignRole($this->managerRole->name);
+        DutyResponsibility::factory()->for($user->duties()->first())->forTenant($this->tenant)->create();
 
         asUser($user)
             ->get(route('forms.show', $this->memberForm))

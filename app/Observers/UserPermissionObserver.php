@@ -8,7 +8,6 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
 use App\Services\Typesense\TypesenseScopedKeyService;
-use App\Settings\AtstovavimasSettings;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -29,7 +28,6 @@ class UserPermissionObserver
         }
 
         Permission::resetCache($userId);
-        AtstovavimasSettings::clearManagerCache($userId);
         InstitutionAccessService::invalidateForUser($userId);
         TypesenseScopedKeyService::invalidateForUser($userId);
     }
