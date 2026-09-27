@@ -1,10 +1,10 @@
 <template>
   <SupportRequestForm
-        :types
-        :areas
-        :roles
-        :support-request
-        :back-url="route('supportRequests.show', supportRequest.id)"
+    :types
+    :areas
+    :roles
+    :support-request
+    :back-url="route('supportRequests.show', supportRequest.id)"
   />
 </template>
 

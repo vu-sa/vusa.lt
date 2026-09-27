@@ -268,6 +268,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from 'lucide-vue-next';
 
 import FocalPointPicker from './FocalPointPicker.vue';
+import ImageCropper from './ImageCropper.vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
 import { useImageCompression, type CompressionOptions, type CompressionResult } from '@/Composables/useImageCompression';
@@ -275,7 +276,6 @@ import { Upload, UploadDropzone, type UploadFile } from '@/Components/ui/upload'
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
-import ImageCropper from './ImageCropper.vue';
 
 export interface ImageUploadProps {
   /** Maximum number of files allowed. Use 1 for single file upload (default: 1) */

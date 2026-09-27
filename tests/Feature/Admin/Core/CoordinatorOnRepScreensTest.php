@@ -140,18 +140,18 @@ describe('GetUserCoordinators', function (): void {
 
         ($this->seatIn)($this->institution);
 
-        expect(GetUserCoordinators::execute($this->rep->fresh()))->toBe([]);
+        expect(GetUserCoordinators::execute($this->rep->fresh()))->toBeEmpty();
     });
 
     test('never names the coordinator as their own coordinator', function (): void {
-        expect(GetUserCoordinators::execute($this->coordinator->fresh()))->toBe([]);
+        expect(GetUserCoordinators::execute($this->coordinator->fresh()))->toBeEmpty();
     });
 
     test('names nobody while the padalinys has no coordinator', function (): void {
         $this->managerDuty->responsibilities()->each(fn (DutyResponsibility $assignment) => $assignment->delete());
         ($this->seatIn)($this->institution);
 
-        expect(GetUserCoordinators::execute($this->rep->fresh()))->toBe([]);
+        expect(GetUserCoordinators::execute($this->rep->fresh()))->toBeEmpty();
     });
 });
 

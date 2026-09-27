@@ -6,7 +6,7 @@
       :class="[
         'w-full border border-border bg-background px-3.5 py-2.5 text-left transition-colors pointer-coarse:min-h-11',
         'hover:border-foreground/30 focus-visible:outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/20',
-              ]"
+      ]"
       @click="expand"
     >
       <span class="text-muted-foreground">{{ placeholder || $t('Parašykite komentarą…') }}</span>

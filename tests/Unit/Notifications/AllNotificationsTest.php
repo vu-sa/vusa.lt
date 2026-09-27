@@ -178,7 +178,7 @@ describe('TaskReminderNotification', function (): void {
         $task = Task::factory()->create();
         $notification = new TaskReminderNotification($task, 3);
 
-        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
+        expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
     });
 
     test('returns correct object structure', function (): void {
@@ -249,7 +249,7 @@ describe('TaskOverdueNotification', function (): void {
         $tasks = collect([Task::factory()->create()]);
         $notification = new TaskOverdueNotification($tasks);
 
-        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
+        expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
     });
 });
 
@@ -337,7 +337,7 @@ describe('DutyExpiringNotification', function (): void {
         ]);
         $notification = new DutyExpiringNotification($duty, $dutiable, 30);
 
-        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
+        expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
     });
 
     test('returns correct object structure', function (): void {
@@ -410,7 +410,7 @@ describe('MeetingReminderNotification', function (): void {
         $meeting = Meeting::factory()->create();
         $notification = new MeetingReminderNotification($meeting, 24);
 
-        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
+        expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
     });
 
     test('has action buttons', function (): void {
@@ -609,7 +609,7 @@ describe('WelcomeNotification', function (): void {
     test('does not support email digest', function (): void {
         $notification = new WelcomeNotification;
 
-        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
+        expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
     });
 
     test('has empty actions', function (): void {
@@ -663,7 +663,7 @@ describe('TestPushNotification', function (): void {
     test('does not support email digest', function (): void {
         $notification = new TestPushNotification;
 
-        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
+        expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
     });
 });
 
@@ -746,7 +746,7 @@ describe('AssignedToResourceNotification', function (): void {
         $resource = ['modelClass' => 'Task', 'name' => 'Test', 'url' => '/test'];
         $notification = new AssignedToResourceNotification($assigner, $resource);
 
-        expect(($notification->type()->defaultEmail() === EmailDelivery::Digest))->toBeFalse();
+        expect($notification->type()->defaultEmail())->not->toBe(EmailDelivery::Digest);
     });
 
     test('includes mail but does not push', function (): void {

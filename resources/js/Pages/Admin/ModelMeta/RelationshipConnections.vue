@@ -400,7 +400,7 @@ const accessExplanation = computed(() => {
     ? $t(relationForm.scope === SCOPE_CROSS_TENANT ? 'relationships.access_type_cross' : 'relationships.access_type_within', { source: sourceName, target: targetName })
     : $t('relationships.access_direct', { source: sourceName, target: targetName });
 
-  return baseExplanation + `<br/><span class="font-medium">${relationForm.bidirectional
+  return `${baseExplanation}<br/><span class="font-medium">${relationForm.bidirectional
     ? $t('relationships.access_bidirectional_note')
     : $t('relationships.access_unidirectional_note')}</span>`;
 });

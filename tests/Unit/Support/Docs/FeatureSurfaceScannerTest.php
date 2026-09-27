@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Reservation;
+use App\Models\ReservationDraft;
 use App\Support\Docs\DocClaims;
 use App\Support\Docs\FeatureSurfaceScanner;
 use App\Support\Docs\TestSurface;
@@ -47,7 +48,7 @@ describe('feature area resolution', function (): void {
         $area = $features->areas['reservationCart'];
 
         expect($area->modelAlias)->toBe('reservation_draft')
-            ->and($area->modelClass)->toBe(\App\Models\ReservationDraft::class);
+            ->and($area->modelClass)->toBe(ReservationDraft::class);
     });
 });
 

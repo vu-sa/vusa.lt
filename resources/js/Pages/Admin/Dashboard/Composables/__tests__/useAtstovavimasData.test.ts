@@ -55,4 +55,3 @@ describe('useAtstovavimasData', () => {
     expect(data.institutions.value.map(item => item.id)).toEqual(['1', '2']);
   });
 });
-

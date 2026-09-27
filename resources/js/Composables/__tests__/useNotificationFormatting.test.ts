@@ -100,4 +100,3 @@ describe('notification category tag', () => {
     expect(getNotificationCategoryTag({ ...make({}), type: 'App\\Notifications\\UnknownNotification' })).toBe('Pranešimas');
   });
 });
-

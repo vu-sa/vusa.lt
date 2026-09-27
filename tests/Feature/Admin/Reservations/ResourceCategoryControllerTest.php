@@ -114,4 +114,3 @@ describe('store and update', function (): void {
             ->assertStatus(403);
     });
 });
-

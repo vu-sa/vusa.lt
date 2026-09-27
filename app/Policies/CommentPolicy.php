@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Gate;
  */
 class CommentPolicy
 {
-    public function __construct(private ModelAuthorizer $authorizer) {}
+    public function __construct(private readonly ModelAuthorizer $authorizer) {}
 
     public function view(User $user, Comment $comment): bool
     {
@@ -89,6 +89,7 @@ class CommentPolicy
      */
     private function commentableTenantIds(Comment $comment): Collection
     {
+        /** @var Model|null $commentable */
         $commentable = $comment->commentable;
 
         if ($commentable === null) {

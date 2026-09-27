@@ -1,6 +1,5 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
-
 import { router } from '@inertiajs/vue3';
 
 import { ConfirmDialog } from '@/Components/Patterns';

@@ -31,42 +31,42 @@
       </td>
     </template>
     <template v-else>
-    <td>
-      <span v-if="retiredScopes?.includes('own')" class="mb-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground" data-testid="baseline-lock" :title="baselineNote">
-        <Lock class="size-3.5" aria-hidden="true" />
-        {{ $t('access.baseline.locked_own') }}
-      </span>
-      <div v-if="availableScopes.hasOwn || availableScopes.hasPadalinys" class="flex w-64 items-center gap-2">
-        <!-- Show checkbox only if 'own' scope is available -->
-        <Checkbox v-if="availableScopes.hasOwn" :model-value="checkboxPadalinys" :disabled="switchAll || disabled"
-          @update:model-value="val => { checkboxPadalinys = val === true; handleUpdate(); }" />
+      <td>
+        <span v-if="retiredScopes?.includes('own')" class="mb-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground" data-testid="baseline-lock" :title="baselineNote">
+          <Lock class="size-3.5" aria-hidden="true" />
+          {{ $t('access.baseline.locked_own') }}
+        </span>
+        <div v-if="availableScopes.hasOwn || availableScopes.hasPadalinys" class="flex w-64 items-center gap-2">
+          <!-- Show checkbox only if 'own' scope is available -->
+          <Checkbox v-if="availableScopes.hasOwn" :model-value="checkboxPadalinys" :disabled="switchAll || disabled"
+            @update:model-value="val => { checkboxPadalinys = val === true; handleUpdate(); }" />
 
-        <!-- For models with both own and padalinys scopes -->
-        <div v-if="availableScopes.hasPadalinys && availableScopes.hasOwn" class="flex items-center gap-2">
-          <Switch :model-value="switchPadalinys" :disabled="switchAll || !checkboxPadalinys || disabled"
-            @update:model-value="val => { switchPadalinys = val; handleUpdate(); }" />
-          <span class="text-xs">{{ switchPadalinys ? 'Visus' : 'Savo' }}</span>
-        </div>
+          <!-- For models with both own and padalinys scopes -->
+          <div v-if="availableScopes.hasPadalinys && availableScopes.hasOwn" class="flex items-center gap-2">
+            <Switch :model-value="switchPadalinys" :disabled="switchAll || !checkboxPadalinys || disabled"
+              @update:model-value="val => { switchPadalinys = val; handleUpdate(); }" />
+            <span class="text-xs">{{ switchPadalinys ? 'Visus' : 'Savo' }}</span>
+          </div>
 
-        <!-- For models with only padalinys scope (no own scope) -->
-        <div v-if="!availableScopes.hasOwn && availableScopes.hasPadalinys" class="flex items-center gap-2">
-          <Switch :model-value="switchPadalinys" :disabled="switchAll || disabled"
-            @update:model-value="val => { switchPadalinys = val; handleUpdate(); }" />
-          <span class="text-xs">{{ switchPadalinys ? 'Padalinyje' : '' }}</span>
+          <!-- For models with only padalinys scope (no own scope) -->
+          <div v-if="!availableScopes.hasOwn && availableScopes.hasPadalinys" class="flex items-center gap-2">
+            <Switch :model-value="switchPadalinys" :disabled="switchAll || disabled"
+              @update:model-value="val => { switchPadalinys = val; handleUpdate(); }" />
+            <span class="text-xs">{{ switchPadalinys ? 'Padalinyje' : '' }}</span>
+          </div>
         </div>
-      </div>
-      <div v-else class="flex w-64 items-center gap-2 text-gray-500">
-        <span class="text-sm">Netaikoma</span>
-      </div>
-    </td>
-    <td>
-      <div v-if="showAllControl">
-        <Switch :model-value="switchAll" :disabled @update:model-value="val => { switchAll = val; handleUpdate(); }" />
-      </div>
-      <div v-else class="text-gray-500">
-        <span class="text-sm">Netaikoma</span>
-      </div>
-    </td>
+        <div v-else class="flex w-64 items-center gap-2 text-gray-500">
+          <span class="text-sm">Netaikoma</span>
+        </div>
+      </td>
+      <td>
+        <div v-if="showAllControl">
+          <Switch :model-value="switchAll" :disabled @update:model-value="val => { switchAll = val; handleUpdate(); }" />
+        </div>
+        <div v-else class="text-gray-500">
+          <span class="text-sm">Netaikoma</span>
+        </div>
+      </td>
     </template>
   </tr>
 </template>

@@ -68,4 +68,3 @@ describe('task actions', () => {
     expect(keys(getTaskActions(manual))).not.toContain('complete');
   });
 });
-

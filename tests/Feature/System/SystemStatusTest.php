@@ -322,11 +322,9 @@ describe('SystemStatus: Maintenance actions', function (): void {
         expect(Cache::tags(['homepage', 'tenant_1'])->get('home'))->toBeNull()
             ->and(Cache::tags(['navigation', 'locale_lt'])->get('nav'))->toBeNull()
             ->and(Cache::get(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY))->toBeNull()
-            ->and(Cache::get('unrelated'))->toBe('kept');
-
-        expect(Activity::query()->where('event', 'system_maintenance')->latest('id')->first())
-            ->causer_id->toBe($this->user->id)
-            ->properties->get('action')->toBe('refresh-public-content');
+            ->and(Cache::get('unrelated'))->toBe('kept')
+            ->and(Activity::query()->where('event', 'system_maintenance')->latest('id')->first())->causer_id->toBe($this->user->id)->properties->get('action')
+            ->toBe('refresh-public-content');
     });
 
     test('clearing the application cache keeps the scheduler heartbeat', function (): void {

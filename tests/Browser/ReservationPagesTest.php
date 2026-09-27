@@ -124,4 +124,3 @@ it('shows the reservation collection with status filters and quick filters', fun
 
     $page->assertNoJavaScriptErrors();
 });
-

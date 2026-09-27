@@ -568,9 +568,8 @@ describe('padaliniai gantt', function (): void {
         expect($public['authorized'])->toBeFalse()
             ->and($public['activity_status'])->toBeNull()
             ->and($public['check_ins'])->toHaveCount(1)
-            ->and($public['duties'][0]['users'][0])->toHaveKeys(['id', 'name'])->not->toHaveKey('last_action');
-
-        expect($rows->get((string) $this->ownInstitution->id))->not->toHaveKey('authorized')
+            ->and($public['duties'][0]['users'][0])->toHaveKeys(['id', 'name'])->not->toHaveKey('last_action')
+            ->and($rows->get((string) $this->ownInstitution->id))->not->toHaveKey('authorized')
             ->and($rows->get((string) $this->ownInstitution->id)['activity_status'])->not->toBeNull();
     });
 

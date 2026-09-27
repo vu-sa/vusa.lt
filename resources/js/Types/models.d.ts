@@ -242,7 +242,7 @@ declare global {
       thread_root_id?: string | null
       commentable_type: string
       commentable_id: string
-      user_id: string
+      user_id?: string | null
       kind: CommentKind
       body: string
       metadata?: Array<unknown> | null
@@ -250,9 +250,9 @@ declare global {
       resolved_at?: string | null
       resolved_by?: string | null
       edited_at?: string | null
+      erased_at?: string | null
       created_at?: string | null
       updated_at?: string | null
-      deleted_at?: string | null
       // relations
       commentable?: Comment
       user?: User
@@ -475,6 +475,7 @@ declare global {
       users?: User[]
       current_users?: User[]
       previous_users?: User[]
+      responsibilities?: DutyResponsibility[]
       types?: Type[]
       institution?: Institution
       institutions?: Institution
@@ -487,6 +488,8 @@ declare global {
       ex_officio_target_duties?: Duty[]
       ex_officio_source_duties?: Duty[]
       assignable_tenants?: Tenant[]
+      comments?: Comment[]
+      root_comments?: Comment[]
       roles?: Role[]
       teams?: Permission[]
       permissions?: Permission[]
@@ -499,10 +502,13 @@ declare global {
       users_count: number
       current_users_count: number
       previous_users_count: number
+      responsibilities_count: number
       types_count: number
       ex_officio_target_duties_count: number
       ex_officio_source_duties_count: number
       assignable_tenants_count: number
+      comments_count: number
+      root_comments_count: number
       roles_count: number
       teams_count: number
       permissions_count: number
@@ -515,12 +521,15 @@ declare global {
       users_exists: boolean
       current_users_exists: boolean
       previous_users_exists: boolean
+      responsibilities_exists: boolean
       types_exists: boolean
       institution_exists: boolean
       institutions_exists: boolean
       ex_officio_target_duties_exists: boolean
       ex_officio_source_duties_exists: boolean
       assignable_tenants_exists: boolean
+      comments_exists: boolean
+      root_comments_exists: boolean
       roles_exists: boolean
       teams_exists: boolean
       permissions_exists: boolean
@@ -528,6 +537,26 @@ declare global {
       available_files_exists: boolean
       activities_as_subject_exists: boolean
       notifications_exists: boolean
+    }
+
+    export interface DutyResponsibility {
+      // columns
+      id: string
+      duty_id: string
+      responsibility: Responsibility
+      scope_type: string
+      scope_id: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      duty?: Duty
+      scope?: DutyResponsibility
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      duty_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface EventType {
@@ -620,13 +649,19 @@ declare global {
       form_fields?: FormField[]
       registrations?: Registration[]
       tenant?: Tenant
+      comments?: Comment[]
+      root_comments?: Comment[]
       // counts
       form_fields_count: number
       registrations_count: number
+      comments_count: number
+      root_comments_count: number
       // exists
       form_fields_exists: boolean
       registrations_exists: boolean
       tenant_exists: boolean
+      comments_exists: boolean
+      root_comments_exists: boolean
     }
 
     export interface FormField {
@@ -993,6 +1028,7 @@ declare global {
       // columns
       id: number
       user_id: string
+      notification_id?: string | null
       notification_class: string
       category: string
       data: Array<unknown>
@@ -1102,10 +1138,14 @@ declare global {
       responsible_user?: User
       categories?: ProblemCategory[]
       institutions?: Institution[]
+      comments?: Comment[]
+      root_comments?: Comment[]
       activities_as_subject?: Activity[]
       // counts
       categories_count: number
       institutions_count: number
+      comments_count: number
+      root_comments_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
@@ -1113,6 +1153,8 @@ declare global {
       responsible_user_exists: boolean
       categories_exists: boolean
       institutions_exists: boolean
+      comments_exists: boolean
+      root_comments_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1500,7 +1542,6 @@ declare global {
       completed_at?: string | null
       created_at: string
       updated_at: string
-      deleted_at?: string | null
       // mutators
       is_completed: unknown
       // relations
@@ -1576,7 +1617,6 @@ declare global {
       returned_at?: string | null
       created_at: string
       updated_at: string
-      deleted_at?: string | null
       // mutators
       approvable: boolean
       state_properties: unknown
@@ -2192,6 +2232,8 @@ declare global {
       duties?: Duty[]
       previous_duties?: Duty[]
       current_duties?: Duty[]
+      authorization_duties?: Duty[]
+      upcoming_duties?: Duty[]
       dutiables?: Dutiable[]
       tenants?: Tenant
       tasks?: Task[]
@@ -2212,6 +2254,8 @@ declare global {
       duties_count: number
       previous_duties_count: number
       current_duties_count: number
+      authorization_duties_count: number
+      upcoming_duties_count: number
       dutiables_count: number
       tasks_count: number
       secretaried_institutions_count: number
@@ -2229,6 +2273,8 @@ declare global {
       duties_exists: boolean
       previous_duties_exists: boolean
       current_duties_exists: boolean
+      authorization_duties_exists: boolean
+      upcoming_duties_exists: boolean
       dutiables_exists: boolean
       tasks_exists: boolean
       secretaried_institutions_exists: boolean
@@ -2309,6 +2355,12 @@ declare global {
     } as const;
 
     export type CommentKind = typeof CommentKind[keyof typeof CommentKind]
+
+    const Responsibility = {
+      StudentRepCoordination: 'student_rep_coordination',
+    } as const;
+
+    export type Responsibility = typeof Responsibility[keyof typeof Responsibility]
 
     const FormOptionSource = {
       Tenant: 'tenant',

@@ -46,7 +46,7 @@ use Illuminate\Support\Collection;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Approval> $approvals
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
  * @property-read bool $approvable
- * @property-read Reservation|null $reservation
+ * @property-read Reservation $reservation
  * @property-read resource|null $resource
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $rootComments
  * @property-read mixed $state_properties

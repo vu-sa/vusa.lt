@@ -346,4 +346,3 @@ describe('restore and forceDelete', function (): void {
         expect(Resource::withTrashed()->where('id', $this->resource->id)->exists())->toBeFalse();
     });
 });
-

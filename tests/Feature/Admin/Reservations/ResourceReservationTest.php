@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\Resource;

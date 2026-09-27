@@ -27,10 +27,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, FormField> $formFields
  * @property-read string|null $force_delete_blocked_reason
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, Registration> $registrations
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *

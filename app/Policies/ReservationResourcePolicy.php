@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Pivots\ReservationResource;
+use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 
@@ -37,6 +38,7 @@ class ReservationResourcePolicy
      */
     private function throughReservation(User $user, ReservationResource $reservationResource, string $ability): bool
     {
+        /** @var Reservation|null $reservation */
         $reservation = $reservationResource->reservation;
 
         if ($reservation === null) {

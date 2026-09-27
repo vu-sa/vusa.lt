@@ -94,7 +94,9 @@
     </template>
   </RecordPage>
   <SheetForm v-model:open="modelsOpen" :title="$t('Susieti įrašai')" :processing="modelsProcessing" :disabled="!modelOptions" @submit="saveModels">
-    <p v-if="!modelOptions" class="text-sm text-muted-foreground">{{ $t('Įkeliama…') }}</p>
+    <p v-if="!modelOptions" class="text-sm text-muted-foreground">
+      {{ $t('Įkeliama…') }}
+    </p>
     <template v-else>
       <Input v-model="modelSearch" :placeholder="$t('Ieškoti')" />
       <div class="space-y-1">
@@ -106,7 +108,9 @@
     </template>
   </SheetForm>
   <SheetForm v-model:open="rolesOpen" :title="$t('Rolės')" :processing="rolesProcessing" :disabled="!roleOptions" @submit="saveRoles">
-    <p v-if="!roleOptions" class="text-sm text-muted-foreground">{{ $t('Įkeliama…') }}</p>
+    <p v-if="!roleOptions" class="text-sm text-muted-foreground">
+      {{ $t('Įkeliama…') }}
+    </p>
     <div v-else class="space-y-1">
       <label v-for="role in roleOptions" :key="role.id" class="flex min-h-11 items-center gap-3 border-b border-border py-2 text-sm">
         <Checkbox :model-value="roleIds.includes(role.id)" @update:model-value="checked => toggleRole(role.id, Boolean(checked))" />

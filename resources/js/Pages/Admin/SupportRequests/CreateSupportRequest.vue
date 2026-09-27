@@ -1,10 +1,10 @@
 <template>
   <SupportRequestForm
-        :types
-        :areas
-        :roles
-        :context="reportContext"
-        :back-url="route('mySupportRequests.index')"
+    :types
+    :areas
+    :roles
+    :context="reportContext"
+    :back-url="route('mySupportRequests.index')"
   />
 </template>
 

@@ -12,7 +12,9 @@
     <Head :title="$t('dutiables.timeline.page.title')" />
     <header class="flex shrink-0 flex-wrap items-end justify-between gap-3 border-b border-border pb-4">
       <div class="min-w-0">
-        <p class="u-eyebrow">{{ $t('dutiables.timeline.page.eyebrow') }}</p>
+        <p class="u-eyebrow">
+          {{ $t('dutiables.timeline.page.eyebrow') }}
+        </p>
         <div class="mt-2 flex min-w-0 items-center gap-1">
           <!--
             The scope is the single most consequential thing on this page, so the title is the

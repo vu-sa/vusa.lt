@@ -516,4 +516,3 @@ describe('reservations.destroy', function (): void {
         $this->assertDatabaseHas('reservations', ['id' => $this->reservation->id]);
     });
 });
-

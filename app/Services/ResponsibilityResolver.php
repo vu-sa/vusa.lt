@@ -103,7 +103,7 @@ class ResponsibilityResolver
         $byScope = $assignments->groupBy('scope_type');
         $idsOf = fn (ResponsibilityScope $scope) => $byScope->get($scope->value, collect())->pluck('scope_id')->all();
 
-        $typeIds = $this->withDescendants(array_map('intval', $idsOf(ResponsibilityScope::Type)));
+        $typeIds = $this->withDescendants(array_map(intval(...), $idsOf(ResponsibilityScope::Type)));
 
         $candidates = Institution::query()
             ->where(fn (Builder $query) => $query
@@ -125,7 +125,7 @@ class ResponsibilityResolver
                     ->whereIn('scope_id', $candidates->pluck('tenant_id')->filter()->map(strval(...))))
                 ->orWhere(fn (Builder $scope) => $scope
                     ->where('scope_type', ResponsibilityScope::Type)
-                    ->whereIn('scope_id', array_map('strval', array_keys($this->typeParents())))))
+                    ->whereIn('scope_id', array_map(strval(...), array_keys($this->typeParents())))))
             ->get(['duty_id', 'scope_type', 'scope_id'])
             ->groupBy(fn (DutyResponsibility $assignment) => $assignment->scope_type.':'.$assignment->scope_id);
 
@@ -200,7 +200,7 @@ class ResponsibilityResolver
                 ->whereHas('responsibilities', fn (Builder $query) => $query
                     ->where('responsibility', $responsibility)
                     ->where('scope_type', $scope)
-                    ->whereIn('scope_id', array_map('strval', $ids)))
+                    ->whereIn('scope_id', array_map(strval(...), $ids)))
                 ->orderBy('order')
                 ->get();
 

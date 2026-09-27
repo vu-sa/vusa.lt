@@ -469,7 +469,7 @@ describe('public records in every scoped key', function (): void {
             'nodes' => config('scout.typesense.client-settings.nodes'),
         ]);
 
-        return (new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class)))
+        return new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class))
             ->generateScopedKeysForUser($user)['collections'];
     }
 

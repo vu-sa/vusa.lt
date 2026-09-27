@@ -115,7 +115,6 @@ export interface DirectoryItem {
   type: 'directory';
 }
 
-
 /**
  * Tutorial progress response
  * Route: GET /api/v1/admin/tutorials/progress

@@ -2,6 +2,8 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { ref } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import RecordActivity from '../RecordActivity.vue';
+
 import { commonStubs } from '@/tests/stubs';
 
 const fetchThread = vi.fn();
@@ -18,8 +20,6 @@ vi.mock('@/Composables/useDiscussionApi', () => ({
 vi.mock('@/Composables/useDiscussionChannel', () => ({
   useDiscussionChannel: () => ({ members: ref([]), connect: vi.fn(), disconnect: vi.fn(), whisperTyping: vi.fn() }),
 }));
-
-import RecordActivity from '../RecordActivity.vue';
 
 const mountActivity = () => mount(RecordActivity, {
   props: { commentableType: 'meeting', commentableId: 'm1' },

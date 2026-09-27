@@ -53,7 +53,7 @@ describe('per-type preferences', function (): void {
         $task = Task::factory()->create(['due_date' => now()->addDay()]);
 
         expect(mutingTestMention()->via($user))->toContain('mail', WebPushChannel::class)
-            ->and((new TaskAssignedNotification($task))->via($user))->toBe(['database', 'broadcast'])
+            ->and(new TaskAssignedNotification($task)->via($user))->toBe(['database', 'broadcast'])
             ->and($user->emailDeliveryFor(NotificationType::TaskAssigned))->toBe(EmailDelivery::Digest);
     });
 
@@ -61,7 +61,7 @@ describe('per-type preferences', function (): void {
         $user = $this->createUserWithTypePreference(NotificationType::TaskReminder, ['email' => 'off']);
         $task = Task::factory()->create(['due_date' => now()->addDays(3)]);
 
-        expect((new TaskReminderNotification($task, 3))->via($user))->not->toContain('mail')
+        expect(new TaskReminderNotification($task, 3)->via($user))->not->toContain('mail')
             ->and(mutingTestMention()->via($user))->toContain('mail');
     });
 
@@ -75,7 +75,7 @@ describe('per-type preferences', function (): void {
         $user = $this->createUserWithTypePreference(NotificationType::TaskAssigned, ['email' => 'immediate']);
         $task = Task::factory()->create(['due_date' => now()->addMonth()]);
 
-        expect((new TaskAssignedNotification($task))->via($user))->toContain('mail');
+        expect(new TaskAssignedNotification($task)->via($user))->toContain('mail');
     });
 
     test('a locked type ignores a stored override', function (): void {

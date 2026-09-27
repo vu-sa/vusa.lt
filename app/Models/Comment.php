@@ -32,10 +32,10 @@ use Illuminate\Support\Facades\DB;
  * @property Carbon|null $resolved_at
  * @property string|null $resolved_by
  * @property Carbon|null $edited_at
+ * @property Carbon|null $erased_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property Carbon|null $erased_at
- * @property-read Model|null $commentable
+ * @property-read Model|\Eloquent $commentable
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentPollVote> $pollVotes
  * @property-read Collection<int, CommentReaction> $reactions

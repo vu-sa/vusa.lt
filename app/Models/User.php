@@ -84,10 +84,10 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Institution> $secretariedInstitutions
  * @property-read Collection<int, Task> $tasks
- * @property-read Collection<int, Duty> $upcoming_duties
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
+ * @property-read Collection<int, Duty> $upcoming_duties
  * @property-read int|null $tenants_count
  * @property-read int|null $institutions_count
  *

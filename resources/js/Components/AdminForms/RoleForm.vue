@@ -36,7 +36,5 @@ const { role, rememberKey } = defineProps<{
 const isCreate = !role.id;
 const form = rememberKey ? useForm(rememberKey, { name: role.name }) : useForm({ name: role.name });
 
-const emit = defineEmits<{
-  (event: 'submit:form', form: InertiaForm<{ name: string }>): void;
-}>();
+const emit = defineEmits<(event: 'submit:form', form: InertiaForm<{ name: string }>) => void>();
 </script>

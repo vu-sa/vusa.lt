@@ -2,8 +2,12 @@
   <div class="min-h-full" data-slot="workbench">
     <Head :title="$t('Institucijų vizualizacija')" />
     <header class="border-b border-border pb-6 pt-6 sm:pt-10">
-      <p class="u-eyebrow">{{ $t('Institucijos') }}</p>
-      <h1 class="u-display mt-3 break-words text-2xl sm:text-4xl lg:text-5xl">{{ $t('Institucijų vizualizacija') }}</h1>
+      <p class="u-eyebrow">
+        {{ $t('Institucijos') }}
+      </p>
+      <h1 class="u-display mt-3 break-words text-2xl sm:text-4xl lg:text-5xl">
+        {{ $t('Institucijų vizualizacija') }}
+      </h1>
     </header>
     <Graph
       :institution-relationships

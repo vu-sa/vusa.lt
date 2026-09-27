@@ -179,7 +179,9 @@
 
   <Dialog v-model:open="accessibilityOpen">
     <DialogContent class="w-80 gap-0 p-0" data-slot="admin-accessibility-dialog">
-      <DialogTitle class="sr-only">{{ $t('accessibility.menu_title') }}</DialogTitle>
+      <DialogTitle class="sr-only">
+        {{ $t('accessibility.menu_title') }}
+      </DialogTitle>
       <AccessibilitySettings />
     </DialogContent>
   </Dialog>

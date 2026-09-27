@@ -63,18 +63,18 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
   useTenantTimelineData: (routeName?: string) => routeName === 'api.v1.admin.visak.gantt'
     ? { data: ref([]), isFetching: ref(false), loaded: ref(true), load: ganttRowsLoad }
     : ({
-    data: ref({
-      institutions: [
-        ...Array.from({ length: 7 }, (_, i) => tenantInstitution(String(i + 1), i)),
-        // A type the settings exclude: drawn in the Gantt, but left out of the numbers and the list.
-        { ...tenantInstitution('excluded', 99), in_summary: false },
-      ],
-      institution_summary: { all: 5, needs_attention: 3, overdue: 2, approaching: 1, no_activity: 0, current: 2 },
-    }),
-    isFetching: ref(false),
-    loaded: tenantLoaded,
-    load: vi.fn(),
-  }),
+        data: ref({
+          institutions: [
+            ...Array.from({ length: 7 }, (_, i) => tenantInstitution(String(i + 1), i)),
+            // A type the settings exclude: drawn in the Gantt, but left out of the numbers and the list.
+            { ...tenantInstitution('excluded', 99), in_summary: false },
+          ],
+          institution_summary: { all: 5, needs_attention: 3, overdue: 2, approaching: 1, no_activity: 0, current: 2 },
+        }),
+        isFetching: ref(false),
+        loaded: tenantLoaded,
+        load: vi.fn(),
+      }),
 }));
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantMeetings', () => ({

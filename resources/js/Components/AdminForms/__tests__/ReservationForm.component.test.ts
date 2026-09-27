@@ -63,7 +63,7 @@ const cartWith = (items: ReservationCartItem[], overrides: Partial<ReservationCa
   ...overrides,
 });
 
-type FormSpies = { form: { setError: ReturnType<typeof vi.fn>; post: ReturnType<typeof vi.fn> } };
+interface FormSpies { form: { setError: ReturnType<typeof vi.fn>; post: ReturnType<typeof vi.fn> } }
 
 const defaultPeriod = { start: new Date(2026, 9, 10, 9, 0).getTime(), end: new Date(2026, 9, 12, 17, 0).getTime() };
 

@@ -259,4 +259,3 @@ test('an active row on an ex-officio target duty without its source is flagged a
         ->and($diagnostic['severity'])->toBe('info')
         ->and($diagnostic['row_ids'])->toBe([$orphanRow->id]);
 });
-

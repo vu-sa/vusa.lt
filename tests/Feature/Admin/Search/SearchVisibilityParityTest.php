@@ -40,7 +40,7 @@ beforeEach(function (): void {
 function parityKeyFilter(User $user, string $collection): string
 {
     $client = new Client(['api_key' => 'test-admin-key', 'nodes' => config('scout.typesense.client-settings.nodes')]);
-    $keys = (new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class)))
+    $keys = new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class))
         ->generateScopedKeysForUser($user);
 
     return json_decode(substr(base64_decode($keys['collections'][$collection]['key']), 48), true, flags: JSON_THROW_ON_ERROR)['filter_by'];
@@ -106,7 +106,7 @@ test('an institution gaining a public type re-indexes its meetings, with list an
     $institution = Institution::factory()->for($this->otherTenant)->create();
     $meeting = parityMeetingOf($institution);
 
-    expect(parityAdmittedIds(Meeting::class, parityKeyFilter($this->member, 'meetings'), [$meeting]))->toBe([]);
+    expect(parityAdmittedIds(Meeting::class, parityKeyFilter($this->member, 'meetings'), [$meeting]))->toBeEmpty();
 
     $institution->syncAudited('types', [$this->publicType->id]);
     $agendaItems = $meeting->agendaItems()->get();
@@ -116,7 +116,7 @@ test('an institution gaining a public type re-indexes its meetings, with list an
         ->toBe(parityAllowedIds($this->member, [$meeting->fresh()]))
         ->and(parityAdmittedIds(AgendaItem::class, parityKeyFilter($this->member, 'agenda_items'), $agendaItems))
         ->toBe(parityAllowedIds($this->member, $agendaItems))
-        ->not->toBe([]);
+        ->not->toBeEmpty();
 });
 
 test('a settings change moves the list with the policy, without a reindex', function (): void {

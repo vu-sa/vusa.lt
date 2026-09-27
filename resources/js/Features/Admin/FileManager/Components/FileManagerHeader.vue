@@ -64,7 +64,7 @@
             <button
               type="button"
               :class="[
-              'inline-flex min-h-11 items-center gap-2 border px-3 text-xs font-semibold transition-colors',
+                'inline-flex min-h-11 items-center gap-2 border px-3 text-xs font-semibold transition-colors',
                 typeFilter !== 'all'
                   ? 'border-brand bg-brand/10 text-brand'
                   : 'border-border bg-secondary/40 text-foreground hover:bg-secondary',
@@ -166,7 +166,7 @@
             <button
               type="button"
               :class="[
-                  'inline-flex min-h-11 items-center gap-1.5 px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
+                'inline-flex min-h-11 items-center gap-1.5 px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
                 path === 'public/files' ? 'text-brand font-semibold' : 'text-muted-foreground',
               ]"
               @click="$emit('navigateToPath', 'public/files')"
