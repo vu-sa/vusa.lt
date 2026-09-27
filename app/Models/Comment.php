@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\DB;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $erased_at
- * @property-read Model|\Eloquent $commentable
+ * @property-read Model|null $commentable
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentPollVote> $pollVotes
  * @property-read Collection<int, CommentReaction> $reactions

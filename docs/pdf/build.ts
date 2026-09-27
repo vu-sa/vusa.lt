@@ -130,7 +130,7 @@ function toCmarkerMarkdown(body: string, prefix: string, file: string): string {
       return ['', '</callout>']
     }
 
-    const heading = line.match(/^(#{1,6})\s+(.*?)\s*(?:\{#([\w-]+)\})?\s*$/)
+    const heading = line.match(/^(#{1,6})\s+(.*?)\s*(?:\{#([\p{L}\p{N}_-]+)\})?\s*$/u)
 
     if (heading) {
       const text = heading[2]

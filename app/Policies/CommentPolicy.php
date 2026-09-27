@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Comment;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
@@ -90,12 +91,19 @@ class CommentPolicy
     {
         $commentable = $comment->commentable;
 
-        return match (true) {
-            $commentable === null => collect(),
-            method_exists($commentable, 'tenant') => collect([$commentable->tenant?->getKey()])->filter(),
-            method_exists($commentable, 'tenants') => $commentable->tenants()->pluck('tenants.id'),
-            default => collect(),
-        };
+        if ($commentable === null) {
+            return collect();
+        }
+
+        if (method_exists($commentable, 'tenant')) {
+            $tenant = $commentable->getRelationValue('tenant');
+
+            return $tenant instanceof Tenant ? collect([$tenant->getKey()]) : collect();
+        }
+
+        return method_exists($commentable, 'tenants')
+            ? $commentable->tenants()->pluck('tenants.id')
+            : collect();
     }
 
     private function canUpdateCommentable(User $user, Comment $comment): bool

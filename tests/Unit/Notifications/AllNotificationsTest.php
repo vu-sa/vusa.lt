@@ -67,7 +67,7 @@ describe('TaskAssignedNotification', function (): void {
         $task = Task::factory()->create();
         $notification = new TaskAssignedNotification($task);
 
-        expect($notification->url())->toBe(route('userTasks'));
+        expect($notification->url())->toBe(route('tasks.index'));
     });
 
     test('returns TASK as modelClass', function (): void {

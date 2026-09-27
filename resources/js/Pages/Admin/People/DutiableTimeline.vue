@@ -26,7 +26,7 @@
                 class="-ml-1 flex min-w-0 items-center gap-2 px-1 py-0.5 text-left hover:bg-accent pointer-coarse:min-h-11"
                 data-tour="timeline-institution"
               >
-                <h1 class="u-display truncate text-2xl sm:text-3xl">
+                <h1 class="u-display min-w-0 break-words text-xl sm:text-2xl lg:text-3xl">
                   {{ institution?.name ?? $t('dutiables.timeline.page.pick_institution') }}
                 </h1>
                 <ChevronsUpDown class="size-5 shrink-0 text-muted-foreground" />

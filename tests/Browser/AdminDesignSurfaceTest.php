@@ -57,8 +57,7 @@ it('resolves the admin token scope in the browser', function (): void {
     expect($borderRadius)->toBe('0px')
         ->and($page->script('getComputedStyle(document.documentElement).fontFamily'))->toContain('Atkinson Hyperlegible Next');
 
-    // admin.css's `:root { font-size: 90% }` must not win over the surface's 100% reset — the
-    // whole point of PR 2.1's `html[data-surface="admin"]` rule.
+    // The admin surface's 100% reset keeps the root at a readable size.
     expect($page->script('getComputedStyle(document.documentElement).fontSize'))
         ->toBe('16px');
 

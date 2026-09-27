@@ -10,7 +10,7 @@
       <span>{{ $t('shell.workspaces.pradzia.title') }}</span>
     </Link>
 
-    <Link :href="route('userTasks')" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" :class="tabClass(onPradzia && activeSection?.key === 'uzduotys')">
+    <Link :href="route('tasks.index')" prefetch :cache-for="SHELL_PREFETCH_CACHE_FOR" :class="tabClass(onPradzia && activeSection?.key === 'uzduotys')">
       <span class="relative">
         <ClipboardCheck class="size-5" />
         <TaskCountBadge compact class="absolute -top-1.5 left-3.5" />

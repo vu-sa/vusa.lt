@@ -55,7 +55,7 @@ class TaskAutoCompletedNotification extends BaseNotification
             return $this->getTaskableUrl();
         }
 
-        return route('userTasks');
+        return route('tasks.index');
     }
 
     #[\Override]
@@ -95,7 +95,7 @@ class TaskAutoCompletedNotification extends BaseNotification
         return [
             'modelClass' => 'Task',
             'name' => $this->task->name,
-            'url' => route('userTasks'),
+            'url' => route('tasks.index'),
             'id' => $this->task->id,
         ];
     }
@@ -119,7 +119,7 @@ class TaskAutoCompletedNotification extends BaseNotification
         return match ($type) {
             'Reservation' => route('reservations.show', $this->task->taskable_id),
             'Meeting' => route('meetings.show', $this->task->taskable_id),
-            default => route('userTasks'),
+            default => route('tasks.index'),
         };
     }
 }

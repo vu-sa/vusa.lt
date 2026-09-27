@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\FileableFile;
 use App\Models\Institution;
@@ -263,6 +264,20 @@ describe('atstovavimas dashboard authorization', function (): void {
                            isset($institution['activity_status']['status']) &&
                            array_key_exists('effective_days_since_activity', $institution['activity_status']);
                 })
+            );
+    });
+
+    test('an institution where the user serves as secretary is included in user institutions as administered', function (): void {
+        $administeredInstitution = Institution::factory()->for($this->tenant)->create();
+        $cadence = Cadence::factory()->create(['institution_id' => $administeredInstitution->id]);
+        $this->user->secretariedInstitutions()->attach($administeredInstitution, ['cadence_id' => $cadence->id]);
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('userInstitutions', fn ($institutions) => collect($institutions)
+                    ->contains(fn ($inst) => data_get($inst, 'id') === $administeredInstitution->id && data_get($inst, 'is_administered') === true)
+                )
             );
     });
 

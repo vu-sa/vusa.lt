@@ -51,7 +51,7 @@ class TaskOverdueNotification extends BaseNotification
 
     public function url(): string
     {
-        return route('userTasks');
+        return route('tasks.index');
     }
 
     #[\Override]
@@ -70,7 +70,7 @@ class TaskOverdueNotification extends BaseNotification
         return [
             'modelClass' => 'Task',
             'name' => __('notifications.overdue_tasks'),
-            'url' => route('userTasks'),
+            'url' => route('tasks.index'),
         ];
     }
 
@@ -90,7 +90,7 @@ class TaskOverdueNotification extends BaseNotification
     {
         return [
             'label' => __('notifications.action_view_tasks'),
-            'url' => route('userTasks'),
+            'url' => route('tasks.index'),
         ];
     }
 }

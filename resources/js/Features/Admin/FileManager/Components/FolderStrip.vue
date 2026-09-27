@@ -3,7 +3,7 @@
     <div class="border border-border">
       <div class="flex flex-col gap-3 border-b border-border bg-muted/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <CollapsibleTrigger as-child>
-          <Button variant="ghost" size="sm" class="h-8 justify-start gap-2 px-2 font-medium">
+          <Button variant="ghost" size="sm" class="justify-start gap-2 px-2 font-medium">
             <ChevronRight
               class="h-4 w-4 transition-transform duration-200"
               :class="{ 'rotate-90': isOpen }"
@@ -32,7 +32,7 @@
               v-for="directory in filteredDirectories"
               :key="directory.path"
               type="button"
-              class="flex max-w-full items-center gap-2 border border-border bg-background px-3 py-2 text-sm transition-colors hover:border-brand hover:bg-muted/50"
+              class="flex min-h-11 max-w-full items-center gap-2 border border-border bg-background px-3 py-2 text-sm transition-colors hover:border-brand hover:bg-muted/50"
               @click="$emit('open', directory)"
             >
               <Folder class="h-4 w-4 flex-shrink-0 text-muted-foreground" />

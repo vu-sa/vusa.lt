@@ -7,7 +7,7 @@
       <!-- Search input -->
       <div class="flex flex-col gap-1 w-full sm:max-w-xs">
         <label
-          class="flex min-h-10 w-full items-center gap-2 border border-border bg-secondary/40 px-3 text-muted-foreground transition-colors focus-within:border-brand"
+          class="flex min-h-11 w-full items-center gap-2 border border-border bg-secondary/40 px-3 text-muted-foreground transition-colors focus-within:border-brand"
         >
           <Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           <input
@@ -21,7 +21,8 @@
           <button
             v-else-if="search"
             type="button"
-            class="text-muted-foreground hover:text-foreground p-0.5"
+            class="flex size-11 items-center justify-center text-muted-foreground hover:text-foreground"
+            :aria-label="$t('files.ui.clear')"
             @click="$emit('update:search', '')"
           >
             <X class="size-3.5" aria-hidden="true" />
@@ -29,7 +30,7 @@
         </label>
 
         <!-- Search Everywhere Checkbox -->
-        <label class="flex cursor-pointer items-center gap-2 px-1 text-xs text-muted-foreground select-none">
+        <label class="flex min-h-11 cursor-pointer items-center gap-2 px-1 text-xs text-muted-foreground select-none">
           <Checkbox
             :model-value="searchEverywhere"
             @update:model-value="$emit('update:searchEverywhere', $event === true)"
@@ -45,7 +46,7 @@
           <button
             type="button"
             :class="[
-              'inline-flex min-h-10 items-center gap-2 border px-3 text-xs font-semibold uppercase tracking-wider transition-colors',
+              'inline-flex min-h-11 items-center gap-2 border px-3 text-xs font-semibold transition-colors',
               isUploadMode
                 ? 'border-brand bg-brand text-brand-foreground'
                 : 'border-border bg-secondary/40 text-foreground hover:bg-secondary',
@@ -63,7 +64,7 @@
             <button
               type="button"
               :class="[
-                'inline-flex min-h-10 items-center gap-2 border px-3 text-xs font-semibold transition-colors',
+              'inline-flex min-h-11 items-center gap-2 border px-3 text-xs font-semibold transition-colors',
                 typeFilter !== 'all'
                   ? 'border-brand bg-brand/10 text-brand'
                   : 'border-border bg-secondary/40 text-foreground hover:bg-secondary',
@@ -90,7 +91,7 @@
         <div class="flex border border-border">
           <button
             type="button"
-            class="inline-flex min-h-10 items-center gap-2 bg-secondary/40 px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            class="inline-flex min-h-11 items-center gap-2 bg-secondary/40 px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             @click="cycleSortKey"
           >
             <ArrowUpDown class="size-3.5 text-muted-foreground" aria-hidden="true" />
@@ -100,7 +101,7 @@
             type="button"
             :title="sortDir === 'asc' ? 'Didėjimo tvarka' : 'Mažėjimo tvarka'"
             :aria-label="sortDir === 'asc' ? 'Didėjimo tvarka' : 'Mažėjimo tvarka'"
-            class="flex size-10 items-center justify-center border-l border-border bg-secondary/40 text-foreground transition-colors hover:bg-secondary"
+            class="flex size-11 items-center justify-center border-l border-border bg-secondary/40 text-foreground transition-colors hover:bg-secondary"
             @click="$emit('update:sortDir', sortDir === 'asc' ? 'desc' : 'asc')"
           >
             <ArrowUp v-if="sortDir === 'asc'" class="size-3.5" aria-hidden="true" />
@@ -115,7 +116,7 @@
             :aria-label="$t('Tinklelis')"
             :aria-pressed="viewMode === 'grid'"
             :class="[
-              'flex size-10 items-center justify-center transition-colors',
+              'flex size-11 items-center justify-center transition-colors',
               viewMode === 'grid'
                 ? 'bg-brand-fill text-brand-foreground font-bold'
                 : 'text-foreground bg-secondary/40 hover:bg-secondary',
@@ -129,7 +130,7 @@
             :aria-label="$t('Sąrašas')"
             :aria-pressed="viewMode === 'list'"
             :class="[
-              'flex size-10 items-center justify-center border-l border-border transition-colors',
+              'flex size-11 items-center justify-center border-l border-border transition-colors',
               viewMode === 'list'
                 ? 'bg-brand-fill text-brand-foreground font-bold'
                 : 'text-foreground bg-secondary/40 hover:bg-secondary',
@@ -151,7 +152,7 @@
         <button
           v-if="!selectionMode"
           type="button"
-          class="text-muted-foreground transition-colors hover:text-brand p-1 shrink-0"
+          class="flex size-11 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-brand"
           :title="allSelected ? $t('files.ui.clear') : $t('files.ui.select_all')"
           :aria-label="allSelected ? $t('files.ui.clear') : $t('files.ui.select_all')"
           @click="$emit('toggleSelectAll')"
@@ -165,7 +166,7 @@
             <button
               type="button"
               :class="[
-                'inline-flex items-center gap-1.5 px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
+                  'inline-flex min-h-11 items-center gap-1.5 px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
                 path === 'public/files' ? 'text-brand font-semibold' : 'text-muted-foreground',
               ]"
               @click="$emit('navigateToPath', 'public/files')"
@@ -178,7 +179,7 @@
               <button
                 type="button"
                 :class="[
-                  'px-1.5 py-0.5 font-medium transition-colors hover:text-brand truncate max-w-[160px]',
+                  'inline-flex min-h-11 max-w-[160px] items-center truncate px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
                   index === breadcrumbParts.length - 1 ? 'text-foreground font-semibold' : 'text-muted-foreground',
                 ]"
                 @click="$emit('navigateToPath', part.path)"
@@ -203,7 +204,7 @@
 
         <button
           type="button"
-          class="inline-flex size-8 items-center justify-center border border-border bg-background text-foreground transition-colors hover:bg-secondary"
+          class="inline-flex size-11 items-center justify-center border border-border bg-background text-foreground transition-colors hover:bg-secondary"
           :title="$t('Pažymėti žvaigždute')"
           :aria-label="$t('Pažymėti žvaigždute')"
           @click="$emit('starSelected')"
@@ -213,7 +214,7 @@
 
         <button
           type="button"
-          class="inline-flex size-8 items-center justify-center border border-border bg-background text-destructive transition-colors hover:bg-destructive/10"
+          class="inline-flex size-11 items-center justify-center border border-border bg-background text-destructive transition-colors hover:bg-destructive/10"
           :title="$t('files.ui.delete')"
           :aria-label="$t('files.ui.delete')"
           @click="$emit('deleteSelected')"
@@ -223,7 +224,7 @@
 
         <button
           type="button"
-          class="inline-flex size-8 items-center justify-center border border-border bg-background text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary"
+          class="inline-flex size-11 items-center justify-center border border-border bg-background text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary"
           :title="$t('files.ui.clear')"
           :aria-label="$t('files.ui.clear')"
           @click="$emit('clearSelection')"

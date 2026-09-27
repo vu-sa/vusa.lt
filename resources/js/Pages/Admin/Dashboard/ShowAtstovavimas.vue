@@ -263,7 +263,7 @@ const numbers = computed<OverviewNumberItem[]>(() => [
     href: route('meetings.index', { completion_status: 'incomplete' }),
     tone: 'attention',
   },
-  { key: 'open_tasks', label: $t('visak.overview.numbers.open_tasks'), value: props.openTasksCount, href: route('userTasks') },
+  { key: 'open_tasks', label: $t('visak.overview.numbers.open_tasks'), value: props.openTasksCount, href: route('tasks.index') },
 ]);
 
 function recordActivityFor(institution: InstitutionActivityInsight): void {

@@ -139,16 +139,7 @@
     </template>
 
     <!-- Modals -->
-    <Dialog v-model:open="showMeetingModal">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{{ $t("Redaguoti posėdžio datą") }}</DialogTitle>
-        </DialogHeader>
-        <Suspense>
-          <MeetingForm class="mt-2" :meeting @submit="handleMeetingFormSubmit" />
-        </Suspense>
-      </DialogContent>
-    </Dialog>
+    <MeetingForm v-model:open="showMeetingModal" :meeting />
 
     <AddAgendaItemsSheet
       v-model:open="showAgendaSheet"
@@ -743,14 +734,6 @@ const handleRecordAction = (action: string) => {
 };
 
 // Event handlers
-const handleMeetingFormSubmit = (meeting: App.Entities.Meeting) => {
-  router.patch(route('meetings.update', props.meeting.id), meeting, {
-    onSuccess: () => {
-      showMeetingModal.value = false;
-    },
-  });
-};
-
 // Agenda item deletion goes through a confirmation dialog
 const showAgendaItemDeleteDialog = ref(false);
 const agendaItemPendingDelete = ref<App.Entities.AgendaItem | null>(null);

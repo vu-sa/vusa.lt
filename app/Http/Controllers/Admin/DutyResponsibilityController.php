@@ -44,7 +44,7 @@ class DutyResponsibilityController extends AdminController
                 ->values()
                 ->all(),
             'roles' => $duty->roles()->orderBy('name')->get(['id', 'name'])
-                ->map(fn ($role) => ['id' => (string) $role->id, 'name' => (string) $role->name])
+                ->map(fn ($role) => ['id' => (string) $role->getKey(), 'name' => (string) $role->getAttribute('name')])
                 ->values()
                 ->all(),
         ];
@@ -61,6 +61,14 @@ class DutyResponsibilityController extends AdminController
             ->map(fn ($tenant) => ['id' => (int) $tenant['id'], 'shortname' => (string) $tenant['shortname']])
             ->values();
 
+        $types = [];
+
+        foreach (Type::query()->forInstitutions()->get()->sortBy('title') as $type) {
+            if ($user->can('update', $type)) {
+                $types[] = ['id' => (string) $type->id, 'title' => (string) $type->title];
+            }
+        }
+
         return [
             'responsibilities' => collect(Responsibility::cases())->map(fn (Responsibility $responsibility) => [
                 'value' => $responsibility->value,
@@ -69,12 +77,7 @@ class DutyResponsibilityController extends AdminController
                 'scopes' => array_map(fn (ResponsibilityScope $scope) => $scope->value, $responsibility->allowedScopes()),
             ])->values()->all(),
             'tenants' => $tenants->all(),
-            'types' => Type::query()->forInstitutions()->get()
-                ->filter(fn (Type $type) => $user->can('update', $type))
-                ->map(fn (Type $type) => ['id' => (string) $type->id, 'title' => (string) $type->title])
-                ->sortBy('title')
-                ->values()
-                ->all(),
+            'types' => $types,
             'institutions' => Institution::query()
                 ->whereIn('tenant_id', $tenants->pluck('id'))
                 ->with('tenant:id,shortname')

@@ -35,10 +35,22 @@ class GetUserCoordinators
                 continue;
             }
 
-            $coordinators[$coordinator['id']] ??= [...$coordinator, 'institutions' => []];
-            $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->name;
+            if (isset($coordinators[$coordinator['id']])) {
+                $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->name;
+            } else {
+                $coordinators[$coordinator['id']] = [
+                    ...$coordinator,
+                    'institutions' => [(string) $institution->name],
+                ];
+            }
         }
 
-        return array_values($coordinators);
+        $result = [];
+
+        foreach ($coordinators as $coordinator) {
+            $result[] = $coordinator;
+        }
+
+        return $result;
     }
 }

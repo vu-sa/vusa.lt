@@ -134,7 +134,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
 import { EyebrowLabel } from '@/Components/Public/Base';
-import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
+import CalendarSyncModal from '@/Components/Public/CalendarSyncModal.vue';
 import Skeleton from '@/Components/ui/skeleton/Skeleton.vue';
 import { useCalendarFetch } from '@/Services/ContentService';
 import { formatEventDateSpan, formatMonthAbbr } from '@/Utils/IntlTime';

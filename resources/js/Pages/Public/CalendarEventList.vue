@@ -416,7 +416,7 @@ import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import TagChip from '@/Components/Brand/TagChip.vue';
 import EventCard from '@/Components/Calendar/EventCard.vue';
 import CalendarFilterPopover, { type FilterOption } from '@/Components/Calendar/CalendarFilterPopover.vue';
-import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
+import CalendarSyncModal from '@/Components/Public/CalendarSyncModal.vue';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';

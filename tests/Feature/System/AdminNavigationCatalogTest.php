@@ -31,7 +31,7 @@ pest()->use(RefreshDatabase::class);
 const SECTION_LANDING_ROUTES = [
     'dashboard', 'dashboard.atstovavimas', 'dashboard.atstovavimas.padaliniai', 'dashboard.reservations', 'dashboard.svetaine',
     'dashboard.organizacija', 'dashboard.sistema',
-    'userTasks', 'institutionGraph', 'dutiables.timeline', 'tasks.summary', 'systemStatus',
+    'institutionGraph', 'dutiables.timeline', 'tasks.summary', 'systemStatus',
     'mailQueue', 'repMetrics', 'administration', 'duties.updateUsersWizard', 'profile',
 ];
 
@@ -167,7 +167,7 @@ describe('per-persona visibility', function (): void {
             'description' => 'shell.workspaces.pradzia.description',
             'sections' => [
                 ['key' => 'apzvalga', 'label' => 'shell.sections.apzvalga', 'routeName' => 'dashboard', 'routeParams' => [], 'entityType' => null, 'description' => null, 'collectionActions' => [], 'matches' => ['dashboard'], 'startsGroup' => false],
-                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'userTasks', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['userTasks'], 'startsGroup' => false],
+                ['key' => 'uzduotys', 'label' => 'shell.sections.uzduotys', 'routeName' => 'tasks.index', 'routeParams' => [], 'entityType' => 'task', 'description' => 'shell.section_descriptions.uzduotys', 'collectionActions' => [], 'matches' => ['tasks.index'], 'startsGroup' => false],
                 ['key' => 'pranesimai', 'label' => 'shell.sections.pranesimai', 'routeName' => 'notifications.index', 'routeParams' => [], 'entityType' => null, 'description' => 'shell.section_descriptions.pranesimai', 'collectionActions' => [], 'matches' => ['notifications.*'], 'startsGroup' => false],
             ],
             'createActions' => [],

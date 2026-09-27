@@ -3,7 +3,7 @@
     <Head :title="$t('Institucijų vizualizacija')" />
     <header class="border-b border-border pb-6 pt-6 sm:pt-10">
       <p class="u-eyebrow">{{ $t('Institucijos') }}</p>
-      <h1 class="u-display mt-3 text-4xl sm:text-5xl">{{ $t('Institucijų vizualizacija') }}</h1>
+      <h1 class="u-display mt-3 break-words text-2xl sm:text-4xl lg:text-5xl">{{ $t('Institucijų vizualizacija') }}</h1>
     </header>
     <Graph
       :institution-relationships
@@ -15,7 +15,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 

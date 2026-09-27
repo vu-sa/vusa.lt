@@ -14,6 +14,7 @@ tests:
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/InstitutionStatusTrendChart.component.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTimelineFilters.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTenantMeetings.test.ts
+  - resources/js/Pages/Admin/Dashboard/Composables/__tests__/statusTrend.test.ts
   - resources/js/Components/Home/__tests__/HomeSections.component.test.ts
   - tests/Browser/VisakOverviewPagesTest.php
 ---
@@ -108,7 +109,7 @@ Puslapį atidaryti gali **kiekvienas** prisijungęs narys.
 | Rolė | Rodikliai | Laiko juosta | Atviros užduotys |
 |---|---|---|---|
 | Narys be rolės | – | Viešos, savo ir susijusios institucijos | – |
-| Studentų atstovas | Savo padalinio | Savo padalinys pilnai, kitur – viešos | – |
+| Studentų atstovas | – | Viešos, savo ir susijusios institucijos | – |
 | Studentų atstovų koordinatorius | Savo padalinio | Savo padalinys pilnai, kitur – viešos | – |
 | Komunikacijos koordinatorius | Savo padalinio | Savo padalinys pilnai, kitur – viešos | – |
 | Centrinio biuro studentų atstovų koordinatorius | Visų padalinių | Visi padaliniai pilnai | ✓ |

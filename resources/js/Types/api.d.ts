@@ -89,23 +89,6 @@ export function isApiError<T>(response: ApiResponse<T>): response is ApiErrorRes
 */
 
 /**
- * Task indicator response
- * Route: GET /api/v1/admin/tasks/indicator
- */
-export interface TaskIndicatorData {
-  id: number;
-  name: string;
-  due_date: string | null;
-  completed_at: string | null;
-  taskable_type: string;
-  taskable_id: number;
-  taskable?: {
-    id: number;
-    [key: string]: unknown;
-  };
-}
-
-/**
  * File browser response
  * Route: GET /api/v1/admin/files
  */

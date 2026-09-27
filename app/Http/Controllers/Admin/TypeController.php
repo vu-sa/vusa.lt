@@ -73,6 +73,27 @@ class TypeController extends AdminController
     {
         $this->handleAuthorization('view', $type);
 
+        $responsibleDuties = [];
+
+        foreach (DutyResponsibility::query()
+            ->where('scope_type', ResponsibilityScope::Type)
+            ->where('scope_id', (string) $type->id)
+            ->with('duty:id,name')
+            ->get() as $assignment) {
+            $duty = $assignment->duty;
+
+            if ($duty === null) {
+                continue;
+            }
+
+            $responsibleDuties[] = [
+                'id' => $assignment->id,
+                'duty_id' => $assignment->duty_id,
+                'duty' => (string) $duty->name,
+                'label' => (string) __($assignment->responsibility->labelKey()),
+            ];
+        }
+
         $relation = $type->typeableRelation();
         $type->load([
             'parent:id,title',
@@ -83,25 +104,13 @@ class TypeController extends AdminController
         return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
             'contentType' => $type->toFullArray(),
             'attachedModels' => $relation === null ? [] : $type->{$relation}->map(fn ($model): array => [
-                'id' => $model->id,
-                'name' => $model->name,
+                'id' => $model->getKey(),
+                'name' => $model->getAttribute('name'),
             ])->values(),
             'modelOptions' => Inertia::optional(fn () => $type->allModelsFromModelType()),
             'roleOptions' => Inertia::optional(fn () => Role::query()->orderBy('name')->get(['id', 'name'])),
             // Duties responsible for every institution of this type (e.g. VU Senatas → CB coordinator).
-            'responsibleDuties' => DutyResponsibility::query()
-                ->where('scope_type', ResponsibilityScope::Type)
-                ->where('scope_id', (string) $type->id)
-                ->with('duty:id,name')
-                ->get()
-                ->filter(fn (DutyResponsibility $assignment) => $assignment->duty !== null)
-                ->map(fn (DutyResponsibility $assignment) => [
-                    'id' => $assignment->id,
-                    'duty_id' => $assignment->duty_id,
-                    'duty' => (string) $assignment->duty->name,
-                    'label' => (string) __($assignment->responsibility->labelKey()),
-                ])
-                ->values(),
+            'responsibleDuties' => $responsibleDuties,
             'sharepointPath' => SharepointFileService::pathOrNull($type),
             'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'can' => [

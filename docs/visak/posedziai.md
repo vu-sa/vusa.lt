@@ -133,7 +133,8 @@ darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
 
 ### Posėdžio keitimas
 
-- **Redaguoti posėdį** – pakeisti datą, tipą ir aprašymą.
+- **Redaguoti posėdį** – šoninėje formoje pakeisti datą, tipą ir aprašymą. Jei uždarai formą
+  neišsaugojęs pakeitimų, sistema paprašo patvirtinti. Aprašymą gali įrašyti lietuviškai ir angliškai.
 - **Kiti institucijos posėdžiai** – rodyklėmis pereiti prie ankstesnio ar kito tos pačios
   institucijos posėdžio.
 - **Paskelbti kalendoriuje** (tik VU SA dariniams) – sukuriamas kalendoriaus įrašo juodraštis su

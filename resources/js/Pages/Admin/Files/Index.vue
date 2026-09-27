@@ -2,10 +2,9 @@
   <div class="space-y-6">
     <Head :title="$t('shell.sections.failai')" />
 
-    <!-- Header -->
     <div class="flex flex-col gap-6 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div class="max-w-2xl">
-        <span class="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.24em] text-brand">
+        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand">
           <HardDrive class="size-3.5" aria-hidden="true" />
           {{ $t('shell.workspaces.svetaine.title') }} · {{ $t('shell.sections.failai') }}
         </span>
@@ -18,25 +17,24 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button
+        <Button
           type="button"
-          :class="[
-            'inline-flex min-h-11 items-center gap-2 bg-brand-fill px-4 text-sm font-bold uppercase tracking-wide',
-            'text-brand-foreground transition-colors hover:bg-brand-fill/90',
-          ]"
+          variant="brand"
           @click="fileManagerRef?.openUpload()"
         >
           <Upload class="size-4" aria-hidden="true" />
           {{ $t('files.ui.upload') }}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          class="inline-flex min-h-11 items-center gap-2 border border-border bg-secondary/40 px-4 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+          variant="outline"
+          voice="sentence"
+          :aria-label="$t('files.ui.add_folder')"
           @click="fileManagerRef?.openCreateFolder()"
         >
           <FolderPlus class="size-4" aria-hidden="true" />
           <span class="hidden sm:inline">{{ $t('files.ui.add_folder') }}</span>
-        </button>
+        </Button>
       </div>
     </div>
 
@@ -66,6 +64,7 @@ import { ref } from 'vue';
 
 import FileManager from '@/Features/Admin/FileManager/FileManager.vue';
 import { useFileSearch } from '@/Features/Admin/FileManager/useFileSearch';
+import { Button } from '@/Components/ui/button';
 
 const fileManagerRef = ref<InstanceType<typeof FileManager> | null>(null);
 

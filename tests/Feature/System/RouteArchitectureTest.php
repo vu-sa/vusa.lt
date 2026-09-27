@@ -32,7 +32,7 @@ it('has public API routes', function (): void {
 });
 
 it('has admin API routes', function (): void {
-    expect(Route::has('api.v1.admin.tasks.indicator'))->toBeTrue()
+    expect(Route::has('api.v1.admin.tasks.index'))->toBeTrue()
         ->and(Route::has('api.v1.admin.files.index'))->toBeTrue()
         ->and(Route::has('api.v1.admin.files.allowedTypes'))->toBeTrue()
         ->and(Route::has('api.v1.admin.fileables.files'))->toBeTrue()

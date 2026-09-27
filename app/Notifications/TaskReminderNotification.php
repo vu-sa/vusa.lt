@@ -35,7 +35,7 @@ class TaskReminderNotification extends BaseNotification
 
     public function url(): string
     {
-        return route('userTasks');
+        return route('tasks.index');
     }
 
     #[\Override]
@@ -54,7 +54,7 @@ class TaskReminderNotification extends BaseNotification
         return [
             'modelClass' => 'Task',
             'name' => $this->task->name,
-            'url' => route('userTasks'),
+            'url' => route('tasks.index'),
             'id' => $this->task->id,
         ];
     }
@@ -73,7 +73,7 @@ class TaskReminderNotification extends BaseNotification
     {
         return [
             'label' => __('notifications.action_view_tasks'),
-            'url' => route('userTasks'),
+            'url' => route('tasks.index'),
         ];
     }
 }

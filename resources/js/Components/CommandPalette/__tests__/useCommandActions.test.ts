@@ -119,7 +119,7 @@ describe('useCommandActions', () => {
   it('ranks entries from the workspace the user is standing in first', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: {
       workspaces: [
-        workspace('pradzia', [section('uzduotys', 'userTasks')]),
+        workspace('pradzia', [section('uzduotys', 'tasks.index')]),
         workspace('svetaine', [section('naujienos', 'news.index', 'news')]),
       ],
     } }));

@@ -6,7 +6,7 @@
       <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {{ $t('Sistema') }} · {{ $t('Sharepoint failai') }}
       </p>
-      <h1 class="text-2xl font-bold tracking-tight text-foreground font-heading">
+      <h1 class="u-display break-words text-2xl text-foreground sm:text-4xl">
         {{ $t('Sharepoint failai') }}
       </h1>
       <p class="text-sm text-muted-foreground">

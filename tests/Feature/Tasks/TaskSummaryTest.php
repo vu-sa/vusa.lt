@@ -292,7 +292,7 @@ describe('tasks.summary completion offer', function (): void {
         orphanTaskFor($assignee, ActionType::Manual);
 
         $readerView = asUser($reader)->get(route('tasks.summary'))->viewData('page')['props']['data'];
-        $assigneeView = asUser($assignee)->get(route('userTasks'))->viewData('page')['props']['data'];
+        $assigneeView = asUser($assignee)->get(route('tasks.index'))->viewData('page')['props']['data'];
 
         expect($readerView[0]['can_update'])->toBeFalse()
             ->and($assigneeView[0]['can_update'])->toBeTrue();

@@ -1,11 +1,6 @@
 import '../css/app.css';
-import '../css/admin.css';
 import '../css/admin/tour.css';
-
 import { type DefineComponent, createApp, h } from 'vue';
-
-// Initialize PWA (service worker registration, install prompt handling)
-initPWA();
 import { ZiggyVue } from 'ziggy-js';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { defineAsyncComponent } from 'vue';
@@ -15,6 +10,8 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { initPWA } from './Composables/usePWA';
 import { initProgress } from './Composables/useTutorialProgress';
 import { useAccessibilityPreferences } from './Composables/useAccessibilityPreferences';
+
+initPWA();
 
 const AdminLayout = defineAsyncComponent(
   () => import('./Components/Layouts/AdminLayout.vue'),

@@ -148,10 +148,10 @@ Frontend usage:
 
 ```typescript
 import { useApi } from '@/Composables/useApi';
-import type { TaskIndicatorData } from '@/Types/api.d';
+import type { TutorialProgressData } from '@/Types/api.d';
 
-const { data, isFetching, execute } = useApi<TaskIndicatorData[]>(
-  route('api.v1.admin.tasks.indicator')
+const { data, isFetching, execute } = useApi<TutorialProgressData>(
+  route('api.v1.admin.tutorials.progress')
 );
 ```
 

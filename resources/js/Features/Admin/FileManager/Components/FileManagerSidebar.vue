@@ -9,7 +9,7 @@
         :key="item.id"
         type="button"
         :class="[
-          'flex min-h-10 items-center gap-2.5 px-3 text-sm font-medium transition-colors shrink-0',
+          'flex min-h-11 items-center gap-2.5 px-3 text-sm font-medium transition-colors shrink-0',
           activeView === item.id
             ? 'bg-brand/10 text-brand font-semibold'
             : 'text-foreground hover:bg-secondary',
@@ -35,7 +35,7 @@
         </p>
         <button
           type="button"
-          class="text-muted-foreground transition-colors hover:text-brand p-1"
+          class="flex size-11 items-center justify-center text-muted-foreground transition-colors hover:text-brand"
           :title="$t('files.ui.add_folder')"
           :aria-label="$t('files.ui.add_folder')"
           @click="$emit('openCreateFolder')"
@@ -49,7 +49,7 @@
         <button
           type="button"
           :class="[
-            'flex min-h-9 items-center gap-2 px-2.5 py-1.5 text-left text-sm transition-colors',
+            'flex min-h-11 items-center gap-2 px-2.5 py-1.5 text-left text-sm transition-colors',
             activeView === 'browse' && isRoot
               ? 'bg-brand/10 text-brand font-medium'
               : 'text-foreground hover:bg-secondary',
@@ -64,7 +64,7 @@
         <button
           v-if="!isRoot"
           type="button"
-          class="flex min-h-9 items-center gap-2 px-2.5 py-1.5 text-left text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          class="flex min-h-11 items-center gap-2 px-2.5 py-1.5 text-left text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
           @click="$emit('goUp')"
         >
           <ArrowUp class="size-3.5 shrink-0" aria-hidden="true" />
@@ -81,7 +81,7 @@
           :key="dir.path"
           type="button"
           :class="[
-            'flex min-h-9 items-center gap-2 px-2.5 py-1.5 text-left text-sm transition-colors group',
+            'flex min-h-11 items-center gap-2 px-2.5 py-1.5 text-left text-sm transition-colors group',
             currentPath === dir.path && activeView === 'browse'
               ? 'bg-brand/10 text-brand font-medium'
               : 'text-foreground hover:bg-secondary',

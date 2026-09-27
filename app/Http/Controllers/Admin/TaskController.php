@@ -7,13 +7,11 @@ use App\Events\TaskCreated;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTasksRequest;
 use App\Http\Requests\StoreTaskRequest;
-use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -29,29 +27,6 @@ class TaskController extends AdminController
     public function index(IndexTasksRequest $request): Response
     {
         return $this->renderCollection($request, BuildTaskIndexQuery::SCOPE_MINE);
-    }
-
-    /**
-     * Return tasks for the current user in JSON format.
-     * Used by the TasksIndicator component.
-     *
-     * @return JsonResponse
-     */
-    public function userTasksForIndicator(Request $request)
-    {
-        $limit = $request->input('limit', 5);
-
-        $tasks = Task::with('taskable')
-            ->whereHas('users', function ($query): void {
-                $query->where('users.id', Auth::id());
-            })
-            ->whereNull('completed_at')
-            ->orderBy('due_date', 'asc')
-            ->orderBy('created_at', 'desc')
-            ->limit($limit)
-            ->get();
-
-        return response()->json($tasks);
     }
 
     /**
@@ -81,23 +56,6 @@ class TaskController extends AdminController
         }
 
         return back()->with('success', $this->entityMessage('created', 'task'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateTaskRequest $request, Task $task)
-    {
-        $this->handleAuthorization('update', $task);
-
-        $validated = $request->validated();
-
-        // change due_date to Carbon object
-        $validated['due_date'] = Carbon::createFromTimestamp($validated['due_date'] / 1000, 'Europe/Vilnius');
-
-        $task->update($validated);
-
-        return back()->with('success', $this->entityMessage('updated', 'task'));
     }
 
     /**

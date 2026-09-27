@@ -100,11 +100,11 @@
               @dblclick="$emit('fileDoubleClick', file)"
             >
               <!-- Checkbox -->
-              <td class="w-10 px-3 py-2 text-center">
+              <td class="w-14 px-2 py-2 text-center">
                 <button
                   type="button"
                   :class="[
-                    'inline-flex size-4 items-center justify-center border transition-colors',
+                    'inline-flex size-11 items-center justify-center border transition-colors',
                     selectedFiles.has(file.path) || selectedFile === file.path
                       ? 'border-brand bg-brand-fill text-brand-foreground'
                       : 'border-border',
@@ -131,7 +131,7 @@
                   <button
                     v-if="starredFiles?.has(file.path)"
                     type="button"
-                    class="text-status-attention fill-status-attention shrink-0"
+                    class="flex size-11 shrink-0 items-center justify-center text-status-attention fill-status-attention"
                     :title="$t('Pašalinti iš pažymėtų')"
                     :aria-label="$t('Pašalinti iš pažymėtų')"
                     @click.stop="$emit('toggleStar', file)"
@@ -194,7 +194,7 @@
         <button
           type="button"
           :disabled="currentPage <= 1"
-          class="inline-flex min-h-8 items-center border border-border px-2.5 font-medium transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed"
+          class="inline-flex min-h-11 items-center border border-border px-2.5 font-medium transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed"
           @click="$emit('update:currentPage', currentPage - 1)"
         >
           {{ $t('files.ui.previous') }}
@@ -206,7 +206,7 @@
             v-else
             type="button"
             :class="[
-              'inline-flex min-h-8 min-w-8 items-center justify-center border font-medium transition-colors',
+              'inline-flex min-h-11 min-w-11 items-center justify-center border font-medium transition-colors',
               currentPage === page
                 ? 'border-brand bg-brand-fill text-brand-foreground font-bold'
                 : 'border-border hover:bg-secondary text-foreground',
@@ -220,7 +220,7 @@
         <button
           type="button"
           :disabled="currentPage >= totalPages"
-          class="inline-flex min-h-8 items-center border border-border px-2.5 font-medium transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed"
+          class="inline-flex min-h-11 items-center border border-border px-2.5 font-medium transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed"
           @click="$emit('update:currentPage', currentPage + 1)"
         >
           {{ $t('files.ui.next') }}

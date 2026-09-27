@@ -19,7 +19,7 @@
             class="flex items-center justify-between gap-3 px-3 py-2 text-xs"
           >
             <div class="flex items-center gap-2 min-w-0">
-              <span class="border border-border bg-secondary/60 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span class="border border-border bg-secondary/60 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 {{ row.locale.toUpperCase() }}
               </span>
               <a
@@ -34,7 +34,7 @@
             <Button
               v-if="row.id"
               variant="ghost"
-              size="icon-xs"
+              size="icon"
               class="shrink-0 text-muted-foreground hover:text-destructive"
               :aria-label="$t('Ištrinti')"
               data-testid="delete-public-url"
@@ -42,7 +42,7 @@
             >
               <Trash2 class="size-3.5" />
             </Button>
-            <span v-else class="shrink-0 text-[10px] italic text-muted-foreground">
+            <span v-else class="shrink-0 text-xs italic text-muted-foreground">
               {{ $t('Pasenusi nuoroda') }}
             </span>
           </li>

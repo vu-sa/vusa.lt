@@ -44,7 +44,7 @@ Route::patch('profile/notification-preferences', [ProfileController::class, 'upd
 Route::delete('profile/notification-preferences', [ProfileController::class, 'resetNotificationPreferences'])->name('profile.resetNotificationPreferences');
 Route::patch('profile/notification-preferences/mute', [ProfileController::class, 'muteNotifications'])->name('profile.muteNotifications');
 Route::post('profile/notification-preferences/test-email', [ProfileController::class, 'sendTestNotificationEmail'])->name('profile.sendTestNotificationEmail');
-Route::get('tasks', [TaskController::class, 'index'])->name('userTasks');
+Route::get('tasks', [TaskController::class, 'index'])->name('tasks.index');
 Route::get('institutionGraph', [DashboardController::class, 'institutionGraph'])->name('institutionGraph');
 
 // System Status
@@ -282,10 +282,9 @@ Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 
 Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');
 Route::put('roles/{role}/sync/attachableTypes', [RoleController::class, 'syncAttachableTypes'])->name('roles.syncAttachableTypes');
 Route::resource('permissions', PermissionController::class)->only(['index']);
-Route::resource('tasks', TaskController::class)->except(['index', 'create', 'show', 'edit']);
+Route::resource('tasks', TaskController::class)->only(['store', 'destroy']);
 Route::get('tasks/summary', [TaskController::class, 'summary'])->name('tasks.summary');
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
-// GET tasks/indicator moved to API: route('api.v1.admin.tasks.indicator')
 
 Route::resource('sharepointFiles', SharepointFileController::class)->only('index', 'destroy');
 

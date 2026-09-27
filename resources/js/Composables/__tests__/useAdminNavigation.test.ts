@@ -22,7 +22,7 @@ const workspace = (key: string, sections: AdminSection[]): AdminWorkspace => ({
 });
 
 const catalog = [
-  workspace('pradzia', [section('apzvalga', 'dashboard'), section('uzduotys', 'userTasks')]),
+  workspace('pradzia', [section('apzvalga', 'dashboard'), section('uzduotys', 'tasks.index')]),
   workspace('atstovavimas', [
     section('posedziai', 'meetings.index'),
     section('darbotvarkes_klausimai', 'agendaItems.index', { matches: ['agendaItems.*'] }),

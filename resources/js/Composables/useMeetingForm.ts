@@ -1,7 +1,5 @@
 import { computed } from 'vue';
-import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
-import { toTypedSchema } from '@vee-validate/zod';
-import * as z from 'zod';
+import { getActiveLanguage } from 'laravel-vue-i18n';
 
 import { MeetingType, getMeetingTypeOptions, type MeetingTypeValue } from '@/Types/MeetingType';
 
@@ -28,40 +26,14 @@ export function useMeetingForm() {
     return day === 0 || day === 6; // Sunday or Saturday
   };
 
-  // Base schema for meeting forms
-  const baseSchema = toTypedSchema(
-    z.object({
-      start_time: z.date({
-        required_error: $t('validation.required', { attribute: $t('forms.fields.date') }),
-      }),
-      type: z.string({
-        required_error: $t('validation.required', { attribute: $tChoice('forms.fields.type', 0) }),
-      }).nullable(),
-    }),
-  );
-
-  // Extended schema with description
-  const extendedSchema = toTypedSchema(
-    z.object({
-      start_time: z.date({
-        required_error: $t('validation.required', { attribute: $t('forms.fields.date') }),
-      }),
-      type: z.string({
-        required_error: $t('validation.required', { attribute: $tChoice('forms.fields.type', 0) }),
-      }).nullable(),
-      // Translatable: Lithuanian is the source language, English optional.
-      description: z.object({ lt: z.string(), en: z.string() }).optional(),
-    }),
-  );
-
   // Format form values for submission
-  const formatMeetingData = (values: Record<string, any>): {
+  const formatMeetingData = (values: { start_time: Date; type: MeetingTypeValue | null; description?: { lt: string; en: string } }): {
     start_time: string;
-    type: MeetingTypeValue;
+    type: MeetingTypeValue | null;
     description?: { lt: string; en: string };
   } => {
-    const dt = values.start_time as Date;
-    const meetingType = values.type as MeetingTypeValue;
+    const dt = values.start_time;
+    const meetingType = values.type;
 
     // For email meetings, set time to 23:59:59 (deadline semantics)
     const adjustedDate = new Date(dt);
@@ -100,7 +72,7 @@ export function useMeetingForm() {
   };
 
   // Get initial values from a meeting object
-  const getInitialValues = (meeting: any) => ({
+  const getInitialValues = (meeting: { start_time?: string | null; type?: MeetingTypeValue | null; description?: unknown }) => ({
     start_time: meeting?.start_time ? new Date(meeting.start_time) : undefined,
     type: meeting?.type ?? undefined, // Don't preselect any meeting type
     description: toLocaleObject(meeting?.description),
@@ -110,8 +82,6 @@ export function useMeetingForm() {
     meetingTypeOptions,
     isEmailMeeting,
     isWeekendTime,
-    baseSchema,
-    extendedSchema,
     formatMeetingData,
     getInitialValues,
   };

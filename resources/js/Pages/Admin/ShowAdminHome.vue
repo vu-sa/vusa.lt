@@ -10,7 +10,7 @@
           :tasks="visibleTasks"
           :stats="taskStats"
           :remaining-count="Math.max(0, taskStats.total - visibleTasks.length)"
-          :more-href="route('userTasks')"
+          :more-href="route('tasks.index')"
         />
 
         <Deferred v-if="hasAtstovavimas" :data="deferredProps">

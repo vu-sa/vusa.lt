@@ -20,7 +20,7 @@
         <!-- Close Button -->
         <button
           type="button"
-          class="absolute right-4 top-4 flex size-10 items-center justify-center border border-border bg-background text-foreground transition-colors hover:bg-secondary z-10"
+          class="absolute right-4 top-4 z-10 flex size-11 items-center justify-center border border-border bg-background text-foreground transition-colors hover:bg-secondary"
           :aria-label="$t('Uždaryti')"
           @click="$emit('close')"
         >
@@ -53,7 +53,7 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 download
-                class="inline-flex min-h-8 items-center gap-1.5 border border-border bg-secondary/50 px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+                class="inline-flex min-h-11 items-center gap-1.5 border border-border bg-secondary/50 px-3 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
               >
                 <Download class="size-3.5" aria-hidden="true" />
                 <span>{{ $t('Atsisiųsti') }}</span>

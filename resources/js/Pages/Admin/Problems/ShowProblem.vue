@@ -43,7 +43,7 @@
                 step.isActive
                   ? 'bg-primary text-primary-foreground'
                   : step.isCompleted
-                    ? 'bg-[var(--status-success-surface)] text-[var(--status-success)]'
+                    ? 'bg-status-success-surface text-status-success'
                     : 'text-muted-foreground hover:bg-accent hover:text-foreground',
                 !canUpdate && 'cursor-default opacity-80',
               ]"
@@ -88,7 +88,7 @@
     <template #sprendimas>
       <div class="max-w-3xl space-y-4">
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <div v-if="hasSolution" class="border border-[var(--status-success-border)] bg-[var(--status-success-surface)] p-4 text-sm text-foreground" v-html="localizedSolution" />
+        <div v-if="hasSolution" class="border border-status-success-border bg-status-success-surface p-4 text-sm text-foreground" v-html="localizedSolution" />
         <EmptyState
           v-else
           :icon="Lightbulb"

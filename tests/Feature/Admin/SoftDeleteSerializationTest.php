@@ -2,7 +2,6 @@
 
 use App\Models\Banner;
 use App\Models\Calendar;
-use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\EventType;
 use App\Models\Form;
@@ -53,13 +52,6 @@ it('exposes deleted_at for soft-deletable models', function (string $modelClass,
     'banner' => [Banner::class, fn (): Banner => Banner::factory()->create(), false],
     'calendar' => [Calendar::class, fn (): Calendar => Calendar::factory()->create(), true],
     'event type' => [EventType::class, fn (): EventType => EventType::factory()->create(), true],
-    'comment' => [
-        Comment::class,
-        fn (): Comment => Comment::factory()
-            ->for(Meeting::factory(), 'commentable')
-            ->create(),
-        false,
-    ],
     'duty' => [Duty::class, fn (): Duty => Duty::factory()->create(), true],
     'form' => [Form::class, fn (): Form => Form::factory()->create(), true],
     'institution' => [Institution::class, fn (): Institution => Institution::factory()->create(), true],

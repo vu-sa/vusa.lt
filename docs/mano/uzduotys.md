@@ -16,6 +16,8 @@ tests:
   - tests/Feature/Tasks/Subscribers/ReservationTaskSubscriberTest.php
   - tests/Feature/Tasks/Subscribers/InstitutionCheckInTaskSubscriberTest.php
   - tests/Feature/Notifications/SendTaskOverdueRemindersCommandTest.php
+  - tests/Feature/Tasks/InstitutionSecretaryTaskResyncTest.php
+  - tests/Feature/Tasks/InstitutionSecretaryMailScopeTest.php
   - resources/js/Pages/Admin/Tasks/__tests__/IndexTask.component.test.ts
   - resources/js/Features/Admin/TaskManager/__tests__/taskActions.test.ts
 ---
@@ -125,12 +127,14 @@ nebėra. Rankinės užduoties priminimus gauna visi, kuriuos priskyrė žmogus.
 
 ## Techninė informacija {#technine-informacija}
 
-- Abu užduočių sąrašai – `TaskController::index` (`mine`) ir `TaskController::summary` (`tenant`) –
+- Abu užduočių sąrašai – `TaskController::index` (`mine`, maršrutas `tasks.index`) ir `TaskController::summary` (`tenant`, maršrutas `tasks.summary`) –
   naudoja tą patį `BuildTaskIndexQuery` ir `Admin/Tasks/IndexTask.vue`. Filtrai ir puslapiai
   kraunami per `api.v1.admin.tasks.index` (`TaskApiController`). Filtrus tikrina `IndexTasksRequest`.
+- Sukurtos užduoties atributų (pavadinimo, termino, atsakingų) keitimas per HTTP nenumatytas –
+  galima tik atnaujinti atlikimo būseną (`TaskController::updateCompletionStatus`) arba užduotį ištrinti (`TaskController::destroy`).
 - Automatiniai tipai – `App\Tasks\Enums\ActionType`. Rankiniu būdu užbaigti galima tik `manual`.
   `updateCompletionStatus` kitus atmeta pranešimu `messages.task.automatic_not_markable`.
-- Atnaujinti gali atsakingi arba turintys `tasks.update.padalinys` / `tasks.update.*`
+- Atlikimo būseną atnaujinti gali atsakingi arba turintys `tasks.update.padalinys` / `tasks.update.*`
   (`TaskPolicy::update`). Ištrinti – `tasks.delete.{*|padalinys|own}`, automatines taip pat
   (`Task::isDeletableBy`). `.own` (tavo pareigybių bendradarbių užduotys) nė vienai standartinei
   rolei nepriskiriama.

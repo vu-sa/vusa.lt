@@ -159,7 +159,7 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.pradzia.description',
             sections: [
                 new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard', [], null, Visibility::always()),
-                new Section('uzduotys', 'shell.sections.uzduotys', 'userTasks', [], 'task', Visibility::always(), descriptionKey: 'shell.section_descriptions.uzduotys'),
+                new Section('uzduotys', 'shell.sections.uzduotys', 'tasks.index', [], 'task', Visibility::always(), matches: ['tasks.index'], descriptionKey: 'shell.section_descriptions.uzduotys'),
                 new Section('pranesimai', 'shell.sections.pranesimai', 'notifications.index', [], null, Visibility::always(), descriptionKey: 'shell.section_descriptions.pranesimai'),
             ],
         );

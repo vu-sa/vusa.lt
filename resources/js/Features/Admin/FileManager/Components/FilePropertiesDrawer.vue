@@ -71,7 +71,7 @@
         <div v-if="selectionMode" class="pt-1">
           <button
             type="button"
-            class="inline-flex min-h-10 w-full items-center justify-center gap-2 bg-brand-fill px-4 text-xs font-bold uppercase tracking-wide text-brand-foreground transition-colors hover:bg-brand-fill/90"
+            class="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-brand-fill px-4 text-xs font-bold uppercase tracking-wide text-brand-foreground transition-colors hover:bg-brand-fill/90"
             @click="$emit('insert')"
           >
             <Link2 class="size-4" aria-hidden="true" />
@@ -85,7 +85,7 @@
           <button
             v-if="source === 'local'"
             type="button"
-            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             @click="$emit('preview')"
           >
             <Eye class="size-3.5 text-muted-foreground" aria-hidden="true" />
@@ -98,7 +98,7 @@
             :href="`/uploads/${selectedFile.replace(/^public\//, '')}`"
             target="_blank"
             download
-            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
           >
             <Download class="size-3.5 text-muted-foreground" aria-hidden="true" />
             <span>{{ $t('Siųsti') }}</span>
@@ -108,7 +108,7 @@
           <button
             v-if="source === 'local'"
             type="button"
-            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             @click="$emit('toggleStar')"
           >
             <Star class="size-3.5" :class="{ 'fill-status-attention text-status-attention': isStarred }" aria-hidden="true" />
@@ -119,7 +119,7 @@
           <button
             v-if="source === 'local'"
             type="button"
-            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             @click="copyUrl"
           >
             <Copy class="size-3.5 text-muted-foreground" aria-hidden="true" />
@@ -131,7 +131,7 @@
             v-if="source === 'local'"
             type="button"
             :disabled="scanningUsage"
-            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
+            class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
             @click="scanFileUsage"
           >
             <Spinner v-if="scanningUsage" class="size-3.5" />
@@ -144,7 +144,7 @@
             v-if="source === 'local' && showCompress"
             type="button"
             :disabled="compressing"
-            class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
+            class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
             :title="compressTitle"
             @click="confirmAndCompress"
           >
@@ -160,7 +160,7 @@
               :href="publicWebUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+              class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             >
               <ExternalLink class="size-3.5 text-muted-foreground" aria-hidden="true" />
               <span>{{ $t('Atidaryti') }}</span>
@@ -168,7 +168,7 @@
             <button
               v-if="publicWebUrl"
               type="button"
-              class="inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+              class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
               @click="copySharePointUrl"
             >
               <Copy class="size-3.5 text-muted-foreground" aria-hidden="true" />
@@ -177,7 +177,7 @@
             <button
               v-else-if="!loadingPublicPermission"
               type="button"
-              class="col-span-2 inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+              class="col-span-2 inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
               @click="createPublicPermission"
             >
               <Link2 class="size-3.5 text-muted-foreground" aria-hidden="true" />
@@ -192,7 +192,7 @@
           <button
             type="button"
             :class="[
-              'col-span-2 inline-flex min-h-9 items-center justify-center gap-1.5 border border-border bg-background px-2.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10',
+              'col-span-2 inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-background px-2.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10',
             ]"
             @click="handleDelete"
           >

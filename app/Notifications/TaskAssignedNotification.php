@@ -45,7 +45,7 @@ class TaskAssignedNotification extends BaseNotification
 
     public function url(): string
     {
-        return route('userTasks');
+        return route('tasks.index');
     }
 
     public function modelClass(): ?string
@@ -71,7 +71,7 @@ class TaskAssignedNotification extends BaseNotification
         return [
             'modelClass' => 'Task',
             'name' => $this->task->name,
-            'url' => route('userTasks'),
+            'url' => route('tasks.index'),
             'id' => $this->task->id,
         ];
     }
@@ -98,7 +98,7 @@ class TaskAssignedNotification extends BaseNotification
     {
         return [
             'label' => __('notifications.action_view_tasks'),
-            'url' => route('userTasks'),
+            'url' => route('tasks.index'),
         ];
     }
 }

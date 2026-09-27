@@ -140,7 +140,6 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('tasks', [TaskApiController::class, 'index'])->name('tasks.index');
         Route::get('mail-queue', [MailQueueApiController::class, 'index'])->name('mailQueue.index');
         Route::get('support-requests', [SupportRequestCollectionApiController::class, 'index'])->name('supportRequests.index');
-        Route::get('tasks/indicator', [TaskApiController::class, 'indicator'])->name('tasks.indicator');
 
         // Tenant-scoped page-view statistics (Umami) for the Svetainė dashboard
         Route::get('analytics/overview', [AnalyticsApiController::class, 'overview'])->name('analytics.overview');

@@ -22,7 +22,7 @@ export const workspace = (key: string, sections: AdminSection[], createActions: 
 
 export const pradzia = workspace('pradzia', [
   section('apzvalga', 'dashboard'),
-  section('uzduotys', 'userTasks'),
+  section('uzduotys', 'tasks.index'),
   section('pranesimai', 'notifications.index'),
 ]);
 

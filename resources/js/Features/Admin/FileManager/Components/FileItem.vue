@@ -20,7 +20,7 @@
       v-if="!isFolder"
       type="button"
       :class="[
-        'absolute left-2 top-2 z-10 flex size-5 cursor-pointer items-center justify-center border transition-all',
+        'absolute left-2 top-2 z-10 flex size-11 cursor-pointer items-center justify-center border transition-all focus-visible:opacity-100 pointer-coarse:opacity-100',
         isMultiSelected || isSelected
           ? 'border-brand bg-brand-fill text-brand-foreground opacity-100'
           : 'border-border bg-background/90 text-foreground opacity-0 group-hover:opacity-100',
@@ -36,7 +36,11 @@
     <button
       v-if="isImage"
       type="button"
-      class="absolute right-2 top-2 z-10 flex size-6 cursor-pointer items-center justify-center border border-border bg-background/90 text-muted-foreground opacity-0 transition-opacity hover:text-brand hover:border-brand group-hover:opacity-100"
+      :class="[
+        'absolute right-2 top-2 z-10 flex size-11 cursor-pointer items-center justify-center',
+        'border border-border bg-background/90 text-muted-foreground opacity-0 transition-opacity',
+        'hover:text-brand hover:border-brand group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100',
+      ]"
       :title="$t('Peržiūrėti')"
       :aria-label="$t('Peržiūrėti')"
       @click.stop="$emit('preview', item)"
@@ -92,7 +96,7 @@
         v-if="!isFolder"
         type="button"
         :class="[
-          'p-0.5 shrink-0 transition-colors',
+          'flex size-11 shrink-0 items-center justify-center transition-colors focus-visible:opacity-100 pointer-coarse:opacity-100',
           isStarred
             ? 'text-status-attention fill-status-attention opacity-100'
             : 'text-muted-foreground/40 hover:text-status-attention opacity-0 group-hover:opacity-100',
