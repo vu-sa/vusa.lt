@@ -67,12 +67,29 @@ describe('IndexTask', () => {
     expect(quickFilterLabels(mountPage({ scope: 'tenant' }))).toContain('tasks.collection.assigned_to_me · 3');
   });
 
+  it('offers a padalinys filter only in the padalinys scope, and only with more than one to choose from', () => {
+    const tenants = [{ id: 1, shortname: 'VU SA MIF' }, { id: 2, shortname: 'VU SA FSF' }];
+    const facetFields = (wrapper: ReturnType<typeof mount>) =>
+      (wrapper.findComponent(CollectionPageStub).props('source') as { facets: { value: { field: string }[] } }).facets.value.map(facet => facet.field);
+
+    expect(facetFields(mountPage({ scope: 'tenant', tenants }))).toContain('tenant');
+    expect(facetFields(mountPage({ scope: 'tenant', tenants: tenants.slice(0, 1) }))).not.toContain('tenant');
+    expect(facetFields(mountPage({ tenants }))).not.toContain('tenant');
+  });
+
   it('leads with a linked task that is not on the first page, so the preview can open on it', () => {
     const linked = task({ id: 'task-99', name: 'Susietoji' });
     const rows = mountPage({ linkedTask: linked }).findAll('[data-testid="row"]');
 
     expect(rows[0].text()).toContain('Susietoji');
     expect(rows).toHaveLength(2);
+  });
+
+  it('offers no checkbox on a task the viewer may read but not update', () => {
+    const wrapper = mountPage({ scope: 'tenant', data: [task({ can_update: false })] });
+
+    expect(wrapper.find('[data-slot="task-completion-control"]').exists()).toBe(true);
+    expect(wrapper.find('[data-slot="task-completion-control"] button').exists()).toBe(false);
   });
 
   it('completes a task in place and reloads only the counts', async () => {

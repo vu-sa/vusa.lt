@@ -242,6 +242,14 @@ describe('InstitutionsNeedingAttention', () => {
     expect(wrapper.find('[data-slot="institutions-needing-attention-more"]').exists()).toBe(false);
   });
 
+  it('marks an institution the user runs as secretary rather than sits in', () => {
+    const administered = mount(InstitutionsNeedingAttention, { props: { institutions: [{ ...institution, is_administered: true }] } });
+    const member = mount(InstitutionsNeedingAttention, { props: { institutions: [institution] } });
+
+    expect(administered.find('[data-slot="institution-administered-badge"]').text()).toContain('secretaries.dashboard.badge');
+    expect(member.find('[data-slot="institution-administered-badge"]').exists()).toBe(false);
+  });
+
   it('names the padalinys when the row carries one', () => {
     const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions: [{ ...institution, tenant_name: 'VU SA MIF' }] } });
 

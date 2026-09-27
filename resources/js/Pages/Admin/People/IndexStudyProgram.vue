@@ -113,7 +113,7 @@ const source = useLocalCollectionSource<StudyProgramRow>({
   items: toRef(props, 'studyPrograms'),
   searchText: program => [program.name, program.degree, program.tenant?.shortname],
   defaultSort: 'name:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: program => program.name },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: program => program.name },
   ],

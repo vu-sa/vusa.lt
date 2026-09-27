@@ -121,7 +121,7 @@ const source = useDatabaseCollectionSource<Category>({
     lastPage: props.resourceCategories.meta.last_page,
   },
   defaultSort: 'created_at:desc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
     { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
   ],

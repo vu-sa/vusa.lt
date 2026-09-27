@@ -52,6 +52,9 @@ export const guide: GuideChapter[] = [
     description: 'Posėdžiai, institucijos, darbotvarkės',
     index: '/visak/',
     pages: [
+      { text: 'Apžvalga', link: '/visak/apzvalga' },
+      { text: 'Padaliniai', link: '/visak/padaliniai' },
+      { text: 'Užduotys', link: '/visak/uzduociu-suvestine' },
       { text: 'Posėdžiai', link: '/visak/posedziai' },
       { text: 'Darbotvarkės klausimai', link: '/visak/darbotvarkes-klausimai' },
       { text: 'Institucijos', link: '/visak/institucijos' },
@@ -59,7 +62,6 @@ export const guide: GuideChapter[] = [
       { text: 'Dokumentai', link: '/visak/dokumentai' },
       { text: 'Laikotarpių tvarkyklė', link: '/visak/pareigybiu-laikotarpiai' },
       { text: 'Institucijų grafas', link: '/visak/instituciju-grafas' },
-      { text: 'Užduočių suvestinė', link: '/visak/uzduociu-suvestine' },
       { text: 'Komentarai', link: '/visak/komentarai' },
     ],
   },

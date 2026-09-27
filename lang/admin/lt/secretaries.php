@@ -21,6 +21,7 @@ return [
 
     'dashboard' => [
         'administered_hint' => 'Esate šios institucijos sekretorius (ne narys).',
+        'badge' => 'Sekretorius',
     ],
 
     'picker' => [

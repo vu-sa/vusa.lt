@@ -157,4 +157,19 @@ describe('InstitutionActivityStatusService', function (): void {
         expect($status->periodicityDays)->toBe(14)
             ->and($status->status)->toBe(InstitutionActivityStatus::Approaching);
     });
+
+    test('takes the shortest periodicity among several types', function (): void {
+        $institution = institutionForActivityStatus(periodicityDays: null);
+        $institution->setRelation('types', new Collection([
+            new Type(['extra_attributes' => ['meeting_periodicity_days' => 60]]),
+            new Type(['extra_attributes' => ['meeting_periodicity_days' => 21]]),
+            new Type(['extra_attributes' => []]),
+        ]));
+
+        expect($institution->meeting_periodicity_days)->toBe(21);
+    });
+
+    test('falls back to thirty days without an override or a typed periodicity', function (): void {
+        expect(institutionForActivityStatus(periodicityDays: null)->meeting_periodicity_days)->toBe(30);
+    });
 });

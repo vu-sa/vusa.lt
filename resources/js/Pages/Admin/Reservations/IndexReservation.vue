@@ -237,7 +237,7 @@ const source = useDatabaseCollectionSource<DashboardReservation>({
     lastPage: props.reservations.meta.last_page,
   },
   defaultSort: 'start_time:desc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'start_time:desc', label: $t('Naujausios pirmiausia') },
     { value: 'start_time:asc', label: $t('Anksčiausios pirmiausia') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },

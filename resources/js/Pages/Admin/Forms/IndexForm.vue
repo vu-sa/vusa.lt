@@ -217,7 +217,7 @@ const source = useDatabaseCollectionSource<FormRow>({
     lastPage: props.forms.meta.last_page,
   },
   defaultSort: 'updated_at:desc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'updated_at:desc', label: $t('Naujausios atnaujintos') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
   ],

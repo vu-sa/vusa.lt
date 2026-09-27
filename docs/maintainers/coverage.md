@@ -97,7 +97,7 @@ Ranked by how much tested behaviour goes unexplained.
 | `supportRequests` | SupportRequest | yes | 9/9 | — |
 | `systemStatus` | — | yes | 1/2 | — |
 | `tags` | Tag | yes | 9/11 | — |
-| `tasks` | Task | yes | 4/7 | — |
+| `tasks` | Task | yes | 5/7 | 2026-09-27 |
 | `tenant` | Tenant | yes | 4/5 | — |
 | `tenants` | Tenant | yes | 8/11 | — |
 | `text-box-submissions` | — | — | 4/4 | — |
@@ -108,6 +108,6 @@ Ranked by how much tested behaviour goes unexplained.
 | `user-preferences` | — | — | 2/2 | — |
 | `userTasks` | — | — | 1/1 | — |
 | `users` | User | yes | 15/21 | — |
-| `visak` | — | yes | 5/5 | — |
+| `visak` | — | yes | 5/5 | 2026-09-27 |
 | `votes` | Vote | yes | 4/4 | — |
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
@@ -12,6 +13,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -449,6 +451,30 @@ test('representatives are searched and paginated without loading the full list',
         ->assertJsonPath('data.users.0.email', 'second-representative@example.test');
 });
 
+test('representative activity counts who acted today, this week, this month and never', function (): void {
+    $duty = Duty::factory()->for($this->institution)->create();
+    collect([now(), now()->subDays(3), now()->subDays(20), now()->subDays(60), null])
+        ->each(function ($lastAction) use ($duty): void {
+            $representative = User::factory()->create();
+            $representative->forceFill(['last_action' => $lastAction])->save();
+            $representative->duties()->attach($duty, ['start_date' => now()->subYear(), 'end_date' => null]);
+        });
+
+    asUser($this->admin)
+        ->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))
+        ->assertJsonPath('data.representative_activity.stats', [
+            'total' => 5,
+            'activeToday' => 1,
+            'activeLast7Days' => 2,
+            'activeLast30Days' => 3,
+            'neverLoggedIn' => 1,
+        ]);
+
+    asUser($this->admin)
+        ->getJson(route('api.v1.admin.visak.representatives', ['tenant_ids' => [$this->tenant->id], 'category' => 'inactive']))
+        ->assertJsonPath('data.pagination.total', 2);
+});
+
 /**
  * VU SA's own bodies do meet, and dropping them server-side left the chart quietly
  * incomplete. They are marked instead, so the chart can offer to hide them.
@@ -492,6 +518,17 @@ describe('internal bodies', function (): void {
 
         expect($rows->get((string) $this->internalInstitution->id)['is_internal'])->toBeTrue()
             ->and($rows->get((string) $this->institution->id)['is_internal'])->toBeFalse();
+    });
+
+    test('the timeline leaves an excluded type out of the attention list as well as the numbers', function (): void {
+        $response = asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline', [
+            'tenant_ids' => [$this->tenant->id],
+        ]));
+
+        $rows = collect($response->json('data.institutions'))->keyBy('id');
+        expect($rows->get((string) $this->internalInstitution->id)['in_summary'])->toBeFalse()
+            ->and($rows->get((string) $this->institution->id)['in_summary'])->toBeTrue()
+            ->and($response->json('data.institution_summary.all'))->toBe(1);
     });
 });
 
@@ -577,6 +614,80 @@ describe('padaliniai gantt', function (): void {
             ->and($meetings['Viešas']['has_report'])->toBeFalse()
             ->and($meetings['Viešas']['agenda_items_count'])->toBe(1)
             ->and($meetings['Savas']['completion_status'])->not->toBeNull();
+    });
+
+    test('a body that only links to the rep\'s own appears read-only, its meetings without agendas', function (): void {
+        $related = Institution::factory()->for($this->tenant)->create();
+        Relationshipable::query()->create([
+            'relationship_id' => Relationship::query()->create(['name' => 'Kuruoja', 'slug' => 'kuruoja'])->id,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
+            'relationshipable_id' => $related->id,
+            'related_model_id' => $this->ownInstitution->id,
+            'bidirectional' => false,
+        ]);
+        RelationshipService::clearRelatedInstitutionsCache($this->ownInstitution->id);
+        $meeting = Meeting::factory()->create(['title' => 'Susijęs', 'start_time' => now()->subDays(5)]);
+        $meeting->institutions()->attach($related->id);
+        AgendaItem::factory()->for($meeting)->create();
+        $tenantIds = [$this->tenant->id, $this->ownInstitution->tenant_id];
+
+        $rows = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', ['tenant_ids' => $tenantIds]))->json('data'))->keyBy('id');
+        $meetings = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.meetings', [
+            'tenant_ids' => $tenantIds,
+            'from' => now()->subMonth()->toDateString(),
+            'until' => now()->addMonth()->toDateString(),
+        ]))->json('data'))->keyBy('title');
+
+        expect($rows->get((string) $related->id)['authorized'])->toBeFalse()
+            ->and($meetings['Susijęs']['authorized'])->toBeFalse()
+            ->and($meetings['Susijęs']['agenda_items_count'])->toBe(0);
+    });
+
+    test('a body the rep\'s own links to appears in full', function (): void {
+        $related = Institution::factory()->for($this->tenant)->create();
+        Relationshipable::query()->create([
+            'relationship_id' => Relationship::query()->create(['name' => 'Kuruoja', 'slug' => 'kuruoja'])->id,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
+            'relationshipable_id' => $this->ownInstitution->id,
+            'related_model_id' => $related->id,
+        ]);
+        RelationshipService::clearRelatedInstitutionsCache($this->ownInstitution->id);
+
+        $rows = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', [
+            'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+        ]))->json('data'))->keyBy('id');
+
+        expect($rows->get((string) $related->id))->not->toHaveKey('authorized')
+            ->and($rows->get((string) $related->id)['activity_status'])->not->toBeNull();
+    });
+
+    test('a body the user administers as secretary appears in full', function (): void {
+        $secretary = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $administered = Institution::factory()->for($this->tenant)->create();
+        $secretary->secretariedInstitutions()->attach($administered, ['cadence_id' => Cadence::factory()->create()->id]);
+
+        $rows = collect(asUser($secretary)->getJson(route('api.v1.admin.visak.gantt', [
+            'tenant_ids' => [$this->tenant->id],
+        ]))->json('data'))->keyBy('id');
+
+        expect($rows->get((string) $administered->id))->not->toBeNull()->not->toHaveKey('authorized');
+    });
+
+    test('a cached window of full meetings is never served to a user who may only see them as public', function (): void {
+        $public = Meeting::factory()->create(['title' => 'Viešas', 'start_time' => now()->subDays(5)]);
+        $public->institutions()->attach($this->publicInstitution->id);
+        $params = [
+            'tenant_ids' => [$this->tenant->id],
+            'from' => now()->subMonth()->toDateString(),
+            'until' => now()->addMonth()->toDateString(),
+        ];
+        asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', $params))
+            ->assertJsonPath('data.0.completion_status', fn ($status) => $status !== null);
+
+        $response = asUser($this->rep)->getJson(route('api.v1.admin.visak.meetings', $params));
+
+        $response->assertJsonPath('data.0.title', 'Viešas')
+            ->assertJsonPath('data.0.completion_status', null);
     });
 
     test('the stats timeline stays closed to padaliniai the user does not manage', function (): void {

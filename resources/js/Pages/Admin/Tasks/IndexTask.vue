@@ -162,6 +162,7 @@ import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Com
 import { useDateLocale } from '@/Composables/useDateLocale';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import {
+  canCompleteByHand,
   formatTaskDueDate,
   getDueDateUrgencyClasses,
   getTaskActionLabel,
@@ -275,7 +276,7 @@ const source = useDatabaseCollectionSource<TaskDisplayData>({
     lastPage: props.meta.last_page,
   },
   defaultSort: 'due_date:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'due_date:asc', label: $t('tasks.collection.sort_due') },
     { value: 'created_at:desc', label: $t('tasks.collection.sort_newest') },
   ],
@@ -357,7 +358,7 @@ const loadingTaskId = ref<string | null>(null);
  * Only the counts reload; the list catches up on the next filter or refresh.
  */
 function toggleCompletion(task: TaskDisplayData): void {
-  if (loadingTaskId.value || task.can_be_manually_completed === false) {
+  if (loadingTaskId.value || !canCompleteByHand(task)) {
     return;
   }
 

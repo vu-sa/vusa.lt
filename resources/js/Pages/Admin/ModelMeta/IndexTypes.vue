@@ -88,7 +88,7 @@ const source = useLocalCollectionSource<TypeRow>({
   items: toRef(props, 'types'),
   searchText: type => [titleOf(type), type.slug, type.model_type],
   defaultSort: 'title:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)'), by: titleOf },
     { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)'), by: titleOf },
     { value: 'updated_at:desc', label: $t('Neseniai atnaujinti'), by: type => type.updated_at },

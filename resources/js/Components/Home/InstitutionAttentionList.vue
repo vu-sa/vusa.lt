@@ -10,6 +10,15 @@
           {{ institution.name }}
         </Link>
         <span
+          v-if="institution.is_administered"
+          class="mt-1 inline-flex items-center gap-1 border border-border px-1.5 py-0.5 text-xs text-muted-foreground"
+          :title="$t('secretaries.dashboard.administered_hint')"
+          data-slot="institution-administered-badge"
+        >
+          <NotebookPen class="size-3.5" aria-hidden="true" />
+          {{ $t('secretaries.dashboard.badge') }}
+        </span>
+        <span
           v-if="institution.tenant_name || institution.effective_days_since_activity !== null"
           class="block text-xs text-muted-foreground"
         >
@@ -33,6 +42,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { NotebookPen } from 'lucide-vue-next';
 
 import type { InstitutionActivityInsight } from './types';
 

@@ -47,6 +47,8 @@ class TaskResource extends JsonResource
             'progress' => $this->getProgress(),
             'is_overdue' => $this->isOverdue(),
             'can_be_manually_completed' => $this->canBeManuallyCompleted(),
+            // A reader of the padalinys list is not necessarily allowed to tick it off.
+            'can_update' => (bool) $request->user()?->can('update', $this->resource),
             'icon' => $this->icon,
             'color' => $this->color,
             'taskable' => $taskable ? [

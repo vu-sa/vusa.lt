@@ -12,13 +12,19 @@ import type {
 
 export function useAtstovavimasData(
   userGetter: MaybeRefOrGetter<AtstovavimasUser>,
+  userInstitutionsGetter: MaybeRefOrGetter<AtstovavimasInstitution[]> = [],
 ) {
-  // User's direct institutions, including duties that begin later.
+  // User's direct institutions, including duties that begin later, then the ones they
+  // administer as secretary (`is_administered`), which no duty reaches.
   const institutions = computed<AtstovavimasInstitution[]>(() => {
     const user = toValue(userGetter);
-    return (user?.authorization_duties ?? [])
-      .map(duty => duty.institution ?? null)
-      .filter((institution): institution is AtstovavimasInstitution => institution !== null)
+    const administered = (toValue(userInstitutionsGetter) ?? []).filter(institution => institution.is_administered);
+
+    return [
+      ...(user?.authorization_duties ?? []).map(duty => duty.institution ?? null),
+      ...administered,
+    ]
+      .filter((institution): institution is AtstovavimasInstitution => institution !== null && institution !== undefined)
       .map((inst: AtstovavimasInstitution) => ({
         ...inst,
         hasUpcomingMeetings: Array.isArray(inst?.meetings)

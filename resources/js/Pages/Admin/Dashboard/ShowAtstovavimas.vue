@@ -170,7 +170,7 @@ const relatedInstitutions = computed<AtstovavimasInstitution[]>(() =>
 );
 
 // Getter keeps reactivity when an Inertia partial reload replaces the prop.
-const atstovavimasData = useAtstovavimasData(() => props.user);
+const atstovavimasData = useAtstovavimasData(() => props.user, () => props.userInstitutions as unknown as AtstovavimasInstitution[]);
 const timelineFilters = provideTimelineFilters(atstovavimasData.institutions.value, []);
 const actions = useAtstovavimasActions(props.userInstitutions);
 
@@ -230,7 +230,12 @@ const attention = computed<InstitutionActivityInsight[]>(() =>
   userScopedInstitutions.value
     .filter(institution => institution.activity_status?.requires_action)
     .sort((a, b) => b.activity_status.priority - a.activity_status.priority)
-    .map(institution => ({ id: String(institution.id), name: String(institution.name ?? ''), ...institution.activity_status })),
+    .map(institution => ({
+      id: String(institution.id),
+      name: String(institution.name ?? ''),
+      is_administered: institution.is_administered === true,
+      ...institution.activity_status,
+    })),
 );
 
 const showNumbersBesideCoordinators = computed(() =>

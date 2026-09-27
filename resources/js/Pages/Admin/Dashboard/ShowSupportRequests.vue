@@ -91,7 +91,7 @@ const source = useDatabaseCollectionSource<SupportRequestItem>({
   },
   preserveUrlKeys: ['tab'],
   defaultSort: 'created_at:desc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'created_at:desc', label: $t('Naujausi') },
     { value: 'created_at:asc', label: $t('Seniausi') },
     { value: 'title:asc', label: $t('Pagal pavadinimą') },

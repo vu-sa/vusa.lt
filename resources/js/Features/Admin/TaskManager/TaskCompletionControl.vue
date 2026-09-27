@@ -35,7 +35,7 @@
     </span>
 
     <Checkbox
-      v-else
+      v-else-if="canCompleteByHand(task)"
       :model-value="Boolean(task.completed_at)"
       :aria-label="task.completed_at ? $t('tasks.collection.reopen') : $t('tasks.collection.complete')"
       @update:model-value="emit('toggle')"
@@ -49,6 +49,7 @@ import { RotateCw } from 'lucide-vue-next';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import {
+  canCompleteByHand,
   getTaskActionBadgeClasses,
   getTaskActionIcon,
   getTaskProgressStrokeClass,

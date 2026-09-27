@@ -191,7 +191,7 @@ const source = useDatabaseCollectionSource<Tag>({
     lastPage: props.tags.meta.last_page,
   },
   defaultSort: 'created_at:desc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'created_at:desc', label: $t('Naujausios pirmiausia') },
     { value: 'created_at:asc', label: $t('Seniausios pirmiausia') },
     { value: 'alias:asc', label: $t('Pagal alias') },

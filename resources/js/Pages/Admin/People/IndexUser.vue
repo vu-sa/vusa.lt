@@ -147,7 +147,7 @@ const source = useDatabaseCollectionSource<UserRow>({
     single: true,
     values: [{ value: 'scheduled', label: $t('users.filters.scheduled') }],
   }],
-  sortOptions: [
+  sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal vardą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal vardą (Z–A)') },
     { value: 'last_action:desc', label: $t('Neseniai prisijungę') },

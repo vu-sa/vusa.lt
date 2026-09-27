@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ref } from 'vue';
 
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '../useCollectionSource';
 
@@ -212,5 +213,21 @@ describe('useDatabaseCollectionSource facet counts', () => {
     });
 
     await vi.waitFor(() => expect(source.items.value.map(item => item.id)).toEqual(['1', '2', '3']));
+  });
+});
+
+describe('useDatabaseCollectionSource sort options', () => {
+  it('follows a label that changes after mount, as translations loaded late do', () => {
+    const label = ref('tasks.collection.sort_due');
+    const source = useDatabaseCollectionSource({
+      endpoint: '/api/v1/admin/tasks',
+      initial: { items: [], total: 0, perPage: 20, currentPage: 1, lastPage: 1 },
+      sortOptions: () => [{ value: 'due_date:asc', label: label.value }],
+      defaultSort: 'due_date:asc',
+    });
+
+    label.value = 'Pagal terminą';
+
+    expect(source.sortOptions.value).toEqual([{ value: 'due_date:asc', label: 'Pagal terminą' }]);
   });
 });

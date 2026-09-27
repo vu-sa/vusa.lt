@@ -49,6 +49,16 @@ test('an institution takes the scope of its first typed ancestor', function (): 
     expect($institution->fresh()->governance_scope)->toBe(InstitutionScope::Vusa);
 });
 
+test('an institution with both a VU SA type and an external one counts as external', function (): void {
+    $institution = Institution::factory()->create();
+    $institution->types()->attach([
+        Type::factory()->forInstitutions(InstitutionScope::Vusa)->create()->id,
+        Type::factory()->forInstitutions(InstitutionScope::University)->create()->id,
+    ]);
+
+    expect($institution->fresh()->governance_scope)->toBe(InstitutionScope::University);
+});
+
 test('an institution with no types falls back to the university scope', function (): void {
     $institution = Institution::factory()->create();
 

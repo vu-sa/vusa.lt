@@ -2,9 +2,11 @@
 
 namespace App\Actions;
 
+use App\Enums\InstitutionScope;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\InstitutionScopeResolver;
 use App\Services\NotificationRouter;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * The koordinatoriai (O22) of one or more institutions, each named by and reachable through the
  * coordinator duty itself — not whichever duty or personal address the user happens to have first.
+ * Only a VU body has one: VU SA's own, national and international bodies are coordinated elsewhere.
  */
 class GetInstitutionCoordinators
 {
@@ -31,6 +34,10 @@ class GetInstitutionCoordinators
         $coordinators = [];
 
         foreach ($institutions as $institution) {
+            if (! self::isCoordinated($institution)) {
+                continue;
+            }
+
             $institutionName = (string) $institution->getTranslation('name', app()->getLocale());
 
             $managerDuties = Duty::query()
@@ -66,6 +73,11 @@ class GetInstitutionCoordinators
         }
 
         return array_values($coordinators);
+    }
+
+    public static function isCoordinated(Institution $institution): bool
+    {
+        return app(InstitutionScopeResolver::class)->forInstitution($institution) === InstitutionScope::University;
     }
 
     /**

@@ -3,6 +3,7 @@
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
+use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -122,5 +123,44 @@ describe('task collection API', function (): void {
             ->getJson(route('api.v1.admin.tasks.index', ['overdue' => '1']))
             ->assertJsonPath('data.total', 1)
             ->assertJsonPath('data.items.0.id', $late->id);
+    });
+
+    test('filters to automatic tasks and counts them for the chip', function (): void {
+        $automatic = Task::factory()->withActionType(ActionType::AgendaCompletion)->create();
+        $automatic->users()->attach($this->user);
+        Task::factory()->withActionType(ActionType::Manual)->create()->users()->attach($this->user);
+
+        asUser($this->user)
+            ->getJson(route('api.v1.admin.tasks.index', ['auto' => '1']))
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $automatic->id);
+
+        asUser($this->user)
+            ->get(route('userTasks'))
+            ->assertInertia(fn (Assert $page) => $page->where('taskCounts.auto', 1));
+    });
+
+    test('never counts a task without a due date or an already completed one as overdue', function (): void {
+        $late = Task::factory()->overdue()->create();
+        $late->users()->attach($this->user);
+        Task::factory()->create(['due_date' => null])->users()->attach($this->user);
+        Task::factory()->create(['due_date' => now()->subDay(), 'completed_at' => now()])->users()->attach($this->user);
+
+        asUser($this->user)
+            ->getJson(route('api.v1.admin.tasks.index', ['overdue' => '1', 'completion' => 'all']))
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $late->id);
+    });
+
+    test('lists completed tasks most recently completed first', function (): void {
+        $earlier = Task::factory()->create(['completed_at' => now()->subDays(2)]);
+        $later = Task::factory()->create(['completed_at' => now()->subDay()]);
+        $earlier->users()->attach($this->user);
+        $later->users()->attach($this->user);
+
+        asUser($this->user)
+            ->getJson(route('api.v1.admin.tasks.index', ['completion' => 'completed']))
+            ->assertJsonPath('data.items.0.id', $later->id)
+            ->assertJsonPath('data.items.1.id', $earlier->id);
     });
 });

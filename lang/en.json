@@ -846,7 +846,7 @@
     "Pranešimas apie nebuvimą": "Check-in notification",
     "Laikotarpis, kai institucija neturi posėdžių ir buvo pranešta apie tai": "Period when the institution has no meetings and this was reported",
     "Saugumo zona": "Safety zone",
-    "±14 dienų periodas aplink susitikimą, kai atstovavimas laikomas padengtų": "±14 day period around a meeting when representation is considered covered",
+    "Pusė institucijos periodiškumo prieš ir po posėdžio, kai atstovavimas laikomas padengtu": "Half the institution's meeting periodicity before and after a meeting, when representation is considered covered",
     "Laiko indikatoriai": "Time indicators",
     "Šiandienos linija": "Today line",
     "Vertikali linija, rodanti dabartinę datą": "Vertical line showing the current date",

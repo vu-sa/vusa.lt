@@ -77,7 +77,7 @@ const source = useLocalCollectionSource<Notification>({
   items: toRef(props, 'notifications'),
   searchText: item => [item.data.title, item.data.body, item.data.message],
   defaultSort: 'created_at:desc',
-  sortOptions: [{ value: 'created_at:desc', label: $t('Naujausi'), by: item => item.created_at }],
+  sortOptions: () => [{ value: 'created_at:desc', label: $t('Naujausi'), by: item => item.created_at }],
   facets: [{
     field: 'read',
     label: $t('Būsena'),

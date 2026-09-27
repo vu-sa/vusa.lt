@@ -169,7 +169,7 @@ const source = useDatabaseCollectionSource<Duty>({
   endpoint: route('api.v1.admin.duties.index'),
   initial: { items: props.duties.data, total: props.duties.meta.total, perPage: props.duties.meta.per_page, currentPage: props.duties.meta.current_page, lastPage: props.duties.meta.last_page },
   defaultSort: 'name:asc',
-  sortOptions: [{ value: 'name:asc', label: $t('Pagal pavadinimą') }, { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') }],
+  sortOptions: () => [{ value: 'name:asc', label: $t('Pagal pavadinimą') }, { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') }],
   preserveUrlKeys: ['showDeleted'],
   facets: [{ field: 'data_quality', label: $t('Duomenų kokybė'), single: true, values: [
     { value: 'vacant', label: $t('Neužimtos') }, { value: 'missing_en_name', label: $t('Trūksta EN pavadinimo') },

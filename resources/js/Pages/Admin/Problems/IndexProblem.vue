@@ -373,7 +373,7 @@ const source = useDatabaseCollectionSource<App.Entities.Problem>({
     lastPage: props.meta.last_page,
   },
   defaultSort: 'occurred_at:desc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'occurred_at:desc', label: $t('Naujausios problemos') },
     { value: 'occurred_at:asc', label: $t('Seniausios problemos') },
   ],

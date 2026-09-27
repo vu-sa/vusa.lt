@@ -74,8 +74,6 @@ describe('tasks.summary listing', function (): void {
     });
 
     test('does not offer deletion to a user who merely holds the task', function (): void {
-        // tasks.delete is seeded for no role, so offering the action in the table only ever
-        // produced a 403 on click.
         Role::create(['name' => 'Task reader', 'guard_name' => 'web'])->givePermissionTo('tasks.read.padalinys');
         $manager = makeTenantUserWithRole('Task reader', $this->tenant);
         orphanTaskFor($manager, ActionType::Manual);
@@ -178,5 +176,125 @@ describe('tasks.destroy for an orphaned task', function (): void {
         asUser($superAdmin)->delete(route('tasks.destroy', $orphan->id))->assertRedirect();
 
         expect(Task::query()->whereKey($orphan->id)->exists())->toBeFalse();
+    });
+});
+
+describe('tasks.summary scope', function (): void {
+    test('shows a padalinys reader the tasks held in their padalinys but not those held elsewhere', function (): void {
+        Role::create(['name' => 'Meeting task reader', 'guard_name' => 'web'])
+            ->givePermissionTo(['tasks.read.padalinys', 'meetings.read.padalinys']);
+        $reader = makeTenantUserWithRole('Meeting task reader', $this->tenant);
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $ownTask = summaryMeetingTaskFor(makeUser($this->tenant), $this->institution);
+        // The meeting is readable; only the assignee's padalinys puts this task out of scope.
+        $foreignTask = summaryMeetingTaskFor(makeUser($otherTenant), $this->institution);
+
+        $response = asUser($reader)->get(route('tasks.summary'));
+
+        $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
+        expect($ids)->toContain($ownTask->id)
+            ->and($ids)->not->toContain($foreignTask->id);
+    });
+
+    test('hides a meeting task from a reader who may not open meetings in that padalinys', function (): void {
+        Role::create(['name' => 'Task reader', 'guard_name' => 'web'])->givePermissionTo('tasks.read.padalinys');
+        $reader = makeTenantUserWithRole('Task reader', $this->tenant);
+        $meetingTask = summaryMeetingTaskFor(makeUser($this->tenant), $this->institution);
+        $orphan = orphanTaskFor(makeUser($this->tenant));
+
+        $response = asUser($reader)->get(route('tasks.summary'));
+
+        $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
+        expect($ids)->toContain($orphan->id)
+            ->and($ids)->not->toContain($meetingTask->id);
+    });
+
+    test('never lists a task nobody is assigned to, nor one about a user', function (): void {
+        $superAdmin = makeAdminUser($this->tenant);
+        $unassigned = Task::factory()->create(['taskable_type' => 'institution', 'taskable_id' => $this->institution->id]);
+        $aboutUser = summaryTaskFor($superAdmin, ['taskable_type' => 'user', 'taskable_id' => $superAdmin->id]);
+        $listed = summaryMeetingTaskFor($superAdmin, $this->institution);
+
+        $response = asUser($superAdmin)->get(route('tasks.summary'));
+
+        $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
+        expect($ids)->toContain($listed->id)
+            ->and($ids)->not->toContain($unassigned->id)
+            ->and($ids)->not->toContain($aboutUser->id);
+    });
+
+    test('shows the central student representative coordinator the tasks of every padalinys', function (): void {
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $ownTask = summaryMeetingTaskFor(makeUser($this->tenant), $this->institution);
+        $otherTask = summaryMeetingTaskFor(makeUser($otherTenant), Institution::factory()->for($otherTenant)->create());
+
+        $response = asUser($coordinator)->get(route('tasks.summary'));
+
+        $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
+        expect($ids)->toContain($ownTask->id)
+            ->and($ids)->toContain($otherTask->id);
+    });
+
+    test('refuses a padalinys student representative coordinator, who only has their own tasks', function (): void {
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
+
+        asUser($coordinator)->get(route('tasks.summary'))->assertForbidden();
+    });
+});
+
+describe('tasks.summary filters', function (): void {
+    test('narrows to the tasks assigned to the viewer', function (): void {
+        Role::create(['name' => 'Task reader', 'guard_name' => 'web'])->givePermissionTo('tasks.read.padalinys');
+        $reader = makeTenantUserWithRole('Task reader', $this->tenant);
+        $mine = orphanTaskFor($reader);
+        orphanTaskFor(makeUser($this->tenant));
+
+        asUser($reader)
+            ->getJson(route('api.v1.admin.tasks.index', ['scope' => 'tenant', 'assigned' => 'me']))
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $mine->id);
+    });
+
+    test('narrows to a chosen padalinys the viewer may read', function (): void {
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $ownTask = summaryMeetingTaskFor(makeUser($this->tenant), $this->institution);
+        summaryMeetingTaskFor(makeUser($otherTenant), Institution::factory()->for($otherTenant)->create());
+
+        asUser($coordinator)
+            ->getJson(route('api.v1.admin.tasks.index', ['scope' => 'tenant', 'tenant' => [$this->tenant->id]]))
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $ownTask->id);
+    });
+});
+
+describe('tasks.summary deletion offer', function (): void {
+    test('lets the central student representative coordinator delete a manual task but not an automatic one', function (): void {
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $assignee = makeUser($this->tenant);
+        $manual = summaryMeetingTaskFor($assignee, $this->institution, ActionType::Manual);
+        $automatic = summaryMeetingTaskFor($assignee, $this->institution, ActionType::AgendaCompletion);
+
+        $response = asUser($coordinator)->get(route('tasks.summary'));
+
+        $canDelete = collect($response->viewData('page')['props']['data'])->pluck('can_delete', 'id');
+        expect($canDelete[$manual->id])->toBeTrue()
+            ->and($canDelete[$automatic->id])->toBeFalse();
+    });
+});
+
+describe('tasks.summary completion offer', function (): void {
+    test('lets the assignee tick a task off but not a padalinys reader who may not update it', function (): void {
+        Role::create(['name' => 'Task reader', 'guard_name' => 'web'])->givePermissionTo('tasks.read.padalinys');
+        $reader = makeTenantUserWithRole('Task reader', $this->tenant);
+        $assignee = makeUser($this->tenant);
+        orphanTaskFor($assignee, ActionType::Manual);
+
+        $readerView = asUser($reader)->get(route('tasks.summary'))->viewData('page')['props']['data'];
+        $assigneeView = asUser($assignee)->get(route('userTasks'))->viewData('page')['props']['data'];
+
+        expect($readerView[0]['can_update'])->toBeFalse()
+            ->and($assigneeView[0]['can_update'])->toBeTrue();
     });
 });

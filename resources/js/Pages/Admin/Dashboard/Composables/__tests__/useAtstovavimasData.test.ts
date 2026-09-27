@@ -42,4 +42,17 @@ describe('useAtstovavimasData', () => {
 
     expect(data.institutionsInsights.value.attention.map(item => item.id)).toEqual(['3', '1']);
   });
+
+  it('adds the institutions the user administers as secretary, once, next to their duty ones', () => {
+    const user = { authorization_duties: [{ institution: institution('1', 'healthy', 0) }] } as AtstovavimasUser;
+    const userInstitutions = [
+      institution('1', 'healthy', 0),
+      { ...institution('2', 'overdue', 50), is_administered: true },
+    ];
+
+    const data = useAtstovavimasData(user, userInstitutions);
+
+    expect(data.institutions.value.map(item => item.id)).toEqual(['1', '2']);
+  });
 });
+

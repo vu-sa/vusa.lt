@@ -249,7 +249,7 @@ const source = useDatabaseCollectionSource<BannerRow>({
     lastPage: props.banners.meta.last_page,
   },
   defaultSort: 'title:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'title:asc', label: $t('Pagal pavadinimą (A–Z)') },
     { value: 'title:desc', label: $t('Pagal pavadinimą (Z–A)') },
   ],

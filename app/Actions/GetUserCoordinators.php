@@ -20,7 +20,7 @@ class GetUserCoordinators
         $institutions = $user->authorization_duties
             ->loadMissing('institution')
             ->pluck('institution')
-            ->filter()
+            ->filter(fn ($institution) => $institution !== null && GetInstitutionCoordinators::isCoordinated($institution))
             ->unique('id');
 
         // One coordinator per tenant: the first a rep would be pointed to, as before.

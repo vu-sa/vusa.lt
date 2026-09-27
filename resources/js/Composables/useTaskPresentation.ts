@@ -33,6 +33,8 @@ export interface TaskDisplayData {
   progress?: TaskProgress | null;
   is_overdue?: boolean;
   can_be_manually_completed?: boolean;
+  /** Absent on payloads that predate it; only an explicit `false` withholds completion. */
+  can_update?: boolean;
   can_delete?: boolean;
   taskable?: {
     id: string;
@@ -167,6 +169,11 @@ export function getTaskActionLabel(actionType: ActionType): string {
 
 export function isPeriodicityGapTask(task: Pick<TaskDisplayData, 'action_type'>): boolean {
   return task.action_type === TaskActionType.PeriodicityGap;
+}
+
+/** A person, not the system, closes it — and this person may. */
+export function canCompleteByHand(task: Pick<TaskDisplayData, 'can_be_manually_completed' | 'can_update'>): boolean {
+  return task.can_be_manually_completed !== false && task.can_update !== false;
 }
 
 export function isAgendaCreationTask(task: Pick<TaskDisplayData, 'action_type'>): boolean {

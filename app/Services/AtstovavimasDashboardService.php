@@ -58,16 +58,20 @@ class AtstovavimasDashboardService
     {
         $institutions = DutyService::getTimelineInstitutionsForTenants($tenantIds, $this->authorizer);
         $this->decorateInstitutions($institutions);
+        $counted = $this->withoutExcludedInstitutionTypes($institutions);
+        $countedIds = $counted->pluck('id')->map(fn ($id) => (string) $id)->flip();
 
         return [
-            // Every row is drawn; the chart's own toggle decides which are shown. The summary
-            // tiles stay on the set the settings call formal, so the health numbers do not
-            // shift under a display filter.
+            // Every row is drawn; the chart's own toggle decides which are shown. The tiles and the
+            // attention list stay on the set the settings call formal (`in_summary`), so the two agree.
             'institutions' => $institutions
-                ->map(fn (Institution $institution) => $this->mapInstitution($institution))
+                ->map(fn (Institution $institution) => [
+                    ...$this->mapInstitution($institution),
+                    'in_summary' => $countedIds->has((string) $institution->id),
+                ])
                 ->values()
                 ->all(),
-            'institution_summary' => $this->institutionSummary($this->withoutExcludedInstitutionTypes($institutions)),
+            'institution_summary' => $this->institutionSummary($counted),
             'representative_activity' => $this->representativeActivitySummary($tenantIds),
         ];
     }

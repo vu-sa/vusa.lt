@@ -31,6 +31,10 @@ class DocsSeeder extends Seeder
 
     public const RESOURCE_MANAGER_EMAIL = 'tomas.kazlauskas@vusa.test';
 
+    public const COORDINATOR_EMAIL = 'greta.urbonaite@vusa.test';
+
+    public const CENTRAL_COORDINATOR_EMAIL = 'jonas.rimkus@vusa.test';
+
     public const MIXED_RESERVATION_NAME = 'Studentų dienų stendas';
 
     public const TIMELINE_INSTITUTION = 'VU SA parlamentas';
@@ -80,6 +84,30 @@ class DocsSeeder extends Seeder
 
         $this->reservations($tenant, $representative);
         $this->dutyTimeline($tenant);
+        $this->coordinators($tenant);
+    }
+
+    /**
+     * The padalinys coordinator sees the Padaliniai statistics for this padalinys only; the
+     * central one also reads every padalinys' tasks, which the Užduotys frame needs.
+     */
+    private function coordinators(Tenant $tenant): void
+    {
+        $board = $this->institution($tenant, 'VU SA padalinio valdyba', 'VU SR unit board', 'Valdyba');
+
+        foreach ([
+            [self::COORDINATOR_EMAIL, 'Greta Urbonaitė', 'Studentų atstovų koordinatorė', 'Student representative coordinator', 'Studentų atstovų koordinatorius'],
+            [self::CENTRAL_COORDINATOR_EMAIL, 'Jonas Rimkus', 'Centrinio biuro studentų atstovų koordinatorius', 'Central office student representative coordinator', 'Centrinio biuro studentų atstovų koordinatorius'],
+        ] as [$email, $name, $dutyLt, $dutyEn, $role]) {
+            $duty = Duty::factory()->for($board)->create([
+                'name' => ['lt' => $dutyLt, 'en' => $dutyEn],
+                'description' => ['lt' => '', 'en' => ''],
+            ]);
+            $duty->assignRole($role);
+
+            User::factory()->create(['name' => $name, 'email' => $email])
+                ->duties()->attach($duty, ['start_date' => now()->subYear()]);
+        }
     }
 
     /**

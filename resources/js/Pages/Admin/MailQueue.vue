@@ -180,7 +180,7 @@ const source = useDatabaseCollectionSource<Recipient>({
     lastPage: props.recipients.last_page,
   },
   defaultSort: 'items_count:desc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'items_count:desc', label: $t('Daugiausia eilučių') },
     { value: 'oldest_at:asc', label: $t('Seniausi pirmiau') },
   ],

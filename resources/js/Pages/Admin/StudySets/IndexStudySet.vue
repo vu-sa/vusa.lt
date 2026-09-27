@@ -87,7 +87,7 @@ const source = useLocalCollectionSource<StudySetRow>({
   items: toRef(props, 'studySets'),
   searchText: set => [getTranslatedValue(set.name, 'lt'), getTranslatedValue(set.name, 'en')],
   defaultSort: 'order:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'order:asc', label: $t('Eilės tvarka'), by: set => set.order },
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: nameOf },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: nameOf },

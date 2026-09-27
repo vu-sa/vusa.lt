@@ -86,7 +86,7 @@
                 <div>
                   <span class="text-sm font-medium">{{ $t('Saugumo zona') }}</span>
                   <p class="text-xs text-muted-foreground">
-                    {{ $t('±14 dienų periodas aplink susitikimą, kai atstovavimas laikomas padengtų') }}
+                    {{ $t('Pusė institucijos periodiškumo prieš ir po posėdžio, kai atstovavimas laikomas padengtu') }}
                   </p>
                 </div>
               </div>

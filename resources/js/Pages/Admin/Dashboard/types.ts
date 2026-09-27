@@ -25,6 +25,8 @@ export interface AtstovavimasInstitution {
   is_internal?: boolean;
   /** Reached through an administrator nomination, not a duty — the user is not a member. */
   is_administered?: boolean;
+  /** Counted in the padaliniai tiles and attention list; false for a type the settings exclude. */
+  in_summary?: boolean;
   meeting_periodicity_days?: number;
   // Duty members (Gantt coverage periods); tenant timeline only
   duties?: AtstovavimasDuty[];

@@ -64,7 +64,11 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
     ? { data: ref([]), isFetching: ref(false), loaded: ref(true), load: ganttRowsLoad }
     : ({
     data: ref({
-      institutions: Array.from({ length: 7 }, (_, i) => tenantInstitution(String(i + 1), i)),
+      institutions: [
+        ...Array.from({ length: 7 }, (_, i) => tenantInstitution(String(i + 1), i)),
+        // A type the settings exclude: drawn in the Gantt, but left out of the numbers and the list.
+        { ...tenantInstitution('excluded', 99), in_summary: false },
+      ],
       institution_summary: { all: 5, needs_attention: 3, overdue: 2, approaching: 1, no_activity: 0, current: 2 },
     }),
     isFetching: ref(false),
@@ -197,7 +201,7 @@ describe('section tiles', () => {
 });
 
 describe('attention list', () => {
-  it('passes every institution needing attention, highest priority first, capped at five', () => {
+  it('passes every counted institution needing attention, highest priority first, capped at five', () => {
     wrapper = createWrapper();
 
     const list = wrapper.getComponent({ name: 'InstitutionsNeedingAttention' });

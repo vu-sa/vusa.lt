@@ -1,4 +1,4 @@
-import { computed, isRef, ref, shallowReactive, watch, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue';
+import { computed, isRef, ref, shallowReactive, toValue, watch, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -95,7 +95,8 @@ interface DatabaseCollectionSourceOptions<T> {
     currentPage: number;
     lastPage: number;
   };
-  sortOptions: CollectionSortOption[];
+  /** A getter, so labels built with `$t()` follow translations that load after the page mounts. */
+  sortOptions: MaybeRefOrGetter<CollectionSortOption[]>;
   defaultSort: string;
   preserveUrlKeys?: string[];
   /**
@@ -586,7 +587,7 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     chips,
     activeFilterCount,
     sortBy,
-    sortOptions: computed(() => options.sortOptions),
+    sortOptions: computed(() => toValue(options.sortOptions)),
     search: (next, immediate = false) => {
       query.value = next;
       if (immediate) {
@@ -646,7 +647,8 @@ interface LocalCollectionSourceOptions<T> {
   items: Ref<readonly T[]> | readonly T[];
   /** The text a query matches against, one or more strings per item. */
   searchText: (item: T) => (string | null | undefined)[];
-  sortOptions: LocalSortOption<T>[];
+  /** A getter, so labels built with `$t()` follow translations that load after the page mounts. */
+  sortOptions: MaybeRefOrGetter<LocalSortOption<T>[]>;
   defaultSort: string;
   facets?: LocalFacetDefinition<T>[];
 }
@@ -670,7 +672,7 @@ export function useLocalCollectionSource<T>(options: LocalCollectionSourceOption
   const facetDefinitions = options.facets ?? [];
 
   const query = ref(initialParams.get('search') ?? '');
-  const sortBy = ref(options.sortOptions.some(option => option.value === initialParams.get('sort'))
+  const sortBy = ref(toValue(options.sortOptions).some(option => option.value === initialParams.get('sort'))
     ? initialParams.get('sort') as string
     : options.defaultSort);
   const visible = ref(PAGE_SIZE * Math.max(1, Number(initialParams.get('pages')) || 1));
@@ -701,7 +703,8 @@ export function useLocalCollectionSource<T>(options: LocalCollectionSourceOption
     });
 
   const filtered = computed(() => {
-    const sort = options.sortOptions.find(option => option.value === sortBy.value) ?? options.sortOptions[0];
+    const sortOptions = toValue(options.sortOptions);
+    const sort = sortOptions.find(option => option.value === sortBy.value) ?? sortOptions[0];
     const direction = sort?.value.endsWith(':desc') ? -1 : 1;
     const rows = source.value.filter(item => matchesQuery(item) && matchesFacets(item));
 
@@ -832,7 +835,7 @@ export function useLocalCollectionSource<T>(options: LocalCollectionSourceOption
     chips,
     activeFilterCount: computed(() => chips.value.length),
     sortBy,
-    sortOptions: computed(() => options.sortOptions.map(({ value, label }) => ({ value, label }))),
+    sortOptions: computed(() => toValue(options.sortOptions).map(({ value, label }) => ({ value, label }))),
     search: (next) => {
       query.value = next;
       visible.value = PAGE_SIZE;
@@ -869,7 +872,7 @@ export function useTrashCollectionSource<T>(collection: 'institutions' | 'meetin
   return useDatabaseCollectionSource<T>({
     endpoint: route('api.v1.admin.trash.index', { collection }),
     initial: { items: [], total: 0, perPage: PAGE_SIZE, currentPage: 0, lastPage: 1 },
-    sortOptions: [
+    sortOptions: () => [
       { value: 'deleted_at:desc', label: $t('Neseniai ištrinti') },
       { value: 'deleted_at:asc', label: $t('Seniausiai ištrinti') },
     ],

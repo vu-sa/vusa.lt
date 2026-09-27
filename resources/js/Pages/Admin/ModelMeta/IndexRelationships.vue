@@ -69,7 +69,7 @@ const source = useLocalCollectionSource<RelationshipRow>({
   items: toRef(props, 'relationships'),
   searchText: relationship => [relationship.name, relationship.slug, relationship.description],
   defaultSort: 'name:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: relationship => relationship.name },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: relationship => relationship.name },
   ],

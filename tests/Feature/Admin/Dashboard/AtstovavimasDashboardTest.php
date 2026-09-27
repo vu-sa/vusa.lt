@@ -70,6 +70,55 @@ describe('atstovavimas dashboard', function (): void {
             );
     });
 
+    test('upcoming meetings run from the start of today to two months ahead', function (): void {
+        $institution = $this->user->current_duties()->first()->institution;
+        $this->travelTo('2026-03-10 15:00:00');
+        $earlierToday = Meeting::factory()->hasAttached($institution)->create(['start_time' => '2026-03-10 09:00:00']);
+        $nextMonth = Meeting::factory()->hasAttached($institution)->create(['start_time' => '2026-04-10 10:00:00']);
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => '2026-03-09 10:00:00']);
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => '2026-05-11 10:00:00']);
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingMeetings.total', 2)
+                ->where('upcomingMeetings.items.0.id', $earlierToday->id)
+                ->where('upcomingMeetings.items.0.is_followed', false)
+                ->where('upcomingMeetings.items.1.id', $nextMonth->id)
+            );
+    });
+
+    test('upcoming meetings send at most twenty rows but count them all', function (): void {
+        $institution = $this->user->current_duties()->first()->institution;
+        Meeting::factory()->count(21)->hasAttached($institution)
+            ->sequence(fn ($sequence) => ['start_time' => now()->addDays($sequence->index + 1)])
+            ->create();
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('upcomingMeetings.total', 21)
+                ->has('upcomingMeetings.items', 20)
+            );
+    });
+
+    test('reference documents are capped at eight, newest document date first', function (): void {
+        $dutyType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+        $this->user->current_duties()->first()->types()->attach($dutyType);
+        $files = FileableFile::factory()->count(9)
+            ->sequence(fn ($sequence) => ['file_date' => now()->subDays(9 - $sequence->index)])
+            ->create(['fileable_type' => MorphMap::alias(Type::class), 'fileable_id' => $dutyType->id]);
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('referenceDocuments', 8)
+                    ->where('referenceDocuments.0.id', $files->last()->id)
+                )
+            );
+    });
+
     test('reference documents of the user\'s duty types, parents included, load with the secondary group', function (): void {
         $parentType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
         $dutyType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class), 'parent_id' => $parentType->id]);
@@ -138,6 +187,31 @@ describe('atstovavimas dashboard', function (): void {
         asUser(makeAdminUser($this->tenant))
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertInertia(fn (Assert $page) => $page->where('canViewTenantTasks', true));
+    });
+
+    test('a padalinys communication coordinator gets statistics and the Gantt for their own padalinys, without the task number', function (): void {
+        $ownTenantId = $this->admin->current_duties()->first()->institution->tenant_id;
+
+        asUser($this->admin)
+            ->get(route('dashboard.atstovavimas.padaliniai'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('statsTenants', fn ($tenants) => collect($tenants)->pluck('id')->all() === [$ownTenantId])
+                ->where('defaultGanttTenantIds', [(string) $ownTenantId])
+                ->where('canViewTenantTasks', false)
+            );
+    });
+
+    test('the central student representative coordinator gets statistics for every padalinys and the task number', function (): void {
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $representationalCount = Tenant::query()->representational()->count();
+
+        asUser($coordinator)
+            ->get(route('dashboard.atstovavimas.padaliniai'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('statsTenants', $representationalCount)
+                ->has('defaultGanttTenantIds', $representationalCount)
+                ->where('canViewTenantTasks', true)
+            );
     });
 
     test('atstovavimas provides accessible institutions and available tenants', function (): void {

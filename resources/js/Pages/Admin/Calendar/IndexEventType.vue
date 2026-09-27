@@ -217,7 +217,7 @@ const source = useDatabaseCollectionSource<EventTypeRow>({
     lastPage: props.eventTypes.meta.last_page,
   },
   defaultSort: 'sort_order:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'sort_order:asc', label: $t('Pagal rikiavimo tvarką') },
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)') },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)') },

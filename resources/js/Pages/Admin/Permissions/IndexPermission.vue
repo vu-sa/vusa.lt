@@ -50,7 +50,7 @@ const source = useLocalCollectionSource<PermissionRow>({
   items: toRef(props, 'permissions'),
   searchText: permission => [permission.name],
   defaultSort: 'name:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal pavadinimą (A–Z)'), by: permission => permission.name },
     { value: 'name:desc', label: $t('Pagal pavadinimą (Z–A)'), by: permission => permission.name },
   ],

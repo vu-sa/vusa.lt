@@ -200,7 +200,7 @@ const source = useDatabaseCollectionSource<EventRow>({
     lastPage: props.calendar.meta.last_page,
   },
   defaultSort: 'date:desc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'date:desc', label: $t('Naujausi pirmi') },
     { value: 'date:asc', label: $t('Seniausi pirmi') },
     { value: 'created_at:desc', label: $t('Neseniai sukurti') },

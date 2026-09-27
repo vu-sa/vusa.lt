@@ -2,11 +2,13 @@
 
 use App\Actions\GetInstitutionCoordinator;
 use App\Actions\GetUserCoordinators;
+use App\Enums\InstitutionScope;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -62,6 +64,12 @@ describe('GetInstitutionCoordinator', function (): void {
         expect(GetInstitutionCoordinator::execute($this->institution, $this->coordinator))->toBeNull();
     });
 
+    test('is null for a body that is not a VU body', function (InstitutionScope $scope): void {
+        $this->institution->types()->attach(Type::factory()->forInstitutions($scope)->create());
+
+        expect(GetInstitutionCoordinator::execute($this->institution->fresh()))->toBeNull();
+    })->with(['VU SA body' => InstitutionScope::Vusa, 'national body' => InstitutionScope::National, 'international body' => InstitutionScope::International]);
+
     test('is null when the tenant has no coordinator', function (): void {
         expect(GetInstitutionCoordinator::execute(Institution::factory()->for(Tenant::factory()->create())->create()))->toBeNull();
     });
@@ -100,6 +108,42 @@ describe('GetUserCoordinators', function (): void {
 
         expect($coordinators)->toHaveCount(1)
             ->and($coordinators[0]['institutions'])->toHaveCount(2);
+    });
+
+    test('leaves a VU SA body out of what the coordinator covers', function (): void {
+        $vusaType = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
+        $board = Institution::factory()->for($this->tenant)->create(['name' => ['lt' => 'Valdyba', 'en' => 'Board']]);
+        $board->types()->attach($vusaType);
+
+        ($this->seatIn)($board);
+        ($this->seatIn)($this->institution);
+
+        $coordinators = GetUserCoordinators::execute($this->rep->fresh());
+
+        expect($coordinators)->toHaveCount(1)
+            ->and($coordinators[0]['institutions'])->toBe([$this->institution->name]);
+    });
+
+    test('names nobody to a rep who sits only in VU SA bodies', function (): void {
+        $vusaType = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
+        $this->institution->types()->attach($vusaType);
+
+        ($this->seatIn)($this->institution);
+
+        expect(GetUserCoordinators::execute($this->rep->fresh()))->toBe([]);
+    });
+
+    test('never names the coordinator as their own coordinator', function (): void {
+        expect(GetUserCoordinators::execute($this->coordinator->fresh()))->toBe([]);
+    });
+
+    test('names nobody while no coordinator role is set', function (): void {
+        $settings = app(AtstovavimasSettings::class);
+        $settings->setInstitutionManagerRoleId(null);
+        $settings->save();
+        ($this->seatIn)($this->institution);
+
+        expect(GetUserCoordinators::execute($this->rep->fresh()))->toBe([]);
     });
 });
 

@@ -3,6 +3,7 @@ import { Check, FileCheck, FilePlus2, Megaphone, RotateCcw, Trash2 } from 'lucid
 
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import {
+  canCompleteByHand,
   getMeetingAgendaUrl,
   isAgendaCreationTask,
   isAgendaTask,
@@ -50,7 +51,7 @@ export function getTaskActions(task: TaskDisplayData): TaskAction[] {
     });
   }
 
-  if (task.can_be_manually_completed !== false) {
+  if (canCompleteByHand(task)) {
     actions.push(task.completed_at
       ? { key: 'complete', label: $t('tasks.collection.reopen'), shortLabel: $t('tasks.short_actions.reopen'), icon: RotateCcw }
       : { key: 'complete', label: $t('tasks.collection.complete'), shortLabel: $t('tasks.short_actions.complete'), icon: Check, primary: actions.length === 0 });

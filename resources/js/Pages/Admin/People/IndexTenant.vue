@@ -108,7 +108,7 @@ const source = useLocalCollectionSource<TenantRow>({
   items: toRef(props, 'tenants'),
   searchText: tenant => [tenant.fullname, tenant.shortname, tenant.alias],
   defaultSort: 'fullname:asc',
-  sortOptions: [
+  sortOptions: () => [
     { value: 'fullname:asc', label: $t('Pagal pavadinimą (A–Z)'), by: tenant => tenant.fullname },
     { value: 'fullname:desc', label: $t('Pagal pavadinimą (Z–A)'), by: tenant => tenant.fullname },
   ],

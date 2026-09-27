@@ -179,7 +179,7 @@ const attention = computed<InstitutionActivityInsight[]>(() => {
   const showTenant = timelineFilters.selectedStatsTenants.value.length > 1;
 
   return tenantInstitutionsData.value
-    .filter((institution: AtstovavimasInstitution) => institution.activity_status?.requires_action)
+    .filter((institution: AtstovavimasInstitution) => institution.in_summary !== false && institution.activity_status?.requires_action)
     .sort((a, b) => b.activity_status.priority - a.activity_status.priority)
     .map(institution => ({
       id: String(institution.id),

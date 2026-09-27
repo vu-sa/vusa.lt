@@ -21,6 +21,7 @@ return [
 
     'dashboard' => [
         'administered_hint' => 'You are the secretary for this institution (you are not a member of it).',
+        'badge' => 'Secretary',
     ],
 
     'picker' => [
