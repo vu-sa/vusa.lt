@@ -7,7 +7,9 @@ tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
   - tests/Feature/Api/Admin/ResourceApiControllerTest.php
+  - tests/Feature/Admin/Search/ResourcePreviewApiTest.php
   - tests/Unit/Models/ResourceTest.php
+  - tests/Unit/Policies/ResourcePolicyTest.php
   - resources/js/Pages/Admin/Reservations/__tests__/ShowResource.component.test.ts
   - tests/Browser/ReservationPagesTest.php
 ---
@@ -57,6 +59,17 @@ esančios rezervacijos – ne. Pilną rezervaciją mato tik tie, kas turi teisę
 [Rezervacijos → Teisės](/rezervacijos/rezervacijos#teises)).
 :::
 
+### Greitoji peržiūra sąraše {#greitoji-perziura}
+
+Išteklių sąraše galima persijungti į peržiūros rodinį (`preview`), kuriame dešiniajame šoniniame
+skydelyje (stalčiuje) iškart pateikiama pasirinkto daikto informacija:
+
+- daikto nuotraukos (su padidinimo peržiūra);
+- laisvas kiekis pasirinktam rezervacijos laikotarpiui;
+- artimiausios rezervacijos ir dabartinės paskolos;
+- išteklio valdytojų kontaktai;
+- veiksmai: įdėti į krepšelį arba atverti pilną išteklio puslapį.
+
 ## Veiksmai
 
 - **Sukurti išteklių** – skiltyje Ištekliai spausk „Sukurti“ ir užpildyk formą.
@@ -105,5 +118,7 @@ daiktus.
 
 - Laisvas kiekis skaičiuojamas pagal būsenas `created`, `reserved`, `lent`
   (`Resource::active_reservations()`).
+- Užimtumo duomenis pasirinktam periodui teikia vidinis API galinis taškas `api.v1.admin.resources.availability` (`ResourceAvailabilityApiController`).
 - Šiukšlinė – tas pats sąrašas su `?showDeleted=true`.
+
 

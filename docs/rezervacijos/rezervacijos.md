@@ -1,7 +1,7 @@
 ---
 title: Rezervacijos
 area: reservations
-models: [Reservation, ReservationResource, Approval]
+models: [Reservation, ReservationResource, ReservationDraft, Approval]
 last_reviewed: 2026-09-27
 tests:
   - tests/Feature/Admin/Reservations/ReservationControllerTest.php
@@ -110,6 +110,17 @@ prieš jį išsaugant.
 
 ## Veiksmai
 
+### Rezervacijų sąrašas ir filtrai
+
+<DocScreenshot name="reservations-index" alt="Rezervacijų sąrašas su greitaisiais filtrais ir būsenomis" caption="Rezervacijų sąrašas: galima filtruoti pagal būseną, vėlavimą arba perjungti tarp savo ir administruojamų rezervacijų." href="/mano/reservations" />
+
+Rezervacijų sąraše (`/mano/reservations`) pateikiama visų pasiekiamų rezervacijų suvestinė. Greitieji filtrai viršuje leidžia vienu paspaudimu atsirinkti:
+- **Laukia sprendimo** – pateiktos rezervacijos, kuriose yra tavo administruojamų daiktų.
+- **Mano rezervacijos** – rezervacijos, kurių teikėjas esi tu (rodoma, jei turi teisę matyti ir kitų rezervacijas).
+- **Administruoju** – visos rezervacijos, kuriose yra bent vienas tavo padalinio išteklius.
+
+Šoniniuose filtruose galima papildomai filtruoti pagal konkrečią būseną arba pasirinkti **Vėluoja grąžinti**.
+
 ### Valdytojo sprendimai
 
 <DocScreenshot name="reservation-decisions" alt="Rezervacijos puslapis: kiekvienas išteklius su savo būsena ir kitu veiksmu – Grąžinti, Išduoti, Tvirtinti" caption="Kiekvienas rezervacijos išteklius turi savo būseną ir savo kitą veiksmą." />
@@ -119,8 +130,7 @@ leistiną veiksmą: **Tvirtinti** (pateikta), **Išduoti** (rezervuota) arba **G
 **Atmesti**, atšaukti, redaguoti ir pašalinti galima per meniu **⋯** šalia. Veiksmus galima atlikti
 ir su keliais pasirinktais ištekliais iš karto.
 
-- **Dalinis patvirtinimas.** Tvirtindamas gali nurodyti mažesnį kiekį nei prašyta, bet ne mažesnį
-  nei 1 ir ne didesnį nei prašyta. Rezervacijos kiekis sumažinamas iki patvirtinto.
+- **Dalinis patvirtinimas.** Kai rezervacijoje yra keli daiktai arba daiktai iš kelių padalinių, kiekvieno padalinio administratorius sprendžia dėl savų daiktų nepriklausomai nuo kitų (nepatvirtinti daiktai lieka laukti sprendimo, o rezervacijos būsena tampa „Mišri“). Be to, serverio lygmeniu palaikomas patvirtinamo vienetų kiekio sumažinimas (`ReservationResource::updateApprovedQuantity`).
 - **Pastabos.** Prie kiekvieno sprendimo galima parašyti pastabą. Atmetant ji tampa priežastimi,
   kurią mato teikėjas.
 - **Užbaigti.** Iš karto perkelia išteklius į būseną „grąžinta“, praleisdamas likusius žingsnius.
@@ -128,6 +138,12 @@ ir su keliais pasirinktais ištekliais iš karto.
 - **Atšaukti paskutinį veiksmą.** Jei suklydai, išteklius grąžinamas viena būsena atgal:
   rezervuota → pateikta, paskolinta → rezervuota, grąžinta → paskolinta. Atšauktas patvirtinimas lieka
   istorijoje su tavo nurodyta priežastimi.
+
+::: tip Išteklių filtravimas rezervacijos puslapyje
+Jei rezervacijoje yra daiktų iš kelių padalinių, rezervacijos puslapyje (`/mano/reservations/{id}`)
+atsiranda padalinio pasirinkimo filtras. Taip administratorius gali matyti tik savo padalinio daiktus
+ir netrukdomas atlikti sprendimus.
+:::
 
 ### Teikėjo veiksmai
 
@@ -137,10 +153,8 @@ ir su keliais pasirinktais ištekliais iš karto.
   daiktui nustatyti kitą skolinimosi laiką nei visai rezervacijai, pridėk jį jau sukūręs rezervaciją.
 - **Pridėti kitus teikėjus.** Pridėti naudotojai gauna pranešimą ir tampa lygiaverčiais teikėjais:
   mato rezervaciją, gali ją keisti ir atšaukti.
-- **Ištrinti** rezervaciją. Ji perkeliama į šiukšlinę ir gali būti atkurta.
-
-Ištrintų rezervacijų sąrašo eilutėse ir lentelėje gali jas atkurti, o turint atskirą teisę –
-ištrinti visam laikui. Sprendimai dėl pateiktų rezervacijų lieka atskirame veiksmų meniu.
+- **Ištrinti** rezervaciją – ją ištrinti gali tik jos teikėjas. Rezervacija ištrinama **iškart ir negrįžtamai**
+  (ji nepatenka į šiukšlinę). Kartu atlaisvinami visi joje buvę ištekliai ir pašalinami su ja susiję komentarai bei užduotys.
 
 Pačios rezervacijos (pavadinimo, laikotarpio) po pateikimo tiesiogiai redaguoti negalima. Keičiami
 tik jos ištekliai.
@@ -154,11 +168,11 @@ tik jos ištekliai.
 |---|---|---|---|
 | Sukurti rezervaciją | ✓ | ✓ | ✓ |
 | Matyti rezervaciją | – | ✓ | ✓, jei joje yra jo padalinio daiktų |
-| Pridėti ar keisti išteklius, pridėti teikėjų | – | ✓ | ✓ |
-| Atšaukti išteklių (kol neišduotas) | – | ✓ | ✓ |
+| Pridėti ar keisti išteklius, pridėti teikėjų | – | ✓ | – |
+| Atšaukti išteklių (kol neišduotas) | – | ✓ | – |
 | Tvirtinti, atmesti, išduoti, grąžinti, užbaigti | – | – | ✓, tik savo padalinio daiktus |
 | Atšaukti paskutinį veiksmą | – | – | ✓, tik savo padalinio daiktus |
-| Ištrinti rezervaciją | – | ✓ | ✓ |
+| Ištrinti rezervaciją | – | ✓ | – |
 
 ::: warning Tik savo padalinio daiktai
 Tvirtinimo teisė tikrinama pagal **daikto** padalinį. MIF administratorius mato rezervaciją, kurioje
@@ -239,7 +253,7 @@ atlyginti nuostolius.
 - Išteklių administratoriaus rolė: `resources.create|update|delete.padalinys`, `resources.read.*`,
   `reservations.create|read|update|delete.padalinys`.
 - Be `reservations.read.padalinys` rezervacijų sąraše rodomos tik tavo rezervacijos, nepaisant
-  filtrų. Visam laikui ištrinti gali tik turintys `reservations.forceDelete`.
+  filtrų. Rezervacijos ištrynimas yra galutinis (nenaudoja minkštojo ištrynimo / šiukšliadėžės).
 
 ### Kaip tai įgyvendinta
 
@@ -250,3 +264,7 @@ atlyginti nuostolius.
 - Užduotis ir pranešimus apie naujas užklausas gauna `GetResourceManagers` grąžinami žmonės:
   dabartiniai išteklio padalinio pareigybių nariai, kurių rolė turi `resources.update.padalinys`
   arba `resources.update.*`.
+- Rezervacijos neturi minkštojo ištrynimo (`SoftDeletes`): ištrynus įrašą per `reservations.destroy`,
+  jis pašalinamas iškart ir visam laikui, o `Reservation::booted()` trynimo kabliukas automatiškai
+  atjungia išteklius (`reservation_resource`), naudotojus ir ištrina polimorfinius komentarus.
+

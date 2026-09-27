@@ -62,6 +62,56 @@ describe('ApprovalController@store', function (): void {
         ]);
     });
 
+    test('resource manager can approve a reservation resource with a reduced quantity', function (): void {
+        $this->reservationResource->update(['quantity' => 3]);
+
+        asUser($this->resourceManager)
+            ->post(route('approvals.store'), [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+                'decision' => 'approved',
+                'quantity' => 2,
+                'step' => 1,
+            ])
+            ->assertRedirect();
+
+        expect($this->reservationResource->fresh()->quantity)->toBe(2);
+
+        $this->assertDatabaseHas('approvals', [
+            'approvable_id' => (string) $this->reservationResource->id,
+            'decision' => ApprovalDecision::Approved->value,
+            'user_id' => $this->resourceManager->id,
+        ]);
+    });
+
+    test('partial approval rejects invalid quantities', function (): void {
+        $this->reservationResource->update(['quantity' => 3]);
+
+        asUser($this->resourceManager)
+            ->post(route('approvals.store'), [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+                'decision' => 'approved',
+                'quantity' => 0,
+                'step' => 1,
+            ])
+            ->assertSessionHasErrors('quantity');
+
+        expect($this->reservationResource->fresh()->quantity)->toBe(3);
+
+        asUser($this->resourceManager)
+            ->post(route('approvals.store'), [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+                'decision' => 'approved',
+                'quantity' => 5,
+                'step' => 1,
+            ])
+            ->assertSessionHas('error');
+
+        expect($this->reservationResource->fresh()->quantity)->toBe(3);
+    });
+
     test('resource manager can reject a reservation resource', function (): void {
         asUser($this->resourceManager)
             ->post(route('approvals.store'), [

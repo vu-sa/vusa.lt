@@ -133,10 +133,24 @@ class FeatureSurfaceScanner
     }
 
     /**
+     * Map route slugs to morph aliases when simple plural-to-singular
+     * normalisation does not match the model's morph alias.
+     *
+     * @var array<string, string>
+     */
+    private const array SLUG_ALIASES = [
+        'reservationCart' => 'reservation_draft',
+    ];
+
+    /**
      * @param  list<string>  $modelAliases
      */
     private function aliasFor(string $slug, array $modelAliases): ?string
     {
+        if (isset(self::SLUG_ALIASES[$slug])) {
+            return self::SLUG_ALIASES[$slug];
+        }
+
         $normalised = Str::snake(Str::singular($slug));
 
         return in_array($normalised, $modelAliases, true) ? $normalised : null;

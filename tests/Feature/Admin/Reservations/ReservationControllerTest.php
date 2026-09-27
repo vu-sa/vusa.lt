@@ -6,9 +6,11 @@ use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\AssignedToResourceNotification;
 use App\States\ReservationResource\Cancelled;
 use App\States\ReservationResource\Created;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 
 pest()->use(RefreshDatabase::class);
 use App\States\ReservationResource\Lent;
@@ -137,9 +139,13 @@ describe('auth: simple user', function (): void {
         $response->assertStatus(403);
     });
     test('can access reservation after they are assigned to it', function (): void {
+        Notification::fake();
+
         $response = asUser($this->reservationManager)->put(route('reservations.add-users', $this->reservation->id), [
             'users' => [$this->user->id],
         ]);
+
+        Notification::assertSentTo($this->user, AssignedToResourceNotification::class);
 
         $response->assertRedirect(route('dashboard'));
 
@@ -462,3 +468,52 @@ describe('reservationResources.store', function (): void {
             ->assertSessionHasErrors('reservation_id');
     });
 });
+
+describe('reservationResources.destroy', function (): void {
+    test('a user attached to the reservation can delete a resource item from it', function (): void {
+        $pivot = $this->reservation->resources()->first()->pivot;
+
+        asUser($this->reservationManager)
+            ->delete(route('reservationResources.destroy', $pivot->id))
+            ->assertRedirect();
+
+        expect($this->reservation->fresh()->resources()->where('reservation_resource.id', $pivot->id)->exists())->toBeFalse();
+    });
+
+    test('an outsider cannot delete a resource item from someone else\'s reservation', function (): void {
+        $pivot = $this->reservation->resources()->first()->pivot;
+        $outsider = makeUser($this->tenant);
+
+        asUser($outsider)
+            ->delete(route('reservationResources.destroy', $pivot->id))
+            ->assertStatus(403);
+
+        expect($this->reservation->fresh()->resources()->where('reservation_resource.id', $pivot->id)->exists())->toBeTrue();
+    });
+});
+
+describe('reservations.destroy', function (): void {
+    test('an owner can delete their reservation, permanently removing it and attached pivots', function (): void {
+        $reservation = Reservation::factory()->hasAttached($this->resources)->create();
+        $reservation->users()->attach($this->user->id);
+
+        asUser($this->user)
+            ->delete(route('reservations.destroy', $reservation->id))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('reservations', ['id' => $reservation->id]);
+        $this->assertDatabaseMissing('reservation_resource', ['reservation_id' => $reservation->id]);
+        $this->assertDatabaseMissing('reservation_user', ['reservation_id' => $reservation->id]);
+    });
+
+    test('an outsider cannot delete someone else\'s reservation', function (): void {
+        $outsider = makeUser($this->tenant);
+
+        asUser($outsider)
+            ->delete(route('reservations.destroy', $this->reservation->id))
+            ->assertStatus(403);
+
+        $this->assertDatabaseHas('reservations', ['id' => $this->reservation->id]);
+    });
+});
+

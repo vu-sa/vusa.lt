@@ -10,6 +10,9 @@ tests:
   - tests/Browser/AdminAccessibilityTest.php
   - tests/Browser/AdminShellTest.php
   - tests/Browser/DefaultThemeTest.php
+  - tests/Feature/Admin/SoftDeletableResourcesTest.php
+  - tests/Unit/Models/TranslatableExpectationsTest.php
+  - tests/Feature/System/TranslationIntegrityTest.php
 ---
 
 # Platforma
@@ -40,6 +43,24 @@ matomą apvadą.
 Sąrašuose įrašo veiksmai matomi tiek eilutėse, tiek lentelėje. Vien piktograma pažymėti mygtukai
 turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra bent 44 × 44 taškai.
 Ištrintų įrašų sąraše galima juos atkurti arba, turint teisę, ištrinti visam laikui.
+
+## Bendrosios platformos galimybės {#bendrosios-galimybes}
+
+Platforma turi bendrų mechanizmų, kurie vienodai veikia visose darbo srityse ir moduliuose:
+
+### Šiukšlinė ir atstatymas (Soft Deletes) {#siukšline}
+
+Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriaus renginiai, failai, ištekliai) palaiko laikiną ištrynimą:
+- Ištrintas įrašas nepašalinamas iš duomenų bazės iš karto – jis perkeliamas į **šiukšlinę** (atitinkamo sąrašo rodinys su `?showDeleted=true`).
+- Naudotojai, turintys įrašo trynimo teisę, gali jį **atkurti** mygtuku „Atkurti“.
+- Visiškas pašalinimas („Ištrinti visam laikui“) reikalauja atskiros teisės (pvz., `resources.forceDelete`, `news.forceDelete`), apsaugančios nuo netyčinio duomenų praradimo.
+- **Operaciniai įrašai** (pvz., **rezervacijos**) į šiukšlinę nekeliami: juos ištrynus, įrašas iš karto negrįžtamai pašalinamas kartu su susijusiais tarpiniais duomenimis.
+
+### Daugiakalbiškumas ir vertimai {#vertimai}
+
+VU SA platforma yra dvikalbė (lietuvių ir anglų k.):
+- **Formose** verčiami laukai pateikiami su kalbų pasirinkimu (LT ir EN skirtukais). Lietuvių kalbos tekstas yra privalomas, o anglų kalbos – rekomenduojamas.
+- **Sąrašuose ir viešojoje svetainėje** rodoma dabartinė vartotojo pasirinkta kalba. Jei angliško vertimo nėra, sistema automatiškai rodo lietuvišką tekstą (atsarginį variantą).
 
 ## Spalvos, ženklai ir formos {#spalvos-zenklai-ir-formos}
 
@@ -105,3 +126,5 @@ Būseną visada rodyk per `StatusBadge`, o ne savo spalvomis.
 - Stačiakampius kampus, šriftą ir fokuso apvadą naršyklėje tikrina `AdminDesignSurfaceTest`, šviesią
   temą pagal nutylėjimą – `DefaultThemeTest`, prieinamumo nustatymus – `AdminAccessibilityTest`,
   telefono juostą ir sparčiuosius klavišus – `AdminShellTest`, langą **+ Sukurti** – `ActionWindowTest`.
+- Laikiną ištrynimą (`SoftDeletes`) ir jo elgseną sąrašuose tikrina `SoftDeletableResourcesTest`.
+- Daugiakalbių laukų elgseną (Spatie `HasTranslations`, `toFullArray()` administravimo formose ir `toArray()` lokalizuotai peržiūrai) bei vertimų vientisumą užtikrina `TranslatableExpectationsTest` ir `TranslationIntegrityTest`.

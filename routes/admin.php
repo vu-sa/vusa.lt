@@ -101,8 +101,6 @@ Route::delete('meetings/{meeting}/calendar-event', [MeetingCalendarController::c
 Route::post('meetings/{meeting}/documents', [MeetingDocumentController::class, 'store'])->name('meetings.documents.store');
 Route::post('meetings/{meeting}/documents/sharepoint', [MeetingDocumentController::class, 'storeFromSharepoint'])->name('meetings.documents.storeFromSharepoint');
 Route::delete('meetings/{meeting}/documents/{document}', [MeetingDocumentController::class, 'destroy'])->name('meetings.documents.destroy');
-Route::patch('reservations/{reservation}/restore', [ReservationController::class, 'restore'])->name('reservations.restore')->withTrashed();
-Route::delete('reservations/{reservation}/force-delete', [ReservationController::class, 'forceDelete'])->name('reservations.forceDelete')->withTrashed();
 Route::patch('resources/{resource}/restore', [ResourceController::class, 'restore'])->name('resources.restore')->withTrashed();
 Route::delete('resources/{resource}/force-delete', [ResourceController::class, 'forceDelete'])->name('resources.forceDelete')->withTrashed();
 Route::patch('studyPrograms/{studyProgram}/restore', [StudyProgramController::class, 'restore'])->name('studyPrograms.restore')->withTrashed();

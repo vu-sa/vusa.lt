@@ -313,3 +313,37 @@ describe('edit', function (): void {
             );
     });
 });
+
+describe('restore and forceDelete', function (): void {
+    test('resource manager can restore a soft-deleted resource in their tenant', function (): void {
+        $this->resource->delete();
+        expect($this->resource->fresh()->trashed())->toBeTrue();
+
+        asUser($this->resourceManager)->patch(route('resources.restore', $this->resource))
+            ->assertRedirect();
+
+        expect($this->resource->fresh()->trashed())->toBeFalse();
+    });
+
+    test('resource manager without forceDelete permission cannot force delete a resource', function (): void {
+        $this->resource->delete();
+
+        asUser($this->resourceManager)->delete(route('resources.forceDelete', $this->resource))
+            ->assertStatus(403);
+
+        expect(Resource::withTrashed()->where('id', $this->resource->id)->exists())->toBeTrue();
+    });
+
+    test('user with resources.forceDelete permission can permanently delete a resource', function (): void {
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole(config('permission.super_admin_role_name'));
+
+        $this->resource->delete();
+
+        asUser($superAdmin)->delete(route('resources.forceDelete', $this->resource))
+            ->assertRedirect();
+
+        expect(Resource::withTrashed()->where('id', $this->resource->id)->exists())->toBeFalse();
+    });
+});
+

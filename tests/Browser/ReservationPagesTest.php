@@ -108,3 +108,20 @@ it('lists every padalinys\' resources as cards with what is free', function (): 
 
     $page->assertNoJavaScriptErrors();
 });
+
+it('shows the reservation collection with status filters and quick filters', function (): void {
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL));
+    $page->navigate('/mano/reservations');
+    waitForInertiaRender($page, '[data-slot=collection-page]');
+
+    $page->assertSee(DocsSeeder::MIXED_RESERVATION_NAME);
+    expectNoRawReservationKeys($page);
+
+    expectReservationPageFits($page, 'collection-page');
+
+    $page->resize(1440, 900);
+    docsScreenshot($page, 'reservations-index');
+
+    $page->assertNoJavaScriptErrors();
+});
+

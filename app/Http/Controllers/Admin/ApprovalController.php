@@ -45,15 +45,15 @@ class ApprovalController extends AdminController
         $decision = ApprovalDecision::from($validated['decision']);
         $user = auth()->user();
 
-        // Handle partial quantity approval for reservation resources
-        $approvedQuantity = $validated['quantity'] ?? null;
-        if ($approvedQuantity !== null && $decision === ApprovalDecision::Approved) {
-            if (method_exists($approvable, 'updateApprovedQuantity')) {
-                $approvable->updateApprovedQuantity($approvedQuantity);
-            }
-        }
-
         try {
+            // Handle partial quantity approval for reservation resources
+            $approvedQuantity = $validated['quantity'] ?? null;
+            if ($approvedQuantity !== null && $decision === ApprovalDecision::Approved) {
+                if (method_exists($approvable, 'updateApprovedQuantity')) {
+                    $approvable->updateApprovedQuantity($approvedQuantity);
+                }
+            }
+
             $this->approvalService->approve(
                 $approvable,
                 $user,

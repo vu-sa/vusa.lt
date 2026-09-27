@@ -10,7 +10,6 @@ use App\Actions\SerializeReservationsForTable;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexReservationRequest;
 use App\Http\Requests\StoreReservationRequest;
-use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Reservation;
 use App\Models\Resource;
@@ -19,7 +18,6 @@ use App\Notifications\AssignedToResourceNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 /* use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests; */
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -28,7 +26,7 @@ use Inertia\Inertia;
 
 class ReservationController extends AdminController
 {
-    use HandlesSoftDeletes, HasTanstackTables;
+    use HasTanstackTables;
 
     public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService)
     {
@@ -55,8 +53,6 @@ class ReservationController extends AdminController
             $searchableColumns,
         );
 
-        $deletedCount = $this->getTrashedCount($query);
-
         $reservations = $query->paginate($request->getPerPage())
             ->withQueryString();
 
@@ -79,8 +75,6 @@ class ReservationController extends AdminController
             ],
             'filters' => $request->getFilters(),
             'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
             'managesResources' => $managesResources,
             'reservationCart' => SerializeReservationCart::execute($request->user()),
             'onlyOwn' => ! $request->user()->can('viewAny', Reservation::class),
@@ -227,11 +221,6 @@ class ReservationController extends AdminController
         return back()->with('success', $this->entityMessage('deleted', 'reservation'));
     }
 
-    public function restore(Reservation $reservation): RedirectResponse
-    {
-        return $this->restoreModel($reservation, $this->entityMessage('restored', 'reservation'));
-    }
-
     public function addUsers(Reservation $reservation, Request $request)
     {
         $this->handleAuthorization('addUsers', [Reservation::class, $reservation, $this->authorizer]);
@@ -243,10 +232,5 @@ class ReservationController extends AdminController
         Notification::send($reservation->refresh()->users->diff($old_users), AssignedToResourceNotification::fromModel($reservation, auth()->user()));
 
         return back()->with('success', __('messages.users_attached_to_reservation'));
-    }
-
-    public function forceDelete(Reservation $reservation): RedirectResponse
-    {
-        return $this->forceDeleteModel($reservation);
     }
 }

@@ -5,6 +5,7 @@ models: [ResourceCategory]
 last_reviewed: 2026-09-27
 tests:
   - tests/Feature/Admin/Reservations/ResourceCategoryControllerTest.php
+  - tests/Feature/Api/Admin/ResourceCategoryApiControllerTest.php
 ---
 
 # Kategorijos

@@ -146,7 +146,7 @@ describe('auth: simple user', function (): void {
         asUser($this->user)->delete(route('reservations.destroy', $reservation))
             ->assertRedirect();
 
-        $this->assertSoftDeleted('reservations', ['id' => $reservation->id]);
+        $this->assertDatabaseMissing('reservations', ['id' => $reservation->id]);
     });
 });
 
@@ -227,51 +227,6 @@ describe('auth: resource manager', function (): void {
                 ->has('reservations.data')
             );
     });
-
-    test('can manage all reservations in tenant', function (): void {
-        $otherUser = User::factory()->create();
-        // For this test, let's create the user within the same tenant structure
-        $duty = Duty::factory()->create([
-            'institution_id' => $this->resourceManager->duties->first()->institution_id,
-        ]);
-        $otherUser->duties()->attach($duty->id, [
-            'start_date' => now(),
-        ]);
-
-        $reservationResource = makeReservationResource($this->resource, $otherUser);
-
-        asUser($this->resourceManager)->put(route('reservationResources.update', $reservationResource), [
-            'start_time' => now()->addDays(2)->getTimestampMs(),
-            'end_time' => now()->addDays(2)->addHours(3)->getTimestampMs(),
-            'resource_id' => $this->resource->id,
-            'quantity' => 3,
-        ])->assertRedirect();
-
-        expect($reservationResource->fresh()->quantity)->toBe(3);
-    })->todo('Resource managers should be able to manage reservations for resources in their tenant');
-
-    test('cannot manage reservations from other tenants', function (): void {
-        // Create a user from completely different tenant structure
-        $otherTenant = Tenant::factory()->create();
-        $otherInstitution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
-        $otherDuty = Duty::factory()->create(['institution_id' => $otherInstitution->id]);
-        $otherUser = User::factory()->create();
-        $otherUser->duties()->attach($otherDuty->id, [
-            'start_date' => now(),
-        ]);
-
-        $foreignResource = Resource::factory()->create(['tenant_id' => $otherTenant->id]);
-        $reservationResource = makeReservationResource($foreignResource, $otherUser);
-
-        asUser($this->resourceManager)->put(route('reservationResources.update', $reservationResource), [
-            'start_time' => now()->addDays(2)->getTimestampMs(),
-            'end_time' => now()->addDays(2)->addHours(3)->getTimestampMs(),
-            'resource_id' => $foreignResource->id,
-            'quantity' => 99,
-        ])->assertStatus(403);
-
-        expect($reservationResource->fresh()->quantity)->not->toBe(99);
-    })->todo('Cross-tenant authorization for reservation resource updates');
 });
 
 describe('resource availability logic', function (): void {
@@ -287,17 +242,9 @@ describe('resource availability logic', function (): void {
             'state' => 'created',
         ]);
 
-        // TODO: Availability checking logic needs to be implemented
-        // For now, just test that the resources index page works
         $response = asUser($this->user)->get(route('resources.index'));
 
         $response->assertOk()
             ->assertInertia(fn ($page) => $page->component('Admin/Reservations/IndexResource'));
-    });
-
-    test('can check resource availability for specific time period', function (): void {
-        // TODO: Resource show method is not implemented yet
-        // This test should be implemented when availability checking is added
-        $this->markTestSkipped('Resource availability checking not yet implemented');
     });
 });

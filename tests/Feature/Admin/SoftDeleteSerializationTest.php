@@ -13,7 +13,6 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Problem;
 use App\Models\QuickLink;
-use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\StudyProgram;
 use App\Models\StudySet;
@@ -70,7 +69,6 @@ it('exposes deleted_at for soft-deletable models', function (string $modelClass,
     'page' => [Page::class, fn (): Page => Page::factory()->create(), false],
     'problem' => [Problem::class, fn (): Problem => Problem::factory()->create(), true],
     'quick link' => [QuickLink::class, fn (): QuickLink => QuickLink::factory()->create(), false],
-    'reservation' => [Reservation::class, fn (): Reservation => Reservation::factory()->create(), false],
     'resource' => [Resource::class, fn (): Resource => Resource::factory()->create(), true],
     'study program' => [StudyProgram::class, fn (): StudyProgram => StudyProgram::factory()->create(), true],
     'study set' => [StudySet::class, fn (): StudySet => StudySet::factory()->create(), true],

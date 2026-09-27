@@ -65,3 +65,53 @@ describe('authorization', function (): void {
         expect(ResourceCategory::query()->whereKey($this->category->id)->exists())->toBeTrue();
     });
 });
+
+describe('store and update', function (): void {
+    test('a resource manager can create a resource category', function (): void {
+        asUser($this->resourceManager)
+            ->post(route('resourceCategories.store'), [
+                'name' => [
+                    'lt' => 'Nauja kategorija',
+                    'en' => 'New category',
+                ],
+                'description' => [
+                    'lt' => 'Kategorijos aprašymas',
+                    'en' => 'Category description',
+                ],
+                'icon' => 'Speaker',
+            ])
+            ->assertRedirect(route('resourceCategories.index'));
+
+        expect(ResourceCategory::query()->where('name->lt', 'Nauja kategorija')->exists())->toBeTrue();
+    });
+
+    test('a resource manager can update a resource category name and icon', function (): void {
+        asUser($this->resourceManager)
+            ->patch(route('resourceCategories.update', $this->category), [
+                'name' => [
+                    'lt' => 'Atnaujinta kategorija',
+                    'en' => 'Updated category',
+                ],
+                'icon' => 'Tv',
+            ])
+            ->assertRedirect();
+
+        expect($this->category->fresh()->getTranslation('name', 'lt'))->toBe('Atnaujinta kategorija')
+            ->and($this->category->fresh()->icon)->toBe('Tv');
+    });
+
+    test('a user without resource permissions cannot store or update a category', function (): void {
+        asUser($this->plainUser)
+            ->post(route('resourceCategories.store'), [
+                'name' => ['lt' => 'Bandymas'],
+            ])
+            ->assertStatus(403);
+
+        asUser($this->plainUser)
+            ->patch(route('resourceCategories.update', $this->category), [
+                'name' => ['lt' => 'Bandymas'],
+            ])
+            ->assertStatus(403);
+    });
+});
+

@@ -40,6 +40,15 @@ describe('feature area resolution', function (): void {
         expect($features->areas['reservations']->isTested())->toBeTrue()
             ->and($features->areas['reservations']->testedRoutes)->toContain('reservations.index');
     });
+
+    test('resolves slug aliases like reservationCart to reservation_draft', function (): void {
+        $features = (new FeatureSurfaceScanner)->scan(surface(['reservationCart.update' => ['tests/Foo.php']]), docClaims());
+
+        $area = $features->areas['reservationCart'];
+
+        expect($area->modelAlias)->toBe('reservation_draft')
+            ->and($area->modelClass)->toBe(\App\Models\ReservationDraft::class);
+    });
 });
 
 describe('documentation attribution', function (): void {

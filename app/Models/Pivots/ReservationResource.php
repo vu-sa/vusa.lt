@@ -43,7 +43,6 @@ use Illuminate\Support\Collection;
  * @property Carbon|null $returned_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property string|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Approval> $approvals
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
  * @property-read bool $approvable

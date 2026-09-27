@@ -9,16 +9,15 @@
     :lead="$t('Stebėk prašymus, patvirtink išdavimą ir pažymėk grąžinimą.')"
     default-view="table"
     :item-key="reservationKey"
-    :trash="{ count: deletedCount ?? 0, active: isDeleted }"
     :columns
-    :selectable="!isDeleted && managesResources"
+    :selectable="managesResources"
     :can-select="isReservationSelectable"
     :quick-filters
     :search-placeholder="$t('Ieškoti rezervacijų')"
     @quick-filter="toggleQuickFilter"
   >
     <template #actions>
-      <Button v-if="canCreate && !isDeleted" as-child variant="brand" size="lg">
+      <Button v-if="canCreate" as-child variant="brand" size="lg">
         <Link v-if="cartItems.length > 0" :href="route('reservations.create')">
           <ArrowRight aria-hidden="true" />
           {{ $t('reservations.cart.continue_with_count', { count: String(cartItems.length) }) }}
@@ -34,16 +33,15 @@
       <article class="flex min-h-16 items-start gap-3 px-4 py-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
-            <CollectionPrimaryCell :title="item.name" :href="isDeleted ? undefined : route('reservations.show', item.id)" />
+            <CollectionPrimaryCell :title="item.name" :href="route('reservations.show', item.id)" />
             <ReservationStateSummary :states="statesOf(item)" :unresolved="isUnresolved(item)" class="shrink-0" />
           </div>
           <ReservationResourceChips class="mt-1.5" :resources="item.resources" :muted-foreign="isAdministrator(item)" />
           <p class="mt-1.5 text-sm tabular-nums text-muted-foreground">
             {{ reservationPeriod(item) }}
           </p>
-          <ReservationRowActions v-if="!isDeleted" class="mt-2 flex-wrap" :reservation="item" @decide="openDecision" />
+          <ReservationRowActions class="mt-2 flex-wrap" :reservation="item" @decide="openDecision" />
         </div>
-        <CollectionRowActions v-if="isDeleted" :actions="trashActions" @select="key => selectTrashAction(key, item)" />
       </article>
     </template>
 
@@ -52,7 +50,7 @@
         v-if="column.key === 'name'"
         :title="item.name"
         :title-lines="2"
-        :href="isDeleted ? undefined : route('reservations.show', item.id)"
+        :href="route('reservations.show', item.id)"
       />
       <div v-else-if="column.key === 'requester'" class="flex items-center gap-2">
         <template v-if="item.users?.length">
@@ -73,11 +71,10 @@
         :unresolved="isUnresolved(item)"
       />
       <ReservationRowActions
-        v-else-if="column.key === 'actions' && !isDeleted"
+        v-else-if="column.key === 'actions'"
         :reservation="item"
         @decide="openDecision"
       />
-      <CollectionRowActions v-else-if="column.key === 'actions' && isDeleted" :actions="trashActions" @select="key => selectTrashAction(key, item)" />
     </template>
 
     <template #preview="{ item }">
@@ -86,12 +83,9 @@
           <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {{ $t('Rezervacija') }}
           </p>
-          <Link v-if="!isDeleted" :href="route('reservations.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
+          <Link :href="route('reservations.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
             {{ item.name }}
           </Link>
-          <h2 v-else class="mt-1 text-lg font-semibold text-muted-foreground">
-            {{ item.name }}
-          </h2>
           <p v-if="item.description" class="mt-2 text-sm text-muted-foreground">
             {{ item.description }}
           </p>
@@ -122,19 +116,7 @@
             </dd>
           </div>
         </dl>
-        <template v-if="isDeleted">
-          <div class="flex flex-col gap-2 pt-2">
-            <Button variant="outline" voice="sentence" @click="restoreReservation(item)">
-              <RotateCcw aria-hidden="true" class="size-4" />
-              {{ $t('Atkurti') }}
-            </Button>
-            <Button v-if="canForceDelete" variant="ghost" voice="sentence" class="text-destructive hover:text-destructive" @click="targetReservationToForceDelete = item">
-              <Trash2 aria-hidden="true" class="size-4" />
-              {{ $t('Ištrinti visam laikui') }}
-            </Button>
-          </div>
-        </template>
-        <ReservationRowActions v-else :reservation="item" class="flex-wrap" @decide="openDecision" />
+        <ReservationRowActions :reservation="item" class="flex-wrap" @decide="openDecision" />
       </section>
     </template>
 
@@ -142,9 +124,9 @@
       <EmptyState
         :mode="isFiltered ? 'no-results' : 'empty'"
         :icon="ReservationIcon"
-        :title="isDeleted ? $t('Ištrintų rezervacijų nėra') : $t('Rezervacijų dar nėra')"
-        :description="isDeleted ? $t('Šiukšliadėžėje nėra pašalintų rezervacijų.') : $t('reservations.resource.reservations_empty')"
-        :action-label="canCreate && !isDeleted ? $t('Nauja rezervacija') : undefined"
+        :title="$t('Rezervacijų dar nėra')"
+        :description="$t('reservations.resource.reservations_empty')"
+        :action-label="canCreate ? $t('Nauja rezervacija') : undefined"
         @action="router.visit(route('reservations.create'))"
       />
     </template>
@@ -176,31 +158,19 @@
     :targets="decisionTargets"
     @done="onDecided"
   />
-
-  <ConfirmDialog
-    :open="targetReservationToForceDelete !== null"
-    :title="$t('Ištrinti rezervaciją visam laikui?')"
-    :description="$t('Šis veiksmas negrįžtamas. Rezervacija bus visiškai pašalinta.')"
-    :confirm-label="$t('Ištrinti visam laikui')"
-    destructive
-    @update:open="!$event && (targetReservationToForceDelete = null)"
-    @confirm="forceDeleteReservation"
-  />
 </template>
 
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, Check, CheckCheck, Plus, RotateCcw, Trash2, X } from 'lucide-vue-next';
+import { ArrowRight, Check, CheckCheck, Plus, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
-import { toast } from 'vue-sonner';
 
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
-import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
+import { EmptyState } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
 import ReservationResourceChips from '@/Components/Reservations/ReservationResourceChips.vue';
 import ReservationRowActions from '@/Components/Reservations/ReservationRowActions.vue';
@@ -225,29 +195,15 @@ const entityName = 'reservation';
 
 const props = defineProps<{
   reservations: { data: DashboardReservation[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
-  deletedCount: number;
   managesResources?: boolean;
-  showDeleted?: boolean;
   /** No list permission: every row is already the user's own, so "Mano rezervacijos" filters nothing. */
   onlyOwn?: boolean;
 }>();
 
-const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.reservation));
-const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.reservation));
-const trashActions = computed<CollectionRowAction[]>(() => [
-  { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
-  ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
-]);
-
-function selectTrashAction(key: string, item: DashboardReservation): void {
-  if (key === 'restore') restoreReservation(item);
-  if (key === 'forceDelete') targetReservationToForceDelete.value = item;
-}
 
 const { items: cartItems } = useReservationCart();
 const selectedIds = ref<string[]>([]);
-const targetReservationToForceDelete = ref<DashboardReservation | null>(null);
 
 const STATES = ['created', 'reserved', 'lent', 'returned', 'rejected', 'cancelled'] as const;
 
@@ -286,7 +242,6 @@ const source = useDatabaseCollectionSource<DashboardReservation>({
     { value: 'start_time:asc', label: $t('Anksčiausios pirmiausia') },
     { value: 'created_at:desc', label: $t('Naujausios sukurtos') },
   ],
-  preserveUrlKeys: ['showDeleted'],
   facets: facets.value,
 });
 
@@ -296,7 +251,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'resources', label: $t('Ištekliai') },
   { key: 'period', label: $t('Laikas'), class: 'w-36' },
   { key: 'status', label: $t('Būsena'), class: 'w-36' },
-  { key: 'actions', label: $t('Veiksmai'), class: isDeleted.value ? 'w-px text-right' : 'w-52', pinned: true },
+  { key: 'actions', label: $t('Veiksmai'), class: 'w-52', pinned: true },
 ]);
 
 // --- Quick filters: the URL state an overview number links to ---------------------------------
@@ -367,35 +322,5 @@ function openDecision(next: ReservationDecision, target: DashboardReservation | 
 function onDecided(): void {
   selectedIds.value = [];
   source.refresh();
-}
-
-function restoreReservation(reservation: DashboardReservation): void {
-  router.patch(route('reservations.restore', reservation.id), {}, {
-    preserveScroll: true,
-    onSuccess: () => {
-      source.refresh();
-      toast.success($t('Rezervacija atkurta.'));
-    },
-    onError: () => {
-      toast.error($t('Nepavyko atkurti rezervacijos.'));
-    },
-  });
-}
-
-function forceDeleteReservation(): void {
-  if (!targetReservationToForceDelete.value) return;
-  const { id } = targetReservationToForceDelete.value;
-  targetReservationToForceDelete.value = null;
-
-  router.delete(route('reservations.forceDelete', id), {
-    preserveScroll: true,
-    onSuccess: () => {
-      source.refresh();
-      toast.success($t('Rezervacija ištrinta visam laikui.'));
-    },
-    onError: () => {
-      toast.error($t('Nepavyko ištrinti rezervacijos.'));
-    },
-  });
 }
 </script>

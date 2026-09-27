@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Docs\ChangedTestAnalyzer;
 use Illuminate\Support\Facades\Artisan;
 
 /**
@@ -242,6 +243,11 @@ describe('docs:coverage dashboard', function (): void {
 
 describe('docs:coverage review mode', function (): void {
     test('reports when a branch changed no test files', function (): void {
+        $analyzer = Mockery::mock(ChangedTestAnalyzer::class);
+        $analyzer->shouldReceive('analyze')->with('HEAD')->andReturn([]);
+        $analyzer->shouldReceive('warnings')->andReturn([]);
+        $this->app->instance(ChangedTestAnalyzer::class, $analyzer);
+
         expect(Artisan::call('docs:coverage', ['--changed' => 'HEAD']))->toBe(0)
             ->and(Artisan::output())->toContain('No');
     });
