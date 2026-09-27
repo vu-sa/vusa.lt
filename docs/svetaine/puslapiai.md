@@ -27,7 +27,7 @@ Kategorijų galimybės kol kas ribotos:
 
 Kategorijas gali kurti tik pagrindinis administratorius.
 
-## Kas ką gali
+## Kas ką gali {#teises}
 
 Padalinio svetainės tekstus atnaujina rolę **Padalinio puslapių redaktorius** turinčios pareigybės:
 jos gali redaguoti esamus padalinio puslapius, bet ne kurti ar trinti. Naujus puslapius kuria ir

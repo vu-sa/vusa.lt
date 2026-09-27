@@ -10,7 +10,7 @@
     @action="handleAction"
   >
     <template #permissions>
-      <RolePermissionForms v-if="can.update" :role :all-available-permissions model-route="roles.update" />
+      <RolePermissionForms v-if="can.update" :role :all-available-permissions :baseline-access :retired-permissions model-route="roles.update" />
       <p v-else class="text-sm text-muted-foreground">
         {{ $t('Neturite teisės keisti šios rolės teisių.') }}
       </p>
@@ -103,6 +103,10 @@ const props = defineProps<{
   tenantsWithDuties: Array<{ institutions?: Array<{ duties?: Duty[] }> }>;
   allTypes: RoleType[];
   allAvailablePermissions: Record<string, string[]>;
+  /** What every member may do without a role, by permission resource (BaselineAccess). */
+  baselineAccess: Record<string, string>;
+  /** Permissions every member already has, so no role may hold them (BaselineAccess). */
+  retiredPermissions: string[];
   can: { update: boolean; delete: boolean };
 }>();
 

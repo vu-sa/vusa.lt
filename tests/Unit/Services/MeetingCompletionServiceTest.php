@@ -56,18 +56,32 @@ describe('MeetingCompletionService', function (): void {
             expect($this->service->calculate($meeting))->toBe('incomplete');
         });
 
-        test('returns complete when any vote is complete if no main vote exists', function (): void {
+        test('an item without a type stays incomplete even with a complete vote', function (): void {
             $meeting = Meeting::factory()->create();
             $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id]);
+            Vote::factory()->create([
+                'agenda_item_id' => $item->id,
+                'is_main' => true,
+                'student_vote' => 'positive',
+                'decision' => 'positive',
+                'student_benefit' => 'positive',
+            ]);
+
+            expect($this->service->calculate($meeting))->toBe('incomplete');
+        });
+
+        test('only the main vote completes a voting item', function (): void {
+            $meeting = Meeting::factory()->create();
+            $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'type' => AgendaItemType::Voting]);
             Vote::factory()->create([
                 'agenda_item_id' => $item->id,
                 'is_main' => false,
                 'student_vote' => 'positive',
                 'decision' => 'positive',
-                'student_benefit' => 'yes',
+                'student_benefit' => 'positive',
             ]);
 
-            expect($this->service->calculate($meeting))->toBe('complete');
+            expect($this->service->calculate($meeting))->toBe('incomplete');
         });
 
         test('ignores informational items for completion', function (): void {

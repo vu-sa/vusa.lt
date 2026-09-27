@@ -125,7 +125,6 @@ return [
     ],
 
     'task' => [
-        'automatic_not_deletable' => 'This task completes automatically and cannot be deleted.',
         'automatic_not_markable' => 'This task completes automatically and cannot be marked manually.',
         'status_updated' => 'Task status updated successfully.',
     ],

@@ -16,6 +16,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
+use App\Support\Permissions\BaselineAccess;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Response;
@@ -117,6 +118,8 @@ class RoleController extends AdminController
             'tenantsWithDuties' => $tenantsWithDuties,
             'allTypes' => Type::all(),
             'allAvailablePermissions' => $allAvailablePermissions->map(fn ($permissions) => $permissions->pluck('name')),
+            'baselineAccess' => BaselineAccess::descriptions(),
+            'retiredPermissions' => BaselineAccess::retiredPermissionNames(),
         ];
     }
 

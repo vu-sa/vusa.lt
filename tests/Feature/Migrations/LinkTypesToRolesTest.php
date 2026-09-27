@@ -74,7 +74,7 @@ describe('splitting page and problem editing out of the resource manager role', 
     beforeEach(function (): void {
         // The production role: resources plus page and problem editing.
         $this->resourceManager = Role::findByName(RoleResourceManagerSeeder::NAME);
-        $this->resourceManager->givePermissionTo(['pages.read.padalinys', 'pages.update.padalinys', 'problems.create.padalinys', 'problems.read.*', 'problems.update.padalinys']);
+        $this->resourceManager->givePermissionTo(['pages.read.padalinys', 'pages.update.padalinys', 'problems.create.padalinys', 'problems.update.padalinys']);
 
         $this->chair = makeTenantUserWithRole(RoleResourceManagerSeeder::NAME);
         $this->directHolder = makeUser(Tenant::query()->firstOrFail());

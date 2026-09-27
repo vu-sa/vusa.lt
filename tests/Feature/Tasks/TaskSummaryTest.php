@@ -270,7 +270,7 @@ describe('tasks.summary filters', function (): void {
 });
 
 describe('tasks.summary deletion offer', function (): void {
-    test('lets the central student representative coordinator delete a manual task but not an automatic one', function (): void {
+    test('lets the central student representative coordinator delete manual and automatic tasks alike', function (): void {
         $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
         $assignee = makeUser($this->tenant);
         $manual = summaryMeetingTaskFor($assignee, $this->institution, ActionType::Manual);
@@ -280,7 +280,7 @@ describe('tasks.summary deletion offer', function (): void {
 
         $canDelete = collect($response->viewData('page')['props']['data'])->pluck('can_delete', 'id');
         expect($canDelete[$manual->id])->toBeTrue()
-            ->and($canDelete[$automatic->id])->toBeFalse();
+            ->and($canDelete[$automatic->id])->toBeTrue();
     });
 });
 

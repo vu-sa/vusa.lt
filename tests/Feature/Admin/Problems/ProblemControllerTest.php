@@ -25,9 +25,17 @@ beforeEach(function (): void {
     ]);
 });
 
-describe('unauthorized access', function (): void {
-    test('cannot access problem index', function (): void {
-        asUser($this->user)->get(route('problems.index'))->assertStatus(403);
+describe('member without a role', function (): void {
+    // Problems are a shared knowledge base (BaselineAccess): reading needs no role.
+    test('browses every padalinys\' problems', function (): void {
+        asUser($this->user)->get(route('problems.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('data', fn ($data) => collect($data)->pluck('id')->contains($this->otherTenantProblem->id)));
+    });
+
+    test('cannot create a problem', function (): void {
+        asUser($this->user)->get(route('problems.create'))->assertForbidden();
     });
 });
 
@@ -129,22 +137,12 @@ test('problem activity loads its discussion and accepts comments', function (): 
 });
 
 describe('tenant isolation', function (): void {
-    test('tenant-scoped user only sees own tenant problems', function (): void {
-        asUser($this->coordinator)->get(route('problems.index'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('data', fn ($data) => collect($data)->isNotEmpty()
-                    && collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id))
-            );
-    });
-
-    test('tenant-scoped user cannot see other tenant problems even when filtering for them', function (): void {
+    test('a coordinator reads other padaliniai problems but narrows them with the padalinys filter', function (): void {
         asUser($this->coordinator)
             ->get(route('problems.index', ['filters' => json_encode(['tenant.id' => [$this->otherTenant->id]])]))
-            ->assertStatus(200)
+            ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('data', fn ($data) => collect($data)->every(fn ($problem) => $problem['tenant_id'] === $this->tenant->id))
-            );
+                ->where('data', fn ($data) => collect($data)->pluck('id')->all() === [$this->otherTenantProblem->id]));
     });
 
     test('cannot store a problem for another tenant', function (): void {

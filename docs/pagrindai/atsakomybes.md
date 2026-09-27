@@ -41,7 +41,7 @@ Atsakomybė pati nesuteikia bendros prieigos prie institucijų. Koordinatorius g
 organu susijusius studentų atstovų registracijos ir posėdžių pranešimus, gali tvarkyti to organo
 veiklos pranešimus ir mato atitinkamas registracijas. Kitą prieigą suteikia rolės ir jų teisės.
 
-## Techninė informacija
+## Techninė informacija {#technine-informacija}
 
 - Atsakomybės yra `duty_responsibilities`; jas skaito `ResponsibilityResolver`.
 - Priskyrimą riboja pareigybės `update` patikra ir tikslui taikoma padalinio ar tipo teisė.

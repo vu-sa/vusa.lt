@@ -211,7 +211,7 @@ const studentVoteRow: VoteRow = {
   options: [
     option('positive', $t('Pritarė'), CircleCheck, 'success'),
     option('negative', $t('Nepritarė'), CircleX, 'danger'),
-    option('neutral', $t('Susilaikyta'), CircleMinus, 'neutral'),
+    option('neutral', $t('Susilaikė'), CircleMinus, 'neutral'),
   ],
   unanswered: option(null, $t('Nebalsuota'), CircleDashed, 'attention'),
 };

@@ -75,8 +75,8 @@ export function useDiscussionApi(commentableType: string, commentableId: string)
       return request<CommentData>(route('api.v1.admin.comments.update', { comment: id }), 'PATCH', { body });
     },
 
-    deleteComment(id: string): Promise<{ id: string }> {
-      return request<{ id: string }>(route('api.v1.admin.comments.destroy', { comment: id }), 'DELETE');
+    deleteComment(id: string): Promise<CommentData> {
+      return request<CommentData>(route('api.v1.admin.comments.destroy', { comment: id }), 'DELETE');
     },
 
     resolveComment(id: string): Promise<CommentData> {

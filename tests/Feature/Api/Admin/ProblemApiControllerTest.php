@@ -24,10 +24,11 @@ beforeEach(function (): void {
     ]);
 });
 
-test('returns 403 to a user without problem read access', function (): void {
+test('lists every padalinys\' problems to a member without a role', function (): void {
     asUser($this->plainUser)
         ->getJson(route('api.v1.admin.problems.index'))
-        ->assertForbidden();
+        ->assertOk()
+        ->assertJsonCount(2, 'data.items');
 });
 
 test('returns paginated problem collection contract for authorized coordinator', function (): void {
@@ -49,17 +50,18 @@ test('filters problem collection by status', function (): void {
     asUser($this->coordinator)
         ->getJson(route('api.v1.admin.problems.index', ['status' => ['resolved']]))
         ->assertOk()
-        ->assertJsonCount(1, 'data.items')
-        ->assertJsonPath('data.items.0.status', 'resolved');
+        ->assertJsonCount(2, 'data.items')
+        ->assertJsonPath('data.items.0.status', 'resolved')
+        ->assertJsonPath('data.items.1.status', 'resolved');
 });
 
-test('counts facet values within the coordinator scope, each facet ignoring its own selection', function (): void {
+test('counts facet values across every padalinys, each facet ignoring its own selection', function (): void {
     Problem::factory()->count(2)->create([
         'tenant_id' => $this->tenant->id,
         'status' => 'resolved',
     ]);
 
-    // Selecting "open" narrows the list but not the status counts; the other tenant stays out of scope.
+    // Selecting "open" narrows the list but not the status counts; the other padalinys' resolved problem counts too.
     asUser($this->coordinator)
         ->getJson(route('api.v1.admin.problems.index', [
             'status' => ['open'],
@@ -70,7 +72,7 @@ test('counts facet values within the coordinator scope, each facet ignoring its 
         ->assertOk()
         ->assertJsonCount(1, 'data.items')
         ->assertJsonPath('data.facets.status.open', 1)
-        ->assertJsonPath('data.facets.status.resolved', 2);
+        ->assertJsonPath('data.facets.status.resolved', 3);
 });
 
 test('leaves facet counts out unless the page asks for them', function (): void {

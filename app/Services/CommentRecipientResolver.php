@@ -106,6 +106,7 @@ class CommentRecipientResolver
         $userIds = Comment::query()
             ->where(fn ($q) => $q->where('thread_root_id', $rootId)->orWhere('id', $rootId))
             ->pluck('user_id')
+            ->filter()
             ->unique()
             ->values();
 

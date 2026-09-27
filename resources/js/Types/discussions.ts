@@ -4,7 +4,8 @@
  */
 
 export interface CommentUser {
-  id: string;
+  /** Null once the comment is erased: its author is not kept. */
+  id: string | null;
   name: string | null;
   profile_photo_path: string | null;
 }
@@ -64,6 +65,8 @@ export interface CommentData {
   thread_root_id: string | null;
   kind: string;
   body: string;
+  /** Deleted: text and author are gone, only the placeholder keeps its place in the thread. */
+  is_erased: boolean;
   metadata: Record<string, unknown> | null;
   poll?: PollData | null;
   user: CommentUser;

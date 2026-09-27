@@ -23,7 +23,6 @@ class RoleResourceManagerSeeder extends Seeder
 
         $role->syncPermissions([
             'resources.create.padalinys',
-            'resources.read.*',
             'resources.update.padalinys',
             'resources.delete.padalinys',
             'reservations.create.padalinys',

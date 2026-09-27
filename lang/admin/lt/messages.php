@@ -127,7 +127,6 @@ return [
     ],
 
     'task' => [
-        'automatic_not_deletable' => 'Ši užduotis užsibaigia automatiškai ir negali būti ištrinta.',
         'automatic_not_markable' => 'Ši užduotis užsibaigia automatiškai ir negali būti pažymėta rankiniu būdu.',
         'status_updated' => 'Užduoties būsena sėkmingai atnaujinta.',
     ],

@@ -970,3 +970,72 @@ describe('institution meeting navigation', function (): void {
             ->assertInertia(fn ($page) => $page->where('recordNavigation', null));
     });
 });
+
+describe('editing a meeting', function (): void {
+    beforeEach(function (): void {
+        $this->meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => now()->subDays(3)->setTime(14, 0)]);
+    });
+
+    test('the old edit URL opens the record page, keeping the tab and action', function (): void {
+        asUser($this->admin)
+            ->get(route('meetings.edit', ['meeting' => $this->meeting, 'tab' => 'files', 'action' => 'add']))
+            ->assertRedirect(route('meetings.show', ['meeting' => $this->meeting, 'tab' => 'files', 'action' => 'add']));
+
+        asUser($this->user)->get(route('meetings.edit', $this->meeting))->assertForbidden();
+    });
+
+    test('changing the date or type regenerates the title, without a time for an email decision', function (): void {
+        $startTime = Carbon::parse('2026-03-05 16:30');
+
+        asUser($this->admin)
+            ->patch(route('meetings.update', $this->meeting), ['start_time' => $startTime->toDateTimeString(), 'type' => 'in-person'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->meeting->fresh()->title)->toBe('2026 kovo 05 d. 16.30 val. posėdis');
+
+        asUser($this->admin)
+            ->patch(route('meetings.update', $this->meeting), ['start_time' => $startTime->toDateTimeString(), 'type' => 'email'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->meeting->fresh()->title)->toBe('2026 kovo 05 d. posėdis');
+    });
+
+    test('a member at the time of the meeting edits it without a role, but not its agenda items', function (): void {
+        $member = makeUser($this->tenant);
+        $duty = $member->duties()->first();
+        $meeting = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->setTime(10, 0)]);
+        $item = AgendaItem::factory()->for($meeting)->create();
+
+        asUser($member)
+            ->patch(route('meetings.update', $meeting), ['start_time' => now()->setTime(12, 0)->toDateTimeString()])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        expect($meeting->fresh()->start_time->format('H:i'))->toBe('12:00');
+
+        asUser($member)
+            ->patch(route('agendaItems.update', $item), ['title' => ['lt' => 'Pakeista']])
+            ->assertForbidden();
+    });
+
+    test('deleting moves the meeting to the trash and restoring brings it back', function (): void {
+        asUser($this->admin)->delete(route('meetings.destroy', $this->meeting))->assertRedirect();
+
+        expect($this->meeting->fresh()->trashed())->toBeTrue();
+
+        asUser($this->admin)->patch(route('meetings.restore', $this->meeting))->assertRedirect();
+
+        expect($this->meeting->fresh()->trashed())->toBeFalse();
+    });
+
+    test('a student representative coordinator deletes only meetings of their own institutions', function (): void {
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
+        $own = Meeting::factory()->hasAttached($coordinator->duties()->first()->institution)->create();
+
+        asUser($coordinator)->delete(route('meetings.destroy', $this->meeting))->assertForbidden();
+        asUser($coordinator)->delete(route('meetings.destroy', $own))->assertRedirect();
+
+        expect($this->meeting->fresh()->trashed())->toBeFalse()
+            ->and($own->fresh()->trashed())->toBeTrue();
+    });
+});

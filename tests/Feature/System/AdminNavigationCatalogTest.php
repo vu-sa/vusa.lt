@@ -153,10 +153,10 @@ describe('per-persona visibility', function (): void {
         // and ReservationPolicy::create() are unconditional, and ReservationPolicy::viewList() opens the
         // list to anyone who can reserve (holding only their own) — so a member with no role at all
         // still gets a foothold in Rezervacijos. Active institutions, public meetings, their agenda items
-        // and documents are open to every admin too (the viewAny() of each policy).
+        // documents and problems are open to every admin too (the viewAny() of each policy).
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
 
@@ -181,9 +181,10 @@ describe('per-persona visibility', function (): void {
         $user = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
 
         // Which meetings and institutions the rep gets is the scoped search key's job, not the catalog's.
+        // The institution graph is a padalinys view; a rep reads only their own institutions.
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai'],
         ]);
     });
@@ -210,7 +211,7 @@ describe('per-persona visibility', function (): void {
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
         ]);
     });

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AgendaItemType;
 use App\Enums\MeetingType;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
@@ -39,11 +40,15 @@ class DocsSeeder extends Seeder
 
     public const TIMELINE_INSTITUTION = 'VU SA parlamentas';
 
+    public const COUNCIL_INSTITUTION = 'Chemijos ir geomokslų fakulteto taryba';
+
+    public const UNFINISHED_AGENDA_ITEM = 'Bendrabučių vietų skirstymas';
+
     public function run(): void
     {
         $tenant = Tenant::query()->firstOrFail();
 
-        $council = $this->institution($tenant, 'Chemijos ir geomokslų fakulteto taryba', 'Faculty of Chemistry and Geosciences Council', 'CGF taryba');
+        $council = $this->institution($tenant, self::COUNCIL_INSTITUTION, 'Faculty of Chemistry and Geosciences Council', 'CGF taryba');
         $senate = $this->institution($tenant, 'Vilniaus universiteto Senatas', 'Vilnius University Senate', 'VU Senatas');
 
         $representative = User::factory()->create([
@@ -54,6 +59,9 @@ class DocsSeeder extends Seeder
         $committee = $this->institution($tenant, 'Chemijos studijų programos komitetas', 'Chemistry Study Programme Committee', 'Chemijos SPK');
 
         $representativeType = Type::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+
+        // A VU body type, so the institution frame shows its governance scope instead of a dash.
+        $council->types()->attach(Type::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail());
 
         foreach ([$council, $senate, $committee] as $institution) {
             $duty = Duty::factory()->for($institution)->create([
@@ -67,10 +75,11 @@ class DocsSeeder extends Seeder
 
         // Tasks come from the app's own subscribers, so each frame shows what a rep really gets:
         // agenda items → "Užpildyti darbotvarkės klausimų informaciją", none → "Sukurti … klausimus".
-        $this->meeting($council, now()->subDays(12)->setTime(15, 0), MeetingType::InPerson, [
+        $pastMeeting = $this->meeting($council, now()->subDays(12)->setTime(15, 0), MeetingType::InPerson, [
             ['lt' => 'Egzaminų sesijos rezultatai', 'en' => 'Exam session results'],
-            ['lt' => 'Bendrabučių vietų skirstymas', 'en' => 'Dormitory allocation'],
+            ['lt' => self::UNFINISHED_AGENDA_ITEM, 'en' => 'Dormitory allocation'],
         ]);
+        $this->recordVotes($pastMeeting);
 
         $this->meeting($council, now()->addDays(3)->setTime(15, 0), MeetingType::InPerson, [
             ['lt' => 'Studijų programų atnaujinimas', 'en' => 'Study programme renewal'],
@@ -85,6 +94,25 @@ class DocsSeeder extends Seeder
         $this->reservations($tenant, $representative);
         $this->dutyTimeline($tenant);
         $this->coordinators($tenant);
+    }
+
+    /**
+     * One item fully recorded and one still missing whether the outcome favoured students, so the
+     * meeting and agenda item frames show both a finished row and the checklist's open step.
+     */
+    private function recordVotes(Meeting $meeting): void
+    {
+        [$finished, $unfinished] = $meeting->agendaItems()->orderBy('order')->get()->all();
+
+        foreach ([[$finished, 'positive'], [$unfinished, null]] as [$item, $benefit]) {
+            $item->update(['type' => AgendaItemType::Voting]);
+            $item->votes()->create([
+                'is_main' => true,
+                'decision' => 'positive',
+                'student_vote' => 'positive',
+                'student_benefit' => $benefit,
+            ]);
+        }
     }
 
     /**

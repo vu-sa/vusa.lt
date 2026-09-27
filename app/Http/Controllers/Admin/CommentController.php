@@ -81,8 +81,7 @@ class CommentController extends AdminController
     {
         $this->handleAuthorization('delete', $comment);
 
-        // delete comment
-        $comment->delete();
+        $comment->erase();
 
         return back()->with('success', $this->entityMessage('deleted', 'comment'));
     }

@@ -437,3 +437,55 @@ describe('reorder', function (): void {
             ->and($second->refresh()->order)->toEqual(2);
     });
 });
+
+describe('adding and editing as a representative', function (): void {
+    test('new items go after the existing ones and keep the "raised by students" flag', function (): void {
+        AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 4]);
+
+        asUser($this->admin)
+            ->post(route('agendaItems.store'), [
+                'meeting_id' => $this->meeting->id,
+                'agendaItemTitles' => ['Stipendijos', 'Bendrabučiai'],
+                'broughtByStudentsFlags' => [true, false],
+            ])
+            ->assertSessionHasNoErrors();
+
+        $added = $this->meeting->agendaItems()->where('order', '>', 4)->orderBy('order')->get();
+
+        expect($added->pluck('order')->all())->toBe([5, 6])
+            ->and($added->pluck('brought_by_students')->all())->toBe([true, false]);
+    });
+
+    test('a student representative edits items of their own institution\'s meetings only', function (): void {
+        $representative = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
+        $ownMeeting = Meeting::factory()->hasAttached($representative->duties()->first()->institution)->create(['start_time' => now()->addDay()]);
+        $ownItem = AgendaItem::factory()->for($ownMeeting)->create();
+        $otherItem = AgendaItem::factory()->for($this->meeting)->create();
+
+        asUser($representative)
+            ->patch(route('agendaItems.update', $ownItem), ['title' => ['lt' => 'Studijų programų atnaujinimas']])
+            ->assertSessionHasNoErrors();
+
+        asUser($representative)
+            ->patch(route('agendaItems.update', $otherItem), ['title' => ['lt' => 'Pakeista']])
+            ->assertForbidden();
+
+        expect($ownItem->fresh()->title)->toBe('Studijų programų atnaujinimas');
+    });
+
+    test('a member at the time of the meeting can reorder its items', function (): void {
+        $member = makeUser($this->tenant);
+        $meeting = Meeting::factory()->hasAttached($member->duties()->first()->institution)->create(['start_time' => now()]);
+        $first = AgendaItem::factory()->for($meeting)->create(['order' => 1]);
+        $second = AgendaItem::factory()->for($meeting)->create(['order' => 2]);
+
+        asUser($member)
+            ->post(route('agendaItems.reorder'), [
+                'meeting_id' => $meeting->id,
+                'agenda_items' => [['id' => $first->id, 'order' => 2], ['id' => $second->id, 'order' => 1]],
+            ])
+            ->assertRedirect();
+
+        expect($first->fresh()->order)->toBe(2);
+    });
+});

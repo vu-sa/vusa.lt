@@ -7,7 +7,7 @@
 
 import type { CollectionFacetConfig, SortOption } from '../Types/AdminSearchTypes';
 
-import { meetingCompletionStatuses } from '@/Constants/statuses';
+import { institutionActivityStatuses, meetingCompletionStatuses } from '@/Constants/statuses';
 
 /**
  * Meeting collection facet configuration
@@ -621,14 +621,9 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
   },
   // Meeting values: all_match, mixed, all_mismatch, neutral.
   // Agenda item values: match, mismatch, mixed, incomplete, neutral.
-  activity_status: {
-    overdue: 'Vėluoja',
-    approaching: 'Artėja terminas',
-    no_activity: 'Nėra duomenų',
-    healthy: 'Būklė tinkama',
-    covered_by_upcoming_meeting: 'Suplanuotas posėdis',
-    covered_by_check_in: 'Pranešta apie veiklą',
-  },
+  activity_status: Object.fromEntries(
+    Object.entries(institutionActivityStatuses).map(([status, presentation]) => [status, presentation.label]),
+  ),
   vote_alignment_status: {
     all_match: 'Visi sutampa',
     match: 'Sutampa',
@@ -645,7 +640,7 @@ export const FACET_VALUE_LABELS: Record<string, Record<string, string>> = {
   },
   decision: {
     positive: 'Priimtas',
-    negative: 'Nepriimtas',
+    negative: 'Atmestas',
     neutral: 'Susilaikyta',
   },
   student_benefit: {

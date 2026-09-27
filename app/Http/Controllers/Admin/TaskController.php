@@ -107,13 +107,6 @@ class TaskController extends AdminController
     {
         $this->handleAuthorization('delete', $task);
 
-        // An automatic task is normally the system's to close, not a person's. Super admins are
-        // the exception: some end up unclosable (the agenda can no longer be completed, the
-        // subject is gone) and there has to be a way out.
-        if (! $task->canBeManuallyCompleted() && ! Auth::user()->isSuperAdmin()) {
-            return back()->with('error', __('messages.task.automatic_not_deletable'));
-        }
-
         $task->delete();
 
         return back()->with('success', $this->entityMessage('deleted', 'task'));

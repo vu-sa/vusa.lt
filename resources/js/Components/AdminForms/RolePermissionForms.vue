@@ -14,8 +14,13 @@
           <component :is="entity.icon" width="16" /> <span>{{ entity.title }}</span>
         </AlertTitle>
       </Alert>
+      <p v-if="baselineAccess?.[entity.key]" class="mb-3 text-sm text-muted-foreground" data-testid="baseline-access">
+        <span class="font-medium text-foreground">{{ $t('access.baseline.title') }}:</span> {{ baselineAccess[entity.key] }}
+      </p>
       <PermissionTable :model-type="entity.key" :icon="entity.icon" :permissions="filterPermissionsFor(entity.key)"
-        :available-permissions="(allAvailablePermissions && allAvailablePermissions[entity.key]) || []" :role />
+        :available-permissions="(allAvailablePermissions && allAvailablePermissions[entity.key]) || []" :role
+        :retired-permissions="(retiredPermissions ?? []).filter(permission => permission.startsWith(`${entity.key}.`))"
+        :baseline-note="baselineAccess?.[entity.key]" />
       <Separator />
     </section>
   </div>
@@ -31,6 +36,8 @@ import entities from '@/entities';
 const props = defineProps<{
   role: App.Entities.Role;
   allAvailablePermissions?: Record<string, string[]>;
+  baselineAccess?: Record<string, string>;
+  retiredPermissions?: string[];
 }>();
 
 const filterPermissionsFor = (modelType: string) => {

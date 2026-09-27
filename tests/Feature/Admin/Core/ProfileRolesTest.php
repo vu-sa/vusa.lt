@@ -119,11 +119,11 @@ test('a super admin is told so', function (): void {
         ->assertInertia(fn (Assert $page) => $page->where('access.isSuperAdmin', true));
 });
 
-test('a link is offered only for records the user may open', function (): void {
+test('links a member to their own duty and institution even without a role', function (): void {
     asUser($this->user)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('access.current.0.dutyHref', null)
-            ->where('access.current.0.institutionHref', null)
+            ->where('access.current.0.dutyHref', fn (?string $href): bool => $href !== null)
+            ->where('access.current.0.institutionHref', fn (?string $href): bool => $href !== null)
         );
 });

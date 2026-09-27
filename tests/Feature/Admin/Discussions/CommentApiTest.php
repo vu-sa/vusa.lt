@@ -178,7 +178,54 @@ describe('update & delete', function (): void {
         asUser($this->coordinator)->deleteJson(route('api.v1.admin.comments.destroy', $comment))
             ->assertOk();
 
-        expect($comment->fresh()->trashed())->toBeTrue();
+        expect($comment->fresh()->isErased())->toBeTrue();
+    });
+
+    test('deleting erases the words and the author but leaves a placeholder that keeps its replies', function (): void {
+        Event::fake([CommentBroadcast::class]);
+        $this->actingAs($this->viewer);
+        $root = $this->agendaItem->comment('<p>Kada kitas posėdis? @Jonas</p>');
+        $root->forceFill(['mentioned_user_ids' => [$this->coordinator->id]])->save();
+        $root->reactions()->create(['user_id' => $this->coordinator->id, 'emoji' => '👍']);
+        $this->actingAs($this->coordinator);
+        $reply = $this->agendaItem->comment('<p>Rugsėjo 30 d.</p>', $root->id);
+
+        asUser($this->viewer)->deleteJson(route('api.v1.admin.comments.destroy', $root))
+            ->assertOk()
+            ->assertJsonPath('data.is_erased', true)
+            ->assertJsonPath('data.body', '')
+            ->assertJsonPath('data.user.id', null)
+            ->assertJsonPath('data.can.delete', false);
+
+        $erased = $root->fresh();
+        expect($erased->user_id)->toBeNull()
+            ->and($erased->mentioned_user_ids)->toBeNull()
+            ->and($erased->reactions()->count())->toBe(0)
+            ->and($reply->fresh()->parent_id)->toBe($root->id);
+
+        asUser($this->coordinator)->getJson($this->indexUrl)
+            ->assertJsonPath('data.0.is_erased', true)
+            ->assertJsonPath('data.0.replies.0.body', '<p>Rugsėjo 30 d.</p>');
+
+        Event::assertDispatched(CommentBroadcast::class, fn (CommentBroadcast $event): bool => $event->action === 'updated');
+    });
+
+    test('an erased comment cannot be edited, reacted to or deleted again', function (): void {
+        $this->actingAs($this->coordinator);
+        $comment = $this->agendaItem->comment('<p>Ištrinsiu</p>');
+        $comment->erase();
+
+        asUser($this->coordinator)->patchJson(route('api.v1.admin.comments.update', $comment), ['body' => '<p>Vėl</p>'])->assertForbidden();
+        asUser($this->coordinator)->deleteJson(route('api.v1.admin.comments.destroy', $comment))->assertForbidden();
+    });
+
+    test('an erased comment no longer counts towards the discussion', function (): void {
+        $this->actingAs($this->coordinator);
+        $this->agendaItem->comment('<p>Lieka</p>');
+        $this->agendaItem->comment('<p>Ištrintas</p>')->erase();
+
+        asUser($this->coordinator)->get(route('agendaItems.show', $this->agendaItem))
+            ->assertInertia(fn ($page) => $page->where('siblingAgendaItems', fn ($siblings) => collect($siblings)->firstWhere('id', $this->agendaItem->id)['comments_count'] === 1));
     });
 
     test('a non-author non-moderator cannot delete (403)', function (): void {

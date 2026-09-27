@@ -234,7 +234,7 @@ parodo peržiūrą.
   negali“. Jei tarp keičiamų įrašų yra bent vienas, kurio keisti negali, visas pakeitimų rinkinys
   atmetamas.
 
-## Pranešimai ir automatizavimas
+## Pranešimai ir automatizavimas {#pranesimai}
 
 | Kada | Kas nutinka |
 |---|---|

@@ -1,5 +1,18 @@
 <template>
-  <div :class="['group/comment flex gap-2.5', isReply ? '' : '']">
+  <div v-if="comment.is_erased" class="flex items-center gap-2.5 py-1 text-sm text-muted-foreground" data-testid="comment-erased">
+    <Ban class="size-4 shrink-0" aria-hidden="true" />
+    <span class="italic">{{ $t('Komentaras ištrintas') }}</span>
+    <button
+      v-if="canReply"
+      type="button"
+      class="ml-2 inline-flex items-center gap-1 text-xs transition-colors hover:text-foreground"
+      @click="$emit('reply', comment.id)"
+    >
+      <CornerDownRight class="h-3.5 w-3.5" />
+      {{ $t('Atsakyti') }}
+    </button>
+  </div>
+  <div v-else :class="['group/comment flex gap-2.5', isReply ? '' : '']">
     <UserAvatar :user="(comment.user as any)" :size="32" class="mt-0.5 shrink-0" />
 
     <div class="min-w-0 flex-1">
@@ -99,7 +112,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CheckCircle2, CornerDownRight, MoreHorizontal, Pencil, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { Ban, CheckCircle2, CornerDownRight, MoreHorizontal, Pencil, RotateCcw, Trash2 } from 'lucide-vue-next';
 
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import CommentReactions from '@/Components/Discussions/CommentReactions.vue';

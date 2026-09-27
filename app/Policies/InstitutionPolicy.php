@@ -62,7 +62,10 @@ class InstitutionPolicy extends ModelPolicy
     #[\Override]
     public function view(User $user, Model $institution): bool
     {
-        return $this->commonChecker($user, $institution, CRUDEnum::READ->label(), $this->pluralModelName, false);
+        // Baseline: a member reads their own institution in full, role or not — from election on,
+        // matching the non-ended duties ModelAuthorizer grants through.
+        return $user->authorization_duties()->where('duties.institution_id', $institution->getKey())->exists()
+            || $this->commonChecker($user, $institution, CRUDEnum::READ->label(), $this->pluralModelName, false);
     }
 
     /**

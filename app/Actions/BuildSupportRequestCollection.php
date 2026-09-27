@@ -41,7 +41,7 @@ class BuildSupportRequestCollection
                 'type:id,name',
                 'area:id,name',
             ])
-            ->withCount('comments')
+            ->withCount(['comments' => fn ($query) => $query->notErased()])
             ->paginate($request->getPerPage())
             ->withQueryString();
 

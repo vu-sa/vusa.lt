@@ -22,9 +22,9 @@ use Spatie\Permission\PermissionRegistrar;
  */
 return new class extends Migration
 {
+    /** `problems.read.*` was here too until reading problems became every member's baseline. */
     private const array PROBLEM_EDITOR_PERMISSIONS = [
         'problems.create.padalinys',
-        'problems.read.*',
         'problems.update.padalinys',
     ];
 

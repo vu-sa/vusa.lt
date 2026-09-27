@@ -119,7 +119,7 @@ class InstitutionController extends AdminController
         $readOnly = ! Gate::allows('view', $institution);
 
         $institution->load('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns')
-            ->loadCount(['comments', 'duties', 'meetings', 'tasks', 'tasksFromMeetings']);
+            ->loadCount(['comments' => fn ($query) => $query->notErased(), 'duties', 'meetings', 'tasks', 'tasksFromMeetings']);
         $showsMeetings = ! $readOnly || $institution->has_public_meetings;
 
         $institution->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
@@ -128,8 +128,9 @@ class InstitutionController extends AdminController
         $tasksFromMeetingsCount = (int) $institution->getAttribute('tasks_from_meetings_count');
         $recentComments = $readOnly ? collect() : $institution->comments()
             ->roots()
+            ->notErased()
             ->with('user:id,name,profile_photo_path')
-            ->withCount('replies')
+            ->withCount(['replies' => fn ($query) => $query->notErased()])
             ->latest()
             ->limit(3)
             ->get()
@@ -256,8 +257,7 @@ class InstitutionController extends AdminController
             'can' => [
                 'update' => $user?->can('update', $institution) ?? false,
                 'delete' => $user?->can('delete', $institution) ?? false,
-                'recordMeeting' => ! $readOnly && $user !== null && $user->can('create', Meeting::class)
-                    && $this->authorizer->tenants($user, 'meetings.create.padalinys')->contains('id', $institution->tenant_id),
+                'recordMeeting' => ! $readOnly && ($user?->can('createFor', [Meeting::class, $institution]) ?? false),
                 'reportActivity' => ! $readOnly && ($user?->can('create', [InstitutionCheckIn::class, $institution]) ?? false),
             ],
             // Terms and secretary rosters are associations, edited on the record rather than in the

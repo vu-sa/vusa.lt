@@ -3,6 +3,7 @@
 use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\Type;
@@ -432,42 +433,44 @@ describe('validation', function (): void {
             ->assertSessionHasErrors('name.lt');
     });
 
-    test('requires short_name for store', function (): void {
-        $response = asUser($this->admin)->post(route('institutions.store'), [
-            'name' => ['lt' => 'Test Institution'],
-            'tenant_id' => $this->tenant->id,
-            'alias' => 'test-alias',
-        ]);
-
-        // Check if it actually gets created without short_name (might not be required)
-        if ($response->status() === 302 && ! $response->getSession()->get('errors')) {
-            // If no validation errors, then short_name is not required
-            $this->assertDatabaseHas('institutions', [
-                'alias' => 'test-alias',
-                'tenant_id' => $this->tenant->id,
-            ]);
-        } else {
-            $response->assertStatus(302)
-                ->assertSessionHasErrors('short_name.lt');
-        }
+    test('the short name is optional', function (): void {
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Chemijos taryba'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
     });
 
-    test('requires alias for store', function (): void {
-        $response = asUser($this->admin)->post(route('institutions.store'), [
-            'name' => ['lt' => 'Test Institution'],
-            'short_name' => ['lt' => 'TI'],
-            'tenant_id' => $this->tenant->id,
-            // Deliberately omitting 'alias'
-        ]);
+    test('the alias is optional and made from the name', function (): void {
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Chemijos studijų komitetas'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
 
-        // Debug what actually happens
-        if ($response->status() === 302 && ! $response->getSession()->get('errors')) {
-            // Institution was created successfully, alias is not required
-            expect(true)->toBeTrue(); // Pass the test
-        } else {
-            $response->assertStatus(302)
-                ->assertSessionHasErrors('alias');
-        }
+        expect(Institution::query()->where('name->lt', 'Chemijos studijų komitetas')->value('alias'))->toBe('chemijos-studiju-komitetas');
+    });
+
+    test('the name and short name must be unique among live institutions', function (): void {
+        Institution::factory()->create(['name' => ['lt' => 'Fakulteto taryba', 'en' => 'Faculty council'], 'short_name' => ['lt' => 'FT', 'en' => 'FC']]);
+        Institution::factory()->create(['name' => ['lt' => 'Ištrinta taryba', 'en' => 'Deleted council']])->delete();
+
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Fakulteto taryba'], 'short_name' => ['lt' => 'FT'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasErrors(['name.lt', 'short_name.lt']);
+
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Ištrinta taryba'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
+    });
+
+    test('an edited institution keeps its own name but cannot take another\'s', function (): void {
+        Institution::factory()->for($this->tenant)->create(['name' => ['lt' => 'Fakulteto taryba', 'en' => 'Faculty council'], 'short_name' => ['lt' => 'FT', 'en' => 'FC']]);
+        $institution = Institution::factory()->for($this->tenant)->create(['name' => ['lt' => 'Studijų komitetas', 'en' => 'Study committee'], 'short_name' => ['lt' => 'SK', 'en' => 'SC']]);
+
+        asUser($this->admin)
+            ->put(route('institutions.update', $institution), ['name' => ['lt' => 'Studijų komitetas'], 'short_name' => ['lt' => 'SK'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
+
+        asUser($this->admin)
+            ->put(route('institutions.update', $institution), ['name' => ['lt' => 'Fakulteto taryba'], 'short_name' => ['lt' => 'FT'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasErrors(['name.lt', 'short_name.lt']);
     });
 
     test('requires unique alias for store', function (): void {
@@ -786,5 +789,78 @@ describe('institution search indexing', function (): void {
         Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->addWeek()]);
 
         expect($institution->fresh()->toSearchableArray()['activity_status'])->toBe('covered_by_upcoming_meeting');
+    });
+});
+
+describe('padalinys, deletion and trash', function (): void {
+    beforeEach(function (): void {
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+        $this->otherTenant = Tenant::factory()->create();
+    });
+
+    test('an institution cannot be created in a padalinys outside the editor\'s reach', function (): void {
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Svetima taryba'], 'tenant_id' => $this->otherTenant->id])
+            ->assertSessionHasErrors('tenant_id');
+
+        expect(Institution::query()->where('name->lt', 'Svetima taryba')->exists())->toBeFalse();
+    });
+
+    test('only a super admin moves an institution to another padalinys', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $payload = ['name' => ['lt' => 'Perkelta taryba'], 'tenant_id' => $this->otherTenant->id];
+
+        asUser($this->admin)->put(route('institutions.update', $institution), $payload);
+
+        expect($institution->fresh()->tenant_id)->toBe($this->tenant->id);
+
+        asUser(makeAdminUser($this->tenant))->put(route('institutions.update', $institution), $payload);
+
+        expect($institution->fresh()->tenant_id)->toBe($this->otherTenant->id);
+    });
+
+    test('an editor cannot delete an institution they are a member of', function (): void {
+        $ownInstitution = $this->admin->duties()->first()->institution;
+
+        asUser($this->admin)
+            ->delete(route('institutions.destroy', $ownInstitution))
+            ->assertSessionHas('error');
+
+        expect($ownInstitution->fresh()->trashed())->toBeFalse();
+    });
+
+    test('a student representative coordinator creates and edits institutions but cannot delete them', function (): void {
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
+        $institution = Institution::factory()->for($this->tenant)->create();
+
+        asUser($coordinator)->get(route('institutions.create'))->assertOk();
+        asUser($coordinator)->get(route('institutions.edit', $institution))->assertOk();
+        asUser($coordinator)->delete(route('institutions.destroy', $institution))->assertForbidden();
+    });
+
+    test('a deleted institution can be restored from the trash', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $institution->delete();
+
+        asUser($this->admin)->patch(route('institutions.restore', $institution))->assertRedirect();
+
+        expect($institution->fresh()->trashed())->toBeFalse();
+    });
+
+    test('an institution with duties or check-ins cannot be deleted permanently', function (): void {
+        $superAdmin = makeAdminUser($this->tenant);
+        $withDuty = Institution::factory()->for($this->tenant)->has(Duty::factory())->create();
+        $withCheckIn = Institution::factory()->for($this->tenant)->create();
+        InstitutionCheckIn::factory()->for($withCheckIn)->create();
+
+        foreach ([$withDuty, $withCheckIn] as $institution) {
+            $institution->delete();
+
+            asUser($superAdmin)
+                ->delete(route('institutions.forceDelete', $institution))
+                ->assertSessionHas('error');
+
+            expect(Institution::withTrashed()->find($institution->id))->not->toBeNull();
+        }
     });
 });

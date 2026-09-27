@@ -74,7 +74,6 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
             'forms.update.padalinys',
             'forms.delete.padalinys',
             'problems.create.padalinys',
-            'problems.read.padalinys',
             'problems.update.padalinys',
             'problems.delete.padalinys',
         ]);

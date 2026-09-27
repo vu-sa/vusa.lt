@@ -67,8 +67,8 @@ class DutiableTimelineController extends AdminController
      *
      * Most people hold more than one duty, so "their" institution is a ranking rather than
      * a lookup: the one they hold the most current duties in wins, ties go alphabetically so
-     * two visits never disagree. Anything they may not `view` is dropped — the page would
-     * only 403 on the first fetch otherwise.
+     * two visits never disagree. A member may always `view` their own institution
+     * (InstitutionPolicy baseline), so none needs filtering out.
      *
      * @return Collection<int, Institution>
      */
@@ -89,7 +89,6 @@ class DutiableTimelineController extends AdminController
                 mb_strtolower((string) $held->first()->name),
             ))
             ->map(fn (Collection $held) => $held->first())
-            ->filter(fn (Institution $institution) => $user->can('view', $institution))
             ->values();
     }
 

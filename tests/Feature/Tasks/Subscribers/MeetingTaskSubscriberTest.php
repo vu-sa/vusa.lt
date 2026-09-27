@@ -1062,6 +1062,55 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->and($completionTask->completed_at)->toBeNull();
         });
     });
+
+    describe('due dates', function (): void {
+        test('creating the agenda is due 3 days after the meeting', function (): void {
+            [$meeting, $creationTask] = $this->createMeetingWithCreationTask();
+
+            expect($creationTask->due_date->toDateString())->toBe($meeting->start_time->addDays(3)->toDateString());
+        });
+
+        test('filling in an agenda recorded with the meeting is due 7 days after it', function (): void {
+            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(1);
+
+            expect($completionTask->due_date->toDateString())->toBe($meeting->start_time->addDays(7)->toDateString());
+        });
+
+        test('an agenda added later is due 7 days after the meeting', function (): void {
+            [$meeting] = $this->createMeetingWithCreationTask();
+
+            AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'order' => 1]);
+
+            $completionTask = Task::query()
+                ->where('taskable_id', $meeting->id)
+                ->where('action_type', ActionType::AgendaCompletion)
+                ->firstOrFail();
+
+            expect($completionTask->due_date->toDateString())->toBe($meeting->start_time->addDays(7)->toDateString());
+        });
+    });
+
+    test('recording the vote on the agenda item page advances the task', function (): void {
+        [$meeting, $task] = $this->createMeetingWithCompletionTask(1);
+        $item = $meeting->agendaItems->first();
+
+        asUser(makeAdminUser())
+            ->patch(route('agendaItems.update', $item), [
+                'type' => AgendaItemType::Voting->value,
+                'votes' => [[
+                    'is_main' => true,
+                    'decision' => 'positive',
+                    'student_vote' => 'positive',
+                    'student_benefit' => 'positive',
+                ]],
+            ])
+            ->assertSessionHasNoErrors();
+
+        $task->refresh();
+
+        expect($task->metadata['items_completed'])->toBe(1)
+            ->and($task->completed_at)->not->toBeNull();
+    });
 });
 
 /** Anyone may follow an active institution, so a follower hears only about meetings they may read. */

@@ -34,7 +34,7 @@ class ProblemController extends AdminController
     {
         $this->handleAuthorization('viewAny', Problem::class);
 
-        $query = BuildProblemIndexQuery::execute($request, $this->authorizer, $this->tableService);
+        $query = BuildProblemIndexQuery::execute($request);
 
         $query = $this->applyTanstackFilters(
             $query,

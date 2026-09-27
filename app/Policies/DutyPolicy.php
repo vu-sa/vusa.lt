@@ -6,6 +6,7 @@ use App\Enums\ModelEnum;
 use App\Models\Duty;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class DutyPolicy extends ModelPolicy
@@ -14,6 +15,17 @@ class DutyPolicy extends ModelPolicy
     {
         parent::__construct($authorizer);
         $this->pluralModelName = Str::plural(ModelEnum::DUTY->label());
+    }
+
+    /**
+     * Baseline: anyone who holds or once held the duty may read it; beyond that, `duties.read.*`.
+     *
+     * @param  Duty  $duty
+     */
+    #[\Override]
+    public function view(User $user, Model $duty): bool
+    {
+        return $duty->users()->whereKey($user->getKey())->exists() || parent::view($user, $duty);
     }
 
     /**

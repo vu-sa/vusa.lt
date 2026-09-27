@@ -75,7 +75,7 @@ class MeetingTaskSubscriber
                 name: __('Užpildyti darbotvarkės klausimų informaciją'),
                 meeting: $meeting,
                 users: $representatives,
-                dueDate: $meeting->start_time->toDateString(),
+                dueDate: $meeting->start_time->addDays(7)->toDateString(),
             );
         }
 

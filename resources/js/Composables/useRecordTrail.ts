@@ -15,7 +15,7 @@ export interface TrailCrumb {
 interface Trail {
   institution?: TrailCrumb;
   meeting?: TrailCrumb & { institutionIds: string[] };
-  agendaItem?: TrailCrumb & { meetingId: string };
+  agendaItem?: TrailCrumb & { meetingId: string; position: number };
 }
 
 interface TrailInstitution { id: string | number; name: string }
@@ -95,9 +95,10 @@ export function enterAgendaItem(agendaItem: TrailAgendaItem, position: number, m
     agendaItem: {
       id: String(agendaItem.id),
       href: route('agendaItems.show', { agendaItem: agendaItem.id }),
-      label: $t('shell.trail.agenda_item', { position: String(position) }),
+      label: '',
       title: agendaItem.title,
       meetingId: meeting ? String(meeting.id) : '',
+      position,
     },
   };
 }
@@ -118,6 +119,12 @@ export function useRecordTrail() {
 
   const crumbFor = (sectionKey: string): TrailCrumb | undefined => {
     const record = SECTION_RECORDS[sectionKey];
+    const { agendaItem } = trail.value;
+
+    // Translated on read: the trail outlives the page that set it, and admin.ts can mount before the translations arrive.
+    if (record === 'agendaItem' && agendaItem) {
+      return { ...agendaItem, label: $t('shell.trail.agenda_item', { position: String(agendaItem.position) }) };
+    }
 
     return record ? trail.value[record] : undefined;
   };

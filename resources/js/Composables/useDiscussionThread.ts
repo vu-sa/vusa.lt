@@ -41,27 +41,12 @@ export function useDiscussionThread(commentableType: string, commentableId: stri
     }
   }
 
-  function removeComment(id: string): void {
-    const rootIndex = comments.value.findIndex(comment => comment.id === id);
-    if (rootIndex !== -1) {
-      comments.value.splice(rootIndex, 1);
-      return;
-    }
-    for (const root of comments.value) {
-      if (root.replies?.some(reply => reply.id === id)) {
-        root.replies = root.replies.filter(reply => reply.id !== id);
-        return;
-      }
-    }
-  }
-
   const { members, connect } = useDiscussionChannel(commentableType, commentableId, {
     onCreated: upsertComment,
     onUpdated: upsertComment,
     onResolved: upsertComment,
     onReaction: upsertComment,
     onPoll: upsertComment,
-    onDeleted: ({ id }) => removeComment(id),
   });
 
   async function post(html: string, parentId?: string): Promise<CommentData | null> {
@@ -112,8 +97,8 @@ export function useDiscussionThread(commentableType: string, commentableId: stri
 
   async function remove(id: string): Promise<void> {
     try {
-      await api.deleteComment(id);
-      removeComment(id);
+      // The comment stays as a "Komentaras ištrintas" placeholder so its replies keep their place.
+      upsertComment(await api.deleteComment(id));
     }
     catch (error) {
       toasts.error((error as Error).message);

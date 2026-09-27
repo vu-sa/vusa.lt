@@ -67,10 +67,7 @@ describe('Išteklių administratorius', function (): void {
             ->first();
     });
 
-    test('a global read scope does not grant approval rights in another tenant', function (): void {
-        // The `*`-scoped check a ReservationPolicy::view would have made first.
-        expect($this->authorizer->allows($this->manager, 'resources.read.*'))->toBeTrue();
-
+    test('seeing every resource does not grant approval rights in another tenant', function (): void {
         expect($this->foreignReservationResource->canBeApprovedBy($this->manager))->toBeFalse();
     });
 
@@ -96,8 +93,7 @@ describe('Išteklių administratorius', function (): void {
             ->where('resource_id', $ownResource->id)
             ->first();
 
-        expect($this->authorizer->allows($this->manager, 'resources.read.*'))->toBeTrue()
-            ->and($own->canBeApprovedBy($this->manager))->toBeTrue();
+        expect($own->canBeApprovedBy($this->manager))->toBeTrue();
     });
 });
 

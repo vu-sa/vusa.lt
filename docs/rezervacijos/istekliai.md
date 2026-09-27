@@ -79,7 +79,7 @@ skydelyje (stalčiuje) iškart pateikiama pasirinkto daikto informacija:
 - **Ištrinti / atkurti** – ištrintas išteklius patenka į sąrašo šiukšlinę ir gali
   būti atkurtas.
 
-## Kas ką gali
+## Kas ką gali {#teises}
 
 | Veiksmas | Bet kuris narys | Išteklių administratorius |
 |---|---|---|
@@ -96,7 +96,7 @@ daiktus.
 :::
 
 
-## Susitarimai
+## Susitarimai {#susitarimai}
 
 ::: tip Išteklių administravimas
 - Išteklių duomenis atnaujiname **du kartus per metus**: iki rugpjūčio 1 d. ir iki kovo 1 d.

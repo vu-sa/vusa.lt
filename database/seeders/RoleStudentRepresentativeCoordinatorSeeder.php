@@ -40,9 +40,6 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'duties.read.padalinys',
             'duties.update.padalinys',
             'duties.delete.padalinys',
-            'comments.create.own',
-            'comments.read.own',
-            'comments.update.own',
             'sharepointFiles.create.padalinys',
             'sharepointFiles.read.padalinys',
             'sharepointFiles.update.padalinys',
@@ -50,7 +47,6 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'tasks.read.own',
             'tasks.update.own',
             'problems.create.padalinys',
-            'problems.read.padalinys',
             'problems.update.padalinys',
             'problems.delete.padalinys',
         ]);

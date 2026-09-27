@@ -22,7 +22,6 @@ class RoleCentralResourceManagerSeeder extends Seeder
 
         $role->syncPermissions([
             'resources.create.*',
-            'resources.read.*',
             'resources.update.*',
             'resources.delete.*',
             'reservations.create.*',

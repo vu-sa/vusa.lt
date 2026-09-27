@@ -93,8 +93,8 @@ export const voteStatuses: Record<VoteValue | MissingVoteStatus, StatusPresentat
 };
 
 export const studentBenefitStatuses: Record<VoteValue | UnknownBenefitStatus, StatusPresentation> = {
-  [VoteValue.Positive]: status('Naudinga', 'success', ThumbsUp),
-  [VoteValue.Negative]: status('Nenaudinga', 'danger', ThumbsDown),
+  [VoteValue.Positive]: status('Palanku', 'success', ThumbsUp),
+  [VoteValue.Negative]: status('Nepalanku', 'danger', ThumbsDown),
   [VoteValue.Neutral]: status('Neutralu', 'neutral', CircleMinus),
   unknown: status('Nežinoma', 'attention', CircleDashed),
 };

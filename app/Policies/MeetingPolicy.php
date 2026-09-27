@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
+use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
@@ -33,6 +34,28 @@ class MeetingPolicy extends ModelPolicy
     public function viewAny(User $user): bool
     {
         return true;
+    }
+
+    /**
+     * Coordinators hold `meetings.create.padalinys`; a representative holds `.own`, which
+     * {@see createFor()} narrows to the institutions of the duties that grant it.
+     */
+    #[\Override]
+    public function create(User $user): bool
+    {
+        return parent::create($user) || $this->authorizer->allows($user, 'meetings.create.own');
+    }
+
+    /**
+     * Whether the user may record a meeting of this institution.
+     */
+    public function createFor(User $user, Institution $institution): bool
+    {
+        if ($this->authorizer->scope($user, 'meetings.create.padalinys')->allowsTenant($institution->tenant)) {
+            return true;
+        }
+
+        return $this->authorizer->duties($user, 'meetings.create.own')->contains('institution_id', $institution->getKey());
     }
 
     /**

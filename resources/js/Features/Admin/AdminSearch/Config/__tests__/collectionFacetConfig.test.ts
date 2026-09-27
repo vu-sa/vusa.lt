@@ -3,9 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   getCollectionFacetConfig,
   getCollectionSortOptions,
+  getFacetValueLabel,
   RELEVANCE_SORT_VALUE,
   resolveSortValue,
 } from '../collectionFacetConfig';
+
+import { institutionActivityStatuses } from '@/Constants/statuses';
 
 describe('getCollectionSortOptions', () => {
   it('prepends the relevance option for known collections', () => {
@@ -51,5 +54,13 @@ describe('resolveSortValue', () => {
 
   it('passes concrete sort values through unchanged', () => {
     expect(resolveSortValue('meetings', 'start_time:asc')).toBe('start_time:asc');
+  });
+});
+
+describe('institution activity filter', () => {
+  it('names each status as its badge does', () => {
+    for (const [status, presentation] of Object.entries(institutionActivityStatuses)) {
+      expect(getFacetValueLabel('activity_status', status)).toBe(presentation.label);
+    }
   });
 });

@@ -334,7 +334,7 @@ export function getStatusText(item: AgendaItem): string {
   if (mainVote.is_consensus) return $t('Bendras sutarimas');
   if (mainVote.decision === 'positive') return $t('Priimtas');
   if (mainVote.decision === 'negative') return $t('Atmestas');
-  return $t('Neutralus');
+  return $t('Neutralus sprendimas');
 }
 
 /**
@@ -368,7 +368,7 @@ export function getStudentVoteLabel(studentVote: VoteValue): string {
   switch (studentVote) {
     case 'positive': return $t('Pritarė');
     case 'negative': return $t('Nepritarė');
-    case 'neutral': return $t('Susilaikyta');
+    case 'neutral': return $t('Susilaikė');
     default: return '';
   }
 }
@@ -391,8 +391,8 @@ export function getStudentVoteShort(studentVote: VoteValue): string {
 export function getDecisionLabel(decision: VoteValue): string {
   switch (decision) {
     case 'positive': return $t('Priimtas');
-    case 'negative': return $t('Nepriimtas');
-    case 'neutral': return $t('Neutralus');
+    case 'negative': return $t('Atmestas');
+    case 'neutral': return $t('Susilaikyta');
     default: return $t('Neaptartas');
   }
 }
@@ -497,11 +497,11 @@ export function getVoteDisplayLabel(value: VoteValue): string {
 export function getStudentBenefitLabel(value: VoteValue): string {
   switch (value) {
     case 'positive':
-      return $t('Naudinga');
+      return $t('Palanku');
     case 'negative':
-      return $t('Nenaudinga');
+      return $t('Nepalanku');
     case 'neutral':
-      return $t('Neutrali');
+      return $t('Neutralu');
     default:
       return $t('Nenustatyta');
   }

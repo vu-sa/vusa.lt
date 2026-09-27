@@ -23,7 +23,6 @@ class RoleProblemEditorSeeder extends Seeder
 
         $role->syncPermissions([
             'problems.create.padalinys',
-            'problems.read.*',
             'problems.update.padalinys',
         ]);
 

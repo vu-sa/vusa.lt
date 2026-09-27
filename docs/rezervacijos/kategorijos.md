@@ -23,7 +23,7 @@ išteklių. Išteklių sąraše pagal ją galima filtruoti.
 - Sąrašo eilutėje ir lentelėje galima atverti redagavimą arba ištrynimo patvirtinimą, jei turi
   atitinkamą teisę.
 
-## Kas ką gali
+## Kas ką gali {#teises}
 
 Kategorijas mato ir tvarko
 [išteklių administratoriai](/rezervacijos/#isteklu-administratorius). Kadangi kategorijos bendros,
@@ -35,6 +35,8 @@ Prieš trindamas kategoriją, pasitark su kitais padaliniais.
 ### Teisės
 
 - Kategorijos neturi savų teisių: `ResourceCategoryPolicy` kiekvieną veiksmą tikrina pagal
-  atitinkamą išteklių teisę (`resources.read|create|update|delete`, `padalinys` arba `*` apimtimi).
+  atitinkamą išteklių teisę (`resources.create|update|delete`, `padalinys` arba `*` apimtimi).
+  Kategorijų sąrašą mato turintys `resources.update` – išteklius mato visi, todėl skaitymo teisė
+  čia nieko nereikštų.
 - `resourceCategories.*` teisės nesukurtos – jas tikrinant kategorijas galėtų tvarkyti tik super
   administratoriai.

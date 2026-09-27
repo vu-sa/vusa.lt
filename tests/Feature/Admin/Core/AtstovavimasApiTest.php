@@ -575,7 +575,7 @@ describe('padaliniai gantt', function (): void {
     });
 
     test('a padalinys reader gets their padalinys in full and only public bodies elsewhere', function (): void {
-        $coordinator = makeTenantUserWithRole('Studentų atstovas', $this->ownInstitution->tenant);
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->ownInstitution->tenant);
         $otherInstitution = Institution::factory()->for($this->ownInstitution->tenant)->create();
 
         $rows = collect(

@@ -10,7 +10,7 @@ paths:
 
 1. All three models declare `getFallbackLocale(): 'lt'`. `config('app.fallback_locale')` is `en`, so without it an English request for an untranslated field returns `''` and the public page renders blank instead of falling back to Lithuanian.
 2. A plain string on a translatable field is written to `lt`, never `app()->getLocale()` — an admin using the English UI still pastes Lithuanian agendas. `App\Http\Requests\Concerns\NormalizesTranslatableInput` does this in `prepareForValidation()`, so rules stay array rules (`title.lt` / `title.en`) and validation errors report on the dotted sub-key, not `title`. `AgendaItemController::store()` and `MeetingController::store()` pin `['lt' => $value]` explicitly.
-3. Only `AgendaItemController::edit()` sends `toFullArray()` (plus `votes->map->toFullArray()`); every other surface — public pages, sibling/navigator projections, `MeetingAgendaList` — gets the localized string from `toArray()` and needs no change. `App.Entities.*` therefore stays typed `string`; the `{lt,en}` shape lives in `useAgendaItemAutosave.ts` (`TranslatedField`).
+3. Only `AgendaItemController::show()` (the editor; `edit()` just redirects there) sends `toFullArray()` (plus `votes->map->toFullArray()`); every other surface — public pages, sibling/navigator projections, `MeetingAgendaList` — gets the localized string from `toArray()` and needs no change. `App.Entities.*` therefore stays typed `string`; the `{lt,en}` shape lives in `useAgendaItemAutosave.ts` (`TranslatedField`).
 
 `meetings.title` is deliberately NOT translatable: it is regenerated from `start_time` on every save. `App\Support\MeetingTitle::for($meeting, $locale)` renders it per locale for the public `<title>`.
 

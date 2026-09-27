@@ -75,6 +75,21 @@ describe('tasks:repopulate institution', function (): void {
         expect(periodicityGapTaskFor($institution))->not->toBeNull();
     });
 
+    test('does not create a task for an inactive institution', function (): void {
+        $this->travelTo('2025-11-15');
+
+        $institution = institutionWithRepresentative();
+        $institution->update(['is_active' => false]);
+
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => '2025-10-01 10:00:00']);
+
+        $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
+
+        expect(periodicityGapTaskFor($institution))->toBeNull();
+    });
+
     test('does not create a task when the gap is made up of vacation days', function (): void {
         // June 20 -> September 1 is 73 calendar days, but 62 of them are summer
         // vacation, leaving 11 effective days - well inside the 30-day periodicity.

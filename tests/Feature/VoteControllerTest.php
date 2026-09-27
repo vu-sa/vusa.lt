@@ -129,6 +129,32 @@ describe('vote controller', function (): void {
         expect(Vote::find($vote->id))->toBeNull();
     });
 
+    test('the first vote becomes the main one without asking', function (): void {
+        asUser($this->admin)
+            ->post(route('votes.store'), ['agenda_item_id' => $this->agendaItem->id, 'decision' => 'positive'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->agendaItem->votes()->sole()->is_main)->toBeTrue();
+    });
+
+    test('deleting the main vote promotes the next one', function (): void {
+        $main = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create();
+        $additional = Vote::factory()->additional()->for($this->agendaItem, 'agendaItem')->create();
+
+        asUser($this->admin)->delete(route('votes.destroy', $main))->assertRedirect();
+
+        expect($additional->fresh()->is_main)->toBeTrue();
+    });
+
+    test('a vote note is limited to 2000 characters', function (): void {
+        asUser($this->admin)
+            ->post(route('votes.store'), [
+                'agenda_item_id' => $this->agendaItem->id,
+                'note' => ['lt' => str_repeat('a', 2001)],
+            ])
+            ->assertSessionHasErrors('note.lt');
+    });
+
     test('admin can set a vote as main', function (): void {
         $mainVote = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create();
         $additionalVote = Vote::factory()->additional()->for($this->agendaItem, 'agendaItem')->create();

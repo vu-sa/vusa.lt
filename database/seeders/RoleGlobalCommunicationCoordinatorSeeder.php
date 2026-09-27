@@ -74,7 +74,6 @@ class RoleGlobalCommunicationCoordinatorSeeder extends Seeder
             'users.update.*',
             'users.delete.*',
             'problems.create.*',
-            'problems.read.*',
             'problems.update.*',
         ]);
 

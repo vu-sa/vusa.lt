@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\AgendaItemType;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use Illuminate\Support\Collection;
@@ -51,26 +52,11 @@ class MeetingCompletionService
                 continue;
             }
 
-            if ($type instanceof AgendaItemType && ! $type->requiresVote()) {
+            if ($this->itemIsComplete($item, $requiresStudentPerspective)) {
                 continue;
-            }
-
-            if (! $item->relationLoaded('votes')) {
-                $item->load('votes');
             }
 
             $mainVote = $item->votes->firstWhere('is_main', true);
-
-            if ($mainVote !== null && $this->voteIsComplete($mainVote, $requiresStudentPerspective)) {
-                continue;
-            }
-
-            if ($mainVote === null && $item->votes->contains(
-                fn (Vote $vote): bool => $this->voteIsComplete($vote, $requiresStudentPerspective)
-            )) {
-                continue;
-            }
-
             $vote = $mainVote ?? $item->votes->first();
             $requiredFields = $requiresStudentPerspective
                 ? ['decision', 'student_vote', 'student_benefit']
@@ -109,29 +95,32 @@ class MeetingCompletionService
 
         $requiresStudentPerspective = $meeting->requiresStudentPerspective();
 
-        $allComplete = $agendaItems->every(function ($item) use ($requiresStudentPerspective) {
-            $type = $item->getAttribute('type');
-            if ($type instanceof AgendaItemType && ! $type->requiresVote()) {
-                return true;
-            }
-
-            if (! $item->relationLoaded('votes')) {
-                $item->load('votes');
-            }
-
-            if ($item->votes->isEmpty()) {
-                return false;
-            }
-
-            $mainVote = $item->votes->firstWhere('is_main', true);
-            if ($mainVote) {
-                return $this->voteIsComplete($mainVote, $requiresStudentPerspective);
-            }
-
-            return $item->votes->contains(fn ($vote) => $this->voteIsComplete($vote, $requiresStudentPerspective));
-        });
+        $allComplete = $agendaItems->every(
+            fn (AgendaItem $item): bool => $this->itemIsComplete($item, $requiresStudentPerspective)
+        );
 
         return $allComplete ? 'complete' : 'incomplete';
+    }
+
+    /**
+     * The one rule for a filled-in agenda item, shared by the meeting status, the completion task
+     * and the agenda item search index: a set type, and for voting items a complete main vote.
+     */
+    public function itemIsComplete(AgendaItem $item, bool $requiresStudentPerspective): bool
+    {
+        $type = $item->getAttribute('type');
+
+        if (! $type instanceof AgendaItemType) {
+            return false;
+        }
+
+        if (! $type->requiresVote()) {
+            return true;
+        }
+
+        $mainVote = $item->votes->firstWhere('is_main', true);
+
+        return $mainVote instanceof Vote && $this->voteIsComplete($mainVote, $requiresStudentPerspective);
     }
 
     /**

@@ -112,3 +112,56 @@ test('a member clears only their own active report', function (): void {
 
     asUser($member)->delete(route('institutions.check-ins.destroyActive', $institution))->assertForbidden();
 });
+
+test('a member reports a period without meetings, an outsider cannot', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $member = makeUser($tenant);
+    $institution = $member->duties()->firstOrFail()->institution;
+    $outsider = makeUser($tenant);
+    $period = ['start_date' => now()->toDateString(), 'end_date' => now()->addMonth()->toDateString()];
+
+    asUser($outsider)->post(route('institutions.check-ins.store', $institution), $period)->assertForbidden();
+    asUser($member)->post(route('institutions.check-ins.store', $institution), $period)->assertSessionHasNoErrors();
+
+    expect($institution->checkIns()->sole()->user_id)->toBe($member->id);
+});
+
+test('a check-in must end after it starts', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $member = makeUser($tenant);
+
+    asUser($member)
+        ->post(route('institutions.check-ins.store', $member->duties()->firstOrFail()->institution), [
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->subDay()->toDateString(),
+        ])
+        ->assertSessionHasErrors('end_date');
+});
+
+test('recording a meeting inside a reported period ends the report the day before, or removes it', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $institution = Institution::factory()->for($tenant)->create();
+    $shortened = InstitutionCheckIn::factory()->for($institution)->create([
+        'start_date' => now()->subDays(10)->toDateString(),
+        'end_date' => now()->addDays(20)->toDateString(),
+    ]);
+    $meetingDate = now()->addDays(5)->setTime(15, 0);
+
+    asUser($coordinator)
+        ->post(route('meetings.store'), ['start_time' => $meetingDate->toDateTimeString(), 'institution_id' => $institution->id])
+        ->assertSessionHasNoErrors();
+
+    expect($shortened->fresh()->end_date->toDateString())->toBe($meetingDate->copy()->subDay()->toDateString());
+
+    $removed = InstitutionCheckIn::factory()->for($institution)->create([
+        'start_date' => now()->addDays(30)->toDateString(),
+        'end_date' => now()->addDays(60)->toDateString(),
+    ]);
+
+    asUser($coordinator)
+        ->post(route('meetings.store'), ['start_time' => now()->addDays(30)->startOfDay()->toDateTimeString(), 'institution_id' => $institution->id])
+        ->assertSessionHasNoErrors();
+
+    expect($removed->fresh())->toBeNull();
+});

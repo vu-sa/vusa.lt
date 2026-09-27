@@ -64,9 +64,9 @@ kitos skiltys – pagal rolę.
 | Apžvalga | `/mano/dashboard/atstovavimas` | Visi – savo institucijas |
 | Padaliniai | `/mano/dashboard/atstovavimas/padaliniai` | Visi – laiko juostą; rodiklius – tik savo padalinių |
 | Užduotys | `/mano/tasks/summary` | Centrinio biuro studentų atstovų koordinatorius |
-| Institucijos | `/mano/institutions` | Turintys teisę matyti institucijas |
-| Posėdžiai | `/mano/meetings` | Turintys teisę matyti posėdžius |
-| Darbotvarkės klausimai | `/mano/agendaItems` | Turintys teisę matyti posėdžius |
+| Institucijos | `/mano/institutions` | Visi – aktyvių institucijų viešą pusę; visą – pagal rolę |
+| Posėdžiai | `/mano/meetings` | Visi – viešus ir savo institucijų posėdžius; kitus – pagal rolę |
+| Darbotvarkės klausimai | `/mano/agendaItems` | Kaip posėdžius |
 | Dokumentai | `/mano/documents` | Turintys teisę matyti dokumentus |
 | Problemos | `/mano/problems` | Turintys teisę matyti problemas |
 | Laikotarpių tvarkyklė | `/mano/dutiables/timeline` | Komunikacijos ir studentų atstovų koordinatoriai |

@@ -70,7 +70,6 @@ return [
         'assignee_context' => 'You and :count other(s) have this task.',
         'all_items_completed' => 'All agenda items completed',
     ],
-    'delete_automatic' => 'Delete (as super admin)',
     'delete_confirm_title' => 'Delete this task?',
     'delete_confirm_description' => '":name" will be removed permanently. This cannot be undone.',
     'orphaned' => 'Subject deleted',

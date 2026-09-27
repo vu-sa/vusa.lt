@@ -17,7 +17,7 @@ Skiltis pasiekiama adresu `/mano/documents`.
 **Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
 :::
 
-## Susitarimai
+## Susitarimai {#susitarimai}
 
 ::: tip Ką keliame į dokumentų naršyklę
 - VU SA P nuostatus;

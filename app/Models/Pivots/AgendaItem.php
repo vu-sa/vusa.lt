@@ -14,6 +14,7 @@ use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Vote;
+use App\Services\MeetingCompletionService;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -184,8 +185,9 @@ class AgendaItem extends Pivot implements Commentable
         /** @var Vote|null $mainVote */
         $mainVote = $this->votes->firstWhere('is_main', true);
 
-        // Calculate vote statistics from all votes
-        $voteStats = $this->calculateVoteStatistics();
+        // An item without a meeting has no institutions to exempt it, so it keeps the full rule.
+        $requiresStudentPerspective = $meeting instanceof Meeting ? $meeting->requiresStudentPerspective() : true;
+        $voteStats = $this->calculateVoteStatistics($requiresStudentPerspective);
 
         $type = $this->getAttribute('type');
         $typeValue = $type instanceof AgendaItemType ? $type->value : 'voting';
@@ -227,12 +229,12 @@ class AgendaItem extends Pivot implements Commentable
             'has_student_vote' => $voteStats['has_any_student_vote'],
             'has_decision' => $voteStats['has_any_decision'],
             'has_student_benefit' => $voteStats['has_any_student_benefit'],
-            'is_complete' => $voteStats['all_votes_complete'],
+            'is_complete' => app(MeetingCompletionService::class)->itemIsComplete($this, $requiresStudentPerspective),
 
             // Vote alignment (based on all votes) - boolean for Typesense compatibility
             'vote_matches' => $voteStats['vote_matches'] > 0,
             'vote_mismatches' => $voteStats['vote_mismatches'] > 0,
-            'vote_alignment_status' => $this->calculateVoteAlignmentStatus(),
+            'vote_alignment_status' => $this->calculateVoteAlignmentStatus($requiresStudentPerspective),
 
             // Tenant / institution context — always present (empty defaults) so the
             // document satisfies the required schema fields even for agenda items
@@ -301,11 +303,11 @@ class AgendaItem extends Pivot implements Commentable
      * Calculate vote statistics from all votes for this agenda item.
      * Delegates to VoteStatisticsCalculator.
      */
-    protected function calculateVoteStatistics(): array
+    protected function calculateVoteStatistics(bool $requiresStudentPerspective = true): array
     {
         $votes = $this->relationLoaded('votes') ? $this->votes : $this->votes()->get();
 
-        return app(VoteStatisticsCalculator::class)->calculate($votes);
+        return app(VoteStatisticsCalculator::class)->calculate($votes, $requiresStudentPerspective);
     }
 
     /**
@@ -314,11 +316,11 @@ class AgendaItem extends Pivot implements Commentable
      *
      * @return string 'match', 'mismatch', 'mixed', 'incomplete', 'neutral'
      */
-    protected function calculateVoteAlignmentStatus(): string
+    protected function calculateVoteAlignmentStatus(bool $requiresStudentPerspective = true): string
     {
         $votes = $this->relationLoaded('votes') ? $this->votes : $this->votes()->get();
 
-        return app(VoteStatisticsCalculator::class)->alignmentStatus($votes);
+        return app(VoteStatisticsCalculator::class)->alignmentStatus($votes, $requiresStudentPerspective);
     }
 
     /**

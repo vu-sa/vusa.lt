@@ -148,3 +148,36 @@ test('permission seeder preserves existing allowed permissions without changing 
             ->and($updatedPermission->id)->toEqual($permission->id);
     }
 });
+
+test('permission seeder retires what every member already has', function (): void {
+    Permission::findOrCreate('resources.read.padalinys', 'web');
+    Permission::findOrCreate('comments.create.own', 'web');
+
+    $this->seed(ModelPermissionSeeder::class);
+
+    $names = Permission::query()->pluck('name');
+
+    expect($names->filter(fn (string $name): bool => preg_match('/^comments\.(create|read|update)\./', $name) === 1
+        || $name === 'comments.delete.own'
+        || str_starts_with($name, 'resources.read.')
+        || str_starts_with($name, 'problems.read.')
+        || $name === 'duties.read.own'))->toBeEmpty()
+        ->and($names)->toContain('resources.update.padalinys')
+        ->and($names)->toContain('duties.read.padalinys')
+        ->and($names)->toContain('tasks.delete.own')
+        ->and($names)->toContain('comments.delete.padalinys');
+});
+
+test('permission seeder offers permanent deletion only where there is a trash to empty', function (): void {
+    Permission::findOrCreate('reservations.forceDelete.*', 'web');
+    Permission::findOrCreate('comments.forceDelete.*', 'web');
+
+    $this->seed(ModelPermissionSeeder::class);
+
+    $names = Permission::query()->pluck('name');
+
+    expect($names)->not->toContain('reservations.forceDelete.*')
+        ->and($names)->not->toContain('comments.forceDelete.*')
+        ->and($names)->toContain('news.forceDelete.*')
+        ->and($names)->toContain('comments.delete.*');
+});

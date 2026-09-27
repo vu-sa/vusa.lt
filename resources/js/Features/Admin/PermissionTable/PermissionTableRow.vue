@@ -22,7 +22,20 @@
         Ištrinti negrįžtamai
       </template>
     </td>
+    <template v-if="fullyRetired">
+      <td v-for="column in 2" :key="column">
+        <span class="inline-flex items-center gap-1.5 text-sm text-muted-foreground" data-testid="baseline-lock" :title="baselineNote">
+          <Lock class="size-4" aria-hidden="true" />
+          {{ $t('access.baseline.locked') }}
+        </span>
+      </td>
+    </template>
+    <template v-else>
     <td>
+      <span v-if="retiredScopes?.includes('own')" class="mb-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground" data-testid="baseline-lock" :title="baselineNote">
+        <Lock class="size-3.5" aria-hidden="true" />
+        {{ $t('access.baseline.locked_own') }}
+      </span>
       <div v-if="availableScopes.hasOwn || availableScopes.hasPadalinys" class="flex w-64 items-center gap-2">
         <!-- Show checkbox only if 'own' scope is available -->
         <Checkbox v-if="availableScopes.hasOwn" :model-value="checkboxPadalinys" :disabled="switchAll || disabled"
@@ -54,11 +67,13 @@
         <span class="text-sm">Netaikoma</span>
       </div>
     </td>
+    </template>
   </tr>
 </template>
 
 <script setup lang="ts">
 import { type Component, ref, computed, watchEffect, watch } from 'vue';
+import { Lock } from 'lucide-vue-next';
 
 import type { CRUDEnum } from '@/Types/enums';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -73,7 +88,13 @@ const props = defineProps<{
   icon: Component;
   permissions: string[];
   availablePermissions: string[];
+  /** Scopes of this ability every member already has; they cannot be granted by a role. */
+  retiredScopes?: string[];
+  baselineNote?: string;
 }>();
+
+// Retired at every scope a role could grant, so there is nothing left to switch.
+const fullyRetired = computed(() => ['padalinys', '*'].every(scope => props.retiredScopes?.includes(scope)));
 
 // Determine available scopes based on available permissions data
 const availableScopes = computed(() => {

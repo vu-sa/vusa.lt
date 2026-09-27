@@ -43,4 +43,17 @@ return [
         'represents' => 'Representing: :tenant',
         'roles' => 'Roles: :roles',
     ],
+    'baseline' => [
+        'title' => 'Every member, even without a role',
+        'locked' => 'Every member',
+        'locked_own' => 'Own – every member',
+        'institutions' => 'Sees the institution list and active institutions\' public information, and their own current institutions in full.',
+        'meetings' => 'Sees public meetings; sees and can edit their institutions\' meetings held while they served.',
+        'agendaItems' => 'Sees the agenda items of public meetings and of meetings they took part in through a duty.',
+        'problems' => 'Sees every unit\'s problems.',
+        'resources' => 'Sees all resources.',
+        'duties' => 'Sees their current and past duties.',
+        'tasks' => 'Sees and completes tasks assigned to them.',
+        'comments' => 'Comments wherever they can see the record, and edits and deletes their own comments. Whoever can edit the record deletes other people\'s.',
+    ],
 ];

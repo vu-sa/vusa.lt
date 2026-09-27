@@ -1,6 +1,13 @@
 ---
 title: Teisės ir rolės
 coverage: ignore
+last_reviewed: 2026-09-27
+tests:
+  - tests/Feature/Permissions/BaselineAccessTest.php
+  - resources/js/Components/AdminForms/__tests__/RolePermissionForms.component.test.ts
+  - resources/js/Features/Admin/PermissionTable/__tests__/PermissionTable.component.test.ts
+  - tests/Feature/Admin/Permissions/RoleControllerTest.php
+  - tests/Feature/System/ModelPermissionSeederTest.php
 ---
 
 # Teisės ir rolės
@@ -14,6 +21,23 @@ naudotojas teises gauna eidamas pareigybę.
 **Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
 :::
 
+## Ką gali kiekvienas narys {#bazine-prieiga}
+
+Kai kas nepriklauso nuo rolių: tai gali kiekvienas prisijungęs narys, net neturėdamas nė vienos
+rolės. Rolės prideda tik tai, kas viršija šį pagrindą. Rolės puslapyje (**Sistema → Rolės**) prie
+kiekvienos įrašų rūšies parašyta, ką visi nariai jau gali, o tokios teisės pažymėtos užraktu
+**Visi nariai**: jų rolei priskirti negalima, nes jos nieko nepridėtų.
+
+| Įrašai | Ką gali kiekvienas narys |
+|---|---|
+| Institucijos | Matyti sąrašą ir aktyvių institucijų viešą informaciją; savo institucijas – pilnai |
+| Posėdžiai ir klausimai | Matyti viešus posėdžius; savo institucijų posėdžius, vykusius tavo pareigų metu, matyti ir keisti – ir pasibaigus pareigoms |
+| Problemos | Matyti visų padalinių problemas |
+| Ištekliai | Matyti visus išteklius |
+| Pareigybės | Matyti savo dabartines ir buvusias pareigybes |
+| Užduotys | Matyti ir atlikti tau priskirtas užduotis (bet ne jas ištrinti; `tasks.delete.own` nė vienai rolei nepriskiriama) |
+| Komentarai | Komentuoti visur, kur matai įrašą; redaguoti ir trinti savo komentarus. Kitų komentarus trina redaguojantys įrašą arba rolė su komentarų trynimo teise |
+
 ## Rolės
 
 Kasdieniame darbe užtenka žinoti roles. Kiekviena rolė – tai vienos atsakomybės teisių rinkinys:
@@ -21,7 +45,7 @@ Kasdieniame darbe užtenka žinoti roles. Kiekviena rolė – tai vienos atsakom
 | Rolė | Kam skiriama | Ką leidžia | Aprašyta |
 |---|---|---|---|
 | **Studentų atstovas** | Automatiškai – pareigybėms su tipu „Studentų atstovas“ | Fiksuoti savo institucijų posėdžius, kelti problemas | [ViSAK](/visak/) |
-| **Problemų redaktorius** | Automatiškai – pareigybėms su tipu „Koordinatorius (-ė)“ | Kelti ir tvarkyti padalinio problemas, matyti visas | [Problemos](/visak/problemos) |
+| **Problemų redaktorius** | Automatiškai – pareigybėms su tipu „Koordinatorius (-ė)“ | Kelti ir tvarkyti padalinio problemas | [Problemos](/visak/problemos) |
 | **Išteklių administratorius** | Padalinio pirmininkui ir administratoriui | Tvarkyti padalinio daiktus ir jų rezervacijas | [Rezervacijos](/rezervacijos/#isteklu-administratorius) |
 | **Padalinio puslapių redaktorius** | Tiems, kas atnaujina padalinio svetainės tekstus | Redaguoti esamus padalinio puslapius | [Puslapiai](/svetaine/puslapiai) |
 
@@ -52,6 +76,7 @@ Rolės sudarytos iš **teisių**. Tikslias kiekvieno puslapio teises rasi jo pab
 ## Kaip sistema nusprendžia
 
 1. **Super administratorius** gali viską.
+   Kiekvienam nariui galioja ir [bazinė prieiga](#bazine-prieiga).
 2. Tikrinamos tiesiogiai naudotojui priskirtos teisės.
 3. Tikrinamos teisės, gautos per pareigybių roles.
 4. Pagal apimtį nustatoma, kuriems padaliniams ar įrašams teisė galioja.

@@ -60,7 +60,7 @@ export function getTaskActions(task: TaskDisplayData): TaskAction[] {
   if (task.can_delete) {
     actions.push({
       key: 'delete',
-      label: task.can_be_manually_completed === false ? $t('tasks.delete_automatic') : $t('forms.delete'),
+      label: $t('forms.delete'),
       shortLabel: $t('tasks.short_actions.delete'),
       icon: Trash2,
       destructive: true,

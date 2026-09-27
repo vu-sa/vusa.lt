@@ -359,6 +359,36 @@ describe('role permission management', function (): void {
             ->assertSessionHasErrors('read');
     });
 
+    test('a permission every member already has cannot be put on a role', function (): void {
+        $role = Role::factory()->create();
+
+        asUser($this->admin)
+            ->patch(route('roles.syncPermissionGroup', [$role, 'resources']), ['read' => '*', 'update' => 'padalinys'])
+            ->assertSessionHasErrors('read');
+
+        expect($role->fresh()->permissions)->toBeEmpty();
+    });
+
+    test('a permission that does not exist is refused, not silently dropped', function (): void {
+        $role = Role::factory()->create();
+
+        asUser($this->admin)
+            ->patch(route('roles.syncPermissionGroup', [$role, 'reservations']), ['forceDelete' => '*'])
+            ->assertSessionHasErrors('forceDelete');
+    });
+
+    test('the role page names the baseline and the permissions it locks', function (): void {
+        $role = Role::factory()->create();
+
+        asUser($this->admin)
+            ->get(route('roles.show', $role))
+            ->assertInertia(fn ($page) => $page
+                ->where('baselineAccess.problems', 'Mato visų padalinių problemas.')
+                ->where('retiredPermissions', fn ($names): bool => collect($names)->contains('resources.read.*')
+                    && collect($names)->contains('duties.read.own')
+                    && ! collect($names)->contains('duties.read.padalinys')));
+    });
+
     test('syncing duties without the duties key reports a validation error, not a server error', function (): void {
         $role = Role::factory()->create();
 

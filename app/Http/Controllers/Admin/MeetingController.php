@@ -27,6 +27,7 @@ use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MeetingTitle;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -169,7 +170,7 @@ class MeetingController extends AdminController
             : ['institutions.types', 'institutions.tenant', 'fileableFiles', 'comments', 'calendarEvent']
         )->load([
             'agendaItems' => function ($query): void {
-                $query->with('votes')->withCount('comments')
+                $query->with('votes')->withCount(['comments' => fn ($query) => $query->notErased()])
                     ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')])
                     ->orderBy('order');
             },
@@ -354,14 +355,15 @@ class MeetingController extends AdminController
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Meetings are edited on their record page; the URL stays for public edit links and search.
      */
-    public function edit(Meeting $meeting)
+    public function edit(Request $request, Meeting $meeting): RedirectResponse
     {
         $this->handleAuthorization('update', $meeting);
 
-        return $this->inertiaResponse('Admin/Representation/EditMeeting', [
+        return redirect()->route('meetings.show', [
             'meeting' => $meeting,
+            ...$request->only(['tab', 'action']),
         ]);
     }
 

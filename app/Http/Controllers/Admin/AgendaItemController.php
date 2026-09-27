@@ -80,7 +80,7 @@ class AgendaItemController extends AdminController
         }
 
         $agendaItem->load(['votes', 'meeting.institutions.types', 'meeting.institutions.tenant', 'meeting.agendaItems' => function ($query): void {
-            $query->orderBy('order')->with(['mainVote', 'votes'])->withCount('comments')
+            $query->orderBy('order')->with(['mainVote', 'votes'])->withCount(['comments' => fn ($query) => $query->notErased()])
                 ->withExists(['note as has_notes' => fn ($note) => $note->whereNotNull('notes_html')]);
         }]);
 

@@ -4,23 +4,16 @@ namespace App\Actions;
 
 use App\Http\Requests\IndexProblemRequest;
 use App\Models\Problem;
-use App\Services\ModelAuthorizer;
-use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Builder;
 
 final class BuildProblemIndexQuery
 {
     /** @return Builder<Problem> */
-    public static function execute(IndexProblemRequest $request, ModelAuthorizer $authorizer, TanstackTableService $tableService): Builder
+    public static function execute(IndexProblemRequest $request): Builder
     {
         $query = Problem::query()->with(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions']);
 
-        $query = $tableService->applyPermissionFiltering(
-            $query,
-            'tenant',
-            'problems.read.padalinys',
-            $authorizer
-        );
+        // No permission filter: every member may browse every padalinys' problems (ProblemPolicy::viewAny).
 
         $filters = $request->getFilters();
 

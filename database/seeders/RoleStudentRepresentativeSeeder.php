@@ -21,8 +21,8 @@ class RoleStudentRepresentativeSeeder extends Seeder
         ]);
 
         $role->syncPermissions([
-            'institutions.read.padalinys',
-            'meetings.create.padalinys',
+            'institutions.read.own',
+            'meetings.create.own',
             'meetings.read.own',
             'meetings.update.own',
             'meetings.delete.own',
@@ -30,9 +30,6 @@ class RoleStudentRepresentativeSeeder extends Seeder
             'agendaItems.read.own',
             'agendaItems.update.own',
             'agendaItems.delete.own',
-            'comments.create.own',
-            'comments.read.own',
-            'comments.update.own',
             'sharepointFiles.create.padalinys',
             'sharepointFiles.read.own',
             'sharepointFiles.update.own',
@@ -40,7 +37,6 @@ class RoleStudentRepresentativeSeeder extends Seeder
             'tasks.read.own',
             'tasks.update.own',
             'problems.create.padalinys',
-            'problems.read.padalinys',
             'problems.update.padalinys',
         ]);
 

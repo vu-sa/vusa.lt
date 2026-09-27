@@ -218,12 +218,11 @@ describe('the standalone page', function (): void {
                 ->count('userInstitutions', 2));
     });
 
-    test('an institution the actor may not view is left out of the shortcuts', function (): void {
-        // `institutions.read.padalinys` is tenant-scoped, so a seat in another tenant's body
-        // would otherwise be offered and then 403 on the first fetch.
+    test('a seat in another padalinys is offered too, since members read their own institution', function (): void {
         $foreign = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $foreignInstitution = Institution::factory()->for($foreign)->create();
         $this->manager->duties()->attach(
-            Duty::factory()->for(Institution::factory()->for($foreign))->create(),
+            Duty::factory()->for($foreignInstitution)->create(),
             ['start_date' => now()->subDay()],
         );
 
@@ -231,8 +230,8 @@ describe('the standalone page', function (): void {
             ->get(route('dutiables.timeline'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->where('initialInstitution.id', $this->duty->institution_id)
-                ->count('userInstitutions', 1));
+                ->where('userInstitutions', fn ($institutions): bool => collect($institutions)->pluck('id')->contains($foreignInstitution->id))
+                ->count('userInstitutions', 2));
     });
 
     test('an ended duty does not decide the default scope', function (): void {

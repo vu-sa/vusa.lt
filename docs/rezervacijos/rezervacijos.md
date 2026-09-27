@@ -189,7 +189,7 @@ pranešimus ir užduotis apie CB daiktus, o kitų padalinių užklausas mato ap�
 :::
 
 
-## Pranešimai ir automatizavimas
+## Pranešimai ir automatizavimas {#pranesimai}
 
 | Kada | Kas gauna | Ką |
 |---|---|---|
