@@ -9,10 +9,7 @@ interface TermDates {
 
 const day = (value?: string | null): string | null => (value ? String(value).slice(0, 10) : null);
 
-/**
- * Where a term sits relative to today. Mirrors `Duty::current_users()`: a term whose end
- * date is today no longer counts, and one that has not started yet is not current.
- */
+// Both dates include the whole calendar day, matching the server.
 export function termStatus(term: TermDates, today: string = todayIso()): TermStatus {
   const start = day(term.start_date);
   const end = day(term.end_date);
@@ -21,7 +18,7 @@ export function termStatus(term: TermDates, today: string = todayIso()): TermSta
     return 'upcoming';
   }
 
-  if (end && end <= today) {
+  if (end && end < today) {
     return 'ended';
   }
 

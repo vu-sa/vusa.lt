@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Kalendorius
 area: calendar
 models: [Calendar]

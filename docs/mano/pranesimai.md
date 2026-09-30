@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Pranešimai
 area: notifications
 ---

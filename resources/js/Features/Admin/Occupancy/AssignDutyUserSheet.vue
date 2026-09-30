@@ -277,7 +277,7 @@
                 {{ $t('Užbaigti pareigas šiandien') }}
               </p>
               <p class="text-xs text-muted-foreground">
-                {{ $t('Narys nebebus laikomas šių pareigų nariu, bet įrašas liks istorijoje.') }}
+                {{ $t('Šiandien yra paskutinė pareigų diena. Narys lieka aktyvus iki dienos pabaigos, o laikotarpis išlieka istorijoje.') }}
               </p>
             </div>
             <Button type="button" variant="outline" size="sm" class="u-touch shrink-0" :disabled="form.processing" @click="endTermOpen = true">
@@ -314,7 +314,7 @@
     <ConfirmDialog
       v-model:open="endTermOpen"
       :title="$t('Užbaigti pareigas šiandien?')"
-      :description="$t('Narys nebebus laikomas šių pareigų nariu, bet įrašas liks istorijoje.')"
+      :description="$t('Šiandien yra paskutinė pareigų diena. Narys lieka aktyvus iki dienos pabaigos, o laikotarpis išlieka istorijoje.')"
       :confirm-label="$t('Užbaigti pareigas')"
       @confirm="endTerm"
     />

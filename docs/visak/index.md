@@ -1,6 +1,7 @@
 ---
+doc_status: reviewed
 title: ViSAK
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Admin/Core/CoordinatorOnRepScreensTest.php
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php

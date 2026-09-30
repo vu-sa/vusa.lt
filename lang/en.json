@@ -1945,5 +1945,7 @@
     "Vykdomas": "In progress",
     "Pasiektas": "Achieved",
     "Nepasiektas": "Not achieved",
-    "Atsisakyta": "Dropped"
+    "Atsisakyta": "Dropped",
+    "Šiandien yra paskutinė pareigų diena. Narys lieka aktyvus iki dienos pabaigos, o laikotarpis išlieka istorijoje.": "Today is the last day in office. The member remains active until the end of the day, and the term stays in the history.",
+    ":name šiandien dar eina pareigas. Laikotarpis baigsis po šiandien ir išliks istorijoje.": ":name is still in office today. The term ends after today and stays in the history."
 }

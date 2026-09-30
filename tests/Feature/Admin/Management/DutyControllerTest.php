@@ -5,6 +5,7 @@ use App\Models\Institution;
 use App\Models\News;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\Type;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -429,6 +430,43 @@ describe('duty role management', function (): void {
         ]);
 
         expect($this->dutyManager->can('update', $otherNews))->toBeFalse();
+    });
+
+    test('attaching an attachable type to a duty automatically grants associated roles to the duty', function (): void {
+        $type = Type::factory()->create([
+            'model_type' => MorphMap::alias(Duty::class),
+            'slug' => 'test-duty-type',
+        ]);
+        $grantedRole = Role::firstOrCreate(['name' => 'Automated Granted Role', 'guard_name' => 'web']);
+        $type->roles()->attach($grantedRole->id);
+
+        // Allow duty manager to attach this type
+        $managerRole = Role::findByName('Komunikacijos koordinatorius');
+        $managerRole->attachable_types()->attach($type->id);
+
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+
+        $response = asUser($this->dutyManager)->put(route('duties.update', $duty), [
+            'name' => ['lt' => 'Test Pareigybė', 'en' => 'Test Duty'],
+            'institution_id' => $duty->institution_id,
+            'places_to_occupy' => 1,
+            'contacts_grouping' => 'none',
+            'types' => [$type->id],
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        expect($duty->fresh()->hasRole('Automated Granted Role'))->toBeTrue();
+
+        // Detaching the type removes the role
+        asUser($this->dutyManager)->put(route('duties.update', $duty), [
+            'name' => ['lt' => 'Test Pareigybė', 'en' => 'Test Duty'],
+            'institution_id' => $duty->institution_id,
+            'places_to_occupy' => 1,
+            'contacts_grouping' => 'none',
+            'types' => [],
+        ])->assertSessionHasNoErrors();
+
+        expect($duty->fresh()->hasRole('Automated Granted Role'))->toBeFalse();
     });
 });
 

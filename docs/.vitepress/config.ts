@@ -76,6 +76,13 @@ export default defineConfig({
   // Markdown configuration
   markdown: {
     lineNumbers: true,
+    config(md) {
+      md.renderer.rules.table_open = (_tokens, _idx, _options, env) => {
+        const label = env.relativePath?.startsWith('en/') ? 'Scrollable table' : 'Slenkama lentelė'
+        return `<div class="doc-table" tabindex="0" role="region" aria-label="${label}"><table>\n`
+      }
+      md.renderer.rules.table_close = () => '</table></div>\n'
+    },
   },
   
   // Build optimization - generate changelog metadata for admin UI update indicator

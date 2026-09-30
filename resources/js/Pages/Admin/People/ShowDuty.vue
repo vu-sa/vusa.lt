@@ -225,7 +225,7 @@
   <ConfirmDialog
     :open="endTenureTarget !== null"
     :title="$t('Užbaigti pareigas šiandien?')"
-    :description="endTenureTarget ? $t(':name nebebus laikomas šių pareigų nariu, bet įrašas liks istorijoje.', { name: endTenureTarget.name }) : undefined"
+    :description="endTenureTarget ? $t(':name šiandien dar eina pareigas. Laikotarpis baigsis po šiandien ir išliks istorijoje.', { name: endTenureTarget.name }) : undefined"
     :confirm-label="$t('Užbaigti pareigas')"
     @update:open="!$event && (endTenureTarget = null)"
     @confirm="endTenure"

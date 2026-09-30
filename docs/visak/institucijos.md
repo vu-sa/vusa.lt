@@ -1,8 +1,9 @@
 ---
+doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
@@ -215,7 +216,7 @@ pranešimus „Posėdžio nebuvo“ tvarko ir kuruojamose institucijose, net be 
 ::: tip Institucijų tvarkymas
 - Jei institucija nebesirenka (pvz., panaikinta), išjunk **Aktyvi institucija** – neištrink jos:
   jos posėdžių istorija lieka.
-- Jei institucijoje keli atstovai, susitarkite, kuris fiksuoja posėdžius, arba paskirkite
+- Jei institucijoje keli atstovai, susitark su kitais, kuris fiksuoja posėdžius, arba paskirk
   kadencijos sekretorių.
 :::
 

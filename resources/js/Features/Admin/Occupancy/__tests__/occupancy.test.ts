@@ -21,13 +21,16 @@ describe('termStatus', () => {
     expect(termStatus({ start_date: '2026-09-20' }, today)).toBe('current');
   });
 
-  // Mirrors Duty::current_users(): `end_date >= now()` compares a DATE to a DATETIME.
-  it('ends a term on its end date, like the server does', () => {
-    expect(termStatus({ start_date: '2026-01-01', end_date: '2026-09-20' }, today)).toBe('ended');
-    expect(termStatus({ start_date: '2026-01-01', end_date: '2026-09-19' }, today)).toBe('ended');
+  it('keeps a term current through its end date', () => {
+    expect(termStatus({ start_date: '2026-01-01', end_date: '2026-09-20' }, today)).toBe('current');
+    expect(termStatus({ start_date: '2026-01-01', end_date: '2026-09-20' }, '2026-09-21')).toBe('ended');
+  });
+
+  it('includes a term that starts and ends on the same day', () => {
+    expect(termStatus({ start_date: today, end_date: today }, today)).toBe('current');
   });
 
   it('accepts full ISO timestamps', () => {
-    expect(termStatus({ start_date: '2026-01-01T00:00:00.000000Z', end_date: '2026-09-19T00:00:00.000000Z' }, today)).toBe('ended');
+    expect(termStatus({ start_date: '2026-01-01T00:00:00.000000Z', end_date: '2026-09-20T00:00:00.000000Z' }, today)).toBe('current');
   });
 });

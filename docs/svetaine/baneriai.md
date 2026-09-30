@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Baneriai
 area: banners
 models: [Banner]

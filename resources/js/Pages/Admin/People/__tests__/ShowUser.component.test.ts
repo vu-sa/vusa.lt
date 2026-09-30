@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 
@@ -93,6 +93,8 @@ const createWrapper = (overrides: Record<string, unknown> = {}, can: Record<stri
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.find('[data-testid="tabs"]').text();
 
 describe('ShowUser.vue', () => {
+  afterEach(() => vi.useRealTimers());
+
   beforeEach(() => {
     localStorage.clear();
     vi.mocked(usePage).mockReturnValue(createMockPage() as never);
@@ -112,6 +114,18 @@ describe('ShowUser.vue', () => {
 
   it('takes the tasks count from the task stats', () => {
     expect(tabs(createWrapper())).toContain('tasks:10');
+  });
+
+  it('keeps an assignment ending today in the current members group', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-30T12:00:00Z'));
+    const wrapper = createWrapper({
+      current_duties: [makeDuty({ name: 'Paskutinė diena', pivot: { id: 'p1', start_date: '2026-01-01', end_date: '2026-09-30' } })],
+      previous_duties: [],
+    });
+
+    expect(wrapper.find('[data-group="current"]').text()).toContain('Paskutinė diena');
+    expect(wrapper.find('[data-group="previous"]').exists()).toBe(false);
   });
 
   it('groups terms by where they sit today, and never lets someone manage a past one', () => {

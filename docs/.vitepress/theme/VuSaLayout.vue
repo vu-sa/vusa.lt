@@ -1,19 +1,12 @@
 <script setup lang="ts">
-/**
- * VU SA Custom VitePress Layout
- * 
- * Extends the default VitePress layout with:
- * - Custom navigation logo mark
- * - Enhanced styling
- * - Home page last-updated section
- */
 import { useData } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import { ref, onMounted } from 'vue'
 import TestEvidence from './TestEvidence.vue'
+import DocReview from './DocReview.vue'
 
 const { Layout } = DefaultTheme
-const { frontmatter, lang } = useData()
+const { lang } = useData()
 
 const lastUpdated = ref<string | null>(null)
 const latestVersion = ref<string | null>(null)
@@ -36,23 +29,16 @@ onMounted(async () => {
 
 <template>
   <Layout>
-    <!-- Custom nav bar title slot for branding -->
     <template #nav-bar-title-before>
       <div class="vusa-logo-mark" aria-hidden="true"></div>
     </template>
     
-    <!-- Custom aside top for additional context -->
-    <template #aside-top>
-      <div v-if="frontmatter.lastUpdated" class="aside-last-updated">
-        Dokumentacija reguliariai atnaujinama
-      </div>
-    </template>
+    <template #doc-before><DocReview /></template>
 
     <template #doc-footer-before>
       <TestEvidence />
     </template>
 
-    <!-- Last update banner on home page -->
     <template #home-features-after>
       <div v-if="latestVersion" class="vusa-home-section">
         <div class="last-update-banner">
@@ -72,7 +58,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* VU SA Logo mark for navigation */
 .vusa-logo-mark {
   width: 24px;
   height: 24px;
@@ -81,13 +66,4 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 
-/* Aside enhancement */
-.aside-last-updated {
-  padding: 8px 12px;
-  margin-bottom: 16px;
-  background: var(--vusa-callout-bg);
-  font-size: 12px;
-  color: var(--vp-c-text-2);
-  border-left: 3px solid var(--vusa-yellow);
-}
 </style>

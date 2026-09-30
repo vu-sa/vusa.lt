@@ -1,8 +1,9 @@
 ---
+doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
   - tests/Feature/Admin/Calendar/AgendaItemControllerTest.php

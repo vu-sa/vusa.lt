@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Studijų rinkiniai
 area: studySets
 models: [StudySet]

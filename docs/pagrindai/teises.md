@@ -1,6 +1,7 @@
 ---
+doc_status: reviewed
 title: Teisės ir rolės
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Permissions/BaselineAccessTest.php
   - resources/js/Components/AdminForms/__tests__/RolePermissionForms.component.test.ts
@@ -57,16 +58,6 @@ priskirti (pvz., koordinatorius – studentų atstovų tipą), arba super admini
 apsaugo nuo teisių išsidalijimo per tipus.
 :::
 
-## Teisės formatas {#teises-formatas}
-
-Rolės sudarytos iš **teisių**. Tikslias kiekvieno puslapio teises rasi jo pabaigoje, skyriuje **Techninė informacija**. Kiekviena teisė užrašoma `{išteklius}.{veiksmas}.{apimtis}`, pavyzdžiui, `news.update.padalinys`.
-
-| Dalis | Reikšmės |
-|---|---|
-| Išteklius | Įrašų rūšis daugiskaita: `news`, `meetings`, `resources`… |
-| Veiksmas | `read`, `create`, `update`, `delete`, `forceDelete` |
-| Apimtis | `own` – tik su tavo pareigybe tiesiogiai susiję įrašai; `padalinys` – tavo padalinio įrašai; `*` – visi įrašai |
-
 ## Kaip sistema nusprendžia {#kaip-sistema-nusprendzia}
 
 1. **Super administratorius** gali viską.
@@ -85,6 +76,17 @@ puslapis „Prieiga uždrausta“.
 Kiekviename puslapyje skyrius **Kas ką gali** aprašo, kurios rolės ką leidžia.
 
 ## Techninė informacija {#technine-informacija}
+
+### Teisės formatas {#teises-formatas}
+
+Rolės sudarytos iš **teisių**. Tikslias kiekvieno puslapio teises rasi jo pabaigoje, skyriuje **Techninė informacija**. Kiekviena teisė užrašoma `{išteklius}.{veiksmas}.{apimtis}`, pavyzdžiui, `news.update.padalinys`.
+
+| Dalis | Reikšmės |
+|---|---|
+| Išteklius | Įrašų rūšis daugiskaita: `news`, `meetings`, `resources`… |
+| Veiksmas | `read`, `create`, `update`, `delete`, `forceDelete` |
+| Apimtis | `own` – tik su tavo pareigybe tiesiogiai susiję įrašai; `padalinys` – tavo padalinio įrašai; `*` – visi įrašai |
+
 
 - Bazinę prieigą be rolių užtikrina `BaselineAccess` taisyklės ir `ModelPolicy` patikros, testuojamos `BaselineAccessTest`.
 - Rolių ir leidimų matricą, jų priskyrimą pareigybėms ir tipams valdo `RoleController`, tikrina `RoleControllerTest` ir `RolePermissionForms.component.test.ts`.

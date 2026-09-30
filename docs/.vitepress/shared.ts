@@ -1,6 +1,13 @@
 import { DefaultTheme } from 'vitepress'
 
-export const shared: DefaultTheme.Config & Record<string, any> = {
+export const shared: DefaultTheme.Config = {
+  i18nRouting: (_data, route, targetLocale) => {
+    const page = route.data.relativePath.replace(/^en\//, '').replace(/\.md$/, '')
+    if (page.startsWith('changelog/')) {
+      return `${targetLocale === 'en' ? '/en' : ''}/${page}${route.query}${route.hash}`
+    }
+    return targetLocale === 'en' ? '/en/' : '/darbai'
+  },
   // Common social links
   socialLinks: [
     { icon: 'github', link: 'https://github.com/vu-sa/vusa.lt' }

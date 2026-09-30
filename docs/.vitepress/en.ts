@@ -2,7 +2,7 @@ import { shared } from './shared.ts'
 import { mergeObjects } from './utils.ts'
 
 export default {
-  label: 'English',
+  label: 'Updates (EN)',
   lang: 'en',
   link: '/en/',
   title: "vusa.lt guide",

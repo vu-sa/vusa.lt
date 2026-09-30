@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Renginių tipai
 area: eventTypes
 models: [EventType]

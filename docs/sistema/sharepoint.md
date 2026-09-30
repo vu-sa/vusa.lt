@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Sharepoint failai
 area: sharepointFiles
 models: [SharepointFile]

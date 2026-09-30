@@ -1,8 +1,9 @@
 ---
+doc_status: reviewed
 title: Atsakomybės
 area: duties
 models: [Duty, DutyResponsibility]
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
   - tests/Feature/Admin/People/DutyResponsibilityControllerTest.php

@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Greitosios nuorodos
 area: quickLinks
 models: [QuickLink]

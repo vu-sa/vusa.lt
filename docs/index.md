@@ -1,4 +1,6 @@
 ---
+doc_status: reviewed
+last_reviewed: 2026-09-30
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
 coverage: ignore
@@ -8,8 +10,8 @@ hero:
   tagline: Mano VU SA platformos žinynas administratoriams – kaip veikia kiekviena darbo sritis, puslapis ir teisė
   actions:
     - theme: brand
-      text: Skaityti gidą
-      link: /ivadas
+      text: Rasti savo darbą
+      link: /darbai
     - theme: alt
       text: Atsisiųsti PDF
       link: /docs/vusa-lt-gidas.pdf
@@ -20,10 +22,10 @@ hero:
 
 features:
   - title: 🧭 Pagrindai
-    details: Platforma, padaliniai, pareigybės, teisės ir pranešimai
+    details: Platforma, teisės ir atsakomybės. Dalis bendrųjų sąvokų dar rašoma.
     link: /pagrindai/platforma
   - title: 🏠 Mano
-    details: Tavo užduotys ir pranešimai
+    details: Tavo užduotys aprašytos. Pranešimų gidas dar rašomas.
     link: /mano/
   - title: 🎓 ViSAK
     details: Posėdžiai, institucijos, darbotvarkės ir problemos
@@ -32,13 +34,13 @@ features:
     details: Įrangos ir daiktų skolinimas
     link: /rezervacijos/
   - title: 🌐 Svetainė
-    details: Puslapiai, naujienos, kalendorius, meniu ir failai
+    details: Puslapiai, naujienos, kalendorius ir failai. Šios srities gidas dar rašomas.
     link: /svetaine/
   - title: 👥 Organizacija
-    details: Nariai, pareigybės, padaliniai ir formos
+    details: Pareigybės ir narių perdavimas aprašyti. Kiti puslapiai dar pildomi.
     link: /organizacija/
   - title: ⚙️ Sistema
-    details: Rolės, leidimai, nustatymai ir priežiūra
+    details: Laiškų eilė aprašyta. Rolių, nustatymų ir priežiūros gidas dar pildomas.
     link: /sistema/
   - title: 🔄 Atnaujinimai
     details: Kas pasikeitė platformoje

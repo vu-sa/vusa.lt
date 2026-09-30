@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Dokumentai
 area: documents
 models: [Document]

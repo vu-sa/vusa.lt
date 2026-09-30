@@ -1,4 +1,5 @@
 ---
+doc_status: reviewed
 title: Mano
 area: dashboard
 last_reviewed: 2026-09-27

@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Studijų programos
 area: studyPrograms
 models: [StudyProgram]

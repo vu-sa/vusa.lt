@@ -1,4 +1,5 @@
 ---
+doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]

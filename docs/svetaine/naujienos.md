@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Naujienos
 area: news
 models: [News]

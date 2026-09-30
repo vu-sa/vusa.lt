@@ -1,7 +1,8 @@
 ---
+doc_status: partial
 title: Nustatymai
 area: settings
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Admin/Settings/CadenceControllerTest.php
   - tests/Feature/Admin/People/CadenceResolutionTest.php
@@ -14,7 +15,8 @@ Sistemos ir formų nustatymai. Skiltis matoma tik turintiems nustatymų tvarkymo
 
 Skiltis pasiekiama adresu `/mano/settings`.
 
-::: warning Rašoma
+::: warning Dalinis puslapis
+Šiuo metu aprašyti kadencijų nustatymai. Kiti sistemos nustatymai dar neaprašyti.
 Šis puslapis dar rašomas. Kai bus baigtas, jame bus skyriai **Kaip tai veikia**, **Veiksmai**,
 **Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
 :::
@@ -38,7 +40,8 @@ birželio 30 d. Kadencijos tvarkomos adresu `/mano/settings/cadences`.
 - Per du metus trunkanti kadencija vadinama abiem metais (pvz., „2025–2026“).
 
 Kadencijas naudoja [Laikotarpių tvarkyklė](/visak/pareigybiu-laikotarpiai#kadencijos) (fonas,
-pritraukimas, lygiavimas ir pasiūlymai) ir [pareigybių atnaujinimas](/organizacija/pareigybiu-atnaujinimas).
+pritraukimas, lygiavimas ir pasiūlymai). [Pareigybių atnaujinimo vedlys](/organizacija/pareigybiu-atnaujinimas#zingsnis-3)
+siūlo atskirą liepos 1 d. reikšmę; ji nėra imama iš šių kadencijų.
 
 ## Techninė informacija {#technine-informacija}
 

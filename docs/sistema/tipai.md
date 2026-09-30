@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Tipai
 area: types
 models: [Type]

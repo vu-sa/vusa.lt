@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Pagalbos užklausos
 area: supportRequests
 models: [SupportRequest]

@@ -204,5 +204,7 @@
     "Rodyti visas (:count)": "Rodyti visas (:count)",
     "Kai sekamoje institucijoje sukuriamas posėdis ar užpildoma jo darbotvarkė, gausi naršyklės pranešimą. Institucijas seki institucijų sąraše.": "Kai sekamoje institucijoje sukuriamas posėdis ar užpildoma jo darbotvarkė, gausi naršyklės pranešimą. Institucijas seki institucijų sąraše.",
     "Naršyklės pranešimai įjungti": "Naršyklės pranešimai įjungti",
-    "Tik pranešimų centre ir suvestinėje": "Tik pranešimų centre ir suvestinėje"
+    "Tik pranešimų centre ir suvestinėje": "Tik pranešimų centre ir suvestinėje",
+    "Šiandien yra paskutinė pareigų diena. Narys lieka aktyvus iki dienos pabaigos, o laikotarpis išlieka istorijoje.": "Šiandien yra paskutinė pareigų diena. Narys lieka aktyvus iki dienos pabaigos, o laikotarpis išlieka istorijoje.",
+    ":name šiandien dar eina pareigas. Laikotarpis baigsis po šiandien ir išliks istorijoje.": ":name šiandien dar eina pareigas. Laikotarpis baigsis po šiandien ir išliks istorijoje."
 }

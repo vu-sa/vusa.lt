@@ -25,6 +25,7 @@ export const guide: GuideChapter[] = [
     text: 'Pradžia',
     noPartPage: true,
     pages: [
+      { text: 'Darbų gidas', link: '/darbai' },
       { text: 'Įvadas', link: '/ivadas' },
     ],
   },

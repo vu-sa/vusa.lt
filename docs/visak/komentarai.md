@@ -1,4 +1,5 @@
 ---
+doc_status: partial
 title: Komentarai
 area: comments
 models: [Comment]
@@ -15,7 +16,8 @@ Komentarus gali palikti daugelis naudotojų įvairiose platformos vietose: posė
 rezervacijų ištekliuose. Komentaras priskiriamas jį parašiusiam žmogui ir įrašui, prie kurio jis
 paliktas. Komentaruose galima paminėti kitus naudotojus – jie gaus pranešimą.
 
-::: warning Rašoma
+::: warning Dalinis puslapis
+Šiuo metu aprašyta komentarų prieiga ir paminėjimai. Visas komentavimo procesas dar neaprašytas.
 Šis puslapis dar rašomas. Kai bus baigtas, jame bus skyriai **Kaip tai veikia**, **Veiksmai**,
 **Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
 :::

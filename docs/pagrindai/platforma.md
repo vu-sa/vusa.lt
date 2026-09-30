@@ -1,7 +1,8 @@
 ---
+doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - resources/js/__tests__/designTokens.test.ts
   - resources/js/Components/Patterns/__tests__/StatusBadge.component.test.ts
@@ -55,10 +56,10 @@ Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapim
 
 Platforma turi bendrų mechanizmų, kurie vienodai veikia visose darbo srityse ir moduliuose:
 
-### Šiukšlinė ir atstatymas (Soft Deletes) {#siuksline}
+### Šiukšlinė ir atkūrimas {#siuksline}
 
 Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriaus renginiai, failai, ištekliai) palaiko laikiną ištrynimą:
-- Ištrintas įrašas nepašalinamas iš duomenų bazės iš karto – jis perkeliamas į **šiukšlinę** (atitinkamo sąrašo rodinys su `?showDeleted=true`).
+- Ištrintas įrašas nepašalinamas iš duomenų bazės iš karto – jis perkeliamas į **šiukšlinę**.
 - Naudotojai, turintys įrašo trynimo teisę, gali jį **atkurti** mygtuku „Atkurti“.
 - Visiškas pašalinimas („Ištrinti visam laikui“) reikalauja super administratoriaus teisės, apsaugančios nuo netyčinio duomenų praradimo.
 - **Operaciniai įrašai** (pvz., **rezervacijos**) į šiukšlinę nekeliami: juos ištrynus, įrašas iš karto negrįžtamai pašalinamas kartu su susijusiais tarpiniais duomenimis.
@@ -118,6 +119,10 @@ Kai viskas gerai, ženkliuko dažniausiai nėra – rodoma tik tai, į ką verta
   pranešimai persikelia į apatinę juostą, o niekas nepasiekiama tik užvedus pelę.
 - Klaviatūra: **?** parodo sparčiųjų klavišų sąrašą, **/** perkelia į sąrašo paiešką.
 
+
+
+## Techninė informacija {#technine-informacija}
+
 ::: details Kuriantiems platformą
 Spalvos aprašytos kaip kintamieji `resources/css/theme/design-tokens.css` ir
 `resources/css/theme/base-tokens.css`: `--brand` / `--brand-fill` – VU SA spalva, `--status-*` –
@@ -125,8 +130,6 @@ Spalvos aprašytos kaip kintamieji `resources/css/theme/design-tokens.css` ir
 `.ai/rules/js-pages-admin.md`; kontrastą tikrina Storybook istorija `Patterns/ColourSystem`.
 Būseną visada rodyk per `StatusBadge`, o ne savo spalvomis.
 :::
-
-## Techninė informacija {#technine-informacija}
 
 - Spalvų kintamieji abiem temoms ir kategorijų atspalvių atstumai tikrinami `designTokens.test.ts`.
 - `StatusBadge` visada rodo žodį ir piktogramą, o spalvą ima iš būsenos vaidmens.

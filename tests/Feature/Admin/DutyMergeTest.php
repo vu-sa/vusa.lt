@@ -231,3 +231,11 @@ describe('after merging', function (): void {
         ])->assertSessionHasErrors('source_duty_ids.0');
     });
 });
+
+describe('legacy redirect', function (): void {
+    test('get merge redirects to duties index with info flash', function (): void {
+        asUser($this->dutyManager)->get(route('duties.merge'))
+            ->assertRedirect(route('duties.index'))
+            ->assertSessionHas('info');
+    });
+});

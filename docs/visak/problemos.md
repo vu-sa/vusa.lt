@@ -1,8 +1,9 @@
 ---
+doc_status: reviewed
 title: Problemos
 area: problems
 models: [Problem, ProblemCategory]
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Admin/Problems/ProblemControllerTest.php
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php

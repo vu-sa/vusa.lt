@@ -1,9 +1,7 @@
 <template>
-  <aside v-if="tests.length > 0" class="test-evidence">
-    <p class="test-evidence__title">
-      Įrodyta testais
-      <span v-if="reviewed" class="test-evidence__reviewed">· peržiūrėta {{ reviewed }}</span>
-    </p>
+  <details v-if="tests.length > 0" class="test-evidence">
+    <summary>Testų nuorodos ({{ tests.length }})</summary>
+    <p>Šie testai tikrina atskiras elgsenos dalis. Jie nepakeičia turinio peržiūros.</p>
     <template v-for="group in groups" :key="group.label">
       <p v-if="group.tests.length > 0" class="test-evidence__group">{{ group.label }}</p>
       <ul v-if="group.tests.length > 0">
@@ -12,14 +10,13 @@
         </li>
       </ul>
     </template>
-  </aside>
+  </details>
 </template>
 
 <script setup lang="ts">
 import { useData } from 'vitepress'
 import { computed } from 'vue'
 
-// Mirrors the `tests:` / `last_reviewed` frontmatter that `docs:coverage` reads; the PDF build renders the same block.
 const repository = 'https://github.com/vu-sa/vusa.lt'
 
 const { frontmatter } = useData()
@@ -30,8 +27,6 @@ const tests = computed<string[]>(() => {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 })
 
-// Pest tests prove what the server enforces, Vitest specs what the screen shows and allows,
-// browser tests what only a real layout can show.
 const isBrowserTest = (test: string) => test.startsWith('tests/Browser/')
 
 const groups = computed(() => [
@@ -40,11 +35,6 @@ const groups = computed(() => [
   { label: 'Naršyklė – kaip veikia tikrame ekrane', tests: tests.value.filter(isBrowserTest) },
 ])
 
-const reviewed = computed(() => {
-  const value = frontmatter.value.last_reviewed
-
-  return value ? String(value instanceof Date ? value.toISOString() : value).slice(0, 10) : null
-})
 </script>
 
 <style scoped>
@@ -57,14 +47,12 @@ const reviewed = computed(() => {
   line-height: 1.6;
 }
 
-.test-evidence__title {
+.test-evidence summary {
   margin: 0 0 4px;
   font-weight: 600;
-}
-
-.test-evidence__reviewed {
-  font-weight: 400;
-  color: var(--vp-c-text-2);
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
 }
 
 .test-evidence__group {
@@ -78,6 +66,7 @@ const reviewed = computed(() => {
 }
 
 .test-evidence a {
+  overflow-wrap: anywhere;
   color: var(--vusa-brand);
   font-family: var(--vp-font-family-mono);
   font-size: 12px;

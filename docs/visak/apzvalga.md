@@ -1,7 +1,8 @@
 ---
+doc_status: reviewed
 title: Apžvalga
 area: dashboard
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/CoordinatorOnRepScreensTest.php

@@ -1,8 +1,9 @@
 ---
+doc_status: reviewed
 title: Laiškų eilė
 area: mailQueue
 models: [NotificationDigestQueue]
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Notifications/MailQueueControllerTest.php
   - tests/Browser/MailQueueLayoutTest.php
@@ -13,8 +14,9 @@ tests:
 
 ## Kaip tai veikia
 
-Čia matai dar neišsiųstų pranešimų santraukų gavėjus. Viena eilutė yra vienas pranešimas; kelios
-to paties žmogaus eilutės išsiunčiamos vienu santraukos laišku. Skiltis pasiekiama adresu
+Čia matai dar neišsiųstų pranešimų santraukų gavėjus. Sąrašo eilutė rodo vieną gavėją;
+atvėręs ją matai atskirus laukiančius pranešimus. To paties žmogaus pranešimai išsiunčiami
+vienu santraukos laišku. Skiltis pasiekiama adresu
 `/mano/mail-queue`.
 
 <DocScreenshot name="mail-queue" alt="Laiškų eilė: gavėjas, jo adresas, seniausio pranešimo laikas ir laukiančių eilučių skaičius" caption="Vienas gavėjas su laukiančiu pranešimu." />

@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Navigacija
 area: navigation
 models: [Navigation]

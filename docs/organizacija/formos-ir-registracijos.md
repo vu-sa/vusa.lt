@@ -1,4 +1,5 @@
 ---
+doc_status: partial
 title: Formos ir registracijos
 area: forms
 models: [Form, Registration]
@@ -21,7 +22,13 @@ koordinatoriaus priskyrimas pakeičia bendrą padalinio priskyrimą.
 
 Skiltis pasiekiama adresu `/mano/forms`.
 
-::: warning Rašoma
+::: warning Dalinis puslapis
+Šiuo metu aprašyta registracijų paskirtis ir prieiga. Formų kūrimas ir atsakymų tvarkymas dar neaprašyti.
 Šis puslapis dar rašomas. Kai bus baigtas, jame bus skyriai **Kaip tai veikia**, **Veiksmai**,
 **Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
 :::
+
+## Techninė informacija {#technine-informacija}
+
+Nurodyti testai tikrina registracijos formos prieigą ir koordinavimo apimtį.
+Formų kūrimo bei atsakymų tvarkymo eiga šiame puslapyje dar neaprašyta.

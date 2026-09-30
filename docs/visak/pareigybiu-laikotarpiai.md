@@ -1,4 +1,5 @@
 ---
+doc_status: reviewed
 title: Laikotarpių tvarkyklė
 area: dutiableTimeline
 models: [Dutiable, Cadence]
@@ -68,7 +69,8 @@ pareigybės laikotarpį** (telefone – iš apačios). Joje:
 - **Studijų programa** ir jos pastaba (pvz., „1 kursas“) – rodomos skliaustuose po pareigybės
   pavadinimu;
 - **Viešas aprašymas** ir ar viešai naudoti originalų pareigybės pavadinimą;
-- **Užbaigti pareigas šiandien** – nustato šiandienos pabaigos datą; **Ištrinti priskyrimą** –
+- **Užbaigti pareigas šiandien** – nustato šiandienos pabaigos datą, kuri dar įskaitoma
+  (žr. [laikotarpio datas](/organizacija/pareigybes#laikotarpio-datos)); **Ištrinti priskyrimą** –
   pašalina laikotarpį visai (tai daryk tik klaidingai sukurtam įrašui).
 
 <DocScreenshot name="dutiable-sheet" narrow alt="Forma „Redaguoti pareigybės laikotarpį“: pareigybė, narys, pradžios ir pabaigos datos, papildomas el. paštas ir nuotrauka" caption="Vieno pareigybės laikotarpio forma pareigybės puslapyje." />

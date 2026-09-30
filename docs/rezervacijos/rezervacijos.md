@@ -1,8 +1,9 @@
 ---
+doc_status: reviewed
 title: Rezervacijos
 area: reservations
 models: [Reservation, ReservationResource, ReservationDraft, Approval]
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-30
 tests:
   - tests/Feature/Admin/Reservations/ReservationControllerTest.php
   - tests/Feature/Admin/Reservations/ReservationCartTest.php
@@ -130,7 +131,7 @@ leistiną veiksmą: **Tvirtinti** (pateikta), **Išduoti** (rezervuota) arba **G
 **Atmesti**, atšaukti, redaguoti ir pašalinti galima per meniu **⋯** šalia. Veiksmus galima atlikti
 ir su keliais pasirinktais ištekliais iš karto.
 
-- **Dalinis patvirtinimas.** Kai rezervacijoje yra keli daiktai arba daiktai iš kelių padalinių, kiekvieno padalinio administratorius sprendžia dėl savų daiktų nepriklausomai nuo kitų (nepatvirtinti daiktai lieka laukti sprendimo, o rezervacijos būsena tampa „Mišri“). Be to, serverio lygmeniu palaikomas patvirtinamo vienetų kiekio sumažinimas (`ReservationResource::updateApprovedQuantity`).
+- **Dalinis patvirtinimas.** Kai rezervacijoje yra keli daiktai arba daiktai iš kelių padalinių, kiekvieno padalinio administratorius sprendžia dėl savų daiktų nepriklausomai nuo kitų (nepatvirtinti daiktai lieka laukti sprendimo, o rezervacijos būsena tampa „Mišri“).
 - **Pastabos.** Prie kiekvieno sprendimo galima parašyti pastabą. Atmetant ji tampa priežastimi,
   kurią mato teikėjas.
 - **Užbaigti.** Iš karto perkelia išteklius į būseną „grąžinta“, praleisdamas likusius žingsnius.
@@ -268,3 +269,5 @@ atlyginti nuostolius.
   jis pašalinamas iškart ir visam laikui, o `Reservation::booted()` trynimo kabliukas automatiškai
   atjungia išteklius (`reservation_resource`), naudotojus ir ištrina polimorfinius komentarus.
 
+
+- Serverio metodas `ReservationResource::updateApprovedQuantity` palaiko dalinio kiekio patvirtinimą; tai nėra atskiras šiame gide aprašomas sąsajos veiksmas.

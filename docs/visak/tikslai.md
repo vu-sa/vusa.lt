@@ -1,4 +1,5 @@
 ---
+doc_status: reviewed
 title: Tikslai (bandomoji funkcija)
 area: goals
 models: [Goal, Step]
@@ -35,7 +36,7 @@ Bandymas įjungiamas kiekvienam padaliniui atskirai. Jo nariai mato visų įjung
 tikslus, o kurti ir keisti gali tik ten, kur turi tam teises. Išjungto padalinio tikslai
 paslepiami, bet neištrinami. Problemos veiksmų skiltis rodoma tik įjungto padalinio problemoms.
 
-<ChangelogNote version="v2.29" date="2026-09-30" title="Tikslų bandymas pagal padalinį">
+<ChangelogNote version="v2.29" date="2026-09-28" title="Tikslų bandymas pagal padalinį">
 
 IT bandymą įjungia kiekvienam padaliniui atskirai. Meniu ir puslapiai pasikeičia per kitą
 užklausą; išjungus bandymą, tikslai ir veiksmai išlieka.

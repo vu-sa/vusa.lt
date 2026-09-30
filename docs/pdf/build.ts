@@ -54,9 +54,10 @@ function typstString(value: string): string {
 interface Frontmatter {
   tests: string[]
   reviewed: string | null
+  status: string | null
 }
 
-/** Only the two keys the PDF shows; `docs:coverage` owns the full YAML contract. */
+/** `docs:coverage` owns the full YAML contract. */
 function splitFrontmatter(source: string): { frontmatter: Frontmatter, body: string } {
   const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/)
   const yaml = match?.[1] ?? ''
@@ -66,6 +67,7 @@ function splitFrontmatter(source: string): { frontmatter: Frontmatter, body: str
     frontmatter: {
       tests: [...testsBlock.matchAll(/-\s+(\S+)/g)].map(([, test]) => test),
       reviewed: yaml.match(/^last_reviewed:\s*['"]?([\d-]{10})/m)?.[1] ?? null,
+      status: yaml.match(/^doc_status:\s*(draft|partial|reviewed)/m)?.[1] ?? null,
     },
     body: match ? source.slice(match[0].length) : source,
   }
@@ -187,12 +189,15 @@ function renderPage(link: string, h1Level: number): string {
   }
 
   const tests = frontmatter.tests.map(typstString).join(', ')
+  const status = { draft: 'Rašoma', partial: 'Dalinis', reviewed: 'Peržiūrėta' }[frontmatter.status ?? '']
+  const review = frontmatter.reviewed ? `Turinys peržiūrėtas ${frontmatter.reviewed}` : 'Turinio peržiūra dar nepažymėta'
 
   return [
     '#pagebreak(weak: true)',
     `#metadata(none) <${prefix}--top>`,
+    ...(status ? [`#text(size: 9pt, ${typstString(`${status} · ${review}`)})`] : []),
     `#guide-page(${typstString(`/docs/pdf/.build/pages/${file}`)}, h1-level: ${h1Level})`,
-    `#evidence(tests: (${tests}${frontmatter.tests.length === 1 ? ',' : ''}), reviewed: ${frontmatter.reviewed ? typstString(frontmatter.reviewed) : 'none'})`,
+    `#evidence(tests: (${tests}${frontmatter.tests.length === 1 ? ',' : ''}))`,
     '',
   ].join('\n')
 }

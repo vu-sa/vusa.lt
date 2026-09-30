@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Rolės ir leidimai
 area: roles
 models: [Role, Permission]

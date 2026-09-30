@@ -1,4 +1,6 @@
 ---
+doc_status: reviewed
+last_reviewed: 2026-09-30
 title: Įvadas
 coverage: ignore
 ---
@@ -24,7 +26,7 @@ kurį esi atsakingas (-a).
 
 ## Kaip skaityti puslapius
 
-Kiekvieno baigto puslapio struktūra vienoda:
+Skilties žinyno puslapyje rasi šiuos skyrius. Sąvokų ir darbo eigos puslapiuose paliekami tik reikalingi skyriai:
 
 | Skyrius | Ką rasi |
 |---|---|
@@ -35,9 +37,17 @@ Kiekvieno baigto puslapio struktūra vienoda:
 | **Susitarimai** | Organizaciniai susitarimai, kurių sistema neužtikrina, bet kurių laikomės |
 | **Techninė informacija** | Tikslios teisės, įgyvendinimo detalės ir testai, kurie tai tikrina |
 
-Techninės informacijos pabaigoje esantis blokas **Įrodyta testais** nurodo automatinius testus,
-kurie tikrina aprašytą elgseną: **serverio** testai – taisykles ir teises, **sąsajos** testai – ką
-rodo ir leidžia ekranas. Jei tekstas ir testai kada nors išsiskirtų, klaida bus pastebėta.
+Puslapio pradžioje rodoma jo būsena: **Peržiūrėta** – tekstas patikrintas pagal dabartinę
+elgseną; **Dalinis** – aprašyta tik dalis temos; **Rašoma** – turinys dar neparuoštas.
+**Turinys peržiūrėtas** nurodo teksto patikrinimo datą, o ne paskutinį failo pakeitimą.
+Darbo srities apžvalgos data netaikoma visiems jos puslapiams.
+
+Pabaigoje gali išskleisti **Testų nuorodas**: serverio testai tikrina taisykles ir teises,
+sąsajos bei naršyklės testai – atitinkamą ekrano elgseną. Testai neperskaito gido ir neįrodo
+viso jo teksto. Pasikeitę testai padeda pastebėti, kuriuos puslapius verta patikrinti iš naujo.
+
+Jei nori atlikti konkretų darbą, pradėk nuo [Darbų gido](/darbai).
+Iš jo nuorodos veda į darbo sričių žinyną, kuriame aprašytos taisyklės ir teisės.
 
 ::: info Gidas ir PDF
 Šis gidas yra ir svetainė, ir [PDF dokumentas](/vusa-lt-gidas.pdf). Abu kuriami iš to paties

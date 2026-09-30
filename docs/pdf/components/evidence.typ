@@ -1,11 +1,11 @@
 #import "../templates/theme.typ": *
 
-// The `tests:` frontmatter, as on the website's "Įrodyta testais" block.
-#let evidence(tests: (), reviewed: none) = if tests.len() > 0 {
+#let evidence(tests: ()) = if tests.len() > 0 {
   v(2.2em)
-  block(width: 100%, inset: (x: 12pt, y: 10pt), stroke: (left: 3pt + amber), fill: paper, breakable: false)[
-    #text(weight: "bold", size: 9pt)[Įrodyta testais]
-    #if reviewed != none { text(size: 9pt, fill: muted)[ · peržiūrėta #reviewed] }
+  block(width: 100%, inset: (x: 12pt, y: 10pt), stroke: (left: 3pt + amber), fill: paper, breakable: true)[
+    #text(weight: "bold", size: 9pt)[Testų nuorodos]
+    #parbreak()
+    #text(size: 8.5pt, fill: muted)[Šie testai tikrina atskiras elgsenos dalis. Jie nepakeičia turinio peržiūros.]
     #v(0.3em)
     #let browser = test => test.starts-with("tests/Browser/")
     #for (label, belongs) in (

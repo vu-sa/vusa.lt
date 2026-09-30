@@ -1,6 +1,14 @@
 import { shared } from './shared.ts'
 import { mergeObjects } from './utils.ts'
-import { guide, pdfFileName } from './structure.ts'
+import { guide, pdfFileName, sourceFile } from './structure.ts'
+import fs from 'node:fs'
+
+const sidebarPage = (page: { text: string, link: string }) => {
+  const source = fs.readFileSync(new URL(`../${sourceFile(page.link)}`, import.meta.url), 'utf8')
+  const status = source.match(/^doc_status: (\w+)/m)?.[1]
+  const label = { draft: 'Rašoma', partial: 'Dalinis', reviewed: 'Peržiūrėta' }[status ?? '']
+  return { ...page, text: label ? `${page.text} · ${label}` : page.text }
+}
 
 export default {
   title: "vusa.lt gidas",
@@ -10,7 +18,7 @@ export default {
   themeConfig: mergeObjects(shared, {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Gidas', link: '/ivadas', activeMatch: '^/(?!changelog)' },
+      { text: 'Gidas', link: '/darbai', activeMatch: '^/(?!changelog)' },
       { text: 'Atnaujinimai', link: '/changelog/v2', activeMatch: '/changelog/' },
       // A file, not a page: VitePress adds the `/docs/` base only to page links.
       { text: 'PDF', link: `/docs/${pdfFileName}`, target: '_blank' },
@@ -20,8 +28,8 @@ export default {
       ...guide.map(chapter => ({
         text: chapter.text,
         link: chapter.index,
-        collapsed: false,
-        items: chapter.pages,
+        collapsed: chapter.text !== 'Pradžia',
+        items: chapter.pages.map(sidebarPage),
       })),
       {
         text: 'Atnaujinimai',
@@ -34,6 +42,12 @@ export default {
     ],
 
     // Override shared translations for Lithuanian
+    sidebarMenuLabel: 'Turinys',
+    skipToContentLabel: 'Pereiti prie turinio',
+    returnToTopLabel: 'Į pradžią',
+    darkModeSwitchLabel: 'Tema',
+    lightModeSwitchTitle: 'Įjungti šviesią temą',
+    darkModeSwitchTitle: 'Įjungti tamsią temą',
     editLink: {
       pattern: 'https://github.com/vu-sa/vusa.lt/edit/main/docs/:path',
       text: 'Redaguoti šį puslapį GitHub platformoje'
@@ -42,7 +56,7 @@ export default {
       label: 'Šiame puslapyje'
     },
     lastUpdated: {
-      text: 'Paskutinį kartą atnaujinta'
+      text: 'Failas pakeistas'
     },
     docFooter: {
       prev: 'Ankstesnis puslapis',

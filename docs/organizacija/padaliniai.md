@@ -1,4 +1,5 @@
 ---
+doc_status: draft
 title: Padaliniai
 area: tenants
 models: [Tenant]
