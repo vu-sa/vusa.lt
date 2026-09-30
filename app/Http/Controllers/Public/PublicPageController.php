@@ -3,22 +3,23 @@
 namespace App\Http\Controllers\Public;
 
 use App\Actions\GetPublicMeetingDocuments;
-use App\Collections\NewsCollection;
 use App\Enums\LocaleEnum;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Http\Requests\IndexPublicCalendarRequest;
 use App\Models\Calendar;
 use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\EventType;
+use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Services\LocationGeocoder;
 use App\Services\PublicUrlService;
-use App\Services\ResourceServices\InstitutionService;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -29,33 +30,6 @@ use Inertia\Inertia;
 
 class PublicPageController extends PublicController
 {
-    protected function getEventsForCalendar()
-    {
-        $locale = app()->getLocale();
-        $cacheKey = "calendar_events_{$locale}";
-
-        return Cache::tags(['calendar', "locale_{$locale}"])
-            ->remember($cacheKey, 1800, function () use ($locale) { // 30 minutes TTL
-                if ($locale === 'en') {
-                    return Calendar::query()->with(['eventType', 'media'])->where('is_international', true)->where('is_draft', false)
-                        ->orderBy('date', 'desc')->take(100)->get()->map(fn ($event) => [
-                            ...$event->toArray(),
-                            'images' => $event->getMedia('images'),
-                            'googleLink' => $event->googleLink(),
-                            'public_url' => $event->publicUrl($locale),
-                        ]);
-                } else {
-                    return Calendar::query()->with(['eventType', 'media'])->where('is_draft', false)
-                        ->orderBy('date', 'desc')->take(100)->get()->map(fn ($event) => [
-                            ...$event->toArray(),
-                            'images' => $event->getMedia('images'),
-                            'googleLink' => $event->googleLink(),
-                            'public_url' => $event->publicUrl($locale),
-                        ]);
-                }
-            });
-    }
-
     public function home()
     {
         // Get shared data (these are cached internally)
@@ -69,43 +43,37 @@ class PublicPageController extends PublicController
         $locale = app()->getLocale();
         $cacheKey = "homepage_content_{$this->tenant->id}_{$locale}";
 
-        $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+        $content = Cache::tags(['homepage'])
             ->remember($cacheKey, 3600, fn () => $this->homepageContentForLocale($this->tenant, $locale)
                 ?? $this->homepageContentForLocale(Tenant::main(), $locale));
-
-        // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
-        $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
 
         // Only authenticated users pay for edit-link resolution.
         if (Auth::check()) {
             $this->sharePublicEditLink($this->tenant);
         }
 
-        $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
-            ->remember($newsCacheKey, 1800, fn () => NewsCollection::getPublishedForTenant(
-                $this->tenant->id,
-                $locale
-            )->toPublicArray());
-
-        // Fetch calendar events for homepage (reduces API calls)
-        $calendarEvents = $this->getEventsForCalendar();
-
         $this->applyPageHead(contentTenant: $this->tenant, title: __('Pagrindinis puslapis'));
 
-        // Get first news image URL for LCP preload hint
-        $firstNewsImageUrl = $news[0]['image'] ?? null;
+        $resolvedParts = $this->resolveContentParts($content);
 
         return Inertia::render('Public/HomePage', [
             'tenantSwitchTarget' => 'same-page',
             'content' => $content,
-            // `news`/`calendarEvents` stay as-is (HomePage's LCP tuning is built on this
-            // exact prop shape); `resolvedParts` only carries the newer dynamic types
-            // (link-list, event-list) a homepage content block might use.
-            'resolvedParts' => (object) $this->resolveContentParts($content),
-            'news' => $news,
-            'calendarEvents' => $calendarEvents,
-            'firstNewsImageUrl' => $firstNewsImageUrl,
+            'resolvedParts' => (object) $resolvedParts,
+            'firstNewsImageUrl' => $this->firstNewsImageUrl($content, $resolvedParts),
         ]);
+    }
+
+    /**
+     * The first news card's image, preloaded as the likely LCP element.
+     *
+     * @param  array<int, array<string, mixed>>  $resolvedParts
+     */
+    private function firstNewsImageUrl(?Content $content, array $resolvedParts): ?string
+    {
+        $newsPart = $content?->parts->first(fn (ContentPart $part) => $part->type === 'news');
+
+        return $newsPart ? ($resolvedParts[$newsPart->id]['items'][0]['image'] ?? null) : null;
     }
 
     private function homepageContentForLocale(?Tenant $tenant, string $locale): ?Content
@@ -131,11 +99,14 @@ class PublicPageController extends PublicController
     public function page(?PublicUrlService $publicUrls = null)
     {
         $publicUrls ??= app(PublicUrlService::class);
-        // HACK: At first, since for PKP we want to redirect old pages to contacts page, we check in this function
-        $pkps = (new InstitutionService)->getInstitutionsByTypeSlug('pkp');
-        $institution = $pkps->firstWhere('alias', request()->permalink);
 
-        if ($institution) {
+        // Old PKP pages live on as contacts pages.
+        $isPkpAlias = Institution::query()
+            ->where('alias', request()->permalink)
+            ->whereHas('types', fn (Builder $query) => $query->where('slug', 'pkp'))
+            ->exists();
+
+        if ($isPkpAlias) {
             return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'institution' => request()->permalink]);
         }
 
@@ -148,7 +119,7 @@ class PublicPageController extends PublicController
         $locale = app()->getLocale();
         $cacheKey = "page_content_{$this->tenant->id}_{$locale}_".md5(request()->permalink);
 
-        $pageData = Cache::tags(['pages', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+        $pageData = Cache::tags(['pages', PublicCacheTags::pages($this->tenant->id, $locale)])
             ->remember($cacheKey, 3600, function () {
                 $page = Page::query()->where([
                     ['permalink', '=', request()->permalink],
@@ -156,9 +127,13 @@ class PublicPageController extends PublicController
                     ['is_active', '=', true],
                 ])->first();
 
+                // false, not null: the cache treats a stored null as a miss, and page saves
+                // flush this entry when the permalink appears.
                 if ($page === null) {
-                    return null;
+                    return false;
                 }
+
+                $page->load(['tenant', 'content']);
 
                 $navigation_item = Navigation::query()->where('name', $page->title)->first();
                 $other_lang_page = $page->getOtherLanguage();
@@ -180,10 +155,11 @@ class PublicPageController extends PublicController
                     'other_lang_page' => $other_lang_page,
                     'ancestors' => $page->ancestors(),
                     'children' => $children,
+                    'seo_description' => ContentHelper::getDescriptionForSeo($page),
                 ];
             });
 
-        if ($pageData === null) {
+        if ($pageData === false || $pageData === null) {
             $publicUrl = $publicUrls->resolve(request()->url());
             $destination = $publicUrl === null ? null : $publicUrls->destinationFor($publicUrl);
 
@@ -217,7 +193,7 @@ class PublicPageController extends PublicController
         $this->applyPageHead(
             contentTenant: $page->tenant,
             title: $page->title,
-            description: ContentHelper::getDescriptionForSeo($page),
+            description: $pageData['seo_description'] ?? ContentHelper::getDescriptionForSeo($page),
         );
 
         // Generate breadcrumb schema
@@ -363,7 +339,7 @@ class PublicPageController extends PublicController
 
         // Create base query with common filters
         $query = Calendar::query()
-            ->with(['eventType', 'tenant:id,alias,shortname,fullname'])
+            ->with(['eventType', 'media', 'tenant:id,alias,shortname,fullname'])
             ->where('is_draft', false);
 
         // Filter by locale
@@ -425,6 +401,17 @@ class PublicPageController extends PublicController
      * "VU SA" for "Upcoming") even after switching to "Past" in the browser.
      */
     private function getCalendarFilterOptions(): array
+    {
+        $locale = app()->getLocale();
+
+        return Cache::tags(['calendar'])->remember("calendar_filter_options_{$locale}", 3600,
+            fn () => $this->queryCalendarFilterOptions());
+    }
+
+    /**
+     * @return array{eventTypes: array<int, mixed>, tenants: array<int, mixed>}
+     */
+    private function queryCalendarFilterOptions(): array
     {
         $eventTypes = EventType::query()
             ->whereHas('calendarEvents', function ($query): void {
@@ -610,10 +597,6 @@ class PublicPageController extends PublicController
     /**
      * The events offered alongside this one: the soonest still to come first, topped up
      * with the most recent past ones when little is coming.
-     *
-     * Not `getEventsForCalendar()` — that sorts the whole calendar newest-first, so
-     * reading from its top surfaced whatever is furthest in the future rather than what
-     * is about to happen.
      *
      * @return array<int, array<string, mixed>>
      */

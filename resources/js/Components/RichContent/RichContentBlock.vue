@@ -9,9 +9,7 @@
         <component :is="displayComponent" :element :html
           :anchor-id="element.id"
           :resolved
-          :band
-          :prefetched-news="element.type === 'news' ? news : undefined"
-          :prefetched-calendar="element.type === 'calendar' ? calendarEvents : undefined">
+          :band>
           <!-- shadcn-card renders its body through a default slot. This must be provided
                for both public pages and the editor's global preview; otherwise the card
                body appears empty even though json_content is present. -->
@@ -50,10 +48,9 @@ import { computed, defineAsyncComponent } from 'vue';
 import { blockLayoutClasses } from './blockLayout';
 import { getDisplayType, getSkeletonForType } from './Types/display';
 import { getSkeletonComponent } from './skeletonComponents';
-const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));
 import type { BandResolution } from './bandLayout';
 
-import type { NewsItem } from '@/Types/contentParts';
+const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));
 
 const props = defineProps<{
   element: models.ContentPart;
@@ -62,9 +59,6 @@ const props = defineProps<{
   resolved?: unknown;
   /** This block's already-looked-up band chrome (see RichContentParser's `bandFor`). */
   band?: BandResolution;
-  /** @deprecated Superseded by `resolved` — only HomePage still supplies these directly. */
-  news?: NewsItem[];
-  calendarEvents?: Array<Record<string, unknown>>;
 }>();
 
 const displayComponent = computed(() => getDisplayType(props.element.type).display);

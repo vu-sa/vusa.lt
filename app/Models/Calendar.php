@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CalendarHeroStyleEnum;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\IcalendarService;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
@@ -194,8 +195,8 @@ class Calendar extends Model implements HasMedia
     protected static function booted()
     {
         static::saved(function (self $calendar): void {
-            // Flush calendar cache for all locales since calendar events can be international
-            Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            Cache::tags(['calendar'])->flush();
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
             $calendar->syncMeetingDocumentsSearchIndex();
@@ -227,8 +228,8 @@ class Calendar extends Model implements HasMedia
         });
 
         static::deleted(function ($calendar): void {
-            // Flush calendar cache for all locales since calendar events can be international
-            Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            Cache::tags(['calendar'])->flush();
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
             $calendar->syncMeetingDocumentsSearchIndex();

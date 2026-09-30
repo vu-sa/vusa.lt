@@ -5,8 +5,10 @@ namespace App\Models;
 use App\Actions\PairTranslatedRecord;
 use App\Enums\PageLayoutEnum;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\PublicUrlService;
 use App\Settings\SiteSettings;
+use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -99,9 +101,8 @@ class Page extends Model implements Sitemapable
             $page->layout = (PageLayoutEnum::tryFrom((string) $page->layout) ?? PageLayoutEnum::default())->value;
         });
 
-        static::saved(function ($page): void {
-            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
-            SiteSettings::forgetCachedPrivacyPageUrls();
+        static::saved(function (Page $page): void {
+            $page->flushPublicCaches();
 
             // A freshly inserted row's `lang` attribute isn't hydrated from the column's DB
             // default until the model is refreshed — guard here rather than in publicUrl(),
@@ -132,10 +133,7 @@ class Page extends Model implements Sitemapable
 
         static::saved(fn (Page $page) => $page->syncPublicSearchIndex());
 
-        static::deleted(function ($page): void {
-            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
-            SiteSettings::forgetCachedPrivacyPageUrls();
-        });
+        static::deleted(fn (Page $page) => $page->flushPublicCaches());
 
         static::deleted(fn (Page $page) => $page->publicSearchModel()->unsearchable());
 
@@ -200,6 +198,13 @@ class Page extends Model implements Sitemapable
 
             return array_slice(array_filter($highlights), 0, 3);
         });
+    }
+
+    private function flushPublicCaches(): void
+    {
+        Cache::tags(PublicCacheTags::pagesOf($this))->flush();
+        Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
+        SiteSettings::forgetCachedPrivacyPageUrls();
     }
 
     /**

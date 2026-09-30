@@ -146,8 +146,7 @@ class TenantController extends AdminController
         });
 
         foreach (LocaleEnum::cases() as $locale) {
-            Cache::tags(['homepage', "tenant_{$tenant->id}", "locale_{$locale->value}"])
-                ->forget("homepage_content_{$tenant->id}_{$locale->value}");
+            Cache::tags(['homepage'])->forget("homepage_content_{$tenant->id}_{$locale->value}");
         }
 
         return redirect()->back()->with('success', $this->entityMessage('updated', 'tenant'));

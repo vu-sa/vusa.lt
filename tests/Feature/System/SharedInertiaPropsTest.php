@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
@@ -60,5 +61,24 @@ test('admin pages share the data the admin shell needs', function (): void {
             ->has('auth.user.unreadNotifications', 1)
             ->has('auth.user.tenants', 1)
             ->missing('auth.user.roles')
+        );
+});
+
+test('the unread count covers notifications beyond the shared list', function (): void {
+    foreach (range(1, HandleInertiaRequests::NOTIFICATION_PREVIEW_LIMIT) as $index) {
+        DatabaseNotification::query()->create([
+            'id' => (string) Str::uuid(),
+            'type' => 'test',
+            'notifiable_type' => $this->user->getMorphClass(),
+            'notifiable_id' => $this->user->getKey(),
+            'data' => ['text' => "Pranešimas {$index}"],
+        ]);
+    }
+
+    asUser($this->user)
+        ->get(route('dashboard'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('auth.user.unreadNotifications', HandleInertiaRequests::NOTIFICATION_PREVIEW_LIMIT)
+            ->where('auth.user.unreadNotificationsCount', HandleInertiaRequests::NOTIFICATION_PREVIEW_LIMIT + 1)
         );
 });

@@ -17,6 +17,7 @@ use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
+use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\RelationshipService;
@@ -385,14 +386,16 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
             }
         });
 
-        // The shared tenant list carries each tenant's primary institution. Void closures:
-        // Cache::forget() returns false on a miss, which would stop the listeners below.
-        $forgetTenantList = function (): void {
+        // The shared tenant list carries each tenant's primary institution; institution-list
+        // blocks are resolved from institutions. A void closure: Cache::forget() returns false
+        // on a miss, which would stop the listeners below.
+        $forgetPublicCaches = function (): void {
             Cache::forget(HandleInertiaRequests::TENANTS_CACHE_KEY);
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
         };
-        static::saved($forgetTenantList);
-        static::deleted($forgetTenantList);
-        static::restored($forgetTenantList);
+        static::saved($forgetPublicCaches);
+        static::deleted($forgetPublicCaches);
+        static::restored($forgetPublicCaches);
 
         static::saved(function (Institution $institution): void {
             $publicInstitution = PublicInstitution::query()->find($institution->getKey());

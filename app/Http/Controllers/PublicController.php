@@ -8,6 +8,7 @@ use App\Http\Traits\ResolvesPublicContent;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\PublicCacheTags;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -76,7 +77,7 @@ class PublicController extends Controller
     protected function getBanners()
     {
         // The tenant's own banners come first, each group in a fresh random order per request.
-        [$tenantBanners, $mainBanners] = Cache::tags(['banners', "tenant_{$this->tenant->id}"])
+        [$tenantBanners, $mainBanners] = Cache::tags(['banners'])
             ->remember("banner_groups_{$this->tenant->id}", 3600, fn () => [
                 $this->tenant->isMain() ? new Collection : $this->tenant->banners()->where('is_active', 1)->get(),
                 Tenant::main()->banners()->where('is_active', 1)->get(),
@@ -90,7 +91,7 @@ class PublicController extends Controller
         $locale = app()->getLocale();
         $cacheKey = "tenant_links_{$this->tenant->id}_{$locale}";
 
-        $quickLinks = Cache::tags(['quick_links', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+        $quickLinks = Cache::tags(['quick_links', PublicCacheTags::quickLinks($this->tenant->id, $locale)])
             ->remember($cacheKey, 3600, fn () => QuickLink::query()
                 ->where([
                     ['tenant_id', $this->tenant->id],
@@ -414,7 +415,7 @@ class PublicController extends Controller
         $locale = app()->getLocale();
         $cacheKey = "structured_schemas_{$locale}";
 
-        return Cache::tags(['schemas', "locale_{$locale}"])
+        return Cache::tags(['schemas'])
             ->remember($cacheKey, 86400, function () use ($locale) { // 24 hours TTL
                 $baseUrl = config('app.url');
 

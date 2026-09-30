@@ -6,6 +6,7 @@ use App\Enums\ContentPartEnum;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentService;
 use App\Services\HtmlSanitizerService;
+use App\Support\PublicCacheTags;
 use App\Tiptap\TiptapEditor;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -153,9 +154,10 @@ class ContentPart extends Model
 
         if ($content->page !== null) {
             $page = $content->page;
-            Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+            Cache::tags([PublicCacheTags::pages((int) $page->tenant_id, (string) $page->lang)])->flush();
         }
 
+        // Every homepage: a tenant without its own falls back to the main tenant's.
         if ($content->tenantHomepageContent !== null) {
             Cache::tags(['homepage'])->flush();
         }

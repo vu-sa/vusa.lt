@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\SystemMaintenanceAction;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
+use App\Services\ContentResolution\ContentPartResolver;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -16,7 +17,7 @@ class SystemMaintenanceService
      */
     public const PUBLIC_CONTENT_CACHE_TAGS = [
         'homepage', 'navigation', 'banners', 'quick_links', 'pages',
-        'news', 'calendar', 'documents', 'sitemap', 'schemas',
+        'calendar', 'documents', 'sitemap', 'schemas', ContentPartResolver::CACHE_TAG,
     ];
 
     /**

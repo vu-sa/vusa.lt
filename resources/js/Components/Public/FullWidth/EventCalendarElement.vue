@@ -162,8 +162,6 @@ const props = defineProps<{
   element?: { json_content: Calendar['json_content']; options: Calendar['options'] };
   /** Server-resolved payload (ContentPartResolver, via RichContentParser's `resolved` prop). */
   resolved?: { type: string; items: CalendarEvent[] } | null;
-  /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
-  prefetchedCalendar?: CalendarEvent[];
   /** Full-screen editor mode: the title and eyebrow become click-to-edit. Undefined/false
    *  elsewhere. The fetch configuration (limit/eventType/tenantScope) is edited through
    *  `CalendarBlockToolbar.vue`'s options popover instead. */
@@ -206,7 +204,7 @@ const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as Locale
 
 const showModal = ref(false);
 
-const serverCalendar = computed<CalendarEvent[] | undefined>(() => props.resolved?.items ?? props.prefetchedCalendar);
+const serverCalendar = computed<CalendarEvent[] | undefined>(() => props.resolved?.items);
 
 /**
  * Presence, not emptiness: `[]` from the resolver means "the server looked and there is nothing

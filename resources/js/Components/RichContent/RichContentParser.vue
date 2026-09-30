@@ -18,8 +18,6 @@
         :element="child" :html
         :resolved="resolvedFor(child)"
         :band="bandFor(child)"
-        :news="child.type === 'news' ? news : undefined"
-        :calendar-events="child.type === 'calendar' ? calendarEvents : undefined"
       />
     </SectionDisplay>
 
@@ -28,8 +26,6 @@
       :element="group.element" :html
       :resolved="resolvedFor(group.element)"
       :band="bandFor(group.element)"
-      :news="group.element.type === 'news' ? news : undefined"
-      :calendar-events="group.element.type === 'calendar' ? calendarEvents : undefined"
     />
   </template>
 </template>
@@ -49,7 +45,7 @@ import { endsSectionWrapping, resolveBandRole, resolveBands, type BandResolution
 import RichContentBlock from './RichContentBlock.vue';
 import SectionDisplay from './RCSection/SectionDisplay.vue';
 
-import type { NewsItem, Section } from '@/Types/contentParts';
+import type { Section } from '@/Types/contentParts';
 
 const props = defineProps<{
   content: models.ContentPart[];
@@ -57,9 +53,6 @@ const props = defineProps<{
   class?: string;
   /** Server-resolved payloads keyed by content-part id (PublicController::resolveContentParts). */
   resolved?: Record<number, unknown>;
-  /** @deprecated Superseded by `resolved` — only HomePage still supplies these directly. */
-  news?: NewsItem[];
-  calendarEvents?: Array<Record<string, unknown>>;
 }>();
 
 /**

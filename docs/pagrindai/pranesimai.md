@@ -23,8 +23,8 @@ Pranešimų nustatymuose pasirink, apie ką ir kokiu būdu nori būti informuoja
 
 Pranešimai gali pasiekti tave trimis kanalais:
 
-1. **Platformoje (varpelis)**: matomas viršutinėje juostoje (telefone – apatinėje). Čia rodomi visi tau
-   skirti pranešimai. Šio kanalo **negalima išjungti ar nutildyti** – net išjungus el. paštą, pranešimus
+1. **Platformoje (varpelis)**: matomas viršutinėje juostoje (telefone – apatinėje). Skaičius rodo visus
+   neperskaitytus pranešimus, o sąraše matai 20 naujausių; visus rasi paspaudęs **Rodyti visus pranešimus**. Šio kanalo **negalima išjungti ar nutildyti** – net išjungus el. paštą, pranešimus
    vis tiek rasi platformoje, kol jų neištrinsi.
 2. **El. paštas**: kiekvienai pranešimų rūšiai gali pasirinkti pristatymo būdą:
    - **Laiškas iškart** – atskiras laiškas išsiunčiamas tuoj pat.

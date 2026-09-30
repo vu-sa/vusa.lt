@@ -31,11 +31,12 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import { useDebounceFn, useEventListener, useOnline } from '@vueuse/core';
-import { computed, defineAsyncComponent, onMounted, watch, ref, nextTick } from 'vue';
+import { defineAsyncComponent, onMounted, watch, ref, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { usePWA } from '@/Composables/usePWA';
 import { useToasts } from '@/Composables/useToasts';
+import { useUnreadNotificationCount } from '@/Composables/useUnreadNotificationCount';
 import 'vue-sonner/style.css';
 
 import InstallBanner from '@/Components/PWA/InstallBanner.vue';
@@ -61,11 +62,7 @@ const props = defineProps<{
 // PWA state
 const { setAppBadge } = usePWA();
 
-// Unread notifications count
-const unreadNotificationsCount = computed(() => {
-  const notifications = usePage().props.auth?.user?.unreadNotifications;
-  return Array.isArray(notifications) ? notifications.length : 0;
-});
+const unreadNotificationsCount = useUnreadNotificationCount();
 
 // Update PWA app badge when notification count changes
 watch(unreadNotificationsCount, (count) => {

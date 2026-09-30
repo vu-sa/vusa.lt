@@ -7,7 +7,9 @@ import type { Notification } from '@/Composables/useNotificationFormatting';
 export function useUnreadNotificationCount() {
   const page = usePage<PageProps>();
 
-  return computed(() => ((page.props.auth?.user?.unreadNotifications ?? []) as Notification[])
-    .filter(notification => !notification.read_at)
-    .length);
+  // The shared list is capped (newest first), so the server's count is authoritative.
+  return computed(() => page.props.auth?.user?.unreadNotificationsCount
+    ?? ((page.props.auth?.user?.unreadNotifications ?? []) as Notification[])
+      .filter(notification => !notification.read_at)
+      .length);
 }

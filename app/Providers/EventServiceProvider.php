@@ -25,7 +25,6 @@ use App\Listeners\SyncExOfficioDutiables;
 use App\Listeners\SyncInstitutionActivityIndex;
 use App\Listeners\SyncRelationSearchIndex;
 use App\Listeners\UpdateSharepointFolder;
-use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -36,7 +35,6 @@ use App\Models\Type;
 use App\Models\Typeable;
 use App\Models\User;
 use App\Notifications\Subscribers\ApprovalNotificationSubscriber;
-use App\Observers\CalendarObserver;
 use App\Observers\DocumentObserver;
 use App\Observers\InstitutionObserver;
 use App\Observers\RelationshipableObserver;
@@ -138,7 +136,6 @@ class EventServiceProvider extends ServiceProvider
     public function boot()
     {
         Document::observe(DocumentObserver::class);
-        Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
         Type::observe(TypeObserver::class);
         Typeable::observe(TypeableObserver::class);

@@ -179,8 +179,7 @@ class ContactController extends PublicController
                 ->with('tenant:id,alias')
                 ->where('tenant_id', '=', $this->tenant->id)
                 ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name', 'alias', 'description']);
+                ->orderBy('name');
         }]);
 
         // remove descendants without institutions
@@ -266,7 +265,8 @@ class ContactController extends PublicController
         );
 
         $data = [
-            'institution' => $institution,
+            // The contacts are passed on their own; the duty tree would be serialized twice.
+            'institution' => $institution->unsetRelation('duties'),
             'currentYearMeetings' => $groupedMeetings['current'] ?? null,
             'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
             'hasMeetings' => ! empty($groupedMeetings),

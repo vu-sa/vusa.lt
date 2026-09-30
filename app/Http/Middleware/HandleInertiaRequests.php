@@ -34,6 +34,8 @@ class HandleInertiaRequests extends Middleware
 
     public const INSTITUTION_TYPES_CACHE_KEY = 'all-institution-types-for-inertia';
 
+    public const NOTIFICATION_PREVIEW_LIMIT = 20;
+
     /**
      * Cached forever; each owning model forgets its key on write.
      */
@@ -144,7 +146,9 @@ class HandleInertiaRequests extends Middleware
                     'tenants' => $onAdmin
                         ? $user->tenants()->distinct()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])
                         : [],
-                    'unreadNotifications' => $onAdmin ? $user->unreadNotifications()->get() : [],
+                    // Newest first; the badge reads the count, so the list can stay short.
+                    'unreadNotifications' => $onAdmin ? $user->unreadNotifications()->limit(self::NOTIFICATION_PREVIEW_LIMIT)->get() : [],
+                    'unreadNotificationsCount' => $onAdmin ? $user->unreadNotifications()->count() : 0,
                     'tutorial_progress' => $user->tutorial_progress ?? [],
                     'ui_preferences' => $user->ui_preferences ?? [],
                 ],

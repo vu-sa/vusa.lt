@@ -63,6 +63,14 @@ describe('MobileBottomBar', () => {
     expect(mountBar().find('[data-slot="notification-count"]').text()).toContain('9+');
   });
 
+  it('counts from the server total, since the shared list is capped', () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { user: { unreadNotifications: [], unreadNotificationsCount: 3 } },
+    }) as ReturnType<typeof usePage>);
+
+    expect(mountBar().find('[data-slot="notification-count"]').text()).toContain('3');
+  });
+
   it('prefetches each navigation destination with a short fresh and stale cache window', () => {
     const wrapper = mountBar();
 

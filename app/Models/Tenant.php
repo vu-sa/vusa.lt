@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\LocaleEnum;
 use App\Enums\TenantType;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Settings\SiteSettings;
@@ -62,6 +63,8 @@ class Tenant extends Model
 
     private const string MAIN_CACHE_KEY = 'tenant:main';
 
+    private const string ALL_CACHE_KEY = 'tenant:all';
+
     #[\Override]
     protected function casts(): array
     {
@@ -75,7 +78,10 @@ class Tenant extends Model
     protected static function booted()
     {
         static::saved(function (Tenant $tenant): void {
-            Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
+            foreach (LocaleEnum::cases() as $locale) {
+                Cache::tags(['homepage'])->forget("homepage_content_{$tenant->id}_{$locale->value}");
+            }
+
             $tenant->forgetLookupCaches();
         });
 
@@ -92,6 +98,17 @@ class Tenant extends Model
     {
         return Cache::memo()->rememberForever(self::MAIN_CACHE_KEY,
             fn () => static::query()->where('type', TenantType::Pagrindinis)->first());
+    }
+
+    /**
+     * Every tenant, for permission resolution. A fresh collection each call; the models are
+     * shared within the request.
+     *
+     * @return Collection<int, static>
+     */
+    public static function allCached(): Collection
+    {
+        return new Collection(Cache::memo()->rememberForever(self::ALL_CACHE_KEY, fn () => static::all())->all());
     }
 
     /**
@@ -114,6 +131,7 @@ class Tenant extends Model
 
         $cache->forget(HandleInertiaRequests::TENANTS_CACHE_KEY);
         $cache->forget(self::MAIN_CACHE_KEY);
+        $cache->forget(self::ALL_CACHE_KEY);
         $cache->forget(self::aliasCacheKey((string) $this->alias));
 
         if ($this->wasChanged('alias') && is_string($this->getOriginal('alias'))) {

@@ -49,6 +49,12 @@ Socialinio įrašo bloke įklijuok Facebook arba Instagram nuorodą; redaktorius
 atpažino, ir pateiks peržiūrą.
 Teksto laukelio bloke atsakymus gali peržiūrėti, eksportuoti arba po patvirtinimo ištrinti.
 
+### Automatiškai pildomi blokai {#automatiniai-blokai}
+
+Naujienų, renginių, nuorodų ir institucijų sąrašų blokai pasipildo patys. Paskelbta naujiena,
+renginys ar pakeistas puslapis juose matomi iš karto. Praėjęs renginys iš artėjančių sąrašo
+dingsta per 10 minučių.
+
 ## Kas ką gali {#teises}
 
 Padalinio svetainės tekstus atnaujina rolę **Padalinio puslapių redaktorius** turinčios pareigybės:

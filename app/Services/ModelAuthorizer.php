@@ -44,9 +44,6 @@ class ModelAuthorizer
      */
     private array $duties = [];
 
-    /** @var Collection<int, Tenant>|null */
-    private ?Collection $allTenants = null;
-
     /**
      * Resolve what a permission grants this user.
      */
@@ -174,7 +171,7 @@ class ModelAuthorizer
      */
     private function allTenants(): Collection
     {
-        return $this->allTenants ??= Tenant::all();
+        return Tenant::allCached();
     }
 
     /**
@@ -183,14 +180,18 @@ class ModelAuthorizer
      */
     private function tenantsOf(Collection $duties): Collection
     {
+        // Read from the shared tenant list, not cached with the duties, so a renamed tenant
+        // is current on the next request.
+        $tenantsById = $this->allTenants()->keyBy('id');
+
         /** @var \Illuminate\Support\Collection<int, Tenant> $tenants */
         $tenants = $duties
-            // loadDuties() caches institution.tenant with the duties; loadMissing keeps any
-            // other caller's duty collection working.
-            ->loadMissing('institution.tenant')
-            ->pluck('institution.tenant')
+            ->loadMissing('institution:id,tenant_id')
+            ->pluck('institution.tenant_id')
             ->filter()
-            ->unique('id')
+            ->unique()
+            ->map(fn (int $tenantId) => $tenantsById->get($tenantId))
+            ->filter()
             ->values();
 
         return new Collection($tenants->all());
@@ -208,9 +209,7 @@ class ModelAuthorizer
             fn () => AuthorityCacheExpiry::for($user, static::CACHE_TTL),
             fn () => $user->load([
                 'authorization_duties:id,name,institution_id',
-                // Cached with the duties so tenantsOf() needs no query per request.
                 'authorization_duties.institution:id,tenant_id',
-                'authorization_duties.institution.tenant',
                 'authorization_duties.roles.permissions',
                 // Without this, the duty loop lazy-loads $duty->permissions (direct, not via
                 // role) once per duty — an N+1 on every permission check.

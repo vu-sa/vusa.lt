@@ -25,6 +25,9 @@ use Illuminate\Support\Collection;
 final class ContentPartResolver
 {
     /** @var array<string, class-string<ResolvesContentPart>> */
+    /** Flushed by the models resolved blocks read from (news, calendar, pages, institutions). */
+    public const string CACHE_TAG = 'resolved_content';
+
     private const array RESOLVERS = [
         'link-list' => LinkListResolver::class,
         'event-list' => EventListResolver::class,
