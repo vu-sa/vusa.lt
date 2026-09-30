@@ -40,6 +40,8 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed, nextTick } from 'vue';
 
+import { toInstagramEmbedUrl, type FacebookSDK, type InstagramSDK } from '../embedUrl';
+
 const props = defineProps<{
   url: string;
   platform: 'facebook' | 'instagram' | null;
@@ -51,19 +53,13 @@ const hasRendered = ref(false);
 const fbContainer = ref<HTMLElement | null>(null);
 const igContainer = ref<HTMLElement | null>(null);
 
-// Extract clean Instagram URL for embedding
 const instagramEmbedUrl = computed(() => {
   if (!props.url || props.platform !== 'instagram') return '';
-  // Ensure URL ends with proper format
-  const cleanUrl = props.url.split('?')[0] || ''; // Remove query params
-  if (!cleanUrl.endsWith('/')) {
-    return `${cleanUrl}/`;
-  }
-  return cleanUrl;
+  return toInstagramEmbedUrl(props.url);
 });
 
 // Load Facebook SDK
-async function loadFacebookSDK(): Promise<any> {
+async function loadFacebookSDK(): Promise<FacebookSDK> {
   if (window.FB) {
     return window.FB;
   }
@@ -106,7 +102,7 @@ async function loadFacebookSDK(): Promise<any> {
 }
 
 // Load Instagram embed script
-async function loadInstagramEmbed(): Promise<any> {
+async function loadInstagramEmbed(): Promise<InstagramSDK> {
   if (window.instgrm) {
     return window.instgrm;
   }
@@ -205,9 +201,9 @@ onMounted(() => {
 // Type declarations for global SDK objects
 declare global {
   interface Window {
-    FB: any;
+    FB: FacebookSDK;
     fbAsyncInit: () => void;
-    instgrm: any;
+    instgrm: InstagramSDK;
   }
 }
 </script>

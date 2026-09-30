@@ -24,14 +24,16 @@
       </Field>
 
       <!-- Platform detection badge -->
-      <div v-if="detectedPlatform" class="flex items-center gap-2 text-xs">
-        <div class="flex items-center gap-1.5 rounded-full px-2.5 py-0.5" :class="platformBadgeClass">
-          <component :is="platformIcon" class="size-3.5" />
-          <span class="font-medium">{{ platformLabel }}</span>
-        </div>
-        <span v-if="isValidUrl" class="text-emerald-600 dark:text-emerald-400">
-          ✓ {{ $t('Nuoroda atpažinta') }}
-        </span>
+      <div v-if="url.trim()" class="flex items-center gap-2 text-xs">
+        <template v-if="detectedPlatform">
+          <div class="flex items-center gap-1.5 rounded-full px-2.5 py-0.5" :class="platformBadgeClass">
+            <component :is="platformIcon" class="size-3.5" />
+            <span class="font-medium">{{ platformLabel }}</span>
+          </div>
+          <span class="text-emerald-600 dark:text-emerald-400">
+            ✓ {{ $t('Nuoroda atpažinta') }}
+          </span>
+        </template>
         <span v-else class="text-amber-600 dark:text-amber-400">
           {{ $t('Patikrinkite nuorodą') }}
         </span>
@@ -66,6 +68,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import RCBlockToolbarShell from '../Editor/Fullscreen/RCBlockToolbarShell.vue';
 import RCWidthPicker from '../Editor/RCWidthPicker.vue';
 import { withWidth } from '../Editor/blockWidth';
+import { detectSocialPlatform } from '../embedUrl';
 import { getContentType, type BlockWidth, type ContentPart } from '../Types';
 
 import { Field, FieldDescription, FieldLabel } from '@/Components/ui/field';
@@ -102,25 +105,7 @@ const options = computed<NonNullable<SocialEmbed['options']>>(
 
 const url = computed(() => socialContent.value?.url ?? '');
 
-function detectPlatformFromUrl(urlValue: string): 'facebook' | 'instagram' | null {
-  if (!urlValue) return null;
-  if (/facebook\.com|fb\.watch/i.test(urlValue)) return 'facebook';
-  if (/instagram\.com|instagr\.am/i.test(urlValue)) return 'instagram';
-  return null;
-}
-
-const detectedPlatform = computed(() => detectPlatformFromUrl(url.value));
-
-const isValidUrl = computed(() => {
-  if (!url.value) return false;
-  try {
-    new URL(url.value);
-    return detectedPlatform.value !== null;
-  }
-  catch {
-    return false;
-  }
-});
+const detectedPlatform = computed(() => detectSocialPlatform(url.value));
 
 const platformBadgeClass = computed(() => {
   if (detectedPlatform.value === 'facebook') {
@@ -154,7 +139,7 @@ function updateUrl(newUrl: string): void {
     json_content: {
       ...socialContent.value,
       url: newUrl,
-      platform: detectPlatformFromUrl(newUrl),
+      platform: detectSocialPlatform(newUrl),
     },
   });
 }
