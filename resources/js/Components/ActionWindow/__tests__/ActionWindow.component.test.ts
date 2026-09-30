@@ -23,7 +23,6 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const ALL_PERMISSIONS = {
   create: { meeting: true, problem: true, reservation: true, duty: true },
-  manageSettings: true,
 };
 
 const createActionsForPermissions = (can: Record<string, unknown>) => {
@@ -176,7 +175,6 @@ describe('ActionWindow.vue', () => {
   it('skips the persona menu when the user qualifies for only one', async () => {
     const { wrapper, window } = mountWindow({
       create: { meeting: true, problem: false, reservation: false, duty: false },
-      manageSettings: false,
     });
     window.open();
     await settle(wrapper);

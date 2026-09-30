@@ -9,6 +9,7 @@ use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -39,7 +40,7 @@ class PublicController extends Controller
         [$alias, $subdomain] = GetAliasSubdomainForPublic::execute();
 
         // When we have the final alias, get the tenant that will be used in all of the public controllers
-        $tenant = Tenant::where('alias', $alias)->first();
+        $tenant = Tenant::forAlias($alias);
 
         // An unrecognized Host (e.g. the catch-all {permalink} route matching a request whose
         // domain isn't a known tenant subdomain) must 404, not crash with a TypeError trying to
@@ -74,28 +75,14 @@ class PublicController extends Controller
 
     protected function getBanners()
     {
-        $cacheKey = "banners_{$this->tenant->id}";
-        $banners = Cache::tags(['banners', "tenant_{$this->tenant->id}"])
-            ->remember($cacheKey, 3600, function () {
-                $banners = Tenant::where('alias', 'vusa')->first()
-                    ->banners()
-                    ->inRandomOrder()
-                    ->where('is_active', 1)
-                    ->get();
+        // The tenant's own banners come first, each group in a fresh random order per request.
+        [$tenantBanners, $mainBanners] = Cache::tags(['banners', "tenant_{$this->tenant->id}"])
+            ->remember("banner_groups_{$this->tenant->id}", 3600, fn () => [
+                $this->tenant->isMain() ? new Collection : $this->tenant->banners()->where('is_active', 1)->get(),
+                Tenant::main()->banners()->where('is_active', 1)->get(),
+            ]);
 
-                if (! $this->tenant->isMain()) {
-                    $tenantBanners = $this->tenant
-                        ->banners()
-                        ->inRandomOrder()
-                        ->where('is_active', 1)
-                        ->get();
-                    $banners = $tenantBanners->merge($banners);
-                }
-
-                return $banners;
-            });
-
-        Inertia::share('tenant.banners', $banners);
+        Inertia::share('tenant.banners', $tenantBanners->shuffle()->merge($mainBanners->shuffle())->values());
     }
 
     protected function getTenantLinks()
@@ -418,11 +405,8 @@ class PublicController extends Controller
             return $image;
         }
 
-        // Confirm the uploaded image still exists in storage before using it —
-        // guards against stale paths left behind by deleted uploads.
-        $storedImage = Storage::get(str_replace('uploads', 'public', $image));
-
-        return $storedImage !== null ? $image : $fallback;
+        // Guards against stale paths left behind by deleted uploads.
+        return Storage::exists(str_replace('uploads', 'public', $image)) ? $image : $fallback;
     }
 
     protected function getStructuredDataSchemas()

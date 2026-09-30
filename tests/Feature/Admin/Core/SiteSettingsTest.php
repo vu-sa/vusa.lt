@@ -57,6 +57,36 @@ describe('privacy page setting', function (): void {
     test('returns null when no page is configured, so the link can be hidden', function (): void {
         expect(app(SiteSettings::class)->privacyPageUrl())->toBeNull();
     });
+
+    test('the shared link follows a renamed page and a changed setting', function (): void {
+        $page = Page::factory()->for($this->tenant)->create([
+            'lang' => 'lt',
+            'permalink' => 'privatumo-politika',
+        ]);
+
+        $settings = app(SiteSettings::class);
+        $settings->privacy_page_id_lt = (string) $page->id;
+        $settings->save();
+
+        $sharedUrl = fn () => $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
+            ->assertOk()
+            ->inertiaProps('organization.privacyPageUrl');
+
+        expect($sharedUrl())->toContain('privatumo-politika');
+
+        $page->update(['permalink' => 'privatumas']);
+
+        expect($sharedUrl())->toContain('/privatumas');
+
+        $other = Page::factory()->for($this->tenant)->create([
+            'lang' => 'lt',
+            'permalink' => 'duomenu-apsauga',
+        ]);
+        $settings->privacy_page_id_lt = (string) $other->id;
+        $settings->save();
+
+        expect($sharedUrl())->toContain('duomenu-apsauga');
+    });
 });
 
 describe('site settings page authorization', function (): void {

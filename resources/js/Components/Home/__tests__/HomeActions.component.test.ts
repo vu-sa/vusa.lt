@@ -33,7 +33,7 @@ const createAction = (id: string, workspaceKey: string): CommandAction => ({
 beforeEach(() => {
   state.actions = [];
   vi.mocked(usePage).mockReturnValue(createMockPage({
-    auth: { can: { accessAdministration: false } },
+    auth: { can: {} },
     adminNavigation: { workspaces: [pradzia] },
   }) as ReturnType<typeof usePage>);
 });
@@ -70,7 +70,7 @@ describe('home actions', () => {
     expect(mount(QuickAccess).find('[data-slot="home-quick-access"]').exists()).toBe(false);
 
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { can: { accessAdministration: true } },
+      auth: { can: {} },
       adminNavigation: { workspaces: [pradzia, atstovavimas, rezervacijos] },
     }) as ReturnType<typeof usePage>);
 
@@ -84,21 +84,21 @@ describe('home actions', () => {
 
   it('shows each quick access link independently when only that area is available', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { can: { accessAdministration: true } },
+      auth: { can: {} },
       adminNavigation: { workspaces: [pradzia, atstovavimas] },
     }) as ReturnType<typeof usePage>);
     expect(mount(QuickAccess).findAll('a').map(link => link.attributes('href')))
       .toEqual(['/mocked-route/dashboard.atstovavimas']);
 
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { can: { accessAdministration: false } },
+      auth: { can: {} },
       adminNavigation: { workspaces: [pradzia, rezervacijos] },
     }) as ReturnType<typeof usePage>);
     expect(mount(QuickAccess).findAll('a').map(link => link.attributes('href')))
       .toEqual(['/mocked-route/dashboard.reservations']);
 
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { can: { accessAdministration: true } },
+      auth: { can: {} },
       adminNavigation: { workspaces: [pradzia] },
     }) as ReturnType<typeof usePage>);
     expect(mount(QuickAccess).findAll('a')).toHaveLength(0);
@@ -122,7 +122,7 @@ describe('home actions', () => {
 
   it('lays out four permitted destinations in one desktop row', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
-      auth: { can: { accessAdministration: true } },
+      auth: { can: {} },
       adminNavigation: { workspaces: [pradzia, atstovavimas, rezervacijos] },
     }) as ReturnType<typeof usePage>);
 

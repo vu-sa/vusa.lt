@@ -19,6 +19,25 @@ test('saving a tenant forgets the cached tenant list', function (): void {
     expect(Cache::get(HandleInertiaRequests::TENANTS_CACHE_KEY))->toBeNull();
 });
 
+test('saving an institution forgets the cached tenant list, which carries primary institutions', function (): void {
+    Cache::forever(HandleInertiaRequests::TENANTS_CACHE_KEY, 'stale');
+
+    Institution::factory()->create();
+
+    expect(Cache::get(HandleInertiaRequests::TENANTS_CACHE_KEY))->toBeNull();
+});
+
+test('changing a tenant alias moves its cached alias lookup', function (): void {
+    $tenant = Tenant::factory()->create(['alias' => 'senas']);
+
+    expect(Tenant::forAlias('senas')?->is($tenant))->toBeTrue();
+
+    $tenant->update(['alias' => 'naujas']);
+
+    expect(Tenant::forAlias('senas'))->toBeNull()
+        ->and(Tenant::forAlias('naujas')?->is($tenant))->toBeTrue();
+});
+
 test('saving an institution type forgets the cached institution type list', function (): void {
     Cache::forever(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY, 'stale');
 

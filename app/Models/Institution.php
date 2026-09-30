@@ -7,6 +7,7 @@ use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
@@ -31,6 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
@@ -382,6 +384,15 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
                 FileableNameUpdated::dispatch($institution);
             }
         });
+
+        // The shared tenant list carries each tenant's primary institution. Void closures:
+        // Cache::forget() returns false on a miss, which would stop the listeners below.
+        $forgetTenantList = function (): void {
+            Cache::forget(HandleInertiaRequests::TENANTS_CACHE_KEY);
+        };
+        static::saved($forgetTenantList);
+        static::deleted($forgetTenantList);
+        static::restored($forgetTenantList);
 
         static::saved(function (Institution $institution): void {
             $publicInstitution = PublicInstitution::query()->find($institution->getKey());

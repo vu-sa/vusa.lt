@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\TenantType;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Settings\SiteSettings;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
@@ -58,6 +60,8 @@ class Tenant extends Model
 {
     use HasFactory, HasRelationships, Searchable;
 
+    private const string MAIN_CACHE_KEY = 'tenant:main';
+
     #[\Override]
     protected function casts(): array
     {
@@ -70,23 +74,54 @@ class Tenant extends Model
     #[\Override]
     protected static function booted()
     {
-        static::saved(function ($tenant): void {
+        static::saved(function (Tenant $tenant): void {
             Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
-            Cache::forget('all-tenants-for-inertia');
+            $tenant->forgetLookupCaches();
         });
 
-        static::deleted(fn () => Cache::forget('all-tenants-for-inertia'));
+        static::deleted(fn (Tenant $tenant) => $tenant->forgetLookupCaches());
     }
 
     /**
      * The single VU SA central-office tenant.
      *
-     * This lookup was hand-written in six places (controllers and Form Requests alike); it is
-     * cheap but it is also the sort of thing that should have exactly one spelling.
+     * Memoized per request (and cached across them) because `Page::publicUrl()` and
+     * `News::publicUrl()` call it once per item in listings.
      */
     public static function main(): ?self
     {
-        return static::query()->where('type', TenantType::Pagrindinis)->first();
+        return Cache::memo()->rememberForever(self::MAIN_CACHE_KEY,
+            fn () => static::query()->where('type', TenantType::Pagrindinis)->first());
+    }
+
+    /**
+     * The tenant a public request's host resolves to, looked up on every public page.
+     */
+    public static function forAlias(string $alias): ?self
+    {
+        return Cache::memo()->rememberForever(self::aliasCacheKey($alias),
+            fn () => static::query()->where('alias', $alias)->first());
+    }
+
+    private static function aliasCacheKey(string $alias): string
+    {
+        return "tenant:alias:{$alias}";
+    }
+
+    private function forgetLookupCaches(): void
+    {
+        $cache = Cache::memo();
+
+        $cache->forget(HandleInertiaRequests::TENANTS_CACHE_KEY);
+        $cache->forget(self::MAIN_CACHE_KEY);
+        $cache->forget(self::aliasCacheKey((string) $this->alias));
+
+        if ($this->wasChanged('alias') && is_string($this->getOriginal('alias'))) {
+            $cache->forget(self::aliasCacheKey($this->getOriginal('alias')));
+        }
+
+        // The privacy page URL carries its tenant's subdomain.
+        SiteSettings::forgetCachedPrivacyPageUrls();
     }
 
     /**

@@ -18,7 +18,6 @@ use App\Support\MorphMap;
 use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -102,9 +101,16 @@ class HandleInertiaRequests extends Middleware
     #[\Override]
     public function share(Request $request)
     {
-        $user = $this->getLoggedInUserForInertia();
+        /** @var User|null $user */
+        $user = $request->user();
 
-        $isSuperAdmin = $user?->isSuperAdmin() ?? false;
+        // Admin-only data stays off public pages, where no component reads it.
+        $onAdmin = $request->is('mano', 'mano/*');
+
+        $pushEndpoints = null;
+        $getPushEndpoints = function () use ($user, &$pushEndpoints): array {
+            return $pushEndpoints ??= $user?->pushSubscriptions()->pluck('endpoint')->all() ?? [];
+        };
 
         return array_merge(parent::share($request), [
             'app' => [
@@ -122,21 +128,23 @@ class HandleInertiaRequests extends Middleware
                 'legal' => config('vusa.legal'),
                 // Resolved server-side so the cookie banner links to the right language
                 // record without knowing anything about permalinks. Null when unconfigured.
-                'privacyPageUrl' => app(SiteSettings::class)->privacyPageUrl(),
+                'privacyPageUrl' => SiteSettings::cachedPrivacyPageUrl(app()->getLocale()),
             ],
             'auth' => is_null($user) ? null : [
                 'can' => fn () => [
-                    'index' => fn () => $this->getIndexPermissions($user),
-                    'create' => fn () => $this->getCreatePermissions($user),
-                    'forceDelete' => fn () => $this->getForceDeletePermissions($user),
-                    'manageSettings' => fn () => $user->can('manage-settings'),
-                    'accessAdministration' => fn () => $user->can('access-administration'),
+                    'index' => fn () => $onAdmin ? $this->getIndexPermissions($user) : [],
+                    'create' => fn () => $onAdmin ? $this->getCreatePermissions($user) : [],
+                    'forceDelete' => fn () => $onAdmin ? $this->getForceDeletePermissions($user) : [],
                 ],
                 'user' => fn () => [
-                    ...$user->toArray(),
-                    'isSuperAdmin' => $isSuperAdmin,
-                    'tenants' => $user->tenants()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])->unique(),
-                    'unreadNotifications' => $user->unreadNotifications()->get(),
+                    // Relations loaded on the request user by policies or controllers are not shared.
+                    ...$user->withoutRelations()->toArray(),
+                    ...($onAdmin ? $this->getOpenTaskCounts($user) : []),
+                    'isSuperAdmin' => $user->isSuperAdmin(),
+                    'tenants' => $onAdmin
+                        ? $user->tenants()->distinct()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])
+                        : [],
+                    'unreadNotifications' => $onAdmin ? $user->unreadNotifications()->get() : [],
                     'tutorial_progress' => $user->tutorial_progress ?? [],
                     'ui_preferences' => $user->ui_preferences ?? [],
                 ],
@@ -165,8 +173,8 @@ class HandleInertiaRequests extends Middleware
             // controller/form that needs an event-type picker (Calendar admin form,
             // RichContent's event-list/calendar block editors). See QuickLinkController's
             // identical "not worth a search endpoint" rationale for topics.
-            'eventTypes' => $this->getEventTypesForInertia(...),
-            'tags' => $this->getTagsForInertia(...),
+            'eventTypes' => fn () => $onAdmin ? $this->getEventTypesForInertia() : [],
+            'tags' => fn () => $onAdmin ? $this->getTagsForInertia() : [],
             'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
@@ -175,35 +183,36 @@ class HandleInertiaRequests extends Middleware
             ],
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
-                'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,
-                'subscriptionEndpoints' => fn () => $user?->pushSubscriptions()
-                    ->pluck('endpoint')
-                    ->toArray() ?? [],
+                'hasPushSubscription' => fn () => $onAdmin && $getPushEndpoints() !== [],
+                'subscriptionEndpoints' => fn () => $onAdmin ? $getPushEndpoints() : [],
             ],
             // The navigation catalog (O19): one server-side definition of every admin
             // destination, gated and cached per user. Null outside `/mano` so public pages pay
             // one string comparison instead of resolving permissions nobody asked for.
-            'adminNavigation' => fn () => $user && $request->is('mano', 'mano/*')
+            'adminNavigation' => fn () => $user && $onAdmin
                 ? app(AdminNavigationCatalog::class)->for($user)
                 : null,
         ]);
     }
 
-    private function getLoggedInUserForInertia(): ?User
+    /**
+     * Open and overdue task counts for the admin shell badges, in one query.
+     *
+     * @return array{tasks_count: int, overdue_tasks_count: int}
+     */
+    private function getOpenTaskCounts(User $user): array
     {
-        $user = User::query()
-            ->withCount([
-                'tasks' => function ($query): void {
-                    $query->whereNull('completed_at');
-                },
-                'tasks as overdue_tasks_count' => function ($query): void {
-                    $query->whereNull('completed_at')->where('due_date', '<', now());
-                },
-            ])
-            ->with('roles', 'current_duties:id,name,institution_id', 'current_duties.roles', 'current_duties.institution:id,name')
-            ->find(Auth::id());
+        $counts = $user->tasks()
+            ->whereNull('completed_at')
+            ->toBase()
+            ->selectRaw('count(*) as tasks_count')
+            ->selectRaw('sum(case when due_date < ? then 1 else 0 end) as overdue_tasks_count', [now()])
+            ->first();
 
-        return $user;
+        return [
+            'tasks_count' => (int) ($counts->tasks_count ?? 0),
+            'overdue_tasks_count' => (int) ($counts->overdue_tasks_count ?? 0),
+        ];
     }
 
     /**
@@ -211,14 +220,12 @@ class HandleInertiaRequests extends Middleware
      */
     private function getTenantsForInertia(): Collection
     {
-        // TODO: maybe should return all tenants, even pagrindinis
-        $tenants = Cache::rememberForever(self::TENANTS_CACHE_KEY,
-            fn () => Tenant::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
+        // Institution saves forget this key too, since the primary institution is cached with it.
+        return Cache::rememberForever(self::TENANTS_CACHE_KEY,
+            fn () => Tenant::orderBy('shortname_vu')
+                ->with('primary_institution:id,short_name,image_url,image_focal_point')
+                ->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
         );
-
-        $tenants->load('primary_institution:id,short_name,image_url,image_focal_point');
-
-        return $tenants;
     }
 
     /**

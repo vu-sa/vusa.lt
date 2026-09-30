@@ -44,6 +44,9 @@ class ModelAuthorizer
      */
     private array $duties = [];
 
+    /** @var Collection<int, Tenant>|null */
+    private ?Collection $allTenants = null;
+
     /**
      * Resolve what a permission grants this user.
      */
@@ -120,7 +123,7 @@ class ModelAuthorizer
     private function resolve(User $user, string $permission): PermissionScope
     {
         if ($user->isSuperAdmin()) {
-            return new PermissionScope(true, true, new Collection, Tenant::all());
+            return new PermissionScope(true, true, new Collection, $this->allTenants());
         }
 
         // A permission granted directly to the user, rather than through a duty. It is
@@ -134,7 +137,7 @@ class ModelAuthorizer
                 true,
                 $isAllScope,
                 new Collection,
-                $isAllScope ? Tenant::all() : $this->tenantsOf($this->loadDuties($user)),
+                $isAllScope ? $this->allTenants() : $this->tenantsOf($this->loadDuties($user)),
             );
         }
 
@@ -162,8 +165,16 @@ class ModelAuthorizer
             true,
             $isAllScope,
             $granting,
-            $isAllScope ? Tenant::all() : $this->tenantsOf($granting),
+            $isAllScope ? $this->allTenants() : $this->tenantsOf($granting),
         );
+    }
+
+    /**
+     * @return Collection<int, Tenant>
+     */
+    private function allTenants(): Collection
+    {
+        return $this->allTenants ??= Tenant::all();
     }
 
     /**
@@ -174,9 +185,8 @@ class ModelAuthorizer
     {
         /** @var \Illuminate\Support\Collection<int, Tenant> $tenants */
         $tenants = $duties
-            // loadMissing, not load: loadDuties() already eager-loads authorization_duties.institution,
-            // and a second resolution in the same request will already have the .tenant leg
-            // loaded too — load() re-queried both unconditionally.
+            // loadDuties() caches institution.tenant with the duties; loadMissing keeps any
+            // other caller's duty collection working.
             ->loadMissing('institution.tenant')
             ->pluck('institution.tenant')
             ->filter()
@@ -198,9 +208,9 @@ class ModelAuthorizer
             fn () => AuthorityCacheExpiry::for($user, static::CACHE_TTL),
             fn () => $user->load([
                 'authorization_duties:id,name,institution_id',
-                // tenant_id (not just id) so tenantsOf()'s loadMissing('institution.tenant')
-                // can resolve the nested tenant relation without re-fetching institution.
+                // Cached with the duties so tenantsOf() needs no query per request.
                 'authorization_duties.institution:id,tenant_id',
+                'authorization_duties.institution.tenant',
                 'authorization_duties.roles.permissions',
                 // Without this, the duty loop lazy-loads $duty->permissions (direct, not via
                 // role) once per duty — an N+1 on every permission check.
